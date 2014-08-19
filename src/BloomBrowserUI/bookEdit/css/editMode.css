@@ -1,4 +1,4 @@
-/*This styesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 /*+clearfix {*/
 .tool-items:after
 {
@@ -29,7 +29,6 @@ DIV.bloom-imageContainer
 {
 	border: thin solid rgba(1, 1, 1, 0.2);
 }
-
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
 .marginBox DIV.pageLabel
 {
@@ -43,13 +42,21 @@ DIV.pageLabel
 	text-align: left;
 	/*This black with high transparency gives us a grey on white, and a darker color of whatever the colored background is.*/
 	color: rgba(0, 0, 0, 0.2);
-	margin-left: 5px;
-	/*+placement:anchor-top-left 71px 19px;*/
+	/*+placement:anchor-top-left 0px 19px;*/
 	position: absolute;
-	left: 71px;
+	left: 15mm;
 	top: 19px;
 	float: left;
 }
+.evenPage DIV.pageLabel
+{
+    margin-left: 2.5cm;
+}
+.oddPage DIV.pageLabel
+{
+    margin-left: 1.3cm;
+}
+
 DIV.page
 {
 	background-color: #F8F8F8;
@@ -350,7 +357,6 @@ DIV.marginBox
 {
 	color: #000000;
 }
-
 /*Toolbox*/
 #toolbox
 {
@@ -405,9 +411,29 @@ UL.toolbox LI
 {
 	text-align: center;
 }
-.ui-dialog
+/*Put in little grey language tooltips in the bottom-right of the editable divs*/
+/*.languageTip is used when the box has focus to work around a couple FF bugs.  See BL-151.*/
+/*The :after pseudoelement is used when the box does not have focus.*/
+/*The goal is to have them appear exactly the same so nothing changes when focus is gained/lost.*/
+.languageTip, .bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):not(:focus):after
 {
-	z-index: 20000;
+	position: absolute;
+	right: 0;
+	/*Same grey color as pageLabel*/
+	color: rgba(0, 0, 0, 0.2);
+	font-size: small;
+	font-family: Arial, sans-serif; /* Arial matches .qtip-content */
+}
+.languageTip
+{
+	/* 'top' is added by javascript (StyleEditor.AttachLanguageTip) based on the height of the element */
+	margin-right: 1px;
+}
+.bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):not(:focus):after
+{
+	content: attr(data-languageTipContent);
+	bottom: 0px;
+	margin-right: 2px;
 }
 /*Simulate the html5 placeholder attribute which is not available on divs
 The :not(:focus) selector here is something we do NOT want. It was added as a workaround for a firefox bug
@@ -416,7 +442,7 @@ has a :before rule applied and which already has focus, weird things happen and 
 When this bug is fixed, or if we can find a better workaround, the :not(:focus) should be removed
 so that when a div has the data-placeholder attribute set, the placeholder will continue to appear
 even when the div is focused (as long as it is empty).*/
-[contentEditable=true]:empty:not(:focus):before
+[contentEditable=true][data-placeholder]:empty:not(:focus):before
 {
 	content: attr(data-placeholder);
 	color: #DDDBDB;
@@ -427,4 +453,25 @@ SPAN.sentence-too-long
 	-moz-text-decoration-style: wavy;
 	-moz-text-decoration-line: underline;
 	-moz-text-decoration-color: orange;
+}
+
+.ui-dialog { z-index: 20000; }
+
+SPAN.sight-word
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: green;
+}
+SPAN.word-not-found
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: orange;
+}
+SPAN.possible-word
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: blue;
 }

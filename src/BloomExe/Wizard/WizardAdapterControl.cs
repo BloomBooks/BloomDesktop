@@ -378,7 +378,7 @@ namespace Bloom.Wizard
         Action<Size> SetSize;
 
 
-        #endregion       
+        #endregion
 
         public WizardAdapterPage()
             : this(WizardAdapterControl._useAeroWizard ? (Control)new AeroWizard.WizardPage() : (Control)new WinForms.WizardPage())
@@ -386,21 +386,7 @@ namespace Bloom.Wizard
         
         }
 
-        protected WizardAdapterPage(Control page)
-        {
-            Setup();
-
-            InitializeControl(page);
-        }
-
-        internal WizardAdapterPage(AeroWizard.WizardPage page)
-        {
-            Setup();
-
-            InitializeControl(page);
-        }
-
-        internal WizardAdapterPage(WinForms.WizardPage page)
+		internal protected WizardAdapterPage(Control page)
         {
             Setup();
 
@@ -411,11 +397,12 @@ namespace Bloom.Wizard
         {
             get
             {
-                return GetTag();
+				return GetTag != null ? GetTag() : null;
             }
             set
             {
-                SetTag(value);
+				if (SetTag != null)
+					SetTag(value);
             }
         }
 
@@ -423,11 +410,12 @@ namespace Bloom.Wizard
         {
             get
             {
-                return GetSuppress();
+				return GetSuppress != null && GetSuppress();
             }
             set
             {
-                SetSuppress(value);
+				if (SetSuppress != null)
+					SetSuppress(value);
             }
         }
 
@@ -435,11 +423,12 @@ namespace Bloom.Wizard
         {
             get
             {
-                return GetAllowNext();
+				return GetAllowNext != null && GetAllowNext();
             }
             set
             {
-                SetAllowNext(value);                
+				if (SetAllowNext != null)
+					SetAllowNext(value);
             }
         }
 
@@ -447,11 +436,12 @@ namespace Bloom.Wizard
         {
             get
             {
-                return GetNextPage();                
+				return GetNextPage != null ? GetNextPage() : null;
             }
             set
             {
-                SetNextPage(value);                
+				if (SetNextPage != null)
+					SetNextPage(value);
             }
         }
 
@@ -459,11 +449,12 @@ namespace Bloom.Wizard
         {
             get
             {
-                return GetIsFinishedPage();
+				return GetIsFinishedPage != null && GetIsFinishedPage();
             }
             set
             {
-                SetIsFinishedPage(value);
+				if (SetIsFinishedPage != null)
+					SetIsFinishedPage(value);
             }
         }
 
@@ -473,12 +464,12 @@ namespace Bloom.Wizard
         {
             get
             {
-                return GetText();
-                
+				return GetText != null ? GetText() : null;
             }
             set
             {
-                SetText(value);                
+				if (SetText != null)
+					SetText(value);
             }
         }
 
@@ -486,20 +477,17 @@ namespace Bloom.Wizard
         {
             get
             {
-                return GetSize();                
+				return GetSize != null ? GetSize() : Size.Empty;
             }
             set
             {
-                SetSize(value);
+				if (SetSize != null)
+					SetSize(value);
             }
         }
-
-
-
-
         #endregion
 
-        public event System.EventHandler<EventArgs> Initialize;
+        public event EventHandler<EventArgs> Initialize;
     }
 
 

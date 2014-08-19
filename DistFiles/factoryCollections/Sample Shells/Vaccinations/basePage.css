@@ -63,7 +63,7 @@ DIV.ui-tooltip-content
 }
 .uibloomSourceTextsBubble .ui-tooltip-content
 {
-	/*This mininum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
+	/*This minimum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
 	min-height: 60px !important;
 }
 .bloom-imageContainer
@@ -112,7 +112,7 @@ DIV#bloomDataDiv
 }
 P
 {
-	margin-left: 1cm;
+    /*[disabled]margin-left:1cm;*/
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
 DIV.bloom-translationGroup DIV.bloom-editable
@@ -185,19 +185,13 @@ DIV.bloom-page.A4Portrait
 {
 	width: 108mm;
 	height: 175mm;
-	/*+placement:anchor-top-left 0 15mm;*/
-	position: absolute;
-	left: 0;
-	top: 15mm;
+	margin-top: 15mm;
 }
 .A4Portrait DIV.marginBox
 {
 	width: 178mm;
 	height: 266mm;
-	/*+placement:anchor-top-left -2.6mm 15.2mm;*/
-	position: absolute;
-	left: -2.6mm;
-	top: 15.2mm;
+    margin-top: 1.5cm;
 }
 .B5Portrait DIV.marginBox
 {
@@ -208,13 +202,19 @@ DIV.bloom-page.A4Portrait
 	left: 0;
 	top: 15mm;
 }
-DIV.bloom-page:nth-of-type(odd) DIV.marginBox
+.bloom-page:nth-of-type(odd) .marginBox
 {
 	margin-left: 15mm;
 }
-DIV.bloom-page:nth-of-type(even) DIV.marginBox
+.bloom-page:nth-of-type(even) .marginBox
 {
 	margin-left: 25mm;
+}
+.bloom-page.outsideFrontCover .marginBox, .bloom-page.outsideBackCover .marginBox
+{
+	/*For the outside cover, just center the margin box, ignore the binding (may need to revisit this decision, I (JH) just think it'll be better)*/
+	margin-left: auto;
+	margin-right: auto;
 }
 .A5Landscape DIV.marginBox
 {
@@ -228,10 +228,7 @@ DIV.bloom-page:nth-of-type(even) DIV.marginBox
 .A4Landscape DIV.marginBox
 {
 	width: 266.1mm;
-	/*+placement:anchor-top-left 1.7mm 12.7mm;*/
-	position: absolute;
-	left: 1.7mm;
-	top: 12.7mm;
+	margin-top: 15mm;
 	height: 178.5mm;
 }
 .A4LandscapeSideBySide DIV.marginBox

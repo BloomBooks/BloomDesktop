@@ -11,7 +11,9 @@ This version includes an "Instructions for Teachers" page that is already filled
 If you would like to have instructions in a different language, you can delete that text and type in your own.
 If you send us that text, we can include it in a future version of the template.
 
+In Bloom 2, you don't get a separate option for printing just the cover page of a Big Book.
+
 #Feedback
-Please give and vote on [suggestions](http://bloom.palaso.org/suggestions/)
+Please give and vote on [suggestions](http://dev.bloomlibrary.org/#/suggestions)
 
 Please report problems to [issues@bloomremovelibrary.org](mailto:issues@bloomremovelibrary.org?subject=Big&nbsp;Book&nbsp;Problem).

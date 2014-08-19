@@ -16,6 +16,7 @@ using DesktopAnalytics;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.UI.WindowsForms.Widgets;
+using L10NSharp;
 
 namespace Bloom.CollectionTab
 {
@@ -35,6 +36,7 @@ namespace Bloom.CollectionTab
     	private bool _primaryCollectionReloadPending;
         private LinkLabel _missingBooksLink;
         private bool _disposed;
+	    private BookCollection _downloadedBookCollection;
 		enum ButtonManagementStage
 		{
 			LoadPrimary, ImprovePrimary, LoadSourceCollections, ImproveAndRefresh
@@ -49,11 +51,14 @@ namespace Bloom.CollectionTab
 		/// </summary>
 		private ConcurrentQueue<Button> _buttonsNeedingSlowUpdate;
 
-        public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
+        private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
+
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent,
 			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory, BookTransfer bookTransferrer)
         {
             _model = model;
             _bookSelection = bookSelection;
+			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
 			_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
 	        _bookTransferrer = bookTransferrer;
 			_buttonsNeedingSlowUpdate = new ConcurrentQueue<Button>();
@@ -169,15 +174,12 @@ namespace Bloom.CollectionTab
 					break;
 				case ButtonManagementStage.LoadSourceCollections:
 					LoadSourceCollectionButtons();
-					// now we're all set to handle any pending book orders, especially one that may have been created
-					// at startup from a command line argument. We're also ready to receive any notifications of new books
-					// downloaded.
-					if (_bookTransferrer != null)
-					{
-						_bookTransferrer.BookDownLoaded += bookTransferrer_BookDownLoaded;
-						_bookTransferrer.HandleOrders();
-					}
 					_buttonManagementStage = ButtonManagementStage.ImproveAndRefresh;
+					if (Program.PathToBookDownloadedAtStartup != null)
+					{
+						// We started up with a command to downloaded a book...Select it.
+						SelectBook(new BookInfo(Program.PathToBookDownloadedAtStartup, false));
+					}
 					break;
 				case ButtonManagementStage.ImproveAndRefresh:
 					ImproveAndRefreshBookButtons();
@@ -260,7 +262,7 @@ namespace Bloom.CollectionTab
 				    //We showed at least one book, so now go back and insert the header
 				    var collectionHeader = new Label()
 					    {
-						    Text = collection.Name,
+							Text = L10NSharp.LocalizationManager.GetDynamicString("Bloom", "CollectionTab." + collection.Name, collection.Name),
 						    Size = new Size(_sourceBooksFlow.Width - 20, 20),
 						    ForeColor = Palette.TextAgainstDarkBackground,
 						    Padding = new Padding(10, 0, 0, 0)
@@ -319,16 +321,29 @@ namespace Bloom.CollectionTab
 				//skip over the dependency injection layer
 				if (error.Source == "Autofac" && error.InnerException != null)
 					error = error.InnerException;
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at "+bookInfo.FolderPath);
+				Logger.WriteEvent("There was a problem with the book at " + bookInfo.FolderPath + ". " + error.Message);
+				if (!_alreadyReportedErrorDuringImproveAndRefreshBookButtons)
+				{
+					_alreadyReportedErrorDuringImproveAndRefreshBookButtons = true;
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at {0}. \r\n\r\nClick the 'Details' button for more information.\r\n\r\nThis error may effect other books, but this is the only notice you will receive.\r\n\r\nSee 'Help:Show Event Log' for any further errors.", bookInfo.FolderPath);
+				}
 				return;
 			}
 			
+			//Only go looking for a better title if the book hasn't already been localized when we first showed it.
+			//The idea is, if we already have a localization mapping for this name, then 
+			// we're not going to get a better title by digging into the document itself and overriding what the localizer
+			// chose to call it.
+			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
+			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay))
+			{
 		    var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
 		    if (titleBestForUserDisplay != button.Text)
 		    {
-			    Debug.WriteLine(button.Text +" --> "+titleBestForUserDisplay);
+					Debug.WriteLine(button.Text + " --> " + titleBestForUserDisplay);
 				button.Text = titleBestForUserDisplay;
 		    }
+			}
 		    if (button.ImageIndex==999)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
 		    {
 				ScheduleRefreshOfOneThumbnail(book);
@@ -337,17 +352,29 @@ namespace Bloom.CollectionTab
 
         void OnBloomLibrary_Click(object sender, EventArgs e)
         {
-            Process.Start("http://dev.bloomlibrary.org");
+            if (_model.IsShellProject)
+            {
+                // Display dialog making sure they know what they're doing
+                var dialogResult = ShowBloomLibraryLinkVerificationDialog();
+                if (dialogResult != DialogResult.OK)
+                    return;
+            }
+            Process.Start(BookTransfer.UseSandbox
+                ? "http://dev.bloomlibrary.org/books"
+                : "http://bloomlibrary.org/books");
         }
+
+        DialogResult ShowBloomLibraryLinkVerificationDialog()
+        {
+            var dlg = new BloomLibraryLinkVerification();
+            return dlg.GetVerification(this);
+        }
+
 	    void OnMissingBooksLink_Click(object sender, EventArgs e)
         {
             if (_model.IsShellProject)
             {
-                MessageBox.Show(L10NSharp.LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."), _missingBooksLink.Text);
-            }
-            else
-            {
-                //MessageBox.Show(L10NSharp.LocalizationManager.GetString("hiddenBookExplanationForVernacularCollections", "Because this is a vernacular collection, Bloom isn't offering all the same."));
+                MessageBox.Show(LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."), _missingBooksLink.Text);
             }
         }
 
@@ -363,15 +390,12 @@ namespace Bloom.CollectionTab
     		{
     		    try
     		    {
-    		    	var isSuitableSourceForThisEditableCollection = (_model.IsShellProject && bookInfo.IsSuitableForMakingShells) ||
-    		    	          (!_model.IsShellProject && bookInfo.IsSuitableForVernacularLibrary);
-
-                    if (isSuitableSourceForThisEditableCollection || collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+					if (IsSuitableSourceForThisEditableCollection(bookInfo) || collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
                     {
                         if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
                         {
                             loadedAtLeastOneBook = true;
-                            AddOneBook(bookInfo, flowLayoutPanel);
+							AddOneBook(bookInfo, flowLayoutPanel, collection.Name.ToLower() == "templates");
                         }
                     }
     		    }
@@ -382,37 +406,102 @@ namespace Bloom.CollectionTab
     		}
             if (collection.Name == BookCollection.DownloadedBooksCollectionNameInEnglish)
             {
-                if (!_model.IsShellProject) // eventually it might make sense from there too, but maybe we should then lead with a query that just gets templates? or
-                                            // maybe before we get to that, we'll be getting template pages from the "new page" dialog instead.
+	            _downloadedBookCollection = collection;
+                collection.FolderContentChanged += DownLoadedBooksChanged;
+                collection.WatchDirectory(); // In case another instance downloads a book.
+                var bloomLibrayLink = new LinkLabel()
                 {
-                    var bloomLibrayLink = new LinkLabel()
-                    {
-                        Text =
-                            L10NSharp.LocalizationManager.GetString("CollectionTab.bloomLibraryLinkLabel",
-                                                                    "Get more source books at BloomLibrary.org",
-                                                                    "Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library"),
-                        Width = 400,
-                        Margin = new Padding(17, 0, 0, 0),
-                        //TextAlign = ContentAlignment.TopCenter,
-                        LinkColor = Palette.TextAgainstDarkBackground
-                    };
-
-                    bloomLibrayLink.Click += new EventHandler(OnBloomLibrary_Click);
-                    
-                    //flowLayoutPanel.SetFlowBreak(_sourceBooksFlow.Controls[_sourceBooksFlow.Controls.Count - 1], true);
-                    flowLayoutPanel.Controls.Add(bloomLibrayLink);
-                    //flowLayoutPanel.SetFlowBreak(bloomLibrayLink, true);
-
-                }
+                    Text =
+                        L10NSharp.LocalizationManager.GetString("CollectionTab.bloomLibraryLinkLabel",
+                                                                "Get more source books at BloomLibrary.org",
+                                                                "Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library"),
+                    Width = 400,
+                    Margin = new Padding(17, 0, 0, 0),
+                    LinkColor = Palette.TextAgainstDarkBackground
+                };
+                bloomLibrayLink.Click += new EventHandler(OnBloomLibrary_Click);
+                flowLayoutPanel.Controls.Add(bloomLibrayLink);
                 return true;
             }
             return loadedAtLeastOneBook;
     	}
 
-    	private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel)
+ 	   private bool IsSuitableSourceForThisEditableCollection(BookInfo bookInfo)
+		{
+			return (_model.IsShellProject && bookInfo.IsSuitableForMakingShells) ||
+				   (!_model.IsShellProject && bookInfo.IsSuitableForVernacularLibrary);
+		}
+
+		private Timer _newDownloadTimer;
+		/// <summary>
+		/// Called when a file system watcher notices a new book (or some similar change) in our downloaded books folder.
+		/// This will happen on a thread-pool thread.
+		/// Since we are updating the UI in response we want to deal with it on the main thread.
+		/// This also has the effect that it can't happen in the middle of another LoadSourceCollectionButtons().
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void DownLoadedBooksChanged(object sender, ProjectChangedEventArgs eventArgs)
+		{
+			Invoke((Action) (() =>
+			{
+				// We may notice a change to the downloaded books directory before the other Bloom instance has finished
+				// copying the new book there. Finishing should not take long, because the download is done...at worst
+				// we have to copy the book on our own filesystem. Typically we only have to move the directory.
+				// As a safeguard, wait half a second before we update things.
+				if (_newDownloadTimer != null)
+				{
+					// Things changed again before we started the update! Forget the old update and wait until things
+					// are stable for the required interval.
+					_newDownloadTimer.Stop();
+					_newDownloadTimer.Dispose();					
+				}
+				_newDownloadTimer = new Timer();
+				_newDownloadTimer.Tick += (o, args) =>
+				{
+					_newDownloadTimer.Stop();
+					_newDownloadTimer.Dispose();
+					_newDownloadTimer = null;
+					UpdateDownloadedBooks(eventArgs.Path);
+				};
+				_newDownloadTimer.Interval = 500;
+				_newDownloadTimer.Start();
+			}));
+		}
+
+	    private void UpdateDownloadedBooks(string pathToChangedBook)
+	    {
+			var newBook = new BookInfo(pathToChangedBook, false);
+		    // It's always worth reloading...maybe we didn't have a button before because it was not
+		    // suitable for making vernacular books, but now it is! Or maybe the metadata changed some
+		    // other way...we want the button to have valid metadata for the book.
+		    // Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
+		    LoadSourceCollectionButtons();
+		    if (Enabled && CollectionTabIsActive)
+			    SelectBook(newBook);
+	    }
+
+	    /// <summary>
+		/// Tells whether the collections tab is visible. If it isn't, we don't try to switch to show the selected book.
+		/// In the current configuration, Parent.Parent.Parent is the LibraryView; this is added and removed from
+		/// the higher level view depending on whether it is wanted, so if it has no higher parent it is hidden
+		/// (although Visible is still true!) and we should not try to switch.
+		/// One day we may enhance it so that we switch tabs and show it, but there are states where that would
+		/// be dangerous.
+		/// </summary>
+	    private bool CollectionTabIsActive
+	    {
+		    get { return Parent.Parent.Parent.Parent != null; }
+	    }
+
+        private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, bool localizeTitle)
     	{
 			var button = new Button(){Size=new Size(90,110)};
-    		button.Text = ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay);
+	        string title = bookInfo.QuickTitleUserDisplay;
+	        if (localizeTitle)
+		        title = LocalizationManager.GetDynamicString("Bloom", "Template."+title,title);
+
+	        button.Text = ShortenTitleIfNeeded(title);
     		button.TextImageRelation = TextImageRelation.ImageAboveText;
 			button.ImageAlign = ContentAlignment.TopCenter;
     		button.TextAlign = ContentAlignment.BottomCenter;
@@ -458,7 +547,7 @@ namespace Bloom.CollectionTab
 
     	private string ShortenTitleIfNeeded(string title)
     	{
-			int kMaxCaptionLetters = 17;
+			int kMaxCaptionLetters = 25; // This allows 2 rows of caption including ellipsis (if longer than that)
 			return title.Length > kMaxCaptionLetters ? title.Substring(0, kMaxCaptionLetters-2) + "…" : title;
     	}
 
@@ -479,44 +568,6 @@ namespace Bloom.CollectionTab
     	private void OnCollectionChanged(object sender, EventArgs e)
     	{
     		_primaryCollectionReloadPending = true;
-    	}
-
-		void bookTransferrer_BookDownLoaded(object sender, BookDownloadedEventArgs e)
-		{
-			var newBook = e.BookDetails;
-			Invoke((Action) (() =>
-			{
-				if (!HaveButtonForBook(newBook))
-				{
-					var downloadCollection = _model.GetBookCollections().First(c => c.PathToDirectory == BookTransfer.DownloadFolder);
-					downloadCollection.InsertBookInfo(newBook);
-					// It's always worth reloading...maybe we didn't have a button before because it was not
-					// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
-					// other way...we want the button to have valid metadata for the book.
-					// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
-					LoadSourceCollectionButtons();					
-				}
-				// This actually works...displays the book and offers to let you use it as a template...even if it
-				// is NOT suitable for making vernacular books and hence no button has been created for it. Not sure
-				// whether this is desirable.
-				SelectBook(newBook);
-			}));
-		}
-
-		private bool HaveButtonForBook(BookInfo newBook)
-		{
-			foreach (var item in _sourceBooksFlow.Controls)
-			{
-				var button = item as Button;
-				if (button == null)
-					continue;
-				var info = button.Tag as BookInfo;
-				if (info == null)
-					continue;
-				if (info.FolderPath == newBook.FolderPath)
-					return true;
-			}
-			return false;
 		}
 
 		private void OnClickBook(object sender, EventArgs e)
@@ -633,6 +684,10 @@ namespace Bloom.CollectionTab
                 if (_primaryCollectionReloadPending)
                 {
                     LoadPrimaryCollectionButtons();
+					// One reason to reload is that we created a new book. We need to go through the steps of selecting it
+					// so that e.g. its menu options are properly configured.
+					if (SelectedBook != null)
+						SelectBook(SelectedBook.BookInfo);
                 }
 			}
 			else
@@ -686,7 +741,7 @@ namespace Bloom.CollectionTab
 
 		private void ScheduleRefreshOfOneThumbnail(Book.Book book)
 		{
-			_model.UpdateThumbnailAsync(book, RefreshOneThumbnail, HandleThumbnailerErrror); 
+			_model.UpdateThumbnailAsync(book, new HtmlThumbNailer.ThumbnailOptions(), RefreshOneThumbnail, HandleThumbnailerErrror); 
 		}
 
 		private void HandleThumbnailerErrror(Book.BookInfo bookInfo, Exception error)
@@ -786,7 +841,12 @@ namespace Bloom.CollectionTab
             {
                 components.Dispose();
             }
-            base.Dispose(disposing);
+	        if (disposing && _downloadedBookCollection != null)
+	        {
+		        _downloadedBookCollection.StopWatchingDirectory();
+		        _downloadedBookCollection.FolderContentChanged -= DownLoadedBooksChanged;
+	        }
+	        base.Dispose(disposing);
             _disposed = true;
         }
 

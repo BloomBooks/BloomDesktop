@@ -158,8 +158,10 @@ namespace Bloom.Book
 	    private XmlElement MakeJavascriptElement(string pathToJavascript)
 	    {
 	        XmlElement element = Head.AppendChild(_dom.CreateElement("script")) as XmlElement;
+
+			element.IsEmpty = false;
 	        element.SetAttribute("type", "text/javascript");
-	        element.SetAttribute("src", "file://" + pathToJavascript);
+	        element.SetAttribute("src", pathToJavascript.ToLocalhost());
 	        return element;
 	    }
 
@@ -168,6 +170,11 @@ namespace Bloom.Book
             Body.AppendChild(MakeJavascriptElement(pathToJavascript));
         }
 
+        public void AddEditMode(string mode)
+        {
+            // RemoveModeStyleSheets() should have already removed any editMode attribute on the body element
+            Body.SetAttribute("editMode", mode);
+        }
 
 		public void RemoveModeStyleSheets()
 		{
@@ -185,6 +192,10 @@ namespace Bloom.Book
 					linkNode.ParentNode.RemoveChild(linkNode);
 				}
 			}
+            // If present, remove the editMode attribute that tells use which mode we're editing in (original or translation)
+            var body = RawDom.SafeSelectNodes("/html/body")[0] as XmlElement;
+            if (body.HasAttribute("editMode"))
+                body.RemoveAttribute("editMode");
 		}
 
 		public string ValidateBook(string descriptionOfBookForErrorLog)
@@ -268,25 +279,6 @@ namespace Bloom.Book
 				link.SetAttribute("href", linke.Replace("file:///", "").Replace("file://", ""));
 			}
 		}
-
-		//        /// <summary>
-		//        /// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
-		//        /// </summary>
-		//        /// <param name="dom"></param>
-		//        private void StripStyleSheetLinkPaths(HtmlDom dom)
-		//        {
-		//            foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
-		//            {
-		//                var href = linkNode.GetAttribute("href");
-		//                if (href == null)
-		//                {
-		//                    continue;
-		//                }
-		//                linkNode.SetAttribute("href", Path.GetFileName(href));
-		//            }
-		//        }
-
-
 
 		public static void AddClass(XmlElement e, string className)
 		{
@@ -495,8 +487,7 @@ namespace Bloom.Book
 	            //TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
 	            href = href.Replace("%5C", "/");
 
-
-	            var fileName = Path.GetFileName(href);
+				var fileName = FileUtils.NormalizePath(Path.GetFileName(href));
 	            if (!fileName.StartsWith("xx"))
 	                //I use xx  as a convenience to temporarily turn off stylesheets during development
 	            {
@@ -521,7 +512,8 @@ namespace Bloom.Book
 	                if (!string.IsNullOrEmpty(path))
 	                {
 	                    //this is here for geckofx 11... probably can remove it when we move up to modern gecko, as FF22 doesn't like it.
-	                    linkNode.SetAttribute("href", "file://" + path);
+	                    //linkNode.SetAttribute("href", "file://" + path);
+                        linkNode.SetAttribute("href", path.ToLocalhost());
 	                }
 	                else
 	                {
@@ -532,5 +524,10 @@ namespace Bloom.Book
 	            }
 	        }
 	    }
-	}
+
+        internal void RemoveStyleSheetIfFound(string path)
+        {
+            XmlDomExtensions.RemoveStyleSheetIfFound(RawDom, path);
+        }
+    }
 }

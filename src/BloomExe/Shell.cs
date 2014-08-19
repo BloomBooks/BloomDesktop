@@ -11,8 +11,8 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
-using Bloom.Properties;
 using Bloom.Workspace;
+using NetSparkle;
 using Palaso.Reporting;
 using Palaso.Extensions;
 
@@ -24,18 +24,41 @@ namespace Bloom
     	private readonly LibraryClosing _libraryClosingEvent;
     	private readonly WorkspaceView _workspaceView;
 
-		public Shell(Func<WorkspaceView> projectViewFactory, CollectionSettings collectionSettings, LibraryClosing libraryClosingEvent, QueueRenameOfCollection queueRenameOfCollection)
-        {
-            queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
-		    _collectionSettings = collectionSettings;
+		public Shell(Func<WorkspaceView> projectViewFactory,
+												CollectionSettings collectionSettings,
+												BookDownloadStartingEvent bookDownloadStartingEvent,
+												LibraryClosing libraryClosingEvent,
+												QueueRenameOfCollection queueRenameOfCollection,
+												Sparkle _sparkle)
+		{
+			queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
+			_collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
 			InitializeComponent();
-            
+
+			//bring the application to the front (will normally be behind the user's web browser)
+			bookDownloadStartingEvent.Subscribe((x) =>
+			{
+				try
+				{
+					this.Invoke((Action)this.Activate);
+				}
+				catch (Exception e)
+				{
+					Debug.Fail("(Debug Only) Can't bring to front in the current state: " + e.Message);
+					//swallow... so we were in some state that we couldn't come to the front... that's ok.
+				}
+			});
+
+
 #if DEBUG
 			WindowState = FormWindowState.Normal;
 			//this.FormBorderStyle = FormBorderStyle.None;  //fullscreen
 			
 			Size = new Size(1024,720);
+#else
+            // We only want this screen size context menu in Debug mode
+		    ContextMenuStrip = null;
 #endif
 			_workspaceView = projectViewFactory();
 			_workspaceView.CloseCurrentProject += ((x, y) =>
@@ -55,7 +78,6 @@ namespace Bloom
                                     
             this.Controls.Add(this._workspaceView);
 
-            
 		    SetWindowText();
         }
 

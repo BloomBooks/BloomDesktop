@@ -31,7 +31,7 @@ mixin page-xmatter(label)
 
 mixin page-cover(label)
 	- requireOneArgument('page-cover',arguments)
-	+page-xmatter(label).cover.coverColor.bloom-frontMatter(attributes)
+	+page-xmatter(label).cover.frontCover.outsideFrontCover.coverColor.bloom-frontMatter(attributes)
 		block
 
 mixin chooser-topic
@@ -98,8 +98,9 @@ mixin factoryStandard-outsideFrontCover
 		//- light of jade it is overly complicated.
 
 		+field-prototypeDeclaredExplicity
+			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bookTitle.coverTitle-style(data-book='bookTitle')
-				label.bubble Book title in {lang}
+
 
 		.bloom-imageContainer
 			img(src="placeholder.png", data-book='coverImage')
@@ -148,13 +149,13 @@ mixin factoryStandard-titlePage
 
 mixin factoryStandard-insideBackCover
 	// Inside Back Cover
-	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')#502BE62F-A4D0-4225-A598-1A203FA73239
+	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(attributes, data-export='back-matter-inside-back-cover')#502BE62F-A4D0-4225-A598-1A203FA73239
 		+field-mono-meta("N1","insideBackCover").inside-back-cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
 
 mixin factoryStandard-outsideBackCover
 	// Outside Back Cover
-	+page-xmatter('Outside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-back-cover')#6AB1D898-9E35-498E-99D4-132B46FAFDA4
+	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(attributes, data-export='back-matter-back-cover')#6AB1D898-9E35-498E-99D4-132B46FAFDA4
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
 		+field-mono-meta("N1","outsideBackCover").outside-back-cover-style
-			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover."
+			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.

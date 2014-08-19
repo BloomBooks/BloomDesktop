@@ -1,4 +1,5 @@
-﻿namespace Bloom.Publish
+﻿#if !__MonoCS__
+namespace Bloom.Publish
 {
 	partial class AdobeReaderControl
 	{
@@ -100,3 +101,4 @@
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }
+#endif

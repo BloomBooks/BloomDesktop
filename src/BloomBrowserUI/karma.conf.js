@@ -13,6 +13,10 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
             'lib/jquery-1.10.1.js',
+            'lib/jquery-ui-1.10.3.custom.min.js',
+            'lib/jquery.myimgscale.js',
+            'lib/jquery.qtip.js',
+            'lib/localizationManager.js',
 
             // helpers -- jasmine-query
             'test/lib/**/*.js',
@@ -27,7 +31,19 @@ module.exports = function (config) {
             '**/js/bloomEditing.js',
             '**/js/StyleEditor.js',
             // as long as the test filename is in the test/specs folder, it will be included in the test run
-            'test/specs/**/*.js'
+            'test/specs/**/*.js',
+
+            // synphony files
+            'bookEdit/js/libsynphony/underscore_min_152.js',
+            'bookEdit/js/libsynphony/xregexp-all-min.js',
+            'bookEdit/js/libsynphony/synphony_lib.js',
+            'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
+            'bookEdit/js/libsynphony/bloom_lib.js',
+            'bookEdit/js/libsynphony/jquery.text-markup.js',
+            'bookEdit/js/*.js',
+            'bookEdit/accordion/accordion.js',
+            'bookEdit/test/*.js',
+            'bookEdit/test/libsynphony/*.test.js'
         ],
         // test results reporter to use
         // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'

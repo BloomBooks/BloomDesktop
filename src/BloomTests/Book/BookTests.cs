@@ -80,17 +80,19 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomPreviewBootstrap.js")).Returns("../notareallocation/bloomPreviewBootstrap.js"); 
 
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
+            _fileLocator.Setup(x => x.LocateDirectoryWithThrow("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("Factory-XMatter".CombineForPath("Factory-XMatter.htm"))).Returns(xMatter.CombineForPath("Factory-XMatter", "Factory-XMatter.htm"));
 
             _fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter")).Returns(xMatter.CombineForPath("BigBook-XMatter"));
+            _fileLocator.Setup(x => x.LocateDirectoryWithThrow("BigBook-XMatter")).Returns(xMatter.CombineForPath("BigBook-XMatter"));
             _fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("BigBook-XMatter"));
             _fileLocator.Setup(x => x.LocateFileWithThrow("BigBook-XMatter".CombineForPath("BigBook-XMatter.htm"))).Returns(xMatter.CombineForPath("BigBook-XMatter", "BigBook-XMatter.htm"));
 
 			//warning: we're neutering part of what the code under test is trying to do here:
 			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
 
-            _thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { 60, 60, new MonitorTarget() });
+			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { new NavigationIsolator() });
             _pageSelection = new Mock<PageSelection>();
             _pageListChangedEvent = new PageListChangedEvent();
       }
@@ -103,6 +105,7 @@ namespace BloomTests.Book
 				_testFolder.Dispose();
 				_testFolder = null;
 			}
+			_thumbnailer.Object.Dispose();
 		}
 
     	private Bloom.Book.Book CreateBook()
@@ -176,8 +179,44 @@ namespace BloomTests.Book
 			Assert.AreEqual("peace", textarea2.InnerText);
     	}
 
+		
+		[Test]
+		public void UpdateTextsNewlyChangedToRequiresParagraph_HasOneBR()
+		{
+			SetDom(@"<div class='bloom-page'>
+						<div id='somewrapper'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs'>
+								<div class='bloom-editable' lang='en'>
+									a<br/>c
+								</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-editable') and @lang='en']/p", 2);
+		}
 
-
+		//Removing extra lines is of interest in case the user was entering blank lines by hand to separate the paragraphs, which now will
+		//be separated by the styling of the new paragraphs
+		[Test]
+		public void UpdateTextsNewlyChangedToRequiresParagraph_RemovesEmptyLines()
+		{
+			SetDom(@"<div class='bloom-page'>
+						<div id='somewrapper'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs'>
+								<div class='bloom-editable' lang='en'>
+									<br/>a<br/>
+								</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-editable') and @lang='en']/p", 1);
+		}
 
 		[Test]
 		public void UpdateFieldsAndVariables_InsertsRegionalLanguageNameInAsWrittenInNationalLanguage1()
@@ -305,7 +344,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
             var scriptNodes = dom.SafeSelectNodes("//script");
-            Assert.AreEqual(3, scriptNodes.Count);
+            Assert.AreEqual(4, scriptNodes.Count);
             Assert.IsNotEmpty(scriptNodes[0].Attributes["src"].Value);
             Assert.IsTrue(scriptNodes[0].Attributes["src"].Value.Contains(".js"));
         }
@@ -799,9 +838,9 @@ namespace BloomTests.Book
 			var book = CreateBook();
 
 			var titleElt = _bookDom.SelectSingleNode("//textarea");
-			titleElt.InnerText = "changed";
+			titleElt.InnerText = "changed & <mangled>";
 			book.Save();
-			Assert.That(_metadata.Title, Is.EqualTo("changed"));
+			Assert.That(_metadata.Title, Is.EqualTo("changed & <mangled>"));
 		}
 
 		[Test]
@@ -898,6 +937,35 @@ namespace BloomTests.Book
 			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
 		}
 
+        [Test]
+        public void Save_UpdatesAllTitles()
+        {
+            _bookDom = new HtmlDom(
+                @"<html>
+                <head>
+                    <meta content='text/html; charset=utf-8' http-equiv='content-type' />
+                    <title>Test Shell</title>
+                    <link rel='stylesheet' href='Basic Book.css' type='text/css' />
+                    <link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+                <body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid2'>
+							<textarea lang='en' data-book='bookTitle'>my nice title</textarea>
+							<textarea lang='de' data-book='bookTitle'>Mein schönen Titel</textarea>
+                            <textarea lang='es' data-book='bookTitle'>мy buen título</textarea>
+						</div>  
+					</div>
+				</body></html>".Replace("nice title", "\"nice\" title\\topic"));
+
+            var book = CreateBook();
+
+            book.Save();
+
+            // Enhance: the order is not critical.
+            Assert.That(_metadata.AllTitles, Is.EqualTo("{\"de\":\"Mein schönen Titel\",\"en\":\"my \\\"nice\\\" title\\\\topic\",\"es\":\"мy buen título\"}"));
+        }
+
 		[Test]
 		public void AllLanguages_FindsBloomEditableElements()
 		{
@@ -960,12 +1028,12 @@ namespace BloomTests.Book
 			// Creative Commons License
 		    var licenseData = new Metadata();
 		    licenseData.License = CreativeCommonsLicense.FromLicenseUrl("http://creativecommons.org/licenses/by-sa/3.0/");
-		    licenseData.License.RightsStatement = "Please acknowledge nicely";
+            licenseData.License.RightsStatement = "Please acknowledge nicely to joe.blow@example.com";
 
 			book.UpdateLicenseMetdata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("cc-by-sa"));
-			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely"));
+            Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely to joe.blow@ex(download book to read full email address)"));
 
 			// Custom License
 		    licenseData.License = new CustomLicense {RightsStatement = "Use it if you dare"};

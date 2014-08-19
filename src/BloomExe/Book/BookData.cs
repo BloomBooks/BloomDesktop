@@ -4,13 +4,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Windows.Forms.VisualStyles;
 using System.Xml;
+using System.Xml.Linq;
 using Bloom.Collection;
 using Palaso.Code;
 using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.Xml;
+using RestSharp;
 
 namespace Bloom.Book
 {
@@ -187,8 +190,19 @@ namespace Bloom.Book
 				tag = tagData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 			}
 
-			if (info != null)
-				info.TagsList = tag;
+		    if (info != null && tag != null)
+		    {
+                // In case we're running localized, for now we'd like to record in the metadata the original English tag.
+                // This allows the book to be found by this tag in the current, non-localized version of bloom library.
+                // Eventually it will make it easier, we think, to implement localization of bloom library.
+		        string originalTag;
+		        if (RuntimeInformationInjector.TopicReversal == null ||
+		            !RuntimeInformationInjector.TopicReversal.TryGetValue(tag, out originalTag))
+		        {
+		            originalTag = tag; // just use it unmodified if we don't have anything
+		        }
+		        info.TagsList = originalTag;
+		    }
 		}
 
         private void UpdateSingleTextVariableThroughoutDOM(string key, MultiTextBase multiText)
@@ -663,7 +677,7 @@ namespace Bloom.Book
 	        var itemsToDelete = new HashSet<Tuple<string, string>>();
             GatherDataItemsFromXElement(data,  _dom.RawDom, itemsToDelete);
 
-            string copyright = metadata.CopyrightNotice;
+            string copyright = WebUtility.HtmlEncode(metadata.CopyrightNotice);
             data.UpdateLanguageString("copyright", copyright, "*", false);
 
             string description = metadata.License.GetDescription("en");
@@ -673,7 +687,7 @@ namespace Bloom.Book
             data.UpdateLanguageString("licenseUrl", licenseUrl, "*", false);
 
             string licenseNotes = metadata.License.RightsStatement;
-            data.UpdateLanguageString("licenseNotes", licenseNotes, "*", false);
+            data.UpdateLanguageString("licenseNotes", WebUtility.HtmlEncode(licenseNotes), "*", false);
 
             string licenseImageName = metadata.License.GetImage() == null ? "" : "license.png";
             data.UpdateGenericLanguageString("licenseImage", licenseImageName, false);
@@ -715,7 +729,7 @@ namespace Bloom.Book
             string licenseUrl = "";
             if (data.TextVariables.TryGetValue("licenseUrl", out d))
             {
-                licenseUrl = d.TextAlternatives.GetFirstAlternative();
+                licenseUrl = WebUtility.HtmlDecode(d.TextAlternatives.GetFirstAlternative());
             }
 
             if (licenseUrl == null || licenseUrl.Trim() == "")
@@ -726,7 +740,7 @@ namespace Bloom.Book
                 {
                     string licenseNotes = d.TextAlternatives.GetFirstAlternative();
 
-                    metadata.License = new CustomLicense {RightsStatement = licenseNotes};
+                    metadata.License = new CustomLicense { RightsStatement = WebUtility.HtmlDecode(licenseNotes) };
                 }
                 else
                 {
@@ -739,7 +753,7 @@ namespace Bloom.Book
                 metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
                 if (data.TextVariables.TryGetValue("licenseNotes", out d))
                 {
-                    metadata.License.RightsStatement = d.TextAlternatives.GetFirstAlternative();
+                    metadata.License.RightsStatement = WebUtility.HtmlDecode(d.TextAlternatives.GetFirstAlternative());
                 }
             }
             return metadata;
@@ -803,10 +817,41 @@ namespace Bloom.Book
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
             {
 	            var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
-	            _dom.Title = t;
-				if (info != null)
-					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
-			}
+                _dom.Title = t;
+                if (info != null)
+                {
+                    info.Title = TextOfInnerHtml(t.Replace("<br />", "")); // Clean out breaks inserted at newlines.
+                    // Now build the AllTitles field
+                    var sb = new StringBuilder();
+                    sb.Append("{");
+                    foreach (var langForm in title.TextAlternatives.Forms)
+                    {
+                        if (sb.Length > 1)
+                            sb.Append(",");
+                        sb.Append("\"");
+                        sb.Append(langForm.WritingSystemId);
+                        sb.Append("\":\"");
+                        sb.Append(TextOfInnerHtml(langForm.Form).Replace("\\", "\\\\").Replace("\"", "\\\"")); // Escape backslash and double-quote
+                        sb.Append("\"");
+                    }
+                    sb.Append("}");
+                    info.AllTitles = sb.ToString();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The data we extract into title fields of _dataSet is the InnerXml of some XML node.
+        /// This might have markup, e.g., making a word italic. It will also have the amp, lt, and gt escaped.
+        /// We want to reduce it to plain text to store in bookInfo.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        internal static string TextOfInnerHtml(string input)
+        {
+            // Parsing it as XML and then extracting the value removes any markup.
+            var doc = XElement.Parse("<doc>" + input + "</doc>");
+            return doc.Value;
         }
 
 	    private string[] WritingSystemIdsToTry

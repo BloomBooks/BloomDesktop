@@ -132,7 +132,7 @@ namespace Bloom.WebLibraryIntegration
             _sessionToken = String.Empty;
 		    Account = string.Empty;
             var request = MakeGetRequest("login");
-            request.AddParameter("username", account);
+            request.AddParameter("username", account.ToLowerInvariant());
             request.AddParameter("password", password);
             var response = _client.Execute(request);
             var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
@@ -193,7 +193,7 @@ namespace Bloom.WebLibraryIntegration
 	    {
 		    var request = MakePostRequest("users");
 		    var metadataJson =
-			    "{\"username\":\"" + account + "\",\"password\":\"" + password + "\",\"email\":\"" + account + "\"}";
+			    "{\"username\":\"" + account.ToLowerInvariant() + "\",\"password\":\"" + password + "\",\"email\":\"" + account + "\"}";
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
 			var response = _client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.Created)
@@ -212,7 +212,88 @@ namespace Bloom.WebLibraryIntegration
 		    _userId = null;
 	    }
 
-		internal void SendResetPassword(string account)
+        public void DeleteLanguages()
+        {
+            if (!LoggedIn)
+                throw new ApplicationException();
+            var getLangs = MakeGetRequest("classes/language");
+            var response1 = _client.Execute(getLangs);
+            dynamic json = JObject.Parse(response1.Content);
+            if (json == null)
+                return;
+            foreach (var obj in json.results)
+            {
+                var request = MakeDeleteRequest("classes/language/" + obj.objectId);
+                var response = _client.Execute(request);
+                if (response.StatusCode != HttpStatusCode.OK)
+                    throw new ApplicationException(response.StatusDescription + " " + response.Content);
+            }
+        }
+
+        public dynamic CreateLanguage(LanguageDescriptor lang)
+        {
+            if (!LoggedIn)
+                throw new ApplicationException();
+            var request = MakePostRequest("classes/language");
+            var langjson = lang.Json;
+            request.AddParameter("application/json", langjson, ParameterType.RequestBody);
+            var response = _client.Execute(request);
+            if (response.StatusCode != HttpStatusCode.Created)
+            {
+                var message = new StringBuilder();
+
+                message.AppendLine("Request.Json: " + langjson);
+                message.AppendLine("Response.Code: " + response.StatusCode);
+                message.AppendLine("Response.Uri: " + response.ResponseUri);
+                message.AppendLine("Response.Description: " + response.StatusDescription);
+                message.AppendLine("Response.Content: " + response.Content);
+                throw new ApplicationException(message.ToString());
+            }
+            return JObject.Parse(response.Content);
+        }
+
+        public bool LanguageExists(LanguageDescriptor lang)
+        {
+            return LanguageCount(lang) > 0;
+        }
+
+        internal int LanguageCount(LanguageDescriptor lang)
+        {
+            var getLang = MakeGetRequest("classes/language");
+            getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
+            var response = _client.Execute(getLang);
+            if (response.StatusCode != HttpStatusCode.OK)
+                return 0;
+            dynamic json = JObject.Parse(response.Content);
+            if (json == null)
+                return 0;
+            var results = json.results;
+            return results.Count;
+        }
+
+        internal string LanguageId(LanguageDescriptor lang)
+        {
+            var getLang = MakeGetRequest("classes/language");
+            getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
+            var response = _client.Execute(getLang);
+            if (response.StatusCode != HttpStatusCode.OK)
+                return null;
+            dynamic json = JObject.Parse(response.Content);
+            if (json == null || json.results.Count < 1)
+                return null;
+            return json.results[0].objectId;
+        }
+
+        internal dynamic GetLanguage(string objectId)
+        {
+            var getLang = MakeGetRequest("classes/language/" + objectId);
+            var response = _client.Execute(getLang);
+            if (response.StatusCode != HttpStatusCode.OK)
+                return null;
+            return JObject.Parse(response.Content);
+        }
+
+        internal void SendResetPassword(string account)
 		{
 			var request = MakePostRequest("requestPasswordReset");
 			request.AddParameter("application/json; charset=utf-8", "{\"email\":\""+account+ "\"}", ParameterType.RequestBody);
@@ -223,7 +304,7 @@ namespace Bloom.WebLibraryIntegration
 	    internal bool UserExists(string account)
 	    {
 		    var request = MakeGetRequest("users");
-			request.AddParameter("where", "{\"username\":\"" + account + "\"}");
+			request.AddParameter("where", "{\"username\":\"" + account.ToLowerInvariant() + "\"}");
 			var response = _client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			// Todo
@@ -246,6 +327,29 @@ namespace Bloom.WebLibraryIntegration
             if (ourMajorVersion == requiredMajorVersion)
                 return ourMinorVersion >= requiredMinorVersion;
             return ourMajorVersion >= requiredMajorVersion;
+        }
+
+        /// <summary>
+        /// Get the language pointers we need to refer to a sequence of languages.
+        /// If matching languages don't exist they will be created (requires user to be logged in)
+        /// </summary>
+        /// <param name="languages"></param>
+        /// <returns></returns>
+        internal ParseDotComObjectPointer[] GetLanguagePointers(LanguageDescriptor[] languages)
+        {
+            var result = new ParseDotComObjectPointer[languages.Length];
+            for (int i = 0; i < languages.Length; i++)
+            {
+                var lang = languages[i];
+                var id = LanguageId(lang);
+                if (id == null)
+                {
+                    var language = CreateLanguage(lang);
+                    id = language["objectId"].Value;
+                }
+                result[i] = new ParseDotComObjectPointer() {ClassName = "language", ObjectId = id};
+            }
+            return result;
         }
     }
 }

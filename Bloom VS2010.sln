@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomExe", "src\BloomExe\BloomExe.csproj", "{304D5612-167C-4725-AF27-B9F2BB788B57}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomTests", "src\BloomTests\BloomTests.csproj", "{57E7AC72-D901-4A80-A50B-71319AC96CDC}"
@@ -9,7 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomChorusPlugin", "src\Bl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{04AF3A87-C943-4731-BE3D-659EA705171D}"
 	ProjectSection(SolutionItems) = preProject
-		build\dependencies.config = build\dependencies.config
+		environ = environ
+		environ-xulrunner = environ-xulrunner
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DistFiles", "DistFiles", "{D38FC737-8C27-46CB-B490-3CB2E7AB3C99}"
@@ -26,14 +27,6 @@ Global
 		Release|Mixed Platforms = Release|Mixed Platforms
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{028817D6-1CC9-4879-89D7-C29BEA323235}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{028817D6-1CC9-4879-89D7-C29BEA323235}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{028817D6-1CC9-4879-89D7-C29BEA323235}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{028817D6-1CC9-4879-89D7-C29BEA323235}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{028817D6-1CC9-4879-89D7-C29BEA323235}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{028817D6-1CC9-4879-89D7-C29BEA323235}.Release|Any CPU.Build.0 = Release|Any CPU
-		{028817D6-1CC9-4879-89D7-C29BEA323235}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{028817D6-1CC9-4879-89D7-C29BEA323235}.Release|Mixed Platforms.Build.0 = Release|x86
 		{304D5612-167C-4725-AF27-B9F2BB788B57}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{304D5612-167C-4725-AF27-B9F2BB788B57}.Debug|Any CPU.Build.0 = Debug|x86
 		{304D5612-167C-4725-AF27-B9F2BB788B57}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
@@ -58,6 +51,14 @@ Global
 		{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}.Release|Any CPU.Build.0 = Release|x86
 		{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{5B04DA06-782F-41B8-84FB-EA1AB82E3FB0}.Release|Mixed Platforms.Build.0 = Release|x86
+		{028817D6-1CC9-4879-89D7-C29BEA323235}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{028817D6-1CC9-4879-89D7-C29BEA323235}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{028817D6-1CC9-4879-89D7-C29BEA323235}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{028817D6-1CC9-4879-89D7-C29BEA323235}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{028817D6-1CC9-4879-89D7-C29BEA323235}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{028817D6-1CC9-4879-89D7-C29BEA323235}.Release|Any CPU.Build.0 = Release|Any CPU
+		{028817D6-1CC9-4879-89D7-C29BEA323235}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{028817D6-1CC9-4879-89D7-C29BEA323235}.Release|Mixed Platforms.Build.0 = Release|x86
 		{A6411357-8A5F-4EEC-BE3C-85C9E65D3C5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A6411357-8A5F-4EEC-BE3C-85C9E65D3C5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6411357-8A5F-4EEC-BE3C-85C9E65D3C5B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -67,13 +68,13 @@ Global
 		{A6411357-8A5F-4EEC-BE3C-85C9E65D3C5B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A6411357-8A5F-4EEC-BE3C-85C9E65D3C5B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D38FC737-8C27-46CB-B490-3CB2E7AB3C99} = {04AF3A87-C943-4731-BE3D-659EA705171D}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = src\BloomExe\BloomExe.csproj
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

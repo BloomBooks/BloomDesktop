@@ -45,6 +45,8 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -59,17 +61,26 @@
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Analytics.NET, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Analytics.2.0.0\lib\Analytics.NET.dll</HintPath>
+    </Reference>
     <Reference Include="Autofac">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="Autofac.Configuration">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.Configuration.dll</HintPath>
     </Reference>
-    <Reference Include="AWSSDK">
-      <HintPath>..\..\packages\AWSSDK.2.0.2.0\lib\net35\AWSSDK.dll</HintPath>
+    <Reference Include="AWSSDK, Version=2.1.7.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\AWSSDK.2.1.7.0\lib\net35\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
+    </Reference>
+    <Reference Include="DesktopAnalytics, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\DesktopAnalytics.1.1.2\lib\net40\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="Interop.Acrobat">
       <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
@@ -82,9 +93,10 @@
     <Reference Include="NetSparkle.Net40">
       <HintPath>..\..\lib\dotnet\NetSparkle.Net40.dll</HintPath>
     </Reference>
-    <Reference Include="PdfDroplet, Version=2.3.2.0, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="PdfDroplet, Version=2.3.495.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\PdfDroplet.2.3.2.0\lib\net40-Client\PdfDroplet.exe</HintPath>
+      <ExecutableExtension>.exe</ExecutableExtension>
+      <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
     </Reference>
     <Reference Include="PdfSharp">
       <HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
@@ -106,23 +118,14 @@
     <Reference Include="AeroWizard">
       <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
     </Reference>
-    <Reference Include="Analytics.NET">
-      <HintPath>..\..\lib\Analytics.NET.dll</HintPath>
-    </Reference>
     <Reference Include="AxInterop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
-    </Reference>
-    <Reference Include="DesktopAnalytics">
-      <HintPath>..\..\lib\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="Interop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
     </Reference>
     <Reference Include="L10NSharp">
       <HintPath>..\..\lib\dotnet\L10NSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.5.0.5\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Palaso">
       <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
@@ -136,10 +139,21 @@
     <Reference Include="Ionic.Zip.Reduced">
       <HintPath>..\..\packages\DotNetZip.Reduced.1.9.1.8\lib\net20\Ionic.Zip.Reduced.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Core">
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Geckofx-Core, Version=29.0.8.0, Culture=neutral" Condition="'$(OS)'!='Windows_NT'">
+      <Package>Geckofx-Core</Package>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Geckofx-Winforms, Version=29.0.8.0, Culture=neutral" Condition="'$(OS)'!='Windows_NT'">
+      <Package>Geckofx-Winforms</Package>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Geckofx-Core.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Winforms">
+    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Geckofx-Winforms.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -164,6 +178,12 @@
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />
+    <Compile Include="CollectionTab\BloomLibraryLinkVerification.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CollectionTab\BloomLibraryLinkVerification.Designer.cs">
+      <DependentUpon>BloomLibraryLinkVerification.cs</DependentUpon>
+    </Compile>
     <Compile Include="CollectionTab\InDesignXmlInformationDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -183,12 +203,12 @@
     <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Edit\EditControlsModel.cs" />
-    <Compile Include="Edit\EditControlsView.cs">
+    <Compile Include="Edit\ReaderToolsModel.cs" />
+    <Compile Include="Edit\ReaderToolsView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Edit\EditControlsView.Designer.cs">
-      <DependentUpon>EditControlsView.cs</DependentUpon>
+    <Compile Include="Edit\ReaderToolsView.Designer.cs">
+      <DependentUpon>ReaderToolsView.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\WebThumbNailList.cs">
       <SubType>UserControl</SubType>
@@ -196,6 +216,10 @@
     <Compile Include="Edit\WebThumbNailList.Designer.cs">
       <DependentUpon>WebThumbNailList.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\TransparentPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Extensions.cs" />
     <Compile Include="MiscUI\DontShowThisAgainButton.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -208,10 +232,17 @@
     <Compile Include="MiscUI\TipDialog.designer.cs">
       <DependentUpon>TipDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="NavigationIsolator.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\AdobeReaderControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Publish\AdobeReaderControl.Designer.cs">
+      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\BloomLibraryPublishControl.cs">
       <SubType>UserControl</SubType>
@@ -224,6 +255,26 @@
     </Compile>
     <Compile Include="Publish\BulkUploadProgressDlg.Designer.cs">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\ConversionOrder.cs" />
+    <Compile Include="Publish\ConversionProgress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Publish\ConversionProgress.Designer.cs">
+      <DependentUpon>ConversionProgress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\GeckofxHtmlToPDFComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Publish\GeckofxHtmlToPDFComponent.Designer.cs">
+      <DependentUpon>GeckofxHtmlToPDFComponent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\MakePdfUsingGeckofxHtmlToPdfComponent.cs" />
+    <Compile Include="Publish\PdfViewer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Publish\PdfViewer.Designer.cs">
+      <DependentUpon>PdfViewer.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\SHRP_TeachersGuideExtension.cs" />
     <Compile Include="Publish\SHRP_PupilBookExtension.cs" />
@@ -309,12 +360,6 @@
       <DependentUpon>NewCollectionWizard.cs</DependentUpon>
     </Compile>
     <Compile Include="Palette.cs" />
-    <Compile Include="Publish\AdobeReaderControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Publish\AdobeReaderControl.Designer.cs">
-      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="SimpleMessageDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -327,10 +372,9 @@
     <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ImageProcessing\ImageServer.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="ImageProcessing\ImageServer.cs" />
     <Compile Include="UpdateVersionTable.cs" />
+    <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -352,7 +396,6 @@
     <Compile Include="WebLibraryIntegration\LoginDialog.Designer.cs">
       <DependentUpon>LoginDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="WebLibraryIntegration\OrderList.cs" />
     <Compile Include="WebLibraryIntegration\OverwriteWarningDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -500,6 +543,9 @@
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="CollectionTab\BloomLibraryLinkVerification.resx">
+      <DependentUpon>BloomLibraryLinkVerification.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\InDesignXmlInformationDialog.resx">
       <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -519,11 +565,23 @@
     <EmbeddedResource Include="MiscUI\TipDialog.resx">
       <DependentUpon>TipDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Publish\AdobeReaderControl.resx">
+      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Publish\BloomLibraryPublishControl.resx">
       <DependentUpon>BloomLibraryPublishControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\BulkUploadProgressDlg.resx">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\ConversionProgress.resx">
+      <DependentUpon>ConversionProgress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\GeckofxHtmlToPDFComponent.resx">
+      <DependentUpon>GeckofxHtmlToPDFComponent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\PdfViewer.resx">
+      <DependentUpon>PdfViewer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Registration\RegistrationDialog.resx">
       <DependentUpon>RegistrationDialog.cs</DependentUpon>
@@ -557,10 +615,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionCreating\NewCollectionWizard.resx">
       <DependentUpon>NewCollectionWizard.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\AdobeReaderControl.resx">
-      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="SimpleMessageDialog.resx">
       <DependentUpon>SimpleMessageDialog.cs</DependentUpon>
@@ -675,15 +729,20 @@
       <DependentUpon>TemplatePagesView.cs</DependentUpon>
     </Compile>
     <Compile Include="XmlHtmlConverter.cs" />
-    <None Include="..\..\lib\dotnet\Geckofx-Core.dll.config">
-      <Link>Geckofx-Core.dll.config</Link>
+    <Compile Include="web\IRequestInfo.cs" />
+    <Compile Include="web\RequestInfo.cs" />
+    <Compile Include="web\ServerBase.cs" />
+    <Compile Include="web\WebClientWithTimeout.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="web\EnhancedImageServer.cs" />
+    <None Include="..\..\lib\dotnet\NDesk.DBus.dll" Condition="'$(OS)'=='Unix'">
+      <Link>NDesk.DBus.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
     </None>
-    <None Include="..\..\lib\dotnet\libgeckofix.so" Condition="'$(OS)'=='Unix'">
-      <Link>libgeckofix.so</Link>
+    <None Include="..\..\lib\dotnet\NDesk.DBus.dll.config" Condition="'$(OS)'=='Unix'">
+      <Link>NDesk.DBus.dll.config</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -951,6 +1010,8 @@
     <None Include="Resources\SIL_Logo_Blue_Smaller_Transparent.png" />
     <None Include="Resources\cloud.png" />
     <None Include="Resources\upload.png" />
+    <None Include="Resources\SIL_Logo_2014Small1.png" />
+    <None Include="Resources\betatag2.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />
@@ -974,7 +1035,19 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   <Target Name="BeforeBuild">
   </Target>
   -->
+  <ItemGroup>
+    <BasicBookCssFiles Include="../../DistFiles/factoryCollections/Templates/Basic Book/*.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <SourceFiles Include="../../lib/dotnet/*.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <RemoteDebugFiles Include="../../remoteDebugging/**" />
+  </ItemGroup>
   <Target Name="AfterBuild">
-    <Copy SourceFiles="../../lib/dotnet/TidyManaged.dll.config" DestinationFolder="$(OutDir)" Condition="'$(OS)'!='Windows_NT'" />
+    <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
+    <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
   </Target>
 </Project>
