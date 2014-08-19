@@ -1,0 +1,28 @@
+html
+	head
+		title Content of the Accordion view (far right pane in book edit)
+		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css')
+		script(src='/bloom/lib/jquery-1.10.1.js')
+		script(src='/bloom/lib/jquery-ui-1.10.3.custom.min.js')
+		script(src='/bloom/bookEdit/js/BloomAccordion.js')
+		script(src='/bloom/bookEdit/js/libsynphony/underscore_min_152.js')
+		script(src='/bloom/bookEdit/js/libsynphony/xregexp-all-min.js')
+		script(src='/bloom/bookEdit/js/libsynphony/bloom_xregexp_categories.js')
+		script(src='/bloom/bookEdit/js/libsynphony/jquery.text-markup.js')
+		script(src='/bloom/bookEdit/js/jquery.div-columns.js')
+		script(src='/bloom/bookEdit/js/libsynphony/synphony_lib.js')
+		script(src='/bloom/bookEdit/js/libsynphony/bloom_lib.js')
+		script(src='/bloom/bookEdit/js/synphonyApi.js')
+		script(src='/bloom/bookEdit/js/readerTools.js')
+		script(src='/bloom/bookEdit/accordion/accordion.js')
+		link(rel='stylesheet', href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css')
+		link(rel='stylesheet', href='/bloom/bookEdit/accordion/accordion.css')
+		link(rel='stylesheet', href='/bloom/bookEdit/accordion/readerTools.css')
+		// not sure we need all three qtip files are needed. qtips are only in the accordion so far.
+		// Something is needed so that $(...).qtip works when manipulating the main page DOM.
+		script(src='/bloom/lib/jquery.qtip.js')
+		script(src='/bloom/lib/jquery.qtipSecondary.js')
+		link(rel='stylesheet', href='/bloom/lib/jquery.qtip.css')
+	body
+		.accordionRoot
+			#accordion

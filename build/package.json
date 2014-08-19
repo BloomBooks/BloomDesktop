@@ -1,0 +1,11 @@
+{
+  "name": "bloom-desktop",
+  "description": "Dependencies for BloomBrowserUI",
+  "author": "",
+  "dependencies": {
+	"jade": "0.35",
+	"less": "1.7.x",
+	"clean-css": "2.2.x"
+  },
+  "engine": "node >= 1.0.0"
+}

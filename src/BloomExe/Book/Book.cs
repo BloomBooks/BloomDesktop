@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
@@ -98,7 +99,7 @@ namespace Bloom.Book
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
 		}
 
-
+		public CollectionSettings CollectionSettings { get { return _collectionSettings; }}
 
 		public void InvokeContentsChanged(EventArgs e)
 		{
@@ -131,7 +132,23 @@ namespace Bloom.Book
 					return "Title Missing";
 				}
 				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
+				t = RemoveXmlMarkup(t);
 				return t;
+			}
+		}
+
+		public static string RemoveXmlMarkup(string input)
+		{
+			try
+			{
+				var doc = new XmlDocument();
+				doc.PreserveWhitespace = true;
+				doc.LoadXml("<div>" + input + "</div>");
+				return doc.DocumentElement.InnerText;
+			}
+			catch (XmlException)
+			{
+				return input; // If we can't parse for some reason, return the original string
 			}
 		}
 
@@ -165,7 +182,7 @@ namespace Bloom.Book
 			return _bookData.PrettyPrintLanguage(code);
 		}
 
-		public virtual void GetThumbNailOfBookCoverAsync(bool drawBorderDashed, Action<Image> callback, Action<Exception> errorCallback)
+		public virtual void GetThumbNailOfBookCoverAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback)
 		{
 			try
 			{
@@ -174,7 +191,7 @@ namespace Bloom.Book
 					callback(Resources.Error70x70);
 				}
 				Image thumb;
-				if (_storage.TryGetPremadeThumbnail(out thumb))
+				if (_storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb))
 				{
 					callback(thumb);
 					return;
@@ -189,8 +206,7 @@ namespace Bloom.Book
 				string folderForCachingThumbnail;
 
 				folderForCachingThumbnail = _storage.FolderPath;
-
-				_thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, _storage.Key, dom, Color.Transparent, drawBorderDashed, callback,errorCallback);
+				_thumbnailProvider.GetThumbnailAsync(folderForCachingThumbnail, _storage.Key, dom, thumbnailOptions, callback, errorCallback);
 			}
 			catch (Exception err)
 			{
@@ -208,17 +224,19 @@ namespace Bloom.Book
 
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css").ToLocalhost());
 			if(LockedDown)
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css"));
+				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css").ToLocalhost());
+				pageDom.AddEditMode("translation");
 			}
 			else
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css"));
+				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css").ToLocalhost());
+				pageDom.AddEditMode("original");
 			}
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css").ToLocalhost());
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
 			AddCoverColor(pageDom, CoverColor);
@@ -230,7 +248,8 @@ namespace Bloom.Book
 
 		private void AddJavaScriptForEditing(HtmlDom dom)
 		{
-			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("bloomBootstrap.js"));
+			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
+			dom.AddJavascriptFile("bookEdit/js/bloomBootstrap.js".ToLocalhost());
 		}
 
 
@@ -335,9 +354,10 @@ namespace Bloom.Book
 			var fileLocator = _storage.GetFileLocator();
 			foreach (var cssFileName in cssFileNames)
 			{
-				dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName));
+				dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName).ToLocalhost());
 			}
 			dom.SortStyleSheetLinks();
+
 			return dom;
 		}
 
@@ -584,7 +604,33 @@ namespace Bloom.Book
 			bookDOM.RemoveMetaElement("SuitableForMakingShells", () => null, val => BookInfo.IsSuitableForMakingShells = val == "yes" || val == "definitely");
 			// If there is nothing there the default of true will survive.
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
+
+			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
 		}
+
+
+		// Around May 2014 we added a class, .bloom-requireParagraphs, backed by javascript that makes geckofx
+		// emit <p>s instead of <br>s (which you can't style and don't leave a space in wkhtmltopdf).
+		// If there is existing text after we added this, it needs code to do the conversion. There
+		// is already javascript for this, but by having it here allows us to update an entire collection in one commmand.
+		// Note, this doesn't yet do as much as the javascript version, which also can be triggered by a border-top-style
+		// of "dashed", so that books shipped without this class can still be converted over.
+		public void UpdateTextsNewlyChangedToRequiresParagraph(HtmlDom bookDom)
+		{
+			var texts = OurHtmlDom.SafeSelectNodes("//*[contains(@class,'bloom-requiresParagraphs')]/div[contains(@class,'bloom-editable') and br]");
+			foreach (XmlElement text in texts)
+			{
+				string s = "";
+				foreach (var chunk in text.InnerXml.Split(new string[] { "<br />", "<br/>"}, StringSplitOptions.None))
+				{
+					if (chunk.Trim().Length > 0)
+						s += "<p>" + chunk + "</p>";
+				}
+				text.InnerXml = s;
+			}
+		}
+
+
 
 		internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 		{
@@ -910,23 +956,31 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languges
+		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languages
 		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful? Should we
 		/// require that all bloom-editable elements in a certain language have content? That all parent elements which contain
 		/// any bloom-editable elements contain one in the candidate language? Is bloom-editable even a reliable class to look
 		/// for to identify the main content of the book?
-		/// For now, I am defning a book as containing a language if it contains at least one bloom-editable element in that
-		/// language.
+		/// Initially a book was defined as containing a language if it contained at least one bloom-editable element in that
+		/// language. However some templates (e.g. Story Primer) may not fit this so well, so if that doesn't produce any languages
+		/// we'll say that a book contains a language if it has a title defined in that language.
 		/// </summary>
 		public IEnumerable<string> AllLanguages
 		{
 			get
 			{
-				return OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
+				var langList = OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
 					.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
 					.Select(div => div.Attributes["lang"].Value)
 					.Where(lang => lang != "*" && lang != "z" && lang != "") // Not valid languages, though we sometimes use them for special purposes
 					.Distinct();
+				if (langList.Count() == 0)
+					langList = OurHtmlDom.SafeSelectNodes("//div[@data-book and @lang]").Cast<XmlElement>()
+						.Where(div => div.Attributes["data-book"].Value.IndexOf("bookTitle", StringComparison.InvariantCulture) >= 0)
+						.Select(div => div.Attributes["lang"].Value)
+						.Where(lang => lang != "*" && lang != "z" && lang != "")
+						.Distinct();
+				return langList;
 			}
 		}
 
@@ -1499,13 +1553,26 @@ namespace Bloom.Book
 			}
 		}
 
-		public void RebuildThumbNailAsync(Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
+		/// <summary>
+		/// Will call either 'callback' or 'errorCallback' UNLESS the thumbnail is readonly, in which case it will do neither.
+		/// </summary>
+		/// <param name="thumbnailOptions"></param>
+		/// <param name="callback"></param>
+		/// <param name="errorCallback"></param>
+		public void RebuildThumbNailAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions,  Action<BookInfo, Image> callback, Action<BookInfo, Exception> errorCallback)
 		{
-			if (!_storage.RemoveBookThumbnail())
+			if (!_storage.RemoveBookThumbnail(thumbnailOptions.FileName))
+			{
+				// thumbnail is marked readonly, so just use it
+				Image thumb;
+				_storage.TryGetPremadeThumbnail(thumbnailOptions.FileName, out thumb);
+				callback(this.BookInfo, thumb);
 				return;
+			}
 
 			_thumbnailProvider.RemoveFromCache(_storage.Key);
-			GetThumbNailOfBookCoverAsync(Type != BookType.Publication, image=>callback(this.BookInfo,image),
+			thumbnailOptions.DrawBorderDashed = Type != BookType.Publication;
+			GetThumbNailOfBookCoverAsync(thumbnailOptions, image=>callback(this.BookInfo,image),
 				error=>
 					{
 						//Enhance; this isn't a very satisfying time to find out, because it's only going to happen if we happen to be rebuilding the thumbnail.
@@ -1584,8 +1651,27 @@ namespace Bloom.Book
 		{
 			_bookData.SetLicenseMetdata(metadata);
 			BookInfo.License = metadata.License.Token;
-			BookInfo.LicenseNotes = metadata.License.RightsStatement;
 			BookInfo.Copyright = metadata.CopyrightNotice;
+			// obfuscate any emails in the license notes.
+			var notes = metadata.License.RightsStatement;
+			if (notes == null)
+				return;
+			// recommended at http://www.regular-expressions.info/email.html.
+			// This purposely does not handle non-ascii emails, or ones with special characters, which he says few servers will handle anyway.
+			// It is also not picky about exactly valid top-level domains (or country codes), and will exclude the rare 'museum' top-level domain.
+			// There are several more complex options we could use there. Just be sure to add () around the bit up to (and including) the @,
+			// and another pair around the rest.
+			var regex = new Regex("\\b([A-Z0-9._%+-]+@)([A-Z0-9.-]+.[A-Z]{2,4})\\b", RegexOptions.IgnoreCase);
+			// We keep the existing email up to 2 characters after the @, and replace the rest with a message.
+			// Not making the message localizable as yet, since the web site isn't, and I'm not sure what we would need
+			// to put to make it so. A fixed string seems more likely to be something we can replace with a localized version,
+			// in the language of the web site user rather than the language of the uploader.
+			notes = regex.Replace(notes,
+				new MatchEvaluator(
+					m =>
+						m.Groups[1].Value + m.Groups[2].Value.Substring(0, 2) +
+						"(download book to read full email address)"));
+			BookInfo.LicenseNotes = notes;
 		}
 
 		public void SetTitle(string name)
@@ -1621,15 +1707,6 @@ namespace Bloom.Book
 		public string GetBookLineage()
 		{
 			return OurHtmlDom.GetMetaValue("bloomBookLineage","");
-		}
-
-		/// <summary>
-		/// A kludge for when we need to make a thumbnail and idle events are not being fired.
-		/// </summary>
-		/// <param name="invokeTarget">A control created on the UI thread.</param>
-		internal void MakeThumbnailerAdvance(Control invokeTarget)
-		{
-			_thumbnailProvider.Advance(invokeTarget);
 		}
 	}
 }

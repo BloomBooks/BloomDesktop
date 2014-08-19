@@ -260,6 +260,9 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		  <Component Id="AWSSDK.dll" Guid="{6B2EE242-5E6F-4403-BA91-F96769D17473}">
 			<File Id="AWSSDK.dll" Name="AWSSDK.dll" KeyPath="yes" Source="..\..\output\release\AWSSDK.dll" />
 		  </Component>
+		  <Component Id="taglibSharp.dll" Guid="{D887D5A1-A81A-41A2-8E66-05FF89B34BB2}">
+			  <File Id="taglibSharp.dll" Name="taglib-sharp.dll" KeyPath="yes" Source="..\..\output\release\taglib-sharp.dll" />
+		  </Component>
 		  <Component Id="RestSharp.dll" Guid="{CC21B89E-5A41-4841-9DCE-C3551894E295}">
 			<File Id="RestSharp.dll" Name="RestSharp.dll" KeyPath="yes" Source="..\..\output\release\RestSharp.dll" />
 		  </Component>
@@ -296,6 +299,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="DesktopAnalytics.dll" />
 	  <ComponentRef Id="Analytics.NET.dll" />
 	  <ComponentRef Id="PdfDroplet.exe" />
+	  <ComponentRef Id="taglibSharp.dll" />
 	  <ComponentRef Id="AWSSDK.dll" />
 	  <ComponentRef Id="RestSharp.dll" />
 	  <ComponentRef Id="Bloom.exe" />
@@ -307,7 +311,6 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 
 	  <ComponentGroupRef Id ="DistFiles"/>
 	  <ComponentGroupRef Id ="BrowserUIFiles"/>
-	  <ComponentGroupRef Id="wkhtmltopdf" />
 	  <ComponentGroupRef Id="XulRunner" />
 
 

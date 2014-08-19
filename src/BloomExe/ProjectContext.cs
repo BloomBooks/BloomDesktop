@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
@@ -11,7 +12,6 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Library;
-using Bloom.Properties;
 using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
@@ -31,8 +31,7 @@ namespace Bloom
 		/// </summary>
 		private ILifetimeScope _scope;
 
-		private BloomServer _bloomServer;
-		private ImageServer _imageServer;
+		private EnhancedImageServer _httpServer;
 		public Form ProjectWindow { get; private set; }
 
 		public string SettingsPath { get; private set; }
@@ -53,22 +52,7 @@ namespace Bloom
 				AddShortCutInComputersBloomCollections(collectionDirectory);
 			}
 
-			if(Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
-			{
-				BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
-				var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
-				_bloomServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
-				_bloomServer.Start();
-			}
-			else
-			{
-				if (Settings.Default.ImageHandler != "off")
-				{
-					_imageServer = _scope.Resolve<ImageServer>();
-
-					_imageServer.StartWithSetupIfNeeded();
-				}
-			}
+			_httpServer.StartWithSetupIfNeeded();
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -93,18 +77,20 @@ namespace Bloom
 					typeof(SendReceiveCommand),
 					typeof(SelectedTabAboutToChangeEvent),
 					typeof(SelectedTabChangedEvent),
-					typeof(BookRenamedEvent),
 					typeof(LibraryClosing),
 					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookRefreshEvent),
+					typeof(BookDownloadStartingEvent),
 					typeof(BookSelection),
 					typeof(CurrentEditableCollectionSelection),
 					typeof(RelocatePageEvent),
 					typeof(QueueRenameOfCollection),
 					typeof(PageSelection),
+					 typeof(LocalizationChangedEvent),
 					typeof(EditingModel)}.Contains(t));
 
-
+				var bookRenameEvent = new BookRenamedEvent();
+				builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
 
 				try
 				{
@@ -144,9 +130,6 @@ namespace Bloom
 
 				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations())).InstancePerLifetimeScope();
 
-				const int kListViewIconHeightAndWidth = 70;
-				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(kListViewIconHeightAndWidth, kListViewIconHeightAndWidth, c.Resolve<MonitorTarget>())).InstancePerLifetimeScope();
-
 				builder.Register<LanguageSettings>(c =>
 													{
 														var librarySettings = c.Resolve<CollectionSettings>();
@@ -163,6 +146,7 @@ namespace Bloom
 															var locations = new List<string>();
 															locations.Add(FileLocator.GetDirectoryDistributedWithApplication("xMatter"));
 															locations.Add(XMatterAppDataFolder);
+															locations.Add(XMatterCommonDataFolder);
 															return new XMatterPackFinder(locations);
 														});
 
@@ -192,6 +176,19 @@ namespace Bloom
 
 				builder.RegisterType<CreateFromSourceBookCommand>().InstancePerLifetimeScope();
 
+				string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);
+				if (Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
+				{
+					// REVIEW: This seems to be used only for testing purposes
+					BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
+					var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
+					_httpServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
+				}
+				else
+				{
+					_httpServer = new EnhancedImageServer(new LowResImageCache(bookRenameEvent));
+				}
+				builder.Register((c => _httpServer)).AsSelf().SingleInstance();
 
 				builder.Register<Func<WorkspaceView>>(c => ()=>
 													{
@@ -212,6 +209,7 @@ namespace Bloom
 		internal static BloomS3Client CreateBloomS3Client()
 		{
 			return new BloomS3Client(BookTransfer.UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName);
+
 		}
 
 
@@ -231,12 +229,12 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/accordion");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/js");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/css");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/html");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/img");
-
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/collection");
 
@@ -345,6 +343,19 @@ namespace Bloom
 			}
 		}
 
+		/// <summary>
+		/// The folder in common data (e.g., ProgramData/SIL/Bloom/XMatter) where Bloom looks for shared XMatter files.
+		/// This is also where older versions of Bloom installed XMatter.
+		/// This folder might not exist! And may not be writeable!
+		/// </summary>
+		public static string XMatterCommonDataFolder
+		{
+			get
+			{
+				 return GetBloomCommonDataFolder().CombineForPath("XMatter");
+			}
+		}
+
 		public SendReceiver SendReceiver
 		{
 			get { return _scope.Resolve<SendReceiver>(); }
@@ -367,6 +378,17 @@ namespace Bloom
 			return d;
 		}
 
+		/// <summary>
+		/// Get the directory where common application data is stored for Bloom. Note that this may not exist,
+		/// and should not be assumed to be writeable. (We don't ensure it exists because Bloom typically
+		/// does not have permissions to create folders in CommonApplicationData.)
+		/// </summary>
+		/// <returns></returns>
+		public static string GetBloomCommonDataFolder()
+		{
+			return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData).CombineForPath("SIL").CombineForPath("Bloom");
+		}
+
 
 
 		/// ------------------------------------------------------------------------------------
@@ -375,12 +397,9 @@ namespace Bloom
 			_scope.Dispose();
 			_scope = null;
 
-			if (_bloomServer != null)
-				_bloomServer.Dispose();
-			_bloomServer = null;
-			if (_imageServer!=null)
-				_imageServer.Dispose();
-			_imageServer = null;
+			if (_httpServer != null)
+				_httpServer.Dispose();
+			_httpServer = null;
 		}
 
 		/// <summary>
@@ -409,11 +428,5 @@ namespace Bloom
 
 		}
 
-	}
-
-	public class MonitorTarget
-	{
-		//doesn't need any guts, just use for dependency injection
-		//Dependecy injection gives us a single instance app-wide, and that single instance is the thing we monitor to achieve mutex on browser navigation
 	}
 }

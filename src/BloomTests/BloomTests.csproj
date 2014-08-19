@@ -74,12 +74,9 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <WarningLevel>4</WarningLevel>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Geckofx-Winforms, Version=22.0.7.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\dotnet\Geckofx-Winforms.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -101,12 +98,6 @@
     <Reference Include="LibChorus.TestUtilities">
       <HintPath>..\..\lib\dotnet\LibChorus.TestUtilities.dll</HintPath>
     </Reference>
-    <Reference Include="Moq">
-      <HintPath>..\..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.5.0.5\lib\net40\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="Palaso">
       <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
     </Reference>
@@ -122,8 +113,22 @@
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Core">
+    <Reference Include="Geckofx-Core, Version=29.0.6.0, Culture=neutral, PublicKeyToken=3209ac31600d1857" Condition="'$(OS)'!='Windows_NT'">
+      <Package>Geckofx-Core</Package>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+    <Reference Include="Geckofx-Winforms, Version=29.0.6.0, Culture=neutral, PublicKeyToken=3209ac31600d1857" Condition="'$(OS)'!='Windows_NT'">
+      <Package>Geckofx-Winforms</Package>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+    <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Geckofx-Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
+      <HintPath>..\..\lib\dotnet\Geckofx-Winforms.dll</HintPath>
+    </Reference>
+    <Reference Include="Moq">
+      <HintPath>..\..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -139,12 +144,13 @@
     <Compile Include="Book\XMatterHelperTests.cs" />
     <Compile Include="Book\SizeAndOrientationTests.cs" />
     <Compile Include="Collection\BloomPackInstallerTests.cs" />
-    <Compile Include="Edit\EditControlsTests.cs" />
+    <Compile Include="Edit\ReaderToolsTests.cs" />
     <Compile Include="HelpLauncherTests.cs" />
     <Compile Include="Chorus\MergingTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
     <Compile Include="FluentAssertXml.cs" />
     <Compile Include="LowResImageProcessing\LowResImageCacheTests.cs" />
+    <Compile Include="NavigationIsolatorTests.cs" />
     <Compile Include="NewCollectionWizardTests.cs" />
     <Compile Include="PageEditingModelTests.cs" />
     <Compile Include="PageSelectionTests.cs" />
@@ -155,12 +161,15 @@
     <Compile Include="ToPalaso\MostRecentPathsTests.cs" />
     <Compile Include="ToPalaso\ProgresDialogTests.cs" />
     <Compile Include="UpdateVersionTableTests.cs" />
+    <Compile Include="WebLibraryIntegration\BloomLinkArgsTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomParseClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
     <Compile Include="web\BloomServerTests.cs" />
     <Compile Include="LowResImageProcessing\ImageServerTests.cs" />
     <Compile Include="XmlHtmlConverterTests.cs" />
+    <Compile Include="web\EnhancedImageServerTests.cs" />
+    <Compile Include="PretendRequestInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bloom-ChorusPlugin\BloomChorusPlugin.csproj">

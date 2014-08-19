@@ -18,7 +18,6 @@ namespace Bloom.Edit
 		private bool _inSelectionAlready;
 		private bool _intentionallyChangingSelection;
 
-
 		private ListViewItem _currentDraggingItem;
 		private ListViewItem _currentTarget;
 		private Pen _boundsPen;
@@ -142,15 +141,23 @@ namespace Bloom.Edit
 		public void UpdateThumbnailAsync(IPage page)
 		{
 			XmlDocument pageDom = page.Book.GetPreviewXmlDocumentForPage(page).RawDom;
-
-			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, pageDom,
-													  Palette.TextAgainstDarkBackground,
-													  false, image => RefreshOneThumbnailCallback(page, image),
+			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
+			{
+				BackgroundColor = Palette.TextAgainstDarkBackground,
+				DrawBorderDashed = false,
+				CenterImageUsingTransparentPadding = true
+			};
+			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, pageDom, thumbnailOptions, image => RefreshOneThumbnailCallback(page, image),
 													  error=> HandleThumbnailerError(page, error));
 		}
 
 		private void HandleThumbnailerError(IPage page, Exception error)
 		{
+			if (InvokeRequired)
+			{
+				Invoke(new Action<IPage, Exception>(HandleThumbnailerError), page, error);
+				return;
+			}
 #if DEBUG
 
 			//NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -168,6 +175,11 @@ namespace Bloom.Edit
 		{
 			if (IsDisposed)
 				return;
+			if (InvokeRequired)
+			{
+				Invoke(new Action<IPage, Image>(RefreshOneThumbnailCallback), page, image);
+				return;
+			}
 			var imageIndex = _thumbnailImageList.Images.IndexOfKey(page.Id);
 			if (imageIndex > -1)
 			{
@@ -427,7 +439,25 @@ namespace Bloom.Edit
 					Thumbnailer.PageChanged(pageId);
 			}
 		}
+
+		public new bool Enabled
+		{
+			set
+			{
+				if (!value)
+				{
+					var panel = new TransparentPanel("disabled", _listView);
+					Controls.Add(panel);
+					panel.BringToFront();
+				}
+				else
+				{
+					Controls.RemoveByKey("disabled");
+				}
+			}
+		}
 	}
+
 
 	/// <summary>
 	/// This makes a list view act, well, like one would expect; the items

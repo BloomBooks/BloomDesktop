@@ -13,6 +13,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Publish;
+using DesktopAnalytics;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.IO;
@@ -32,28 +33,19 @@ namespace Bloom.WebLibraryIntegration
 		private BloomParseClient _parseClient;
 		private BloomS3Client _s3Client;
 		private readonly HtmlThumbNailer _htmlThumbnailer;
-		// A list of 'orders' to download books. These may be urls or (this may be obsolete) paths to book order files.
-		// One order is created when a url or book order is found as the single command line argument.
-		// It gets processed by an initial call to HandleOrders in LibraryListView.ManageButtonsAtIdleTime
-		// when everything is sufficiently initialized to handle downloading a new book.
-		// Orders may also be created in the Program.ServerThreadAction method, on a thread that is set up
-		// to receive download orders from additional instances of Bloom created by clicking a download link
-		// in a web page. These may be handled at any time.
-		private OrderList _orders;
+		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
 
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
-		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, OrderList orders)
+		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, BookDownloadStartingEvent bookDownloadStartingEvent)
 		{
 			this._parseClient = bloomParseClient;
 			this._s3Client = bloomS3Client;
 			_htmlThumbnailer = htmlThumbnailer;
-			_orders = orders;
-			if (_orders != null)
-			{
-				_orders.OrderAdded += _OrderAdded;
-			}
+			_bookDownloadStartingEvent = bookDownloadStartingEvent;
 		}
+
+		public string LastBookDownloadedPath { get; set; }
 
 		public static bool UseSandbox
 		{
@@ -71,54 +63,80 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		void _OrderAdded(object sender, EventArgs e)
-		{
-			HandleOrders();
-		}
-
-		public void HandleOrders()
-		{
-			if (_orders == null)
-				return;
-			string order;
-			while ((order = _orders.GetOrder()) != null)
-			{
-				HandleBloomBookOrder(order);
-			}
-		}
-
 		public string DownloadFromOrderUrl(string orderUrl, string destPath)
 		{
 			var decoded = HttpUtilityFromMono.UrlDecode(orderUrl);
 			var bucketStart = decoded.IndexOf(_s3Client.BucketName,StringComparison.InvariantCulture);
 			if (bucketStart == -1)
-				throw new ArgumentException("URL is not within expected bucket");
+			{
+#if DEBUG
+				if (decoded.StartsWith(("BloomLibraryBooks")))
+				{
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					"The book is from bloomlibrary.org, but you are running the DEBUG version of Bloom, which can only use dev.bloomlibrary.org.");
+				}
+				else
+				{
+					throw new ApplicationException("Can't match URL of bucket of the book being downloaded, and I don't know why.");
+				}
+
+#else
+				if (decoded.StartsWith(("BloomLibraryBooks-Sandbox")))
+				{
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+						"The book is from the testing version of the bloomlibrary, but you are running the RELEASE version of Bloom. The RELEASE build cannot use the 'dev.bloomlibrary.org' site. If you need to do that for testing purposes, set the windows Environment variable 'BloomSandbox' to 'true'.", decoded);
+				}
+				else
+				{
+					throw new ApplicationException(string.Format("Can't match URL of bucket of the book being downloaded {0}, and I don't know why.", decoded));
+				}
+#endif
+				return null;
+			}
+
 			var s3orderKey = decoded.Substring(bucketStart  + _s3Client.BucketName.Length + 1);
+			string url = "unknown";
+			string title = "unknown";
 			try
 			{
 				var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
+				url = metadata.DownloadSource;
+				title = metadata.Title;
 				if (_progressDialog != null)
 					_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; }));
-					// downloading the metadata is considered step 1.
-				return DownloadBook(metadata.DownloadSource, destPath);
+				// downloading the metadata is considered step 1.
+				var destinationPath = DownloadBook(metadata.DownloadSource, destPath);
+				LastBookDownloadedPath = destinationPath;
 
+				Analytics.Track("DownloadedBook-Success",
+					new Dictionary<string, string>() {{"url", url}, {"title",title}});
+				return destinationPath;
 			}
-			catch(WebException e)
+			catch (WebException e)
 			{
 				DisplayNetworkDownloadProblem(e);
+				Analytics.Track("DownloadedBook-Failure",
+					new Dictionary<string, string>() { { "url", url }, { "title", title } });
+				Analytics.ReportException(e);
 				return "";
 			}
 			catch (AmazonServiceException e)
 			{
 				DisplayNetworkDownloadProblem(e);
+				Analytics.Track("DownloadedBook-Failure",
+					new Dictionary<string, string>() { { "url", url }, { "title", title } });
+				Analytics.ReportException(e);
 				return "";
 			}
 			catch (Exception e)
 			{
-			ShellWindow.Invoke((Action) (() =>
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-				LocalizationManager.GetString("Publish.Upload.DownloadProblem",
-						"There was a problem downloading your book. You may need to restart Bloom or get technical help."))));
+				ShellWindow.Invoke((Action) (() =>
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+						LocalizationManager.GetString("Publish.Upload.DownloadProblem",
+							"There was a problem downloading your book. You may need to restart Bloom or get technical help."))));
+				Analytics.Track("DownloadedBook-Failure",
+					new Dictionary<string, string>() { { "url", url }, { "title", title } });
+				Analytics.ReportException(e);
 				return "";
 			}
 		}
@@ -150,48 +168,58 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		private ProgressDialog _progressDialog;
+		private string _downloadRequest;
 
-		private void HandleBloomBookOrder(string argument)
+		internal void HandleBloomBookOrder(string argument)
 		{
-			var mainWindow = ShellWindow;
-			if (mainWindow == null)
-				return; // We shouldn't be trying to handle orders while we don't have a main window open.
-			mainWindow.Invoke((Action)(() =>
+			_downloadRequest = argument;
+			using (_progressDialog = new ProgressDialog())
 			{
-				_progressDialog = new ProgressDialog();
 				_progressDialog.CanCancel = false; // one day we may allow this...
 				_progressDialog.Overview = LocalizationManager.GetString("Download.DownloadingDialogTitle", "Downloading book");
 				_progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
 				if (IsUrlOrder(argument))
 				{
 					var link = new BloomLinkArgs(argument);
-					var indexOfSlash = link.OrderUrl.LastIndexOf('/');
-					var bookOrder = link.OrderUrl.Substring(indexOfSlash + 1);
-					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(bookOrder);
+					_progressDialog.StatusText = link.Title;
 				}
 				else
 				{
 					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(argument);
 				}
-				_progressDialog.Show(mainWindow);
-			}));
-			try
-			{
-				// If we are passed a bloom book order URL, download the corresponding book and open it.
-				if (IsUrlOrder(argument))
+
+				// We must do the download in a background thread, even though the whole process is doing nothing else,
+				// so we can invoke stuff on the main thread to (e.g.) update the progress bar.
+				BackgroundWorker worker = new BackgroundWorker();
+				worker.DoWork += OnDoDownload;
+				_progressDialog.BackgroundWorker = worker;
+				//dlg.CancelRequested += new EventHandler(OnCancelRequested);
+				_progressDialog.ShowDialog(); // hidden automatically when task completes
+				if (_progressDialog.ProgressStateResult != null &&
+					_progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
 				{
-					var link = new BloomLinkArgs(argument);
-					DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
-				}
-				// If we are passed a bloom book order, download the corresponding book and open it.
-				else if (argument.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) && File.Exists(argument))
-				{
-					HandleBookOrder(argument);
+					Palaso.Reporting.ErrorReport.ReportFatalException(
+						_progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
 				}
 			}
-			finally
+		}
+
+		/// <summary>
+		/// this runs in a worker thread
+		/// </summary>
+		private void OnDoDownload(object sender, DoWorkEventArgs args)
+		{
+			// If we are passed a bloom book order URL, download the corresponding book and open it.
+			if (IsUrlOrder(_downloadRequest))
 			{
-				_progressDialog.Invoke((Action) (() => _progressDialog.Dispose()));
+				var link = new BloomLinkArgs(_downloadRequest);
+				DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
+			}
+				// If we are passed a bloom book order, download the corresponding book and open it.
+			else if (_downloadRequest.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) &&
+					 File.Exists(_downloadRequest))
+			{
+				HandleBookOrder(_downloadRequest);
 			}
 		}
 
@@ -298,7 +326,7 @@ namespace Bloom.WebLibraryIntegration
 			try
 			{
 				_s3Client.UploadBook(s3BookId, bookFolder, progress);
-				metadata.Thumbnail = _s3Client.ThumbnailUrl;
+				metadata.BaseUrl = _s3Client.BaseUrl;
 				metadata.BookOrder = _s3Client.BookOrderUrl;
 				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingBook", "Uploading book record"));
 				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
@@ -312,15 +340,23 @@ namespace Bloom.WebLibraryIntegration
 					var json = _parseClient.GetSingleBookRecord(metadata.Id);
 					parseId = json.objectId.Value;
 				}
+			 //   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
+				{
+					Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title } });
+				}
 			}
 			catch (WebException e)
 			{
 				DisplayNetworkUploadProblem(e, progress);
+				if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
 				return "";
 			}
 			catch (AmazonServiceException e)
 			{
 				DisplayNetworkUploadProblem(e, progress);
+				if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
 				return "";
 			}
 			catch (Exception e)
@@ -329,6 +365,8 @@ namespace Bloom.WebLibraryIntegration
 								"There was a problem uploading your book. You may need to restart Bloom or get technical help."));
 				progress.WriteError(e.Message.Replace("{","{{").Replace("}","}}"));
 				progress.WriteVerbose(e.StackTrace);
+				if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
 				return "";
 			}
 			return s3BookId;
@@ -361,14 +399,14 @@ namespace Bloom.WebLibraryIntegration
 		/// <returns></returns>
 		internal string DownloadBook(string s3BookId, string dest)
 		{
-			var result = _s3Client.DownloadBook(s3BookId, dest, _progressDialog);
+			var destinationPath = _s3Client.DownloadBook(s3BookId, dest, _progressDialog);
 			if (BookDownLoaded != null)
 			{
-				var bookInfo = new BookInfo(result, false); // A downloaded book is a template, so never editable.
+				var bookInfo = new BookInfo(destinationPath, false); // A downloaded book is a template, so never editable.
 				BookDownLoaded(this, new BookDownloadedEventArgs() {BookDetails = bookInfo});
 			}
 
-			return result;
+			return destinationPath;
 		}
 
 		public void HandleBookOrder(string bookOrderPath, string projectPath)
@@ -414,7 +452,9 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword))
 			{
-				MessageBox.Show("To use this feature, you must first run Bloom normally and log in.");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Could not log you in using user='" + Settings.Default.WebUserId + "' and pwd='" + Settings.Default.WebPassword+"'."+System.Environment.NewLine+
+					"For some reason, from the command line, we cannot get these credentials out of Settings.Default. However if you place your command line arguments in the properties of the project in visual studio and run from there, it works. If you are already doing that and get this message, then try running Bloom normally (gui), go to publish, and make sure you are logged in. Then quit and try this again.");
+				return;
 			}
 			using (var dlg = new BulkUploadProgressDlg())
 			{
@@ -530,11 +570,13 @@ namespace Bloom.WebLibraryIntegration
 			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 			// These bits of data can't easily be set while saving the book because we save one page at a time
 			// and they apply to the book as a whole.
-			book.BookInfo.Languages = book.AllLanguages.ToArray();
+			book.BookInfo.LanguageTableReferences = _parseClient.GetLanguagePointers(book.CollectionSettings.MakeLanguageUploadData(book.AllLanguages.ToArray()));
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
-			RebuildThumbnail(book, invokeTarget);
+			MakeThumbnail(book, 70, invokeTarget);
+			MakeThumbnail(book, 256, invokeTarget);
+			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
 			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
@@ -552,23 +594,39 @@ namespace Bloom.WebLibraryIntegration
 			return result;
 		}
 
-		static void RebuildThumbnail(Book.Book book, Control invokeTarget)
+		void MakeThumbnail(Book.Book book, int height, Control invokeTarget)
 		{
 			bool done = false;
 			string error = null;
-			book.RebuildThumbNailAsync((info, image) => done = true,
+
+			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions()
+			{
+				CenterImageUsingTransparentPadding = false,
+				//since this is destined for HTML, it's much easier to handle if there is no pre-padding
+
+				Height=height,
+				Width =-1,
+				FileName = "thumbnail-"+height+".png"
+			};
+
+			book.RebuildThumbNailAsync(options, (info, image) => done = true,
 				(info, ex) =>
 				{
 					done = true;
 					throw ex;
 				});
-			while (!done)
+			var giveUpTime = DateTime.Now.AddSeconds(5);
+			while (!done && DateTime.Now < giveUpTime)
 			{
 				Thread.Sleep(100);
 				Application.DoEvents();
 				// In the context of bulk upload, when a model dialog is the only window, apparently Application.Idle is never invoked.
 				// So we need a trick to allow the thumbnailer to actually make some progress, since it usually works while idle.
-				book.MakeThumbnailerAdvance(invokeTarget);
+				this._htmlThumbnailer.Advance(invokeTarget);
+			}
+			if (!done)
+			{
+				throw new ApplicationException(string.Format("Gave up waiting for the {0} to be created.", options.FileName));
 			}
 		}
 

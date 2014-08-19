@@ -21,13 +21,19 @@ namespace BloomTests.LowResImageProcessing
 			_folder = new TemporaryFolder("ImageServerTests");
 		}
 
+		[TearDown]
+		public void TearDown()
+		{
+			_folder.Dispose();
+		}
+
 		[Test]
 		public void GetMissingImage_ReturnsError()
 		{
 			using (var server = CreateImageServer())
 			using (var file = MakeTempImage())
 			{
-				var transaction = new PretendRequestInfo("http://localhost:8089/bloom/abc.png");
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "abc.png");
 				server.MakeReply(transaction);
 				Assert.AreEqual(404, transaction.StatusCode);
 			}
@@ -39,7 +45,7 @@ namespace BloomTests.LowResImageProcessing
 			using (var server = CreateImageServer())
 			using (var file = MakeTempImage())
 			{
-				var transaction = new PretendRequestInfo("http://localhost:8089/bloom/"+file.Path);
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path);
 				server.MakeReply(transaction);
 				Assert.IsTrue(transaction.ReplyImagePath.Contains(".png"));
 			}

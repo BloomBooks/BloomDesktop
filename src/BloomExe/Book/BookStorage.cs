@@ -32,9 +32,9 @@ namespace Bloom.Book
 		string FileName { get; }
 		string FolderPath { get; }
 		string PathToExistingHtml { get; }
-		bool TryGetPremadeThumbnail(out Image image);
+		bool TryGetPremadeThumbnail(string fileName, out Image image);
 		//bool DeleteBook();
-		bool RemoveBookThumbnail();
+		bool RemoveBookThumbnail(string fileName);
 
 		// REQUIRE INTIALIZATION (AVOID UNLESS USER IS WORKING WITH THIS BOOK SPECIFICALLY)
 		bool GetLooksOk();
@@ -132,10 +132,11 @@ namespace Bloom.Book
 		/// <summary>
 		///
 		/// </summary>
+		/// <param name="fileName"></param>
 		/// <returns>false if we shouldn't mess with the thumbnail</returns>
-		public bool RemoveBookThumbnail()
+		public bool RemoveBookThumbnail(string fileName)
 		{
-			string path = Path.Combine(_folderPath, "thumbnail.png");
+			string path = Path.Combine(_folderPath, fileName);
 			if(File.Exists(path) &&
 			 (new System.IO.FileInfo(path).IsReadOnly)) //readonly is good when you've put in a custom thumbnail
 			{
@@ -157,9 +158,9 @@ namespace Bloom.Book
 			return _fileLocator;
 		}
 
-		public bool TryGetPremadeThumbnail(out Image image)
+		public bool TryGetPremadeThumbnail(string fileName, out Image image)
 		{
-			string path = Path.Combine(_folderPath, "thumbnail.png");
+			string path = Path.Combine(_folderPath, fileName);
 			if (File.Exists(path))
 			{
 				//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
@@ -396,9 +397,13 @@ namespace Bloom.Book
 					}
 					continue;
 				}
+				// Certain .svg files (cogGrey.svg, FontSizeLetter.svg) aren't really part of the book and are stored elsewhere.
+				// Also, at present the user can't insert them into a book. Don't report them.
+				// TODO: if we ever allow the user to add .svg files, we'll need to change this
+				if (Path.HasExtension(imageFileName) && Path.GetExtension(imageFileName).ToLowerInvariant() == ".svg")
+					continue;
 
 				//trim off the end of "license.png?123243"
-
 				var startOfDontCacheHack = imageFileName.IndexOf('?');
 				if (startOfDontCacheHack > -1)
 					imageFileName = imageFileName.Substring(0, startOfDontCacheHack);
@@ -505,7 +510,7 @@ namespace Bloom.Book
 					var uri = folderPath + Path.DirectorySeparatorChar;
 					uri = uri.Replace(":", "%3A");
 					uri = uri.Replace('\\', '/');
-					uri = ImageServer.GetPathEndingInSlash() + uri;
+					uri = ImageServer.PathEndingInSlash + uri;
 					path = uri;
 				}
 				else
@@ -719,7 +724,19 @@ namespace Bloom.Book
 				EnsureHasLinkToStyleSheet(dom, customCssFilePath);
 
 			if (File.Exists(Path.Combine(_folderPath, "customBookStyles.css")))
-				EnsureHasLinkToStyleSheet(dom,"customBookStyles.css");
+				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
+			else
+				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
+		}
+
+		private void EnsureDoesntHaveLinkToStyleSheet(HtmlDom dom, string path)
+		{
+			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var fileName = link.GetStringAttribute("href");
+				if (fileName == path)
+					dom.RemoveStyleSheetIfFound(path);
+			}
 		}
 
 		private void EnsureHasLinkToStyleSheet(HtmlDom dom, string path)

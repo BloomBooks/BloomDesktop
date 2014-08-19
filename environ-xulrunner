@@ -1,0 +1,22 @@
+# MonoDevelop seems to set PKG_CONFIG_LIBDIR to the empty string, which is bad
+# for us because that eliminates most packages, including geckofx29.
+# If PKG_CONFIG_LIBDIR is not set at all, then the default paths are searched.
+# To be safe, we'll preserve the old value (if it is set) and restore it.
+if [ "${PKG_CONFIG_LIBDIR+set}" = set ]; then
+	OLD_PKG_CONFIG_LIBDIR="${PKG_CONFIG_LIBDIR}"
+	unset PKG_CONFIG_LIBDIR
+fi
+
+if [ -d /usr/lib/xulrunner-geckofx-29 ]; then
+	export XULRUNNER=/usr/lib/xulrunner-geckofx-29
+else
+	export XULRUNNER=/usr/lib/xulrunner-29
+fi
+LD_LIBRARY_PATH="${XULRUNNER}:${LD_LIBRARY_PATH}"
+GECKOFX="$(pkg-config --variable assemblies_dir Geckofx-Core)"
+export LD_PRELOAD=${GECKOFX}/geckofix.so
+
+if [ "${OLD_PKG_CONFIG_LIBDIR+set}" = set ]; then
+	export PKG_CONFIG_LIBDIR="${OLD_PKG_CONFIG_LIBDIR}"
+	unset OLD_PKG_CONFIG_LIBDIR
+fi

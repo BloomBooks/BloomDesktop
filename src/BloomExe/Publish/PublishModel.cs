@@ -17,7 +17,6 @@ using DesktopAnalytics;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;
-using TempFile = BloomTemp.TempFile;
 
 namespace Bloom.Publish
 {
@@ -94,7 +93,7 @@ namespace Bloom.Publish
 		}
 
 
-		public void LoadBook(DoWorkEventArgs doWorkEventArgs)
+		public void LoadBook(BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 			_currentlyLoadedBook = BookSelection.CurrentSelection;
 
@@ -112,7 +111,7 @@ namespace Bloom.Publish
 						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
 
 					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape,
-									  layoutMethod, BookletPortion, doWorkEventArgs);
+									  layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 				}
 			}
 			catch (Exception e)
@@ -126,24 +125,20 @@ namespace Bloom.Publish
 		}
 
 
-		private BloomTemp.TempFile MakeFinalHtmlForPdfMaker()
+		private TempFile MakeFinalHtmlForPdfMaker()
 		{
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
 			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
 			HtmlDom.AddPublishClassToBody(dom);
-			//HtmlDom.AddWebkitClassToBody(dom);
-
-			//wkhtmltopdf can't handle file://
-			dom.InnerXml = dom.InnerXml.Replace("file://", "");
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
 			PageLayout.UpdatePageSplitMode(dom);
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			return BloomTemp.TempFile.CreateHtm5FromXml(dom);
+			return BloomTemp.TempFileUtils.CreateHtm5FromXml(dom);
 		}
 
 		private string GetPdfPath(string fileName)
@@ -210,6 +205,21 @@ namespace Bloom.Publish
 		{
 			get { return _pdfMaker.ShowCropMarks; }
 			set { _pdfMaker.ShowCropMarks = value; }
+		}
+
+		public bool AllowUpload {
+			get { return BookSelection.CurrentSelection.BookInfo.AllowUploading; }
+		}
+
+		public bool ShowBookletOption
+		{
+			get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }
+		}
+
+		public bool ShowCoverOption
+		{
+			//currently the only cover option we have is a booklet one
+			get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }
 		}
 
 		public override bool Equals(object obj)
@@ -357,7 +367,13 @@ namespace Bloom.Publish
 
 		public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError )
 		{
-			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom, Color.White, false, onReady, onError);
+			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
+			{
+				BackgroundColor = Color.White,
+				DrawBorderDashed = false,
+				CenterImageUsingTransparentPadding = false
+			};
+			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom,thumbnailOptions,onReady, onError);
 		}
 
 		public IEnumerable<ToolStripItem> GetExtensionMenuItems()

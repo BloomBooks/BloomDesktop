@@ -23,13 +23,13 @@ namespace Bloom.Edit
 	public class Configurator
 	{
 		private readonly string _folderInWhichToReadAndSaveLibrarySettings;
-		private readonly MonitorTarget _monitorObjectForBrowserNavigation;
+		private readonly NavigationIsolator _isolator;
 		public delegate Configurator Factory(string folderInWhichToReadAndSaveLibrarySettings);//autofac uses this
 
-		public Configurator(string folderInWhichToReadAndSaveLibrarySettings, MonitorTarget monitorObjectForBrowserNavigation)
+		public Configurator(string folderInWhichToReadAndSaveLibrarySettings, NavigationIsolator isolator)
 		{
 			_folderInWhichToReadAndSaveLibrarySettings = folderInWhichToReadAndSaveLibrarySettings;
-			_monitorObjectForBrowserNavigation = monitorObjectForBrowserNavigation;
+			_isolator = isolator;
 			PathToLibraryJson = _folderInWhichToReadAndSaveLibrarySettings.CombineForPath("configuration.txt");
 			RequireThat.Directory(folderInWhichToReadAndSaveLibrarySettings).Exists();
 			LocalData = string.Empty;
@@ -47,23 +47,14 @@ namespace Bloom.Edit
 
 		public DialogResult ShowConfigurationDialog(string folderPath)
 		{
-			try
+			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.htm"), GetLibraryData(), _isolator))
 			{
-				Monitor.Enter(_monitorObjectForBrowserNavigation);
-				using (
-					var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.htm"), GetLibraryData()))
+				var result = dlg.ShowDialog(null);
+				if (result == DialogResult.OK)
 				{
-					var result = dlg.ShowDialog(null);
-					if (result == DialogResult.OK)
-					{
-						CollectJsonData(dlg.FormData);
-					}
-					return result;
+					CollectJsonData(dlg.FormData);
 				}
-			}
-			finally
-			{
-				Monitor.Exit(_monitorObjectForBrowserNavigation);
+				return result;
 			}
 		}
 
@@ -146,7 +137,7 @@ namespace Bloom.Edit
 				browser.Navigated -= browser_DocumentNavigated;
 				browser.Navigated += browser_DocumentNavigated;
 
-				browser.Navigate(url);
+				_isolator.Navigate(browser, url);
 
 				//in geckofx 14, there wasn't a reliable event for knowing when navigating was done
 				//this could be simplified when we upgrade
@@ -269,7 +260,7 @@ namespace Bloom.Edit
 					}
 				}
 			}
-			return existing.ToString().Replace("\r\n", "").Replace("\\", "");
+			return existing.ToString().Replace("\r\n", "").Replace("\n", "").Replace("\\", "");
 		}
 
 		private bool IsComplexObject(string value)

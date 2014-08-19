@@ -4,11 +4,12 @@ Bloom Desktop is a c# Windows application that dramatically "lowers the bar" for
 
 ## RoadMap / Day-to-day progress
 
-See the [Bloom Trello Board](https://trello.com/board/bloom-development/4f087ec138f81c83752051a0).
+See the Trello boards:
+[Bloom 2](https://trello.com/b/UA7QLibU/bloom-desktop-2-0), [Bloom 3](https://trello.com/b/ErDHtpNe/bloom-3-0)
 
 ## Bug Reports
 
-Reports can be entered in [http://jira.palaso.org/issues/browse/BL](http://jira.palaso.org/issues/browse/BL). They can be entered there via email by sending to [issues@bloom.palaso.org](mailto:issues@bloom.palaso.org); things sent there will be visible on the web to anyone who makes an account on the jira system.
+Reports can be entered in [jira](https://jira.sil.org/browse/BL). They can be entered there via email by sending to [issues@bloom.palaso.org](mailto:issues@bloom.palaso.org); things sent there will be visible on the web to anyone who makes an account on the jira system.
 
 ## Continuous Build System
 
@@ -36,9 +37,6 @@ or
 
 That will take several minutes the first time, and afterwards will be quick as it only downloads what has changed. When you change branches, run this again.
 
-### Mercurial
-If you'll be working with Send/Receive, please copy the "Mercurial" and "Mercurial Extensions" folders from an installation of Bloom to the root of your Bloom source directory.
-
 #### About Bloom Dependencies
 
 Our **[Palaso libraries](http://projects.palaso.org/projects/palaso)** hold the classes that are common to multiple products. If you need to build palaso from source, see [projects.palaso.org/projects/palaso/wiki](http://projects.palaso.org/projects/palaso/wiki).
@@ -47,9 +45,7 @@ Our **[PdfDroplet ](http://pdfdroplet.palaso.org)**engine drives the booklet-mak
 
 Our **[Chorus](http://projects.palaso.org/projects/chorus)** library provides the Send/Receive functionality.
 
-**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the GeckoFX .net wrapper.
-
-If you need to build GeckoFX from source, see [https://bitbucket.org/geckofx](https://bitbucket.org/geckofx). Note that Bloom is actually built off of the [Hatton fork](https://bitbucket.org/hatton/geckofx-11.0). In either case, you'll need to figure out which version of gecko (firefox) Bloom is currently using.
+**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the [GeckoFX .net wrapper](https://bitbucket.org/geckofx).
 
 **XulRunner**: If you need some other version, they come from here: [http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases](http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases). You want a "runtime", not an "sdk". Note, in addition to the generic "lib/xulrunner", the code will also work if it finds "lib/xulrunner8" (or 9, or 10, or whatever the current version is).
 
@@ -62,13 +58,88 @@ Now, Mozilla puts out a new version of XulRunner every 6 weeks at the time of th
 
 Bloom uses various web services that require identification. We can't really keep those a secret, but we can at least not make them google'able by not checking them into github. To get the file that contains user and test-level authorization codes, just get the connections.dll file out of a shipping version of a Bloom, and place it in your Bloom/DistFiles directory.
 
+# Special instructions for building on Linux
+
+These notes were written by JohnT on 16 July 2014 based on previous two half-days working with Eberhard to get Bloom to build on a Precise Linux box. The computer was previously used to develop FLEx, so may have already had something that is needed. Sorry, I have not had the chance to try them on another system. If you do, please correct as needed.
+
+Note that as of 16 July 2014, Bloom does not work very well on Linux. Something more may be needed by the time we get it fully working. Hopefully these notes will be updated.
+
+At various points you will be asked for the SU password.
+
+1. You need synaptic to look in some extra places for components. In Synaptic, go to Settings->Repositories, Other Software tab. You want to see the following lines:
+
+http://packages.sil.org/ubuntu precise main
+http://packages.sil.org/ubuntu precise-experimental main
+http://linux.lsdev.sil.org/ubuntu precise main
+http://linux.lsdev.sil.org/ubuntu precise-experimental main
+
+If some are missing, click add and paste the missing line, then insert 'deb' at the start, then confirm.
+
+(May help to check for and remove any lines that refer to the obsolete ppa.palaso.org, if you've been doing earlier work on SIL stuff.)
+
+2. Update your system:
+
+sudo apt-get update
+
+sudo apt-get upgrade
+
+3. Custom version of Mono:
+
+Bloom depends on a patched version of Mono 3.4. Currently there is no package, you need to build mono yourself with the patches Bloom needs. I did this work in fwrepo/mono; I think this is only important in that some of the instructions assume the root of the mono rep is fwrepo/mono/mono.
+
+3a. Get the mono source and the correct branch:
+
+git clone git://github.com/sillsdev/mono.git
+
+git checkout --track origin/feature/mono-3.4
+
+This should put you on the necessary 3.4 branch of the mono repo that you want to build.
+
+3b. Follow the instructions at http://linux.lsdev.sil.org/wiki/index.php/Building_mono_from_source to build mono. Note that you need to clone mono-calgary into the same parent directory as mono.
+
+(You may get a message like "/bin/ls: cannot access /opt/mono-sil/bin/mono-fw: No such file or directory" at the end of the build. As long as it says "Finished successfully" a few lines up this is OK.
+
+4. Install MonoDevelop 5 (or later). One way to do this is with synaptic.
+
+Make a shortcut to launch MonoDevelop (or just use this command line). The shortcut should execute something like this:
+
+bash -c 'PATH=/opt/monodevelop/bin:$PATH; export FIELDWORKS_ENVIRON="/home/thomson/fwrepo/fw/environ"; export MONO_ENVIRON="/home/thomson/palaso/bloom-desktop/environ"; monodevelop-launcher.sh'
+
+(The FIELDWORKS_ENVIRON bit is probably not needed, but I had it in mine so I left it in. Correct the paths to have your username instead of 'thomson'.)
+
+5. Clone the Bloom repository: hg clone https://bitbucket.org/hatton/bloom-desktop.
+
+This should leave you in the default branch, which is currently correct for Linux. Don't be misled into activating the Linux branch, which is no longer used. Note that after about September, you should be using a git repo, if things go as planned.
+
+6. Get dependencies:
+
+cd bloom-desktop/build.
+
+./install-deps (Note the initial dot.)
+
+./getDependencies-Linux.sh
+
+cd ..
+
+. environ (note the '.')
+
+mozroots --import --sync
+
+Run MonoDevelop using the shortcut. Open the solution BloomLinux.sln. Go to Edit ->Preferences, Packages/Sources. The list should include  https://www.nuget.org/api/v2/, and http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/ (not sure the second is necessary).
+
+Select the BloomExe project. Do Project/Restore Packages. (Uses nuget to get some of Bloom's dependencies.)
+
+7. At this point you should be able to build the whole BloomLinux solution (right-click in Solution pane, choose Build).
+
+Hopefully we can streamline this process eventually.
+
 # Registry settings
 
-One responsibilty of Bloom desktop is to handle url's starting with "bloom://"", such as those used in the bloom library web site when the user clicks "open in Bloom." Making this work requires some registry settings. These are automatically created when you install Bloom. Developers who need this functionality can get it using the build/bloom link.reg file. You need to edit this file first. It contains a full path to Bloom.exe, and the first part of the path will depend on where you have put your working folder. After adjusting that, just double-click it to create the registry entries for handling bloom: urls.
+One responsibility of Bloom desktop is to handle url's starting with "bloom://"", such as those used in the bloom library web site when the user clicks "open in Bloom." Making this work requires some registry settings. These are automatically created when you install Bloom. Developers who need this functionality can get it using the build/bloom link.reg file. You need to edit this file first. It contains a full path to Bloom.exe, and the first part of the path will depend on where you have put your working folder. After adjusting that, just double-click it to create the registry entries for handling bloom: urls.
 
 # Testers
 
-Please see "Tips for Testing Palaso Software":https://docs.google.com/document/d/1dkp0edjJ8iqkrYeXdbQJcz3UicyilLR7GxMRIUAGb1E/edit
+Please see [Tips for Testing Palaso Software](https://docs.google.com/document/d/1dkp0edjJ8iqkrYeXdbQJcz3UicyilLR7GxMRIUAGb1E/edit)
 
 # License
 
