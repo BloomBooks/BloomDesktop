@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.7.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">2.1.13.0</prop>
+  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.2.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">2.0.000.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -124,6 +124,12 @@
     <tu tuid="BloomPackInstallDialog.Opening">
       <tuv xml:lang="en">
         <seg>Opening {0}...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -527,7 +533,6 @@
       </tuv>
     </tu>
     <tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Confirm Delete</seg>
       </tuv>
@@ -545,7 +550,6 @@
       </tuv>
     </tu>
     <tu tuid="ConfirmRecycleDialog.deleteBtn">
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>&amp;Delete</seg>
       </tuv>
@@ -581,11 +585,13 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.CantPasteImageLocked">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Sorry, this book is locked down so that images cannot be changed.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ChangeImage">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Change Image</seg>
       </tuv>
@@ -622,6 +628,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.ImageChangeWarning">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
       </tuv>
@@ -1206,7 +1213,7 @@
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
-        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
+        <seg>A collection of shell or template books in one or more languages of wider communication. From this, you can make a BloomPack to give to others so that they can make vernacular books with it.</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
@@ -1364,7 +1371,7 @@
     </tu>
     <tu tuid="Publish.Upload.Credits">
       <tuv xml:lang="en">
-        <seg>Credits</seg>
+        <seg>credits</seg>
       </tuv>
     </tu>
     <tu tuid="Publish.Upload.DownloadProblem">
