@@ -477,7 +477,6 @@ namespace Bloom.Edit
         internal void DocumentCompleted()
         {
 			// listen for events raised by javascript
-			_view.AddMessageEventListener("saveDecodableLevelSettingsEvent", SaveDecodableLevelSettings);
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
 			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
@@ -608,16 +607,6 @@ namespace Bloom.Edit
 			jsonData = jsonData.Replace("\r", "").Replace("\n", "");
 			return CleanUpDataForJavascript(jsonData);
 		}
-
-        /// <summary>Receives data from javascript, saves it, then closes the dialog</summary>
-        /// <param name="content"></param>
-        private void SaveDecodableLevelSettings(string content)
-        {
-            var path = _collectionSettings.DecodableLevelPathName;
-            File.WriteAllText(path, content, Encoding.UTF8);
-
-            _view.RunJavaScript("if (typeof(closeSetupDialog) === \"function\") {closeSetupDialog();}");
-        }
 
         /// <summary>Opens Explorer (or Linux equivalent) displaying the contents of the Sample Texts directory</summary>
         /// <param name="arg">Not Used, but required because it is being called by a javascrip MessageEvent</param>
