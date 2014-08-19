@@ -43,7 +43,8 @@ namespace Bloom.Edit
 
         
         public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView,
-            CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DeletePageCommand deletePageCommand)
+            CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DeletePageCommand deletePageCommand,
+			NavigationIsolator isolator)
         {
             _model = model;
             _pageListView = pageListView;
@@ -54,6 +55,7 @@ namespace Bloom.Edit
             _undoCommand = undoCommand;
             _deletePageCommand = deletePageCommand;
             InitializeComponent();
+	        _browser1.Isolator = isolator;
             _splitContainer1.Tag = _splitContainer1.SplitterDistance;//save it
             //don't let it grow automatically
 //            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
@@ -157,10 +159,8 @@ namespace Bloom.Edit
 					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
 				}
 
-                var decodedMetadata = GetMetadataCloneWithHtmlDecodedCopyRightAndCustomRights(metadata);
-
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
-                using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(decodedMetadata))
+                using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
 				{
 					dlg.ShowCreator = false;
 					if (DialogResult.OK == dlg.ShowDialog())
@@ -179,26 +179,26 @@ namespace Bloom.Edit
 						}
 
                         // Both LicenseNotes and Copyright By could have user-entered html characters that need escaping.
-					    var copyright = GetHtmlEncodedCopyright(dlg);
+                        var copyright = dlg.Metadata.CopyrightNotice;
 					    dlg.Metadata.CopyrightNotice = copyright;
 						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
 						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
-                        var rights = GetHtmlEncodedRights(dlg);
+                        var rights = dlg.Metadata.License.RightsStatement;
                         dlg.Metadata.License.RightsStatement = rights;
                         string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
 						string licenseImageName = licenseImage==null? string.Empty: "license.png";
 						string result =
 							string.Format(
 								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
-								dlg.Metadata.CopyrightNotice.Replace("'","\\'"),
+                                MakeJavaScriptContent(dlg.Metadata.CopyrightNotice),
 								licenseImageName,
-								dlg.Metadata.License.Url, rights, description);
-						_browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
+                                dlg.Metadata.License.Url, MakeJavaScriptContent(rights), description);
+                        _browser1.RunJavaScript("SetCopyrightAndLicense(" + result + ")");
 						
 						//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
 						//back to the data div in the actual html file even when the page is read and saved, because individual pages don't
 						//have the data div.
-						_model.CurrentBook.UpdateLicenseMetdata(dlg.Metadata);
+                        _model.CurrentBook.UpdateLicenseMetdata(dlg.Metadata);
 						_model.SaveNow();
 						_model.RefreshDisplayOfCurrentPage();//the cleanup() that is part of Save removes qtips, so let' redraw everything
 					}
@@ -214,27 +214,13 @@ namespace Bloom.Edit
 			}
     	}
 
-        private string GetHtmlEncodedRights(MetadataEditorDialog dlg)
+        // Make a string which, when compiled as a JavaScript literal embedded in single quotes, will produce the original.
+        private string MakeJavaScriptContent(string input)
         {
-            var rights = WebUtility.HtmlEncode(dlg.Metadata.License.RightsStatement);
-            return rights ?? string.Empty;
-        }
-
-        private string GetHtmlEncodedCopyright(MetadataEditorDialog dlg)
-        {
-            var copyright = WebUtility.HtmlEncode(dlg.Metadata.CopyrightNotice);
-            return copyright ?? string.Empty;
-        }
-
-        private Metadata GetMetadataCloneWithHtmlDecodedCopyRightAndCustomRights(Metadata metadata)
-        {
-            // HtmlDecode apparently takes care of whether a string is empty or null or has html-encoded stuff and does the right thing
-            var rightsStatement = WebUtility.HtmlDecode(metadata.License.RightsStatement);
-            var copyright = WebUtility.HtmlDecode(metadata.CopyrightNotice);
-            var safeMetadata = metadata.DeepCopy();
-            safeMetadata.License.RightsStatement = rightsStatement;
-            safeMetadata.CopyrightNotice = copyright;
-            return safeMetadata;
+            if (input == null)
+                return "";
+            // Order is important here...we do NOT want to double the backslash we insert before a single quote.
+            return input.Replace("\\", "\\\\").Replace("'", "\\'");
         }
 
         private void SetupThumnailLists()
@@ -582,16 +568,17 @@ namespace Bloom.Edit
         /// <returns></returns>
         private bool CheckIfLockedAndWarn(string imagePath)
         {
-            //TODO: this would let them set it once without us bugging them, but after that if they
+			// Enhance: we may want to reinstate some sort of (disableable) warning when they edit a picture while translating.
+			// Original comment:  this would let them set it once without us bugging them, but after that if they
             //go to change it, we would bug them because we don't have a way of knowing that it was a placeholder before.
-            if (!imagePath.ToLower().Contains("placeholder")  //always allow them to put in something over a placeholder
-                && !_model.CanChangeImages())
-            {
-                if (DialogResult.Cancel == MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning", "This book is locked down as shell. Are you sure you want to change the picture?"), LocalizationManager.GetString("EditTab.ChangeImage", "Change Image"), MessageBoxButtons.OKCancel))
-                {
-                    return false;
-                }
-            }
+			//if (!imagePath.ToLower().Contains("placeholder")  //always allow them to put in something over a placeholder
+			//	&& !_model.CanChangeImages())
+			//{
+			//	if (DialogResult.Cancel == MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning", "This book is locked down as shell. Are you sure you want to change the picture?"), LocalizationManager.GetString("EditTab.ChangeImage", "Change Image"), MessageBoxButtons.OKCancel))
+			//	{
+			//		return false;
+			//	}
+			//}
             return true;
         }
 

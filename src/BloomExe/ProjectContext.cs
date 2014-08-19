@@ -104,6 +104,7 @@ namespace Bloom
                     typeof(RelocatePageEvent),
                     typeof(QueueRenameOfCollection),
 					typeof(PageSelection),
+					 typeof(LocalizationChangedEvent),
                     typeof(EditingModel)}.Contains(t));
 				
 				
@@ -406,10 +407,4 @@ namespace Bloom
 		}
 
 	}
-
-    public class MonitorTarget
-    {
-        //doesn't need any guts, just use for dependency injection
-        //Dependecy injection gives us a single instance app-wide, and that single instance is the thing we monitor to achieve mutex on browser navigation
-    }
 }

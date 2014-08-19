@@ -181,9 +181,7 @@ namespace Bloom.WebLibraryIntegration
 				if (IsUrlOrder(argument))
 				{
 					var link = new BloomLinkArgs(argument);
-					var indexOfSlash = link.OrderUrl.LastIndexOf('/');
-					var bookOrder = link.OrderUrl.Substring(indexOfSlash + 1);
-					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(bookOrder);
+					_progressDialog.StatusText = link.Title;
 				}
 				else
 				{

@@ -138,7 +138,7 @@
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
       <tuv xml:lang="en">
-        <seg>Show Experimental Templates (e.g. Picture Dictionary, Calendar)</seg>
+        <seg>Show Experimental Templates (e.g. Picture Dictionary)</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowLocalizationControls">
@@ -339,6 +339,12 @@
         <seg>Export To XML For InDesign...</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.Books From BloomLibrary.org">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Books From BloomLibrary.org</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
       <tuv xml:lang="en">
         <seg>Do Updates of All Books</seg>
@@ -395,6 +401,12 @@
         <seg>Other Collection</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.Sample Shells">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Shells</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.SendReceive">
       <tuv xml:lang="en">
         <seg>Send/Receive</seg>
@@ -408,6 +420,12 @@
     <tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
       <tuv xml:lang="en">
         <seg>Open Additional Collections Folder</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Templates">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Templates</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Vernacular Collection Heading">
@@ -512,6 +530,12 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Confirm Delete</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ConfirmRecycleDialog._messageLabel">
+      <note>In your translation, put the {0} placeholder where you want the name of the thing to be deleted to appear.</note>
+      <tuv xml:lang="en">
+        <seg>{0} will be moved to the Recycle Bin.</seg>
       </tuv>
     </tu>
     <tu tuid="ConfirmRecycleDialog.cancelBtn">
@@ -683,6 +707,12 @@
         <seg>Basic Text &amp; Image</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Text &amp; Picture</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Credits Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -749,10 +779,28 @@
         <seg>Inside Back Cover</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Inside Front Cover</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Instructions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Instructions</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Just Text">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just Text</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Just a Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just a Picture</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Just an Image">
@@ -771,6 +819,18 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture &amp; Word</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture On Bottom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture in Middle</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
@@ -865,6 +925,37 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Collections</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.BigBook.*You may use this space for author/illustrator, or anything else.">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>*You may use this space for author/illustrator, or anything else.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.BigBook.Acknowledgments for translated version, in {lang}">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Acknowledgments for translated version, in {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.BigBook.Click to Edit Copyright &amp; License">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to Edit Copyright &amp; License</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.BigBook.Click to choose topic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to choose topic</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.BigBook.International Standard Book Number. Leave blank if you don't have one of these.">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
       </tuv>
     </tu>
     <tu tuid="FrontMatter.Factory.*You may use this space for author/illustrator, or anything else.">
@@ -1115,7 +1206,7 @@
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
-        <seg>A collection of shell or template books in one or more languages of wider communication. From this, you can make a BloomPack to give to others so that they can make vernacular books with it.</seg>
+        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
@@ -1244,6 +1335,11 @@
     <tu tuid="OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Publish.Upload.Acknowledgments">
+      <tuv xml:lang="en">
+        <seg>Acknowledgments</seg>
       </tuv>
     </tu>
     <tu tuid="Publish.Upload.AdditionalRequests">
@@ -1590,6 +1686,24 @@
         <seg>Send/Receive</seg>
       </tuv>
     </tu>
+    <tu tuid="Template.Basic Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Book</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Big Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Big Book</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Wall Calendar">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wall Calendar</seg>
+      </tuv>
+    </tu>
     <tu tuid="Topics.Agriculture">
       <note>shows in the topics chooser in the edit tab</note>
       <prop type="x-dynamic">true</prop>
@@ -1707,6 +1821,13 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Tradition</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Traditional Story">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Traditional Story</seg>
       </tuv>
     </tu>
     <tu tuid="WallCalendar.TitleOfSetupDialog">
