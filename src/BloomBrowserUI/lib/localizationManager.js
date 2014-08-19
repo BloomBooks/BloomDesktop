@@ -152,8 +152,8 @@ LocalizationManager.prototype.getVernacularLang = function() {
     return this.getText('vernacularLang');
 }
 
-LocalizationManager.prototype.getIso = function() {
-    return this.getText('iso');
+LocalizationManager.prototype.getLanguageName = function(iso) {
+    return this.getText(iso);
 }
 
 var localizationManager = new LocalizationManager();
