@@ -1667,6 +1667,11 @@
         <seg>Simple</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
+      <tuv xml:lang="en">
+        <seg>Open the PDF in the default system pdf viewer</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.PrintButton">
       <tuv xml:lang="en">
         <seg>&amp;Print...</seg>
