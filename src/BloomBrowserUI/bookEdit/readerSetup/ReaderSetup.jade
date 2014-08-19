@@ -11,16 +11,19 @@ html
 		script(src='/bloom/bookEdit/js/libsynphony/jquery.text-markup.js')
 		script(src='/bloom/bookEdit/js/libsynphony/synphony_lib.js')
 		script(src='/bloom/bookEdit/js/libsynphony/bloom_lib.js')
+		script(src='/bloom/lib/localizationManager.js')
+		script(src='/bloom/lib/jquery.i18n.custom.js')
 		script(type='text/javascript') $(function() {$("#dlstabs").tabs();});
 	body
 		#dlstabs.ui-dialog.ui-widget
-			#powered-by.smaller Powered by&nbsp;
-				a(href='http://call.canil.ca/') Synphony
-				, the Search Engine for Literacy.
+			#powered-by.smaller
+				span(data-i18n='ReaderSetup.PoweredBy') Powered by&nbsp;
+				a(href='http://call.canil.ca/' data-i18n='ReaderSetup.Synphony') Synphony
+				span(data-i18n='ReaderSetup.SearchEngine') , the Search Engine for Literacy.
 			ul
-				li: a(href='#dlstabs-1') Language
-				li: a(href='#dlstabs-2') Decodable Stages
-				li: a(href='#dlstabs-3') Reader Levels
+				li: a(href='#dlstabs-1' data-i18n='ReaderSetup.Language') Language
+				li: a(href='#dlstabs-2' data-i18n='ReaderSetup.DecodableStages') Decodable Stages
+				li: a(href='#dlstabs-3' data-i18n='ReaderSetup.ReaderLevels') Reader Levels
 			#dlstabs-1.reader-setup-tab
 				.floating(style='width: 200px')
 					label(for='dls_letters') Letters
@@ -44,17 +47,17 @@ html
 							br
 							span.smaller E.g. "ai oo sh ng th ing"
 				#word-lists-div.floating
-					label(for='dls_word_lists') Word Lists and Sample Texts
+					label(for='dls_word_lists' data-i18n='ReaderSetup.SampleTexts') Word Lists and Sample Texts
 					br
 					textarea#dls_word_lists(style='height: 55px;' readonly)
 					br
-					a#open-text-folder.smaller(href='') Open the sample texts folder for this language.
-					p.smaller About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.
-					p.smaller If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.
-					p.smaller Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.
-					p.smaller Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.
+					a#open-text-folder.smaller(href='' data-i18n='ReaderSetup.OpenSampleTexts') Open the sample texts folder for this language.
+					p.smaller(data-i18n='ReaderSetup.AboutSampleTexts1') About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.
+					p.smaller(data-i18n='ReaderSetup.AboutSampleTexts2') If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.
+					p.smaller(data-i18n='ReaderSetup.AboutSampleTexts2') Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.
+					p.smaller(data-i18n='ReaderSetup.AboutSampleTexts4') Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.
 				.floating
-					label(for='dls_more_words') More Words
+					label(for='dls_more_words' data-i18n='ReaderSetup.MoreWords') More Words
 					br
 					textarea#dls_more_words.book-font(style='height: 328px; width: 100px')
 			#dlstabs-2.reader-setup-tab
@@ -62,7 +65,7 @@ html
 					table
 						tr
 							td: img(src='/bloom/images/keys.png')
-							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Stages
+							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0' data-i18n='ReaderSetup.Stages') Stages
 				#stage-list-container.floating.tab-list-container
 					#stage-list.tab-list
 						.scrolling-table-container
@@ -71,35 +74,34 @@ html
 								table#stages-table(style='border-collapse: collapse')
 									thead
 										tr
-											th: div Stage
-											th(style='min-width: 35px'): div Letters
-											th(style='width: 100%'): div Sight Words
+											th: div(data-i18n='ReaderSetup.StageHeader') Stage
+											th: div(data-i18n='ReaderSetup.lettersHeader') Letters
+											th(style='width: 100%'): div(data-i18n='ReaderSetup.SightWordsHeader') Sight Words
 									tbody
 									tfoot
 										tr
-											td(colspan='3'): a#setup-add-stage(href='') Add Stage
-					div.smaller(style='float: left') Drag rows to reorder stages.
+											td(colspan='3'): a#setup-add-stage(href='' data-i18n='ReaderSetup.AddStage') Add Stage
+					div.smaller(style='float: left' data-i18n='ReaderSetup.ReorderStages') Drag rows to reorder stages.
 					div(style='float: right')
-						a.blue-link#setup-remove-stage.smaller(href='') Remove Stage&nbsp;
-							span#remove-stage-number 1
+						a.blue-link#setup-remove-stage.smaller(href='' data-i18n='ReaderSetup.RemoveStage') Remove Stage {0}
 				#stage-detail.floating.tab-detail
 					div(style='display: block; margin: 6px 10px')
-						span.rs-subheading(style='margin: auto 0') Stage&nbsp;
-							span#setup-stage-number.rs-subheading 1
+						span.rs-subheading(style='margin: auto 0' data-i18n='ReaderSetup.StageLabel') Stage&nbsp;
+						span#setup-stage-number.rs-subheading 1
 					#setup-stage-letters-and-words.sub-float
 						div(style='width: 100%')
-							label(for='setup-stage-sight-words') New Sight Words
+							label(for='setup-stage-sight-words' data-i18n='ReaderSetup.SightWordLabel') New Sight Words
 							div(style='float: right')
-								a#define-sight-words.smaller(href='') What are sight words?
+								a#define-sight-words.smaller(href='' data-i18n='ReaderSetup.SightWordHelp') What are sight words?
 							textarea#setup-stage-sight-words.book-font(style='height: 35px; width: 100%; box-sizing:border-box;')
 						br
-						div(style='display: block; margin-top: 12px;'): label Previous and New Letters
+						div(style='display: block; margin-top: 12px;'): label(data-i18n='ReaderSetup.SelectedLetters') Previous and New Letters
 						#setup-selected-letters.rs-letter-container
-						#click-letters.smaller(style='float: left') Click on letters to add them to this stage.
+						#click-letters.smaller(style='float: left' data-i18n='ReaderSetup.ClickLetter') Click on letters to add them to this stage.
 					#setup-stage-matching-words.sub-float
 						label(style='white-space: nowrap;')
 							span#setup-words-count 0
-							span &nbsp;matching words
+							span(data-i18n='ReaderSetup.MatchingWords') &nbsp;matching words
 						.rs-word-container
 							#rs-matching-words(style='margin-left: 8px')
 			#dlstabs-3.reader-setup-tab
@@ -107,7 +109,7 @@ html
 					table
 						tr
 							td: img(src='/bloom/images/steps.png', height='32')
-							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Reader Levels
+							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0' data-i18n='ReaderSetup.Levels') Reader Levels
 				#level-list-container.floating.tab-list-container
 					#level-list.tab-list
 						.scrolling-table-container
@@ -116,43 +118,42 @@ html
 								table#levels-table(style='border-collapse: collapse; width: 100%')
 									thead
 										tr
-											th(style='width: 17%'): div Level
-											th(style='width: 24%'): div Sentence
-											th(style='width: 17%'): div Page
-											th(style='width: 17%'): div Book
-											th(style='width: 25%'): div Unique
+											th(style='width: 17%'): div(data-i18n='ReaderSetup.LevelHeader') Level
+											th(style='width: 24%'): div(data-i18n='ReaderSetup.SentenceHeader') Sentence
+											th(style='width: 17%'): div(data-i18n='ReaderSetup.PageHeader') Page
+											th(style='width: 17%'): div(data-i18n='ReaderSetup.BookHeader') Book
+											th(style='width: 25%'): div(data-i18n='ReaderSetup.UniqueHeader') Unique
 											th(style='display: none')
 									tbody
 									tfoot
 										tr
-											td(colspan='5'): a#setup-add-level(href='') Add Level
-					div.smaller(style='float: left') Drag rows to reorder levels.
+											td(colspan='5'): a#setup-add-level(href='' data-i18n='ReaderSetup.AddLevel') Add Level
+					div.smaller(style='float: left' data-i18n='ReaderSetup.ReorderLevels') Drag rows to reorder levels.
 					div(style='float: right')
-						a.blue-link#setup-remove-level.smaller(href='') Remove Level&nbsp;
-							span#remove-level-number 1
+						a.blue-link#setup-remove-level.smaller(href='' data-i18n='ReaderSetup.RemoveLevel') Remove Level {0}
 				#level-detail.floating.tab-detail
 					div(style='display: block; margin: 0 10px 6px')
-						span.rs-subheading(style='margin: auto 0') Level&nbsp;
-							span#setup-level-number.rs-subheading 1
+						span.rs-subheading(style='margin: auto 0' data-i18n='ReaderSetup.LevelLabel') Level&nbsp;
+						span#setup-level-number.rs-subheading 1
 					table
 						tr
 							td: input#use-words-per-sentence.level-checkbox(type='checkbox')
-							td(style='padding-left: 0'): label(for='use-words-per-sentence') Maximum Words in each Sentence
+							td(style='padding-left: 0'): label(for='use-words-per-sentence' data-i18n='ReaderSetup.SentenceMaxWords') Maximum Words in each Sentence
 							td: input#max-words-per-sentence.level-textbox(type='text')
 						tr
 							td: input#use-words-per-page.level-checkbox(type='checkbox')
-							td: label(for='use-words-per-page') Maximum Words on each Page
+							td: label(for='use-words-per-page' data-i18n='ReaderSetup.PageMaxWords') Maximum Words on each Page
 							td: input#max-words-per-page.level-textbox(type='text')
 						tr
 							td: input#use-words-per-book.level-checkbox(type='checkbox')
-							td: label(for='use-words-per-book') Maximum Words per Book
+							td: label(for='use-words-per-book' data-i18n='ReaderSetup.BookMaxWords') Maximum Words per Book
 							td: input#max-words-per-book.level-textbox(type='text')
 						tr
 							td: input#use-unique-words-per-book.level-checkbox(type='checkbox')
-							td: label(for='use-unique-words-per-book') Maximum Unique Words per Book
+							td: label(for='use-unique-words-per-book' data-i18n='ReaderSetup.MaxUniqueWords') Maximum Unique Words per Book
 							td: input#max-unique-words-per-book.level-textbox(type='text')
 					#things-to-remember-container
-						label(for='things-to-remember') Things to remember for this level:
+						label(for='things-to-remember' data-i18n='ReaderSetup.ToRemember') Things to remember for this level:
 						ul#things-to-remember
 							li(contenteditable='true')
 		script(src='readerSetup.js')
