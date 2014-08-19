@@ -1816,18 +1816,11 @@
 		<seg>Spiritual</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Topics.Tradition">
+	<tu tuid="Topics.Tradition Story">
 	  <note>shows in the topics chooser in the edit tab</note>
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Tradition</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Topics.Traditional Story">
-	  <note>shows in the topics chooser in the edit tab</note>
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Traditional Story</seg>
+		<seg>Tradition Story</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="WallCalendar.TitleOfSetupDialog">

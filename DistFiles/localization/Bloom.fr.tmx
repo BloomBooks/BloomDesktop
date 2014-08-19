@@ -1953,14 +1953,14 @@
 		<seg>Spirituel</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Topics.Tradition">
+	<tu tuid="Topics.Traditional Story">
 	  <note>shows in the topics chooser in the edit tab</note>
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Tradition</seg>
+		<seg>Traditional Story</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Tradition</seg>
+		<seg>Histoire traditionnelle</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="WallCalendar.TitleOfSetupDialog">
