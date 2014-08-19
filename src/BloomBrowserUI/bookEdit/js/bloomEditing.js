@@ -352,7 +352,7 @@ function MakeSourceTextDivForGroup(group) {
         var shellEditingMode = false;
         items.each(function() {
             var iso = $(this).attr('lang');
-            var languageName = localizationManager.getIso();
+            var languageName = localizationManager.getLanguageName(iso);
             if (!languageName)
                 languageName = iso;
             var shouldShowOnPage = (iso === vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
@@ -1272,7 +1272,7 @@ jQuery(document).ready(function () {
 
     //copy source texts out to their own div, where we can make a bubble with tabs out of them
     //We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too, and then we couldn't translate the book.
-    $("*.bloom-translationGroup").each(function () {
+    $("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function () {
         if ($(this).find("textarea, div").length > 1) {
             MakeSourceTextDivForGroup(this);
         }
