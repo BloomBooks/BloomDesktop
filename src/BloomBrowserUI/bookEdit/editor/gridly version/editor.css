@@ -1,0 +1,53 @@
+*
+{
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+BODY
+{
+	font-size: 16px;
+	font-family: "Helvetica Neue", Arial, sans-serif;
+	color: #444;
+	margin: 30px 40px 30px 68px;
+}
+.gridly
+{
+	position: relative;
+}
+.gridly DIV
+{
+	width: 140px;
+	height: 140px;
+	background-color: #D2E2DF;
+	border: 1px solid #000000;
+	opacity: 1;
+}
+.gridly DIV.dragging
+{
+	opacity: .8;
+}
+.gridly DIV
+{
+	/*[disabled]width:252px;*/
+	/*[disabled]height:101px;*/
+	/*[disabled]-webkit-transform:scale(0.1);*/
+	/*[disabled]-moz-transform:scale(0.1);*/
+	/*[disabled]-moz-transform-origin:0 0;*/
+	/*[disabled]-webkit-transform-origin:0 0;*/
+}
+.thumb
+{
+	width: 596px;
+	height: 822px;
+}
+.thumb
+{
+	/*[disabled]overflow:hidden;*/
+	/*[disabled]-webkit-transform:scale(0.1);*/
+	/*[disabled]-moz-transform:scale(0.1);*/
+	/*[disabled]-moz-transform-origin:0 0;*/
+	/*[disabled]-webkit-transform-origin:0 0;*/
+	/*[disabled]width:574px;*/
+	/*[disabled]height:818px;*/
+}
