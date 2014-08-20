@@ -107,7 +107,7 @@ namespace Bloom.Book
 			{
 				// Hard-coded localizations for 2.0
 				var key = "EditTab.ThumbnailCaptions." + element.InnerText;
-				AddTranslationToDictionary(d, key, element.InnerText);
+				AddTranslationToDictionary(dictionary, key, element.InnerText);
 
 				if (!element.HasAttribute("data-i18n"))
 					element.SetAttribute("data-i18n", key);
@@ -178,22 +178,37 @@ namespace Bloom.Book
 		/// <param name="d"></param>
 		private static void AddHtmlUiStrings(Dictionary<string, string> d)
 		{
+			//ATTENTION: Currently, the english here must exactly match whats in the html. See comment in AddTranslationToDictionary
+
 			AddTranslationToDictionary(d, "BookEditor.FontSizeTip", "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
-			AddTranslationToDictionary(d, "FrontMatter.Factory.Book title in {lang}", "Book title in {lang}");
-			AddTranslationToDictionary(d, "FrontMatter.Factory.Click to choose topic", "Click to choose topic");
-			AddTranslationToDictionary(d, "FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.", "International Standard Book Number. Leave blank if you don't have one of these.");
-			AddTranslationToDictionary(d, "FrontMatter.Factory.Acknowledgments for translated version, in {lang}", "Acknowledgments for translated version, in {lang}");
-			AddTranslationToDictionary(d, "FrontMatter.Factory.Use this to acknowledge any funding agencies.", "Use this to acknowledge any funding agencies.");
-			AddTranslationToDictionary(d, "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.", "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.");
-			AddTranslationToDictionary(d, "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.", "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.");
+			AddTranslationToDictionary(d, "BookEditor.FrontMatter.BookTitlePrompt", "Book title in {lang}");
+
+			AddTranslationToDictionary(d, "BookEditor.FrontMatter.TranslatedAcknowledgmentsPrompt", "Acknowledgments for translated version, in {lang}");
+			AddTranslationToDictionary(d, "BookEditor.FrontMatter.FundingAgenciesPrompt", "Use this to acknowledge any funding agencies.");
+
+			//everything from here down doesn't work yet, don't know why yet:
+			AddTranslationToDictionary(d, "BookEditor.FrontMatter.OriginalAcknowledgmentsPrompt",
+				"Original (or Shell) Acknowledgments in English");
+
+			AddTranslationToDictionary(d, "BookEditor.FrontMatter.OriginalContributorsPrompt",
+				"The contributions made by writers, illustrators, editors, etc., in English");
+			AddTranslationToDictionary(d, "BookEditor.FrontMatter.TopicPrompt", "Click to choose topic"); //doesn't work yet. https://jira.sil.org/browse/BL-189
+			AddTranslationToDictionary(d, "BookEditor.FrontMatter.ISBNPrompt", "International Standard Book Number. Leave blank if you don't have one of these.");
+			AddTranslationToDictionary(d, "BookEditor.BackMatter.InsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.");
+			AddTranslationToDictionary(d, "BookEditor.BackMatter.OutsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.");
 		}
 
-		private static void AddTranslationToDictionary(Dictionary<string, string> d, string key, string defaultText)  {
+		private static void AddTranslationToDictionary(Dictionary<string, string> dictionary, string key, string defaultText)  {
 
 			var translation = LocalizationManager.GetDynamicString("Bloom", key, defaultText);
-			if (!d.ContainsKey(key))
+
+			//We have to match on some key. Ideally, we'd match on something "key-ish", like BookEditor.FrontMatter.BookTitlePrompt
+			//But that would require changes to all the templates to have that key somehow, in adition to or in place of the current English
+			//So for now, we're just keeping the real key on the c#/tmx side of things, and letting the javascript work by matching our defaultText to the English text in the html
+			string keyUsedInTheJavascriptDictionary = defaultText;
+			if (!dictionary.ContainsKey(keyUsedInTheJavascriptDictionary))
 			{
-				d.Add(key, translation);
+				dictionary.Add(keyUsedInTheJavascriptDictionary, translation);
 			}
 		}
 
