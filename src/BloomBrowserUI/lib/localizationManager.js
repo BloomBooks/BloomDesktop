@@ -81,7 +81,9 @@ LocalizationManager.prototype.getText = function (stringId, englishText) {
 
     // get the translation
     var text = this.dictionary[stringId];
-
+    if (!text) {
+        text = this.dictionary[stringId.replace('&','&amp;')];
+    }
     // use default if necessary
     if (!text) text = englishText;
 
