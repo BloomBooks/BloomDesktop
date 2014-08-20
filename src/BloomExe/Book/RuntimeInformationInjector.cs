@@ -136,6 +136,11 @@ namespace Bloom.Book
 
         private static void AddLocalizedHintContentsToDictionary(HtmlDom singlePageHtmlDom, Dictionary<string, string> dictionary, CollectionSettings collectionSettings)
         {
+			/*  Disabling this, generic data-hint localization at the moment, as it is interfering with the primary factory-supplied ones.
+			 * when we bring it back, lets think of ways to get nice ids in there that don't rely on the english. E.g., we could do
+			 * something like this: data-hint="[ColorBook.ColorPrompt]What color do you want?" and then we could take that id and prepend something
+			 * like "BookEdit.MiscBooks." so we end up with BookEdit.MiscBooks.ColorBook.ColorPrompt
+	        
 			var nameOfXMatterPack = singlePageHtmlDom.GetMetaValue("xMatter", collectionSettings.XMatterPackName);
 			
 
@@ -170,7 +175,8 @@ namespace Bloom.Book
                     dictionary.Add(key, translation);
                 }
             }
-        }
+			 */
+		}
 
         /// <summary>
         /// For Bloom 2.0 this list is hard-coded
@@ -185,8 +191,8 @@ namespace Bloom.Book
 
 			AddTranslationToDictionary(d, "BookEditor.FrontMatter.TranslatedAcknowledgmentsPrompt", "Acknowledgments for translated version, in {lang}");
 			AddTranslationToDictionary(d, "BookEditor.FrontMatter.FundingAgenciesPrompt", "Use this to acknowledge any funding agencies.");
+			AddTranslationToDictionary(d, "BookEditor.FrontMatter.CopyrightPrompt","Click to Edit Copyright & License");
 
-			//everything from here down doesn't work yet, don't know why yet:
 			AddTranslationToDictionary(d, "BookEditor.FrontMatter.OriginalAcknowledgmentsPrompt",
 				"Original (or Shell) Acknowledgments in {lang}");
 
