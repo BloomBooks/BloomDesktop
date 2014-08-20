@@ -5,11 +5,13 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Drawing;
+using System.Text;
 using System.Windows.Forms;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
+using IWshRuntimeLibrary;
 using L10NSharp;
 
 namespace Bloom.Edit
@@ -52,7 +54,7 @@ namespace Bloom.Edit
                 this._browser.Name = "_browser";
                 this._browser.Size = new System.Drawing.Size(150, 491);
                 this._browser.TabIndex = 0;
-                this.components.Add(_browser);
+                this.Controls.Add(_browser);
             }
         }
 
@@ -465,14 +467,48 @@ namespace Bloom.Edit
 
         }
 
+	    string ColorToHtmlCode(Color color)
+	    {
+			// thanks to http://stackoverflow.com/questions/982028/convert-net-color-objects-to-hex-codes-and-back
+		    return string.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B);
+	    }
+
         public void SetItems(IEnumerable<IPage> pages)
         {
- 
+	        var frame = BloomFileLocator.GetFileDistributedWithApplication("BloomBrowserUI", "bookEdit", "BookPagesThumbnailList", "BookPagesThumbnailList.htm");
+	        var backColor = ColorToHtmlCode(BackColor);
+	        var dom = new HtmlDom(System.IO.File.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor));
+	        var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
+	        if (firstRealPage != null)
+	        {
+		        dom = firstRealPage.Book.GetHtmlDomReadyToAddPages(dom);
+	        }
+			var pageDoc = dom.RawDom;
+	        var body = pageDoc.GetElementsByTagName("body")[0];
+			foreach (var page in pages)
+	        {
+		        var node = page.GetDivNodeForThisPage();
+		        if (node == null)
+			        continue; // or crash? How can this happen?
+		        var clone = pageDoc.ImportNode(node, true);
+		        body.AppendChild(clone);
+	        }
+			_browser.Navigate(pageDoc);
         }
 
         public void UpdateThumbnailAsync(IPage page)
         {
 
         }
+
+	    public NavigationIsolator Isolator
+	    {
+		    get { return _browser == null ? null : _browser.Isolator; }
+		    set
+		    {
+			    if (_browser != null)
+				    _browser.Isolator = value;
+		    }
+	    }
     }
 }

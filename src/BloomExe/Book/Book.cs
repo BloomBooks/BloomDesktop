@@ -281,6 +281,23 @@ namespace Bloom.Book
     		return dom;
     	}
 
+		public HtmlDom GetHtmlDomReadyToAddPages(HtmlDom inputDom)
+		{
+			var headNode = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head");
+			var inputHead = inputDom.SelectSingleNodeHonoringDefaultNS("/html/head");
+			var insertBefore = inputHead.FirstChild;  // Enhance: handle case where there is no existing child
+			foreach (XmlNode child in headNode.ChildNodes)
+			{
+				inputHead.InsertBefore(inputDom.RawDom.ImportNode(child, true), insertBefore);
+			}
+
+			// This version somehow leaves the head in the wrong (empty) namespace and nothing works.
+			//var importNode = inputDom.RawDom.ImportNode(headNode, true);
+			//foreach (XmlNode child in inputHead.ChildNodes)
+			//	importNode.AppendChild(child);
+			//inputHead.ParentNode.ReplaceChild(importNode, inputHead);
+			return _storage.MakeDomRelocatable(inputDom, _log);
+		}
 
         public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
         {
