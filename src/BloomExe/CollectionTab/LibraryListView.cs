@@ -508,6 +508,7 @@ namespace Bloom.CollectionTab
     		button.FlatStyle = FlatStyle.Flat;
             button.ForeColor = Palette.TextAgainstDarkBackground ;
     		button.FlatAppearance.BorderSize = 0;
+	        button.UseMnemonic = false; //otherwise, it tries to interpret '&' as a shortcut
     		button.ContextMenuStrip = _bookContextMenu;
 			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
