@@ -4,8 +4,11 @@
 //    $('ul#pageThumbnails').disableSelection();
 
     $('.gridly').gridly({
-        base:140, // px 
+        base:60, // px 
 //        gutter: 5, // px
-        columns: 3
+        columns: 4,
+	 draggable: {
+        selector: '.movable'
+      }
     });
 });
