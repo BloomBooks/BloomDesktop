@@ -2,7 +2,7 @@
 /*
 jQuery Gridly
 Copyright 2013 Kevin Sylvestre
-1.2.2
+1.2.4 with patches by JohnT (SIL)
 */
 
 
@@ -168,7 +168,8 @@ Copyright 2013 Kevin Sylvestre
       gutter: 20,
       columns: 12,
       draggable: {
-        zIndex: 800
+        zIndex: 800,
+        selector: '> *'
       }
     };
 
@@ -215,9 +216,19 @@ Copyright 2013 Kevin Sylvestre
     Gridly.prototype.ordinalize = function($elements) {
       var $element, i, _i, _ref, _results;
       _results = [];
+    var oldPos = [];
+    for (i = 0; i < $elements.length; i++) {
+        $element = $($elements[i]);
+      var pos = $element.data('position') || i;
+      oldPos.push(pos);
+    }
+    oldPos.sort(function (a, b) {
+        return a - b;
+      });
+
       for (i = _i = 0, _ref = $elements.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
         $element = $($elements[i]);
-        _results.push($element.data('position', i));
+        _results.push($element.data('position', oldPos[i]));
       }
       return _results;
     };
@@ -248,7 +259,7 @@ Copyright 2013 Kevin Sylvestre
 
     Gridly.prototype.draggable = function(method) {
       if (this._draggable == null) {
-        this._draggable = new Draggable(this.$el, '> *', {
+        this._draggable = new Draggable(this.$el, this.settings.draggable.selector, {
           began: this.draggingBegan,
           ended: this.draggingEnded,
           moved: this.draggingMoved
@@ -260,7 +271,7 @@ Copyright 2013 Kevin Sylvestre
     };
 
     Gridly.prototype.$sorted = function($elements) {
-      return ($elements || this.$('> *')).sort(function(a, b) {
+      return ($elements || this.$(this.settings.draggable.selector)).sort(function(a, b) {
         var $a, $b, aPosition, aPositionInt, bPosition, bPositionInt;
         $a = $(a);
         $b = $(b);
@@ -308,8 +319,8 @@ Copyright 2013 Kevin Sylvestre
 
     Gridly.prototype.draggingMoved = function(event) {
       var $dragging, $elements, element, i, index, original, positions, _i, _j, _len, _ref, _ref1, _ref2;
-      $dragging = $(event.target).closest(this.$('> *'));
-      $elements = this.$sorted();
+      $dragging = $(event.target).closest(this.$(this.settings.draggable.selector));
+      $elements = this.$sorted(this.$(this.settings.draggable.selector));
       positions = this.structure($elements).positions;
       original = index = $dragging.data('position');
       _ref = positions.filter(function(position) {
@@ -327,8 +338,18 @@ Copyright 2013 Kevin Sylvestre
         return position.$element;
       });
       $elements = (((_ref1 = this.settings.callbacks) != null ? _ref1.optimize : void 0) || this.optimize)($elements);
+    var oldPos = [];
+    for (i = 0; i < $elements.length; i++) {
+        var $element = $($elements[i]);
+      var pos = $element.data('position') || i;
+      oldPos.push(pos);
+    }
+    oldPos.sort(function (a, b) {
+        return a - b;
+      });
+
       for (i = _j = 0, _ref2 = $elements.length; 0 <= _ref2 ? _j < _ref2 : _j > _ref2; i = 0 <= _ref2 ? ++_j : --_j) {
-        this.reordinalize($($elements[i]), i);
+        this.reordinalize($($elements[i]), oldPos[i]);
       }
       return this.layout();
     };
@@ -361,7 +382,7 @@ Copyright 2013 Kevin Sylvestre
     Gridly.prototype.structure = function($elements) {
       var $element, columns, i, index, position, positions, _i, _ref;
       if ($elements == null) {
-        $elements = this.$sorted();
+        $elements = this.$sorted(this.$('> *'));
       }
       positions = [];
       columns = (function() {
@@ -391,7 +412,7 @@ Copyright 2013 Kevin Sylvestre
 
     Gridly.prototype.layout = function() {
       var $element, $elements, index, position, structure, _i, _ref, _ref1;
-      $elements = (((_ref = this.settings.callbacks) != null ? _ref.optimize : void 0) || this.optimize)(this.$sorted());
+      $elements = (((_ref = this.settings.callbacks) != null ? _ref.optimize : void 0) || this.optimize)(this.$sorted(this.$('> *')));
       structure = this.structure($elements);
       for (index = _i = 0, _ref1 = $elements.length; 0 <= _ref1 ? _i < _ref1 : _i > _ref1; index = 0 <= _ref1 ? ++_i : --_i) {
         $element = $($elements[index]);
