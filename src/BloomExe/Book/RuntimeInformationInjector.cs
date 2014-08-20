@@ -209,6 +209,7 @@ namespace Bloom.Book
             d.Add("bloomBrowserUIFolder", FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI").ToLocalhost());
 
             var topics = new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Traditional Story" };
+            Array.Sort(topics);
             var builder = new StringBuilder();
             builder.Append("[");
             TopicReversal = new Dictionary<string, string>();
