@@ -188,10 +188,10 @@ namespace Bloom.Book
 
 			//everything from here down doesn't work yet, don't know why yet:
 			AddTranslationToDictionary(d, "BookEditor.FrontMatter.OriginalAcknowledgmentsPrompt",
-				"Original (or Shell) Acknowledgments in English");
+				"Original (or Shell) Acknowledgments in {lang}");
 
 			AddTranslationToDictionary(d, "BookEditor.FrontMatter.OriginalContributorsPrompt",
-				"The contributions made by writers, illustrators, editors, etc., in English");
+				"The contributions made by writers, illustrators, editors, etc., in {lang}");
 			AddTranslationToDictionary(d, "BookEditor.FrontMatter.TopicPrompt", "Click to choose topic"); //doesn't work yet. https://jira.sil.org/browse/BL-189
 			AddTranslationToDictionary(d, "BookEditor.FrontMatter.ISBNPrompt", "International Standard Book Number. Leave blank if you don't have one of these.");
 			AddTranslationToDictionary(d, "BookEditor.BackMatter.InsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.");
