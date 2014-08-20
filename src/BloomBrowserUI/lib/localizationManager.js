@@ -116,14 +116,18 @@ LocalizationManager.prototype.setElementText = function (element) {
 
 /**
  * Hints sometimes have a {lang} tag in the text that needs to be substituted.
+ * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
  * @param {String} whatToSay
  * @param {element} targetElement
  * @returns {String}
  */
 LocalizationManager.prototype.getLocalizedHint = function (whatToSay, targetElement) {
-
-    // get the translation
-    var translated = this.getText(whatToSay);
+    var args = Array.prototype.slice.call(arguments);
+    args[1] = null; //we're passing null into the gettext englishText arg
+    // this awkward, fragile method call sends along the 2 fixed arguments
+    // to the method, plus any extra arguments we might have been called with,
+    // as parameters for a  c#-style template string
+    var translated = this.getText.apply(this, args);
 
     // stick in the language
     if (translated.indexOf('{lang}') != -1)
