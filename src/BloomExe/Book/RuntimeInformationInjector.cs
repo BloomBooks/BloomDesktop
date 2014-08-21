@@ -251,6 +251,7 @@ namespace Bloom.Book
 			//If you modify any of these, consider modifying/updating the localization files; the localization ids for these are just the current English (which is fagile)
 			//If you make changes/additions here, also synchronize with the bloomlibrary source in services.js
 			var topics = new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Traditional Story" };
+			Array.Sort(topics);
 			var builder = new StringBuilder();
 			builder.Append("[");
 			TopicReversal = new Dictionary<string, string>();
