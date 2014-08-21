@@ -1,6 +1,8 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
 
+declare var localizationManager: any;
+
 interface qtipInterface extends JQuery {
 	qtip(options: any): JQuery;
 }
@@ -201,7 +203,9 @@ class StyleEditor {
 		var pxSize = parseInt(sizeString); // strip off units and parse
 		var ptSize = this.ConvertPxToPt(pxSize);
 		var lang = box.attr('lang');
-		return "Changes the text size for all boxes carrying the style \'"+styleName+"\' and language \'"+lang+"\'.\nCurrent size is "+ptSize+"pt.";
+
+		return localizationManager.getLocalizedHint("Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.",
+			null, styleName, lang, ptSize);
 	}
 
 	AddQtipToElement(element: JQuery, toolTip: string) {
