@@ -1704,6 +1704,54 @@
 		<seg>Crop Marks</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="RegisterDialog.Email">
+	  <tuv xml:lang="en">
+		<seg>Email Address</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="RegisterDialog.FirstName">
+	  <tuv xml:lang="en">
+		<seg>First Name</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="RegisterDialog.Heading">
+	  <note>Place a {0} where the name of the program goes.</note>
+	  <tuv xml:lang="en">
+		<seg>Please take a minute to register {0}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="RegisterDialog.HowAreYouUsing">
+	  <note>Place a {0} where the name of the program goes.</note>
+	  <tuv xml:lang="en">
+		<seg>How are you using {0}?</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="RegisterDialog.IAmStuckLabel">
+	  <tuv xml:lang="en">
+		<seg>I'm stuck, I'll finish this later.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="RegisterDialog.Organization">
+	  <tuv xml:lang="en">
+		<seg>Organization</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="RegisterDialog.RegisterButton">
+	  <tuv xml:lang="en">
+		<seg>&amp;Register</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="RegisterDialog.Surname">
+	  <tuv xml:lang="en">
+		<seg>Surname</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="RegisterDialog.WindowTitle">
+	  <note>Place a {0} where the name of the program goes.</note>
+	  <tuv xml:lang="en">
+		<seg>Register {0}</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="SendReceiveutton">
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
