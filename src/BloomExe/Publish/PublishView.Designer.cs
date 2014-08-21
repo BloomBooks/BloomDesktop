@@ -390,7 +390,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._openPDF, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._openPDF, null);
-			this._L10NSharpExtender.SetLocalizingId(this._openPDF, ".openThePDFInTheDefaultSystemPdfViewerToolStripMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._openPDF, "PublishTab.OpenThePDFInTheSystemPDFViewer");
 			this._openPDF.Name = "_openPDF";
 			this._openPDF.Size = new System.Drawing.Size(433, 22);
 			this._openPDF.Text = "Open the PDF in the default system pdf viewer";
