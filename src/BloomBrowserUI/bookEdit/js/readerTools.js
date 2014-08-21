@@ -634,6 +634,10 @@ ReaderToolsModel.prototype.saveState = function() {
     var accordion = $('#accordion');
     if (typeof accordion.accordion !== 'function') return;
 
+    // this is also needed for unit testing
+    var active = accordion.accordion('option', 'active');
+    if (isNaN(active)) return;
+
     var state = new DRTState();
     state.active = accordion.accordion('option', 'active');
     state.stage = this.stageNumber;
