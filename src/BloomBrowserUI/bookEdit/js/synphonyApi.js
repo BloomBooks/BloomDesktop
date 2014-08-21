@@ -22,27 +22,28 @@ SynphonyApi.prototype.loadSettings = function(fileContent) {
     if (!fileContent) return;
 
     var data = jQuery.extend(new DLRSettings(), fileContent);
-    if (data.letters === '') return;
 
     this.source = fileContent;
 
-    lang_data.addGrapheme(data.letters.split(' '));
-    lang_data.addGrapheme(data.letterCombinations.split(' '));
-    lang_data.addWord(data.moreWords.split(' '));
+    if (data.letters !== '') {
+        lang_data.addGrapheme(data.letters.split(' '));
+        lang_data.addGrapheme(data.letterCombinations.split(' '));
+        lang_data.addWord(data.moreWords.split(' '));
+
+        var stgs = data.stages;
+        if (stgs) {
+            this.stages = [];
+            for (var j = 0; j < stgs.length; j++) {
+                this.AddStage(jQuery.extend(true, new Stage(j+1), stgs[j]));
+            }
+        }
+    }
 
     var lvls = data.levels;
     if (lvls) {
         this.levels = [];
         for (var i = 0; i < lvls.length; i++) {
             this.addLevel(jQuery.extend(true, new Level(i+1), lvls[i]));
-        }
-    }
-
-    var stgs = data.stages;
-    if (stgs) {
-        this.stages = [];
-        for (var j = 0; j < stgs.length; j++) {
-            this.AddStage(jQuery.extend(true, new Stage(j+1), stgs[j]));
         }
     }
 };

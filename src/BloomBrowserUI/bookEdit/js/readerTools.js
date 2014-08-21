@@ -335,7 +335,7 @@ ReaderToolsModel.prototype.getSightWords = function(stageNumber) {
 /**
  * Get the sight words for the current stage and all previous stages as an array of DataWord objects
  * Note: The list returned may contain sight words from previous stages that are now decodable.
- * @param {type} stageNumber
+ * @param {int} stageNumber
  * @returns {DataWord[]}
  */
 ReaderToolsModel.prototype.getSightWordsAsObjects = function(stageNumber) {
@@ -414,7 +414,9 @@ ReaderToolsModel.prototype.setMarkupType = function(markupType) {
     if (newMarkupType === null) return;
 
     if (newMarkupType !== this.currentMarkupType) {
-        $('.bloom-editable').removeSynphonyMarkup();
+        var page = parent.window.document.getElementById('page');
+        if (page)
+            $('.bloom-editable', page.contentWindow.document).removeSynphonyMarkup();
         this.currentMarkupType = newMarkupType;
         this.doMarkup();
     }
@@ -629,9 +631,11 @@ ReaderToolsModel.prototype.selectWordsFromSynphony = function(justWordName, desi
 ReaderToolsModel.prototype.saveState = function() {
 
     // this is needed for unit testing
-    if (typeof $('#accordion').accordion !== 'function') return;
+    var accordion = $('#accordion');
+    if (typeof accordion.accordion !== 'function') return;
 
     var state = new DRTState();
+    state.active = accordion.accordion('option', 'active');
     state.stage = this.stageNumber;
     state.level = this.levelNumber;
     state.markupType = this.currentMarkupType;
@@ -643,11 +647,13 @@ ReaderToolsModel.prototype.saveState = function() {
 ReaderToolsModel.prototype.restoreState = function() {
 
     // this is needed for unit testing
-    if (typeof $('#accordion').accordion !== 'function') return;
+    var accordion = $('#accordion');
+    if (typeof accordion.accordion !== 'function') return;
 
     var state = libsynphony.dbGet('drt_state');
     if (!state) state = new DRTState();
 
+    accordion.accordion('option', 'active', state.active);
     this.currentMarkupType = state.markupType;
     this.setStageNumber(state.stage);
     this.setLevelNumber(state.level);
