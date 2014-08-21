@@ -389,17 +389,17 @@ function MakeSourceTextDivForGroup(group) {
         var shellEditingMode = false;
         items.each(function() {
             var iso = $(this).attr('lang');
-            var languageName = localizationManager.getIso();
+            var languageName = localizationManager.getLanguageName(iso);
             if (!languageName)
                 languageName = iso;
             var shouldShowOnPage = (iso === vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
-            if(iso === GetSettings().defaultSourceLanguage) {
-                selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
-            }
             // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
             if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
                 $(list).append('<li id="'+iso+'"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
+                if (iso === GetSettings().defaultSourceLanguage) {
+                    selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
+                }
             }
         });
     });
@@ -694,11 +694,14 @@ jQuery.fn.IsOverflowing = function () {
 
 // Checks for overflow and adds/removes the proper class
 // N.B. This function is specifically designed to be called from within AddOverflowHandler()
-function MarkOverflowInternal(element) {
-    if (element.IsOverflowing())
-        element.addClass('overflow');
-    else
-        element.removeClass('overflow'); // If it's not here, this won't hurt anything.
+function MarkOverflowInternal() {
+    $("div.bloom-editable, textarea").each(function () {
+        var $this = $(this);
+        if ($this.IsOverflowing())
+            $this.addClass('overflow');
+        else
+            $this.removeClass('overflow'); // If it's not here, this won't hurt anything.
+    });
 }
 
 // When a div is overfull,
@@ -706,12 +709,11 @@ function MarkOverflowInternal(element) {
 function AddOverflowHandler() {
 	//NB: for some historical reason in March 2014 the calendar still uses textareas
     $("div.bloom-editable, textarea").on("keyup paste", function (e) {
-        var $this = $(this);
         // Give the browser time to get the pasted text into the DOM first, before testing for overflow
         // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
         //        At first I was concerned that this might slow typing, but it doesn't seem to.
         setTimeout(function () {
-            MarkOverflowInternal($this);
+            MarkOverflowInternal();
 
             // This will make sure that any language tags on this div stay in position with editing.
             // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
@@ -721,10 +723,7 @@ function AddOverflowHandler() {
     });
 
     // Test initial overflow state on page
-    $("div.bloom-editable, textarea").each(function () {
-        var $this = $(this);
-        MarkOverflowInternal($this);
-    });
+    MarkOverflowInternal();
 }
 
 // Add various editing key handlers
@@ -1375,8 +1374,7 @@ $(document).ready(function () {
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-    // and then we couldn't translate the book.
-    $("*.bloom-translationGroup").each(function () {
+    $("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function () {
         if ($(this).find("textarea, div").length > 1) {
             MakeSourceTextDivForGroup(this);
         }
