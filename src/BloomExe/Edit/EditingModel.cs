@@ -87,7 +87,6 @@ namespace Bloom.Edit
 				_view.UpdateTemplateList();
 			});
 			_contentLanguages = new List<ContentLanguage>();
-
 			_server.CurrentCollectionSettings = _collectionSettings;
         }
 
