@@ -61,7 +61,7 @@ LocalizationManager.prototype.loadStrings = function (keyValuePairs) {
 LocalizationManager.prototype.loadStringsFromObject = function (keyValuePairObject) {
     // TODO: Evaluate if this function is needed in Bloom 2.1
     this.dictionary = keyValuePairObject;
-}
+};
 
 /**
  * Gets translated text.
@@ -81,25 +81,9 @@ LocalizationManager.prototype.getText = function (stringId, englishText) {
 
     // get the translation
     var text = this.dictionary[stringId];
-
-    // In the XMatter, there are string keys that are not exact matches for what is in the *.tmx localization files. For
-    // example, the *.tmx files contain the key "FrontMatter.Factory.Book title in {lang}" but where it is used in the
-    // jade and html files, the key is simply "Book title in {lang}." If there is not an exact match found for stringId,
-    // this block looks for keys in the dictionary that follow the pattern "*.stringId".
-
-    //TODO: Evaluate if this should be moved to the server
     if (!text) {
-        var keys = Object.keys(this.dictionary);
-        var regex = new RegExp('\\.(' + stringId + ')$');
-
-        for (var i = 0; i < keys.length; i++) {
-            if (regex.test(keys[i])) {
-                text = this.dictionary[keys[i]];
-                break;
-            }
-        }
+        text = this.dictionary[stringId.replace('&','&amp;')];
     }
-
     // use default if necessary
     if (!text) text = englishText;
 
@@ -132,25 +116,29 @@ LocalizationManager.prototype.setElementText = function (element) {
 
 /**
  * Hints sometimes have a {lang} tag in the text that needs to be substituted.
+ * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
  * @param {String} whatToSay
  * @param {element} targetElement
  * @returns {String}
  */
-LocalizationManager.prototype.getLocalizedHint = function(whatToSay, targetElement) {
-
-    // get the translation
-    whatToSay = this.getText(whatToSay);
+LocalizationManager.prototype.getLocalizedHint = function (whatToSay, targetElement) {
+    var args = Array.prototype.slice.call(arguments);
+    args[1] = null; //we're passing null into the gettext englishText arg
+    // this awkward, fragile method call sends along the 2 fixed arguments
+    // to the method, plus any extra arguments we might have been called with,
+    // as parameters for a  c#-style template string
+    var translated = this.getText.apply(this, args);
 
     // stick in the language
-    if (whatToSay.indexOf('{lang}') != -1)
-        whatToSay = whatToSay.replace("{lang}", localizationManager.dictionary[$(targetElement).attr('lang')]);
+    if (translated.indexOf('{lang}') != -1)
+        translated = translated.replace("{lang}", localizationManager.dictionary[$(targetElement).attr('lang')]);
 
-    return whatToSay;
-}
+    return translated;
+};
 
-LocalizationManager.prototype.getVernacularLang = function() {
+LocalizationManager.prototype.getVernacularLang = function () {
     return this.getText('vernacularLang');
-}
+};
 
 LocalizationManager.prototype.getLanguageName = function(iso) {
     return this.getText(iso);

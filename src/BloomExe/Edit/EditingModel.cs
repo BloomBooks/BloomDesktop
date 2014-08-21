@@ -23,7 +23,8 @@ namespace Bloom.Edit
         private readonly PageSelection _pageSelection;
         private readonly LanguageSettings _languageSettings;
     	private readonly DeletePageCommand _deletePageCommand;
-    	private readonly CollectionSettings _collectionSettings;
+	    private readonly LocalizationChangedEvent _localizationChangedEvent;
+	    private readonly CollectionSettings _collectionSettings;
     	private readonly SendReceiver _sendReceiver;
     	private HtmlDom _domForCurrentPage;
         public bool Visible;
@@ -47,6 +48,7 @@ namespace Bloom.Edit
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 			LibraryClosing libraryClosingEvent,
+			LocalizationChangedEvent localizationChangedEvent,
             CollectionSettings collectionSettings,
 			SendReceiver sendReceiver)
         {
@@ -54,7 +56,7 @@ namespace Bloom.Edit
             _pageSelection = pageSelection;
             _languageSettings = languageSettings;
         	_deletePageCommand = deletePageCommand;
-        	_collectionSettings = collectionSettings;
+	        _collectionSettings = collectionSettings;
         	_sendReceiver = sendReceiver;
 
         	bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
@@ -68,7 +70,14 @@ namespace Bloom.Edit
             pageListChangedEvent.Subscribe(x => _view.UpdatePageList(false));
             relocatePageEvent.Subscribe(OnRelocatePage);
 			libraryClosingEvent.Subscribe(o=>SaveNow());
-        	_contentLanguages = new List<ContentLanguage>();
+			localizationChangedEvent.Subscribe(o =>
+			{
+				RefreshDisplayOfCurrentPage();
+				//_view.UpdateDisplay();
+				_view.UpdatePageList(false);
+				_view.UpdateTemplateList();
+			});
+			_contentLanguages = new List<ContentLanguage>();
         }
 
 
