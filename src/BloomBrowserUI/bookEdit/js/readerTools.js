@@ -414,7 +414,9 @@ ReaderToolsModel.prototype.setMarkupType = function(markupType) {
     if (newMarkupType === null) return;
 
     if (newMarkupType !== this.currentMarkupType) {
-        $('.bloom-editable').removeSynphonyMarkup();
+        var page = parent.window.document.getElementById('page');
+        if (page)
+            $('.bloom-editable', page.contentWindow.document).removeSynphonyMarkup();
         this.currentMarkupType = newMarkupType;
         this.doMarkup();
     }
