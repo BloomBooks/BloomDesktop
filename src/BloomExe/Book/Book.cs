@@ -132,23 +132,8 @@ namespace Bloom.Book
 					return "Title Missing";
 				}
 				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
-				t = RemoveXmlMarkup(t);
+				t = WebUtility.HtmlDecode(t);
 				return t;
-			}
-		}
-
-		public static string RemoveXmlMarkup(string input)
-		{
-			try
-			{
-				var doc = new XmlDocument();
-				doc.PreserveWhitespace = true;
-				doc.LoadXml("<div>" + input + "</div>");
-				return doc.DocumentElement.InnerText;
-			}
-			catch (XmlException)
-			{
-				return input; // If we can't parse for some reason, return the original string
 			}
 		}
 
