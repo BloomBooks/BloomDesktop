@@ -1,4 +1,4 @@
-/// <reference path="../../lib/jquery.d.ts" />
+﻿/// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
 
 var StyleEditor = (function () {
@@ -34,9 +34,11 @@ var StyleEditor = (function () {
 
     StyleEditor.prototype.MakeBigger = function (target) {
         this.ChangeSize(target, 2);
+        $("div.bloom-editable, textarea").qtip('reposition');
     };
     StyleEditor.prototype.MakeSmaller = function (target) {
         this.ChangeSize(target, -2);
+        $("div.bloom-editable, textarea").qtip('reposition');
     };
 
     StyleEditor.MigratePreStyleBook = function (target) {
@@ -191,7 +193,9 @@ var StyleEditor = (function () {
         var ptSize = this.ConvertPxToPt(pxSize);
         var lang = box.attr('lang');
 
-        return localizationManager.getLocalizedHint("Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.", null, styleName, lang, ptSize);
+        // localize
+        var tipText = "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.";
+        return localizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
     };
 
     StyleEditor.prototype.AddQtipToElement = function (element, toolTip) {
@@ -249,14 +253,14 @@ var StyleEditor = (function () {
             formatButton.trigger('click'); // This re-displays the qtip with the new value.
         });
 
-        StyleEditor.AttachLanguageTip($(targetBox), bottom);
+        editor.AttachLanguageTip($(targetBox), bottom);
     };
 
     //Attach and detach a language tip which is used when the applicable edittable div has focus.
     //This works around a couple FF bugs with the :after pseudoelement.  See BL-151.
-    StyleEditor.AttachLanguageTip = function (targetBox, bottom) {
+    StyleEditor.prototype.AttachLanguageTip = function (targetBox, bottom) {
         if ($(targetBox).attr('data-languagetipcontent')) {
-            $(targetBox).after('<div style="top: ' + (bottom-17) + 'px" class="languageTip bloom-ui">' + $(targetBox).attr('data-languagetipcontent') + '</div>');
+            $(targetBox).after('<div style="top: ' + (bottom - 17) + 'px" class="languageTip bloom-ui">' + $(targetBox).attr('data-languagetipcontent') + '</div>');
         }
     };
 
