@@ -12,9 +12,9 @@ using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
+using Bloom.Registration;
 using Bloom.WebLibraryIntegration;
 using Gecko;
-using PalasoUIWinforms.Registration;
 using DesktopAnalytics;
 using L10NSharp;
 using Palaso.IO;
@@ -651,7 +651,9 @@ namespace Bloom
 										   "Bloom", "Bloom", Application.ProductVersion,
 										   installedStringFileFolder,
 										   "SIL/Bloom",
-										   Resources.Bloom, "issues@bloomlibrary.org", "Bloom");
+										   Resources.Bloom, "issues@bloomlibrary.org",
+										   //the parameters that follow are namespace beginnings:
+										   "Bloom");
 
 				//We had a case where someone translated stuff into another language, and sent in their tmx. But their tmx had soaked up a bunch of string
 				//from their various templates, which were not Bloom standard templates. So then someone else sitting down to localize bloom would be

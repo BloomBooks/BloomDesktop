@@ -9,7 +9,7 @@ using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
 using Palaso.UI.WindowsForms.ReleaseNotes;
-using PalasoUIWinforms.Registration;
+using Bloom.Registration;
 using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;

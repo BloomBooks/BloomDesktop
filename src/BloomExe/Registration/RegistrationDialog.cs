@@ -6,7 +6,7 @@ using Bloom.Properties;
 using DesktopAnalytics;
 using L10NSharp;
 
-namespace PalasoUIWinforms.Registration
+namespace Bloom.Registration
 {
 	public partial class RegistrationDialog : Form
 	{
@@ -26,9 +26,10 @@ namespace PalasoUIWinforms.Registration
 
 			_cancelButton.Visible = _registrationIsOptional;
 
-			Text = LocalizationManager.GetString("RegisterDialog.WindowTitle", string.Format(Text,Application.ProductName), "Place a {0} where the name of the program goes.");
-			_headingLabel.Text = LocalizationManager.GetString("RegisterDialog.Heading", string.Format(_headingLabel.Text,Application.ProductName), "Place a {0} where the name of the program goes.");
-			_howUsingLabel.Text = LocalizationManager.GetString("RegisterDialog.HowAreYouUsing", string.Format(_howUsingLabel.Text, Application.ProductName), "Place a {0} where the name of the program goes.");
+			//Text = LocalizationManager.GetString("RegisterDialog.WindowTitle", "not used");
+			Text = string.Format(Text, Application.ProductName);
+			_headingLabel.Text = string.Format(_headingLabel.Text, Application.ProductName);
+			_howUsingLabel.Text = string.Format(_howUsingLabel.Text, Application.ProductName);
 		}
 
 		protected bool ReallyDesignMode
