@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.7.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">2.1.13.0</prop>
+  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.2.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">2.0.000.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -51,11 +51,6 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Open the Html used to make this PDF, in Browser</seg>
-      </tuv>
-    </tu>
-    <tu tuid=".openThePDFInTheDefaultSystemPdfViewerToolStripMenuItem">
-      <tuv xml:lang="en">
-        <seg>Open the PDF in the default system pdf viewer</seg>
       </tuv>
     </tu>
     <tu tuid=".showEventLogToolStripMenuItem">
@@ -527,7 +522,6 @@
       </tuv>
     </tu>
     <tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Confirm Delete</seg>
       </tuv>
@@ -545,7 +539,6 @@
       </tuv>
     </tu>
     <tu tuid="ConfirmRecycleDialog.deleteBtn">
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>&amp;Delete</seg>
       </tuv>
@@ -570,6 +563,18 @@
         <seg>There was a problem downloading your book.</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BackMatter.OutsideBackCoverTextPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
       <tuv xml:lang="en">
         <seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
@@ -581,11 +586,13 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.CantPasteImageLocked">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Sorry, this book is locked down so that images cannot be changed.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ChangeImage">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Change Image</seg>
       </tuv>
@@ -621,7 +628,62 @@
         <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.CopyrightPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to Edit Copyright &amp; License</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.FundingAgenciesPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Use this to acknowledge any funding agencies.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.ISBNPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Original (or Shell) Acknowledgments in {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalContributorsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.TopicPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to choose topic</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Acknowledgments for translated version, in {lang}</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.ImageChangeWarning">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
       </tuv>
@@ -779,18 +841,6 @@
         <seg>Inside Back Cover</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Inside Front Cover</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Instructions">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Instructions</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Just Text">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -925,37 +975,6 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Collections</seg>
-      </tuv>
-    </tu>
-    <tu tuid="FrontMatter.BigBook.*You may use this space for author/illustrator, or anything else.">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>*You may use this space for author/illustrator, or anything else.</seg>
-      </tuv>
-    </tu>
-    <tu tuid="FrontMatter.BigBook.Acknowledgments for translated version, in {lang}">
-      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Acknowledgments for translated version, in {lang}</seg>
-      </tuv>
-    </tu>
-    <tu tuid="FrontMatter.BigBook.Click to Edit Copyright &amp; License">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Click to Edit Copyright &amp; License</seg>
-      </tuv>
-    </tu>
-    <tu tuid="FrontMatter.BigBook.Click to choose topic">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Click to choose topic</seg>
-      </tuv>
-    </tu>
-    <tu tuid="FrontMatter.BigBook.International Standard Book Number. Leave blank if you don't have one of these.">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
       </tuv>
     </tu>
     <tu tuid="FrontMatter.Factory.*You may use this space for author/illustrator, or anything else.">
@@ -1206,7 +1225,7 @@
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
-        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
+        <seg>A collection of shell or template books in one or more languages of wider communication. From this, you can make a BloomPack to give to others so that they can make vernacular books with it.</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
@@ -1364,7 +1383,7 @@
     </tu>
     <tu tuid="Publish.Upload.Credits">
       <tuv xml:lang="en">
-        <seg>Credits</seg>
+        <seg>credits</seg>
       </tuv>
     </tu>
     <tu tuid="Publish.Upload.DownloadProblem">
@@ -1658,6 +1677,11 @@
       <note>Instead of making a booklet, just make normal pages</note>
       <tuv xml:lang="en">
         <seg>Simple</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
+      <tuv xml:lang="en">
+        <seg>Open the PDF in the default system pdf viewer</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PrintButton">
