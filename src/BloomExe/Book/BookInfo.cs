@@ -135,9 +135,25 @@ namespace Bloom.Book
 			get { return MetaData.Title; }
 			set
             {
-                var titleStr = Book.RemoveXmlMarkup(value);
+                var titleStr = RemoveXmlMarkup(value);
                 MetaData.Title = titleStr;
             }
+		}
+
+		//moved here from Book, where it was no longer used after 
+		public static string RemoveXmlMarkup(string input)
+		{
+			try
+			{
+				var doc = new XmlDocument();
+				doc.PreserveWhitespace = true;
+				doc.LoadXml("<div>" + input + "</div>");
+				return doc.DocumentElement.InnerText;
+			}
+			catch (XmlException)
+			{
+				return input; // If we can't parse for some reason, return the original string
+			}
 		}
 
         /// <summary>

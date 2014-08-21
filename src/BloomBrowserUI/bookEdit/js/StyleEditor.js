@@ -34,11 +34,9 @@ var StyleEditor = (function () {
 
     StyleEditor.prototype.MakeBigger = function (target) {
         this.ChangeSize(target, 2);
-        $("div.bloom-editable, textarea").qtip('reposition');
     };
     StyleEditor.prototype.MakeSmaller = function (target) {
         this.ChangeSize(target, -2);
-        $("div.bloom-editable, textarea").qtip('reposition');
     };
 
     StyleEditor.MigratePreStyleBook = function (target) {
@@ -193,9 +191,7 @@ var StyleEditor = (function () {
         var ptSize = this.ConvertPxToPt(pxSize);
         var lang = box.attr('lang');
 
-        // localize
-        var tipText = "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.";
-        return localizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
+        return localizationManager.getLocalizedHint("Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.", null, styleName, lang, ptSize);
     };
 
     StyleEditor.prototype.AddQtipToElement = function (element, toolTip) {
