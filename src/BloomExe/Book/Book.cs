@@ -125,6 +125,7 @@ namespace Bloom.Book
 					return "Title Missing";
 				}
 				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
+				t = WebUtility.HtmlDecode(t);
 				return t;
 			}
 		}
