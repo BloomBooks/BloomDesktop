@@ -8,7 +8,7 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
-using PalasoUIWinforms.Registration;
+using Bloom.Registration;
 using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
