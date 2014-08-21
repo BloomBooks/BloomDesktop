@@ -189,6 +189,8 @@ namespace Bloom.Book
 			AddTranslationToDictionary(d, "EditTab.FontSizeTip", "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
 			AddTranslationToDictionary(d, "EditTab.FrontMatter.BookTitlePrompt", "Book title in {lang}");
 
+			AddTranslationToDictionary(d, "EditTab.FrontMatter.OriginalContributorsPrompt",
+				"The contributions made by writers, illustrators, editors, etc., in {lang}");
 			AddTranslationToDictionary(d, "EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt", "Acknowledgments for translated version, in {lang}");
 			AddTranslationToDictionary(d, "EditTab.FrontMatter.FundingAgenciesPrompt", "Use this to acknowledge any funding agencies.");
 			AddTranslationToDictionary(d, "EditTab.FrontMatter.CopyrightPrompt","Click to Edit Copyright & License");
@@ -196,8 +198,6 @@ namespace Bloom.Book
 			AddTranslationToDictionary(d, "EditTab.FrontMatter.OriginalAcknowledgmentsPrompt",
 				"Original (or Shell) Acknowledgments in {lang}");
 
-			AddTranslationToDictionary(d, "EditTab.FrontMatter.OriginalContributorsPrompt",
-				"The contributions made by writers, illustrators, editors, etc., in {lang}");
 			AddTranslationToDictionary(d, "EditTab.FrontMatter.TopicPrompt", "Click to choose topic"); //doesn't work yet. https://jira.sil.org/browse/BL-189
 			AddTranslationToDictionary(d, "EditTab.FrontMatter.ISBNPrompt", "International Standard Book Number. Leave blank if you don't have one of these.");
 			AddTranslationToDictionary(d, "EditTab.BackMatter.InsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.");

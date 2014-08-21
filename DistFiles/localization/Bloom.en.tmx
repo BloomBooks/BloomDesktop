@@ -1770,6 +1770,12 @@
 		<seg>Big Book</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Template.Picture Dictionary">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Picture Dictionary</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="Template.Wall Calendar">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
