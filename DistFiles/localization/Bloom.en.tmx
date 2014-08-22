@@ -698,6 +698,11 @@
 		<seg>Pages</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="EditTab.PageSizeAndOrientation.Tooltip">
+	  <tuv xml:lang="en">
+		<seg>Choose a page size and orientation</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="EditTab.TemplatePagesList.Heading">
 	  <tuv xml:lang="en">
 		<seg>Template Pages</seg>
@@ -839,6 +844,18 @@
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Inside Back Cover</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Inside Front Cover</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Instructions">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Instructions</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Just Text">
@@ -1356,286 +1373,6 @@
 		<seg>Notice</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Publish.Upload.Acknowledgments">
-	  <tuv xml:lang="en">
-		<seg>Acknowledgments</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.AdditionalRequests">
-	  <tuv xml:lang="en">
-		<seg>AdditionalRequests: </seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.AllReserved">
-	  <tuv xml:lang="en">
-		<seg>All rights reserved (Contact the Copyright holder for any permissions</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.ConfirmReplaceExisting">
-	  <tuv xml:lang="en">
-		<seg>BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Copyright">
-	  <tuv xml:lang="en">
-		<seg>Copyright</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Credits">
-	  <tuv xml:lang="en">
-		<seg>credits</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.DownloadProblem">
-	  <tuv xml:lang="en">
-		<seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.ErrorUploading">
-	  <tuv xml:lang="en">
-		<seg>Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.FieldsNeedAttention">
-	  <tuv xml:lang="en">
-		<seg>One or more fields above need your attention before uploading</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.FinalUploadFailureNotice">
-	  <tuv xml:lang="en">
-		<seg>Sorry, "{0}" was not successfully uploaded</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Gaurantee">
-	  <tuv xml:lang="en">
-		<seg>By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.GenericUploadProblemNotice">
-	  <tuv xml:lang="en">
-		<seg>There was a problem uploading your book.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Languages">
-	  <tuv xml:lang="en">
-		<seg>Languages</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.License">
-	  <tuv xml:lang="en">
-		<seg>Usage/License</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.AccountAlreadyExists">
-	  <tuv xml:lang="en">
-		<seg>Account Already Exists</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.AlreadyHaveAccount">
-	  <tuv xml:lang="en">
-		<seg>We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.LoginConnectFailed">
-	  <tuv xml:lang="en">
-		<seg>Bloom could not connect to the server to verify your login. Please check your network connection</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.LoginFailed">
-	  <tuv xml:lang="en">
-		<seg>Login failed</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.LoginOrSignupConnectionFailed">
-	  <tuv xml:lang="en">
-		<seg>Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.MustAgreeTerms">
-	  <tuv xml:lang="en">
-		<seg>In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.Need Email">
-	  <tuv xml:lang="en">
-		<seg>Email Needed</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.NoRecordOfUser">
-	  <tuv xml:lang="en">
-		<seg>We don't have a user on record with that email. Would you like to sign up?</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.PasswordMismatch">
-	  <tuv xml:lang="en">
-		<seg>Password and user ID did not match</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.PleaseAgreeTerms">
-	  <tuv xml:lang="en">
-		<seg>Please agree to terms of use</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.PleaseProvideEmail">
-	  <tuv xml:lang="en">
-		<seg>Please enter a valid email address. We will send an email to this address so you can reset your password.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.ResetConnectFailed">
-	  <tuv xml:lang="en">
-		<seg>Bloom could not connect to the server to reset your password. Please check your network connection</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.ResetFailed">
-	  <tuv xml:lang="en">
-		<seg>Reset Password failed</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.ResetPassword">
-	  <tuv xml:lang="en">
-		<seg>Resetting Password</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.SendingResetPassword">
-	  <tuv xml:lang="en">
-		<seg>We are sending an email to {0} with instructions for how to reset your password</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.Signup">
-	  <tuv xml:lang="en">
-		<seg>Sign up for Bloom Library.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Login.UnknownUser">
-	  <tuv xml:lang="en">
-		<seg>Unknown user</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.LoginFailure">
-	  <tuv xml:lang="en">
-		<seg>Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Logout">
-	  <tuv xml:lang="en">
-		<seg>Log out of BloomLibrary.org</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.MakingPdf">
-	  <tuv xml:lang="en">
-		<seg>Making PDF Preview...</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.MakingThumbnail">
-	  <tuv xml:lang="en">
-		<seg>Making thumbnail image...</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.OldVersion">
-	  <tuv xml:lang="en">
-		<seg>Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.PleaseLogIn">
-	  <tuv xml:lang="en">
-		<seg>Please log in to BloomLibrary.org (or sign up) before uploading</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.PleaseSetThis">
-	  <tuv xml:lang="en">
-		<seg>Please set this from the edit tab</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Step1">
-	  <tuv xml:lang="en">
-		<seg>Step 1: Confirm Metadata</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Step2">
-	  <tuv xml:lang="en">
-		<seg>Step 2: Upload</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.SuggestAssignCC">
-	  <tuv xml:lang="en">
-		<seg>Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.SuggestChangeCC">
-	  <tuv xml:lang="en">
-		<seg>Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Summary">
-	  <tuv xml:lang="en">
-		<seg>Summary</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.TermsLink">
-	  <tuv xml:lang="en">
-		<seg>Show Terms of Use</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.Title">
-	  <tuv xml:lang="en">
-		<seg>Title</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.UploadButton">
-	  <tuv xml:lang="en">
-		<seg>Upload Book</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.UploadCompleteNotice">
-	  <tuv xml:lang="en">
-		<seg>Congratulations, "{0}" is now available on BloomLibrary.org ({1})</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.UploadNotAllowed">
-	  <tuv xml:lang="en">
-		<seg>Upload Not Allowed</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.UploadProblemNotice">
-	  <tuv xml:lang="en">
-		<seg>There was a problem uploading your book. You may need to restart Bloom or get technical help.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.UploadProgress">
-	  <tuv xml:lang="en">
-		<seg>Upload Progress</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.UploadSandbox">
-	  <tuv xml:lang="en">
-		<seg>Upload Book (to Sandbox)</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.UploadingBook">
-	  <tuv xml:lang="en">
-		<seg>Uploading book record</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.UploadingStatus">
-	  <tuv xml:lang="en">
-		<seg>Uploading {0}</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.ccLink">
-	  <tuv xml:lang="en">
-		<seg>CC-BY-NC</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.loginLink">
-	  <tuv xml:lang="en">
-		<seg>Log in to BloomLibrary.org</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Publish.Upload.signupLink">
-	  <tuv xml:lang="en">
-		<seg>Sign up for BloomLibrary.org</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
 	  <tuv xml:lang="en">
 		<seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
@@ -1656,14 +1393,32 @@
 		<seg>Booklet Insides</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="PublishTab.BodyOnlyRadio-tooltip">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="PublishTab.ButtonThatShowsUploadForm">
 	  <tuv xml:lang="en">
 		<seg>Upload</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="PublishTab.ButtonThatShowsUploadForm-tooltip">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Upload to BloomLibrary.org, where others can download and localize into their own language.</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="PublishTab.CoverOnlyRadio">
 	  <tuv xml:lang="en">
 		<seg>Booklet Cover</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.CoverOnlyRadio-tooltip">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Make a PDF of just the front and back (both sides), so you can  print on colored paper.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.OnPagePerPaperRadio">
@@ -1677,6 +1432,12 @@
 	  <note>Instead of making a booklet, just make normal pages</note>
 	  <tuv xml:lang="en">
 		<seg>Simple</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.OnePagePerPaperRadio-tooltip">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Make a PDF of every page of the book, one page per piece of paper.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
@@ -1702,6 +1463,286 @@
 	<tu tuid="PublishTab.ShowCropMarks">
 	  <tuv xml:lang="en">
 		<seg>Crop Marks</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Acknowledgments">
+	  <tuv xml:lang="en">
+		<seg>Acknowledgments</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.AdditionalRequests">
+	  <tuv xml:lang="en">
+		<seg>AdditionalRequests: </seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.AllReserved">
+	  <tuv xml:lang="en">
+		<seg>All rights reserved (Contact the Copyright holder for any permissions</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.ConfirmReplaceExisting">
+	  <tuv xml:lang="en">
+		<seg>BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Copyright">
+	  <tuv xml:lang="en">
+		<seg>Copyright</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Credits">
+	  <tuv xml:lang="en">
+		<seg>credits</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.DownloadProblem">
+	  <tuv xml:lang="en">
+		<seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.ErrorUploading">
+	  <tuv xml:lang="en">
+		<seg>Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.FieldsNeedAttention">
+	  <tuv xml:lang="en">
+		<seg>One or more fields above need your attention before uploading</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.FinalUploadFailureNotice">
+	  <tuv xml:lang="en">
+		<seg>Sorry, "{0}" was not successfully uploaded</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Gaurantee">
+	  <tuv xml:lang="en">
+		<seg>By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.GenericUploadProblemNotice">
+	  <tuv xml:lang="en">
+		<seg>There was a problem uploading your book.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Languages">
+	  <tuv xml:lang="en">
+		<seg>Languages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.License">
+	  <tuv xml:lang="en">
+		<seg>Usage/License</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.AccountAlreadyExists">
+	  <tuv xml:lang="en">
+		<seg>Account Already Exists</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.AlreadyHaveAccount">
+	  <tuv xml:lang="en">
+		<seg>We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.LoginConnectFailed">
+	  <tuv xml:lang="en">
+		<seg>Bloom could not connect to the server to verify your login. Please check your network connection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.LoginFailed">
+	  <tuv xml:lang="en">
+		<seg>Login failed</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
+	  <tuv xml:lang="en">
+		<seg>Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.MustAgreeTerms">
+	  <tuv xml:lang="en">
+		<seg>In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.Need Email">
+	  <tuv xml:lang="en">
+		<seg>Email Needed</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.NoRecordOfUser">
+	  <tuv xml:lang="en">
+		<seg>We don't have a user on record with that email. Would you like to sign up?</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.PasswordMismatch">
+	  <tuv xml:lang="en">
+		<seg>Password and user ID did not match</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.PleaseAgreeTerms">
+	  <tuv xml:lang="en">
+		<seg>Please agree to terms of use</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.PleaseProvideEmail">
+	  <tuv xml:lang="en">
+		<seg>Please enter a valid email address. We will send an email to this address so you can reset your password.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.ResetConnectFailed">
+	  <tuv xml:lang="en">
+		<seg>Bloom could not connect to the server to reset your password. Please check your network connection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.ResetFailed">
+	  <tuv xml:lang="en">
+		<seg>Reset Password failed</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.ResetPassword">
+	  <tuv xml:lang="en">
+		<seg>Resetting Password</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.SendingResetPassword">
+	  <tuv xml:lang="en">
+		<seg>We are sending an email to {0} with instructions for how to reset your password</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.Signup">
+	  <tuv xml:lang="en">
+		<seg>Sign up for Bloom Library.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Login.UnknownUser">
+	  <tuv xml:lang="en">
+		<seg>Unknown user</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.LoginFailure">
+	  <tuv xml:lang="en">
+		<seg>Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Logout">
+	  <tuv xml:lang="en">
+		<seg>Log out of BloomLibrary.org</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.MakingPdf">
+	  <tuv xml:lang="en">
+		<seg>Making PDF Preview...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.MakingThumbnail">
+	  <tuv xml:lang="en">
+		<seg>Making thumbnail image...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.OldVersion">
+	  <tuv xml:lang="en">
+		<seg>Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.PleaseLogIn">
+	  <tuv xml:lang="en">
+		<seg>Please log in to BloomLibrary.org (or sign up) before uploading</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.PleaseSetThis">
+	  <tuv xml:lang="en">
+		<seg>Please set this from the edit tab</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Step1">
+	  <tuv xml:lang="en">
+		<seg>Step 1: Confirm Metadata</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Step2">
+	  <tuv xml:lang="en">
+		<seg>Step 2: Upload</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.SuggestAssignCC">
+	  <tuv xml:lang="en">
+		<seg>Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.SuggestChangeCC">
+	  <tuv xml:lang="en">
+		<seg>Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Summary">
+	  <tuv xml:lang="en">
+		<seg>Summary</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.TermsLink">
+	  <tuv xml:lang="en">
+		<seg>Show Terms of Use</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.Title">
+	  <tuv xml:lang="en">
+		<seg>Title</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.UploadButton">
+	  <tuv xml:lang="en">
+		<seg>Upload Book</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.UploadCompleteNotice">
+	  <tuv xml:lang="en">
+		<seg>Congratulations, "{0}" is now available on BloomLibrary.org ({1})</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.UploadNotAllowed">
+	  <tuv xml:lang="en">
+		<seg>Upload Not Allowed</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.UploadProblemNotice">
+	  <tuv xml:lang="en">
+		<seg>There was a problem uploading your book. You may need to restart Bloom or get technical help.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.UploadProgress">
+	  <tuv xml:lang="en">
+		<seg>Upload Progress</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.UploadSandbox">
+	  <tuv xml:lang="en">
+		<seg>Upload Book (to Sandbox)</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.UploadingBook">
+	  <tuv xml:lang="en">
+		<seg>Uploading book record</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.UploadingStatus">
+	  <tuv xml:lang="en">
+		<seg>Uploading {0}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.ccLink">
+	  <tuv xml:lang="en">
+		<seg>CC-BY-NC</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.loginLink">
+	  <tuv xml:lang="en">
+		<seg>Log in to BloomLibrary.org</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.signupLink">
+	  <tuv xml:lang="en">
+		<seg>Sign up for BloomLibrary.org</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.Email">
