@@ -572,7 +572,7 @@ namespace Bloom.Edit
 				if (!_pages[i].CanRelocate)
 				{
 					var msg = LocalizationManager.GetString("PageList.CantMoveXMatter",
-						"That page can't be moved. Front matter and back matter must remain where they are");
+						"That change is not allowed. Front matter and back matter pages must remain where they are");
 					var caption = LocalizationManager.GetString("PageList.CantMoveXMatterCaption",
 						"Invalid Move");
 					MessageBox.Show(msg, caption);
@@ -604,6 +604,9 @@ namespace Bloom.Edit
 			{
 				_pages = newSeq;
 				UpdatePageNumbers();
+				// This is only needed if left and right pages are styled differently.
+				// Unfortunately gecko does not re-apply the styles when things are re-ordered!
+				UpdateItems(_pages);
 			}
 		}
 
