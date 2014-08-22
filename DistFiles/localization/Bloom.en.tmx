@@ -841,6 +841,18 @@
 		<seg>Inside Back Cover</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Inside Front Cover</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Instructions">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Instructions</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Just Text">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
