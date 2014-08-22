@@ -890,7 +890,7 @@ function FindOrCreateTopicDialogDiv() {
     if (!dialogContents.length) {
         dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
 
-        var topics = JSON.parse(GetSettings().topics);
+        var topics = JSON.parse(GetSettings().topics).sort();
         // var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment",
         // "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
 
