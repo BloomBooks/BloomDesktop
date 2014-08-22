@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Frames</title>
+		<link rel="stylesheet" href="lib/split-pane.css" />
+		<!-- The style sheet below is not part of the split-pane plugin. Feel free to use it, or style things your own way. -->
+		<!--<link rel="stylesheet" href="lib/pretty-split-pane.css" />-->
+		<!--<script src="../bower_components/jquery/dist/jquery.min.js"></script>-->
+		<script src="../../lib/jquery-1.10.1.js"></script>
+		<script src="lib/split-pane.js"></script>
+
+		<style type="text/css">
+
+			html, body {
+				height: 100%;
+				min-height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+
+			.split-pane-frame {
+				box-sizing: border-box;
+				width: 100%;
+				height: 100%;
+				padding: 5px;
+				background: silver;
+			}
+
+			.split-pane.vertical-percent > .split-pane-component.position-left {
+				right: 50%;
+				margin-right: 10px;
+			}
+
+			.split-pane.vertical-percent > .split-pane-component.position-right {
+				width: 50%;
+			}
+
+			.split-pane.horizontal-percent > .split-pane-component.position-top {
+				bottom: 50%;
+				margin-bottom: 10px;
+			}
+
+			.split-pane.horizontal-percent > .split-pane-component.position-bottom {
+				height: 50%;
+			}
+
+			.split-pane.vertical-percent > .vertical-divider {
+				right: 50%;
+				width: 10px;
+				cursor: col-resize;
+				/*background-color: black;*/
+			}
+
+			.split-pane.horizontal-percent > .horizontal-divider {
+				bottom: 50%;
+				height: 10px;
+				cursor: row-resize;
+				/*background-color: black;*/
+			}
+
+			.button, .button:visited {
+				display: inline-block;
+				padding: 5px 10px 6px;
+				/*color: #fff;*/
+				text-decoration: none;
+				border-bottom: 1px solid rgba(0,0,0,0.25);
+				position: relative;
+				cursor: pointer
+			}
+
+			.buttons {
+				position: absolute;
+				bottom: 10px;
+				right: 10px;
+			}
+
+			.blue.button, .blue.button:visited { background-color: #2981e4; }
+
+			.green.button, .green.button:visited { background-color: green; }
+
+			.split-pane-component-inner {
+				width: 100%;
+				height: 100%;
+				padding: 10px;
+				border: thin solid green;
+				box-sizing: border-box;
+			}
+
+		</style>
+
+		<script>
+			$(function() {
+				$('div.split-pane').splitPane();
+			});
+			$(window).load(function() {
+				$('.split-pane-component-inner').append(getButtons());
+			});
+
+			function splitClickHandler() {
+				var myInner = $(this).closest('.split-pane-component-inner');
+				var newSplitPane;
+				if ($(this).hasClass('vertical')) {
+					myInner.wrap(getSplitPaneHtml('vertical'));
+					myInner.wrap(getSplitPaneComponentHtml('left'));
+					newSplitPane = myInner.closest('.split-pane');
+					newSplitPane.append(getSplitPaneDividerHtml('vertical'));
+					newSplitPane.append(getSplitPaneComponentWithNewContent('right'));
+					newSplitPane.find('.split-pane-component.position-right .button').bind('click', splitClickHandler);
+				} else {
+					myInner.wrap(getSplitPaneHtml('horizontal'));
+					myInner.wrap(getSplitPaneComponentHtml('top'));
+					newSplitPane = myInner.closest('.split-pane');
+					newSplitPane.append(getSplitPaneDividerHtml('horizontal'));
+					newSplitPane.append(getSplitPaneComponentWithNewContent('bottom'));
+					newSplitPane.find('.split-pane-component.position-bottom .button').bind('click', splitClickHandler);
+				}
+				newSplitPane.splitPane();
+			}
+
+			function closeClickHandler() {
+				myComponent = $(this).closest('.split-pane-component');
+				sibling = myComponent.siblings('.split-pane-component').first();
+				var toReplace = myComponent.parent().parent();
+				var positionClass = toReplace.attr('class');
+				myComponent.parent().parent().replaceWith(sibling);
+				sibling.removeClass(function (index, css) {
+					return (css.match (/(^|\s)position-\S+/g) || []).join(' ');
+				});
+				sibling.addClass(positionClass);
+			}
+
+			function getSplitPaneHtml(vh) {
+				return $('<div class="split-pane ' + vh + '-percent"></div>');
+			}
+			function getSplitPaneComponentHtml(leftRight) {
+				return $('<div class="split-pane-component position-' + leftRight + '"></div>');
+			}
+			function getSplitPaneDividerHtml(vh) {
+				return $('<div class="split-pane-divider ' + vh + '-divider"></div>');
+			}
+			function getSplitPaneComponentWithNewContent(rightBottom) {
+				spc = $('<div class="split-pane-component position-' + rightBottom + '">');
+				spc.append(getSplitPaneComponentInner());
+				return spc;
+			}
+			function getSplitPaneComponentInner() {
+				spci = $('<div class="split-pane-component-inner">');
+				spci.append(getButtons());
+				return spci;
+			}
+
+			function getButtons() {
+				var buttons = $('<div class="buttons"></div>');
+				buttons.append(getVSplitButton())
+				.append(getHSplitButton())
+				.append(getCloseButton());
+				return buttons;
+			}
+			function getVSplitButton() {
+				vSplitButton = $('<a class="button blue splitter vertical">split vertically</a>');
+				vSplitButton.click(splitClickHandler);
+				return vSplitButton;
+			}
+			function getHSplitButton() {
+				hSplitButton = $('<a class="button blue splitter horizontal">split horizontally</a>');
+				hSplitButton.click(splitClickHandler);
+				return hSplitButton;
+			}
+			function getCloseButton() {
+				var closeButton = $('<a class="button blue close">x</a>');
+				closeButton.click(closeClickHandler);
+				return closeButton;
+			}
+			//            function addCloseButton(element) {
+			//                var closeButton = $('<a class="button blue close">x</a>');
+			//                closeButton.click(closeClickHandler);
+			//                element.append(closeButton);
+			//            }
+		</script>
+	</head>
+	<body>
+	<div class="split-pane-frame">
+		<div class="split-pane vertical-percent">
+			<div class="split-pane-component position-left">
+				<div class="split-pane-component-inner">
+					<!--<div class="buttons">-->
+						<!--<a class="button blue splitter vertical">split vertically</a>-->
+						<!--<a class="button blue splitter horizontal">split horizontally</a>-->
+					<!--</div>-->
+				</div>
+			</div>
+			<div class="split-pane-divider vertical-divider"></div>
+			<div class="split-pane-component position-right">
+				<div class="split-pane-component-inner">
+					<!--<a class="button blue splitter vertical">split vertically</a>-->
+					<!--<a class="button blue splitter horizontal">split horizontally</a>-->
+				</div>
+			</div>
+		</div>
+	</div>
+	</body>
+</html>
