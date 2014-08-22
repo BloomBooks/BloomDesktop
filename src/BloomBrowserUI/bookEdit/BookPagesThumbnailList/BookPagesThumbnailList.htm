@@ -3,18 +3,73 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="bookEdit/editor/gridly version/jquery.gridly.css" />
+    <script src="http://localhost:8089/bloom/bookEdit/editor/gridly version/jquery-2.0.3.js" type="text/javascript"></script>
+    <script type="text/javascript" src="http://localhost:8089/bloom/bookEdit/editor/gridly version/jquery.gridly.js"></script>
+    <script>
+        var reorder = function (elements) {
+            var ids = "";
+            elements.each(function () {
+                var id = $(this).attr('id');
+                if (id)
+                    ids += "," + id;
+            });
+            fireCSharpEvent("gridReordered", ids);
+        };
+        jQuery(document).ready(function () {
+            $('.gridly').gridly({
+                base: 45, // px
+                gutter: 10, // px
+                columns: 4,
+                callbacks: {
+                    reordered: reorder
+                }
+            });
+            jQuery('.gridItem').click(function () {
+                fireCSharpEvent("gridClick", $(this).attr('id'));
+            });
+        });
+        function fireCSharpEvent(eventName, eventData) {
+
+            var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
+            document.dispatchEvent(event);
+        }
+    </script>
     <title></title>
     <style>
         body {
             background-color: DarkGray;
         }
         div.bloom-page {
-            transform: scale(0.5);
-            height: 200px;
-            background-color: white;
+            transform: scale(0.1) translate(-450%,-450%); /* bizarrely, the translate moves it to the top left instead of the middle of the original space*/
+            position: absolute;
+            left:20px;
+        }
+        .gridly {
+            position: relative;
+        }
+        div.gridItem {
+            width: 100px;
+            height: 120px;
+            opacity: 1;
+            overflow:hidden;
+        }
+        .div.gridItem.dragging {
+            opacity: .8;
+        }
+        div.gridTitle {
+            position: absolute;
+            top: 80px;
+            color: white;
+            overflow: hidden;
+            text-align:center;
+            width: 100px;
         }
     </style>
 </head>
 <body id="body">
+    <div class="gridly">
+        <div class="gridItem" id="placeholder"></div>
+    </div>
 </body>
 </html>
