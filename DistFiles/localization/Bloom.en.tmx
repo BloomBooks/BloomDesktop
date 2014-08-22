@@ -698,6 +698,11 @@
         <seg>Pages</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.PageSizeAndOrientation.Tooltip">
+      <tuv xml:lang="en">
+        <seg>Choose a page size and orientation</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.TemplatePagesList.Heading">
       <tuv xml:lang="en">
         <seg>Template Pages</seg>
