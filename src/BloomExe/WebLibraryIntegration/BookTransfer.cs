@@ -132,7 +132,7 @@ namespace Bloom.WebLibraryIntegration
 	        {
 	            ShellWindow.Invoke((Action) (() =>
 	                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-	                    LocalizationManager.GetString("Publish.Upload.DownloadProblem",
+	                    LocalizationManager.GetString("PublishTab.Upload.DownloadProblem",
 	                        "There was a problem downloading your book. You may need to restart Bloom or get technical help."))));
 	            Analytics.Track("DownloadedBook-Failure",
                     new Dictionary<string, string>() { { "url", url }, { "title", title } });
@@ -152,7 +152,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private static void DisplayNetworkUploadProblem(Exception e, IProgress progress)
 		{
-            progress.WriteError(LocalizationManager.GetString("Publish.Upload.GenericUploadProblemNotice",
+            progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.GenericUploadProblemNotice",
 	            "There was a problem uploading your book."));
             progress.WriteError(e.Message.Replace("{", "{{").Replace("}", "}}")); 
             progress.WriteVerbose(e.StackTrace);
@@ -328,7 +328,7 @@ namespace Bloom.WebLibraryIntegration
 				_s3Client.UploadBook(s3BookId, bookFolder, progress);
 				metadata.BaseUrl = _s3Client.BaseUrl;
 				metadata.BookOrder = _s3Client.BookOrderUrl;
-				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingBook", "Uploading book record"));
+				progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBook", "Uploading book record"));
 				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
 				var response = _parseClient.SetBookRecord(metadata.Json);
 			    parseId = response.ResponseUri.LocalPath;
@@ -361,7 +361,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			catch (Exception e)
 			{			    
-			    progress.WriteError(LocalizationManager.GetString("Publish.Upload.UploadProblemNotice",
+			    progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.UploadProblemNotice",
                                 "There was a problem uploading your book. You may need to restart Bloom or get technical help."));
                 progress.WriteError(e.Message.Replace("{","{{").Replace("}","}}")); 
                 progress.WriteVerbose(e.StackTrace);
@@ -546,7 +546,7 @@ namespace Bloom.WebLibraryIntegration
 			    }
 			    var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _htmlThumbnailer);
 			    publishModel.PageLayout = book.GetLayout();
-			    var view = new PublishView(publishModel, new SelectedTabChangedEvent(), this, null);
+			    var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null);
 			    string dummy;
 			    FullUpload(book, dlg.Progress, view, out dummy, dlg);
 			    return;
@@ -573,7 +573,7 @@ namespace Bloom.WebLibraryIntegration
             book.BookInfo.LanguageTableReferences = _parseClient.GetLanguagePointers(book.CollectionSettings.MakeLanguageUploadData(book.AllLanguages.ToArray()));
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
-			progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingThumbnail", "Making thumbnail image..."));
+			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
             MakeThumbnail(book, 70, invokeTarget);
             MakeThumbnail(book, 256, invokeTarget);
             //the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
@@ -583,7 +583,7 @@ namespace Bloom.WebLibraryIntegration
 			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
 			if (!FileUtils.IsFileLocked(uploadPdfPath))
 			{
-				progressBox.WriteStatus(LocalizationManager.GetString("Publish.Upload.MakingPdf", "Making PDF Preview..."));
+				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
 				publishView.MakePublishPreview();
 				if (File.Exists(publishView.PdfPreviewPath))
 				{
