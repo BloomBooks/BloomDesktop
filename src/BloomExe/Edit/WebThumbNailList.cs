@@ -484,12 +484,30 @@ namespace Bloom.Edit
 			_pages = UpdateItems(pages);
 		}
 
+		bool RoomForTwoColumns
+		{
+			get { return Width > 199; }
+		}
+
+		protected override void OnSizeChanged(EventArgs e)
+		{
+			base.OnSizeChanged(e);
+			if (_pages != null && _pages.Count > 0 && RoomForTwoColumns != _usingTwoColumns)
+				UpdateItems(_pages);
+		}
+
+		private bool _usingTwoColumns;
+
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
 		{
 			var result = new List<IPage>();
 			var frame = BloomFileLocator.GetFileDistributedWithApplication("BloomBrowserUI", "bookEdit", "BookPagesThumbnailList", "BookPagesThumbnailList.htm");
 			var backColor = ColorToHtmlCode(BackColor);
-			var dom = new HtmlDom(System.IO.File.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor));
+			var htmlText = System.IO.File.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
+			_usingTwoColumns = RoomForTwoColumns;
+			if (!RoomForTwoColumns)
+				htmlText = htmlText.Replace("columns: 4", "columns: 2").Replace("<div class=\"gridItem placeholder\" id=\"placeholder\"></div>", "");
+			var dom = new HtmlDom(htmlText);
 			var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
 			if (firstRealPage == null)
 			{
