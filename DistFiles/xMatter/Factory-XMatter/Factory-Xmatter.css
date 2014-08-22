@@ -260,7 +260,7 @@ DIV.coverBottomBookTopic
 	height: 58px;
 	text-align: right;
 }
-DIV.coverBottomBookTopic DIV
+DIV.coverBottomBookTopic .bloom-contentNational1
 {
 	/*[disabled]overflow:hidden;*/
 	text-align: right;
