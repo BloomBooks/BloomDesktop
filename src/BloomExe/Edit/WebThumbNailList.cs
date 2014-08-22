@@ -5,12 +5,14 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Drawing;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
+using Gecko;
 using IWshRuntimeLibrary;
 using L10NSharp;
 
@@ -54,6 +56,8 @@ namespace Bloom.Edit
 				this._browser.Name = "_browser";
 				this._browser.Size = new System.Drawing.Size(150, 491);
 				this._browser.TabIndex = 0;
+				_browser.ScaleToFullWidthOfPage = false;
+				_browser.VerticalScroll.Visible = true;
 				this.Controls.Add(_browser);
 			}
 		}
@@ -98,7 +102,7 @@ namespace Bloom.Edit
 			}
 		}
 
-	   private void InvokePageSelectedChanged(Page page)
+	   private void InvokePageSelectedChanged(IPage page)
 		{
 			EventHandler handler = PageSelectedChanged;
 			if (handler != null && /*REVIEW */ page!=null )
@@ -472,33 +476,187 @@ namespace Bloom.Edit
 			// thanks to http://stackoverflow.com/questions/982028/convert-net-color-objects-to-hex-codes-and-back
 			return string.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B);
 		}
+		Dictionary<string, IPage> _pageMap = new Dictionary<string, IPage>();
+		private List<IPage> _pages;
 
 		public void SetItems(IEnumerable<IPage> pages)
 		{
+			_pages = UpdateItems(pages);
+		}
+
+		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
+		{
+			var result = new List<IPage>();
 			var frame = BloomFileLocator.GetFileDistributedWithApplication("BloomBrowserUI", "bookEdit", "BookPagesThumbnailList", "BookPagesThumbnailList.htm");
 			var backColor = ColorToHtmlCode(BackColor);
 			var dom = new HtmlDom(System.IO.File.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor));
 			var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
-			if (firstRealPage != null)
+			if (firstRealPage == null)
 			{
-				dom = firstRealPage.Book.GetHtmlDomReadyToAddPages(dom);
+				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
+				return result;
 			}
+			dom = firstRealPage.Book.GetHtmlDomReadyToAddPages(dom);
 			var pageDoc = dom.RawDom;
 			var body = pageDoc.GetElementsByTagName("body")[0];
+			var gridlyParent = body.FirstChild; // too simplistic?
+			int pageNumber = 0;
+			_pageMap.Clear();
 			foreach (var page in pages)
 			{
 				var node = page.GetDivNodeForThisPage();
 				if (node == null)
 					continue; // or crash? How can this happen?
+				result.Add(page);
 				var clone = pageDoc.ImportNode(node, true);
-				body.AppendChild(clone);
+				var gridDiv = pageDoc.CreateElement("div");
+				gridDiv.SetAttribute("class", "gridItem");
+				var gridId = GridId(page);
+				gridDiv.SetAttribute("id", gridId);
+				_pageMap[gridId] = page;
+				gridlyParent.AppendChild(gridDiv);
+				gridDiv.AppendChild(clone);
+				var titleDiv = pageDoc.CreateElement("div");
+				gridDiv.AppendChild(titleDiv);
+				titleDiv.SetAttribute("class", "gridTitle");
+				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
+				titleDiv.InnerText = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + captionOrPageNumber, captionOrPageNumber);
 			}
-			_browser.Navigate(pageDoc);
+			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
+			_browser.Navigate(pageDoc, null);
+			return result;
+		}
+
+		private static string GridId(IPage page)
+		{
+			return "page-" + page.Id;
+		}
+
+		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
+		{
+			_browser.AddMessageEventListener("gridClick", ItemClick);
+			_browser.AddMessageEventListener("gridReordered", GridReordered);
+		}
+
+		private void ItemClick(string s)
+		{
+			IPage page;
+			if (_pageMap.TryGetValue(s, out page))
+				InvokePageSelectedChanged(page);
+		}
+
+		private void GridReordered(string s)
+		{
+			var newSeq = new List<IPage>();
+			var keys = s.Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries);
+			foreach (var key in keys)
+			{
+				IPage page;
+				if (_pageMap.TryGetValue(key, out page))
+					newSeq.Add(page);
+			}
+			Debug.Assert(newSeq.Count == _pages.Count);
+			// Now, which one moved?
+			int firstDiff = 0;
+			while (firstDiff < _pages.Count && _pages[firstDiff] == newSeq[firstDiff])
+				firstDiff++;
+			int limDiff = _pages.Count;
+			while (limDiff > firstDiff && _pages[limDiff-1] == newSeq[limDiff-1])
+				limDiff--;
+			if (firstDiff == limDiff)
+				return; // spurious notification somehow? Nothing changed.
+			// We have the subsequence that altered.
+			// Is the change legal?
+			for (int i = firstDiff; i < limDiff; i++)
+			{
+				if (!_pages[i].CanRelocate)
+				{
+					var msg = LocalizationManager.GetString("PageList.CantMoveXMatter",
+						"That page can't be moved. Front matter and back matter must remain where they are");
+					var caption = LocalizationManager.GetString("PageList.CantMoveXMatterCaption",
+						"Invalid Move");
+					MessageBox.Show(msg, caption);
+					UpdateItems(_pages); // reset to old state
+					return;
+				}
+			}
+			// There are two possibilities: the user dragged the item that used to be at the start to the end,
+			// or the item that used to be the end to the start.
+			IPage movedPage;
+			int newPageIndex;
+			if (_pages[firstDiff] == newSeq[limDiff - 1])
+			{
+				// Move forward
+				movedPage = _pages[firstDiff];
+				newPageIndex = limDiff - 1;
+			}
+			else
+			{
+				Debug.Assert(_pages[limDiff - 1] == newSeq[firstDiff]); // moved last page forwards
+				movedPage = _pages[limDiff - 1];
+				newPageIndex = firstDiff;
+			}
+			var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
+			RelocatePageEvent.Raise(relocatePageInfo);
+			if (relocatePageInfo.Cancel)
+				UpdateItems(_pages);
+			else
+			{
+				_pages = newSeq;
+				UpdatePageNumbers();
+			}
+		}
+
+		private void UpdatePageNumbers()
+		{
+			int pageNumber = 0;
+			foreach (var page in _pages)
+			{
+				var node = page.GetDivNodeForThisPage();
+				if (node == null)
+					continue; // or crash? How can this happen?
+				var gridElt = _browser.WebBrowser.Document.GetElementById(GridId(page));
+				var titleElt = GetFirstChildWithClass(gridElt, "gridTitle") as GeckoElement;
+				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
+				var desiredText = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + captionOrPageNumber, captionOrPageNumber);
+				if (titleElt == null || titleElt.TextContent == desiredText)
+					continue;
+				titleElt.TextContent = desiredText;
+			}
 		}
 
 		public void UpdateThumbnailAsync(IPage page)
 		{
+			var targetClass = "bloom-page";
+			var gridElt = _browser.WebBrowser.Document.GetElementById(GridId(page));
+			var pageElt = GetFirstChildWithClass(gridElt, targetClass);
+			if (pageElt == null)
+				return; // Should not happen.
+			var replaceChild = gridElt.ReplaceChild(MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, page.GetDivNodeForThisPage()), pageElt);
+		}
 
+		private GeckoNode GetFirstChildWithClass(GeckoElement parentElement, string targetClass)
+		{
+			return parentElement.ChildNodes.FirstOrDefault(e => e is GeckoElement && ((GeckoElement)e).Attributes["class"].TextContent.Contains(targetClass));
+		}
+
+		private Gecko.GeckoNode MakeGeckoNodeFromXmlNode(Gecko.GeckoDocument doc, XmlNode xmlElement)
+		{
+			var result = doc.CreateElement(xmlElement.LocalName);
+			foreach (XmlAttribute attr in xmlElement.Attributes)
+				result.SetAttribute(attr.LocalName, attr.Value);
+			foreach (var child in xmlElement.ChildNodes)
+			{
+				if (child is XmlElement)
+					result.AppendChild(MakeGeckoNodeFromXmlNode(doc, (XmlElement)child));
+				else if (child is XmlText)
+					result.AppendChild(doc.CreateTextNode(((XmlText) child).InnerText));
+				else
+				{
+					result = result;
+				}
+			}
+			return result;
 		}
 
 		public NavigationIsolator Isolator

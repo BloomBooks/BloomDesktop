@@ -460,6 +460,9 @@ namespace Bloom
 			UpdateDisplay();
 		}
 
+		[DefaultValue(true)]
+		public bool ScaleToFullWidthOfPage { get; set; }
+
 		//NB: make sure the <base> is set correctly, 'cause you don't know where this method will
 		//save the file before navigating to it.
 		public void Navigate(XmlDocument dom, XmlDocument editDom = null)
@@ -477,10 +480,13 @@ namespace Bloom
 			 * But it's still worth doing, becuase without it, we have this annoying re-zoom every time we look at different page.
 			*/
 			XmlElement body = (XmlElement) _rootDom.GetElementsByTagName("body")[0];
-			var scale = GetScaleToShowWholeWidthOfPage();
-			if (scale > 0f)
+			if (ScaleToFullWidthOfPage)
 			{
-				body.SetAttribute("style", GetZoomCSS(scale));
+				var scale = GetScaleToShowWholeWidthOfPage();
+				if (scale > 0f)
+				{
+					body.SetAttribute("style", GetZoomCSS(scale));
+				}
 			}
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			SetNewTempFile(TempFileUtils.CreateHtm5FromXml(dom));
@@ -833,6 +839,8 @@ namespace Bloom
 
 		private void ZoomToFullWidth()
 		{
+			if (!ScaleToFullWidthOfPage)
+				return;
 			var scale = GetScaleToShowWholeWidthOfPage();
 			if(scale>0f)
 			{
