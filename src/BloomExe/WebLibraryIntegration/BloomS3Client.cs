@@ -247,7 +247,7 @@ namespace Bloom.WebLibraryIntegration
                     request.Headers.ContentDisposition = "attachment";
                 request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 
-                progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingStatus", "Uploading {0}"),
+                progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}"),
                     fileName);
 
                 try

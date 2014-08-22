@@ -32,7 +32,7 @@ namespace Bloom.Publish
 		private bool _usingNotesSuggestion = true;
 		private bool _usingCcControls = true;
 
-		private string _pleaseSetThis = LocalizationManager.GetString("Publish.Upload.PleaseSetThis",
+		private string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
 			"Please set this from the edit tab");
 		public BloomLibraryPublishControl(PublishView parentView, BookTransfer bookTransferrer, LoginDialog login, Book.Book book)
 		{
@@ -71,18 +71,18 @@ namespace Bloom.Publish
 				}
 				else
 				{
-					_licenseNotesLabel.Text = LocalizationManager.GetString("Publish.Upload.AdditionalRequests", "AdditionalRequests: ") + license.RightsStatement;
+					_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AdditionalRequests", "AdditionalRequests: ") + license.RightsStatement;
 				}
 			}
 			else if (license is NullLicense)
 			{
 				_usingCcControls = false;
-				_licenseNotesLabel.Text = LocalizationManager.GetString("Publish.Upload.AllReserved", "All rights reserved (Contact the Copyright holder for any permissions");
+				_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AllReserved", "All rights reserved (Contact the Copyright holder for any permissions");
 				if (!string.IsNullOrWhiteSpace(license.RightsStatement))
 				{
 					_licenseNotesLabel.Text += Environment.NewLine + license.RightsStatement;
 				}
-				_licenseSuggestion.Text = LocalizationManager.GetString("Publish.Upload.SuggestAssignCC", "Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.");
+				_licenseSuggestion.Text = LocalizationManager.GetString("PublishTab.Upload.SuggestAssignCC", "Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.");
 
 			}
 			else
@@ -90,7 +90,7 @@ namespace Bloom.Publish
 				// So far, this means it must be custom license (with non-blank rights...actually, currently, the palaso dialog will not allow a custom license with no rights statement).
 				_usingCcControls = false;
 				_licenseNotesLabel.Text = license.RightsStatement;
-				_licenseSuggestion.Text = LocalizationManager.GetString("Publish.Upload.SuggestChangeCC", "Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.");
+				_licenseSuggestion.Text = LocalizationManager.GetString("PublishTab.Upload.SuggestChangeCC", "Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.");
 			}
 
 			_copyrightLabel.Text = book.BookInfo.Copyright;
@@ -107,7 +107,7 @@ namespace Bloom.Publish
 			catch (Exception e)
 			{
 			    Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-			        LocalizationManager.GetString("Publish.Upload.LoginFailure",
+			        LocalizationManager.GetString("PublishTab.Upload.LoginFailure",
 			            "Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection"));
 			}
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
@@ -118,7 +118,7 @@ namespace Bloom.Publish
 			if (BookTransfer.UseSandbox)
 			{
 				var oldTextWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
-				_uploadButton.Text = LocalizationManager.GetString("Publish.Upload.UploadSandbox","Upload Book (to Sandbox)"); 
+				_uploadButton.Text = LocalizationManager.GetString("PublishTab.Upload.UploadSandbox","Upload Book (to Sandbox)"); 
 				var neededWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
 				_uploadButton.Width += neededWidth - oldTextWidth;
 			}
@@ -187,16 +187,16 @@ namespace Bloom.Publish
 			{
 				if (!okToUpload)
 				{
-					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("Publish.Upload.FieldsNeedAttention",
+					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("PublishTab.Upload.FieldsNeedAttention",
 						"One or more fields above need your attention before uploading"));
 				}
 				if (!_bookTransferrer.LoggedIn)
 				{
-					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("Publish.Upload.PleaseLogIn",
+					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("PublishTab.Upload.PleaseLogIn",
 						"Please log in to BloomLibrary.org (or sign up) before uploading"));
 				}
 			}
-			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("Publish.Upload.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
+			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("PublishTab.Upload.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
 			_signUpLink.Visible = !_bookTransferrer.LoggedIn;
 		}
 
@@ -243,9 +243,9 @@ namespace Bloom.Publish
 		    if (!_bookTransferrer.IsThisVersionAllowedToUpload())
 		    {
 		        MessageBox.Show(this,
-		            LocalizationManager.GetString("Publish.Upload.OldVersion",
+		            LocalizationManager.GetString("PublishTab.Upload.OldVersion",
 		                "Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version."),
-		            LocalizationManager.GetString("Publish.Upload.UploadNotAllowed", "Upload Not Allowed"),
+		            LocalizationManager.GetString("PublishTab.Upload.UploadNotAllowed", "Upload Not Allowed"),
                     MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 _progressBox.WriteMessage("Canceled."); 
 		        return;
@@ -273,19 +273,19 @@ namespace Bloom.Publish
 			{
 				if (completedEvent.Error != null)
 				{
-					string errorMessage = LocalizationManager.GetString("Publish.Upload.ErrorUploading","Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.");
+					string errorMessage = LocalizationManager.GetString("PublishTab.Upload.ErrorUploading","Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.");
 					_progressBox.WriteError(errorMessage,_book.Title);
 					_progressBox.WriteException(completedEvent.Error);
 				}
 				else if (string.IsNullOrEmpty((string)completedEvent.Result))
 				{
 					// Something went wrong, typically already reported.
-					string sorryMessage = LocalizationManager.GetString("Publish.Upload.FinalUploadFailureNotice", "Sorry, \"{0}\" was not successfully uploaded");
+					string sorryMessage = LocalizationManager.GetString("PublishTab.Upload.FinalUploadFailureNotice", "Sorry, \"{0}\" was not successfully uploaded");
 					_progressBox.WriteError(sorryMessage, _book.Title);
 				}
 				else {
 					var url = BloomLibraryUrlPrefix + "/browse/detail/" + _parseId;
-					string congratsMessage = LocalizationManager.GetString("Publish.Upload.UploadCompleteNotice", "Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})");
+					string congratsMessage = LocalizationManager.GetString("PublishTab.Upload.UploadCompleteNotice", "Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})");
 					_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _book.Title, url);
 				}
 				_uploadButton.Enabled = true; // Don't call UpdateDisplay, it will wipe out the progress messages.
