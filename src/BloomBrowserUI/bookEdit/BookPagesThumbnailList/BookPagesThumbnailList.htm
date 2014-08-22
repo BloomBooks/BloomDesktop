@@ -18,7 +18,7 @@
         };
         jQuery(document).ready(function () {
             $('.gridly').gridly({
-                base: 45, // px
+                base: 35, // px
                 gutter: 10, // px
                 columns: 4,
                 callbacks: {
@@ -41,35 +41,46 @@
             background-color: DarkGray;
         }
         div.bloom-page {
-            transform: scale(0.1) translate(-450%,-450%); /* bizarrely, the translate moves it to the top left instead of the middle of the original space*/
+            /* bizarrely, the translate moves it to the top left instead of the middle of the original space.
+                If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
+            transform: scale(0.075) translate(-617%,-617%);
             position: absolute;
-            left:20px;
+            left: 40px;
         }
         .gridly {
             position: relative;
         }
         div.gridItem {
-            width: 100px;
-            height: 120px;
+            width: 80px;
+            height: 100px;
             opacity: 1;
             overflow:hidden;
+        }
+        div.gridItem:nth-child(even) div.bloom-page {
+            left: 0px;
         }
         .div.gridItem.dragging {
             opacity: .8;
         }
         div.gridTitle {
             position: absolute;
-            top: 80px;
+            top: 60px;
             color: white;
             overflow: hidden;
-            text-align:center;
-            width: 100px;
+            text-align:right;
+            width: 80px;
+        }
+        div.gridItem:nth-child(even) div.gridTitle {
+            text-align: left;
+        }
+        div.placeholder {
+            pointer-events: none;
         }
     </style>
 </head>
 <body id="body">
     <div class="gridly">
-        <div class="gridItem" id="placeholder"></div>
+        <div class="gridItem placeholder" id="placeholder"></div>
     </div>
 </body>
 </html>
