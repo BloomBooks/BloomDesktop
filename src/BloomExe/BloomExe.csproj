@@ -210,6 +210,12 @@
     <Compile Include="Edit\ReaderToolsView.Designer.cs">
       <DependentUpon>ReaderToolsView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\WebThumbNailList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\WebThumbNailList.Designer.cs">
+      <DependentUpon>WebThumbNailList.cs</DependentUpon>
+    </Compile>
     <Compile Include="Edit\TransparentPanel.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -552,6 +558,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\HistoryAndNotesDialog.resx">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\WebThumbNailList.resx">
+      <DependentUpon>WebThumbNailList.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\TipDialog.resx">
       <DependentUpon>TipDialog.cs</DependentUpon>

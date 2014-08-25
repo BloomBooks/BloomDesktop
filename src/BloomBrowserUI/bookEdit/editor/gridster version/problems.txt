@@ -1,0 +1,9 @@
+CON: Main problem is that Gridster doesn't think in terms of a zig-zag, so when you move a page, it fills in the spot in unexpected ways.
+
+CON: often seems to miss that you let the mouse up; maybe a problem caused by slowness/iframes (in which case would be helped by dragging just screenshots of the iframes (see html2canvas)).
+
+PRO: Code is well commented
+
+PRO: has an object resize mode that works quite well, could be used in our "custom page" mode, with the grid keeping things aligned.
+
+NOTE: some good features are being done in a fork at https://github.com/dustmoo/gridster.js
