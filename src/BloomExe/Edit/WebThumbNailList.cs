@@ -466,9 +466,29 @@ namespace Bloom.Edit
 
 		}
 
+		private IPage _selectedPage;
+
 		public void SelectPage(IPage page)
 		{
-
+			if (_selectedPage != null && _selectedPage != page)
+			{
+				var oldGridElt = GetGridElementForPage(_selectedPage);
+				if (oldGridElt != null)
+				{
+					var oldClassContent = oldGridElt.GetAttribute("class");
+					oldGridElt.SetAttribute("class", oldClassContent.Replace(" gridSelected", ""));
+				}
+			}
+			_selectedPage = page;
+			if (page == null)
+				return;
+			var gridElt = GetGridElementForPage(page);
+			if (gridElt == null)
+				return; // Can't find it yet, will try again after we next build pages.
+			var classContent = gridElt.GetAttribute("class");
+			if (classContent.Contains("gridSelected"))
+				return;
+			gridElt.SetAttribute("class", classContent + " gridSelected");
 		}
 
 		string ColorToHtmlCode(Color color)
@@ -554,6 +574,7 @@ namespace Bloom.Edit
 		{
 			_browser.AddMessageEventListener("gridClick", ItemClick);
 			_browser.AddMessageEventListener("gridReordered", GridReordered);
+			SelectPage(_selectedPage);
 		}
 
 		private void ItemClick(string s)
@@ -649,11 +670,16 @@ namespace Bloom.Edit
 		public void UpdateThumbnailAsync(IPage page)
 		{
 			var targetClass = "bloom-page";
-			var gridElt = _browser.WebBrowser.Document.GetElementById(GridId(page));
+			var gridElt = GetGridElementForPage(page);
 			var pageElt = GetFirstChildWithClass(gridElt, targetClass);
 			if (pageElt == null)
 				return; // Should not happen.
 			var replaceChild = gridElt.ReplaceChild(MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, page.GetDivNodeForThisPage()), pageElt);
+		}
+
+		private GeckoElement GetGridElementForPage(IPage page)
+		{
+			return _browser.WebBrowser.Document.GetElementById(GridId(page));
 		}
 
 		private GeckoNode GetFirstChildWithClass(GeckoElement parentElement, string targetClass)
