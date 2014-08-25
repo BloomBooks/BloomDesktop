@@ -54,7 +54,6 @@ namespace Bloom
 
                 
                 builder.Register(c => LocalizationManager).SingleInstance();
-				builder.Register(c => new DownloadOrderList()).SingleInstance();
 
 				if (Settings.Default.MruProjects==null)
 				{
@@ -64,9 +63,9 @@ namespace Bloom
 
                 //this is to prevent some problems we were getting while waiting for a browser to navigate and being forced to call Application.DoEvents().
                 //HtmlThumbnailer & ConfigurationDialog, at least, use this.
-                builder.Register(c => new MonitorTarget()).InstancePerLifetimeScope();
+                builder.Register(c => new NavigationIsolator()).InstancePerLifetimeScope();
 
-                builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(c.Resolve<MonitorTarget>())).SingleInstance();
+				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(c.Resolve<NavigationIsolator>())).SingleInstance();
 
 				_container = builder.Build();
 			}
@@ -77,11 +76,6 @@ namespace Bloom
 			}
 
 			public LocalizationManager LocalizationManager;
-
-			public DownloadOrderList DownloadOrderList
-			{
-				get { return _container.Resolve<DownloadOrderList>(); }
-			}
 
 			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
 

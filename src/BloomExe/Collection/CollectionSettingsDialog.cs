@@ -36,10 +36,6 @@ namespace Bloom.Collection
                 _language3Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language3InSourceCollection", "Language 3", "In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a souce collection, National Language has no relevance, so we use this different label"); 
 			}
 
-#if !DEBUG
-            _showSendReceive.Enabled = false;
-#endif
-
 		    _showSendReceive.Checked = Settings.Default.ShowSendReceive;
 		    _showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
 			_showExperimentCommands.Checked = Settings.Default.ShowExperimentalCommands;
@@ -170,7 +166,10 @@ namespace Bloom.Collection
 			_collectionSettings.Country = _countryText.Text.Trim();
 			_collectionSettings.Province = _provinceText.Text.Trim();
 			_collectionSettings.District = _districtText.Text.Trim();
-            _collectionSettings.DefaultLanguage1FontName = _fontCombo.SelectedItem.ToString();
+			if (_fontCombo.SelectedItem != null)
+			{
+				_collectionSettings.DefaultLanguage1FontName = _fontCombo.SelectedItem.ToString();
+			}
 
 			//no point in letting them have the Nat lang 2 be the same as 1
 			if (_collectionSettings.Language2Iso639Code == _collectionSettings.Language3Iso639Code)

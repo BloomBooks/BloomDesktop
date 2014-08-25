@@ -6,6 +6,9 @@ var previousGPCs;
 var sightWords;
 var currentSightWords;
 
+function accordionWindow() {
+    return window.parent.document.getElementById('accordion').contentWindow;
+}
 /**
  * Respond to messages from the parent document
  * @param {Event} event
@@ -21,11 +24,7 @@ function processMessage(event) {
 
         case 'Data':
             loadReaderSetupData(params[1]);
-            window.parent.postMessage('SetupType', '*');
-
-            // initialize the selected letters
-            $('#stages-table').find('tbody tr:first').click();
-            $('#levels-table').find('tbody tr:first').click();
+            accordionWindow().postMessage('SetupType', '*');
             return;
 
         case 'Files':
@@ -37,10 +36,26 @@ function processMessage(event) {
             return;
 
         case 'SetupType':
-            if (params[1] === 'stages')
-                $('#dlstabs').tabs('option', 'disabled', [2]);
-            else
-                $('#dlstabs').tabs('option', 'disabled', [1]);
+            var tabs = $('#dlstabs');
+            if (params[1] === 'stages') {
+                tabs.tabs('option', 'disabled', [2]);
+                tabs.tabs('option', 'active', 1);
+                var firstStage = $('#stages-table').find('tbody tr:first');
+                if (firstStage && (firstStage.length === 0))
+                    addNewStage();
+                else
+                    firstStage.click(); // select the first stage
+            }
+            else {
+                tabs.tabs('option', 'disabled', [0, 1]);
+                tabs.tabs('option', 'active', 2);
+                var firstLevel = $('#levels-table').find('tbody tr:first');
+                if (firstLevel && (firstLevel.length === 0))
+                    addNewLevel();
+                else
+                    firstLevel.click(); // select the first level
+            }
+
             return;
 
         case 'Font':
@@ -89,7 +104,10 @@ function saveClicked() {
         var stage = {};
         stage.letters = stages[i].cells[1].innerHTML;
         stage.sightWords = stages[i].cells[2].innerHTML;
-        s.stages.push(stage);
+
+        // do not save stage with no data
+        if (stage.letters || stage.sightWords)
+            s.stages.push(stage);
     }
 
     // levels
@@ -107,7 +125,7 @@ function saveClicked() {
 
     // send to parent
     var settingsStr = JSON.stringify(s);
-    window.parent.postMessage('Refresh\n' + settingsStr, '*');
+    accordionWindow().postMessage('Refresh\n' + settingsStr, '*');
 
     // send to C#
     fireCSharpSetupEvent('saveDecodableLevelSettingsEvent', settingsStr);
@@ -217,9 +235,13 @@ function requestWordsForSelectedStage() {
     sightWords = $.makeArray($(tr).prevAll().map(function() {
         return this.cells[2].innerHTML.split(' ');
     }));
+
     sightWords = _.union(sightWords, currentSightWords);
 
-    window.parent.postMessage('Words\n' + knownGPCS, '*');
+    // remove empty items
+    sightWords = _.compact(sightWords);
+
+    accordionWindow().postMessage('Words\n' + knownGPCS, '*');
 }
 
 /**
@@ -371,14 +393,24 @@ function renumberRows(rows) {
  * Called to update the stage numbers on the screen after rows are reordered.
  */
 function updateStageNumbers() {
+    updateNumbers('stages-table', 'setup-stage-number', 'remove-stage-number');
+}
 
-    var tbody = $('#stages-table').find('tbody');
+/**
+ * Called to update the level numbers on the screen after rows are reordered.
+ */
+function updateLevelNumbers() {
+    updateNumbers('levels-table', 'setup-level-number', 'remove-level-number');
+}
+
+function updateNumbers(tableId, setupNumberId, removeNumberId) {
+    var tbody = $('#' + tableId).find('tbody');
     var rows = tbody.find('tr');
     renumberRows(rows);
 
     var currentStage = tbody.find('tr.selected td:nth-child(1)').html();
-    document.getElementById('setup-stage-number').innerHTML = currentStage;
-    document.getElementById('remove-stage-number').innerHTML = currentStage;
+    $('#' + setupNumberId).innerHTML = currentStage;
+    $('#' + removeNumberId).innerHTML = currentStage;
 }
 
 function displayWordsForSelectedStage(wordsStr) {
@@ -628,7 +660,8 @@ if (typeof ($) === "function") {
     });
 }
 
-$(document).ready(function() {
-    window.parent.postMessage('Texts', '*');
-    $('#stages-table').find('tbody').sortable({stop: updateStageNumbers });
+$(document).ready(function () {
+    accordionWindow().postMessage('Texts', '*');
+    $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
+    $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
 });

@@ -24,6 +24,22 @@ namespace BloomTests.Book
                 Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
         }
 
+	    [Test]
+	    public void TextOfInnerHtml_RemovesMarkup()
+	    {
+		    var input = "This <em>is</em> the day";
+		    var output = BookData.TextOfInnerHtml(input);
+			Assert.That(output, Is.EqualTo("This is the day"));
+	    }
+
+		[Test]
+		public void TextOfInnerHtml_HandlesXmlEscapesCorrectly()
+		{
+			var input = "Jack &amp; Jill like xml sequences like &amp;amp; &amp; &amp;lt; &amp; &amp;gt; for characters like &lt;&amp;&gt;";
+			var output = BookData.TextOfInnerHtml(input);
+			Assert.That(output, Is.EqualTo("Jack & Jill like xml sequences like &amp; & &lt; & &gt; for characters like <&>"));
+		}
+
         [Test]
         public void MakeLanguageUploadData_FindsDefaultInfo()
         {
@@ -139,10 +155,10 @@ namespace BloomTests.Book
              </body></html>");
             var data = new BookData(dom,  _collectionSettings, null);
             var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle' and @lang='xyz']");
-            textarea1.InnerText = "peace";
+            textarea1.InnerText = "peace & quiet";
             data.SynchronizeDataItemsThroughoutDOM();
             var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[@data-book='bookTitle'  and @lang='xyz']");
-            Assert.AreEqual("peace", paragraph.InnerText);
+            Assert.AreEqual("peace & quiet", paragraph.InnerText);
         }
 
      

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.Library;
 using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
@@ -29,7 +31,7 @@ namespace Bloom
 		/// </summary>
 		private ILifetimeScope _scope;
 
-		private ServerBase _httpServer;
+		private EnhancedImageServer _httpServer;
 		public Form ProjectWindow { get; private set; }
 
 		public string SettingsPath { get; private set; }
@@ -50,19 +52,7 @@ namespace Bloom
 				AddShortCutInComputersBloomCollections(collectionDirectory);
 			}
 
-			if(Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
-			{
-				// REVIEW: This seems to be used only for testing purposes
-				BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
-				var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
-				_httpServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
-				_httpServer.StartWithSetupIfNeeded();
-			}
-			else
-			{
-				_httpServer = _scope.Resolve<EnhancedImageServer>();
-				_httpServer.StartWithSetupIfNeeded();
-			}
+			_httpServer.StartWithSetupIfNeeded();
         }
 
 		/// ------------------------------------------------------------------------------------
@@ -87,18 +77,20 @@ namespace Bloom
 					typeof(SendReceiveCommand),
 					typeof(SelectedTabAboutToChangeEvent),
 					typeof(SelectedTabChangedEvent),
-					typeof(BookRenamedEvent),
 					typeof(LibraryClosing),
                     typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookRefreshEvent),
+					typeof(BookDownloadStartingEvent),
 					typeof(BookSelection),
 					typeof(CurrentEditableCollectionSelection),
                     typeof(RelocatePageEvent),
                     typeof(QueueRenameOfCollection),
 					typeof(PageSelection),
+					 typeof(LocalizationChangedEvent),
                     typeof(EditingModel)}.Contains(t));
-				
-				
+
+			    var bookRenameEvent = new BookRenamedEvent();
+			    builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
                 
                 try
                 {
@@ -184,6 +176,19 @@ namespace Bloom
 
 				builder.RegisterType<CreateFromSourceBookCommand>().InstancePerLifetimeScope();
 
+                string collectionDirectory = Path.GetDirectoryName(projectSettingsPath); 
+                if (Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
+                {
+                    // REVIEW: This seems to be used only for testing purposes
+                    BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
+                    var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
+                    _httpServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
+                }
+                else
+                {
+                    _httpServer = new EnhancedImageServer(new LowResImageCache(bookRenameEvent));
+                }
+			    builder.Register((c => _httpServer)).AsSelf().SingleInstance();
 
 				builder.Register<Func<WorkspaceView>>(c => ()=>
 				                                	{
@@ -204,6 +209,7 @@ namespace Bloom
 		internal static BloomS3Client CreateBloomS3Client()
 		{
 			return new BloomS3Client(BookTransfer.UseSandbox ? BloomS3Client.SandboxBucketName : BloomS3Client.ProductionBucketName);
+
 		}
 
 
@@ -423,10 +429,4 @@ namespace Bloom
 		}
 
 	}
-
-    public class MonitorTarget
-    {
-        //doesn't need any guts, just use for dependency injection
-        //Dependecy injection gives us a single instance app-wide, and that single instance is the thing we monitor to achieve mutex on browser navigation
-    }
 }

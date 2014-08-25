@@ -22,13 +22,22 @@ SynphonyApi.prototype.loadSettings = function(fileContent) {
     if (!fileContent) return;
 
     var data = jQuery.extend(new DLRSettings(), JSON.parse(fileContent));
-    if (data.letters === '') return;
 
     this.source = fileContent;
 
-    lang_data.addGrapheme(data.letters.split(' '));
-    lang_data.addGrapheme(data.letterCombinations.split(' '));
-    lang_data.addWord(data.moreWords.split(' '));
+    if (data.letters !== '') {
+        lang_data.addGrapheme(data.letters.split(' '));
+        lang_data.addGrapheme(data.letterCombinations.split(' '));
+        lang_data.addWord(data.moreWords.split(' '));
+
+        var stgs = data.stages;
+        if (stgs) {
+            this.stages = [];
+            for (var j = 0; j < stgs.length; j++) {
+                this.AddStage(jQuery.extend(true, new Stage(j+1), stgs[j]));
+            }
+        }
+    }
 
     var lvls = data.levels;
     if (lvls) {
@@ -37,91 +46,12 @@ SynphonyApi.prototype.loadSettings = function(fileContent) {
             this.addLevel(jQuery.extend(true, new Level(i+1), lvls[i]));
         }
     }
-
-    var stgs = data.stages;
-    if (stgs) {
-        this.stages = [];
-        for (var j = 0; j < stgs.length; j++) {
-            this.AddStage(jQuery.extend(true, new Stage(j+1), stgs[j]));
-        }
-    }
 };
 
 SynphonyApi.fireCSharpEvent = function(eventName, eventData) {
 
     var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
     document.dispatchEvent(event);
-};
-
-/**
- * Create the configuration dialog
- * @param {String} path
- * @param {String} title
- * @returns {JQuery|*|jQuery|HTMLElement}
- */
-function FindOrCreateConfigDiv(path, title) {
-
-    var dialogContents = $("#synphonyConfig");
-    if (!dialogContents.length) {
-        dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($("body"));
-
-        var url = path.replace(/\/js\/$/, '/readerSetup/ReaderSetup.htm');
-
-        var html = '<iframe id="settings_frame" src="' + url + '" scrolling="no" style="width: 100%; height: 100%; border-width: 0; margin: 0" id="setup_frame" ' +
-            'onload="document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Data\\n\' + model.getSynphony().source, \'*\'); ' +
-            'document.getElementById(\'settings_frame\').contentWindow.postMessage(\'Font\\n\' + model.fontName, \'*\');"></iframe>';
-
-        dialogContents.append(html);
-    }
-    return dialogContents;
-}
-
-/**
- * Show the configuration dialog
- * @param {String} title The title of the dialog
- */
-SynphonyApi.prototype.showConfigDialog = function(title) {
-
-    var dialogContents = FindOrCreateConfigDiv(this.getScriptDirectory(), title);
-    var h = 580;
-    var w = 720;
-
-    // This height and width will fit inside the "800 x 600" settings
-    if (document.body.scrollWidth < 583) {
-        h = 460;
-        w = 390;
-    }
-
-    // This height and width will fit inside the "1024 x 586 Low-end netbook with windows Task bar" settings
-    else if ((document.body.scrollWidth < 723) || (window.innerHeight < 583)) {
-        h = 460;
-        w = 580;
-    }
-
-    $(dialogContents).dialog({
-        autoOpen: "true",
-        modal: "true",
-        beforeClose: function(e) {
-            var config = $('#synphonyConfig');
-
-            // if this is not the first close attempt, ew already saved, so close.
-            if (config.attr('close')) return;
-
-            // we need to save before closing, so cancel the first attempt and save. C# will close after saving.
-            e.preventDefault();
-            config.attr('close', true);
-            document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
-        },
-        close: function() {
-            $(this).remove();
-            SynphonyApi.fireCSharpEvent('setModalStateEvent', 'false');
-        },
-        open: function () { $('#synphonyConfig').css('overflow', 'hidden'); },
-        height: h,
-        width: w
-    });
-
-    SynphonyApi.fireCSharpEvent('setModalStateEvent', 'true');
 };
 
 // This is at least useful for testing; maybe for real use.

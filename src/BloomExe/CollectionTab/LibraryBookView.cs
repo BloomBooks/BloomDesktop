@@ -26,9 +26,12 @@ namespace Bloom.CollectionTab
 			SendReceiver sendReceiver, 
 			CreateFromSourceBookCommand createFromSourceBookCommand,
             EditBookCommand editBookCommand,
-			SelectedTabChangedEvent selectedTabChangedEvent)
+			SelectedTabChangedEvent selectedTabChangedEvent,
+			NavigationIsolator isolator)
         {
             InitializeComponent();
+	        _previewBrowser.Isolator = isolator;
+	        _readmeBrowser.Isolator = isolator;
             _bookSelection = bookSelection;
         	_sendReceiver = sendReceiver;
         	_createFromSourceBookCommand = createFromSourceBookCommand;

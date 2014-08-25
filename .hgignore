@@ -87,4 +87,5 @@ DistFiles/ReleaseNotes.html
 ReadMe_*.html
 B3.sln
 B2.sln
+node_modules/*
 *.usertasks
