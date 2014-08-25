@@ -1,0 +1,25 @@
+Source: bloom-desktop
+Section: x11
+Priority: extra
+Maintainer: Eberhard Beilharz <eb1@sil.org>
+Homepage: http://bloomlibrary.org/
+Vcs-Git: git://github.com/BloomBooks/BloomDesktop.git
+Vcs-Browser: https://github.com/BloomBooks/BloomDesktop
+Standards-Version: 3.9.5
+Build-Depends: debhelper (>= 8.0.0), cli-common-dev (>= 0.8),
+ wget, unzip, desktop-file-utils,
+ libtidy-html5, optipng,
+ mono-sil, libgdiplus-sil, geckofx29,
+ libenchant-dev, libxklavier-dev, libdconf-dev,
+ libicu-dev, icu-devtools
+
+Package: bloom-desktop
+Architecture: all
+Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
+ mono-sil, libgdiplus-sil, geckofx29
+Description: Literacy materials development for language communities
+ Bloom Desktop is an application that dramatically "lowers the bar" for
+ language communities who want books in their own languages. Bloom delivers
+ a low-training, high-output system where mother tongue speakers and their
+ advocates work together to foster both community authorship and access to
+ external material in the vernacular.
