@@ -1,8 +1,14 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
 
+declare var localizationManager: any;
+
 interface qtipInterface extends JQuery {
 	qtip(options: any): JQuery;
+}
+
+interface overflowInterface extends JQuery {
+	IsOverflowing(): boolean;
 }
 
 class StyleEditor {
@@ -42,9 +48,11 @@ class StyleEditor {
 
 	MakeBigger(target: HTMLElement) {
 		this.ChangeSize(target, 2);
+		(<qtipInterface>$("div.bloom-editable, textarea")).qtip('reposition');
 	}
 	MakeSmaller(target: HTMLElement) {
 		this.ChangeSize(target, -2);
+		(<qtipInterface>$("div.bloom-editable, textarea")).qtip('reposition');
 	}
 
 	static MigratePreStyleBook(target: HTMLElement): string {
@@ -106,6 +114,11 @@ class StyleEditor {
 		if (parseInt(sizeString) < this.MIN_FONT_SIZE)
 			return; // too small, quietly don't do it!
 		rule.style.setProperty("font-size", sizeString + units, "important");
+		if ((<overflowInterface>$(target)).IsOverflowing())
+			$(target).addClass('overflow');
+		else
+			$(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
+
 		// alert("New size rule: " + rule.cssText);
 		// Now update tooltip
 		var toolTip = this.GetToolTip(target, styleName);
@@ -192,7 +205,10 @@ class StyleEditor {
 		var pxSize = parseInt(sizeString); // strip off units and parse
 		var ptSize = this.ConvertPxToPt(pxSize);
 		var lang = box.attr('lang');
-		return "Changes the text size for all boxes carrying the style \'"+styleName+"\' and language \'"+lang+"\'.\nCurrent size is "+ptSize+"pt.";
+
+		// localize
+		var tipText = "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.";
+		return localizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
 	}
 
 	AddQtipToElement(element: JQuery, toolTip: string) {
@@ -251,6 +267,23 @@ class StyleEditor {
 				editor.MakeBigger(targetBox);
 			}
 			formatButton.trigger('click'); // This re-displays the qtip with the new value.
+		});
+
+		editor.AttachLanguageTip($(targetBox), bottom);
+	}
+
+	//Attach and detach a language tip which is used when the applicable edittable div has focus.
+	//This works around a couple FF bugs with the :after pseudoelement.  See BL-151.
+	AttachLanguageTip(targetBox, bottom) {
+		if ($(targetBox).attr('data-languagetipcontent')) {
+			$(targetBox).after('<div style="top: ' + (bottom - 17) + 'px" class="languageTip bloom-ui">' + $(targetBox).attr('data-languagetipcontent') + '</div>');
+		}
+	}
+
+	DetachLanguageTip(element) {
+		//we're placing these controls *after* the target, not inside it; that's why we go up to parent
+		$(element).parent().find(".languageTip.bloom-ui").each(function () {
+			$(this).remove();
 		});
 	}
 

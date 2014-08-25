@@ -2,15 +2,15 @@ doctype html
 html
 	head
 		meta(charset='UTF-8')
-		link(rel='stylesheet', href='../../themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
+		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
 		link(rel='stylesheet', href='readerSetup.css', type='text/css')
-		script(src='../../lib/jquery-1.10.1.js')
-		script(src='../../lib/jquery-ui-1.10.3.custom.min.js')
-		script(src='../js/jquery.div-columns.js')
-		script(src='../js/libsynphony/underscore_min_152.js')
-		script(src='../js/libsynphony/jquery.text-markup.js')
-		script(src='../js/libsynphony/synphony_lib.js')
-		script(src='../js/libsynphony/bloom_lib.js')
+		script(src='/bloom/lib/jquery-1.10.1.js')
+		script(src='/bloom/lib/jquery-ui-1.10.3.custom.min.js')
+		script(src='/bloom/bookEdit/js/jquery.div-columns.js')
+		script(src='/bloom/bookEdit/js/libsynphony/underscore_min_152.js')
+		script(src='/bloom/bookEdit/js/libsynphony/jquery.text-markup.js')
+		script(src='/bloom/bookEdit/js/libsynphony/synphony_lib.js')
+		script(src='/bloom/bookEdit/js/libsynphony/bloom_lib.js')
 		script(type='text/javascript') $(function() {$("#dlstabs").tabs();});
 	body
 		#dlstabs.ui-dialog.ui-widget
@@ -53,7 +53,7 @@ html
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table
 						tr
-							td: img(src='../../images/keys.png')
+							td: img(src='/bloom/images/keys.png')
 							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Stages
 				#stage-list-container.floating.tab-list-container
 					#stage-list.tab-list
@@ -64,7 +64,7 @@ html
 									thead
 										tr
 											th: div Stage
-											th: div Letters
+											th(style='min-width: 35px'): div Letters
 											th(style='width: 100%'): div Sight Words
 									tbody
 									tfoot
@@ -90,7 +90,7 @@ html
 						#click-letters.smaller(style='float: left') Click on letters to add them to this stage.
 					#setup-stage-matching-words.sub-float
 						label(style='white-space: nowrap;')
-							span#setup-words-count 15
+							span#setup-words-count 0
 							span &nbsp;matching words
 						.rs-word-container
 							#rs-matching-words(style='margin-left: 8px')
@@ -98,7 +98,7 @@ html
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table
 						tr
-							td: img(src='../../images/steps.png', height='32')
+							td: img(src='/bloom/images/steps.png', height='32')
 							td(style='vertical-align: baseline;'): span.rs-heading(style='margin: auto 0') Reader Levels
 				#level-list-container.floating.tab-list-container
 					#level-list.tab-list
@@ -137,7 +137,7 @@ html
 							td: input#max-words-per-page.level-textbox(type='text')
 						tr
 							td: input#use-words-per-book.level-checkbox(type='checkbox')
-							td: label(for='use-words-per-book') Maximum Words perBook
+							td: label(for='use-words-per-book') Maximum Words per Book
 							td: input#max-words-per-book.level-textbox(type='text')
 						tr
 							td: input#use-unique-words-per-book.level-checkbox(type='checkbox')

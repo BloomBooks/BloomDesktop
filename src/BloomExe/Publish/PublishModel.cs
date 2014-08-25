@@ -5,7 +5,6 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,8 +14,6 @@ using Bloom.Book;
 using Bloom.Collection;
 using DesktopAnalytics;
 using Palaso.IO;
-using Palaso.Reporting;
-using Palaso.Xml;
 
 namespace Bloom.Publish
 {
@@ -93,7 +90,7 @@ namespace Bloom.Publish
 		}
 
 
-		public void LoadBook(DoWorkEventArgs doWorkEventArgs)
+		public void LoadBook(BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 			_currentlyLoadedBook = BookSelection.CurrentSelection;
 
@@ -111,7 +108,7 @@ namespace Bloom.Publish
 						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
 
 					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape,
-									  layoutMethod, BookletPortion, doWorkEventArgs);
+									  layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 				}
 			}
 			catch (Exception e)
@@ -132,10 +129,6 @@ namespace Bloom.Publish
 			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
 			HtmlDom.AddPublishClassToBody(dom);
-			//HtmlDom.AddWebkitClassToBody(dom);
-
-			//wkhtmltopdf can't handle file://
-			dom.InnerXml = dom.InnerXml.Replace("file://", "");
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
@@ -145,9 +138,12 @@ namespace Bloom.Publish
 			return BloomTemp.TempFileUtils.CreateHtm5FromXml(dom);
 		}
 
-		private string GetPdfPath(string fileName)
+		private string GetPdfPath(string fname)
 		{
 			string path = null;
+
+			// Sanitize fileName first
+			string fileName = SanitizeFileName(fname);
 
 			for (int i = 0; i < 100; i++)
 			{
@@ -166,6 +162,21 @@ namespace Bloom.Publish
 				}
 			}
 			return path;
+		}
+
+		/// <summary>
+		/// Ampersand in book title was causing Publish problems
+		/// </summary>
+		/// <param name="fileName"></param>
+		/// <returns></returns>
+		private static string SanitizeFileName(string fileName)
+		{
+			fileName = Path.GetInvalidFileNameChars().Aggregate(
+				fileName, (current, character) => current.Replace(character, ' '));
+			// I (GJM) set this up to keep ampersand out of the book title,
+			// but discovered that ampersand isn't one of the characters that GetInvalidFileNameChars returns!
+			fileName = fileName.Replace('&', ' ');
+			return fileName;
 		}
 
 		DisplayModes _currentDisplayMode = DisplayModes.WaitForUserToChooseSomething;

@@ -37,10 +37,9 @@ html
 				label.bubble Book title in {lang}
 				+editable('N1').nationalLanguage1Title(data-book='bookTitle')
 			.languageLine
-				div(data-library='nameOfLanguage')
-				div(data-library='dialect')
-				|,&nbsp;
-				div(data-library='languageLocation')
+				div.languageName(data-library='nameOfLanguage')
+				div.languageDialect(data-library='dialect')
+				div.languageLocation(data-library='languageLocation')
 
 			.bloom-metaData(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")
 				.copyright(data-book="copyright", lang="*")

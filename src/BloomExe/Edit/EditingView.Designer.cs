@@ -384,14 +384,14 @@
 			this._layoutChoices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
 			this._layoutChoices.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._layoutChoices.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._layoutChoices, null);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._layoutChoices, "");
 			this._L10NSharpExtender.SetLocalizationComment(this._layoutChoices, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "EditTab._layoutChoices");
+			this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "EditTab.PageSizeAndOrientationChoices");
 			this._layoutChoices.Name = "_layoutChoices";
 			this._layoutChoices.Size = new System.Drawing.Size(50, 19);
 			this._layoutChoices.Text = "Paper";
-			this._layoutChoices.ToolTipText = "Choose a page size and orientation";
+			this._layoutChoices.ToolTipText = "(set dynamically, see code)";
 			// 
 			// _browser1
 			// 
@@ -399,6 +399,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._browser1.BackColor = System.Drawing.Color.DarkGray;
+			this._browser1.Isolator = null;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._browser1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._browser1, null);
 			this._L10NSharpExtender.SetLocalizingId(this._browser1, "EditTab.Browser");

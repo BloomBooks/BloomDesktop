@@ -85,8 +85,8 @@ namespace BloomTests
 		public void CanReadActualFileFromServer()
 		{
 			var t = new UpdateVersionTable();
-			t.RunningVersion = Version.Parse("2.0.0");
-			Assert.AreEqual("http://build.palaso.org/guestAuth/repository/download/bt392/.lastSuccessful/appcast.xml", t.GetAppcastUrl());
+			t.RunningVersion = Version.Parse("2.1.0");
+			Assert.AreEqual("http://build.palaso.org/guestAuth/repository/download/bt414/.lastSuccessful/appcast.xml", t.GetAppcastUrl());
 		}
 
 	}

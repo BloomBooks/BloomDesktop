@@ -2,15 +2,15 @@
 <html>
   <head>
 	<meta charset="UTF-8">
-	<link rel="stylesheet" href="../../themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css" type="text/css">
+	<link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css" type="text/css">
 	<link rel="stylesheet" href="readerSetup.css" type="text/css">
-	<script src="../../lib/jquery-1.10.1.js"></script>
-	<script src="../../lib/jquery-ui-1.10.3.custom.min.js"></script>
-	<script src="../js/jquery.div-columns.js"></script>
-	<script src="../js/libsynphony/underscore_min_152.js"></script>
-	<script src="../js/libsynphony/jquery.text-markup.js"></script>
-	<script src="../js/libsynphony/synphony_lib.js"></script>
-	<script src="../js/libsynphony/bloom_lib.js"></script>
+	<script src="/bloom/lib/jquery-1.10.1.js"></script>
+	<script src="/bloom/lib/jquery-ui-1.10.3.custom.min.js"></script>
+	<script src="/bloom/bookEdit/js/jquery.div-columns.js"></script>
+	<script src="/bloom/bookEdit/js/libsynphony/underscore_min_152.js"></script>
+	<script src="/bloom/bookEdit/js/libsynphony/jquery.text-markup.js"></script>
+	<script src="/bloom/bookEdit/js/libsynphony/synphony_lib.js"></script>
+	<script src="/bloom/bookEdit/js/libsynphony/bloom_lib.js"></script>
 	<script type="text/javascript">$(function() {$("#dlstabs").tabs();});</script>
   </head>
   <body>
@@ -45,7 +45,7 @@
 		<div style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" class="floating">
 		  <table>
 			<tr>
-			  <td><img src="../../images/keys.png"></td>
+			  <td><img src="/bloom/images/keys.png"></td>
 			  <td style="vertical-align: baseline;"><span style="margin: auto 0" class="rs-heading">Stages</span></td>
 			</tr>
 		  </table>
@@ -61,7 +61,7 @@
 					  <th>
 						<div>Stage</div>
 					  </th>
-					  <th>
+					  <th style="min-width: 35px">
 						<div>Letters</div>
 					  </th>
 					  <th style="width: 100%">
@@ -97,7 +97,7 @@
 			<div id="click-letters" style="float: left" class="smaller">Click on letters to add them to this stage.</div>
 		  </div>
 		  <div id="setup-stage-matching-words" class="sub-float">
-			<label style="white-space: nowrap;"><span id="setup-words-count">15</span><span>&nbsp;matching words</span></label>
+			<label style="white-space: nowrap;"><span id="setup-words-count">0</span><span>&nbsp;matching words</span></label>
 			<div class="rs-word-container">
 			  <div id="rs-matching-words" style="margin-left: 8px"></div>
 			</div>
@@ -108,7 +108,7 @@
 		<div style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" class="floating">
 		  <table>
 			<tr>
-			  <td><img src="../../images/steps.png" height="32"></td>
+			  <td><img src="/bloom/images/steps.png" height="32"></td>
 			  <td style="vertical-align: baseline;"><span style="margin: auto 0" class="rs-heading">Reader Levels</span></td>
 			</tr>
 		  </table>
@@ -182,7 +182,7 @@
 				<input id="use-words-per-book" type="checkbox" class="level-checkbox">
 			  </td>
 			  <td>
-				<label for="use-words-per-book">Maximum Words perBook</label>
+				<label for="use-words-per-book">Maximum Words per Book</label>
 			  </td>
 			  <td>
 				<input id="max-words-per-book" type="text" class="level-textbox">

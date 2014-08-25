@@ -1,10 +1,10 @@
 html
 	head
-		link(rel='stylesheet', href='readerTools.css', type='text/css')
+
 	body
-		h3(data-markuptype='1') Decodable Reader Tool
+		h3(data-markuptype='1', data-order='10') Decodable Reader Tool
 		div
-			img#decodable-keys(src='../../../images/keys-white.pn', style='margin-left: 14px')
+			img#decodable-keys(src='/bloom/images/keys-white.png', style='margin-left: 14px')
 			.stageLine
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decStage
 				span.stageLabel.stageLine="Stage "
@@ -25,10 +25,8 @@ html
 				.wordList#wordList
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 				span.setup.stageLine
-					a(href="javascript:showSetupDialog('stages');") Set up Stages
+					a(href="javascript:parent.window.showSetupDialog('stages');") Set up Stages
 			script(type='text/javascript').
 				$(document).ready(function() {
 					setTimeout(initializeDecodableRT, 100);
-					var path = thisDir + '../../images/keys-white.png';
-					document.getElementById('decodable-keys').src = path;
 				});

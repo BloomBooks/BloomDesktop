@@ -99,7 +99,7 @@ namespace Bloom.Edit
 #else
 			var fakeIt = "false";
 #endif
-			RunJavaScript("initialize(\"" + path + "\", " + fakeIt + ")");
+			RunJavaScript("document.getElementById('accordion').contentWindow.initialize(\"" + path + "\", " + fakeIt + ")");
 		}
 
 		public void RunJavaScript(string script)
