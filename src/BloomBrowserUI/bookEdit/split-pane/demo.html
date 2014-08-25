@@ -71,7 +71,7 @@
 
 			.buttons {
 				position: absolute;
-				bottom: 0;
+				top: 0;
 				right: 0;
 				margin: 10px;
 			}
@@ -80,6 +80,7 @@
 			.bloom-purple.button, .bloom-purple.button:visited { background-color: #C2A6BF; }
 
 			.split-pane-component-inner {
+				position: relative;
 				width: 100%;
 				height: 100%;
 				padding: 10px;
@@ -106,14 +107,12 @@
 					newSplitPane = myInner.closest('.split-pane');
 					newSplitPane.append(getSplitPaneDividerHtml('vertical'));
 					newSplitPane.append(getSplitPaneComponentWithNewContent('right'));
-					newSplitPane.find('.split-pane-component.position-right .button').bind('click', splitClickHandler);
 				} else {
 					myInner.wrap(getSplitPaneHtml('horizontal'));
 					myInner.wrap(getSplitPaneComponentHtml('top'));
 					newSplitPane = myInner.closest('.split-pane');
 					newSplitPane.append(getSplitPaneDividerHtml('horizontal'));
 					newSplitPane.append(getSplitPaneComponentWithNewContent('bottom'));
-					newSplitPane.find('.split-pane-component.position-bottom .button').bind('click', splitClickHandler);
 				}
 				newSplitPane.splitPane();
 			}
@@ -130,17 +129,17 @@
 				sibling.addClass(positionClass);
 			}
 
-			function getSplitPaneHtml(vh) {
-				return $('<div class="split-pane ' + vh + '-percent"></div>');
+			function getSplitPaneHtml(verticalOrHorizontal) {
+				return $('<div class="split-pane ' + verticalOrHorizontal + '-percent"></div>');
 			}
-			function getSplitPaneComponentHtml(leftRight) {
-				return $('<div class="split-pane-component position-' + leftRight + '"></div>');
+			function getSplitPaneComponentHtml(leftOrRight) {
+				return $('<div class="split-pane-component position-' + leftOrRight + '"></div>');
 			}
-			function getSplitPaneDividerHtml(vh) {
-				return $('<div class="split-pane-divider ' + vh + '-divider"></div>');
+			function getSplitPaneDividerHtml(verticalOrHorizontal) {
+				return $('<div class="split-pane-divider ' + verticalOrHorizontal + '-divider"></div>');
 			}
-			function getSplitPaneComponentWithNewContent(rightBottom) {
-				var spc = $('<div class="split-pane-component position-' + rightBottom + '">');
+			function getSplitPaneComponentWithNewContent(rightOrBottom) {
+				var spc = $('<div class="split-pane-component position-' + rightOrBottom + '">');
 				spc.append(getSplitPaneComponentInner());
 				return spc;
 			}
@@ -153,12 +152,14 @@
 			function getButtons() {
 				var buttons = $('<div class="buttons"></div>');
 				buttons.append(getVSplitButton())
+				.append('&nbsp;')
 				.append(getHSplitButton())
+				.append('&nbsp;')
 				.append(getCloseButton());
 				return buttons;
 			}
 			function getVSplitButton() {
-				var vSplitButton = $('<a class="button bloom-purple splitter vertical">|</a>');
+				var vSplitButton = $('<a class="button bloom-purple splitter vertical">&#124;</a>');
 				vSplitButton.click(splitClickHandler);
 				return vSplitButton;
 			}
@@ -168,28 +169,15 @@
 				return hSplitButton;
 			}
 			function getCloseButton() {
-				var closeButton = $('<a class="button bloom-purple close">x</a>');
+				var closeButton = $('<a class="button bloom-purple close">&#215;</a>');
 				closeButton.click(closeClickHandler);
 				return closeButton;
 			}
-			//            function addCloseButton(element) {
-			//                var closeButton = $('<a class="button blue close">x</a>');
-			//                closeButton.click(closeClickHandler);
-			//                element.append(closeButton);
-			//            }
 		</script>
 	</head>
 	<body>
 	<div class="split-pane-frame">
-		<div class="split-pane vertical-percent">
-			<div class="split-pane-component position-left">
-				<div class="split-pane-component-inner"></div>
-			</div>
-			<div class="split-pane-divider vertical-divider"></div>
-			<div class="split-pane-component position-right">
-				<div class="split-pane-component-inner"></div>
-			</div>
-		</div>
+		<div class="split-pane-component-inner"></div>
 	</div>
 	</body>
 </html>
