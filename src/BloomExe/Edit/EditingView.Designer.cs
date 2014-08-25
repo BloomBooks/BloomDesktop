@@ -100,7 +100,7 @@
 			// 
 			this._splitContainer1.Panel2.Controls.Add(this._splitContainer2);
 			this._splitContainer1.Size = new System.Drawing.Size(1200, 561);
-			this._splitContainer1.SplitterDistance = 250;
+			this._splitContainer1.SplitterDistance = 200;
 			this._splitContainer1.SplitterWidth = 10;
 			this._splitContainer1.TabIndex = 0;
 			this._splitContainer1.TabStop = false;
