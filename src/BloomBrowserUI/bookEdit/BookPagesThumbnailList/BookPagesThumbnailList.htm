@@ -43,9 +43,16 @@
 		div.bloom-page {
 			/* bizarrely, the translate moves it to the top left instead of the middle of the original space.
 				If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
-			transform: scale(0.075) translate(-617%,-617%);
+			transform: scale(0.075) translate(617%,-617%);
 			position: absolute;
-			left: 40px;
+			right: 0px;
+		}
+		div.bloom-page.A4Portrait {
+			/* bizarrely, the translate moves it to the top left instead of the middle of the original space.
+				If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
+			transform: scale(0.05) translate(950%,-950%);
+			position: absolute;
+			right: 0px;
 		}
 		.gridly {
 			position: relative;
@@ -57,8 +64,16 @@
 			overflow:hidden;
 		}
 		div.gridItem:nth-child(even) div.bloom-page {
+			transform: scale(0.075) translate(-617%,-617%);
+			right: auto;
 			left: 0px;
 		}
+		div.gridItem:nth-child(even) div.bloom-page.A4Portrait {
+			transform: scale(0.05) translate(-950%,-950%);
+			right: auto;
+			left: 0px;
+		}
+
 		.div.gridItem.dragging {
 			opacity: .8;
 		}
