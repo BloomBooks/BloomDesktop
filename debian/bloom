@@ -1,0 +1,11 @@
+#!/bin/sh
+
+LIB=/usr/lib/bloom-desktop
+SHARE=/usr/share/bloom-desktop
+
+cd "$SHARE"
+RUNMODE=INSTALLED
+. ./environ
+cd $OLDPWD
+
+exec mono --debug "$LIB"/Bloom.exe "$@"
