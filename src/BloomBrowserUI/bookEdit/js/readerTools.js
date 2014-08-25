@@ -738,8 +738,6 @@ else {
 
 /**
  * The function that is called to hook everything up.
- * For debugging and demo purposes we generate some fake data if fakeIt is true and the attempt to load the file
- * does not produce anything.
  * Note: settingsFileContent may be empty.
  *
  * @param {String} settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
