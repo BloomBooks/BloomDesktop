@@ -19,6 +19,7 @@
             }
 
             .split-pane-frame {
+                position: relative;
                 box-sizing: border-box;
                 width: 800px;
                 height: 100%;
@@ -88,6 +89,17 @@
                 box-sizing: border-box;
             }
 
+            .add {
+                position: absolute;
+                top: 50%;
+            }
+            .add.right {
+                right: -36px;
+            }
+            .add.left {
+                left: -36px;
+            }
+
         </style>
 
         <script>
@@ -96,6 +108,7 @@
             });
             $(window).load(function() {
                 $('.split-pane-component-inner').append(getButtons());
+                $('.add').click(addClickHandler);
             });
 
             function splitClickHandler() {
@@ -117,12 +130,37 @@
                 newSplitPane.splitPane();
             }
 
+            function addClickHandler() {
+                var topSplitPane = $('.split-pane-frame').children('div').first();
+                if ($(this).hasClass('right')) {
+                    topSplitPane.wrap(getSplitPaneHtml('vertical'));
+                    topSplitPane.wrap(getSplitPaneComponentHtml('left'));
+                    var newSplitPane = $('.split-pane-frame').children('div').first();
+                    newSplitPane.append(getSplitPaneDividerHtml('vertical'));
+                    newSplitPane.append(getSplitPaneComponentWithNewContent('right'));
+                    newSplitPane.splitPane();
+                } else if ($(this).hasClass('left')) {
+                    topSplitPane.wrap(getSplitPaneHtml('vertical'));
+                    topSplitPane.wrap(getSplitPaneComponentHtml('right'));
+                    var newSplitPane = $('.split-pane-frame').children('div').first();
+                    newSplitPane.prepend(getSplitPaneDividerHtml('vertical'));
+                    newSplitPane.prepend(getSplitPaneComponentWithNewContent('left'));
+                    newSplitPane.splitPane();
+                }
+            }
+
             function closeClickHandler() {
+                if (!$('.split-pane'))
+                    return;
+
                 var myComponent = $(this).closest('.split-pane-component');
-                var sibling = myComponent.siblings('.split-pane-component').first();
+                var sibling = myComponent.siblings('.split-pane-component').first('div');
                 var toReplace = myComponent.parent().parent();
                 var positionClass = toReplace.attr('class');
                 toReplace.replaceWith(sibling);
+
+                // The idea here is we need the position-* class from the parent to replace the sibling's position-* class.
+                // This is working for now, but should be cleaned up since it could also add other classes.
                 sibling.removeClass(function (index, css) {
                     return (css.match (/(^|\s)position-\S+/g) || []).join(' ');
                 });
@@ -177,7 +215,9 @@
     </head>
     <body>
     <div class="split-pane-frame">
+        <a class="button bloom-purple add left">+</a>
         <div class="split-pane-component-inner"></div>
+        <a class="button bloom-purple add right">+</a>
     </div>
     </body>
 </html>
