@@ -427,11 +427,16 @@ ReaderToolsModel.prototype.setMarkupType = function(markupType) {
 ReaderToolsModel.prototype.getElementsToCheck = function() {
 
     var page = parent.window.document.getElementById('page');
-    if (page)
-        return $(".bloom-content1", page.contentWindow.document);
 
     // this happens during unit testing
-    return $(".bloom-content1");
+    if (!page) return $(".bloom-content1");
+
+    // if this is a cover page, return an empty set
+    var cover = $('body', page.contentWindow.document).find('div.cover');
+    if (cover['length'] > 0) return $();
+
+    // not a cover page, return elements to check
+    return $(".bloom-content1", page.contentWindow.document);
 };
 
 /**
