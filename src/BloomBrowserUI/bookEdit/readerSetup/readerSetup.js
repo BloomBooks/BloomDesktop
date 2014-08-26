@@ -664,13 +664,17 @@ if (typeof ($) === "function") {
  * Retrieve data from localhost
  * @param {String} url The URL to request
  * @param {Function} callback Function to call when the ajax request returns
- * @param {String} [dataValue] Passed in the query string under the "data" key
+ * @param {String} [dataValue] Passed in the post under the "data" key
  */
 function simpleAjaxPost(url, callback, dataValue) {
 
     var ajaxSettings = {type: 'POST', url: url};
     if (dataValue) ajaxSettings.data = {data: dataValue};
 
+    // If/when the ajax call returns a response, the entire contents of the response
+    // will be passed to the function that was passed in the "callback" parameter.
+    // The data can be almost anything: an html document, a json object, a single
+    // string or number, etc., whatever the "callback" function is expecting.
     $.ajax(ajaxSettings)
         .done(function (data) {
             callback(data);
