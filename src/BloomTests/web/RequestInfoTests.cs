@@ -13,7 +13,7 @@ namespace BloomTests.web
 		[Test]
 		public void RetrieveFileWithSpecialCharacters()
 		{
-			const string fileContents = @"\&<'@?>/" + "\"";
+			const string fileContents = @"\&<'@?>/" + "\r\n\"";
 			using (var asciiFile = MakeTempFile(Encoding.ASCII.GetBytes(fileContents)))
 			{
 				using (var utf8File = MakeTempFile(Encoding.UTF8.GetBytes(fileContents)))
@@ -23,7 +23,7 @@ namespace BloomTests.web
 					request.WriteCompleteOutput(File.ReadAllText(asciiFile.Path));
 					var asciiString = request.ReplyContents;
 
-					Assert.AreEqual(asciiString.Length, 9);
+					Assert.AreEqual(asciiString.Length, 11);
 					Assert.AreEqual(asciiString[0], '\\');
 					Assert.AreEqual(asciiString[1], '&');
 					Assert.AreEqual(asciiString[2], '<');
@@ -32,11 +32,13 @@ namespace BloomTests.web
 					Assert.AreEqual(asciiString[5], '?');
 					Assert.AreEqual(asciiString[6], '>');
 					Assert.AreEqual(asciiString[7], '/');
-					Assert.AreEqual(asciiString[8], '"');
+					Assert.AreEqual(asciiString[8], '\r');
+					Assert.AreEqual(asciiString[9], '\n');
+					Assert.AreEqual(asciiString[10], '"');
 
 					request.WriteCompleteOutput(File.ReadAllText(utf8File.Path));
 					var utf8String = request.ReplyContents;
-					Assert.AreEqual(utf8String.Length, 9);
+					Assert.AreEqual(utf8String.Length, 11);
 					Assert.AreEqual(utf8String[0], '\\');
 					Assert.AreEqual(utf8String[1], '&');
 					Assert.AreEqual(utf8String[2], '<');
@@ -45,7 +47,9 @@ namespace BloomTests.web
 					Assert.AreEqual(utf8String[5], '?');
 					Assert.AreEqual(utf8String[6], '>');
 					Assert.AreEqual(utf8String[7], '/');
-					Assert.AreEqual(utf8String[8], '"');
+					Assert.AreEqual(utf8String[8], '\r');
+					Assert.AreEqual(utf8String[9], '\n');
+					Assert.AreEqual(utf8String[10], '"');
 				}
 			}
 		}
