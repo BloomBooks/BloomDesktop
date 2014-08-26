@@ -500,7 +500,7 @@ namespace Bloom.Edit
 
 			var settingsStr = CleanUpJsonDataForJavascript(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
 
-			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.restoreAccordionSettings) === \"function\") {document.getElementById('accordion').contentWindow.restoreAccordionSettings(\"" + settingsStr + "\");}");
+			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.restoreAccordionSettings(\"" + settingsStr + "\"); }");
 		}
 
 		/// <summary>Gets reader tool settings from DecodableLevelData.json and send to javascript</summary>
@@ -521,7 +521,7 @@ namespace Bloom.Edit
 			else
 				bookFontName = "sans-serif";
 
-			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.initializeSynphony) === \"function\") {document.getElementById('accordion').contentWindow.initializeSynphony(\"" + input + "\", \"" + bookFontName + "\");}");
+			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.loadReaderToolSettings(\"" + input + "\", \"" + bookFontName + "\"); }");
 		}
 
 		private void SaveAccordionSettings(string data)
@@ -666,7 +666,7 @@ namespace Bloom.Edit
 				}
 			}
 
-			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.setTextsList) === \"function\") {document.getElementById('accordion').contentWindow.setTextsList(\"" + fileList + "\");}");
+			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.setSampleTextsList(\"" + fileList + "\"); }");
 		}
 
 		/// <summary>Gets the contents of a Sample Text file</summary>
@@ -685,7 +685,7 @@ namespace Bloom.Edit
 
 			text = CleanUpDataForJavascript(text);
 
-			_view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.setSampleFileContents) === \"function\") {document.getElementById('accordion').contentWindow.setSampleFileContents(\"" + text + "\");}");
+			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.setSampleFileContents(\"" + text + "\"); }");
 		}
 
 		private string MakeAccordionContent()

@@ -1,0 +1,14 @@
+Completed requirements:
+----------------------------
+prevent dragging fixed thumbs
+
+
+Partially completed
+--------------------
+Can select items on first row, but not other rows
+
+
+Incomplete
+--------------------
+Drag on iframes themseleves
+Make pages ease out of the way
