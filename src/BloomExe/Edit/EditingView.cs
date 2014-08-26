@@ -193,7 +193,7 @@ namespace Bloom.Edit
 								MakeJavaScriptContent(dlg.Metadata.CopyrightNotice),
 								licenseImageName,
 								dlg.Metadata.License.Url, MakeJavaScriptContent(rights), description);
-						_browser1.RunJavaScript("document.getElementById('page').contentWindow.SetCopyrightAndLicense(" + result + ")");
+						_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.setCopyrightAndLicense(" + result + "); }");
 
 						//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
 						//back to the data div in the actual html file even when the page is read and saved, because individual pages don't
@@ -705,7 +705,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
-			RunJavaScript("var pageWin = document.getElementById('page').contentWindow; if (pageWin && (typeof pageWin.jQuery !== 'undefined') && pageWin.jQuery.fn.removeSynphonyMarkup) { pageWin.jQuery(\".bloom-editable\").removeSynphonyMarkup(); }");
+			RunJavaScript("if (document.getElementById('page')) { var pageWin = document.getElementById('page').contentWindow; if (pageWin && (typeof pageWin.jQuery !== 'undefined') && pageWin.jQuery.fn.removeSynphonyMarkup) { pageWin.jQuery('.bloom-editable').removeSynphonyMarkup(); }}");
 			_browser1.ReadEditableAreasNow();
 		}
 

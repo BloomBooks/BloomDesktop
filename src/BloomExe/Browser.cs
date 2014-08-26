@@ -250,6 +250,8 @@ namespace Bloom
 			//again, more generally
 			errorsToHide.Add("xulrunner"); // can happen when mootools (used by calendar) is loaded
 
+			errorsToHide.Add("calledByCSharp"); // this can happen while switching pages quickly, when the page unloads after the script starts executing.
+
 #if !DEBUG
 			errorsToHide.Add("Cleanup"); // TODO: can happen when switching pages quickly, as it tries to run it on about:blank. This suggests that sometimes pages aren't cleaned up.
 #endif

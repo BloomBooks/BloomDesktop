@@ -5,7 +5,8 @@
   "dependencies": {
 	"jade": "0.35",
 	"less": "1.7.x",
-	"clean-css": "2.2.x"
+	"clean-css": "2.2.x",
+	"typescript": "1.0.x"
   },
   "engine": "node >= 1.0.0"
 }
