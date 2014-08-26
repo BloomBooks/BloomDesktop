@@ -280,13 +280,14 @@ DIV.coverBottomBookTopic DIV.bloom-contentNational1
 
 .coverBottomBookTopic .bloom-contentNational2, .coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1) /*the not is for shellbooks where lang 1 and 2 are both the same (e.g. English)*/
 {
-	color: gray;
+	color: gray; /* review: these may never show anyho; the grey color is in here to help tracing down a problem that may already be fixed, where you would see, e.g.,  "Health  Health" on the front page */
 }
 
-.publishMode .coverBottomBookTopic .bloom-contentNational2, .publishMode .coverBottomBookTopic .bloom-content1
+.publishMode .coverBottomBookTopic .bloom-contentNational2, .publishMode .coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1)
 {
-	display: none;
+	display: none; /* review: these may never show anyhow; it's in here to help tracing down a problem that may already be fixed */
 }
+
 /*.......Language Name*/
 DIV.coverBottomLangName DIV
 {
