@@ -43,3 +43,8 @@ document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/s
 document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/bloom_lib.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'synphonyApi.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'readerTools.js"></script>');
+
+document.write('<script type="text/javascript" src="' + thisDir + 'split-pane/split-pane.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'split-pane/split-pane-bloom.js"></script>');
+document.write('<link rel="stylesheet" type="text/css" href="' + thisDir + 'split-pane/split-pane.css">');
+document.write('<link rel="stylesheet" type="text/css" href="' + thisDir + 'split-pane/split-pane-bloom.css">');

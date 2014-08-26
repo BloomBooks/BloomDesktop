@@ -1,0 +1,95 @@
+.split-pane-frame {
+  position: relative;
+  box-sizing: border-box;
+  width: 800px;
+  height: 100%;
+  padding: 5px;
+  margin-left: auto;
+  margin-right: auto;
+  border: thick solid black;
+}
+
+.split-pane.vertical-percent > .split-pane-component.position-left {
+  right: 50%;
+  margin-right: 10px;
+}
+
+.split-pane.vertical-percent > .split-pane-component.position-right {
+  width: 50%;
+}
+
+.split-pane.horizontal-percent > .split-pane-component.position-top {
+/*.split-pane.horizontal-percent > .split-pane-component:first-child {*/
+  bottom: 50%;
+  margin-bottom: 10px;
+}
+
+.split-pane.horizontal-percent > .split-pane-component.position-bottom {
+/*.split-pane.horizontal-percent > .split-pane-component:nth-of-type(3) {*/
+/*.split-pane.horizontal-percent > .split-pane-component:first-child ~ .split-pane-component {*/
+  height: 50%;
+}
+
+.split-pane.vertical-percent > .vertical-divider {
+  right: 50%;
+  width: 10px;
+  cursor: col-resize;
+  /*background-color: black;*/
+}
+
+.split-pane.horizontal-percent > .horizontal-divider {
+  bottom: 50%;
+  height: 10px;
+  cursor: row-resize;
+  /*background-color: black;*/
+}
+
+.button, .button:visited {
+  display: inline-block;
+  text-decoration: none;
+  border: 1px solid rgba(0,0,0,0.25);
+  position: relative;
+  cursor: pointer;
+  opacity: 0.5;
+  height: 20px;
+  width: 20px;
+  text-align: center;
+  color: #1D94A4;
+}
+
+.buttons {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px;
+}
+
+.bloom-purple.button, .bloom-purple.button:visited { background-color: #C2A6BF; }
+
+.split-pane-component-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  border: medium solid #1D94A4; /*#E48C84*/
+  box-sizing: border-box;
+}
+
+.selector-links {
+  top: 45%;
+  text-align: center;
+}
+.selector-links, .selector-links a {
+  color: #E48C84;
+}
+
+.add {
+  position: absolute;
+  top: 50%;
+}
+.add.right {
+  right: -36px;
+}
+.add.left {
+  left: -36px;
+}
