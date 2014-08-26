@@ -966,6 +966,26 @@ function DecodeHtml(encodedString) {
     return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&#169;/g, "©");
 }
 
+function SetupImage(image) {
+    //make images scale up to their container without distorting their proportions, while being centered within it.
+    $(image).scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
+
+    // when the image changes, we need to scale again:
+    $(image).load(function () {
+        $(this).scaleImage({ scale: "fit" });
+    });
+
+    //and when their parent is resized by the user, we need to scale again:
+    $(image).parent().resize(function () {
+        $(this).find("img").scaleImage({ scale: "fit" });
+        try {
+            ResetRememberedSize(this);
+        } catch (error) {
+            console.log(error);
+        }
+    });
+}
+
 // ---------------------------------------------------------------------------------
 // document ready function
 // ---------------------------------------------------------------------------------
@@ -1380,25 +1400,29 @@ $(document).ready(function () {
         }
     });
 
-    //make images scale up to their container without distorting their proportions, while being centered within it.
-    $(".bloom-imageContainer img").scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
-
-    // when the image changes, we need to scale again:
-    $(".bloom-imageContainer img").load(function () {
-        $(this).scaleImage({ scale: "fit" });
+    $(".bloom-imageContainer img").each(function() {
+        SetupImage(this);
     });
 
-    //and when their parent is resized by the user, we need to scale again:
-    $(".bloom-imageContainer img").each(function () {
-        $(this).parent().resize(function () {
-            $(this).find("img").scaleImage({ scale: "fit" });
-            try {
-                ResetRememberedSize(this);
-            } catch (error) {
-                console.log(error);
-            }
-        });
-    });
+//    //make images scale up to their container without distorting their proportions, while being centered within it.
+//    $(".bloom-imageContainer img").scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
+//
+//    // when the image changes, we need to scale again:
+//    $(".bloom-imageContainer img").load(function () {
+//        $(this).scaleImage({ scale: "fit" });
+//    });
+//
+//    //and when their parent is resized by the user, we need to scale again:
+//    $(".bloom-imageContainer img").each(function () {
+//        $(this).parent().resize(function () {
+//            $(this).find("img").scaleImage({ scale: "fit" });
+//            try {
+//                ResetRememberedSize(this);
+//            } catch (error) {
+//                console.log(error);
+//            }
+//        });
+//    });
      
     var editor;
     if (GetSettings().bloomBrowserUIFolder.indexOf('http') === 0) {
