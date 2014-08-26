@@ -626,7 +626,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			if (!done)
 			{
-				throw new ApplicationException(string.Format("Gave up waiting for the {0} to be created.", options.FileName));
+				throw new ApplicationException(string.Format("Gave up waiting for the {0} to be created. This usually means Bloom is busy making thumbnails for other things. Wait a bit, and try again.", options.FileName));
 			}
 		}
 
