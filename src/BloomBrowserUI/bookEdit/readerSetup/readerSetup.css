@@ -88,6 +88,7 @@ div.rs-word-container {
 span.desired-grapheme { color: #b2652b; }
 span.current-sight-word { font-weight: 700; }
 span.sight-word { color: #00528d; }
+div.ui-tabs div.ui-tabs-panel ul.asterisk { margin: 0; padding-left: 12px; border: 0 none; }
 
 @media (max-width: 539px) {
 	.tab-detail div.sub-float { width: calc(100% - 20px); }
