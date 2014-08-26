@@ -82,7 +82,7 @@ namespace Bloom
 					{
 						newContents = newContents.Replace("&nbsp;", "&#160;");
 							//REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
-						newContents = newContents.Replace("REMOVEME", "");
+						newContents = newContents.Replace("REMOVEME", "").Replace("\0", "");
 						dom.LoadXml(newContents);
 					}
 					catch (Exception e)

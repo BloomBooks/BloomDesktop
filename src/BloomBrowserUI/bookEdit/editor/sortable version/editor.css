@@ -1,0 +1,38 @@
+UL
+{
+	list-style-type: none;
+	width: 150px;
+	background-color: #42CA26;
+}
+LI
+{
+	background-color: #2913CC !important;
+	float: left;
+	width: 61px;
+	height: 93px;
+	overflow: hidden;
+	margin-top: 12px;
+	margin-left: 2px;
+	margin-right: 2px;
+	margin-bottom: 2px;
+}
+LI.ui-selected
+{
+	border: 2px solid #1AC952;
+	margin-left: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	margin-top: 10px;
+}
+LI IFRAME
+{
+	overflow: hidden;
+	-moz-transform: scale(0.1);
+	-moz-transform-origin: 0 0;
+	-webkit-transform: scale(0.1);
+	transform: scale(0.1);
+	-webkit-transform-origin: 0 0;
+	transform-origin: 0 0;
+	width: 571px;
+	height: 802px;
+}

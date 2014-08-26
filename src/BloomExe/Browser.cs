@@ -250,6 +250,8 @@ namespace Bloom
 			//again, more generally
 			errorsToHide.Add("xulrunner"); // can happen when mootools (used by calendar) is loaded
 
+			errorsToHide.Add("calledByCSharp"); // this can happen while switching pages quickly, when the page unloads after the script starts executing.
+
 #if !DEBUG
 			errorsToHide.Add("Cleanup"); // TODO: can happen when switching pages quickly, as it tries to run it on about:blank. This suggests that sometimes pages aren't cleaned up.
 #endif
@@ -460,6 +462,9 @@ namespace Bloom
             UpdateDisplay();
         }
 
+		[DefaultValue(true)]
+		public bool ScaleToFullWidthOfPage { get; set; }
+
         //NB: make sure the <base> is set correctly, 'cause you don't know where this method will 
         //save the file before navigating to it.
         public void Navigate(XmlDocument dom, XmlDocument editDom = null)
@@ -477,12 +482,15 @@ namespace Bloom
 			 * But it's still worth doing, becuase without it, we have this annoying re-zoom every time we look at different page.
 			*/
 			XmlElement body = (XmlElement) _rootDom.GetElementsByTagName("body")[0];
-        	var scale = GetScaleToShowWholeWidthOfPage();
-			if (scale > 0f)
-			{
-				body.SetAttribute("style", GetZoomCSS(scale));
-			}
-        	XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+	        if (ScaleToFullWidthOfPage)
+	        {
+		        var scale = GetScaleToShowWholeWidthOfPage();
+		        if (scale > 0f)
+		        {
+			        body.SetAttribute("style", GetZoomCSS(scale));
+		        }
+	        }
+	        XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			SetNewTempFile(TempFileUtils.CreateHtm5FromXml(dom));
 			_url = _tempHtmlFile.Path.ToLocalhost();
             UpdateDisplay();
@@ -833,6 +841,8 @@ namespace Bloom
 
 		private void ZoomToFullWidth()
 		{
+			if (!ScaleToFullWidthOfPage)
+				return;
 			var scale = GetScaleToShowWholeWidthOfPage();
 			if(scale>0f)
 			{
