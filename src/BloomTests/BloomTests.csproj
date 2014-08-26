@@ -166,6 +166,7 @@
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
     <Compile Include="web\BloomServerTests.cs" />
     <Compile Include="LowResImageProcessing\ImageServerTests.cs" />
+    <Compile Include="web\RequestInfoTests.cs" />
     <Compile Include="XmlHtmlConverterTests.cs" />
     <Compile Include="web\EnhancedImageServerTests.cs" />
     <Compile Include="PretendRequestInfo.cs" />
