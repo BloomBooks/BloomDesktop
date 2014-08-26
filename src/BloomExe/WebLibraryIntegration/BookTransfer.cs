@@ -615,7 +615,7 @@ namespace Bloom.WebLibraryIntegration
 					done = true;
 					throw ex;
 				});
-			var giveUpTime = DateTime.Now.AddSeconds(5);
+			var giveUpTime = DateTime.Now.AddSeconds(15);
 			while (!done && DateTime.Now < giveUpTime)
 			{
 				Thread.Sleep(100);
