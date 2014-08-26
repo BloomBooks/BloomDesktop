@@ -85,7 +85,7 @@ function getSplitPaneComponentInner() {
 }
 
 function getButtons() {
-    var buttons = $('<div class="buttons"></div>');
+    var buttons = $('<div class="buttons bloom-ui"></div>');
     buttons.append(getVSplitButton())
         .append('&nbsp;')
         .append(getHSplitButton())
@@ -94,21 +94,41 @@ function getButtons() {
     return buttons;
 }
 function getVSplitButton() {
-    var vSplitButton = $('<a class="button bloom-purple splitter vertical bloom-ui">&#124;</a>');
+    var vSplitButton = $('<a class="button bloom-purple splitter vertical">&#124;</a>');
     vSplitButton.click(splitClickHandler);
     return vSplitButton;
 }
 function getHSplitButton() {
-    var hSplitButton = $('<a class="button bloom-purple splitter horizontal bloom-ui">&#8211;&#8211;&#8211;</a>');
+    var hSplitButton = $('<a class="button bloom-purple splitter horizontal">&#8211;&#8211;&#8211;</a>');
     hSplitButton.click(splitClickHandler);
     return hSplitButton;
 }
 function getCloseButton() {
-    var closeButton = $('<a class="button bloom-purple close bloom-ui">&#215;</a>');
+    var closeButton = $('<a class="button bloom-purple close">&#215;</a>');
     closeButton.click(closeClickHandler);
     return closeButton;
 }
 function getTypeSelectors() {
-    var links = $('<div class="selector-links bloom-ui"><a href="">Picture</a> or <a href="">Text</a></div>');
+    var links = $('<div class="selector-links bloom-ui"></div>');
+    var pictureLink = $('<a href="">Picture</a>');
+    pictureLink.click(makePictureFieldClickHandler);
+    var textLink = $('<a href="">Text</a>');
+    textLink.click(makeTextFieldClickHandler);
+    links.append(pictureLink).append(' or ').append(textLink);
     return links;
+}
+function makeTextFieldClickHandler(e) {
+    e.preventDefault();
+    $(this).closest('.split-pane-component-inner').append('<div class="bloom-translationGroup bloom-trailingElement normal-style"><div lang="z" contenteditable="true" class="bloom-content1 bloom-editable"></div></div>');
+    $(this).closest('.selector-links').remove();
+}
+function makePictureFieldClickHandler(e) {
+    e.preventDefault();
+    var imageContainer = $('<div class="bloom-imageContainer bloom-leadingElement"></div>');
+    var image = $('<img src="placeHolder.png" alt="Could not load the picture"/>');
+    SetupImage(image);
+    imageContainer.append(image);
+    SetupImageContainer(imageContainer);
+    $(this).closest('.split-pane-component-inner').append(imageContainer);
+    $(this).closest('.selector-links').remove();
 }
