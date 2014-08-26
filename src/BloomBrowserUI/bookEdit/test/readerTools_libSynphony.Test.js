@@ -27,7 +27,7 @@ describe("readerTools-libSynphony tests", function() {
         var sampleFileContents = 'The cat sat on the mat. The rat sat on the cat.';
 
         var synphony = model.getSynphony();
-        synphony.loadSettings(JSON.stringify(settings));
+        synphony.loadSettings(settings);
 
         model.addWordsFromFile(sampleFileContents);
         model.addWordsToSynphony();
