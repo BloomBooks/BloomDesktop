@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Drawing.Text;
 using Bloom.ImageProcessing;
 using System.IO;
 using Palaso.IO;
@@ -68,6 +69,10 @@ namespace Bloom.web
 					var fileName = info.GetQueryString()["data"];
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(GetSampleFileContents(fileName));
+					return true;
+				case "availableFontNames":
+					InstalledFontCollection installedFontCollection = new InstalledFontCollection();
+					info.WriteCompleteOutput(string.Join(",", installedFontCollection.Families.Select(f => f.Name)));
 					return true;
 			}
 
