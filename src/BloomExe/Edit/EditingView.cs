@@ -775,6 +775,11 @@ namespace Bloom.Edit
 						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.trilingual", "Three Languages", "Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page");
 						break;
 				}
+
+				//I'm surprised that L10NSharp (in aug 2014) doesn't automatically make tooltips localizable, but this is how I got it to work
+				_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
+					//_layoutChoices.ToolTipText); doesn't work because the scanner needs literals
+					"Choose a page size and orientation");
 			}
 			catch (Exception error)
 			{

@@ -121,7 +121,7 @@ namespace BloomTemp
 
 		public static string CleanupHtml5(string xhtml)
 		{
-			var re = new Regex("<(title|div|i|table|td|span) ([^<]*)/>");
+			var re = new Regex("<(title|div|i|table|td|span|style) ([^<]*)/>");
 			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
 			//now insert the non-xml-ish <!doctype html>
 			return string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine, xhtml);

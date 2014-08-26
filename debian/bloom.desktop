@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Bloom
+Comment=Literacy materials development for language communities
+Exec=bloom
+Icon=bloom
+Terminal=false
+Type=Application
+Categories=Education;
+X-Desktop-File-Install-Version=0.21

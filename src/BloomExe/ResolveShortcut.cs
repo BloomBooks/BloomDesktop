@@ -11,9 +11,6 @@ namespace Bloom
 		//from http://stackoverflow.com/questions/139010/how-to-resolve-a-lnk-in-c
 		#region Signitures imported from http://pinvoke.net
 
-		[DllImport("shfolder.dll", CharSet = CharSet.Auto)]
-		internal static extern int SHGetFolderPath(IntPtr hwndOwner, int nFolder, IntPtr hToken, int dwFlags, StringBuilder lpszPath);
-
 		[Flags()]
 		enum SLGP_FLAGS
 		{

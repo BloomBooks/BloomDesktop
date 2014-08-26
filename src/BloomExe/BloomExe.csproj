@@ -210,6 +210,12 @@
     <Compile Include="Edit\ReaderToolsView.Designer.cs">
       <DependentUpon>ReaderToolsView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\WebThumbNailList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\WebThumbNailList.Designer.cs">
+      <DependentUpon>WebThumbNailList.cs</DependentUpon>
+    </Compile>
     <Compile Include="Edit\TransparentPanel.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -552,6 +558,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\HistoryAndNotesDialog.resx">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\WebThumbNailList.resx">
+      <DependentUpon>WebThumbNailList.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\TipDialog.resx">
       <DependentUpon>TipDialog.cs</DependentUpon>
@@ -1027,6 +1037,12 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   <Target Name="BeforeBuild">
   </Target>
   -->
+  <Target Name="BeforeBuild">
+    <!-- Copy the appropriate version of icudotnet -->
+    <!-- $(icu-config ...) is passed to shell to exec. -->
+    <!-- Escape the $ (%24) to ensure it is sent to the shell. -->
+    <Exec Command="cp -p $(SolutionDir)/lib/dotnet/icu%24(icu-config --version|tr -d .|cut -c -2)/icu.net.dll* $(SolutionDir)/lib/dotnet" Condition="'$(OS)'!='Windows_NT'" />
+  </Target>
   <ItemGroup>
     <BasicBookCssFiles Include="../../DistFiles/factoryCollections/Templates/Basic Book/*.css" />
   </ItemGroup>
