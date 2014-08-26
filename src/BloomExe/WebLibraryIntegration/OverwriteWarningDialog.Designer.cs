@@ -40,7 +40,7 @@
             // 
             this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
             this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
-            this._L10NSharpExtender.SetLocalizingId(this.label1, "Publish.Upload.ConfirmReplaceExisting");
+            this._L10NSharpExtender.SetLocalizingId(this.label1, "PublishTab.Upload.ConfirmReplaceExisting");
             this.label1.Location = new System.Drawing.Point(22, 19);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(217, 105);

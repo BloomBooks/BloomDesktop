@@ -2,7 +2,7 @@
 # server=build.palaso.org
 # project=Bloom
 # build=Bloom-Default-precise64-Auto (Bloom 3)
-# root_dir=..
+# root_dir=../
 # $Id: d32984f53cd52f171a9cba46cd3879538ad23431 $
 
 cd "$(dirname "$0")"
@@ -69,7 +69,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 # URL: http://build.palaso.org/viewType.html?buildTypeId=bt403
 # VCS: https://bitbucket.org/hatton/bloom-desktop [default]
 # dependencies:
-# [0] build: bloom-2.1.-win32-static-dependencies (bt396)
+# [0] build: bloom-3.0.-win32-static-dependencies (bt396)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false

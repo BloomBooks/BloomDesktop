@@ -14,6 +14,7 @@ using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using L10NSharp;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.SuperToolTip;
 using Gecko;
 using Palaso.IO;
 
@@ -31,7 +32,7 @@ namespace Bloom.Publish
 		public delegate PublishView Factory();//autofac uses this
 
         public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, BookTransfer bookTransferrer, LoginDialog login)
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login)
         {
 	        _bookTransferrer = bookTransferrer;
 	        _loginDialog = login;
@@ -74,7 +75,27 @@ namespace Bloom.Publish
 
 			_menusToolStrip.Renderer = new EditingView.FixedToolStripRenderer();
 			GeckoPreferences.Default["pdfjs.disabled"] = false;
+			SetupLocalization();
+			localizationChangedEvent.Subscribe(o=>SetupLocalization());
         }
+
+		private void SetupLocalization()
+		{
+			LocalizeSuperToolTip(_simpleAllPagesRadio, "PublishTab.OnePagePerPaperRadio");
+			LocalizeSuperToolTip(_bookletCoverRadio, "PublishTab.CoverOnlyRadio");
+			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
+			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
+		}
+
+		private void LocalizeSuperToolTip(Control controlThatHasSuperTooltipAttached, string l10nIdOfControl)
+		{
+			var tooltipinfo = _superToolTip.GetSuperStuff(controlThatHasSuperTooltipAttached);
+			var english = tooltipinfo.SuperToolTipInfo.BodyText;
+			//enhance: GetLocalizingId didn't work: var l10nidForTooltip = _L10NSharpExtender.GetLocalizingId(controlThatHasSuperTooltipAttached) + ".tooltip";
+			var l10nidForTooltip = l10nIdOfControl + "-tooltip";
+			tooltipinfo.SuperToolTipInfo.BodyText = LocalizationManager.GetDynamicString("Bloom", l10nidForTooltip, english);
+			_superToolTip.SetSuperStuff(controlThatHasSuperTooltipAttached, tooltipinfo);
+		}
 
 
 		private void Activate()

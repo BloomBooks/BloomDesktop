@@ -166,7 +166,10 @@ namespace Bloom.Collection
 			_collectionSettings.Country = _countryText.Text.Trim();
 			_collectionSettings.Province = _provinceText.Text.Trim();
 			_collectionSettings.District = _districtText.Text.Trim();
-            _collectionSettings.DefaultLanguage1FontName = _fontCombo.SelectedItem.ToString();
+			if (_fontCombo.SelectedItem != null)
+			{
+				_collectionSettings.DefaultLanguage1FontName = _fontCombo.SelectedItem.ToString();
+			}
 
 			//no point in letting them have the Nat lang 2 be the same as 1
 			if (_collectionSettings.Language2Iso639Code == _collectionSettings.Language3Iso639Code)
