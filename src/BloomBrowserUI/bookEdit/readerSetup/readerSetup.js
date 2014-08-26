@@ -9,6 +9,7 @@ var currentSightWords;
 function accordionWindow() {
     return window.parent.document.getElementById('accordion').contentWindow;
 }
+
 /**
  * Respond to messages from the parent document
  * @param {Event} event
@@ -160,7 +161,6 @@ function loadReaderSetupData(jsonData) {
     if (!data.stages) data.stages = [];
     if (!data.levels) data.levels = [];
 
-
     // language tab
     document.getElementById('dls_letters').value = data.letters;
     document.getElementById('dls_letter_combinations').value = data.letterCombinations;
@@ -198,7 +198,6 @@ function loadReaderSetupData(jsonData) {
     tbodyLevels.find('tr').onOnce('click', function() {
         selectLevel(this);
     });
-
 }
 
 /**
@@ -274,6 +273,8 @@ function displayLetters() {
 
     var letters = (document.getElementById('dls_letters').value.trim() + ' ' + document.getElementById('dls_letter_combinations').value.trim()).split(' ');
     letters = letters.filter(function(n){ return n !== ''; });
+
+    if (letters.length === 0) return;
 
     /**
      * If there are more than 42 letters the parent div containing the letter divs will scroll vertically, so the
@@ -603,6 +604,12 @@ function storeThingsToRemember() {
 
     // store
     $('#levels-table').find('tbody tr.selected td:nth-child(6)').html(vals.join('\n'));
+}
+
+function firstSetupLetters() {
+
+    $('#dlstabs').tabs('option', 'active', 0);
+    return false;
 }
 
 /**

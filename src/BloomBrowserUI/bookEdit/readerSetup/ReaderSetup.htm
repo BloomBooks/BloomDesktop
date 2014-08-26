@@ -71,7 +71,7 @@
                         <div data-i18n="ReaderSetup.StageHeader">Stage</div>
                       </th>
                       <th>
-                        <div data-i18n="ReaderSetup.lettersHeader">Letters</div>
+                        <div style="min-width: 35px" data-i18n="ReaderSetup.lettersHeader">Letters</div>
                       </th>
                       <th style="width: 100%">
                         <div data-i18n="ReaderSetup.SightWordsHeader">Sight Words</div>
@@ -102,7 +102,12 @@
             <div style="display: block; margin-top: 12px;">
               <label data-i18n="ReaderSetup.SelectedLetters">Previous and New Letters</label>
             </div>
-            <div id="setup-selected-letters" class="rs-letter-container"></div>
+            <div id="setup-selected-letters" class="rs-letter-container">
+              <div style="height: 80px">
+                <p><span data-i18n="ReaderSetup.FirstSetupAlphabet">First,</span> <a id="first-setup-alphabet" href="" onclick="return firstSetupLetters();" data-i18n="ReaderSetup.SetupAlphabet">set up the alphabet for this language.</a>
+                </p>
+              </div>
+            </div>
             <div id="click-letters" style="float: left" data-i18n="ReaderSetup.ClickLetter" class="smaller">Click on letters to add them to this stage.</div>
           </div>
           <div id="setup-stage-matching-words" class="sub-float">

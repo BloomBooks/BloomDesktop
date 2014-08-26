@@ -75,7 +75,7 @@ html
 									thead
 										tr
 											th: div(data-i18n='ReaderSetup.StageHeader') Stage
-											th: div(data-i18n='ReaderSetup.lettersHeader') Letters
+											th: div(style='min-width: 35px', data-i18n='ReaderSetup.lettersHeader') Letters
 											th(style='width: 100%'): div(data-i18n='ReaderSetup.SightWordsHeader') Sight Words
 									tbody
 									tfoot
@@ -97,6 +97,11 @@ html
 						br
 						div(style='display: block; margin-top: 12px;'): label(data-i18n='ReaderSetup.SelectedLetters') Previous and New Letters
 						#setup-selected-letters.rs-letter-container
+							div(style='height: 80px')
+								p
+									span(data-i18n='ReaderSetup.FirstSetupAlphabet') First,
+									= ' '
+									a#first-setup-alphabet(href='', onclick='return firstSetupLetters();', data-i18n='ReaderSetup.SetupAlphabet') set up the alphabet for this language.
 						#click-letters.smaller(style='float: left', data-i18n='ReaderSetup.ClickLetter') Click on letters to add them to this stage.
 					#setup-stage-matching-words.sub-float
 						label(style='white-space: nowrap;')
