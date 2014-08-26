@@ -2,6 +2,7 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.IO;
 using System.Net;
@@ -128,5 +129,16 @@ namespace Bloom.web
 			_actualContext.Response.StatusDescription = "File not found";
 			_actualContext.Response.Close();
 		}
+
+		public NameValueCollection GetQueryString()
+		{
+			return _actualContext.Request.QueryString;
+		}
+
+		private static string UnescapeString(string value)
+		{
+			return Uri.UnescapeDataString(value.Replace("+", " "));
+		}
+
 	}
 }
