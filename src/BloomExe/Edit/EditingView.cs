@@ -705,7 +705,7 @@ namespace Bloom.Edit
 					item.Enabled = false;
 				}
 
-				_layoutChoices.Text = layout.ToString();
+				_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices."+layout, layout.ToString());
 
 				switch (_model.NumberOfDisplayedLanguages)
 				{
