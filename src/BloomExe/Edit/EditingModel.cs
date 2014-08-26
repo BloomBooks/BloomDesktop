@@ -87,6 +87,8 @@ namespace Bloom.Edit
 				_view.UpdateTemplateList();
 			});
 			_contentLanguages = new List<ContentLanguage>();
+
+			_server.CurrentCollectionSettings = _collectionSettings;
 		}
 
 
@@ -475,12 +477,9 @@ namespace Bloom.Edit
 		internal void DocumentCompleted()
 		{
 			// listen for events raised by javascript
-			_view.AddMessageEventListener("loadReaderToolSettingsEvent", LoadReaderToolSettings);
 			_view.AddMessageEventListener("saveDecodableLevelSettingsEvent", SaveDecodableLevelSettings);
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
 			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
-			_view.AddMessageEventListener("getTextsListEvent", GetTextsList);
-			_view.AddMessageEventListener("getSampleFileContentsEvent", GetSampleFileContents);
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 
 			var tools = _currentlyDisplayedBook.BookInfo.Tools.Where(t => t.Enabled == true);
@@ -501,27 +500,6 @@ namespace Bloom.Edit
 			var settingsStr = CleanUpJsonDataForJavascript(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
 
 			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.restoreAccordionSettings(\"" + settingsStr + "\"); }");
-		}
-
-		/// <summary>Gets reader tool settings from DecodableLevelData.json and send to javascript</summary>
-		/// <param name="arg">Not Used, but required because it is being called by a javascrip MessageEvent</param>
-		private void LoadReaderToolSettings(string arg)
-		{
-			// get saved reader settings
-			var path = _collectionSettings.DecodableLevelPathName;
-			var decodableLeveledSettings = "";
-			if (File.Exists(path))
-				decodableLeveledSettings = File.ReadAllText(path, Encoding.UTF8);
-
-			var input = CleanUpJsonDataForJavascript(decodableLeveledSettings);
-
-			var bookFontName = _currentlyDisplayedBook.CollectionSettings.DefaultLanguage1FontName;
-			if (bookFontName.Length > 0)
-				bookFontName = CleanUpDataForJavascript("\"" + bookFontName + "\", sans-serif");
-			else
-				bookFontName = "sans-serif";
-
-			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.loadReaderToolSettings(\"" + input + "\", \"" + bookFontName + "\"); }");
 		}
 
 		private void SaveAccordionSettings(string data)
@@ -649,43 +627,6 @@ namespace Bloom.Edit
 			var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
 			if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 			Process.Start(path);
-		}
-
-		/// <summary>Gets a list of the files in the Sample Texts folder</summary>
-		/// <param name="arg">Not Used, but required because it is being called by a javascrip MessageEvent</param>
-		private void GetTextsList(string arg)
-		{
-			var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
-			var fileList = "";
-
-			if (Directory.Exists(path)) {
-				foreach (var file in Directory.GetFiles(path))
-				{
-					if (fileList.Length == 0) fileList = Path.GetFileName(file);
-					else fileList += "\\r" + Path.GetFileName(file);
-				}
-			}
-
-			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.setSampleTextsList(\"" + fileList + "\"); }");
-		}
-
-		/// <summary>Gets the contents of a Sample Text file</summary>
-		/// <param name="fileName"></param>
-		private void GetSampleFileContents(string fileName)
-		{
-			var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
-			path = Path.Combine(path, fileName);
-
-			// first try utf-8/ascii encoding (the .Net default)
-			var text = File.ReadAllText(path);
-
-			// If the "unknown" character (65533) is present, C# did not sucessfully decode the file. Try the system default encoding and codepage.
-			if (text.Contains((char)65533))
-				text = File.ReadAllText(path, Encoding.Default);
-
-			text = CleanUpDataForJavascript(text);
-
-			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.setSampleFileContents(\"" + text + "\"); }");
 		}
 
 		private string MakeAccordionContent()

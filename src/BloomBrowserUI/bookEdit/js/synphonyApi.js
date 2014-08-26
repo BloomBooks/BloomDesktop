@@ -21,7 +21,7 @@ SynphonyApi.prototype.loadSettings = function(fileContent) {
 
     if (!fileContent) return;
 
-    var data = jQuery.extend(new DLRSettings(), JSON.parse(fileContent));
+    var data = jQuery.extend(new DLRSettings(), fileContent);
 
     this.source = fileContent;
 
