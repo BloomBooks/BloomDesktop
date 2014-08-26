@@ -499,7 +499,7 @@ namespace Bloom.Edit
 
 			var settingsStr = CleanUpJsonDataForJavascript(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
 
-            _view.RunJavaScript("if (typeof(document.getElementById('accordion').contentWindow.restoreAccordionSettings) === \"function\") {document.getElementById('accordion').contentWindow.restoreAccordionSettings(\"" + settingsStr + "\");}");
+			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.restoreAccordionSettings(\"" + settingsStr + "\"); }");
         }
 
 		private void SaveAccordionSettings(string data)
