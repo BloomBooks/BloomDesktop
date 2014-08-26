@@ -5,6 +5,11 @@ using Bloom.Collection;
 
 namespace Bloom.web
 {
+	/// <summary>
+	/// This class handles requests from the Decodable and Leveled Readers tools, as well as from the Reader Setup dialog.
+	/// It reads and writes the reader tools settings file, and retrieves files and other information used by the
+	/// reader tools.
+	/// </summary>
 	static class ReadersHandler
 	{
 		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
