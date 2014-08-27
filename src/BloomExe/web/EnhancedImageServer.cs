@@ -4,6 +4,8 @@ using System;
 using Bloom.ImageProcessing;
 using System.IO;
 using Palaso.IO;
+using Bloom.Collection;
+
 
 namespace Bloom.web
 {
@@ -12,6 +14,8 @@ namespace Bloom.web
 	/// </summary>
 	public class EnhancedImageServer: ImageServer
 	{
+		public CollectionSettings CurrentCollectionSettings { get; set; }
+
 		public EnhancedImageServer(LowResImageCache cache): base(cache)
 		{
 		}
@@ -25,18 +29,26 @@ namespace Bloom.web
 				return true;
 
 			var localPath = GetLocalPathWithoutQuery(info);
-			if (localPath == "currentPageContent")
+
+			// routing
+			if (localPath.StartsWith("readers/"))
 			{
-				info.ContentType = "text/html";
-				info.WriteCompleteOutput(CurrentPageContent ?? "");
-				return true;
+				if (ReadersHandler.HandleRequest(localPath, info, CurrentCollectionSettings)) return true;
 			}
-			else if (localPath == "accordionContent")
+
+			switch (localPath)
 			{
-				info.ContentType = "text/html";
-				info.WriteCompleteOutput(AccordionContent ?? "");
-				return true;
+				case "currentPageContent":
+					info.ContentType = "text/html";
+					info.WriteCompleteOutput(CurrentPageContent ?? "");
+					return true;
+
+				case "accordionContent":
+					info.ContentType = "text/html";
+					info.WriteCompleteOutput(AccordionContent ?? "");
+					return true;
 			}
+
 			string path = null;
 			try
 			{

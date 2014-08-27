@@ -11,5 +11,7 @@ namespace Bloom.web
 		void ReplyWithFileContent(string path);
 		void ReplyWithImage(string path);
 		void WriteError(int errorCode);
+		System.Collections.Specialized.NameValueCollection GetQueryString();
+		System.Collections.Specialized.NameValueCollection GetPostData();
 	}
 }

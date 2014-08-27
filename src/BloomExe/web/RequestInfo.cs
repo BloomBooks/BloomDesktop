@@ -2,6 +2,7 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.IO;
 using System.Net;
@@ -127,6 +128,45 @@ namespace Bloom.web
 			_actualContext.Response.StatusCode = errorCode;
 			_actualContext.Response.StatusDescription = "File not found";
 			_actualContext.Response.Close();
+		}
+
+		public NameValueCollection GetQueryString()
+		{
+			return _actualContext.Request.QueryString;
+		}
+
+		public NameValueCollection GetPostData()
+		{
+			var request = _actualContext.Request;
+
+			if (!request.HasEntityBody)
+				return null;
+
+			var returnVal = new NameValueCollection();
+
+			using (var body = request.InputStream)
+			{
+				using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
+				{
+					var inputString = reader.ReadToEnd();
+					var pairs = inputString.Split('&');
+					foreach (var pair in pairs)
+					{
+						var kvp = pair.Split('=');
+						if (kvp.Length == 1)
+							returnVal.Add(UnescapeString(kvp[0]), String.Empty);
+						else
+							returnVal.Add(UnescapeString(kvp[0]), UnescapeString(kvp[1]));
+					}
+				}
+			}
+
+			return returnVal;
+		}
+
+		private static string UnescapeString(string value)
+		{
+			return Uri.UnescapeDataString(value.Replace("+", " "));
 		}
 	}
 }

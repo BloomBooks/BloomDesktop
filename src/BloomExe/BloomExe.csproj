@@ -203,13 +203,6 @@
     <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Edit\ReaderToolsModel.cs" />
-    <Compile Include="Edit\ReaderToolsView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Edit\ReaderToolsView.Designer.cs">
-      <DependentUpon>ReaderToolsView.cs</DependentUpon>
-    </Compile>
     <Compile Include="Edit\WebThumbNailList.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -375,6 +368,7 @@
     <Compile Include="ImageProcessing\ImageServer.cs" />
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
+    <Compile Include="web\ReadersHandler.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>
