@@ -33,7 +33,7 @@ namespace Bloom.Publish
 		private bool _usingCcControls = true;
 
 		private string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
-			"Please set this from the edit tab");
+			"Please set this from the edit tab", "This shows next to the license, if the license has not yet been set.");
 		public BloomLibraryPublishControl(PublishView parentView, BookTransfer bookTransferrer, LoginDialog login, Book.Book book)
 		{
 			_parentView = parentView;
