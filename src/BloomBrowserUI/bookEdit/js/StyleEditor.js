@@ -230,7 +230,8 @@ var StyleEditor = (function () {
         var editor = this;
         $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton'); // after we create it!
-        formatButton.hover(function () {
+        editor.AddQtipToElement(formatButton, 'adjust formatting for style');
+        formatButton.click(function () {
             simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
@@ -289,7 +290,6 @@ var StyleEditor = (function () {
                     + '</span>'
                     + '<div style="color:grey;margin-top:20px">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>'
                     + '</div>';
-                //editor.AddQtipToElement(formatButton, toolTip);
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
                 $(targetBox).after(html);
                 var toolbar = $('#format-toolbar');
