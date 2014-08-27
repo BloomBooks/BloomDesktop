@@ -1,6 +1,8 @@
 // listen for messages sent to this page
 window.addEventListener('message', processDLRMessage, false);
 
+var global = getGlobalObject();
+
 function getSetupDialogWindow() {
     return parent.window.document.getElementById("settings_frame").contentWindow;
 }
@@ -59,10 +61,8 @@ var ReaderToolsModel = function() {
     this.texts = [];
     this.textCounter = 0;
     this.setupType = '';
-
-    // Please do not remove fontName. It is used, in spite of what WebStorm says.
-    // This is the book font, which is used in the reader setup dialog.
     this.fontName = '';
+    this.readableFileExtensions = getGlobalObject().readableFileExtensions;
 };
 
 ReaderToolsModel.prototype.incrementStage = function() {
@@ -571,6 +571,7 @@ ReaderToolsModel.prototype.addWordsFromFile = function(fileContents) {
  */
 ReaderToolsModel.prototype.getNextSampleFile = function() {
 
+    // if there are no more files, process the word lists now
     if (this.textCounter >= this.texts.length) {
         this.addWordsToSynphony();
         this.updateWordList();
@@ -578,12 +579,19 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
         return;
     }
 
-    // We need to do this because it is part of an asynchronous loop, and this.textCounter needs to be updated before
-    // the call to fireCSharpAccordionEvent
-    var i = this.textCounter;
-    this.textCounter++;
+    // only get the contents of the file types we can read
+    var fileName;
+    do {
+        var ext = this.texts[this.textCounter].split('.').pop();
+        if (this.readableFileExtensions.indexOf(ext) > -1)
+            fileName = this.texts[this.textCounter];
+        this.textCounter++;
+    } while (!fileName && (this.textCounter < this.texts.length));
 
-    simpleAjaxGet('/bloom/readers/getSampleFileContents', setSampleFileContents, this.texts[i]);
+    if (fileName)
+        global.simpleAjaxGet('/bloom/readers/getSampleFileContents', setSampleFileContents, fileName);
+    else
+        this.getNextSampleFile();
 };
 
 /**
@@ -672,8 +680,8 @@ function initializeDecodableRT() {
 
     // make sure synphony is initialized
     if (!model.getSynphony().source) {
-        simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
-        simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
+        global.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
+        global.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
     }
 
     // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
@@ -706,8 +714,8 @@ function initializeLeveledRT() {
 
     // make sure synphony is initialized
     if (!model.getSynphony().source) {
-        simpleAjaxGet('/bloom/getDefaultFont', setDefaultFont);
-        simpleAjaxGet('/bloom/loadReaderToolSettings', initializeSynphony);
+        global.simpleAjaxGet('/bloom/getDefaultFont', setDefaultFont);
+        global.simpleAjaxGet('/bloom/loadReaderToolSettings', initializeSynphony);
     }
 
     $('#incLevel').onOnce('click.readerTools', function() {
@@ -762,7 +770,7 @@ function initializeSynphony(settingsFileContent) {
     } );
 
     // get the list of sample texts
-    simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+    global.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
 }
 
 /**
@@ -782,23 +790,6 @@ function setTextsList(textsList) {
 function setSampleFileContents(fileContents) {
     model.addWordsFromFile(fileContents);
     model.getNextSampleFile();
-}
-
-/**
- * Retrieve data from localhost
- * @param {String} url The URL to request
- * @param {Function} callback Function to call when the ajax request returns
- * @param {String} [dataValue] Passed in the query string under the "data" key
- */
-function simpleAjaxGet(url, callback, dataValue) {
-
-    var ajaxSettings = {type: 'GET', url: url};
-    if (dataValue) ajaxSettings.data = {data: dataValue};
-
-    $.ajax(ajaxSettings)
-        .done(function (data) {
-            callback(data);
-        });
 }
 
 function setDefaultFont(fontName) {

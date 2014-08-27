@@ -51,6 +51,11 @@ namespace Bloom.web
 					info.ContentType = "text/html";
 					info.WriteCompleteOutput(AccordionContent ?? "");
 					return true;
+
+				case "help":
+					var post = info.GetPostData();
+					HelpLauncher.Show(null, post["data"]);
+					return true;
 			}
 
             string path = null;

@@ -5,12 +5,21 @@
     <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css" type="text/css">
     <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css" type="text/css">
     <link rel="stylesheet" href="/bloom/bookEdit/accordion/accordion.css" type="text/css">
-    <script type="text/javascript">var localizationManagerDictionary = {};</script>
+    <script src="/bloom/bookEdit/js/globalObject.js"></script>
     <script src="/bloom/lib/jquery-1.10.1.js"></script>
     <script src="/bloom/lib/jquery-ui-1.10.3.custom.min.js"></script>
     <script src="/bloom/bookEdit/js/editViewFrame.js"></script>
     <script src="/bloom/bookEdit/js/calledByCSharp.js"></script>
     <script type="text/javascript">var calledByCSharp = new CalledByCSharp();</script>
+    <script type="text/javascript">
+      var globalObject;
+      $(document).ready(function () {
+       // The globalObject needs to be initialized before the child documents are loaded.
+       globalObject = new GlobalObject();
+       document.getElementById('page').src = '/bloom/currentPageContent';
+       document.getElementById('accordion').src = '/bloom/accordionContent';
+      });
+    </script>
     <style type="text/css">
       html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
       body { overflow:hidden }
@@ -22,10 +31,10 @@
   </head>
   <body class="no-accordion">
     <div id="right">
-      <iframe id="accordion" width="100%" height="100%" src="/bloom/accordionContent">Your browser does not support iframes.</iframe>
+      <iframe id="accordion" width="100%" height="100%" src="">Your browser does not support iframes.</iframe>
     </div>
     <div id="left">
-      <iframe id="page" width="100%" height="100%" src="/bloom/currentPageContent">Your browser does not support iframes.</iframe>
+      <iframe id="page" width="100%" height="100%" src="">Your browser does not support iframes.</iframe>
     </div>
   </body>
 </html>
