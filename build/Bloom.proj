@@ -180,6 +180,7 @@
 
 	<!-- remove an existing one with the same name, if necessary -->
 	<Delete Files="$(RootDir)\output\installer\BloomInstaller.$(Version).msi" TreatErrorsAsWarnings="false" />
+	<Exec Command='sign "$(RootDir)\output\installer\BloomInstaller.msi"'></Exec>
 
 	<Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
 		  DestinationFiles="$(RootDir)\output\installer\BloomInstaller.$(Version).msi"
