@@ -764,6 +764,7 @@ function initializeSynphony(settingsFileContent) {
         model.setMarkupType(ui.newHeader.data('markuptype'));
     } );
 
+    // set up a DirectoryWatcher on the Sample Texts directory
     model.directoryWatcher = new DirectoryWatcher('Sample Texts', 20);
     model.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
     model.directoryWatcher.start();
@@ -814,13 +815,23 @@ function setDefaultFont(fontName) {
 
 /**
  * This method is called whenever a change is detected in the Sample Files directory
- * @param {String[]} newFiles Names of new files
- * @param {String[]} deletedFiles Names of deleted files
- * @param {String[]} changedFiles Names of changed files
+ * @@param {String[]} newFiles Names of new files
+ * @@param {String[]} deletedFiles Names of deleted files
+ * @@param {String[]} changedFiles Names of changed files
  */
-function readerSampleFilesChanged(newFiles, deletedFiles, changedFiles) {
+function readerSampleFilesChanged() {
 
-    console.log('Changed');
-    console.log(arguments);
+    // reset the file and word list
+    lang_data = new LanguageData();
+    model.allWords = {};
+    model.textCounter = 0;
 
+    var settings = model.getSynphony().source;
+    model.setSynphony(new SynphonyApi());
+
+    var synphony = model.getSynphony();
+    synphony.loadSettings(settings);
+
+    // reload the sample texts
+    simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
 }
