@@ -5,6 +5,7 @@ var desiredGPCs;
 var previousGPCs;
 var sightWords;
 var currentSightWords;
+var directoryWatcher;
 
 function accordionWindow() {
     return window.parent.document.getElementById('accordion').contentWindow;
@@ -681,8 +682,24 @@ function simpleAjaxPost(url, callback, dataValue) {
         });
 }
 
+/**
+ * This method is called whenever a change is detected in the Sample Files directory
+ * @param {String[]} newFiles Names of new files
+ * @param {String[]} deletedFiles Names of deleted files
+ * @param {String[]} changedFiles Names of changed files
+ */
+function sampleFilesChanged(newFiles, deletedFiles, changedFiles) {
+
+    console.log('Changed');
+    console.log(arguments);
+
+}
+
 $(document).ready(function () {
     accordionWindow().postMessage('Texts', '*');
     $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
     $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
+    directoryWatcher = new DirectoryWatcher('Sample Texts', 8);
+    directoryWatcher.onChanged('SampleFilesChanged.ReaderSetup', sampleFilesChanged);
+    directoryWatcher.start();
 });
