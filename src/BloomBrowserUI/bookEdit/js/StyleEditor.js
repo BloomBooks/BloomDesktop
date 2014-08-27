@@ -270,34 +270,58 @@ var StyleEditor = (function () {
             var fonts = fontData.split(',');
             var sizes = ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72']; // Same options as Word 2010
             var wordSpaceOptions = ['normal','1pt', '2pt', '3pt', '4pt', '5pt', '7pt', '10pt', '15pt', '20pt'];
-            var html = '<div id="format-toolbar" style="background-color:white" class="bloom-ui">'
-                + editor.MakeSelect(fonts, 5, fontName, 'fontSelect') + editor.MakeSelect(sizes, 5, ptSize, 'sizeSelect')
-                + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:15px;position:relative;top:6px">'
-                + editor.MakeSelect(lineSpaceOptions, 2, lineHeight, 'lineHeightSelect')
-                + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:15px;position:relative;top:6px">'
-                + editor.MakeSelect(wordSpaceOptions, 2, wordSpacing, 'wordSpaceSelect')
+            var html = '<div id="format-toolbar" style="background-color:white;z-index:900;position:absolute" class="bloom-ui">'
+                + editor.MakeSelect(fonts, 5, fontName, 'fontSelect') + ' '
+                + editor.MakeSelect(sizes, 5, ptSize, 'sizeSelect') + ' '
+                + '<span style="white-space: nowrap">'
+                    + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:15px;position:relative;top:6px">'
+                    + editor.MakeSelect(lineSpaceOptions, 2, lineHeight, 'lineHeightSelect') + ' '
+                + '</span>'
+                + '<span style="white-space: nowrap">'
+                    + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:15px;position:relative;top:6px">'
+                    + editor.MakeSelect(wordSpaceOptions, 2, wordSpacing, 'wordSpaceSelect')
+                + '</span>'
                 + '<div style="color:grey;margin-top:20px">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>'
                 + '</div>';
             $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
             var formatButton = $('#formatButton'); // after we create it!
-            editor.AddQtipToElement(formatButton, toolTip);
+            //editor.AddQtipToElement(formatButton, toolTip);
             formatButton.hover(function () {
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
                 $(targetBox).after(html);
-                $('#format-toolbar').draggable();
-                formatButton.toolbar({
-                    content: '#format-toolbar',
-                    position: 'right',
-                    hideOnClick: false
+                var toolbar = $('#format-toolbar');
+                toolbar.draggable();
+                $('#fontSelect').change(function () { editor.changeFont(); });
+                $('#sizeSelect').change(function () { editor.changeSize(); });
+                $('#lineHeightSelect').change(function () { editor.changeLineheight(); });
+                $('#wordSpaceSelect').change(function () { editor.changeWordSpace(); });
+                var offset = $('#formatButton').offset();
+                toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
+                //alert(offset.left + "," + $(document).width() + "," + $(targetBox).offset().left);
+                toolbar.width($(".bloom-page").width() - offset.left - 50);
+                $('html').on("click.toolbar", function (event) {
+                    if (event.target != toolbar &&
+                        toolbar.has(event.target).length === 0 &&
+                        //self.toolbar.has(event.target).length === 0 &&
+                        toolbar.is(":visible")) {
+                        toolbar.remove();
+                    }
                 });
+                //formatButton.toolbar({
+                //    content: '#format-toolbar',
+                //    position: 'right',
+                //    hideOnClick: true
+                //});
             });
         });
 
         editor.AttachLanguageTip($(targetBox), bottom);
     };
 
-    StyleEditor.prototype.MakeSelect = function MakeSelect(items, marginLeft, current, id) {
-        var result = '<select id="' + id + '" style="margin-left:' + marginLeft + 'px">';
+    StyleEditor.prototype.MakeSelect = function MakeSelect(items, marginLeft, current, id, changeHandler, extraStyle) {
+        if (!extraStyle)
+            extraStyle = "";
+        var result = '<select id="' + id + '" style="margin-left:' + marginLeft + 'px' + extraStyle + '">';
         for (i = 0; i < items.length; i++) {
             var selected = "";
             if (current == items[i]) selected = ' selected';
@@ -306,52 +330,53 @@ var StyleEditor = (function () {
         return result + '</select>';
     };
 
+    StyleEditor.prototype.changeFont = function changeFont() {
+        var rule = this.getStyleRule();
+        var font = $('#fontSelect').val();
+        alert($('#format-toolbar').css('z-index'));
+        rule.style.setProperty("font-family", font, "important");
+        this.cleanupAfterStyleChange();
+    };
 
-    StyleEditor.prototype.showFontDialog = function showFontDialog(content) {
-        var dialogContents = $('<div id="fontDlg" title="Adjust formatting"/>').appendTo($("body"));
-        dialogContents.append(content);
-        var editor = this;
-        $(dialogContents).dialog({
-            autoOpen: "true",
-            modal: "true",
-            buttons: {
-                "OK": function () {
-                    var font = $('#fontSelect').val();
-                    var size = $('#sizeSelect').val();
-                    var lineHeight = $('#lineHeightSelect').val();
-                    var wordSpace = $('#wordSpaceSelect').val();
-                    //alert('font: ' + font + ' size: ' + size + ' height: ' + lineHeight + ' space: ' + wordSpace);
-                    editor.UpdateStyle(font, size, lineHeight, wordSpace);
-                    $(this).dialog("close");
-                },
-                "Cancel": function () {
-                    $(this).dialog("close");
-                }
-            },
-            close: function () {
-                $(this).remove();
-            },
-            open: function () { $('#fontDlg').css('overflow', 'hidden'); },
-            height: 200,
-            width: 600
-        });
-    }
-
-    StyleEditor.prototype.UpdateStyle = function UpdateStyle(font, fontSize, lineHeight, wordSpace) {
-        var target = this.boxBeingEdited;
-        var styleName = StyleEditor.GetStyleNameForElement(target);
-        if (!styleName)
-            return; // bizarre, since we put up the dialog
-        var langAttrValue = StyleEditor.GetLangValueOrNull(target);
-        var rule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
+    StyleEditor.prototype.changeSize = function changeSize() {
+        var rule = this.getStyleRule();
+        var fontSize = $('#sizeSelect').val();
         var units = 'pt';
         var sizeString = fontSize.toString();
         if (parseInt(sizeString) < this.MIN_FONT_SIZE)
             return; // should not be possible?
         rule.style.setProperty("font-size", sizeString + units, "important");
-        rule.style.setProperty("font-family", font, "important");
+        this.cleanupAfterStyleChange();
+    };
+
+    StyleEditor.prototype.changeLineheight = function changeLineheight() {
+        var rule = this.getStyleRule();
+        var lineHeight = $('#lineHeightSelect').val();
         rule.style.setProperty("line-height", lineHeight, "important");
+        this.cleanupAfterStyleChange();
+    };
+
+    StyleEditor.prototype.changeWordSpace = function changeWordSpace() {
+        var rule = this.getStyleRule();
+        var wordSpace = $('#wordSpaceSelect').val();
         rule.style.setProperty("word-spacing", wordSpace, "important");
+        this.cleanupAfterStyleChange();
+    };
+
+    StyleEditor.prototype.getStyleRule = function getStyleRule() {
+        var target = this.boxBeingEdited;
+        var styleName = StyleEditor.GetStyleNameForElement(target);
+        if (!styleName)
+            return; // bizarre, since we put up the dialog
+        var langAttrValue = StyleEditor.GetLangValueOrNull(target);
+        return this.GetOrCreateRuleForStyle(styleName, langAttrValue);
+    };
+
+    StyleEditor.prototype.cleanupAfterStyleChange = function cleanupAfterStyleChange() {
+        var target = this.boxBeingEdited;
+        var styleName = StyleEditor.GetStyleNameForElement(target);
+        if (!styleName)
+            return; // bizarre, since we put up the dialog
         if ($(target).IsOverflowing())
             $(target).addClass('overflow');
         else
@@ -359,8 +384,8 @@ var StyleEditor = (function () {
 
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip
-        var toolTip = this.GetToolTip(target, styleName);
-        this.AddQtipToElement($('#formatButton'), toolTip);
+        //var toolTip = this.GetToolTip(target, styleName);
+        //this.AddQtipToElement($('#formatButton'), toolTip);
 
     };
 
