@@ -299,6 +299,9 @@ DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup
 	bottom: 0;
 	width: 100%;
 }
+/*.customPage.bloom-bilingual DIV.bloom-translationGroup*/
+/*{*/
+/*}*/
 .imageOnTop.A4Portrait.bloom-bilingual DIV.bloom-imageContainer
 {
 	height: 30% !important;
