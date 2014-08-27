@@ -5,6 +5,9 @@ using Newtonsoft.Json;
 
 namespace Bloom.web
 {
+	/// <summary>
+	/// This class handles requests for internationalization. It uses the L10NSharp LocalizationManager to look up values.
+	/// </summary>
 	static class I18NHandler
 	{
 		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
