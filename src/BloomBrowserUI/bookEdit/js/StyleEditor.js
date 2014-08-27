@@ -259,24 +259,17 @@ var StyleEditor = (function () {
                 }
                 if (lineHeight > lineSpaceOptions[lineSpaceOptions.length - 1]) lineHeight = lineSpaceOptions[lineSpaceOptions.length - 1];
 
-                var wordSpaceOptions = ['normal','0.1em', '0.2em', '0.3em', '0.4em', '0.5em', '0.7em', '1em', '1.5em', '2em'];
+                var wordSpaceOptions = ['normal','Wide', 'Extra Wide'];
                 var wordSpaceString = box.css('word-spacing');
                 var wordSpacing = 'normal';
                 if (wordSpaceString != "0px") {
                     pxSpace = parseInt(wordSpaceString);
-                    relativeSpace = Math.round(pxSpace / pxSize * 10) / 10.0;
-                    for (var i = 1; i < wordSpaceOptions.length; i++) { // start at 1 to skip normal
-                        var current = parseFloat(wordSpaceOptions[i]);
-                        //alert(wordSpaceOptions[i] + "," + current);
-                        if (relativeSpace == current) {
-                            break;
-                        }
-                        if (relativeSpace <= current) {
-                            relativeSpace = current;
-                            break; // Enhance: possibly it is closer to the option before, should we check for that?
-                        }
+                    ptSpace = editor.ConvertPxToPt(pxSpace);
+                    if (ptSpace > 7.5) {
+                        wordSpacing = "Extra Wide";
+                    }  else {
+                        wordSpacing = 'Wide';
                     }
-                    wordSpacing = relativeSpace + "em";
                 }
                 //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
                 // Enhance: lineHeight may well be something like 35px; what should we select initially?
@@ -372,6 +365,11 @@ var StyleEditor = (function () {
     StyleEditor.prototype.changeWordSpace = function changeWordSpace() {
         var rule = this.getStyleRule();
         var wordSpace = $('#wordSpaceSelect').val();
+        if (wordSpace === 'Wide')
+            wordSpace = '5pt';
+        else if (wordSpace === 'Extra Wide') {
+            wordSpace = '10pt';
+        }
         rule.style.setProperty("word-spacing", wordSpace, "important");
         this.cleanupAfterStyleChange();
     };
