@@ -28,7 +28,30 @@ function processMessage(event) {
             return;
 
         case 'Files':
-            document.getElementById('dls_word_lists').value = params[1].replace(/\r/g, '\n');
+            var s = params[1];
+            if (s.length > 0) {
+
+                var files = s.split('\r');
+                var extensions = getGlobalObject().readableFileExtensions;
+                var notSupported = document.getElementById('format_not_supported').innerHTML;
+                var foundNotSupported = false;
+                files.forEach(function(element, index, array) {
+                    var ext = element.split('.').pop();
+                    if (extensions.indexOf(ext) === -1) {
+                        array[index] = element + ' ' + '<span class="format-not-supported">' + notSupported + '</span>';
+                        foundNotSupported = true;
+                    }
+                });
+                s = files.join('\r');
+
+                if (foundNotSupported)
+                    document.getElementById('how_to_export').style.display = '';
+            }
+
+
+            var fileList = s || document.getElementById('please-add-texts').innerHTML;
+
+            document.getElementById('dls_word_lists').innerHTML = fileList.replace(/\r/g, '<br>');
             return;
 
         case 'Words':
@@ -128,7 +151,7 @@ function saveClicked() {
     accordionWindow().postMessage('Refresh\n' + settingsStr, '*');
 
     // save now
-    simpleAjaxPost('/bloom/readers/saveReaderToolSettings', parent.window.closeSetupDialog, settingsStr);
+    getGlobalObject().simpleAjaxPost('/bloom/readers/saveReaderToolSettings', parent.window.closeSetupDialog, settingsStr);
 }
 
 function getLevelValue(innerHTML) {
@@ -668,29 +691,14 @@ if (typeof ($) === "function") {
 }
 
 /**
- * Retrieve data from localhost
- * @param {String} url The URL to request
- * @param {Function} callback Function to call when the ajax request returns
- * @param {String} [dataValue] Passed in the post under the "data" key
+ * Called after localized strings are loaded.
  */
-function simpleAjaxPost(url, callback, dataValue) {
-
-    var ajaxSettings = {type: 'POST', url: url};
-    if (dataValue) ajaxSettings.data = {data: dataValue};
-
-    // If/when the ajax call returns a response, the entire contents of the response
-    // will be passed to the function that was passed in the "callback" parameter.
-    // The data can be almost anything: an html document, a json object, a single
-    // string or number, etc., whatever the "callback" function is expecting.
-    $.ajax(ajaxSettings)
-        .done(function (data) {
-            callback(data);
-        });
+function finishInitializing() {
+    $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
+    $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
+    accordionWindow().postMessage('Texts', '*');
 }
 
 $(document).ready(function () {
-    accordionWindow().postMessage('Texts', '*');
-    $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
-    $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
-    $('body').find('*[data-i18n]').localize();
+    $('body').find('*[data-i18n]').localize(finishInitializing);
 });

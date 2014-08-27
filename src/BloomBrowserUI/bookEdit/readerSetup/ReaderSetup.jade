@@ -11,6 +11,7 @@ html
 		script(src='/bloom/bookEdit/js/libsynphony/jquery.text-markup.js')
 		script(src='/bloom/bookEdit/js/libsynphony/synphony_lib.js')
 		script(src='/bloom/bookEdit/js/libsynphony/bloom_lib.js')
+		script(src='/bloom/bookEdit/js/getGlobalObject.js')
 		script(src='/bloom/lib/localizationManager.js')
 		script(src='/bloom/lib/jquery.i18n.custom.js')
 		script(type='text/javascript') $(function() {$("#dlstabs").tabs();});
@@ -49,8 +50,9 @@ html
 				#word-lists-div.floating
 					label(for='dls_word_lists', data-i18n='ReaderSetup.SampleTexts') Word Lists and Sample Texts
 					br
-					textarea#dls_word_lists(style='height: 55px;' readonly)
-					br
+					#dls_word_lists
+					#how_to_export(style="display: none")
+						a(href="", onclick="return getGlobalObject().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');", data-i18n='ReaderSetup.HowToExport') Help exporting and converting files to use as sample texts
 					a#open-text-folder.smaller(href='', data-i18n='ReaderSetup.OpenSampleTexts') Open the sample texts folder for this language.
 					p.smaller(data-i18n='ReaderSetup.AboutSampleTexts1') About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.
 					p.smaller(data-i18n='ReaderSetup.AboutSampleTexts2') If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.
@@ -156,4 +158,7 @@ html
 						label(for='things-to-remember', data-i18n='ReaderSetup.ToRemember') Things to remember for this level:
 						ul#things-to-remember
 							li(contenteditable='true')
+		#hiddenWordList(style="display: none")
+			label#please-add-texts(data-i18n='ReaderSetup.AddTexts') Please add texts to the Sample Texts folder.
+			label#format_not_supported(data-i18n='ReaderSetup.FormatNotSupported') Cannot read this format
 		script(src='readerSetup.js')
