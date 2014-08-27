@@ -302,9 +302,13 @@ var StyleEditor = (function () {
                 var toolbar = $('#format-toolbar');
                 toolbar.draggable();
                 $('#fontSelect').change(function () { editor.changeFont(); });
+                editor.AddQtipToElement($('#fontSelect'), 'Change the font face');
                 $('#sizeSelect').change(function () { editor.changeSize(); });
+                editor.AddQtipToElement($('#sizeSelect'), 'Change the font size');
                 $('#lineHeightSelect').change(function () { editor.changeLineheight(); });
+                editor.AddQtipToElement($('#lineHeightSelect'), 'Change the spacing between lines of text');
                 $('#wordSpaceSelect').change(function () { editor.changeWordSpace(); });
+                editor.AddQtipToElement($('#wordSpaceSelect'), 'Change the spacing between words');
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
                 //alert(offset.left + "," + $(document).width() + "," + $(targetBox).offset().left);
