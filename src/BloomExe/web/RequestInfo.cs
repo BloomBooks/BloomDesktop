@@ -135,10 +135,38 @@ namespace Bloom.web
 			return _actualContext.Request.QueryString;
 		}
 
+		public NameValueCollection GetPostData()
+		{
+			var request = _actualContext.Request;
+
+			if (!request.HasEntityBody)
+				return null;
+
+			var returnVal = new NameValueCollection();
+
+			using (var body = request.InputStream)
+			{
+				using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
+				{
+					var inputString = reader.ReadToEnd();
+					var pairs = inputString.Split('&');
+					foreach (var pair in pairs)
+					{
+						var kvp = pair.Split('=');
+						if (kvp.Length == 1)
+							returnVal.Add(UnescapeString(kvp[0]), String.Empty);
+						else
+							returnVal.Add(UnescapeString(kvp[0]), UnescapeString(kvp[1]));
+					}
+				}
+			}
+
+			return returnVal;
+		}
+		
 		private static string UnescapeString(string value)
 		{
 			return Uri.UnescapeDataString(value.Replace("+", " "));
 		}
-
 	}
 }

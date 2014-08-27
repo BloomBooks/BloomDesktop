@@ -26,7 +26,7 @@ function processDLRMessage(event) {
 
         case 'Refresh': // notification from setup dialog that settings have changed
             var synphony = model.getSynphony();
-            synphony.loadSettings(params[1]);
+            synphony.loadSettings(JSON.parse(params[1]));
             model.updateControlContents();
             model.doMarkup();
             return;
@@ -578,7 +578,7 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
     var i = this.textCounter;
     this.textCounter++;
 
-    simpleAjaxGet('/bloom/getSampleFileContents', setSampleFileContents, this.texts[i]);
+    simpleAjaxGet('/bloom/readers/getSampleFileContents', setSampleFileContents, this.texts[i]);
 };
 
 /**
@@ -667,8 +667,8 @@ function initializeDecodableRT() {
 
     // make sure synphony is initialized
     if (!model.getSynphony().source) {
-        simpleAjaxGet('/bloom/getDefaultFont', setDefaultFont);
-        simpleAjaxGet('/bloom/loadReaderToolSettings', initializeSynphony);
+        simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
+        simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
     }
 
     // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
@@ -757,7 +757,7 @@ function initializeSynphony(settingsFileContent) {
     } );
 
     // get the list of sample texts
-    simpleAjaxGet('/bloom/getSampleTextsList', setTextsList);
+    simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
 }
 
 /**
