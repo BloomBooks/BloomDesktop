@@ -35,6 +35,10 @@ namespace Bloom.web
 			{
 				if (ReadersHandler.HandleRequest(localPath, info, CurrentCollectionSettings)) return true;
 			}
+			else if (localPath.StartsWith("directoryWatcher/"))
+			{
+				if (DirectoryWatcherHandler.HandleRequest(localPath, info, CurrentCollectionSettings)) return true;
+			}
 
 			switch (localPath)
 			{

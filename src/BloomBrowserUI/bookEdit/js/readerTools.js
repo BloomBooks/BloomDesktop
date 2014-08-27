@@ -63,6 +63,9 @@ var ReaderToolsModel = function() {
     // Please do not remove fontName. It is used, in spite of what WebStorm says.
     // This is the book font, which is used in the reader setup dialog.
     this.fontName = '';
+
+    /** @type DirectoryWatcher */
+    this.directoryWatcher = null;
 };
 
 ReaderToolsModel.prototype.incrementStage = function() {
@@ -761,6 +764,10 @@ function initializeSynphony(settingsFileContent) {
         model.setMarkupType(ui.newHeader.data('markuptype'));
     } );
 
+    model.directoryWatcher = new DirectoryWatcher('Sample Texts', 20);
+    model.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
+    model.directoryWatcher.start();
+
     // get the list of sample texts
     simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
 }
@@ -803,4 +810,17 @@ function simpleAjaxGet(url, callback, dataValue) {
 
 function setDefaultFont(fontName) {
     model.fontName = fontName;
+}
+
+/**
+ * This method is called whenever a change is detected in the Sample Files directory
+ * @param {String[]} newFiles Names of new files
+ * @param {String[]} deletedFiles Names of deleted files
+ * @param {String[]} changedFiles Names of changed files
+ */
+function readerSampleFilesChanged(newFiles, deletedFiles, changedFiles) {
+
+    console.log('Changed');
+    console.log(arguments);
+
 }
