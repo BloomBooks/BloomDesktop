@@ -2,10 +2,17 @@ $(function() {
     $('div.split-pane').splitPane();
 });
 $(window).load(function() {
-    $('.split-pane-component-inner').append(getTypeSelectors());
-    $('.split-pane-component-inner').append(getButtons());
+    setupSplitPaneComponentInners();
     $('.add').click(addClickHandler);
 });
+
+function setupSplitPaneComponentInners() {
+    $('.split-pane-component-inner').each(function() {
+        if (!$.trim( $(this).html() ).length)
+            $(this).append(getTypeSelectors());
+        $(this).append(getButtons());
+    });
+}
 
 function splitClickHandler() {
     var myInner = $(this).closest('.split-pane-component-inner');
