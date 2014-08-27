@@ -127,8 +127,8 @@ function saveClicked() {
     var settingsStr = JSON.stringify(s);
     accordionWindow().postMessage('Refresh\n' + settingsStr, '*');
 
-    // send to C#
-    fireCSharpSetupEvent('saveDecodableLevelSettingsEvent', settingsStr);
+    // save now
+    simpleAjaxPost('/bloom/readers/saveReaderToolSettings', parent.window.closeSetupDialog, settingsStr);
 }
 
 function getLevelValue(innerHTML) {
@@ -658,6 +658,27 @@ if (typeof ($) === "function") {
         var id = this.id.replace(/^max-/, '');
         $('#levels-table').find('tbody tr.selected td.' + id).html(this.value);
     });
+}
+
+/**
+ * Retrieve data from localhost
+ * @param {String} url The URL to request
+ * @param {Function} callback Function to call when the ajax request returns
+ * @param {String} [dataValue] Passed in the post under the "data" key
+ */
+function simpleAjaxPost(url, callback, dataValue) {
+
+    var ajaxSettings = {type: 'POST', url: url};
+    if (dataValue) ajaxSettings.data = {data: dataValue};
+
+    // If/when the ajax call returns a response, the entire contents of the response
+    // will be passed to the function that was passed in the "callback" parameter.
+    // The data can be almost anything: an html document, a json object, a single
+    // string or number, etc., whatever the "callback" function is expecting.
+    $.ajax(ajaxSettings)
+        .done(function (data) {
+            callback(data);
+        });
 }
 
 $(document).ready(function () {
