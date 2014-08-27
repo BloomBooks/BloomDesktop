@@ -158,6 +158,8 @@ namespace Bloom
 
 		private void Cleanup()
 		{
+			if (_current == null) return;
+
 			CleanupTimer();
 			_current.Browser.RemoveEventHandlers();
 			_current.Browser.Navigated -= BrowserOnDocumentCompleted;
