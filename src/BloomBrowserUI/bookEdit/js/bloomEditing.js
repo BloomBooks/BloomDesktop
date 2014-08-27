@@ -655,6 +655,10 @@ function ResizeUsingPercentages(e,ui){
 // Actual testable determination of overflow or not
 jQuery.fn.IsOverflowing = function () {
     var element = $(this)[0];
+    // Ignore Topic divs as they are chosen from a list
+    if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
+        return false;
+    }
     // We want to prevent an inner div from expanding past the borders set by any containing marginBox class.
     var marginBoxParent = $(element).parents('.marginBox');
     var parentBottom;
