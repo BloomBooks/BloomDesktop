@@ -11,7 +11,8 @@ Build-Depends: debhelper (>= 8.0.0), cli-common-dev (>= 0.8),
  libtidy-html5, optipng,
  mono-sil, libgdiplus-sil, geckofx29,
  libenchant-dev, libxklavier-dev, libdconf-dev,
- libicu-dev, icu-devtools
+ libicu-dev,
+ icu-devtools | libicu-dev (<< 52)
 
 Package: bloom-desktop
 Architecture: all
