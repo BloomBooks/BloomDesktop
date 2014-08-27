@@ -5,7 +5,9 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+#if !__MonoCS__
 using IWshRuntimeLibrary;
+#endif
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
 using File = System.IO.File;
