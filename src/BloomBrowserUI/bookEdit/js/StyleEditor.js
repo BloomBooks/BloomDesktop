@@ -228,65 +228,75 @@ var StyleEditor = (function () {
         var t = bottom + "px";
 
         var editor = this;
-
-        simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
-            editor.boxBeingEdited = targetBox;
-            styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
-            var box = $(targetBox);
-            var sizeString = box.css('font-size');
-            var pxSize = parseInt(sizeString);
-            var ptSize = editor.ConvertPxToPt(pxSize);
-            var lang = box.attr('lang');
-            var fontName = box.css('font-family');
-            if (fontName[0] == '\'' || fontName[0] == '"') {
-                fontName = fontName.substring(1, fontName.length - 1); // strip off quotes
-            }
-
-            var lineHeightString = box.css('line-height');
-            var lineHeightPx = parseInt(lineHeightString);
-            var lineHeight = Math.round(lineHeightPx / pxSize *10) / 10.0;
-            var lineSpaceOptions = ['1.0', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.8', '2.0', '2.5', '3.0'];
-            for (var i = 0; i < lineSpaceOptions.length; i++) {
-                if (lineHeight == lineSpaceOptions[i]) {
-                    break;
+        $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
+        var formatButton = $('#formatButton'); // after we create it!
+        formatButton.hover(function () {
+            simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
+                editor.boxBeingEdited = targetBox;
+                styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
+                var box = $(targetBox);
+                var sizeString = box.css('font-size');
+                var pxSize = parseInt(sizeString);
+                var ptSize = editor.ConvertPxToPt(pxSize);
+                var lang = box.attr('lang');
+                var fontName = box.css('font-family');
+                if (fontName[0] == '\'' || fontName[0] == '"') {
+                    fontName = fontName.substring(1, fontName.length - 1); // strip off quotes
                 }
-                if (lineHeight <= lineSpaceOptions[i]) {
-                    lineHeight = lineSpaceOptions[i];
-                    break; // Enhance: possibly it is closer to the option before, should we check for that?
+
+                var lineHeightString = box.css('line-height');
+                var lineHeightPx = parseInt(lineHeightString);
+                var lineHeight = Math.round(lineHeightPx / pxSize *10) / 10.0;
+                var lineSpaceOptions = ['1.0', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.8', '2.0', '2.5', '3.0'];
+                for (var i = 0; i < lineSpaceOptions.length; i++) {
+                    if (lineHeight == lineSpaceOptions[i]) {
+                        break;
+                    }
+                    if (lineHeight <= lineSpaceOptions[i]) {
+                        lineHeight = lineSpaceOptions[i];
+                        break; // Enhance: possibly it is closer to the option before, should we check for that?
+                    }
                 }
-            }
-            if (lineHeight > lineSpaceOptions[lineSpaceOptions.length - 1]) lineHeight = lineSpaceOptions[lineSpaceOptions.length - 1];
+                if (lineHeight > lineSpaceOptions[lineSpaceOptions.length - 1]) lineHeight = lineSpaceOptions[lineSpaceOptions.length - 1];
 
-            var wordSpaceString = box.css('word-spacing');
-            var wordSpacing = 'normal';
-            if (wordSpaceString != "0px") {
-                pxSpace = parseInt(wordSpaceString);
-                ptSpace = editor.ConvertPxToPt(pxSpace);
-                wordSpacing = ptSpace + "pt";
-            }
-            //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
-            // Enhance: lineHeight may well be something like 35px; what should we select initially?
+                var wordSpaceOptions = ['normal','0.1em', '0.2em', '0.3em', '0.4em', '0.5em', '0.7em', '1em', '1.5em', '2em'];
+                var wordSpaceString = box.css('word-spacing');
+                var wordSpacing = 'normal';
+                if (wordSpaceString != "0px") {
+                    pxSpace = parseInt(wordSpaceString);
+                    relativeSpace = Math.round(pxSpace / pxSize * 10) / 10.0;
+                    for (var i = 1; i < wordSpaceOptions.length; i++) { // start at 1 to skip normal
+                        var current = parseFloat(wordSpaceOptions[i]);
+                        //alert(wordSpaceOptions[i] + "," + current);
+                        if (relativeSpace == current) {
+                            break;
+                        }
+                        if (relativeSpace <= current) {
+                            relativeSpace = current;
+                            break; // Enhance: possibly it is closer to the option before, should we check for that?
+                        }
+                    }
+                    wordSpacing = relativeSpace + "em";
+                }
+                //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
+                // Enhance: lineHeight may well be something like 35px; what should we select initially?
 
-            var fonts = fontData.split(',');
-            var sizes = ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72']; // Same options as Word 2010
-            var wordSpaceOptions = ['normal','1pt', '2pt', '3pt', '4pt', '5pt', '7pt', '10pt', '15pt', '20pt'];
-            var html = '<div id="format-toolbar" style="background-color:white;z-index:900;position:absolute" class="bloom-ui">'
-                + editor.MakeSelect(fonts, 5, fontName, 'fontSelect') + ' '
-                + editor.MakeSelect(sizes, 5, ptSize, 'sizeSelect') + ' '
-                + '<span style="white-space: nowrap">'
-                    + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:15px;position:relative;top:6px">'
-                    + editor.MakeSelect(lineSpaceOptions, 2, lineHeight, 'lineHeightSelect') + ' '
-                + '</span>'
-                + '<span style="white-space: nowrap">'
-                    + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:15px;position:relative;top:6px">'
-                    + editor.MakeSelect(wordSpaceOptions, 2, wordSpacing, 'wordSpaceSelect')
-                + '</span>'
-                + '<div style="color:grey;margin-top:20px">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>'
-                + '</div>';
-            $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
-            var formatButton = $('#formatButton'); // after we create it!
-            //editor.AddQtipToElement(formatButton, toolTip);
-            formatButton.hover(function () {
+                var fonts = fontData.split(',');
+                var sizes = ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72']; // Same options as Word 2010
+                var html = '<div id="format-toolbar" style="background-color:white;z-index:900;position:absolute" class="bloom-ui">'
+                    + editor.MakeSelect(fonts, 5, fontName, 'fontSelect') + ' '
+                    + editor.MakeSelect(sizes, 5, ptSize, 'sizeSelect') + ' '
+                    + '<span style="white-space: nowrap">'
+                        + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:15px;position:relative;top:6px">'
+                        + editor.MakeSelect(lineSpaceOptions, 2, lineHeight, 'lineHeightSelect') + ' '
+                    + '</span>'
+                    + '<span style="white-space: nowrap">'
+                        + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:15px;position:relative;top:6px">'
+                        + editor.MakeSelect(wordSpaceOptions, 2, wordSpacing, 'wordSpaceSelect')
+                    + '</span>'
+                    + '<div style="color:grey;margin-top:20px">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>'
+                    + '</div>';
+                //editor.AddQtipToElement(formatButton, toolTip);
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
                 $(targetBox).after(html);
                 var toolbar = $('#format-toolbar');
@@ -333,7 +343,6 @@ var StyleEditor = (function () {
     StyleEditor.prototype.changeFont = function changeFont() {
         var rule = this.getStyleRule();
         var font = $('#fontSelect').val();
-        alert($('#format-toolbar').css('z-index'));
         rule.style.setProperty("font-family", font, "important");
         this.cleanupAfterStyleChange();
     };
