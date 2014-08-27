@@ -5,7 +5,6 @@ var desiredGPCs;
 var previousGPCs;
 var sightWords;
 var currentSightWords;
-var directoryWatcher;
 
 function accordionWindow() {
     return window.parent.document.getElementById('accordion').contentWindow;
@@ -29,7 +28,6 @@ function processMessage(event) {
             accordionWindow().postMessage('SetupType', '*');
             return;
 
-        case 'Files':
             var s = params[1];
             if (s.length > 0) {
 
@@ -54,8 +52,6 @@ function processMessage(event) {
             var fileList = s || document.getElementById('please-add-texts').innerHTML;
 
             document.getElementById('dls_word_lists').innerHTML = fileList.replace(/\r/g, '<br>');
-            return;
-
         case 'Words':
             displayWordsForSelectedStage(params[1]);
             return;
@@ -710,17 +706,19 @@ function finishInitializing() {
 }
 
 /**
- * This method is called whenever a change is detected in the Sample Files directory
+ * The ReaderTools calls this function to notify the dialog that the word list and/or the list of sample files
+ * has changed.
  */
-function sampleFilesChanged() {
-
-    console.log('Changed');
-
+function wordListChangedCallback() {
+    var accordion = accordionWindow();
+    document.getElementById('dls_word_lists').value = accordion.getTexts().join('\n');
+    requestWordsForSelectedStage();
 }
 
 $(document).ready(function () {
     $('body').find('*[data-i18n]').localize(finishInitializing);
-    directoryWatcher = new DirectoryWatcher('Sample Texts', 8);
-    directoryWatcher.onChanged('SampleFilesChanged.ReaderSetup', sampleFilesChanged);
-    directoryWatcher.start();
+    document.getElementById('dls_word_lists').value = accordion.getTexts().join('\n');
+    accordion.addWordListChangedListener('wordListChanged.ReaderSetup', wordListChangedCallback);
+    $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
+    $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
 });

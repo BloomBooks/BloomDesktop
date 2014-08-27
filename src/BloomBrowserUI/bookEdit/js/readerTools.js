@@ -18,11 +18,6 @@ function processDLRMessage(event) {
     var params = event.data.split("\n");
 
     switch(params[0]) {
-        case 'Texts': // request from setup dialog for the list of sample texts
-            if (model.texts)
-                getSetupDialogWindow().postMessage('Files\n' + model.texts.join("\r"), '*');
-            return;
-
         case 'Words': // request from setup dialog for a list of words for a stage
             var words = model.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
             getSetupDialogWindow().postMessage('Words\n' + JSON.stringify(words), '*');
@@ -66,7 +61,7 @@ var ReaderToolsModel = function() {
     this.fontName = '';
     this.readableFileExtensions = iframeChannel.readableFileExtensions;
 
-    /** @type DirectoryWatcher */
+    /** @type DirectoryWatcher directoryWatcher */
     this.directoryWatcher = null;
 };
 
@@ -581,6 +576,7 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
         this.addWordsToSynphony();
         this.updateWordList();
         this.doMarkup();
+        processWordListChangedListeners();
         return;
     }
 
@@ -772,7 +768,7 @@ function initializeSynphony(settingsFileContent) {
     } );
 
     // set up a DirectoryWatcher on the Sample Texts directory
-    model.directoryWatcher = new DirectoryWatcher('Sample Texts', 20);
+    model.directoryWatcher = new DirectoryWatcher('Sample Texts', 10);
     model.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
     model.directoryWatcher.start();
 
@@ -824,4 +820,41 @@ function readerSampleFilesChanged() {
 
     // reload the sample texts
     iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+}
+
+//noinspection JSUnusedGlobalSymbols
+/**
+ * Gets the list of texts in the Sample Texts directory
+ * @returns {String[]}
+ */
+function getTexts() {
+    if (model.texts)
+        return model.texts;
+    else
+        return [];
+}
+
+/**
+ * A list of the functions to call when the word list changes
+ */
+var wordListChangedListeners = {};
+
+//noinspection JSUnusedGlobalSymbols
+/**
+ * Adds a function to the list of functions to call when the word list changes
+ * @param {String} listenerNameAndContext
+ * @param {Function} callback
+ */
+function addWordListChangedListener(listenerNameAndContext, callback) {
+    wordListChangedListeners[listenerNameAndContext] = callback;
+}
+
+/**
+ * Notify anyone who wants to know that the word list changed
+ */
+function processWordListChangedListeners() {
+
+    var handlers = Object.keys(wordListChangedListeners);
+    for (var j = 0; j < handlers.length; j++)
+        wordListChangedListeners[handlers[j]]();
 }
