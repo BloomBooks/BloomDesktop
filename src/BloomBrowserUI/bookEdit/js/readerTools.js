@@ -26,7 +26,7 @@ function processDLRMessage(event) {
 
         case 'Refresh': // notification from setup dialog that settings have changed
             var synphony = model.getSynphony();
-            synphony.loadSettings(params[1]);
+            synphony.loadSettings(JSON.parse(params[1]));
             model.updateControlContents();
             model.doMarkup();
             return;
@@ -578,7 +578,7 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
     var i = this.textCounter;
     this.textCounter++;
 
-    fireCSharpAccordionEvent('getSampleFileContentsEvent', this.texts[i]);
+    simpleAjaxGet('/bloom/readers/getSampleFileContents', setSampleFileContents, this.texts[i]);
 };
 
 /**
@@ -634,6 +634,10 @@ ReaderToolsModel.prototype.saveState = function() {
     var accordion = $('#accordion');
     if (typeof accordion.accordion !== 'function') return;
 
+    // this is also needed for unit testing
+    var active = accordion.accordion('option', 'active');
+    if (isNaN(active)) return;
+
     var state = new DRTState();
     state.active = accordion.accordion('option', 'active');
     state.stage = this.stageNumber;
@@ -663,7 +667,8 @@ function initializeDecodableRT() {
 
     // make sure synphony is initialized
     if (!model.getSynphony().source) {
-        fireCSharpAccordionEvent('loadReaderToolSettingsEvent', '');
+        simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
+        simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
     }
 
     // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
@@ -696,7 +701,8 @@ function initializeLeveledRT() {
 
     // make sure synphony is initialized
     if (!model.getSynphony().source) {
-        fireCSharpAccordionEvent('loadReaderToolSettingsEvent', '');
+        simpleAjaxGet('/bloom/getDefaultFont', setDefaultFont);
+        simpleAjaxGet('/bloom/loadReaderToolSettings', initializeSynphony);
     }
 
     $('#incLevel').onOnce('click.readerTools', function() {
@@ -731,19 +737,15 @@ else {
 }
 
 /**
- * The function that the C# code calls to hook everything up.
- * For debugging and demo purposes we generate some fake data if fakeIt is true and the attempt to load the file
- * does not produce anything.
+ * The function that is called to hook everything up.
  * Note: settingsFileContent may be empty.
  *
  * @param {String} settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
- * @param {String} fontName The font to use for text boxes and text areas.
  * @global {ReaderToolsModel) model
  */
-function initializeSynphony(settingsFileContent, fontName) {
+function initializeSynphony(settingsFileContent) {
 
     var synphony = model.getSynphony();
-    model.fontName = fontName;
     synphony.loadSettings(settingsFileContent);
     model.restoreState();
 
@@ -755,11 +757,11 @@ function initializeSynphony(settingsFileContent, fontName) {
     } );
 
     // get the list of sample texts
-    fireCSharpAccordionEvent('getTextsListEvent', 'files'); // get the list of texts
+    simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
 }
 
 /**
- * Called by C# in response to a request for the files in the sample texts directory
+ * Called in response to a request for the files in the sample texts directory
  * @param {String} textsList List of file names delimited by \r
  */
 function setTextsList(textsList) {
@@ -769,10 +771,31 @@ function setTextsList(textsList) {
 }
 
 /**
- * Called by C# in response to a request for the contents of a sample text file
+ * Called in response to a request for the contents of a sample text file
  * @param {string} fileContents
  */
 function setSampleFileContents(fileContents) {
     model.addWordsFromFile(fileContents);
     model.getNextSampleFile();
+}
+
+/**
+ * Retrieve data from localhost
+ * @param {String} url The URL to request
+ * @param {Function} callback Function to call when the ajax request returns
+ * @param {String} [dataValue] Passed in the query string under the "data" key
+ */
+function simpleAjaxGet(url, callback, dataValue) {
+
+    var ajaxSettings = {type: 'GET', url: url};
+    if (dataValue) ajaxSettings.data = {data: dataValue};
+
+    $.ajax(ajaxSettings)
+        .done(function (data) {
+            callback(data);
+        });
+}
+
+function setDefaultFont(fontName) {
+    model.fontName = fontName;
 }

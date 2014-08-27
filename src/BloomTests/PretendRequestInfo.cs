@@ -1,6 +1,8 @@
 // Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Collections.Specialized;
+using System.Text;
 
 namespace Bloom.web
 {
@@ -30,7 +32,8 @@ namespace Bloom.web
 
 		public void WriteCompleteOutput(string s)
 		{
-			ReplyContents = s;
+			var buffer = Encoding.UTF8.GetBytes(s);
+			ReplyContents = Encoding.UTF8.GetString(buffer);
 		}
 
 		public void ReplyWithFileContent(string path)
@@ -46,6 +49,16 @@ namespace Bloom.web
 		public void WriteError(int errorCode)
 		{
 			StatusCode = errorCode;
+		}
+
+		public NameValueCollection GetQueryString()
+		{
+			return new NameValueCollection();
+		}
+
+		public NameValueCollection GetPostData()
+		{
+			return new NameValueCollection();
 		}
 	}
 }
