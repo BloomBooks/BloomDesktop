@@ -2,6 +2,7 @@
 /// <reference path="toolbar/toolbar.d.ts"/>
 
 declare var localizationManager: any;
+declare var simpleAjaxGet: any;
 
 interface qtipInterface extends JQuery {
     qtip(options: any): JQuery;
@@ -11,11 +12,17 @@ interface overflowInterface extends JQuery {
     IsOverflowing(): boolean;
 }
 
+
+interface draggableInterface extends JQuery {
+    draggable(): void;
+}
+
 class StyleEditor {
 
     private _previousBox: Element;
     private _supportFilesRoot: string;
     private MIN_FONT_SIZE: number = 7;
+	private boxBeingEdited: HTMLElement;
 
     constructor(supportFilesRoot: string) {
         this._supportFilesRoot = supportFilesRoot;
@@ -237,42 +244,187 @@ class StyleEditor {
         }
         this._previousBox = targetBox;
 
-        //REVIEW: we're putting it in the target div, but at the moment we are using exactly the same bar for each editable box, could just have
-        //one for the whole document
-
-        //NB: we're placing these *after* the target, don't want to mess with having a div inside our text (if that would work anyhow)
-
-        //  i couldn't get the nice icomoon icon font/style.css system to work in Bloom or stylizer        
-        //            $(targetBox).after('<div id="format-toolbar" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller">a</a><a id="bigger" class="largerFontButton" ><i class="bloom-icon-FontSize"></i></a></div>');
-        $(targetBox).after('<div id="format-toolbar" class="bloom-ui" style="opacity:0; display:none;"><a class="smallerFontButton" id="smaller"><img src="' + this._supportFilesRoot + '/img/FontSizeLetter.svg"></a><a id="bigger" class="largerFontButton" ><img src="' + this._supportFilesRoot + '/img/FontSizeLetter.svg"></a></div>');
-
         var toolTip = this.GetToolTip(targetBox, styleName);
         var bottom = $(targetBox).position().top + $(targetBox).height();
         var t = bottom + "px";
-        $(targetBox).after('<div id="formatButton"  style="top: '+t+'" class="bloom-ui"><img src="' + this._supportFilesRoot + '/img/cogGrey.svg"></div>');
-        var formatButton = $('#formatButton');
-        this.AddQtipToElement(formatButton, toolTip);
-        formatButton.toolbar({
-            content: '#format-toolbar',
-            position: 'left',
-            hideOnClick: false
-        });
 
         var editor = this;
-        formatButton.on("toolbarItemClick", function (event, whichButton) {
-            if (whichButton.id == "smaller") {
-                editor.MakeSmaller(targetBox);
-            }
-            if (whichButton.id == "bigger") {
-                editor.MakeBigger(targetBox);
-            }
-            formatButton.trigger('click'); // This re-displays the qtip with the new value.
+        $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
+        var formatButton = $('#formatButton'); // after we create it!
+        editor.AddQtipToElement(formatButton, 'adjust formatting for style');
+        formatButton.click(function () {
+            simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
+                editor.boxBeingEdited = targetBox;
+                styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
+                var box = $(targetBox);
+                var sizeString = box.css('font-size');
+                var pxSize = parseInt(sizeString);
+                var ptSize = editor.ConvertPxToPt(pxSize);
+                var lang = box.attr('lang');
+                var fontName = box.css('font-family');
+                if (fontName[0] == '\'' || fontName[0] == '"') {
+                    fontName = fontName.substring(1, fontName.length - 1); // strip off quotes
+                }
+
+                var lineHeightString = box.css('line-height');
+                var lineHeightPx = parseInt(lineHeightString);
+                var lineHeightNumber = Math.round(lineHeightPx / pxSize *10) / 10.0;
+                var lineSpaceOptions = ['1.0', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.8', '2.0', '2.5', '3.0'];
+				var lineHeight;
+                for (var i = 0; i < lineSpaceOptions.length; i++) {
+	                var optionNumber = parseFloat(lineSpaceOptions[i]);
+                    if (lineHeightNumber == optionNumber) {
+	                    lineHeight = lineSpaceOptions[i];
+                        break;
+                    }
+                    if (lineHeightNumber <= optionNumber) {
+                        lineHeight = lineSpaceOptions[i];
+                        break; // Enhance: possibly it is closer to the option before, should we check for that?
+                    }
+                }
+                if (lineHeightNumber > parseFloat(lineSpaceOptions[lineSpaceOptions.length - 1])) {
+	                lineHeight = lineSpaceOptions[lineSpaceOptions.length - 1];
+                }
+
+                var wordSpaceOptions = ['normal','Wide', 'Extra Wide'];
+                var wordSpaceString = box.css('word-spacing');
+                var wordSpacing = 'normal';
+                if (wordSpaceString != "0px") {
+                    var pxSpace = parseInt(wordSpaceString);
+                    var ptSpace = editor.ConvertPxToPt(pxSpace);
+                    if (ptSpace > 7.5) {
+                        wordSpacing = "Extra Wide";
+                    }  else {
+                        wordSpacing = 'Wide';
+                    }
+                }
+                //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
+                // Enhance: lineHeight may well be something like 35px; what should we select initially?
+
+                var fonts = fontData.split(',');
+                var sizes = ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72']; // Same options as Word 2010
+                var html = '<div id="format-toolbar" style="background-color:white;z-index:900;position:absolute" class="bloom-ui">'
+                    + editor.makeSelect(fonts, 5, fontName, 'fontSelect') + ' '
+                    + editor.makeSelect(sizes, 5, ptSize, 'sizeSelect') + ' '
+                    + '<span style="white-space: nowrap">'
+                        + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:15px;position:relative;top:6px">'
+                        + editor.makeSelect(lineSpaceOptions, 2, lineHeight, 'lineHeightSelect') + ' '
+                    + '</span>'
+                    + '<span style="white-space: nowrap">'
+                        + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:15px;position:relative;top:6px">'
+                        + editor.makeSelect(wordSpaceOptions, 2, wordSpacing, 'wordSpaceSelect')
+                    + '</span>'
+                    + '<div style="color:grey;margin-top:20px">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>'
+                    + '</div>';
+                $('#format-toolbar').remove(); // in case there's still one somewhere else
+                $(targetBox).after(html);
+                var toolbar = $('#format-toolbar');
+                (<draggableInterface>toolbar).draggable();
+                $('#fontSelect').change(function () { editor.changeFont(); });
+                editor.AddQtipToElement($('#fontSelect'), 'Change the font face');
+                $('#sizeSelect').change(function () { editor.changeSize(); });
+                editor.AddQtipToElement($('#sizeSelect'), 'Change the font size');
+                $('#lineHeightSelect').change(function () { editor.changeLineheight(); });
+                editor.AddQtipToElement($('#lineHeightSelect'), 'Change the spacing between lines of text');
+                $('#wordSpaceSelect').change(function () { editor.changeWordSpace(); });
+                editor.AddQtipToElement($('#wordSpaceSelect'), 'Change the spacing between words');
+                var offset = $('#formatButton').offset();
+                toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
+                //alert(offset.left + "," + $(document).width() + "," + $(targetBox).offset().left);
+                toolbar.width($(".bloom-page").width() - offset.left - 50);
+                $('html').on("click.toolbar", function (event) {
+                    if (event.target != toolbar &&
+                        toolbar.has(event.target).length === 0 &&
+                        //self.toolbar.has(event.target).length === 0 &&
+                        toolbar.is(":visible")) {
+                        toolbar.remove();
+                    }
+                });
+                //formatButton.toolbar({
+                //    content: '#format-toolbar',
+                //    position: 'right',
+                //    hideOnClick: true
+                //});
+            });
         });
 
         editor.AttachLanguageTip($(targetBox), bottom);
+     }
+
+     makeSelect(items, marginLeft, current, id) {
+        var result = '<select id="' + id + '" style="margin-left:' + marginLeft + 'px">';
+        for (var i = 0; i < items.length; i++) {
+            var selected = "";
+            if (current == items[i]) selected = ' selected';
+            result += '<option' + selected + '>' + items[i] + '</option>';
+        }
+        return result + '</select>';
     }
 
-    //Attach and detach a language tip which is used when the applicable edittable div has focus.
+    changeFont() {
+        var rule = this.getStyleRule();
+        var font = $('#fontSelect').val();
+        rule.style.setProperty("font-family", font, "important");
+        this.cleanupAfterStyleChange();
+    }
+
+    changeSize() {
+        var rule = this.getStyleRule();
+        var fontSize = $('#sizeSelect').val();
+        var units = 'pt';
+        var sizeString = fontSize.toString();
+        if (parseInt(sizeString) < this.MIN_FONT_SIZE)
+            return; // should not be possible?
+        rule.style.setProperty("font-size", sizeString + units, "important");
+        this.cleanupAfterStyleChange();
+    }
+
+    changeLineheight() {
+        var rule = this.getStyleRule();
+        var lineHeight = $('#lineHeightSelect').val();
+        rule.style.setProperty("line-height", lineHeight, "important");
+        this.cleanupAfterStyleChange();
+    }
+
+    changeWordSpace() {
+        var rule = this.getStyleRule();
+        var wordSpace = $('#wordSpaceSelect').val();
+        if (wordSpace === 'Wide')
+            wordSpace = '5pt';
+        else if (wordSpace === 'Extra Wide') {
+            wordSpace = '10pt';
+        }
+        rule.style.setProperty("word-spacing", wordSpace, "important");
+        this.cleanupAfterStyleChange();
+    }
+
+    getStyleRule() {
+        var target = this.boxBeingEdited;
+        var styleName = StyleEditor.GetStyleNameForElement(target);
+        if (!styleName)
+            return; // bizarre, since we put up the dialog
+        var langAttrValue = StyleEditor.GetLangValueOrNull(target);
+        return this.GetOrCreateRuleForStyle(styleName, langAttrValue);
+    }
+
+    cleanupAfterStyleChange() {
+        var target = this.boxBeingEdited;
+        var styleName = StyleEditor.GetStyleNameForElement(target);
+        if (!styleName)
+            return; // bizarre, since we put up the dialog
+        if ((<overflowInterface>$(target)).IsOverflowing())
+            $(target).addClass('overflow');
+        else
+            $(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
+
+        // alert("New size rule: " + rule.cssText);
+        // Now update tooltip
+        //var toolTip = this.GetToolTip(target, styleName);
+        //this.AddQtipToElement($('#formatButton'), toolTip);
+
+    }
+
+   //Attach and detach a language tip which is used when the applicable edittable div has focus.
     //This works around a couple FF bugs with the :after pseudoelement.  See BL-151.
     AttachLanguageTip(targetBox, bottom) {
         if ($(targetBox).attr('data-languagetipcontent')) {
