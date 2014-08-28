@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+<!-- TODO: this is a mess--><!DOCTYPE html>
 <html>
   <head>
 	<meta charset="UTF-8">
@@ -23,9 +24,7 @@
 		<div lang="V" contenteditable="true" class="bloom-content1 bloom-editable smallCoverCredits cover-credits-style" data-book="smallCoverCredits">
 		  <label class="bubble">*You may use this space for author/illustrator, or anything else.</label>
 		</div>
-		<div class="coverBottomLangName">
-		  <div data-library="nameOfLanguage" lang="N1">{Lang in N1}</div>
-		</div>
+		<div data-book="languagesOfBook" class="coverBottomLangName"></div>
 		<div data-functionOnHintClick="ShowTopicChooser()" data-hint="Click to choose topic" class="bloom-translationGroup coverBottomBookTopic bloom-readOnlyInTranslationMode">
 		  <div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable"></div>
 		</div>
@@ -74,10 +73,7 @@
 		  </div>
 		</div>
 		<div id="languageInformation">
-		  <div class="bloom-translationGroup">
-			<!-- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.-->
-			<div data-library="nameOfLanguage" class="langName"></div>
-		  </div>
+		  <div data-book="languagesOfBook" class="languagesOfBook"></div>
 		  <!-- review: can we get rid of these "langName" classes?-->
 		  <div class="bloom-translationGroup">
 			<!-- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.-->
