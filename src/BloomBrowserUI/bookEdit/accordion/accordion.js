@@ -51,51 +51,68 @@ function showOrHidePanel_click(chkbox) {
 function restoreAccordionSettings(settings) {
 
     var opts = JSON.parse(settings);
+    var currentPanel = opts['current'] || '';
+    var state;
+    var panels = [];
 
     if (opts['showPE'])
-        requestPanel('showPE', 'PageElements');
+        panels.push(['showPE', 'PageElements']);
 
     if (opts['showDRT'])
-        requestPanel('showDRT', 'DecodableRT');
+        panels.push(['showDRT', 'DecodableRT']);
 
     if (opts['showLRT'])
-        requestPanel('showLRT', 'LeveledRT');
+        panels.push(['showLRT', 'LeveledRT']);
 
     if (opts['decodableState']) {
-        var state = libsynphony.dbGet('drt_state');
+        state = libsynphony.dbGet('drt_state');
         if (!state) state = new DRTState();
         state.stage = 0 + opts['decodableState'];
         libsynphony.dbSet('drt_state', state);
-    };
+    }
 
     if (opts['leveledState']) {
-        var state = libsynphony.dbGet('drt_state');
+        state = libsynphony.dbGet('drt_state');
         if (!state) state = new DRTState();
         state.level = 0 + opts['leveledState'];
         libsynphony.dbSet('drt_state', state);
-    };
+    }
 
-    // set the current panel
-    if (opts['current']) {
+    loadPanelsAndSetCurrent(panels, currentPanel);
+}
 
-        var accordion = $('#accordion');
+/**
+ * This function requests one panel, and then sets itself up to be called again after the panel is loaded. If there
+ * are no more panels to load it activates the last panel displayed, as long as it isn't the "More" panel.
+ * @param {Array} panels An array of arrays.
+ * @param {String} currentPanel
+ */
+function loadPanelsAndSetCurrent(panels, currentPanel) {
+
+    // if there are still panels to load, load the next one
+    if (panels && (panels.length > 0)) {
+
+        // remove the first panel from the array
+        var panel = panels.shift();
+
+        // request the panel from localhost
+        requestPanel(panel[0], panel[1], loadPanelsAndSetCurrent, panels, currentPanel);
+
+        return;
+    }
+
+    // there are no more panels, so set the current one
+    var idx = '0';
+    var accordion = $('#accordion');
+
+    if (currentPanel) {
 
         // find the index of the panel with the 'current' id
         accordion.find('> h3').each(function() {
-            if ($(this).data('panelId') === opts['current']) {
+            if ($(this).data('panelId') === currentPanel) {
 
                 // the index is the last segment of the element id
-                var idx = this.id.substr(this.id.lastIndexOf('-') + 1);
-
-                // turn off animation
-                var ani = accordion.accordion('option', 'animate');
-                accordion.accordion('option', 'animate', false);
-
-                // the index must be passed as an int, a string will not work
-                accordion.accordion('option', 'active', parseInt(idx));
-
-                // turn animation back on
-                accordion.accordion('option', 'animate', ani);
+                idx = this.id.substr(this.id.lastIndexOf('-') + 1);
 
                 // break from the each() loop
                 return false;
@@ -103,9 +120,36 @@ function restoreAccordionSettings(settings) {
             return true;
         });
     }
+
+    // turn off animation
+    var ani = accordion.accordion('option', 'animate');
+    accordion.accordion('option', 'animate', false);
+
+    // the index must be passed as an int, a string will not work
+    accordion.accordion('option', 'active', parseInt(idx));
+
+    // turn animation back on
+    accordion.accordion('option', 'animate', ani);
+
+    // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
+    accordion.onOnce('accordionactivate.accordion', function(event, ui) {
+
+        if (ui.newHeader.data('panelId'))
+            fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t" + ui.newHeader.data('panelId').toString());
+        else
+            fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t");
+    });
 }
 
-function requestPanel(checkBoxId, panelId) {
+/**
+ * Requests a panel from localhost and loads it into the accordion.
+ * @param {String} checkBoxId
+ * @param {String} panelId
+ * @param {Function} loadNextCallback
+ * @param {Array} panels
+ * @param {String} currentPanel
+ */
+function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPanel) {
 
     var chkBox = document.getElementById(checkBoxId);
     if (chkBox) {
@@ -117,6 +161,7 @@ function requestPanel(checkBoxId, panelId) {
         $.ajax(ajaxSettings)
             .done(function (data) {
                 loadAccordionPanel(data, panelId);
+                loadNextCallback(panels, currentPanel)
             });
     }
 }
@@ -167,21 +212,21 @@ function loadAccordionPanel(newContent, panelId) {
 
     accordion.accordion('refresh');
 
-    // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
-    accordion.onOnce('accordionactivate.accordion', function(event, ui) {
-
-        if (ui.newHeader.data('panelId'))
-            fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t" + ui.newHeader.data('panelId').toString());
-        else
-            fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t");
-    });
-
     // if requested, open the panel that was just inserted
     if (showingPanel) {
         showingPanel = false;
         var id = tab.attr('id');
         id = parseInt(id.substr(id.lastIndexOf('_')));
         accordion.accordion('option', 'active', id);
+
+        // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
+        accordion.onOnce('accordionactivate.accordion', function(event, ui) {
+
+            if (ui.newHeader.data('panelId'))
+                fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t" + ui.newHeader.data('panelId').toString());
+            else
+                fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t");
+        });
     }
 }
 
