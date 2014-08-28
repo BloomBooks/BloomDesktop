@@ -31,6 +31,15 @@ class CalledByCSharp {
 			contentWindow['SetCopyrightAndLicense'](contents);
 	}
 
+	removeSynphonyMarkup() {
+
+		var page = this.getPageContent();
+		if (!page) return;
+
+		if ((typeof page['jQuery'] !== 'undefined') && (page['jQuery'].fn.removeSynphonyMarkup))
+			page['jQuery']('.bloom-content1').removeSynphonyMarkup();
+	}
+
 	invokeAccordionWithOneParameter(functionName: string, value: string) {
 
 		var contentWindow = this.getAccordionContent();
