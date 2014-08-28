@@ -514,7 +514,7 @@ namespace Bloom.Book
 			{
 				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
 			}
-			var previewDom= GetBookDomWithStyleSheets("previewMode.css");
+			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "split-pane.css", "origami.css");
 
 			//We may have just run into an error for the first time
 			if (HasFatalError)

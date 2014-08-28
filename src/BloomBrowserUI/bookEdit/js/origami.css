@@ -32,21 +32,28 @@
 
 .split-pane.vertical-percent > .vertical-divider {
   right: 50%;
-  /*width: 10px;*/
   cursor: col-resize;
-  /*background-color: black;*/
   border-right: 3px dashed #E48C84;
 }
 
 .split-pane.horizontal-percent > .horizontal-divider {
   bottom: 50%;
-  /*height: 10px;*/
   cursor: row-resize;
-  /*background-color: black;*/
   border-bottom: 3px dashed #E48C84;
 }
 
-.button, .button:visited {
+.origami-toggle {
+  position: absolute;
+  right: 19px;
+  top: 19px;
+  border: 1px solid rgba(0,0,0,0.25);
+  cursor: pointer;
+  line-height: 1em;
+  padding: 3px;
+  color: #1D94A4;
+}
+
+.marginBox .button, .marginBox .button:visited {
   display: inline-block;
   text-decoration: none;
   border: 1px solid rgba(0,0,0,0.25);

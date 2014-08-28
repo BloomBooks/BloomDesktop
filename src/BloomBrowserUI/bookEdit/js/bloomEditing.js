@@ -211,8 +211,8 @@ function Cleanup() {
 
  //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
  //onto the page
-function AddToolbox(){
-    $('div.bloom-page.bloom-enablePageCustomization').each(function () {
+function AddToolbox(container){
+    $(container).find('div.bloom-page.bloom-enablePageCustomization').each(function () {
         $(this).find('.marginBox').droppable({
             hoverClass: "ui-state-hover",
             accept: function () { return true; },
@@ -526,8 +526,8 @@ function CreditsAreRelevantForImage(img) {
 
 //While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
 // so that we can easily & quickly get to the here.
-function SetOverlayForImagesWithoutMetadata() {
-    $(".bloom-imageContainer").each(function () {
+function SetOverlayForImagesWithoutMetadata(container) {
+    $(container).find(".bloom-imageContainer").each(function () {
         var img = $(this).find('img');
         if (!CreditsAreRelevantForImage(img)) {
            return;
@@ -698,8 +698,8 @@ jQuery.fn.IsOverflowing = function () {
 
 // Checks for overflow and adds/removes the proper class
 // N.B. This function is specifically designed to be called from within AddOverflowHandler()
-function MarkOverflowInternal() {
-    $("div.bloom-editable, textarea").each(function () {
+function MarkOverflowInternal(container) {
+    $(container).find("div.bloom-editable, textarea").each(function () {
         var $this = $(this);
         if ($this.IsOverflowing())
             $this.addClass('overflow');
@@ -710,14 +710,14 @@ function MarkOverflowInternal() {
 
 // When a div is overfull,
 // we add the overflow class and it gets a red background or something
-function AddOverflowHandler() {
+function AddOverflowHandler(container) {
   //NB: for some historical reason in March 2014 the calendar still uses textareas
-    $("div.bloom-editable, textarea").on("keyup paste", function (e) {
+    $(container).find("div.bloom-editable, textarea").on("keyup paste", function (e) {
         // Give the browser time to get the pasted text into the DOM first, before testing for overflow
         // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
         //        At first I was concerned that this might slow typing, but it doesn't seem to.
         setTimeout(function () {
-            MarkOverflowInternal();
+            MarkOverflowInternal(container);
 
             // This will make sure that any language tags on this div stay in position with editing.
             // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
@@ -727,14 +727,14 @@ function AddOverflowHandler() {
     });
 
     // Test initial overflow state on page
-    MarkOverflowInternal();
+    MarkOverflowInternal(container);
 }
 
 // Add various editing key handlers
-function AddEditKeyHandlers() {
+function AddEditKeyHandlers(container) {
     //Make F6 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
     //nb: we're avoiding ctrl+plus and ctrl+shift+plus (as used by MS Word), because they means zoom in browser. also three keys is too much
-    $("div.bloom-editable").on('keydown', null, 'F6', function (e) {
+    $(container).find("div.bloom-editable").on('keydown', null, 'F6', function (e) {
         var selection = document.getSelection();
         if (selection) {
             //NB: by using exeCommand, we get undo-ability
@@ -743,19 +743,19 @@ function AddEditKeyHandlers() {
     });
 
     // Make F7 apply top-level header style (H1)
-    $("div.bloom-editable").on('keydown', null, 'F7', function (e) {
+    $(container).find("div.bloom-editable").on('keydown', null, 'F7', function (e) {
         e.preventDefault();
         document.execCommand("formatBlock", false, "H1");
     });
 
     // Make F8 apply header style (H2)
-    $("div.bloom-editable").on('keydown', null, 'F8', function (e) {
+    $(container).find("div.bloom-editable").on('keydown', null, 'F8', function (e) {
         e.preventDefault();
         document.execCommand("formatBlock", false, "H2");
     });
 
     //there doesn't appear to be a good simple way to clear out formatting
-    $("div.bloom-editable").on('keydown', null, 'ctrl+space', function (e) {
+    $(container).find("div.bloom-editable").on('keydown', null, 'ctrl+space', function (e) {
         e.preventDefault();
         document.execCommand("removeFormat", false, false);//will remove bold, italics, etc. but not things that use elements, like h1
         //TODO now for elements (h1, span, etc), we could do a regex and remove them. The following is just a temporary bandaid
@@ -765,8 +765,8 @@ function AddEditKeyHandlers() {
 }
 
 // Add little language tags
-function AddLanguageTags() {
-    $(".bloom-editable:visible[contentEditable=true]").each(function () {
+function AddLanguageTags(container) {
+    $(container).find(".bloom-editable:visible[contentEditable=true]").each(function () {
         var $this = $(this);
 
         // If this DIV already had a language tag, remove the content in case we decide the situation has changed.
@@ -811,14 +811,14 @@ function AddLanguageTags() {
 }
 
 // Add (yellow) hint bubbles from (usually) label.bubble elements
-function AddHintBubbles() {
+function AddHintBubbles(container) {
     //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
     //bloom-translationGroup (those should have a single <label> for the whole group).
     //Notice that the <label> inside an editable div is in a precarious position, it could get
     //edited away by the user. So we are moving the contents into a data-hint attribute on the field.
     //Yes, it could have been placed there in the 1st place, but the <label> approach is highly readable,
     //so it is preferred when making new templates by hand.
-    $(".bloom-editable:visible label.bubble").each(function () {
+    $(container).find(".bloom-editable:visible label.bubble").each(function () {
         var labelElement = $(this);
         var whatToSay = labelElement.text();
         if (!whatToSay)
@@ -838,7 +838,7 @@ function AddHintBubbles() {
     // Note that in Version 1.0, we didn't have this <label> ability but we had @data-hint.
     // Using <label> instead of the attribute makes the html much easier to read, write, and add additional
     // behaviors through classes
-    $(".bloom-translationGroup > label.bubble").each(function () {
+    $(container).find(".bloom-translationGroup > label.bubble").each(function () {
         var labelElement = $(this);
         var whatToSay = labelElement.text();
         if (!whatToSay)
@@ -851,7 +851,7 @@ function AddHintBubbles() {
         });
     });
 
-    $("*.bloom-imageContainer > label.bubble").each(function () {
+    $(container).find("*.bloom-imageContainer > label.bubble").each(function () {
         var labelElement = $(this);
         var imageContainer = $(this).parent();
         var whatToSay = labelElement.text();
@@ -864,7 +864,7 @@ function AddHintBubbles() {
     //This is the "low-level" way to get a hint bubble, cramming it all into a data-hint attribute.
     //It is used by the "high-level" way in the monolingual case where we don't have a bloom-translationGroup,
     //and need a place to preserve the contents of the <label>, which is in danger of being edited away.
-    $("*[data-hint]").each(function () {
+    $(container).find("*[data-hint]").each(function () {
         var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
         if (!whatToSay)
             return;
@@ -897,12 +897,12 @@ function SetCopyrightAndLicense(data) {
     }
 
     $("IMG[data-book='licenseImage']").attr("src", licenseImageValue);
-    SetBookCopyrightAndLicenseButtonVisibility();
+    SetBookCopyrightAndLicenseButtonVisibility($('body'));
 }
 
-function SetBookCopyrightAndLicenseButtonVisibility() {
-    var shouldShowButton = !($("DIV.copyright").text());
-    $("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
+function SetBookCopyrightAndLicenseButtonVisibility(container) {
+    var shouldShowButton = !($(container).find("DIV.copyright").text());
+    $(container).find("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
 }
 
 function FindOrCreateTopicDialogDiv() {
@@ -949,8 +949,8 @@ function FindOrCreateTopicDialogDiv() {
 //note, the normal way is for the user to click the link on the qtip.
 //But clicking on the exiting topic may be natural too, and this prevents
 //them from editing it by hand.
-function SetupShowingTopicChooserWhenTopicIsClicked() {
-    $("div[data-book='topic']").click(function () {
+function SetupShowingTopicChooserWhenTopicIsClicked(container) {
+    $(container).find("div[data-book='topic']").click(function () {
         if ($(this).css('cursor') == 'not-allowed')
             return;
         ShowTopicChooser();
@@ -984,6 +984,15 @@ function ShowTopicChooser() {
 
 function DecodeHtml(encodedString) {
     return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&#169;/g, "©");
+}
+
+function GetEditor() {
+    if (GetSettings().bloomBrowserUIFolder.indexOf('http') === 0) {
+        return new StyleEditor(GetSettings().bloomBrowserUIFolder + "/bookEdit");
+    }
+    else {
+        return new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
+    }
 }
 
 function SetupImage(image) {
@@ -1023,44 +1032,31 @@ $.fn.hasAttr = function (name) {
     return (typeof attr !== 'undefined' && attr !== false);
 };
 
-// ---------------------------------------------------------------------------------
-// document ready function
-// ---------------------------------------------------------------------------------
-$(document).ready(function () {
-    if($.fn.qtip)
-        $.fn.qtip.zindex = 15000;
-    //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
+// Originally, all this code was in document.load and the selectors were acting
+// on all elements (not bound by the container).  I added the container bound so we
+// can add new elements (such as during layout mode) and call this on only newly added elements.
+// Now document.load calls this with $('body') as the container.
+// REVIEW: Some of these would be better off in OnTimeSetup, but too much risk to try to decide right now.
+function SetupElements(container) {
 
     //add a marginBox if it's missing. We introduced it early in the first beta
-    $(".bloom-page").each(function () {
+    $(container).find(".bloom-page").each(function () {
         if ($(this).find(".marginBox").length == 0) {
             $(this).wrapInner("<div class='marginBox'></div>");
         }
     });
 
-    AddToolbox();
+    AddToolbox(container);
 
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
-    $("textarea").blur(function () {
+    $(container).find("textarea").blur(function () {
         this.innerHTML = this.value;
     });
-
-
-    jQuery.fn.reverse = function () {
-         return this.pushStack(this.get().reverse(), arguments);
-    };
-
-    //if this browser doesn't have endsWith built in, add it
-    if (typeof String.prototype.endsWith !== 'function') {
-    String.prototype.endsWith = function (suffix) {
-            return this.indexOf(suffix, this.length - suffix.length) !== -1;
-        };
-    }
 
     //firefox adds a <BR> when you press return, which is lame because you can't put css styles on BR, such as indent.
     //Eventually we may use a wysiwyg add-on which does this conversion as you type, but for now, we change it when
     //you tab or click out.
-    jQuery(".bloom-editable").blur(function () {
+    $(container).find(".bloom-editable").blur(function () {
 
         //This might mess some things up, so we're only applying it selectively
         if ($(this).closest('.bloom-requiresParagraphs').length == 0
@@ -1082,6 +1078,7 @@ $(document).ready(function () {
         }
         $(this).html(x);
 
+        //REVIEW: shouldn't this (and below) select only the p's in $(this)?
         //If somehow you get leading empty paragraphs, FF won't let you delete them
         $('p').each(function () {
             if ($(this).text() === "") {
@@ -1103,7 +1100,7 @@ $(document).ready(function () {
     });
 
     //when we discover an empty text box that has been marked to use paragraphs, start us off on the right foot
-    $('.bloom-editable').focus(function () {
+    $(container).find('.bloom-editable').focus(function () {
         if ($(this).closest('.bloom-requiresParagraphs').length == 0
             && ($(this).css('border-top-style') != 'dashed')) //this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
                 return;
@@ -1136,17 +1133,17 @@ $(document).ready(function () {
     });
 
     // invoke function when a bloom-editable element loses focus.
-    $('.bloom-editable').focusout(function () {
+    $(container).find('.bloom-editable').focusout(function () {
         var accordion = parent.window.document.getElementById("accordion");
         if (accordion) {
             accordion.contentWindow.model.doMarkup(); // 'This' is the element that just lost focus.
         }
     });
 
-    SetBookCopyrightAndLicenseButtonVisibility();
+    SetBookCopyrightAndLicenseButtonVisibility(container);
 
     //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
-    $(".bloom-translationGroup").each(function () {
+    $(container).find(".bloom-translationGroup").each(function () {
         var contentElements = $(this).find("textarea, div.bloom-editable");
         contentElements.sort(function (a, b) {
             //using negatives so that something with none of these labels ends up with a > score and at the end
@@ -1163,7 +1160,7 @@ $(document).ready(function () {
     });
 
     //Convert Standard Format Markers in the pasted text to html spans
-    $("div.bloom-editable").on("paste", function (e) {
+    $(container).find("div.bloom-editable").on("paste", function (e) {
         if (!e.originalEvent.clipboardData)
             return;
 
@@ -1186,28 +1183,21 @@ $(document).ready(function () {
 
     // Add overflow event handlers so that when a div is overfull,
     // we add the overflow class and it gets a red background or something
-    AddOverflowHandler();
+    AddOverflowHandler(container);
 
-    AddEditKeyHandlers();
+    AddEditKeyHandlers(container);
 
     //--------------------------------
     //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
 
     //do it initially
-    $(".bloom-centerVertically").CenterVerticallyInParent();
+    $(container).find(".bloom-centerVertically").CenterVerticallyInParent();
     //reposition as needed
-    $(".bloom-centerVertically").resize(function () { //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
+    $(container).find(".bloom-centerVertically").resize(function () { //nb: this uses a 3rd party resize extension from Ben Alman; the built in jquery resize only fires on the window
         $(this).CenterVerticallyInParent();
     });
 
-    /* Defines a starts-with function*/
-    if (typeof String.prototype.startsWith != 'function') {
-        String.prototype.startsWith = function (str) {
-            return this.indexOf(str) == 0;
-        };
-    }
-
-    AddHintBubbles();
+    AddHintBubbles(container);
 
     //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
     //So one of our foundational stylesheets looks for @data-placeholder and simulates the
@@ -1218,7 +1208,7 @@ $(document).ready(function () {
     //Using <label> instead of the attribute makes the html much easier to read, write, and add additional
     //behaviors through classes.
     //So the job of this bit here is to take the label.placeholder and create the data-placeholders.
-    $("*.bloom-translationGroup > label.placeholder").each(function () {
+    $(container).find("*.bloom-translationGroup > label.placeholder").each(function () {
 
         var labelText = $(this).text();
 
@@ -1232,28 +1222,25 @@ $(document).ready(function () {
         });
     });
 
-    //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
-    Cleanup();
-
     //make images look click-able when you cover over them
-    jQuery(".bloom-imageContainer").each(function () {
+    $(container).find(".bloom-imageContainer").each(function () {
         SetupImageContainer(this);
     });
 
     //todo: this had problems. Check out the later approach, seen in draggableLabel (e.g. move handle on the inside, using a background image on a div)
-    jQuery(".bloom-draggable").mouseenter(function () {
+    $(container).find(".bloom-draggable").mouseenter(function () {
         $(this).prepend("<button class='moveButton' title='Move'></button>");
         $(this).find(".moveButton").mousedown(function (e) {
             $(this).parent().trigger(e);
         });
     });
-    jQuery(".bloom-draggable").mouseleave(function () {
+    $(container).find(".bloom-draggable").mouseleave(function () {
         $(this).find(".moveButton").each(function () {
             $(this).remove()
         });
     });
 
-    $('div.bloom-editable').each(function () {
+    $(container).find('div.bloom-editable').each(function () {
         $(this).attr('contentEditable', 'true');
     });
 
@@ -1261,7 +1248,7 @@ $(document).ready(function () {
     // Normally, we'd control this is a style in editTranslationMode.css/editOriginalMode.css. However, "readonly" isn't a style, just
     // an attribute, so it can't be included in css.
     // The solution here is to add the readonly attribute when we detect that the css has set the cursor to "not-allowed".
-    $('textarea, div').focus(function () {
+    $(container).find('textarea, div').focus(function () {
         //        if ($(this).css('border-bottom-color') == 'transparent') {
         if ($(this).css('cursor') == 'not-allowed') {
             $(this).attr("readonly", "true");
@@ -1273,10 +1260,10 @@ $(document).ready(function () {
         }
     });
 
-    AddLanguageTags();
+    AddLanguageTags(container);
 
     // If the user moves over something they can't edit, show a tooltip explaining why not
-    $('*[data-hint]').each(function () {
+    $(container).find('*[data-hint]').each(function () {
 
         if ($(this).css('cursor') == 'not-allowed') {
             var whyDisabled = "You cannot change these because this is not the original copy.";
@@ -1307,7 +1294,7 @@ $(document).ready(function () {
     //Same thing for divs which are potentially editable, but via the contentEditable attribute instead of TextArea's ReadOnly attribute
     // editTranslationMode.css/editOriginalMode.css can't get at the contentEditable (css can't do that), so
     // so they set the cursor to "not-allowed", and we detect that and set the contentEditable appropriately
-    $('div.bloom-readOnlyInTranslationMode').focus(function () {
+    $(container).find('div.bloom-readOnlyInTranslationMode').focus(function () {
         if ($(this).css('cursor') == 'not-allowed') {
             $(this).removeAttr("contentEditable");
         }
@@ -1319,7 +1306,7 @@ $(document).ready(function () {
     //first used in the Uganda SHRP Primer 1 template, on the image on day 1
     //This took *enormous* fussing in the css. TODO: copy what we learned there
     //to the (currently experimental) Toolbox template (see 'bloom-draggable')
-    $(".bloom-draggableLabel").each(function () {
+    $(container).find(".bloom-draggableLabel").each(function () {
         // previous to June 2014, containment was not working, so some items may be
         // out of bounds. Or the stylesheet could change the size of things. This gets any such back in bounds.
         if ($(this).position().left < 0) {
@@ -1343,12 +1330,12 @@ $(document).ready(function () {
     });
 
 
-    $(".bloom-draggableLabel")
+    $(container).find(".bloom-draggableLabel")
        .mouseenter(function () {
         $(this).prepend(" <div class='dragHandle'></div>");
     });
 
-    jQuery(".bloom-draggableLabel").mouseleave(function () {
+    $(container).find(".bloom-draggableLabel").mouseleave(function () {
         $(this).find(".dragHandle").each(function() {
             $(this).remove()
         });
@@ -1356,7 +1343,7 @@ $(document).ready(function () {
 
     // add drag and resize ability where elements call for it
     //   $(".bloom-draggable").draggable({containment: "parent"});
-    $(".bloom-draggable").draggable({ containment: "parent",
+    $(container).find(".bloom-draggable").draggable({ containment: "parent",
         handle: '.bloom-imageContainer',
         stop: function (event, ui) {
             $(this).find('.wordsDiv').find('div').each(function () {
@@ -1375,7 +1362,7 @@ $(document).ready(function () {
      </select>
      */
     //First we select the initial value based on what class is currently set, or leave to the default if none of them
-    $(".bloom-classSwitchingCombobox").each(function(){
+    $(container).find(".bloom-classSwitchingCombobox").each(function(){
         //look through the classes of the parent for any that match one of our combobox values
         var i;
         for(i=0; i< this.options.length;i++) {
@@ -1387,7 +1374,7 @@ $(document).ready(function () {
         }
     });
     //And now we react to the user choosing a different value
-    $(".bloom-classSwitchingCombobox").change(function(){
+    $(container).find(".bloom-classSwitchingCombobox").change(function(){
         //remove any of the values that might already be set
         var i;
         for(i=0; i< this.options.length;i++) {
@@ -1399,68 +1386,41 @@ $(document).ready(function () {
     });
 
     //only make things deletable if they have the deletable class *and* page customization is enabled
-    $("DIV.bloom-page.bloom-enablePageCustomization DIV.bloom-deletable").each(function () {
+    $(container).find("DIV.bloom-page.bloom-enablePageCustomization DIV.bloom-deletable").each(function () {
         SetupDeletable(this);
     });
 
-    $(".pictureDictionaryPage").each(function () {
+    $(container).find(".pictureDictionaryPage").each(function () {
         AddExperimentalNotice(this);
     });
 
-    $(".bloom-resizable").each(function () {
+    $(container).find(".bloom-resizable").each(function () {
         SetupResizableElement(this);
     });
 
-    $("img").each(function () {
+    $(container).find("img").each(function () {
         SetAlternateTextOnImages(this);
     });
 
-    SetOverlayForImagesWithoutMetadata();
+    SetOverlayForImagesWithoutMetadata(container);
 
-    //focus on the first editable field
-
-    SetupShowingTopicChooserWhenTopicIsClicked();
+    SetupShowingTopicChooserWhenTopicIsClicked(container);
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-    $("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function () {
+    $(container).find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function () {
         if ($(this).find("textarea, div").length > 1) {
             MakeSourceTextDivForGroup(this);
         }
     });
 
-    $(".bloom-imageContainer img").each(function() {
+    $(container).find(".bloom-imageContainer img").each(function() {
         SetupImage(this);
     });
 
-//    //make images scale up to their container without distorting their proportions, while being centered within it.
-//    $(".bloom-imageContainer img").scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
-//
-//    // when the image changes, we need to scale again:
-//    $(".bloom-imageContainer img").load(function () {
-//        $(this).scaleImage({ scale: "fit" });
-//    });
-//
-//    //and when their parent is resized by the user, we need to scale again:
-//    $(".bloom-imageContainer img").each(function () {
-//        $(this).parent().resize(function () {
-//            $(this).find("img").scaleImage({ scale: "fit" });
-//            try {
-//                ResetRememberedSize(this);
-//            } catch (error) {
-//                console.log(error);
-//            }
-//        });
-//    });
+    var editor = GetEditor();
 
-    var editor;
-    if (GetSettings().bloomBrowserUIFolder.indexOf('http') === 0) {
-        editor = new StyleEditor(GetSettings().bloomBrowserUIFolder + "/bookEdit");
-    }
-    else {
-        editor = new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
-    }
-    $("div.bloom-editable:visible").each(function () {
+    $(container).find("div.bloom-editable:visible").each(function () {
 
         $(this).focus(function() {
            editor.AttachToBox(this);
@@ -1477,7 +1437,61 @@ $(document).ready(function () {
 
     //focus on the first editable field
     //$(':input:enabled:visible:first').focus();
-    $("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
+    $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 
     //editor.AddStyleEditBoxes('file://' + GetSettings().bloomBrowserUIFolder+"/bookEdit");
+}
+
+// Only put setup code here which is guaranteed to only be run once per page load.
+// e.g. Don't put setup for elements such as image containers or editable boxes which may get added after page load.
+function OneTimeSetup() {
+
+    //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
+    Cleanup();
+
+    setupSplitPaneComponentInners();
+
+    $('.customPage').append('<div class="button bloom-purple origami-toggle bloom-ui"><a>Switch to Layout Mode</a></div>');
+
+    $('.origami-ui').css('visibility', 'hidden');
+
+    $('.origami-toggle').click(function() {
+        var anchor = $(this).find('a');
+        anchor.text('Switch to ' + (anchor.text() === 'Switch to Layout Mode' ? 'Edit Mode' : 'Layout Mode'));
+
+        $('.origami-ui').each(function() {
+            $(this).css('visibility', $(this).css('visibility') === 'visible' ? 'hidden' : 'visible');
+        });
+    });
+}
+
+// ---------------------------------------------------------------------------------
+// document ready function
+// ---------------------------------------------------------------------------------
+$(document).ready(function() {
+
+    if($.fn.qtip)
+        $.fn.qtip.zindex = 15000;
+    //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
+
+    $.fn.reverse = function () {
+        return this.pushStack(this.get().reverse(), arguments);
+    };
+
+    //if this browser doesn't have endsWith built in, add it
+    if (typeof String.prototype.endsWith !== 'function') {
+        String.prototype.endsWith = function (suffix) {
+            return this.indexOf(suffix, this.length - suffix.length) !== -1;
+        };
+    }
+
+    /* Defines a starts-with function*/
+    if (typeof String.prototype.startsWith != 'function') {
+        String.prototype.startsWith = function (str) {
+            return this.indexOf(str) == 0;
+        };
+    }
+
+    SetupElements($('body'));
+    OneTimeSetup();
 });
