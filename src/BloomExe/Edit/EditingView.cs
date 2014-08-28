@@ -706,7 +706,7 @@ namespace Bloom.Edit
         /// </summary>
         public void CleanHtmlAndCopyToPageDom()
         {
-            RunJavaScript("if (document.getElementById('page')) { var pageWin = document.getElementById('page').contentWindow; if (pageWin && (typeof pageWin.jQuery !== 'undefined') && pageWin.jQuery.fn.removeSynphonyMarkup) { pageWin.jQuery('.bloom-editable').removeSynphonyMarkup(); }}");
+			RunJavaScript("if (calledByCSharp) { calledByCSharp.removeSynphonyMarkup(); }");
             _browser1.ReadEditableAreasNow();
         }
 
