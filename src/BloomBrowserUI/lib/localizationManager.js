@@ -28,7 +28,14 @@
  *      this is found in StyleEditor.GetToolTip(), where the tip for the font size changer is built.
  */
 function LocalizationManager() {
+
     this.dictionary = {};
+
+    // get the dictionary from the main document, if present
+    if (typeof localizationManagerDictionary === 'object')
+        this.dictionary = localizationManagerDictionary;
+    else if (typeof window.parent.localizationManagerDictionary === 'object')
+        this.dictionary = window.parent.localizationManagerDictionary;
 }
 
 /**
@@ -37,19 +44,23 @@ function LocalizationManager() {
  * @param {Object} [keyValuePairs] Optional. Each property name (i.e. keyValuePairs.keys) is a string id, and the
  * property value is the default value/english text. If keyValuePairs is omitted, all dictionary entries will be
  * returned, otherwise only the requested entries will be returned.
+ * @param [elementsToLocalize]
  */
-LocalizationManager.prototype.loadStrings = function (keyValuePairs) {
+LocalizationManager.prototype.loadStrings = function (keyValuePairs, elementsToLocalize) {
 
     // NOTE: This function is not used in Bloom 2.0, but will be used in Bloom 2.1
-    // NOTE: The file "i18n.html" does not exist on the hard drive. The EnhancedImageServer class intercepts this request and handles it appropriately.
-    // TODO: Implement this functionality in the C# EnhancedImageServer and RequestInfo classes for Bloom 2.1.
 
-    var ajaxSettings = {type: 'POST', url: '/bloom/i18n.html'};
+    var ajaxSettings = {type: 'POST', url: '/bloom/i18n/loadStrings'};
     if (keyValuePairs) ajaxSettings.data = keyValuePairs;
 
     $.ajax(ajaxSettings)
         .done(function (data) {
-            localizationManager.dictionary = $.extend(localizationManager.dictionary, JSON.parse(data));
+            localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
+            if (elementsToLocalize) {
+                $(elementsToLocalize).each(function() {
+                    localizationManager.setElementText(this);
+                });
+            }
         });
 };
 
@@ -72,9 +83,10 @@ LocalizationManager.prototype.loadStringsFromObject = function (keyValuePairObje
  */
 LocalizationManager.prototype.getText = function (stringId, englishText) {
 
-    // TODO: Evaluate if this dependence on GetDictionary() should be removed in Bloom 2.1
-    if (Object.keys(this.dictionary).length == 0)
-        this.loadStringsFromObject(GetDictionary());
+    if (typeof GetDictionary === 'function') {
+        if (Object.keys(this.dictionary).length == 0)
+            this.loadStringsFromObject(GetDictionary());
+    }
 
     // check if englishText is missing
     englishText = englishText || stringId;
