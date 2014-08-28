@@ -583,8 +583,9 @@ namespace Bloom.Book
 			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
     		TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
-            
-            
+
+		    InjectStringListingActiveLanguagesOfBook();
+			
             //hack
     		if(bookDOM == OurHtmlDom)//we already have a data for this
             {
@@ -970,6 +971,28 @@ namespace Bloom.Book
 	    public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
             _bookData.SetMultilingualContentLanguages(language2Code, language3Code);
+		    InjectStringListingActiveLanguagesOfBook();
+		}
+
+		/// <summary>
+		/// Bloom books can have up to 3 languages active at any time. This method pushes in a string
+		/// listing then, separated by commas. It is then usable on the front page, title page, etc.
+		/// </summary>
+		private void InjectStringListingActiveLanguagesOfBook()
+		{
+			string codeOfNationalLanguage = _collectionSettings.Language2Iso639Code; 
+			var languagesOfBook = _collectionSettings.GetLanguage1Name(codeOfNationalLanguage);
+
+			if (MultilingualContentLanguage2 != null)
+			{
+				languagesOfBook += ", " + _collectionSettings.GetLanguageName(MultilingualContentLanguage2, codeOfNationalLanguage);
+			}
+			if (MultilingualContentLanguage3 != null)
+			{
+				languagesOfBook += ", " + _collectionSettings.GetLanguageName(MultilingualContentLanguage3, codeOfNationalLanguage);
+			}
+
+			_bookData.Set("languagesOfBook", languagesOfBook, false);
 		}
 
 		/// <summary>

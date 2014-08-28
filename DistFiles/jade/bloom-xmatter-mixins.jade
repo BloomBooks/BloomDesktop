@@ -109,10 +109,7 @@ mixin factoryStandard-outsideFrontCover
 		+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.cover-credits-style
 			label.bubble *You may use this space for author/illustrator, or anything else.
 
-		.coverBottomLangName
-			//- lang='N1' means show the language name here using the national language
-			div(data-library="nameOfLanguage",lang="N1")
-				{Lang in N1}
+		.coverBottomLangName(data-book='languagesOfBook')
 		+chooser-topic.coverBottomBookTopic
 
 mixin factoryStandard-creditsInsideFrontCover
@@ -136,9 +133,11 @@ mixin factoryStandard-titlePage
 			label.bubble Use this to acknowledge any funding agencies.
 			+editable(kLanguageForPrototypeOnly).funding.title-page-funding-style(data-book='funding')
 		#languageInformation
-			+field-prototypeDeclaredExplicity
-				// review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
-				.langName(data-library='nameOfLanguage')
+			.languagesOfBook(data-book='languagesOfBook')
+			//- +field-prototypeDeclaredExplicity
+				//- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
+				//- .langName(data-library='nameOfLanguage')
+
 			// review: can we get rid of these "langName" classes?
 			+field-prototypeDeclaredExplicity
 				// review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
