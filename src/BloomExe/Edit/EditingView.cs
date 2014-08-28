@@ -220,7 +220,8 @@ namespace Bloom.Edit
 			if (input == null)
 				return "";
 			// Order is important here...we do NOT want to double the backslash we insert before a single quote.
-			return input.Replace("\\", "\\\\").Replace("'", "\\'");
+			// Review: is the NewLine replace safe for Linux?
+			return input.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\r", "\\r").Replace("\n", "\\n");
 		}
 
 		private void SetupThumnailLists()
@@ -705,7 +706,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
-			RunJavaScript("if (document.getElementById('page')) { var pageWin = document.getElementById('page').contentWindow; if (pageWin && (typeof pageWin.jQuery !== 'undefined') && pageWin.jQuery.fn.removeSynphonyMarkup) { pageWin.jQuery('.bloom-editable').removeSynphonyMarkup(); }}");
+			RunJavaScript("if (calledByCSharp) { calledByCSharp.removeSynphonyMarkup(); }");
 			_browser1.ReadEditableAreasNow();
 		}
 

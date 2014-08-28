@@ -55,5 +55,10 @@ namespace Bloom.web
 		{
 			return new NameValueCollection();
 		}
+
+		public NameValueCollection GetPostData()
+		{
+			return new NameValueCollection();
+		}
 	}
 }
