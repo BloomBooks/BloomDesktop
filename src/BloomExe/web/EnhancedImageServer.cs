@@ -35,6 +35,10 @@ namespace Bloom.web
 			{
 				if (ReadersHandler.HandleRequest(localPath, info, CurrentCollectionSettings)) return true;
 			}
+			else if (localPath.StartsWith("i18n/"))
+			{
+				if (I18NHandler.HandleRequest(localPath, info, CurrentCollectionSettings)) return true;
+			}
 
 			switch (localPath)
 			{
