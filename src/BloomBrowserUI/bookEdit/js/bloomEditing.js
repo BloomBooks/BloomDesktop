@@ -655,6 +655,10 @@ function ResizeUsingPercentages(e,ui){
 // Actual testable determination of overflow or not
 jQuery.fn.IsOverflowing = function () {
     var element = $(this)[0];
+    // Ignore Topic divs as they are chosen from a list
+    if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
+        return false;
+    }
     // We want to prevent an inner div from expanding past the borders set by any containing marginBox class.
     var marginBoxParent = $(element).parents('.marginBox');
     var parentBottom;
@@ -763,20 +767,36 @@ function AddEditKeyHandlers() {
 // Add little language tags
 function AddLanguageTags() {
     $(".bloom-editable:visible[contentEditable=true]").each(function () {
+        var $this = $(this);
+
+        // If this DIV already had a language tag, remove the content in case we decide the situation has changed.
+        if ($this.hasAttr('data-languageTipContent')) {
+            $this.removeAttr('data-languageTipContent');
+        }
+
         // With a really small box that also had a hint qtip, there wasn't enough room and the two fought
         // with each other, leading to flashing back and forth
         // Of course that was from when Language Tags were qtips too, but I think I'll leave the restriction for now.
-        if ($(this).width() < 100) {
+        if ($this.width() < 100) {
             return;
         }
 
-        var key = $(this).attr("lang");
+        // Make sure language tags appear or disappear depending on what edit mode we are in
+        var isTranslationMode = IsInTranslationMode();
+        if (isTranslationMode && $this.hasClass('bloom-readOnlyInTranslationMode')) {
+            return;
+        }
+        if (!isTranslationMode && $this.hasClass('bloom-readOnlyInEditMode')) {
+            return;
+        }
+
+        var key = $this.attr("lang");
         if (key == "*" || key.length < 1)
             return; //seeing a "*" was confusing even to me
 
         // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags
         // first usage (for instance) was turning off language tags for a whole page
-        if ($(this).hasClass('bloom-hideLanguageNameDisplay') || $(this).parents('.bloom-hideLanguageNameDisplay').length != 0) {
+        if ($this.hasClass('bloom-hideLanguageNameDisplay') || $this.parents('.bloom-hideLanguageNameDisplay').length != 0) {
             return;
         }
 
@@ -786,7 +806,7 @@ function AddLanguageTags() {
             whatToSay = key; //just show the code
 
         // Put whatToSay into data attribute for pickup by the css
-        $(this).attr('data-languageTipContent', whatToSay);
+        $this.attr('data-languageTipContent', whatToSay);
     });
 }
 
@@ -986,6 +1006,23 @@ function SetupImage(image) {
     });
 }
 
+function IsInTranslationMode() {
+    var body = $("body");
+    if (!body.hasAttr('editMode'))
+        return false;
+    else {
+        return body.attr('editMode') == "translation";
+    }
+}
+
+$.fn.hasAttr = function (name) {
+    var attr = $(this).attr(name);
+
+    // For some browsers, `attr` is undefined; for others,
+    // `attr` is false.  Check for both.
+    return (typeof attr !== 'undefined' && attr !== false);
+};
+
 // ---------------------------------------------------------------------------------
 // document ready function
 // ---------------------------------------------------------------------------------
@@ -1170,8 +1207,6 @@ $(document).ready(function () {
         };
     }
 
-    AddLanguageTags();
-
     AddHintBubbles();
 
     //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
@@ -1196,14 +1231,6 @@ $(document).ready(function () {
             //next, it's up to CSS to draw the placeholder when the field is empty.
         });
     });
-
-    $.fn.hasAttr = function (name) {
-        var attr = $(this).attr(name);
-
-        // For some browsers, `attr` is undefined; for others,
-        // `attr` is false.  Check for both.
-        return (typeof attr !== 'undefined' && attr !== false);
-    };
 
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
@@ -1245,6 +1272,8 @@ $(document).ready(function () {
             //review: do we need to add contentEditable... that could lead to making things editable that shouldn't be
         }
     });
+
+    AddLanguageTags();
 
     // If the user moves over something they can't edit, show a tooltip explaining why not
     $('*[data-hint]').each(function () {
