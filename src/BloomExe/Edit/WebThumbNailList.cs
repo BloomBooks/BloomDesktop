@@ -13,7 +13,9 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
 using Gecko;
+#if !__MonoCS__
 using IWshRuntimeLibrary;
+#endif
 using L10NSharp;
 
 namespace Bloom.Edit

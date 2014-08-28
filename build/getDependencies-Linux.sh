@@ -2,8 +2,8 @@
 # server=build.palaso.org
 # project=Bloom
 # build=Bloom-Default-precise64-Auto (Bloom 3)
-# root_dir=../
-# $Id: d32984f53cd52f171a9cba46cd3879538ad23431 $
+# root_dir=..
+# $Id: 0b75ca980cea444bf053cfdd852cb3e370225ffe $
 
 cd "$(dirname "$0")"
 
@@ -62,6 +62,7 @@ cd -
 
 # clean destination directories
 rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
+rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 
 # *** Results ***
 # build: Bloom-Default-precise64-Auto (Bloom 3) (bt403)
@@ -69,7 +70,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 # URL: http://build.palaso.org/viewType.html?buildTypeId=bt403
 # VCS: https://bitbucket.org/hatton/bloom-desktop [default]
 # dependencies:
-# [0] build: bloom-3.0.-win32-static-dependencies (bt396)
+# [0] build: bloom-2.1.-win32-static-dependencies (bt396)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
@@ -80,7 +81,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt394
 #     clean: true
 #     revision: latest.lastSuccessful
-#     paths: {"*.*"=>"src\\BloomBrowserUI\\bookEdit\\js\\libsynphony"}
+#     paths: {"libsynphony-js.zip!**"=>"src/BloomBrowserUI/bookEdit/js/libsynphony", "libsynphony-test-js.zip!**"=>"src/BloomBrowserUI/bookEdit/test/libsynphony"}
 #     VCS: https://bitbucket.org/phillip_hopper/synphony [default]
 # [2] build: pdf.js (bt401)
 #     project: BuildTasks
@@ -141,14 +142,15 @@ mkdir -p ../lib/dotnet
 mkdir -p ../lib/dotnet/icu48
 mkdir -p ../lib/dotnet/icu52
 mkdir -p ../src/BloomBrowserUI/bookEdit/js/libsynphony
+mkdir -p ../src/BloomBrowserUI/bookEdit/test/libsynphony
 
 # download artifact dependencies
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/libsynphony-js.zip ../src/BloomBrowserUI/bookEdit/js/libsynphony/libsynphony-js.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/libsynphony-test-js.zip ../src/BloomBrowserUI/bookEdit/js/libsynphony/libsynphony-test-js.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/libsynphony-js.zip ../Downloads/libsynphony-js.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/libsynphony-test-js.zip ../Downloads/libsynphony-test-js.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Chorus.exe ../lib/dotnet/Chorus.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Chorus.exe.mdb ../lib/dotnet/Chorus.exe.mdb
@@ -242,5 +244,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.last
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.lastSuccessful/TidyManaged.dll.config ../lib/dotnet/TidyManaged.dll.config
 # extract downloaded zip files
+unzip -uqo ../Downloads/libsynphony-js.zip -d ../src/BloomBrowserUI/bookEdit/js/libsynphony
+unzip -uqo ../Downloads/libsynphony-test-js.zip -d ../src/BloomBrowserUI/bookEdit/test/libsynphony
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d ../DistFiles/pdf
 # End of script

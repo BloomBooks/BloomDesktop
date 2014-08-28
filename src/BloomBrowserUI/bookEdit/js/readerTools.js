@@ -26,7 +26,7 @@ function processDLRMessage(event) {
 
         case 'Refresh': // notification from setup dialog that settings have changed
             var synphony = model.getSynphony();
-            synphony.loadSettings(params[1]);
+            synphony.loadSettings(JSON.parse(params[1]));
             model.updateControlContents();
             model.doMarkup();
             return;
@@ -427,11 +427,16 @@ ReaderToolsModel.prototype.setMarkupType = function(markupType) {
 ReaderToolsModel.prototype.getElementsToCheck = function() {
 
     var page = parent.window.document.getElementById('page');
-    if (page)
-        return $(".bloom-content1", page.contentWindow.document);
 
     // this happens during unit testing
-    return $(".bloom-content1");
+    if (!page) return $(".bloom-content1");
+
+    // if this is a cover page, return an empty set
+    var cover = $('body', page.contentWindow.document).find('div.cover');
+    if (cover['length'] > 0) return $();
+
+    // not a cover page, return elements to check
+    return $(".bloom-content1", page.contentWindow.document);
 };
 
 /**
@@ -578,7 +583,7 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
     var i = this.textCounter;
     this.textCounter++;
 
-    simpleAjaxGet('/bloom/getSampleFileContents', setSampleFileContents, this.texts[i]);
+    simpleAjaxGet('/bloom/readers/getSampleFileContents', setSampleFileContents, this.texts[i]);
 };
 
 /**
@@ -667,8 +672,8 @@ function initializeDecodableRT() {
 
     // make sure synphony is initialized
     if (!model.getSynphony().source) {
-        simpleAjaxGet('/bloom/getDefaultFont', setDefaultFont);
-        simpleAjaxGet('/bloom/loadReaderToolSettings', initializeSynphony);
+        simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
+        simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
     }
 
     // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
@@ -757,7 +762,7 @@ function initializeSynphony(settingsFileContent) {
     } );
 
     // get the list of sample texts
-    simpleAjaxGet('/bloom/getSampleTextsList', setTextsList);
+    simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
 }
 
 /**

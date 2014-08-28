@@ -31,6 +31,15 @@ var CalledByCSharp = (function () {
             contentWindow['SetCopyrightAndLicense'](contents);
     };
 
+    CalledByCSharp.prototype.removeSynphonyMarkup = function () {
+        var page = this.getPageContent();
+        if (!page)
+            return;
+
+        if ((typeof page['jQuery'] !== 'undefined') && (page['jQuery'].fn.removeSynphonyMarkup))
+            page['jQuery']('.bloom-content1').removeSynphonyMarkup();
+    };
+
     CalledByCSharp.prototype.invokeAccordionWithOneParameter = function (functionName, value) {
         var contentWindow = this.getAccordionContent();
         if (!contentWindow)
