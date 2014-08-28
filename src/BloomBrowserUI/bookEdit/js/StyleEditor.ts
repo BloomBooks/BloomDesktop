@@ -129,7 +129,7 @@ class StyleEditor {
 		// alert("New size rule: " + rule.cssText);
 		// Now update tooltip
 		var toolTip = this.GetToolTip(target, styleName);
-		this.AddQtipToElement($('#formatButton'), toolTip, 3000);
+		this.AddQtipToElement($('#formatButton'), toolTip);
 	}
 
 	GetCalculatedFontSizeInPoints(target: HTMLElement): number {
@@ -154,7 +154,7 @@ class StyleEditor {
 		rule.style.setProperty("font-size", sizeString + units, "important");
 		// Now update tooltip
 		var toolTip = this.GetToolTip(target, styleName);
-		this.AddQtipToElement($('#formatButton'), toolTip, 3000);
+		this.AddQtipToElement($('#formatButton'), toolTip);
 	}
 
 	GetOrCreateUserModifiedStyleSheet(): StyleSheet {
@@ -205,6 +205,12 @@ class StyleEditor {
 		return Math.round(pxSize*ratio);
 	}
 
+	/**
+	 * Get the style information off of the target element to display in the tooltip
+	 * @param {HTMLElement} targetBox the element with the style information
+	 * @param {string} styleName the style whose information we are reporting
+	 * @return returns the tooltip string
+	 */
 	GetToolTip(targetBox: HTMLElement, styleName: string): string {
 		styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
 		var box = $(targetBox);
@@ -218,11 +224,15 @@ class StyleEditor {
 		return localizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
 	}
 
-	AddQtipToElement(element: JQuery, toolTip: string, delay: number) {
+	/**
+	 * Adds a tooltip to an element
+	 * @param element a JQuery object to add the tooltip to
+	 * @param toolTip the text of the tooltip to display
+	 * @param delay how many milliseconds to display the tooltip (defaults to 3sec)
+	 */
+	AddQtipToElement(element: JQuery, toolTip: string, delay: number = 3000) {
 		if (element.length == 0)
 			return;
-		if (arguments.length < 3)
-			delay = 3000;
 		(<qtipInterface>element).qtip( {
 			content: toolTip,
 			show: {
