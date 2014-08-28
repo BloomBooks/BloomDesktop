@@ -2,6 +2,7 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
 using System.Drawing.Text;
+using System.Linq;
 using Bloom.ImageProcessing;
 using System.IO;
 using Palaso.IO;
