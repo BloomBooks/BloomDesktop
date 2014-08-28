@@ -1261,6 +1261,14 @@ namespace Bloom.Book
 
 				page.InnerXml = divElement.InnerXml;
 
+				// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
+				// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
+				// The idea is to match class attriutes which have class bloom-ui, but may have other classes. We don't want to match
+				// classes where bloom-ui is a substring, though, if there should be any. So we wrap spaces around the class attribute
+				// and then see whether it contains bloom-ui surrounded by spaces.
+				foreach (var node in page.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
+					node.ParentNode.RemoveChild(node);
+
 				 _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
 				 var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
