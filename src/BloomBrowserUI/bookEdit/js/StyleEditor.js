@@ -109,7 +109,7 @@ var StyleEditor = (function () {
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip
         var toolTip = this.GetToolTip(target, styleName);
-        this.AddQtipToElement($('#formatButton'), toolTip, 3000);
+        this.AddQtipToElement($('#formatButton'), toolTip);
     };
 
     StyleEditor.prototype.GetCalculatedFontSizeInPoints = function (target) {
@@ -135,7 +135,7 @@ var StyleEditor = (function () {
 
         // Now update tooltip
         var toolTip = this.GetToolTip(target, styleName);
-        this.AddQtipToElement($('#formatButton'), toolTip, 3000);
+        this.AddQtipToElement($('#formatButton'), toolTip);
     };
 
     StyleEditor.prototype.GetOrCreateUserModifiedStyleSheet = function () {
@@ -185,6 +185,12 @@ var StyleEditor = (function () {
         return Math.round(pxSize * ratio);
     };
 
+    /**
+    * Get the style information off of the target element to display in the tooltip
+    * @param {HTMLElement} targetBox the element with the style information
+    * @param {string} styleName the style whose information we are reporting
+    * @return returns the tooltip string
+    */
     StyleEditor.prototype.GetToolTip = function (targetBox, styleName) {
         styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
         var box = $(targetBox);
@@ -198,11 +204,16 @@ var StyleEditor = (function () {
         return localizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
     };
 
+    /**
+    * Adds a tooltip to an element
+    * @param element a JQuery object to add the tooltip to
+    * @param toolTip the text of the tooltip to display
+    * @param delay how many milliseconds to display the tooltip (defaults to 3sec)
+    */
     StyleEditor.prototype.AddQtipToElement = function (element, toolTip, delay) {
+        if (typeof delay === "undefined") { delay = 3000; }
         if (element.length == 0)
             return;
-        if (arguments.length < 3)
-            delay = 3000;
         element.qtip({
             content: toolTip,
             show: {
