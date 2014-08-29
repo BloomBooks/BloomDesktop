@@ -1455,25 +1455,7 @@ function OneTimeSetup() {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
-    SetupOrigami();
-}
-
-function SetupOrigami() {
-    setupSplitPaneComponentInners();
-
-    $('.customPage').append('<div class="button bloom-purple origami-toggle bloom-ui"><a>' + localizationManager.getText('Origami.SwitchToLayoutMode', 'Switch to Layout Mode') + '</a></div>');
-
-    $('.origami-ui').css('visibility', 'hidden');
-
-    $('.origami-toggle').click(function() {
-        var anchor = $(this).find('a');
-        if ($(this).hasClass(''))
-        anchor.text('Switch to ' + (anchor.text() === 'Switch to Layout Mode' ? 'Edit Mode' : 'Layout Mode'));
-
-        $('.origami-ui').each(function() {
-            $(this).css('visibility', $(this).css('visibility') === 'visible' ? 'hidden' : 'visible');
-        });
-    });
+    setupOrigami();
 }
 
 // ---------------------------------------------------------------------------------
