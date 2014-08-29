@@ -328,7 +328,7 @@ namespace Bloom.WebLibraryIntegration
 				_s3Client.UploadBook(s3BookId, bookFolder, progress);
 				metadata.BaseUrl = _s3Client.BaseUrl;
 				metadata.BookOrder = _s3Client.BookOrderUrl;
-				progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBook", "Uploading book record"));
+				progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database."));
 				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
 				var response = _parseClient.SetBookRecord(metadata.Json);
 				parseId = response.ResponseUri.LocalPath;
@@ -615,7 +615,7 @@ namespace Bloom.WebLibraryIntegration
 					done = true;
 					throw ex;
 				});
-			var giveUpTime = DateTime.Now.AddSeconds(5);
+			var giveUpTime = DateTime.Now.AddSeconds(15);
 			while (!done && DateTime.Now < giveUpTime)
 			{
 				Thread.Sleep(100);
@@ -626,7 +626,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			if (!done)
 			{
-				throw new ApplicationException(string.Format("Gave up waiting for the {0} to be created.", options.FileName));
+				throw new ApplicationException(string.Format("Gave up waiting for the {0} to be created. This usually means Bloom is busy making thumbnails for other things. Wait a bit, and try again.", options.FileName));
 			}
 		}
 
