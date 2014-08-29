@@ -282,7 +282,7 @@ var StyleEditor = (function () {
                 // Enhance: lineHeight may well be something like 35px; what should we select initially?
                 var fonts = fontData.split(',');
                 var sizes = ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
-                var html = '<div id="format-toolbar" style="background-color:white;z-index:900;position:absolute" class="bloom-ui">' + editor.makeSelect(fonts, 5, fontName, 'fontSelect') + ' ' + editor.makeSelect(sizes, 5, ptSize, 'sizeSelect') + ' ' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:15px;position:relative;top:6px">' + editor.makeSelect(lineSpaceOptions, 2, lineHeight, 'lineHeightSelect') + ' ' + '</span>' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:15px;position:relative;top:6px">' + editor.makeSelect(wordSpaceOptions, 2, wordSpacing, 'wordSpaceSelect') + '</span>' + '<div style="color:grey;margin-top:20px">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>' + '</div>';
+                var html = '<div id="format-toolbar" style="background-color:white;z-index:900;position:absolute" class="bloom-ui">' + editor.makeSelect(fonts, 5, fontName, 'fontSelect') + ' ' + editor.makeSelect(sizes, 5, ptSize, 'sizeSelect') + ' ' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:15px;position:relative;top:6px">' + editor.makeSelect(lineSpaceOptions, 2, lineHeight, 'lineHeightSelect') + ' ' + '</span>' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:15px;position:relative;top:6px">' + editor.makeSelect(wordSpaceOptions, 2, wordSpacing, 'wordSpaceSelect') + '</span>' + '<span style="white-space: nowrap">' + '<div style="margin-left:15px;display:inline-block;border:2px solid black;height:10pt;width:10pt;margin-right:2px;position:relative;top:2px"></div>' + editor.makeBorderSelect(box) + '</span>' + '<div style="color:grey;margin-top:20px">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>' + '</div>';
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
                 $(targetBox).after(html);
                 var toolbar = $('#format-toolbar');
@@ -303,6 +303,10 @@ var StyleEditor = (function () {
                     editor.changeWordSpace();
                 });
                 editor.AddQtipToElement($('#wordSpaceSelect'), 'Change the spacing between words');
+                $('#borderSelect').change(function () {
+                    editor.changeBorderSelect();
+                });
+                editor.AddQtipToElement($('#borderSelect'), 'Change the border and background');
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
 
@@ -332,6 +336,45 @@ var StyleEditor = (function () {
                 selected = ' selected';
             result += '<option' + selected + '>' + items[i] + '</option>';
         }
+        return result + '</select>';
+    };
+
+    StyleEditor.prototype.makeBorderSelect = function (box) {
+        var borderStyle = box.css('border-bottom-style');
+        var borderColor = box.css('border-bottom-color');
+        var borderRadius = box.css('border-top-left-radius');
+        var backColor = box.css('background-color');
+
+        //alert(borderStyle + ',' + borderColor + ',' + borderRadius + ',' + backColor);
+        var noneSelected = "";
+        var blackSelected = "";
+        var blackGreySelected = "";
+        var blackRoundSelected = "";
+        var greySelected = "";
+        var greyRoundSelected = "";
+        if (borderStyle === 'none') {
+            noneSelected = ' selected';
+        } else if (borderColor.toLowerCase() == 'rgb(128, 128, 128)') {
+            if (parseInt(borderRadius) == 0) {
+                greySelected = ' selected';
+            } else {
+                greyRoundSelected = ' selected';
+            }
+        } else if (backColor.toLowerCase() == 'rgb(211, 211, 211)') {
+            blackGreySelected = ' selected';
+        } else if (parseInt(borderRadius) > 0) {
+            blackRoundSelected = ' selected';
+        } else {
+            blackSelected = ' selected';
+        }
+
+        var result = '<select id="borderSelect">';
+        result += '<option value="none"' + noneSelected + '>None</option>';
+        result += '<option value="black"' + blackSelected + '>Black Border</option>';
+        result += '<option value="black-grey"' + blackGreySelected + '>&nbsp;&nbsp;...Grey Background</option>';
+        result += '<option value="black-round"' + blackRoundSelected + '>&nbsp;&nbsp;...Rounded</option>';
+        result += '<option value="grey"' + greySelected + '>Grey Border</option>';
+        result += '<option value="grey-round"' + greyRoundSelected + '>&nbsp;&nbsp;...Rounded</option>';
         return result + '</select>';
     };
 
@@ -369,6 +412,48 @@ var StyleEditor = (function () {
             wordSpace = '10pt';
         }
         rule.style.setProperty("word-spacing", wordSpace, "important");
+        this.cleanupAfterStyleChange();
+    };
+
+    StyleEditor.prototype.changeBorderSelect = function () {
+        var rule = this.getStyleRule();
+        var borderOpt = $('#borderSelect').val();
+        switch (borderOpt) {
+            case 'none':
+                //rule.style.setProperty("border-style", "none");
+                rule.style.removeProperty("border-style");
+                rule.style.removeProperty("border");
+                rule.style.removeProperty("border-color");
+                rule.style.setProperty("background-color", "transparent ");
+                rule.style.setProperty("border-radius", "0px");
+                break;
+            case 'black':
+                rule.style.setProperty("border", "1pt solid black");
+                rule.style.setProperty("background-color", "transparent ");
+                rule.style.setProperty("border-radius", "0px");
+                break;
+            case 'black-grey':
+                rule.style.setProperty("border", "1pt solid black");
+                rule.style.setProperty("background-color", "LightGray ");
+                rule.style.setProperty("border-radius", "0px");
+                break;
+            case 'black-round':
+                rule.style.setProperty("border", "1pt solid black");
+                rule.style.setProperty("border-radius", "10px");
+                rule.style.setProperty("background-color", "transparent ");
+                break;
+            case 'grey':
+                rule.style.setProperty("border", "1pt solid Grey");
+                rule.style.setProperty("background-color", "transparent ");
+                rule.style.setProperty("border-radius", "0px");
+                break;
+            case 'grey-round':
+                rule.style.setProperty("border", "1pt solid Grey");
+                rule.style.setProperty("border-radius", "10px");
+                rule.style.setProperty("background-color", "transparent ");
+                break;
+        }
+
         this.cleanupAfterStyleChange();
     };
 
