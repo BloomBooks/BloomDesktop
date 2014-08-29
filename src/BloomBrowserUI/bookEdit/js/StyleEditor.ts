@@ -407,7 +407,10 @@ class StyleEditor {
         var blackRoundSelected = "";
         var greySelected = "";
         var greyRoundSelected = "";
-        if (borderStyle === 'none') {
+        // Detecting 'none' is difficult because our edit boxes inherit a faint grey border
+        // Currently we use plain rgb for our official borders, and the inherited one uses rgba(0, 0, 0, 0.2).
+        // Rather arbitrarily we will consider a border less than 50% opaque to be 'none'.
+        if (!borderStyle || borderStyle === 'none' || !borderColor || (borderColor.toLowerCase().startsWith("rgba(") && parseFloat(borderColor.split(',')[3]) < 0.5)) {
             noneSelected = ' selected';
         }
         else if (borderColor.toLowerCase() == 'rgb(128, 128, 128)') {
