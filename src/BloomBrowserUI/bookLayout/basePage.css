@@ -256,3 +256,6 @@ H1
 	font-size: 120%;
 	color: #1C27D2;
 }
+.box-header:empty {
+	display: none;
+}

@@ -2,11 +2,11 @@ $(function() {
     $('div.split-pane').splitPane();
 });
 $(window).load(function() {
-    $('.add').click(addClickHandler);
+//    $('.add').click(addClickHandler);
 });
 
 function setupOrigami() {
-    setupSplitPaneComponentInners();
+//    setupSplitPaneComponentInners();
 
     $('.customPage').append('<div class="button bloom-purple origami-toggle edit-mode bloom-ui"><a>' + localizationManager.getText('LayoutMode.SwitchToLayoutMode', 'Switch to Layout Mode') + '</a></div>');
 
@@ -24,18 +24,26 @@ function setupOrigami() {
             $(this).addClass('edit-mode');
         }
 
-        $('.origami-ui').each(function() {
-            $(this).css('visibility', $(this).css('visibility') === 'visible' ? 'hidden' : 'visible');
-        });
+        setupLayoutMode();
+
+//        $('.origami-ui').each(function() {
+//            $(this).css('visibility', $(this).css('visibility') === 'visible' ? 'hidden' : 'visible');
+//        });
     });
 }
 
-function setupSplitPaneComponentInners() {
+function cleanupOrigami() {
+    // Otherwise, we get a new one each time the page is loaded
+    $('.split-pane-resize-shim').remove();
+}
+
+function setupLayoutMode() {
     $('.split-pane-component-inner').each(function() {
-        if (!$.trim( $(this).html() ).length)
+        if (!$(this).find('.bloom-imageContainer', '.bloom-translationGroup').length)
             $(this).append(getTypeSelectors());
         $(this).append(getButtons());
     });
+    $('.origami-ui').css('visibility', 'visible');
 }
 
 function splitClickHandler() {
@@ -109,7 +117,7 @@ function getSplitPaneComponentWithNewContent(rightOrBottom) {
     return spc;
 }
 function getSplitPaneComponentInner() {
-    var spci = $('<div class="split-pane-component-inner">');
+    var spci = $('<div class="split-pane-component-inner"><div class="box-header"></div></div>');
     spci.append(getTypeSelectors());
     spci.append(getButtons());
     return spci;
@@ -150,7 +158,7 @@ function getTypeSelectors() {
 }
 function makeTextFieldClickHandler(e) {
     e.preventDefault();
-    var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement normal-style"></div>');
+    var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement normal-style"><div lang="z" class="bloom-content1 bloom-editable"></div>');
     $(this).closest('.split-pane-component-inner').append(translationGroup);
     $(this).closest('.selector-links').remove();
 //    SetupElements(translationGroup.parent());
@@ -159,6 +167,7 @@ function makePictureFieldClickHandler(e) {
     e.preventDefault();
     var imageContainer = $('<div class="bloom-imageContainer bloom-leadingElement"></div>');
     var image = $('<img src="placeHolder.png" alt="Could not load the picture"/>');
+    SetupImage(image);
     imageContainer.append(image);
     $(this).closest('.split-pane-component-inner').append(imageContainer);
     $(this).closest('.selector-links').remove();
