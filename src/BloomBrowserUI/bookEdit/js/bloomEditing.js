@@ -208,11 +208,7 @@ function Cleanup() {
 	$('.bloom-imageContainer').css('opacity', '');//comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
     $('.bloom-imageContainer').css('overflow', '');//review: also comes form myimgscale; is it a problem?
 
-    CleanupOrigami();
-}
-
-function CleanupOrigami() {
-    $('.split-pane-resize-shim').remove();
+    cleanupOrigami();
 }
 
  //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
