@@ -296,11 +296,12 @@ var StyleEditor = (function () {
                 // Enhance: lineHeight may well be something like 35px; what should we select initially?
                 var fonts = fontData.split(',');
                 var sizes = ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
-                var html = '<div id="format-toolbar" style="background-color:white;z-index:900;position:absolute" class="bloom-ui">' + editor.makeSelect(fonts, 5, fontName, 'fontSelect') + ' ' + editor.makeSelect(sizes, 5, ptSize, 'sizeSelect') + ' ' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:15px;position:relative;top:6px">' + editor.makeSelect(lineSpaceOptions, 2, lineHeight, 'lineHeightSelect') + ' ' + '</span>' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:15px;position:relative;top:6px">' + editor.makeSelect(wordSpaceOptions, 2, wordSpacing, 'wordSpaceSelect') + '</span>' + '<span style="white-space: nowrap">' + '<div style="margin-left:15px;display:inline-block;border:2px solid black;height:10pt;width:10pt;margin-right:2px;position:relative;top:2px"></div>' + editor.makeBorderSelect(box) + '</span>' + '<div style="color:grey;margin-top:20px">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>' + '</div>';
+                var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:900;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">' + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt;margin-bottom: 5pt"></div>' + editor.makeSelect(fonts, 5, fontName, 'fontSelect', 15) + ' ' + editor.makeSelect(sizes, 5, ptSize, 'sizeSelect') + ' ' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:8px;position:relative;top:6px">' + editor.makeSelect(lineSpaceOptions, 2, lineHeight, 'lineHeightSelect') + ' ' + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">' + editor.makeSelect(wordSpaceOptions, 2, wordSpacing, 'wordSpaceSelect') + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<div style="margin-left:5px;display:inline-block;border:2px solid black;height:10pt;width:10pt;margin-right:2px;position:relative;top:2px"></div>' + editor.makeBorderSelect(box) + '</span>' + '<div style="color:grey;margin-top:10px">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>' + '</div>';
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
-                $(targetBox).after(html);
+                $('body').after(html);
                 var toolbar = $('#format-toolbar');
                 toolbar.draggable();
+                toolbar.css('opacity', 1.0);
                 $('#fontSelect').change(function () {
                     editor.changeFont();
                 });
@@ -312,24 +313,31 @@ var StyleEditor = (function () {
                 $('#lineHeightSelect').change(function () {
                     editor.changeLineheight();
                 });
-                editor.AddQtipToElement($('#lineHeightSelect'), 'Change the spacing between lines of text', 1500);
+                editor.AddQtipToElement($('#lineHeightSelect').parent(), 'Change the spacing between lines of text', 1500);
                 $('#wordSpaceSelect').change(function () {
                     editor.changeWordSpace();
                 });
-                editor.AddQtipToElement($('#wordSpaceSelect'), 'Change the spacing between words', 1500);
+                editor.AddQtipToElement($('#wordSpaceSelect').parent(), 'Change the spacing between words', 1500);
                 $('#borderSelect').change(function () {
                     editor.changeBorderSelect();
                 });
-                editor.AddQtipToElement($('#borderSelect'), 'Change the border and background', 1500);
+                editor.AddQtipToElement($('#borderSelect').parent(), 'Change the border and background', 1500);
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
 
                 //alert(offset.left + "," + $(document).width() + "," + $(targetBox).offset().left);
                 toolbar.width($(".bloom-page").width() - offset.left - 50);
+                $('html').off('click.toolbar');
                 $('html').on("click.toolbar", function (event) {
-                    if (event.target != toolbar && toolbar.has(event.target).length === 0 && toolbar.is(":visible")) {
+                    if (event.target != toolbar && toolbar.has(event.target).length === 0 && $(event.target.parent) != toolbar && toolbar.has(event.target).length === 0 && toolbar.is(":visible")) {
                         toolbar.remove();
+                        event.stopPropagation();
+                        event.preventDefault();
                     }
+                });
+                toolbar.on("click.toolbar", function (event) {
+                    // this stops an event inside the dialog from propagating to the html element, which would close the dialog
+                    event.stopPropagation();
                 });
                 //formatButton.toolbar({
                 //    content: '#format-toolbar',
@@ -342,13 +350,17 @@ var StyleEditor = (function () {
         editor.AttachLanguageTip($(targetBox), bottom);
     };
 
-    StyleEditor.prototype.makeSelect = function (items, marginLeft, current, id) {
+    StyleEditor.prototype.makeSelect = function (items, marginLeft, current, id, maxlength) {
         var result = '<select id="' + id + '" style="margin-left:' + marginLeft + 'px">';
         for (var i = 0; i < items.length; i++) {
             var selected = "";
             if (current == items[i])
                 selected = ' selected';
-            result += '<option' + selected + '>' + items[i] + '</option>';
+            var text = items[i];
+            if (maxlength && text.length > maxlength) {
+                text = text.substring(0, maxlength) + "...";
+            }
+            result += '<option value="' + items[i] + '"' + selected + '>' + text + '</option>';
         }
         return result + '</select>';
     };
