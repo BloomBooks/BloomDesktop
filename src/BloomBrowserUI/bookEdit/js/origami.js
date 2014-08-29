@@ -6,29 +6,37 @@ $(window).load(function() {
 });
 
 function setupOrigami() {
-//    setupSplitPaneComponentInners();
+//    $('.customPage').append('<div class="button bloom-purple origami-toggle edit-mode bloom-ui"><a>' + localizationManager.getText('LayoutMode.SwitchToLayoutMode', 'Switch to Layout Mode') + '</a></div>');
 
-    $('.customPage').append('<div class="button bloom-purple origami-toggle edit-mode bloom-ui"><a>' + localizationManager.getText('LayoutMode.SwitchToLayoutMode', 'Switch to Layout Mode') + '</a></div>');
+    $('.customPage').append(function() {
+        var switchLabel = localizationManager.getText('LayoutMode.ChangeLayout', 'Change Layout');
+        return '\
+<div class="origami-toggle edit-mode bloom-ui">' + switchLabel + ' \
+    <div class="onoffswitch"> \
+        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch"> \
+        <label class="onoffswitch-label" for="myonoffswitch"> \
+            <span class="onoffswitch-inner"></span> \
+            <span class="onoffswitch-switch"></span> \
+        </label> \
+    </div> \
+</div>';
+    });
 
     $('.origami-ui').css('visibility', 'hidden');
 
-    $('.origami-toggle').click(function() {
-        var anchor = $(this).find('a');
-        if ($(this).hasClass('edit-mode')) {
-            anchor.text(localizationManager.getText('LayoutMode.SwitchToEditMode', 'Switch to Edit Mode'));
-            $(this).removeClass('edit-mode');
-            $(this).addClass('layout-mode');
+    $('.origami-toggle .onoffswitch').change(function() {
+        var toggle = $(this).closest('.origami-toggle');
+        if (toggle.hasClass('edit-mode')) {
+            toggle.removeClass('edit-mode');
+            toggle.addClass('layout-mode');
+
+            setupLayoutMode();
         } else {
-            anchor.text(localizationManager.getText('LayoutMode.SwitchToLayoutMode', 'Switch to Layout Mode'));
-            $(this).removeClass('layout-mode');
-            $(this).addClass('edit-mode');
+            toggle.removeClass('layout-mode');
+            toggle.addClass('edit-mode');
+
+            fireCSharpEditEvent('reloadPageEvent', '');
         }
-
-        setupLayoutMode();
-
-//        $('.origami-ui').each(function() {
-//            $(this).css('visibility', $(this).css('visibility') === 'visible' ? 'hidden' : 'visible');
-//        });
     });
 }
 
@@ -44,8 +52,10 @@ function setupLayoutMode() {
         $(this).append(getButtons());
     });
     $('.origami-ui').css('visibility', 'visible');
+    $(".bloom-editable:visible[contentEditable=true]").removeAttr('contentEditable');
 }
 
+// Event handler to split the current box in half (vertically or horizontally)
 function splitClickHandler() {
     var myInner = $(this).closest('.split-pane-component-inner');
     var newSplitPane;
@@ -65,6 +75,7 @@ function splitClickHandler() {
     newSplitPane.splitPane();
 }
 
+// Event handler to add a new column or row (currently only works for column)
 function addClickHandler() {
     var topSplitPane = $('.split-pane-frame').children('div').first();
     if ($(this).hasClass('right')) {
@@ -86,6 +97,7 @@ function addClickHandler() {
 
 function closeClickHandler() {
     if (!$('.split-pane'))
+        // We're at the topmost element; don't allow deletion
         return;
 
     var myComponent = $(this).closest('.split-pane-component');
@@ -161,7 +173,7 @@ function makeTextFieldClickHandler(e) {
     var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement normal-style"><div lang="z" class="bloom-content1 bloom-editable"></div>');
     $(this).closest('.split-pane-component-inner').append(translationGroup);
     $(this).closest('.selector-links').remove();
-//    SetupElements(translationGroup.parent());
+    //TODO: figure out what needs to get hooked up immediately
 }
 function makePictureFieldClickHandler(e) {
     e.preventDefault();
@@ -171,5 +183,5 @@ function makePictureFieldClickHandler(e) {
     imageContainer.append(image);
     $(this).closest('.split-pane-component-inner').append(imageContainer);
     $(this).closest('.selector-links').remove();
-//    SetupElements(imageContainer.parent());
+    //TODO: figure out what (else) needs to get hooked up immediately, e.g. pictures resize when added but not when slider moves
 }

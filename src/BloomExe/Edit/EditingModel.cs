@@ -479,6 +479,7 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
 			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
+			_view.AddMessageEventListener("reloadPageEvent", ReloadPage);
 
 			var tools = _currentlyDisplayedBook.BookInfo.Tools.Where(t => t.Enabled == true);
 			var settings = new Dictionary<string, object>();
@@ -498,6 +499,12 @@ namespace Bloom.Edit
 			var settingsStr = CleanUpJsonDataForJavascript(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
 
 			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.restoreAccordionSettings(\"" + settingsStr + "\"); }");
+		}
+
+		private void ReloadPage(string data)
+		{
+			SaveNow();
+			RefreshDisplayOfCurrentPage();
 		}
 
 		private void SaveAccordionSettings(string data)
