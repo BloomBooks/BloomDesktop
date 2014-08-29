@@ -32,6 +32,17 @@ function processExternalMessage(event) {
     }
 }
 
+/**
+ * Fires an event for C# to handle
+ * @param {String} eventName
+ * @param {String} eventData
+ */
+function fireCSharpEditEvent(eventName, eventData) {
+
+    var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
+    document.dispatchEvent(event);
+}
+
 $.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {
         var ah = $(this).height();
