@@ -207,6 +207,12 @@ function Cleanup() {
 
 	$('.bloom-imageContainer').css('opacity', '');//comes in on img containers from an old version of myimgscale, and is a major problem if the image is missing
     $('.bloom-imageContainer').css('overflow', '');//review: also comes form myimgscale; is it a problem?
+
+    CleanupOrigami();
+}
+
+function CleanupOrigami() {
+    $('.split-pane-resize-shim').remove();
 }
 
  //Make a toolbox off to the side (implemented using qtip), with elements that can be dragged
@@ -1449,14 +1455,19 @@ function OneTimeSetup() {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
+    SetupOrigami();
+}
+
+function SetupOrigami() {
     setupSplitPaneComponentInners();
 
-    $('.customPage').append('<div class="button bloom-purple origami-toggle bloom-ui"><a>Switch to Layout Mode</a></div>');
-    
+    $('.customPage').append('<div class="button bloom-purple origami-toggle bloom-ui"><a>' + localizationManager.getText('Origami.SwitchToLayoutMode', 'Switch to Layout Mode') + '</a></div>');
+
     $('.origami-ui').css('visibility', 'hidden');
 
     $('.origami-toggle').click(function() {
         var anchor = $(this).find('a');
+        if ($(this).hasClass(''))
         anchor.text('Switch to ' + (anchor.text() === 'Switch to Layout Mode' ? 'Edit Mode' : 'Layout Mode'));
 
         $('.origami-ui').each(function() {
