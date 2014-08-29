@@ -308,6 +308,7 @@ namespace Bloom.Book
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
 			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
 
 			pageDom.SortStyleSheetLinks();
 
@@ -514,7 +515,7 @@ namespace Bloom.Book
 			{
 				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
 			}
-			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "split-pane.css", "origami.css");
+			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 
 			//We may have just run into an error for the first time
 			if (HasFatalError)
@@ -1417,7 +1418,7 @@ namespace Bloom.Book
 
 		public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer)
 		{
-			var printingDom = GetBookDomWithStyleSheets("previewMode.css");
+			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 			//dom.LoadXml(OurHtmlDom.OuterXml);
 
 			if (IsFolio)
