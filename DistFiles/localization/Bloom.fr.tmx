@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.2.2.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">1.0.29.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.7.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">2.0.1070.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -116,7 +116,7 @@
     <tu tuid="AboutDialog.AboutDialogWindowTitle">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
-        <seg>About Bloom</seg>
+        <seg>About</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>À propos de Bloom</seg>
@@ -186,7 +186,7 @@
         <seg>Advanced Program Settings</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Configuration avancée (du logiciel)</seg>
+        <seg>Configuration avancée du logiciel</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
@@ -194,15 +194,15 @@
         <seg>Show Experimental Commands (e.g. Export XML for InDesign)</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Afficher des </seg>
+        <seg>Afficher des commandes expérimentales (e.g. Exporter en format XML pour InDesign)</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
       <tuv xml:lang="en">
-        <seg>Show Experimental Templates (e.g. Picture Dictionary, Calendar)</seg>
+        <seg>Show Experimental Templates (e.g. Picture Dictionary)</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Afficher modèles expérimentaux (e.g. Dictionnaire d'images, Calendrier)</seg>
+        <seg>Afficher des modèles expérimentaux (e.g. Dictionnaire d'images, Calendrier)</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowLocalizationControls">
@@ -220,7 +220,7 @@
         <seg>Use Image Server to reduce memory usage with large images.</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Utiliser 'Image Server' pour réduire l'usage de mémoire pour les images de grandes tailles.</seg>
+        <seg>Utiliser 'Image Server' pour réduire l'usage de mémoire pour des images de grande taille.</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive">
@@ -368,7 +368,7 @@
         <seg>Bloom Collection Name</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Nom de collection Bloom</seg>
+        <seg>Nom de la collection Bloom</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.ProjectInformationTab.Country">
@@ -435,15 +435,6 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Module des pages liminaires et des parties annexes</seg>
-      </tuv>
-    </tu>
-    <tu tuid="CollectionSettingsDialog.label3">
-      <prop type="x-nolongerused">true</prop>
-      <tuv xml:lang="en">
-        <seg>Province</seg>
-      </tuv>
-      <tuv xml:lang="fr">
-        <seg>Province</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.label5">
@@ -597,10 +588,10 @@
     </tu>
     <tu tuid="CollectionTab.MakeBookUsingThisTemplate">
       <tuv xml:lang="en">
-        <seg>Make a book using this template</seg>
+        <seg>Make a book using this source</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Créer un livre à partir de ce modèle</seg>
+        <seg>Créer un livre à partir de cette source</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Open/CreateCollectionButton">
@@ -671,12 +662,30 @@
         <seg>Créer un paquet Bloom</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.bloomLibraryLinkLabel">
+      <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
+      <tuv xml:lang="en">
+        <seg>Get more source books at BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Obtenir davantage de livres à BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
+      <note>get this clicking on BloomLibrary.org link in source collection</note>
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Collection source</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.bookSourceHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Books</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Sources pour de nouveaux livres</seg>
+        <seg>Sources de nouveaux livres</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.bookSourcesLockNotice">
@@ -684,7 +693,7 @@
         <seg>This collection is locked, so new books cannot be added/removed.</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Cette collection est verrouillée donc on ne peut pas ajouter ou supprimer des livres.</seg>
+        <seg>Cette collection est verrouillée, donc on ne peut pas ajouter ou supprimer des livres.</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
@@ -754,6 +763,22 @@
         <seg>&amp;OK</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.Optional">
+      <tuv xml:lang="en">
+        <seg>optional</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>facultatif</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ConfiguringBookMessage">
+      <tuv xml:lang="en">
+        <seg>Building...</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Construction en cours...</seg>
+      </tuv>
+    </tu>
     <tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
       <tuv xml:lang="en">
         <seg>Confirm Delete</seg>
@@ -788,6 +813,38 @@
         <seg>Supprimer</seg>
       </tuv>
     </tu>
+    <tu tuid="Download.Completed">
+      <tuv xml:lang="en">
+        <seg>Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Le téléchargement ({0}) est terminée. Vous pouvez le voir dans la section 'Books from BloomLibrary.org' de vos collections. Si Bloom pense que vous n'êtes pas en train de faire quelque chose, il le sélectionnera pour vous.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.CompletedCaption">
+      <tuv xml:lang="en">
+        <seg>Download complete</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Téléchargement terminé</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.DownloadingDialogTitle">
+      <tuv xml:lang="en">
+        <seg>Downloading book</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Téléchargement de livre en cours</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.GenericDownloadProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem downloading your book.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Problème de téléchargement de votre livre.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
       <tuv xml:lang="en">
         <seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
@@ -805,6 +862,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.CantPasteImageLocked">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Sorry, this book is locked down so that images cannot be changed.</seg>
       </tuv>
@@ -813,6 +871,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.ChangeImage">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Change Image</seg>
       </tuv>
@@ -870,6 +929,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.ImageChangeWarning">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
       </tuv>
@@ -882,7 +942,7 @@
         <seg>Before you can paste an image, copy one onto your 'clipboard', from another program.</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Avant de coller une image, veuillez d'abord en copier une à partir d'un autre logiciel dans le 'presse-papiers'.</seg>
+        <seg>Avant de coller une image, il faut d'abord en copier une à partir d'un autre logiciel dans le 'presse-papiers'.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.PageList.Heading">
@@ -891,6 +951,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Pages</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PageSizeAndOrientation.Tooltip">
+      <tuv xml:lang="en">
+        <seg>Choose a page size and orientation</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Choisir la taille et l'orientation de la page</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.TemplatePagesList.Heading">
@@ -1052,6 +1120,15 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Image et mot</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Page Is Intentionally Blank</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Cette page est intentionnellement vide</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Title Page">
@@ -1360,7 +1437,7 @@
         <seg>InDesign XML Information</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Configuration</seg>
+        <seg>Format InDesign</seg>
       </tuv>
     </tu>
     <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
@@ -1434,6 +1511,70 @@
         <seg>B5 Portrait</seg>
       </tuv>
     </tu>
+    <tu tuid="LoginDialog.AgreeToTerms">
+      <tuv xml:lang="en">
+        <seg>I agree to the Bloom Library's Terms of Use</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Je suis d'accord avec les conditions d'utilisation de la bibliothèque Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.Email">
+      <tuv xml:lang="en">
+        <seg>Email Address</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Adresse de courriel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.ForgotPassword">
+      <tuv xml:lang="en">
+        <seg>Forgot Password</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Mot de passe oublié</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.LoginButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Login</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Se connecter</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.Password">
+      <tuv xml:lang="en">
+        <seg>Password</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Mot de passe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.ShowTerms">
+      <tuv xml:lang="en">
+        <seg>Show Terms of Use</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Afficher des conditions d'utilisation</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Log in to BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Se connecter à BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.showPassword">
+      <tuv xml:lang="en">
+        <seg>&amp;Show Password</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Afficher le mot de passe</seg>
+      </tuv>
+    </tu>
     <tu tuid="NewCollectionWizard.AlreadyCollectionWithThatName">
       <tuv xml:lang="en">
         <seg>There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</seg>
@@ -1499,8 +1640,9 @@
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
-        <seg>A collection of shell or template books in one or more languages of wider communication. From this, you can make a BloomPack to give to others so that they can make vernacular books with it.</seg>
+        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Une collection des livres moules ou des livres modèles dans une ou plusieurs langues véhiculaires, à partir de laquelle vous pouvez créer un paquet Bloom pour donner aux autres pour qu'ils puissent l'utiliser pour créer des livres vernaculaires.</seg>
@@ -1508,7 +1650,7 @@
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
       <tuv xml:lang="en">
-        <seg>Vernacular Collection</seg>
+        <seg>Vernacular/Local Language Collection</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Collection vernaculaire</seg>
@@ -1665,7 +1807,7 @@
         <seg>Create New Collection</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Créer nouvelle collection</seg>
+        <seg>Créer une nouvelle collection</seg>
       </tuv>
     </tu>
     <tu tuid="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
@@ -1690,7 +1832,23 @@
         <seg>Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Quelqu'un d'autre aurait-il déjà  utilisé Envoyer/recevoir pour partager une collection avec vous?\nVeuillez utiliser l'un de ces boutons rouges pour copier sa collection sur votre ordinateur\n.Ensuite, utiliser Envoyer/recevoir pour partager votre travail avec lui.</seg>
+        <seg>Quelqu'un d'autre aurait-il déjà utilisé Envoyer/recevoir pour partager une collection avec vous?\nVeuillez utiliser l'un de ces boutons rouges pour copier sa collection sur votre ordinateur\n.Ensuite, utiliser Envoyer/recevoir pour partager votre travail avec lui.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+      <tuv xml:lang="en">
+        <seg>Replace Existing</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Remplacer l'existant</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OverwriteWarning.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Notice</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Attention</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
@@ -1719,15 +1877,23 @@
     </tu>
     <tu tuid="PublishTab.BodyOnlyRadio">
       <tuv xml:lang="en">
-        <seg>Booklet Inside Pages</seg>
+        <seg>Booklet Insides</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Pages intérieures d'un livret</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.ButtonThatShowsUploadForm">
+      <tuv xml:lang="en">
+        <seg>Upload</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Téléverser</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.CoverOnlyRadio">
       <tuv xml:lang="en">
-        <seg>Cover</seg>
+        <seg>Booklet Cover</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Couverture</seg>
@@ -1746,10 +1912,18 @@
     <tu tuid="PublishTab.OnePagePerPaperRadio">
       <note>Instead of making a booklet, just make normal pages</note>
       <tuv xml:lang="en">
-        <seg>One page per piece of paper</seg>
+        <seg>Simple</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Une page par feuille</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
+      <tuv xml:lang="en">
+        <seg>Open the PDF in the default system pdf viewer</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ouvrir le fichier PDF dans le logiciel PDF par défaut</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PrintButton">
@@ -1782,6 +1956,521 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Traits de coupe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Acknowledgments">
+      <tuv xml:lang="en">
+        <seg>Acknowledgments</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Remerciements</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.AdditionalRequests">
+      <tuv xml:lang="en">
+        <seg>AdditionalRequests: </seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Autres demandes :</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.AllReserved">
+      <tuv xml:lang="en">
+        <seg>All rights reserved (Contact the Copyright holder for any permissions</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Tous droits réservés (contacter le titulaire du droit d'auteur pour toute autorisation)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.ConfirmReplaceExisting">
+      <tuv xml:lang="en">
+        <seg>BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Vous avez déjà soumis une version précédente de ce livre à BloomLibrary.org. Si vous le téléversez encore, votre version actuelle remplacera la version précédente.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Copyright">
+      <tuv xml:lang="en">
+        <seg>Copyright</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Copyright</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Credits">
+      <tuv xml:lang="en">
+        <seg>credits</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>crédits</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.DownloadProblem">
+      <tuv xml:lang="en">
+        <seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Il y avait un problème de téléchargement de votre livre. Vous devrez peut-être redémarrer Bloom ou obtenir de l'aide technique.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.ErrorUploading">
+      <tuv xml:lang="en">
+        <seg>Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Désolé, il y avait un problème de téléversement de {0}. Voir les détails ci-dessous. Vous devrez peut-être obtenir de l'aide technique.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.FieldsNeedAttention">
+      <tuv xml:lang="en">
+        <seg>One or more fields above need your attention before uploading</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Il faut corriger un ou plusieurs champs ci-dessus avant le téléversement.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.FinalUploadFailureNotice">
+      <tuv xml:lang="en">
+        <seg>Sorry, "{0}" was not successfully uploaded</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Désolé, le téléversement de "{0}" n'a pas réussi.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Gaurantee">
+      <tuv xml:lang="en">
+        <seg>By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>En téléversant, vous confirmez votre accord avec les conditions d'utilisation de Bloom Library et vous accordez les droits qui y sont contenus.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.GenericUploadProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem uploading your book.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Il y avait un problème de téléversement de votre livre.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Languages">
+      <tuv xml:lang="en">
+        <seg>Languages</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Langues</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.License">
+      <tuv xml:lang="en">
+        <seg>Usage/License</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Utilisation/licence</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.AccountAlreadyExists">
+      <tuv xml:lang="en">
+        <seg>Account Already Exists</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Compte existe déjà</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.AlreadyHaveAccount">
+      <tuv xml:lang="en">
+        <seg>We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>On ne peut pas vous inscrire avec cette adresse, parce qu'on a déjà un compte avec cette adresse. Voulez-vous plutôt vous connecter?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginConnectFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to verify your login. Please check your network connection</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom n'a pas pu se connecter au serveur pour vous authentifier. Veuillez vérifier votre connexion réseau.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginFailed">
+      <tuv xml:lang="en">
+        <seg>Login failed</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Connexion a échoué</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom n'a pas pu se connecter au serveur pour vous inscrire ou vous authentifier. Le problème pourrait être votre connexion internet, notre serveur ou quelque chose entre les deux.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.MustAgreeTerms">
+      <tuv xml:lang="en">
+        <seg>In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Afin de créer un compte BloomLibrary.org, vous devez cocher la case indiquant que vous acceptez les conditions d'utilisation de BloomLibrary.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.Need Email">
+      <tuv xml:lang="en">
+        <seg>Email Needed</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Adresse de courriel exigée</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.NoRecordOfUser">
+      <tuv xml:lang="en">
+        <seg>We don't have a user on record with that email. Would you like to sign up?</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>On n'a pas un utilisateur enregistré avec cette adresse de courriel. Voulez-vous vous inscrire?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PasswordMismatch">
+      <tuv xml:lang="en">
+        <seg>Password and user ID did not match</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Identifiant et mot de passe incorrects</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PleaseAgreeTerms">
+      <tuv xml:lang="en">
+        <seg>Please agree to terms of use</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Veuillez accepter les conditions d'utilisation</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PleaseProvideEmail">
+      <tuv xml:lang="en">
+        <seg>Please enter a valid email address. We will send an email to this address so you can reset your password.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Veuillez entrer une adresse de courriel valide. On vous enverra un courriel pour vous permettre de réinitialiser votre mot de passe.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetConnectFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to reset your password. Please check your network connection</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom n'a pas pu se connecter au serveur pour réinitialiser votre mot de passe. Veuillez vérifier votre connexion réseau.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetFailed">
+      <tuv xml:lang="en">
+        <seg>Reset Password failed</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>La réinitialisation de mot de passe a échoué</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetPassword">
+      <tuv xml:lang="en">
+        <seg>Resetting Password</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Réinitialisation de mot de passe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.SendingResetPassword">
+      <tuv xml:lang="en">
+        <seg>We are sending an email to {0} with instructions for how to reset your password</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>On enverra un courriel à {0} avec des instructions pour réinitialiser votre mot de passe.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.Signup">
+      <tuv xml:lang="en">
+        <seg>Sign up for Bloom Library.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Créer un compte BloomLibrary</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.UnknownUser">
+      <tuv xml:lang="en">
+        <seg>Unknown user</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Utilisateur inconnu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.LoginFailure">
+      <tuv xml:lang="en">
+        <seg>Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Impossible de se connecter à BloomLibrary.org en utilisant vos informations de connexion enregistrées. Veuillez vérifier votre connexion réseau.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Logout">
+      <tuv xml:lang="en">
+        <seg>Log out of BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Se déconnecter de BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.MakingPdf">
+      <tuv xml:lang="en">
+        <seg>Making PDF Preview...</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Préparation de l'aperçu PDF...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.MakingThumbnail">
+      <tuv xml:lang="en">
+        <seg>Making thumbnail image...</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Préparation de l'image miniature...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.OldVersion">
+      <tuv xml:lang="en">
+        <seg>Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Désolé, cette version de Bloom Desktop n'est pas compatible avec la version actuelle de BloomLibrary.org. Veuillez mettre à niveau Bloom vers une version plus récente.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.PleaseLogIn">
+      <tuv xml:lang="en">
+        <seg>Please log in to BloomLibrary.org (or sign up) before uploading</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Veuillez vous connecter à BloomLibrary.org (ou vous inscrire) avant de téléverser.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.PleaseSetThis">
+      <tuv xml:lang="en">
+        <seg>Please set this from the edit tab</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Veuillez établir la licence sur l'onglet Édition</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Step1">
+      <tuv xml:lang="en">
+        <seg>Step 1: Confirm Metadata</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Étape 1: Valider les métadonnées</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Step2">
+      <tuv xml:lang="en">
+        <seg>Step 2: Upload</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Étape 2: Téléverser</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.SuggestAssignCC">
+      <tuv xml:lang="en">
+        <seg>Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Suggestion : Choisir une license Creative Commons vous permet facilement d'accorder clairement certaines autorisations à tout le monde.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.SuggestChangeCC">
+      <tuv xml:lang="en">
+        <seg>Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Suggestion: Une licence Creative Commons facilite beaucoup l'utilisation de votre livre par des autres, même s'ils ne parlent pas couramment la langue de votre licence personnalisée.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Summary">
+      <tuv xml:lang="en">
+        <seg>Summary</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Résumé</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.TermsLink">
+      <tuv xml:lang="en">
+        <seg>Show Terms of Use</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Afficher les conditions d'utilisation</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Title">
+      <tuv xml:lang="en">
+        <seg>Title</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Titre</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadButton">
+      <tuv xml:lang="en">
+        <seg>Upload Book</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Téléverser livre</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadCompleteNotice">
+      <tuv xml:lang="en">
+        <seg>Congratulations, "{0}" is now available on BloomLibrary.org ({1})</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Félicitations, "{0}" est maintenant disponible à BloomLibrary.org ({1})</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadNotAllowed">
+      <tuv xml:lang="en">
+        <seg>Upload Not Allowed</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Téléversement interdit</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem uploading your book. You may need to restart Bloom or get technical help.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Il y avait un problème de téléversement de votre livre. Vous devrez peut-être redémarrer Bloom ou obtenir de l'aide technique.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadProgress">
+      <tuv xml:lang="en">
+        <seg>Upload Progress</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Progrès de téléversement</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadSandbox">
+      <tuv xml:lang="en">
+        <seg>Upload Book (to Sandbox)</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Téléverser livre (au bac à sable)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadingStatus">
+      <tuv xml:lang="en">
+        <seg>Uploading {0}</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Téléversement de {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.ccLink">
+      <tuv xml:lang="en">
+        <seg>CC-BY-NC</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>CC-BY-NC</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.loginLink">
+      <tuv xml:lang="en">
+        <seg>Log in to BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Se connecter à BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.signupLink">
+      <tuv xml:lang="en">
+        <seg>Sign up for BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Créer un compte BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Email">
+      <tuv xml:lang="en">
+        <seg>Email Address</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Adresse de courriel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.FirstName">
+      <tuv xml:lang="en">
+        <seg>First Name</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Prénom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Heading">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="en">
+        <seg>Please take a minute to register {0}</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Veuillez prendre un moment pour vous inscrire à {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.HowAreYouUsing">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="en">
+        <seg>How are you using {0}?</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Comment utilisez-vous {0}?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.IAmStuckLabel">
+      <tuv xml:lang="en">
+        <seg>I'm stuck, I'll finish this later.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Je suis coincé, je le complétera plus tard.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Organization">
+      <tuv xml:lang="en">
+        <seg>Organization</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Organisation</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.RegisterButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Register</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>S'insc&amp;rire</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Surname">
+      <tuv xml:lang="en">
+        <seg>Surname</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Nom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.WindowTitle">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="en">
+        <seg>Register {0}</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>S'inscrire à {0}</seg>
       </tuv>
     </tu>
     <tu tuid="SendReceiveutton">
@@ -1951,6 +2640,16 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Spirituel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Tradition">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Tradition</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Tradition</seg>
       </tuv>
     </tu>
     <tu tuid="Topics.Traditional Story">
