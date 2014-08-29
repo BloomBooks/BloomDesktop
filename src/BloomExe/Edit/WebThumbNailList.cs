@@ -13,6 +13,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
 using Gecko;
+using Palaso.Xml;
 #if !__MonoCS__
 using IWshRuntimeLibrary;
 #endif
@@ -548,19 +549,51 @@ namespace Bloom.Edit
 				if (node == null)
 					continue; // or crash? How can this happen?
 				result.Add(page);
-				var clone = pageDoc.ImportNode(node, true);
-				var gridDiv = pageDoc.CreateElement("div");
-				gridDiv.SetAttribute("class", "gridItem");
+				var pageThumbnail = pageDoc.ImportNode(node, true);
+				var cellDiv = pageDoc.CreateElement("div");
+				cellDiv.SetAttribute("class", "gridItem");
 				var gridId = GridId(page);
-				gridDiv.SetAttribute("id", gridId);
+				cellDiv.SetAttribute("id", gridId);
 				_pageMap[gridId] = page;
-				gridlyParent.AppendChild(gridDiv);
-				gridDiv.AppendChild(clone);
-				var titleDiv = pageDoc.CreateElement("div");
-				gridDiv.AppendChild(titleDiv);
-				titleDiv.SetAttribute("class", "gridTitle");
+				gridlyParent.AppendChild(cellDiv);
+
+
+				//we wrap our incredible-shrinking page in a plain 'ol div so that we
+				//have something to give a border to when this page is selected
+				var pageContainer = pageDoc.CreateElement("div");
+				pageContainer.SetAttribute("class", "pageContainer");
+				pageContainer.AppendChild(pageThumbnail);
+
+
+				/* And here it gets fragile (for not).
+				   The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
+					the browser's normal ability to assign a width to the parent div. So our parent
+					here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
+					moment, we assign appropriate sizes, by hand. We rely on c# code to add these
+					classes, since we can't write a rule in css3 that peeks into a child attribute.
+				*/
+				var pageClasses = pageThumbnail.GetStringAttribute("class");
+
+				//enhance: there is doubtless code somewhere else that picks these size/orientations out elegantly
+				if (pageClasses.ToLower().Contains("a5portrait"))
+				{
+					pageContainer.SetAttribute("class", "pageContainer A5Portrait");
+				}
+				if (pageClasses.ToLower().Contains("a4portrait"))
+				{
+					pageContainer.SetAttribute("class", "pageContainer A4Portrait");
+				}
+				if (pageClasses.ToLower().Contains("a4landscape"))
+				{
+					pageContainer.SetAttribute("class", "pageContainer A4Landscape");
+				}
+
+				cellDiv.AppendChild(pageContainer);
+				var captionDiv = pageDoc.CreateElement("div");
+				captionDiv.SetAttribute("class", "thumbnailCaption");
+				cellDiv.AppendChild(captionDiv);
 				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-				titleDiv.InnerText = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + captionOrPageNumber, captionOrPageNumber);
+				captionDiv.InnerText = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + captionOrPageNumber, captionOrPageNumber);
 			}
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 			_browser.Navigate(pageDoc, null);
