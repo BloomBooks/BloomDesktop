@@ -44,7 +44,6 @@ document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/b
 document.write('<script type="text/javascript" src="' + thisDir + 'synphonyApi.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'readerTools.js"></script>');
 
-document.write('<script type="text/javascript" src="' + thisDir + 'split-pane.js"></script>');
+document.write('<script type="text/javascript" src="' + libDir + 'split-pane/split-pane.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'origami.js"></script>');
-document.write('<link rel="stylesheet" type="text/css" href="' + thisDir + 'split-pane.css">');
-document.write('<link rel="stylesheet" type="text/css" href="' + thisDir + 'origami.css">');
+document.write('<link rel="stylesheet" type="text/css" href="' + thisDir + '../css/origami.css">');
