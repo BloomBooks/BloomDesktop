@@ -244,7 +244,7 @@ var StyleEditor = (function () {
         var editor = this;
         $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
-        editor.AddQtipToElement(formatButton, 'adjust formatting for style', 1500);
+        editor.AddQtipToElement(formatButton, localizationManager.getText('BookEditor.StyleEditorTip', 'Adjust formatting for style'), 1500);
         formatButton.click(function () {
             simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
@@ -279,16 +279,19 @@ var StyleEditor = (function () {
                     lineHeight = lineSpaceOptions[lineSpaceOptions.length - 1];
                 }
 
-                var wordSpaceOptions = ['normal', 'Wide', 'Extra Wide'];
+                var wordSpaceOptions = [
+                    localizationManager.getText('StyleEditor.WordSpacingNormal', 'Normal'),
+                    localizationManager.getText('StyleEditor.WordSpacingWide', 'Wide'),
+                    localizationManager.getText('StyleEditor.WordSpacingExtraWide', 'Extra Wide')];
                 var wordSpaceString = box.css('word-spacing');
-                var wordSpacing = 'normal';
+                var wordSpacing = wordSpaceOptions[0];
                 if (wordSpaceString != "0px") {
                     var pxSpace = parseInt(wordSpaceString);
                     var ptSpace = editor.ConvertPxToPt(pxSpace);
                     if (ptSpace > 7.5) {
-                        wordSpacing = "Extra Wide";
+                        wordSpacing = wordSpaceOptions[2];
                     } else {
-                        wordSpacing = 'Wide';
+                        wordSpacing = wordSpaceOptions[1];
                     }
                 }
 
