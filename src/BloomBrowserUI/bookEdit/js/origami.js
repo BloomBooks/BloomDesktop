@@ -125,7 +125,7 @@ function getTypeSelectors() {
 }
 function makeTextFieldClickHandler(e) {
     e.preventDefault();
-    var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement normal-style"><div lang="z" contenteditable="true" class="bloom-content1 bloom-editable"></div></div>');
+    var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement normal-style"></div>');
     $(this).closest('.split-pane-component-inner').append(translationGroup);
     $(this).closest('.selector-links').remove();
     SetupElements(translationGroup.parent());
