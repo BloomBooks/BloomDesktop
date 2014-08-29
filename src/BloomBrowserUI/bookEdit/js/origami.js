@@ -6,10 +6,8 @@ $(window).load(function() {
 });
 
 function setupOrigami() {
-//    $('.customPage').append('<div class="button bloom-purple origami-toggle edit-mode bloom-ui"><a>' + localizationManager.getText('LayoutMode.SwitchToLayoutMode', 'Switch to Layout Mode') + '</a></div>');
-
     $('.customPage').append(function() {
-        var switchLabel = localizationManager.getText('LayoutMode.ChangeLayout', 'Change Layout');
+        var switchLabel = localizationManager.getText('EditTab.LayoutMode.ChangeLayout', 'Change Layout');
         return '\
 <div class="origami-toggle edit-mode bloom-ui">' + switchLabel + ' \
     <div class="onoffswitch"> \
@@ -47,12 +45,15 @@ function cleanupOrigami() {
 
 function setupLayoutMode() {
     $('.split-pane-component-inner').each(function() {
-        if (!$(this).find('.bloom-imageContainer', '.bloom-translationGroup').length)
+        if (!$(this).find('.bloom-imageContainer, .bloom-translationGroup').length)
             $(this).append(getTypeSelectors());
         $(this).append(getButtons());
     });
     $('.origami-ui').css('visibility', 'visible');
-    $(".bloom-editable:visible[contentEditable=true]").removeAttr('contentEditable');
+    // Text should not be edittable in layout mode
+    $('.bloom-editable:visible[contentEditable=true]').removeAttr('contentEditable');
+    // Images cannot be changed (other than growing/shrinking with container) in layout mode
+    $('.bloom-imageContainer').off('mouseenter').off('mouseleave');
 }
 
 // Event handler to split the current box in half (vertically or horizontally)
@@ -136,7 +137,7 @@ function getSplitPaneComponentInner() {
 }
 
 function getButtons() {
-    var buttons = $('<div class="buttons bloom-ui origami-ui"></div>');
+    var buttons = $('<div class="origami-buttons bloom-ui origami-ui"></div>');
     buttons.append(getVSplitButton())
         .append('&nbsp;')
         .append(getHSplitButton())
@@ -150,7 +151,7 @@ function getVSplitButton() {
     return vSplitButton;
 }
 function getHSplitButton() {
-    var hSplitButton = $('<a class="button bloom-purple splitter horizontal">&#8211;&#8211;&#8211;</a>');
+    var hSplitButton = $('<a class="button bloom-purple splitter horizontal">&#8212;&#8212;</a>');
     hSplitButton.click(splitClickHandler);
     return hSplitButton;
 }
