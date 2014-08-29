@@ -185,6 +185,12 @@ var StyleEditor = (function () {
         return Math.round(pxSize * ratio);
     };
 
+    /**
+    * Get the style information off of the target element to display in the tooltip
+    * @param {HTMLElement} targetBox the element with the style information
+    * @param {string} styleName the style whose information we are reporting
+    * @return returns the tooltip string
+    */
     StyleEditor.prototype.GetToolTip = function (targetBox, styleName) {
         styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
         var box = $(targetBox);
@@ -198,17 +204,25 @@ var StyleEditor = (function () {
         return localizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
     };
 
-    StyleEditor.prototype.AddQtipToElement = function (element, toolTip) {
+    /**
+    * Adds a tooltip to an element
+    * @param element a JQuery object to add the tooltip to
+    * @param toolTip the text of the tooltip to display
+    * @param delay how many milliseconds to display the tooltip (defaults to 3sec)
+    */
+    StyleEditor.prototype.AddQtipToElement = function (element, toolTip, delay) {
+        if (typeof delay === "undefined") { delay = 3000; }
         if (element.length == 0)
             return;
         element.qtip({
             content: toolTip,
             show: {
-                event: 'click mouseenter'
+                event: 'click mouseenter',
+                solo: true
             },
             hide: {
                 event: 'unfocus',
-                inactive: 3000
+                inactive: delay
             }
         });
     };
@@ -230,7 +244,7 @@ var StyleEditor = (function () {
         var editor = this;
         $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
-        editor.AddQtipToElement(formatButton, 'adjust formatting for style');
+        editor.AddQtipToElement(formatButton, 'adjust formatting for style', 1500);
         formatButton.click(function () {
             simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
@@ -290,23 +304,23 @@ var StyleEditor = (function () {
                 $('#fontSelect').change(function () {
                     editor.changeFont();
                 });
-                editor.AddQtipToElement($('#fontSelect'), 'Change the font face');
+                editor.AddQtipToElement($('#fontSelect'), 'Change the font face', 1500);
                 $('#sizeSelect').change(function () {
                     editor.changeSize();
                 });
-                editor.AddQtipToElement($('#sizeSelect'), 'Change the font size');
+                editor.AddQtipToElement($('#sizeSelect'), 'Change the font size', 1500);
                 $('#lineHeightSelect').change(function () {
                     editor.changeLineheight();
                 });
-                editor.AddQtipToElement($('#lineHeightSelect'), 'Change the spacing between lines of text');
+                editor.AddQtipToElement($('#lineHeightSelect'), 'Change the spacing between lines of text', 1500);
                 $('#wordSpaceSelect').change(function () {
                     editor.changeWordSpace();
                 });
-                editor.AddQtipToElement($('#wordSpaceSelect'), 'Change the spacing between words');
+                editor.AddQtipToElement($('#wordSpaceSelect'), 'Change the spacing between words', 1500);
                 $('#borderSelect').change(function () {
                     editor.changeBorderSelect();
                 });
-                editor.AddQtipToElement($('#borderSelect'), 'Change the border and background');
+                editor.AddQtipToElement($('#borderSelect'), 'Change the border and background', 1500);
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
 
