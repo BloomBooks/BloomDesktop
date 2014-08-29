@@ -60,7 +60,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 			catch (Exception)
 			{
-				MessageBox.Show(this, LocalizationManager.GetString("PublishTab.Upload.Login.LoginConnectFailed", "Bloom could not connect to the server to verify your login. Please check your network connection"),
+				MessageBox.Show(this, LocalizationManager.GetString("PublishTab.Upload.Login.LoginConnectFailed", "Bloom could not connect to the server to verify your login. Please check your network connection."),
 					LocalizationManager.GetString("PublishTab.Upload.Login.LoginFailed", "Login failed"),
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error);
@@ -240,7 +240,7 @@ namespace Bloom.WebLibraryIntegration
 				}
 				catch (Exception)
 				{
-					MessageBox.Show(this, LocalizationManager.GetString("PublishTab.Upload.Login.ResetConnectFailed", "Bloom could not connect to the server to reset your password. Please check your network connection"),
+					MessageBox.Show(this, LocalizationManager.GetString("PublishTab.Upload.Login.ResetConnectFailed", "Bloom could not connect to the server to reset your password. Please check your network connection."),
 						LocalizationManager.GetString("PublishTab.Upload.Login.ResetFailed", "Reset Password failed"),
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error);

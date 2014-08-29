@@ -77,7 +77,7 @@
         .div.gridItem.dragging {
             opacity: .8;
         }
-        div.gridTitle {
+        div.thumbnailCaption {
             position: absolute;
             top: 60px;
             color: white;
@@ -85,19 +85,37 @@
             text-align:right;
             width: 80px;
         }
-        div.gridItem:nth-child(even) div.gridTitle {
+        div.gridItem:nth-child(even) div.thumbnailCaption {
             text-align: left;
         }
         div.placeholder {
             pointer-events: none;
         }
-        div.gridSelected {
-            border-right-width: 1px;
-            border-left-width: 1px;
-            border-bottom-width: 1px;
-            border-top-width: 1px;
-            border: solid;
-            border-color: white;
+
+        .gridSelected .pageContainer {
+            border: 3px solid rgb(255, 255, 163);/*matches the current tooltip yellow*/
+        }
+         div.gridItem:nth-child(odd) .pageContainer {
+             float: right; /*towards the center*/
+        }
+
+         /* the nature of how we're doing the thumbnails (relying on scaling) seems to mess up
+             the browser's normal ability to assign a width to the parent div. So our parent
+             here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
+             moment, we assign appropriate sizes, by hand. We rely on c# code to add these
+             classes, since we can't write a rule in css3 that peeks into a child attribute.
+         */
+        .gridSelected .pageContainer.A5Portrait {
+            height: 60px;
+            width: 42px;
+        }
+        .gridSelected .pageContainer.A4Portrait {
+            height: 56px;
+            width: 40px;
+        }
+        .gridSelected .pageContainer.A4Landscape {
+            height: 59px;
+            width: 74px;
         }
     </style>
 </head>

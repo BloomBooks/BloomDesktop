@@ -260,7 +260,7 @@ DIV.coverBottomBookTopic
 	height: 58px;
 	text-align: right;
 }
-DIV.coverBottomBookTopic DIV
+DIV.coverBottomBookTopic .bloom-contentNational1
 {
 	/*[disabled]overflow:hidden;*/
 	text-align: right;
@@ -277,10 +277,17 @@ DIV.coverBottomBookTopic DIV.bloom-contentNational1
 	/*NB: we need placement because we want the national1 to be on top, regardless of its order in the parent div*/
 	/*[disabled]+placement:anchor-top-right 0px 0px;*/
 }
-DIV.coverBottomBookTopic DIV.bloom-contentNational2
+
+.coverBottomBookTopic .bloom-contentNational2, .coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1) /*the not is for shellbooks where lang 1 and 2 are both the same (e.g. English)*/
 {
-	/*[disabled]+placement:anchor-top-right -3px 43px;*/
+	color: gray; /* review: these may never show anyho; the grey color is in here to help tracing down a problem that may already be fixed, where you would see, e.g.,  "Health  Health" on the front page */
 }
+
+.publishMode .coverBottomBookTopic .bloom-contentNational2, .publishMode .coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1)
+{
+	display: none; /* review: these may never show anyhow; it's in here to help tracing down a problem that may already be fixed */
+}
+
 /*.......Language Name*/
 DIV.coverBottomLangName DIV
 {
