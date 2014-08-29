@@ -5,6 +5,31 @@ $(window).load(function() {
     $('.add').click(addClickHandler);
 });
 
+function setupOrigami() {
+    setupSplitPaneComponentInners();
+
+    $('.customPage').append('<div class="button bloom-purple origami-toggle edit-mode bloom-ui"><a>' + localizationManager.getText('LayoutMode.SwitchToLayoutMode', 'Switch to Layout Mode') + '</a></div>');
+
+    $('.origami-ui').css('visibility', 'hidden');
+
+    $('.origami-toggle').click(function() {
+        var anchor = $(this).find('a');
+        if ($(this).hasClass('edit-mode')) {
+            anchor.text(localizationManager.getText('LayoutMode.SwitchToEditMode', 'Switch to Edit Mode'));
+            $(this).removeClass('edit-mode');
+            $(this).addClass('layout-mode');
+        } else {
+            anchor.text(localizationManager.getText('LayoutMode.SwitchToLayoutMode', 'Switch to Layout Mode'));
+            $(this).removeClass('layout-mode');
+            $(this).addClass('edit-mode');
+        }
+
+        $('.origami-ui').each(function() {
+            $(this).css('visibility', $(this).css('visibility') === 'visible' ? 'hidden' : 'visible');
+        });
+    });
+}
+
 function setupSplitPaneComponentInners() {
     $('.split-pane-component-inner').each(function() {
         if (!$.trim( $(this).html() ).length)
@@ -128,7 +153,7 @@ function makeTextFieldClickHandler(e) {
     var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement normal-style"></div>');
     $(this).closest('.split-pane-component-inner').append(translationGroup);
     $(this).closest('.selector-links').remove();
-    SetupElements(translationGroup.parent());
+//    SetupElements(translationGroup.parent());
 }
 function makePictureFieldClickHandler(e) {
     e.preventDefault();
@@ -137,5 +162,5 @@ function makePictureFieldClickHandler(e) {
     imageContainer.append(image);
     $(this).closest('.split-pane-component-inner').append(imageContainer);
     $(this).closest('.selector-links').remove();
-    SetupElements(imageContainer.parent());
+//    SetupElements(imageContainer.parent());
 }
