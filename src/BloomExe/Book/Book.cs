@@ -993,6 +993,7 @@ namespace Bloom.Book
 			}
 
 			_bookData.Set("languagesOfBook", languagesOfBook, false);
+			_bookData.UpdateDomFromDataset();
 		}
 
 		/// <summary>

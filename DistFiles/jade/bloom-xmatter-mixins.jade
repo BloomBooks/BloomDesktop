@@ -134,16 +134,12 @@ mixin factoryStandard-titlePage
 			+editable(kLanguageForPrototypeOnly).funding.title-page-funding-style(data-book='funding')
 		#languageInformation
 			.languagesOfBook(data-book='languagesOfBook')
-			//- +field-prototypeDeclaredExplicity
-				//- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
-				//- .langName(data-library='nameOfLanguage')
-
-			// review: can we get rid of these "langName" classes?
+			//- review: can we get rid of these "langName" classes?
 			+field-prototypeDeclaredExplicity
-				// review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
+				//- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
 				.langName('data-library'='dialect')
 			+field-prototypeDeclaredExplicity
-				// review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
+				//- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
 				.langName(data-library='languageLocation')
 
 mixin factoryStandard-insideBackCover
