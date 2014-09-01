@@ -18,71 +18,81 @@ namespace Bloom.Publish
 	/// </summary>
 	class MakePdfUsingGeckofxHtmlToPdfComponent
 	{
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
+		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName,
+			bool landscape, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 			ConversionProgress progress = null;
-
-			var tempOutput = TempFile.WithExtension(".pdf"); //we don't want to dispose of this (since we will move it)
-			File.Delete(tempOutput.Path);
-
-			var conversionOrder = new ConversionOrder()
+			try
 			{
-				BottomMarginInMillimeters = 0,
-				TopMarginInMillimeters = 0,
-				LeftMarginInMillimeters = 0,
-				RightMarginInMillimeters = 0,
-				EnableGraphite = true,
-				Landscape = landscape,
-				InputHtmlPath = inputHtmlPath,
-				OutputPdfPath = tempOutput.Path,
-				PageSizeName = paperSizeName
-			};
-			bool finished = false;
-			var mainThreadTask = (Action) (() =>
-			{
-				progress = new ConversionProgress(conversionOrder);
-				progress.Finished += (sender, args) =>
+				var tempOutput = TempFile.WithExtension(".pdf"); //we don't want to dispose of this (since we will move it)
+				File.Delete(tempOutput.Path);
+
+				var conversionOrder = new ConversionOrder()
 				{
-					finished = true;
-					if (!File.Exists(tempOutput.Path))
-						throw new ApplicationException(
-							"Bloom was not able to create the PDF.\r\n\r\nDetails: GeckofxHtmlToPdf (command line) did not produce the expected document.");
-
-					try
-					{
-						File.Move(tempOutput.Path, outputPdfPath);
-					}
-					catch (IOException e)
-					{
-						//I can't figure out how it happened (since GetPdfPath makes sure the file name is unique),
-						//but we had a report (BL-211) of that move failing.
-						throw new ApplicationException(
-							string.Format(
-								"Bloom tried to save the file to {0}, but Windows said that it was locked. Please try again.\r\n\r\nDetails: {1}",
-								outputPdfPath, e.Message));
-
-					}
+					BottomMarginInMillimeters = 0,
+					TopMarginInMillimeters = 0,
+					LeftMarginInMillimeters = 0,
+					RightMarginInMillimeters = 0,
+					EnableGraphite = true,
+					Landscape = landscape,
+					InputHtmlPath = inputHtmlPath,
+					OutputPdfPath = tempOutput.Path,
+					PageSizeName = paperSizeName
 				};
-				progress.Show(owner);
-			});
-			if (owner == null) // typically tests; should be the main UI thread.
-				mainThreadTask();
-			else
-				owner.Invoke(mainThreadTask);
-			while (!finished)
-			{
-				// The background thread can't actually do any work...all happens in the gecko component on the UI thread...but it must wait until we're done.
-				//Application.DoEvents(); // Review: needed??
-				Thread.Sleep(100);
-				if (progress != null && worker != null && worker.CancellationPending)
+				using (var waitHandle = new AutoResetEvent(false))
 				{
-					owner.Invoke((Action)(() => progress.Cancel()));
-					doWorkEventArgs.Cancel = true;
-					finished = true;
+					var mainThreadTask = (Action)(() => {
+						progress = new ConversionProgress(conversionOrder);
+						progress.Finished += (sender, args) => {
+							waitHandle.Set();
+							if (!File.Exists(tempOutput.Path))
+							{
+								throw new ApplicationException(
+									string.Format("Bloom was not able to create the PDF.{0}{0}" +
+									"Details: GeckofxHtmlToPdf (command line) did not produce the expected document.",
+										Environment.NewLine));
+							}
+							try
+							{
+								File.Move(tempOutput.Path, outputPdfPath);
+							}
+							catch (IOException e)
+							{
+								//I can't figure out how it happened (since GetPdfPath makes sure the file name is unique),
+								//but we had a report (BL-211) of that move failing.
+								throw new ApplicationException(
+									string.Format(
+										"Bloom tried to save the file to {0}, but Windows said that it was locked. Please try again.{2}{2}Details: {1}",
+										outputPdfPath, e.Message, Environment.NewLine));
+							}
+						};
+						progress.Show(owner);
+					});
+					if (owner == null) // typically tests; should be the main UI thread.
+						mainThreadTask();
+					else
+						owner.Invoke(mainThreadTask);
+
+					while (true)
+					{
+						// The background thread can't actually do any work...all happens in the gecko
+						// component on the UI thread...but it must wait until we're done.
+						if (waitHandle.WaitOne(100))
+							break; // background thread signaled that it is finished
+						if (progress != null && worker != null && worker.CancellationPending)
+						{
+							owner.Invoke((Action)(progress.Cancel));
+							doWorkEventArgs.Cancel = true;
+							break;
+						}
+					}
 				}
-
 			}
-
+			finally
+			{
+				if (progress != null)
+					progress.Dispose();
+			}
 		}
 	}
 }
