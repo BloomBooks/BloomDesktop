@@ -141,7 +141,7 @@ function getSplitPaneComponentWithNewContent(position) {
     return spc;
 }
 function getSplitPaneComponentInner() {
-    var spci = $('<div class="split-pane-component-inner"><div class="box-header bloom-translation"></div></div>');
+    var spci = $('<div class="split-pane-component-inner"><div class="box-header bloom-translationGroup"></div></div>');
     spci.append(getTypeSelectors());
     spci.append(getButtons());
     return spci;
@@ -194,18 +194,17 @@ function getTypeSelectors() {
 }
 function makeTextFieldClickHandler(e) {
     e.preventDefault();
-    var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement normal-style"><div lang="z" class="bloom-content1 bloom-editable"></div>');
+    var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement normal-style"><div lang="z" class="bloom-content1 bloom-editable"></div></div>');
     $(this).closest('.split-pane-component-inner').append(translationGroup);
     $(this).closest('.selector-links').remove();
-    //TODO: figure out what needs to get hooked up immediately
+    //TODO: figure out if anything needs to get hooked up immediately
 }
 function makePictureFieldClickHandler(e) {
     e.preventDefault();
     var imageContainer = $('<div class="bloom-imageContainer bloom-leadingElement"></div>');
     var image = $('<img src="placeHolder.png" alt="Could not load the picture"/>');
-    SetupImage(image);
     imageContainer.append(image);
+    SetupImage(image); // Must attach it first so event handler gets added to parent
     $(this).closest('.split-pane-component-inner').append(imageContainer);
     $(this).closest('.selector-links').remove();
-    //TODO: figure out what (else) needs to get hooked up immediately, e.g. pictures currently resize when added but not when slider moves
 }
