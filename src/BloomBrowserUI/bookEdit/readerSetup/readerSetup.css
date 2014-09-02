@@ -27,6 +27,17 @@ textarea { resize: none; }
 }
 
 /* Language Setup */
+#dls_word_lists {
+    width: 265px;
+    height: 58px;
+    background: transparent;
+    border: 1px solid #bbb;
+    padding: 1px;
+    overflow: auto;
+}
+
+.format-not-supported { color: #EF0808; }
+
 @media (max-width: 649px) {
     #dlstabs-1 div.floating { margin: 8px; }
     #word-lists-div { width: 250px; }
