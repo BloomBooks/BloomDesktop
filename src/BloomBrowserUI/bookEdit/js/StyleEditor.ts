@@ -264,7 +264,7 @@ class StyleEditor {
         var editor = this;
         $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton'); // after we create it!
-        editor.AddQtipToElement(formatButton, localizationManager.getText('BookEditor.StyleEditorTip', 'Adjust formatting for style'), 1500);
+        editor.AddQtipToElement(formatButton, localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style'), 1500);
         formatButton.click(function () {
             simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
@@ -300,9 +300,9 @@ class StyleEditor {
                 }
 
                 var wordSpaceOptions =
-                    [localizationManager.getText('StyleEditor.WordSpacingNormal', 'Normal'),
-                    localizationManager.getText('StyleEditor.WordSpacingWide', 'Wide'),
-                    localizationManager.getText('StyleEditor.WordSpacingExtraWide', 'Extra Wide')];
+                    [localizationManager.getText('EditTab.StyleEditor.WordSpacingNormal', 'Normal'),
+                        localizationManager.getText('EditTab.StyleEditor.WordSpacingWide', 'Wide'),
+                        localizationManager.getText('EditTab.StyleEditor.WordSpacingExtraWide', 'Extra Wide')];
                 var wordSpaceString = box.css('word-spacing');
                 var wordSpacing = wordSpaceOptions[0];
                 if (wordSpaceString != "0px") {
@@ -343,15 +343,15 @@ class StyleEditor {
                 (<draggableInterface>toolbar).draggable();
                 toolbar.css('opacity', 1.0);
                 $('#fontSelect').change(function () { editor.changeFont(); });
-                editor.AddQtipToElement($('#fontSelect'), localizationManager.getText('StyleEditor.FontFaceToolTip', 'Change the font face'), 1500);
+                editor.AddQtipToElement($('#fontSelect'), localizationManager.getText('EditTab.StyleEditor.FontFaceToolTip', 'Change the font face'), 1500);
                 $('#sizeSelect').change(function () { editor.changeSize(); });
-                editor.AddQtipToElement($('#sizeSelect'), localizationManager.getText('StyleEditor.FontSizeToolTip', 'Change the font size'), 1500);
+                editor.AddQtipToElement($('#sizeSelect'), localizationManager.getText('EditTab.StyleEditor.FontSizeToolTip', 'Change the font size'), 1500);
                 $('#lineHeightSelect').change(function () { editor.changeLineheight(); });
-                editor.AddQtipToElement($('#lineHeightSelect').parent(), localizationManager.getText('StyleEditor.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
+                editor.AddQtipToElement($('#lineHeightSelect').parent(), localizationManager.getText('EditTab.StyleEditor.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
                 $('#wordSpaceSelect').change(function () { editor.changeWordSpace(); });
-                editor.AddQtipToElement($('#wordSpaceSelect').parent(), localizationManager.getText('StyleEditor.WordSpacingToolTip', 'Change the spacing between words'), 1500);
+                editor.AddQtipToElement($('#wordSpaceSelect').parent(), localizationManager.getText('EditTab.StyleEditor.WordSpacingToolTip', 'Change the spacing between words'), 1500);
                 $('#borderSelect').change(function () { editor.changeBorderSelect(); });
-                editor.AddQtipToElement($('#borderSelect').parent(), localizationManager.getText('StyleEditor.BorderToolTip', 'Change the border and background'), 1500);
+                editor.AddQtipToElement($('#borderSelect').parent(), localizationManager.getText('EditTab.StyleEditor.BorderToolTip', 'Change the border and background'), 1500);
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
                 //alert(offset.left + "," + $(document).width() + "," + $(targetBox).offset().left);
