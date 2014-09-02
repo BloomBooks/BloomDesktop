@@ -1,6 +1,8 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
 
+var global = getGlobalObject();
+
 var StyleEditor = (function () {
     function StyleEditor(supportFilesRoot) {
         this.MIN_FONT_SIZE = 7;
@@ -246,7 +248,7 @@ var StyleEditor = (function () {
         var formatButton = $('#formatButton');
         editor.AddQtipToElement(formatButton, localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style'), 1500);
         formatButton.click(function () {
-            getGlobalObject().simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
+            global.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
                 var box = $(targetBox);

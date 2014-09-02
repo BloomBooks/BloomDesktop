@@ -18,12 +18,14 @@ interface draggableInterface extends JQuery {
     draggable(): void;
 }
 
+var global = getGlobalObject();
+
 class StyleEditor {
 
     private _previousBox: Element;
     private _supportFilesRoot: string;
     private MIN_FONT_SIZE: number = 7;
-	private boxBeingEdited: HTMLElement;
+    private boxBeingEdited: HTMLElement;
 
     constructor(supportFilesRoot: string) {
         this._supportFilesRoot = supportFilesRoot;
@@ -267,7 +269,7 @@ class StyleEditor {
         var formatButton = $('#formatButton'); // after we create it!
         editor.AddQtipToElement(formatButton, localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style'), 1500);
         formatButton.click(function () {
-            getGlobalObject().simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
+            global.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
                 var box = $(targetBox);
