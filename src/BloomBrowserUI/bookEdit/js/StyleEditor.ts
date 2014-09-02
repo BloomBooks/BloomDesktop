@@ -1,9 +1,10 @@
 /// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
+/// <reference path="getGlobalObject.ts"/>
 
-declare var localizationManager: any;
 declare var simpleAjaxGet: any;
-declare var getGlobalObject: any;
+var global = getGlobalObject();
 
 interface qtipInterface extends JQuery {
 	qtip(options: any): JQuery;
@@ -17,8 +18,6 @@ interface overflowInterface extends JQuery {
 interface draggableInterface extends JQuery {
 	draggable(): void;
 }
-
-var global = getGlobalObject();
 
 class StyleEditor {
 
@@ -267,9 +266,10 @@ class StyleEditor {
 		var editor = this;
 		$(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
 		var formatButton = $('#formatButton'); // after we create it!
-		editor.AddQtipToElement(formatButton, localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style'), 1500);
+		var txt = localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style');
+		editor.AddQtipToElement(formatButton, txt, 1500);
 		formatButton.click(function () {
-			global.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
+				global.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
 				editor.boxBeingEdited = targetBox;
 				styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
 				var box = $(targetBox);
