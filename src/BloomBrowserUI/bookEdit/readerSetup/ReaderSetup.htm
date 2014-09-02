@@ -11,6 +11,7 @@
 	<script src="/bloom/bookEdit/js/libsynphony/jquery.text-markup.js"></script>
 	<script src="/bloom/bookEdit/js/libsynphony/synphony_lib.js"></script>
 	<script src="/bloom/bookEdit/js/libsynphony/bloom_lib.js"></script>
+	<script src="/bloom/bookEdit/js/getGlobalObject.js"></script>
 	<script src="/bloom/lib/localizationManager.js"></script>
 	<script src="/bloom/lib/jquery.i18n.custom.js"></script>
 	<script type="text/javascript">$(function() {$("#dlstabs").tabs();});</script>
@@ -39,7 +40,8 @@
 		</div>
 		<div id="word-lists-div" class="floating">
 		  <label for="dls_word_lists" data-i18n="ReaderSetup.SampleTexts">Word Lists and Sample Texts</label><br>
-		  <textarea id="dls_word_lists" style="height: 55px;" readonly></textarea><br><a id="open-text-folder" href="" data-i18n="ReaderSetup.OpenSampleTexts" class="smaller">Open the sample texts folder for this language.</a>
+		  <div id="dls_word_lists"></div>
+		  <div id="how_to_export" style="display: none"><a href="" onclick="return getGlobalObject().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');" data-i18n="ReaderSetup.HowToExport">Help exporting and converting files to use as sample texts</a></div><a id="open-text-folder" href="" data-i18n="ReaderSetup.OpenSampleTexts" class="smaller">Open the sample texts folder for this language.</a>
 		  <p data-i18n="ReaderSetup.AboutSampleTexts1" class="smaller">About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.</p>
 		  <p data-i18n="ReaderSetup.AboutSampleTexts2" class="smaller">If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.</p>
 		  <p data-i18n="ReaderSetup.AboutSampleTexts2" class="smaller">Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.</p>
@@ -217,6 +219,10 @@
 		  </div>
 		</div>
 	  </div>
+	</div>
+	<div id="hiddenWordList" style="display: none">
+	  <label id="please-add-texts" data-i18n="ReaderSetup.AddTexts">Please add texts to the Sample Texts folder.</label>
+	  <label id="format_not_supported" data-i18n="ReaderSetup.FormatNotSupported">Cannot read this format</label>
 	</div>
 	<script src="readerSetup.js"></script>
   </body>

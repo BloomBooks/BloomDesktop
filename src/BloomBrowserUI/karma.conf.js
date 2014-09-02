@@ -16,6 +16,8 @@ module.exports = function (config) {
             'lib/jquery-ui-1.10.3.custom.min.js',
             'lib/jquery.myimgscale.js',
             'lib/jquery.qtip.js',
+            'bookEdit/js/globalObject.js',
+            'bookEdit/test/globalObjectInitializer.js',
             'lib/localizationManager.js',
 
             // helpers -- jasmine-query
