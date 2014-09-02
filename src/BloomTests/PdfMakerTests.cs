@@ -15,6 +15,13 @@ namespace BloomTests
 	[TestFixture]
 	public class PdfMakerTests
 	{
+		[TestFixtureTearDown]
+		public void FixtureTearDown()
+		{
+			if (Gecko.Xpcom.IsInitialized)
+				Gecko.Xpcom.Shutdown();
+		}
+
 		[Test]
 		public void MakePdf_BookStyleIsNone_OutputsPdf()
 		{
@@ -39,19 +46,11 @@ namespace BloomTests
 			var owner = new Form();
 			var dummy = owner.Handle; // Must invoke this to get a handle so we can invoke
 			var worker = new BackgroundWorker();
-			bool finished = false;
-			worker.RunWorkerCompleted += (sender, args) =>
-			{
-				finished = true;
-			};
+			worker.RunWorkerCompleted += (sender, args) => owner.Close();
 			worker.DoWork += (sender, args) => task(worker, args, owner);
 			worker.RunWorkerAsync();
-			while (!finished)
-			{
-				Application.DoEvents();
-				Thread.Sleep(10);
-			}
-
+			// We need a message loop
+			owner.ShowDialog();
 		}
 
 		[Test]
