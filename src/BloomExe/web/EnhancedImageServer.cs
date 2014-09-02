@@ -14,6 +14,9 @@ namespace Bloom.web
 	/// </summary>
 	public class EnhancedImageServer: ImageServer
 	{
+		private FileSystemWatcher _sampleTextsWatcher;
+		private bool _sampleTextsChanged = true;
+
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
 		public EnhancedImageServer(LowResImageCache cache): base(cache)
@@ -41,7 +44,14 @@ namespace Bloom.web
 			}
 			else if (localPath.StartsWith("directoryWatcher/"))
 			{
-				if (DirectoryWatcherHandler.HandleRequest(localPath, info, CurrentCollectionSettings)) return true;
+				var dirName = info.GetPostData()["dir"];
+
+				if (dirName == "Sample Texts")
+				{
+					if (CheckForSampleTextChanges(info)) return true;
+				}
+
+				return false;
 			}
 
 			switch (localPath)
@@ -66,14 +76,51 @@ namespace Bloom.web
 			{
 				// ignore
 			}
-			if (File.Exists(path))
-			{
-				info.ContentType = GetContentType(Path.GetExtension(localPath));
 
-				info.ReplyWithFileContent(path);
-				return true;
+			if (!File.Exists(path)) return false;
+
+			info.ContentType = GetContentType(Path.GetExtension(localPath));
+			info.ReplyWithFileContent(path);
+			return true;
+		}
+
+		private bool CheckForSampleTextChanges(IRequestInfo info)
+		{
+			if (_sampleTextsWatcher == null)
+			{
+				var path = Path.Combine(Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath), "Sample Texts");
+
+				_sampleTextsWatcher = new FileSystemWatcher {Path = path};
+				_sampleTextsWatcher.Created += SampleTextsOnChange;
+				_sampleTextsWatcher.Changed += SampleTextsOnChange;
+				_sampleTextsWatcher.Deleted += SampleTextsOnChange;
+				_sampleTextsWatcher.EnableRaisingEvents = true;
 			}
-			return false;
+
+			info.ContentType = "text/plain";
+			info.WriteCompleteOutput(_sampleTextsChanged ? "yes" : "no");
+
+			// reset the changed flag
+			_sampleTextsChanged = false;
+
+			return true;
+		}
+
+		private void SampleTextsOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
+		{
+			_sampleTextsChanged = true;
+		}
+
+		protected override void Dispose(bool fDisposing)
+		{
+			if (_sampleTextsWatcher != null)
+			{
+				_sampleTextsWatcher.EnableRaisingEvents = false;
+				_sampleTextsWatcher.Dispose();
+				_sampleTextsWatcher = null;
+			}
+
+			base.Dispose(fDisposing);
 		}
 	}
 }
