@@ -11,9 +11,7 @@ var DirectoryWatcher = (function () {
     */
     function DirectoryWatcher(directoryToWatch, refreshIntervalSeconds) {
         this.refreshInterval = 0;
-        this.previousData = {};
         this.changeEventHandlers = {};
-        this.initialRunComplete = false;
         this.directoryToWatch = directoryToWatch;
 
         if ((typeof refreshIntervalSeconds !== 'undefined') || (refreshIntervalSeconds > 0))
@@ -39,55 +37,17 @@ var DirectoryWatcher = (function () {
 
     /**
     * Process the headers returned.
-    * @param responseData A list of file names and header data (Content-Length and Last-Modified).
-    * Example: { "file1.txt": [ 1024, "2012-04-23T18:25:43.511Z" ], "file2.txt": [ 2048, "2012-04-23T18:25:43.511Z" ] }
+    * @param responseData 'yes' = changed, 'no' = not changed
     * @param {DirectoryWatcher} self
     */
-    DirectoryWatcher.prototype.compareNewAndOld = function (responseData, self) {
-        // there will be nothing to compare the first time
-        if (!self.initialRunComplete) {
-            self.initialRunComplete = true;
-            self.previousData = responseData;
-            self.restartTimer(self);
-            return;
-        }
-
-        var newKeys = Object.keys(responseData);
-        var oldKeys = Object.keys(self.previousData);
-
-        // check for new files
-        var newFiles = _.difference(newKeys, oldKeys);
-
-        // check for deleted files
-        var deletedFiles = _.difference(oldKeys, newKeys);
-
-        // check for changed files
-        var changedFiles = [];
-        var filesToCheck = _.intersection(newKeys, oldKeys);
-
-        for (var i = 0; i < filesToCheck.length; i++) {
-            // key is the file name
-            var key = filesToCheck[i];
-            var newInfo = responseData[key];
-            var oldInfo = this.previousData[key];
-
-            // index 0 = file size
-            // index 1 = last modified timestamp
-            if ((newInfo[0] !== oldInfo[0]) || (newInfo[1] !== oldInfo[1]))
-                changedFiles.push(key);
-        }
-
-        // remember for next time
-        self.previousData = responseData;
-
-        // was there a change?
-        var changed = ((newFiles.length > 0) || (deletedFiles.length > 0) || (changedFiles.length > 0));
+    DirectoryWatcher.prototype.ifChangedFireEvents = function (responseData, self) {
+        var changed = (responseData === 'yes');
 
         // if there were changes, call the registered onChanged handlers
         if (changed) {
             var handlers = Object.keys(self.changeEventHandlers);
             for (var j = 0; j < handlers.length; j++)
-                self.changeEventHandlers[handlers[j]](newFiles, deletedFiles, changedFiles);
+                self.changeEventHandlers[handlers[j]]();
         }
 
         self.restartTimer(self);
@@ -123,7 +83,7 @@ var DirectoryWatcher = (function () {
         // The data can be almost anything: an html document, a json object, a single
         // string or number, etc., whatever the "callback" function is expecting.
         $.ajax(ajaxSettings).done(function (data) {
-            self.compareNewAndOld(data, self);
+            self.ifChangedFireEvents(data, self);
         });
     };
 
