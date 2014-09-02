@@ -101,7 +101,7 @@
 			this.Controls.Add(this.htmlLabel1);
 			this.Controls.Add(this.dontShowThisAgainButton1);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
-			this._L10NSharpExtender.SetLocalizationComment(this, null);
+			this._L10NSharpExtender.SetLocalizationComment(this, "This is the title of a dialog about exporting a Bloom book to the InDesign XML format");
 			this._L10NSharpExtender.SetLocalizingId(this, "InDesignXmlInformationDialog.WindowTitle");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;

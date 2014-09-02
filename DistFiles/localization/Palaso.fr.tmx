@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="1.2.2.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">1.0.29.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.7.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+	<prop type="x-appversion">2.0.1070.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -45,6 +45,48 @@
 		<seg>Oui</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
+	  <note>Param 0 is a description of the things being deleted (e.g., "The selected files"</note>
+	  <tuv xml:lang="en">
+		<seg>{0} will be moved to the Recycle Bin.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>{0} sera déplacé à la corbeille.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="DialogBoxes.ConfirmRecycleDialog.MessageForSingleItem">
+	  <note>Param 0 is a file name</note>
+	  <tuv xml:lang="en">
+		<seg>{0} will be moved to the Recycle Bin.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>{0} sera déplacé à la corbeille.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
+	  <tuv xml:lang="en">
+		<seg>Confirm Delete</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Confirmer la suppression</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
+	  <tuv xml:lang="en">
+		<seg>&amp;Cancel</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Annuler</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
+	  <tuv xml:lang="en">
+		<seg>&amp;Delete</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Supprimer</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="ImageToolbox.ArtOfReading">
 	  <tuv xml:lang="en">
 		<seg>Art Of Reading</seg>
@@ -59,6 +101,15 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Appareil photo</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ImageToolbox.CopyExemplarMetadata">
+	  <note>Used to copy a previous metadata set to the current image. The  {0} will be replaced with the name of the exemplar image.</note>
+	  <tuv xml:lang="en">
+		<seg>Use {0}</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Utiliser {0}</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ImageToolbox.Crop">
@@ -191,6 +242,14 @@
 		<seg>Votre langue est-elle introuvable?</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
+	  <tuv xml:lang="en">
+		<seg>This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Cette liste doit inclure toutes les langues selon ISO-639, y inclus tous les noms alternatifs connus à ethnologue.com.\n\nSi nécessaire, utiliser l'option "Langue non répertoriée", qui est sélectionnée pour vous maintenant.</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
 	  <note>It's ok to change what this shows; the underlying destination will remain ethnologue.com</note>
 	  <tuv xml:lang="en">
@@ -205,7 +264,7 @@
 		<seg>About Language 639-3 Codes &amp; How To Apply For New Ones</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>À propos des codes de langue 639-3 et comment en demander de nouveaux</seg>
+		<seg>À propos des codes de langue 639-3 et comment en demander un nouveau</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LanguageLookup.CannotFindMyLanguageWindowTitle">
@@ -258,9 +317,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="LanguageLookup.LookupISOControl._searchText">
-	  <tuv xml:lang="en">
-		<seg>?</seg>
-	  </tuv>
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="fr">
 		<seg>?</seg>
 	  </tuv>
@@ -340,13 +397,14 @@
 	</tu>
 	<tu tuid="MetadataEditor.CopyrightHolder">
 	  <tuv xml:lang="en">
-		<seg>By</seg>
+		<seg>Copyright Holder</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Par</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="MetadataEditor.CopyrightYear">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Copyright Year</seg>
 	  </tuv>
@@ -379,6 +437,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="MetadataEditor.License">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>License</seg>
 	  </tuv>
@@ -388,7 +447,7 @@
 	</tu>
 	<tu tuid="MetadataEditor.TitleNoCredit">
 	  <tuv xml:lang="en">
-		<seg>Copyright, &amp; License</seg>
+		<seg>Copyright &amp; License</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Copyright et licence</seg>
@@ -418,12 +477,38 @@
 		<seg>Oui, si le résultat est aussi partagé</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="MetadataEditor.additionalRequestsLabel">
+	  <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
+	  <tuv xml:lang="en">
+		<seg>Additional Requests</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Demandes supplémentaires</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="MetadataEditor.betterLinkLabel1">
+	  <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.</note>
+	  <tuv xml:lang="en">
+		<seg>more info</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>plus d'informations</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
+	  <tuv xml:lang="en">
+		<seg>Not Enforceable</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Non exécutoire</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="SettingsProtection.AlsoHideOthersNotice">
 	  <tuv xml:lang="en">
 		<seg>This may also hide other buttons which are not needed by the non-advanced user.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Ceci pourrait éventuellemnt cacher d'autres boutons qui seront inutiles à l'utilisateur non avancé.</seg>
+		<seg>Ceci pourrait éventuellement cacher d'autres boutons qui seront inutiles à l'utilisateur non avancé.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="SettingsProtection.CtrlShiftHint">
@@ -505,6 +590,70 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Protection de la configuration</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="WSKeyboardControl.KeyboardNotListed">
+	  <tuv xml:lang="en">
+		<seg>If the keyboard you need is not listed, click the appropriate link below to set it up</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Si le clavier nécessaire ne figure pas dans la liste, cliquer sur le lien approprié ci-dessous pour l'installer.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="WSKeyboardControl.KeyboardSettingsLink">
+	  <tuv xml:lang="en">
+		<seg>Windows keyboard settings</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Configuration de clavier Windows</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="WSKeyboardControl.KeyboardsAvailable">
+	  <tuv xml:lang="en">
+		<seg>Available keyboards</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Claviers disponibles</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="WSKeyboardControl.KeyboardsPreviouslyUsed">
+	  <tuv xml:lang="en">
+		<seg>Previously used keyboards</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Claviers déjà utilisés</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="WSKeyboardControl.KeymanConfigurationLink">
+	  <tuv xml:lang="en">
+		<seg>Keyman Configuration</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Configuration Keyman</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="WSKeyboardControl.KeymanNotInstalled">
+	  <tuv xml:lang="en">
+		<seg>Keyman 5.0 or later is not Installed.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Keyman 5.0 ou ultérieure n'est pas installé.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="WSKeyboardControl.SelectKeyboardLabel">
+	  <tuv xml:lang="en">
+		<seg>Select the &amp;keyboard with which to type {0} text</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Sélectionner le clavier pour la saisie en langue {0}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="WSKeyboardControl.TestAreaCaption">
+	  <tuv xml:lang="en">
+		<seg>&amp;Test Area (Use this area to type something to test out your keyboard.)</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Zone d'essai (Utilser cette zone de taper quelque chose pour tester votre clavier.)</seg>
 	  </tuv>
 	</tu>
   </body>
