@@ -1,8 +1,10 @@
 /// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
+/// <reference path="getGlobalObject.ts"/>
 
-declare var localizationManager: any;
 declare var simpleAjaxGet: any;
+var global = getGlobalObject();
 
 interface qtipInterface extends JQuery {
     qtip(options: any): JQuery;
@@ -59,7 +61,7 @@ class StyleEditor {
     }
     MakeSmaller(target: HTMLElement) {
         this.ChangeSize(target, -2);
-        (<qtipInterface>$("div.bloom-editable, textarea")).qtip('reposition'); 
+        (<qtipInterface>$("div.bloom-editable, textarea")).qtip('reposition');
     }
 
     static MigratePreStyleBook(target: HTMLElement): string {
@@ -264,9 +266,10 @@ class StyleEditor {
         var editor = this;
         $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton'); // after we create it!
-        editor.AddQtipToElement(formatButton, localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style'), 1500);
+        var txt = localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style');
+        editor.AddQtipToElement(formatButton, txt, 1500);
         formatButton.click(function () {
-            simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
+                global.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
                 var box = $(targetBox);
@@ -428,9 +431,9 @@ class StyleEditor {
         } else if (parseInt(borderRadius) > 0) {
             blackRoundSelected = ' selected';
         } else {
-            blackSelected = ' selected';            
+            blackSelected = ' selected';
         }
-        
+
         var result = '<select id="borderSelect">';
 		result += '<option value="none"' + noneSelected + '>None</option>';
         result += '<option value="black"' + blackSelected + '>Black Border</option>';
