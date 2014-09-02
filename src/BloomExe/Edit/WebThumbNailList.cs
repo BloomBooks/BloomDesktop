@@ -719,7 +719,24 @@ namespace Bloom.Edit
 
 	    private GeckoNode GetFirstChildWithClass(GeckoElement parentElement, string targetClass)
 	    {
-		    return parentElement.ChildNodes.FirstOrDefault(e => e is GeckoElement && ((GeckoElement)e).Attributes["class"].TextContent.Contains(targetClass));
+			// Something here can be null when adding pages very quickly, possibly because something
+			// is incompletely constructed or in the course of being disposed? So be very careful.
+		    if (parentElement == null || parentElement.ChildNodes == null)
+			    return null;
+			var targetWithSpaces = " " + targetClass + " "; // search for this to avoid partial word matches
+		    return parentElement.ChildNodes.FirstOrDefault(e =>
+		    {
+			    var ge = e as GeckoElement;
+			    if (ge == null)
+				    return false;
+			    var attr = ge.Attributes["class"];
+			    if (attr == null)
+				    return false;
+				var content = " " + attr.TextContent + " "; // wrapping spaces allow us to find targetWithSpaces at start or end
+			    if (content == null)
+				    return false;
+				return content.Contains(targetWithSpaces);
+		    });
 	    }
 
 	    private Gecko.GeckoNode MakeGeckoNodeFromXmlNode(Gecko.GeckoDocument doc, XmlNode xmlElement)
