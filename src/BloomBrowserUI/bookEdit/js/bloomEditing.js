@@ -456,12 +456,12 @@ function SetupImageContainer(containerDiv) {
         if ($(this).height() < 80) {
             buttonModifier = 'smallImageButton';
         }
-        $(this).prepend("<button class='pasteImageButton " + buttonModifier + "' title='Paste Image'></button>");
-        $(this).prepend("<button class='changeImageButton " + buttonModifier + "' title='Change Image'></button>");
+        $(this).prepend('<button class="pasteImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
+        $(this).prepend('<button class="changeImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.ChangeImage") + '"></button>');
 
         var img = $(this).find('img');
         if (CreditsAreRelevantForImage(img)) {
-            $(this).prepend("<button class='editMetadataButton " + buttonModifier + "' title='Edit Image Credits, Copyright, & License'></button>");
+            $(this).prepend('<button class="editMetadataButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.EditMetadata") + '"></button>');
         }
 
         $(this).addClass('hoverUp');
