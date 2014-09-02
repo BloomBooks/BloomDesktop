@@ -5,13 +5,21 @@ html
 		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/bookEdit/accordion/accordion.css', type='text/css')
-		script(type='text/javascript') var localizationManagerDictionary = {};
+		script(src='/bloom/bookEdit/js/globalObject.js')
 		script(src='/bloom/lib/jquery-1.10.1.js')
 		script(src='/bloom/lib/jquery-ui-1.10.3.custom.min.js')
 		script(src='/bloom/bookEdit/js/editViewFrame.js')
 		script(src='/bloom/bookEdit/js/calledByCSharp.js')
 		script(type="text/javascript") .
 			var calledByCSharp = new CalledByCSharp();
+		script(type='text/javascript') .
+			var globalObject;
+			$(document).ready(function () {
+				// The globalObject needs to be initialized before the child documents are loaded.
+				globalObject = new GlobalObject();
+				document.getElementById('page').src = '/bloom/currentPageContent';
+				document.getElementById('accordion').src = '/bloom/accordionContent';
+			});
 		style(type='text/css')
 			html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
 			body { overflow:hidden }
@@ -21,8 +29,8 @@ html
 			.no-accordion #right { display: none;}
 	body.no-accordion
 		#right
-			iframe#accordion(width='100%', height='100%', src='/bloom/accordionContent') .
+			iframe#accordion(width='100%', height='100%', src='') .
 				Your browser does not support iframes.
 		#left
-			iframe#page(width='100%', height='100%', src='/bloom/currentPageContent') .
+			iframe#page(width='100%', height='100%', src='') .
 				Your browser does not support iframes.
