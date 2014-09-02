@@ -108,9 +108,13 @@ function addClickHandler() {
 }
 
 function closeClickHandler() {
-    if (!$('.split-pane'))
-        // We're at the topmost element; don't allow deletion
+    if (!$('.split-pane').length) {
+        // We're at the topmost element
+        var marginBox = $(this).closest('.marginBox');
+        marginBox.empty();
+        marginBox.append(getSplitPaneComponentInner());
         return;
+    }
 
     var myComponent = $(this).closest('.split-pane-component');
     var sibling = myComponent.siblings('.split-pane-component').first('div');
@@ -151,11 +155,11 @@ function getButtons() {
     var buttons = $('<div class="origami-buttons bloom-ui origami-ui"></div>');
     buttons.append(getHSplitButton(true))
         .append('&nbsp;')
-        .append(getVSplitButton())
-        .append('&nbsp;')
         .append(getHSplitButton())
         .append('&nbsp;')
         .append(getVSplitButton(true))
+        .append('&nbsp;')
+        .append(getVSplitButton())
         .append('&nbsp;')
         .append(getCloseButton());
     return buttons;
@@ -163,23 +167,23 @@ function getButtons() {
 function getVSplitButton(left) {
     var vSplitButton;
     if (left)
-        vSplitButton = $('<a class="button bloom-purple splitter-left">&lt;</a>');
+        vSplitButton = $('<a class="button bloom-purple splitter-left">&#65513;</a>');
     else
-        vSplitButton = $('<a class="button bloom-purple splitter-right">&gt;</a>');
+        vSplitButton = $('<a class="button bloom-purple splitter-right">&#65515;</a>');
     vSplitButton.click(splitClickHandler);
     return vSplitButton;
 }
 function getHSplitButton(top) {
     var hSplitButton;
     if (top)
-        hSplitButton = $('<a class="button bloom-purple splitter-top">&#94;</a>');
+        hSplitButton = $('<a class="button bloom-purple splitter-top">&#65514;</a>');
     else
-        hSplitButton = $('<a class="button bloom-purple splitter-bottom">v</a>');
+        hSplitButton = $('<a class="button bloom-purple splitter-bottom">&#65516;</a>');
     hSplitButton.click(splitClickHandler);
     return hSplitButton;
 }
 function getCloseButton() {
-    var closeButton = $('<a class="button bloom-purple close">&times;</a>');
+    var closeButton = $('<a class="button bloom-purple close">&#10005;</a>');
     closeButton.click(closeClickHandler);
     return closeButton;
 }
