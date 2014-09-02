@@ -428,6 +428,7 @@ UL.toolbox LI
 {
 	/* 'top' is added by javascript (StyleEditor.AttachLanguageTip) based on the height of the element */
 	margin-right: 1px;
+	text-align: right;
 }
 .bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):not(:focus):after
 {
