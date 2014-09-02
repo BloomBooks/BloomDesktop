@@ -308,23 +308,23 @@ var StyleEditor = (function () {
                 $('#fontSelect').change(function () {
                     editor.changeFont();
                 });
-                editor.AddQtipToElement($('#fontSelect'), 'Change the font face', 1500);
+                editor.AddQtipToElement($('#fontSelect'), localizationManager.getText('StyleEditor.FontFaceToolTip', 'Change the font face'), 1500);
                 $('#sizeSelect').change(function () {
                     editor.changeSize();
                 });
-                editor.AddQtipToElement($('#sizeSelect'), 'Change the font size', 1500);
+                editor.AddQtipToElement($('#sizeSelect'), localizationManager.getText('StyleEditor.FontSizeToolTip', 'Change the font size'), 1500);
                 $('#lineHeightSelect').change(function () {
                     editor.changeLineheight();
                 });
-                editor.AddQtipToElement($('#lineHeightSelect').parent(), 'Change the spacing between lines of text', 1500);
+                editor.AddQtipToElement($('#lineHeightSelect').parent(), localizationManager.getText('StyleEditor.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
                 $('#wordSpaceSelect').change(function () {
                     editor.changeWordSpace();
                 });
-                editor.AddQtipToElement($('#wordSpaceSelect').parent(), 'Change the spacing between words', 1500);
+                editor.AddQtipToElement($('#wordSpaceSelect').parent(), localizationManager.getText('StyleEditor.WordSpacingToolTip', 'Change the spacing between words'), 1500);
                 $('#borderSelect').change(function () {
                     editor.changeBorderSelect();
                 });
-                editor.AddQtipToElement($('#borderSelect').parent(), 'Change the border and background', 1500);
+                editor.AddQtipToElement($('#borderSelect').parent(), localizationManager.getText('StyleEditor.BorderToolTip', 'Change the border and background'), 1500);
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
 
