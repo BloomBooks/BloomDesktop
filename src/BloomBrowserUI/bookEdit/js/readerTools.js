@@ -644,7 +644,6 @@ ReaderToolsModel.prototype.saveState = function() {
     if (isNaN(active)) return;
 
     var state = new DRTState();
-    state.active = accordion.accordion('option', 'active');
     state.stage = this.stageNumber;
     state.level = this.levelNumber;
     state.markupType = this.currentMarkupType;
@@ -662,7 +661,6 @@ ReaderToolsModel.prototype.restoreState = function() {
     var state = libsynphony.dbGet('drt_state');
     if (!state) state = new DRTState();
 
-    accordion.accordion('option', 'active', state.active);
     this.currentMarkupType = state.markupType;
     this.setStageNumber(state.stage);
     this.setLevelNumber(state.level);
@@ -722,7 +720,6 @@ function initializeLeveledRT() {
 }
 
 function DRTState() {
-    this.active = 0;
     this.stage = 1;
     this.level = 1;
     this.markupType = MarkupType.Decodable;
