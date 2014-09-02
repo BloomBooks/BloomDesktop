@@ -29,13 +29,10 @@
  */
 function LocalizationManager() {
 
-    this.dictionary = {};
-
-    // get the dictionary from the main document, if present
-    if (typeof localizationManagerDictionary === 'object')
-        this.dictionary = localizationManagerDictionary;
-    else if (typeof window.parent.localizationManagerDictionary === 'object')
-        this.dictionary = window.parent.localizationManagerDictionary;
+    if (typeof getGlobalObject === 'function')
+        this.dictionary = getGlobalObject().localizationManagerDictionary;
+    else
+        this.dictionary = {};
 }
 
 /**
@@ -45,8 +42,9 @@ function LocalizationManager() {
  * property value is the default value/english text. If keyValuePairs is omitted, all dictionary entries will be
  * returned, otherwise only the requested entries will be returned.
  * @param [elementsToLocalize]
+ * @param {Function} [callbackDone] Optional function to call when done.
  */
-LocalizationManager.prototype.loadStrings = function (keyValuePairs, elementsToLocalize) {
+LocalizationManager.prototype.loadStrings = function (keyValuePairs, elementsToLocalize, callbackDone) {
 
     // NOTE: This function is not used in Bloom 2.0, but will be used in Bloom 2.1
 
@@ -56,11 +54,18 @@ LocalizationManager.prototype.loadStrings = function (keyValuePairs, elementsToL
     $.ajax(ajaxSettings)
         .done(function (data) {
             localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
-            if (elementsToLocalize) {
+
+            // if callback is passes without a list of elements to localize...
+            if (typeof elementsToLocalize === 'function') {
+                elementsToLocalize()
+            }
+            else if (elementsToLocalize) {
                 $(elementsToLocalize).each(function() {
                     localizationManager.setElementText(this);
                 });
+                if (typeof callbackDone === 'function') callbackDone();
             }
+            else if (typeof callbackDone === 'function') callbackDone();
         });
 };
 
@@ -154,7 +159,7 @@ LocalizationManager.prototype.getVernacularLang = function () {
 
 LocalizationManager.prototype.getLanguageName = function(iso) {
     return this.getText(iso);
-}
+};
 
 var localizationManager = new LocalizationManager();
 
