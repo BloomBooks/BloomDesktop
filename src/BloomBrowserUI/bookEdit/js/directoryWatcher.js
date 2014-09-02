@@ -14,7 +14,7 @@ var DirectoryWatcher = (function () {
         this.changeEventHandlers = {};
         this.directoryToWatch = directoryToWatch;
 
-        if ((typeof refreshIntervalSeconds !== 'undefined') || (refreshIntervalSeconds > 0))
+        if ((typeof refreshIntervalSeconds !== 'undefined') && (refreshIntervalSeconds > 0))
             this.refreshInterval = Math.ceil(refreshIntervalSeconds);
     }
     DirectoryWatcher.prototype.start = function () {
@@ -78,10 +78,7 @@ var DirectoryWatcher = (function () {
         if (postKeyValueDataObject)
             ajaxSettings['data'] = postKeyValueDataObject;
 
-        // If/when the ajax call returns a response, the entire contents of the response
-        // will be passed to the function that was passed in the "callback" parameter.
-        // The data can be almost anything: an html document, a json object, a single
-        // string or number, etc., whatever the "callback" function is expecting.
+        // we are expecting the value returned in 'data' to be either 'yes' or 'no'
         $.ajax(ajaxSettings).done(function (data) {
             self.ifChangedFireEvents(data, self);
         });
@@ -89,8 +86,7 @@ var DirectoryWatcher = (function () {
 
     /**
     * Adds a listener for the changed event.
-    * @param listenerNameAndContext Name and context that identifies this handler. The handler will be called with
-    * these parameters: handler(newFiles, deletedFiles, changedFiles)
+    * @param listenerNameAndContext Name and context that identifies this handler.
     * @param handler Function to call
     */
     DirectoryWatcher.prototype.onChanged = function (listenerNameAndContext, handler) {
