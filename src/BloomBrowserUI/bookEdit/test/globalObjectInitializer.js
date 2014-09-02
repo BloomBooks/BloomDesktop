@@ -1,0 +1,1 @@
+var globalObject = new GlobalObject();
