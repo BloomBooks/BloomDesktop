@@ -297,6 +297,8 @@ function displayLetters() {
     var letters = (document.getElementById('dls_letters').value.trim() + ' ' + document.getElementById('dls_letter_combinations').value.trim()).split(' ');
     letters = letters.filter(function(n){ return n !== ''; });
 
+    // If there are no letters, skip updating the contents of #setup-selected-letters. This leaves it showing the
+    // message in the original file, which encourages users to set up an alphabet.
     if (letters.length === 0) return;
 
     /**
