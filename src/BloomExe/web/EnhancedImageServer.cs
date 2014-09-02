@@ -53,9 +53,15 @@ namespace Bloom.web
 					info.ContentType = "text/html";
 					info.WriteCompleteOutput(AccordionContent ?? "");
 					return true;
+					
 				case "availableFontNames":
 					InstalledFontCollection installedFontCollection = new InstalledFontCollection();
 					info.WriteCompleteOutput(string.Join(",", installedFontCollection.Families.Select(f => f.Name)));
+					return true;
+
+				case "help":
+					var post = info.GetPostData();
+					HelpLauncher.Show(null, post["data"]);
 					return true;
 			}
 

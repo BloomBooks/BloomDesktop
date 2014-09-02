@@ -33,7 +33,7 @@ namespace Bloom.Publish
 		private bool _usingCcControls = true;
 
 		private string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
-			"Please set this from the edit tab");
+			"Please set this from the edit tab", "This shows next to the license, if the license has not yet been set.");
 		public BloomLibraryPublishControl(PublishView parentView, BookTransfer bookTransferrer, LoginDialog login, Book.Book book)
 		{
 			_parentView = parentView;
@@ -77,7 +77,7 @@ namespace Bloom.Publish
 			else if (license is NullLicense)
 			{
 				_usingCcControls = false;
-				_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AllReserved", "All rights reserved (Contact the Copyright holder for any permissions");
+				_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AllReserved", "All rights reserved (Contact the Copyright holder for any permissions.)");
 				if (!string.IsNullOrWhiteSpace(license.RightsStatement))
 				{
 					_licenseNotesLabel.Text += Environment.NewLine + license.RightsStatement;
@@ -108,7 +108,7 @@ namespace Bloom.Publish
 			{
 			    Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
 			        LocalizationManager.GetString("PublishTab.Upload.LoginFailure",
-			            "Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection"));
+			            "Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection."));
 			}
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
 			RequireValue(_copyrightLabel);

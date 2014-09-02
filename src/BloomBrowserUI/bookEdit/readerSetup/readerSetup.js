@@ -9,6 +9,7 @@ var currentSightWords;
 function accordionWindow() {
     return window.parent.document.getElementById('accordion').contentWindow;
 }
+
 /**
  * Respond to messages from the parent document
  * @param {Event} event
@@ -28,7 +29,30 @@ function processMessage(event) {
             return;
 
         case 'Files':
-            document.getElementById('dls_word_lists').value = params[1].replace(/\r/g, '\n');
+            var s = params[1];
+            if (s.length > 0) {
+
+                var files = s.split('\r');
+                var extensions = getGlobalObject().readableFileExtensions;
+                var notSupported = document.getElementById('format_not_supported').innerHTML;
+                var foundNotSupported = false;
+                files.forEach(function(element, index, array) {
+                    var ext = element.split('.').pop();
+                    if (extensions.indexOf(ext) === -1) {
+                        array[index] = element + ' ' + '<span class="format-not-supported">' + notSupported + '</span>';
+                        foundNotSupported = true;
+                    }
+                });
+                s = files.join('\r');
+
+                if (foundNotSupported)
+                    document.getElementById('how_to_export').style.display = '';
+            }
+
+
+            var fileList = s || document.getElementById('please-add-texts').innerHTML;
+
+            document.getElementById('dls_word_lists').innerHTML = fileList.replace(/\r/g, '<br>');
             return;
 
         case 'Words':
@@ -128,7 +152,7 @@ function saveClicked() {
     accordionWindow().postMessage('Refresh\n' + settingsStr, '*');
 
     // save now
-    simpleAjaxPost('/bloom/readers/saveReaderToolSettings', parent.window.closeSetupDialog, settingsStr);
+    getGlobalObject().simpleAjaxPost('/bloom/readers/saveReaderToolSettings', parent.window.closeSetupDialog, settingsStr);
 }
 
 function getLevelValue(innerHTML) {
@@ -159,7 +183,6 @@ function loadReaderSetupData(jsonData) {
     if (!data.moreWords) data.moreWords = '';
     if (!data.stages) data.stages = [];
     if (!data.levels) data.levels = [];
-
 
     // language tab
     document.getElementById('dls_letters').value = data.letters;
@@ -198,7 +221,6 @@ function loadReaderSetupData(jsonData) {
     tbodyLevels.find('tr').onOnce('click', function() {
         selectLevel(this);
     });
-
 }
 
 /**
@@ -211,7 +233,7 @@ function selectStage(tr) {
 
     var currentStage = tr.cells[0].innerHTML;
     document.getElementById('setup-stage-number').innerHTML = currentStage;
-    document.getElementById('remove-stage-number').innerHTML = currentStage;
+    document.getElementById('setup-remove-stage').innerHTML = localizationManager.getText('ReaderSetup.RemoveStage', 'Remove Stage {0}', currentStage);
     document.getElementById('setup-stage-sight-words').value = tr.cells[2].innerHTML;
 
     $('#stages-table').find('tbody tr.selected').removeClass('selected').addClass('linked');
@@ -274,6 +296,10 @@ function displayLetters() {
 
     var letters = (document.getElementById('dls_letters').value.trim() + ' ' + document.getElementById('dls_letter_combinations').value.trim()).split(' ');
     letters = letters.filter(function(n){ return n !== ''; });
+
+    // If there are no letters, skip updating the contents of #setup-selected-letters. This leaves it showing the
+    // message in the original file, which encourages users to set up an alphabet.
+    if (letters.length === 0) return;
 
     /**
      * If there are more than 42 letters the parent div containing the letter divs will scroll vertically, so the
@@ -393,24 +419,31 @@ function renumberRows(rows) {
  * Called to update the stage numbers on the screen after rows are reordered.
  */
 function updateStageNumbers() {
-    updateNumbers('stages-table', 'setup-stage-number', 'remove-stage-number');
+    updateNumbers('stages-table');
 }
 
 /**
  * Called to update the level numbers on the screen after rows are reordered.
  */
 function updateLevelNumbers() {
-    updateNumbers('levels-table', 'setup-level-number', 'remove-level-number');
+    updateNumbers('levels-table');
 }
 
-function updateNumbers(tableId, setupNumberId, removeNumberId) {
+function updateNumbers(tableId) {
     var tbody = $('#' + tableId).find('tbody');
     var rows = tbody.find('tr');
     renumberRows(rows);
 
     var currentStage = tbody.find('tr.selected td:nth-child(1)').html();
-    $('#' + setupNumberId).innerHTML = currentStage;
-    $('#' + removeNumberId).innerHTML = currentStage;
+
+    if (tableId === 'levels-table') {
+        document.getElementById('setup-level-number').innerHTML = currentStage;
+        document.getElementById('setup-remove-level').innerHTML = localizationManager.getText('ReaderSetup.RemoveLevel', 'Remove Level {0}', currentStage);
+    }
+    else {
+        document.getElementById('setup-stage-number').innerHTML = currentStage;
+        document.getElementById('setup-remove-stage').innerHTML = localizationManager.getText('ReaderSetup.RemoveStage', 'Remove Stage {0}', currentStage);
+    }
 }
 
 function displayWordsForSelectedStage(wordsStr) {
@@ -505,9 +538,9 @@ function selectLevel(tr) {
 
     if (tr.classList.contains('selected')) return;
 
-    var currentStage = tr.cells[0].innerHTML;
-    document.getElementById('setup-level-number').innerHTML = currentStage;
-    document.getElementById('remove-level-number').innerHTML = currentStage;
+    var currentLevel = tr.cells[0].innerHTML;
+    document.getElementById('setup-level-number').innerHTML = currentLevel;
+    document.getElementById('setup-remove-level').innerHTML = localizationManager.getText('ReaderSetup.RemoveLevel', 'Remove Level {0}', currentLevel);
 
     $('#levels-table').find('tbody tr.selected').removeClass('selected').addClass('linked');
     $(tr).removeClass('linked').addClass('selected');
@@ -598,6 +631,12 @@ function storeThingsToRemember() {
     $('#levels-table').find('tbody tr.selected td:nth-child(6)').html(vals.join('\n'));
 }
 
+function firstSetupLetters() {
+
+    $('#dlstabs').tabs('option', 'active', 0);
+    return false;
+}
+
 /**
  * Event handlers
  *
@@ -661,28 +700,14 @@ if (typeof ($) === "function") {
 }
 
 /**
- * Retrieve data from localhost
- * @param {String} url The URL to request
- * @param {Function} callback Function to call when the ajax request returns
- * @param {String} [dataValue] Passed in the post under the "data" key
+ * Called after localized strings are loaded.
  */
-function simpleAjaxPost(url, callback, dataValue) {
-
-    var ajaxSettings = {type: 'POST', url: url};
-    if (dataValue) ajaxSettings.data = {data: dataValue};
-
-    // If/when the ajax call returns a response, the entire contents of the response
-    // will be passed to the function that was passed in the "callback" parameter.
-    // The data can be almost anything: an html document, a json object, a single
-    // string or number, etc., whatever the "callback" function is expecting.
-    $.ajax(ajaxSettings)
-        .done(function (data) {
-            callback(data);
-        });
+function finishInitializing() {
+    $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
+    $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
+    accordionWindow().postMessage('Texts', '*');
 }
 
 $(document).ready(function () {
-    accordionWindow().postMessage('Texts', '*');
-    $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
-    $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
+    $('body').find('*[data-i18n]').localize(finishInitializing);
 });
