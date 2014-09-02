@@ -246,7 +246,7 @@ var StyleEditor = (function () {
         var formatButton = $('#formatButton');
         editor.AddQtipToElement(formatButton, localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style'), 1500);
         formatButton.click(function () {
-            simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
+            getGlobalObject().simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
                 var box = $(targetBox);
