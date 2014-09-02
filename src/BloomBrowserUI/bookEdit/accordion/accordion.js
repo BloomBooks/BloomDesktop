@@ -83,7 +83,8 @@ function restoreAccordionSettings(settings) {
 
 /**
  * This function requests one panel, and then sets itself up to be called again after the panel is loaded. If there
- * are no more panels to load it activates the last panel displayed, as long as it isn't the "More" panel.
+ * are no more panels to load, it attempts to activate the panel whose "data-panelId" attribute is equal to the value
+ * of "currentPanel" (the last panel displayed).
  * @param {Array} panels An array of arrays.
  * @param {String} currentPanel
  */
@@ -101,13 +102,14 @@ function loadPanelsAndSetCurrent(panels, currentPanel) {
         return;
     }
 
-    // there are no more panels, so set the current one
+    // If you are here, there are no more panels to load, so try to make the "currentPanel" active.
+    // NOTE: panels without a "data-panelId" attribute (such as the More panel) cannot be the "currentPanel."
     var idx = '0';
     var accordion = $('#accordion');
 
     if (currentPanel) {
 
-        // find the index of the panel with the 'current' id
+        // find the index of the panel whose "data-panelId" attribute equals the value of "currentPanel"
         accordion.find('> h3').each(function() {
             if ($(this).data('panelId') === currentPanel) {
 
@@ -131,7 +133,7 @@ function loadPanelsAndSetCurrent(panels, currentPanel) {
     // turn animation back on
     accordion.accordion('option', 'animate', ani);
 
-    // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
+    // when a panel is activated, save its data-panelId so state can be restored when Bloom is restarted.
     accordion.onOnce('accordionactivate.accordion', function(event, ui) {
 
         if (ui.newHeader.data('panelId'))
