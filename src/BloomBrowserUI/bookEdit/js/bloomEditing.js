@@ -1458,10 +1458,6 @@ function SetupElements(container) {
 // Only put setup code here which is guaranteed to only be run once per page load.
 // e.g. Don't put setup for elements such as image containers or editable boxes which may get added after page load.
 function OneTimeSetup() {
-
-    //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
-    Cleanup();
-
     setupOrigami();
 }
 
@@ -1491,6 +1487,9 @@ $(document).ready(function() {
             return this.indexOf(str) == 0;
         };
     }
+
+    //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
+    Cleanup();
 
     SetupElements($('body'));
     OneTimeSetup();

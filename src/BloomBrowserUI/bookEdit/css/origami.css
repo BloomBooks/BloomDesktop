@@ -67,6 +67,8 @@
   font-weight: bold;
   color: #E48C84;
   background-color: white;
+  line-height: 1em;
+  font-size: 18px;
 }
 
 .origami-buttons .button:hover, .origami-buttons .button:focus {

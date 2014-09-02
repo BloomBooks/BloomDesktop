@@ -1,9 +1,9 @@
 $(function() {
     $('div.split-pane').splitPane();
 });
-$(window).load(function() {
+//$(window).load(function() {
 //    $('.add').click(addClickHandler);
-});
+//});
 
 function setupOrigami() {
     $('.customPage').append(function() {
@@ -59,20 +59,31 @@ function setupLayoutMode() {
 // Event handler to split the current box in half (vertically or horizontally)
 function splitClickHandler() {
     var myInner = $(this).closest('.split-pane-component-inner');
-    var newSplitPane;
-    if ($(this).hasClass('vertical')) {
-        myInner.wrap(getSplitPaneHtml('vertical'));
-        myInner.wrap(getSplitPaneComponentHtml('left'));
-        newSplitPane = myInner.closest('.split-pane');
-        newSplitPane.append(getSplitPaneDividerHtml('vertical'));
-        newSplitPane.append(getSplitPaneComponentWithNewContent('right'));
-    } else {
-        myInner.wrap(getSplitPaneHtml('horizontal'));
-        myInner.wrap(getSplitPaneComponentHtml('top'));
-        newSplitPane = myInner.closest('.split-pane');
-        newSplitPane.append(getSplitPaneDividerHtml('horizontal'));
-        newSplitPane.append(getSplitPaneComponentWithNewContent('bottom'));
-    }
+    if ($(this).hasClass('splitter-top'))
+        performSplit2(myInner, 'horizontal', 'bottom', 'top');
+    else if ($(this).hasClass('splitter-right'))
+        performSplit(myInner, 'vertical', 'left', 'right');
+    else if ($(this).hasClass('splitter-bottom'))
+        performSplit(myInner, 'horizontal', 'top', 'bottom');
+    else if ($(this).hasClass('splitter-left'))
+        performSplit2(myInner, 'vertical', 'right', 'left');
+}
+
+function performSplit(innerElement, verticalOrHorizontal, existingContentPosition, newContentPosition) {
+    innerElement.wrap(getSplitPaneHtml(verticalOrHorizontal));
+    innerElement.wrap(getSplitPaneComponentHtml(existingContentPosition));
+    var newSplitPane = innerElement.closest('.split-pane');
+    newSplitPane.append(getSplitPaneDividerHtml(verticalOrHorizontal));
+    newSplitPane.append(getSplitPaneComponentWithNewContent(newContentPosition));
+    newSplitPane.splitPane();
+}
+
+function performSplit2(innerElement, verticalOrHorizontal, existingContentPosition, newContentPosition) {
+    innerElement.wrap(getSplitPaneHtml(verticalOrHorizontal));
+    innerElement.wrap(getSplitPaneComponentHtml(existingContentPosition));
+    var newSplitPane = innerElement.closest('.split-pane');
+    newSplitPane.prepend(getSplitPaneDividerHtml(verticalOrHorizontal));
+    newSplitPane.prepend(getSplitPaneComponentWithNewContent(newContentPosition));
     newSplitPane.splitPane();
 }
 
@@ -118,19 +129,19 @@ function closeClickHandler() {
 function getSplitPaneHtml(verticalOrHorizontal) {
     return $('<div class="split-pane ' + verticalOrHorizontal + '-percent"></div>');
 }
-function getSplitPaneComponentHtml(leftOrRight) {
-    return $('<div class="split-pane-component position-' + leftOrRight + '"></div>');
+function getSplitPaneComponentHtml(position) {
+    return $('<div class="split-pane-component position-' + position + '"></div>');
 }
 function getSplitPaneDividerHtml(verticalOrHorizontal) {
     return $('<div class="split-pane-divider ' + verticalOrHorizontal + '-divider origami-ui"></div>');
 }
-function getSplitPaneComponentWithNewContent(rightOrBottom) {
-    var spc = $('<div class="split-pane-component position-' + rightOrBottom + '">');
+function getSplitPaneComponentWithNewContent(position) {
+    var spc = $('<div class="split-pane-component position-' + position + '">');
     spc.append(getSplitPaneComponentInner());
     return spc;
 }
 function getSplitPaneComponentInner() {
-    var spci = $('<div class="split-pane-component-inner"><div class="box-header"></div></div>');
+    var spci = $('<div class="split-pane-component-inner"><div class="box-header bloom-translation"></div></div>');
     spci.append(getTypeSelectors());
     spci.append(getButtons());
     return spci;
@@ -138,25 +149,37 @@ function getSplitPaneComponentInner() {
 
 function getButtons() {
     var buttons = $('<div class="origami-buttons bloom-ui origami-ui"></div>');
-    buttons.append(getVSplitButton())
+    buttons.append(getHSplitButton(true))
+        .append('&nbsp;')
+        .append(getVSplitButton())
         .append('&nbsp;')
         .append(getHSplitButton())
+        .append('&nbsp;')
+        .append(getVSplitButton(true))
         .append('&nbsp;')
         .append(getCloseButton());
     return buttons;
 }
-function getVSplitButton() {
-    var vSplitButton = $('<a class="button bloom-purple splitter vertical">&#124;</a>');
+function getVSplitButton(left) {
+    var vSplitButton;
+    if (left)
+        vSplitButton = $('<a class="button bloom-purple splitter-left">&lt;</a>');
+    else
+        vSplitButton = $('<a class="button bloom-purple splitter-right">&gt;</a>');
     vSplitButton.click(splitClickHandler);
     return vSplitButton;
 }
-function getHSplitButton() {
-    var hSplitButton = $('<a class="button bloom-purple splitter horizontal">&#8212;&#8212;</a>');
+function getHSplitButton(top) {
+    var hSplitButton;
+    if (top)
+        hSplitButton = $('<a class="button bloom-purple splitter-top">&#94;</a>');
+    else
+        hSplitButton = $('<a class="button bloom-purple splitter-bottom">v</a>');
     hSplitButton.click(splitClickHandler);
     return hSplitButton;
 }
 function getCloseButton() {
-    var closeButton = $('<a class="button bloom-purple close">&#215;</a>');
+    var closeButton = $('<a class="button bloom-purple close">&times;</a>');
     closeButton.click(closeClickHandler);
     return closeButton;
 }
@@ -184,5 +207,5 @@ function makePictureFieldClickHandler(e) {
     imageContainer.append(image);
     $(this).closest('.split-pane-component-inner').append(imageContainer);
     $(this).closest('.selector-links').remove();
-    //TODO: figure out what (else) needs to get hooked up immediately, e.g. pictures resize when added but not when slider moves
+    //TODO: figure out what (else) needs to get hooked up immediately, e.g. pictures currently resize when added but not when slider moves
 }
