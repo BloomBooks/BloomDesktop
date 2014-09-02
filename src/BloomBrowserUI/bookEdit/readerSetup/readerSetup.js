@@ -702,14 +702,10 @@ function finishInitializing() {
 
 /**
  * This method is called whenever a change is detected in the Sample Files directory
- * @param {String[]} newFiles Names of new files
- * @param {String[]} deletedFiles Names of deleted files
- * @param {String[]} changedFiles Names of changed files
  */
-function sampleFilesChanged(newFiles, deletedFiles, changedFiles) {
+function sampleFilesChanged() {
 
     console.log('Changed');
-    console.log(arguments);
 
 }
 

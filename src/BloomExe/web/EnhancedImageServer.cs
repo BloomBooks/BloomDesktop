@@ -102,12 +102,14 @@ namespace Bloom.web
 				_sampleTextsWatcher.EnableRaisingEvents = true;
 			}
 
-			info.ContentType = "text/plain";
-			info.WriteCompleteOutput(_sampleTextsChanged ? "yes" : "no");
+			var hasChanged = _sampleTextsChanged;
 
 			// reset the changed flag
-			_sampleTextsChanged = false;
+			if (hasChanged) _sampleTextsChanged = false;
 
+			info.ContentType = "text/plain";
+			info.WriteCompleteOutput(hasChanged ? "yes" : "no");
+			
 			return true;
 		}
 
@@ -118,11 +120,14 @@ namespace Bloom.web
 
 		protected override void Dispose(bool fDisposing)
 		{
-			if (_sampleTextsWatcher != null)
+			if (fDisposing)
 			{
-				_sampleTextsWatcher.EnableRaisingEvents = false;
-				_sampleTextsWatcher.Dispose();
-				_sampleTextsWatcher = null;
+				if (_sampleTextsWatcher != null)
+				{
+					_sampleTextsWatcher.EnableRaisingEvents = false;
+					_sampleTextsWatcher.Dispose();
+					_sampleTextsWatcher = null;
+				}
 			}
 
 			base.Dispose(fDisposing);
