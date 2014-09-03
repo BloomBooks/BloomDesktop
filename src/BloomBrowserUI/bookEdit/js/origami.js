@@ -33,7 +33,7 @@ function setupOrigami() {
             toggle.removeClass('layout-mode');
             toggle.addClass('edit-mode');
 
-            fireCSharpEditEvent('reloadPageEvent', '');
+            fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
         }
     });
 }
@@ -199,7 +199,9 @@ function getTypeSelectors() {
 }
 function makeTextFieldClickHandler(e) {
     e.preventDefault();
-    var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement normal-style"><div lang="z" class="bloom-content1 bloom-editable"></div></div>');
+    //note, we're leaving it to some other part of the system, later, to add the needed .bloom-editable
+    //   divs (and set the right classes on them) inside of this new .bloom-translationGroup.
+    var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement normal-style"></div>');
     $(this).closest('.split-pane-component-inner').append(translationGroup);
     $(this).closest('.selector-links').remove();
     //TODO: figure out if anything needs to get hooked up immediately

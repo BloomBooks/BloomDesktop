@@ -1557,14 +1557,23 @@ namespace Bloom.Book
 		/// </summary>
 		public void PrepareForEditing()
 		{
-			// I may re-enable this later....			RebuildXMatter(RawDom);
+			//We could re-enable RebuildXMatter() here later, so that we get this nice refresh each time.
+			//But currently this does some really slow image compression:	RebuildXMatter(RawDom);
+			UpdateEditableAreasOfElement(OurHtmlDom);
+		}
 
+		/// <summary>
+		/// This is called both for the whole book, and for individual pages when the user uses Origami to make changes to the layout of the page
+		/// </summary>
+		/// <param name="elementToUpdate"></param>
+		public void UpdateEditableAreasOfElement(HtmlDom elementToUpdate)
+		{
 			var language1Iso639Code = _collectionSettings.Language1Iso639Code;
 			var language2Iso639Code = _collectionSettings.Language2Iso639Code;
 			var language3Iso639Code = _collectionSettings.Language3Iso639Code;
 			var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2;
 			var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3;
-		   foreach (XmlElement div in OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			foreach (XmlElement div in elementToUpdate.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				TranslationGroupManager.PrepareElementsInPageOrDocument(div, _collectionSettings);
 				TranslationGroupManager.UpdateContentLanguageClasses(div, language1Iso639Code, language2Iso639Code, language3Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);
