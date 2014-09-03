@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">2.0.000.0</prop>
+    <prop type="x-appversion">3.0.000.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -81,6 +81,18 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>About Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.DecodableReaderToolCheckbox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader Tool</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.LeveledReaderToolCheckbox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader Tool</seg>
       </tuv>
     </tu>
     <tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
@@ -543,6 +555,30 @@
         <seg>&amp;Delete</seg>
       </tuv>
     </tu>
+    <tu tuid="DecodableReaderTool.SetUpStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Stages</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.Stage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage 1 of 2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.StageOf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg> of 2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.Title">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader Tool</seg>
+      </tuv>
+    </tu>
     <tu tuid="Download.Completed">
       <tuv xml:lang="en">
         <seg>Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
@@ -705,6 +741,12 @@
         <seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.LayoutMode.ChangeLayout">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Layout</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.NoImageFoundOnClipboard">
       <tuv xml:lang="en">
         <seg>Before you can paste an image, copy one onto your 'clipboard', from another program.</seg>
@@ -718,6 +760,12 @@
     <tu tuid="EditTab.PageSizeAndOrientation.Tooltip">
       <tuv xml:lang="en">
         <seg>Choose a page size and orientation</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditorTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Adjust formatting for style</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.TemplatePagesList.Heading">
@@ -1391,6 +1439,16 @@
         <seg>Notice</seg>
       </tuv>
     </tu>
+    <tu tuid="PageList.CantMoveXMatter">
+      <tuv xml:lang="en">
+        <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PageList.CantMoveXMatterCaption">
+      <tuv xml:lang="en">
+        <seg>Invalid Move</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
       <tuv xml:lang="en">
         <seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
@@ -1835,6 +1893,18 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Big Book</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Decodable Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Leveled Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader</seg>
       </tuv>
     </tu>
     <tu tuid="Template.Picture Dictionary">
