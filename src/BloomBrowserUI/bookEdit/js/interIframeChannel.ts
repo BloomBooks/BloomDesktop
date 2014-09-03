@@ -4,7 +4,7 @@
  * Class to hold information passed between iframes
  * @constructor
  */
-class GlobalObject {
+class interIframeChannel {
 
 	public localizationManagerDictionary: any;
 	public readableFileExtensions: string[];
