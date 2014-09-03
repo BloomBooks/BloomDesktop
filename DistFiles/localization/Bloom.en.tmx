@@ -1829,6 +1829,318 @@
 		<seg>Sign up for BloomLibrary.org</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="ReaderSetup.AboutSampleTexts1">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>About Word Lists and Sample TextsWhen you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.AboutSampleTexts2">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.AboutSampleTexts4">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.AddLevel">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Add Level</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.AddStage">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Add Stage</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.AddTexts">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Please add texts to the Sample Texts folder.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.BookHeader">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Book</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.BookMaxWords">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Maximum Words per Book</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.ClickLetter">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Click on letters to add them to this stage.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.CombinationHelp1">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Separate by spaces</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.CombinationHelp2">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>E.g. "ai oo sh ng th ing"</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Combinations">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Letter Combinations (Graphemes)</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.DecodableStages">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Decodable Stages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.FirstSetupAlphabet">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>First,</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.FormatNotSupported">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Cannot read this format</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.HowToExport">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Help exporting and converting files to use as sample texts</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Language">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Language</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.LetterHelp1">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>List letters and word-forming characters in alphabetic order.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.LetterHelp2">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Separate by spaces</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.LetterHelp3">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>E.g. "a b c d"</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Letters">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Letters</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.LevelHeader">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Level</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.LevelLabel">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Level </seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Levels">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Reader Levels</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.MatchingWords">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg> matching words</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.MaxUniqueWords">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Maximum Unique Words per Book</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.MoreWords">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>More Words</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.OpenSampleTexts">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Open the sample texts folder for this language.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.PageHeader">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Page</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.PageMaxWords">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Maximum Words on each Page</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.PoweredBy">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Powered by </seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.ReaderLevels">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Reader Levels</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.RemoveLevel">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Remove Level {0}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.RemoveStage">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Remove Stage {0}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.ReorderLevels">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Drag rows to reorder levels.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.ReorderStages">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Drag rows to reorder stages.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SampleTexts">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Word Lists and Sample Texts</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SearchEngine">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>, the Search Engine for Literacy.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SelectedLetters">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Previous and New Letters</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SentenceHeader">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Sentence</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SentenceMaxWords">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Maximum Words in each Sentence</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SetupAlphabet">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>set up the alphabet for this language.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SightWordHelp">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>What are sight words?</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SightWordLabel">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>New Sight Words</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SightWordsHeader">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Sight Words</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.StageHeader">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Stage</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.StageLabel">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Stage </seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Stages">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Stages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Synphony">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Synphony</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.ToRemember">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Things to remember for this level:</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.UniqueHeader">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Unique</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.lettersHeader">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Letters</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="RegisterDialog.Email">
 	  <tuv xml:lang="en">
 		<seg>Email Address</seg>
