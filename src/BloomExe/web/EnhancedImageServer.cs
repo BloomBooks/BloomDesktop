@@ -3,6 +3,7 @@
 using System;
 using Bloom.ImageProcessing;
 using System.IO;
+using Bloom.ReaderTools;
 using Palaso.IO;
 using Bloom.Collection;
 
@@ -14,13 +15,17 @@ namespace Bloom.web
 	/// </summary>
 	public class EnhancedImageServer: ImageServer
 	{
-		private FileSystemWatcher _sampleTextsWatcher;
+		private FileSystemWatcher _sampleTextsCacheWatcher;
 		private bool _sampleTextsChanged = true;
+		private SampleTexts _sampleTexts;
+
+		public EnhancedImageServer(LowResImageCache cache): base(cache) {}
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
-		public EnhancedImageServer(LowResImageCache cache): base(cache)
+		public void EnableSampleTexts()
 		{
+			_sampleTexts = new SampleTexts(CurrentCollectionSettings, StartSampleTextsCacheWatcher);
 		}
 
 		public string CurrentPageContent { get; set; }
@@ -89,18 +94,24 @@ namespace Bloom.web
 			return true;
 		}
 
-		private bool CheckForSampleTextChanges(IRequestInfo info)
+		private void StartSampleTextsCacheWatcher()
 		{
-			if (_sampleTextsWatcher == null)
+			if (_sampleTextsCacheWatcher == null)
 			{
 				var path = Path.Combine(Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath), "Sample Texts");
 
-				_sampleTextsWatcher = new FileSystemWatcher {Path = path};
-				_sampleTextsWatcher.Created += SampleTextsOnChange;
-				_sampleTextsWatcher.Changed += SampleTextsOnChange;
-				_sampleTextsWatcher.Deleted += SampleTextsOnChange;
-				_sampleTextsWatcher.EnableRaisingEvents = true;
+				_sampleTextsCacheWatcher = new FileSystemWatcher { Path = path };
+				_sampleTextsCacheWatcher.Created += SampleTextsOnChange;
+				_sampleTextsCacheWatcher.Changed += SampleTextsOnChange;
+				_sampleTextsCacheWatcher.Deleted += SampleTextsOnChange;
+				_sampleTextsCacheWatcher.EnableRaisingEvents = true;
 			}
+		}
+
+		private bool CheckForSampleTextChanges(IRequestInfo info)
+		{
+			if (_sampleTextsCacheWatcher == null)
+				return false;
 
 			var hasChanged = _sampleTextsChanged;
 
@@ -122,11 +133,17 @@ namespace Bloom.web
 		{
 			if (fDisposing)
 			{
-				if (_sampleTextsWatcher != null)
+				if (_sampleTexts != null)
 				{
-					_sampleTextsWatcher.EnableRaisingEvents = false;
-					_sampleTextsWatcher.Dispose();
-					_sampleTextsWatcher = null;
+					_sampleTexts.Dispose();
+					_sampleTexts = null;
+				}
+
+				if (_sampleTextsCacheWatcher != null)
+				{
+					_sampleTextsCacheWatcher.EnableRaisingEvents = false;
+					_sampleTextsCacheWatcher.Dispose();
+					_sampleTextsCacheWatcher = null;
 				}
 			}
 

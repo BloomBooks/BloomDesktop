@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
@@ -26,9 +25,9 @@ namespace Bloom.Edit
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
+// ReSharper disable once NotAccessedField.Local
 		private readonly LanguageSettings _languageSettings;
 		private readonly DeletePageCommand _deletePageCommand;
-		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly SendReceiver _sendReceiver;
 		private HtmlDom _domForCurrentPage;
@@ -68,11 +67,11 @@ namespace Bloom.Edit
 			_sendReceiver = sendReceiver;
 			_server = server;
 
-			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
-			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
-			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
+			bookSelection.SelectionChanged += OnBookSelectionChanged;
+			pageSelection.SelectionChanged += OnPageSelectionChanged;
+			templateInsertionCommand.InsertPage += OnInsertTemplatePage;
 
-			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
+			bookRefreshEvent.Subscribe(book => OnBookSelectionChanged(null, null));
 			selectedTabChangedEvent.Subscribe(OnTabChanged);
 			selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
 			deletePageCommand.Implementer=OnDeletePage;
@@ -370,6 +369,10 @@ namespace Bloom.Edit
 			if(_currentlyDisplayedBook != CurrentBook)
 			{
 				CurrentBook.PrepareForEditing();
+
+				// start the Sample Texts watcher if reader tools are available for this book
+				if (CurrentBook.BookInfo.ReaderToolsAvailable)
+					_server.EnableSampleTexts();
 			}
 
 			_currentlyDisplayedBook = CurrentBook;
