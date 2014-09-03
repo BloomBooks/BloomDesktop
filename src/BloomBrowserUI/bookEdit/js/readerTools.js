@@ -65,6 +65,9 @@ var ReaderToolsModel = function() {
     this.setupType = '';
     this.fontName = '';
     this.readableFileExtensions = iframeChannel.readableFileExtensions;
+    
+    /** @type DirectoryWatcher */
+    this.directoryWatcher = null;
 };
 
 ReaderToolsModel.prototype.incrementStage = function() {
@@ -768,6 +771,11 @@ function initializeSynphony(settingsFileContent) {
         model.setMarkupType(ui.newHeader.data('markuptype'));
     } );
 
+    // set up a DirectoryWatcher on the Sample Texts directory
+    model.directoryWatcher = new DirectoryWatcher('Sample Texts', 20);
+    model.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
+    model.directoryWatcher.start();
+
     // get the list of sample texts
     iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
 }
@@ -793,4 +801,27 @@ function setSampleFileContents(fileContents) {
 
 function setDefaultFont(fontName) {
     model.fontName = fontName;
+}
+
+/**
+ * This method is called whenever a change is detected in the Sample Files directory
+ * @@param {String[]} newFiles Names of new files
+ * @@param {String[]} deletedFiles Names of deleted files
+ * @@param {String[]} changedFiles Names of changed files
+ */
+function readerSampleFilesChanged() {
+
+    // reset the file and word list
+    lang_data = new LanguageData();
+    model.allWords = {};
+    model.textCounter = 0;
+
+    var settings = model.getSynphony().source;
+    model.setSynphony(new SynphonyApi());
+
+    var synphony = model.getSynphony();
+    synphony.loadSettings(settings);
+
+    // reload the sample texts
+    iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
 }
