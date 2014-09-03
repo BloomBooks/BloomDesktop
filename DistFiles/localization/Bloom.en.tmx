@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.2.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
 	<prop type="x-appversion">2.0.000.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
@@ -586,7 +586,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.CantPasteImageLocked">
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Sorry, this book is locked down so that images cannot be changed.</seg>
 	  </tuv>
@@ -680,6 +679,24 @@
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Acknowledgments for translated version, in {lang}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.Image.ChangeImage">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Change Image!!</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.Image.EditMetadata">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Edit Image Credits, Copyright, &amp; License</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.Image.PasteImage">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Paste Image</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ImageChangeWarning">
@@ -1103,6 +1120,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="InDesignXmlInformationDialog.WindowTitle">
+	  <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
 	  <tuv xml:lang="en">
 		<seg>InDesign XML Information</seg>
 	  </tuv>
@@ -1477,7 +1495,7 @@
 	</tu>
 	<tu tuid="PublishTab.Upload.AllReserved">
 	  <tuv xml:lang="en">
-		<seg>All rights reserved (Contact the Copyright holder for any permissions</seg>
+		<seg>All rights reserved (Contact the Copyright holder for any permissions.)</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.ConfirmReplaceExisting">
@@ -1547,7 +1565,7 @@
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.LoginConnectFailed">
 	  <tuv xml:lang="en">
-		<seg>Bloom could not connect to the server to verify your login. Please check your network connection</seg>
+		<seg>Bloom could not connect to the server to verify your login. Please check your network connection.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.LoginFailed">
@@ -1592,7 +1610,7 @@
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.ResetConnectFailed">
 	  <tuv xml:lang="en">
-		<seg>Bloom could not connect to the server to reset your password. Please check your network connection</seg>
+		<seg>Bloom could not connect to the server to reset your password. Please check your network connection.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.ResetFailed">
@@ -1622,7 +1640,7 @@
 	</tu>
 	<tu tuid="PublishTab.Upload.LoginFailure">
 	  <tuv xml:lang="en">
-		<seg>Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection</seg>
+		<seg>Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Logout">
@@ -1651,6 +1669,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.PleaseSetThis">
+	  <note>This shows next to the license, if the license has not yet been set.</note>
 	  <tuv xml:lang="en">
 		<seg>Please set this from the edit tab</seg>
 	  </tuv>
@@ -1721,8 +1740,15 @@
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.UploadingBook">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Uploading book record</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="PublishTab.Upload.UploadingBookMetadata">
+	  <note>In this step, Bloom is uploading things like title, languages, &amp; topic tags to the bloomlibrary.org database.</note>
+	  <tuv xml:lang="en">
+		<seg>Uploading book metadata</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.UploadingStatus">
