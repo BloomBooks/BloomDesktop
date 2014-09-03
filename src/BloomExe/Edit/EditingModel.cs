@@ -503,9 +503,6 @@ namespace Bloom.Edit
 
 	    private void PreparePageForEditingAfterOrigamiChanges(string obj)
 	    {
-			//TODO: @Andrew, if we could clear out the origami controls either before saving or as part of saving,
-			// the rest would be a 1000x easier to debug. See the CleanHtmlAndCopyToPageDom() that SaveNow() calls.
-
 			SaveNow();
 
 			// "Origami" is the javascript system that lets the user introduce new elements to the page. 
@@ -513,7 +510,12 @@ namespace Bloom.Edit
 			// or set the proper classes on those editables to match the current multilingual settings.
 			// So after a change, this eventually gets called. We then ask the page's book to fix things
 			// up so that those boxes are ready to edit
+			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			_currentlyDisplayedBook.UpdateEditableAreasOfElement(_domForCurrentPage);
+
+			//Enhance: Probably we could avoid having two saves, by determing what it is that they entail that is required.
+			//But at the moment both of them are required
+			SaveNow();
 			RefreshDisplayOfCurrentPage();
 	    }
 
