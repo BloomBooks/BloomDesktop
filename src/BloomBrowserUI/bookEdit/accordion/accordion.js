@@ -165,7 +165,8 @@ function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPane
         $.ajax(ajaxSettings)
             .done(function (data) {
                 loadAccordionPanel(data, panelId);
-                if (typeof loadNextCallback === 'function') loadNextCallback(panels, currentPanel)
+                if (typeof loadNextCallback === 'function')
+                    loadNextCallback(panels, currentPanel);
             });
     }
 }

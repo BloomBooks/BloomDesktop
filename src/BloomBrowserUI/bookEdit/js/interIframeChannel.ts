@@ -31,7 +31,7 @@ class interIframeChannel {
 	 * @param {Function} callback Function to call when the ajax request returns
 	 * @param {String} [dataValue] Passed in the query string under the "data" key
 	 */
-	simpleAjaxGet(url, callback, dataValue): void {
+	simpleAjaxGet(url: string, callback: any, dataValue?: any): void {
 
 		var ajaxSettings = {type: 'GET', url: url};
 		if (dataValue) ajaxSettings['data'] = {data: dataValue};
