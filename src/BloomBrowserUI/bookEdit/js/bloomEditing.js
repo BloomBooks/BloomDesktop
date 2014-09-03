@@ -1446,8 +1446,6 @@ function SetupElements(container) {
 
     //focus on the first editable field
     $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
-
-}); // end document ready function
 }
 
 // Only put setup code here which is guaranteed to only be run once per page load.
@@ -1488,3 +1486,5 @@ $(document).ready(function() {
 
     SetupElements($('body'));
     OneTimeSetup();
+
+}); // end document ready function
