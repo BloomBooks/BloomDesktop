@@ -712,6 +712,7 @@ function finishInitializing() {
  * has changed.
  */
 function wordListChangedCallback() {
+    accordionWindow().postMessage('Texts', '*');
     requestWordsForSelectedStage();
 }
 
