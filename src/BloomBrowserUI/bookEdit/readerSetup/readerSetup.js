@@ -710,15 +710,12 @@ function finishInitializing() {
  * has changed.
  */
 function wordListChangedCallback() {
-    var accordion = accordionWindow();
-    document.getElementById('dls_word_lists').value = accordion.getTexts().join('\n');
     requestWordsForSelectedStage();
 }
 
 $(document).ready(function () {
     $('body').find('*[data-i18n]').localize(finishInitializing);
+    var accordion = accordionWindow();
     document.getElementById('dls_word_lists').value = accordion.getTexts().join('\n');
     accordion.addWordListChangedListener('wordListChanged.ReaderSetup', wordListChangedCallback);
-    $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
-    $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
 });
