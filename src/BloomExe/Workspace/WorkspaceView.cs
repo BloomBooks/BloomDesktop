@@ -318,7 +318,12 @@ namespace Bloom.Workspace
 
 		private void OnAboutBoxClick(object sender, EventArgs e)
 		{
-			using(var dlg = new Palaso.UI.WindowsForms.SIL.SILAboutBox(FileLocator.GetFileDistributedWithApplication(false,"infoPages","aboutBox.htm")))
+			string path = FileLocator.GetFileDistributedWithApplication(true,"infoPages","aboutBox-"+LocalizationManager.UILanguageId+".htm");
+			if (String.IsNullOrEmpty(path))
+			{
+				path = FileLocator.GetFileDistributedWithApplication(false,"infoPages","aboutBox.htm");
+			}
+			using(var dlg = new Palaso.UI.WindowsForms.SIL.SILAboutBox(path))
 			{
 			    dlg.ShowDialog();
 			}
