@@ -1,10 +1,10 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
-/// <reference path="getGlobalObject.ts"/>
+/// <reference path="getIframeChannel.ts"/>
 
 declare var simpleAjaxGet: any;
-var global = getGlobalObject();
+var iframeChannel = getIframeChannel();
 
 interface qtipInterface extends JQuery {
     qtip(options: any): JQuery;
@@ -269,7 +269,7 @@ class StyleEditor {
         var txt = localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
         formatButton.click(function () {
-                global.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
+                iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
                 var box = $(targetBox);

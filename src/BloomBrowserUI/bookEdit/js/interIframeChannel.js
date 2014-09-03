@@ -3,8 +3,8 @@
 * Class to hold information passed between iframes
 * @constructor
 */
-var GlobalObject = (function () {
-    function GlobalObject() {
+var interIframeChannel = (function () {
+    function interIframeChannel() {
         this.localizationManagerDictionary = {};
         this.readableFileExtensions = ['txt', 'js'];
     }
@@ -13,7 +13,7 @@ var GlobalObject = (function () {
     * @param topic
     * @returns {boolean} Returns false to prevent navigation if link clicked.
     */
-    GlobalObject.prototype.help = function (topic) {
+    interIframeChannel.prototype.help = function (topic) {
         this.simpleAjaxNoCallback('/bloom/help', topic);
         return false;
     };
@@ -24,7 +24,7 @@ var GlobalObject = (function () {
     * @param {Function} callback Function to call when the ajax request returns
     * @param {String} [dataValue] Passed in the query string under the "data" key
     */
-    GlobalObject.prototype.simpleAjaxGet = function (url, callback, dataValue) {
+    interIframeChannel.prototype.simpleAjaxGet = function (url, callback, dataValue) {
         var ajaxSettings = { type: 'GET', url: url };
         if (dataValue)
             ajaxSettings['data'] = { data: dataValue };
@@ -40,7 +40,7 @@ var GlobalObject = (function () {
     * @param {Function} callback Function to call when the ajax request returns
     * @param {String} [dataValue] Passed in the post under the "data" key
     */
-    GlobalObject.prototype.simpleAjaxPost = function (url, callback, dataValue) {
+    interIframeChannel.prototype.simpleAjaxPost = function (url, callback, dataValue) {
         var ajaxSettings = { type: 'POST', url: url };
         if (dataValue)
             ajaxSettings['data'] = { data: dataValue };
@@ -55,13 +55,13 @@ var GlobalObject = (function () {
     * @param {String} url The URL to request
     * @param {String} [dataValue] Passed in the post under the "data" key
     */
-    GlobalObject.prototype.simpleAjaxNoCallback = function (url, dataValue) {
+    interIframeChannel.prototype.simpleAjaxNoCallback = function (url, dataValue) {
         var ajaxSettings = { type: 'POST', url: url };
         if (dataValue)
             ajaxSettings['data'] = { data: dataValue };
 
         $.ajax(ajaxSettings);
     };
-    return GlobalObject;
+    return interIframeChannel;
 })();
-//# sourceMappingURL=globalObject.js.map
+//# sourceMappingURL=interIframeChannel.js.map
