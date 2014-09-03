@@ -17,6 +17,7 @@ document.write('<script type="text/javascript" src="' + libDir + 'jquery.qtip.js
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.qtipSecondary.js"></script>');
 document.write('<link rel="stylesheet" type="text/css" href="' + libDir + 'jquery.qtip.css">');
 
+document.write('<script type="text/javascript" src="' + thisDir + 'getIframeChannel.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'localizationManager.js"></script>');
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.i18n.custom.js"></script>');
 
@@ -43,3 +44,7 @@ document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/s
 document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/bloom_lib.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'synphonyApi.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'readerTools.js"></script>');
+
+document.write('<script type="text/javascript" src="' + libDir + 'split-pane/split-pane.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'origami.js"></script>');
+document.write('<link rel="stylesheet" type="text/css" href="' + thisDir + '../css/origami.css">');

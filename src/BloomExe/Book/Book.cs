@@ -308,6 +308,7 @@ namespace Bloom.Book
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
 			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
 
 			pageDom.SortStyleSheetLinks();
 
@@ -514,7 +515,7 @@ namespace Bloom.Book
 			{
 				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
 			}
-			var previewDom= GetBookDomWithStyleSheets("previewMode.css");
+			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 
 			//We may have just run into an error for the first time
 			if (HasFatalError)
@@ -1285,6 +1286,14 @@ namespace Bloom.Book
 
 				page.InnerXml = divElement.InnerXml;
 
+				// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
+				// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
+				// The idea is to match class attriutes which have class bloom-ui, but may have other classes. We don't want to match
+				// classes where bloom-ui is a substring, though, if there should be any. So we wrap spaces around the class attribute
+				// and then see whether it contains bloom-ui surrounded by spaces.
+				foreach (var node in page.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
+					node.ParentNode.RemoveChild(node);
+
 				 _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
 				 var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
@@ -1441,7 +1450,7 @@ namespace Bloom.Book
 
 		public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer)
 		{
-			var printingDom = GetBookDomWithStyleSheets("previewMode.css");
+			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 			//dom.LoadXml(OurHtmlDom.OuterXml);
 
 			if (IsFolio)
@@ -1580,14 +1589,23 @@ namespace Bloom.Book
 		/// </summary>
 		public void PrepareForEditing()
 		{
-			// I may re-enable this later....			RebuildXMatter(RawDom);
+			//We could re-enable RebuildXMatter() here later, so that we get this nice refresh each time.
+			//But currently this does some really slow image compression:	RebuildXMatter(RawDom);
+			UpdateEditableAreasOfElement(OurHtmlDom);
+		}
 
+		/// <summary>
+		/// This is called both for the whole book, and for individual pages when the user uses Origami to make changes to the layout of the page
+		/// </summary>
+		/// <param name="elementToUpdate"></param>
+		public void UpdateEditableAreasOfElement(HtmlDom elementToUpdate)
+		{
 			var language1Iso639Code = _collectionSettings.Language1Iso639Code;
 			var language2Iso639Code = _collectionSettings.Language2Iso639Code;
 			var language3Iso639Code = _collectionSettings.Language3Iso639Code;
 			var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2;
 			var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3;
-		   foreach (XmlElement div in OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			foreach (XmlElement div in elementToUpdate.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				TranslationGroupManager.PrepareElementsInPageOrDocument(div, _collectionSettings);
 				TranslationGroupManager.UpdateContentLanguageClasses(div, language1Iso639Code, language2Iso639Code, language3Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);

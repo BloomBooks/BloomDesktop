@@ -32,7 +32,7 @@
 	<Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
 
 	<!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
-	<CreateProperty Value="2.1.$(BuildCounter)">
+	<CreateProperty Value="3.0.$(BuildCounter)">
 	  <Output PropertyName="Version" TaskParameter="Value"/>
 	</CreateProperty>
 	<CreateProperty Value="BloomInstaller.$(Version).$(Label).msi">
@@ -182,6 +182,7 @@
 
 	<!-- remove an existing one with the same name, if necessary -->
 	<Delete Files="$(RootDir)\output\installer\$(InstallerFileName)" TreatErrorsAsWarnings="false" />
+	<Exec Command='sign "$(RootDir)\output\installer\BloomInstaller.msi"'></Exec>
 
 	<Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
 		  DestinationFiles="$(RootDir)\output\installer\$(InstallerFileName)"
@@ -235,7 +236,7 @@
 		Note, the original name for this on Dropbox may differ (e.g. "Bloom2.1.chm") but we
 		are renaming it here to just Bloom.chm.
 		-->
-		<WebDownload FileUri="https://www.dropbox.com/s/3v8n25tqqbs70h0/Bloom2_1.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
+		<WebDownload FileUri="https://www.dropbox.com/s/4mgbc5xhmhndia2/Bloom3.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
 	</Target>
 
   <Target Name="MakeWixForXulRunner" >
