@@ -33,7 +33,7 @@ function processMessage(event) {
             if (s.length > 0) {
 
                 var files = s.split('\r');
-                var extensions = getGlobalObject().readableFileExtensions;
+                var extensions = getIframeChannel().readableFileExtensions;
                 var notSupported = document.getElementById('format_not_supported').innerHTML;
                 var foundNotSupported = false;
                 files.forEach(function(element, index, array) {
@@ -152,7 +152,7 @@ function saveClicked() {
     accordionWindow().postMessage('Refresh\n' + settingsStr, '*');
 
     // save now
-    getGlobalObject().simpleAjaxPost('/bloom/readers/saveReaderToolSettings', parent.window.closeSetupDialog, settingsStr);
+    getIframeChannel().simpleAjaxPost('/bloom/readers/saveReaderToolSettings', parent.window.closeSetupDialog, settingsStr);
 }
 
 function getLevelValue(innerHTML) {

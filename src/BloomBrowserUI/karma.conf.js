@@ -17,6 +17,7 @@ module.exports = function (config) {
             'lib/jquery.myimgscale.js',
             'lib/jquery.qtip.js',
             'bookEdit/js/interIframeChannel.js',
+            'bookEdit/js/getIframeChannel.js',
             'bookEdit/test/interIframeChannelInitializer.js',
             'lib/localizationManager.js',
 
