@@ -390,7 +390,7 @@ class StyleEditor {
      makeSelect(items, marginLeft, current, id, maxlength?) {
         var result = '<select id="' + id + '" style="margin-left:' + marginLeft + 'px">';
         for (var i = 0; i < items.length; i++) {
-            var selected = "";
+            var selected: string = "";
             if (current == items[i]) selected = ' selected';
             var text = items[i];
             if (maxlength && text.length > maxlength) {
@@ -402,17 +402,17 @@ class StyleEditor {
     }
 
     makeBorderSelect(box) {
-        var borderStyle = box.css('border-bottom-style');
+        var borderStyle: string = box.css('border-bottom-style');
         var borderColor = box.css('border-bottom-color');
-        var borderRadius = box.css('border-top-left-radius');
-        var backColor = box.css('background-color');
+        var borderRadius: string = box.css('border-top-left-radius');
+        var backColor: string = box.css('background-color');
         //alert(borderStyle + ',' + borderColor + ',' + borderRadius + ',' + backColor);
-        var noneSelected = "";
-        var blackSelected = "";
-        var blackGreySelected = "";
-        var blackRoundSelected = "";
-        var greySelected = "";
-        var greyRoundSelected = "";
+        var noneSelected: string = "";
+        var blackSelected: string = "";
+        var blackGreySelected: string = "";
+        var blackRoundSelected: string = "";
+        var greySelected: string = "";
+        var greyRoundSelected: string = "";
         // Detecting 'none' is difficult because our edit boxes inherit a faint grey border
         // Currently we use plain rgb for our official borders, and the inherited one uses rgba(0, 0, 0, 0.2).
         // Rather arbitrarily we will consider a border less than 50% opaque to be 'none'.
