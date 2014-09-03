@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Xml;
 using Bloom.Collection;
@@ -107,7 +108,7 @@ namespace Bloom.Book
             {
                 // Hard-coded localizations for 2.0
                 var key = "EditTab.ThumbnailCaptions." + element.InnerText;
-                AddTranslationToDictionary(dictionary, key, element.InnerText);
+                AddTranslationToDictionaryUsingEnglishAsKey(dictionary, key, element.InnerText);
 
                 if (!element.HasAttribute("data-i18n"))
                     element.SetAttribute("data-i18n", key);
@@ -184,27 +185,40 @@ namespace Bloom.Book
         /// <param name="d"></param>
         private static void AddHtmlUiStrings(Dictionary<string, string> d)
         {
-			//ATTENTION: Currently, the english here must exactly match whats in the html. See comment in AddTranslationToDictionary
+			//ATTENTION: Currently, the english here must exactly match whats in the html. See comment in AddTranslationToDictionaryUsingEnglishAsKey
 
-			AddTranslationToDictionary(d, "EditTab.FontSizeTip", "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
-			AddTranslationToDictionary(d, "EditTab.FrontMatter.BookTitlePrompt", "Book title in {lang}");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FontSizeTip", "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BookTitlePrompt", "Book title in {lang}");
 
-			AddTranslationToDictionary(d, "EditTab.FrontMatter.OriginalContributorsPrompt",
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.OriginalContributorsPrompt",
 				"The contributions made by writers, illustrators, editors, etc., in {lang}");
-			AddTranslationToDictionary(d, "EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt", "Acknowledgments for translated version, in {lang}");
-			AddTranslationToDictionary(d, "EditTab.FrontMatter.FundingAgenciesPrompt", "Use this to acknowledge any funding agencies.");
-			AddTranslationToDictionary(d, "EditTab.FrontMatter.CopyrightPrompt","Click to Edit Copyright & License");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt", "Acknowledgments for translated version, in {lang}");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.FundingAgenciesPrompt", "Use this to acknowledge any funding agencies.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.CopyrightPrompt","Click to Edit Copyright & License");
 
-			AddTranslationToDictionary(d, "EditTab.FrontMatter.OriginalAcknowledgmentsPrompt",
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.OriginalAcknowledgmentsPrompt",
 				"Original (or Shell) Acknowledgments in {lang}");
 
-			AddTranslationToDictionary(d, "EditTab.FrontMatter.TopicPrompt", "Click to choose topic"); //doesn't work yet. https://jira.sil.org/browse/BL-189
-			AddTranslationToDictionary(d, "EditTab.FrontMatter.ISBNPrompt", "International Standard Book Number. Leave blank if you don't have one of these."); 
-			AddTranslationToDictionary(d, "EditTab.BackMatter.InsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.");
-			AddTranslationToDictionary(d, "EditTab.BackMatter.OutsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.");
-        }
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TopicPrompt", "Click to choose topic"); //doesn't work yet. https://jira.sil.org/browse/BL-189
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.ISBNPrompt", "International Standard Book Number. Leave blank if you don't have one of these."); 
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.InsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.OutsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.");
 
-        private static void AddTranslationToDictionary(Dictionary<string, string> dictionary, string key, string defaultText)  {
+			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.PasteImage", "Paste Image");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image!!");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.EditMetadata", "Edit Image Credits, Copyright, & License");
+		}
+
+		private static void AddTranslationToDictionaryUsingKey(Dictionary<string, string> dictionary, string key, string defaultText)
+		{
+			var translation = LocalizationManager.GetDynamicString("Bloom", key, defaultText);
+			if (!dictionary.ContainsKey(key))
+			{
+				dictionary.Add(key, translation);
+			}
+		}
+
+        private static void AddTranslationToDictionaryUsingEnglishAsKey(Dictionary<string, string> dictionary, string key, string defaultText)  {
 
             var translation = LocalizationManager.GetDynamicString("Bloom", key, defaultText);
 
@@ -214,7 +228,7 @@ namespace Bloom.Book
 			string keyUsedInTheJavascriptDictionary = defaultText;
 			if (!dictionary.ContainsKey(keyUsedInTheJavascriptDictionary))
 	        {
-				dictionary.Add(keyUsedInTheJavascriptDictionary, translation);
+				dictionary.Add(keyUsedInTheJavascriptDictionary, WebUtility.HtmlEncode(translation));
 	        }
         }
 
