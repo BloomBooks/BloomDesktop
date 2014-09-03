@@ -634,6 +634,7 @@ function storeThingsToRemember() {
     $('#levels-table').find('tbody tr.selected td:nth-child(6)').html(vals.join('\n'));
 }
 
+//noinspection JSUnusedGlobalSymbols
 function firstSetupLetters() {
 
     $('#dlstabs').tabs('option', 'active', 0);
