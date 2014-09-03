@@ -459,6 +459,7 @@ ReaderToolsModel.prototype.doMarkup = function() {
             editableElements.checkLeveledReader(options);
             this.updateMaxWordsPerSentenceOnPage();
             this.updateTotalWordsOnPage();
+            this.updateTotalWordsPerBook();
 
             break;
 
@@ -499,6 +500,14 @@ ReaderToolsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
     return levels[this.levelNumber - 1].getMaxWordsPerSentence();
 };
 
+ReaderToolsModel.prototype.maxWordsPerBook = function() {
+    var levels = this.synphony.getLevels();
+    if (levels.length <= 0) {
+        return 9999;
+    }
+    return levels[this.levelNumber - 1].getMaxWordsPerBook();
+};
+
 ReaderToolsModel.prototype.maxWordsPerPage = function() {
     var levels = this.synphony.getLevels();
     if (levels.length <= 0) {
@@ -506,6 +515,39 @@ ReaderToolsModel.prototype.maxWordsPerPage = function() {
     }
     return levels[this.levelNumber - 1].getMaxWordsPerPage();
 };
+
+ReaderToolsModel.prototype.getTextOfWholeBook = function() {
+    return ["This is a silly substitute for a page", "This is another silly substitute for a page"];
+}
+
+ReaderToolsModel.prototype.countWordsInBook = function(pageStrings) {
+    var total = 0;
+    for (i = 0; i < pageStrings.length; i++) {
+        var page = pageStrings[i];
+        var fragments = libsynphony.stringToSentences(page);
+
+        // remove inter-sentence space
+        fragments = fragments.filter(function (frag) {
+            return frag.isSentence;
+        });
+
+        for (j=0; j < fragments.length; j++) {
+            total += fragments[j].wordCount()
+        }
+    }
+    return total;
+}
+
+ReaderToolsModel.prototype.updateTotalWordsPerBook = function() {
+    var wordCount = this.countWordsInBook(this.getTextOfWholeBook());
+    $('#actualWordCount').html(wordCount.toString());
+    var acceptable = wordCount <= this.maxWordsPerBook();
+    // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
+    // It's important NOT to use two names where one is a substring of the other (e.g., unacceptable
+    // instead of tooLarge). That will mess things up going from the longer to the shorter.
+    this.setPresenceOfClass("actualWordsPerSentence", acceptable, "acceptable");
+    this.setPresenceOfClass("actualWordsPerSentence", !acceptable, "tooLarge");
+}
 
 ReaderToolsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
     var max = this.getElementsToCheck().getMaxSentenceLength();
