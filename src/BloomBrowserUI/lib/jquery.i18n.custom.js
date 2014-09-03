@@ -13,7 +13,7 @@
 
     /**
      *
-     * @param {Function} [callbackDone] Optional function to call when done.
+     * @param [callbackDone] Optional function to call when done.
      */
     $.fn.localize = function(callbackDone) {
 

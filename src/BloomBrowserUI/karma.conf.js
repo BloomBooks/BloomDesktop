@@ -19,6 +19,7 @@ module.exports = function (config) {
             'bookEdit/js/globalObject.js',
             'bookEdit/test/globalObjectInitializer.js',
             'lib/localizationManager.js',
+            'lib/jquery.i18n.custom.js',
 
             // helpers -- jasmine-query
             'test/lib/**/*.js',
