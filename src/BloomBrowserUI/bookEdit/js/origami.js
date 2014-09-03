@@ -145,7 +145,8 @@ function getSplitPaneComponentWithNewContent(position) {
     return spc;
 }
 function getSplitPaneComponentInner() {
-    var spci = $('<div class="split-pane-component-inner"><div class="box-header bloom-translationGroup"></div></div>');
+    /* the stylesheet will hide this initially; we will have UI later than switches it to box-header-on */
+    var spci = $('<div class="split-pane-component-inner"><div class="box-header-off bloom-translationGroup"></div></div>');
     spci.append(getTypeSelectors());
     spci.append(getButtons());
     return spci;
