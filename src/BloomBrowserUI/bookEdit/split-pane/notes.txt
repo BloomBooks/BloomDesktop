@@ -1,0 +1,11 @@
+Sliders work
+Adding boxes works
+Removing boxes work until you have only one left,
+ then strange things happen when you add again
+
+To do:
+ Replace buttons with dashed line
+ Change slider to only be triggered in the middle and indicate visually
+ Fix bug when removing too many boxes
+ Tidy up code (lots of room for improvement here)
+ Integrate with a bloom page
