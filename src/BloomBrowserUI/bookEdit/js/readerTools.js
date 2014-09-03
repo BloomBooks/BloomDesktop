@@ -63,7 +63,7 @@ var ReaderToolsModel = function() {
     this.setupType = '';
     this.fontName = '';
     this.readableFileExtensions = getGlobalObject().readableFileExtensions;
-    
+
     /** @type DirectoryWatcher */
     this.directoryWatcher = null;
 };
@@ -821,5 +821,5 @@ function readerSampleFilesChanged() {
     synphony.loadSettings(settings);
 
     // reload the sample texts
-    simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+    global.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
 }
