@@ -479,7 +479,7 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
 			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
-            _view.AddMessageEventListener("reloadPageEvent", ReloadPage);
+			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", PreparePageForEditingAfterOrigamiChanges);
 
 			var tools = _currentlyDisplayedBook.BookInfo.Tools.Where(t => t.Enabled == true);
 			var settings = new Dictionary<string, object>();
@@ -501,11 +501,21 @@ namespace Bloom.Edit
 			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.restoreAccordionSettings(\"" + settingsStr + "\"); }");
         }
 
-        private void ReloadPage(string data)
-        {
-            SaveNow();
-            RefreshDisplayOfCurrentPage();
-        }
+	    private void PreparePageForEditingAfterOrigamiChanges(string obj)
+	    {
+			//TODO: @Andrew, if we could clear out the origami controls either before saving or as part of saving,
+			// the rest would be a 1000x easier to debug. See the CleanHtmlAndCopyToPageDom() that SaveNow() calls.
+
+			SaveNow();
+
+			// "Origami" is the javascript system that lets the user introduce new elements to the page. 
+			// It can insert .bloom-translationGroup's, but it can't populate them with .bloom-editables
+			// or set the proper classes on those editables to match the current multilingual settings.
+			// So after a change, this eventually gets called. We then ask the page's book to fix things
+			// up so that those boxes are ready to edit
+			_currentlyDisplayedBook.UpdateEditableAreasOfElement(_domForCurrentPage);
+			RefreshDisplayOfCurrentPage();
+	    }
 
 		private void SaveAccordionSettings(string data)
 		{
