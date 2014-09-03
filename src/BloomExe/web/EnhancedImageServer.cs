@@ -104,7 +104,9 @@ namespace Bloom.web
 
 			var hasChanged = _sampleTextsChanged;
 
-			// reset the changed flag
+			// Reset the changed flag.
+			// NOTE: we are only resetting the flag if it was "true" when we checked in case the FileSystemWatcher detects a change 
+			// after we check the flag but we reset it to false before we check again.
 			if (hasChanged) _sampleTextsChanged = false;
 
 			info.ContentType = "text/plain";
