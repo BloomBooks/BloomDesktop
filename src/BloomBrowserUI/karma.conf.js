@@ -20,6 +20,7 @@ module.exports = function (config) {
             'bookEdit/js/getIframeChannel.js',
             'bookEdit/test/interIframeChannelInitializer.js',
             'lib/localizationManager.js',
+            'lib/jquery.i18n.custom.js',
 
             // helpers -- jasmine-query
             'test/lib/**/*.js',

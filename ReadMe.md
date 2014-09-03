@@ -1,4 +1,4 @@
-Bloom Desktop is a c# Windows application that dramatically "lowers the bar" for language communities who want books in their own languages. Bloom delivers a low-training, high-output system where mother tongue speakers and their advocates work together to foster both community authorship and access to external material in the vernacular.
+Bloom Desktop is a hybrid c#/javascript/html/css Windows application that dramatically "lowers the bar" for language communities who want books in their own languages. Bloom delivers a low-training, high-output system where mother tongue speakers and their advocates work together to foster both community authorship and access to external material in the vernacular.
 
 # Development Process
 
@@ -21,11 +21,7 @@ Bloom is written in C# with Winforms, with an embedded Gecko (Firefox) browser a
 
 You'll need at least a 2010 edition of Visual Studio, including the free Express version. 
 
-Now, what revision should you be on? If you're not familiar with DVCS (Distributed version control), this could be a big stumbling block. I hesitate to give advice in this document in case I forget to update it. But a reasonable start is to update to the tip of the "default" branch, which is the most recent one that anyone has checked in, regardless of which branch it is on. To update to the tip, do:
-
-`hg update default`
-
-It will avoid some complications if you do that now, before adding the dependencies which follow.
+It will avoid some complications if you update to default branch now, before adding the dependencies that follow.
 
 ## Get Binary Dependencies
 
@@ -37,15 +33,19 @@ or
 
 That will take several minutes the first time, and afterwards will be quick as it only downloads what has changed. When you change branches, run this again. 
 
+## JADE Sources
+
+We use [JADE](http://www.google.com/url?q=http%3A%2F%2Fjade-lang.com%2F&sa=D&sntz=1&usg=AFQjCNGt56mizPKbPZPjua7fjmzoTXAiEQ) as the source language for html. See [these instructions](https://docs.google.com/a/sil.org/document/d/1dYv-yQ18Jandi1TqDwzXIYrZf3M8NIgIQ8Y0rWlXVAI/edit) for setting up a nice JADE evironment in WebStorm.
+
 #### About Bloom Dependencies
 
-Our **[Palaso libraries](http://projects.palaso.org/projects/palaso)** hold the classes that are common to multiple products. If you need to build palaso from source, see [projects.palaso.org/projects/palaso/wiki](http://projects.palaso.org/projects/palaso/wiki).
+Our **[Palaso libraries](https://github.com/sillsdev/libpalaso)** hold the classes that are common to multiple products.
 
 Our **[PdfDroplet ](http://pdfdroplet.palaso.org)**engine drives the booklet-making in the Publish tab. If you need to build PdfDroplet from source, see [projects.palaso.org/projects/pdfdroplet/wiki](http://projects.palaso.org/projects/palaso/wiki).
 
-Our **[Chorus](http://projects.palaso.org/projects/chorus)** library provides the Send/Receive functionality.
+Our **[Chorus](https://github.com/sillsdev/chorus)** library provides the Send/Receive functionality.
 
-**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the [GeckoFX .net wrapper](https://bitbucket.org/geckofx).
+**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the [GeckoFX .net wrapper](https://bitbucket.org/geckofx). As of Bloom version 3, we are using xulrunner 29.
 
 **XulRunner**: If you need some other version, they come from here: [http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases](http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases). You want a "runtime", not an "sdk". Note, in addition to the generic "lib/xulrunner", the code will also work if it finds "lib/xulrunner8" (or 9, or 10, or whatever the current version is).
 
