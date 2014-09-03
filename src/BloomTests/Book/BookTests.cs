@@ -70,7 +70,8 @@ namespace BloomTests.Book
 			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
 			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","Templates"); 
 			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplayTemplate.css")).Returns(root.CombineForPath("bookLayout","languageDisplayTemplate.css"));
-			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
+            _fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
+            _fileLocator.Setup(x => x.LocateFileWithThrow("origami.css")).Returns("../notareallocation/origami.css"); 
             _fileLocator.Setup(x => x.LocateFileWithThrow("editMode.css")).Returns("../notareallocation/editMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editTranslationMode.css")).Returns("../notareallocation/editTranslationMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
