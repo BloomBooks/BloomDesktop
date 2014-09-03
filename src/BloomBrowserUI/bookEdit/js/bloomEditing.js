@@ -1049,7 +1049,7 @@ $.fn.hasAttr = function (name) {
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
 // Now document.load calls this with $('body') as the container.
-// REVIEW: Some of these would be better off in OnTimeSetup, but too much risk to try to decide right now.
+// REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
 function SetupElements(container) {
 
     //add a marginBox if it's missing. We introduced it early in the first beta
