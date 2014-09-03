@@ -28,6 +28,7 @@ function processMessage(event) {
             accordionWindow().postMessage('SetupType', '*');
             return;
 
+        case 'Files':
             var s = params[1];
             if (s.length > 0) {
 
@@ -48,10 +49,11 @@ function processMessage(event) {
                     document.getElementById('how_to_export').style.display = '';
             }
 
-
             var fileList = s || document.getElementById('please-add-texts').innerHTML;
 
             document.getElementById('dls_word_lists').innerHTML = fileList.replace(/\r/g, '<br>');
+            return;
+
         case 'Words':
             displayWordsForSelectedStage(params[1]);
             return;
