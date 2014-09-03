@@ -10,14 +10,13 @@ function setupOrigami() {
 
     $('.origami-toggle .onoffswitch').change(layoutToggleClickHandler);
 
-    if($('marginBox.mode-layout').length) {
+    if($('.customPage .marginBox.origami-layout-mode').length) {
         setupLayoutMode();
         $('#myonoffswitch').prop('checked', true);
     }
 }
 
 function cleanupOrigami() {
-    $('.marginBox.mode-layout').removeClass('mode-layout');
     // Otherwise, we get a new one each time the page is loaded
     $('.split-pane-resize-shim').remove();
 }
@@ -36,15 +35,11 @@ function setupLayoutMode() {
 
 function layoutToggleClickHandler() {
     var marginBox = $('.marginBox');
-    if (!marginBox.hasClass('mode-layout')) {
-        marginBox.removeClass('mode-edit');
-        marginBox.addClass('mode-layout');
-
+    if (!marginBox.hasClass('origami-layout-mode')) {
+        marginBox.addClass('origami-layout-mode');
         setupLayoutMode();
     } else {
-        marginBox.removeClass('mode-layout');
-        marginBox.addClass('mode-edit');
-
+        marginBox.removeClass('origami-layout-mode');
         fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
     }
 }

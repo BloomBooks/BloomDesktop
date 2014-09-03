@@ -3,7 +3,7 @@
 .origami-ui {
   visibility: hidden;
 }
-.mode-layout .origami-ui {
+.origami-layout-mode .origami-ui {
   visibility: visible;
 }
 
@@ -46,7 +46,7 @@
 }
 
 .split-pane.vertical-percent > .vertical-divider:hover,
-.mode-layout .split-pane.vertical-percent > .vertical-divider,
+.origami-layout-mode .split-pane.vertical-percent > .vertical-divider,
 .vertical-divider.dragged {
   border-right-color: #E48C84 !important;
 }
@@ -58,7 +58,7 @@
 }
 
 .split-pane.horizontal-percent > .horizontal-divider:hover,
-.mode-layout .split-pane.horizontal-percent > .horizontal-divider,
+.origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
 .horizontal-divider.dragged {
   border-bottom-color: #E48C84 !important;
 }
@@ -71,7 +71,7 @@
   line-height: 1em;
   color: rgba(0, 0, 0, 0.2);
 }
-.mode-layout ~ .origami-toggle {
+.origami-layout-mode ~ .origami-toggle {
   color: black;
 }
 
