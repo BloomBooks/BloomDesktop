@@ -18,6 +18,11 @@ function processDLRMessage(event) {
     var params = event.data.split("\n");
 
     switch(params[0]) {
+        case 'Texts': // request from setup dialog for the list of sample texts
+            if (model.texts)
+                getSetupDialogWindow().postMessage('Files\n' + model.texts.join("\r"), '*');
+            return;
+
         case 'Words': // request from setup dialog for a list of words for a stage
             var words = model.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
             getSetupDialogWindow().postMessage('Words\n' + JSON.stringify(words), '*');

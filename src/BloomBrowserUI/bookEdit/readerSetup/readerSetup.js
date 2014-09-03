@@ -53,7 +53,7 @@ function processMessage(event) {
 
             document.getElementById('dls_word_lists').innerHTML = fileList.replace(/\r/g, '<br>');
             return;
-        
+
         case 'Words':
             displayWordsForSelectedStage(params[1]);
             return;
@@ -712,6 +712,7 @@ function finishInitializing() {
  * has changed.
  */
 function wordListChangedCallback() {
+    accordionWindow().postMessage('Texts', '*');
     requestWordsForSelectedStage();
 }
 
