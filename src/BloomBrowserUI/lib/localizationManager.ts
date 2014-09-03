@@ -34,8 +34,8 @@ class LocalizationManager {
 	public dictionary: any;
 
 	constructor() {
-		if (typeof document['getGlobalObject'] === 'function')
-			this.dictionary = document['getGlobalObject']().localizationManagerDictionary;
+		if (typeof document['getIframeChannel'] === 'function')
+			this.dictionary = document['getIframeChannel']().localizationManagerDictionary;
 		else
 			this.dictionary = {};
 	}
