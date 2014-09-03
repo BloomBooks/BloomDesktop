@@ -1,5 +1,12 @@
 @import url("../../lib/split-pane/split-pane.css");
 
+.origami-ui {
+  visibility: hidden;
+}
+.mode-layout .origami-ui {
+  visibility: visible;
+}
+
 .split-pane-frame {
   position: relative;
   box-sizing: border-box;
@@ -35,13 +42,25 @@
 .split-pane.vertical-percent > .vertical-divider {
   right: 50%;
   cursor: col-resize;
-  border-right: 3px dashed #E48C84;
+  border-right: 3px dashed transparent;
+}
+
+.split-pane.vertical-percent > .vertical-divider:hover,
+.mode-layout .split-pane.vertical-percent > .vertical-divider,
+.vertical-divider.dragged {
+  border-right-color: #E48C84 !important;
 }
 
 .split-pane.horizontal-percent > .horizontal-divider {
   bottom: 50%;
   cursor: row-resize;
-  border-bottom: 3px dashed #E48C84;
+  border-bottom: 3px dashed transparent;
+}
+
+.split-pane.horizontal-percent > .horizontal-divider:hover,
+.mode-layout .split-pane.horizontal-percent > .horizontal-divider,
+.horizontal-divider.dragged {
+  border-bottom-color: #E48C84 !important;
 }
 
 .origami-toggle {
@@ -52,7 +71,7 @@
   line-height: 1em;
   color: rgba(0, 0, 0, 0.2);
 }
-.origami-toggle.layout-mode {
+.mode-layout ~ .origami-toggle {
   color: black;
 }
 
