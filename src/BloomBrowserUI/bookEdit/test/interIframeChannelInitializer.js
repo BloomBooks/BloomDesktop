@@ -1,0 +1,1 @@
+var interIframeChannel = new interIframeChannel();
