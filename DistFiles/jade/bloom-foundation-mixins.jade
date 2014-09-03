@@ -44,6 +44,17 @@ mixin page-choice(englishLabel)
 	+page(englishLabel).numberedPage(attributes, data-page='extra')
 		block
 
+mixin page-layout(englishLabel)
+	+pageWithJustPageSize.bloom-page(attributes)
+		+page-label-english(englishLabel)
+		.marginBox.mode-layout
+			block
+
+//- The most common kind of page template; it is numbered and not required.
+mixin page-choice-layout(englishLabel)
+	+page-layout(englishLabel).numberedPage(attributes, data-page='extra')
+		block
+
 //- This is a page that is always in the book and can't be removed, like a cover page.
 mixin page-required(englishLabel)
 	+page(englishLabel)(data-page='required', attributes)

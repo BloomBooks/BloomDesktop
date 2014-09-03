@@ -6,54 +6,47 @@ $(function() {
 //});
 
 function setupOrigami() {
-    $('.customPage').append(function() {
-        var switchLabel = localizationManager.getText('EditTab.LayoutMode.ChangeLayout', 'Change Layout');
-        return '\
-<div class="origami-toggle edit-mode bloom-ui">' + switchLabel + ' \
-    <div class="onoffswitch"> \
-        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch"> \
-        <label class="onoffswitch-label" for="myonoffswitch"> \
-            <span class="onoffswitch-inner"></span> \
-            <span class="onoffswitch-switch"></span> \
-        </label> \
-    </div> \
-</div>';
-    });
+    $('.customPage').append(getOnOffSwitch());
 
-    $('.origami-ui').css('visibility', 'hidden');
+    $('.origami-toggle .onoffswitch').change(layoutToggleClickHandler);
 
-    $('.origami-toggle .onoffswitch').change(function() {
-        var toggle = $(this).closest('.origami-toggle');
-        if (toggle.hasClass('edit-mode')) {
-            toggle.removeClass('edit-mode');
-            toggle.addClass('layout-mode');
-
-            setupLayoutMode();
-        } else {
-            toggle.removeClass('layout-mode');
-            toggle.addClass('edit-mode');
-
-            fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
-        }
-    });
+    if($('marginBox.mode-layout').length) {
+        setupLayoutMode();
+        $('#myonoffswitch').prop('checked', true);
+    }
 }
 
 function cleanupOrigami() {
+    $('.marginBox.mode-layout').removeClass('mode-layout');
     // Otherwise, we get a new one each time the page is loaded
     $('.split-pane-resize-shim').remove();
 }
 
 function setupLayoutMode() {
     $('.split-pane-component-inner').each(function() {
-        if (!$(this).find('.bloom-imageContainer, .bloom-translationGroup').length)
+        if (!$(this).find('.bloom-imageContainer, .bloom-translationGroup:not(.box-header-off)').length)
             $(this).append(getTypeSelectors());
         $(this).append(getButtons());
     });
-    $('.origami-ui').css('visibility', 'visible');
-    // Text should not be edittable in layout mode
+    // Text should not be editable in layout mode
     $('.bloom-editable:visible[contentEditable=true]').removeAttr('contentEditable');
     // Images cannot be changed (other than growing/shrinking with container) in layout mode
     $('.bloom-imageContainer').off('mouseenter').off('mouseleave');
+}
+
+function layoutToggleClickHandler() {
+    var marginBox = $('.marginBox');
+    if (!marginBox.hasClass('mode-layout')) {
+        marginBox.removeClass('mode-edit');
+        marginBox.addClass('mode-layout');
+
+        setupLayoutMode();
+    } else {
+        marginBox.removeClass('mode-layout');
+        marginBox.addClass('mode-edit');
+
+        fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
+    }
 }
 
 // Event handler to split the current box in half (vertically or horizontally)
@@ -137,7 +130,8 @@ function getSplitPaneComponentHtml(position) {
     return $('<div class="split-pane-component position-' + position + '"></div>');
 }
 function getSplitPaneDividerHtml(verticalOrHorizontal) {
-    return $('<div class="split-pane-divider ' + verticalOrHorizontal + '-divider origami-ui"></div>');
+    var divider = $('<div class="split-pane-divider ' + verticalOrHorizontal + '-divider"></div>');
+    return divider;
 }
 function getSplitPaneComponentWithNewContent(position) {
     var spc = $('<div class="split-pane-component position-' + position + '">');
@@ -152,6 +146,19 @@ function getSplitPaneComponentInner() {
     return spci;
 }
 
+function getOnOffSwitch() {
+    var switchLabel = localizationManager.getText('EditTab.LayoutMode.ChangeLayout', 'Change Layout');
+    return $('\
+<div class="origami-toggle bloom-ui">' + switchLabel + ' \
+    <div class="onoffswitch"> \
+        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch"> \
+        <label class="onoffswitch-label" for="myonoffswitch"> \
+            <span class="onoffswitch-inner"></span> \
+            <span class="onoffswitch-switch"></span> \
+        </label> \
+    </div> \
+</div>');
+}
 function getButtons() {
     var buttons = $('<div class="origami-buttons bloom-ui origami-ui"></div>');
     buttons.append(getHSplitButton(true))
