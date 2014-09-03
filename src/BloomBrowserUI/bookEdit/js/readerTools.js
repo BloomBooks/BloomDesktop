@@ -59,7 +59,11 @@ var ReaderToolsModel = function() {
     this.textCounter = 0;
     this.setupType = '';
     this.fontName = '';
-    this.readableFileExtensions = iframeChannel.readableFileExtensions;
+    this.readableFileExtensions = [];
+
+    // this happens during testing
+    if (iframeChannel)
+        this.readableFileExtensions = iframeChannel.readableFileExtensions;
 
     /** @type DirectoryWatcher directoryWatcher */
     this.directoryWatcher = null;
