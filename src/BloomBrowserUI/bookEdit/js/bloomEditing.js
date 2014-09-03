@@ -1441,10 +1441,6 @@ $(document).ready(function () {
         $(this).focus(function() {
            editor.AttachToBox(this);
         });
-        //no: this removes the button just when we're clicking on one of the toolbar items
-        //$(this).focusout(function () {
-        //    editor.DetachFromBox(this);
-        //});
 
         $(this).focusout(function () {
             editor.DetachLanguageTip(this);
@@ -1452,8 +1448,6 @@ $(document).ready(function () {
     });
 
     //focus on the first editable field
-    //$(':input:enabled:visible:first').focus();
     $("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 
-    //editor.AddStyleEditBoxes('file://' + GetSettings().bloomBrowserUIFolder+"/bookEdit");
-});
+}); // end document ready function

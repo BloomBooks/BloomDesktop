@@ -1,7 +1,9 @@
+/// <reference path="getIframeChannel.ts"/>
+
 // listen for messages sent to this page
 window.addEventListener('message', processDLRMessage, false);
 
-var global = getGlobalObject();
+var iframeChannel = getIframeChannel();
 
 function getSetupDialogWindow() {
     return parent.window.document.getElementById("settings_frame").contentWindow;
@@ -62,7 +64,7 @@ var ReaderToolsModel = function() {
     this.textCounter = 0;
     this.setupType = '';
     this.fontName = '';
-    this.readableFileExtensions = getGlobalObject().readableFileExtensions;
+    this.readableFileExtensions = iframeChannel.readableFileExtensions;
     
     /** @type DirectoryWatcher */
     this.directoryWatcher = null;
@@ -592,7 +594,7 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
     } while (!fileName && (this.textCounter < this.texts.length));
 
     if (fileName)
-        global.simpleAjaxGet('/bloom/readers/getSampleFileContents', setSampleFileContents, fileName);
+        iframeChannel.simpleAjaxGet('/bloom/readers/getSampleFileContents', setSampleFileContents, fileName);
     else
         this.getNextSampleFile();
 };
@@ -681,8 +683,8 @@ function initializeDecodableRT() {
 
     // make sure synphony is initialized
     if (!model.getSynphony().source) {
-        global.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
-        global.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
+        iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
+        iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
     }
 
     // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
@@ -715,8 +717,8 @@ function initializeLeveledRT() {
 
     // make sure synphony is initialized
     if (!model.getSynphony().source) {
-        global.simpleAjaxGet('/bloom/getDefaultFont', setDefaultFont);
-        global.simpleAjaxGet('/bloom/loadReaderToolSettings', initializeSynphony);
+        iframeChannel.simpleAjaxGet('/bloom/getDefaultFont', setDefaultFont);
+        iframeChannel.simpleAjaxGet('/bloom/loadReaderToolSettings', initializeSynphony);
     }
 
     $('#incLevel').onOnce('click.readerTools', function() {
@@ -775,7 +777,7 @@ function initializeSynphony(settingsFileContent) {
     model.directoryWatcher.start();
 
     // get the list of sample texts
-    global.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+    iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
 }
 
 /**
@@ -821,5 +823,5 @@ function readerSampleFilesChanged() {
     synphony.loadSettings(settings);
 
     // reload the sample texts
-    simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+    iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
 }
