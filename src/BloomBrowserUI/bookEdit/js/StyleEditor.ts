@@ -220,6 +220,7 @@ class StyleEditor {
 		var pxSize = parseInt(sizeString); // strip off units and parse
 		var ptSize = this.ConvertPxToPt(pxSize);
 		var lang = box.attr('lang');
+		lang = localizationManager.getText(lang);
 
 		// localize
 		var tipText = "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.";
