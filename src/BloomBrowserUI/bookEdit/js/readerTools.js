@@ -70,7 +70,7 @@ var ReaderToolsModel = function() {
     if (iframeChannel)
         this.readableFileExtensions = iframeChannel.readableFileExtensions;
 
-    /** @type DirectoryWatcher */
+    /** @type DirectoryWatcher directoryWatcher */
     this.directoryWatcher = null;
 };
 
@@ -585,6 +585,7 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
         this.addWordsToSynphony();
         this.updateWordList();
         this.doMarkup();
+        processWordListChangedListeners();
         return;
     }
 
@@ -776,7 +777,7 @@ function initializeSynphony(settingsFileContent) {
     } );
 
     // set up a DirectoryWatcher on the Sample Texts directory
-    model.directoryWatcher = new DirectoryWatcher('Sample Texts', 20);
+    model.directoryWatcher = new DirectoryWatcher('Sample Texts', 10);
     model.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
     model.directoryWatcher.start();
 
@@ -828,4 +829,41 @@ function readerSampleFilesChanged() {
 
     // reload the sample texts
     iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+}
+
+//noinspection JSUnusedGlobalSymbols
+/**
+ * Gets the list of texts in the Sample Texts directory
+ * @returns {String[]}
+ */
+function getTexts() {
+    if (model.texts)
+        return model.texts;
+    else
+        return [];
+}
+
+/**
+ * A list of the functions to call when the word list changes
+ */
+var wordListChangedListeners = {};
+
+//noinspection JSUnusedGlobalSymbols
+/**
+ * Adds a function to the list of functions to call when the word list changes
+ * @param {String} listenerNameAndContext
+ * @param {Function} callback
+ */
+function addWordListChangedListener(listenerNameAndContext, callback) {
+    wordListChangedListeners[listenerNameAndContext] = callback;
+}
+
+/**
+ * Notify anyone who wants to know that the word list changed
+ */
+function processWordListChangedListeners() {
+
+    var handlers = Object.keys(wordListChangedListeners);
+    for (var j = 0; j < handlers.length; j++)
+        wordListChangedListeners[handlers[j]]();
 }
