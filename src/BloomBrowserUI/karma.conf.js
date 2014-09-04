@@ -21,6 +21,7 @@ module.exports = function (config) {
             'bookEdit/test/interIframeChannelInitializer.js',
             'lib/localizationManager.js',
             'lib/jquery.i18n.custom.js',
+            'lib/split-pane/split-pane.js',
 
             // helpers -- jasmine-query
             'test/lib/**/*.js',
