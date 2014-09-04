@@ -305,7 +305,7 @@ namespace Bloom.Book
             {
                 return GetErrorDom();
             }
-            var pageDom = GetHtmlDomWithJustOnePage(page);
+            var pageDom = GetHtmlDomWithJustOnePage(page); 
             pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
             pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
             pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
@@ -977,6 +977,7 @@ namespace Bloom.Book
 		{
             _bookData.SetMultilingualContentLanguages(language2Code, language3Code);
 		    InjectStringListingActiveLanguagesOfBook();
+			_bookData.UpdateDomFromDataset();
 		}
 
 		/// <summary>
@@ -998,7 +999,6 @@ namespace Bloom.Book
 			}
 
 			_bookData.Set("languagesOfBook", languagesOfBook, false);
-			_bookData.UpdateDomFromDataset();
 		}
 
 		/// <summary>
@@ -1289,7 +1289,7 @@ namespace Bloom.Book
 				 */
 
 	            page.InnerXml = divElement.InnerXml;
- 
+
 				// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
 				// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
 				// The idea is to match class attriutes which have class bloom-ui, but may have other classes. We don't want to match
@@ -1583,16 +1583,16 @@ namespace Bloom.Book
 			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.
     	}
 
-	    /// <summary>
-	    ///Under normal conditions, this isn't needed, because it is done when a book is first created. But thing might have changed:
-	    /// *changing xmatter pack, and update to it, changing the languages, etc.
-	    /// *the book was dragged from another project
-	    /// *the editing language was changed.  
-	    /// Under those conditions, if we didn't, for example, do a PrepareElementsInPageOrDocument, we would end up with no
-	    /// editable items, because there are no elements in our language.
-	    /// </summary>
-	    public void PrepareForEditing()
-	    {
+		/// <summary>
+		///Under normal conditions, this isn't needed, because it is done when a book is first created. But thing might have changed:
+		/// *changing xmatter pack, and update to it, changing the languages, etc.
+		/// *the book was dragged from another project
+		/// *the editing language was changed.  
+		/// Under those conditions, if we didn't, for example, do a PrepareElementsInPageOrDocument, we would end up with no
+		/// editable items, because there are no elements in our language.
+		/// </summary>
+		public void PrepareForEditing()
+		{
 			//We could re-enable RebuildXMatter() here later, so that we get this nice refresh each time.
 			//But currently this does some really slow image compression:	RebuildXMatter(RawDom);
 			UpdateEditableAreasOfElement(OurHtmlDom);
@@ -1604,11 +1604,11 @@ namespace Bloom.Book
 		/// <param name="elementToUpdate"></param>
 		public void UpdateEditableAreasOfElement(HtmlDom elementToUpdate)
 		{
-			var language1Iso639Code = _collectionSettings.Language1Iso639Code;
-			var language2Iso639Code = _collectionSettings.Language2Iso639Code;
-			var language3Iso639Code = _collectionSettings.Language3Iso639Code;
-			var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2;
-			var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3;
+            var language1Iso639Code = _collectionSettings.Language1Iso639Code;
+            var language2Iso639Code = _collectionSettings.Language2Iso639Code;
+            var language3Iso639Code = _collectionSettings.Language3Iso639Code;
+            var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2;
+            var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3;
 			foreach (XmlElement div in elementToUpdate.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				TranslationGroupManager.PrepareElementsInPageOrDocument(div, _collectionSettings);
