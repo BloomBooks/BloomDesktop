@@ -2,6 +2,7 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Drawing;
 using System.IO;
@@ -16,6 +17,7 @@ namespace Bloom.web
 	public class RequestInfo : IRequestInfo
 	{
 		private readonly HttpListenerContext _actualContext;
+		private NameValueCollection _queryStringList;
 
 		public string LocalPathWithoutQuery
 		{
@@ -130,9 +132,31 @@ namespace Bloom.web
 			_actualContext.Response.Close();
 		}
 
+		/// <summary>
+		/// Processes the QueryString, decoding the values if needed
+		/// </summary>
+		/// <returns></returns>
 		public NameValueCollection GetQueryString()
 		{
-			return _actualContext.Request.QueryString;
+			// UrlDecode the values, if needed
+			if (_queryStringList == null)
+			{
+				var qs = _actualContext.Request.QueryString;
+
+				_queryStringList = new NameValueCollection();
+
+				foreach (var key in qs.AllKeys)
+				{
+					var val = qs[key];
+					if (val.Contains("%") || val.Contains("+"))
+						val = Uri.UnescapeDataString(val).Replace('+', ' ');
+
+					_queryStringList.Add(key, val);
+				}
+
+			}
+
+			return _queryStringList;
 		}
 
 		public NameValueCollection GetPostData()
