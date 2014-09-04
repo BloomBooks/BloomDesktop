@@ -800,16 +800,6 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		private void label3_Click(object sender, EventArgs e)
-		{
-
-		}
-
-		private void _vernacularCollectionMenuStrip_Opening(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-
-		}
-
         private void _doChecksAndUpdatesOfAllBooksToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _model.DoUpdatesOfAllBooks();
@@ -851,9 +841,33 @@ namespace Bloom.CollectionTab
             _disposed = true;
         }
 
+		internal void MakeBloomPack(bool forReaderTools)
+		{
+			using (var dlg = new SaveFileDialog())
+			{
+				dlg.FileName = _model.GetSuggestedBloomPackPath();
+				dlg.Filter = "BloomPack|*.BloomPack";
+				dlg.RestoreDirectory = true;
+				dlg.OverwritePrompt = true;
+				if (DialogResult.Cancel == dlg.ShowDialog())
+				{
+					return;
+				}
+				_model.MakeBloomPack(dlg.FileName, forReaderTools);
+			}
+		}
 
-
-
+		private void makeReaderTemplateBloomPackToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			using (var dlg = new MakeReaderTemplateBloomPackDlg())
+			{
+				dlg.SetLanguage(_model.LanguageName);
+				dlg.SetTitles(_model.BookTitles);
+				if (dlg.ShowDialog(this) != DialogResult.OK)
+					return;
+				MakeBloomPack(true);
+			}
+		}
 
 		/// <summary>
 		/// Occasionally, when select a book, the Bloom App itself loses focus. I assume this is a gecko-related issue.
