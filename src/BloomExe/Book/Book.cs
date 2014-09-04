@@ -977,6 +977,7 @@ namespace Bloom.Book
 		{
 			_bookData.SetMultilingualContentLanguages(language2Code, language3Code);
 			InjectStringListingActiveLanguagesOfBook();
+			_bookData.UpdateDomFromDataset();
 		}
 
 		/// <summary>
@@ -998,7 +999,6 @@ namespace Bloom.Book
 			}
 
 			_bookData.Set("languagesOfBook", languagesOfBook, false);
-			_bookData.UpdateDomFromDataset();
 		}
 
 		/// <summary>
