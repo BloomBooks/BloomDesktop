@@ -503,7 +503,7 @@ ReaderToolsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
 ReaderToolsModel.prototype.maxWordsPerBook = function() {
     var levels = this.synphony.getLevels();
     if (levels.length <= 0) {
-        return 9999;
+        return 999999;
     }
     return levels[this.levelNumber - 1].getMaxWordsPerBook();
 };
@@ -511,7 +511,7 @@ ReaderToolsModel.prototype.maxWordsPerBook = function() {
 ReaderToolsModel.prototype.maxUniqueWordsPerBook = function () {
     var levels = this.synphony.getLevels();
     if (levels.length <= 0) {
-        return 9999;
+        return 99999;
     }
     return levels[this.levelNumber - 1].getMaxUniqueWordsPerBook();
 };
