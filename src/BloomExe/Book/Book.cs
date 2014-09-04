@@ -968,11 +968,16 @@ namespace Bloom.Book
 
 		public BookInfo BookInfo { get; private set; }
 
+		public int NextStyleNumber
+		{
+			get { return _bookData.StyleNumberSequence; }
+		}
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
 			_bookData.SetMultilingualContentLanguages(language2Code, language3Code);
 			InjectStringListingActiveLanguagesOfBook();
+			_bookData.UpdateDomFromDataset();
 		}
 
 		/// <summary>
@@ -994,7 +999,6 @@ namespace Bloom.Book
 			}
 
 			_bookData.Set("languagesOfBook", languagesOfBook, false);
-			_bookData.UpdateDomFromDataset();
 		}
 
 		/// <summary>
