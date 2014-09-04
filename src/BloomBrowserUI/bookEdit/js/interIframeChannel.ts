@@ -46,6 +46,24 @@ class interIframeChannel {
      * Retrieve data from localhost
      * @param {String} url The URL to request
      * @param {Function} callback Function to call when the ajax request returns
+     * @param {Object} callbackParam Parameter passed to the callback function
+     * @param {String} [dataValue] Passed in the query string under the "data" key
+     */
+    simpleAjaxGetWithCallbackParam(url: string, callback: any, callbackParam: any, dataValue?: any): void {
+
+        var ajaxSettings = {type: 'GET', url: url};
+        if (dataValue) ajaxSettings['data'] = {data: dataValue};
+
+        $.ajax(ajaxSettings)
+            .done(function (data) {
+                callback(data, callbackParam);
+            });
+    }
+
+    /**
+     * Retrieve data from localhost
+     * @param {String} url The URL to request
+     * @param {Function} callback Function to call when the ajax request returns
      * @param {String} [dataValue] Passed in the post under the "data" key
      */
     simpleAjaxPost(url, callback, dataValue): void {
