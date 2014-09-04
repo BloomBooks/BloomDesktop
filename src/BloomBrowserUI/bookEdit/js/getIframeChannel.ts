@@ -1,7 +1,8 @@
+/// <reference path="interIframeChannel.ts" />
 /**
  * Finds the interIframeChannel on the main document
  */
-function getIframeChannel() {
+function getIframeChannel(): interIframeChannel {
 
     if (typeof document["interIframeChannel"] === 'object') {
         return document["interIframeChannel"];

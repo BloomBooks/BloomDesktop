@@ -123,6 +123,8 @@ function loadPanelsAndSetCurrent(panels, currentPanel) {
         });
     }
 
+    $('body').find('*[data-i18n]').localize();
+
     // turn off animation
     var ani = accordion.accordion('option', 'animate');
     accordion.accordion('option', 'animate', false);
@@ -163,7 +165,8 @@ function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPane
         $.ajax(ajaxSettings)
             .done(function (data) {
                 loadAccordionPanel(data, panelId);
-                if (typeof loadNextCallback === 'function') loadNextCallback(panels, currentPanel)
+                if (typeof loadNextCallback === 'function')
+                    loadNextCallback(panels, currentPanel);
             });
     }
 }
@@ -235,6 +238,7 @@ function loadAccordionPanel(newContent, panelId) {
 $(document).ready(function () {
     new BloomAccordion(); // have to create this somewhere to get it initialized.
     resizeAccordion(); // Make sure it gets run once, at least.
+    $('body').find('*[data-i18n]').localize(); // run localization
 
     // Now bind the window's resize function to the accordion resizer
     $(window).bind('resize', function () {

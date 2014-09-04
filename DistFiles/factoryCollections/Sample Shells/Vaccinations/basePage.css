@@ -256,3 +256,8 @@ H1
 	font-size: 120%;
 	color: #1C27D2;
 }
+
+/* we will have UI that switches this .box-header-on if th user wants it*/
+.box-header-off{
+	display: none;
+}

@@ -2,28 +2,28 @@
 <html>
   <head></head>
   <body>
-    <h3 data-markuptype="2" data-order="20">Leveled Reader Tool</h3>
+    <h3 data-markuptype="2" data-order="20" data-i18n="LeveledReaderTool.Title">Leveled Reader Tool</h3>
     <div><img id="levels-steps" src="http://localhost:8089/bloom/images/steps-white.png" style="margin-left: 14px; width: 32px"/>
-      <div class="stageLine"><span id="decLevel" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine">Level <span id="levelNumber">1</span><span class="ofStage">&nbsp;of&nbsp;<span id="numberOfLevels">2</span></span></span><span id="incLevel" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
+      <div class="stageLine"><span id="decLevel" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span data-i18n="LeveledReaderTool.Level" class="stageLabel stageLine">Level <span id="levelNumber">1</span><span data-i18n="LeveledReaderTool.LevelOf" class="ofStage">&nbsp;of&nbsp;<span id="numberOfLevels">2</span></span></span><span id="incLevel" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
       <table style="margin-left: 6px" class="statistics clear">
         <tr>
-          <td class="section">Word counts</td>
+          <td data-i18n="LeveledReaderTool.WordCounts" class="section">Word counts</td>
         </tr>
         <tr>
-          <td>This Page</td>
+          <td data-i18n="LeveledReaderTool.ThisPage">This Page</td>
         </tr>
         <tr>
           <td class="statistics-label"></td>
-          <td class="statistics-max">Max</td>
-          <td class="statistics-actual">Actual</td>
+          <td data-i18n="LeveledReaderTool.Max" class="statistics-max">Max</td>
+          <td data-i18n="LeveledReaderTool.Actual" class="statistics-actual">Actual</td>
         </tr>
         <tr>
-          <td class="statistics-label">per page</td>
+          <td data-i18n="LeveledReaderTool.PerPage" class="statistics-label">per page</td>
           <td id="maxWordsPerPage" class="statistics-max">15</td>
           <td id="actualWordsPerPage" class="statistics-actual">13</td>
         </tr>
         <tr>
-          <td class="statistics-label">per sentence</td>
+          <td data-i18n="LeveledReaderTool.PerSentence" class="statistics-label">per sentence</td>
           <td id="maxWordsPerSentence" class="statistics-max">5</td>
           <td id="actualWordsPerSentence" class="statistics-actual">7</td>
         </tr>
@@ -31,32 +31,32 @@
       <!-- the This Book section is hidden because it has not been implemented yet-->
       <table style="margin-left: 6px; display: none" class="statistics clear">
         <tr>
-          <td class="section">This Book</td>
+          <td data-i18n="LeveledReaderTool.ThisBook" class="section">This Book</td>
         </tr>
         <tr>
           <td class="statistics-label"></td>
-          <td class="statistics-max">Max</td>
-          <td class="statistics-actual">Actual</td>
+          <td data-i18n="LeveledReaderTool.Max" class="statistics-max">Max</td>
+          <td data-i18n="LeveledReaderTool.Actual" class="statistics-actual">Actual</td>
         </tr>
         <tr>
-          <td class="statistics-label">total</td>
+          <td data-i18n="LeveledReaderTool.Total" class="statistics-label">total</td>
           <td id="maxWordsPerBook" class="statistics-max"></td>
           <td id="actualWordCount" class="statistics-actual">83</td>
         </tr>
-        <td class="statistics-label">per page</td>
+        <td data-i18n="LeveledReaderTool.PerPage" class="statistics-label">per page</td>
         <td id="maxWordsPerPageBook" class="statistics-max">15</td>
         <td id="actualWordsPerPageBook" class="statistics-actual">14</td>
         <tr>
-          <td class="statistics-label">unique</td>
+          <td data-i18n="LeveledReaderTool.Unique" class="statistics-label">unique</td>
           <td id="maxUniqueWordsPerBook" class="statistics-max">20</td>
           <td id="actualUniqueWords" class="statistics-actual">22</td>
         </tr>
       </table>
-      <div style="display: inline-block; position: relative; float: right; margin: 10px 14px"><span class="setup stageLine"><a href="javascript:parent.window.showSetupDialog('levels');">Set up Levels</a></span></div>
-      <div style="clear: both; margin-left: 8px;" class="section">For this Level
+      <div style="display: inline-block; position: relative; float: right; margin: 10px 14px"><span class="setup stageLine"><a href="javascript:parent.window.showSetupDialog('levels');" data-i18n="LeveledReaderTool.SetUpLevels">Set up Levels</a></span></div>
+      <div style="clear: both; margin-left: 8px;" data-i18n="LeveledReaderTool.FoThisLevel" class="section">For this Level
         <ul id="thingsToRemember"></ul>
       </div>
-      <div style="margin-left: 8px;" class="section">Keep in mind
+      <div style="margin-left: 8px;" data-i18n="LeveledReaderTool.KeepInMind" class="section">Keep in mind
         <ul>
           <li><a href="http://onlinelibrary.wiley.com/doi/10.1002/j.1949-3533.2003.tb00139.x/abstract">Predictability</a></li>
           <li><a href="http://pracresources.pbworks.com/f/PatternAndSequence.pdf">Pattern and recognition</a></li>
