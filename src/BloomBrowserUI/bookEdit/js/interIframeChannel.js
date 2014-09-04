@@ -25,6 +25,12 @@ var interIframeChannel = (function () {
     * @param {String} [dataValue] Passed in the query string under the "data" key
     */
     interIframeChannel.prototype.simpleAjaxGet = function (url, callback, dataValue) {
+        // We should call encodeURIComponent() if dataValue is a string.
+        // NOTE: Wea re checking for '%' because we shouldn't call encodeURIComponent() if the string has
+        // already been URI encoded.
+        if ((typeof dataValue === 'string') && (dataValue.indexOf('%') === -1))
+            dataValue = encodeURIComponent(dataValue);
+
         var ajaxSettings = { type: 'GET', url: url };
         if (dataValue)
             ajaxSettings['data'] = { data: dataValue };
