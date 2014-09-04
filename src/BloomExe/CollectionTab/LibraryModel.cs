@@ -90,6 +90,14 @@ namespace Bloom.CollectionTab
 			return _bookCollections;
 		}
 
+		/// <summary>
+		/// Titles of all the books in the vernacular collection.
+		/// </summary>
+		internal IEnumerable<string> BookTitles
+		{
+			get { return TheOneEditableCollection.GetBookInfos().Select(book => book.Title); }
+		}
+
 		private BookCollection TheOneEditableCollection
 		{
 			get { return GetBookCollections().First(c => c.Type == BookCollection.CollectionType.TheOneEditableCollection); }
@@ -192,13 +200,13 @@ namespace Bloom.CollectionTab
 			book.RebuildThumbNailAsync(thumbnailOptions, callback, errorCallback);
 		}
 
-		public void MakeBloomPack(string path)
+		public void MakeBloomPack(string path, bool forReaderTools = false)
 		{
 			try
 			{
 				if(File.Exists(path))
 				{
-					//UI already go permission for this
+					//UI already got permission for this
 					File.Delete(path);
 				}
 				Logger.WriteEvent("Making BloomPack");
@@ -213,8 +221,21 @@ namespace Bloom.CollectionTab
 						using (var zip = new ZipFile(Encoding.UTF8))
 						{
 							string dir = TheOneEditableCollection.PathToDirectory;
+							string rootName = Path.GetFileName(dir);
+							foreach (var directory in Directory.GetDirectories(dir))
+							{
+								var dirName = Path.GetFileName(directory);
+								if (dirName.ToLowerInvariant() == "sample texts")
+									continue; // Don't want to bundle these up
+								var zipName = Path.Combine(rootName, dirName);
+								zip.AddDirectory(directory, zipName);
+							}
+							foreach (var file in Directory.GetFiles(dir))
+							{
+								zip.AddFile(file, rootName);
+							}
 							//nb: without this second argument, we don't get the outer directory included, and we need that for the name of the collection
-							zip.AddDirectory(dir, System.IO.Path.GetFileName(dir));
+							//zip.AddDirectory(dir, System.IO.Path.GetFileName(dir));
 							zip.Save(path);
 						}
 						//show it
