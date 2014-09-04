@@ -81,10 +81,15 @@ namespace Bloom.Edit
 			libraryClosingEvent.Subscribe(o=>SaveNow());
 			localizationChangedEvent.Subscribe(o =>
 			{
-				RefreshDisplayOfCurrentPage();
-				//_view.UpdateDisplay();
-				_view.UpdatePageList(false);
-				_view.UpdateTemplateList();
+				//this is visible was added for https://jira.sil.org/browse/BL-267, where the edit tab has never been
+				//shown so the view has never been full constructed, so we're not in a good state to do a refresh
+				if (Visible)
+				{
+					RefreshDisplayOfCurrentPage();
+					//_view.UpdateDisplay();
+					_view.UpdatePageList(false);
+					_view.UpdateTemplateList();
+				}
 			});
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
