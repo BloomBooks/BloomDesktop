@@ -144,9 +144,9 @@ class LocalizationManager {
         if (!key) return;
 
         var elem = $(element);
-        var text = this.getText(key, elem.text());
+        var text = this.getText(key, elem.html());
 
-        if (text) elem.text(text);
+        if (text) elem.html(text);
     }
 
     /**
