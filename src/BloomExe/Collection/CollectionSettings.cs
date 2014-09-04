@@ -309,7 +309,7 @@ namespace Bloom.Collection
 		/// </summary>
 		public string DecodableLevelPathName
 		{
-			get { return Path.Combine(Path.GetDirectoryName(SettingsFilePath), "DecodableLevelData.json"); }
+			get { return Path.Combine(Path.GetDirectoryName(SettingsFilePath), "ReaderToolsSettings-" + Language1Iso639Code + ".json"); }
 		}
 
 		[XmlIgnore]
