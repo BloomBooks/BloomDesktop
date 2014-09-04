@@ -460,9 +460,6 @@ ReaderToolsModel.prototype.doMarkup = function() {
             this.updateMaxWordsPerSentenceOnPage();
             this.updateTotalWordsOnPage();
             var pageStrings = this.getTextOfWholeBook();
-            this.updateActualCount(this.countWordsInBook(pageStrings), this.maxWordsPerBook(), 'actualWordCount');
-            this.updateActualCount(this.maxWordsPerPageInBook(pageStrings), this.maxWordsPerPage(), 'actualWordsPerPageBook');
-            this.updateActualCount(this.uniqueWordsInBook(pageStrings), this.maxUniqueWordsPerBook(), 'actualUniqueWords');
 
             break;
 
@@ -527,9 +524,16 @@ ReaderToolsModel.prototype.maxWordsPerPage = function() {
     return levels[this.levelNumber - 1].getMaxWordsPerPage();
 };
 
-ReaderToolsModel.prototype.getTextOfWholeBook = function() {
-    return ["This is a silly substitute for a page", "This is another silly substitute for a page with a much longer sentence"];
+ReaderToolsModel.prototype.getTextOfWholeBook = function () {
+    iframeChannel.simpleAjaxGet('/bloom/readers/getTextOfPages', updateWholeBookCounts);
 };
+
+ReaderToolsModel.prototype.updateWholeBookCounts = function (pageSource) {
+    var pageStrings = pageSource.split('\r');
+    this.updateActualCount(this.countWordsInBook(pageStrings), this.maxWordsPerBook(), 'actualWordCount');
+    this.updateActualCount(this.maxWordsPerPageInBook(pageStrings), this.maxWordsPerPage(), 'actualWordsPerPageBook');
+    this.updateActualCount(this.uniqueWordsInBook(pageStrings), this.maxUniqueWordsPerBook(), 'actualUniqueWords');
+}
 
 ReaderToolsModel.prototype.countWordsInBook = function(pageStrings) {
     var total = 0;
@@ -884,6 +888,14 @@ function setTextsList(textsList) {
 function setSampleFileContents(fileContents) {
     model.addWordsFromFile(fileContents);
     model.getNextSampleFile();
+}
+
+/**
+ * Called in response to a request for the contents of the book's pages
+ * @param {string} pageSource
+ */
+function updateWholeBookCounts(pageSource) {
+    model.updateWholeBookCounts(pageSource);
 }
 
 function setDefaultFont(fontName) {
