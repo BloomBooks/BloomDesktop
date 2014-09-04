@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -56,6 +57,7 @@ namespace Bloom.Book
         private readonly CollectionSettings _collectionSettings;
         private readonly DataSet _dataset;
         private XmlElement _dataDiv;
+        private Object thisLock = new Object();
 
         /// <param name="dom">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
         ///   Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
@@ -92,6 +94,28 @@ namespace Bloom.Book
             {
                 GatherDataItemsFromXElement(_dataset, _dom.RawDom);
                 return GetVariableOrNull("contentLanguage3", "*");
+            }
+        }
+
+        /// <summary>
+        /// A book-level style number sequence
+        /// </summary>
+        public int StyleNumberSequence
+        {
+            get
+            {
+                lock(thisLock)
+                {
+                    GatherDataItemsFromXElement(_dataset, _dom.RawDom);
+                    string curSeqStr = GetVariableOrNull("styleNumberSequence", "*");
+                    int curSeq;
+                    int nextSeq = 1;
+                    if (Int32.TryParse(curSeqStr, out curSeq))
+                        nextSeq = curSeq + 1;
+                    Set("styleNumberSequence", nextSeq.ToString(CultureInfo.InvariantCulture),
+                        false);
+                    return nextSeq;
+                }
             }
         }
 

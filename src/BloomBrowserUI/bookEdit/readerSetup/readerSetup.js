@@ -5,7 +5,6 @@ var desiredGPCs;
 var previousGPCs;
 var sightWords;
 var currentSightWords;
-var directoryWatcher;
 
 function accordionWindow() {
     return window.parent.document.getElementById('accordion').contentWindow;
@@ -746,17 +745,17 @@ function tabBeforeActivate(ui) {
 }
 
 /**
- * This method is called whenever a change is detected in the Sample Files directory
+ * The ReaderTools calls this function to notify the dialog that the word list and/or the list of sample files
+ * has changed.
  */
-function sampleFilesChanged() {
-
-    console.log('Changed');
-
+function wordListChangedCallback() {
+    accordionWindow().postMessage('Texts', '*');
+    requestWordsForSelectedStage();
 }
 
 $(document).ready(function () {
     $('body').find('*[data-i18n]').localize(finishInitializing);
-    directoryWatcher = new DirectoryWatcher('Sample Texts', 8);
-    directoryWatcher.onChanged('SampleFilesChanged.ReaderSetup', sampleFilesChanged);
-    directoryWatcher.start();
+    var accordion = accordionWindow();
+    document.getElementById('dls_word_lists').value = accordion.getTexts().join('\n');
+    accordion.addWordListChangedListener('wordListChanged.ReaderSetup', wordListChangedCallback);
 });

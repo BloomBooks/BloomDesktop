@@ -93,6 +93,7 @@ namespace Bloom.Edit
 			});
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
+            _server.CurrentBook = CurrentBook;
         }
 
 
@@ -125,6 +126,7 @@ namespace Bloom.Edit
     		var wasNull = _domForCurrentPage == null;
     		_domForCurrentPage = null;
     		_currentlyDisplayedBook = null;
+    	    _server.CurrentBook = CurrentBook;
 			if (Visible)
 			{
 				_view.ClearOutDisplay();

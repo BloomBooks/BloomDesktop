@@ -38,6 +38,23 @@ var interIframeChannel = (function () {
     * Retrieve data from localhost
     * @param {String} url The URL to request
     * @param {Function} callback Function to call when the ajax request returns
+    * @param {Object} callbackParam Parameter passed to the callback function
+    * @param {String} [dataValue] Passed in the query string under the "data" key
+    */
+    interIframeChannel.prototype.simpleAjaxGetWithCallbackParam = function (url, callback, callbackParam, dataValue) {
+        var ajaxSettings = { type: 'GET', url: url };
+        if (dataValue)
+            ajaxSettings['data'] = { data: dataValue };
+
+        $.ajax(ajaxSettings).done(function (data) {
+            callback(data, callbackParam);
+        });
+    };
+
+    /**
+    * Retrieve data from localhost
+    * @param {String} url The URL to request
+    * @param {Function} callback Function to call when the ajax request returns
     * @param {String} [dataValue] Passed in the post under the "data" key
     */
     interIframeChannel.prototype.simpleAjaxPost = function (url, callback, dataValue) {
