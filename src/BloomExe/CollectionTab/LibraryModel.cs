@@ -13,6 +13,7 @@ using Bloom.Edit;
 using Bloom.SendReceive;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
+using Chorus.FileTypeHanders.OurWord;
 using DesktopAnalytics;
 using Ionic.Zip;
 using Palaso.IO;
@@ -224,11 +225,18 @@ namespace Bloom.CollectionTab
 							string rootName = Path.GetFileName(dir);
 							foreach (var directory in Directory.GetDirectories(dir))
 							{
+								string repairPath;
+								string repairContent;
+								if (forReaderTools)
+									MakeBookIntoTemplate(directory, out repairPath, out repairContent );
+
 								var dirName = Path.GetFileName(directory);
 								if (dirName.ToLowerInvariant() == "sample texts")
 									continue; // Don't want to bundle these up
 								var zipName = Path.Combine(rootName, dirName);
 								zip.AddDirectory(directory, zipName);
+								if (repairPath != null)
+									File.WriteAllText(repairPath, repairContent, Encoding.UTF8);
 							}
 							foreach (var file in Directory.GetFiles(dir))
 							{
@@ -255,6 +263,11 @@ namespace Bloom.CollectionTab
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Could not make the BloomPack");
 			}
     	}
+
+		private void MakeBookIntoTemplate(string directory, out string repairPath, out string repairContent)
+		{
+			var bookFile = Path.
+		}
 
     	public string GetSuggestedBloomPackPath()
     	{
