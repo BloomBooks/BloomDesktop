@@ -1,4 +1,4 @@
-/// <reference path="../../lib/jquery.d.ts" />
+﻿/// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
 /// <reference path="getIframeChannel.ts"/>
@@ -201,6 +201,7 @@ var StyleEditor = (function () {
         var pxSize = parseInt(sizeString);
         var ptSize = this.ConvertPxToPt(pxSize);
         var lang = box.attr('lang');
+        lang = localizationManager.getText(lang);
 
         // localize
         var tipText = "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.";
