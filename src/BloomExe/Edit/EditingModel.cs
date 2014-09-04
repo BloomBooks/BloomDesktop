@@ -27,7 +27,8 @@ namespace Bloom.Edit
         private readonly BookSelection _bookSelection;
         private readonly PageSelection _pageSelection;
         private readonly LanguageSettings _languageSettings;
-    	private readonly DeletePageCommand _deletePageCommand;
+        private readonly DuplicatePageCommand _duplicatePageCommand;
+        private readonly DeletePageCommand _deletePageCommand;
 	    private readonly LocalizationChangedEvent _localizationChangedEvent;
 	    private readonly CollectionSettings _collectionSettings;
     	private readonly SendReceiver _sendReceiver;
@@ -50,7 +51,8 @@ namespace Bloom.Edit
             TemplateInsertionCommand templateInsertionCommand,
             PageListChangedEvent pageListChangedEvent,
             RelocatePageEvent relocatePageEvent,
-			BookRefreshEvent bookRefreshEvent,
+            BookRefreshEvent bookRefreshEvent,
+            DuplicatePageCommand duplicatePageCommand,
             DeletePageCommand deletePageCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
@@ -62,8 +64,9 @@ namespace Bloom.Edit
         {
             _bookSelection = bookSelection;
             _pageSelection = pageSelection;
-            _languageSettings = languageSettings;
-        	_deletePageCommand = deletePageCommand;
+			_languageSettings = languageSettings;
+			_duplicatePageCommand = duplicatePageCommand;
+			_deletePageCommand = deletePageCommand;
 	        _collectionSettings = collectionSettings;
         	_sendReceiver = sendReceiver;
             _server = server;
@@ -75,7 +78,8 @@ namespace Bloom.Edit
 			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null)); 
 			selectedTabChangedEvent.Subscribe(OnTabChanged);
 			selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
-            deletePageCommand.Implementer=OnDeletePage;
+			duplicatePageCommand.Implementer = OnDuplicatePage;
+			deletePageCommand.Implementer = OnDeletePage;
             pageListChangedEvent.Subscribe(x => _view.UpdatePageList(false));
             relocatePageEvent.Subscribe(OnRelocatePage);
 			libraryClosingEvent.Subscribe(o=>SaveNow());
@@ -134,6 +138,22 @@ namespace Bloom.Edit
 					_view.UpdatePageList(false);
 			}
     	}
+
+	    private void OnDuplicatePage()
+		{
+			try
+			{
+				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
+				_currentlyDisplayedBook.DuplicatePage(_pageSelection.CurrentSelection);
+				_view.UpdatePageList(false);
+				Logger.WriteEvent("Duplicate Page");
+				Analytics.Track("Duplicate Page");
+			}
+			catch (Exception error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, "Could not duplicate that page. Try quiting Bloom, run it again, and then attempt to duplicate the page again. And please click 'details' below and report this to us.");
+			}
+	    }
 
         private void OnDeletePage()
         {
@@ -220,6 +240,16 @@ namespace Bloom.Edit
 //                }
             }
         }
+
+	    public bool CanDuplicatePage
+		{
+			get
+			{
+				return _pageSelection != null && _pageSelection.CurrentSelection != null &&
+					   !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null
+					   && !_currentlyDisplayedBook.LockedDown;//this clause won't work when we start allowing custom front/backmatter pages
+			}
+	    }
 
         public bool CanDeletePage
         {
@@ -415,8 +445,9 @@ namespace Bloom.Edit
 					_view.UpdateThumbnailAsync(_previouslySelectedPage);
                 }
             	_previouslySelectedPage = _pageSelection.CurrentSelection;
-                _view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-            	_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
+				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+				_duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
+				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
             }
 
 			GC.Collect();//i put this in while looking for memory leaks, feel free to remove it.
