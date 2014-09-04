@@ -203,7 +203,8 @@ function makeTextFieldClickHandler(e) {
     e.preventDefault();
     //note, we're leaving it to some other part of the system, later, to add the needed .bloom-editable 
     //   divs (and set the right classes on them) inside of this new .bloom-translationGroup.
-    var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement normal-style"></div>');
+    var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement"></div>');
+    getIframeChannel().simpleAjaxGetWithCallbackParam('/bloom/getNextBookStyle', setStyle, translationGroup);
     $(this).closest('.split-pane-component-inner').append(translationGroup);
     $(this).closest('.selector-links').remove();
     //TODO: figure out if anything needs to get hooked up immediately
@@ -218,3 +219,6 @@ function makePictureFieldClickHandler(e) {
     $(this).closest('.selector-links').remove();
 }
 
+function setStyle(data, translationGroup) {
+    $(translationGroup).addClass('style' + data + '-style');
+}

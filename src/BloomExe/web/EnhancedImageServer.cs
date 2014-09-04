@@ -2,6 +2,7 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
 using System.Drawing.Text;
+using System.Globalization;
 using System.Linq;
 using Bloom.ImageProcessing;
 using System.IO;
@@ -17,9 +18,11 @@ namespace Bloom.web
 	public class EnhancedImageServer: ImageServer
 	{
 		private FileSystemWatcher _sampleTextsWatcher;
-		private bool _sampleTextsChanged = true;
+        private bool _sampleTextsChanged = true;
 
-		public CollectionSettings CurrentCollectionSettings { get; set; }
+        public CollectionSettings CurrentCollectionSettings { get; set; }
+
+        public Book.Book CurrentBook { get; set; }
 
 		public EnhancedImageServer(LowResImageCache cache): base(cache)
 		{
@@ -76,6 +79,11 @@ namespace Bloom.web
 				case "help":
 					var post = info.GetPostData();
 					HelpLauncher.Show(null, post["data"]);
+					return true;
+
+				case "getNextBookStyle":
+					info.ContentType = "text/html";
+					info.WriteCompleteOutput(CurrentBook.NextStyleNumber.ToString(CultureInfo.InvariantCulture));
 					return true;
 			}
 

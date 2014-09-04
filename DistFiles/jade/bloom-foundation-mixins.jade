@@ -24,6 +24,9 @@ mixin stylesheets(nameOfTemplateSpecificCSS)
 	+stylesheet(nameOfTemplateSpecificCSS)
 	//- +stylesheet('file://..\customCollectionStyles.css')
 
+mixin bookVariable(element, langCode, value)
+	div(data-book=element, lang=langCode)=value
+
 mixin bookVariable-title(langCode, title)
 	div(data-book='bookTitle', lang=langCode)=title
 
