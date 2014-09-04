@@ -34,7 +34,7 @@ class interIframeChannel {
     simpleAjaxGet(url: string, callback: any, dataValue?: any): void {
 
         // We should call encodeURIComponent() if dataValue is a string.
-        // NOTE: Wea re checking for '%' because we shouldn't call encodeURIComponent() if the string has
+        // NOTE: We are checking for '%' because we shouldn't call encodeURIComponent() if the string has
         // already been URI encoded.
         if ((typeof dataValue === 'string') && (dataValue.indexOf('%') === -1))
             dataValue = encodeURIComponent(dataValue);
@@ -56,6 +56,9 @@ class interIframeChannel {
      * @param {String} [dataValue] Passed in the query string under the "data" key
      */
     simpleAjaxGetWithCallbackParam(url: string, callback: any, callbackParam: any, dataValue?: any): void {
+
+        if ((typeof dataValue === 'string') && (dataValue.indexOf('%') === -1))
+            dataValue = encodeURIComponent(dataValue);
 
         var ajaxSettings = {type: 'GET', url: url};
         if (dataValue) ajaxSettings['data'] = {data: dataValue};
