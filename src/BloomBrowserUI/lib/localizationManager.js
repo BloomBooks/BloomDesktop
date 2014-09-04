@@ -30,6 +30,7 @@
 */
 var LocalizationManager = (function () {
     function LocalizationManager() {
+        this.inlineDictionaryLoaded = false;
         if (typeof document['getIframeChannel'] === 'function')
             this.dictionary = document['getIframeChannel']().localizationManagerDictionary;
         else
@@ -90,9 +91,11 @@ var LocalizationManager = (function () {
         for (var _i = 0; _i < (arguments.length - 2); _i++) {
             args[_i] = arguments[_i + 2];
         }
-        if (typeof document['GetDictionary'] === 'function') {
-            if (Object.keys(this.dictionary).length == 0)
-                this.loadStringsFromObject(document['GetDictionary']());
+        if (!this.inlineDictionaryLoaded && (typeof document['GetDictionary'] === 'function')) {
+            if (Object.keys(this.dictionary).length == 0) {
+                this.inlineDictionaryLoaded = true;
+                $.extend(localizationManager.dictionary, document['GetDictionary']());
+            }
         }
 
         // check if englishText is missing

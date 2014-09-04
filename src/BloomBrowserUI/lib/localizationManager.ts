@@ -32,6 +32,7 @@
 class LocalizationManager {
 
 	public dictionary: any;
+	private inlineDictionaryLoaded: boolean = false;
 
 	constructor() {
 		if (typeof document['getIframeChannel'] === 'function')
@@ -94,9 +95,11 @@ class LocalizationManager {
 	 */
 	getText(stringId: string, englishText?: string, ...args): string {
 
-		if (typeof document['GetDictionary'] === 'function') {
-			if (Object.keys(this.dictionary).length == 0)
-				this.loadStringsFromObject(document['GetDictionary']());
+		if (!this.inlineDictionaryLoaded && (typeof document['GetDictionary'] === 'function')) {
+			if (Object.keys(this.dictionary).length == 0) {
+				this.inlineDictionaryLoaded = true;
+				$.extend(localizationManager.dictionary, document['GetDictionary']());
+			}
 		}
 
 		// check if englishText is missing
