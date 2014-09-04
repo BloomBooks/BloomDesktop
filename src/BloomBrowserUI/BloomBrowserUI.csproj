@@ -39,15 +39,10 @@
     <Content Include="bookEdit\js\libsynphony\underscore_min_152.js" />
     <Content Include="bookEdit\js\libsynphony\xregexp-all-min.js" />
     <Content Include="bookEdit\js\readerTools.js" />
-    <Content Include="bookEdit\ReaderTools\readerTools.css" />
     <Content Include="bookEdit\css\editMode.css" />
     <Content Include="bookEdit\css\editOriginalMode.css" />
     <Content Include="bookEdit\css\editPaneGlobal.css" />
     <Content Include="bookEdit\css\editTranslationMode.css" />
-    <Content Include="bookEdit\ReaderTools\DecodableRT\DecodableRT.htm" />
-    <Content Include="bookEdit\ReaderTools\ReaderTools.htm" />
-    <Content Include="bookEdit\ReaderTools\LeveledRT\LeveledRT.htm" />
-    <Content Include="bookEdit\ReaderTools\PageElements\PageElements.htm" />
     <Content Include="bookEdit\html\HtmlPage1.html" />
     <Content Include="bookEdit\html\topicDialog.htm" />
     <Content Include="bookEdit\iconfont\index.html" />
@@ -78,6 +73,9 @@
     <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbars.css" />
     <Content Include="bookEdit\js\toolbar\toolbar.d.ts" />
+    <Content Include="bookEdit\readerSetup\readerSetup.css" />
+    <Content Include="bookEdit\readerSetup\ReaderSetup.htm" />
+    <Content Include="bookEdit\readerSetup\readerSetup.js" />
     <Content Include="bookEdit\test\cSharpDependencyInjector.js" />
     <Content Include="bookEdit\test\interIframeChannelInitializer.js" />
     <Content Include="bookEdit\test\libsynphony\jquery.text-markup.test.js" />
@@ -269,19 +267,17 @@
     <Content Include="bookEdit\img\cogGrey.svg" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="themes\bloom-jqueryui-theme\jquery-ui-dialog.custom.css" />
     <Content Include="web.config">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="packages.config" />
-    <Content Include="bookEdit\ReaderTools\DecodableRT\DecodableRT.jade" />
-    <Content Include="bookEdit\ReaderTools\ReaderTools.jade" />
-    <Content Include="bookEdit\ReaderTools\LeveledRT\LeveledRT.jade" />
-    <Content Include="bookEdit\ReaderTools\PageElements\PageElements.jade" />
     <Content Include="bookEdit\EditViewFrame.jade" />
     <Content Include="bookEdit\LibSynphonyTests.jstd" />
     <Content Include="bookEdit\ReaderToolsTests.jstd" />
     <Content Include="bookEdit\SynphonyApiTests.jstd" />
     <Content Include="bookEdit\js\calledByCSharp.js.map" />
+    <Content Include="bookEdit\readerSetup\ReaderSetup.jade" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
