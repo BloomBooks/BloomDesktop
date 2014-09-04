@@ -141,10 +141,10 @@ namespace Bloom.Book
 			foreach (var v in incomingData.TextVariables)
 			{
 				if (!v.Value.IsCollectionValue)
-					UpdateSingleTextVariableThroughoutDOM(v.Key,v.Value.TextAlternatives);
+					UpdateSingleTextVariableInDataDiv(v.Key,v.Value.TextAlternatives);
 			}
 			foreach (var tuple in itemsToDelete)
-				UpdateSingleTextVariableThrougoutDom(tuple.Item1, tuple.Item2, "");
+				UpdateSingleTextVariableInDataDiv(tuple.Item1, tuple.Item2, "");
 			Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
 			UpdateTitle(info);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
@@ -205,7 +205,14 @@ namespace Bloom.Book
 			}
 		}
 
-		private void UpdateSingleTextVariableThroughoutDOM(string key, MultiTextBase multiText)
+
+		/// <summary>
+		///
+		/// </summary>
+		/// <remarks>I (jh) found this labelled UpdateSingleTextVariableThrougoutDom but it actually only updated the datadiv, so I changed the name.</remarks>
+		/// <param name="key"></param>
+		/// <param name="multiText"></param>
+		private void UpdateSingleTextVariableInDataDiv(string key, MultiTextBase multiText)
 		{
 			//Debug.WriteLine("before: " + dataDiv.OuterXml);
 
@@ -216,11 +223,18 @@ namespace Bloom.Book
 			foreach (LanguageForm languageForm in multiText.Forms)
 			{
 				string writingSystemId = languageForm.WritingSystemId;
-				UpdateSingleTextVariableThrougoutDom(key, writingSystemId, languageForm.Form);
+				UpdateSingleTextVariableInDataDiv(key, writingSystemId, languageForm.Form);
 			}
 		}
 
-		private void UpdateSingleTextVariableThrougoutDom(string key, string writingSystemId, string form)
+		/// <summary>
+		///
+		/// </summary>
+		/// <remarks>I (jh) found this labelled UpdateSingleTextVariableThrougoutDom but it actually only updated the datadiv, so I changed the name.</remarks>
+		/// <param name="key"></param>
+		/// <param name="writingSystemId"></param>
+		/// <param name="form"></param>
+		private void UpdateSingleTextVariableInDataDiv(string key, string writingSystemId, string form)
 		{
 			XmlNode node =
 				_dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
@@ -265,7 +279,7 @@ namespace Bloom.Book
 		public void Set(string key, string value, bool isCollectionValue)
 		{
 			_dataset.UpdateGenericLanguageString(key, value, isCollectionValue);
-			UpdateSingleTextVariableThroughoutDOM(key, _dataset.TextVariables[key].TextAlternatives);
+			UpdateSingleTextVariableInDataDiv(key, _dataset.TextVariables[key].TextAlternatives);
 		}
 
 		public void Set(string key, string value, string lang)
@@ -273,7 +287,7 @@ namespace Bloom.Book
 			_dataset.UpdateLanguageString(key, value, lang, false);
 			if(_dataset.TextVariables.ContainsKey(key))
 			{
-				UpdateSingleTextVariableThroughoutDOM(key,_dataset.TextVariables[key].TextAlternatives);
+				UpdateSingleTextVariableInDataDiv(key,_dataset.TextVariables[key].TextAlternatives);
 			}
 			else //we go this path if we just removed the last value from the multitext
 			{
@@ -488,6 +502,15 @@ namespace Bloom.Book
 					"Error in GatherDataItemsFromDom(," + elementName + "). RawDom was:\r\n" + sourceElement.OuterXml,
 					error);
 			}
+		}
+
+		/// <summary>
+		/// given the values in our dataset, push them out to the fields in the pages
+		/// </summary>
+		public void UpdateDomFromDataset()
+		{
+			var noItemsToDelete = new HashSet<Tuple<string, string>>();
+			UpdateDomFromDataSet(_dataset, "*", _dom.RawDom, noItemsToDelete);
 		}
 
 		/// <summary>

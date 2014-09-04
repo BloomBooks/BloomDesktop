@@ -79,6 +79,9 @@ function processMessage(event) {
                     firstLevel.click(); // select the first level
             }
 
+            // handle the beforeActivate event
+            tabs.on('tabsbeforeactivate', function(event, ui) { tabBeforeActivate(ui); });
+
             return;
 
         case 'Font':
@@ -630,6 +633,7 @@ function storeThingsToRemember() {
     $('#levels-table').find('tbody tr.selected td:nth-child(6)').html(vals.join('\n'));
 }
 
+//noinspection JSUnusedGlobalSymbols
 function firstSetupLetters() {
 
     $('#dlstabs').tabs('option', 'active', 0);
@@ -705,6 +709,39 @@ function finishInitializing() {
     $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
     $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
     accordionWindow().postMessage('Texts', '*');
+}
+
+function tabBeforeActivate(ui) {
+
+    var panelId = ui['newPanel'][0].id;
+
+    if (panelId === 'dlstabs-2') { // Decodable Stages tab
+
+        var allLetters = (document.getElementById('dls_letters').value.trim() + ' ' + document.getElementById('dls_letter_combinations').value.trim()).split(' ');
+        var tbody = $('#stages-table').find('tbody');
+
+        // update letters grid
+        displayLetters();
+
+        // update letters in stages
+        var rows = tbody.find('tr');
+        rows.each(function() {
+
+            // get the letters for this stage
+            var letters = this.cells[1].innerHTML.split(' ');
+
+            // make sure each letter for this stage is all in the allLetters list
+            letters = _.intersection(letters, allLetters);
+            this.cells[1].innerHTML = Array.join(letters, ' ');
+        });
+
+        // select letters for current stage
+        var tr = tbody.find('tr.selected');
+        if (tr.length === 1) {
+            selectLetters(tr[0]);
+        }
+
+    }
 }
 
 /**

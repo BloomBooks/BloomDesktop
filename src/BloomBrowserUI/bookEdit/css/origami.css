@@ -1,0 +1,182 @@
+@import url("../../lib/split-pane/split-pane.css");
+
+.origami-ui {
+  visibility: hidden;
+}
+.origami-layout-mode .origami-ui {
+  visibility: visible;
+}
+
+.split-pane-frame {
+  position: relative;
+  box-sizing: border-box;
+  width: 800px;
+  height: 100%;
+  padding: 5px;
+  margin-left: auto;
+  margin-right: auto;
+  border: thick solid black;
+}
+
+.split-pane.vertical-percent > .split-pane-component.position-left {
+  right: 50%;
+  margin-right: 3px;
+}
+
+.split-pane.vertical-percent > .split-pane-component.position-right {
+  width: 50%;
+}
+
+.split-pane.horizontal-percent > .split-pane-component.position-top {
+/*.split-pane.horizontal-percent > .split-pane-component:first-child {*/
+  bottom: 50%;
+  margin-bottom: 3px;
+}
+
+.split-pane.horizontal-percent > .split-pane-component.position-bottom {
+/*.split-pane.horizontal-percent > .split-pane-component:nth-of-type(3) {*/
+/*.split-pane.horizontal-percent > .split-pane-component:first-child ~ .split-pane-component {*/
+  height: 50%;
+}
+
+.split-pane.vertical-percent > .vertical-divider {
+  right: 50%;
+  cursor: col-resize;
+  border-right: 3px dashed transparent;
+}
+
+.split-pane.vertical-percent > .vertical-divider:hover,
+.origami-layout-mode .split-pane.vertical-percent > .vertical-divider,
+.vertical-divider.dragged {
+  border-right-color: #E48C84 !important;
+}
+
+.split-pane.horizontal-percent > .horizontal-divider {
+  bottom: 50%;
+  cursor: row-resize;
+  border-bottom: 3px dashed transparent;
+}
+
+.split-pane.horizontal-percent > .horizontal-divider:hover,
+.origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
+.horizontal-divider.dragged {
+  border-bottom-color: #E48C84 !important;
+}
+
+.origami-toggle {
+  position: absolute;
+  right: 19px;
+  top: 19px;
+  cursor: pointer;
+  line-height: 1em;
+  color: rgba(0, 0, 0, 0.2);
+}
+.origami-layout-mode ~ .origami-toggle {
+  color: black;
+}
+
+.origami-buttons .button, .origami-buttons .button:visited {
+  display: inline-block;
+  text-decoration: none;
+  position: relative;
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  text-align: center;
+  font-weight: bold;
+  color: #E48C84;
+  background-color: white;
+  line-height: 1em;
+  font-size: 18px;
+}
+
+.origami-buttons .button:hover, .origami-buttons .button:focus {
+  color: white;
+  background-color: #E48C84;
+}
+
+.origami-buttons {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px;
+  z-index: 20000;
+}
+
+.split-pane-component-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.selector-links {
+  top: 45%;
+  text-align: center;
+}
+.selector-links, .selector-links a {
+  color: #E48C84;
+}
+
+.add {
+  position: absolute;
+  top: 50%;
+}
+.add.right {
+  right: -36px;
+}
+.add.left {
+  left: -36px;
+}
+
+/*
+ * Layout Mode switch (from proto.io)
+ */
+.onoffswitch {
+  display: inline-block; vertical-align: middle;
+  position: relative; width: 60px;
+  -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+  display: none;
+}
+.onoffswitch-label {
+  display: block; overflow: hidden; cursor: pointer;
+  border: 2px solid #000000; border-radius: 9px;
+}
+.onoffswitch-inner {
+  display: block; width: 200%; margin-left: -100%;
+  -moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
+  -o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+  display: block; float: left; width: 50%; height: 14px; padding: 0; line-height: 14px;
+  font-size: 13px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+}
+.onoffswitch-inner:before {
+  content: "";
+  padding-left: 5px;
+  background-color: #D65649; color: #FFFFFF;
+}
+.onoffswitch-inner:after {
+  content: "";
+  padding-right: 5px;
+  background-color: #EEEEEE; color: #999999;
+  text-align: right;
+}
+.onoffswitch-switch {
+  display: block; width: 18px; margin: -2px;
+  background: #FFFFFF;
+  border: 2px solid #000000; border-radius: 9px;
+  position: absolute; top: 0; bottom: 0; right: 42px;
+  -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
+  -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+  margin-left: 0;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+  right: 0px;
+}

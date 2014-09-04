@@ -44,3 +44,7 @@ document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/s
 document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/bloom_lib.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'synphonyApi.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'readerTools.js"></script>');
+
+document.write('<script type="text/javascript" src="' + libDir + 'split-pane/split-pane.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'origami.js"></script>');
+document.write('<link rel="stylesheet" type="text/css" href="' + thisDir + '../css/origami.css">');
