@@ -54,7 +54,7 @@ namespace Bloom.Book
             // Hard-coded localizations for 2.0
             AddHtmlUiStrings(d);
 
-            dictionaryScriptElement.InnerText = String.Format("function GetDictionary() {{ return {0};}}", JsonConvert.SerializeObject(d));
+			dictionaryScriptElement.InnerText = String.Format("function GetInlineDictionary() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
 			// add i18n initialization script to the page
 			AddLocalizationTriggerToDom(pageDom);
