@@ -26,15 +26,12 @@ html
 				li: a(href='#dlstabs-2', data-i18n='ReaderSetup.DecodableStages') Decodable Stages
 				li: a(href='#dlstabs-3', data-i18n='ReaderSetup.ReaderLevels') Reader Levels
 			#dlstabs-1.reader-setup-tab
-				.floating(style='width: 100%; box-sizing: border-box')
-					table(style='width: 100%')
-						tr
-							td(style='width: 100%; text-align: right; vertical-align: top')
-								a(href="", onclick="return getIframeChannel().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');")
-									table(style='display: inline-block; margin: 0 12px 0 0')
-										tr
-											td.smaller(style='padding: 0 2px 0 0; vertical-align: middle; text-decoration: underline', data-i18n='ReaderSetup.AboutSettings') About these settings
-											td(style='padding: 0'): img(src='/bloom/images/help24x24.png', style='cursor: pointer')
+				.floating(style='width: 100%; box-sizing: border-box; text-align: right')
+					a(href="", onclick="return getIframeChannel().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');")
+						table(style='display: inline-block; margin: 2px 22px 0 0')
+							tr
+								td.smaller(style='padding: 0 2px 0 0; vertical-align: middle; text-decoration: underline', data-i18n='ReaderSetup.AboutSettings') About these settings
+								td(style='padding: 0'): img(src='/bloom/images/help24x24.png', style='cursor: pointer')
 				.floating(style='width: 200px')
 					label(for='dls_letters', data-i18n='ReaderSetup.Letters') Letters
 					br
