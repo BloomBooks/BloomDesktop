@@ -220,7 +220,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void UpdateFieldsAndVariables_InsertsRegionalLanguageNameInAsWrittenInNationalLanguage1()
+		public void BringBookUpToDate_InsertsRegionalLanguageNameInAsWrittenInNationalLanguage1()
 		{
 			SetDom(@"<div class='bloom-page'>
 						 <span data-collection='nameOfNationalLanguage2' lang='en'>{Regional}</span>
@@ -233,6 +233,32 @@ namespace BloomTests.Book
 		}
 
 
+		[Test]
+		public void SetMultilingualContentLanguages_UpdatesLanguagesOfBookFieldInDOM()
+		{
+			SetDom(@"<div class='bloom-page'>
+						 <span data-book='languagesOfBook' lang='*'></span>
+					</div>
+			");
+
+			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"),
+				Language1Iso639Code = "th", Language2Iso639Code = "fr", Language3Iso639Code = "es" });
+			var book =  new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
+				_collectionSettings,
+				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+
+			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code);
+
+			//note: our code currently only knows how to display French *in French*; the other come out in English.
+			//That's not part of this test, and will have to be changed as we improve that aspect of things.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français, Spanish']", 1);
+
+			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, null);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français']", 1);
+
+			book.SetMultilingualContentLanguages("", null);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai']", 1);
+		}
 
 
 
