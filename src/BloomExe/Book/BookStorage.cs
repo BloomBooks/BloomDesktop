@@ -625,6 +625,7 @@ namespace Bloom.Book
 			UpdateIfNewer("placeHolder.png");
 			UpdateIfNewer("basePage.css");
 			UpdateIfNewer("previewMode.css");
+			UpdateIfNewer("origami.css");
 
 			foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 			{
@@ -798,6 +799,7 @@ namespace Bloom.Book
 			dom.RemoveModeStyleSheets();
 			dom.AddStyleSheet("previewMode.css");
 			dom.AddStyleSheet("basePage.css");
+			dom.AddStyleSheet("origami.css");
 			EnsureHasLinksToStylesheets(dom);
 			dom.SortStyleSheetLinks();
 			dom.RemoveFileProtocolFromStyleSheetLinks();
