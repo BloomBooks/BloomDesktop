@@ -28,6 +28,16 @@ namespace Bloom.web
 		public string CurrentPageContent { get; set; }
 		public string AccordionContent { get; set; }
 
+		/// <summary>
+		/// There can really only be one of these globally, since ReadersHandler is static. But for now that's true anyway
+		/// because we use a fixed port. See comments on the ReadersHandler property.
+		/// </summary>
+		public Book.Book CurrentBook
+		{
+			get { return ReadersHandler.CurrentBook; }
+			set { ReadersHandler.CurrentBook = value; }
+		}
+
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
 			if (base.ProcessRequest(info))

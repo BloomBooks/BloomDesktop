@@ -426,6 +426,7 @@ namespace Bloom.Edit
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			_server.CurrentPageContent = TempFileUtils.CreateHtml5StringFromXml(_domForCurrentPage.RawDom);
 			_server.AccordionContent = MakeAccordionContent();
+			_server.CurrentBook = _currentlyDisplayedBook;
 		}
 
 		/// <summary>
