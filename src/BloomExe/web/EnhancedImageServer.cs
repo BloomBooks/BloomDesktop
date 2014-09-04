@@ -22,8 +22,6 @@ namespace Bloom.web
 
         public CollectionSettings CurrentCollectionSettings { get; set; }
 
-        public Book.Book CurrentBook { get; set; }
-
 		public EnhancedImageServer(LowResImageCache cache): base(cache)
 		{
 		}
