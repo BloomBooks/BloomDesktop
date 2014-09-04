@@ -117,6 +117,8 @@ namespace Bloom.web
 			if (_sampleTextsWatcher == null)
 			{
 				var path = Path.Combine(Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath), "Sample Texts");
+				if (!Directory.Exists(path))
+					Directory.CreateDirectory(path);
 
 				_sampleTextsWatcher = new FileSystemWatcher {Path = path};
 				_sampleTextsWatcher.Created += SampleTextsOnChange;
