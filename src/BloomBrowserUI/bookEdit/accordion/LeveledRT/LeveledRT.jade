@@ -29,8 +29,7 @@ html
 					td.statistics-label(data-i18n='LeveledReaderTool.PerSentence') per sentence
 					td.statistics-max#maxWordsPerSentence 5
 					td.statistics-actual#actualWordsPerSentence 7
-			// the This Book section is hidden because it has not been implemented yet
-			table.statistics.clear(style='margin-left: 6px; display: none')
+			table.statistics.clear(style='margin-left: 6px')
 				tr
 					td.section(data-i18n='LeveledReaderTool.ThisBook') This Book
 				tr
@@ -41,9 +40,10 @@ html
 					td.statistics-label(data-i18n='LeveledReaderTool.Total') total
 					td.statistics-max#maxWordsPerBook
 					td.statistics-actual#actualWordCount 83
-				td.statistics-label(data-i18n='LeveledReaderTool.PerPage') per page
-				td.statistics-max#maxWordsPerPageBook 15
-				td.statistics-actual#actualWordsPerPageBook 14
+				tr
+					td.statistics-label(data-i18n='LeveledReaderTool.PerPage') per page
+					td.statistics-max#maxWordsPerPageBook 15
+					td.statistics-actual#actualWordsPerPageBook 14
 				tr
 					td.statistics-label(data-i18n='LeveledReaderTool.Unique') unique
 					td.statistics-max#maxUniqueWordsPerBook 20

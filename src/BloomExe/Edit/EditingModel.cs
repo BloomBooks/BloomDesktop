@@ -432,7 +432,8 @@ namespace Bloom.Edit
 			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			_server.CurrentPageContent = TempFileUtils.CreateHtml5StringFromXml(_domForCurrentPage.RawDom);
-			_server.AccordionContent = MakeAccordionContent();		    
+			_server.AccordionContent = MakeAccordionContent();
+		    _server.CurrentBook = _currentlyDisplayedBook;
 	    }
 
 	    /// <summary>
