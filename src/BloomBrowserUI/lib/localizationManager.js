@@ -195,14 +195,14 @@ function SimpleDotNetFormat(format, args) {
     }
     return format;
 }
-//# sourceMappingURL=localizationManager.js.map
 
 /**
- * Returns a string where html entities have been convert to normal text
- * @param {String} text
- */
+* Returns a string where html entities have been convert to normal text
+* @param {String} text
+*/
 function HtmlDecode(text) {
     var div = document.createElement('div');
     div.innerHTML = text;
     return div.firstChild.nodeValue;
 }
+//# sourceMappingURL=localizationManager.js.map
