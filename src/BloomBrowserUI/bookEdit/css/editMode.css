@@ -451,24 +451,18 @@ even when the div is focused (as long as it is empty).*/
 /*This block handles marking elements that violate decodable book and leveled reader constraints*/
 SPAN.sentence-too-long
 {
-	-moz-text-decoration-style: wavy;
-	-moz-text-decoration-line: underline;
-	-moz-text-decoration-color: orange;
+	background-color: orange;
 }
 
 .ui-dialog { z-index: 20000; }
 
 SPAN.sight-word
 {
-	-moz-text-decoration-style: wavy;
-	-moz-text-decoration-line: underline;
-	-moz-text-decoration-color: green;
 }
 SPAN.word-not-found
 {
-	-moz-text-decoration-style: wavy;
-	-moz-text-decoration-line: underline;
-	-moz-text-decoration-color: orange;
+	background-color: orange;
+
 }
 SPAN.possible-word
 {
