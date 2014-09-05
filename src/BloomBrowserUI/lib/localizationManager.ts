@@ -134,7 +134,7 @@ class LocalizationManager {
 			text = SimpleDotNetFormat(text, args);
 		}
 
-		return text;
+		return HtmlDecode(text);
 	}
 
 	/**
@@ -201,4 +201,14 @@ function SimpleDotNetFormat(format, args) {
 		format = format.replace(regex, args[i]);
 	}
 	return format;
+}
+
+/**
+ * Returns a string where html entities have been convert to normal text
+ * @param {String} text
+ */
+function HtmlDecode(text): string {
+	var div = document.createElement('div');
+	div.innerHTML = text;
+	return div.firstChild.nodeValue;
 }
