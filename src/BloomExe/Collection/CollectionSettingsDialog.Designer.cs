@@ -360,7 +360,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._language3FontLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._language3FontLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._language3FontLabel, "CollectionSettingsDialog.BookMakingTab.Font");
-			this._language3FontLabel.Location = new System.Drawing.Point(27, 191);
+			this._language3FontLabel.Location = new System.Drawing.Point(27, 178);
 			this._language3FontLabel.Name = "_language3FontLabel";
 			this._language3FontLabel.Size = new System.Drawing.Size(37, 19);
 			this._language3FontLabel.TabIndex = 24;
@@ -373,7 +373,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._fontComboLanguage3, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._fontComboLanguage3, null);
 			this._L10NSharpExtender.SetLocalizingId(this._fontComboLanguage3, "CollectionSettingsDialog._fontComboLanguage3");
-			this._fontComboLanguage3.Location = new System.Drawing.Point(31, 213);
+			this._fontComboLanguage3.Location = new System.Drawing.Point(31, 200);
 			this._fontComboLanguage3.Name = "_fontComboLanguage3";
 			this._fontComboLanguage3.Size = new System.Drawing.Size(146, 25);
 			this._fontComboLanguage3.TabIndex = 26;

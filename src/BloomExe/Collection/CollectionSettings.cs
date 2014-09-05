@@ -233,14 +233,14 @@ namespace Bloom.Collection
 				sb.AppendLine(" font-family: '" + DefaultLanguage1FontName + "';");
 				sb.AppendLine("}");
 				sb.AppendLine();
-				sb.AppendLine("DIV.bloom-contentNational1");
+				sb.AppendLine("DIV.bloom-content2");
 				sb.AppendLine("{");
 				sb.AppendLine(" font-family: '" + DefaultLanguage2FontName + "';");
 				sb.AppendLine("}");
-				if (string.IsNullOrEmpty(Language3Iso639Code))
+				if (!string.IsNullOrEmpty(Language3Iso639Code))
 				{
 					sb.AppendLine();
-					sb.AppendLine("DIV.bloom-contentNational2");
+					sb.AppendLine("DIV.bloom-content3");
 					sb.AppendLine("{");
 					sb.AppendLine(" font-family: '" + DefaultLanguage3FontName + "';");
 					sb.AppendLine("}");
