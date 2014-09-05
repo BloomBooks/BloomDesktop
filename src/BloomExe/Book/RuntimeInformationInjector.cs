@@ -205,7 +205,7 @@ namespace Bloom.Book
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.OutsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.");
 
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.PasteImage", "Paste Image");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image!!");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.EditMetadata", "Edit Image Credits, Copyright, & License");
 		}
 
