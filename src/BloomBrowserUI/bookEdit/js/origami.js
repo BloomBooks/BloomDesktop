@@ -1,9 +1,6 @@
 $(function() {
     $('div.split-pane').splitPane();
 });
-//$(window).load(function() {
-//    $('.add').click(addClickHandler);
-//});
 
 function setupOrigami() {
     $('.customPage').append(getOnOffSwitch());
@@ -75,25 +72,25 @@ function performSplit2(innerElement, verticalOrHorizontal, existingContentPositi
     newSplitPane.splitPane();
 }
 
-// Event handler to add a new column or row (currently only works for column)
-function addClickHandler() {
-    var topSplitPane = $('.split-pane-frame').children('div').first();
-    if ($(this).hasClass('right')) {
-        topSplitPane.wrap(getSplitPaneHtml('vertical'));
-        topSplitPane.wrap(getSplitPaneComponentHtml('left'));
-        var newSplitPane = $('.split-pane-frame').children('div').first();
-        newSplitPane.append(getSplitPaneDividerHtml('vertical'));
-        newSplitPane.append(getSplitPaneComponentWithNewContent('right'));
-        newSplitPane.splitPane();
-    } else if ($(this).hasClass('left')) {
-        topSplitPane.wrap(getSplitPaneHtml('vertical'));
-        topSplitPane.wrap(getSplitPaneComponentHtml('right'));
-        var newSplitPane = $('.split-pane-frame').children('div').first();
-        newSplitPane.prepend(getSplitPaneDividerHtml('vertical'));
-        newSplitPane.prepend(getSplitPaneComponentWithNewContent('left'));
-        newSplitPane.splitPane();
-    }
-}
+// Event handler to add a new column or row (was working in demo but never wired up in Bloom)
+//function addClickHandler() {
+//    var topSplitPane = $('.split-pane-frame').children('div').first();
+//    if ($(this).hasClass('right')) {
+//        topSplitPane.wrap(getSplitPaneHtml('vertical'));
+//        topSplitPane.wrap(getSplitPaneComponentHtml('left'));
+//        var newSplitPane = $('.split-pane-frame').children('div').first();
+//        newSplitPane.append(getSplitPaneDividerHtml('vertical'));
+//        newSplitPane.append(getSplitPaneComponentWithNewContent('right'));
+//        newSplitPane.splitPane();
+//    } else if ($(this).hasClass('left')) {
+//        topSplitPane.wrap(getSplitPaneHtml('vertical'));
+//        topSplitPane.wrap(getSplitPaneComponentHtml('right'));
+//        var newSplitPane = $('.split-pane-frame').children('div').first();
+//        newSplitPane.prepend(getSplitPaneDividerHtml('vertical'));
+//        newSplitPane.prepend(getSplitPaneComponentWithNewContent('left'));
+//        newSplitPane.splitPane();
+//    }
+//}
 
 function closeClickHandler() {
     if (!$('.split-pane').length) {
