@@ -149,7 +149,7 @@ namespace Bloom.web
 				{
 					var val = qs[key];
 					if (val.Contains("%") || val.Contains("+"))
-						val = Uri.UnescapeDataString(val).Replace('+', ' ');
+						val = Uri.UnescapeDataString(val.Replace('+', ' '));
 
 					_queryStringList.Add(key, val);
 				}
