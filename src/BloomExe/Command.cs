@@ -48,6 +48,7 @@ namespace Bloom
     public class CopyCommand : Command { }
     public class PasteCommand : Command{}
     public class UndoCommand : Command { }
+    public class DuplicatePageCommand : Command { }
     public class DeletePageCommand : Command { }
 
 }

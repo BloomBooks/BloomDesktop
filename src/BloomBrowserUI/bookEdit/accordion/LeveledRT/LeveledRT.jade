@@ -7,10 +7,11 @@ html
 			img#levels-steps(src='http://localhost:8089/bloom/images/steps-white.png', style='margin-left: 14px; width: 32px')
 			.stageLine
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decLevel
-				span.stageLabel.stageLine(data-i18n='LeveledReaderTool.Level')="Level "
+				span.stageLabel.stageLine
+					span(data-i18n='LeveledReaderTool.Level')="Level "
 					span#levelNumber 1
 					span.ofStage(data-i18n='LeveledReaderTool.LevelOf')!="&nbsp;of&nbsp;"
-						span#numberOfLevels 2
+					span#numberOfLevels.ofStage 2
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incLevel
 			table.statistics.clear(style='margin-left: 6px')
 				tr
@@ -29,8 +30,7 @@ html
 					td.statistics-label(data-i18n='LeveledReaderTool.PerSentence') per sentence
 					td.statistics-max#maxWordsPerSentence 5
 					td.statistics-actual#actualWordsPerSentence 7
-			// the This Book section is hidden because it has not been implemented yet
-			table.statistics.clear(style='margin-left: 6px; display: none')
+			table.statistics.clear(style='margin-left: 6px')
 				tr
 					td.section(data-i18n='LeveledReaderTool.ThisBook') This Book
 				tr
@@ -41,9 +41,10 @@ html
 					td.statistics-label(data-i18n='LeveledReaderTool.Total') total
 					td.statistics-max#maxWordsPerBook
 					td.statistics-actual#actualWordCount 83
-				td.statistics-label(data-i18n='LeveledReaderTool.PerPage') per page
-				td.statistics-max#maxWordsPerPageBook 15
-				td.statistics-actual#actualWordsPerPageBook 14
+				tr
+					td.statistics-label(data-i18n='LeveledReaderTool.PerPage') per page
+					td.statistics-max#maxWordsPerPageBook 15
+					td.statistics-actual#actualWordsPerPageBook 14
 				tr
 					td.statistics-label(data-i18n='LeveledReaderTool.Unique') unique
 					td.statistics-max#maxUniqueWordsPerBook 20
@@ -51,9 +52,11 @@ html
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 				span.setup.stageLine
 					a(href="javascript:parent.window.showSetupDialog('levels');", data-i18n='LeveledReaderTool.SetUpLevels') Set up Levels
-			.section(style='clear: both; margin-left: 8px;', data-i18n='LeveledReaderTool.FoThisLevel') For this Level
+			.section(style='clear: both; margin-left: 8px;')
+				span(data-i18n='LeveledReaderTool.FoThisLevel') For this Level
 				ul#thingsToRemember
-			.section(style='margin-left: 8px;', data-i18n='LeveledReaderTool.KeepInMind') Keep in mind
+			.section(style='margin-left: 8px;')
+				span(data-i18n='LeveledReaderTool.KeepInMind') Keep in mind
 				ul
 					li
 						a(href='http://onlinelibrary.wiley.com/doi/10.1002/j.1949-3533.2003.tb00139.x/abstract') Predictability

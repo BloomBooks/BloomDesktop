@@ -1018,6 +1018,8 @@
     <None Include="Resources\SIL_Logo_2014Small1.png" />
     <None Include="Resources\betatag2.png" />
     <None Include="Resources\unstable.png" />
+    <None Include="Resources\duplicatePage32x32.png" />
+    <None Include="Resources\duplicatePageDisabled32x32.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />

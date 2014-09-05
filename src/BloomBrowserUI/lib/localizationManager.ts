@@ -14,7 +14,7 @@
  * Bloom 2.0 String Localization steps:
  *   1. C# RuntimeInformationInjector.AddUIDictionaryToDom() is called when loading an page into the editor, which
  *      retrieves all the localized strings that may be needed by the editing page, using L10NSharp, and loads them
- *      into a script tag that defines the JS function GetDictionary().
+ *      into a script tag that defines the JS function GetInlineDictionary().
  *   2. C# RuntimeInformationInjector.AddLocalizationTriggerToDom() is called, adding a script tag to the page that
  *      instructs the browser control to gather all elements that have a "data-i18n" attribute once the document has
  *      finished loading, and run the jQuery.fn.localize() function.
@@ -32,6 +32,7 @@
 class LocalizationManager {
 
     public dictionary: any;
+    private inlineDictionaryLoaded: boolean = false;
 
     constructor() {
         if (typeof document['getIframeChannel'] === 'function')
@@ -94,9 +95,11 @@ class LocalizationManager {
      */
     getText(stringId: string, englishText?: string, ...args): string {
 
-        if (typeof document['GetDictionary'] === 'function') {
-            if (Object.keys(this.dictionary).length == 0)
-                this.loadStringsFromObject(document['GetDictionary']());
+        if (!this.inlineDictionaryLoaded && (typeof document['GetInlineDictionary'] === 'function')) {
+            if (Object.keys(this.dictionary).length == 0) {
+                this.inlineDictionaryLoaded = true;
+                $.extend(localizationManager.dictionary, document['GetInlineDictionary']());
+            }
         }
 
         // check if englishText is missing
@@ -131,7 +134,7 @@ class LocalizationManager {
             text = SimpleDotNetFormat(text, args);
         }
 
-        return text;
+        return HtmlDecode(text);
     }
 
     /**
@@ -144,9 +147,9 @@ class LocalizationManager {
         if (!key) return;
 
         var elem = $(element);
-        var text = this.getText(key, elem.text());
+        var text = this.getText(key, elem.html());
 
-        if (text) elem.text(text);
+        if (text) elem.html(text);
     }
 
     /**
@@ -166,8 +169,12 @@ class LocalizationManager {
         var translated = this.getText.apply(this, args);
 
         // stick in the language
-        if (translated.indexOf('{lang}') != -1)
-            translated = translated.replace("{lang}", localizationManager.dictionary[$(targetElement).attr('lang')]);
+        if (translated.indexOf('{lang}') != -1) {
+            //This is the preferred approach, but it's not working yet.
+            //var languageName = localizationManager.dictionary[$(targetElement).attr('lang')];
+            var languageName = GetInlineDictionary()[$(targetElement).attr('lang')];
+            translated = translated.replace("{lang}", languageName);
+        }
 
         return translated;
     }
@@ -198,4 +205,14 @@ function SimpleDotNetFormat(format, args) {
         format = format.replace(regex, args[i]);
     }
     return format;
+}
+
+/**
+ * Returns a string where html entities have been convert to normal text
+ * @param {String} text
+ */
+function HtmlDecode(text): string {
+    var div = document.createElement('div');
+    div.innerHTML = text;
+    return div.firstChild.nodeValue;
 }

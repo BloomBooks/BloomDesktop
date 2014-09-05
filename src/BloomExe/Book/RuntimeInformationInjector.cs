@@ -54,7 +54,7 @@ namespace Bloom.Book
             // Hard-coded localizations for 2.0
             AddHtmlUiStrings(d);
 
-            dictionaryScriptElement.InnerText = String.Format("function GetDictionary() {{ return {0};}}", JsonConvert.SerializeObject(d));
+			dictionaryScriptElement.InnerText = String.Format("function GetInlineDictionary() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
 			// add i18n initialization script to the page
 			AddLocalizationTriggerToDom(pageDom);
@@ -205,7 +205,7 @@ namespace Bloom.Book
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.OutsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.");
 
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.PasteImage", "Paste Image");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image!!");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.EditMetadata", "Edit Image Credits, Copyright, & License");
 		}
 
@@ -227,7 +227,7 @@ namespace Bloom.Book
 			//So for now, we're just keeping the real key on the c#/tmx side of things, and letting the javascript work by matching our defaultText to the English text in the html
 			string keyUsedInTheJavascriptDictionary = defaultText;
 			if (!dictionary.ContainsKey(keyUsedInTheJavascriptDictionary))
-	        {
+			{
 				dictionary.Add(keyUsedInTheJavascriptDictionary, WebUtility.HtmlEncode(translation));
 	        }
         }
