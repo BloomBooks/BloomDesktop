@@ -48,3 +48,6 @@ document.write('<script type="text/javascript" src="' + thisDir + 'readerTools.j
 document.write('<script type="text/javascript" src="' + libDir + 'split-pane/split-pane.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'origami.js"></script>');
 document.write('<link rel="stylesheet" type="text/css" href="' + thisDir + '../css/origami.css">');
+
+document.write('<script type="text/javascript" src="' + libDir + 'long-press/jquery.mousewheel.js"></script>');
+document.write('<script type="text/javascript" src="' + libDir + 'long-press/jquery.longpress.js"></script>');
