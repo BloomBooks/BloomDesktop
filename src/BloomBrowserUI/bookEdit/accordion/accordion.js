@@ -123,8 +123,6 @@ function loadPanelsAndSetCurrent(panels, currentPanel) {
         });
     }
 
-    $('body').find('*[data-i18n]').localize();
-
     // turn off animation
     var ani = accordion.accordion('option', 'animate');
     accordion.accordion('option', 'animate', false);
@@ -188,6 +186,9 @@ function resizeAccordion() {
  */
 function loadAccordionPanel(newContent, panelId) {
     var parts = $($.parseHTML(newContent, document, true));
+
+    parts.find('*[data-i18n]').localize();
+
     var accordion = $('#accordion');
 
     // expect parts to have 2 items, an h3 and a div

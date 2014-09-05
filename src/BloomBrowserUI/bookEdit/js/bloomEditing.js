@@ -813,7 +813,7 @@ function AddLanguageTags(container) {
             return;
         }
 
-        var dictionary = GetDictionary();
+        var dictionary = GetInlineDictionary();
         var whatToSay = dictionary[key];
         if (!whatToSay)
             whatToSay = key; //just show the code
