@@ -81,6 +81,7 @@ namespace Bloom.Collection
 				_removeLanguage3Link.Visible = false;
 				_language3FontLabel.Visible = false;
 				_fontComboLanguage3.Visible = false;
+				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink", "Set...", "If there is no third language specified, the link changes to this.");
 			}
 			else
 			{
@@ -90,6 +91,7 @@ namespace Bloom.Collection
 				_removeLanguage3Link.Visible = true;
 				_language3FontLabel.Visible = true;
 				_fontComboLanguage3.Visible = true;
+				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
 			}
 
 			_restartReminder.Visible = _restartRequired;
