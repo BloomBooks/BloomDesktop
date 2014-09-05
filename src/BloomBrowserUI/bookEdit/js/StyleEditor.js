@@ -1,4 +1,4 @@
-﻿/// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
 /// <reference path="getIframeChannel.ts"/>
