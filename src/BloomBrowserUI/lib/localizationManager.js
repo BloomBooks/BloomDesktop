@@ -141,10 +141,10 @@ var LocalizationManager = (function () {
             return;
 
         var elem = $(element);
-        var text = this.getText(key, elem.text());
+        var text = this.getText(key, elem.html());
 
         if (text)
-            elem.text(text);
+            elem.html(text);
     };
 
     /**
