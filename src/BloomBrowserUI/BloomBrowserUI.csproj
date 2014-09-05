@@ -85,6 +85,7 @@
     <Content Include="lib\jquery.sizes.js" />
     <Content Include="lib\jquery.watermark.js" />
     <Content Include="lib\json.js" />
+    <Content Include="lib\localizationManager.js" />
     <Content Include="nonProductionStuff\.guidsForInstaller.xml" />
     <Content Include="nonProductionStuff\alignmentTest.css" />
     <Content Include="nonProductionStuff\alignmentTest.html" />

@@ -198,6 +198,7 @@ class StyleEditor {
 
     GetToolTip(targetBox: HTMLElement, styleName: string): string {
         styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
+        styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
         var box = $(targetBox);
         var sizeString = box.css('font-size'); // always returns computed size in pixels
         var pxSize = parseInt(sizeString); // strip off units and parse
