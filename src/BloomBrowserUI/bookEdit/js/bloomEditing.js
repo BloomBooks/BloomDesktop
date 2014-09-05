@@ -18,15 +18,16 @@ function processExternalMessage(event) {
             });
 
             editableElements.find('span.' + $.cssWordNotFound()).each(function() {
-                $(this).qtip({ content: 'Word not valid' });
+                $(this).qtip({ content: 'This word is not decodable in this stage.' });
             });
 
+            //we're considering dropping this entirely
             editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-                $(this).qtip({ content: 'Possible word' });
+                $(this).qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
             });
 
             editableElements.find('span.' + $.cssSentenceTooLong()).each(function() {
-                $(this).qtip({ content: 'Sentence too long' });
+                $(this).qtip({ content: 'This Sentence is too long for this Level.' });
             });
             return;
     }
