@@ -54,7 +54,7 @@ namespace Bloom.Collection
             :this(collectionInfo.PathToSettingsFile)
 		{
 			AllowNewBooks = collectionInfo.AllowNewBooks; 
-			DefaultLanguage1FontName = GetDefaultFontName(); 
+			DefaultLanguage1FontName = DefaultLanguage2FontName = DefaultLanguage3FontName = GetDefaultFontName();
             
             Language1Iso639Code = collectionInfo.Language1Iso639Code;
     		Language2Iso639Code = collectionInfo.Language2Iso639Code;
@@ -202,7 +202,9 @@ namespace Bloom.Collection
             library.Add(new XAttribute("version", "0.2"));
 			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
             library.Add(new XElement("Language1Name", Language1Name)); 
-            library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName)); 
+            library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName));
+			library.Add(new XElement("DefaultLanguage2FontName", DefaultLanguage2FontName));
+			library.Add(new XElement("DefaultLanguage3FontName", DefaultLanguage3FontName));
 			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
 			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString())); 
@@ -250,6 +252,8 @@ namespace Bloom.Collection
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
                 DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
+				DefaultLanguage2FontName = GetValue(library, "DefaultLanguage2FontName", GetDefaultFontName());
+				DefaultLanguage3FontName = GetValue(library, "DefaultLanguage3FontName", GetDefaultFontName());
 
 				Country = GetValue(library, "Country", ""); 
             	Province = GetValue(library, "Province", "");
@@ -347,6 +351,10 @@ namespace Bloom.Collection
     	}
 
 	    public string DefaultLanguage1FontName { get; set; }
+
+		public string DefaultLanguage2FontName { get; set; }
+
+		public string DefaultLanguage3FontName { get; set; }
 
 		public bool AllowNewBooks { get; set; }
 
