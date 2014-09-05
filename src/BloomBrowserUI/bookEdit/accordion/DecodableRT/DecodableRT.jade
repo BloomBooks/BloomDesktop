@@ -7,10 +7,11 @@ html
 			img#decodable-keys(src='/bloom/images/keys-white.png', style='margin-left: 14px')
 			.stageLine
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decStage
-				span.stageLabel.stageLine(data-i18n='DecodableReaderTool.Stage')="Stage "
+				span.stageLabel.stageLine
+					stage(data-i18n='DecodableReaderTool.Stage')="Stage "
 					span#stageNumber 1
 					span.ofStage(data-i18n='DecodableReaderTool.StageOf')!="&nbsp;of&nbsp;"
-						span#numberOfStages 2
+					span#numberOfStages.ofStage 2
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incStage
 			.section.clear(style='margin-left: 6px') Words in this stage
 				.sortBlock

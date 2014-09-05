@@ -537,7 +537,7 @@ ReaderToolsModel.prototype.updateWholeBookCounts = function (pageSource) {
     this.updateActualCount(this.countWordsInBook(pageStrings), this.maxWordsPerBook(), 'actualWordCount');
     this.updateActualCount(this.maxWordsPerPageInBook(pageStrings), this.maxWordsPerPage(), 'actualWordsPerPageBook');
     this.updateActualCount(this.uniqueWordsInBook(pageStrings), this.maxUniqueWordsPerBook(), 'actualUniqueWords');
-}
+};
 
 ReaderToolsModel.prototype.countWordsInBook = function(pageStrings) {
     var total = 0;
@@ -598,7 +598,7 @@ ReaderToolsModel.prototype.maxWordsPerPageInBook = function(pageStrings) {
         }
 
         if (subMax > maxWords) maxWords = subMax;
-    };
+    }
 
     return maxWords;
 };

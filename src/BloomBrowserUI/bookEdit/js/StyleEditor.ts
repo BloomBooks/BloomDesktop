@@ -1,5 +1,6 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
+/// <reference path="../../lib/misc-types.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
 /// <reference path="getIframeChannel.ts"/>
 
@@ -206,7 +207,7 @@ class StyleEditor {
         tempDiv = null;
         return Math.round(pxSize*ratio);
     }
-
+    
     /**
      * Get the style information off of the target element to display in the tooltip
      * @param {HTMLElement} targetBox the element with the style information
@@ -281,6 +282,7 @@ class StyleEditor {
                 var pxSize = parseInt(sizeString);
                 var ptSize = editor.ConvertPxToPt(pxSize);
                 var lang = box.attr('lang');
+                lang = GetInlineDictionary()[lang]; //Note: it should have worked to just do localizationManger.getTExt(lang), but that isn't working.
                 var fontName = box.css('font-family');
                 if (fontName[0] == '\'' || fontName[0] == '"') {
                     fontName = fontName.substring(1, fontName.length - 1); // strip off quotes
