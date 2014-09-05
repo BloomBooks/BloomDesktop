@@ -463,6 +463,7 @@ ReaderToolsModel.prototype.doMarkup = function() {
             editableElements.checkLeveledReader(options);
             this.updateMaxWordsPerSentenceOnPage();
             this.updateTotalWordsOnPage();
+            var pageStrings = this.getTextOfWholeBook();
 
             break;
 
@@ -503,6 +504,22 @@ ReaderToolsModel.prototype.maxWordsPerSentenceOnThisPage = function() {
     return levels[this.levelNumber - 1].getMaxWordsPerSentence();
 };
 
+ReaderToolsModel.prototype.maxWordsPerBook = function() {
+    var levels = this.synphony.getLevels();
+    if (levels.length <= 0) {
+        return 999999;
+    }
+    return levels[this.levelNumber - 1].getMaxWordsPerBook();
+};
+
+ReaderToolsModel.prototype.maxUniqueWordsPerBook = function () {
+    var levels = this.synphony.getLevels();
+    if (levels.length <= 0) {
+        return 99999;
+    }
+    return levels[this.levelNumber - 1].getMaxUniqueWordsPerBook();
+};
+
 ReaderToolsModel.prototype.maxWordsPerPage = function() {
     var levels = this.synphony.getLevels();
     if (levels.length <= 0) {
@@ -511,23 +528,97 @@ ReaderToolsModel.prototype.maxWordsPerPage = function() {
     return levels[this.levelNumber - 1].getMaxWordsPerPage();
 };
 
-ReaderToolsModel.prototype.updateMaxWordsPerSentenceOnPage = function() {
-    var max = this.getElementsToCheck().getMaxSentenceLength();
-    $("#actualWordsPerSentence").html(max.toString());
-    var acceptable = max <= this.maxWordsPerSentenceOnThisPage();
+ReaderToolsModel.prototype.getTextOfWholeBook = function () {
+    iframeChannel.simpleAjaxGet('/bloom/readers/getTextOfPages', updateWholeBookCounts);
+};
+
+ReaderToolsModel.prototype.updateWholeBookCounts = function (pageSource) {
+    var pageStrings = pageSource.split('\r');
+    this.updateActualCount(this.countWordsInBook(pageStrings), this.maxWordsPerBook(), 'actualWordCount');
+    this.updateActualCount(this.maxWordsPerPageInBook(pageStrings), this.maxWordsPerPage(), 'actualWordsPerPageBook');
+    this.updateActualCount(this.uniqueWordsInBook(pageStrings), this.maxUniqueWordsPerBook(), 'actualUniqueWords');
+}
+
+ReaderToolsModel.prototype.countWordsInBook = function(pageStrings) {
+    var total = 0;
+    for (i = 0; i < pageStrings.length; i++) {
+        var page = pageStrings[i];
+        var fragments = libsynphony.stringToSentences(page);
+
+        // remove inter-sentence space
+        fragments = fragments.filter(function(frag) {
+            return frag.isSentence;
+        });
+
+        for (j = 0; j < fragments.length; j++) {
+            total += fragments[j].wordCount();
+        }
+    }
+    return total;
+};
+
+ReaderToolsModel.prototype.uniqueWordsInBook = function (pageStrings) {
+    var wordMap = {};
+    for (i = 0; i < pageStrings.length; i++) {
+        var page = pageStrings[i];
+        var fragments = libsynphony.stringToSentences(page);
+
+        // remove inter-sentence space
+        fragments = fragments.filter(function (frag) {
+            return frag.isSentence;
+        });
+
+        for (j = 0; j < fragments.length; j++) {
+            var words = fragments[j].words;
+            for (k = 0; k < words.length; k++) {
+                wordMap[words[k]] = 1;
+            }
+        }
+    }
+    return Object.keys(wordMap).length;
+};
+
+ReaderToolsModel.prototype.maxWordsPerPageInBook = function(pageStrings) {
+    var maxWords = 0;
+
+    for (i = 0; i < pageStrings.length; i++) {
+        var page = pageStrings[i];
+
+        // split into sentences
+        var fragments = libsynphony.stringToSentences(page);
+
+        // remove inter-sentence space
+        fragments = fragments.filter(function(frag) {
+            return frag.isSentence;
+        });
+
+        var subMax = 0;
+        for (j = 0; j < fragments.length; j++) {
+            subMax += fragments[j].wordCount();
+        }
+
+        if (subMax > maxWords) maxWords = subMax;
+    };
+
+    return maxWords;
+};
+
+ReaderToolsModel.prototype.updateActualCount = function(actual, max, id) {
+    $('#' + id).html(actual.toString());
+    var acceptable = actual <= max;
     // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
     // It's important NOT to use two names where one is a substring of the other (e.g., unacceptable
     // instead of tooLarge). That will mess things up going from the longer to the shorter.
-    this.setPresenceOfClass("actualWordsPerSentence", acceptable, "acceptable");
-    this.setPresenceOfClass("actualWordsPerSentence", !acceptable, "tooLarge");
+    this.setPresenceOfClass(id, acceptable, "acceptable");
+    this.setPresenceOfClass(id, !acceptable, "tooLarge");
+};
+
+ReaderToolsModel.prototype.updateMaxWordsPerSentenceOnPage = function () {
+    this.updateActualCount(this.getElementsToCheck().getMaxSentenceLength(), this.maxWordsPerSentenceOnThisPage(), 'actualWordsPerSentence');
 };
 
 ReaderToolsModel.prototype.updateTotalWordsOnPage = function() {
-    var count = this.getElementsToCheck().getTotalWordCount();
-    $("#actualWordsPerPage").html(count.toString());
-    var acceptable = count <= this.maxWordsPerPage();
-    this.setPresenceOfClass("actualWordsPerPage", acceptable, "acceptable");
-    this.setPresenceOfClass("actualWordsPerPage", !acceptable, "tooLarge");
+    this.updateActualCount(this.getElementsToCheck().getTotalWordCount(), this.maxWordsPerPage(), 'actualWordsPerPage');
 };
 
 // Should be called early on, before other init.
@@ -802,6 +893,14 @@ function setTextsList(textsList) {
 function setSampleFileContents(fileContents) {
     model.addWordsFromFile(fileContents);
     model.getNextSampleFile();
+}
+
+/**
+ * Called in response to a request for the contents of the book's pages
+ * @param {string} pageSource
+ */
+function updateWholeBookCounts(pageSource) {
+    model.updateWholeBookCounts(pageSource);
 }
 
 function setDefaultFont(fontName) {

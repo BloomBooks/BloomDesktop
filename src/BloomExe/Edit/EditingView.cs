@@ -31,6 +31,7 @@ namespace Bloom.Edit
         private readonly CopyCommand _copyCommand;
         private readonly PasteCommand _pasteCommand;
         private readonly UndoCommand _undoCommand;
+        private readonly DuplicatePageCommand _duplicatePageCommand;
         private readonly DeletePageCommand _deletePageCommand;
 		private GeckoElement _previousClickElement;
 		private Action _pendingMessageHandler;
@@ -43,8 +44,8 @@ namespace Bloom.Edit
 
         
         public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView,
-            CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DeletePageCommand deletePageCommand,
-			NavigationIsolator isolator)
+            CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
+            DeletePageCommand deletePageCommand, NavigationIsolator isolator)
         {
             _model = model;
             _pageListView = pageListView;
@@ -53,6 +54,7 @@ namespace Bloom.Edit
             _copyCommand = copyCommand;
             _pasteCommand = pasteCommand;
             _undoCommand = undoCommand;
+            _duplicatePageCommand = duplicatePageCommand;
             _deletePageCommand = deletePageCommand;
             InitializeComponent();
 	        _browser1.Isolator = isolator;
@@ -814,8 +816,9 @@ namespace Bloom.Edit
     		UpdateButtonEnabled(_cutButton, _cutCommand);
 			UpdateButtonEnabled(_copyButton, _copyCommand);
 			UpdateButtonEnabled(_pasteButton,_pasteCommand);
-			UpdateButtonEnabled(_undoButton, _undoCommand);
-			UpdateButtonEnabled(_deletePageButton, _deletePageCommand);
+            UpdateButtonEnabled(_undoButton, _undoCommand);
+            UpdateButtonEnabled(_duplicatePageButton, _duplicatePageCommand);
+            UpdateButtonEnabled(_deletePageButton, _deletePageCommand);
 		}
 
     	private void UpdateButtonEnabled(Button button, Command command)
@@ -854,6 +857,11 @@ namespace Bloom.Edit
 				_deletePageCommand.Execute();
 			}
 		}
+
+        private void _duplicatePageButton_Click(object sender, EventArgs e)
+        {
+			_duplicatePageCommand.Execute();
+        }
 
 		private void EditingView_Load(object sender, EventArgs e)
 		{

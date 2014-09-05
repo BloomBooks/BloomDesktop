@@ -22,14 +22,22 @@ namespace Bloom.web
 
         public CollectionSettings CurrentCollectionSettings { get; set; }
 
-        public Book.Book CurrentBook { get; set; }
-
 		public EnhancedImageServer(LowResImageCache cache): base(cache)
 		{
 		}
 
         public string CurrentPageContent { get; set; }
         public string AccordionContent { get; set; }
+
+		/// <summary>
+		/// There can really only be one of these globally, since ReadersHandler is static. But for now that's true anyway
+		/// because we use a fixed port. See comments on the ReadersHandler property.
+		/// </summary>
+		public Book.Book CurrentBook
+		{
+			get { return ReadersHandler.CurrentBook; }
+			set { ReadersHandler.CurrentBook = value; }
+		}
 
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
@@ -109,6 +117,8 @@ namespace Bloom.web
 			if (_sampleTextsWatcher == null)
 			{
 				var path = Path.Combine(Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath), "Sample Texts");
+				if (!Directory.Exists(path))
+					Directory.CreateDirectory(path);
 
 				_sampleTextsWatcher = new FileSystemWatcher {Path = path};
 				_sampleTextsWatcher.Created += SampleTextsOnChange;

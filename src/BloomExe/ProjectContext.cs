@@ -72,6 +72,7 @@ namespace Bloom
 					.InstancePerLifetimeScope()
 					.Where(t => new[]{
                     typeof(TemplateInsertionCommand),
+                    typeof(DuplicatePageCommand),
                     typeof(DeletePageCommand),
                     typeof(EditBookCommand),
 					typeof(SendReceiveCommand),
