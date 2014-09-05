@@ -50,13 +50,13 @@ mixin field-acknowledgments-localizedVersion
 	//- Why both versionAcknowledgments && inside-cover-version-acknowledgments-style?
 	//-   versionAcknowledgments governs placement on the page, inside-cover-version-acknowledgments-style is a
 	//-   holding place for user style adjustments (like font-size)
-	+editable("N1").versionAcknowledgments.inside-cover-version-acknowledgments-style.bloom-readOnlyInEditMode(data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
+	+editable("N1").versionAcknowledgments.Version-Acknowledgments-On-Inside-Front-Cover--style.bloom-readOnlyInEditMode(data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
 
 // TODO: this is a mess
 mixin field-acknowledgments-originalVersion
 	+field-prototypeDeclaredExplicity().originalAcknowledgments
 		label.bubble Original (or Shell) Acknowledgments in {lang}
-		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.inside-cover-original-acknowledgments-style(data-book='originalAcknowledgments')
+		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Original-Acknowledgments-On-Inside-Front-Cover-style(data-book='originalAcknowledgments')
 			{Original Acknowledgments}
 
 mixin block-licenseAndCopyright
@@ -99,14 +99,14 @@ mixin factoryStandard-outsideFrontCover
 
 		+field-prototypeDeclaredExplicity
 			label.bubble Book title in {lang}
-			+editable(kLanguageForPrototypeOnly).bookTitle.coverTitle-style(data-book='bookTitle')
+			+editable(kLanguageForPrototypeOnly).bookTitle.Title-On-Cover-style(data-book='bookTitle')
 
 
 		.bloom-imageContainer
 			img(src="placeHolder.png", data-book='coverImage')
 
 		//- 'V' means this field is only available in the vernacular
-		+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.cover-credits-style
+		+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.Credits-On-Cover-style
 			label.bubble *You may use this space for author/illustrator, or anything else.
 
 		.coverBottomLangName(data-book='languagesOfBook')
@@ -125,13 +125,13 @@ mixin factoryStandard-titlePage
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter.bloom-startPageNumbering(data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
 		+field-prototypeDeclaredExplicity#titlePageTitleBlock
 			label.bubble Book title in {lang}
-			+editable(kLanguageForPrototypeOnly).title-page-bookTitle-style(data-book='bookTitle')
+			+editable(kLanguageForPrototypeOnly).Title-On-Title-Page-style(data-book='bookTitle')
 		+field-prototypeDeclaredExplicity#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
-			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.title-page-original-contributors-style(data-book='originalContributions')
+			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.Original-Contributors-On-Title-Page-style(data-book='originalContributions')
 		+field-prototypeDeclaredExplicity#funding
 			label.bubble Use this to acknowledge any funding agencies.
-			+editable(kLanguageForPrototypeOnly).funding.title-page-funding-style(data-book='funding')
+			+editable(kLanguageForPrototypeOnly).funding.Funding-On-Title-Page-style(data-book='funding')
 		#languageInformation
 			.languagesOfBook(data-book='languagesOfBook')
 			//- review: can we get rid of these "langName" classes?
@@ -145,12 +145,12 @@ mixin factoryStandard-titlePage
 mixin factoryStandard-insideBackCover
 	// Inside Back Cover
 	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(attributes, data-export='back-matter-inside-back-cover')#502BE62F-A4D0-4225-A598-1A203FA73239
-		+field-mono-meta("N1","insideBackCover").inside-back-cover-style
+		+field-mono-meta("N1","insideBackCover").Inside-Back-Cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.
 
 mixin factoryStandard-outsideBackCover
 	// Outside Back Cover
 	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(attributes, data-export='back-matter-back-cover')#6AB1D898-9E35-498E-99D4-132B46FAFDA4
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
-		+field-mono-meta("N1","outsideBackCover").outside-back-cover-style
+		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
