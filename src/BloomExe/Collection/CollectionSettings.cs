@@ -227,20 +227,25 @@ namespace Bloom.Collection
 	            var sb = new StringBuilder();
 	            sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 	            sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
-	            sb.AppendLine();
-                sb.AppendLine("DIV.bloom-content1");
+				sb.AppendLine();
+				sb.AppendLine("BODY");
+				sb.AppendLine("{");
+				sb.AppendLine(" font-family: '" + GetDefaultFontName() + "';");
+				sb.AppendLine("}");
+				sb.AppendLine();
+                sb.AppendLine("DIV[lang='" + Language1Iso639Code + "']");
                 sb.AppendLine("{");
                 sb.AppendLine(" font-family: '" + DefaultLanguage1FontName + "';");
                 sb.AppendLine("}");
 				sb.AppendLine();
-				sb.AppendLine("DIV.bloom-content2");
+				sb.AppendLine("DIV[lang='" + Language2Iso639Code + "']");
 				sb.AppendLine("{");
 				sb.AppendLine(" font-family: '" + DefaultLanguage2FontName + "';");
 				sb.AppendLine("}");
 				if (!string.IsNullOrEmpty(Language3Iso639Code))
 				{
 					sb.AppendLine();
-					sb.AppendLine("DIV.bloom-content3");
+					sb.AppendLine("DIV[lang='" + Language3Iso639Code + "']");
 					sb.AppendLine("{");
 					sb.AppendLine(" font-family: '" + DefaultLanguage3FontName + "';");
 					sb.AppendLine("}");
