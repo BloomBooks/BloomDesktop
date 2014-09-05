@@ -1444,6 +1444,8 @@ function SetupElements(container) {
         });
     });
 
+    $(container).find('.bloom-editable').longPress();
+
     //focus on the first editable field
     $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 }
