@@ -163,8 +163,12 @@ var LocalizationManager = (function () {
         var translated = this.getText.apply(this, args);
 
         // stick in the language
-        if (translated.indexOf('{lang}') != -1)
-            translated = translated.replace("{lang}", localizationManager.dictionary[$(targetElement).attr('lang')]);
+        if (translated.indexOf('{lang}') != -1) {
+            //This is the preferred approach, but it's not working yet.
+            //var languageName = localizationManager.dictionary[$(targetElement).attr('lang')];
+            var languageName = GetInlineDictionary()[$(targetElement).attr('lang')];
+            translated = translated.replace("{lang}", languageName);
+        }
 
         return translated;
     };
