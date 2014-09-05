@@ -248,7 +248,7 @@ TEXTAREA.province
 	margin-top: -8px;
 	margin-right: 8px;
 }
-UL
+UL:not(.long-press-popup)
 {
 	padding: 0;
 	z-index: 1;
@@ -260,7 +260,7 @@ UL
 	left: -7px;
 	top: 1px;
 }
-UL LI
+UL:not(.long-press-popup) LI
 {
 	display: inline-block;
 	padding-right: 11px;
@@ -451,24 +451,18 @@ even when the div is focused (as long as it is empty).*/
 /*This block handles marking elements that violate decodable book and leveled reader constraints*/
 SPAN.sentence-too-long
 {
-	-moz-text-decoration-style: wavy;
-	-moz-text-decoration-line: underline;
-	-moz-text-decoration-color: orange;
+    background-color: orange;
 }
 
 .ui-dialog { z-index: 20000; }
 
 SPAN.sight-word
 {
-	-moz-text-decoration-style: wavy;
-	-moz-text-decoration-line: underline;
-	-moz-text-decoration-color: green;
 }
 SPAN.word-not-found
 {
-	-moz-text-decoration-style: wavy;
-	-moz-text-decoration-line: underline;
-	-moz-text-decoration-color: orange;
+    background-color: orange;
+
 }
 SPAN.possible-word
 {
@@ -528,4 +522,38 @@ SPAN.possible-word
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
   right: 0px;
+}
+
+
+/*
+ * Long-press plugin for adding special characters
+*/
+.long-press-popup {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  background: rgba(0, 0, 0, .8);
+  padding-top: 20px;
+  margin:0;
+  font-size: 60px;
+}
+.long-press-popup li {
+  display:inline-block;
+  list-style: none;
+  padding: 10px 34px;
+  margin-right: 20px;
+  margin-bottom: 20px;
+  background: #000000;
+  cursor:pointer;
+  color: white;
+  border: solid 4px black;
+  border-radius: 12px;
+}
+.long-press-popup .selected {
+  border-color: white;
+  -webkit-box-shadow: 0 0 18px rgba(255, 255, 255, 0.75);
+  -moz-box-shadow:    0 0 18px rgba(255, 255, 255, 0.75);
+  box-shadow:         0 0 18px rgba(255, 255, 255, 0.75);
 }
