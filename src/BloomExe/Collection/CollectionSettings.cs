@@ -227,28 +227,12 @@ namespace Bloom.Collection
 				var sb = new StringBuilder();
 				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
-				sb.AppendLine();
-				sb.AppendLine("BODY");
-				sb.AppendLine("{");
-				sb.AppendLine(" font-family: '" + GetDefaultFontName() + "';");
-				sb.AppendLine("}");
-				sb.AppendLine();
-				sb.AppendLine("DIV[lang='" + Language1Iso639Code + "']");
-				sb.AppendLine("{");
-				sb.AppendLine(" font-family: '" + DefaultLanguage1FontName + "';");
-				sb.AppendLine("}");
-				sb.AppendLine();
-				sb.AppendLine("DIV[lang='" + Language2Iso639Code + "']");
-				sb.AppendLine("{");
-				sb.AppendLine(" font-family: '" + DefaultLanguage2FontName + "';");
-				sb.AppendLine("}");
+				AddFontCssRule(sb, "BODY", GetDefaultFontName());
+				AddFontCssRule(sb, "DIV:lang(" + Language1Iso639Code + ")", DefaultLanguage1FontName);
+				AddFontCssRule(sb, "DIV:lang(" + Language2Iso639Code + ")", DefaultLanguage2FontName);
 				if (!string.IsNullOrEmpty(Language3Iso639Code))
 				{
-					sb.AppendLine();
-					sb.AppendLine("DIV[lang='" + Language3Iso639Code + "']");
-					sb.AppendLine("{");
-					sb.AppendLine(" font-family: '" + DefaultLanguage3FontName + "';");
-					sb.AppendLine("}");
+					AddFontCssRule(sb, "DIV:lang(" + Language3Iso639Code + ")", DefaultLanguage3FontName);
 				}
 				File.WriteAllText(path, sb.ToString());
 			}
@@ -256,6 +240,15 @@ namespace Bloom.Collection
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
 			}
+		}
+
+		private void AddFontCssRule(StringBuilder sb, string selector, string fontName)
+		{
+			sb.AppendLine();
+			sb.AppendLine(selector);
+			sb.AppendLine("{");
+			sb.AppendLine(" font-family: '" + fontName + "';");
+			sb.AppendLine("}");
 		}
 
 		/// ------------------------------------------------------------------------------------
