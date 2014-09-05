@@ -312,7 +312,7 @@
 			this._language1FontLabel.Name = "label2";
 			this._language1FontLabel.Size = new System.Drawing.Size(37, 19);
 			this._language1FontLabel.TabIndex = 22;
-			this._language1FontLabel.Text = "Font";
+			this._language1FontLabel.Text = "Default Font for Language 1";
 			// 
 			// _fontComboLanguage1
 			// 
@@ -338,7 +338,7 @@
 			this._language2FontLabel.Name = "_language2FontLabel";
 			this._language2FontLabel.Size = new System.Drawing.Size(37, 19);
 			this._language2FontLabel.TabIndex = 23;
-			this._language2FontLabel.Text = "Font";
+			this._language2FontLabel.Text = "Default Font for Language 2";
 			// 
 			// _fontComboLanguage2
 			// 
@@ -364,7 +364,7 @@
 			this._language3FontLabel.Name = "_language3FontLabel";
 			this._language3FontLabel.Size = new System.Drawing.Size(37, 19);
 			this._language3FontLabel.TabIndex = 24;
-			this._language3FontLabel.Text = "Font";
+			this._language3FontLabel.Text = "Default Font for Language 3";
 			// 
 			// _fontComboLanguage3
 			// 
