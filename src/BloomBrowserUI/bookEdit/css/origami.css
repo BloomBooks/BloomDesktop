@@ -100,11 +100,11 @@
 /*the commented line below would also add it to an empty bloom-content1 for re-entry to layout mode*/
 /*but that would be problematic/confusing in a multilingual context*/
 /*.origami-layout-mode .split-pane-component-inner .bloom-editable.bloom-content1:empty:before,*/
-.origami-layout-mode .split-pane-component-inner .bloom-translationGroup:empty:before {
-  content: "{ Text Box }";
+.origami-layout-mode .split-pane-component-inner .bloom-translationGroup:before {
+  content: "Text Box";
   color: rgba(0, 0, 0, 0.2);
   white-space: nowrap;
-  font-size: 16px;
+  font-size: 32px;
   text-align: center;
   width: 100%;
   position: absolute;
