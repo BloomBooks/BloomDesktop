@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -170,7 +171,13 @@ namespace Bloom.Workspace
 			_uiLanguageMenu.DropDownItems.Clear();
 			foreach (var lang in L10NSharp.LocalizationManager.GetUILanguages(true))
 			{
-				var item = _uiLanguageMenu.DropDownItems.Add(lang.NativeName);
+				string englishName="";
+				var langaugeNamesRecognizableByOtherLatinScriptReaders = new List<string> {"en","fr","es","it","tpi"};
+				if(!(langaugeNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
+				{
+					englishName = " (" + lang.EnglishName + ")";
+				}
+				var item = _uiLanguageMenu.DropDownItems.Add(lang.NativeName + englishName);
 				item.Tag = lang;
 				item.Click += new EventHandler((a, b) =>
 												{
