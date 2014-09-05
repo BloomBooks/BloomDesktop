@@ -75,11 +75,15 @@ namespace Bloom.Collection
 			{
 				_language3Name.Text = "--";
 				_removeLanguage3Link.Visible = false;
+				_language3FontLabel.Visible = false;
+				_fontComboLanguage3.Visible = false;
 			}
 			else
 			{
 				_language3Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId), _collectionSettings.Language3Iso639Code);
 				_removeLanguage3Link.Visible = true;
+				_language3FontLabel.Visible = true;
+				_fontComboLanguage3.Visible = true;
 			}
 
 			_restartReminder.Visible = _restartRequired;
