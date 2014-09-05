@@ -7,17 +7,6 @@
   visibility: visible;
 }
 
-.split-pane-frame {
-  position: relative;
-  box-sizing: border-box;
-  width: 800px;
-  height: 100%;
-  padding: 5px;
-  margin-left: auto;
-  margin-right: auto;
-  border: thick solid black;
-}
-
 .split-pane.vertical-percent > .split-pane-component.position-left {
   right: 50%;
   margin-right: 3px;
@@ -28,14 +17,11 @@
 }
 
 .split-pane.horizontal-percent > .split-pane-component.position-top {
-/*.split-pane.horizontal-percent > .split-pane-component:first-child {*/
   bottom: 50%;
   margin-bottom: 3px;
 }
 
 .split-pane.horizontal-percent > .split-pane-component.position-bottom {
-/*.split-pane.horizontal-percent > .split-pane-component:nth-of-type(3) {*/
-/*.split-pane.horizontal-percent > .split-pane-component:first-child ~ .split-pane-component {*/
   height: 50%;
 }
 
@@ -111,72 +97,24 @@
   box-sizing: border-box;
 }
 
+/*the commented line below would also add it to an empty bloom-content1 for re-entry to layout mode*/
+/*but that would be problematic/confusing in a multilingual context*/
+/*.origami-layout-mode .split-pane-component-inner .bloom-editable.bloom-content1:empty:before,*/
+.origami-layout-mode .split-pane-component-inner .bloom-translationGroup:before {
+  content: "Text Box";
+  color: rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  font-size: 32px;
+  text-align: center;
+  width: 100%;
+  position: absolute;
+  top: 45%;
+}
+
 .selector-links {
   top: 45%;
   text-align: center;
 }
 .selector-links, .selector-links a {
   color: #E48C84;
-}
-
-.add {
-  position: absolute;
-  top: 50%;
-}
-.add.right {
-  right: -36px;
-}
-.add.left {
-  left: -36px;
-}
-
-/*
- * Layout Mode switch (from proto.io)
- */
-.onoffswitch {
-  display: inline-block; vertical-align: middle;
-  position: relative; width: 60px;
-  -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
-}
-.onoffswitch-checkbox {
-  display: none;
-}
-.onoffswitch-label {
-  display: block; overflow: hidden; cursor: pointer;
-  border: 2px solid #000000; border-radius: 9px;
-}
-.onoffswitch-inner {
-  display: block; width: 200%; margin-left: -100%;
-  -moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
-  -o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
-}
-.onoffswitch-inner:before, .onoffswitch-inner:after {
-  display: block; float: left; width: 50%; height: 14px; padding: 0; line-height: 14px;
-  font-size: 13px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
-  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
-}
-.onoffswitch-inner:before {
-  content: "";
-  padding-left: 5px;
-  background-color: #D65649; color: #FFFFFF;
-}
-.onoffswitch-inner:after {
-  content: "";
-  padding-right: 5px;
-  background-color: #EEEEEE; color: #999999;
-  text-align: right;
-}
-.onoffswitch-switch {
-  display: block; width: 18px; margin: -2px;
-  background: #FFFFFF;
-  border: 2px solid #000000; border-radius: 9px;
-  position: absolute; top: 0; bottom: 0; right: 42px;
-  -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
-  -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
-}
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
-  margin-left: 0;
-}
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
-  right: 0px;
 }

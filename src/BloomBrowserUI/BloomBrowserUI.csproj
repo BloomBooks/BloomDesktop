@@ -124,6 +124,7 @@
     <Content Include="lib\jquery.sizes.js" />
     <Content Include="lib\jquery.watermark.js" />
     <Content Include="lib\json.js" />
+    <Content Include="lib\localizationManager.js" />
     <Content Include="nonProductionStuff\.guidsForInstaller.xml" />
     <Content Include="nonProductionStuff\alignmentTest.css" />
     <Content Include="nonProductionStuff\alignmentTest.html" />
@@ -238,6 +239,7 @@
     <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_cccccc_256x240.png" />
     <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_ffffff_256x240.png" />
     <Content Include="themes\bloom-jqueryui-theme\jquery-ui-1.8.16.custom.css" />
+    <TypeScriptCompile Include="lib\localizationManager.ts" />
     <TypeScriptCompile Include="test\specs\StyleEditorSpec.ts" />
     <Content Include="bookLayout\basePage.css" />
   </ItemGroup>

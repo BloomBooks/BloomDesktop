@@ -143,6 +143,7 @@ namespace Bloom.Edit
 		{
 			try
 			{
+				SaveNow(); //ensure current page is saved first
 				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
 				_currentlyDisplayedBook.DuplicatePage(_pageSelection.CurrentSelection);
 				_view.UpdatePageList(false);
