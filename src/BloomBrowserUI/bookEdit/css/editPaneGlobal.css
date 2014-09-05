@@ -107,7 +107,7 @@ BODY[editMode="original"] DIV.ui-sourceTextsForBubble TEXTAREA, BODY[editMode="o
 {
 	background-color: transparent;
 	border: none;
-	height: 236px;
+	max-height: 236px;
 	overflow: auto;
 }
 /* Moved from editTranslationMode.css */
