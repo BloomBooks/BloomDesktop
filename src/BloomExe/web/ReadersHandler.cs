@@ -1,7 +1,9 @@
 ﻿using System.Text;
 using System.Linq;
 using System.IO;
+using System.Xml;
 using Bloom.Collection;
+using Palaso.Xml;
 
 namespace Bloom.web
 {
@@ -12,6 +14,10 @@ namespace Bloom.web
 	/// </summary>
 	static class ReadersHandler
 	{
+		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
+		// whole-book counts. If we ever support having more than one book open, ReadersHandler will need to stop being static, or
+		// some similar change. But by then, we may have the whole book in the main DOM, anyway, and getTextOfPages may be obsolete.
+		public static Book.Book CurrentBook { get; set; }
 		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
 		{
 			var lastSep = localPath.IndexOf("/", System.StringComparison.Ordinal);
@@ -53,9 +59,37 @@ namespace Bloom.web
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(GetSampleFileContents(fileName, currentCollectionSettings.SettingsFilePath));
 					return true;
+				case "getTextOfPages":
+					info.WriteCompleteOutput(GetTextOfPages());
+					return true;
 			}
 
 			return false;
+		}
+
+		/// <summary>
+		/// Needs to return a string with the bloom-content1 text of each non-x-matter page, separated by /r
+		/// </summary>
+		/// <returns></returns>
+		private static string GetTextOfPages()
+		{
+			var pages = CurrentBook.RawDom.SafeSelectNodes("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]")
+				.Cast<XmlElement>()
+				.Where(p =>
+				{
+					var cls = " " + p.Attributes["class"].Value + " ";
+					return !cls.Contains(" bloom-frontMatter ") && !cls.Contains(" bloom-backMatter ");
+				});
+			var sb = new StringBuilder();
+			foreach (var page in pages)
+			{
+				if (sb.Length > 0)
+					sb.Append("\r");
+				foreach (XmlElement node in page.SafeSelectNodes(".//div[contains(concat(' ', @class, ' '), ' bloom-content1 ')]"))
+					sb.Append(node.InnerText.Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " "));
+			}
+			var temp = sb.ToString();
+			return temp;
 		}
 
 		private static string GetSampleTextsList(string settingsFilePath)

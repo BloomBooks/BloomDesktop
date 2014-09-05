@@ -488,7 +488,26 @@ namespace BloomTests.Book
 //            book.DeletePage(existingPage);
 //            Assert.IsTrue(gotEvent);
 //        }
-        
+
+	    [Test]
+	    public void DuplicatePage()
+		{
+			var book = CreateBook();
+			var original = book.GetPages().Count();
+			var existingPage = book.GetPages().Last();
+			book.DuplicatePage(existingPage);
+			AssertPageCount(book, original + 1);
+
+			var newPage = book.GetPages().Last();
+			Assert.AreNotEqual(existingPage, newPage);
+			Assert.AreNotEqual(existingPage.Id, newPage.Id);
+			
+			var existingDivNode = existingPage.GetDivNodeForThisPage();
+			var newDivNode = newPage.GetDivNodeForThisPage();
+
+			Assert.AreEqual(existingPage.Id, newDivNode.Attributes["data-pagelineage"].Value);
+			Assert.AreEqual(existingDivNode.InnerXml, newDivNode.InnerXml);
+		}
         
         [Test]
         public void DeletePage_OnLastPage_Deletes()
