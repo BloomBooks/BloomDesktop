@@ -581,7 +581,7 @@ ReaderToolsModel.prototype.uniqueWordsInBook = function (pageStrings) {
 ReaderToolsModel.prototype.maxWordsPerPageInBook = function(pageStrings) {
     var maxWords = 0;
 
-    for (i = 0; i < pageStrings.length; i++) {
+    for (var i = 0; i < pageStrings.length; i++) {
         var page = pageStrings[i];
 
         // split into sentences
@@ -593,7 +593,7 @@ ReaderToolsModel.prototype.maxWordsPerPageInBook = function(pageStrings) {
         });
 
         var subMax = 0;
-        for (j = 0; j < fragments.length; j++) {
+        for (var j = 0; j < fragments.length; j++) {
             subMax += fragments[j].wordCount();
         }
 
@@ -677,6 +677,10 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
         this.updateWordList();
         this.doMarkup();
         processWordListChangedListeners();
+
+        // write out the ReaderToolsWords-xyz.json file
+        iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(lang_data));
+
         return;
     }
 
