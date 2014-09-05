@@ -54,7 +54,7 @@ namespace Bloom.Collection
             :this(collectionInfo.PathToSettingsFile)
 		{
 			AllowNewBooks = collectionInfo.AllowNewBooks; 
-			DefaultLanguage1FontName = GetDefaultFontName(); 
+			DefaultLanguage1FontName = DefaultLanguage2FontName = DefaultLanguage3FontName = GetDefaultFontName();
             
             Language1Iso639Code = collectionInfo.Language1Iso639Code;
     		Language2Iso639Code = collectionInfo.Language2Iso639Code;
@@ -202,7 +202,9 @@ namespace Bloom.Collection
             library.Add(new XAttribute("version", "0.2"));
 			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
             library.Add(new XElement("Language1Name", Language1Name)); 
-            library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName)); 
+            library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName));
+			library.Add(new XElement("DefaultLanguage2FontName", DefaultLanguage2FontName));
+			library.Add(new XElement("DefaultLanguage3FontName", DefaultLanguage3FontName));
 			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
 			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString())); 
@@ -225,12 +227,14 @@ namespace Bloom.Collection
 	            var sb = new StringBuilder();
 	            sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 	            sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
-	            sb.AppendLine();
-                sb.AppendLine("BODY");
-                sb.AppendLine("{");
-                sb.AppendLine(" font-family: '" + DefaultLanguage1FontName + "';");
-                sb.AppendLine("}");
-                File.WriteAllText(path, sb.ToString());
+		        AddFontCssRule(sb, "BODY", GetDefaultFontName());
+				AddFontCssRule(sb, "DIV:lang(" + Language1Iso639Code + ")", DefaultLanguage1FontName);
+				AddFontCssRule(sb, "DIV:lang(" + Language2Iso639Code + ")", DefaultLanguage2FontName);
+				if (!string.IsNullOrEmpty(Language3Iso639Code))
+				{
+					AddFontCssRule(sb, "DIV:lang(" + Language3Iso639Code + ")", DefaultLanguage3FontName);
+				}
+				File.WriteAllText(path, sb.ToString());
 	        }
 	        catch (Exception error)
 	        {
@@ -238,7 +242,16 @@ namespace Bloom.Collection
 	        }
 	    }
 
-	    /// ------------------------------------------------------------------------------------
+		private void AddFontCssRule(StringBuilder sb, string selector, string fontName)
+		{
+			sb.AppendLine();
+			sb.AppendLine(selector);
+			sb.AppendLine("{");
+			sb.AppendLine(" font-family: '" + fontName + "';");
+			sb.AppendLine("}");
+		}
+
+		/// ------------------------------------------------------------------------------------
         public void Load()
         {
             try
@@ -250,6 +263,8 @@ namespace Bloom.Collection
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
                 DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
+				DefaultLanguage2FontName = GetValue(library, "DefaultLanguage2FontName", GetDefaultFontName());
+				DefaultLanguage3FontName = GetValue(library, "DefaultLanguage3FontName", GetDefaultFontName());
 
 				Country = GetValue(library, "Country", ""); 
             	Province = GetValue(library, "Province", "");
@@ -347,6 +362,10 @@ namespace Bloom.Collection
     	}
 
 	    public string DefaultLanguage1FontName { get; set; }
+
+		public string DefaultLanguage2FontName { get; set; }
+
+		public string DefaultLanguage3FontName { get; set; }
 
 		public bool AllowNewBooks { get; set; }
 

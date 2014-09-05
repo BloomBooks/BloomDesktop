@@ -4,7 +4,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
-using DesktopAnalytics;
 using L10NSharp;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
@@ -31,9 +30,9 @@ namespace Bloom.Collection
 		    InitializeComponent();
 			if(_collectionSettings.IsSourceCollection)	
 			{
-                _language1Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language1InSourceCollection", "Language 1", "In a vernacular collection, we say 'Vernacular Language', but in a souce collection, Vernacular has no relevance, so we use this different label");
-                _language2Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language2InSourceCollection", "Language 2", "In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a souce collection, National Language has no relevance, so we use this different label");
-                _language3Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language3InSourceCollection", "Language 3", "In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a souce collection, National Language has no relevance, so we use this different label"); 
+                _language1Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language1InSourceCollection", "Language 1", "In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label");
+                _language2Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language2InSourceCollection", "Language 2", "In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label");
+                _language3Label.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.Language3InSourceCollection", "Language 3", "In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label"); 
 			}
 
 		    _showSendReceive.Checked = Settings.Default.ShowSendReceive;
@@ -69,18 +68,30 @@ namespace Bloom.Collection
 
 		private void UpdateDisplay()
 		{
-			_language1Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId), _collectionSettings.Language1Iso639Code);
-			_language2Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId), _collectionSettings.Language2Iso639Code);
+			var lang1UiName = _collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId);
+			var lang2UiName = _collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId);
+			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, _collectionSettings.Language1Iso639Code);
+			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Iso639Code);
+			_language1FontLabel.Text = string.Format("Default Font for {0}", lang1UiName);
+			_language2FontLabel.Text = string.Format("Default Font for {0}", lang2UiName);
 
 			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 			{
 				_language3Name.Text = "--";
 				_removeLanguage3Link.Visible = false;
+				_language3FontLabel.Visible = false;
+				_fontComboLanguage3.Visible = false;
+				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink", "Set...", "If there is no third language specified, the link changes to this.");
 			}
 			else
 			{
-				_language3Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId), _collectionSettings.Language3Iso639Code);
+				var lang3UiName = _collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId);
+				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.Language3Iso639Code);
+				_language3FontLabel.Text = string.Format("Default Font for {0}", lang3UiName);
 				_removeLanguage3Link.Visible = true;
+				_language3FontLabel.Visible = true;
+				_fontComboLanguage3.Visible = true;
+				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
 			}
 
 			_restartReminder.Visible = _restartRequired;
@@ -166,9 +177,17 @@ namespace Bloom.Collection
 			_collectionSettings.Country = _countryText.Text.Trim();
 			_collectionSettings.Province = _provinceText.Text.Trim();
 			_collectionSettings.District = _districtText.Text.Trim();
-			if (_fontCombo.SelectedItem != null)
+			if (_fontComboLanguage1.SelectedItem != null)
 			{
-				_collectionSettings.DefaultLanguage1FontName = _fontCombo.SelectedItem.ToString();
+				_collectionSettings.DefaultLanguage1FontName = _fontComboLanguage1.SelectedItem.ToString();
+			}
+			if (_fontComboLanguage2.SelectedItem != null)
+			{
+				_collectionSettings.DefaultLanguage2FontName = _fontComboLanguage2.SelectedItem.ToString();
+			}
+			if (_fontComboLanguage3.SelectedItem != null)
+			{
+				_collectionSettings.DefaultLanguage3FontName = _fontComboLanguage3.SelectedItem.ToString();
 			}
 
 			//no point in letting them have the Nat lang 2 be the same as 1
@@ -263,10 +282,16 @@ namespace Bloom.Collection
 	    {
             foreach (FontFamily fontFamily in FontFamily.Families)
             {
-                _fontCombo.Items.Add(fontFamily.Name);
-                if(fontFamily.Name == _collectionSettings.DefaultLanguage1FontName)
-                    _fontCombo.SelectedIndex = _fontCombo.Items.Count-1;
-            }
+                _fontComboLanguage1.Items.Add(fontFamily.Name);
+				_fontComboLanguage2.Items.Add(fontFamily.Name);
+				_fontComboLanguage3.Items.Add(fontFamily.Name);
+				if (fontFamily.Name == _collectionSettings.DefaultLanguage1FontName)
+                    _fontComboLanguage1.SelectedIndex = _fontComboLanguage1.Items.Count-1;
+				if (fontFamily.Name == _collectionSettings.DefaultLanguage2FontName)
+					_fontComboLanguage2.SelectedIndex = _fontComboLanguage2.Items.Count - 1;
+				if (fontFamily.Name == _collectionSettings.DefaultLanguage3FontName)
+					_fontComboLanguage3.SelectedIndex = _fontComboLanguage3.Items.Count - 1;
+			}
 	    }
 
 
@@ -285,11 +310,23 @@ namespace Bloom.Collection
             RestartRequired();
         }
 
-        private void _fontCombo_SelectedIndexChanged(object sender, EventArgs e)
+        private void _fontComboLanguage1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(_fontCombo.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage1FontName.ToLower())
+            if(_fontComboLanguage1.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage1FontName.ToLower())
                 RestartRequired();
         }
+
+		private void _fontComboLanguage2_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (_fontComboLanguage2.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage2FontName.ToLower())
+				RestartRequired();
+		}
+
+		private void _fontComboLanguage3_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (_fontComboLanguage3.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage3FontName.ToLower())
+				RestartRequired();
+		}
 
         private void _showSendReceive_CheckedChanged(object sender, EventArgs e)
         {
