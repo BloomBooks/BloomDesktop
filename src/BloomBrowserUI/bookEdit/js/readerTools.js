@@ -188,6 +188,15 @@ ReaderToolsModel.prototype.updateControlContents = function() {
     this.updateLevelLabel();
 };
 
+ReaderToolsModel.prototype.updateStageXofY = function() {
+
+    this.updateElementContent("stageXofY", this.synphony.getStages().length.toString());
+}
+
+ReaderToolsModel.prototype.updateLevelXofY = function() {
+    this.updateElementContent("numberOfLevels", this.synphony.getLevels().length.toString());
+}
+
 ReaderToolsModel.prototype.updateNumberOfStages = function() {
     this.updateElementContent("numberOfStages", this.synphony.getStages().length.toString());
 };

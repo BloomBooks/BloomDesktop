@@ -5,7 +5,7 @@
 	<h3 data-markuptype="1" data-order="10" data-i18n="DecodableReaderTool.Title">Decodable Reader Tool</h3>
 	<div><img id="decodable-keys" src="/bloom/images/keys-white.png" style="margin-left: 14px"/>
 	  <div class="stageLine"><span id="decStage" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine">
-		  <stage data-i18n="DecodableReaderTool.Stage">Stage </stage><span id="stageNumber">1</span><span data-i18n="DecodableReaderTool.StageOf" class="ofStage">&nbsp;of&nbsp;</span><span id="numberOfStages" class="ofStage">2</span></span><span id="incStage" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
+		  <stage id="stageXofY">Stage 1 of 1</stage></span><span id="incStage" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
 	  <div style="margin-left: 6px" class="section clear">Words in this stage
 		<div class="sortBlock">
 		  <div id="sortAlphabetic" class="sortItem rightBorder sortIconSelected"><i title="Sort alphabetically" class="fa fa-sort-alpha-asc"></i></div>
@@ -17,6 +17,9 @@
 		<div id="wordList" class="wordList"></div>
 	  </div>
 	  <div style="display: inline-block; position: relative; float: right; margin: 10px 14px"><span class="setup stageLine"><a href="javascript:parent.window.showSetupDialog('stages');" data-i18n="DecodableReaderTool.SetUpStages">Set up Stages</a></span></div>
+	  <div style="display: none">
+		<label id="please-add-texts" data-i18n="DecodableReaderTool.StageXofY">Stage {0} of {1}</label>
+	  </div>
 	  <script type="text/javascript">
 		$(document).ready(function() {
 		 setTimeout(initializeDecodableRT, 100);
