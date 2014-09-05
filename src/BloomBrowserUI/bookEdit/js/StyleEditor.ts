@@ -214,13 +214,16 @@ class StyleEditor {
      * @return returns the tooltip string
      */
     GetToolTip(targetBox: HTMLElement, styleName: string): string {
+
+        //Review: Gordon (JH) I'm not clear if this is still used or why, since it seems to be duplicated in AttachToBox
         styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
+        styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
         var box = $(targetBox);
         var sizeString = box.css('font-size'); // always returns computed size in pixels
         var pxSize = parseInt(sizeString); // strip off units and parse
         var ptSize = this.ConvertPxToPt(pxSize);
         var lang = box.attr('lang');
-
+       
         // localize
         var tipText = "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.";
         return localizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
@@ -259,7 +262,7 @@ class StyleEditor {
         }
         this._previousBox = targetBox;
 
-        var toolTip = this.GetToolTip(targetBox, styleName);
+        //wasn't being used: var toolTip = this.GetToolTip(targetBox, styleName);
         var bottom = $(targetBox).position().top + $(targetBox).height();
         var t = bottom + "px";
 
@@ -272,6 +275,7 @@ class StyleEditor {
                 iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
+                styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
                 var box = $(targetBox);
                 var sizeString = box.css('font-size');
                 var pxSize = parseInt(sizeString);
