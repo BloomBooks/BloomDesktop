@@ -69,7 +69,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 # URL: http://build.palaso.org/viewType.html?buildTypeId=bt222
 # VCS: https://bitbucket.org/hatton/bloom-desktop [default]
 # dependencies:
-# [0] build: bloom-2.1.-win32-static-dependencies (bt396)
+# [0] build: bloom-3.-win32-static-dependencies (bt396)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
@@ -107,7 +107,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt223
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"Palaso.BuildTasks.dll"=>"build/", "exiftool/*.*"=>"DistFiles", "*.dll"=>"lib/dotnet"}
+#     paths: {"Palaso.BuildTasks.dll"=>"build/", "*.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/libpalaso.git []
 # [6] build: PdfDroplet-Win-Dev-Continuous (bt54)
 #     project: PdfDroplet
@@ -187,7 +187,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastS
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/win32helper.pyo ../MercurialExtensions/fixutf8/win32helper.pyo
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt400/latest.lastSuccessful/xulrunner-29.0.1.en-US.win32.zip ../Downloads/xulrunner-29.0.1.en-US.win32.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/Palaso.BuildTasks.dll ../build/Palaso.BuildTasks.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/exiftool/exiftool.exe ../DistFiles/exiftool.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/Enchant.Net.dll ../lib/dotnet/Enchant.Net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/Interop.WIA.dll ../lib/dotnet/Interop.WIA.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/latest.lastSuccessful/Ionic.Zip.dll ../lib/dotnet/Ionic.Zip.dll
