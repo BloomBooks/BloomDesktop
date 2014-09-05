@@ -29,7 +29,8 @@ namespace Bloom.Collection
     /// </summary>
     public class CollectionSettings
     {
-    	private string _language1Iso639Code;
+		public const string ReaderToolsSettingsPrefix = "ReaderToolsSettings-";
+		private string _language1Iso639Code;
     	private LookupIsoCodeModel _lookupIsoCode = new LookupIsoCodeModel();
     	private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
 
@@ -309,7 +310,7 @@ namespace Bloom.Collection
         /// </summary>
 	    public string DecodableLevelPathName
 	    {
-	        get { return Path.Combine(Path.GetDirectoryName(SettingsFilePath), "ReaderToolsSettings-" + Language1Iso639Code + ".json"); }
+	        get { return Path.Combine(Path.GetDirectoryName(SettingsFilePath), ReaderToolsSettingsPrefix + Language1Iso639Code + ".json"); }
 	    }
 
         [XmlIgnore]
