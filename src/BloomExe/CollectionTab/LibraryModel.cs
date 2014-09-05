@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -227,16 +228,14 @@ namespace Bloom.CollectionTab
 							{
 								string repairPath;
 								string repairContent;
-								if (forReaderTools)
-									MakeBookIntoTemplate(directory, out repairPath, out repairContent );
 
 								var dirName = Path.GetFileName(directory);
 								if (dirName.ToLowerInvariant() == "sample texts")
 									continue; // Don't want to bundle these up
 								var zipName = Path.Combine(rootName, dirName);
 								zip.AddDirectory(directory, zipName);
-								if (repairPath != null)
-									File.WriteAllText(repairPath, repairContent, Encoding.UTF8);
+								if (forReaderTools)
+									ReplaceBookWithTemplate(zip, directory, rootName);
 							}
 							foreach (var file in Directory.GetFiles(dir))
 							{
@@ -264,9 +263,22 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		private void MakeBookIntoTemplate(string directory, out string repairPath, out string repairContent)
+		private void ReplaceBookWithTemplate(ZipFile zip, string directory, string rootName)
 		{
-			var bookFile = Path.
+			var bookFile = BookStorage.FindBookHtmlInFolder(directory);
+			if (string.IsNullOrEmpty(bookFile))
+				return;
+			var text = File.ReadAllText(bookFile, Encoding.UTF8);
+			// Note that we're getting rid of preceding newline but not following one. Hopefully we cleanly remove a whole line.
+			// I'm not sure the </meta> ever occurs in html files, but just in case we'll match if present.
+			var regex = new Regex("\\s*<meta\\s+name=(['\\\"])lockedDownAsShell\\1 content=(['\\\"])true\\2>(</meta>)? *");
+			var match = regex.Match(text);
+			if (!match.Success)
+				return; // nothing to remove
+			var newText = text.Substring(0, match.Index) + text.Substring(match.Index + match.Length);
+			var zipName = Path.Combine(rootName, Path.GetFileName(directory), Path.GetFileName(bookFile));
+			zip.RemoveEntry(zipName);
+			zip.AddEntry(zipName, newText);
 		}
 
 		public string GetSuggestedBloomPackPath()
