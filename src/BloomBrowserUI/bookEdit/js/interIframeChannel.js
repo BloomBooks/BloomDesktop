@@ -22,13 +22,13 @@ var interIframeChannel = (function () {
     * Retrieve data from localhost
     * @param {String} url The URL to request
     * @param {Function} callback Function to call when the ajax request returns
-    * @param {String} [dataValue] Passed in the query string under the "data" key
+    * @param [dataValue] Passed in the query string under the "data" key.
+    * NOTE: If dataValue is a string, it must NOT be URI encoded.
     */
     interIframeChannel.prototype.simpleAjaxGet = function (url, callback, dataValue) {
-        // We should call encodeURIComponent() if dataValue is a string.
-        // NOTE: We are checking for '%' because we shouldn't call encodeURIComponent() if the string has
-        // already been URI encoded.
-        if ((typeof dataValue === 'string') && (dataValue.indexOf('%') === -1))
+        // We are calling encodeURIComponent() if dataValue is a string.
+        // NOTE: We are encoding every string, so the caller should NOT encode the string.
+        if (typeof dataValue === 'string')
             dataValue = encodeURIComponent(dataValue);
 
         var ajaxSettings = { type: 'GET', url: url };
@@ -45,10 +45,13 @@ var interIframeChannel = (function () {
     * @param {String} url The URL to request
     * @param {Function} callback Function to call when the ajax request returns
     * @param {Object} callbackParam Parameter passed to the callback function
-    * @param {String} [dataValue] Passed in the query string under the "data" key
+    * @param [dataValue] Passed in the query string under the "data" key
+    * NOTE: If dataValue is a string, it must NOT be URI encoded.
     */
     interIframeChannel.prototype.simpleAjaxGetWithCallbackParam = function (url, callback, callbackParam, dataValue) {
-        if ((typeof dataValue === 'string') && (dataValue.indexOf('%') === -1))
+        // We are calling encodeURIComponent() if dataValue is a string.
+        // NOTE: We are encoding every string, so the caller should NOT encode the string.
+        if (typeof dataValue === 'string')
             dataValue = encodeURIComponent(dataValue);
 
         var ajaxSettings = { type: 'GET', url: url };
