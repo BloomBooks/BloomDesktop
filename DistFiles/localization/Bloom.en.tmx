@@ -564,13 +564,13 @@
     <tu tuid="DecodableReaderTool.Stage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Stage 1 of 2</seg>
+        <seg>Stage </seg>
       </tuv>
     </tu>
     <tu tuid="DecodableReaderTool.StageOf">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg> of 2</seg>
+        <seg> of </seg>
       </tuv>
     </tu>
     <tu tuid="DecodableReaderTool.Title">
