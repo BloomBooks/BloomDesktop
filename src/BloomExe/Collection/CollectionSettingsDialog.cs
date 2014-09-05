@@ -68,10 +68,12 @@ namespace Bloom.Collection
 
 		private void UpdateDisplay()
 		{
-			_language1Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId), _collectionSettings.Language1Iso639Code);
-			_language2Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId), _collectionSettings.Language2Iso639Code);
-			_language1FontLabel.Text = string.Format("Default Font for {0}", _language1Name.Text);
-			_language2FontLabel.Text = string.Format("Default Font for {0}", _language2Name.Text);
+			var lang1UiName = _collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId);
+			var lang2UiName = _collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId);
+			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, _collectionSettings.Language1Iso639Code);
+			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Iso639Code);
+			_language1FontLabel.Text = string.Format("Default Font for {0}", lang1UiName);
+			_language2FontLabel.Text = string.Format("Default Font for {0}", lang2UiName);
 
 			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 			{
@@ -82,8 +84,9 @@ namespace Bloom.Collection
 			}
 			else
 			{
-				_language3Name.Text = string.Format("{0} ({1})", _collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId), _collectionSettings.Language3Iso639Code);
-				_language3FontLabel.Text = string.Format("Default Font for {0}", _language3Name.Text);
+				var lang3UiName = _collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId);
+				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.Language3Iso639Code);
+				_language3FontLabel.Text = string.Format("Default Font for {0}", lang3UiName);
 				_removeLanguage3Link.Visible = true;
 				_language3FontLabel.Visible = true;
 				_fontComboLanguage3.Visible = true;
