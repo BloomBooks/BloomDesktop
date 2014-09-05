@@ -95,8 +95,7 @@ LocalizationManager.prototype.getText = function (stringId, englishText) {
         // Remove the first 2 elements, which are the stringId and englishText.
         text = SimpleDotNetFormat(text, args.slice(2));
     }
-
-    return text;
+    return HtmlDecode(text);
 };
 
 /**
@@ -160,4 +159,14 @@ function SimpleDotNetFormat(format, args) {
         format = format.replace(regex, args[i]);
     }
     return format;
+}
+
+/**
+ * Returns a string where html entities have been convert to normal text
+ * @param {String} text
+ */
+function HtmlDecode(text) {
+    var div = document.createElement('div');
+    div.innerHTML = text;
+    return div.firstChild.nodeValue;
 }
