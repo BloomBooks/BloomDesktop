@@ -7,3 +7,7 @@ declare function GetInlineDictionary(): any;
 interface String {
 	startsWith(str: string): boolean
 }
+
+interface Window {
+	postMessage(message: string, context: any): void;
+}
