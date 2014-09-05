@@ -1,4 +1,5 @@
 /// <reference path="jquery.d.ts" />
+/// <reference path="misc-types.d.ts" />
 /**
 * L10NSharp LocalizationManager for javascript.
 *
