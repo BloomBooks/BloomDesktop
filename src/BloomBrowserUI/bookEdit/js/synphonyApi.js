@@ -19,8 +19,11 @@ var SynphonyApi = (function () {
     function SynphonyApi() {
         this.stages = [];
         this.levels = [];
-        this.source = '';
     }
+    /**
+    *
+    * @param fileContent
+    */
     SynphonyApi.prototype.loadSettings = function (fileContent) {
         if (!lang_data)
             lang_data = new LanguageData();
@@ -30,7 +33,7 @@ var SynphonyApi = (function () {
 
         var data = jQuery.extend(new DLRSettings(), fileContent);
 
-        this.source = fileContent;
+        this.source = data;
 
         if (data.letters !== '') {
             lang_data.addGrapheme(data.letters.split(' '));
@@ -53,6 +56,18 @@ var SynphonyApi = (function () {
             for (var i = 0; i < lvls.length; i++) {
                 this.addLevel(jQuery.extend(true, new Level((i + 1).toString()), lvls[i]));
             }
+        }
+    };
+
+    SynphonyApi.prototype.loadFromLangData = function (langData) {
+        if (!this.source)
+            this.source = new DLRSettings();
+
+        if (this.source.letters === '') {
+            var sorted = langData.LanguageSortOrder.join(' ').toLowerCase().split(' ');
+            sorted = _.uniq(sorted);
+
+            this.source.letters = sorted.join(' ');
         }
     };
 

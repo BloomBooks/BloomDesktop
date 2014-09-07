@@ -651,8 +651,13 @@ ReaderToolsModel.prototype.setElementAttribute = function(id, attrName, val) {
 ReaderToolsModel.prototype.addWordsFromFile = function(fileContents) {
 
     // is this a Synphony data file?
-    if (fileContents.substr(0, 12) === 'setLangData(') {
+    if (fileContents.substr(0, 12) === '{"LangName":') {
         libsynphony.langDataFromString(fileContents);
+        this.getSynphony().loadFromLangData(lang_data);
+    }
+    else if (fileContents.substr(0, 12) === 'setLangData(') {
+        libsynphony.langDataFromString(fileContents);
+        this.getSynphony().loadFromLangData(lang_data);
     }
     else {
         var words = libsynphony.getWordsFromHtmlString(fileContents);

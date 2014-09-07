@@ -756,6 +756,5 @@ function wordListChangedCallback() {
 $(document).ready(function () {
     $('body').find('*[data-i18n]').localize(finishInitializing);
     var accordion = accordionWindow();
-    document.getElementById('dls_word_lists').value = accordion.getTexts().join('\n');
     accordion.addWordListChangedListener('wordListChanged.ReaderSetup', wordListChangedCallback);
 });
