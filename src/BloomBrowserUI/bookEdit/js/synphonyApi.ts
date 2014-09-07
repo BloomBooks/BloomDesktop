@@ -17,8 +17,12 @@ class SynphonyApi {
 
     stages = [];
     levels = [];
-    source: string = '';
+    source: DLRSettings;
 
+    /**
+     *
+     * @param fileContent
+     */
     loadSettings(fileContent): void {
 
         if (!lang_data) lang_data = new LanguageData();
@@ -27,7 +31,7 @@ class SynphonyApi {
 
         var data: DLRSettings = <DLRSettings>jQuery.extend(new DLRSettings(), fileContent);
 
-        this.source = fileContent;
+        this.source = data;
 
         if (data.letters !== '') {
             lang_data.addGrapheme(data.letters.split(' '));
@@ -50,6 +54,19 @@ class SynphonyApi {
             for (var i = 0; i < lvls.length; i++) {
                 this.addLevel(<Level>jQuery.extend(true, new Level((i+1).toString()), lvls[i]));
             }
+        }
+    }
+
+    loadFromLangData(langData: LanguageData): void {
+
+        if (!this.source) this.source = new DLRSettings();
+
+        if (this.source.letters === '') {
+
+            var sorted = langData.LanguageSortOrder.join(' ').toLowerCase().split(' ');
+            sorted = _.uniq(sorted);
+
+            this.source.letters = sorted.join(' ');
         }
     }
 

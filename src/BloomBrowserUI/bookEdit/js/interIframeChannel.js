@@ -6,7 +6,7 @@
 var interIframeChannel = (function () {
     function interIframeChannel() {
         this.localizationManagerDictionary = {};
-        this.readableFileExtensions = ['txt', 'js'];
+        this.readableFileExtensions = ['txt', 'js', 'json'];
     }
     /**
     * Opens the application help topic
