@@ -875,34 +875,6 @@ namespace Bloom.CollectionTab
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
 				Analytics.ReportException(error);
 			}
-
-
-//			using (var d = new SaveFileDialog())
-//			{
-//				d.RestoreDirectory = true;
-//				d.ShowDialog();
-//			}
-//			using (var dlg = new SaveFileDialog())
-//			{
-//				dlg.FileName = Path.GetFileNameWithoutExtension(SelectedBook.GetPathHtmlFile()) + ".doc";
-//				dlg.InitialDirectory = SelectedBook.FolderPath;
-//				if (DialogResult.OK == dlg.ShowDialog())
-//				{
-//					try
-//					{
-//						_model.ExportDocFormat(dlg.FileName);
-//#if !__MonoCS__
-//						Process.Start("explorer.exe", "/select, \"" + dlg.FileName + "\"");
-//#endif
-//						Analytics.Track("Exported To Doc format");
-//					}
-//					catch (Exception error)
-//					{
-//						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
-//						Analytics.ReportException(error);
-//					}
-//				}
-//			}
 		}
 
 
