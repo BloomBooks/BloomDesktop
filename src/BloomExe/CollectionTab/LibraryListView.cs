@@ -202,8 +202,10 @@ namespace Bloom.CollectionTab
             _primaryCollectionFlow.Controls.Add(invisibleHackPartner);
             var primaryCollectionHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
             primaryCollectionHeader.Label.Text = _model.VernacularLibraryNamePhrase;
-            _primaryCollectionFlow.Controls.Add(primaryCollectionHeader);
-            _primaryCollectionFlow.SetFlowBreak(primaryCollectionHeader, true);
+			primaryCollectionHeader.AdjustWidth();
+			_primaryCollectionFlow.Controls.Add(primaryCollectionHeader);
+            //_primaryCollectionFlow.SetFlowBreak(primaryCollectionHeader, true);
+			_primaryCollectionFlow.Controls.Add(_menuButton);
 			LoadOneCollection(_model.GetBookCollections().First(), _primaryCollectionFlow);
 			_primaryCollectionFlow.ResumeLayout();
         }
@@ -867,6 +869,11 @@ namespace Bloom.CollectionTab
 					return;
 				MakeBloomPack(true);
 			}
+		}
+
+		private void _menuButton_Click(object sender, EventArgs e)
+		{
+			_vernacularCollectionMenuStrip.Show(_menuButton, new Point(0, 0));
 		}
 
 		/// <summary>
