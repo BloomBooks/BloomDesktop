@@ -1230,7 +1230,29 @@ namespace Bloom.Book
 			InvokeContentsChanged(null);
 		}
 
+		public void DuplicatePage(IPage page)
+		{
+			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
 
+			var pages = GetPageElements();
+			var pageDiv = FindPageDiv(page);
+			var newpageDiv = (XmlElement) pageDiv.CloneNode(true);
+			BookStarter.SetupIdAndLineage(pageDiv, newpageDiv);
+			var body = pageDiv.ParentNode;
+			int currentPageIndex = _pagesCache.IndexOf(page);
+			body.InsertAfter(newpageDiv, pages[currentPageIndex]);
+
+			ClearPagesCache();
+			Save();
+			if (_pageListChangedEvent != null)
+				_pageListChangedEvent.Raise(null);
+
+			InvokeContentsChanged(null);
+
+			if (_pagesCache == null)
+				BuildPageCache();
+			_pageSelection.SelectPage(_pagesCache[currentPageIndex + 1]);
+		}
 
 		public void DeletePage(IPage page)
 		{

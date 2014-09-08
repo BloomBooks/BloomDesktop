@@ -1,5 +1,6 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
+/// <reference path="../../lib/misc-types.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
 /// <reference path="getIframeChannel.ts"/>
 var iframeChannel = getIframeChannel();
@@ -195,7 +196,9 @@ var StyleEditor = (function () {
     * @return returns the tooltip string
     */
     StyleEditor.prototype.GetToolTip = function (targetBox, styleName) {
+        //Review: Gordon (JH) I'm not clear if this is still used or why, since it seems to be duplicated in AttachToBox
         styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
+        styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
         var box = $(targetBox);
         var sizeString = box.css('font-size');
         var pxSize = parseInt(sizeString);
@@ -240,7 +243,7 @@ var StyleEditor = (function () {
         }
         this._previousBox = targetBox;
 
-        var toolTip = this.GetToolTip(targetBox, styleName);
+        //wasn't being used: var toolTip = this.GetToolTip(targetBox, styleName);
         var bottom = $(targetBox).position().top + $(targetBox).height();
         var t = bottom + "px";
 
@@ -253,11 +256,13 @@ var StyleEditor = (function () {
             iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
+                styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
                 var box = $(targetBox);
                 var sizeString = box.css('font-size');
                 var pxSize = parseInt(sizeString);
                 var ptSize = editor.ConvertPxToPt(pxSize);
                 var lang = box.attr('lang');
+                lang = GetInlineDictionary()[lang]; //Note: it should have worked to just do localizationManger.getTExt(lang), but that isn't working.
                 var fontName = box.css('font-family');
                 if (fontName[0] == '\'' || fontName[0] == '"') {
                     fontName = fontName.substring(1, fontName.length - 1); // strip off quotes

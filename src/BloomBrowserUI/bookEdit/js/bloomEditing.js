@@ -18,15 +18,16 @@ function processExternalMessage(event) {
             });
 
             editableElements.find('span.' + $.cssWordNotFound()).each(function() {
-                $(this).qtip({ content: 'Word not valid' });
+                $(this).qtip({ content: 'This word is not decodable in this stage.' });
             });
 
+            //we're considering dropping this entirely
             editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-                $(this).qtip({ content: 'Possible word' });
+                $(this).qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
             });
 
             editableElements.find('span.' + $.cssSentenceTooLong()).each(function() {
-                $(this).qtip({ content: 'Sentence too long' });
+                $(this).qtip({ content: 'This Sentence is too long for this Level.' });
             });
             return;
     }
@@ -350,21 +351,17 @@ function MakeSourceTextDivForGroup(group) {
         $(this).attr('style', 'font-size: 1.2em; line-height: 1.2em;')
     });
 
-    var vernacularLang = localizationManager.getVernacularLang();
+    var vernacularLang = GetInlineDictionary()['vernacularLang']; //doesn't work localizationManager.getVernacularLang();
 
     $(divForBubble).removeClass(); //remove them all
     $(divForBubble).addClass("ui-sourceTextsForBubble");
-    //don't want the vernacular in the bubble
-    $(divForBubble).find("*[lang='" + vernacularLang + "']").each(function() {
-        $(this).remove();
-    });
     //don't want empty items in the bubble
     $(divForBubble).find("textarea:empty, div:hasNoText").each(function() {
         $(this).remove();
     });
 
-    //don't want bilingual/trilingual boxes to be shown in the bubble
-    $(divForBubble).find("*.bloom-content2, *.bloom-content3").each(function() {
+    //don't want the vernacular or languages in use for bilingual/trilingual boxes to be shown in the bubble
+    $(divForBubble).find("*.bloom-content1, *.bloom-content2, *.bloom-content3").each(function () {
         $(this).remove();
     });
 
@@ -402,13 +399,15 @@ function MakeSourceTextDivForGroup(group) {
         var shellEditingMode = false;
         items.each(function() {
             var iso = $(this).attr('lang');
-            var languageName = localizationManager.getLanguageName(iso);
+            //doesn't work: var languageName = localizationManager.getLanguageName(iso);
+            var languageName = GetInlineDictionary()[iso];
             if (!languageName)
                 languageName = iso;
             var shouldShowOnPage = (iso === vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
             // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
             if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
+
                 $(list).append('<li id="'+iso+'"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
                 if (iso === GetSettings().defaultSourceLanguage) {
                     selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
@@ -813,7 +812,7 @@ function AddLanguageTags(container) {
             return;
         }
 
-        var dictionary = GetDictionary();
+        var dictionary = GetInlineDictionary();
         var whatToSay = dictionary[key];
         if (!whatToSay)
             whatToSay = key; //just show the code
@@ -1443,6 +1442,8 @@ function SetupElements(container) {
             editor.DetachLanguageTip(this);
         });
     });
+
+    $(container).find('.bloom-editable').longPress();
 
     //focus on the first editable field
     $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
