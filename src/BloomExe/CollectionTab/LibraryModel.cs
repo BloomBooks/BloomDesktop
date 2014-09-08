@@ -247,7 +247,7 @@ namespace Bloom.CollectionTab
 						}
 						//show it
 						Logger.WriteEvent("Showing BloomPack on disk");
-						Process.Start(Path.GetDirectoryName(path));
+						Process.Start("explorer.exe", "/select, \"" + path + "\"");
 						Analytics.Track("Create BloomPack");
 					}
 					finally
