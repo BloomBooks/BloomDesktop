@@ -35,6 +35,8 @@ namespace Bloom.CollectionTab
 			this._keepFocusTimer = new System.Windows.Forms.Timer(this.components);
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._vernacularCollectionMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.makeReaderTemplateBloomPackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.advancedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._showHistoryMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this._showNotesMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this._doChecksOfAllBooksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,20 +48,20 @@ namespace Bloom.CollectionTab
 			this.label1 = new System.Windows.Forms.Label();
 			this.label2 = new System.Windows.Forms.Label();
 			this.label3 = new System.Windows.Forms.Label();
+			this._menuButton = new System.Windows.Forms.Button();
 			this.button1 = new System.Windows.Forms.Button();
 			this.button4 = new System.Windows.Forms.Button();
 			this.button5 = new System.Windows.Forms.Button();
 			this.label4 = new System.Windows.Forms.Label();
 			this.label5 = new System.Windows.Forms.Label();
 			this.button6 = new System.Windows.Forms.Button();
+			this.button3 = new System.Windows.Forms.Button();
 			this._sourceBooksFlow = new System.Windows.Forms.FlowLayoutPanel();
 			this.label7 = new System.Windows.Forms.Label();
 			this.pretendLabel = new System.Windows.Forms.Label();
 			this.label9 = new System.Windows.Forms.Label();
 			this._dividerPanel = new System.Windows.Forms.Panel();
 			this._settingsProtectionHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
-			this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
-			this.makeReaderTemplateBloomPackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bookContextMenu.SuspendLayout();
 			this._sourcePaneMenuStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -191,20 +193,40 @@ namespace Bloom.CollectionTab
 			// _vernacularCollectionMenuStrip
 			// 
 			this._vernacularCollectionMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._showHistoryMenu,
-            this._showNotesMenu,
-            this._doChecksOfAllBooksToolStripMenuItem,
-            this._rescueMissingImagesToolStripMenuItem,
-            this.toolStripMenuItem3,
-            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem,
-            this.toolStripMenuItem4,
-            this.makeReaderTemplateBloomPackToolStripMenuItem});
+            this.makeReaderTemplateBloomPackToolStripMenuItem,
+            this.advancedToolStripMenuItem});
 			this._L10NSharpExtender.SetLocalizableToolTip(this._vernacularCollectionMenuStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._vernacularCollectionMenuStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._vernacularCollectionMenuStrip, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._vernacularCollectionMenuStrip, "CollectionTab.CollectionMenu.contextMenuStrip2");
 			this._vernacularCollectionMenuStrip.Name = "_vernacularCollectionMenuStrip";
-			this._vernacularCollectionMenuStrip.Size = new System.Drawing.Size(298, 170);
+			this._vernacularCollectionMenuStrip.Size = new System.Drawing.Size(268, 48);
+			// 
+			// makeReaderTemplateBloomPackToolStripMenuItem
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this.makeReaderTemplateBloomPackToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.makeReaderTemplateBloomPackToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this.makeReaderTemplateBloomPackToolStripMenuItem, ".addMakeReaderTemplateBloomPackToolStripMenuItem");
+			this.makeReaderTemplateBloomPackToolStripMenuItem.Name = "makeReaderTemplateBloomPackToolStripMenuItem";
+			this.makeReaderTemplateBloomPackToolStripMenuItem.Size = new System.Drawing.Size(267, 22);
+			this.makeReaderTemplateBloomPackToolStripMenuItem.Text = "Make Reader Template BloomPack...";
+			this.makeReaderTemplateBloomPackToolStripMenuItem.Click += new System.EventHandler(this.makeReaderTemplateBloomPackToolStripMenuItem_Click);
+			// 
+			// advancedToolStripMenuItem
+			// 
+			this.advancedToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._showHistoryMenu,
+            this._showNotesMenu,
+            this._doChecksOfAllBooksToolStripMenuItem,
+            this._rescueMissingImagesToolStripMenuItem,
+            this.toolStripMenuItem3,
+            this._doChecksAndUpdatesOfAllBooksToolStripMenuItem});
+			this._L10NSharpExtender.SetLocalizableToolTip(this.advancedToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.advancedToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this.advancedToolStripMenuItem, ".advancedToolStripMenuItem");
+			this.advancedToolStripMenuItem.Name = "advancedToolStripMenuItem";
+			this.advancedToolStripMenuItem.Size = new System.Drawing.Size(267, 22);
+			this.advancedToolStripMenuItem.Text = "Advanced";
 			// 
 			// _showHistoryMenu
 			// 
@@ -212,7 +234,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizationComment(this._showHistoryMenu, null);
 			this._L10NSharpExtender.SetLocalizingId(this._showHistoryMenu, "CollectionTab.CollectionMenu.showHistory");
 			this._showHistoryMenu.Name = "_showHistoryMenu";
-			this._showHistoryMenu.Size = new System.Drawing.Size(297, 22);
+			this._showHistoryMenu.Size = new System.Drawing.Size(205, 22);
 			this._showHistoryMenu.Text = "Collection History...";
 			this._showHistoryMenu.Click += new System.EventHandler(this.OnVernacularProjectHistoryClick);
 			// 
@@ -223,7 +245,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizationComment(this._showNotesMenu, null);
 			this._L10NSharpExtender.SetLocalizingId(this._showNotesMenu, "CollectionTab.CollectionMenu.showNotes");
 			this._showNotesMenu.Name = "_showNotesMenu";
-			this._showNotesMenu.Size = new System.Drawing.Size(297, 22);
+			this._showNotesMenu.Size = new System.Drawing.Size(205, 22);
 			this._showNotesMenu.Text = "Collection Notes...";
 			this._showNotesMenu.Click += new System.EventHandler(this.OnShowNotesMenu);
 			// 
@@ -233,7 +255,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizationComment(this._doChecksOfAllBooksToolStripMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._doChecksOfAllBooksToolStripMenuItem, "CollectionTab.CollectionMenu.doChecksOfAllBooks");
 			this._doChecksOfAllBooksToolStripMenuItem.Name = "_doChecksOfAllBooksToolStripMenuItem";
-			this._doChecksOfAllBooksToolStripMenuItem.Size = new System.Drawing.Size(297, 22);
+			this._doChecksOfAllBooksToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
 			this._doChecksOfAllBooksToolStripMenuItem.Text = "Do Checks of All Books";
 			this._doChecksOfAllBooksToolStripMenuItem.Click += new System.EventHandler(this._doChecksOfAllBooksToolStripMenuItem_Click);
 			// 
@@ -243,14 +265,14 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizationComment(this._rescueMissingImagesToolStripMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._rescueMissingImagesToolStripMenuItem, "CollectionTab.CollectionMenu.rescueMissingImages");
 			this._rescueMissingImagesToolStripMenuItem.Name = "_rescueMissingImagesToolStripMenuItem";
-			this._rescueMissingImagesToolStripMenuItem.Size = new System.Drawing.Size(297, 22);
+			this._rescueMissingImagesToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
 			this._rescueMissingImagesToolStripMenuItem.Text = "Rescue Missing Images...";
 			this._rescueMissingImagesToolStripMenuItem.Click += new System.EventHandler(this._rescueMissingImagesToolStripMenuItem_Click);
 			// 
 			// toolStripMenuItem3
 			// 
 			this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-			this.toolStripMenuItem3.Size = new System.Drawing.Size(294, 6);
+			this.toolStripMenuItem3.Size = new System.Drawing.Size(202, 6);
 			// 
 			// _doChecksAndUpdatesOfAllBooksToolStripMenuItem
 			// 
@@ -258,7 +280,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizationComment(this._doChecksAndUpdatesOfAllBooksToolStripMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._doChecksAndUpdatesOfAllBooksToolStripMenuItem, "CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks");
 			this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Name = "_doChecksAndUpdatesOfAllBooksToolStripMenuItem";
-			this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Size = new System.Drawing.Size(297, 22);
+			this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
 			this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Text = "Do Updates of All Books";
 			this._doChecksAndUpdatesOfAllBooksToolStripMenuItem.Click += new System.EventHandler(this._doChecksAndUpdatesOfAllBooksToolStripMenuItem_Click);
 			// 
@@ -295,12 +317,14 @@ namespace Bloom.CollectionTab
 			this._primaryCollectionFlow.Controls.Add(this.label1);
 			this._primaryCollectionFlow.Controls.Add(this.label2);
 			this._primaryCollectionFlow.Controls.Add(this.label3);
+			this._primaryCollectionFlow.Controls.Add(this._menuButton);
 			this._primaryCollectionFlow.Controls.Add(this.button1);
 			this._primaryCollectionFlow.Controls.Add(this.button4);
 			this._primaryCollectionFlow.Controls.Add(this.button5);
 			this._primaryCollectionFlow.Controls.Add(this.label4);
 			this._primaryCollectionFlow.Controls.Add(this.label5);
 			this._primaryCollectionFlow.Controls.Add(this.button6);
+			this._primaryCollectionFlow.Controls.Add(this.button3);
 			this._primaryCollectionFlow.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._primaryCollectionFlow.Location = new System.Drawing.Point(0, 0);
 			this._primaryCollectionFlow.Name = "_primaryCollectionFlow";
@@ -336,7 +360,6 @@ namespace Bloom.CollectionTab
 			// label3
 			// 
 			this.label3.AutoSize = true;
-			this._primaryCollectionFlow.SetFlowBreak(this.label3, true);
 			this.label3.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label3.ForeColor = System.Drawing.Color.WhiteSmoke;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label3, null);
@@ -350,6 +373,21 @@ namespace Bloom.CollectionTab
 			this.label3.Size = new System.Drawing.Size(69, 29);
 			this.label3.TabIndex = 6;
 			this.label3.Text = "Header";
+			// 
+			// _menuButton
+			// 
+			this._primaryCollectionFlow.SetFlowBreak(this._menuButton, true);
+			this._menuButton.Image = global::Bloom.Properties.Resources.menuButton;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._menuButton, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._menuButton, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._menuButton, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._menuButton, "button2");
+			this._menuButton.Location = new System.Drawing.Point(72, 16);
+			this._menuButton.Name = "_menuButton";
+			this._menuButton.Size = new System.Drawing.Size(18, 18);
+			this._menuButton.TabIndex = 6;
+			this._menuButton.UseVisualStyleBackColor = true;
+			this._menuButton.Click += new System.EventHandler(this._menuButton_Click);
 			// 
 			// button1
 			// 
@@ -461,6 +499,18 @@ namespace Bloom.CollectionTab
 			this.button6.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this.button6.UseVisualStyleBackColor = true;
 			// 
+			// button3
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this.button3, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.button3, null);
+			this._L10NSharpExtender.SetLocalizingId(this.button3, "button3");
+			this.button3.Location = new System.Drawing.Point(3, 291);
+			this.button3.Name = "button3";
+			this.button3.Size = new System.Drawing.Size(237, 264);
+			this.button3.TabIndex = 13;
+			this.button3.Text = "button3";
+			this.button3.UseVisualStyleBackColor = true;
+			// 
 			// _sourceBooksFlow
 			// 
 			this._sourceBooksFlow.AutoScroll = true;
@@ -529,21 +579,6 @@ namespace Bloom.CollectionTab
 			this._dividerPanel.Size = new System.Drawing.Size(350, 1);
 			this._dividerPanel.TabIndex = 6;
 			// 
-			// toolStripMenuItem4
-			// 
-			this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-			this.toolStripMenuItem4.Size = new System.Drawing.Size(294, 6);
-			// 
-			// addMakeReaderTemplateBloomPackToolStripMenuItem
-			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this.makeReaderTemplateBloomPackToolStripMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.makeReaderTemplateBloomPackToolStripMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this.makeReaderTemplateBloomPackToolStripMenuItem, ".addMakeReaderTemplateBloomPackToolStripMenuItem");
-			this.makeReaderTemplateBloomPackToolStripMenuItem.Name = "makeReaderTemplateBloomPackToolStripMenuItem";
-			this.makeReaderTemplateBloomPackToolStripMenuItem.Size = new System.Drawing.Size(297, 22);
-			this.makeReaderTemplateBloomPackToolStripMenuItem.Text = "Make Reader Template BloomPack...";
-			this.makeReaderTemplateBloomPackToolStripMenuItem.Click += new System.EventHandler(this.makeReaderTemplateBloomPackToolStripMenuItem_Click);
-			// 
 			// LibraryListView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -611,7 +646,9 @@ namespace Bloom.CollectionTab
 		private ToolStripMenuItem _doChecksOfAllBooksToolStripMenuItem;
 		private ToolStripMenuItem _rescueMissingImagesToolStripMenuItem;
 		private ToolStripSeparator toolStripMenuItem3;
-		private ToolStripSeparator toolStripMenuItem4;
 		private ToolStripMenuItem makeReaderTemplateBloomPackToolStripMenuItem;
+		private ToolStripMenuItem advancedToolStripMenuItem;
+		private Button _menuButton;
+		private Button button3;
     }
 }
