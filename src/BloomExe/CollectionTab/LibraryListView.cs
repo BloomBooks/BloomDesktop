@@ -205,7 +205,7 @@ namespace Bloom.CollectionTab
 			primaryCollectionHeader.AdjustWidth();
 			_primaryCollectionFlow.Controls.Add(primaryCollectionHeader);
             //_primaryCollectionFlow.SetFlowBreak(primaryCollectionHeader, true);
-			_primaryCollectionFlow.Controls.Add(_menuButton);
+			_primaryCollectionFlow.Controls.Add(_menuTriangle);//NB: we're using a picture box instead of a button because the former can have transparency.
 			LoadOneCollection(_model.GetBookCollections().First(), _primaryCollectionFlow);
 			_primaryCollectionFlow.ResumeLayout();
         }
@@ -899,7 +899,7 @@ namespace Bloom.CollectionTab
 
 		private void _menuButton_Click(object sender, EventArgs e)
 		{
-			_vernacularCollectionMenuStrip.Show(_menuButton, new Point(0, 0));
+			_vernacularCollectionMenuStrip.Show(_menuTriangle, new Point(0, 0));
 		}
 
 		/// <summary>
