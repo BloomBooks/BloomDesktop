@@ -248,7 +248,7 @@ TEXTAREA.province
 	margin-top: -8px;
 	margin-right: 8px;
 }
-UL
+UL:not(.long-press-popup)
 {
 	padding: 0;
 	z-index: 1;
@@ -260,7 +260,7 @@ UL
 	left: -7px;
 	top: 1px;
 }
-UL LI
+UL:not(.long-press-popup) LI
 {
 	display: inline-block;
 	padding-right: 11px;
@@ -451,28 +451,109 @@ even when the div is focused (as long as it is empty).*/
 /*This block handles marking elements that violate decodable book and leveled reader constraints*/
 SPAN.sentence-too-long
 {
-	-moz-text-decoration-style: wavy;
-	-moz-text-decoration-line: underline;
-	-moz-text-decoration-color: orange;
+    background-color: orange;
 }
 
 .ui-dialog { z-index: 20000; }
 
 SPAN.sight-word
 {
-	-moz-text-decoration-style: wavy;
-	-moz-text-decoration-line: underline;
-	-moz-text-decoration-color: green;
 }
 SPAN.word-not-found
 {
-	-moz-text-decoration-style: wavy;
-	-moz-text-decoration-line: underline;
-	-moz-text-decoration-color: orange;
+    background-color: orange;
+
 }
 SPAN.possible-word
 {
 	-moz-text-decoration-style: wavy;
 	-moz-text-decoration-line: underline;
 	-moz-text-decoration-color: blue;
+}
+
+
+/*
+ * Layout Mode (origami) switch (from proto.io)
+ */
+.onoffswitch {
+  display: inline-block; vertical-align: middle; /* This is the only thing I added custom */
+  position: relative; width: 50px;
+  -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+  display: none;
+}
+.onoffswitch-label {
+  display: block; overflow: hidden; cursor: pointer;
+  border: 2px solid #999999; border-radius: 0px;
+}
+.onoffswitch-inner {
+  display: block; width: 200%; margin-left: -100%;
+  -moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
+  -o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+  display: block; float: left; width: 50%; height: 14px; padding: 0; line-height: 10px;
+  font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.onoffswitch-inner:before {
+  content: "";
+  padding-left: 10px;
+  background-color: #D65649; color: #FFFFFF;
+}
+.onoffswitch-inner:after {
+  content: "";
+  padding-right: 10px;
+  background-color: #CCCCCC; color: #333333;
+  text-align: right;
+}
+.onoffswitch-switch {
+  display: block; width: 14px; margin: 0px;
+  background: #000000;
+  position: absolute; top: 0; bottom: 0; right: 36px;
+  -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
+  -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+  margin-left: 0;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+  right: 0px;
+}
+
+
+/*
+ * Long-press plugin for adding special characters
+*/
+.long-press-popup {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  background: #96668F;
+  padding-top: 10px;
+  margin:0;
+  font-size: 24pt;
+}
+.long-press-popup li {
+  display:inline-block;
+  list-style: none;
+    padding: 0px 15px 10px 15px;
+  margin-right: 20px;
+  margin-bottom: 10px;
+  background: #000000;
+  cursor:pointer;
+  color: white;
+  border: solid 4px black;
+  border-radius: 12px;
+}
+.long-press-popup .selected {
+  border-color: white;
+  -webkit-box-shadow: 0 0 18px rgba(255, 255, 255, 0.75);
+  -moz-box-shadow:    0 0 18px rgba(255, 255, 255, 0.75);
+  box-shadow:         0 0 18px rgba(255, 255, 255, 0.75);
 }
