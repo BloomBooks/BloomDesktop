@@ -48,7 +48,7 @@ namespace Bloom.CollectionTab
 			this.label1 = new System.Windows.Forms.Label();
 			this.label2 = new System.Windows.Forms.Label();
 			this.label3 = new System.Windows.Forms.Label();
-			this._menuButton = new System.Windows.Forms.Button();
+			this._menuTriangle = new System.Windows.Forms.PictureBox();
 			this.button1 = new System.Windows.Forms.Button();
 			this.button4 = new System.Windows.Forms.Button();
 			this.button5 = new System.Windows.Forms.Button();
@@ -72,6 +72,7 @@ namespace Bloom.CollectionTab
 			this.splitContainer1.Panel2.SuspendLayout();
 			this.splitContainer1.SuspendLayout();
 			this._primaryCollectionFlow.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this._menuTriangle)).BeginInit();
 			this._sourceBooksFlow.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -319,7 +320,7 @@ namespace Bloom.CollectionTab
 			this._primaryCollectionFlow.Controls.Add(this.label1);
 			this._primaryCollectionFlow.Controls.Add(this.label2);
 			this._primaryCollectionFlow.Controls.Add(this.label3);
-			this._primaryCollectionFlow.Controls.Add(this._menuButton);
+			this._primaryCollectionFlow.Controls.Add(this._menuTriangle);
 			this._primaryCollectionFlow.Controls.Add(this.button1);
 			this._primaryCollectionFlow.Controls.Add(this.button4);
 			this._primaryCollectionFlow.Controls.Add(this.button5);
@@ -376,20 +377,19 @@ namespace Bloom.CollectionTab
 			this.label3.TabIndex = 6;
 			this.label3.Text = "Header";
 			// 
-			// _menuButton
+			// _menuTriangle
 			// 
-			this._primaryCollectionFlow.SetFlowBreak(this._menuButton, true);
-			this._menuButton.Image = global::Bloom.Properties.Resources.menuButton;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._menuButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._menuButton, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._menuButton, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._menuButton, "button2");
-			this._menuButton.Location = new System.Drawing.Point(72, 16);
-			this._menuButton.Name = "_menuButton";
-			this._menuButton.Size = new System.Drawing.Size(18, 18);
-			this._menuButton.TabIndex = 6;
-			this._menuButton.UseVisualStyleBackColor = true;
-			this._menuButton.Click += new System.EventHandler(this._menuButton_Click);
+			this._primaryCollectionFlow.SetFlowBreak(this._menuTriangle, true);
+			this._menuTriangle.Image = global::Bloom.Properties.Resources.greyTriangleButton;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._menuTriangle, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._menuTriangle, null);
+			this._L10NSharpExtender.SetLocalizingId(this._menuTriangle, "pictureBox1");
+			this._menuTriangle.Location = new System.Drawing.Point(72, 16);
+			this._menuTriangle.Name = "_menuTriangle";
+			this._menuTriangle.Size = new System.Drawing.Size(25, 26);
+			this._menuTriangle.TabIndex = 14;
+			this._menuTriangle.TabStop = false;
+			this._menuTriangle.Click += new System.EventHandler(this._menuButton_Click);
 			// 
 			// button1
 			// 
@@ -613,6 +613,7 @@ namespace Bloom.CollectionTab
 			this.splitContainer1.ResumeLayout(false);
 			this._primaryCollectionFlow.ResumeLayout(false);
 			this._primaryCollectionFlow.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this._menuTriangle)).EndInit();
 			this._sourceBooksFlow.ResumeLayout(false);
 			this._sourceBooksFlow.PerformLayout();
 			this.ResumeLayout(false);
@@ -660,8 +661,8 @@ namespace Bloom.CollectionTab
 		private ToolStripSeparator toolStripMenuItem3;
 		private ToolStripMenuItem makeReaderTemplateBloomPackToolStripMenuItem;
 		private ToolStripMenuItem advancedToolStripMenuItem;
-		private Button _menuButton;
 		private Button button3;
 		private ToolStripMenuItem exportToWordOrLibreOfficeToolStripMenuItem;
+		private PictureBox _menuTriangle;
     }
 }
