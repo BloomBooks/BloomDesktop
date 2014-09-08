@@ -121,7 +121,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizingId(this._exportToXMLForInDesignToolStripMenuItem, "CollectionTab.BookMenu.exportToXMLForInDesign");
 			this._exportToXMLForInDesignToolStripMenuItem.Name = "_exportToXMLForInDesignToolStripMenuItem";
 			this._exportToXMLForInDesignToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
-			this._exportToXMLForInDesignToolStripMenuItem.Text = "Export To XML For InDesign...";
+			this._exportToXMLForInDesignToolStripMenuItem.Text = "Export to XML for InDesign...";
 			this._exportToXMLForInDesignToolStripMenuItem.Click += new System.EventHandler(this.OnExportToXmlForInDesign);
 			// 
 			// _openFolderOnDisk
