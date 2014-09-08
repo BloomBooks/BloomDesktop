@@ -641,28 +641,7 @@ namespace Bloom
 
 				if (userModifiedStyleSheet != null)
 				{
-					try
-					{
-						/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
-						 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
-						 * rules don't show up inside of it. So
-						 * this won't work: _editDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
-						 */
-						var styles = new StringBuilder();
-						styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
-						foreach (var cssRule in userModifiedStyleSheet.CssRules)
-						{
-							styles.AppendLine(cssRule.CssText);
-						}
-						styles.AppendLine("</style>");
-						Debug.WriteLine("*User Modified Stylesheet in browser:"+styles);
-                        _pageEditDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
-					}
-					catch (COMException)
-					{
-						// Trying to access the CssRules might throw an exception if there are
-						// no rules. If so, just ignore.
-					}
+					SaveCustomizedCssRules(userModifiedStyleSheet);
 				}
 
 				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen 
@@ -698,7 +677,49 @@ namespace Bloom
 
 		}
 
-        private void OnUpdateDisplayTick(object sender, EventArgs e)
+		private void SaveCustomizedCssRules(GeckoStyleSheet userModifiedStyleSheet)
+		{
+			try
+			{
+				/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
+						 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
+						 * rules don't show up inside of it. So
+						 * this won't work: _editDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
+						 */
+				var styles = new StringBuilder();
+				styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
+				foreach (var cssRule in userModifiedStyleSheet.CssRules)
+				{
+					styles.AppendLine(cssRule.CssText);
+				}
+				styles.AppendLine("</style>");
+				Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);
+				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
+			}
+			catch (Exception error)
+			{
+				if (error.Message.Contains("addEventListener")) // BL-270 and friends report death here
+				{
+					// Trying to access the CssRules sometimes throws this exception. I may be a timing thing,
+					// since devs couldn't reproduce but various testers did.
+
+					// When does this happen? We don't know yet. Nor Why.
+					//
+					// In one scenario, this is running before the page is ready: in that case, there would have been nothing to save.
+					// In another scenario, it is running after the browser has left this page, again, nothing to save, but 
+					// mabye some style changes you made aren't going to be saved. If people
+					// start reporting that, then we will need to return to this.
+
+					Debug.Fail("BL-270 reproduction. In Release version, this would not show.");
+				}
+				else
+				{
+					throw;
+				}
+			}
+		}
+
+		private void OnUpdateDisplayTick(object sender, EventArgs e)
         {
             UpdateEditButtons();
         }
