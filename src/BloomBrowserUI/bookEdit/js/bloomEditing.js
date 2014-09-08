@@ -27,7 +27,7 @@ function processExternalMessage(event) {
             });
 
             editableElements.find('span.' + $.cssSentenceTooLong()).each(function() {
-                $(this).qtip({ content: 'This Sentence is too long for this Level.' });
+                $(this).qtip({ content: 'This sentence is too long for this level.' });
             });
             return;
     }
