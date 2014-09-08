@@ -88,6 +88,7 @@
     var lastWhich;
     var timer;
     var activeElement;
+    var caretPosition; // Technically, the object is a range, but for us it should always be a point
 
     var popup=$('<ul class=long-press-popup />');
 
@@ -128,6 +129,7 @@
         var typedChar=$(activeElement).text().split('')[getCaretPosition(activeElement)-1];
 
         if (moreChars[typedChar]) {
+            storeCaretPosition();
             showPopup((moreChars[typedChar]));
         } else {
             hidePopup();
@@ -176,12 +178,22 @@
         replacePreviousLetterWithText(newChar);
     }
 
-    function replacePreviousLetterWithText(text) {
-        var sel, range, textNode, clone;
+    function storeCaretPosition() {
+        var sel;
+        caretPosition = null;
         if (window.getSelection) {
             sel = window.getSelection();
             if (sel.getRangeAt && sel.rangeCount) {
-                range = sel.getRangeAt(0);
+                caretPosition = sel.getRangeAt(0);
+            }
+        }
+    }
+    function replacePreviousLetterWithText(text) {
+        var sel, textNode, clone;
+        var range = caretPosition;
+        if (window.getSelection && range) {
+            sel = window.getSelection();
+            if (sel.getRangeAt && sel.rangeCount) {
                 textNode = document.createTextNode(text);
 
                 clone = range.cloneRange();
@@ -197,9 +209,6 @@
                 sel.removeAllRanges();
                 sel.addRange(range);
             }
-        } else if (document.selection && document.selection.createRange) {
-            range = document.selection.createRange();
-            range.pasteHTML(text);
         }
     }
 
