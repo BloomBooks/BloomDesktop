@@ -709,7 +709,7 @@ namespace Bloom
 					// In another scenario, it is running after the browser has left this page, again, nothing to save, but 
 					// mabye some style changes you made aren't going to be saved. If people
 					// start reporting that, then we will need to return to this.
-
+					Logger.WriteEvent("BL-270 Reproduction (addEventListener error while saving CSSRules). We're swallowing it but listing it here in the log.");
 					Debug.Fail("BL-270 reproduction. In Release version, this would not show.");
 				}
 				else
