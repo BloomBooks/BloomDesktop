@@ -44,8 +44,12 @@
 			this._language1Name = new System.Windows.Forms.Label();
 			this._language1Label = new System.Windows.Forms.Label();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
-			this.label2 = new System.Windows.Forms.Label();
-			this._fontCombo = new System.Windows.Forms.ComboBox();
+			this._language1FontLabel = new System.Windows.Forms.Label();
+			this._language2FontLabel = new System.Windows.Forms.Label();
+			this._language3FontLabel = new System.Windows.Forms.Label();
+			this._fontComboLanguage1 = new System.Windows.Forms.ComboBox();
+			this._fontComboLanguage2 = new System.Windows.Forms.ComboBox();
+			this._fontComboLanguage3 = new System.Windows.Forms.ComboBox();
 			this._aboutBookMakingSettingsButton = new System.Windows.Forms.Button();
 			this._xmatterPackLabel = new System.Windows.Forms.Label();
 			this._xmatterPackCombo = new System.Windows.Forms.ComboBox();
@@ -277,8 +281,12 @@
 			// 
 			// tabPage2
 			// 
-			this.tabPage2.Controls.Add(this.label2);
-			this.tabPage2.Controls.Add(this._fontCombo);
+			this.tabPage2.Controls.Add(this._fontComboLanguage3);
+			this.tabPage2.Controls.Add(this._fontComboLanguage2);
+			this.tabPage2.Controls.Add(this._fontComboLanguage1);
+			this.tabPage2.Controls.Add(this._language3FontLabel);
+			this.tabPage2.Controls.Add(this._language2FontLabel);
+			this.tabPage2.Controls.Add(this._language1FontLabel);
 			this.tabPage2.Controls.Add(this._aboutBookMakingSettingsButton);
 			this.tabPage2.Controls.Add(this._xmatterPackLabel);
 			this.tabPage2.Controls.Add(this._xmatterPackCombo);
@@ -293,31 +301,83 @@
 			this.tabPage2.Text = "Book Making";
 			this.tabPage2.UseVisualStyleBackColor = true;
 			// 
-			// label2
+			// _language1FontLabel
 			// 
-			this.label2.AutoSize = true;
-			this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this.label2, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.label2, null);
-			this._L10NSharpExtender.SetLocalizingId(this.label2, "CollectionSettingsDialog.BookMakingTab.Font");
-			this.label2.Location = new System.Drawing.Point(27, 40);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(37, 19);
-			this.label2.TabIndex = 22;
-			this.label2.Text = "Font";
+			this._language1FontLabel.AutoSize = true;
+			this._language1FontLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._language1FontLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._language1FontLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._language1FontLabel, "CollectionSettingsDialog.BookMakingTab.Font");
+			this._language1FontLabel.Location = new System.Drawing.Point(27, 40);
+			this._language1FontLabel.Name = "label2";
+			this._language1FontLabel.Size = new System.Drawing.Size(37, 19);
+			this._language1FontLabel.TabIndex = 22;
+			this._language1FontLabel.Text = "Default Font for Language 1";
 			// 
-			// _fontCombo
+			// _fontComboLanguage1
 			// 
-			this._fontCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this._fontCombo.FormattingEnabled = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._fontCombo, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._fontCombo, null);
-			this._L10NSharpExtender.SetLocalizingId(this._fontCombo, "CollectionSettingsDialog._xmatterPackCombo");
-			this._fontCombo.Location = new System.Drawing.Point(31, 62);
-			this._fontCombo.Name = "_fontCombo";
-			this._fontCombo.Size = new System.Drawing.Size(146, 25);
-			this._fontCombo.TabIndex = 21;
-			this._fontCombo.SelectedIndexChanged += new System.EventHandler(this._fontCombo_SelectedIndexChanged);
+			this._fontComboLanguage1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this._fontComboLanguage1.FormattingEnabled = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._fontComboLanguage1, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._fontComboLanguage1, null);
+			this._L10NSharpExtender.SetLocalizingId(this._fontComboLanguage1, "CollectionSettingsDialog._fontComboLanguage1");
+			this._fontComboLanguage1.Location = new System.Drawing.Point(31, 62);
+			this._fontComboLanguage1.Name = "_fontComboLanguage1";
+			this._fontComboLanguage1.Size = new System.Drawing.Size(146, 25);
+			this._fontComboLanguage1.TabIndex = 21;
+			this._fontComboLanguage1.SelectedIndexChanged += new System.EventHandler(this._fontComboLanguage1_SelectedIndexChanged);
+			// 
+			// _language2FontLabel
+			// 
+			this._language2FontLabel.AutoSize = true;
+			this._language2FontLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._language2FontLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._language2FontLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._language2FontLabel, "CollectionSettingsDialog.BookMakingTab.Font");
+			this._language2FontLabel.Location = new System.Drawing.Point(27, 109);
+			this._language2FontLabel.Name = "_language2FontLabel";
+			this._language2FontLabel.Size = new System.Drawing.Size(37, 19);
+			this._language2FontLabel.TabIndex = 23;
+			this._language2FontLabel.Text = "Default Font for Language 2";
+			// 
+			// _fontComboLanguage2
+			// 
+			this._fontComboLanguage2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this._fontComboLanguage2.FormattingEnabled = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._fontComboLanguage2, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._fontComboLanguage2, null);
+			this._L10NSharpExtender.SetLocalizingId(this._fontComboLanguage2, "CollectionSettingsDialog._fontComboLanguage2");
+			this._fontComboLanguage2.Location = new System.Drawing.Point(31, 131);
+			this._fontComboLanguage2.Name = "_fontComboLanguage2";
+			this._fontComboLanguage2.Size = new System.Drawing.Size(146, 25);
+			this._fontComboLanguage2.TabIndex = 25;
+			this._fontComboLanguage2.SelectedIndexChanged += new System.EventHandler(this._fontComboLanguage2_SelectedIndexChanged);
+			// 
+			// _language3FontLabel
+			// 
+			this._language3FontLabel.AutoSize = true;
+			this._language3FontLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._language3FontLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._language3FontLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._language3FontLabel, "CollectionSettingsDialog.BookMakingTab.Font");
+			this._language3FontLabel.Location = new System.Drawing.Point(27, 178);
+			this._language3FontLabel.Name = "_language3FontLabel";
+			this._language3FontLabel.Size = new System.Drawing.Size(37, 19);
+			this._language3FontLabel.TabIndex = 24;
+			this._language3FontLabel.Text = "Default Font for Language 3";
+			// 
+			// _fontComboLanguage3
+			// 
+			this._fontComboLanguage3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this._fontComboLanguage3.FormattingEnabled = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._fontComboLanguage3, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._fontComboLanguage3, null);
+			this._L10NSharpExtender.SetLocalizingId(this._fontComboLanguage3, "CollectionSettingsDialog._fontComboLanguage3");
+			this._fontComboLanguage3.Location = new System.Drawing.Point(31, 200);
+			this._fontComboLanguage3.Name = "_fontComboLanguage3";
+			this._fontComboLanguage3.Size = new System.Drawing.Size(146, 25);
+			this._fontComboLanguage3.TabIndex = 26;
+			this._fontComboLanguage3.SelectedIndexChanged += new System.EventHandler(this._fontComboLanguage3_SelectedIndexChanged);
 			// 
 			// _aboutBookMakingSettingsButton
 			// 
@@ -345,7 +405,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._xmatterPackLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._xmatterPackLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._xmatterPackLabel, "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack");
-			this._xmatterPackLabel.Location = new System.Drawing.Point(27, 124);
+			this._xmatterPackLabel.Location = new System.Drawing.Point(254, 40);
 			this._xmatterPackLabel.Name = "_xmatterPackLabel";
 			this._xmatterPackLabel.Size = new System.Drawing.Size(156, 19);
 			this._xmatterPackLabel.TabIndex = 1;
@@ -358,7 +418,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._xmatterPackCombo, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._xmatterPackCombo, null);
 			this._L10NSharpExtender.SetLocalizingId(this._xmatterPackCombo, "CollectionSettingsDialog._xmatterPackCombo");
-			this._xmatterPackCombo.Location = new System.Drawing.Point(31, 146);
+			this._xmatterPackCombo.Location = new System.Drawing.Point(258, 62);
 			this._xmatterPackCombo.Name = "_xmatterPackCombo";
 			this._xmatterPackCombo.Size = new System.Drawing.Size(146, 25);
 			this._xmatterPackCombo.TabIndex = 0;
@@ -720,8 +780,12 @@
         private System.Windows.Forms.TextBox _bloomCollectionName;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button _cancelButton;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox _fontCombo;
+        private System.Windows.Forms.Label _language1FontLabel;
+        private System.Windows.Forms.ComboBox _fontComboLanguage1;
+		private System.Windows.Forms.Label _language2FontLabel;
+		private System.Windows.Forms.ComboBox _fontComboLanguage2;
+		private System.Windows.Forms.Label _language3FontLabel;
+		private System.Windows.Forms.ComboBox _fontComboLanguage3;
         private System.Windows.Forms.CheckBox _showExperimentalTemplates;
 		private System.Windows.Forms.CheckBox _showExperimentCommands;
 	}
