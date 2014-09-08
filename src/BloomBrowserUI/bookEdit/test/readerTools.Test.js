@@ -52,11 +52,11 @@ describe("Bloom Edit Controls tests", function() {
 
     it("increments stage to limit on stage right button", function() {
         model.incrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", 2);
+        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "2");
 
         model.updateElementContent.reset();
         model.incrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", 3);
+        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "3");
 
         model.updateElementContent.reset();
         model.incrementStage();
@@ -67,11 +67,11 @@ describe("Bloom Edit Controls tests", function() {
         model.setStageNumber(3);
         model.updateElementContent.reset();
         model.decrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", 2);
+        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "2");
 
         model.updateElementContent.reset();
         model.decrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", 1);
+        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "1");
 
         model.updateElementContent.reset();
         model.decrementStage();
@@ -80,11 +80,11 @@ describe("Bloom Edit Controls tests", function() {
 
     it("increments level to limit on level right button", function() {
         model.incrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", 2);
+        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "2");
 
         model.updateElementContent.reset();
         model.incrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", 3);
+        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "3");
 
         model.updateElementContent.reset();
         model.incrementLevel();
@@ -95,11 +95,11 @@ describe("Bloom Edit Controls tests", function() {
         model.setLevelNumber(3);
         model.updateElementContent.reset();
         model.decrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", 2);
+        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "2");
 
         model.updateElementContent.reset();
         model.decrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", 1);
+        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "1");
 
         model.updateElementContent.reset();
         model.decrementLevel();
@@ -152,7 +152,7 @@ describe("Bloom Edit Controls tests", function() {
 
     it("updates content of level element when setting level", function() {
         model.setLevelNumber(3);
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", 3);
+        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "3");
     });
 
     it("sorts word list correctly when sort buttons clicked", function() {
@@ -233,7 +233,7 @@ describe("Bloom Edit Controls tests", function() {
 
     it ("updates stage label on init", function() {
         model.updateControlContents();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", 1);
+        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "1");
     });
 
     it("sets level max values on init", function() {
