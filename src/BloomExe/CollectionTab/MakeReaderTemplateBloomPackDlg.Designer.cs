@@ -95,7 +95,7 @@
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "MakeReaderTemplateBloomPackDlg";
-			this.Text = "MakeReaderTemplateBloomPackDlg";
+			this.Text = "Make Reader Template BloomPack";
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
