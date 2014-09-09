@@ -1151,6 +1151,13 @@ function SetupElements(container) {
             accordion.contentWindow.model.doMarkup(); // 'This' is the element that just lost focus.
         }
     });
+    // and a slightly different one for keypresses
+    $(container).find('.bloom-editable').keypress(function () {
+        var accordion = parent.window.document.getElementById("accordion");
+        if (accordion) {
+            accordion.contentWindow.model.doKeypressMarkup();
+        }
+    });
 
     SetBookCopyrightAndLicenseButtonVisibility(container);
 

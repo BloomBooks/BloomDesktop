@@ -65,6 +65,7 @@ var ReaderToolsModel = function() {
     this.setupType = '';
     this.fontName = '';
     this.readableFileExtensions = [];
+    this.keypressTimer = null;
 
     // this happens during testing
     if (iframeChannel)
@@ -446,6 +447,55 @@ ReaderToolsModel.prototype.getElementsToCheck = function() {
 
     // not a cover page, return elements to check
     return $(".bloom-content1", page.contentWindow.document);
+};
+
+// Make a selection in the specified node at the specified offset
+ReaderToolsModel.prototype.makeSelectionIn = function(node, offset) {
+    if (node.nodeType === 3) {
+        // drilled down to a text node. Make the selection.
+        var range = parent.window.document.getElementById('page').contentWindow.document.createRange();
+        range.setStart(node, offset);
+        range.setEnd(node, offset);
+        var selection = parent.window.document.getElementById('page').contentWindow.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        return;
+    }
+    for (i = 0; i < node.childNodes.length; i++) {
+        var childNode = node.childNodes[i];
+        var len = childNode.textContent.length;
+        if (offset <= len) {
+            this.makeSelectionIn(childNode, offset);
+            return;
+        }
+        offset -= len;
+    }
+};
+
+ReaderToolsModel.prototype.doKeypressMarkup = function() {
+    if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
+        this.keypressTimer.clearTimeout();
+    }
+    var self = this;
+    this.keypressTimer = setTimeout(function() {
+        // This happens 500ms after the user stops typing.
+        var page = parent.window.document.getElementById('page');
+        if (!page) return; // unit testing?
+        var selection = page.contentWindow.getSelection();
+        var current = selection.anchorNode;
+        var active = $(selection.anchorNode).closest('div').get(0);
+        if (selection.rangeCount > 1 || (selection.rangeCount == 1 && !selection.getRangeAt(0).collapsed)) {
+            alert('no range');
+            return; // don't even try to adjust markup while there is some complex selection
+        }
+        var myRange = selection.getRangeAt(0).cloneRange();
+        myRange.setStart(active, 0);
+        var offset = myRange.toString().length;
+        self.doMarkup();
+        // Now we try to restore the selection at the specified position.
+        self.makeSelectionIn(active, offset);
+
+    }, 500);
 };
 
 /**
