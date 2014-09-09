@@ -59,8 +59,7 @@ function showSetupDialog(showWhat) {
         },
         open: function () {
             $('#synphonyConfig').css('overflow', 'hidden');
-//            $('button span:contains("Help")').prepend('<i class="fa fa-question-circle"></i> ');
-            $('button span:contains("Help")').prepend('<img src="/bloom/images/help24x24.png" style="vertical-align:middle"> ');
+            $('button span:contains("Help")').prepend('<i class="fa fa-question-circle"></i> ');
         },
         height: h,
         width: w

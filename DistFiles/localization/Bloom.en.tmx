@@ -1955,6 +1955,42 @@
 		<seg>Letters</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="ReaderSetup.Letters.Header">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Letters and Letter Combinations</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Letters.Intro">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Letters.LetterHelp1">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>For example, here is what we might use for the English language:</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Letters.LetterHelp2">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Notice that the English list includes symbols that are used to make words, like ' in </seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Letters.LetterHelp3">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>it's</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Letters.LetterHelp4">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>.</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="ReaderSetup.LevelHeader">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -2133,6 +2169,30 @@
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Unique</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Words">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Words</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Words.Intro">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Words.PlaceTextFiles">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>2) Place Text Files in Your</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.Words.TypeWordsHere">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>1) Type Words Here</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.lettersHeader">
