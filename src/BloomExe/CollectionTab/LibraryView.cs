@@ -65,18 +65,7 @@ namespace Bloom.CollectionTab
 
 		private void OnMakeBloomPackButton_Click(object sender, EventArgs e)
 		{
-			using(var dlg = new SaveFileDialog())
-			{
-				dlg.FileName = _model.GetSuggestedBloomPackPath();
-				dlg.Filter = "BloomPack|*.BloomPack";
-				dlg.RestoreDirectory = true;
-				dlg.OverwritePrompt = true;
-				if(DialogResult.Cancel == dlg.ShowDialog())
-				{
-					return;
-				}
-				_model.MakeBloomPack(dlg.FileName);
-			}
+			_collectionListView.MakeBloomPack(false);
 		}
 
 		public string HelpTopicUrl
