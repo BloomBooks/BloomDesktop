@@ -22,64 +22,46 @@ html
 				a(href='http://call.canil.ca/', data-i18n='ReaderSetup.Synphony') Synphony
 				span(data-i18n='ReaderSetup.SearchEngine') , the Search Engine for Literacy.
 			ul
-				li: a(href='#dlstabs-1', data-i18n='ReaderSetup.Language') Language
+				li: a(href='#dlstabs-0', data-i18n='ReaderSetup.Letters') Letters
+				li: a(href='#dlstabs-1', data-i18n='ReaderSetup.Words') Words
 				li: a(href='#dlstabs-2', data-i18n='ReaderSetup.DecodableStages') Decodable Stages
 				li: a(href='#dlstabs-3', data-i18n='ReaderSetup.ReaderLevels') Reader Levels
+			#dlstabs-0.reader-setup-tab
+				.floating
+					p(data-i18n='ReaderSetup.Letters.Intro') To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.
+					br
+					label(data-i18n='ReaderSetup.Letters.Header') Letters and Letter Combinations
+					br
+					textarea#dls_letters.book-font(style='height: 55px; width: 325px')
+					p(data-i18n='ReaderSetup.Letters.LetterHelp1') For example, here is what we might use for the English language:
+					p a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z ' -
+					p
+						span(data-i18n='ReaderSetup.Letters.LetterHelp2') Notice that the English list includes symbols that are used to make words, like ' in&nbsp;
+						i(data-i18n='ReaderSetup.Letters.LetterHelp3') it's
+						span \.
 			#dlstabs-1.reader-setup-tab
-				.floating(style='width: 100%; box-sizing: border-box; text-align: right')
-					a(href="", onclick="return getIframeChannel().help('/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');")
-						table(style='display: inline-block; margin: 2px 22px 0 0')
-							tr
-								td.smaller(style='padding: 0 2px 0 0; vertical-align: middle; text-decoration: underline', data-i18n='ReaderSetup.AboutSettings') About these settings
-								td(style='padding: 0'): img(src='/bloom/images/help24x24.png', style='cursor: pointer')
-				.floating(style='width: 200px')
-					label(for='dls_letters', data-i18n='ReaderSetup.Letters') Letters
+				p(data-i18n='ReaderSetup.Words.Intro') To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:
+				.floating(style='width: 30%')
+					label(for='dls_more_words', data-i18n='ReaderSetup.Words.TypeWordsHere') 1) Type Words Here
 					br
-					textarea#dls_letters.book-font(style='height: 55px; width: 195px')
-					ul.asterisk
-						li
-							span.smaller(data-i18n='ReaderSetup.LetterHelp1') List letters and word-forming characters in alphabetic order.
-						li
-							span.smaller(data-i18n='ReaderSetup.LetterHelp2') Separate by spaces
-							br
-							span.smaller(data-i18n='ReaderSetup.LetterHelp3') E.g. "a b c d"
-					br
-					label(for='dls_letter_combinations', data-i18n='ReaderSetup.Combinations') Letter Combinations (Graphemes)
-					br
-					textarea#dls_letter_combinations.book-font(style='height: 55px; width: 195px')
-					br
-					ul.asterisk
-						li
-							span.smaller(data-i18n='ReaderSetup.CombinationHelp1') Separate by spaces
-							br
-							span.smaller(data-i18n='ReaderSetup.CombinationHelp2') E.g. "ai oo sh ng th ing"
-				#word-lists-div.floating
-					label(for='dls_word_lists', data-i18n='ReaderSetup.SampleTexts') Word Lists and Sample Texts
+					textarea#dls_more_words.book-font(style='height: 328px;width:100%')
+				#word-lists-div.floating(style='width: 60%')
+					label(for='dls_word_lists', data-i18n='ReaderSetup.Words.SampleTexts') 2) Place Text Files in Your Sample Text Folder
 					br
 					#dls_word_lists
 					#how_to_export(style="display: none")
 						a(href="", onclick="return getIframeChannel().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');", data-i18n='ReaderSetup.HowToExport') Help exporting and converting files to use as sample texts
 					a#open-text-folder.smaller(href='', data-i18n='ReaderSetup.OpenSampleTexts') Open the sample texts folder for this language.
-					p.smaller(data-i18n='ReaderSetup.AboutSampleTexts1') About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.
-					p.smaller(data-i18n='ReaderSetup.AboutSampleTexts2') If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.
-					p.smaller(data-i18n='ReaderSetup.AboutSampleTexts2') Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.
-					p.smaller(data-i18n='ReaderSetup.AboutSampleTexts4') Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.
-				.floating
-					label(for='dls_more_words', data-i18n='ReaderSetup.MoreWords') More Words
-					br
-					textarea#dls_more_words.book-font(style='height: 328px; width: 100px')
+					p.smaller(data-i18n='ReaderSetup.Words.AboutSampleTexts1') About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.
+					p.smaller(data-i18n='ReaderSetup.Words.AboutSampleTexts2') If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.
+					p.smaller(data-i18n='ReaderSetup.Words.AboutSampleTexts2') Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.
+					p.smaller(data-i18n='ReaderSetup.Words.AboutSampleTexts4') Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.
 			#dlstabs-2.reader-setup-tab
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table(style='width: 100%')
 						tr
 							td: img(src='/bloom/images/keys.png')
 							td(style='vertical-align: baseline; white-space: nowrap'): span.rs-heading(style='margin: auto 0', data-i18n='ReaderSetup.Stages') Stages
-							td(style='width: 100%; text-align: right; vertical-align: top')
-								a(href="", onclick="return getIframeChannel().help('/Tasks/Edit_tasks/Decodable_Reader_Tool/Decodable_Stages_tab.htm');")
-									table(style='display: inline-block; margin: 0')
-										tr
-											td.smaller(style='padding: 0 2px 0 0; vertical-align: middle; text-decoration: underline', data-i18n='ReaderSetup.AboutSettings') About these settings
-											td(style='padding: 0'): img(src='/bloom/images/help24x24.png', style='cursor: pointer')
 				#stage-list-container.floating.tab-list-container
 					#stage-list.tab-list
 						.scrolling-table-container
@@ -128,12 +110,6 @@ html
 						tr
 							td: img(src='/bloom/images/steps.png', height='32')
 							td(style='vertical-align: baseline; white-space: nowrap'): span.rs-heading(style='margin: auto 0', data-i18n='ReaderSetup.Levels') Reader Levels
-							td(style='width: 100%; text-align: right; vertical-align: top')
-								a(href="", onclick="return getIframeChannel().help('/Tasks/Edit_tasks/Leveled_Reader_Tool/Reader_Levels_tab.htm');")
-									table(style='display: inline-block; margin: 0')
-										tr
-											td.smaller(style='padding: 0 2px 0 0; vertical-align: middle; text-decoration: underline', data-i18n='ReaderSetup.AboutSettings') About these settings
-											td(style='padding: 0'): img(src='/bloom/images/help24x24.png', style='cursor: pointer')
 				#level-list-container.floating.tab-list-container
 					#level-list.tab-list
 						.scrolling-table-container

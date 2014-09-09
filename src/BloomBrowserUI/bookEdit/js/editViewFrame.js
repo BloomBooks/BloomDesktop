@@ -1,4 +1,3 @@
-
 function FindOrCreateConfigDiv(title) {
 
     var dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($("body"));
@@ -40,6 +39,13 @@ function showSetupDialog(showWhat) {
         autoOpen: "true",
         modal: "true",
         buttons: {
+            Help: {
+                text: "Help",
+                class: 'left-button',
+                click: function() {
+                    document.getElementById('settings_frame').contentWindow.postMessage('Help', '*');
+                }
+            },
             "OK": function () {
                 document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
             },
@@ -51,7 +57,11 @@ function showSetupDialog(showWhat) {
             $(this).remove();
             document.getElementById('accordion').contentWindow.SynphonyApi.fireCSharpEvent('setModalStateEvent', 'false');
         },
-        open: function () { $('#synphonyConfig').css('overflow', 'hidden'); },
+        open: function () {
+            $('#synphonyConfig').css('overflow', 'hidden');
+//            $('button span:contains("Help")').prepend('<i class="fa fa-question-circle"></i> ');
+            $('button span:contains("Help")').prepend('<img src="/bloom/images/help24x24.png" style="vertical-align:middle"> ');
+        },
         height: h,
         width: w
     });

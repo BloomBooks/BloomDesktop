@@ -28,7 +28,6 @@ textarea { resize: none; }
 
 /* Language Setup */
 #dls_word_lists {
-	width: 265px;
 	height: 58px;
 	background: transparent;
 	border: 1px solid #bbb;
