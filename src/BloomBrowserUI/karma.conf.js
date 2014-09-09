@@ -22,6 +22,8 @@ module.exports = function (config) {
             'lib/localizationManager.js',
             'lib/jquery.i18n.custom.js',
             'lib/split-pane/split-pane.js',
+            'lib/long-press/jquery.mousewheel.js',
+            'lib/long-press/jquery.longpress.js',
 
             // helpers -- jasmine-query
             'test/lib/**/*.js',
