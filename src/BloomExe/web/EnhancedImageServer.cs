@@ -1,11 +1,13 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Diagnostics;
 using System.Drawing.Text;
 using System.Globalization;
 using System.Linq;
 using Bloom.ImageProcessing;
 using System.IO;
+using L10NSharp;
 using Palaso.IO;
 using Bloom.Collection;
 
@@ -65,6 +67,17 @@ namespace Bloom.web
 				}
 
 				return false;
+			}
+			else if (localPath.StartsWith("DistFiles/"))
+			{
+				var langCode = LocalizationManager.UILanguageId;
+				var completeEnglishPath = FileLocator.GetFileDistributedWithApplication(localPath);
+				var completeUiLangPath = completeEnglishPath.Replace("-en#", "-" + langCode + "#");
+				if (langCode != "en" && File.Exists(completeUiLangPath))
+					Process.Start(completeUiLangPath);
+				else
+					Process.Start(completeEnglishPath);
+				return true;
 			}
 
 			switch (localPath)
