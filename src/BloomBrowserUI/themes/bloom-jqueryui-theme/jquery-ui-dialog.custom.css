@@ -21,7 +21,7 @@ div.ui-dialog button.ui-dialog-titlebar-close {
 
 div.ui-dialog button.left-button {
   position: absolute;
-  left: 8px;
+  left: calc(1em - 7px);
 }
 
 div.ui-dialog div.ui-dialog-titlebar .ui-icon-closethick { background-position: -96px -128px; }

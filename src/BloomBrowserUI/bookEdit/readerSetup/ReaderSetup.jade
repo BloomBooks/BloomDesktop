@@ -38,24 +38,23 @@ html
 					p
 						span(data-i18n='ReaderSetup.Letters.LetterHelp2') Notice that the English list includes symbols that are used to make words, like ' in&nbsp;
 						i(data-i18n='ReaderSetup.Letters.LetterHelp3') it's
-						span \.
+						span(data-i18n='ReaderSetup.Letters.LetterHelp4')
+							= '.'
 			#dlstabs-1.reader-setup-tab
 				p(data-i18n='ReaderSetup.Words.Intro') To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:
-				.floating(style='width: 30%')
+				#more-words-div.floating(style='width: 30%')
 					label(for='dls_more_words', data-i18n='ReaderSetup.Words.TypeWordsHere') 1) Type Words Here
 					br
 					textarea#dls_more_words.book-font(style='height: 328px;width:100%')
-				#word-lists-div.floating(style='width: 60%')
-					label(for='dls_word_lists', data-i18n='ReaderSetup.Words.SampleTexts') 2) Place Text Files in Your Sample Text Folder
+				#word-lists-div.floating
+					label(for='dls_word_lists')
+						span(data-i18n='ReaderSetup.Words.PlaceTextFiles') 2) Place Text Files in Your
+						= ' '
+						a#open-text-folder.blue-link(href='', data-i18n='ReaderSetup.Words.SampleTextFolder') Sample Text Folder
 					br
 					#dls_word_lists
 					#how_to_export(style="display: none")
 						a(href="", onclick="return getIframeChannel().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');", data-i18n='ReaderSetup.HowToExport') Help exporting and converting files to use as sample texts
-					a#open-text-folder.smaller(href='', data-i18n='ReaderSetup.OpenSampleTexts') Open the sample texts folder for this language.
-					p.smaller(data-i18n='ReaderSetup.Words.AboutSampleTexts1') About Word Lists and Sample Texts<br />When you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.
-					p.smaller(data-i18n='ReaderSetup.Words.AboutSampleTexts2') If you include texts instead of just a word list, the tool can help you find the most common words, words that kids use every day.
-					p.smaller(data-i18n='ReaderSetup.Words.AboutSampleTexts2') Don't have a word list for your language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.
-					p.smaller(data-i18n='ReaderSetup.Words.AboutSampleTexts4') Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.
 			#dlstabs-2.reader-setup-tab
 				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
 					table(style='width: 100%')
@@ -157,6 +156,6 @@ html
 						ul#things-to-remember
 							li(contenteditable='true')
 		#hiddenWordList(style="display: none")
-			label#please-add-texts(data-i18n='ReaderSetup.AddTexts') Please add texts to the Sample Texts folder.
+			label#please-add-texts
 			label#format_not_supported(data-i18n='ReaderSetup.FormatNotSupported') Cannot read this format
 		script(src='readerSetup.js')
