@@ -192,5 +192,10 @@ namespace Bloom.web
 		{
 			return Uri.UnescapeDataString(value.Replace("+", " "));
 		}
+
+		public string RawUrl
+		{
+			get { return _actualContext.Request.RawUrl; }
+		}
 	}
 }
