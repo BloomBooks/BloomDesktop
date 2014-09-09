@@ -538,6 +538,7 @@ SPAN.possible-word
   padding-top: 10px;
   margin:0;
   font-size: 24pt;
+  z-index: 2001;
 }
 .long-press-popup li {
   display:inline-block;
