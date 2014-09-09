@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -13,6 +14,7 @@ using Bloom.Edit;
 using Bloom.SendReceive;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
+using Chorus.FileTypeHanders.OurWord;
 using DesktopAnalytics;
 using Ionic.Zip;
 using Palaso.IO;
@@ -89,6 +91,14 @@ namespace Bloom.CollectionTab
 			}
 			return _bookCollections;
 		}
+
+		/// <summary>
+		/// Titles of all the books in the vernacular collection.
+		/// </summary>
+	    internal IEnumerable<string> BookTitles
+	    {
+			get { return TheOneEditableCollection.GetBookInfos().Select(book => book.Title); }
+	    }
 
     	private BookCollection TheOneEditableCollection
     	{
@@ -207,13 +217,13 @@ namespace Bloom.CollectionTab
             book.RebuildThumbNailAsync(thumbnailOptions, callback, errorCallback);
     	}
 
-    	public void MakeBloomPack(string path)
+    	public void MakeBloomPack(string path, bool forReaderTools = false)
     	{
 			try
 			{
 				if(File.Exists(path))
 				{
-					//UI already go permission for this
+					//UI already got permission for this
 					File.Delete(path);
 				}
 				Logger.WriteEvent("Making BloomPack");
@@ -228,13 +238,31 @@ namespace Bloom.CollectionTab
                         using (var zip = new ZipFile(Encoding.UTF8))
 						{
 							string dir = TheOneEditableCollection.PathToDirectory;
+							string rootName = Path.GetFileName(dir);
+							foreach (var directory in Directory.GetDirectories(dir))
+							{
+								string repairPath;
+								string repairContent;
+
+								var dirName = Path.GetFileName(directory);
+								if (dirName.ToLowerInvariant() == "sample texts")
+									continue; // Don't want to bundle these up
+								var zipName = Path.Combine(rootName, dirName);
+								zip.AddDirectory(directory, zipName);
+								if (forReaderTools)
+									ReplaceBookWithTemplate(zip, directory, rootName);
+							}
+							foreach (var file in Directory.GetFiles(dir))
+							{
+								zip.AddFile(file, rootName);
+							}
 							//nb: without this second argument, we don't get the outer directory included, and we need that for the name of the collection
-							zip.AddDirectory(dir, System.IO.Path.GetFileName(dir));
+							//zip.AddDirectory(dir, System.IO.Path.GetFileName(dir));
 							zip.Save(path);
 						}
 						//show it
 						Logger.WriteEvent("Showing BloomPack on disk");
-						Process.Start(Path.GetDirectoryName(path));
+						Process.Start("explorer.exe", "/select, \"" + path + "\"");
 						Analytics.Track("Create BloomPack");
 					}
 					finally
@@ -249,6 +277,24 @@ namespace Bloom.CollectionTab
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Could not make the BloomPack");
 			}
     	}
+
+		private void ReplaceBookWithTemplate(ZipFile zip, string directory, string rootName)
+		{
+			var bookFile = BookStorage.FindBookHtmlInFolder(directory);
+			if (string.IsNullOrEmpty(bookFile))
+				return;
+			var text = File.ReadAllText(bookFile, Encoding.UTF8);
+			// Note that we're getting rid of preceding newline but not following one. Hopefully we cleanly remove a whole line.
+			// I'm not sure the </meta> ever occurs in html files, but just in case we'll match if present.
+			var regex = new Regex("\\s*<meta\\s+name=(['\\\"])lockedDownAsShell\\1 content=(['\\\"])true\\2>(</meta>)? *");
+			var match = regex.Match(text);
+			if (!match.Success)
+				return; // nothing to remove
+			var newText = text.Substring(0, match.Index) + text.Substring(match.Index + match.Length);
+			var zipName = Path.Combine(rootName, Path.GetFileName(directory), Path.GetFileName(bookFile));
+			zip.RemoveEntry(zipName);
+			zip.AddEntry(zipName, newText);
+		}
 
     	public string GetSuggestedBloomPackPath()
     	{

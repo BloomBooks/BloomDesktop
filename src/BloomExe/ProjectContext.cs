@@ -345,6 +345,11 @@ namespace Bloom
 			}
 		}
 
+		public CollectionSettings Settings
+		{
+			get { return _scope.Resolve<CollectionSettings>(); }
+		}
+
         /// <summary>
         /// The folder in common data (e.g., ProgramData/SIL/Bloom/XMatter) where Bloom looks for shared XMatter files.
         /// This is also where older versions of Bloom installed XMatter.
