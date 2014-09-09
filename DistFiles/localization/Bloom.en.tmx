@@ -83,6 +83,18 @@
 		<seg>About Bloom</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="AboutDialog._checkForUpdates">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Check For Updates</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="AboutDialog._releaseNotesLabel">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Release Notes</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="Accordion.DecodableReaderToolCheckbox">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -133,6 +145,18 @@
 		<seg>Opening {0}...</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Book title in {lang}">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Book title in {lang}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Click to choose topic">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Click to choose topic</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Advanced Program Settings</seg>
@@ -172,7 +196,7 @@
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
 	  <tuv xml:lang="en">
-		<seg>Font</seg>
+		<seg>Default Font for Language 1</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
@@ -202,19 +226,19 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
-	  <note>In a vernacular collection, we say 'Vernacular Language', but in a souce collection, Vernacular has no relevance, so we use this different label</note>
+	  <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
 	  <tuv xml:lang="en">
 		<seg>Language 1</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
-	  <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a souce collection, National Language has no relevance, so we use this different label</note>
+	  <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
 	  <tuv xml:lang="en">
 		<seg>Language 2</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
-	  <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a souce collection, National Language has no relevance, so we use this different label</note>
+	  <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
 	  <tuv xml:lang="en">
 		<seg>Language 3</seg>
 	  </tuv>
@@ -222,6 +246,12 @@
 	<tu tuid="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Languages</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+	  <note>If there is no third language specified, the link changes to this.</note>
+	  <tuv xml:lang="en">
+		<seg>Set...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
@@ -326,6 +356,11 @@
 		<seg>Project Information</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="CollectionTab.BookMenu.ExportDocMessage">
+	  <tuv xml:lang="en">
+		<seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
 	  <tuv xml:lang="en">
 		<seg>Update Book</seg>
@@ -341,9 +376,14 @@
 		<seg>Delete Book</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
+	  <tuv xml:lang="en">
+		<seg>Export to Word or LibreOffice...</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
 	  <tuv xml:lang="en">
-		<seg>Export To XML For InDesign...</seg>
+		<seg>Export to XML for InDesign...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.Books From BloomLibrary.org">
@@ -397,6 +437,12 @@
 		<seg>Open Folder on Disk</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="CollectionTab.Health">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Health</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="CollectionTab.MakeBookUsingThisTemplate">
 	  <tuv xml:lang="en">
 		<seg>Make a book using this source</seg>
@@ -406,6 +452,12 @@
 	  <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
 	  <tuv xml:lang="en">
 		<seg>Other Collection</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.PNG Animal Stories - Copy">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>PNG Animal Stories - Copy</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.Sample Shells">
@@ -440,6 +492,12 @@
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>{0} Books</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.Zaza Reader Templates">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Zaza Reader Templates</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab._addToLibraryButton">
@@ -534,14 +592,9 @@
 	  </tuv>
 	</tu>
 	<tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Confirm Delete</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ConfirmRecycleDialog._messageLabel">
-	  <note>In your translation, put the {0} placeholder where you want the name of the thing to be deleted to appear.</note>
-	  <tuv xml:lang="en">
-		<seg>{0} will be moved to the Recycle Bin.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ConfirmRecycleDialog.cancelBtn">
@@ -551,6 +604,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="ConfirmRecycleDialog.deleteBtn">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>&amp;Delete</seg>
 	  </tuv>
@@ -571,12 +625,6 @@
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg> of </seg>
-	  </tuv>
-	</tu>
-	<tu tuid="DecodableReaderTool.Title">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Decodable Reader Tool</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Download.Completed">
@@ -994,7 +1042,12 @@
 	</tu>
 	<tu tuid="EditTab._deletePageButton">
 	  <tuv xml:lang="en">
-		<seg>Remove Page</seg>
+		<seg>Remove\n  Page</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab._duplicatePageButton">
+	  <tuv xml:lang="en">
+		<seg>Duplicate\n   Page</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab._menusToolStrip">
@@ -1218,6 +1271,90 @@
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>B5Portrait</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.Actual">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Actual</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.FoThisLevel">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>For this Level</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.KeepInMind">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Keep in mind</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.Level">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Level </seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.LevelOf">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg> of </seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.Max">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Max</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.PerPage">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>per page</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.PerSentence">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>per sentence</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.SetUpLevels">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Set up Levels</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.ThisBook">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>This Book</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.ThisPage">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>This Page</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.Total">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>total</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.Unique">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>unique</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.WordCounts">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Word counts</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LoginDialog.AgreeToTerms">
@@ -2189,6 +2326,12 @@
 		<seg>2) Place Text Files in Your</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="ReaderSetup.Words.SampleTextFolder">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Sample Text Folder</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="ReaderSetup.Words.TypeWordsHere">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -2427,6 +2570,12 @@
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>tabStrip1</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="You may use this space for author/illustrator, or anything else.">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>You may use this space for author/illustrator, or anything else.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="checkBox1.checkBox1">
