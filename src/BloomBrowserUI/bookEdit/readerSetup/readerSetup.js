@@ -54,10 +54,6 @@ function processMessage(event) {
             document.getElementById('dls_word_lists').innerHTML = fileList.replace(/\r/g, '<br>');
             return;
 
-        case 'Words':
-            displayWordsForSelectedStage(params[1]);
-            return;
-
         case 'SetupType':
             var tabs = $('#dlstabs');
             if (params[1] === 'stages') {
@@ -108,6 +104,7 @@ function fireCSharpSetupEvent(eventName, eventData) {
 
 /**
  * Pass the settings to C# to be saved.
+ * @returns {Object}
  */
 function saveClicked() {
 
@@ -155,6 +152,9 @@ function saveClicked() {
 
     // save now
     getIframeChannel().simpleAjaxPost('/bloom/readers/saveReaderToolSettings', parent.window.closeSetupDialog, settingsStr);
+
+    // return the settings
+    return s;
 }
 
 function getLevelValue(innerHTML) {
@@ -249,12 +249,6 @@ function requestWordsForSelectedStage() {
 
     var tr = $('#stages-table').find('tbody tr.selected').get(0);
 
-    desiredGPCs = (tr.cells[1].innerHTML).split(' ');
-    previousGPCs = $.makeArray($(tr).prevAll().map(function() {
-        return this.cells[1].innerHTML.split(' ');
-    }));
-
-    var knownGPCS = previousGPCs.join(' ') + ' ' + desiredGPCs.join(' ');
     currentSightWords = (tr.cells[2].innerHTML).split(' ');
     sightWords = $.makeArray($(tr).prevAll().map(function() {
         return this.cells[2].innerHTML.split(' ');
@@ -265,7 +259,28 @@ function requestWordsForSelectedStage() {
     // remove empty items
     sightWords = _.compact(sightWords);
 
-    accordionWindow().postMessage('Words\n' + knownGPCS, '*');
+    displayWordsForSelectedStage(requestWordsForStageTableRow(tr));
+}
+
+/**
+ *
+ * @param {HTMLTableRowElement} tr
+ * @param {Boolean} [justWordName] Default false
+ * @returns {Array}
+ */
+function requestWordsForStageTableRow(tr, justWordName) {
+
+    if (typeof justWordName === 'undefined') justWordName = false;
+
+    desiredGPCs = (tr.cells[1].innerHTML).split(' ');
+    previousGPCs = $.makeArray($(tr).prevAll().map(function() {
+        return this.cells[1].innerHTML.split(' ');
+    }));
+
+    var knownGPCS = _.union(previousGPCs, desiredGPCs);
+
+    //accordionWindow().postMessage('Words\n' + knownGPCS, '*');
+    return accordionWindow().model.selectWordsFromSynphony(justWordName, knownGPCS, knownGPCS, true, true);
 }
 
 /**
@@ -448,10 +463,9 @@ function updateNumbers(tableId) {
     }
 }
 
-function displayWordsForSelectedStage(wordsStr) {
+function displayWordsForSelectedStage(wordsObj) {
 
-    var words = JSON.parse(wordsStr);
-    words = _.toArray(words);
+    var words = _.toArray(wordsObj);
 
     // add sight words
     _.each(sightWords, function(sw) {
@@ -684,6 +698,11 @@ if (typeof ($) === "function") {
         return false;
     });
 
+    $('#make-letter-word-list').onOnce('click', function() {
+        makeLetterWordList();
+        return false;
+    });
+
     var toRemember = $('#things-to-remember');
     toRemember.onOnce('keydown', handleThingsToRemember);
     toRemember.onOnce('keyup', storeThingsToRemember);
@@ -751,6 +770,41 @@ function tabBeforeActivate(ui) {
 function wordListChangedCallback() {
     accordionWindow().postMessage('Texts', '*');
     requestWordsForSelectedStage();
+}
+
+function makeLetterWordList() {
+
+    // save settings
+    var settings = saveClicked();
+
+    // get the words for each stage
+    var rows = $('#stages-table').find('tbody tr');
+    for (var i = 0; i < settings.stages.length; i++) {
+
+        var stageWords = requestWordsForStageTableRow(rows.get(i), true);
+        settings.stages[i].words = _.toArray(stageWords);
+    }
+
+    // get list of all words
+    var allGroups = [];
+    for (var j = 1; j <= accordionWindow().lang_data.VocabularyGroups; j++)
+        allGroups.push('group' + j);
+    allGroups = accordionWindow().libsynphony.chooseVocabGroups(allGroups);
+
+    var allWords = [];
+    for (var g = 0; g < allGroups.length; g++) {
+        allWords = allWords.concat(allGroups[g]);
+    }
+    allWords = _.compact(_.pluck(allWords, 'Name'));
+
+    // export the word list
+    var ajaxSettings = {type: 'POST', url: '/bloom/readers/makeLetterAndWordList'};
+    ajaxSettings['data'] = {
+        settings: JSON.stringify(settings),
+        allWords: allWords.join('\t')
+    };
+
+    $.ajax(ajaxSettings)
 }
 
 $(document).ready(function () {

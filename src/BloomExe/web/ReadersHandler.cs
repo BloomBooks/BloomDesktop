@@ -1,9 +1,13 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Linq;
 using System.IO;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.ReaderTools;
+using L10NSharp;
+using Newtonsoft.Json;
 using Palaso.Xml;
 
 namespace Bloom.web
@@ -21,14 +25,14 @@ namespace Bloom.web
 		public static Book.Book CurrentBook { get; set; }
 		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
 		{
-			var lastSep = localPath.IndexOf("/", System.StringComparison.Ordinal);
+			var lastSep = localPath.IndexOf("/", StringComparison.Ordinal);
 			var lastSegment = (lastSep > -1) ? localPath.Substring(lastSep + 1) : localPath;
 
 			switch (lastSegment)
 			{
 				case "loadReaderToolSettings":
 					info.ContentType = "application/json";
-					info.WriteCompleteOutput(GetDefaultReaderSettings(currentCollectionSettings));
+					info.WriteCompleteOutput(GetDefaultReaderSettings(currentCollectionSettings.DecodableLevelPathName));
 					return true;
 
 				case "saveReaderToolSettings":
@@ -60,6 +64,12 @@ namespace Bloom.web
 				case "getTextOfPages":
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(GetTextOfPages());
+					return true;
+
+				case "makeLetterAndWordList":
+					MakeLetterAndWordList(info.GetPostData()["settings"], info.GetPostData()["allWords"]);
+					info.ContentType = "text/plain";
+					info.WriteCompleteOutput("OK");
 					return true;
 			}
 
@@ -126,9 +136,48 @@ namespace Bloom.web
 			return text;
 		}
 
-		private static string GetDefaultReaderSettings(CollectionSettings currentCollectionSettings)
+		/// <summary>
+		/// The SaveFileDialog must run on a STA thread.
+		/// </summary>
+		private static void MakeLetterAndWordList(string jsonSettings, string allWords)
 		{
-			var settingsPath = currentCollectionSettings.DecodableLevelPathName;
+			// load the settings
+			var settings = JsonConvert.DeserializeObject<ReaderToolsSettings>(jsonSettings);
+
+			// format the output
+			var sb = new StringBuilder();
+			sb.AppendLineFormat("Letter and word list for making decodable readers in {0}", CurrentBook.CollectionSettings.Language1Name);
+
+			var idx = 1;
+			foreach (var stage in settings.Stages)
+			{
+				sb.AppendLineFormat("Stage {0}", idx++);
+				sb.AppendLineFormat("\tLetters: {0}", stage.Letters.Replace(" ", ", "));
+				sb.AppendLineFormat("\tNew Sight Words: {0}", stage.SightWords.Replace(" ", ", "));
+
+				Array.Sort(stage.Words);
+				sb.AppendLine("\t" + string.Join(" ", stage.Words));
+
+			}
+
+			// complete word list
+			var words = allWords.Split(new [] {'\t'});
+			Array.Sort(words);
+			sb.AppendLine();
+			sb.AppendLine("Complete word list");
+			sb.AppendLine(string.Join(" ", words));
+
+			// write the file
+			var fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, "Decodable Books Letters and Words.txt");
+			File.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
+
+			// notify when finished
+			var finished = LocalizationManager.GetDynamicString("Bloom", "ReaderSetup.FinishedLetterAndWordList", "Letter and Word List saved to {0}.");
+			MessageBox.Show(string.Format(finished, fileName));
+		}
+
+		private static string GetDefaultReaderSettings(string settingsPath)
+		{
 
 			// if file exists, return current settings
 			if (File.Exists(settingsPath))
