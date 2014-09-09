@@ -3,6 +3,7 @@ using System.Linq;
 using System.IO;
 using System.Xml;
 using Bloom.Collection;
+using Bloom.ReaderTools;
 using Palaso.Xml;
 
 namespace Bloom.web
@@ -26,12 +27,8 @@ namespace Bloom.web
 			switch (lastSegment)
 			{
 				case "loadReaderToolSettings":
-					var settingsPath = currentCollectionSettings.DecodableLevelPathName;
-					var decodableLeveledSettings = "{}";
-					if (File.Exists(settingsPath))
-						decodableLeveledSettings = File.ReadAllText(settingsPath, Encoding.UTF8);
 					info.ContentType = "application/json";
-					info.WriteCompleteOutput(decodableLeveledSettings);
+					info.WriteCompleteOutput(GetDefaultReaderSettings(currentCollectionSettings));
 					return true;
 
 				case "saveReaderToolSettings":
@@ -127,6 +124,22 @@ namespace Bloom.web
 				text = File.ReadAllText(path, Encoding.Default);
 
 			return text;
+		}
+
+		private static string GetDefaultReaderSettings(CollectionSettings currentCollectionSettings)
+		{
+			var settingsPath = currentCollectionSettings.DecodableLevelPathName;
+
+			// if file exists, return current settings
+			if (File.Exists(settingsPath))
+				return File.ReadAllText(settingsPath, Encoding.UTF8);
+
+			// file does not exist, so make a new one
+			var settings = new ReaderToolsSettings(true);
+			var settingsString = settings.Json;
+			File.WriteAllText(settingsPath, settingsString);
+
+			return settingsString;
 		}
 	}
 }
