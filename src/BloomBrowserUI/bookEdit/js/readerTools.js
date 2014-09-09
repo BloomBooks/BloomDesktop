@@ -23,11 +23,6 @@ function processDLRMessage(event) {
                 getSetupDialogWindow().postMessage('Files\n' + model.texts.join("\r"), '*');
             return;
 
-        case 'Words': // request from setup dialog for a list of words for a stage
-            var words = model.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
-            getSetupDialogWindow().postMessage('Words\n' + JSON.stringify(words), '*');
-            return;
-
         case 'Refresh': // notification from setup dialog that settings have changed
             var synphony = model.getSynphony();
             synphony.loadSettings(JSON.parse(params[1]));

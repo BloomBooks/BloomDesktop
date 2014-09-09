@@ -1907,6 +1907,12 @@
         <seg>Decodable Stages</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.FinishedLetterAndWordList">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letter and Word List saved to {0}.</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.FirstSetupAlphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
