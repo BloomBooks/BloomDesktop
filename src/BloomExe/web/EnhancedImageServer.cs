@@ -70,11 +70,17 @@ namespace Bloom.web
 			}
 			else if (localPath.StartsWith("DistFiles/"))
 			{
+				var queryPart = string.Empty;
+				if (info.RawUrl.Contains("?"))
+					queryPart = "#" + info.RawUrl.Split('?')[1];
 				var langCode = LocalizationManager.UILanguageId;
 				var completeEnglishPath = FileLocator.GetFileDistributedWithApplication(localPath);
-				var completeUiLangPath = completeEnglishPath.Replace("-en#", "-" + langCode + "#");
+				var completeUiLangPath = GetUiLanguageFileVersion(completeEnglishPath, langCode);
 				if (langCode != "en" && File.Exists(completeUiLangPath))
+				{
 					Process.Start(completeUiLangPath);
+					return true;
+				}
 				else
 					Process.Start(completeEnglishPath);
 				return true;
@@ -123,6 +129,11 @@ namespace Bloom.web
 			info.ContentType = GetContentType(Path.GetExtension(localPath));
 			info.ReplyWithFileContent(path);
 			return true;
+		}
+
+		private string GetUiLanguageFileVersion(string englishFileName, string langCode)
+		{
+			return englishFileName.Replace("-en.htm", "-" + langCode + ".htm");
 		}
 
 		private bool CheckForSampleTextChanges(IRequestInfo info)
