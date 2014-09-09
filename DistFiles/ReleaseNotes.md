@@ -1,8 +1,13 @@
-﻿## 2.1 Alpha
+﻿## 3.0
 Now uses the same engine for editing and pdf-making, increasing fidelity between the two
 New engine renders fonts better
 Graphite Complex-non-roman script rendering
 Adobe Acrobat no longer needed to view PDFs in the Publish tab
+Andika Font is now installed along with Bloom
+Holding down a key now shows a "Special Characters Panel" that lets you select from similar characters
+You can now set the font, size, line spacing, word spacing, border, and background of each text box, along with all other boxes with the same "style". Just click on the little "gear" icon in the lower left of a text box.
+New "Custom" page that lets you divide up the page into text and picture portions. You can then duplicate that page in order to use it as a template in that document. The ability to use that page in other books is expected in the next version of Bloom.
+You can now right click on a book and export its contents to Word or Libre Office (most formatting will be lost).
 
 ## Known Bugs
 "A5Portrait Bottom Align" cannot layout correct in bilingual or trilingual mode [BL-46]. We will fix this in Bloom 2.1 using flexbox layout.

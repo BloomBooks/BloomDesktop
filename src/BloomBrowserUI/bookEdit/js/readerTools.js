@@ -459,11 +459,11 @@ ReaderToolsModel.prototype.doMarkup = function() {
 
     switch(this.currentMarkupType) {
         case MarkupType.Leveled:
-            var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage()};
+            var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage(), maxWordsPerPage: this.maxWordsPerPage()};
             editableElements.checkLeveledReader(options);
             this.updateMaxWordsPerSentenceOnPage();
             this.updateTotalWordsOnPage();
-            var pageStrings = this.getTextOfWholeBook();
+            this.getTextOfWholeBook();
 
             break;
 
