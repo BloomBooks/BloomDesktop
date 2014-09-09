@@ -59,7 +59,9 @@ namespace Bloom.web
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(GetSampleFileContents(fileName, currentCollectionSettings.SettingsFilePath));
 					return true;
+
 				case "getTextOfPages":
+					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(GetTextOfPages());
 					return true;
 			}

@@ -856,7 +856,7 @@ namespace Bloom.CollectionTab
 			try
 			{
 				MessageBox.Show(LocalizationManager.GetString("CollectionTab.BookMenu.ExportDocMessage",
-					"Bloom will now open this HTML document in your word processing program (normally Word or Libre Office). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much."));
+					"Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much."));
 				var destPath = _bookSelection.CurrentSelection.GetPathHtmlFile().Replace(".htm", ".doc");
 				_model.ExportDocFormat(destPath);
 #if !__MonoCS__
@@ -875,34 +875,6 @@ namespace Bloom.CollectionTab
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
 				Analytics.ReportException(error);
 			}
-
-
-//			using (var d = new SaveFileDialog())
-//			{
-//				d.RestoreDirectory = true;
-//				d.ShowDialog();
-//			}
-//			using (var dlg = new SaveFileDialog())
-//			{
-//				dlg.FileName = Path.GetFileNameWithoutExtension(SelectedBook.GetPathHtmlFile()) + ".doc";
-//				dlg.InitialDirectory = SelectedBook.FolderPath;
-//				if (DialogResult.OK == dlg.ShowDialog())
-//				{
-//					try
-//					{
-//						_model.ExportDocFormat(dlg.FileName);
-//#if !__MonoCS__
-//						Process.Start("explorer.exe", "/select, \"" + dlg.FileName + "\"");
-//#endif
-//						Analytics.Track("Exported To Doc format");
-//					}
-//					catch (Exception error)
-//					{
-//						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
-//						Analytics.ReportException(error);
-//					}
-//				}
-//			}
 		}
 
 
