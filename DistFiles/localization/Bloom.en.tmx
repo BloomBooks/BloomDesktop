@@ -559,6 +559,12 @@
         <seg>Sources For New Shells</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.Cancel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Cancel</seg>
+      </tuv>
+    </tu>
     <tu tuid="Common.CancelButton">
       <tuv xml:lang="en">
         <seg>&amp;Cancel</seg>
@@ -574,6 +580,12 @@
       <note>Used for the Next button in wizards, like that used for making a New Collection</note>
       <tuv xml:lang="en">
         <seg>&amp;Next</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.OK">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>OK</seg>
       </tuv>
     </tu>
     <tu tuid="Common.OKButton">
@@ -2246,6 +2258,18 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Maximum Words in each Sentence</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetUpDecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Decodable Reader Tool</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetUpLeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Leveled Reader Tool</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SetupAlphabet">

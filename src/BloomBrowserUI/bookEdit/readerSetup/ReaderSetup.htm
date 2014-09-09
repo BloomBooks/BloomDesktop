@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
@@ -68,8 +68,8 @@
                       <th>
                         <div data-i18n="ReaderSetup.StageHeader">Stage</div>
                       </th>
-                      <th>
-                        <div style="min-width: 35px" data-i18n="ReaderSetup.lettersHeader">Letters</div>
+                      <th style="min-width: 35px">
+                        <div data-i18n="ReaderSetup.lettersHeader">Letters</div>
                       </th>
                       <th style="width: 100%">
                         <div data-i18n="ReaderSetup.SightWordsHeader">Sight Words</div>
@@ -109,10 +109,20 @@
             <div id="click-letters" style="float: left" data-i18n="ReaderSetup.ClickLetter" class="smaller">Click on letters to add them to this stage.</div>
           </div>
           <div id="setup-stage-matching-words" class="sub-float">
-            <label style="white-space: nowrap;"><span id="setup-words-count">0</span><span data-i18n="ReaderSetup.MatchingWords">&nbsp;matching words</span></label>
-            <div class="rs-word-container">
-              <div id="rs-matching-words" style="margin-left: 8px"></div>
-            </div>
+            <table style="height:100%;width:100%;margin-top:-3px;">
+              <tr>
+                <td>
+                  <label><span id="setup-words-count">0</span><span data-i18n="ReaderSetup.MatchingWords">&nbsp;matching words</span></label>
+                </td>
+              </tr>
+              <tr>
+                <td style="height:100%">
+                  <div class="rs-word-container">
+                    <div id="rs-matching-words" style="margin-left: 8px"></div>
+                  </div>
+                </td>
+              </tr>
+            </table>
           </div>
         </div>
       </div>
