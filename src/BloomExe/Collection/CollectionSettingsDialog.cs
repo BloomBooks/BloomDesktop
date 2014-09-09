@@ -38,6 +38,9 @@ namespace Bloom.Collection
 		    _showSendReceive.Checked = Settings.Default.ShowSendReceive;
 		    _showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
 			_showExperimentCommands.Checked = Settings.Default.ShowExperimentalCommands;
+			_rtlLanguagesCombo.Text = LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.RightToLeft", "Right To Left");
+			_rtlLanguagesCombo.ToolTipText =
+				LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.RightToLeftTip", "Select languages that are written from right to left");
 
 //		    _showSendReceive.CheckStateChanged += (sender, args) =>
 //		                                              {
@@ -74,6 +77,8 @@ namespace Bloom.Collection
 			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Iso639Code);
 			_language1FontLabel.Text = string.Format("Default Font for {0}", lang1UiName);
 			_language2FontLabel.Text = string.Format("Default Font for {0}", lang2UiName);
+			_rtlLanguagesCombo.DropDownItems.Add(lang1UiName);
+			_rtlLanguagesCombo.DropDownItems.Add(lang2UiName);
 
 			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 			{
@@ -92,6 +97,7 @@ namespace Bloom.Collection
 				_language3FontLabel.Visible = true;
 				_fontComboLanguage3.Visible = true;
 				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
+				_rtlLanguagesCombo.DropDownItems.Add(lang3UiName);
 			}
 
 			_restartReminder.Visible = _restartRequired;
