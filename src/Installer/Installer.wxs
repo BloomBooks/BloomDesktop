@@ -57,7 +57,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 
     <DirectoryRef Id="FontsFolder">
       <Component Id="InstallFonts" Guid="C217AA11-2B7A-4D44-8A65-6F42D8BAD5EA">
-        <File Id="AndikaRttf" Source="..\..\Andika-R.ttf" Name="Andika-R.ttf" TrueType="yes" KeyPath="yes"/>
+        <File Id="AndikaRttf" Source="..\..\Downloads\Andika-1.004\Andika-R.ttf" Name="Andika-R.ttf" TrueType="yes" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
     
