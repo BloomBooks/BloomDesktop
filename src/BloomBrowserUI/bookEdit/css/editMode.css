@@ -557,3 +557,10 @@ SPAN.possible-word
   -moz-box-shadow:    0 0 18px rgba(255, 255, 255, 0.75);
   box-shadow:         0 0 18px rgba(255, 255, 255, 0.75);
 }
+
+.format-toolbar-description {
+  font-size: small;
+  line-height: 1.2;
+  margin: 10px 5px 5px 5px;
+  color:grey;
+}
