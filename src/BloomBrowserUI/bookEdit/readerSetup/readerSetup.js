@@ -62,7 +62,7 @@ function processMessage(event) {
             var tabs = $('#dlstabs');
             if (params[1] === 'stages') {
                 tabs.tabs('option', 'disabled', [3]);
-                tabs.tabs('option', 'active', 0);
+                tabs.tabs('option', 'active', 2);
                 var firstStage = $('#stages-table').find('tbody tr:first');
                 if (firstStage && (firstStage.length === 0))
                     addNewStage();
