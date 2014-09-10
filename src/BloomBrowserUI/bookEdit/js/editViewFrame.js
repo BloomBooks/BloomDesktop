@@ -14,7 +14,11 @@ function FindOrCreateConfigDiv(title) {
 function showSetupDialog(showWhat) {
 
     var accordion = document.getElementById('accordion').contentWindow;
-    var title = 'Set up ' + (showWhat == 'stages' ? 'Decodable' : 'Leveled') + ' Reader Tool';
+    var title;
+    if (showWhat == 'stages')
+        title = accordion.localizationManager.getText('ReaderSetup.SetUpDecodableReaderTool', 'Set up Decodable Reader Tool');
+    else
+        title = accordion.localizationManager.getText('ReaderSetup.SetUpLeveledReaderTool', 'Set up Leveled Reader Tool');
     var dialogContents = FindOrCreateConfigDiv(title);
 
     var h = 580;
@@ -46,11 +50,18 @@ function showSetupDialog(showWhat) {
                     document.getElementById('settings_frame').contentWindow.postMessage('Help', '*');
                 }
             },
-            "OK": function () {
-                document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
+            OK: {
+                text: accordion.localizationManager.getText('Common.OK', 'OK'),
+                click: function () {
+                    document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
+                }
             },
-            "Cancel": function () {
-                $(this).dialog("close");
+
+            Cancel: {
+                text: accordion.localizationManager.getText('Common.Cancel', 'Cancel'),
+                click: function () {
+                    $(this).dialog("close");
+                }
             }
         },
         close: function() {
