@@ -2161,7 +2161,7 @@
 	<tu tuid="ReaderSetup.MatchingWords">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg> matching words</seg>
+		<seg>matching words</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.MaxUniqueWords">
