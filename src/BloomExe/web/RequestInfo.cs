@@ -2,7 +2,6 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Drawing;
 using System.IO;
@@ -18,6 +17,7 @@ namespace Bloom.web
 	{
 		private readonly HttpListenerContext _actualContext;
 		private NameValueCollection _queryStringList;
+		private NameValueCollection _postData;
 
 		public string LocalPathWithoutQuery
 		{
@@ -161,31 +161,35 @@ namespace Bloom.web
 
 		public NameValueCollection GetPostData()
 		{
-			var request = _actualContext.Request;
-
-			if (!request.HasEntityBody)
-				return null;
-
-			var returnVal = new NameValueCollection();
-
-			using (var body = request.InputStream)
+			if (_postData == null)
 			{
-				using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
+				var request = _actualContext.Request;
+
+				if (!request.HasEntityBody)
+					return null;
+
+				_postData = new NameValueCollection();
+
+				using (var body = request.InputStream)
 				{
-					var inputString = reader.ReadToEnd();
-					var pairs = inputString.Split('&');
-					foreach (var pair in pairs)
+					using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
 					{
-						var kvp = pair.Split('=');
-						if (kvp.Length == 1)
-							returnVal.Add(UnescapeString(kvp[0]), String.Empty);
-						else
-							returnVal.Add(UnescapeString(kvp[0]), UnescapeString(kvp[1]));
+						var inputString = reader.ReadToEnd();
+						var pairs = inputString.Split('&');
+						foreach (var pair in pairs)
+						{
+							var kvp = pair.Split('=');
+							if (kvp.Length == 1)
+								_postData.Add(UnescapeString(kvp[0]), String.Empty);
+							else
+								_postData.Add(UnescapeString(kvp[0]), UnescapeString(kvp[1]));
+						}
 					}
 				}
 			}
 
-			return returnVal;
+			return _postData;
+
 		}
 		
 		private static string UnescapeString(string value)
