@@ -2107,7 +2107,7 @@
 	<tu tuid="ReaderSetup.Letters.LetterHelp1">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>For example, here is what we might use for the English language:</seg>
+		<seg>Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.Letters.LetterHelp2">
