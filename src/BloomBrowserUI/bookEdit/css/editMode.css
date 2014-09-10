@@ -461,7 +461,7 @@ SPAN.sight-word
 }
 SPAN.word-not-found
 {
-    background-color: orange;
+    background-color: #1D94A4;/*bloomblue       #D65649; /* bloomRed */
 
 }
 SPAN.possible-word
