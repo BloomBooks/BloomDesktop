@@ -1057,6 +1057,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   </ItemGroup>
   <ItemGroup>
     <SourceFiles Include="../../lib/dotnet/*.config" />
+    <SourceFiles Include="../../lib/dotnet/*.mdb" Condition="'$(OS)'!='Windows_NT'" />
   </ItemGroup>
   <ItemGroup>
     <RemoteDebugFiles Include="../../remoteDebugging/**" />
