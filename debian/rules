@@ -12,6 +12,8 @@ DESTDIR = debian/$(PACKAGE)
 LIB     = usr/lib/$(PACKAGE)
 SHARE   = usr/share/$(PACKAGE)
 
+FULL_BUILD_NUMBER ?= 0.0.1
+
 %:
 	dh $@ --with=cli --parallel
 
@@ -20,7 +22,7 @@ override_dh_auto_configure:
 override_dh_auto_build:
 	build/getDependencies-Linux.sh
 	. ./environ && \
-		teamcity_build_checkoutDir=$(pwd) BUILD_NUMBER=0.0.$(BUILD_NUMBER) xbuild /t:SetAssemblyVersion build/Bloom.proj && \
+		xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$(FULL_BUILD_NUMBER) build/Bloom.proj && \
 		xbuild /p:Configuration=$(BUILD) "Bloom VS2010.sln"
 
 override_dh_auto_test:
