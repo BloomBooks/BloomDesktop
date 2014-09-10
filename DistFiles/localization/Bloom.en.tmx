@@ -516,6 +516,16 @@
         <seg>Make Bloom Pack</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template BloomPack...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.advancedToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Advanced</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.bloomLibraryLinkLabel">
       <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
       <tuv xml:lang="en">
@@ -559,6 +569,12 @@
         <seg>Sources For New Shells</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.BackButton">
+      <note>In a wizard, this button takes you to the previous step.</note>
+      <tuv xml:lang="en">
+        <seg>Back</seg>
+      </tuv>
+    </tu>    
     <tu tuid="Common.Cancel">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -580,6 +596,12 @@
       <note>Used for the Next button in wizards, like that used for making a New Collection</note>
       <tuv xml:lang="en">
         <seg>&amp;Next</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.NextButton">
+      <note>In a wizard, this button takes you to the next step.</note>
+      <tuv xml:lang="en">
+        <seg>Next</seg>
       </tuv>
     </tu>
     <tu tuid="Common.OK">
@@ -619,6 +641,12 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>&amp;Delete</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.MakeLetterWordList">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make a Letter and Word List File</seg>
       </tuv>
     </tu>
     <tu tuid="DecodableReaderTool.SetUpStages">
@@ -1455,9 +1483,8 @@
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
-        <seg>A collection of shell or template books in one or more languages of wider communication. From this, you can make a BloomPack to give to others so that they can make vernacular books with it.</seg>
+        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
@@ -2366,6 +2393,27 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Letters</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
+      <tuv xml:lang="en">
+        <seg>The following books will be made into templates:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.MakeReaderTemplateBloomPackDlg._btnSaveBloomPack">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Save BloomPack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+      <tuv xml:lang="en">
+        <seg>Save BloomPack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template BloomPack</seg>
       </tuv>
     </tu>
     <tu tuid="RegisterDialog.Email">
