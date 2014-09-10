@@ -643,6 +643,12 @@
         <seg>&amp;Delete</seg>
       </tuv>
     </tu>
+    <tu tuid="DecodableReaderTool.LettersInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters in this stage</seg>
+      </tuv>
+    </tu>
     <tu tuid="DecodableReaderTool.MakeLetterWordList">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
