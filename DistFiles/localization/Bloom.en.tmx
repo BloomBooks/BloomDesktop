@@ -2354,6 +2354,27 @@
         <seg>Letters</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
+      <tuv xml:lang="en">
+        <seg>The following books will be made into templates:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.MakeReaderTemplateBloomPackDlg._btnSaveBloomPack">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Save BloomPack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+      <tuv xml:lang="en">
+        <seg>Save BloomPack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template BloomPack</seg>
+      </tuv>
+    </tu>
     <tu tuid="RegisterDialog.Email">
       <tuv xml:lang="en">
         <seg>Email Address</seg>
