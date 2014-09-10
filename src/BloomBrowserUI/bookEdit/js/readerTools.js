@@ -969,8 +969,12 @@ function processWordListChangedListeners() {
 
 function makeLetterWordList() {
 
-    // save settings
-    var settings = model.getSynphony().source;
+    // get a copy of the current settings
+    var settings = jQuery.extend(true, {}, model.getSynphony().source);
+
+    // remove levels
+    if (typeof settings.levels !== 'undefined')
+        delete settings.levels;
 
     // get the words for each stage
     var knownGPCS = [];
