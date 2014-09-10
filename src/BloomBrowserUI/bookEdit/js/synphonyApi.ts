@@ -9,7 +9,6 @@ class DLRSettings {
 	levels: Level[] = [];
 	stages: Stage[] = [];
 	letters: string = '';
-	letterCombinations: string = '';
 	moreWords: string = '';
 }
 
@@ -35,7 +34,6 @@ class SynphonyApi {
 
 		if (data.letters !== '') {
 			lang_data.addGrapheme(data.letters.split(' '));
-			lang_data.addGrapheme(data.letterCombinations.split(' '));
 			lang_data.addWord(data.moreWords.split(' '));
 			lang_data.LanguageSortOrder = data.letters.split(' ');
 

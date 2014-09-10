@@ -9,7 +9,6 @@ var DLRSettings = (function () {
         this.levels = [];
         this.stages = [];
         this.letters = '';
-        this.letterCombinations = '';
         this.moreWords = '';
     }
     return DLRSettings;
@@ -37,7 +36,6 @@ var SynphonyApi = (function () {
 
         if (data.letters !== '') {
             lang_data.addGrapheme(data.letters.split(' '));
-            lang_data.addGrapheme(data.letterCombinations.split(' '));
             lang_data.addWord(data.moreWords.split(' '));
             lang_data.LanguageSortOrder = data.letters.split(' ');
 
