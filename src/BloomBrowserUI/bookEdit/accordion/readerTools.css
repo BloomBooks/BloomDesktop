@@ -48,3 +48,12 @@ div.section ul { padding-left: 16px; margin-top: 4px; }
 div.section ul li { color: #fff; }
 
 .ui-icon-triangle-1-w, .ui-icon-triangle-1-e { cursor: pointer; }
+
+#make-letter-word-list-div {
+  position: absolute;
+  bottom: 15px;
+  margin-left: 6px
+}
+#make-letter-word-list {
+  font-size: 10px;
+}
