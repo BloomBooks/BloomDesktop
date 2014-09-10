@@ -840,7 +840,7 @@
 	<tu tuid="EditTab.Image.ChangeImage">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Change Image!!</seg>
+		<seg>Change Image</seg>
 	  </tuv>
 	  <tuv xml:lang="ta">
 		<seg>உருவத்தை மாற்று!!</seg>
