@@ -145,18 +145,6 @@
 		<seg>Opening {0}...</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Book title in {lang}">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Book title in {lang}</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Click to choose topic">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Click to choose topic</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Advanced Program Settings</seg>
@@ -575,12 +563,6 @@
 		<seg>Back</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Common.Cancel">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Cancel</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="Common.CancelButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Cancel</seg>
@@ -602,12 +584,6 @@
 	  <note>In a wizard, this button takes you to the next step.</note>
 	  <tuv xml:lang="en">
 		<seg>Next</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Common.OK">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>OK</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Common.OKButton">
@@ -643,12 +619,6 @@
 		<seg>&amp;Delete</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="DecodableReaderTool.MakeLetterWordList">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Make a Letter and Word List File</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="DecodableReaderTool.SetUpStages">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -658,13 +628,13 @@
 	<tu tuid="DecodableReaderTool.Stage">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Stage</seg>
+		<seg>Stage 1 of 2</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="DecodableReaderTool.StageOf">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>of</seg>
+		<seg> of 2</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Download.Completed">
@@ -1311,90 +1281,6 @@
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>B5Portrait</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.Actual">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Actual</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.FoThisLevel">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>For this Level</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.KeepInMind">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Keep in mind</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.Level">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Level </seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.LevelOf">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg> of </seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.Max">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Max</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.PerPage">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>per page</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.PerSentence">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>per sentence</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.SetUpLevels">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Set up Levels</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.ThisBook">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>This Book</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.ThisPage">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>This Page</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.Total">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>total</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.Unique">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>unique</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.WordCounts">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Word counts</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LoginDialog.AgreeToTerms">
@@ -2131,42 +2017,6 @@
 		<seg>Letters</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="ReaderSetup.Letters.Header">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Letters and Letter Combinations</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderSetup.Letters.Intro">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderSetup.Letters.LetterHelp1">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderSetup.Letters.LetterHelp2">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Notice that the English list includes symbols that are used to make words, like ' in </seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderSetup.Letters.LetterHelp3">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>it's</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderSetup.Letters.LetterHelp4">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>.</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="ReaderSetup.LevelHeader">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -2188,7 +2038,7 @@
 	<tu tuid="ReaderSetup.MatchingWords">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>matching words</seg>
+		<seg> matching words</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.MaxUniqueWords">
@@ -2287,18 +2137,6 @@
 		<seg>Maximum Words in each Sentence</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="ReaderSetup.SetUpDecodableReaderTool">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Set up Decodable Reader Tool</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderSetup.SetUpLeveledReaderTool">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Set up Leveled Reader Tool</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="ReaderSetup.SetupAlphabet">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -2359,51 +2197,20 @@
 		<seg>Unique</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="ReaderSetup.Words">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Words</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderSetup.Words.Intro">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderSetup.Words.PlaceTextFiles">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>2) Place Text Files in Your</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderSetup.Words.SampleTextFolder">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Sample Text Folder</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderSetup.Words.TypeWordsHere">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>1) Type Words Here</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="ReaderSetup.lettersHeader">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Letters</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+	  <tuv xml:lang="en">
+		<seg>In addition, this BloomPack will carry your latest decodable and levelled reader settings for the "{0}" language. Anyone opening this BloomPack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
 	  <tuv xml:lang="en">
 		<seg>The following books will be made into templates:</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderTemplateBloomPackDialog.MakeReaderTemplateBloomPackDlg._btnSaveBloomPack">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Save BloomPack</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
@@ -2642,12 +2449,6 @@
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>tabStrip1</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="You may use this space for author/illustrator, or anything else.">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>You may use this space for author/illustrator, or anything else.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="checkBox1.checkBox1">

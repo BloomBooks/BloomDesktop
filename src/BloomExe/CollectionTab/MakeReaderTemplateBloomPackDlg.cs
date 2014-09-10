@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using L10NSharp;
 
 namespace Bloom.CollectionTab
 {
@@ -16,6 +17,11 @@ namespace Bloom.CollectionTab
 		{
 			InitializeComponent();
 			_willCarrySettingsOriginal = _willCarrySettingsLabel.Text;
+
+
+			//another work around for the problem described in https://jira.sil.org/browse/BL-316
+			_willCarrySettingsLabel.Text = LocalizationManager.GetString("ReaderTemplateBloomPackDialog.ExplanationParagraph",
+				"In addition, this BloomPack will carry your latest decodable and levelled reader settings for the \"{0}\" language. Anyone opening this BloomPack , who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.");
 		}
 
 		public void SetLanguage(string name)
