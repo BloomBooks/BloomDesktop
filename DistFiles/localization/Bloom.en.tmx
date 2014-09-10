@@ -634,7 +634,7 @@
 	<tu tuid="DecodableReaderTool.MakeLetterWordList">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Make a Letter and Word List File</seg>
+		<seg>Show a Letter and Word List File</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="DecodableReaderTool.SetUpStages">
