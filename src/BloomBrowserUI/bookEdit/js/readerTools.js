@@ -505,7 +505,6 @@ ReaderToolsModel.prototype.doKeypressMarkup = function() {
         var current = selection.anchorNode;
         var active = $(selection.anchorNode).closest('div').get(0);
         if (selection.rangeCount > 1 || (selection.rangeCount == 1 && !selection.getRangeAt(0).collapsed)) {
-            alert('no range');
             return; // don't even try to adjust markup while there is some complex selection
         }
         var myRange = selection.getRangeAt(0).cloneRange();
