@@ -17,6 +17,10 @@ FULL_BUILD_NUMBER ?= 0.0.1
 %:
 	dh $@ --with=cli --parallel
 
+# don't strip the debug symbols
+# TODO: move the debug symbols to a separate file
+override_dh_clistrip:
+
 override_dh_auto_configure:
 
 override_dh_auto_build:
