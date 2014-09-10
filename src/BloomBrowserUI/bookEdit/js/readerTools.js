@@ -536,6 +536,7 @@ ReaderToolsModel.prototype.getActiveElementSelectionIndex = function() {
 ReaderToolsModel.prototype.noteFocus = function(element) {
     this.activeElement = element;
     this.undoStack = [];
+    this.redoStack = [];
     this.undoStack.push({html: element.innerHTML, text: element.textContent, offset: this.getActiveElementSelectionIndex()});
     //alert(undoStack.last);
 };
@@ -543,7 +544,7 @@ ReaderToolsModel.prototype.noteFocus = function(element) {
 ReaderToolsModel.prototype.undo = function() {
     if (!this.activeElement) return;
     if (this.activeElement.textContent = this.undoStack[this.undoStack.length - 1].text && this.undoStack.length > 1) {
-        this.undoStack.pop();
+        this.redoStack.push(this.undoStack.pop());
     }
     this.activeElement.innerHTML = this.undoStack[this.undoStack.length - 1].html;
     var restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
@@ -551,6 +552,16 @@ ReaderToolsModel.prototype.undo = function() {
     this.makeSelectionIn(this.activeElement, restoreOffset);
 };
 
+ReaderToolsModel.prototype.redo = function() {
+    if (!this.activeElement) return;
+    if (this.redoStack.length > 0) {
+        this.undoStack.push(this.redoStack.pop());
+    }
+    this.activeElement.innerHTML = this.undoStack[this.undoStack.length - 1].html;
+    var restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
+    if (restoreOffset < 0) return;
+    this.makeSelectionIn(this.activeElement, restoreOffset);
+};
 
 /**
  * Displays the correct markup for the current page.
@@ -603,6 +614,7 @@ ReaderToolsModel.prototype.doMarkup = function() {
 
     if (this.activeElement && this.activeElement.textContent != this.undoStack[this.undoStack.length - 1].text) {
         this.undoStack.push({html: this.activeElement.innerHTML, text: this.activeElement.textContent, offset: oldSelectionPosition});
+        this.redoStack = []; // ok because only referred to by this variable.
     }
 
     // the contentWindow is not available during unit testing
