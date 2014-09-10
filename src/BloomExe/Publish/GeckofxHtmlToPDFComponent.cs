@@ -258,7 +258,7 @@ namespace GeckofxHtmlToPdf
 
 		private void OnCheckForBrowserNavigatedTimerTick(object sender, EventArgs e)
 		{
-			if (_browser.Document.ReadyState == "complete")
+			if (_browser.Document != null && _browser.Document.ReadyState == "complete")
 			{
 				_checkForBrowserNavigatedTimer.Enabled = false;
 				StartMakingPdf();
