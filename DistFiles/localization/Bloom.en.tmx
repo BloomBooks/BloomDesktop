@@ -628,13 +628,13 @@
     <tu tuid="DecodableReaderTool.Stage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Stage </seg>
+        <seg>Stage</seg>
       </tuv>
     </tu>
     <tu tuid="DecodableReaderTool.StageOf">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg> of </seg>
+        <seg>of</seg>
       </tuv>
     </tu>
     <tu tuid="Download.Completed">
