@@ -575,6 +575,12 @@
 		<seg>Back</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Common.Cancel">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Cancel</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="Common.CancelButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Cancel</seg>
@@ -596,6 +602,12 @@
 	  <note>In a wizard, this button takes you to the next step.</note>
 	  <tuv xml:lang="en">
 		<seg>Next</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Common.OK">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>OK</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Common.OKButton">
@@ -2176,7 +2188,7 @@
 	<tu tuid="ReaderSetup.MatchingWords">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg> matching words</seg>
+		<seg>matching words</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.MaxUniqueWords">
@@ -2273,6 +2285,18 @@
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Maximum Words in each Sentence</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SetUpDecodableReaderTool">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Set up Decodable Reader Tool</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SetUpLeveledReaderTool">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Set up Leveled Reader Tool</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.SetupAlphabet">
