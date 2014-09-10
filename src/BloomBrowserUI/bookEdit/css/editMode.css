@@ -534,17 +534,18 @@ SPAN.possible-word
   left: 0;
   right: 0;
   text-align: center;
-  background: rgba(0, 0, 0, .8);
-  padding-top: 20px;
+  background: #96668F;
+  padding-top: 10px;
   margin:0;
-  font-size: 60px;
+  font-size: 24pt;
+  z-index: 2001;
 }
 .long-press-popup li {
   display:inline-block;
   list-style: none;
-  padding: 10px 34px;
+    padding: 0px 15px 10px 15px;
   margin-right: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   background: #000000;
   cursor:pointer;
   color: white;
@@ -556,4 +557,11 @@ SPAN.possible-word
   -webkit-box-shadow: 0 0 18px rgba(255, 255, 255, 0.75);
   -moz-box-shadow:    0 0 18px rgba(255, 255, 255, 0.75);
   box-shadow:         0 0 18px rgba(255, 255, 255, 0.75);
+}
+
+.format-toolbar-description {
+  font-size: small;
+  line-height: 1.2;
+  margin: 10px 5px 5px 5px;
+  color:grey;
 }

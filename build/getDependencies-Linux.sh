@@ -3,7 +3,7 @@
 # project=Bloom
 # build=Bloom-Default-precise64-Auto (Bloom 3)
 # root_dir=..
-# $Id: 0b75ca980cea444bf053cfdd852cb3e370225ffe $
+# $Id: d32984f53cd52f171a9cba46cd3879538ad23431 $
 
 cd "$(dirname "$0")"
 
@@ -70,7 +70,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 # URL: http://build.palaso.org/viewType.html?buildTypeId=bt403
 # VCS: https://bitbucket.org/hatton/bloom-desktop [default]
 # dependencies:
-# [0] build: bloom-2.1.-win32-static-dependencies (bt396)
+# [0] build: bloom-3.-win32-static-dependencies (bt396)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
@@ -95,7 +95,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt323
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"*.exe*"=>"lib/dotnet", "*.dll*"=>"lib/dotnet"}
+#     paths: {"*.exe*"=>"lib/dotnet", "*.dll*"=>"lib/dotnet", "Mercurial-x86_64.zip!**"=>"Mercurial-x86_64", "Mercurial-i686.zip!**"=>"Mercurial-i686"}
 #     VCS: https://github.com/sillsdev/chorus.git [master]
 # [4] build: palaso-precise64-master Continuous (bt322)
 #     project: libpalaso
@@ -137,6 +137,8 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 mkdir -p ../DistFiles
 mkdir -p ../DistFiles/pdf
 mkdir -p ../Downloads
+mkdir -p ../Mercurial-i686
+mkdir -p ../Mercurial-x86_64
 mkdir -p ../build/
 mkdir -p ../lib/dotnet
 mkdir -p ../lib/dotnet/icu48
@@ -168,6 +170,8 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/NDesk.DBus.dll ../lib/dotnet/NDesk.DBus.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/NDesk.DBus.dll.config ../lib/dotnet/NDesk.DBus.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Vulcan.Uczniowie.HelpProvider.dll ../lib/dotnet/Vulcan.Uczniowie.HelpProvider.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Mercurial-x86_64.zip ../Downloads/Mercurial-x86_64.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt323/latest.lastSuccessful/Mercurial-i686.zip ../Downloads/Mercurial-i686.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.BuildTasks.dll ../build/Palaso.BuildTasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Enchant.Net.dll ../lib/dotnet/Enchant.Net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Enchant.Net.dll.config ../lib/dotnet/Enchant.Net.dll.config
@@ -247,4 +251,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt351/latest.las
 unzip -uqo ../Downloads/libsynphony-js.zip -d ../src/BloomBrowserUI/bookEdit/js/libsynphony
 unzip -uqo ../Downloads/libsynphony-test-js.zip -d ../src/BloomBrowserUI/bookEdit/test/libsynphony
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d ../DistFiles/pdf
+unzip -uqo ../Downloads/Mercurial-x86_64.zip -d ../Mercurial-x86_64
+unzip -uqo ../Downloads/Mercurial-i686.zip -d ../Mercurial-i686
 # End of script

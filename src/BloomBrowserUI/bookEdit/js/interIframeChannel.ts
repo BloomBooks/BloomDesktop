@@ -78,7 +78,7 @@ class interIframeChannel {
      * @param {Function} callback Function to call when the ajax request returns
      * @param {String} [dataValue] Passed in the post under the "data" key
      */
-    simpleAjaxPost(url, callback, dataValue): void {
+    simpleAjaxPost(url: string, callback: any, dataValue?: string): void {
 
         var ajaxSettings = {type: 'POST', url: url};
         if (dataValue) ajaxSettings['data'] = {data: dataValue};
@@ -94,7 +94,7 @@ class interIframeChannel {
      * @param {String} url The URL to request
      * @param {String} [dataValue] Passed in the post under the "data" key
      */
-    simpleAjaxNoCallback(url, dataValue): void {
+    simpleAjaxNoCallback(url: string, dataValue?: string): void {
 
         var ajaxSettings = {type: 'POST', url: url};
         if (dataValue) ajaxSettings['data'] = {data: dataValue};

@@ -28,26 +28,29 @@ textarea { resize: none; }
 
 /* Language Setup */
 #dls_word_lists {
-    width: 265px;
-    height: 58px;
     background: transparent;
     border: 1px solid #bbb;
     padding: 1px;
     overflow: auto;
+    height: 330px;
+    width: 100%;
+    margin-top: 1px;
+    margin-right: 0px;
+}
+#word-lists-div {
+    width: 65%;
+    float: right;
 }
 
 .format-not-supported { color: #EF0808; }
 
 @media (max-width: 649px) {
-    #dlstabs-1 div.floating { margin: 8px; }
-    #word-lists-div { width: 250px; }
-    #word-lists-div textarea { width: 245px; }
+    /*#dlstabs-1 div.floating { margin: 8px 15px 8px 0; }*/
+    #more-words-div { margin-right: 15px; }
 }
 
 @media (min-width: 650px) {
-    #dlstabs-1 div.floating { margin: 0 12px; }
-    #word-lists-div { width: 270px; }
-    #word-lists-div textarea { width: 265px; }
+    #more-words-div { margin-right: 20px; }
 }
 
 

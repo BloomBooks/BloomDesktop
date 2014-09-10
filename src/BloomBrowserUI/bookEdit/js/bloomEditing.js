@@ -27,7 +27,7 @@ function processExternalMessage(event) {
             });
 
             editableElements.find('span.' + $.cssSentenceTooLong()).each(function() {
-                $(this).qtip({ content: 'This Sentence is too long for this Level.' });
+                $(this).qtip({ content: 'This sentence is too long for this level.' });
             });
             return;
     }
@@ -351,21 +351,17 @@ function MakeSourceTextDivForGroup(group) {
         $(this).attr('style', 'font-size: 1.2em; line-height: 1.2em;')
     });
 
-    var vernacularLang = localizationManager.getVernacularLang();
+    var vernacularLang = GetInlineDictionary()['vernacularLang']; //doesn't work localizationManager.getVernacularLang();
 
     $(divForBubble).removeClass(); //remove them all
     $(divForBubble).addClass("ui-sourceTextsForBubble");
-    //don't want the vernacular in the bubble
-    $(divForBubble).find("*[lang='" + vernacularLang + "']").each(function() {
-        $(this).remove();
-    });
     //don't want empty items in the bubble
     $(divForBubble).find("textarea:empty, div:hasNoText").each(function() {
         $(this).remove();
     });
 
-    //don't want bilingual/trilingual boxes to be shown in the bubble
-    $(divForBubble).find("*.bloom-content2, *.bloom-content3").each(function() {
+    //don't want the vernacular or languages in use for bilingual/trilingual boxes to be shown in the bubble
+    $(divForBubble).find("*.bloom-content1, *.bloom-content2, *.bloom-content3").each(function () {
         $(this).remove();
     });
 
@@ -403,13 +399,15 @@ function MakeSourceTextDivForGroup(group) {
         var shellEditingMode = false;
         items.each(function() {
             var iso = $(this).attr('lang');
-            var languageName = localizationManager.getLanguageName(iso);
+            //doesn't work: var languageName = localizationManager.getLanguageName(iso);
+            var languageName = GetInlineDictionary()[iso];
             if (!languageName)
                 languageName = iso;
             var shouldShowOnPage = (iso === vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
             // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
             if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
+
                 $(list).append('<li id="'+iso+'"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
                 if (iso === GetSettings().defaultSourceLanguage) {
                     selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4

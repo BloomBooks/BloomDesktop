@@ -197,7 +197,22 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
+
+		/// <summary>
+		/// All we do at this point is make a file with a ".doc" extension and open it.
+		/// </summary>
+		/// <param name="path"></param>
+		public void ExportDocFormat(string path)
+		{
+			string sourcePath = _bookSelection.CurrentSelection.GetPathHtmlFile();
+			if (File.Exists(path))
+			{
+				File.Delete(path);
+			}
+			File.Copy(sourcePath, path);
+		}
+
+	    public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
     	{
             book.RebuildThumbNailAsync(thumbnailOptions, callback, errorCallback);
     	}
@@ -247,7 +262,7 @@ namespace Bloom.CollectionTab
 						}
 						//show it
 						Logger.WriteEvent("Showing BloomPack on disk");
-						Process.Start(Path.GetDirectoryName(path));
+						Process.Start("explorer.exe", "/select, \"" + path + "\"");
 						Analytics.Track("Create BloomPack");
 					}
 					finally
@@ -405,5 +420,6 @@ namespace Bloom.CollectionTab
 	    {
 		    return _bookServer.GetBookFromBookInfo(bookInfo);
 	    }
+
     }
 }
