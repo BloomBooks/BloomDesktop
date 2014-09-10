@@ -275,12 +275,13 @@ namespace Bloom.Edit
 				{
 					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1Iso639Code,
 					                                          _collectionSettings.GetLanguage1Name("en"))
-					                      	{Locked = true, Selected = true});
+					                      	{Locked = true, Selected = true, IsRtl = _collectionSettings.IsLanguage1Rtl});
 
-					//NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity
+					//NB: these won't *always* be tied to the national and regional languages, but they are for now. We would need more UI, without making for extra complexity
 					var item2 = new ContentLanguage(_collectionSettings.Language2Iso639Code,
 					                                _collectionSettings.GetLanguage2Name("en"))
 					            	{
+										IsRtl = _collectionSettings.IsLanguage1Rtl
 //					            		Selected =
 //					            			_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
 //					            			_librarySettings.Language2Iso639Code
@@ -294,7 +295,10 @@ namespace Bloom.Edit
 //						                _bookSelection.CurrentSelection.MultilingualContentLanguage3 ==
 //						                _librarySettings.Language3Iso639Code;
 						var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
-						                                _collectionSettings.GetLanguage3Name("en"));// {Selected = selected};
+						                                _collectionSettings.GetLanguage3Name("en"))
+						{
+							IsRtl = _collectionSettings.IsLanguage3Rtl
+						};// {Selected = selected};
 						_contentLanguages.Add(item3);
 					}
 				}
@@ -396,6 +400,7 @@ namespace Bloom.Edit
 
     		public bool Selected;
     		public bool Locked;
+    		public bool IsRtl;
     	}
 
     	public bool GetBookHasChanged()
