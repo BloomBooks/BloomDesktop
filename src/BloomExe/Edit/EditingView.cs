@@ -410,7 +410,7 @@ namespace Bloom.Edit
 				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
 				{
 					// do not open in external browser if localhost...except for some links in the accordion
-					if (anchor.Href.ToLowerInvariant().StartsWith(ServerBase.PathEndingInSlash) && !anchor.Href.ToLowerInvariant().Contains("/bookedit/accordion"))
+					if (anchor.Href.ToLowerInvariant().StartsWith(ServerBase.PathEndingInSlash))
 					{
 						ge.Handled = false; // let gecko handle it
 						return;
