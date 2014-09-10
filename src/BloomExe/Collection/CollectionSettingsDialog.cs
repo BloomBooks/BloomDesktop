@@ -77,6 +77,7 @@ namespace Bloom.Collection
 			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Iso639Code);
 			_language1FontLabel.Text = string.Format("Default Font for {0}", lang1UiName);
 			_language2FontLabel.Text = string.Format("Default Font for {0}", lang2UiName);
+			_rtlLanguagesCombo.DropDownItems.Clear();
 			_rtlLanguagesCombo.DropDownItems.Add(lang1UiName);
 			_rtlLanguagesCombo.DropDownItems.Add(lang2UiName);
 

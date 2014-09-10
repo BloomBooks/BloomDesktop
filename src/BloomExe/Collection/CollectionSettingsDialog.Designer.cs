@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.Drawing;
+using System.Windows.Forms;
 
 namespace Bloom.Collection
 {
@@ -320,21 +321,21 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
-			this._menusToolStrip.Location = new System.Drawing.Point(31, 249);
+			this._menusToolStrip.Location = new System.Drawing.Point(258, 131);
 			this._menusToolStrip.Name = "_menusToolStrip";
-			this._menusToolStrip.Size = new System.Drawing.Size(146, 28);
 			this._menusToolStrip.TabIndex = 2;
 			this._menusToolStrip.Text = "toolStrip1";
 			// 
 			// _rtlLanguagesCombo
 			// 
 			this._rtlLanguagesCombo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this._rtlLanguagesCombo.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._rtlLanguagesCombo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._rtlLanguagesCombo, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._rtlLanguagesCombo, null);
 			this._L10NSharpExtender.SetLocalizingId(this._rtlLanguagesCombo, "CollectionSettingsDialog.BookMakingTab.RightToLeft");
 			this._rtlLanguagesCombo.Name = "_rtlLanguagesCombo";
-			this._rtlLanguagesCombo.Size = new System.Drawing.Size(97, 21);
+			this._rtlLanguagesCombo.BackColor = SystemColors.ButtonFace;
+			this._rtlLanguagesCombo.Size = new System.Drawing.Size(200, 21);
 			this._rtlLanguagesCombo.Text = "Right To Left";
 			// 
 			// _fontComboLanguage3
