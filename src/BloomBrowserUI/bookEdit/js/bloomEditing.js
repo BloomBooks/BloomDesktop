@@ -1151,6 +1151,14 @@ function SetupElements(container) {
             accordion.contentWindow.model.doMarkup(); // 'This' is the element that just lost focus.
         }
     });
+
+    $(container).find('.bloom-editable').focusin(function () {
+        var accordion = parent.window.document.getElementById("accordion");
+        if (accordion) {
+            accordion.contentWindow.model.noteFocus(this); // 'This' is the element that just got focus.
+        }
+    });
+
     // and a slightly different one for keypresses
     $(container).find('.bloom-editable').keypress(function () {
         var accordion = parent.window.document.getElementById("accordion");
@@ -1158,6 +1166,18 @@ function SetupElements(container) {
             accordion.contentWindow.model.doKeypressMarkup();
         }
     });
+
+    $(container).find('.bloom-editable').keydown(function (e) {
+        if (e.keyCode == 90 && e.ctrlKey) {
+            var accordion = parent.window.document.getElementById("accordion");
+            if (accordion && accordion.contentWindow.model.currentMarkupType !== MarkupType.None) {
+                e.preventDefault();
+                accordion.contentWindow.model.undo();
+                return false;
+            }
+        }
+    });
+
 
     SetBookCopyrightAndLicenseButtonVisibility(container);
 
