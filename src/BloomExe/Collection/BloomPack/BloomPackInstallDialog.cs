@@ -4,9 +4,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using System.Linq;
+using System.Xml;
+using Bloom.Properties;
 using DesktopAnalytics;
 using Ionic.Zip;
 using Palaso.Reporting;
+using Palaso.Xml;
 
 namespace Bloom.Collection.BloomPack
 {
@@ -139,40 +142,61 @@ namespace Bloom.Collection.BloomPack
 
 				var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
 				CopyXMatterFoldersToWhereTheyBelong(newlyAddedFolderOfThePack);
+				CopyReaderToolsSettingsToWhereTheyBelong(newlyAddedFolderOfThePack);
 			}
 		}
 
-        //xmatter in bloompacks was an afterthought... at the moment we unpack everything to programdata/../Collections, 
-        //but now we need to move xmatter over to programdata/../xmatter
-        private static void CopyXMatterFoldersToWhereTheyBelong(string newlyAddedFolderOfThePack)
-	    {
-	        foreach (var dir in Directory.GetDirectories(newlyAddedFolderOfThePack, "*-xmatter"))
-	        {
-	            var destDirName = Path.Combine(ProjectContext.XMatterAppDataFolder, Path.GetFileName(dir));
-	            try
-	            {
-	                if (Directory.Exists(destDirName))
-	                {
-	                    Directory.Delete(destDirName, true);
-	                }
-	            }
-	            catch (Exception error)
-	            {
-	                throw new ApplicationException("Could not delete the existing xmatter pack in order to update it", error);
-	            }
-	            try
-	            {
-	                Directory.Move(dir, destDirName);
-	            }
-	            catch (Exception error)
-	            {
-	                throw new ApplicationException("Could not move an xmatter pack from collections to xmatter", error);
-	            }
-	        }
-	    }
+		private void CopyReaderToolsSettingsToWhereTheyBelong(string newlyAddedFolderOfThePack)
+		{
+			var destFolder = ProjectContext.GetBloomAppDataFolder();
+			foreach (var readerSettingsFile in Directory.GetFiles(newlyAddedFolderOfThePack, CollectionSettings.ReaderToolsSettingsPrefix + "*.json")
+				.Concat(Directory.GetFiles(newlyAddedFolderOfThePack,"ReaderToolsWords-*.json")))
+			{
+				try
+				{
+					File.Copy(readerSettingsFile, Path.Combine(destFolder, Path.GetFileName(readerSettingsFile)), true);
+				}
+				catch (IOException e)
+				{
+					// If we can't do it, we can't. Don't worry about it in production.
+#if DEBUG
+					Debug.Fail("Some file error copying reader settings");
+#endif
+				}
+			}
+		}
+
+		//xmatter in bloompacks was an afterthought... at the moment we unpack everything to programdata/../Collections, 
+		//but now we need to move xmatter over to programdata/../xmatter
+		private static void CopyXMatterFoldersToWhereTheyBelong(string newlyAddedFolderOfThePack)
+		{
+			foreach (var dir in Directory.GetDirectories(newlyAddedFolderOfThePack, "*-xmatter"))
+			{
+				var destDirName = Path.Combine(ProjectContext.XMatterAppDataFolder, Path.GetFileName(dir));
+				try
+				{
+					if (Directory.Exists(destDirName))
+					{
+						Directory.Delete(destDirName, true);
+					}
+				}
+				catch (Exception error)
+				{
+					throw new ApplicationException("Could not delete the existing xmatter pack in order to update it", error);
+				}
+				try
+				{
+					Directory.Move(dir, destDirName);
+				}
+				catch (Exception error)
+				{
+					throw new ApplicationException("Could not move an xmatter pack from collections to xmatter", error);
+				}
+			}
+		}
 
 
-	    private void _backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+		private void _backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
 			_okButton.Enabled = true;
 			if(e.Error!=null)
