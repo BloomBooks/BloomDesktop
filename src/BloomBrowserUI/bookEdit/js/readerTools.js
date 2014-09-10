@@ -517,12 +517,50 @@ ReaderToolsModel.prototype.doKeypressMarkup = function() {
     }, 500);
 };
 
+ReaderToolsModel.prototype.getActiveElementSelectionIndex = function() {
+    var page = parent.window.document.getElementById('page');
+    if (!page) return -1; // unit testing?
+    var selection = page.contentWindow.getSelection();
+    var current = selection.anchorNode;
+    var active = $(selection.anchorNode).closest('div').get(0);
+    if (active != this.activeElement) return -1; // huh??
+    if (!active || selection.rangeCount == 0 ) {
+        return -1;
+    }
+    var myRange = selection.getRangeAt(0).cloneRange();
+    myRange.setStart(active, 0);
+    return myRange.toString().length;
+};
+
+
+ReaderToolsModel.prototype.noteFocus = function(element) {
+    this.activeElement = element;
+    this.undoStack = [];
+    this.undoStack.push({html: element.innerHTML, text: element.textContent, offset: this.getActiveElementSelectionIndex()});
+    //alert(undoStack.last);
+};
+
+ReaderToolsModel.prototype.undo = function() {
+    if (!this.activeElement) return;
+    if (this.activeElement.textContent = this.undoStack[this.undoStack.length - 1].text && this.undoStack.length > 1) {
+        this.undoStack.pop();
+    }
+    this.activeElement.innerHTML = this.undoStack[this.undoStack.length - 1].html;
+    var restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
+    if (restoreOffset < 0) return;
+    this.makeSelectionIn(this.activeElement, restoreOffset);
+};
+
+
 /**
  * Displays the correct markup for the current page.
  */
 ReaderToolsModel.prototype.doMarkup = function() {
 
     if (this.currentMarkupType === MarkupType.None) return;
+
+    var oldSelectionPosition = -1;
+    if (this.activeElement) oldSelectionPosition = this.getActiveElementSelectionIndex();
 
     var editableElements = this.getElementsToCheck();
     if (editableElements.length == 0) return;
@@ -561,6 +599,10 @@ ReaderToolsModel.prototype.doMarkup = function() {
             });
 
             break;
+    }
+
+    if (this.activeElement && this.activeElement.textContent != this.undoStack[this.undoStack.length - 1].text) {
+        this.undoStack.push({html: this.activeElement.innerHTML, text: this.activeElement.textContent, offset: oldSelectionPosition});
     }
 
     // the contentWindow is not available during unit testing
