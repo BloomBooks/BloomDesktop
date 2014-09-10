@@ -1,5 +1,5 @@
-﻿using Bloom.web;
-using System.Collections.Generic;
+﻿using System.Text;
+using Bloom.web;
 
 namespace Bloom
 {
@@ -28,5 +28,11 @@ namespace Bloom
 			if (value) return 1;
 			return 0;
 		}
+
+		public static void AppendLineFormat(this StringBuilder sb, string format, params object[] args)
+		{
+			sb.AppendLine(string.Format(format, args));
+		}
+
 	}
 }
