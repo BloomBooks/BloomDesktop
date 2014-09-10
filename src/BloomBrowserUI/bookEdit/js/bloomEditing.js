@@ -1168,11 +1168,16 @@ function SetupElements(container) {
     });
 
     $(container).find('.bloom-editable').keydown(function (e) {
-        if (e.keyCode == 90 && e.ctrlKey) {
+        if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrlz or ctrl-Y
             var accordion = parent.window.document.getElementById("accordion");
             if (accordion && accordion.contentWindow.model.currentMarkupType !== MarkupType.None) {
                 e.preventDefault();
-                accordion.contentWindow.model.undo();
+                if (e.shiftKey || e.keyCode == 89) { // crtl-shift-z or ctrl-y
+                    accordion.contentWindow.model.redo();
+                }
+                else {
+                    accordion.contentWindow.model.undo();
+                }
                 return false;
             }
         }
