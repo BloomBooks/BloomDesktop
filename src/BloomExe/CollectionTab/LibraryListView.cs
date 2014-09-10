@@ -202,8 +202,10 @@ namespace Bloom.CollectionTab
 			_primaryCollectionFlow.Controls.Add(invisibleHackPartner);
 			var primaryCollectionHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
 			primaryCollectionHeader.Label.Text = _model.VernacularLibraryNamePhrase;
+			primaryCollectionHeader.AdjustWidth();
 			_primaryCollectionFlow.Controls.Add(primaryCollectionHeader);
-			_primaryCollectionFlow.SetFlowBreak(primaryCollectionHeader, true);
+			//_primaryCollectionFlow.SetFlowBreak(primaryCollectionHeader, true);
+			_primaryCollectionFlow.Controls.Add(_menuTriangle);//NB: we're using a picture box instead of a button because the former can have transparency.
 			LoadOneCollection(_model.GetBookCollections().First(), _primaryCollectionFlow);
 			_primaryCollectionFlow.ResumeLayout();
 		}
@@ -856,6 +858,32 @@ namespace Bloom.CollectionTab
 				_model.MakeBloomPack(dlg.FileName, forReaderTools);
 			}
 		}
+		private void exportToWordOrLibreOfficeToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				MessageBox.Show(LocalizationManager.GetString("CollectionTab.BookMenu.ExportDocMessage",
+					"Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much."));
+				var destPath = _bookSelection.CurrentSelection.GetPathHtmlFile().Replace(".htm", ".doc");
+				_model.ExportDocFormat(destPath);
+#if !__MonoCS__
+				//Process.Start("explorer.exe", "/select, \"" + destPath + "\"");
+				Process.Start(destPath);
+#endif
+				Analytics.Track("Exported To Doc format");
+			}
+			catch (IOException error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error.Message, "Could not export the book");
+				Analytics.ReportException(error);
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
+				Analytics.ReportException(error);
+			}
+		}
+
 
 		private void makeReaderTemplateBloomPackToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -867,6 +895,11 @@ namespace Bloom.CollectionTab
 					return;
 				MakeBloomPack(true);
 			}
+		}
+
+		private void _menuButton_Click(object sender, EventArgs e)
+		{
+			_vernacularCollectionMenuStrip.Show(_menuTriangle, new Point(0, 0));
 		}
 
 		/// <summary>

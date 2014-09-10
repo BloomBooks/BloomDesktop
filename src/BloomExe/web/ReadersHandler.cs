@@ -1,8 +1,14 @@
-﻿using System.Text;
+﻿using System;
+using System.Diagnostics;
+using System.Text;
 using System.Linq;
 using System.IO;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
+using Bloom.ReaderTools;
+using L10NSharp;
+using Newtonsoft.Json;
 using Palaso.Xml;
 using Palaso.IO;
 using System.Collections.Generic;
@@ -26,18 +32,14 @@ namespace Bloom.web
 
 		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
 		{
-			var lastSep = localPath.IndexOf("/", System.StringComparison.Ordinal);
+			var lastSep = localPath.IndexOf("/", StringComparison.Ordinal);
 			var lastSegment = (lastSep > -1) ? localPath.Substring(lastSep + 1) : localPath;
 
 			switch (lastSegment)
 			{
 				case "loadReaderToolSettings":
-					var settingsPath = currentCollectionSettings.DecodableLevelPathName;
-					var decodableLeveledSettings = "{}";
-					if (File.Exists(settingsPath))
-						decodableLeveledSettings = File.ReadAllText(settingsPath, Encoding.UTF8);
 					info.ContentType = "application/json";
-					info.WriteCompleteOutput(decodableLeveledSettings);
+					info.WriteCompleteOutput(GetDefaultReaderSettings(currentCollectionSettings));
 					return true;
 
 				case "saveReaderToolSettings":
@@ -76,6 +78,11 @@ namespace Bloom.web
 					info.WriteCompleteOutput(SaveReaderToolsWordsFile(info.GetPostData()["data"]));
 					return true;
 
+				case "makeLetterAndWordList":
+					MakeLetterAndWordList(info.GetPostData()["settings"], info.GetPostData()["allWords"]);
+					info.ContentType = "text/plain";
+					info.WriteCompleteOutput("OK");
+					return true;
 			}
 
 			return false;
@@ -172,6 +179,65 @@ namespace Bloom.web
 			return text;
 		}
 
+		private static string GetDefaultReaderSettings(CollectionSettings currentCollectionSettings)
+		{
+			var settingsPath = currentCollectionSettings.DecodableLevelPathName;
+
+			// if file exists, return current settings
+			if (File.Exists(settingsPath))
+				return File.ReadAllText(settingsPath, Encoding.UTF8);
+
+			// file does not exist, so make a new one
+			var settings = new ReaderToolsSettings(true);
+			var settingsString = settings.Json;
+			File.WriteAllText(settingsPath, settingsString);
+
+			return settingsString;
+		}
+
+		/// <summary>
+		/// The SaveFileDialog must run on a STA thread.
+		/// </summary>
+		private static void MakeLetterAndWordList(string jsonSettings, string allWords)
+		{
+			// load the settings
+			var settings = JsonConvert.DeserializeObject<ReaderToolsSettings>(jsonSettings);
+
+			// format the output
+			var sb = new StringBuilder();
+			sb.AppendLineFormat("Letter and word list for making decodable readers in {0}", CurrentBook.CollectionSettings.Language1Name);
+
+			var idx = 1;
+			foreach (var stage in settings.Stages)
+			{
+				sb.AppendLine();
+				sb.AppendLineFormat("Stage {0}", idx++);
+				sb.AppendLine();
+				sb.AppendLineFormat("Letters: {0}", stage.Letters.Replace(" ", ", "));
+				sb.AppendLine();
+				sb.AppendLineFormat("New Sight Words: {0}", stage.SightWords.Replace(" ", ", "));
+
+				Array.Sort(stage.Words);
+				sb.AppendLineFormat("Decodable Words: {0}", string.Join(" ", stage.Words));
+				sb.AppendLine();
+
+			}
+
+			// complete word list
+			var words = allWords.Split(new[] { '\t' });
+			Array.Sort(words);
+			sb.AppendLine();
+			sb.AppendLine("Complete Word List");
+			sb.AppendLine(string.Join(" ", words));
+
+			// write the file
+			var fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, "Decodable Books Letters and Words.txt");
+			File.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
+
+			// open the file
+			Process.Start(fileName);
+		}
+
 		/// <summary></summary>
 		/// <param name="jsonString">The contents of the ReaderToolsWords file</param>
 		/// <returns>OK</returns>
@@ -203,6 +269,5 @@ namespace Bloom.web
 
 			return "OK";
 		}
-
 	}
 }

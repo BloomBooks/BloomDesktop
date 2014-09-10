@@ -5,9 +5,24 @@
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
+	<tu tuid="AboutDialog._checkForUpdates">
+	  <tuv xml:lang="en">
+		<seg>Check For Updates</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="AboutDialog._releaseNotesLabel">
+	  <tuv xml:lang="en">
+		<seg>Release Notes</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="AboutDialog.AboutDialogWindowTitle">
 	  <tuv xml:lang="en">
 		<seg>About</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="AboutDialog.NoUpdates">
+	  <tuv xml:lang="en">
+		<seg>No Updates</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Common.CancelButton">
@@ -81,6 +96,11 @@
 	<tu tuid="ImageToolbox.EditMetadataLink">
 	  <tuv xml:lang="en">
 		<seg>Edit...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ImageToolbox.EnterSearchTerms">
+	  <tuv xml:lang="en">
+		<seg>This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ImageToolbox.FileButton">

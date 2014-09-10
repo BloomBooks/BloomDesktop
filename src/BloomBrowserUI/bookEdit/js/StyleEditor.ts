@@ -344,7 +344,7 @@ class StyleEditor {
 					+ '<div style="margin-left:5px;display:inline-block;border:2px solid black;height:10pt;width:10pt;margin-right:2px;position:relative;top:2px"></div>'
 						+ editor.makeBorderSelect(box)
 					+ '</span>'
-					+ '<div style="color:grey;margin-top:10px">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>'
+					+ '<div class="format-toolbar-description">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>'
 					+ '</div>';
 				$('#format-toolbar').remove(); // in case there's still one somewhere else
 				$('body').after(html);
