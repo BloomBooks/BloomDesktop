@@ -96,10 +96,10 @@ class LocalizationManager {
      */
     getText(stringId: string, englishText?: string, ...args): string {
 
-        if (!this.inlineDictionaryLoaded && (typeof document['GetInlineDictionary'] === 'function')) {
+        if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
             if (Object.keys(this.dictionary).length == 0) {
                 this.inlineDictionaryLoaded = true;
-                $.extend(localizationManager.dictionary, document['GetInlineDictionary']());
+                $.extend(localizationManager.dictionary, GetInlineDictionary());
             }
         }
 
