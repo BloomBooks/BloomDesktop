@@ -459,17 +459,37 @@ ReaderToolsModel.prototype.makeSelectionIn = function(node, offset) {
         var selection = parent.window.document.getElementById('page').contentWindow.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);
-        return;
+        return true;
     }
-    for (i = 0; i < node.childNodes.length; i++) {
-        var childNode = node.childNodes[i];
-        var len = childNode.textContent.length;
-        if (offset <= len) {
-            this.makeSelectionIn(childNode, offset);
-            return;
+    var i = 0;
+    var childNode;
+    var len;
+    for (; i < node.childNodes.length && offset >= 0; i++) {
+        childNode = node.childNodes[i];
+        len = childNode.textContent.length;
+        // If it's at the end of a child (that is not the last child) we have a choice whether to put it at the
+        // end of that node or the start of the following one. For some reason the IP is invisible if
+        // placed at the end of the preceding one, so prefer the start of the following one.
+        // (But, of course, if it is the last node we must be able to put the IP at the very end.)
+        if (offset < len || (offset == len && i == node.childNodes.length - 1)) {
+            if (this.makeSelectionIn(childNode, offset)) {
+                return true;
+            }
         }
         offset -= len;
     }
+    // Somehow we failed. Maybe the node it should go in has no text?
+    // See if we can put it at the right position (or as close as possible) in an earlier node.
+    // Not sure exactly what case required this...possibly markup included some empty spans?
+    for (i--; i >= 0; i--)
+    {
+        childNode = node.childNodes[i];
+        len = childNode.textContent.length;
+        if (this.makeSelectionIn(childNode, len)) {return true;}
+    }
+    // can't select anywhere (maybe this has no text-node children? Hopefully the caller can find
+    // an equivalent place in an adjacent node).
+    return false;
 };
 
 ReaderToolsModel.prototype.doKeypressMarkup = function() {
@@ -506,6 +526,10 @@ ReaderToolsModel.prototype.doMarkup = function() {
     if (this.currentMarkupType === MarkupType.None) return;
 
     var editableElements = this.getElementsToCheck();
+    if (editableElements.length == 0) return;
+    // qtips can be orphaned if the element they belong to is deleted
+    // (and so the mouse can't move off their owning element, and they never go away).
+    $(editableElements[0]).closest('body').children('.qtip').remove();
 
     switch(this.currentMarkupType) {
         case MarkupType.Leveled:
