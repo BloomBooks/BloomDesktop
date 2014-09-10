@@ -1,11 +1,13 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Diagnostics;
 using System.Drawing.Text;
 using System.Globalization;
 using System.Linq;
 using Bloom.ImageProcessing;
 using System.IO;
+using L10NSharp;
 using Palaso.IO;
 using Bloom.Collection;
 
@@ -66,6 +68,23 @@ namespace Bloom.web
 
 				return false;
 			}
+			else if (localPath.StartsWith("DistFiles/"))
+			{
+				var queryPart = string.Empty;
+				if (info.RawUrl.Contains("?"))
+					queryPart = "#" + info.RawUrl.Split('?')[1];
+				var langCode = LocalizationManager.UILanguageId;
+				var completeEnglishPath = FileLocator.GetFileDistributedWithApplication(localPath);
+				var completeUiLangPath = GetUiLanguageFileVersion(completeEnglishPath, langCode);
+				if (langCode != "en" && File.Exists(completeUiLangPath))
+				{
+					Process.Start(completeUiLangPath);
+					return true;
+				}
+				else
+					Process.Start(completeEnglishPath);
+				return true;
+			}
 
 			switch (localPath)
 			{
@@ -110,6 +129,11 @@ namespace Bloom.web
 			info.ContentType = GetContentType(Path.GetExtension(localPath));
 			info.ReplyWithFileContent(path);
 			return true;
+		}
+
+		private string GetUiLanguageFileVersion(string englishFileName, string langCode)
+		{
+			return englishFileName.Replace("-en.htm", "-" + langCode + ".htm");
 		}
 
 		private bool CheckForSampleTextChanges(IRequestInfo info)

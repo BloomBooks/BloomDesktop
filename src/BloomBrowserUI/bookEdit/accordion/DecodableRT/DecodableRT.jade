@@ -16,7 +16,8 @@ html
 					= ' '
 					span#numberOfStages.ofStage 2
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incStage
-			.section.clear(style='margin-left: 6px') Words in this stage
+			.section.clear(style='margin-left: 6px')
+				span(data-i18n='DecodableReaderTool.WordsInThisStage') Words in this stage
 				.sortBlock
 					.sortItem.rightBorder.sortIconSelected#sortAlphabetic
 						i.fa.fa-sort-alpha-asc(title='Sort alphabetically')
@@ -30,6 +31,8 @@ html
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 				span.setup.stageLine
 					a(href="javascript:parent.window.showSetupDialog('stages');", data-i18n='DecodableReaderTool.SetUpStages') Set up Stages
+			.clear(style='margin-left: 6px')
+				a#make-letter-word-list(style='font-size: 10px', href='javascript:makeLetterWordList();', data-i18n='DecodableReaderTool.MakeLetterWordList') Make a Letter and Word List File
 			script(type='text/javascript').
 				$(document).ready(function() {
 					setTimeout(initializeDecodableRT, 100);

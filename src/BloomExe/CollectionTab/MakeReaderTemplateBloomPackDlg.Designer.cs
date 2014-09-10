@@ -129,7 +129,6 @@
 			this.ShowIcon = false;
 			this.ShowInTaskbar = false;
 			this.Text = "Make Reader Template BloomPack";
-			this.Load += new System.EventHandler(this.MakeReaderTemplateBloomPackDlg_Load);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
