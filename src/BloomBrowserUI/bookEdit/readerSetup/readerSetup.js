@@ -57,8 +57,8 @@ function processMessage(event) {
         case 'SetupType':
             var tabs = $('#dlstabs');
             if (params[1] === 'stages') {
-                tabs.tabs('option', 'disabled', [2]);
-                tabs.tabs('option', 'active', 1);
+                tabs.tabs('option', 'disabled', [3]);
+                tabs.tabs('option', 'active', 0);
                 var firstStage = $('#stages-table').find('tbody tr:first');
                 if (firstStage && (firstStage.length === 0))
                     addNewStage();
@@ -66,8 +66,8 @@ function processMessage(event) {
                     firstStage.click(); // select the first stage
             }
             else {
-                tabs.tabs('option', 'disabled', [0, 1]);
-                tabs.tabs('option', 'active', 2);
+                tabs.tabs('option', 'disabled', [0, 1, 2]);
+                tabs.tabs('option', 'active', 3);
                 var firstLevel = $('#levels-table').find('tbody tr:first');
                 if (firstLevel && (firstLevel.length === 0))
                     addNewLevel();
@@ -86,6 +86,24 @@ function processMessage(event) {
             style.innerHTML = '.book-font { font-family: ' + params[1] + '; }';
             document.getElementsByTagName('head')[0].appendChild(style);
             return;
+
+        case 'Help':
+            var helpFile;
+            switch($('#dlstabs').tabs('option', 'active')) {
+                case 0:
+                    helpFile = '/Tasks/Edit_tasks/Decodable_Reader_Tool/Letters_tab.htm';
+                    break;
+                case 1:
+                    helpFile = '/Tasks/Edit_tasks/Decodable_Reader_Tool/Words_tab.htm';
+                    break;
+                case 2:
+                    helpFile = '/Tasks/Edit_tasks/Decodable_Reader_Tool/Decodable_Stages_tab.htm';
+                    break;
+                case 3:
+                    helpFile = '/Tasks/Edit_tasks/Leveled_Reader_Tool/Reader_Levels_tab.htm';
+                    break;
+            }
+            return getIframeChannel().help(helpFile);
     }
 }
 
@@ -111,7 +129,6 @@ function saveClicked() {
     // get the values
     var s = {};
     s.letters = document.getElementById('dls_letters').value.trim();
-    s.letterCombinations = document.getElementById('dls_letter_combinations').value.trim();
 
     // remove duplicates from the more words list
     var moreWords = _.uniq((document.getElementById('dls_more_words').value).split("\n"));
@@ -181,14 +198,12 @@ function loadReaderSetupData(jsonData) {
     // validate data
     var data = JSON.parse(jsonData);
     if (!data.letters) data.letters = '';
-    if (!data.letterCombinations) data.letterCombinations = '';
     if (!data.moreWords) data.moreWords = '';
     if (!data.stages) data.stages = [];
     if (!data.levels) data.levels = [];
 
     // language tab
     document.getElementById('dls_letters').value = data.letters;
-    document.getElementById('dls_letter_combinations').value = data.letterCombinations;
     document.getElementById('dls_more_words').value = data.moreWords.replace(/ /g, '\n');
 
     // stages tab
@@ -311,7 +326,7 @@ function selectLetter(div) {
  */
 function displayLetters() {
 
-    var letters = (document.getElementById('dls_letters').value.trim() + ' ' + document.getElementById('dls_letter_combinations').value.trim()).split(' ');
+    var letters = (document.getElementById('dls_letters').value.trim()).split(' ');
     letters = letters.filter(function(n){ return n !== ''; });
 
     // If there are no letters, skip updating the contents of #setup-selected-letters. This leaves it showing the
@@ -736,7 +751,7 @@ function tabBeforeActivate(ui) {
 
     if (panelId === 'dlstabs-2') { // Decodable Stages tab
 
-        var allLetters = (document.getElementById('dls_letters').value.trim() + ' ' + document.getElementById('dls_letter_combinations').value.trim()).split(' ');
+        var allLetters = (document.getElementById('dls_letters').value.trim()).split(' ');
         var tbody = $('#stages-table').find('tbody');
 
         // update letters grid
