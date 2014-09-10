@@ -42,7 +42,6 @@ namespace Bloom.CollectionTab
 			this._rescueMissingImagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
 			this._doChecksAndUpdatesOfAllBooksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this._settingsProtectionHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
 			this.splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._primaryCollectionFlow = new System.Windows.Forms.FlowLayoutPanel();
 			this.label1 = new System.Windows.Forms.Label();
@@ -55,12 +54,12 @@ namespace Bloom.CollectionTab
 			this.label4 = new System.Windows.Forms.Label();
 			this.label5 = new System.Windows.Forms.Label();
 			this.button6 = new System.Windows.Forms.Button();
-			this.button3 = new System.Windows.Forms.Button();
 			this._sourceBooksFlow = new System.Windows.Forms.FlowLayoutPanel();
 			this.label7 = new System.Windows.Forms.Label();
 			this.pretendLabel = new System.Windows.Forms.Label();
 			this.label9 = new System.Windows.Forms.Label();
 			this._dividerPanel = new System.Windows.Forms.Panel();
+			this._settingsProtectionHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
 			this._bookContextMenu.SuspendLayout();
 			this._sourcePaneMenuStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -217,7 +216,7 @@ namespace Bloom.CollectionTab
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this.makeReaderTemplateBloomPackToolStripMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.makeReaderTemplateBloomPackToolStripMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this.makeReaderTemplateBloomPackToolStripMenuItem, ".addMakeReaderTemplateBloomPackToolStripMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this.makeReaderTemplateBloomPackToolStripMenuItem, "CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem");
 			this.makeReaderTemplateBloomPackToolStripMenuItem.Name = "makeReaderTemplateBloomPackToolStripMenuItem";
 			this.makeReaderTemplateBloomPackToolStripMenuItem.Size = new System.Drawing.Size(267, 22);
 			this.makeReaderTemplateBloomPackToolStripMenuItem.Text = "Make Reader Template BloomPack...";
@@ -234,7 +233,7 @@ namespace Bloom.CollectionTab
             this._doChecksAndUpdatesOfAllBooksToolStripMenuItem});
 			this._L10NSharpExtender.SetLocalizableToolTip(this.advancedToolStripMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.advancedToolStripMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this.advancedToolStripMenuItem, ".advancedToolStripMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this.advancedToolStripMenuItem, "CollectionTab.advancedToolStripMenuItem");
 			this.advancedToolStripMenuItem.Name = "advancedToolStripMenuItem";
 			this.advancedToolStripMenuItem.Size = new System.Drawing.Size(267, 22);
 			this.advancedToolStripMenuItem.Text = "Advanced";
@@ -335,7 +334,6 @@ namespace Bloom.CollectionTab
 			this._primaryCollectionFlow.Controls.Add(this.label4);
 			this._primaryCollectionFlow.Controls.Add(this.label5);
 			this._primaryCollectionFlow.Controls.Add(this.button6);
-			this._primaryCollectionFlow.Controls.Add(this.button3);
 			this._primaryCollectionFlow.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._primaryCollectionFlow.Location = new System.Drawing.Point(0, 0);
 			this._primaryCollectionFlow.Name = "_primaryCollectionFlow";
@@ -510,18 +508,6 @@ namespace Bloom.CollectionTab
 			this.button6.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this.button6.UseVisualStyleBackColor = true;
 			// 
-			// button3
-			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this.button3, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.button3, null);
-			this._L10NSharpExtender.SetLocalizingId(this.button3, "button3");
-			this.button3.Location = new System.Drawing.Point(3, 296);
-			this.button3.Name = "button3";
-			this.button3.Size = new System.Drawing.Size(237, 264);
-			this.button3.TabIndex = 13;
-			this.button3.Text = "button3";
-			this.button3.UseVisualStyleBackColor = true;
-			// 
 			// _sourceBooksFlow
 			// 
 			this._sourceBooksFlow.AutoScroll = true;
@@ -660,7 +646,6 @@ namespace Bloom.CollectionTab
 		private ToolStripSeparator toolStripMenuItem3;
 		private ToolStripMenuItem makeReaderTemplateBloomPackToolStripMenuItem;
 		private ToolStripMenuItem advancedToolStripMenuItem;
-		private Button button3;
 		private ToolStripMenuItem exportToWordOrLibreOfficeToolStripMenuItem;
 		private PictureBox _menuTriangle;
     }
