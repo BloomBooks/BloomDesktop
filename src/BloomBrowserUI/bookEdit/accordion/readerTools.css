@@ -36,8 +36,10 @@ span.ofStage { font-size: xx-small; }
 span.disabledIcon { visibility: hidden; }
 td.disabledLimit { visibility: hidden; }
 
-div.wordList { margin: 4px; }
-div.word { min-width: 40px; margin: 2px; float: left; }
+div.wordList, div.letterList { margin: 4px; }
+div.word, div.letter { margin: 2px; float: left; }
+div.word { min-width: 40px; }
+div.letter { min-width: 20px; }
 div.sight-word {
 	-moz-text-decoration-style: wavy;
 	-moz-text-decoration-line: underline;

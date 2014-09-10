@@ -28,6 +28,10 @@ html
 						i.fa.fa-facebook#sortFrequency2(title='Sort by frequency')
 			.tableHolder.clear
 				.wordList#wordList
+			.section.clear(style='margin-left: 6px')
+				span(data-i18n='DecodableReaderTool.LettersInThisStage') Letters in this stage
+			.tableHolder.clear
+				.letterList#letterList
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 				span.setup.stageLine
 					a(href="javascript:parent.window.showSetupDialog('stages');", data-i18n='DecodableReaderTool.SetUpStages') Set up Stages
