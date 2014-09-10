@@ -55,6 +55,7 @@ function processMessage(event) {
             return;
 
         case 'SetupType':
+            //noinspection JSJQueryEfficiency
             var tabs = $('#dlstabs');
             if (params[1] === 'stages') {
                 tabs.tabs('option', 'disabled', [3]);
@@ -89,6 +90,7 @@ function processMessage(event) {
 
         case 'Help':
             var helpFile;
+            //noinspection JSJQueryEfficiency
             switch($('#dlstabs').tabs('option', 'active')) {
                 case 0:
                     helpFile = '/Tasks/Edit_tasks/Decodable_Reader_Tool/Letters_tab.htm';
@@ -103,7 +105,8 @@ function processMessage(event) {
                     helpFile = '/Tasks/Edit_tasks/Leveled_Reader_Tool/Reader_Levels_tab.htm';
                     break;
             }
-            return getIframeChannel().help(helpFile);
+            getIframeChannel().help(helpFile);
+            return;
     }
 }
 
@@ -713,11 +716,6 @@ if (typeof ($) === "function") {
         return false;
     });
 
-    $('#make-letter-word-list').onOnce('click', function() {
-        makeLetterWordList();
-        return false;
-    });
-
     var toRemember = $('#things-to-remember');
     toRemember.onOnce('keydown', handleThingsToRemember);
     toRemember.onOnce('keyup', storeThingsToRemember);
@@ -785,41 +783,6 @@ function tabBeforeActivate(ui) {
 function wordListChangedCallback() {
     accordionWindow().postMessage('Texts', '*');
     requestWordsForSelectedStage();
-}
-
-function makeLetterWordList() {
-
-    // save settings
-    var settings = saveClicked();
-
-    // get the words for each stage
-    var rows = $('#stages-table').find('tbody tr');
-    for (var i = 0; i < settings.stages.length; i++) {
-
-        var stageWords = requestWordsForStageTableRow(rows.get(i), true);
-        settings.stages[i].words = _.toArray(stageWords);
-    }
-
-    // get list of all words
-    var allGroups = [];
-    for (var j = 1; j <= accordionWindow().lang_data.VocabularyGroups; j++)
-        allGroups.push('group' + j);
-    allGroups = accordionWindow().libsynphony.chooseVocabGroups(allGroups);
-
-    var allWords = [];
-    for (var g = 0; g < allGroups.length; g++) {
-        allWords = allWords.concat(allGroups[g]);
-    }
-    allWords = _.compact(_.pluck(allWords, 'Name'));
-
-    // export the word list
-    var ajaxSettings = {type: 'POST', url: '/bloom/readers/makeLetterAndWordList'};
-    ajaxSettings['data'] = {
-        settings: JSON.stringify(settings),
-        allWords: allWords.join('\t')
-    };
-
-    $.ajax(ajaxSettings)
 }
 
 $(document).ready(function () {

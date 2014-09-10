@@ -2,7 +2,7 @@
 var SynphonyApi = function() {
     this.stages = [];
     this.levels = [];
-    this.source = "";
+    this.source = {};
 };
 
 /**
@@ -58,17 +58,6 @@ SynphonyApi.fireCSharpEvent = function(eventName, eventData) {
 SynphonyApi.prototype.AddStage = function(stage)
 {
     this.stages.push(stage);
-};
-
-/**
- * Gets a URI that points to the directory containing the "synphonyApi.js" file.
- * @returns {String}
- */
-SynphonyApi.prototype.getScriptDirectory = function() {
-
-    var src = $('script[src$="synphonyApi.js"]').attr('src').replace('synphonyApi.js', '').replace(/\\/g, '/');
-    if (!src) return '';
-    return src;
 };
 
 /**

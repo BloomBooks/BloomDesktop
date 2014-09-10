@@ -961,3 +961,40 @@ function processWordListChangedListeners() {
     for (var j = 0; j < handlers.length; j++)
         wordListChangedListeners[handlers[j]]();
 }
+
+function makeLetterWordList() {
+
+    // get settings
+    var settings = model.getSynphony().source;
+
+    // get the words for each stage
+    var knownGPCS = [];
+    for (var i = 0; i < settings.stages.length; i++) {
+
+        var stageGPCS = settings.stages[i].split(' ');
+        knownGPCS = _.union(knownGPCS, stageGPCS);
+        var stageWords = model.selectWordsFromSynphony(true, stageGPCS, knownGPCS, true, true);
+        settings.stages[i].words = _.toArray(stageWords);
+    }
+
+    // get list of all words
+    var allGroups = [];
+    for (var j = 1; j <= lang_data.VocabularyGroups; j++)
+        allGroups.push('group' + j);
+    allGroups = libsynphony.chooseVocabGroups(allGroups);
+
+    var allWords = [];
+    for (var g = 0; g < allGroups.length; g++) {
+        allWords = allWords.concat(allGroups[g]);
+    }
+    allWords = _.compact(_.pluck(allWords, 'Name'));
+
+    // export the word list
+    var ajaxSettings = {type: 'POST', url: '/bloom/readers/makeLetterAndWordList'};
+    ajaxSettings['data'] = {
+        settings: JSON.stringify(settings),
+        allWords: allWords.join('\t')
+    };
+
+    $.ajax(ajaxSettings)
+}
