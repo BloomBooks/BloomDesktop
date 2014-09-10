@@ -310,7 +310,7 @@ namespace Bloom.Collection
 			// 
 			// _menusToolStrip
 			// 
-			this._menusToolStrip.AutoSize = false;
+			this._menusToolStrip.AutoSize = true;
 			this._menusToolStrip.CanOverflow = false;
 			this._menusToolStrip.Dock = System.Windows.Forms.DockStyle.None;
 			this._menusToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
