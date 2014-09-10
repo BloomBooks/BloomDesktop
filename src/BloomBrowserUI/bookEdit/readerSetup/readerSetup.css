@@ -121,7 +121,7 @@ div.ui-tabs div.ui-tabs-panel ul.asterisk { margin: 0; padding-left: 12px; borde
 
 @media (min-width: 650px) {
 	#stage-list-container { width: calc(40% - 6px); min-height: 360px; height: calc(100% - 50px); }
-	.tab-list { height: calc(100% - 32px); }
+	.tab-list { height: calc(100% - 16px); }
 	#stage-detail { width: calc(60% - 6px); min-height: 360px; height: calc(100% - 50px); margin-left: 12px; margin-top: 0; }
 	#stage-detail div.sub-float { width: calc(100% - 258px); }
 	#setup-stage-letters-and-words { width: 228px !important; }

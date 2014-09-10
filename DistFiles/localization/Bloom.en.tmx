@@ -609,6 +609,12 @@
 		<seg>&amp;Delete</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="DecodableReaderTool.FinishedLetterAndWordList">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Letter and Word List saved to {0}.</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="DecodableReaderTool.SetUpStages">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -2042,12 +2048,6 @@
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Decodable Stages</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderSetup.FinishedLetterAndWordList">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Letter and Word List saved to {0}.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.FirstSetupAlphabet">

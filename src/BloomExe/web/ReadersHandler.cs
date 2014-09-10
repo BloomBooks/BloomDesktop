@@ -172,7 +172,7 @@ namespace Bloom.web
 			File.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
 
 			// notify when finished
-			var finished = LocalizationManager.GetDynamicString("Bloom", "ReaderSetup.FinishedLetterAndWordList", "Letter and Word List saved to {0}.");
+			var finished = LocalizationManager.GetDynamicString("Bloom", "DecodableReaderTool.FinishedLetterAndWordList", "Letter and Word List saved to {0}.");
 			MessageBox.Show(string.Format(finished, fileName));
 		}
 
