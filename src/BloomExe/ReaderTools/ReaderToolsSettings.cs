@@ -19,6 +19,14 @@ namespace Bloom.ReaderTools
 		[JsonProperty("sightWords", DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue("")]
 		public string SightWords { get; set; }
+
+		/// <summary>
+		/// This value is only used for exporting stage word lists in ReadersHandler.MakeLetterAndWordList(),
+		/// it is not saved to the DecodableLevelData.json file
+		/// </summary>
+		[JsonProperty("words", DefaultValueHandling = DefaultValueHandling.Ignore)]
+		[DefaultValue(null)]
+		public string[] Words { get; set; }
 	}
 
 	public class ReaderLevel

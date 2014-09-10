@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
+using L10NSharp;
 
 namespace Bloom.Wizard.WinForms
 {
@@ -78,8 +79,11 @@ namespace Bloom.Wizard.WinForms
 		public void BeginInit()
 		{
 			_backButton = new Button { Text = "Back", Size = new Size(75, 25), Left = 0};
+			_backButton.Text = LocalizationManager.GetString("Common.BackButton", "Back", "In a wizard, this button takes you to the previous step.");
 			_nextAndFinishedButton = new Button { Text = "Next", Size = new Size(75, 25), Left = 80};
+			_nextAndFinishedButton.Text = LocalizationManager.GetString("Common.NextButton", "Next", "In a wizard, this button takes you to the next step.");
 			_cancelButton = new Button { Text = "Cancel", Size = new Size(75, 25), Left = 160 };
+			_cancelButton.Text = LocalizationManager.GetString("Common.CancelButton", "Cancel");
 
 			_contentPanel = new Panel { Dock = DockStyle.Fill };
 
