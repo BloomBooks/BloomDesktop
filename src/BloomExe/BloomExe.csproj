@@ -190,6 +190,12 @@
     <Compile Include="CollectionTab\InDesignXmlInformationDialog.Designer.cs">
       <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="CollectionTab\MakeReaderTemplateBloomPackDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CollectionTab\MakeReaderTemplateBloomPackDlg.Designer.cs">
+      <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
+    </Compile>
     <Compile Include="Collection\NaturalSortComparer.cs" />
     <Compile Include="Edit\ConfirmRemovePageDialog.cs">
       <SubType>Form</SubType>
@@ -544,6 +550,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\InDesignXmlInformationDialog.resx">
       <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CollectionTab\MakeReaderTemplateBloomPackDlg.resx">
+      <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\ConfirmRemovePageDialog.resx">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
@@ -1012,6 +1021,7 @@
     <None Include="Resources\unstable.png" />
     <None Include="Resources\duplicatePage32x32.png" />
     <None Include="Resources\duplicatePageDisabled32x32.png" />
+    <None Include="Resources\greyTriangleButton.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />
