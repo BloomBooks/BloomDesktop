@@ -93,7 +93,7 @@ namespace Bloom.web
 				if (TryGetDefaultBrowserPath(out defaultBrowserPath) && !string.IsNullOrEmpty(defaultBrowserPath))
 					try
 					{
-						Process.Start(defaultBrowserPath, "file:///" + cleanUrl + queryPart);
+						Process.Start(defaultBrowserPath, "\"file:///" + cleanUrl + queryPart + "\"");
 						return true;
 					}
 					catch (Exception)
@@ -102,7 +102,7 @@ namespace Bloom.web
 						// Don't crash Bloom because we can't open an external file.
 					}
 				// If the above failed, either for lack of default browser or exception, try this:
-				Process.Start(cleanUrl);				
+				Process.Start("\"" + cleanUrl + "\"");				
 				return true;
 			}
 
