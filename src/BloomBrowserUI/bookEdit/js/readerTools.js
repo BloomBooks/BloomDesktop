@@ -845,8 +845,8 @@ function initializeLeveledRT() {
 
     // make sure synphony is initialized
     if (!model.getSynphony().source) {
-        iframeChannel.simpleAjaxGet('/bloom/getDefaultFont', setDefaultFont);
-        iframeChannel.simpleAjaxGet('/bloom/loadReaderToolSettings', initializeSynphony);
+        iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
+        iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
     }
 
     $('#incLevel').onOnce('click.readerTools', function() {
