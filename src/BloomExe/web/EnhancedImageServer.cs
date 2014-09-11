@@ -69,7 +69,7 @@ namespace Bloom.web
 
 				return false;
 			}
-			else if (localPath.StartsWith("DistFiles/"))
+			else if (localPath.StartsWith("leveledRTInfo/"))
 			{
 				var queryPart = string.Empty;
 				if (info.RawUrl.Contains("?"))
