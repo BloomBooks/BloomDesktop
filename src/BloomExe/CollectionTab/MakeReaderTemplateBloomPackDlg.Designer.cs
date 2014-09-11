@@ -59,7 +59,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._willCarrySettingsLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._willCarrySettingsLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._willCarrySettingsLabel, "ReaderTemplateBloomPackDialog.ExplanationParagraph");
-			this._willCarrySettingsLabel.Location = new System.Drawing.Point(28, 170);
+			this._willCarrySettingsLabel.Location = new System.Drawing.Point(28, 175);
 			this._willCarrySettingsLabel.Name = "_willCarrySettingsLabel";
 			this._willCarrySettingsLabel.Size = new System.Drawing.Size(326, 127);
 			this._willCarrySettingsLabel.TabIndex = 1;
