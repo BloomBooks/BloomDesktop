@@ -87,16 +87,19 @@
   position: absolute;
   top: 0;
   right: 0;
-  padding: 10px;
   z-index: 20000;
-  background-color: rgba(0,0,0,.4);
-  border-radius: 10px;
 }
 
+.origami-buttons .horizontal-buttons,
+.origami-buttons .close-button-wrapper,
+.origami-buttons .vertical-buttons {
+  background-color: rgba(0,0,0,.4);
+  border-radius: 10px;
+  padding: 10px;
+}
 .origami-buttons .horizontal-buttons {
   float: left;
-  margin-right: 15px;
-  margin-top: -5px;
+  margin-right: 30px;
   min-width: 20px;
 }
 .origami-buttons .horizontal-buttons .button {
@@ -111,8 +114,8 @@
 }
 .origami-buttons .vertical-buttons {
   float: right;
+  margin-top: 10px;
   clear: both;
-  margin-right: -5px;
 }
 .origami-buttons .vertical-buttons > div {
   float: left;
