@@ -8,6 +8,7 @@ using System.Linq;
 using Bloom.ImageProcessing;
 using System.IO;
 using L10NSharp;
+using Microsoft.Win32;
 using Palaso.IO;
 using Bloom.Collection;
 
@@ -68,7 +69,7 @@ namespace Bloom.web
 
 				return false;
 			}
-			else if (localPath.StartsWith("DistFiles/"))
+			else if (localPath.StartsWith("leveledRTInfo/"))
 			{
 				var queryPart = string.Empty;
 				if (info.RawUrl.Contains("?"))
@@ -76,13 +77,32 @@ namespace Bloom.web
 				var langCode = LocalizationManager.UILanguageId;
 				var completeEnglishPath = FileLocator.GetFileDistributedWithApplication(localPath);
 				var completeUiLangPath = GetUiLanguageFileVersion(completeEnglishPath, langCode);
+				string url;
 				if (langCode != "en" && File.Exists(completeUiLangPath))
-				{
-					Process.Start(completeUiLangPath);
-					return true;
-				}
+					url = completeUiLangPath;
 				else
-					Process.Start(completeEnglishPath);
+					url = completeEnglishPath;
+				var cleanUrl = url.Replace("\\", "/"); // allows jump to file to work
+
+				// If we don't provide the path of the browser, i.e. Process.Start(url + queryPart), we get file not found exception.
+				// If we prepend "file:///", the anchor part of the link (#xxx) is not sent unless we provide the browser path too.
+				// This is the same behavior when simply typing a url into the Run command on Windows.
+				// If we fail to get the browser path for some reason, we still load the page, just without navigating to the anchor.
+				// TODO: need Linux-specific code here -- possibly to simply call Process.Start(url + queryPart)
+				string defaultBrowserPath;
+				if (TryGetDefaultBrowserPath(out defaultBrowserPath) && !string.IsNullOrEmpty(defaultBrowserPath))
+					try
+					{
+						Process.Start(defaultBrowserPath, "file:///" + cleanUrl + queryPart);
+						return true;
+					}
+					catch (Exception)
+					{
+						Debug.Fail("Jumping to browser with anchor failed.");
+						// Don't crash Bloom because we can't open an external file.
+					}
+				// If the above failed, either for lack of default browser or exception, try this:
+				Process.Start(cleanUrl);
 				return true;
 			}
 
@@ -129,6 +149,22 @@ namespace Bloom.web
 			info.ContentType = GetContentType(Path.GetExtension(localPath));
 			info.ReplyWithFileContent(path);
 			return true;
+		}
+
+		private static bool TryGetDefaultBrowserPath(out string defaultBrowserPath)
+		{
+			try
+			{
+				string key = @"HTTP\shell\open\command";
+				using (RegistryKey registrykey = Registry.ClassesRoot.OpenSubKey(key, false))
+					defaultBrowserPath = ((string)registrykey.GetValue(null, null)).Split('"')[1];
+				return true;
+			}
+			catch
+			{
+				defaultBrowserPath = null;
+				return false;
+			}
 		}
 
 		private string GetUiLanguageFileVersion(string englishFileName, string langCode)
