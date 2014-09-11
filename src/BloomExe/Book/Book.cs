@@ -255,9 +255,7 @@ namespace Bloom.Book
 
 		private void UpdateMultilingualSettings(HtmlDom dom)
 		{
-			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings.Language1Iso639Code,
-			                                         _collectionSettings.Language2Iso639Code,
-			                                         _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2,
+			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings, _collectionSettings.Language1Iso639Code, _bookData.MultilingualContentLanguage2,
                                                      _bookData.MultilingualContentLanguage3);
 		}
 
@@ -533,7 +531,7 @@ namespace Bloom.Book
 			if (IsShellOrTemplate) //TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
 				primaryLanguage = _collectionSettings.Language2Iso639Code;
 
-            TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, primaryLanguage, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
+            TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, _collectionSettings, primaryLanguage, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
             AddCoverColor(previewDom, CoverColor);
 
             AddPreviewJScript(previewDom);
@@ -1634,7 +1632,7 @@ namespace Bloom.Book
 			foreach (XmlElement div in elementToUpdate.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				TranslationGroupManager.PrepareElementsInPageOrDocument(div, _collectionSettings);
-			    TranslationGroupManager.UpdateContentLanguageClasses(div, language1Iso639Code, language2Iso639Code, language3Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);
+			    TranslationGroupManager.UpdateContentLanguageClasses(div, _collectionSettings, language1Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);
 			}
 		}
 
