@@ -454,9 +454,21 @@ SPAN.sentence-too-long
     background-color: orange;
 }
 
-/*.page-too-many-words .marginBox {
+.page-too-many-words .marginBox {
     border: 5px solid orange !important;
-}*/
+}
+.book-too-many-unique-words .marginBox {
+    border: 5px solid orange !important;
+}
+.book-too-many-words .marginBox {
+    border: 5px solid orange !important;
+}
+
+
+/* 
+    
+    this was all a nice idea, but not a localizable approach
+    
 .page-too-many-words .marginBox::after {
     content: 'Too many words on page';
     position: absolute;
@@ -472,9 +484,6 @@ SPAN.sentence-too-long
     background-color: red;
     color: white;
 }
-.book-too-many-unique-words .marginBox {
-    border: 5px solid purple !important;
-}
 .book-too-many-unique-words .marginBox::after {
     content: 'Too many unique words in book';
     position: absolute;
@@ -483,7 +492,7 @@ SPAN.sentence-too-long
     background-color:  purple
     color: white;
 }
-
+*/
 
 .ui-dialog { z-index: 20000; }
 
