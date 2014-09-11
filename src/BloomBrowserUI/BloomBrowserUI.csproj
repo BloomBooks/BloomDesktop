@@ -283,13 +283,9 @@
     <Content Include="bookEdit\ReaderToolsTests.jstd" />
     <Content Include="bookEdit\SynphonyApiTests.jstd" />
     <Content Include="bookEdit\js\calledByCSharp.js.map" />
-    <Content Include="bookEdit\accordion\Accordion.htm.orig" />
     <Content Include="bookEdit\accordion\Accordion.jade" />
-    <Content Include="bookEdit\accordion\Accordion.jade.orig" />
     <Content Include="bookEdit\accordion\DecodableRT\DecodableRT.jade" />
-    <Content Include="bookEdit\accordion\LeveledRT\LeveledRT.htm.orig" />
     <Content Include="bookEdit\accordion\LeveledRT\LeveledRT.jade" />
-    <Content Include="bookEdit\accordion\LeveledRT\LeveledRT.jade.orig" />
     <Content Include="bookEdit\accordion\PageElements\PageElements.jade" />
     <Content Include="bookEdit\accordion\settings\Settings.jade" />
     <None Include="web.Debug.config">
