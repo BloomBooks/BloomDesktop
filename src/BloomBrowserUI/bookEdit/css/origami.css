@@ -69,11 +69,13 @@
   height: 20px;
   width: 20px;
   text-align: center;
-  font-weight: bold;
   color: #E48C84;
-  background-color: white;
+  background-color: transparent;
   line-height: 1em;
   font-size: 18px;
+}
+.origami-buttons .close {
+  font-weight: bold;
 }
 
 .origami-buttons .button:hover, .origami-buttons .button:focus {
@@ -85,8 +87,39 @@
   position: absolute;
   top: 0;
   right: 0;
-  margin: 10px;
+  padding: 10px;
   z-index: 20000;
+  background-color: rgba(0,0,0,.4);
+  border-radius: 10px;
+}
+
+.origami-buttons .horizontal-buttons {
+  float: left;
+  margin-right: 15px;
+  margin-top: -5px;
+  min-width: 20px;
+}
+.origami-buttons .horizontal-buttons .button {
+  width: 100%;
+  text-align: center;
+}
+.origami-buttons .horizontal-buttons .separator {
+  border-bottom: 2px white dotted;
+}
+.origami-buttons .close-button-wrapper {
+  float: left;
+}
+.origami-buttons .vertical-buttons {
+  float: right;
+  clear: both;
+  margin-right: -5px;
+}
+.origami-buttons .vertical-buttons > div {
+  float: left;
+}
+.origami-buttons .vertical-buttons .separator {
+  border-right: 2px white dotted;
+  height: 20px;
 }
 
 .split-pane-component-inner {
