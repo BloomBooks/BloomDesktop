@@ -59,10 +59,17 @@ namespace Bloom.Book
 				bookData.RemoveAllForms("contentLanguage2");
 
 			bookData.Set("contentLanguage1", collectionSettings.Language1Iso639Code, false);
+			bookData.Set("contentLanguage1Rtl", collectionSettings.IsLanguage1Rtl.ToString(), false);
 			if (oneTwoOrThreeContentLanguages > 1)
+			{
 				bookData.Set("contentLanguage2", collectionSettings.Language2Iso639Code, false);
+				bookData.Set("contentLanguage2Rtl", collectionSettings.IsLanguage2Rtl.ToString(), false);
+			}
 			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+			{
 				bookData.Set("contentLanguage3", collectionSettings.Language3Iso639Code, false);
+				bookData.Set("contentLanguage3Rtl", collectionSettings.IsLanguage3Rtl.ToString(), false);
+			}
 		}
 
 
