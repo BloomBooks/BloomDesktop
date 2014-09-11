@@ -491,10 +491,10 @@ ReaderToolsModel.prototype.selectAtOffset = function(node, offset) {
     var selection = parent.window.document.getElementById('page').contentWindow.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
-    console.log("Selected at " + offset + " in node of type " + node.localName + " with text '" + node.textContent + "' (of length) " + node.textContent.length);
-    if (node.localName === null && node.textContent.length > 0 && node.textContent.charCodeAt(0) == 10) {
-        console.log("first character " + node.textContent.charCodeAt(0));
-    }
+//    console.log("Selected at " + offset + " in node of type " + node.localName + " with text '" + node.textContent + "' (of length) " + node.textContent.length);
+//    if (node.localName === null && node.textContent.length > 0 && node.textContent.charCodeAt(0) == 10) {
+//        console.log("first character " + node.textContent.charCodeAt(0));
+//    }
 }
 
 ReaderToolsModel.prototype.makeSelectionIn = function(node, offset, divBrCount, atStart) {
@@ -583,14 +583,14 @@ ReaderToolsModel.prototype.doKeypressMarkup = function() {
                 else if (current.childNodes[k].textContent.length > 0) break;
             }
         }
-        console.log("-----------------");
-        console.log('before: ' + active.innerHTML);
+        //console.log("-----------------");
+        //console.log('before: ' + active.innerHTML);
         var atStart = myRange.endOffset === 0;
 
         self.doMarkup();
 
-        console.log('after: ' + active.innerHTML);
-        console.log('restoring selection using ' + offset + " with brs " + divBrCount + " and atStart " + atStart);
+        //console.log('after: ' + active.innerHTML);
+        //console.log('restoring selection using ' + offset + " with brs " + divBrCount + " and atStart " + atStart);
         // Now we try to restore the selection at the specified position.
         self.makeSelectionIn(active, offset, divBrCount, atStart);
 
