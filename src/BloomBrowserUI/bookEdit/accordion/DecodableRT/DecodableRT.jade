@@ -35,8 +35,8 @@ html
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 				span.setup.stageLine
 					a(href="javascript:parent.window.showSetupDialog('stages');", data-i18n='DecodableReaderTool.SetUpStages') Set up Stages
-			.clear(style='margin-left: 6px')
-				a#make-letter-word-list(style='font-size: 10px', href='javascript:makeLetterWordList();', data-i18n='DecodableReaderTool.MakeLetterWordList') Make a Letter and Word List File
+			#make-letter-word-list-div.clear
+				a#make-letter-word-list(href='javascript:makeLetterWordList();', data-i18n='DecodableReaderTool.MakeLetterWordList') Make a Letter and Word List File
 			script(type='text/javascript').
 				$(document).ready(function() {
 					setTimeout(initializeDecodableRT, 100);
