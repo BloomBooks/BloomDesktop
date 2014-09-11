@@ -8,6 +8,7 @@ using System.Linq;
 using Bloom.ImageProcessing;
 using System.IO;
 using L10NSharp;
+using Microsoft.Win32;
 using Palaso.IO;
 using Bloom.Collection;
 
@@ -76,13 +77,18 @@ namespace Bloom.web
 				var langCode = LocalizationManager.UILanguageId;
 				var completeEnglishPath = FileLocator.GetFileDistributedWithApplication(localPath);
 				var completeUiLangPath = GetUiLanguageFileVersion(completeEnglishPath, langCode);
+				string url;
 				if (langCode != "en" && File.Exists(completeUiLangPath))
-				{
-					Process.Start(completeUiLangPath);
-					return true;
-				}
+					url = completeUiLangPath;
 				else
-					Process.Start(completeEnglishPath);
+					url = completeEnglishPath;
+				
+				string defaultBrowserPath;
+				if (TryGetDefaultBrowserPath(out defaultBrowserPath))
+					Process.Start(defaultBrowserPath, url + queryPart);
+				else
+					Process.Start(url);
+				
 				return true;
 			}
 
@@ -129,6 +135,22 @@ namespace Bloom.web
 			info.ContentType = GetContentType(Path.GetExtension(localPath));
 			info.ReplyWithFileContent(path);
 			return true;
+		}
+
+		private static bool TryGetDefaultBrowserPath(out string defaultBrowserPath)
+		{
+			try
+			{
+				string key = @"HTTP\shell\open\command";
+				using (RegistryKey registrykey = Registry.ClassesRoot.OpenSubKey(key, false))
+					defaultBrowserPath = ((string)registrykey.GetValue(null, null)).Split('"')[1];
+				return true;
+			}
+			catch
+			{
+				defaultBrowserPath = null;
+				return false;
+			}
 		}
 
 		private string GetUiLanguageFileVersion(string englishFileName, string langCode)
