@@ -351,7 +351,7 @@ function MakeSourceTextDivForGroup(group) {
         $(this).attr('style', 'font-size: 1.2em; line-height: 1.2em;')
     });
 
-    var vernacularLang = GetInlineDictionary()['vernacularLang']; //doesn't work localizationManager.getVernacularLang();
+    var vernacularLang = localizationManager.getVernacularLang();
 
     $(divForBubble).removeClass(); //remove them all
     $(divForBubble).addClass("ui-sourceTextsForBubble");
@@ -399,8 +399,7 @@ function MakeSourceTextDivForGroup(group) {
         var shellEditingMode = false;
         items.each(function() {
             var iso = $(this).attr('lang');
-            //doesn't work: var languageName = localizationManager.getLanguageName(iso);
-            var languageName = GetInlineDictionary()[iso];
+            var languageName = localizationManager.getLanguageName(iso);
             if (!languageName)
                 languageName = iso;
             var shouldShowOnPage = (iso === vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
@@ -812,8 +811,7 @@ function AddLanguageTags(container) {
             return;
         }
 
-        var dictionary = GetInlineDictionary();
-        var whatToSay = dictionary[key];
+        var whatToSay = localizationManager.getText(key);
         if (!whatToSay)
             whatToSay = key; //just show the code
 
