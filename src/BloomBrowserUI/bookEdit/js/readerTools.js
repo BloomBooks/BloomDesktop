@@ -541,9 +541,13 @@ ReaderToolsModel.prototype.noteFocus = function(element) {
     //alert(undoStack.last);
 };
 
+ReaderToolsModel.prototype.shouldHandleUndo = function() {
+    return this.currentMarkupType !== MarkupType.None;
+}
+
 ReaderToolsModel.prototype.undo = function() {
     if (!this.activeElement) return;
-    if (this.activeElement.textContent = this.undoStack[this.undoStack.length - 1].text && this.undoStack.length > 1) {
+    if (this.activeElement.textContent == this.undoStack[this.undoStack.length - 1].text && this.undoStack.length > 1) {
         this.redoStack.push(this.undoStack.pop());
     }
     this.activeElement.innerHTML = this.undoStack[this.undoStack.length - 1].html;
@@ -551,6 +555,15 @@ ReaderToolsModel.prototype.undo = function() {
     if (restoreOffset < 0) return;
     this.makeSelectionIn(this.activeElement, restoreOffset);
 };
+
+ReaderToolsModel.prototype.canUndo = function() {
+    if (!this.activeElement) return 'no';
+    if (this.undoStack && (this.undoStack.length > 1 || this.activeElement.textContent !== this.undoStack[0].text)) {
+        return 'yes';
+    }
+    return 'no';
+}
+
 
 ReaderToolsModel.prototype.redo = function() {
     if (!this.activeElement) return;
