@@ -145,16 +145,10 @@
 		<seg>Opening {0}...</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Book title in {lang}">
+	<tu tuid="BookEditor.FontSizeTip">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Book title in {lang}</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Click to choose topic">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Click to choose topic</seg>
+		<seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -575,6 +569,12 @@
 		<seg>Back</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Common.Cancel">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Cancel</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="Common.CancelButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Cancel</seg>
@@ -596,6 +596,12 @@
 	  <note>In a wizard, this button takes you to the next step.</note>
 	  <tuv xml:lang="en">
 		<seg>Next</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Common.OK">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>OK</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Common.OKButton">
@@ -631,10 +637,16 @@
 		<seg>&amp;Delete</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="DecodableReaderTool.LettersInThisStage">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Letters in this stage</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="DecodableReaderTool.MakeLetterWordList">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Show a Letter and Word List File</seg>
+		<seg>Make a Letter and Word List File</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="DecodableReaderTool.SetUpStages">
@@ -646,13 +658,19 @@
 	<tu tuid="DecodableReaderTool.Stage">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Stage </seg>
+		<seg>Stage 1 of 2</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="DecodableReaderTool.StageOf">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg> of </seg>
+		<seg> of 2</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="DecodableReaderTool.WordsInThisStage">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Words in this stage</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Download.Completed">
@@ -836,6 +854,54 @@
 	<tu tuid="EditTab.PageSizeAndOrientation.Tooltip">
 	  <tuv xml:lang="en">
 		<seg>Choose a page size and orientation</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.StyleEditor.BorderToolTip">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Change the border and background</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.StyleEditor.FontFaceToolTip">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Change the font face</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.StyleEditor.FontSizeToolTip">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Change the font size</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.StyleEditor.LineSpacingToolTip">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Change the spacing between lines of text</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.StyleEditor.WordSpacingExtraWide">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Extra Wide</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.StyleEditor.WordSpacingNormal">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Normal</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.StyleEditor.WordSpacingToolTip">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Change the spacing between words</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="EditTab.StyleEditor.WordSpacingWide">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Wide</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.StyleEditorTip">
@@ -2275,6 +2341,18 @@
 		<seg>Maximum Words in each Sentence</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="ReaderSetup.SetUpDecodableReaderTool">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Set up Decodable Reader Tool</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderSetup.SetUpLeveledReaderTool">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Set up Leveled Reader Tool</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="ReaderSetup.SetupAlphabet">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -2371,15 +2449,14 @@
 		<seg>Letters</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+	  <tuv xml:lang="en">
+		<seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this BloomPack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
 	  <tuv xml:lang="en">
 		<seg>The following books will be made into templates:</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="ReaderTemplateBloomPackDialog.MakeReaderTemplateBloomPackDlg._btnSaveBloomPack">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Save BloomPack</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">

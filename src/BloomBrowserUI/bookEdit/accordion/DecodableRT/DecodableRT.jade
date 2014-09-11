@@ -8,9 +8,12 @@ html
 			.stageLine
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decStage
 				span.stageLabel.stageLine
-					stage(data-i18n='DecodableReaderTool.Stage')="Stage "
+					stage(data-i18n='DecodableReaderTool.Stage') Stage
+					= ' '
 					span#stageNumber 1
-					span.ofStage(data-i18n='DecodableReaderTool.StageOf')!="&nbsp;of&nbsp;"
+					= ' '
+					span.ofStage(data-i18n='DecodableReaderTool.StageOf') of
+					= ' '
 					span#numberOfStages.ofStage 2
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incStage
 			.section.clear(style='margin-left: 6px')
@@ -25,11 +28,15 @@ html
 						i.fa.fa-facebook#sortFrequency2(title='Sort by frequency')
 			.tableHolder.clear
 				.wordList#wordList
+			.section.clear(style='margin-left: 6px')
+				span(data-i18n='DecodableReaderTool.LettersInThisStage') Letters in this stage
+			.tableHolder.clear
+				.letterList#letterList
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 				span.setup.stageLine
 					a(href="javascript:parent.window.showSetupDialog('stages');", data-i18n='DecodableReaderTool.SetUpStages') Set up Stages
-			.clear(style='margin-left: 6px')
-				a#make-letter-word-list(style='font-size: 10px', href='javascript:makeLetterWordList();', data-i18n='DecodableReaderTool.MakeLetterWordList') Make a Letter and Word List File
+			#make-letter-word-list-div.clear
+				a#make-letter-word-list(href='javascript:makeLetterWordList();', data-i18n='DecodableReaderTool.MakeLetterWordList') Make a Letter and Word List File
 			script(type='text/javascript').
 				$(document).ready(function() {
 					setTimeout(initializeDecodableRT, 100);

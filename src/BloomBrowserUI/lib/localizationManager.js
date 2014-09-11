@@ -92,10 +92,10 @@ var LocalizationManager = (function () {
         for (var _i = 0; _i < (arguments.length - 2); _i++) {
             args[_i] = arguments[_i + 2];
         }
-        if (!this.inlineDictionaryLoaded && (typeof document['GetInlineDictionary'] === 'function')) {
+        if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
             if (Object.keys(this.dictionary).length == 0) {
                 this.inlineDictionaryLoaded = true;
-                $.extend(localizationManager.dictionary, document['GetInlineDictionary']());
+                $.extend(localizationManager.dictionary, GetInlineDictionary());
             }
         }
 
