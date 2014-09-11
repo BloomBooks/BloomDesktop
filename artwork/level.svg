@@ -20,7 +20,7 @@
    sodipodi:docname="level.svg"><metadata
    id="metadata33"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
-         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
    id="defs31" /><sodipodi:namedview
    pagecolor="#ffffff"
    bordercolor="#666666"
@@ -30,8 +30,8 @@
    guidetolerance="10"
    inkscape:pageopacity="0"
    inkscape:pageshadow="2"
-   inkscape:window-width="640"
-   inkscape:window-height="480"
+   inkscape:window-width="916"
+   inkscape:window-height="1314"
    id="namedview29"
    showgrid="false"
    inkscape:zoom="2.36"
@@ -41,67 +41,105 @@
    inkscape:window-y="0"
    inkscape:window-maximized="0"
    inkscape:current-layer="Layer_1" />
-<g
-   id="g3"
-   inkscape:export-filename="X:\dev\b3\artwork\levels.png"
-   inkscape:export-xdpi="144.7"
-   inkscape:export-ydpi="144.7">
-	<g
-   id="g5">
-		<path
-   d="M80.737,63.429c0,2.422,1.962,4.384,4.384,4.384s4.385-1.962,4.385-4.384c0-8.286-2.558-15.984-6.921-22.352    c-1.91,2.175-3.954,4.497-6.035,6.854C79.207,52.49,80.737,57.782,80.737,63.429z"
-   id="path7" />
-		<path
-   d="M49.849,23.772c-21.866,0-39.655,17.79-39.655,39.657c0,2.422,1.963,4.384,4.385,4.384s4.384-1.962,4.384-4.384    c0-17.032,13.855-30.888,30.886-30.888c6.355,0,12.269,1.931,17.185,5.235c2.715-1.729,5.397-3.433,7.913-5.027    C68.104,27.143,59.363,23.772,49.849,23.772z"
-   id="path9" />
-		<path
-   d="M89.807,27.512c0,0-42.654,26.848-45.723,29.472c-3.068,2.622-3.429,7.236-0.806,10.306    c1.446,1.69,3.496,2.559,5.559,2.559c1.681,0,3.37-0.575,4.747-1.753C56.651,65.472,89.807,27.512,89.807,27.512z"
-   id="path11" />
-	</g>
-	<g
-   id="g13">
-		<circle
-   cx="49.63"
-   cy="41.029"
-   r="3.946"
-   id="circle15" />
-	</g>
-	<g
-   id="g17">
-		<circle
-   cx="33.56"
-   cy="47.685"
-   r="3.947"
-   id="circle19" />
-	</g>
-	<g
-   id="g21">
-		<circle
-   cx="26.904"
-   cy="63.754"
-   r="3.947"
-   id="circle23" />
-	</g>
-	<g
-   id="g25">
-		<circle
-   cx="72.358"
-   cy="63.754"
-   r="3.947"
-   id="circle27" />
-	</g>
-</g>
-<text
-   sodipodi:linespacing="125%"
-   id="text7204"
-   y="10.358763"
-   x="58.937862"
-   style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-   xml:space="preserve"><tspan
-     style="font-size:10px"
-     y="10.358763"
-     x="58.937862"
-     id="tspan7206"
-     sodipodi:role="line">Must attribute illustrator, Chris Kerr</tspan></text>
 
-</svg>
+
+
+<g
+   id="g3029"
+   transform="translate(102.9661,57.20339)"><g
+     inkscape:export-ydpi="65.599998"
+     inkscape:export-xdpi="65.599998"
+     inkscape:export-filename="X:\dev\b3\DistFiles\factoryCollections\Templates\Leveled Reader\thumbnail.png"
+     style="fill:#98d0b9;fill-opacity:1"
+     transform="translate(79.043576,-1028.528)"
+     id="g6889"><rect
+       style="fill:#98d0b9;fill-opacity:1;stroke:#000000;stroke-width:1.273;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:7.638, 2.546;stroke-dashoffset:0"
+       id="rect6891"
+       width="67.331383"
+       height="98.271706"
+       x="-166.52283"
+       y="970.9176"
+       inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Sample Shells\A5 Wall Calendar\thumbnail.png"
+       inkscape:export-xdpi="91.849998"
+       inkscape:export-ydpi="91.849998" /><text
+       xml:space="preserve"
+       style="font-size:54.56119919px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#98d0b9;fill-opacity:1;stroke:none;font-family:Sans"
+       x="-152.34695"
+       y="992.34052"
+       id="text6893"
+       sodipodi:linespacing="125%"><tspan
+         id="tspan6895"
+         sodipodi:role="line"
+         x="-152.34695"
+         y="992.34052"
+         style="font-size:10.91224003px;fill:#98d0b9;fill-opacity:1" /></text>
+</g><text
+     inkscape:export-ydpi="65.599998"
+     inkscape:export-xdpi="65.599998"
+     inkscape:export-filename="X:\dev\b3\DistFiles\factoryCollections\Templates\Leveled Reader\thumbnail.png"
+     sodipodi:linespacing="125%"
+     id="text6899"
+     y="-31.718098"
+     x="-74.809052"
+     style="font-size:63.67641449px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+     xml:space="preserve"><tspan
+       style="font-size:12.7352829px"
+       y="-31.718098"
+       x="-74.809052"
+       id="tspan6901"
+       sodipodi:role="line">Leveled</tspan><tspan
+       id="tspan6903"
+       style="font-size:12.7352829px"
+       y="-15.798994"
+       x="-74.809052"
+       sodipodi:role="line">Reader</tspan></text>
+<g
+     id="g6905"
+     transform="translate(79.043576,-1028.528)"
+     style="fill:#e48c84;fill-opacity:1"
+     inkscape:export-filename="X:\dev\b3\DistFiles\factoryCollections\Templates\Leveled Reader\thumbnail.png"
+     inkscape:export-xdpi="65.599998"
+     inkscape:export-ydpi="65.599998"><rect
+       inkscape:export-ydpi="91.849998"
+       inkscape:export-xdpi="91.849998"
+       inkscape:export-filename="C:\dev\Bloom\DistFiles\factoryCollections\Sample Shells\A5 Wall Calendar\thumbnail.png"
+       y="970.9176"
+       x="-166.52283"
+       height="98.271706"
+       width="67.331383"
+       id="rect6907"
+       style="fill:#e48c84;fill-opacity:1;stroke:#000000;stroke-width:1.273;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:7.638, 2.546;stroke-dashoffset:0" /><text
+       sodipodi:linespacing="125%"
+       id="text6909"
+       y="992.34052"
+       x="-152.34695"
+       style="font-size:54.56119919px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#e48c84;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         style="font-size:10.91224003px;fill:#e48c84;fill-opacity:1"
+         y="992.34052"
+         x="-152.34695"
+         sodipodi:role="line"
+         id="tspan6911" /></text>
+</g><path
+     inkscape:export-ydpi="65.599998"
+     inkscape:export-xdpi="65.599998"
+     inkscape:export-filename="X:\dev\b3\DistFiles\factoryCollections\Templates\Leveled Reader\thumbnail.png"
+     inkscape:connector-curvature="0"
+     id="path1312"
+     d="m -75.001796,4.4543454 7.636949,-0.062 c 0,0 0.03782,-7.7652 0.08017,-7.8322 l 7.72857,-0.173 0.09817,-7.9561004 c 0,0 7.685459,-0.086 7.775613,-0.16048 0.105583,-0.088 0.148845,-7.7323 0.286814,-7.7852 l 7.702568,-0.059 0,-7.85794 11.688682,0 c 0,0 -0.02072,4.01414 -0.155365,4.06574 l -7.602097,0.059 -0.05143,7.8089 -7.759716,0.098 -0.09817,7.8579804 -7.759716,0.098 -0.09817,7.85789998 -7.857932,0.098 -0.05128,8.00530002 -11.784705,0 c 0,0 9.83e-4,-4.0046 0.220999,-4.0634 z"
+     style="fill:#000000"
+     sodipodi:nodetypes="ccsccsscccscccccccccs" /><path
+     inkscape:export-ydpi="65.599998"
+     inkscape:export-xdpi="65.599998"
+     inkscape:export-filename="X:\dev\b3\DistFiles\factoryCollections\Templates\Leveled Reader\thumbnail.png"
+     inkscape:connector-curvature="0"
+     id="path4812"
+     d="m -47.65086,5.8407454 11.46674,-11.4667"
+     style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" /><path
+     inkscape:export-ydpi="65.599998"
+     inkscape:export-xdpi="65.599998"
+     inkscape:export-filename="X:\dev\b3\DistFiles\factoryCollections\Templates\Leveled Reader\thumbnail.png"
+     inkscape:connector-curvature="0"
+     id="path4814"
+     d="m -35.68557,2.9602454 0,-8.7524 -8.19843,0"
+     style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" /></g></svg>
