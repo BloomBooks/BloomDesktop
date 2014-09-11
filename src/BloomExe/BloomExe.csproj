@@ -1061,8 +1061,12 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   <ItemGroup>
     <RemoteDebugFiles Include="../../remoteDebugging/**" />
   </ItemGroup>
+  <ItemGroup>
+    <GeckoBrowserAdapter Include="../../lib/dotnet/PalasoUIWindowsForms.GeckoBrowserAdapter.dll" />
+  </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(GeckoBrowserAdapter)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />

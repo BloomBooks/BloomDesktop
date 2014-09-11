@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.43"
+   width="443"
+   height="367"
+   sodipodi:docbase="C:\Documents and Settings\Owner\Desktop\SVG"
+   sodipodi:docname="Aiga_stairs.svg"
+   version="1.0">
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs5" />
+  <sodipodi:namedview
+     inkscape:window-height="543"
+     inkscape:window-width="756"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     inkscape:zoom="0.5149308"
+     inkscape:cx="219.83307"
+     inkscape:cy="188.63096"
+     inkscape:window-x="88"
+     inkscape:window-y="132"
+     inkscape:current-layer="svg2" />
+  <path
+     id="path1312"
+     d="M 5.1155202,326.51723 L 82.86552,325.88694 C 82.86552,325.88694 83.24999,246.82981 83.68248,246.14887 L 162.36552,244.38694 L 163.36552,163.38694 C 163.36552,163.38694 241.60948,162.5144 242.52739,161.7526 C 243.60279,160.8601 244.04256,83.032984 245.44731,82.493934 L 323.86552,81.886944 L 323.86552,1.8869444 L 442.86552,1.8869444 C 442.86552,1.8869444 442.65456,42.753914 441.28373,43.279954 L 363.88847,43.886944 L 363.36552,123.38694 L 284.36552,124.38694 L 283.36552,204.38694 L 204.36552,205.38694 L 203.36552,285.38694 L 123.36552,286.38694 L 122.84309,367.88694 L 2.8655202,367.88694 C 2.8655202,367.88694 2.8755002,327.11753 5.1155202,326.51723 z "
+     style="fill:#000000"
+     sodipodi:nodetypes="ccsccsscccscccccccccs" />
+</svg>

@@ -93,6 +93,7 @@ ReaderToolsModel.prototype.setStageNumber = function(val) {
     this.stageNumber = val;
     this.updateStageLabel();
     this.updateWordList();
+    this.updateLetterList();
     this.enableStageButtons();
     this.saveState();
     this.doMarkup();
@@ -179,6 +180,7 @@ ReaderToolsModel.prototype.updateSelectedStatus = function(eltId, isSelected) {
 // It updates various things in the UI to be consistent with the state of things in the model.
 ReaderToolsModel.prototype.updateControlContents = function() {
     this.updateWordList();
+    this.updateLetterList();
     this.updateNumberOfStages();
     this.updateNumberOfLevels();
     this.updateStageLabel();
@@ -319,6 +321,35 @@ ReaderToolsModel.prototype.updateWordList = function() {
     this.updateElementContent("wordList", result);
 
     $.divsToColumns('word');
+};
+
+/**
+ * Displays the list of letters for the current Stage.
+ */
+ReaderToolsModel.prototype.updateLetterList = function() {
+    var stages = this.synphony.getStages();
+    if (stages.length === 0) return;
+
+    // Letters up through current stage
+    var letters = this.getKnownGraphemes(this.stageNumber);
+
+    // All the letters in the order they were entered on the Letters tab in the set up dialog
+    var allLetters = this.synphony.source.letters.split(' ');
+
+    // Sort our letters based on the order they were entered
+    letters.sort(function(a, b) {
+        return allLetters.indexOf(a) - allLetters.indexOf(b);
+    });
+
+    var result = "";
+    for (var i = 0; i < letters.length; i++) {
+        var letter = letters[i];
+        result += '<div class="letter">' + letter + '</div>';
+    }
+
+    this.updateElementContent("letterList", result);
+
+    $.divsToColumns('letter');
 };
 
 /**
@@ -807,6 +838,7 @@ function initializeDecodableRT() {
     model.updateControlContents();
 
     setTimeout(function() { $.divsToColumns('word'); }, 100);
+    setTimeout(function() { $.divsToColumns('letter'); }, 100);
 }
 
 function initializeLeveledRT() {

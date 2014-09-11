@@ -4,7 +4,9 @@ body { margin: 0; box-sizing: border-box; }
 div { box-sizing: border-box; }
 .align-top { vertical-align: top; }
 td, th { padding: 0 8px; }
-.smaller { font-size: 8pt; }
+.smaller,
+.smaller span, .smaller a /*Otherwise, was overridden by * above*/
+{ font-size: 8pt; }
 label { font-weight: 700; }
 div.floating { position: relative; float: left; }
 .rs-heading { font-size: 13pt; font-weight: 400; }
@@ -35,7 +37,7 @@ textarea { resize: none; }
     height: 330px;
     width: 100%;
     margin-top: 1px;
-    margin-right: 0px;
+    margin-right: 0;
 }
 #word-lists-div {
     width: 65%;
@@ -45,7 +47,6 @@ textarea { resize: none; }
 .format-not-supported { color: #EF0808; }
 
 @media (max-width: 649px) {
-    /*#dlstabs-1 div.floating { margin: 8px 15px 8px 0; }*/
     #more-words-div { margin-right: 15px; }
 }
 
@@ -60,7 +61,7 @@ div.sub-float { position: relative; }
 #setup-stage-letters-and-words { float: left; margin-left: 10px; }
 #click-letters { padding-bottom: 10px; }
 
-div.scrolling-table-container { height: 100%; }
+div.scrolling-table-container { height: 100%; overflow-x: hidden; }
 div.scrolling-table-container-inner { overflow-x: hidden; overflow-y: auto; height: 100%; }
 div.scrolling-table-container-inner table { background-color: #eee; }
 div.scrolling-table-container-inner table td { color: #000; height: 26px; white-space: nowrap; min-width: 26px; }
@@ -70,7 +71,7 @@ div.scrolling-table-container-inner table a { color: #2392db; }
 /* height of header = 26px */
 div.scrolling-table-container { position: relative; padding-top: 26px;  width: 100%; }
 div.scrolling-table-header { background-color: #ddd; height: 26px; position: absolute; top: 0; right: 0; left: 0; border-bottom: 1px solid #666; }
-div.scrolling-table-container-inner table th div { position: absolute; top: 0; line-height: 26px; text-align: left; }
+div.scrolling-table-container-inner table th div { position: absolute; top: 0; line-height: 26px; text-align: left; white-space: nowrap; }
 
 div.rs-letters {
     position: relative;
@@ -104,6 +105,10 @@ span.current-sight-word { font-weight: 700; }
 span.sight-word { color: #00528d; }
 div.ui-tabs div.ui-tabs-panel ul.asterisk { margin: 0; padding-left: 12px; border: 0 none; }
 
+#setup-stage-matching-words td {
+    padding: 0;
+}
+
 @media (max-width: 539px) {
     .tab-detail div.sub-float { width: calc(100% - 20px); }
     #setup-stage-matching-words { float: left; margin-left: 10px; margin-top: 12px; }
@@ -116,7 +121,8 @@ div.ui-tabs div.ui-tabs-panel ul.asterisk { margin: 0; padding-left: 12px; borde
     .tab-detail div.sub-float { width: calc(50% - 17px); }
     #setup-stage-matching-words { float: right; margin-right: 10px; }
     div.rs-word-container { height: 240px; }
-    .reader-setup-tab { height: calc(100% - 32px); }
+    #powered-by { width: 100%; }
+    .reader-setup-tab { height: calc(100% - 50px); }
 }
 
 @media (min-width: 650px) {
@@ -125,7 +131,7 @@ div.ui-tabs div.ui-tabs-panel ul.asterisk { margin: 0; padding-left: 12px; borde
     #stage-detail { width: calc(60% - 6px); min-height: 360px; height: calc(100% - 50px); margin-left: 12px; margin-top: 0; }
     #stage-detail div.sub-float { width: calc(100% - 258px); }
     #setup-stage-letters-and-words { width: 228px !important; }
-    #setup-stage-matching-words { float: right; margin-right: 10px; height: calc(100% - 64px); }
+    #setup-stage-matching-words { float: right; margin-right: 10px; height: calc(100% - 45px); }
     div.rs-word-container { height: 100%; }
 }
 
