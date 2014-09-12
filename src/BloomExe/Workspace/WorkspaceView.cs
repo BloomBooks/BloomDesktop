@@ -173,7 +173,7 @@ namespace Bloom.Workspace
 			{
 				string englishName="";
 				var langaugeNamesRecognizableByOtherLatinScriptReaders = new List<string> {"en","fr","es","it","tpi"};
-				if((lang.EnglishName != lang.DisplayName) && !(langaugeNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
+				if((lang.EnglishName != lang.NativeName) && !(langaugeNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
 				{
 					englishName = " (" + lang.EnglishName + ")";
 				}
