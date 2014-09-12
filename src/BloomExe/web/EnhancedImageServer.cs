@@ -42,6 +42,8 @@ namespace Bloom.web
 			set { ReadersHandler.CurrentBook = value; }
 		}
 
+		// Every path should return false or send a response. 
+		// Otherwise we can get a timeout error as the browser waits for a response.
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
 			if (base.ProcessRequest(info))
@@ -94,7 +96,7 @@ namespace Bloom.web
 					try
 					{
 						Process.Start(defaultBrowserPath, "\"file:///" + cleanUrl + queryPart + "\"");
-						return true;
+						return false;
 					}
 					catch (Exception)
 					{
@@ -102,8 +104,8 @@ namespace Bloom.web
 						// Don't crash Bloom because we can't open an external file.
 					}
 				// If the above failed, either for lack of default browser or exception, try this:
-				Process.Start("\"" + cleanUrl + "\"");				
-				return true;
+				Process.Start("\"" + cleanUrl + "\"");
+				return false;
 			}
 
 			switch (localPath)
