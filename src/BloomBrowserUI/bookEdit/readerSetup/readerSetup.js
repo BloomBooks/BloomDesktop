@@ -5,9 +5,11 @@ var desiredGPCs;
 var previousGPCs;
 var sightWords;
 var currentSightWords;
+var previousMoreWords;
 
 function accordionWindow() {
-    return window.parent.document.getElementById('accordion').contentWindow;
+    if (window.parent)
+        return window.parent.document.getElementById('accordion').contentWindow;
 }
 
 /**
@@ -59,10 +61,11 @@ function processMessage(event) {
             return;
 
         case 'SetupType':
+            //noinspection JSJQueryEfficiency
             var tabs = $('#dlstabs');
             if (params[1] === 'stages') {
                 tabs.tabs('option', 'disabled', [3]);
-                tabs.tabs('option', 'active', 0);
+                tabs.tabs('option', 'active', 2);
                 var firstStage = $('#stages-table').find('tbody tr:first');
                 if (firstStage && (firstStage.length === 0))
                     addNewStage();
@@ -93,6 +96,7 @@ function processMessage(event) {
 
         case 'Help':
             var helpFile;
+            //noinspection JSJQueryEfficiency
             switch($('#dlstabs').tabs('option', 'active')) {
                 case 0:
                     helpFile = '/Tasks/Edit_tasks/Decodable_Reader_Tool/Letters_tab.htm';
@@ -107,7 +111,9 @@ function processMessage(event) {
                     helpFile = '/Tasks/Edit_tasks/Leveled_Reader_Tool/Reader_Levels_tab.htm';
                     break;
             }
-            return getIframeChannel().help(helpFile);
+            if (helpFile)
+                getIframeChannel().help(helpFile);
+            return;
     }
 }
 
@@ -124,12 +130,28 @@ function fireCSharpSetupEvent(eventName, eventData) {
     document.dispatchEvent(event);
 }
 
-/**
- * Pass the settings to C# to be saved.
- */
+
 function saveClicked() {
 
-    // get the values
+    // update more words
+    if (document.getElementById('dls_more_words').value !== previousMoreWords) {
+
+        var accordion = accordionWindow();
+
+        // save the changes and update lists
+        saveChangedSettings(function() {
+            if (typeof accordion['readerSampleFilesChanged'] === 'function')
+                accordion['readerSampleFilesChanged']();
+            parent.window.closeSetupDialog();
+        });
+    }
+    else {
+        saveChangedSettings(parent.window.closeSetupDialog);
+    }
+}
+
+function getChangedSettings() {
+
     var s = {};
     s.letters = document.getElementById('dls_letters').value.trim();
 
@@ -165,13 +187,27 @@ function saveClicked() {
         level.thingsToRemember = levels[j].cells[5].innerHTML.split('\n');
         s.levels.push(level);
     }
+    return s;
+}
+
+/**
+ * Pass the settings to C# to be saved.
+ * @param [callback]
+ */
+function saveChangedSettings(callback) {
+
+    // get the values
+    var s = getChangedSettings();
 
     // send to parent
     var settingsStr = JSON.stringify(s);
     accordionWindow().postMessage('Refresh\n' + settingsStr, '*');
 
     // save now
-    getIframeChannel().simpleAjaxPost('/bloom/readers/saveReaderToolSettings', parent.window.closeSetupDialog, settingsStr);
+    if (callback)
+        getIframeChannel().simpleAjaxPost('/bloom/readers/saveReaderToolSettings', callback, settingsStr);
+    else
+        getIframeChannel().simpleAjaxNoCallback('/bloom/readers/saveReaderToolSettings', settingsStr);
 }
 
 function getLevelValue(innerHTML) {
@@ -204,7 +240,8 @@ function loadReaderSetupData(jsonData) {
 
     // language tab
     document.getElementById('dls_letters').value = data.letters;
-    document.getElementById('dls_more_words').value = data.moreWords.replace(/ /g, '\n');
+    previousMoreWords = data.moreWords.replace(/ /g, '\n');
+    document.getElementById('dls_more_words').value = previousMoreWords;
 
     // stages tab
     displayLetters();
@@ -756,6 +793,19 @@ function tabBeforeActivate(ui) {
             selectLetters(tr[0]);
         }
 
+        // update more words
+        if (document.getElementById('dls_more_words').value !== previousMoreWords) {
+
+            // remember the new list of more words
+            previousMoreWords = document.getElementById('dls_more_words').value;
+
+            // save the changes and update lists
+            var accordion = accordionWindow();
+            saveChangedSettings(function() {
+                if (typeof accordion['readerSampleFilesChanged'] === 'function')
+                    accordion['readerSampleFilesChanged']();
+            });
+        }
     }
 }
 
@@ -764,7 +814,9 @@ function tabBeforeActivate(ui) {
  * has changed.
  */
 function wordListChangedCallback() {
-    accordionWindow().postMessage('Texts', '*');
+    var accordion = accordionWindow();
+    if (!accordion) return;
+    accordion.postMessage('Texts', '*');
     requestWordsForSelectedStage();
 }
 
