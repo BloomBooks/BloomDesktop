@@ -193,7 +193,7 @@ function setLevelValue(value) {
  */
 function loadReaderSetupData(jsonData) {
 
-    if (!jsonData) return;
+    if ((!jsonData) || (jsonData === '""')) return;
 
     // validate data
     var data = JSON.parse(jsonData);
