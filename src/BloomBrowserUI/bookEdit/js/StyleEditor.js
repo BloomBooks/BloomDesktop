@@ -179,14 +179,18 @@ var StyleEditor = (function () {
         return x[x.length - 1];
     };
 
-    StyleEditor.prototype.ConvertPxToPt = function (pxSize) {
+    StyleEditor.prototype.ConvertPxToPt = function (pxSize, round) {
+        if (typeof round === "undefined") { round = true; }
         var tempDiv = document.createElement('div');
         tempDiv.style.width = '1000pt';
         document.body.appendChild(tempDiv);
         var ratio = 1000 / tempDiv.clientWidth;
         document.body.removeChild(tempDiv);
         tempDiv = null;
-        return Math.round(pxSize * ratio);
+        if (round)
+            return Math.round(pxSize * ratio);
+        else
+            return pxSize * ratio;
     };
 
     /**
@@ -233,6 +237,25 @@ var StyleEditor = (function () {
         });
     };
 
+    StyleEditor.GetClosestValueInList = function (listOfOptions, valueToMatch) {
+        var lineHeight;
+        for (var i = 0; i < listOfOptions.length; i++) {
+            var optionNumber = parseFloat(listOfOptions[i]);
+            if (valueToMatch == optionNumber) {
+                lineHeight = listOfOptions[i];
+                break;
+            }
+            if (valueToMatch <= optionNumber) {
+                lineHeight = listOfOptions[i];
+                break;
+            }
+        }
+        if (valueToMatch > parseFloat(listOfOptions[listOfOptions.length - 1])) {
+            lineHeight = listOfOptions[listOfOptions.length - 1];
+        }
+        return lineHeight;
+    };
+
     StyleEditor.prototype.AttachToBox = function (targetBox) {
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName)
@@ -258,9 +281,13 @@ var StyleEditor = (function () {
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
                 styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
                 var box = $(targetBox);
+
                 var sizeString = box.css('font-size');
                 var pxSize = parseInt(sizeString);
-                var ptSize = editor.ConvertPxToPt(pxSize);
+                var ptSize = editor.ConvertPxToPt(pxSize, false);
+                var sizes = ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
+                ptSize = StyleEditor.GetClosestValueInList(sizes, ptSize);
+
                 var lang = box.attr('lang');
                 lang = localizationManager.getText(lang);
                 var fontName = box.css('font-family');
@@ -272,21 +299,7 @@ var StyleEditor = (function () {
                 var lineHeightPx = parseInt(lineHeightString);
                 var lineHeightNumber = Math.round(lineHeightPx / pxSize * 10) / 10.0;
                 var lineSpaceOptions = ['1.0', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.8', '2.0', '2.5', '3.0'];
-                var lineHeight;
-                for (var i = 0; i < lineSpaceOptions.length; i++) {
-                    var optionNumber = parseFloat(lineSpaceOptions[i]);
-                    if (lineHeightNumber == optionNumber) {
-                        lineHeight = lineSpaceOptions[i];
-                        break;
-                    }
-                    if (lineHeightNumber <= optionNumber) {
-                        lineHeight = lineSpaceOptions[i];
-                        break;
-                    }
-                }
-                if (lineHeightNumber > parseFloat(lineSpaceOptions[lineSpaceOptions.length - 1])) {
-                    lineHeight = lineSpaceOptions[lineSpaceOptions.length - 1];
-                }
+                var lineHeight = StyleEditor.GetClosestValueInList(lineSpaceOptions, lineHeightNumber);
 
                 var wordSpaceOptions = [
                     localizationManager.getText('EditTab.StyleEditor.WordSpacingNormal', 'Normal'),
@@ -307,7 +320,6 @@ var StyleEditor = (function () {
                 //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
                 // Enhance: lineHeight may well be something like 35px; what should we select initially?
                 var fonts = fontData.split(',');
-                var sizes = ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
                 var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:900;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">' + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt;margin-bottom: 5pt"></div>' + editor.makeSelect(fonts, 5, fontName, 'fontSelect', 15) + ' ' + editor.makeSelect(sizes, 5, ptSize, 'sizeSelect') + ' ' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:8px;position:relative;top:6px">' + editor.makeSelect(lineSpaceOptions, 2, lineHeight, 'lineHeightSelect') + ' ' + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">' + editor.makeSelect(wordSpaceOptions, 2, wordSpacing, 'wordSpaceSelect') + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<div style="margin-left:5px;display:inline-block;border:2px solid black;height:10pt;width:10pt;margin-right:2px;position:relative;top:2px"></div>' + editor.makeBorderSelect(box) + '</span>' + '<div class="format-toolbar-description">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>' + '</div>';
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
                 $('body').after(html);
