@@ -54,11 +54,13 @@ namespace Bloom.web
 			// routing
 			if (localPath.StartsWith("readers/"))
 			{
-				if (ReadersHandler.HandleRequest(localPath, info, CurrentCollectionSettings)) return true;
+				if (ReadersHandler.HandleRequest(localPath, info, CurrentCollectionSettings))
+					return true;
 			}
 			else if (localPath.StartsWith("i18n/"))
 			{
-				if (I18NHandler.HandleRequest(localPath, info, CurrentCollectionSettings)) return true;
+				if (I18NHandler.HandleRequest(localPath, info, CurrentCollectionSettings))
+					return true;
 			}
 			else if (localPath.StartsWith("directoryWatcher/"))
 			{
@@ -66,7 +68,8 @@ namespace Bloom.web
 
 				if (dirName == "Sample Texts")
 				{
-					if (CheckForSampleTextChanges(info)) return true;
+					if (CheckForSampleTextChanges(info))
+						return true;
 				}
 
 				return false;
@@ -85,17 +88,34 @@ namespace Bloom.web
 				else
 					url = completeEnglishPath;
 				var cleanUrl = url.Replace("\\", "/"); // allows jump to file to work
-				
-				// If we don't provide the path of the browser, i.e. Process.Start(url + queryPart), we get file not found exception.
-				// If we prepend "file:///", the anchor part of the link (#xxx) is not sent unless we provide the browser path too.
-				// This is the same behavior when simply typing a url into the Run command on Windows.
-				// If we fail to get the browser path for some reason, we still load the page, just without navigating to the anchor.
-				// TODO: need Linux-specific code here -- possibly to simply call Process.Start(url + queryPart)
-				string defaultBrowserPath;
-				if (TryGetDefaultBrowserPath(out defaultBrowserPath) && !string.IsNullOrEmpty(defaultBrowserPath))
+
+				string browser = string.Empty;
+				if (Palaso.PlatformUtilities.Platform.IsLinux)
+				{
+					// REVIEW: This opens HTML files in the browser. Do we have any non-html
+					// files that this code needs to open in the browser? Currently they get
+					// opened in whatever application the user has selected for that file type
+					// which might well be an editor.
+					browser = "xdg-open";
+				}
+				else
+				{
+					// If we don't provide the path of the browser, i.e. Process.Start(url + queryPart), we get file not found exception.
+					// If we prepend "file:///", the anchor part of the link (#xxx) is not sent unless we provide the browser path too.
+					// This is the same behavior when simply typing a url into the Run command on Windows.
+					// If we fail to get the browser path for some reason, we still load the page, just without navigating to the anchor.
+					string defaultBrowserPath;
+					if (TryGetDefaultBrowserPath(out defaultBrowserPath))
+					{
+						browser = defaultBrowserPath;
+					}
+				}
+
+				if (!string.IsNullOrEmpty(browser))
+				{
 					try
 					{
-						Process.Start(defaultBrowserPath, "\"file:///" + cleanUrl + queryPart + "\"");
+						Process.Start(browser, "\"file:///" + cleanUrl + queryPart + "\"");
 						return false;
 					}
 					catch (Exception)
@@ -103,6 +123,8 @@ namespace Bloom.web
 						Debug.Fail("Jumping to browser with anchor failed.");
 						// Don't crash Bloom because we can't open an external file.
 					}
+				}
+
 				// If the above failed, either for lack of default browser or exception, try this:
 				Process.Start("\"" + cleanUrl + "\"");
 				return false;
