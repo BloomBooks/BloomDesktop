@@ -7,7 +7,7 @@ div.stageLine {
     -moz-user-select: none;
 }
 span.stageLine { float: left; -moz-user-select: none; }
-td.acceptable { color: green; }
+td.acceptable { color: lightgreen; }
 td.tooLarge { color: orange; }
 td.statistics-label { padding-right: 5px; }
 td.statistics-max { padding-right: 3px; text-align: center; }
