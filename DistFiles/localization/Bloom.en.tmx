@@ -448,12 +448,6 @@
 		<seg>Other Collection</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionTab.PNG Animal Stories - Copy">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>PNG Animal Stories - Copy</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="CollectionTab.Sample Shells">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
