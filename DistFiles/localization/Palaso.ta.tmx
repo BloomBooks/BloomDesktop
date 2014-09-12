@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="ta" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.424.0</prop>
+    <prop type="x-appversion">3.0.486.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -322,6 +322,14 @@
         <seg>பார்த்து மொழி குறியீடு...</seg>
       </tuv>
     </tu>
+    <tu tuid="LanguageLookup.LookupISOControl._searchText">
+      <tuv xml:lang="en">
+        <seg>?</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>?</seg>
+      </tuv>
+    </tu>
     <tu tuid="LanguageLookup.PrimaryNameHeader">
       <tuv xml:lang="en">
         <seg>Name</seg>
@@ -494,7 +502,7 @@
     </tu>
     <tu tuid="SettingsProtection.LauncherButtonLabel">
       <tuv xml:lang="en">
-        <seg>Settings Protection...</seg>
+        <seg>Settings...</seg>
       </tuv>
       <tuv xml:lang="ta">
         <seg>அமைப்புகள்...</seg>
