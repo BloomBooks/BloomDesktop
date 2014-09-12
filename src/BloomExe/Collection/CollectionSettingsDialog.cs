@@ -144,6 +144,8 @@ namespace Bloom.Collection
 				_collectionSettings.IsLanguage2Rtl = itemChecked;
 			else
 				_collectionSettings.IsLanguage3Rtl = itemChecked;
+			_restartRequired = true;
+			UpdateDisplay(); // to get the restart required message to display
 		}
 
 		private void _language1ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

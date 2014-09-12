@@ -111,7 +111,8 @@ namespace Bloom.Book
                 foreach (XmlElement e in @group.SafeSelectNodes(".//textarea | .//div")) //nb: we don't necessarily care that a div is editable or not
                 {
                     var lang = e.GetAttribute("lang");
-                    HtmlDom.RemoveClassesBeginingWith(e, "bloom-content");//they might have been a given content lang before, but not now
+                    HtmlDom.RemoveClassesBeginingWith(e, "bloom-content"); // they might have been a given content lang before, but not now
+                    HtmlDom.RemoveRtlDir(e); // in case this language has been changed from a Right to Left language to a Left to Right language
                     if (isXMatter && lang == national1Iso)
                     {
                         HtmlDom.AddClass(e, "bloom-contentNational1");
@@ -125,19 +126,13 @@ namespace Bloom.Book
                         if (lang == language.Key)
                         {
                             HtmlDom.AddClass(e, language.Value);
-	                        if (lang == vernacularIso)
-	                        {
-		                        // TODO: add rtl, if necessary
-	                        }
-							if (lang == national1Iso)
-							{
-								// TODO: add rtl, if necessary
-							}
-							if (!String.IsNullOrEmpty(national2Iso) && lang == national2Iso)
-							{
-								// TODO: add rtl, if necessary
-							}
-							break;//don't check the other languages
+                            if ((lang == vernacularIso && settings.IsLanguage1Rtl) ||
+                                (lang == national1Iso && settings.IsLanguage2Rtl) ||
+                                (!String.IsNullOrEmpty(national2Iso) && lang == national2Iso && settings.IsLanguage3Rtl))
+                            {
+                                HtmlDom.AddRtlDir(e);
+                            }
+                            break; //don't check the other languages
                         }
                     }
                 }
