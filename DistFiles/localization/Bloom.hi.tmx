@@ -5,6 +5,15 @@
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
+    <tu tuid="Accordion.DecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>डेकोदाबाल रीडर उपकरण</seg>
+      </tuv>
+    </tu>
     <tu tuid="Accordion.DecodableReaderToolCheckbox">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -14,6 +23,15 @@
         <seg>डेकोदाबाल रीडर उपकरण</seg>
       </tuv>
     </tu>
+    <tu tuid="Accordion.LeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>लगाया रीडर उपकरण</seg>
+      </tuv>
+    </tu>
     <tu tuid="Accordion.LeveledReaderToolCheckbox">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -21,6 +39,15 @@
       </tuv>
       <tuv xml:lang="hi">
         <seg>लगाया रीडर उपकरण</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.More">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>More...</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>और अधिक...</seg>
       </tuv>
     </tu>
     <tu tuid="BloomPackInstallDialog.BloomPackInstalled">
