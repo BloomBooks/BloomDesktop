@@ -23,6 +23,15 @@
 		<seg>Sobre Bloom</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Accordion.More">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>More...</seg>
+	  </tuv>
+	  <tuv xml:lang="es">
+		<seg>Más...</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="BloomPackInstallDialog.BloomPackInstalled">
 	  <tuv xml:lang="en">
 		<seg>The {0} Collection is now ready to use on this computer.</seg>

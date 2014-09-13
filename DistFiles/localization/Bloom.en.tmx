@@ -95,16 +95,34 @@
 		<seg>Release Notes</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Accordion.DecodableReaderTool">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Decodable Reader Tool</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="Accordion.DecodableReaderToolCheckbox">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Decodable Reader Tool</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Accordion.LeveledReaderTool">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Leveled Reader Tool</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="Accordion.LeveledReaderToolCheckbox">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Leveled Reader Tool</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Accordion.More">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>More...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
