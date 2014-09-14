@@ -1,17 +1,34 @@
 ﻿## 3.0
-Now uses the same engine for editing and pdf-making, increasing fidelity between the two
-New engine renders fonts better
-Graphite Complex-non-roman script rendering
-Adobe Acrobat no longer needed to view PDFs in the Publish tab
-Andika Font is now installed along with Bloom
-Holding down a key now shows a "Special Characters Panel" that lets you select from similar characters
-You can now set the font, size, line spacing, word spacing, border, and background of each text box, along with all other boxes with the same "style". Just click on the little "gear" icon in the lower left of a text box.
-New "Custom" page that lets you divide up the page into text and picture portions. You can then duplicate that page in order to use it as a template in that document. The ability to use that page in other books is expected in the next version of Bloom.
-You can now right click on a book and export its contents to Word or Libre Office (most formatting will be lost).
 
-## Known Bugs
-"A5Portrait Bottom Align" cannot layout correct in bilingual or trilingual mode [BL-46]. We will fix this in Bloom 2.1 using flexbox layout.
+#New Features
 
+- Bloom now uses the same rendering engine for editing and pdf-making, eliminating WYSIWYG glitches of previous versions.
+- New PDF engine renders fonts better.
+- Languages requiring Graphite Complex-non-roman script rendering are now supported.
+- Adobe Acrobat no longer needed to view PDFs in the Publish tab
+- Andika Font is now installed along with Bloom
+- You can now set a default font family for each of the languages in a book.
+- You can now set the font family, size, line spacing, word spacing, border, and background of each text box, along with all other boxes with the same "style". Just click on the little "gear" icon in the lower left of a text box.
+- You can now right click on a book and export its contents to Word or Libre Office (most formatting will be lost).
+- Bloom's interface has new translations, in Tamil (India), Hindi (India), Tulugu (India), and Kinyarwanda (Rwanda). French and Spanish translations have been updated.
+
+###Experimental Features in this release
+- Decodable Reader Tool helps you develop a series of books that introduce a few letters at a time.
+	* Reads a folder for texts you have placed there, and suggests words to the writer that are "decodable" at each stage.
+	* Words that are not appropriate for the current stage are highlighted.
+	* You can export a file detailing each decodable stage: letters, sight words, and available words to use.
+	* Thanks to Norbert Rennert for sharing code from his Synphony engine.
+- Leveled Reader Tool helps you develop books for readers at various levels of ability by setting limits on the number of words per sentence, page, and book.
+- Holding down a key now shows a "Special Characters Panel" that lets you select from similar characters.
+- New "Custom" page that lets you divide up the page into text and picture portions. You can then just use the page, or treat it like a template for other pages in the book.  The ability to use that page in other books is expected in the next version of Bloom.
+- Support for Right-To-Left Languages
+- Initial Linux Version (Precise and Trusty).
+
+### Known Bugs & Limitations
+- "A5Portrait Bottom Align" does not layout correctly in bilingual or trilingual mode [BL-46].
+- Page Template names are always shown in English.
+- Books with Graphite complex-non-roman scripts cannot be printed directly from Bloom yet. Instead, open the PDF in Adobe Reader and print from there.
+- Sample texts for use with the decodable reader must be saved as unicode text files.
 
 ## 2.0.1038 BETA 23 July 2014
 A4Landscape with "Picture on top" now gives 70% of the page to the picture, was previously 45%.
