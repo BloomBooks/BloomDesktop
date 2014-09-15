@@ -184,7 +184,7 @@
 			this._duplicatePageButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._duplicatePageButton.TextDropShadow = false;
 			this.betterToolTip1.SetToolTip(this._duplicatePageButton, "Insert a new page which is a duplicate of this one");
-			this.betterToolTip1.SetToolTipWhenDisabled(this._duplicatePageButton, "This page cannot be removed");
+			this.betterToolTip1.SetToolTipWhenDisabled(this._duplicatePageButton, "This page cannot be duplicated");
 			this._duplicatePageButton.UseVisualStyleBackColor = false;
 			this._duplicatePageButton.Click += new System.EventHandler(this._duplicatePageButton_Click);
 			// 
