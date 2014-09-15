@@ -5,11 +5,9 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Bloom.Book;
-using L10NSharp;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.WritingSystems;
@@ -113,6 +111,10 @@ namespace Bloom.Collection
 		public virtual string Language3Iso639Code { get; set; }
 		public virtual string Language1Name { get; set; }
 
+		public virtual bool IsLanguage1Rtl { get; set; }
+		public virtual bool IsLanguage2Rtl { get; set; }
+		public virtual bool IsLanguage3Rtl { get; set; }
+
 		/// <summary>
 		/// Intended for making shell books and templates, not vernacular
 		/// </summary>
@@ -201,13 +203,16 @@ namespace Bloom.Collection
 			
             XElement library = new XElement("Collection");
             library.Add(new XAttribute("version", "0.2"));
-			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
             library.Add(new XElement("Language1Name", Language1Name)); 
+			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
+			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
+			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
             library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName));
 			library.Add(new XElement("DefaultLanguage2FontName", DefaultLanguage2FontName));
 			library.Add(new XElement("DefaultLanguage3FontName", DefaultLanguage3FontName));
-			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
-			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
+			library.Add(new XElement("IsLanguage1Rtl", IsLanguage1Rtl));
+			library.Add(new XElement("IsLanguage2Rtl", IsLanguage2Rtl));
+			library.Add(new XElement("IsLanguage3Rtl", IsLanguage3Rtl));
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString())); 
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("Country", Country)); 
@@ -266,6 +271,9 @@ namespace Bloom.Collection
                 DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
 				DefaultLanguage2FontName = GetValue(library, "DefaultLanguage2FontName", GetDefaultFontName());
 				DefaultLanguage3FontName = GetValue(library, "DefaultLanguage3FontName", GetDefaultFontName());
+	            IsLanguage1Rtl = GetBoolValue(library, "IsLanguage1Rtl", false);
+				IsLanguage2Rtl = GetBoolValue(library, "IsLanguage2Rtl", false);
+				IsLanguage3Rtl = GetBoolValue(library, "IsLanguage3Rtl", false);
 
 				Country = GetValue(library, "Country", ""); 
             	Province = GetValue(library, "Province", "");

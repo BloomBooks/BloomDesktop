@@ -59,18 +59,27 @@ namespace Bloom.Book
                 bookData.RemoveAllForms("contentLanguage2");
 
             bookData.Set("contentLanguage1", collectionSettings.Language1Iso639Code, false);
-            if (oneTwoOrThreeContentLanguages > 1)
+			bookData.Set("contentLanguage1Rtl", collectionSettings.IsLanguage1Rtl.ToString(), false);
+	        if (oneTwoOrThreeContentLanguages > 1)
+	        {
                 bookData.Set("contentLanguage2", collectionSettings.Language2Iso639Code, false);
-            if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+				bookData.Set("contentLanguage2Rtl", collectionSettings.IsLanguage2Rtl.ToString(), false);
+	        }
+	        if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+	        {
                 bookData.Set("contentLanguage3", collectionSettings.Language3Iso639Code, false);
+				bookData.Set("contentLanguage3Rtl", collectionSettings.IsLanguage3Rtl.ToString(), false);		        
+	        }
         }
 
         
-       /// <summary>
+        /// <summary>
         /// We stick 'contentLanguage2' and 'contentLanguage3' classes on editable things in bilingual and trilingual books
         /// </summary>
-        public static void UpdateContentLanguageClasses(XmlNode elementOrDom, string vernacularIso, string national1Iso, string national2Iso, string contentLanguageIso2, string contentLanguageIso3)
+        public static void UpdateContentLanguageClasses(XmlNode elementOrDom, CollectionSettings settings, string vernacularIso, string contentLanguageIso2, string contentLanguageIso3)
         {
+            var national1Iso = settings.Language2Iso639Code;
+            var national2Iso = settings.Language3Iso639Code;
             var multilingualClass = "bloom-monolingual";
             var contentLanguages = new Dictionary<string, string>();
             contentLanguages.Add(vernacularIso, "bloom-content1");
@@ -102,7 +111,8 @@ namespace Bloom.Book
                 foreach (XmlElement e in @group.SafeSelectNodes(".//textarea | .//div")) //nb: we don't necessarily care that a div is editable or not
                 {
                     var lang = e.GetAttribute("lang");
-                    HtmlDom.RemoveClassesBeginingWith(e, "bloom-content");//they might have been a given content lang before, but not now
+                    HtmlDom.RemoveClassesBeginingWith(e, "bloom-content"); // they might have been a given content lang before, but not now
+                    HtmlDom.RemoveRtlDir(e); // in case this language has been changed from a Right to Left language to a Left to Right language
                     if (isXMatter && lang == national1Iso)
                     {
                         HtmlDom.AddClass(e, "bloom-contentNational1");
@@ -116,7 +126,13 @@ namespace Bloom.Book
                         if (lang == language.Key)
                         {
                             HtmlDom.AddClass(e, language.Value);
-                            break;//don't check the other languages
+                            if ((lang == vernacularIso && settings.IsLanguage1Rtl) ||
+                                (lang == national1Iso && settings.IsLanguage2Rtl) ||
+                                (!String.IsNullOrEmpty(national2Iso) && lang == national2Iso && settings.IsLanguage3Rtl))
+                            {
+                                HtmlDom.AddRtlDir(e);
+                            }
+                            break; //don't check the other languages
                         }
                     }
                 }
