@@ -1150,6 +1150,38 @@ function SetupElements(container) {
         }
     });
 
+    $(container).find('.bloom-editable').focusin(function () {
+        var accordion = parent.window.document.getElementById("accordion");
+        if (accordion) {
+            accordion.contentWindow.model.noteFocus(this); // 'This' is the element that just got focus.
+        }
+    });
+
+    // and a slightly different one for keypresses
+    $(container).find('.bloom-editable').keypress(function () {
+        var accordion = parent.window.document.getElementById("accordion");
+        if (accordion) {
+            accordion.contentWindow.model.doKeypressMarkup();
+        }
+    });
+
+    $(container).find('.bloom-editable').keydown(function (e) {
+        if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrlz or ctrl-Y
+            var accordion = parent.window.document.getElementById("accordion");
+            if (accordion && accordion.contentWindow.model.currentMarkupType !== MarkupType.None) {
+                e.preventDefault();
+                if (e.shiftKey || e.keyCode == 89) { // crtl-shift-z or ctrl-y
+                    accordion.contentWindow.model.redo();
+                }
+                else {
+                    accordion.contentWindow.model.undo();
+                }
+                return false;
+            }
+        }
+    });
+
+
     SetBookCopyrightAndLicenseButtonVisibility(container);
 
     //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
