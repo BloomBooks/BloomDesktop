@@ -1,62 +1,75 @@
 @import url("../../lib/split-pane/split-pane.css");
+
+@inactiveColor: rgb(80%,80%,80%);
+@activeColor:  #E48C84;
+@font: arial;
+
 .origami-ui {
   visibility: hidden;
-  font-family: arial;
+  font-family: @font;
 }
 .origami-layout-mode .origami-ui {
   visibility: visible;
 }
+
 .split-pane.vertical-percent > .split-pane-component.position-left {
   right: 50%;
   margin-right: 3px;
 }
+
 .split-pane.vertical-percent > .split-pane-component.position-right {
   width: 50%;
 }
+
 .split-pane.horizontal-percent > .split-pane-component.position-top {
   bottom: 50%;
   margin-bottom: 3px;
 }
+
 .split-pane.horizontal-percent > .split-pane-component.position-bottom {
   height: 50%;
 }
+
 .split-pane.vertical-percent > .vertical-divider {
   right: 50%;
   cursor: col-resize;
   border-right: 3px dashed transparent;
 }
+
 .split-pane.vertical-percent > .vertical-divider:hover,
 .origami-layout-mode .split-pane.vertical-percent > .vertical-divider,
 .vertical-divider.dragged {
-  border-right-color: #e48c84 !important;
+  border-right-color: @activeColor !important;
 }
+
 .split-pane.horizontal-percent > .horizontal-divider {
   bottom: 50%;
   cursor: row-resize;
   border-bottom: 3px dashed transparent;
 }
+
 .split-pane.horizontal-percent > .horizontal-divider:hover,
 .origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
 .horizontal-divider.dragged {
-  border-bottom-color: #e48c84 !important;
+  border-bottom-color: @activeColor !important;
 }
+
 .origami-toggle {
   position: absolute;
   right: 19px;
   top: 19px;
   cursor: pointer;
   line-height: 1em;
-  color: #cccccc;
-  font-family: arial;
+  color: @inactiveColor;
+  font-family: @font;
 }
 .origami-layout-mode ~ .origami-toggle {
   color: black;
 }
-.origami-layout-mode .bloom-editable {
-  color: #e6fafa !important;
+.origami-layout-mode .bloom-editable{
+  color: rgb(90%,98%,98%) !important;
 }
-.origami-buttons .button,
-.origami-buttons .button:visited {
+.origami-buttons .button, .origami-buttons .button:visited {
   display: inline-block;
   text-decoration: none;
   position: relative;
@@ -64,7 +77,7 @@
   height: 20px;
   width: 20px;
   text-align: center;
-  color: #cccccc;
+  color: @inactiveColor;
   background-color: transparent;
   line-height: 1em;
   font-size: 18px;
@@ -72,11 +85,12 @@
 .origami-buttons .close {
   font-weight: bold;
 }
-.origami-buttons .button:hover,
-.origami-buttons .button:focus {
+
+.origami-buttons .button:hover, .origami-buttons .button:focus {
   color: white;
-  background-color: #e48c84;
+  background-color: @activeColor;
 }
+
 .origami-buttons {
   position: absolute;
   top: 0;
@@ -84,7 +98,9 @@
   z-index: 20000;
   height: 99%;
   width: 99%;
+
 }
+
 .origami-buttons .horizontal-buttons,
 .origami-buttons .vertical-buttons {
   /*   -background-color: lightgrey;rgba(0,0,0,.1) ;*/
@@ -103,9 +119,10 @@
 }
 .origami-buttons .horizontal-buttons .button {
   padding: 10px;
+
 }
 .origami-buttons .horizontal-buttons .separator {
-  border-bottom: 3px #cccccc dashed;
+  border-bottom:  3px @inactiveColor dashed;
   width: 100px;
 }
 .origami-buttons .close-button-wrapper {
@@ -125,9 +142,10 @@
   float: left;
 }
 .origami-buttons .vertical-buttons .separator {
-  border-right: 3px #cccccc dashed;
+  border-right: 3px @inactiveColor dashed;
   height: 100px;
 }
+
 .split-pane-component-inner {
   position: relative;
   width: 100%;
@@ -135,12 +153,13 @@
   padding: 2px;
   box-sizing: border-box;
 }
+
 /*the commented line below would also add it to an empty bloom-content1 for re-entry to layout mode*/
 /*but that would be problematic/confusing in a multilingual context*/
 /*.origami-layout-mode .split-pane-component-inner .bloom-editable.bloom-content1:empty:before,*/
 .origami-layout-mode .split-pane-component-inner .bloom-translationGroup:before {
   content: "Text Box";
-  color: #cccccc;
+  color: @inactiveColor;
   white-space: nowrap;
   font-size: 32px;
   text-align: center;
@@ -149,12 +168,12 @@
   top: 45%;
   z-index: 50000;
 }
+
 .selector-links {
   top: 45%;
   text-align: center;
   z-index: 50000;
 }
-.selector-links,
-.selector-links a {
-  color: #e48c84;
+.selector-links, .selector-links a {
+  color: @activeColor;
 }

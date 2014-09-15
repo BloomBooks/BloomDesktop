@@ -1,51 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="es" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="rw" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
 	<prop type="x-appversion">2.0.1084.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
-	<tu tuid=".toolStripMenuItem1">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Open Additional Collections Folder</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Abrir colecciones adicionales</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="AboutDialog.AboutDialogWindowTitle">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>About Bloom</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Sobre Bloom</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="Accordion.More">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>More...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Más...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ibindi...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="BloomPackInstallDialog.BloomPackInstalled">
 	  <tuv xml:lang="en">
 		<seg>The {0} Collection is now ready to use on this computer.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>La colección {0} está lista para su uso en este computadora.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ikuzanya {0} riratunganye ku buryo ryakoreshwa kuri iyi mudasobwa.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="BloomPackInstallDialog.ErrorInstallingBloomPack">
 	  <tuv xml:lang="en">
 		<seg>Bloom was not able to install that Bloom Pack</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Bloom no fue capaz de instalar ese paquete de Bloom</seg>
+	  <tuv xml:lang="rw">
+		<seg>Bloom ntiyashoboye kwensitara iyo paki ya Bloom</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="BloomPackInstallDialog.Extracting">
@@ -53,48 +35,48 @@
 	  <tuv xml:lang="en">
 		<seg>Extracting...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Extrayendo...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ehambura...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="BloomPackInstallDialog.MustRestartToSee">
 	  <tuv xml:lang="en">
 		<seg>Bloom is already running, but the contents will not show up until the next time you run Bloom</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Bloom ya se está ejecutando, pero no se mostrará los contenidos hasta la próxima vez que ejecute Bloom</seg>
+	  <tuv xml:lang="rw">
+		<seg>Bloom yamaze gufunguka, ariko amakuru ayirimo ntagaragara kugeza ikindi gihe uri bwongere kuyifungura</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="BloomPackInstallDialog.Opening">
 	  <tuv xml:lang="en">
 		<seg>Opening {0}...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Abriendo {0}...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Indimi eshatu</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Advanced Program Settings</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Configuración avanzada del programa</seg>
+	  <tuv xml:lang="rw">
+		<seg>Itunganya ryimbitse rya porogaramu</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
 	  <tuv xml:lang="en">
 		<seg>Show Experimental Commands (e.g. Export XML for InDesign)</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Mostrar los comandos experimentales (e.g. exportar XML para InDesign)</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwerekana Komande z'igerageza (urg. Kwimirira XML muri InDesign)</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
 	  <tuv xml:lang="en">
 		<seg>Show Experimental Templates (e.g. Picture Dictionary)</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Mostrar las plantillas experimentales (e.g. Diccionario del cuadro, calendario)</seg>
+	  <tuv xml:lang="rw">
+		<seg>KwerekanaIntangarugero z'igerageza (urg. Inkoranya y'amashusho)</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
@@ -102,64 +84,64 @@
 	  <tuv xml:lang="en">
 		<seg>Use Image Server to reduce memory usage with large images.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Use el servidor de ilustraciones para reducir el uso de memoria con ilustraciones de gran tamaño.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukoresha seriveri y'ishusho mu kuganbanya ikoreshwa rya memwari n'amashusho manini.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive">
 	  <tuv xml:lang="en">
 		<seg>(Experimental) Show Send/Receive Controls</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>(Experimental) Mostrar controles de enviar/recibir</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ugukora ishusho ntubyangano...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Book Making</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Haciendo libros</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ugukora Igitabo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
 	  <tuv xml:lang="en">
 		<seg>Font</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Fuente</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inyuguti</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
 	  <tuv xml:lang="en">
 		<seg>Front/Back Matter Pack</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Paquete de materia frontal y posterior</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inyuguti/Ipaki y'inyuma ni ingenzi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Sobre las configuraciones</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ibirebana n'iri tunganya</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.CollectionSettingsWindowTitle">
 	  <tuv xml:lang="en">
 		<seg>Settings</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Configuración</seg>
+	  <tuv xml:lang="rw">
+		<seg>Itunganya</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
 	  <tuv xml:lang="en">
 		<seg>Change...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cambiar...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Guhindura...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
@@ -167,8 +149,8 @@
 	  <tuv xml:lang="en">
 		<seg>Language 1</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Idioma 1</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ururimi rwa 1</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
@@ -176,8 +158,8 @@
 	  <tuv xml:lang="en">
 		<seg>Language 2</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Idioma 2</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ururimi rwa 2</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
@@ -185,104 +167,104 @@
 	  <tuv xml:lang="en">
 		<seg>Language 3</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Idioma 3</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ururimi rwa 3</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Languages</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Idiomas</seg>
+	  <tuv xml:lang="rw">
+		<seg>Indimi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Sobre las configuraciones</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ibirebana n'iri tunganya</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
 	  <tuv xml:lang="en">
 		<seg>Vernacular Language</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Idioma vernácula</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ururimi kavukire</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab._language2Label">
 	  <tuv xml:lang="en">
 		<seg>Language 2 (e.g. National Language)</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Idioma 2 (por ejemplo - idioma nacional)</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ururimi 2 (urg. Ururimi rw'igihugu)</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab._language3Label">
 	  <tuv xml:lang="en">
 		<seg>Language 3 (e.g. Regional Language)   (Optional)</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Idioma 3 (por ejemplo - idioma regional) (opcional)</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ururimi 3 (urg. Ururimi rw'Akarere) (Si itegeko)</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
 	  <tuv xml:lang="en">
 		<seg>Remove</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Quitar</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukuramo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
 	  <tuv xml:lang="en">
 		<seg>Bloom Collection Name</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Nombre de la colección Bloom</seg>
+	  <tuv xml:lang="rw">
+		<seg>Izina ry'ikusanyirizo rya Bloom</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.Country">
 	  <tuv xml:lang="en">
 		<seg>Country</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>País</seg>
+	  <tuv xml:lang="rw">
+		<seg>Igihugu</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.District">
 	  <tuv xml:lang="en">
 		<seg>District</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Distrito</seg>
+	  <tuv xml:lang="rw">
+		<seg>Akarere</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Project Information</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Información del proyecto</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amakuru ku mushinga</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.ProjectInformationTab.Province">
 	  <tuv xml:lang="en">
 		<seg>Province</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Provincia</seg>
+	  <tuv xml:lang="rw">
+		<seg>Intara</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Sobre las configuraciones</seg>
+	  <tuv xml:lang="rw">
+		<seg>Akarere</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.Restart">
@@ -290,48 +272,48 @@
 	  <tuv xml:lang="en">
 		<seg>Restart</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Reiniciar</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kongera gutangira</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog._restartMessage">
 	  <tuv xml:lang="en">
 		<seg>Bloom will close and re-open this project with the new settings.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Bloom se cierre y vuelva a abrir este proyecto con la nueva configuración.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Bloom igiye kwifunga yongere ifungure uyu mushinga mu yindi mitunganyirize.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
 	  <tuv xml:lang="en">
 		<seg>Update Book</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Actualizar el libro</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukosora Igitabo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.BookMenu._updateThumbnail">
 	  <tuv xml:lang="en">
 		<seg>Update Thumbnail</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Actualizar el miniatura</seg>
+	  <tuv xml:lang="rw">
+		<seg>Guhuza n'igihe ishusho ntubyangano</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.BookMenu.deleteBook">
 	  <tuv xml:lang="en">
 		<seg>Delete Book</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Eliminar libro</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gusiba Igitabo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
 	  <tuv xml:lang="en">
 		<seg>Export To XML For InDesign...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Exportar a XML para InDesign...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwimurira muri XML igenewe InDesign...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.Books From BloomLibrary.org">
@@ -339,88 +321,88 @@
 	  <tuv xml:lang="en">
 		<seg>Books From BloomLibrary.org</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Libros de BloomLibrary.org</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ibitabo byavanywe kuri BloomLibrary.org</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
 	  <tuv xml:lang="en">
 		<seg>Do Updates of All Books</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Hacer actualizaciones de todos los libros</seg>
+	  <tuv xml:lang="rw">
+		<seg>Guhuza n'igihe ibitabo byose</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.CollectionMenu.doChecksOfAllBooks">
 	  <tuv xml:lang="en">
 		<seg>Do Checks of All Books</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Hacer compraciones de todos los libros</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kontorora ibitabo byose</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.CollectionMenu.rescueMissingImages">
 	  <tuv xml:lang="en">
 		<seg>Rescue Missing Images...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Rescatar las ilustraciones que faltan...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kugaruraamashusho yose abura...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.CollectionMenu.showHistory">
 	  <tuv xml:lang="en">
 		<seg>Collection History...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Historia de la colección...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amateka y'ikusanyirizo...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.CollectionMenu.showNotes">
 	  <tuv xml:lang="en">
 		<seg>Collection Notes...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Notas de la colección...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Note z'ikusanyirizo...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.CollectionTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Collections</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Colecciones</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amakusanyirizo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.Collections">
 	  <tuv xml:lang="en">
 		<seg>Collections</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Colecciones</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amasanyirizo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.ConfirmRecycleDescription">
 	  <tuv xml:lang="en">
 		<seg>The book '{0}'</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>El libro '{0}'</seg>
+	  <tuv xml:lang="rw">
+		<seg>Igitabo '{0}'</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.ContextMenu._openFolderOnDisk">
 	  <tuv xml:lang="en">
 		<seg>Open Folder on Disk</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Abrir carpeta en el disco</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gufungura idosiye iri ku idisiki</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.MakeBookUsingThisTemplate">
 	  <tuv xml:lang="en">
 		<seg>Make a book using this source</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Crear un libro con esta plantilla</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukora igitabo ukoresheje ibi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.Open/CreateCollectionButton">
@@ -428,8 +410,8 @@
 	  <tuv xml:lang="en">
 		<seg>Other Collection</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Otra colección</seg>
+	  <tuv xml:lang="rw">
+		<seg>Irindi kusanyirizo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.Sample Shells">
@@ -437,32 +419,32 @@
 	  <tuv xml:lang="en">
 		<seg>Sample Shells</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Shells de muestra</seg>
+	  <tuv xml:lang="rw">
+		<seg>Imiterere ntangarugero</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.SendReceive">
 	  <tuv xml:lang="en">
 		<seg>Send/Receive</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Enviar/Recibir</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwakira/Kohereza</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.SettingsButton">
 	  <tuv xml:lang="en">
 		<seg>Settings</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Configuración</seg>
+	  <tuv xml:lang="rw">
+		<seg>Itunganya</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
 	  <tuv xml:lang="en">
 		<seg>Open Additional Collections Folder</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Abrir carpeta de colecciones adicionales</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gufungura Idosye y'ikusanyirizo ry'inyongera</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.Templates">
@@ -470,34 +452,24 @@
 	  <tuv xml:lang="en">
 		<seg>Templates</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Plantillas</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="CollectionTab.Vernacular Collection Heading">
-	  <note>The {0} is where we fill in the name of the Vernacular</note>
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>{0} Books</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Libros</seg>
+	  <tuv xml:lang="rw">
+		<seg>Imbata ntangarugero</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab._editBookButton">
 	  <tuv xml:lang="en">
 		<seg>Edit this book</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Editar este libro</seg>
+	  <tuv xml:lang="rw">
+		<seg>Nonosora iki gitabo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab._makeBloomPackButton">
 	  <tuv xml:lang="en">
 		<seg>Make Bloom Pack</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Crear Paquete de Bloom</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukora ipaki ya Bloom</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.bloomLibraryLinkLabel">
@@ -505,8 +477,8 @@
 	  <tuv xml:lang="en">
 		<seg>Get more source books at BloomLibrary.org</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Conseguir más libros de fuente en BloomLibrary.org</seg>
+	  <tuv xml:lang="rw">
+		<seg>Habwa ibindi bitabo ntangarugero kuri BloomLibrary.org</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
@@ -514,32 +486,24 @@
 	  <tuv xml:lang="en">
 		<seg>Source Collection</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Colección de la fuente</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ikusanyirizo ntangarugero</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.bookSourceHeading">
 	  <tuv xml:lang="en">
 		<seg>Sources For New Books</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Fuente de nuevos libros</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inkomoko y'ibitabo bishya</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.bookSourcesLockNotice">
 	  <tuv xml:lang="en">
 		<seg>This collection is locked, so new books cannot be added/removed.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Esta colección está bloqueada,  no se puede agregar o eliminar nuevos libros.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
-	  <tuv xml:lang="en">
-		<seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Porque este es una colección de fuentes, Bloom no está ofreciendo ninguna armazones existentes como fuentes de nuevas armazones. Si desea agregar un idioma a una armazón, en cambio es necesario editar la colección que contiene la armazón, en lugar de hacer una copia de la misma. Además, el calendario de pared no se puede utilizar para crear una nueva armazón.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Iri kusanyirizo rirafunze, bityo nta bitabo bishya bishobora kongerwamo/gukurwamo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.hiddenBooksNotice">
@@ -547,32 +511,32 @@
 	  <tuv xml:lang="en">
 		<seg>Where's the rest?</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>¿Dónde está el resto?</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ibisigaye biri he?</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
 	  <tuv xml:lang="en">
 		<seg>More...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Más...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ibindi...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.sourcesForNewShellsHeading">
 	  <tuv xml:lang="en">
 		<seg>Sources For New Shells</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Fuentes de armazones nuevas</seg>
+	  <tuv xml:lang="rw">
+		<seg>Intangarugero ku miterere mishya y'ibitabo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Common.CancelButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Cancel</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>&amp;Cancelar</seg>
+	  <tuv xml:lang="rw">
+		<seg>&amp;Hagarika</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Common.Finish">
@@ -580,8 +544,8 @@
 	  <tuv xml:lang="en">
 		<seg>&amp;Finish</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>&amp;Finalizar</seg>
+	  <tuv xml:lang="rw">
+		<seg>&amp;Kurangiza</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Common.Next">
@@ -589,40 +553,40 @@
 	  <tuv xml:lang="en">
 		<seg>&amp;Next</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Próxima</seg>
+	  <tuv xml:lang="rw">
+		<seg>&amp;Ibikurikira</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Common.OKButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;OK</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Aceptar</seg>
+	  <tuv xml:lang="rw">
+		<seg>&amp;OK</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Common.Optional">
 	  <tuv xml:lang="en">
 		<seg>optional</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>opcional</seg>
+	  <tuv xml:lang="rw">
+		<seg>ukoresha ushatse</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ConfiguringBookMessage">
 	  <tuv xml:lang="en">
 		<seg>Building...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Construyendo...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Iyubakwa...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
 	  <tuv xml:lang="en">
 		<seg>Confirm Delete</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Confirmar borrar</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwemeza ko bisibwa</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ConfirmRecycleDialog._messageLabel">
@@ -630,149 +594,88 @@
 	  <tuv xml:lang="en">
 		<seg>{0} will be moved to the Recycle Bin.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>{0} se moverá a la papelera de reciclaje.</seg>
+	  <tuv xml:lang="rw">
+		<seg>{0} irahita yoherezwa mu gakangara k'ibyasiibwe</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ConfirmRecycleDialog.deleteBtn">
 	  <tuv xml:lang="en">
 		<seg>&amp;Delete</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Eliminar</seg>
+	  <tuv xml:lang="rw">
+		<seg>&amp;Guhanagura</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Download.Completed">
 	  <tuv xml:lang="en">
 		<seg>Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Su descarga ({0}) es completa. Se puede ver en la sección de sus colecciones, "Libros de la Bloom Library". Si usted no parece estar en el medio de hacer algo, Bloom seleccionará por usted.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ibyo wakururaga ({0}) byarangiye. Ushobora kubisanga mu gice cyitwa 'Ikusanyabitabo rya Bloom' kiboneka mu makusanyirizo yawe. Niba usa n'udafite ikintu uri gukora, Bloom iribukikugaragarize ubwayo.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Download.CompletedCaption">
 	  <tuv xml:lang="en">
 		<seg>Download complete</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Descarga completa</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukurura byarangiye</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Download.DownloadingDialogTitle">
 	  <tuv xml:lang="en">
 		<seg>Downloading book</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Descargando libro</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukurura igitabo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Download.GenericDownloadProblemNotice">
 	  <tuv xml:lang="en">
 		<seg>There was a problem downloading your book.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Hubo un problema al descargar su libro.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Si usted necesita un lugar para poner más información sobre el libro, puede utilizar esta página, que es la parte interior de la cubierta posterior.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.BackMatter.OutsideBackCoverTextPrompt">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Si usted necesita un lugar para poner más información sobre el libro, puede utilizar esta página, que es la parte exterior de la cubierta posterior.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
-	  <tuv xml:lang="en">
-		<seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Abrir en Chrome (debe estar en camino) el Html utilizado para hacer este PDF.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Habaye ikibazo mu gukurura igitabo cyawe</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.CannotChangeCopyright">
 	  <tuv xml:lang="en">
 		<seg>Sorry, the copyright and license for this book cannot be changed.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Lo sentimos, no se puede cambiar los derechos de autor y la licencia de este libro.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.CantPasteImageLocked">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Sorry, this book is locked down so that images cannot be changed.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Lo sentimos, este libro está bloqueado para que las ilustraciones no se pueden cambiar.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.ChangeImage">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Change Image</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cambiar ilustración</seg>
+	  <tuv xml:lang="rw">
+		<seg>Tukwiseguyeho, uburenganzira bw'umwanditsi kimwe n'uburenganzira kuri iki gitabo ntibishobora guhindurwa.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
 	  <tuv xml:lang="en">
 		<seg>Really Delete Page?</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>¿Está seguro que quiere eliminar esta página?</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ushaka koko guhanagura iyi paji?</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ConfirmRemovePageDialog.DeleteButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Delete</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Eliminar</seg>
+	  <tuv xml:lang="rw">
+		<seg>&amp;Guhanagura</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ConfirmRemovePageDialog._messageLabel">
 	  <tuv xml:lang="en">
 		<seg>This page will be permanently removed.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Esta página se eliminará de forma permanente.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Iyi paji irahita ikurwamo burundu.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.Edit">
 	  <tuv xml:lang="en">
 		<seg>Edit</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Editar</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.FontMissing">
-	  <tuv xml:lang="en">
-		<seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>La fuente seleccionada es '{0}', pero no está instalado en este computadora. Otra fuente se utiliza.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.FontSizeTip">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cambia el tamaño del texto para todas las cajas que llevan el estilo '{0}' y el lenguaje '{1}'.\nTamaño actual es {2} pt.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kunoza</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.FrontMatter.BookTitlePrompt">
@@ -780,8 +683,8 @@
 	  <tuv xml:lang="en">
 		<seg>Book title in {lang}</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Título del libro en {lang}</seg>
+	  <tuv xml:lang="rw">
+		<seg>Umutwe w'igitabo mu {lang}</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.FrontMatter.CopyrightPrompt">
@@ -789,44 +692,8 @@
 	  <tuv xml:lang="en">
 		<seg>Click to Edit Copyright &amp; License</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Haga clic para editar Copyright &amp; licencia</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.FrontMatter.FundingAgenciesPrompt">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Use this to acknowledge any funding agencies.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Use esto para reconocer los organismos de financiamiento.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.FrontMatter.ISBNPrompt">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Número Internacional Normalizado para Libros. Dejar en blanco si no tiene uno de estos.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Original (or Shell) Acknowledgments in {lang}</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Reconocimientos originales (o Shell) en {lang}</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.FrontMatter.OriginalContributorsPrompt">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Las contribuciones hechas por los escritores, ilustradores, editores, etc, en {lang}</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kanda uhindure Uburenganzira bw'umwanditsi &amp; n'amabwiriza</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.FrontMatter.TopicPrompt">
@@ -834,58 +701,32 @@
 	  <tuv xml:lang="en">
 		<seg>Click to choose topic</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Haga clic para elegir el tema</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Acknowledgments for translated version, in {lang}</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Reconocimientos para la versión traducida, en {lang}</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.ImageChangeWarning">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Este libro está bloqueado en una armazón. ¿Está seguro de que desea cambiar la ilustración?</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.NoImageFoundOnClipboard">
-	  <tuv xml:lang="en">
-		<seg>Before you can paste an image, copy one onto your 'clipboard', from another program.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Antes de que usted puede pegar una ilustración, copiar uno de otro programa en su "portapapeles".</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kanda uhitemo insanganyamatsiko</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.PageList.Heading">
 	  <tuv xml:lang="en">
 		<seg>Pages</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Páginas</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amapaji</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.PageSizeAndOrientation.Tooltip">
 	  <tuv xml:lang="en">
 		<seg>Choose a page size and orientation</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Elija un tamaño de página y orientación</seg>
+	  <tuv xml:lang="rw">
+		<seg>Guhitamo ubunini bw'urupapuro n'icyerekezo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.TemplatePagesList.Heading">
 	  <tuv xml:lang="en">
 		<seg>Template Pages</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Páginas de plantilla</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amapaji y'intangarugero</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.1">
@@ -893,7 +734,7 @@
 	  <tuv xml:lang="en">
 		<seg>1</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
+	  <tuv xml:lang="rw">
 		<seg>1</seg>
 	  </tuv>
 	</tu>
@@ -902,7 +743,7 @@
 	  <tuv xml:lang="en">
 		<seg>2</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
+	  <tuv xml:lang="rw">
 		<seg>2</seg>
 	  </tuv>
 	</tu>
@@ -911,7 +752,7 @@
 	  <tuv xml:lang="en">
 		<seg>3</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
+	  <tuv xml:lang="rw">
 		<seg>3</seg>
 	  </tuv>
 	</tu>
@@ -920,7 +761,7 @@
 	  <tuv xml:lang="en">
 		<seg>4</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
+	  <tuv xml:lang="rw">
 		<seg>4</seg>
 	  </tuv>
 	</tu>
@@ -929,7 +770,7 @@
 	  <tuv xml:lang="en">
 		<seg>5</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
+	  <tuv xml:lang="rw">
 		<seg>5</seg>
 	  </tuv>
 	</tu>
@@ -938,7 +779,7 @@
 	  <tuv xml:lang="en">
 		<seg>6</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
+	  <tuv xml:lang="rw">
 		<seg>6</seg>
 	  </tuv>
 	</tu>
@@ -947,7 +788,7 @@
 	  <tuv xml:lang="en">
 		<seg>7</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
+	  <tuv xml:lang="rw">
 		<seg>7</seg>
 	  </tuv>
 	</tu>
@@ -956,7 +797,7 @@
 	  <tuv xml:lang="en">
 		<seg>8</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
+	  <tuv xml:lang="rw">
 		<seg>8</seg>
 	  </tuv>
 	</tu>
@@ -965,7 +806,7 @@
 	  <tuv xml:lang="en">
 		<seg>9</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
+	  <tuv xml:lang="rw">
 		<seg>9</seg>
 	  </tuv>
 	</tu>
@@ -974,8 +815,8 @@
 	  <tuv xml:lang="en">
 		<seg>Alphabet</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Alfabeto</seg>
+	  <tuv xml:lang="rw">
+		<seg>Itonde ry'inyuguti</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
@@ -983,8 +824,8 @@
 	  <tuv xml:lang="en">
 		<seg>Basic Text &amp; Image</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Texto básico &amp; ilustración</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inyandiko y'ibanze &amp; Ishusho</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
@@ -992,8 +833,8 @@
 	  <tuv xml:lang="en">
 		<seg>Basic Text &amp; Picture</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Texto Básico e imagen</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inyandiko y'ibanze &amp; Ifoto</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Credits Page">
@@ -1001,8 +842,8 @@
 	  <tuv xml:lang="en">
 		<seg>Credits Page</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Página de créditos</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ipaji yo gushima</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 1">
@@ -1010,8 +851,8 @@
 	  <tuv xml:lang="en">
 		<seg>Day 1</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Día 1</seg>
+	  <tuv xml:lang="rw">
+		<seg>Umunsi 1</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 2">
@@ -1019,8 +860,8 @@
 	  <tuv xml:lang="en">
 		<seg>Day 2</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Día 2</seg>
+	  <tuv xml:lang="rw">
+		<seg>Umunsi 2</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 3">
@@ -1028,8 +869,8 @@
 	  <tuv xml:lang="en">
 		<seg>Day 3</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Día 3</seg>
+	  <tuv xml:lang="rw">
+		<seg>Umunsi 3</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 4">
@@ -1037,8 +878,8 @@
 	  <tuv xml:lang="en">
 		<seg>Day 4</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Día 4</seg>
+	  <tuv xml:lang="rw">
+		<seg>Umunsi 4</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 5a">
@@ -1046,8 +887,8 @@
 	  <tuv xml:lang="en">
 		<seg>Day 5a</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Día 5a</seg>
+	  <tuv xml:lang="rw">
+		<seg>Umunsi 5a</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 5b">
@@ -1055,8 +896,8 @@
 	  <tuv xml:lang="en">
 		<seg>Day 5b</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Día 5b</seg>
+	  <tuv xml:lang="rw">
+		<seg>Umunsi 5b</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Front Cover">
@@ -1064,8 +905,8 @@
 	  <tuv xml:lang="en">
 		<seg>Front Cover</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Portada</seg>
+	  <tuv xml:lang="rw">
+		<seg>Igikobokobo cy'imbere</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
@@ -1073,8 +914,8 @@
 	  <tuv xml:lang="en">
 		<seg>Image On Bottom</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Dibujo de fondo</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ishusho hasi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Image in Middle">
@@ -1082,8 +923,8 @@
 	  <tuv xml:lang="en">
 		<seg>Image in Middle</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Dibujo en medio</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ishusho hagati</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
@@ -1091,8 +932,8 @@
 	  <tuv xml:lang="en">
 		<seg>Inside Back Cover</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Contraportada interior</seg>
+	  <tuv xml:lang="rw">
+		<seg>Igikobokobo cy'inyuma mo imbere</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
@@ -1100,8 +941,8 @@
 	  <tuv xml:lang="en">
 		<seg>Inside Front Cover</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>El interior de la cubierta frontal</seg>
+	  <tuv xml:lang="rw">
+		<seg>Igikobokobo cy'imbere mo imbere</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Instructions">
@@ -1109,8 +950,8 @@
 	  <tuv xml:lang="en">
 		<seg>Instructions</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Instrucciones</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amabwiriza</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Just Text">
@@ -1118,8 +959,8 @@
 	  <tuv xml:lang="en">
 		<seg>Just Text</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Sólo texto</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inyandiko gusa</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Just a Picture">
@@ -1127,8 +968,8 @@
 	  <tuv xml:lang="en">
 		<seg>Just a Picture</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Sólo una imagen</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ifoto gusa</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Just an Image">
@@ -1136,8 +977,8 @@
 	  <tuv xml:lang="en">
 		<seg>Just an Image</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Solo una ilustración</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ishusho gusa</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
@@ -1145,8 +986,8 @@
 	  <tuv xml:lang="en">
 		<seg>Outside Back Cover</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Contraportada exterior</seg>
+	  <tuv xml:lang="rw">
+		<seg>Igikobokobo cy'inyuma hanze</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
@@ -1154,8 +995,8 @@
 	  <tuv xml:lang="en">
 		<seg>Picture &amp; Word</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Dibujo &amp; Palabra</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ifoto &amp; Ijambo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
@@ -1163,8 +1004,8 @@
 	  <tuv xml:lang="en">
 		<seg>Picture On Bottom</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Imagen en el fondo</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ifoto hasi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
@@ -1172,8 +1013,8 @@
 	  <tuv xml:lang="en">
 		<seg>Picture in Middle</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Imagen en medio</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ifoto hagati</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
@@ -1181,8 +1022,8 @@
 	  <tuv xml:lang="en">
 		<seg>This Page Is Intentionally Blank</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Esta página se ha dejado en blanco intencionalmente</seg>
+	  <tuv xml:lang="rw">
+		<seg>Iyi paji ntiyanditsweho ku bushake</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Title Page">
@@ -1190,56 +1031,56 @@
 	  <tuv xml:lang="en">
 		<seg>Title Page</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Página de título</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ipaji ijyaho Umutwe</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab._contentLanguagesDropdown">
 	  <tuv xml:lang="en">
 		<seg>Multilingual Settings</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Configuración multilingüe</seg>
+	  <tuv xml:lang="rw">
+		<seg>Imitunganyirize y'indimi nyinshi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab._copyButton">
 	  <tuv xml:lang="en">
 		<seg>Copy</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Copiar</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukoporora</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab._cutButton">
 	  <tuv xml:lang="en">
 		<seg>Cut</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cortar</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukata</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab._deletePageButton">
 	  <tuv xml:lang="en">
 		<seg>Remove Page</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Eliminar página</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukuramo ipaji</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab._pasteButton">
 	  <tuv xml:lang="en">
 		<seg>Paste</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Pegar</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kubambika</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab._undoButton">
 	  <tuv xml:lang="en">
 		<seg>Undo</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Deshacer</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gusubizayo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.bilingual">
@@ -1247,25 +1088,8 @@
 	  <tuv xml:lang="en">
 		<seg>Two Languages</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Dos idiomas</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.copyImageIPMetdataQuestion">
-	  <note>get this after you edit the metadata of an image</note>
-	  <tuv xml:lang="en">
-		<seg>Copy this information to all other pictures in this book?</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>¿Copiar esta información a todas las otras ilustraciones de este libro?</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.layoutInPublishTabOnlyNotice">
-	  <tuv xml:lang="en">
-		<seg>This option is only available in the Publish tab.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Esta opción sólo está disponible en la pestaña publicar.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Indimi ebyiri</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.monolingual">
@@ -1273,25 +1097,16 @@
 	  <tuv xml:lang="en">
 		<seg>One Language</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Una idioma</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="EditTab.noOtherLayouts">
-	  <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
-	  <tuv xml:lang="en">
-		<seg>There are no other layout options for this template.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>No hay otras opciones de diseño para esta plantilla.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ururimi rumwe</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
 	  <tuv xml:lang="en">
 		<seg>Picture Intellectual Property Information</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Información de propiedad intelectual de la ilustración</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amakuru kuri nyir'ifoto</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.trilingual">
@@ -1299,88 +1114,88 @@
 	  <tuv xml:lang="en">
 		<seg>Three Languages</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Tres idiomas</seg>
+	  <tuv xml:lang="rw">
+		<seg>Indimi eshatu</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.Help Menu">
 	  <tuv xml:lang="en">
 		<seg>Help</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Ayuda</seg>
+	  <tuv xml:lang="rw">
+		<seg>Nkunganire</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu._makeASuggestionMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Make a Suggestion</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Hacer una sugerencia</seg>
+	  <tuv xml:lang="rw">
+		<seg>Vuga uko wifuza ko byamera</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu._webSiteMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Web Site</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Sitio web</seg>
+	  <tuv xml:lang="rw">
+		<seg>Site ya interineti</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Check For New Version</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Buscar nueva versión</seg>
+	  <tuv xml:lang="rw">
+		<seg>Reba niba nta nonosora rishya ryasohotse</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.creditsMenuItem">
 	  <tuv xml:lang="en">
 		<seg>About Bloom</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Sobre Bloom</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ibirebana na Bloom</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Deep Bloom Paper</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Documento para consultores- Deep Bloom (ingles)</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inyandiko ivuga birambuye kuri Bloom</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.documentationMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Documentation</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Documentación (ingles)</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ishyinguranyandiko</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.registrationMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Registration</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Registración</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ukwiyandikisha</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.releaseNotesMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Release Notes...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Notas de la versión (ingles)...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amakuru kuri porogaramu yasohotse</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.showEventLogMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Show Event Log</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Mostrar el registro de eventos</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwerekana uko abantu bagije binjira</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="InDesignXmlInformationDialog.WindowTitle">
@@ -1388,16 +1203,16 @@
 	  <tuv xml:lang="en">
 		<seg>InDesign XML Information</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Información XML de InDesign</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amakuru kuri XML ya InDesign</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
 	  <tuv xml:lang="en">
 		<seg>Don't Show This Again</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>No volver a mostrar</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ntiwongere kwerekana ibi ukundi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LayoutChoices.A4Landscape">
@@ -1405,8 +1220,8 @@
 	  <tuv xml:lang="en">
 		<seg>A4Landscape</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>A4Horizontal</seg>
+	  <tuv xml:lang="rw">
+		<seg>Urupapuro rutambitse A4</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LayoutChoices.A4Landscape SideBySide">
@@ -1414,8 +1229,8 @@
 	  <tuv xml:lang="en">
 		<seg>A4Landscape SideBySide</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>A4Horizontal LadoALado</seg>
+	  <tuv xml:lang="rw">
+		<seg>Urupapuro rutambitse A4 Uruhande ku ruhande</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LayoutChoices.A4Landscape SplitAcrossPages">
@@ -1423,8 +1238,8 @@
 	  <tuv xml:lang="en">
 		<seg>A4Landscape SplitAcrossPages</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>A4Landscape DividirEnPáginas</seg>
+	  <tuv xml:lang="rw">
+		<seg>Urupapuro rutambitse A4 Rusatuye amapaji yose</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LayoutChoices.A4Portrait">
@@ -1432,8 +1247,8 @@
 	  <tuv xml:lang="en">
 		<seg>A4Portrait</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>A4Vertical</seg>
+	  <tuv xml:lang="rw">
+		<seg>Urupapuro ruhagaze A4</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LayoutChoices.A5Portrait">
@@ -1441,8 +1256,8 @@
 	  <tuv xml:lang="en">
 		<seg>A5Portrait</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>A5Vertical</seg>
+	  <tuv xml:lang="rw">
+		<seg>Urupapuro ruhagaze A5</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LayoutChoices.A5Portrait BottomAlign">
@@ -1450,8 +1265,8 @@
 	  <tuv xml:lang="en">
 		<seg>A5Portrait BottomAlign</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>A5Vertical AlinearAbajo</seg>
+	  <tuv xml:lang="rw">
+		<seg>Urupapuro ruhagaze A5 Hasi haringanijwe</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LayoutChoices.B5Portrait">
@@ -1459,209 +1274,152 @@
 	  <tuv xml:lang="en">
 		<seg>B5Portrait</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>B5Vertical</seg>
+	  <tuv xml:lang="rw">
+		<seg>Urupapuro ruhagaze B5</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LoginDialog.AgreeToTerms">
 	  <tuv xml:lang="en">
 		<seg>I agree to the Bloom Library's Terms of Use</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Estoy de acuerdo con los términos de uso de la Bloom Library</seg>
+	  <tuv xml:lang="rw">
+		<seg>Nemeranya n'amabwiriza yagenwe mu ikoreshwa ry'Ikusanyabitabo rya Bloom</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LoginDialog.Email">
 	  <tuv xml:lang="en">
 		<seg>Email Address</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Dirección de correo electrónico</seg>
+	  <tuv xml:lang="rw">
+		<seg>Aderese ya Imeyili</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LoginDialog.ForgotPassword">
 	  <tuv xml:lang="en">
 		<seg>Forgot Password</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Olvidó su contraseña</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwibagirwa ijambobanga</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LoginDialog.LoginButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Login</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Conectar</seg>
+	  <tuv xml:lang="rw">
+		<seg>&amp;Kwinjira</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LoginDialog.Password">
 	  <tuv xml:lang="en">
 		<seg>Password</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Contraseña</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ijambobanga</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LoginDialog.ShowTerms">
 	  <tuv xml:lang="en">
 		<seg>Show Terms of Use</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Mostrar términos de uso</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwerkana amabwiriza y'imikoreshereze</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LoginDialog.WindowTitle">
 	  <tuv xml:lang="en">
 		<seg>Log in to BloomLibrary.org</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Inicie sesión en BloomLibrary.org</seg>
+	  <tuv xml:lang="rw">
+		<seg>Injira muri BloomLibrary.org</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LoginDialog.label3">
 	  <tuv xml:lang="en">
 		<seg>label3</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Label3</seg>
+	  <tuv xml:lang="rw">
+		<seg>akarango3</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LoginDialog.showPassword">
 	  <tuv xml:lang="en">
 		<seg>&amp;Show Password</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Mostrar contraseña</seg>
+	  <tuv xml:lang="rw">
+		<seg>&amp;Kwerekana Ijambobanga</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.AlreadyCollectionWithThatName">
 	  <tuv xml:lang="en">
 		<seg>There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Ya hay una colección con ese nombre, en &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPor favor elija un nombre único.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="NewCollectionWizard.ChooseLanguagePage">
-	  <tuv xml:lang="en">
-		<seg>Choose the Main Language For This Collection</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Elija el idioma principal para esta colección</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ikusanyirizo rifite izina nk'iri risanzweho, warisanga kuri &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nTwagusabaga guhitamo izina rindi.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.CollectionNamePage.ExampleText">
 	  <tuv xml:lang="en">
 		<seg>Examples: "Health Books", "PNG Animal Stories"</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Ejemplos: "Libros de salud", "Historias de animales de PNG"</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
-	  <tuv xml:lang="en">
-		<seg>What would you like to call this collection?</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>¿Qué te gustaría denomino a esta colección?</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="NewCollectionWizard.CollectionWillBeCreatedAt">
-	  <tuv xml:lang="en">
-		<seg>Collection will be created at: {0}</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Colección se creará en: {0}</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ingero: "Ibitabo by'ubuzima", "Inkuru z'inyamaswa PNG" </seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.FinishPage">
 	  <tuv xml:lang="en">
 		<seg>Ready To Create New Collection</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Listo para crear nueva colección</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="NewCollectionWizard.KindOfCollectionPage">
-	  <tuv xml:lang="en">
-		<seg>Choose the Collection Type</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Elija el tipo de colección</seg>
+	  <tuv xml:lang="rw">
+		<seg>Itegure gukora ikusanyirizo rishya</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
 	  <tuv xml:lang="en">
 		<seg>Source Collection</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Colección utiliza como fuente</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Una colección de armazón o plantilla de libros en uno o más idiomas de comunicación más amplio. De esto, usted puede hacer una BloomPack para dar a otros para que hagan libros vernáculas.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
-	  <tuv xml:lang="en">
-		<seg>Vernacular/Local Language Collection</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Colección vernácula</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inkomoko y'ikusanyirizo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
 	  <tuv xml:lang="en">
 		<seg>A collection of books in a local language.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Sugerencia: Asignación de una licencia Creative Commons hace que sea fácil para que usted otorga claramente ciertos permisos a todo el mundo.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ikusanyirizo ry'ibitabo mu rurimi gakondo.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.LocationPage">
 	  <tuv xml:lang="en">
 		<seg>Give Language Location</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Dale la ubicación del idioma</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gutanga aho ururimi ruvugwa</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.LocationPage.Country">
 	  <tuv xml:lang="en">
 		<seg>Country</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>País</seg>
+	  <tuv xml:lang="rw">
+		<seg>Igihugu</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.LocationPage.District">
 	  <tuv xml:lang="en">
 		<seg>District</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Distrito</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
-	  <tuv xml:lang="en">
-		<seg>These are optional. Bloom will place them in the right places on title page of books you create.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Estos son opcionales. Bloom colocarlos en los lugares correctos en la página del título del libro que cree.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Akarere</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.LocationPage.Province">
 	  <tuv xml:lang="en">
 		<seg>Province</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Provincia</seg>
+	  <tuv xml:lang="rw">
+		<seg>Intara</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.NewBookPattern">
@@ -1669,56 +1427,40 @@
 	  <tuv xml:lang="en">
 		<seg>{0} Books</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Libros en {0}</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ibitabo {0}</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.NewCollectionWindowTitle">
 	  <tuv xml:lang="en">
 		<seg>Create New Bloom Collection</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Crear nueva colección Bloom</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
-	  <tuv xml:lang="en">
-		<seg>Unable to create a new collection using that name.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>No se puede crear una nueva colección con ese nombre.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukora ikusanyirizo rishya rya Bloom</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.WelcomePage">
 	  <tuv xml:lang="en">
 		<seg>Welcome To Bloom!</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>¡Bienvenido a Bloom!</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ikaze kuri Bloom!</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine1">
 	  <tuv xml:lang="en">
 		<seg>You are almost ready to start making books.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Está casi listo para empezar a crear libros.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine2">
-	  <tuv xml:lang="en">
-		<seg>In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. So the first thing we need to do is make one for you.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>A fin de mantener un proyecto que es simple y organizada, Bloom mantiene todos los libros que realice en una o más &lt;i&gt;Colecciones&lt;/ i&gt;. Así que lo primero que debemos hacer es crear un libro.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Uri hafi gutangira gukora ibitabo.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine3">
 	  <tuv xml:lang="en">
 		<seg>Click 'Next' to get started.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Haga clic en 'Proxima' para empezar.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kanda 'Ibikurikira' kugira ngo utangire</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="OpenCreateNewCollectionsDialog.Bloom Collections">
@@ -1726,56 +1468,56 @@
 	  <tuv xml:lang="en">
 		<seg>Bloom Collections</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Colecciones de Bloom</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amakusanyirizo ya Bloom</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
 	  <tuv xml:lang="en">
 		<seg>Browse for another collection on this computer</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Busque otra colección en esta computadora</seg>
+	  <tuv xml:lang="rw">
+		<seg>Shakisha irindi kusanyirizo kuri iyi mudasobwa</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
 	  <tuv xml:lang="en">
 		<seg>Copy From Chorus Hub on Local Network</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Copia desde Chorus Hub en el red local</seg>
+	  <tuv xml:lang="rw">
+		<seg>Koporora ubikuye kuri Chorus Hub ku rusobesangano lokali</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="OpenCreateNewCollectionsDialog.CopyFromInternet">
 	  <tuv xml:lang="en">
 		<seg>Copy from Internet</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Copia desde el Internet</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukoporora bivuye kuri interineti</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="OpenCreateNewCollectionsDialog.CopyFromUsbDrive">
 	  <tuv xml:lang="en">
 		<seg>Copy from USB Drive</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Copia del USB</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukopororo bivuye kuri USB</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="OpenCreateNewCollectionsDialog.CreateNewCollection">
 	  <tuv xml:lang="en">
 		<seg>Create New Collection</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Crear nueva colección</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gukora ikusanyirizo rishya</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
 	  <tuv xml:lang="en">
 		<seg>Open/Create Collections</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Abrir/Crear colecciones</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gufungura/Gukora amakusanyirizo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="OpenCreateNewCollectionsDialog.ReadMoreLink">
@@ -1783,107 +1525,72 @@
 	  <tuv xml:lang="en">
 		<seg>Read More</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Leer más</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
-	  <tuv xml:lang="en">
-		<seg>Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>¿Ha utilizado alguien el "Enviar/Recibir" para compartir una colección con usted?\nUtilice uno de estos botones rojos para copiar su colección a su computadora.\nDespués, utiliceEnviar/Recibir para compartir su trabajo con ellos.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Soma n'ibindi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="OverwriteWarning.ReplaceExistingButton">
 	  <tuv xml:lang="en">
 		<seg>Replace Existing</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Reemplazar los existentes</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gusimbuza ibisanzwemo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="OverwriteWarning.WindowTitle">
 	  <tuv xml:lang="en">
 		<seg>Notice</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Aviso</seg>
+	  <tuv xml:lang="rw">
+		<seg>Icyitonderwa</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
 	  <tuv xml:lang="en">
 		<seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Por favor instale a Adobe Reader para que Bloom puede mostrar su libro. Hasta entonces, puede guardar el libro PDF y abrirlo en otro programa.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Turasaba ko wakwensitara Adobe Reader kugira ngo Bloom ibe yagaragaza igitabo kirangiye. Kugeza igihe uzabikorera, ushobora gukomeza kubika igitabo muri PDF no kugifungurira mu zindi porogaramu.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.AdobeReaderControl.ProblemShowingPDF">
 	  <tuv xml:lang="en">
 		<seg>That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Eso es extraño... Adobe Reader le dio un error al intentar mostrar ese PDF. Todavía puede intentar salvar el libro PDF.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ntibisanzwe... Adobe Reader yagaragaje ko habaye ikosa mu gihe hageragezwaga kugaragaza iyo PDF. Ushobora gukomeza kugerageza kubika igitabo cya PDF.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.AdobeReaderControl.UnknownError">
 	  <tuv xml:lang="en">
 		<seg>Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Noticia triste. Bloom no fue capaz de abrir Adobe Reader aquí, así que Bloom no puede mostrar su libro.\nPor favor, desinstale la versión existente de 'Adobe Reader' y vuelva a instalar a 'Adobe Reader'.\nHasta que llegue ese fijo, puede guardar el libro PDF y abrirlo en otro programa.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Amakuru ababaje. Bloom ntiyashoboye kubona Adobe Reader yo kwerekana hano, ubwo rero Bloom ntishobora kugaragaza igitabo cyuzuye.\nUbwo rero wakuramo inonosora ufite rya 'Adobe Reader' ukongera kwensitara 'Adobe Reader".\nKugeza igihe biri bukosokere, ushobora gukomeza kubika igitabo muri PDF no kugifungura mu zindi porogaramu.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.BodyOnlyRadio">
 	  <tuv xml:lang="en">
 		<seg>Booklet Insides</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Páginas dentro del folleto</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.BodyOnlyRadio-tooltip">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Hacer un folleto de las páginas interiores del libro. Las páginas se distribuido y reordenado de manera que cuando la doblará , tendrá un folleto</seg>
+	  <tuv xml:lang="rw">
+		<seg>Imbere h'agatabo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.ButtonThatShowsUploadForm">
 	  <tuv xml:lang="en">
 		<seg>Upload</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cargar</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.ButtonThatShowsUploadForm-tooltip">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Upload to BloomLibrary.org, where others can download and localize into their own language.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cargar a BloomLibrary.org, donde otros pueden descargar y localizar a su propia lengua.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Koherezayo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.CoverOnlyRadio">
 	  <tuv xml:lang="en">
 		<seg>Booklet Cover</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Portada</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.CoverOnlyRadio-tooltip">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Make a PDF of just the front and back (both sides), so you can  print on colored paper.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Hacer un PDF de sólo la anverso y reverso (ambos lados), para que pueda imprimir en papel de color.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Igifubiko cy'agatabo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.OnePagePerPaperRadio">
@@ -1891,8 +1598,8 @@
 	  <tuv xml:lang="en">
 		<seg>Simple</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Una página por el pedazo de papel</seg>
+	  <tuv xml:lang="rw">
+		<seg>Cyoroheje</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.OnePagePerPaperRadio-tooltip">
@@ -1900,490 +1607,319 @@
 	  <tuv xml:lang="en">
 		<seg>Make a PDF of every page of the book, one page per piece of paper.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Hacer un PDF de cada página del libro, una página por hoja de papel.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
-	  <tuv xml:lang="en">
-		<seg>Open the PDF in the default system pdf viewer</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Abra el PDF en el visor predeterminado de archivos pdf</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kora PDF ya buri paji y'igitabo,ipaji imwe ku urupapuro rumwe.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.PrintButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Print...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Imprimir...</seg>
+	  <tuv xml:lang="rw">
+		<seg>&amp;Capurura...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Publish">
 	  <tuv xml:lang="en">
 		<seg>Publish</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Publicar</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gutangaza</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.SaveButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Save PDF...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Guarde como PDF...</seg>
+	  <tuv xml:lang="rw">
+		<seg>&amp;Kubika PDF...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.ShowCropMarks">
 	  <tuv xml:lang="en">
 		<seg>Crop Marks</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Marcas de recorte</seg>
+	  <tuv xml:lang="rw">
+		<seg>Gucimbura ibirango</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Acknowledgments">
 	  <tuv xml:lang="en">
 		<seg>Acknowledgments</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Agradecimientos</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ugushimira</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.AdditionalRequests">
 	  <tuv xml:lang="en">
 		<seg>AdditionalRequests: </seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>SolicitudesAdicionales:</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ibisabwa by'inyongera:</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.AllReserved">
 	  <tuv xml:lang="en">
 		<seg>All rights reserved (Contact the Copyright holder for any permissions.)</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Todos los derechos reservados (contacto el titular del Copyright para los permisos</seg>
+	  <tuv xml:lang="rw">
+		<seg>Uburenganzira bw'umwanditsi bugomba kubahirizwa (Vugana n'ufite uburenganzira kuri iyi nyandiko ku burenganzira bwose waba wifuza.)</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.ConfirmReplaceExisting">
 	  <tuv xml:lang="en">
 		<seg>BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>BloomLibrary.org ya tiene una versión anterior de este libro.  Si lo subes otra vez, se sustituirá con su versión actual.</seg>
+	  <tuv xml:lang="rw">
+		<seg>BloomLibrary.org yamaze kwakira inonosora rya mbere ry'iki gitabo wanditse. Niba wongeye kucyinjizamo, kirasimburwa n'igishya ushaka gushyiramo.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Copyright">
 	  <tuv xml:lang="en">
 		<seg>Copyright</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Derechos de autor</seg>
+	  <tuv xml:lang="rw">
+		<seg>Uburenganzira bw'umuhanzi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Credits">
 	  <tuv xml:lang="en">
 		<seg>credits</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>créditos</seg>
+	  <tuv xml:lang="rw">
+		<seg>Abashimirwa by'umwihariko</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.DownloadProblem">
 	  <tuv xml:lang="en">
 		<seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Hubo un problema al descargar su libro. Es posible que necesite reiniciar Bloom o conseguir ayuda técnica.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.ErrorUploading">
-	  <tuv xml:lang="en">
-		<seg>Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Lo sentimos, hubo un problema cargando {0}. Siguen algunos detalles. Puede que necesites ayuda técnica.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.FieldsNeedAttention">
-	  <tuv xml:lang="en">
-		<seg>One or more fields above need your attention before uploading</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Uno o más campos anteriores necesitan su atención antes de cargar</seg>
+	  <tuv xml:lang="rw">
+		<seg>Habaye ikibazo cyo gukurura igitabo cyawe. Urasabwa kongera gutangira Bloom cyangwa gushaka ubufasha bwa tekiniki.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.FinalUploadFailureNotice">
 	  <tuv xml:lang="en">
 		<seg>Sorry, "{0}" was not successfully uploaded</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Lo sentimos, "{0}" se ha subido correctamente</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.Gaurantee">
-	  <tuv xml:lang="en">
-		<seg>By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Al cargar, usted confirma su acuerdo con los términos de uso de la Bloom Library y concede los derechos que describe</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.GenericUploadProblemNotice">
-	  <tuv xml:lang="en">
-		<seg>There was a problem uploading your book.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Hubo un problema cargar su libro.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Tukwiseguyeho, "{0}" kwinjizamo ibitabo ntibyakunze</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Languages">
 	  <tuv xml:lang="en">
 		<seg>Languages</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Idiomas</seg>
+	  <tuv xml:lang="rw">
+		<seg>Indimi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.License">
 	  <tuv xml:lang="en">
 		<seg>Usage/License</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Uso/licencia</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ikoreshwa/Uburenganzira</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.AccountAlreadyExists">
 	  <tuv xml:lang="en">
 		<seg>Account Already Exists</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>La cuenta ya existe</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.Login.AlreadyHaveAccount">
-	  <tuv xml:lang="en">
-		<seg>We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>No podemos crear una nueva cuenta con esa dirección, porque ya tenemos una cuenta con esa dirección de correo electrónico. Le gustaría hacer login?</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.Login.LoginConnectFailed">
-	  <tuv xml:lang="en">
-		<seg>Bloom could not connect to the server to verify your login. Please check your network connection.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Bloom no se pudo conectar al servidor para verificar tu nombre de usuario. Por favor, compruebe su conexión de red.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Iyi konti isanzweho</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.LoginFailed">
 	  <tuv xml:lang="en">
 		<seg>Login failed</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Error de inicio de sesión</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
-	  <tuv xml:lang="en">
-		<seg>Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Bloom no se pudo conectar al servidor para completar su login o suscripción. Esto podría ser un problema con la conexión a internet, nuestro servidor o algún equipo en el medio.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.Login.MustAgreeTerms">
-	  <tuv xml:lang="en">
-		<seg>In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Con el fin de registrarse para una cuenta de BloomLibrary.org, debe marcar la casilla indicando que de acuerdo a los términos de uso de BloomLibrary.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwinjiramo byanze</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.Need Email">
 	  <tuv xml:lang="en">
 		<seg>Email Needed</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Dirección de correo electrónico necesario</seg>
+	  <tuv xml:lang="rw">
+		<seg>Imeyili irakenewe</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.NoRecordOfUser">
 	  <tuv xml:lang="en">
 		<seg>We don't have a user on record with that email. Would you like to sign up?</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>No tenemos un usuario registrado con ese email. ¿Le gustaría registrarse?</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ntidufite umuntu ukoresha iyi imeyili. Waba wifuza kwiyandikisha?</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.PasswordMismatch">
 	  <tuv xml:lang="en">
 		<seg>Password and user ID did not match</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Contraseña y nombre de usuario no coincide</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ijambobanga n'akazina winjiriraho ntibihuye</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.PleaseAgreeTerms">
 	  <tuv xml:lang="en">
 		<seg>Please agree to terms of use</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Por favor, de acuerdo a los términos de uso</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.Login.PleaseProvideEmail">
-	  <tuv xml:lang="en">
-		<seg>Please enter a valid email address. We will send an email to this address so you can reset your password.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Introduzca una dirección de correo electrónico válida. Le enviaremos un correo electrónico a esta dirección para que pueda restablecer su contraseña.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.Login.ResetConnectFailed">
-	  <tuv xml:lang="en">
-		<seg>Bloom could not connect to the server to reset your password. Please check your network connection.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Bloom no se pudo conectar al servidor para restablecer la contraseña. Por favor, compruebe su conexión de red.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Turasaba ko wakwemeranya n'amabwiriza y'ikoreshwa</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.ResetFailed">
 	  <tuv xml:lang="en">
 		<seg>Reset Password failed</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>No se pudo restablecer contraseña</seg>
+	  <tuv xml:lang="rw">
+		<seg>Guhindura ijambobanga byanze</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.ResetPassword">
 	  <tuv xml:lang="en">
 		<seg>Resetting Password</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Restableciendo contraseña</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.Login.SendingResetPassword">
-	  <tuv xml:lang="en">
-		<seg>We are sending an email to {0} with instructions for how to reset your password</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Estamos enviando un correo electrónico a {0} con instrucciones para restablecer la contraseña</seg>
+	  <tuv xml:lang="rw">
+		<seg>Guhindura ijambobanga</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.Signup">
 	  <tuv xml:lang="en">
 		<seg>Sign up for Bloom Library.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Inscríbete en la Bloom Library.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwiyandikisha ku Ikusanyabitabo rya Bloom</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Login.UnknownUser">
 	  <tuv xml:lang="en">
 		<seg>Unknown user</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Usuario desconocido</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.LoginFailure">
-	  <tuv xml:lang="en">
-		<seg>Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Bloom no podría entrar a BloomLibrary.org utilizando las credenciales guardadas. Por favor, compruebe su conexión de red.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Umukoresha utazwi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Logout">
 	  <tuv xml:lang="en">
 		<seg>Log out of BloomLibrary.org</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cerrar sesión de BloomLibrary.org</seg>
+	  <tuv xml:lang="rw">
+		<seg>Sohoka muri BloomLibrary.org</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.MakingPdf">
 	  <tuv xml:lang="en">
 		<seg>Making PDF Preview...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Haciendo una vista previa PDF...</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ukubyerekanisha PDF</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.MakingThumbnail">
 	  <tuv xml:lang="en">
 		<seg>Making thumbnail image...</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Haciendo una imagen en miniatura...</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.OldVersion">
-	  <tuv xml:lang="en">
-		<seg>Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Lo sentimos, esta versión de escritorio de Bloom no es compatible con la versión actual de BloomLibrary.org. Por favor actualice a una versión más reciente.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ugukora ishusho ntubyangano...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.PleaseLogIn">
 	  <tuv xml:lang="en">
 		<seg>Please log in to BloomLibrary.org (or sign up) before uploading</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Por favor, Inicia sesión para BloomLibrary.org (o registrarse) antes de cargar</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.PleaseSetThis">
-	  <note>This shows next to the license, if the license has not yet been set.</note>
-	  <tuv xml:lang="en">
-		<seg>Please set this from the edit tab</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Configure esto desde la pestaña Editar</seg>
+	  <tuv xml:lang="rw">
+		<seg>Twagusabaga kubanza kwinjira muri BloomLibrary.org (cyangwa kwiyandikisha) mbereyo kwinjizamo ibitabo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Step1">
 	  <tuv xml:lang="en">
 		<seg>Step 1: Confirm Metadata</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Paso 1: Confirmar metadatos</seg>
+	  <tuv xml:lang="rw">
+		<seg>Intambwe 1: Kwemeza ibiranganyandiko</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Step2">
 	  <tuv xml:lang="en">
 		<seg>Step 2: Upload</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Paso 2: Cargar</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.SuggestAssignCC">
-	  <tuv xml:lang="en">
-		<seg>Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Sugerencia: Asignar una licencia Creative Commons facilita para que usted pueda conceder claramente determinados permisos a todo el mundo.</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.SuggestChangeCC">
-	  <tuv xml:lang="en">
-		<seg>Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Sugerencia: Las licencias Creative Commons hacen que sea mucho más fácil para que otros utilicen su libro, incluso si no tienen fluidez en el idioma de su licencia personalizada.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Intambwe 2: Kukururiramo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Summary">
 	  <tuv xml:lang="en">
 		<seg>Summary</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Resumen</seg>
+	  <tuv xml:lang="rw">
+		<seg>Incamake</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.TermsLink">
 	  <tuv xml:lang="en">
 		<seg>Show Terms of Use</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Mostrar términos de uso</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwerekana amabwiriza y'ikoresha</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.Title">
 	  <tuv xml:lang="en">
 		<seg>Title</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Título</seg>
+	  <tuv xml:lang="rw">
+		<seg>Umutwe</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.UploadButton">
 	  <tuv xml:lang="en">
 		<seg>Upload Book</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cargar libro</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.UploadCompleteNotice">
-	  <tuv xml:lang="en">
-		<seg>Congratulations, "{0}" is now available on BloomLibrary.org ({1})</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>¡Felicidades, "{0}" ya está disponible en BloomLibrary.org ({1})</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwinjizamo igitabo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.UploadNotAllowed">
 	  <tuv xml:lang="en">
 		<seg>Upload Not Allowed</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>No se permite cargar</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.UploadProblemNotice">
-	  <tuv xml:lang="en">
-		<seg>There was a problem uploading your book. You may need to restart Bloom or get technical help.</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Hubo un problema cargar su libro. Es posible que necesite reiniciar Bloom o conseguir ayuda técnica.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Indimi eshatu</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.UploadProgress">
 	  <tuv xml:lang="en">
 		<seg>Upload Progress</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Progreso de carga</seg>
+	  <tuv xml:lang="rw">
+		<seg>Uho kwinjizamo bigeze</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.UploadSandbox">
 	  <tuv xml:lang="en">
 		<seg>Upload Book (to Sandbox)</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cargar libro (a sandbox)</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.UploadingBook">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Uploading book record</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cargando registro de libro</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="PublishTab.Upload.UploadingBookMetadata">
-	  <note>In this step, Bloom is uploading things like title, languages, &amp; topic tags to the bloomlibrary.org database.</note>
-	  <tuv xml:lang="en">
-		<seg>Uploading book metadata</seg>
-	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Carga de metadatos de libro</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwinjiza igitabo (muri Sandbook)</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.UploadingStatus">
 	  <tuv xml:lang="en">
 		<seg>Uploading {0}</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cargando {0}</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ugusunikiramo {0}</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.ccLink">
 	  <tuv xml:lang="en">
 		<seg>CC-BY-NC</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
+	  <tuv xml:lang="rw">
 		<seg>CC-BY-NC</seg>
 	  </tuv>
 	</tu>
@@ -2391,32 +1927,32 @@
 	  <tuv xml:lang="en">
 		<seg>Log in to BloomLibrary.org</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Inicie sesión en BloomLibrary.org</seg>
+	  <tuv xml:lang="rw">
+		<seg>Injira kuri BloomLibrary.org</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.Upload.signupLink">
 	  <tuv xml:lang="en">
 		<seg>Sign up for BloomLibrary.org</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Inscríbete en la BloomLibrary.org</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwiyandikisha kuri BloomLibrary.org</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.Email">
 	  <tuv xml:lang="en">
 		<seg>Email Address</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Dirección de correo electrónico</seg>
+	  <tuv xml:lang="rw">
+		<seg>Imeyili</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.FirstName">
 	  <tuv xml:lang="en">
 		<seg>First Name</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Primer nombre</seg>
+	  <tuv xml:lang="rw">
+		<seg>Izina ry'idini</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.Heading">
@@ -2424,8 +1960,8 @@
 	  <tuv xml:lang="en">
 		<seg>Please take a minute to register {0}</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Por favor tome un momento para registrar {0}</seg>
+	  <tuv xml:lang="rw">
+		<seg>Turasaba ko wafata umunota umwe ukiyandikisha {0}</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.HowAreYouUsing">
@@ -2433,40 +1969,40 @@
 	  <tuv xml:lang="en">
 		<seg>How are you using {0}?</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>¿Cómo está usando {0}?</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ukoresha ute {0}?</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.IAmStuckLabel">
 	  <tuv xml:lang="en">
 		<seg>I'm stuck, I'll finish this later.</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Estoy atascado, voy a terminar esto más tarde.</seg>
+	  <tuv xml:lang="rw">
+		<seg>Byanyobeye, ibi ndabirangiza nyuma.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.Organization">
 	  <tuv xml:lang="en">
 		<seg>Organization</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Organización</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ikigo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.RegisterButton">
 	  <tuv xml:lang="en">
 		<seg>&amp;Register</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>&amp;Registrar</seg>
+	  <tuv xml:lang="rw">
+		<seg>&amp;Kwiyandikisha</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.Surname">
 	  <tuv xml:lang="en">
 		<seg>Surname</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Apellido</seg>
+	  <tuv xml:lang="rw">
+		<seg>Izina ry'umuryango</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.WindowTitle">
@@ -2474,8 +2010,8 @@
 	  <tuv xml:lang="en">
 		<seg>Register {0}</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Registro {0}</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kwiyandikisha {0}</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Template.Basic Book">
@@ -2483,8 +2019,8 @@
 	  <tuv xml:lang="en">
 		<seg>Basic Book</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Libro básico</seg>
+	  <tuv xml:lang="rw">
+		<seg>Igitabo cy'ibanze</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Template.Big Book">
@@ -2492,8 +2028,8 @@
 	  <tuv xml:lang="en">
 		<seg>Big Book</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Libro grande</seg>
+	  <tuv xml:lang="rw">
+		<seg>Igitabo kinini</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Template.Picture Dictionary">
@@ -2501,8 +2037,8 @@
 	  <tuv xml:lang="en">
 		<seg>Picture Dictionary</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Diccionario ilustrado</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inkoranya y'Amashusho</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Template.Wall Calendar">
@@ -2510,8 +2046,8 @@
 	  <tuv xml:lang="en">
 		<seg>Wall Calendar</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Calendario de pared</seg>
+	  <tuv xml:lang="rw">
+		<seg>Kalendari yo ku rukuta</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Agriculture">
@@ -2520,8 +2056,8 @@
 	  <tuv xml:lang="en">
 		<seg>Agriculture</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Agricultura</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ubuhinzi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Animal Stories">
@@ -2530,8 +2066,8 @@
 	  <tuv xml:lang="en">
 		<seg>Animal Stories</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Historias de animales</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inkuru z'inyamaswa</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Business">
@@ -2540,8 +2076,8 @@
 	  <tuv xml:lang="en">
 		<seg>Business</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Negocio</seg>
+	  <tuv xml:lang="rw">
+		<seg>Bizinesi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Community Living">
@@ -2550,8 +2086,8 @@
 	  <tuv xml:lang="en">
 		<seg>Community Living</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Vida comunitaria</seg>
+	  <tuv xml:lang="rw">
+		<seg>Imibereho y'abaturage</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Culture">
@@ -2560,8 +2096,8 @@
 	  <tuv xml:lang="en">
 		<seg>Culture</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cultura</seg>
+	  <tuv xml:lang="rw">
+		<seg>Umuco</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Dictionary">
@@ -2570,8 +2106,8 @@
 	  <tuv xml:lang="en">
 		<seg>Dictionary</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Diccionario</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inkoranyamagambo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Environment">
@@ -2580,8 +2116,8 @@
 	  <tuv xml:lang="en">
 		<seg>Environment</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Medio ambiente</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ibidukikije</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Fiction">
@@ -2590,8 +2126,8 @@
 	  <tuv xml:lang="en">
 		<seg>Fiction</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Ficción</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inkuru mpimbano</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Health">
@@ -2600,8 +2136,8 @@
 	  <tuv xml:lang="en">
 		<seg>Health</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Salud</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ubuzima</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.How To">
@@ -2610,8 +2146,8 @@
 	  <tuv xml:lang="en">
 		<seg>How To</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cómo</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ni gute bikorwa</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Math">
@@ -2620,8 +2156,8 @@
 	  <tuv xml:lang="en">
 		<seg>Math</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Matemáticas</seg>
+	  <tuv xml:lang="rw">
+		<seg>Imibare</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Non Fiction">
@@ -2630,8 +2166,8 @@
 	  <tuv xml:lang="en">
 		<seg>Non Fiction</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>No ficción</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inkuru zitari mpimbano</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Personal Development">
@@ -2640,8 +2176,8 @@
 	  <tuv xml:lang="en">
 		<seg>Personal Development</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Desarrollo personal</seg>
+	  <tuv xml:lang="rw">
+		<seg>Iterambere bwite rya muntu</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Primer">
@@ -2650,8 +2186,8 @@
 	  <tuv xml:lang="en">
 		<seg>Primer</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Cartilla</seg>
+	  <tuv xml:lang="rw">
+		<seg>Igitabo cy'inyigisho</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Science">
@@ -2660,8 +2196,8 @@
 	  <tuv xml:lang="en">
 		<seg>Science</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Ciencia</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ubumenyi</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Spiritual">
@@ -2670,8 +2206,8 @@
 	  <tuv xml:lang="en">
 		<seg>Spiritual</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Espiritual</seg>
+	  <tuv xml:lang="rw">
+		<seg>Cy'iyobokamana</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Tradition">
@@ -2680,8 +2216,8 @@
 	  <tuv xml:lang="en">
 		<seg>Tradition</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Tradición</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ubumenyi gakondo</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Topics.Traditional Story">
@@ -2690,8 +2226,8 @@
 	  <tuv xml:lang="en">
 		<seg>Traditional Story</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Historia tradicional</seg>
+	  <tuv xml:lang="rw">
+		<seg>Inkuru za kera</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="WallCalendar.TitleOfSetupDialog">
@@ -2699,8 +2235,8 @@
 	  <tuv xml:lang="en">
 		<seg>Setup</seg>
 	  </tuv>
-	  <tuv xml:lang="es">
-		<seg>Configuración</seg>
+	  <tuv xml:lang="rw">
+		<seg>Ikora</seg>
 	  </tuv>
 	</tu>
   </body>

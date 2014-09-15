@@ -95,16 +95,34 @@
 		<seg>Release Notes</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Accordion.DecodableReaderTool">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Decodable Reader Tool</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="Accordion.DecodableReaderToolCheckbox">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Decodable Reader Tool</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Accordion.LeveledReaderTool">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Leveled Reader Tool</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="Accordion.LeveledReaderToolCheckbox">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Leveled Reader Tool</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Accordion.More">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>More...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
@@ -448,12 +466,6 @@
 		<seg>Other Collection</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionTab.PNG Animal Stories - Copy">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>PNG Animal Stories - Copy</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="CollectionTab.Sample Shells">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -646,7 +658,7 @@
 	<tu tuid="DecodableReaderTool.MakeLetterWordList">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Make a Letter and Word List File</seg>
+		<seg>Open a Letter and Word List File</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="DecodableReaderTool.SetUpStages">
@@ -658,13 +670,13 @@
 	<tu tuid="DecodableReaderTool.Stage">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Stage 1 of 2</seg>
+		<seg>Stage</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="DecodableReaderTool.StageOf">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg> of 2</seg>
+		<seg>of</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="DecodableReaderTool.WordsInThisStage">
@@ -2242,7 +2254,7 @@
 	<tu tuid="ReaderSetup.MatchingWords">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg> matching words</seg>
+		<seg>matching words</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.MaxUniqueWords">

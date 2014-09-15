@@ -1320,6 +1320,13 @@ namespace Bloom.Book
 				foreach (var node in page.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
 					node.ParentNode.RemoveChild(node);
 
+				// Upon save, make sure we are not in layout mode.  Otherwise we show the sliders.
+				foreach (var node in page.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' origami-layout-mode ')]").Cast<XmlNode>().ToArray())
+				{
+					string currentValue = node.Attributes["class"].Value;
+					node.Attributes["class"].Value = currentValue.Replace("origami-layout-mode", "");
+				}
+
 				 _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
 				 var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
