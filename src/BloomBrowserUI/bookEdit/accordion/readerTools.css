@@ -5,9 +5,10 @@ div.stageLine {
     float: right;
     margin: 10px 14px;
     -moz-user-select: none;
+    font-size: 16pt;
 }
 span.stageLine { float: left; -moz-user-select: none; }
-td.acceptable { color: green; }
+td.acceptable { color: lightgreen; }
 td.tooLarge { color: orange; }
 td.statistics-label { padding-right: 5px; }
 td.statistics-max { padding-right: 3px; text-align: center; }
@@ -32,7 +33,7 @@ div.sortItem {
 	padding: 2px 3px;
 	cursor: pointer;
 }
-span.ofStage { font-size: xx-small; }
+span.ofStage { font-size: 12pt; }
 span.disabledIcon { visibility: hidden; }
 td.disabledLimit { visibility: hidden; }
 

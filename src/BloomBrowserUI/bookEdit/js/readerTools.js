@@ -854,8 +854,8 @@ function initializeLeveledRT() {
 
     // make sure synphony is initialized
     if (!model.getSynphony().source) {
-        iframeChannel.simpleAjaxGet('/bloom/getDefaultFont', setDefaultFont);
-        iframeChannel.simpleAjaxGet('/bloom/loadReaderToolSettings', initializeSynphony);
+        iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
+        iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
     }
 
     $('#incLevel').onOnce('click.readerTools', function() {
@@ -1047,4 +1047,11 @@ function makeLetterWordList() {
     };
 
     $.ajax(ajaxSettings)
+}
+
+function loadExternalLink(url) {
+    $.get(url, function() {
+        // ignore response
+        // in this case, we just want to open an external browser with a link, so we don't want to process the response
+    });
 }

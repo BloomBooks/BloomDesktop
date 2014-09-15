@@ -2,7 +2,7 @@ html
 	head
 
 	body
-		h3(data-markuptype='2', data-order='20', data-i18n='LeveledReaderTool.Title') Leveled Reader Tool
+		h3(data-markuptype='2', data-order='20', data-i18n='Accordion.LeveledReaderTool') Leveled Reader Tool
 		div
 			img#levels-steps(src='http://localhost:8089/bloom/images/steps-white.png', style='margin-left: 14px; width: 32px')
 			.stageLine
@@ -59,16 +59,16 @@ html
 				span(data-i18n='LeveledReaderTool.KeepInMind') Keep in mind
 				ul
 					li
-						a(href='DistFiles/leveledRTInfo/leveledReaderInfo-en.htm?Predictability') Predictability
+						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?Predictability")') Predictability
 					li
-						a(href='DistFiles/leveledRTInfo/leveledReaderInfo-en.htm?PatternAndRecognition') Pattern and recognition
+						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?PatternAndRecognition")') Pattern and recognition
 					li
-						a(href='DistFiles/leveledRTInfo/leveledReaderInfo-en.htm?IllustrationSupport') Illustration support
+						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?IllustrationSupport")') Illustration support
 					li
-						a(href='DistFiles/leveledRTInfo/leveledReaderInfo-en.htm?ConceptLoad') Concept load
+						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?ConceptLoad")') Concept load
 					li
-						a(href='DistFiles/leveledRTInfo/leveledReaderInfo-en.htm?TopicFamiliarity') Topic familiarity
-				a(href='DistFiles/leveledRTInfo/leveledReaderInfo-en.htm?HowToMakeLeveledReader') How to make a great leveled reader
+						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?TopicFamiliarity")') Topic familiarity
+				a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?HowToMakeLeveledReader")') How to make a great leveled reader
 			script(type='text/javascript').
 				$(document).ready(function() {
 					setTimeout(initializeLeveledRT, 100);

@@ -187,6 +187,7 @@ function resizeAccordion() {
 function loadAccordionPanel(newContent, panelId) {
     var parts = $($.parseHTML(newContent, document, true));
 
+    parts.filter('*[data-i18n]').localize();
     parts.find('*[data-i18n]').localize();
 
     var accordion = $('#accordion');

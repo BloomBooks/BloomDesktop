@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="ta" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.424.0</prop>
+    <prop type="x-appversion">3.0.486.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
+    <tu tuid="Accordion.DecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>Decodable படிப்பான் கருவி</seg>
+      </tuv>
+    </tu>
     <tu tuid="Accordion.DecodableReaderToolCheckbox">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -14,6 +23,15 @@
         <seg>Decodable படிப்பான் கருவி</seg>
       </tuv>
     </tu>
+    <tu tuid="Accordion.LeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>மறுக்கும் படிப்பான் கருவி</seg>
+      </tuv>
+    </tu>
     <tu tuid="Accordion.LeveledReaderToolCheckbox">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -21,6 +39,15 @@
       </tuv>
       <tuv xml:lang="ta">
         <seg>மறுக்கும் படிப்பான் கருவி</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.More">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>More...</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>மேலும்...</seg>
       </tuv>
     </tu>
     <tu tuid="BloomPackInstallDialog.BloomPackInstalled">
@@ -62,6 +89,15 @@
       </tuv>
       <tuv xml:lang="ta">
         <seg>திறக்கிறது {0}...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>அனைத்து பெட்டிகளை சுமந்து பாணி '{0}' மற்றும் மொழி '{1}' உரை அளவை மாற்றும்.\n{2} தமிழகத்தில் நடப்பு அளவு உள்ளது.</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -115,7 +151,7 @@
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
       <tuv xml:lang="en">
-        <seg>Default Font for Language 3</seg>
+        <seg>Default Font for Language 1</seg>
       </tuv>
       <tuv xml:lang="ta">
         <seg>இயல்புநிலை எழுத்துருவை மொழி 1</seg>
@@ -304,7 +340,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
       <tuv xml:lang="en">
-        <seg>Bloom will now open this HTML document in your word processing program (normally Word or Libre Office). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
       </tuv>
       <tuv xml:lang="ta">
         <seg>Bloom இந்த HTML ஆவணத்தை உங்கள் சொற்செயலி நிரலில் (இயல்பாக சொல் அல்லது மையம் Office) திறக்கும் இப்போது. நீங்கள் உரை மற்றும் இந்த புத்தகத்தில் படிமங்கள் வேலை இருக்கும், ஆனால் இந்த நிரல்களை உருவமைப்பு, எனவே வேண்டாம் எதிர்பார்க்கும் அதிகம் பரப்பவும் கொண்டு மிக நன்றாக இயல்பாக வேண்டாம்.</seg>
@@ -336,7 +372,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
       <tuv xml:lang="en">
-        <seg>Export to Word or Libre Office...</seg>
+        <seg>Export to Word or LibreOffice...</seg>
       </tuv>
       <tuv xml:lang="ta">
         <seg>சொல் அல்லது மையம் Office ஏற்றுமதி...</seg>
@@ -344,7 +380,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
       <tuv xml:lang="en">
-        <seg>Export To XML For InDesign...</seg>
+        <seg>Export to XML for InDesign...</seg>
       </tuv>
       <tuv xml:lang="ta">
         <seg>ஏற்றுமதி செய் XML-InDesign...</seg>
@@ -431,6 +467,15 @@
         <seg>வட்டில் கோப்புறை திற</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.Health">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Health</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>சுகாதார</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.MakeBookUsingThisTemplate">
       <tuv xml:lang="en">
         <seg>Make a book using this source</seg>
@@ -446,6 +491,15 @@
       </tuv>
       <tuv xml:lang="ta">
         <seg>மற்ற தொகுப்பு</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.PNG Animal Stories - Copy">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>PNG Animal Stories - Copy</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>PNG விலங்கு கதைகள் - நகல்</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Sample Shells">
@@ -490,6 +544,15 @@
         <seg>வார்ப்புருக்கள்</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.Zaza Reader Templates">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Zaza Reader Templates</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>Zaza படிப்பான் வார்ப்புருக்கள்</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab._editBookButton">
       <tuv xml:lang="en">
         <seg>Edit this book</seg>
@@ -504,6 +567,22 @@
       </tuv>
       <tuv xml:lang="ta">
         <seg>Bloom கட்டு அமை</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template BloomPack...</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>படிப்பவர் வார்ப்புரு BloomPack அமை...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.advancedToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Advanced</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>மேம்பட்ட</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.bloomLibraryLinkLabel">
@@ -573,6 +652,24 @@
         <seg>புதிய உதிரிபாகங்கள் வட்டாரங்கள்</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.BackButton">
+      <note>In a wizard, this button takes you to the previous step.</note>
+      <tuv xml:lang="en">
+        <seg>Back</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>பின்</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Cancel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Cancel</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>ரத்து செய்</seg>
+      </tuv>
+    </tu>
     <tu tuid="Common.CancelButton">
       <tuv xml:lang="en">
         <seg>&amp;Cancel</seg>
@@ -599,6 +696,24 @@
         <seg>அடுத்த</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.NextButton">
+      <note>In a wizard, this button takes you to the next step.</note>
+      <tuv xml:lang="en">
+        <seg>Next</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>அடுத்த</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.OK">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>OK</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>சரி</seg>
+      </tuv>
+    </tu>
     <tu tuid="Common.OKButton">
       <tuv xml:lang="en">
         <seg>&amp;OK</seg>
@@ -613,6 +728,32 @@
       </tuv>
       <tuv xml:lang="ta">
         <seg>விருப்ப</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ConfiguringBookMessage">
+      <tuv xml:lang="en">
+        <seg>Building...</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>கட்டிடம்...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.LettersInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters in this stage</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>இந்த நிலையில் உள்ள எழுத்துக்கள்</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.MakeLetterWordList">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Open a Letter and Word List File</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>ஒரு எழுத்து மற்றும் சொல் பட்டியல் கோப்பை திறக்க</seg>
       </tuv>
     </tu>
     <tu tuid="DecodableReaderTool.SetUpStages">
@@ -640,6 +781,15 @@
       </tuv>
       <tuv xml:lang="ta">
         <seg>நிலை இருந்த</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.WordsInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Words in this stage</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>இந்த நிலையில் வார்த்தைகளை</seg>
       </tuv>
     </tu>
     <tu tuid="Download.Completed">
@@ -840,7 +990,7 @@
     <tu tuid="EditTab.Image.ChangeImage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Change Image</seg>
+        <seg>Change Image!!</seg>
       </tuv>
       <tuv xml:lang="ta">
         <seg>உருவத்தை மாற்று!!</seg>
@@ -895,6 +1045,78 @@
       </tuv>
       <tuv xml:lang="ta">
         <seg>ஒரு பக்க அளவு மற்றும் திசையை தேர்ந்தெடு</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.BorderToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the border and background</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>கரை மற்றும் பின்னணி மாற்ற</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontFaceToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font face</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>எழுத்துரு முகத்தை மாற்ற</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontSizeToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font size</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>எழுத்துரு அளவை மாற்ற</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.LineSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between lines of text</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>உரையின் வரிகள் இடையே இடைவெளி மாற்ற</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingExtraWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Extra Wide</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>கூடுதல் உலகத்தின்</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingNormal">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>சராசரி</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between words</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>சொற்களை இடையே இடைவெளி மாற்ற</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wide</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>அகலம்</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.StyleEditorTip">
@@ -1497,6 +1719,132 @@
         <seg>B5 உருவப்படம்</seg>
       </tuv>
     </tu>
+    <tu tuid="LeveledReaderTool.Actual">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Actual</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>சரியான</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.FoThisLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>For this Level</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>இந்த நிலை</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.KeepInMind">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Keep in mind</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>மனதில் வைத்துக்</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Level">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level </seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>நிலை</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.LevelOf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg> of </seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>உடைய</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Max">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Max</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>மேக்ஸ்</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per page</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>ஒரு பக்கத்திற்கு</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per sentence</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>ஒரு வாக்கியத்தை</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.SetUpLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Levels</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>நிலைகள் அமை</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisBook">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Book</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>இந்த புத்தகம்</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Page</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>இப்பக்கம் கடைசியாக</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Total">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>total</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>மொத்த</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Unique">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>unique</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>பிரத்யேக</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.WordCounts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Word counts</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>சொல் எண்ணிக்கை</seg>
+      </tuv>
+    </tu>
     <tu tuid="LoginDialog.AgreeToTerms">
       <tuv xml:lang="en">
         <seg>I agree to the Bloom Library's Terms of Use</seg>
@@ -1631,6 +1979,14 @@
       </tuv>
       <tuv xml:lang="ta">
         <seg>மூல தொகுப்பை</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+      <tuv xml:lang="en">
+        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>ஒன்று அல்லது மேற்பட்ட மொழிகளில் விரிந்த இண்டர்நெட் கூடு அல்லது வார்ப்புரு தொகுப்பை புத்தகங்களில். நீங்கள் செய்ய BloomLibrary.org இந்த உதிரிபாகங்கள் பதிவேற்றும் மற்றும் optionally எனவே அவர்கள் உடன் உங்கள் உதிரிபாகங்கள் vernacular புத்தகங்கள் எளிதாக மற்றவர்களுக்கு அளிக்க ஒரு BloomPack ஏற்படுத்து முடியும் இருக்கும்.</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
@@ -1828,10 +2184,20 @@
         <seg>தற்போதுள்ள மாற்றிடு</seg>
       </tuv>
     </tu>
+    <tu tuid="OverwriteWarning.ReplaceExistingButton_ToolTip_">
+      <tuv xml:lang="ta">
+        <seg>தற்போதுள்ள மாற்றிடு</seg>
+      </tuv>
+    </tu>
     <tu tuid="OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
       </tuv>
+      <tuv xml:lang="ta">
+        <seg>அறிவிப்பு</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OverwriteWarning.WindowTitle_ToolTip_">
       <tuv xml:lang="ta">
         <seg>அறிவிப்பு</seg>
       </tuv>
@@ -2624,6 +2990,51 @@
         <seg>கடிதங்கள்</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.Letters.Header">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters and Letter Combinations</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>கடிதங்கள் மற்றும் எழுத்து சேர்க்கைகளை</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>உதவும் decodable படிப்பான்கள், Bloom கடிதங்கள் மற்றும் நீங்கள் கற்பித்தல் இருக்கும் எழுத்து சேர்க்கைகளை தேவைப்படுகிறது.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>ஒவ்வொரு எழுத்து அல்லது எழுத்து இரண்டும் கொண்ட ஒரு இடம் தனி. உதாரணமாக, இங்கே என்பது என்ன நாங்கள் இருக்கலாம் பயன்படுத்த ஆங்கில மொழி:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Notice that the English list includes symbols that are used to make words, like ' in </seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>ஆங்கில பட்டியலில் அடங்கும் போன்ற சொற்கள், தயாரிக்க பயன்படுத்தப்படும் சின்னங்கள் கவனிக்கவும் ' உள்ள</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>it's</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>அது</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.LevelHeader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2804,6 +3215,24 @@
         <seg>ஒவ்வொரு வரியின் அதிகபட்ச வார்த்தைகளை</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.SetUpDecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Decodable Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>Decodable படிப்பான் கருவி அமை</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetUpLeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Leveled Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>மறுக்கும் படிப்பான் கருவி அமை</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.SetupAlphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2894,6 +3323,51 @@
         <seg>பிரத்யேக</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.Words">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Words</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>சொற்கள்</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>உதவும் decodable படிப்பான்கள், தற்போதைய நிலையில் க்குள் பொருத்த சொற்களை Bloom ஆலோசனை செய்யலாம்.  Bloom சொற்களை கொடுக்க இரண்டு வழிகள் இருக்கின்றன:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.PlaceTextFiles">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>2) Place Text Files in Your</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>2) உள்ள இடம் உரை கோப்புகள் உங்கள்</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.SampleTextFolder">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Text Folder</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>மாதிரி உரை கோப்புறை</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.TypeWordsHere">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>1) Type Words Here</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>1) வகை சொற்களை இங்கு</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.lettersHeader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2901,6 +3375,38 @@
       </tuv>
       <tuv xml:lang="ta">
         <seg>கடிதங்கள்</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+      <tuv xml:lang="en">
+        <seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this BloomPack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>மேலும், இந்த BloomPack தொடர்வோம் "{0}" மொழி உங்கள் சமீபத்திய decodable மற்றும் மறுக்கும் படிப்பவர் அமைப்புகளை. இந்த BloomPack உள்ள அமைப்புகள் மாற்றப்பட்டது அவர்களின் தற்போதைய decodable மற்றும் மறுக்கும் படிப்பவர் அமைப்புகள் யார் யார் பின் "{0}" தொகுப்பை திறக்கும், இந்த BloomPack திறக்கும் வேண்டிவரும். அவர்கள் கிடைக்கும் சொற்களை நடப்பு தொகுப்பை decodable படிப்பான்கள் பயன்படுத்தும்.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
+      <tuv xml:lang="en">
+        <seg>The following books will be made into templates:</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>வார்ப்புருக்கள்-ஐ பின்வரும் புத்தகங்கள் வெளியிடப்படும்:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+      <tuv xml:lang="en">
+        <seg>Save BloomPack</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>BloomPack சேமி</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template BloomPack</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>படிப்பவர் வார்ப்புரு BloomPack உருவாக்கு</seg>
       </tuv>
     </tu>
     <tu tuid="RegisterDialog.Email">
@@ -3219,6 +3725,15 @@
       </tuv>
       <tuv xml:lang="ta">
         <seg>அமைவு</seg>
+      </tuv>
+    </tu>
+    <tu tuid="You may use this space for author/illustrator, or anything else.">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You may use this space for author/illustrator, or anything else.</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>எழுத்தாளர்/illustrator, அல்லது வேறு எதுவும் இந்த இடம் உபயோகித்து.</seg>
       </tuv>
     </tu>
   </body>

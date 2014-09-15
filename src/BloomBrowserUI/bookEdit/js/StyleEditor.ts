@@ -197,14 +197,17 @@ class StyleEditor {
         return <CSSStyleRule> x[x.length - 1]; //new guy is last
     }
 
-    ConvertPxToPt(pxSize: number): number {
+    ConvertPxToPt(pxSize: number, round = true): number {
         var tempDiv = document.createElement('div');
         tempDiv.style.width='1000pt';
         document.body.appendChild(tempDiv);
         var ratio = 1000/tempDiv.clientWidth;
         document.body.removeChild(tempDiv);
         tempDiv = null;
-        return Math.round(pxSize*ratio);
+        if (round)
+            return Math.round(pxSize*ratio);
+        else
+            return pxSize*ratio;
     }
 
     /**
@@ -251,6 +254,25 @@ class StyleEditor {
         });
     }
 
+    static GetClosestValueInList(listOfOptions: Array<string>, valueToMatch: number) {
+        var lineHeight;
+        for (var i = 0; i < listOfOptions.length; i++) {
+            var optionNumber = parseFloat(listOfOptions[i]);
+            if (valueToMatch == optionNumber) {
+                lineHeight = listOfOptions[i];
+                break;
+            }
+            if (valueToMatch <= optionNumber) {
+                lineHeight = listOfOptions[i];
+                break; // Enhance: possibly it is closer to the option before, should we check for that?
+            }
+        }
+        if (valueToMatch > parseFloat(listOfOptions[listOfOptions.length - 1])) {
+            lineHeight = listOfOptions[listOfOptions.length - 1];
+        }
+        return lineHeight;
+    }
+
     AttachToBox(targetBox: HTMLElement) {
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName)
@@ -277,9 +299,13 @@ class StyleEditor {
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
                 styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
                 var box = $(targetBox);
+
                 var sizeString = box.css('font-size');
                 var pxSize = parseInt(sizeString);
-                var ptSize = editor.ConvertPxToPt(pxSize);
+                var ptSize = editor.ConvertPxToPt(pxSize, false);
+                var sizes = ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72']; // Same options as Word 2010
+                ptSize = StyleEditor.GetClosestValueInList(sizes, ptSize);
+
                 var lang = box.attr('lang');
                 lang = localizationManager.getText(lang);
                 var fontName = box.css('font-family');
@@ -291,21 +317,7 @@ class StyleEditor {
                 var lineHeightPx = parseInt(lineHeightString);
                 var lineHeightNumber = Math.round(lineHeightPx / pxSize *10) / 10.0;
                 var lineSpaceOptions = ['1.0', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.8', '2.0', '2.5', '3.0'];
-				var lineHeight;
-                for (var i = 0; i < lineSpaceOptions.length; i++) {
-	                var optionNumber = parseFloat(lineSpaceOptions[i]);
-                    if (lineHeightNumber == optionNumber) {
-	                    lineHeight = lineSpaceOptions[i];
-                        break;
-                    }
-                    if (lineHeightNumber <= optionNumber) {
-                        lineHeight = lineSpaceOptions[i];
-                        break; // Enhance: possibly it is closer to the option before, should we check for that?
-                    }
-                }
-                if (lineHeightNumber > parseFloat(lineSpaceOptions[lineSpaceOptions.length - 1])) {
-	                lineHeight = lineSpaceOptions[lineSpaceOptions.length - 1];
-                }
+                var lineHeight = StyleEditor.GetClosestValueInList(lineSpaceOptions, lineHeightNumber);
 
                 var wordSpaceOptions =
                     [localizationManager.getText('EditTab.StyleEditor.WordSpacingNormal', 'Normal'),
@@ -326,7 +338,6 @@ class StyleEditor {
                 // Enhance: lineHeight may well be something like 35px; what should we select initially?
 
                 var fonts = fontData.split(',');
-                var sizes = ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72']; // Same options as Word 2010
                 var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:900;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">'
                     + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt;margin-bottom: 5pt"></div>'
                     + editor.makeSelect(fonts, 5, fontName, 'fontSelect', 15) + ' '
