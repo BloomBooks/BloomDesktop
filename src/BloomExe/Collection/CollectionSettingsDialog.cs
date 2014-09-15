@@ -38,6 +38,9 @@ namespace Bloom.Collection
 			_showSendReceive.Checked = Settings.Default.ShowSendReceive;
 			_showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
 			_showExperimentCommands.Checked = Settings.Default.ShowExperimentalCommands;
+			_rtlLanguagesCombo.Text = LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.RightToLeft", "Right To Left");
+			_rtlLanguagesCombo.ToolTipText =
+				LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.RightToLeftTip", "Select languages that are written from right to left");
 
 //		    _showSendReceive.CheckStateChanged += (sender, args) =>
 //		                                              {
@@ -75,6 +78,7 @@ namespace Bloom.Collection
 			_language1FontLabel.Text = string.Format("Default Font for {0}", lang1UiName);
 			_language2FontLabel.Text = string.Format("Default Font for {0}", lang2UiName);
 
+			var lang3UiName = string.Empty;
 			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 			{
 				_language3Name.Text = "--";
@@ -85,15 +89,17 @@ namespace Bloom.Collection
 			}
 			else
 			{
-				var lang3UiName = _collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId);
+				lang3UiName = _collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId);
 				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.Language3Iso639Code);
 				_language3FontLabel.Text = string.Format("Default Font for {0}", lang3UiName);
 				_removeLanguage3Link.Visible = true;
 				_language3FontLabel.Visible = true;
 				_fontComboLanguage3.Visible = true;
 				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
+				_rtlLanguagesCombo.DropDownItems.Add(lang3UiName);
 			}
 
+			SetupItemsForRtlCombo(lang1UiName, lang2UiName, lang3UiName);
 			_restartReminder.Visible = _restartRequired;
 			_okButton.Text = _restartRequired ? LocalizationManager.GetString("CollectionSettingsDialog.Restart", "Restart", "If you make certain changes in the settings dialog, the OK button changes to this.") : LocalizationManager.GetString("Common.OKButton", "&OK");
 
@@ -102,6 +108,44 @@ namespace Bloom.Collection
 			_xmatterPackCombo.SelectedItem = _xmatterPackFinder.FindByKey(_collectionSettings.XMatterPackName);
 			if (_xmatterPackCombo.SelectedItem == null) //if something goes wrong
 				_xmatterPackCombo.SelectedItem = _xmatterPackFinder.FactoryDefault;
+		}
+
+		private void SetupItemsForRtlCombo(string lang1, string lang2, string lang3)
+		{
+			_rtlLanguagesCombo.DropDownItems.Clear();
+			var item1 = (ToolStripMenuItem)_rtlLanguagesCombo.DropDownItems.Add(lang1);
+			item1.Tag = _collectionSettings.Language1Iso639Code;
+			item1.Checked = _collectionSettings.IsLanguage1Rtl;
+			item1.CheckOnClick = true;
+			item1.CheckedChanged += new EventHandler(OnRtlLanguagesCombo_CheckedChanged);
+			var item2 = (ToolStripMenuItem)_rtlLanguagesCombo.DropDownItems.Add(lang2);
+			item2.Tag = _collectionSettings.Language2Iso639Code;
+			item2.Checked = _collectionSettings.IsLanguage2Rtl;
+			item2.CheckOnClick = true;
+			item2.CheckedChanged += new EventHandler(OnRtlLanguagesCombo_CheckedChanged);
+			if (!String.IsNullOrEmpty(lang3))
+			{
+				var item3 = (ToolStripMenuItem)_rtlLanguagesCombo.DropDownItems.Add(lang3);
+				item3.Tag = _collectionSettings.Language3Iso639Code;
+				item3.Checked = _collectionSettings.IsLanguage3Rtl;
+				item3.CheckOnClick = true;
+				item3.CheckedChanged += new EventHandler(OnRtlLanguagesCombo_CheckedChanged);
+			}
+		}
+
+		private void OnRtlLanguagesCombo_CheckedChanged(object sender, EventArgs e)
+		{
+			var item = (ToolStripMenuItem)sender;
+			var itemCode = item.Tag as string;
+			var itemChecked = item.Checked;
+			if (itemCode == _collectionSettings.Language1Iso639Code)
+				_collectionSettings.IsLanguage1Rtl = itemChecked;
+			else if (itemCode == _collectionSettings.Language2Iso639Code)
+				_collectionSettings.IsLanguage2Rtl = itemChecked;
+			else
+				_collectionSettings.IsLanguage3Rtl = itemChecked;
+			_restartRequired = true;
+			UpdateDisplay(); // to get the restart required message to display
 		}
 
 		private void _language1ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

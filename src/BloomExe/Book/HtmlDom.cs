@@ -285,6 +285,16 @@ namespace Bloom.Book
 			e.SetAttribute("class", (e.GetAttribute("class").Replace(className,"").Trim() + " " + className).Trim());
 		}
 
+		public static void AddRtlDir(XmlElement e)
+		{
+			e.SetAttribute("dir", "rtl");
+		}
+
+		public static void RemoveRtlDir(XmlElement e)
+		{
+			e.RemoveAttribute("dir");
+		}
+
 		public static void RemoveClassesBeginingWith(XmlElement xmlElement, string classPrefix)
 		{
 
