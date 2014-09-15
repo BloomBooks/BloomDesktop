@@ -121,8 +121,21 @@ namespace Bloom
             _cutCommand.Implementer = () => _browser.CutSelection();
             _copyCommand.Implementer = () => _browser.CopySelection();
             _pasteCommand.Implementer = PasteFilteredText;
-            _undoCommand.Implementer = () => _browser.Undo();
-
+			_undoCommand.Implementer = () =>
+			{
+				// Note: this is only used for the Undo button in the toolbar;
+				// ctrl-z is handled in JavaScript directly.
+				var result = RunJavaScript("calledByCSharp ? 'y' : 'f'");
+				if (result == "y")
+				{
+					if (RunJavaScript("calledByCSharp.handleUndo()") == "fail")
+						_browser.Undo(); // not using special Undo.
+				}
+				else
+				{
+					_browser.Undo();
+				}
+			};
             //none of these worked
 /*            _browser.DomKeyPress+=new GeckoDomKeyEventHandler((sender, args) => UpdateEditButtons());
             _browser.DomClick += new GeckoDomEventHandler((sender, args) => UpdateEditButtons());
@@ -160,7 +173,7 @@ namespace Bloom
 					//prevent pasting images (BL-93)
 					_pasteCommand.Enabled = Clipboard.ContainsText();
 				}
-				_undoCommand.Enabled = _browser != null && _browser.CanUndo;
+				_undoCommand.Enabled = CanUndo;
 
 			}
 			catch (Exception)
@@ -173,7 +186,25 @@ namespace Bloom
 			}
         }
 
-        void OnValidating(object sender, CancelEventArgs e)
+		private bool CanUndo
+		{
+			get
+			{
+				if (_browser == null)
+					return false;
+				var result = RunJavaScript("calledByCSharp ? 'y' : 'f'");
+				if (result == "y")
+				{
+					result = RunJavaScript("calledByCSharp.canUndo()");
+					if (result == "fail")
+						return _browser.CanUndo; // not using special Undo.
+					return result == "yes";
+				}
+				return _browser.CanUndo;
+			}
+		}
+
+		void OnValidating(object sender, CancelEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
 			LoadPageDomFromBrowser();

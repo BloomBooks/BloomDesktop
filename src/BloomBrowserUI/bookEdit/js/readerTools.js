@@ -65,6 +65,7 @@ var ReaderToolsModel = function() {
     this.setupType = '';
     this.fontName = '';
     this.readableFileExtensions = [];
+    this.keypressTimer = null;
 
     // this happens during testing
     if (iframeChannel)
@@ -479,6 +480,182 @@ ReaderToolsModel.prototype.getElementsToCheck = function() {
     return $(".bloom-content1", page.contentWindow.document);
 };
 
+// Make a selection in the specified node at the specified offset
+// if divBrCount is >=0, we expect to make the selection offset characters into node itself
+// (typically the root div). After traversing offset characters, we will try to additionally
+// traverse divBrCount <br> elements.
+ReaderToolsModel.prototype.selectAtOffset = function(node, offset) {
+    var range = parent.window.document.getElementById('page').contentWindow.document.createRange();
+    range.setStart(node, offset);
+    range.setEnd(node, offset);
+    var selection = parent.window.document.getElementById('page').contentWindow.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+//    console.log("Selected at " + offset + " in node of type " + node.localName + " with text '" + node.textContent + "' (of length) " + node.textContent.length);
+//    if (node.localName === null && node.textContent.length > 0 && node.textContent.charCodeAt(0) == 10) {
+//        console.log("first character " + node.textContent.charCodeAt(0));
+//    }
+}
+
+ReaderToolsModel.prototype.makeSelectionIn = function(node, offset, divBrCount, atStart) {
+    if (node.nodeType === 3) {
+        // drilled down to a text node. Make the selection.
+        this.selectAtOffset(node, offset);
+        return true;
+    }
+    var i = 0;
+    var childNode;
+    var len;
+    for (; i < node.childNodes.length && offset >= 0; i++) {
+        childNode = node.childNodes[i];
+        len = childNode.textContent.length;
+        if (divBrCount >= 0 && len == offset) {
+            // We want the selection after childNode itself, plus if possible an additional divBrCount <br> elements
+            for(i++;
+                i < node.childNodes.length && divBrCount > 0 && node.childNodes[i].textContent.length == 0;
+                i++) {
+                if (node.childNodes[i].localName === 'br') divBrCount--;
+            }
+            // We want the selection in node itself, before childNode[i].
+            this.selectAtOffset(node, i);
+            return true;
+        }
+        // If it's at the end of a child (that is not the last child) we have a choice whether to put it at the
+        // end of that node or the start of the following one. For some reason the IP is invisible if
+        // placed at the end of the preceding one, so prefer the start of the following one, which is why
+        // we generally call this routine with atStart true.
+        // (But, of course, if it is the last node we must be able to put the IP at the very end.)
+        // When trying to do a precise restore, we pass atStart carefully, as it may control
+        // whether we end up before or after some <br>s
+        if (offset < len || (offset == len && (i == node.childNodes.length - 1 || !atStart))) {
+            if (this.makeSelectionIn(childNode, offset, -1, atStart)) {
+                return true;
+            }
+        }
+        offset -= len;
+    }
+    // Somehow we failed. Maybe the node it should go in has no text?
+    // See if we can put it at the right position (or as close as possible) in an earlier node.
+    // Not sure exactly what case required this...possibly markup included some empty spans?
+    for (i--; i >= 0; i--)
+    {
+        childNode = node.childNodes[i];
+        len = childNode.textContent.length;
+        if (this.makeSelectionIn(childNode, len, -1, atStart)) {return true;}
+    }
+    // can't select anywhere (maybe this has no text-node children? Hopefully the caller can find
+    // an equivalent place in an adjacent node).
+    return false;
+};
+
+ReaderToolsModel.prototype.doKeypressMarkup = function() {
+    if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
+        this.keypressTimer.clearTimeout();
+    }
+    var self = this;
+    this.keypressTimer = setTimeout(function() {
+        // This happens 500ms after the user stops typing.
+        var page = parent.window.document.getElementById('page');
+        if (!page) return; // unit testing?
+        var selection = page.contentWindow.getSelection();
+        var current = selection.anchorNode;
+        var active = $(selection.anchorNode).closest('div').get(0);
+        if (!active || selection.rangeCount > 1 || (selection.rangeCount == 1 && !selection.getRangeAt(0).collapsed)) {
+            return; // don't even try to adjust markup while there is some complex selection
+        }
+        var myRange = selection.getRangeAt(0).cloneRange();
+        myRange.setStart(active, 0);
+        var offset = myRange.toString().length;
+        // In case the IP is somewhere like after the last <br> or between <br>s,
+        // its anchorNode is the div itself, or perhaps one of its spans, and we want to try to put it back
+        // in a comparable position. -1 marks a selection that is at a text level.
+        // other values count the <br> elements immediately before the selection.
+        // I am hoping it doesn't happen that there are <br>s at multiple levels.
+        // Note that the newly marked up version will have any <br>s at the top level only (children of the div).
+        var divBrCount = -1;
+        if (current.nodeType !== 3)
+        {
+            divBrCount = 0;
+            // endoffset counts the number of childNodes that the selection is after.
+            // We want to know how many <br> nodes are between it and the previous non-empty node.
+            for (k = myRange.endOffset - 1; k >= 0; k-- ) {
+                if (current.childNodes[k].localName === 'br') divBrCount++;
+                else if (current.childNodes[k].textContent.length > 0) break;
+            }
+        }
+        //console.log("-----------------");
+        //console.log('before: ' + active.innerHTML);
+        var atStart = myRange.endOffset === 0;
+
+        self.doMarkup();
+
+        //console.log('after: ' + active.innerHTML);
+        //console.log('restoring selection using ' + offset + " with brs " + divBrCount + " and atStart " + atStart);
+        // Now we try to restore the selection at the specified position.
+        self.makeSelectionIn(active, offset, divBrCount, atStart);
+
+    }, 500);
+};
+
+ReaderToolsModel.prototype.getActiveElementSelectionIndex = function() {
+    var page = parent.window.document.getElementById('page');
+    if (!page) return -1; // unit testing?
+    var selection = page.contentWindow.getSelection();
+    var current = selection.anchorNode;
+    var active = $(selection.anchorNode).closest('div').get(0);
+    if (active != this.activeElement) return -1; // huh??
+    if (!active || selection.rangeCount == 0 ) {
+        return -1;
+    }
+    var myRange = selection.getRangeAt(0).cloneRange();
+    myRange.setStart(active, 0);
+    return myRange.toString().length;
+};
+
+
+ReaderToolsModel.prototype.noteFocus = function(element) {
+    this.activeElement = element;
+    this.undoStack = [];
+    this.redoStack = [];
+    this.undoStack.push({html: element.innerHTML, text: element.textContent, offset: this.getActiveElementSelectionIndex()});
+    //alert(undoStack.last);
+};
+
+ReaderToolsModel.prototype.shouldHandleUndo = function() {
+    return this.currentMarkupType !== MarkupType.None;
+}
+
+ReaderToolsModel.prototype.undo = function() {
+    if (!this.activeElement) return;
+    if (this.activeElement.textContent == this.undoStack[this.undoStack.length - 1].text && this.undoStack.length > 1) {
+        this.redoStack.push(this.undoStack.pop());
+    }
+    this.activeElement.innerHTML = this.undoStack[this.undoStack.length - 1].html;
+    var restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
+    if (restoreOffset < 0) return;
+    this.makeSelectionIn(this.activeElement, restoreOffset, null, true);
+};
+
+ReaderToolsModel.prototype.canUndo = function() {
+    if (!this.activeElement) return 'no';
+    if (this.undoStack && (this.undoStack.length > 1 || this.activeElement.textContent !== this.undoStack[0].text)) {
+        return 'yes';
+    }
+    return 'no';
+}
+
+
+ReaderToolsModel.prototype.redo = function() {
+    if (!this.activeElement) return;
+    if (this.redoStack.length > 0) {
+        this.undoStack.push(this.redoStack.pop());
+    }
+    this.activeElement.innerHTML = this.undoStack[this.undoStack.length - 1].html;
+    var restoreOffset = this.undoStack[this.undoStack.length - 1].offset;
+    if (restoreOffset < 0) return;
+    this.makeSelectionIn(this.activeElement, restoreOffset, null, true);
+};
+
 /**
  * Displays the correct markup for the current page.
  */
@@ -486,7 +663,14 @@ ReaderToolsModel.prototype.doMarkup = function() {
 
     if (this.currentMarkupType === MarkupType.None) return;
 
+    var oldSelectionPosition = -1;
+    if (this.activeElement) oldSelectionPosition = this.getActiveElementSelectionIndex();
+
     var editableElements = this.getElementsToCheck();
+    if (editableElements.length == 0) return;
+    // qtips can be orphaned if the element they belong to is deleted
+    // (and so the mouse can't move off their owning element, and they never go away).
+    $(editableElements[0]).closest('body').children('.qtip').remove();
 
     switch(this.currentMarkupType) {
         case MarkupType.Leveled:
@@ -519,6 +703,11 @@ ReaderToolsModel.prototype.doMarkup = function() {
             });
 
             break;
+    }
+
+    if (this.activeElement && this.activeElement.textContent != this.undoStack[this.undoStack.length - 1].text) {
+        this.undoStack.push({html: this.activeElement.innerHTML, text: this.activeElement.textContent, offset: oldSelectionPosition});
+        this.redoStack = []; // ok because only referred to by this variable.
     }
 
     // the contentWindow is not available during unit testing
