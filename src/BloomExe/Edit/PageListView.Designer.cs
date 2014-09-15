@@ -45,6 +45,7 @@
             // 
             // _pagesLabel
             // 
+            this._pagesLabel.Dock = System.Windows.Forms.DockStyle.Top;
             this._pagesLabel.AutoSize = true;
             this._pagesLabel.BackColor = System.Drawing.Color.Transparent;
             this._pagesLabel.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -65,9 +66,7 @@
             // 
             // _thumbNailList
             // 
-            this._thumbNailList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this._thumbNailList.Dock = System.Windows.Forms.DockStyle.Fill;
             this._thumbNailList.BackColor = System.Drawing.SystemColors.Control;
             this._thumbNailList.ForeColor = System.Drawing.SystemColors.WindowText;
             this._L10NSharpExtender.SetLocalizableToolTip(this._thumbNailList, null);
