@@ -33,6 +33,16 @@ var StyleEditor = (function () {
             $(target).addClass(newStyleName);
             return newStyleName;
         }
+
+        // For awhile in v2 we used 'coverTitle-style' in Factory-XMatter
+        // In case this is one of those books, we'll replace it with 'Title-On-Cover-style'
+        coverTitleClass = 'coverTitle-style';
+        if ($(target).hasClass(coverTitleClass)) {
+            $(target).removeClass(coverTitleClass);
+            var newStyleName = 'Title-On-Cover-style';
+            $(target).addClass(newStyleName);
+            return newStyleName;
+        }
         return null;
     };
 
