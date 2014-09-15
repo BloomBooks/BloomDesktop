@@ -29,24 +29,32 @@
     <Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="2">
       <Output TaskParameter="ReturnValue" PropertyName="BuildCounter" />
     </Split>
+    <Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="3">
+      <Output TaskParameter="ReturnValue" PropertyName="BuildHash" />
+    </Split>
 
     <Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
+    <Message Text="BuildHash: $(BuildHash)" Importance="high"/>
 
     <!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
     <CreateProperty Value="3.0.$(BuildCounter)">
       <Output PropertyName="Version" TaskParameter="Value"/>
     </CreateProperty>
+    <CreateProperty Value="$(Version).$(BuildHash)">
+      <Output PropertyName="FullVersion" TaskParameter="Value"/>
+    </CreateProperty>
     <CreateProperty Value="BloomInstaller.$(Version).$(Label).msi">
       <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
     </CreateProperty> 
     <Message Text="Version: $(Version)" Importance="high"/>
+    <Message Text="FullVersion: $(FullVersion)" Importance="high"/>
   </Target>
 
   <Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
     <ItemGroup>
       <AssemblyInfoFiles Include="$(RootDir)/src/**/AssemblyInfo.cs"/>
     </ItemGroup>
-    <StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
+    <StampAssemblies Version="$(FullVersion)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
   </Target>
   
   <Target Name="Build" DependsOnTargets="SetAssemblyVersion">
