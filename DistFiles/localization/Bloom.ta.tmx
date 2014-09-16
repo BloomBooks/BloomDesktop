@@ -544,15 +544,6 @@
         <seg>வார்ப்புருக்கள்</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.Zaza Reader Templates">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Zaza Reader Templates</seg>
-      </tuv>
-      <tuv xml:lang="ta">
-        <seg>Zaza படிப்பான் வார்ப்புருக்கள்</seg>
-      </tuv>
-    </tu>
     <tu tuid="CollectionTab._editBookButton">
       <tuv xml:lang="en">
         <seg>Edit this book</seg>
