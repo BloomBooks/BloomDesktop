@@ -649,6 +649,7 @@ namespace Bloom.Collection
 			// _showSendReceive
 			// 
 			this._showSendReceive.AutoSize = true;
+			this._showSendReceive.Enabled = false;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._showSendReceive, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._showSendReceive, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._showSendReceive, L10NSharp.LocalizationPriority.Low);
