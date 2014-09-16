@@ -516,10 +516,28 @@ namespace Bloom.Edit
 		}
 
 		/// <summary>
-		/// View calls this once the main document has completed loading
+		/// View calls this once the main document has completed loading.
+		/// But this is not really reliable.
+		/// Also see comments in EditingView.UpdateSingleDisplayedPage.
+		/// TODO really need a more reliable way of determining when the document really is complete
 		/// </summary>
 		internal void DocumentCompleted()
 		{
+			System.Windows.Forms.Application.Idle += OnIdleAfterDocumentSupposedlyCompleted;
+		}
+
+		/// <summary>
+		/// For some reason, we need to call this code OnIdle.
+		/// We couldn't figure out the timing any other way.
+		/// Otherwise, sometimes the calledByCSharp object doesn't exist; then we don't call restoreAccordionSettings.
+		/// If we don't call restoreAccordionSettings, then the more panel stays open without the checkboxes checked.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void OnIdleAfterDocumentSupposedlyCompleted(object sender, EventArgs e)
+		{
+			System.Windows.Forms.Application.Idle -= OnIdleAfterDocumentSupposedlyCompleted;
+
 			// listen for events raised by javascript
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
 			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
