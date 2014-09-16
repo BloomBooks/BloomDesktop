@@ -713,10 +713,10 @@ namespace Bloom
 			try
 			{
 				/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
-						 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
-						 * rules don't show up inside of it. So
-						 * this won't work: _editDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
-						 */
+				 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
+				 * rules don't show up inside of it. So
+				 * this won't work: _editDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
+				 */
 				var styles = new StringBuilder();
 				styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
 				foreach (var cssRule in userModifiedStyleSheet.CssRules)
@@ -727,26 +727,13 @@ namespace Bloom
 				Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);
 				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
 			}
-			catch (Exception error)
+			catch (GeckoJavaScriptException jsex)
 			{
-				if (error.Message.Contains("addEventListener")) // BL-270 and friends report death here
-				{
-					// Trying to access the CssRules sometimes throws this exception. I may be a timing thing,
-					// since devs couldn't reproduce but various testers did.
-
-					// When does this happen? We don't know yet. Nor Why.
-					//
-					// In one scenario, this is running before the page is ready: in that case, there would have been nothing to save.
-					// In another scenario, it is running after the browser has left this page, again, nothing to save, but
-					// mabye some style changes you made aren't going to be saved. If people
-					// start reporting that, then we will need to return to this.
-					Logger.WriteEvent("BL-270 Reproduction (addEventListener error while saving CSSRules). We're swallowing it but listing it here in the log.");
-					Debug.Fail("BL-270 reproduction. In Release version, this would not show.");
-				}
-				else
-				{
-					throw;
-				}
+				/* We are attempting to catch and ignore all JavaScript errors encountered here,
+				 * specifically addEventListener errors and JSError (BL-279, BL-355, et al.).
+				 */
+				Logger.WriteEvent("GeckoJavaScriptException (" + jsex.Message + "). We're swallowing it but listing it here in the log.");
+				Debug.Fail("GeckoJavaScriptException(" + jsex.Message + "). In Release version, this would not show.");
 			}
 		}
 
