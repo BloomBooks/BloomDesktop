@@ -116,10 +116,10 @@ namespace Bloom.web
 		private static string GetSampleTextsList(string settingsFilePath)
 		{
 			var path = Path.Combine(Path.GetDirectoryName(settingsFilePath), "Sample Texts");
-			if (!Directory.Exists(path)) return string.Empty;
+			if (!Directory.Exists(path))
+				Directory.CreateDirectory(path);
 
-			var fileHashSet = new HashSet<string>();
-			var fileList = "";
+			var fileList1 = new List<string>();
 			var langFileName = string.Format(ProjectContext.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 			var langFile = Path.Combine(path, langFileName);
 
@@ -142,23 +142,23 @@ namespace Bloom.web
 
 			// first look for ReaderToolsWords-<iso>.json
 			if (File.Exists(langFile))
-				fileHashSet.Add(langFile);
+				fileList1.Add(langFile);
 
 			// next look for <language_name>_lang_data.js
 			foreach (var file in Directory.GetFiles(path, "*" + _synphonyFileNameSuffix))
 			{
-				fileHashSet.Add(file);
+				if (!fileList1.Contains(file))
+					fileList1.Add(file);
 			}
 
 			// now add the rest
 			foreach (var file in Directory.GetFiles(path))
 			{
-				fileHashSet.Add(file);
+				if (!fileList1.Contains(file))
+					fileList1.Add(file);
 			}
 
-			fileList = string.Join("\r", fileHashSet.ToArray());
-
-			return fileList;
+			return string.Join("\r", fileList1.ToArray());
 		}
 
 		/// <summary>Gets the contents of a Sample Text file</summary>
