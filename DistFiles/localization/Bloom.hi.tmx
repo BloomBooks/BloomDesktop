@@ -67,6 +67,7 @@
       </tuv>
     </tu>
     <tu tuid="BloomPackInstallDialog.Extracting">
+      <note>Shown while BloomPacks are being installed</note>
       <tuv xml:lang="en">
         <seg>Extracting...</seg>
       </tuv>
@@ -88,6 +89,15 @@
       </tuv>
       <tuv xml:lang="hi">
         <seg>{0} खोलने...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>सभी बक्से की शैली '{0}' और भाषा '{1}' को ले जाने के लिए पाठ का आकार बदलता है।\nवर्तमान आकार {2} पीटी है।</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -153,6 +163,22 @@
       </tuv>
       <tuv xml:lang="hi">
         <seg>बात के सामने/वापस पैक</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeft">
+      <tuv xml:lang="en">
+        <seg>Right To Left</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>दाएँ से बाएँ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftTip">
+      <tuv xml:lang="en">
+        <seg>Select languages that are written from right to left</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>दाएँ से बाएँ से लिखा हैं कि भाषाओं का चयन करें</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
@@ -312,6 +338,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.Restart">
+      <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
       <tuv xml:lang="en">
         <seg>Restart</seg>
       </tuv>
@@ -329,7 +356,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
       <tuv xml:lang="en">
-        <seg>Bloom will now open this HTML document in your word processing program (normally Word or Libre Office). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
       </tuv>
       <tuv xml:lang="hi">
         <seg>ब्लूम अब अपने शब्द संसाधन प्रोग्राम (सामान्य रूप से शब्द या Libre कार्यालय) में इस HTML दस्तावेज़ खुलेगा। आप पाठ और इस पुस्तक की छवियों के साथ काम करने में सक्षम हो जाएगा, लेकिन इन कार्यक्रमों के साथ बहुत अच्छी तरह से लेआउट, इतनी ज्यादा उम्मीद नहीं बनाए सामान्य रूप से नहीं है।</seg>
@@ -361,7 +388,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
       <tuv xml:lang="en">
-        <seg>Export to Word or Libre Office...</seg>
+        <seg>Export to Word or LibreOffice...</seg>
       </tuv>
       <tuv xml:lang="hi">
         <seg>शब्द या लिब्रे  कार्यालय को निर्यात करें...</seg>
@@ -369,7 +396,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
       <tuv xml:lang="en">
-        <seg>Export To XML For InDesign...</seg>
+        <seg>Export to XML for InDesign...</seg>
       </tuv>
       <tuv xml:lang="hi">
         <seg>एक्स एम एल को निर्यात के लिए इन डिज़ाइन ...</seg>
@@ -456,6 +483,15 @@
         <seg>डिस्क पर फ़ोल्डर खोलें</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.Health">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Health</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>स्वास्थ्य</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.MakeBookUsingThisTemplate">
       <tuv xml:lang="en">
         <seg>Make a book using this source</seg>
@@ -531,6 +567,22 @@
         <seg>ब्लूम पैक बनाने</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template BloomPack...</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>पाठक टेम्पलेट BloomPack बनाओ...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.advancedToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Advanced</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>उन्नत</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.bloomLibraryLinkLabel">
       <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
       <tuv xml:lang="en">
@@ -598,6 +650,24 @@
         <seg>नई गोले के लिए स्रोतों</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.BackButton">
+      <note>In a wizard, this button takes you to the previous step.</note>
+      <tuv xml:lang="en">
+        <seg>Back</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>पीठ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Cancel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Cancel</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>रद्द करें</seg>
+      </tuv>
+    </tu>
     <tu tuid="Common.CancelButton">
       <tuv xml:lang="en">
         <seg>&amp;Cancel</seg>
@@ -624,6 +694,24 @@
         <seg>अगले</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.NextButton">
+      <note>In a wizard, this button takes you to the next step.</note>
+      <tuv xml:lang="en">
+        <seg>Next</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>अगले</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.OK">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>OK</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>ठीक है</seg>
+      </tuv>
+    </tu>
     <tu tuid="Common.OKButton">
       <tuv xml:lang="en">
         <seg>&amp;OK</seg>
@@ -648,6 +736,24 @@
         <seg>इमारत...</seg>
       </tuv>
     </tu>
+    <tu tuid="DecodableReaderTool.LettersInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters in this stage</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>इस अवस्था में पत्र</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.MakeLetterWordList">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Open a Letter and Word List File</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>एक अक्षर और शब्द सूची फ़ाइल खोलें</seg>
+      </tuv>
+    </tu>
     <tu tuid="DecodableReaderTool.SetUpStages">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -660,7 +766,7 @@
     <tu tuid="DecodableReaderTool.Stage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Stage </seg>
+        <seg>Stage</seg>
       </tuv>
       <tuv xml:lang="hi">
         <seg>स्टेज</seg>
@@ -669,10 +775,19 @@
     <tu tuid="DecodableReaderTool.StageOf">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg> of </seg>
+        <seg>of</seg>
       </tuv>
       <tuv xml:lang="hi">
         <seg>की</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.WordsInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Words in this stage</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>इस अवस्था में शब्द</seg>
       </tuv>
     </tu>
     <tu tuid="Download.Completed">
@@ -928,6 +1043,87 @@
       </tuv>
       <tuv xml:lang="hi">
         <seg>एक पृष्ठ आकार और ओरिएंटेशन का चयन</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.BorderToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the border and background</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>बॉर्डर और पृष्ठभूमि परिवर्तित करें</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontFaceToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font face</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>फ़ॉन्ट चेहरा बदल</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontSizeToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font size</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>फ़ॉन्ट आकार बदलें</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.LineSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between lines of text</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>पाठ की पंक्तियों के बीच की रिक्ति परिवर्तित करें</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingExtraWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Extra Wide</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>अतिरिक्त व्यापक</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingNormal">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>सामान्य</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between words</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>शब्दों के बीच की रिक्ति परिवर्तित करें</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wide</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>विस्तृत</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditorTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Adjust formatting for style</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>शैली के लिए स्वरूपण समायोजित करें</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.TemplatePagesList.Heading">
@@ -1521,6 +1717,186 @@
         <seg>B5चित्र</seg>
       </tuv>
     </tu>
+    <tu tuid="LeveledReaderTool.Actual">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Actual</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>वास्तविक</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ConceptLoad">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Concept load</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>अवधारणा लोड</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.FoThisLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>For this Level</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>इस स्तर के लिए</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>How to make a great leveled reader</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>कैसे एक महान लगाया पाठक बनाने के लिए</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.IllustrationSupport">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Illustration support</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>चित्रण समर्थन</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.KeepInMind">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Keep in mind</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>ध्यान में रखें</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Level">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level </seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>स्तर</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.LevelOf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg> of </seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>की</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Max">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Max</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>मैक्स</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PatternAndRecognition">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Pattern and recognition</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>पैटर्न और मान्यता</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per page</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>प्रति पृष्ठ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per sentence</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>प्रति वाक्य</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Predictability">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Predictability</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>पूर्वानुमान</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.SetUpLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Levels</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>ऊपर के स्तर सेट करें</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisBook">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Book</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>इस पुस्तक</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Page</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>यह पृष्ठ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.TopicFamiliarity">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Topic familiarity</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>विषय सुपरिचय</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Total">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>total</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>कुल</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Unique">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>unique</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>अद्वितीय</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.WordCounts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Word counts</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>शब्द मायने रखता है</seg>
+      </tuv>
+    </tu>
     <tu tuid="LoginDialog.AgreeToTerms">
       <tuv xml:lang="en">
         <seg>I agree to the Bloom Library's Terms of Use</seg>
@@ -1655,6 +2031,14 @@
       </tuv>
       <tuv xml:lang="hi">
         <seg>स्रोत संग्रह</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+      <tuv xml:lang="en">
+        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>शेल या टेम्पलेट का एक संग्रह है व्यापक संचार के एक या एक से अधिक भाषाओं में किताबें। आप ये गोले BloomLibrary.org करने के लिए अपलोड करें और वैकल्पिक रूप से इतना है कि वे स्थानीय भाषा की पुस्तकों के साथ अपने गोले बना कर सकते हैं दूसरों को देने के लिए एक BloomPack बनाने के लिए सक्षम हो जाएगा।</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
@@ -1911,10 +2295,12 @@
     <tu tuid="PublishTab.BodyOnlyRadio-tooltip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
+        <seg>Make a booklet from the inside pages of the book.
+ Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
       </tuv>
       <tuv xml:lang="hi">
-        <seg>अंदर से एक बुकलेट बना पुस्तक के पन्नों। पृष्ठों बाहर रखा जाएगा और इतना है कि जब आप इसे गुना है, आप एक पुस्तिका होगा reordered.(-999)</seg>
+        <seg>अंदर से एक बुकलेट बना पुस्तक के पन्नों।
+ पृष्ठों बाहर रखा जाएगा और इतना है कि जब आप इसे गुना है, आप एक पुस्तिका होगा reordered.(-999)</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.ButtonThatShowsUploadForm">
@@ -2648,6 +3034,60 @@
         <seg>पत्र</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.Letters.Header">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters and Letter Combinations</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>पत्र और पत्र संयोजन</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>आप पाठकों के decodable बनाने में मदद करने के लिए, पत्र और पत्र संयोजन कि आप शिक्षण हो जाएगा पता करने के लिए ब्लूम की जरूरत।</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>प्रत्येक पत्र या पत्र संयोजन एक स्थान के साथ अलग करें। उदाहरण के लिए, यहाँ है क्या हम के लिए अंग्रेजी भाषा का प्रयोग हो सकता है:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Notice that the English list includes symbols that are used to make words, like ' in </seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>सूचना है कि अंग्रेजी सूची भी शामिल है जैसे शब्दों में, करने के लिए उपयोग किए गए प्रतीक ' में</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>it's</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>यह है</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>.</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>.</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.LevelHeader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2678,7 +3118,7 @@
     <tu tuid="ReaderSetup.MatchingWords">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg> matching words</seg>
+        <seg>matching words</seg>
       </tuv>
       <tuv xml:lang="hi">
         <seg>शब्दों से मेल खाते</seg>
@@ -2828,6 +3268,24 @@
         <seg>प्रत्येक वाक्य में अधिकतम शब्द</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.SetUpDecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Decodable Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>Decodable रीडर उपकरण अप सेट करें</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetUpLeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Leveled Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>समतल पाठक उपकरण अप सेट करें</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.SetupAlphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2918,6 +3376,51 @@
         <seg>अद्वितीय</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.Words">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Words</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>शब्दों के</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>आप पाठकों के decodable बनाने में मदद करने के लिए, ब्लूम शब्दों है कि वर्तमान मंच के भीतर फिट का सुझाव कर सकते हैं।  खिलने को शब्द देने के लिए दो तरीके हैं:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.PlaceTextFiles">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>2) Place Text Files in Your</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>2) जगह पाठ फ़ाइलों में अपने</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.SampleTextFolder">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Text Folder</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>नमूना पाठ फ़ोल्डर</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.TypeWordsHere">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>1) Type Words Here</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>1) यहाँ शब्द लिखें</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.lettersHeader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2925,6 +3428,38 @@
       </tuv>
       <tuv xml:lang="hi">
         <seg>पत्र</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+      <tuv xml:lang="en">
+        <seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this BloomPack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>इसके अलावा, इस BloomPack अपनी नवीनतम decodable और लगाया रीडर सेटिंग्स "{0}" भाषा के लिए ले जाएगा। किसी को खोलने के इस BloomPack, जो फिर एक "{0}" संग्रह खोलता है, उनकी वर्तमान पाठक decodable और लगाया सेटिंग्स द्वारा इस BloomPack में सेटिंग्स बदल दिया होगा। वे भी पाठकों के decodable में उपयोग के लिए शब्दों के मौजूदा सेट मिल जाएगा।</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
+      <tuv xml:lang="en">
+        <seg>The following books will be made into templates:</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>निम्नलिखित पुस्तकों टेम्पलेट्स में किया जाएगा:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+      <tuv xml:lang="en">
+        <seg>Save BloomPack</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>BloomPack सहेजें</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template BloomPack</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>पाठक टेम्पलेट BloomPack बनाना</seg>
       </tuv>
     </tu>
     <tu tuid="RegisterDialog.Email">
@@ -3243,6 +3778,15 @@
       </tuv>
       <tuv xml:lang="hi">
         <seg>सेटअप</seg>
+      </tuv>
+    </tu>
+    <tu tuid="You may use this space for author/illustrator, or anything else.">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You may use this space for author/illustrator, or anything else.</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>लेखक/illustrator, या कुछ और के लिए आप इस स्थान का उपयोग हो सकता।</seg>
       </tuv>
     </tu>
   </body>
