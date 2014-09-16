@@ -500,12 +500,6 @@
         <seg>{0} Books</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.Zaza Reader Templates">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Zaza Reader Templates</seg>
-      </tuv>
-    </tu>
     <tu tuid="CollectionTab._addToLibraryButton">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
