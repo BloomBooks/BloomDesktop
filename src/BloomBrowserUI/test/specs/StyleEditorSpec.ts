@@ -34,6 +34,12 @@ function MakeSmaller(target:string) {
     editor.MakeSmaller(<HTMLElement><any>jQueryTarget);
 }
 
+function GetFontSize(target:string): number {
+    var jQueryTarget = $(document).find(target);
+    var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
+    return editor.GetCalculatedFontSizeInPoints(<HTMLElement><any>jQueryTarget);
+}
+
 function ChangeSizeAbsolute(target:string, newSize:number) {
     var jQueryTarget = $(document).find(target);
     var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
@@ -46,7 +52,7 @@ function GetUserModifiedStyleSheet(): CSSStyleSheet {
            return <CSSStyleSheet>(document.styleSheets[i]);
     }
     return new CSSStyleSheet();
-} 
+}
 
 function GetFooStyleRuleFontSize(): number {
     var sizeString = $('.foo-style').css("font-size");
@@ -61,7 +67,8 @@ function GetFontSizeRuleByLang(lang: string): number {
 function ParseRuleForFontSize(ruleText: string): number {
     var ruleString = 'font-size: ';
     var beginPoint = ruleText.indexOf(ruleString) + ruleString.length;
-    var endPoint = ruleText.indexOf(' !important');
+    //var endPoint = ruleText.indexOf(' !important');
+    var endPoint = ruleText.indexOf(' !');
     if (beginPoint < 1 || endPoint < beginPoint)
         return null;
     var sizeString = ruleText.substr(beginPoint, endPoint - beginPoint);
@@ -223,7 +230,7 @@ describe("StyleEditor", function () {
     it("When the element does not have @lang, MakeBigger adds rules that apply only when there is no @lang", function () {
         $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
         MakeBigger2('#testTarget2');
-        
+
         expect(HasRuleMatchingThisSelector("normal-style:not([lang])")).toBe(true);
     });
 
@@ -323,7 +330,10 @@ describe("StyleEditor", function () {
     it("When the element has a size rule in enough 'em's, MakeSmaller will still work", function () {
         $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 0.8em ! important; }</style>");
         $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
+
+        var before = GetFontSize('#testTarget');
         MakeSmaller('#testTarget');
+
         var x = GetUserModifiedStyleSheet().cssRules;
 
         var count = 0;
@@ -333,8 +343,8 @@ describe("StyleEditor", function () {
             }
         }
         expect(count).toBe(1);
-        expect(GetFontSizeRuleByLang('xyz')).toBe(8); // 0.8em -> 10pt -> smaller is 8pt
+        expect(GetFontSizeRuleByLang('xyz')).toBe(before - 2); // 0.8em -> 10pt -> smaller is 8pt
     });
 });
 
-    
+
