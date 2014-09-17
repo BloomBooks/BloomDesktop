@@ -584,7 +584,7 @@ ReaderToolsModel.prototype.doKeypressMarkup = function() {
             divBrCount = 0;
             // endoffset counts the number of childNodes that the selection is after.
             // We want to know how many <br> nodes are between it and the previous non-empty node.
-            for (var k = myRange.endOffset - 1; k >= 0; k-- ) {
+            for (k = myRange.endOffset - 1; k >= 0; k-- ) {
                 if (current.childNodes[k].localName === 'br') divBrCount++;
                 else if (current.childNodes[k].textContent.length > 0) break;
             }
@@ -774,7 +774,7 @@ ReaderToolsModel.prototype.updateWholeBookCounts = function (pageSource) {
 
 ReaderToolsModel.prototype.countWordsInBook = function(pageStrings) {
     var total = 0;
-    for (var i = 0; i < pageStrings.length; i++) {
+    for (i = 0; i < pageStrings.length; i++) {
         var page = pageStrings[i];
         var fragments = libsynphony.stringToSentences(page);
 
@@ -783,7 +783,7 @@ ReaderToolsModel.prototype.countWordsInBook = function(pageStrings) {
             return frag.isSentence;
         });
 
-        for (var j = 0; j < fragments.length; j++) {
+        for (j = 0; j < fragments.length; j++) {
             total += fragments[j].wordCount();
         }
     }
@@ -792,7 +792,7 @@ ReaderToolsModel.prototype.countWordsInBook = function(pageStrings) {
 
 ReaderToolsModel.prototype.uniqueWordsInBook = function (pageStrings) {
     var wordMap = {};
-    for (var i = 0; i < pageStrings.length; i++) {
+    for (i = 0; i < pageStrings.length; i++) {
         var page = pageStrings[i];
         var fragments = libsynphony.stringToSentences(page);
 
@@ -801,7 +801,7 @@ ReaderToolsModel.prototype.uniqueWordsInBook = function (pageStrings) {
             return frag.isSentence;
         });
 
-        for (var j = 0; j < fragments.length; j++) {
+        for (j = 0; j < fragments.length; j++) {
             var words = fragments[j].words;
             for (var k = 0; k < words.length; k++) {
                 wordMap[words[k]] = 1;
