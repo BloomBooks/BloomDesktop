@@ -101,7 +101,7 @@ function GetRuleForCoverTitleStyle(): CSSRule {
 	var x:CSSRuleList = <any>GetUserModifiedStyleSheet().cssRules;
 
 	for (var i = 0; i < x.length; i++) {
-		if (x[i].cssText.indexOf('coverTitle-style') > -1) {
+		if (x[i].cssText.indexOf('Title-On-Cover-style') > -1) {
 			return x[i];
 		}
 	}
@@ -296,7 +296,7 @@ describe("StyleEditor", function () {
 		expect(GetRuleForNormalStyle()).not.toBeNull();
 	});
 
-	it("If a 'coverTitle' slips through, make it 'coverTitle-style'", function () {
+	it("If a 'coverTitle' slips through, make it 'Title-On-Cover-style'", function () {
 		$('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='coverTitle'></div>");
 		MakeBigger2('#testTarget2');
 
