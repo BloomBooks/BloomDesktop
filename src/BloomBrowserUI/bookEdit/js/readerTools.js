@@ -801,7 +801,7 @@ ReaderToolsModel.prototype.uniqueWordsInBook = function (pageStrings) {
 ReaderToolsModel.prototype.maxWordsPerPageInBook = function(pageStrings) {
     var maxWords = 0;
 
-    for (i = 0; i < pageStrings.length; i++) {
+    for (var i = 0; i < pageStrings.length; i++) {
         var page = pageStrings[i];
 
         // split into sentences
@@ -813,7 +813,7 @@ ReaderToolsModel.prototype.maxWordsPerPageInBook = function(pageStrings) {
         });
 
         var subMax = 0;
-        for (j = 0; j < fragments.length; j++) {
+        for (var j = 0; j < fragments.length; j++) {
             subMax += fragments[j].wordCount();
         }
 
@@ -871,8 +871,13 @@ ReaderToolsModel.prototype.setElementAttribute = function(id, attrName, val) {
 ReaderToolsModel.prototype.addWordsFromFile = function(fileContents) {
 
     // is this a Synphony data file?
-    if (fileContents.substr(0, 12) === 'setLangData(') {
+    if (fileContents.substr(0, 12) === '{"LangName":') {
         libsynphony.langDataFromString(fileContents);
+        this.getSynphony().loadFromLangData(lang_data);
+    }
+    else if (fileContents.substr(0, 12) === 'setLangData(') {
+        libsynphony.langDataFromString(fileContents);
+        this.getSynphony().loadFromLangData(lang_data);
     }
     else {
         var words = libsynphony.getWordsFromHtmlString(fileContents);
@@ -897,6 +902,10 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
         this.updateWordList();
         this.doMarkup();
         processWordListChangedListeners();
+
+        // write out the ReaderToolsWords-xyz.json file
+        iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(lang_data));
+
         return;
     }
 

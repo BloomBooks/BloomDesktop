@@ -17,19 +17,29 @@ Each time code is checked in, an automatic build begins on our [TeamCity build s
 
 ## Source Code
 
-Bloom is written in C# with Winforms, with an embedded Gecko (Firefox) browser and a bunch of jquery-using javascript & Typescript. You will need Visual Studio 2010 SP1, or greater, to build it. The free Visual Studio Express version should be fine, but we don't test it.
+Bloom is written in C# with Winforms, with an embedded Gecko (Firefox) browser and a bunch of jquery-using javascript & Typescript.
 
-You'll need at least a 2010 edition of Visual Studio, including the free Express version.
+On Windows you'll need at least a 2010 edition of Visual Studio (Version 2010 SP1), including the free Express version.
 
 It will avoid some complications if you update to default branch now, before adding the dependencies that follow.
 
+### Building the Source Code
+
+Before you'll be able to build you'll have to download some binary dependencies (see below).
+
+On Linux you'll also have to make sure that you have installed some dependencies (see below).
+
+To build Bloom you can open and build the solution in Visual Studio or MonoDevelop, or build from the command line using msbuild/xbuild.
+
 ## Get Binary Dependencies
 
-In the build directory, run
+In the `build` directory, run
 
 `getDependencies-windows.sh`
+
 or
-`getDependencies-linux.sh`
+
+`./getDependencies-linux.sh`
 
 That will take several minutes the first time, and afterwards will be quick as it only downloads what has changed. When you change branches, run this again.
 
@@ -58,78 +68,105 @@ Now, Mozilla puts out a new version of XulRunner every 6 weeks at the time of th
 
 Bloom uses various web services that require identification. We can't really keep those a secret, but we can at least not make them google'able by not checking them into github. To get the file that contains user and test-level authorization codes, just get the connections.dll file out of a shipping version of a Bloom, and place it in your Bloom/DistFiles directory.
 
+
 # Special instructions for building on Linux
 
-These notes were written by JohnT on 16 July 2014 based on previous two half-days working with Eberhard to get Bloom to build on a Precise Linux box. The computer was previously used to develop FLEx, so may have already had something that is needed. Sorry, I have not had the chance to try them on another system. If you do, please correct as needed.
+These notes were written by JohnT on 16 July 2014 based on previous two half-days working with
+Eberhard to get Bloom to build on a Precise Linux box. The computer was previously used to
+develop FLEx, so may have already had something that is needed. Sorry, I have not had the chance
+to try them on another system. If you do, please correct as needed.
 
-Note that as of 16 July 2014, Bloom does not work very well on Linux. Something more may be needed by the time we get it fully working. Hopefully these notes will be updated.
+Note that as of 16 July 2014, Bloom does not work very well on Linux. Something more may be
+needed by the time we get it fully working. Hopefully these notes will be updated.
 
-At various points you will be asked for the SU password.
+At various points you will be asked for your password.
 
-1. You need synaptic to look in some extra places for components. In Synaptic, go to Settings->Repositories, Other Software tab. You want to see the following lines:
+1. Install `wget`
 
-http://packages.sil.org/ubuntu precise main
-http://packages.sil.org/ubuntu precise-experimental main
-http://linux.lsdev.sil.org/ubuntu precise main
-http://linux.lsdev.sil.org/ubuntu precise-experimental main
+		sudo apt-get install wget
 
-If some are missing, click add and paste the missing line, then insert 'deb' at the start, then confirm.
+2. Add the SIL keys for the main and testing SIL package repositiories
 
-(May help to check for and remove any lines that refer to the obsolete ppa.palaso.org, if you've been doing earlier work on SIL stuff.)
+		wget -O - http://linux.lsdev.sil.org/downloads/sil-testing.gpg | sudo apt-key add -
+		wget -O - http://packages.sil.org/sil.gpg | sudo apt-key add -
 
-2. Update your system:
+3. Make sure you have your system set up to look at the main and testing SIL repositories
 
-sudo apt-get update
+	You need synaptic to look in some extra places for components. In Synaptic, go to
+	`Settings->Repositories`, `Other Software` tab. You want to see the following lines (replace
+	`precise` with your distribution version):
 
-sudo apt-get upgrade
+		http://packages.sil.org/ubuntu precise main
+		http://packages.sil.org/ubuntu precise-experimental main
+		http://linux.lsdev.sil.org/ubuntu precise main
+		http://linux.lsdev.sil.org/ubuntu precise-experimental main
 
-3. Custom version of Mono:
+	If some are missing, click add and paste the missing line, then insert 'deb' at the start,
+	then confirm.
 
-Bloom depends on a patched version of Mono 3.4. Currently there is no package, you need to build mono yourself with the patches Bloom needs. I did this work in fwrepo/mono; I think this is only important in that some of the instructions assume the root of the mono rep is fwrepo/mono/mono.
+	(May help to check for and remove any lines that refer to the obsolete `ppa.palaso.org`, if
+	you've been doing earlier work on SIL stuff.)
 
-3a. Get the mono source and the correct branch:
+4. Update your system:
 
-git clone git://github.com/sillsdev/mono.git
+		sudo apt-get update
+		sudo apt-get upgrade
 
-git checkout --track origin/feature/mono-3.4
+5. Clone the Bloom repository:
 
-This should put you on the necessary 3.4 branch of the mono repo that you want to build.
+		mkdir $HOME/palaso
+		cd $HOME/palaso
+		hg clone https://bitbucket.org/hatton/bloom-desktop.
 
-3b. Follow the instructions at http://linux.lsdev.sil.org/wiki/index.php/Building_mono_from_source to build mono. Note that you need to clone mono-calgary into the same parent directory as mono.
+	This should leave you in the default branch, which is currently correct for Linux. Don't be
+	misled into activating the Linux branch, which is no longer used. Note that after about
+	October, you should be using a git repo, if things go as planned.
 
-(You may get a message like "/bin/ls: cannot access /opt/mono-sil/bin/mono-fw: No such file or directory" at the end of the build. As long as it says "Finished successfully" a few lines up this is OK.
+6. Install MonoDevelop 5 (or later)
 
-4. Install MonoDevelop 5 (or later). One way to do this is with synaptic.
+	A current MonoDevelop can be found on launchpad: https://launchpad.net/~ermshiperete/+archive/ubuntu/monodevelop
+	or https://launchpad.net/~ermshiperete/+archive/ubuntu/monodevelop-beta.
 
-Make a shortcut to launch MonoDevelop (or just use this command line). The shortcut should execute something like this:
+	Follow the instructions on the launchpad website.
 
-bash -c 'PATH=/opt/monodevelop/bin:$PATH; export FIELDWORKS_ENVIRON="/home/thomson/fwrepo/fw/environ"; export MONO_ENVIRON="/home/thomson/palaso/bloom-desktop/environ"; monodevelop-launcher.sh'
+	Make a shortcut to launch MonoDevelop (or just use this command line). The shortcut should execute something like this:
 
-(The FIELDWORKS_ENVIRON bit is probably not needed, but I had it in mine so I left it in. Correct the paths to have your username instead of 'thomson'.)
+		bash -c 'PATH=/opt/monodevelop/bin:$PATH; \
+			export MONO_ENVIRON="$HOME/palaso/bloom-desktop/environ"; \
+			export MONO_GAC_PREFIX=/opt/monodevelop:/opt/mono-sil:/usr:/usr/local; \
+			monodevelop-launcher.sh'
 
-5. Clone the Bloom repository: hg clone https://bitbucket.org/hatton/bloom-desktop.
+	Correct the path in MONO_ENVIRON to point to the Bloom source code directory.
 
-This should leave you in the default branch, which is currently correct for Linux. Don't be misled into activating the Linux branch, which is no longer used. Note that after about September, you should be using a git repo, if things go as planned.
+7. Install the dependencies needed for Bloom
 
-6. Get dependencies:
+		cd $HOME/palaso/bloom-desktop/build
+		./install-deps # (Note the initial dot)
 
-cd bloom-desktop/build.
+	This will also install a custom mono version in `/opt/mono-sil`. However, to successfully
+	use it with MonoDevelop, you'll need to do some additional steps:
 
-./install-deps (Note the initial dot.)
+		wget https://raw.githubusercontent.com/sillsdev/mono-calgary/develop/mono-sil
+		sudo mv mono-sil /opt/mono-sil/bin
+		sudo (cd /opt/mono-sil/bin && ln -s mono-sgen mono-real && rm mono && ln -s mono-sil mono)
 
-./getDependencies-Linux.sh
+8. Get binary dependencies:
 
-cd ..
+		cd $HOME/palaso/bloom-desktop/build
+		./getDependencies-Linux.sh  # (Note the initial dot)
+		cd ..
+		. environ #(note the '.')
+		mozroots --import --sync
 
-. environ (note the '.')
+9. Open solution in MonoDevelop
 
-mozroots --import --sync
+	Run MonoDevelop using the shortcut. Open the solution BloomLinux.sln. Go to
+	`Edit ->Preferences`, `Packages/Sources`. The list should include
+	`https://www.nuget.org/api/v2/`, and `http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/`
+	(not sure the second is necessary).
 
-Run MonoDevelop using the shortcut. Open the solution BloomLinux.sln. Go to Edit ->Preferences, Packages/Sources. The list should include  https://www.nuget.org/api/v2/, and http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/ (not sure the second is necessary).
-
-Select the BloomExe project. Do Project/Restore Packages. (Uses nuget to get some of Bloom's dependencies.)
-
-7. At this point you should be able to build the whole BloomLinux solution (right-click in Solution pane, choose Build).
+	At this point you should be able to build the whole BloomLinux solution (right-click in
+	Solution pane, choose Build).
 
 Hopefully we can streamline this process eventually.
 

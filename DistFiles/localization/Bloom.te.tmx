@@ -677,7 +677,7 @@
 	</tu>
 	<tu tuid="Download.Completed">
 	  <tuv xml:lang="en">
-		<seg>Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
+		<seg>Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
 	  </tuv>
 	  <tuv xml:lang="te">
 		<seg>మీ డౌన్లోడ్ ({0}) పూర్తయింది. మీరు మీ సేకరణలు 'పుస్తకాలు బ్లూమ్ లైబ్రరీ నుండి' విభాగంలో ఇది చూడగలరు మీరు ఏదో చేయడం మధ్యలో అనిపించడం లేదు ఉంటే.బూమ్ మీరు దానిని ఎంచుకోవచ్చు</seg>

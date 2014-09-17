@@ -129,7 +129,7 @@ namespace Bloom
 							_onlyOneBloomMutex = null; // we don't own it, so ReleaseMutexForBloom must not try to release it.
 							string caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
 							string message = LocalizationManager.GetString("Download.Completed",
-								@"Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. "
+								@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. "
 								+ "If you don't seem to be in the middle of doing something, Bloom will select it for you.");
 							message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
 							MessageBox.Show(message, caption);
@@ -400,7 +400,16 @@ namespace Bloom
 			using (var dlg = new SimpleMessageDialog("Waiting for other Bloom to finish..."))
 			{
 				dlg.TopMost = true;
-				dlg.Show();
+				if (mutexAcquired)
+				{
+					// On Linux if we don't create this control the splash screen won't update
+					// properly. If we create this dialog it works better. We don't want to show
+					// the dialog unless we have to, because that doesn't update properly either.
+					dlg.CreateControl();
+				}
+				else
+					dlg.Show();
+
 				try
 				{
 					_onlyOneBloomMutex = Mutex.OpenExisting(_mutexId);
