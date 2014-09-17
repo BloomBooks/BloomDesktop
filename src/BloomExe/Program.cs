@@ -129,7 +129,7 @@ namespace Bloom
 							_onlyOneBloomMutex = null; // we don't own it, so ReleaseMutexForBloom must not try to release it.
 							string caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
 							string message = LocalizationManager.GetString("Download.Completed",
-								@"Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. "
+								@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. "
 								+ "If you don't seem to be in the middle of doing something, Bloom will select it for you.");
 							message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
 							MessageBox.Show(message, caption);

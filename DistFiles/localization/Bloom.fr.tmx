@@ -878,7 +878,7 @@
 	</tu>
 	<tu tuid="Download.Completed">
 	  <tuv xml:lang="en">
-		<seg>Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
+		<seg>Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Le téléchargement ({0}) est terminé. Vous pouvez le voir dans la section 'Livres de BloomLibrary.org' de vos collections. Si Bloom pense que vous n'êtes pas en train de faire quelque chose, il le sélectionnera pour vous.</seg>
