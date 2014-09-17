@@ -30,6 +30,12 @@ function MakeSmaller(target) {
     editor.MakeSmaller(jQueryTarget);
 }
 
+function GetFontSize(target) {
+    var jQueryTarget = $(document).find(target);
+    var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
+    return editor.GetCalculatedFontSizeInPoints(jQueryTarget);
+}
+
 function ChangeSizeAbsolute(target, newSize) {
     var jQueryTarget = $(document).find(target);
     var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
@@ -57,7 +63,9 @@ function GetFontSizeRuleByLang(lang) {
 function ParseRuleForFontSize(ruleText) {
     var ruleString = 'font-size: ';
     var beginPoint = ruleText.indexOf(ruleString) + ruleString.length;
-    var endPoint = ruleText.indexOf(' !important');
+
+    //var endPoint = ruleText.indexOf(' !important');
+    var endPoint = ruleText.indexOf(' !');
     if (beginPoint < 1 || endPoint < beginPoint)
         return null;
     var sizeString = ruleText.substr(beginPoint, endPoint - beginPoint);
@@ -319,7 +327,10 @@ describe("StyleEditor", function () {
     it("When the element has a size rule in enough 'em's, MakeSmaller will still work", function () {
         $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 0.8em ! important; }</style>");
         $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
+
+        var before = GetFontSize('#testTarget');
         MakeSmaller('#testTarget');
+
         var x = GetUserModifiedStyleSheet().cssRules;
 
         var count = 0;
@@ -329,7 +340,7 @@ describe("StyleEditor", function () {
             }
         }
         expect(count).toBe(1);
-        expect(GetFontSizeRuleByLang('xyz')).toBe(8); // 0.8em -> 10pt -> smaller is 8pt
+        expect(GetFontSizeRuleByLang('xyz')).toBe(before - 2); // 0.8em -> 10pt -> smaller is 8pt
     });
 });
 //# sourceMappingURL=StyleEditorSpec.js.map

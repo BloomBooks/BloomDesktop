@@ -11,7 +11,7 @@ class interIframeChannel {
 
 	constructor() {
 		this.localizationManagerDictionary = {};
-		this.readableFileExtensions = ['txt', 'js'];
+		this.readableFileExtensions = ['txt', 'js', 'json'];
 	}
 
 	/**
