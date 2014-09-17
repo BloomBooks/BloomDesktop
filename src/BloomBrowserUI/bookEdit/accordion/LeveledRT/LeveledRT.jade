@@ -24,12 +24,12 @@ html
 					td.statistics-actual(data-i18n='LeveledReaderTool.Actual') Actual
 				tr
 					td.statistics-label(data-i18n='LeveledReaderTool.PerPage') per page
-					td.statistics-max#maxWordsPerPage 15
-					td.statistics-actual#actualWordsPerPage 13
+					td.statistics-max#maxWordsPerPage
+					td.statistics-actual#actualWordsPerPage -
 				tr
 					td.statistics-label(data-i18n='LeveledReaderTool.PerSentence') per sentence
-					td.statistics-max#maxWordsPerSentence 5
-					td.statistics-actual#actualWordsPerSentence 7
+					td.statistics-max#maxWordsPerSentence
+					td.statistics-actual#actualWordsPerSentence -
 			table.statistics.clear(style='margin-left: 6px')
 				tr
 					td.section(data-i18n='LeveledReaderTool.ThisBook') This Book
@@ -40,15 +40,15 @@ html
 				tr
 					td.statistics-label(data-i18n='LeveledReaderTool.Total') total
 					td.statistics-max#maxWordsPerBook
-					td.statistics-actual#actualWordCount 83
+					td.statistics-actual#actualWordCount -
 				tr
 					td.statistics-label(data-i18n='LeveledReaderTool.PerPage') per page
-					td.statistics-max#maxWordsPerPageBook 15
-					td.statistics-actual#actualWordsPerPageBook 14
+					td.statistics-max#maxWordsPerPageBook
+					td.statistics-actual#actualWordsPerPageBook -
 				tr
 					td.statistics-label(data-i18n='LeveledReaderTool.Unique') unique
-					td.statistics-max#maxUniqueWordsPerBook 20
-					td.statistics-actual#actualUniqueWords 22
+					td.statistics-max#maxUniqueWordsPerBook
+					td.statistics-actual#actualUniqueWords -
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 				span.setup.stageLine
 					a(href="javascript:parent.window.showSetupDialog('levels');", data-i18n='LeveledReaderTool.SetUpLevels') Set up Levels

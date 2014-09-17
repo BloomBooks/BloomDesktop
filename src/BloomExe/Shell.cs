@@ -51,7 +51,10 @@ namespace Bloom
 			});
 
 
-#if DEBUG
+// BL-369/BL-379: currently we're building packages on Linux from debug builds. Therefore
+// we don't want to execute the following code on Linux. Once BL-379 is fixed we should remove
+// the !__MonoCS__ part.
+#if DEBUG && !__MonoCS__
 			WindowState = FormWindowState.Normal;
 			//this.FormBorderStyle = FormBorderStyle.None;  //fullscreen
 			
