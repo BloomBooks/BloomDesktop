@@ -20,6 +20,7 @@ GDK_SHARP=/usr/lib/cli/gdk-sharp-2.0
 
 MONO_RUNTIME=v4.0.30319
 MONO_PATH="${GDK_SHARP}:${GECKOFX}"
+MONO_DEBUG=explicit-null-checks
 
 ################################################################################################
 
@@ -67,7 +68,8 @@ export \
 	PATH LD_LIBRARY_PATH PKG_CONFIG_PATH LD_PRELOAD \
 	MONO_PATH \
 	MONO_RUNTIME MONO_PREFIX MONO_GAC_PREFIX \
-	MONO_TRACE_LISTENER MONO_IOMAP MONO_MWF_SCALING
+	MONO_TRACE_LISTENER MONO_IOMAP MONO_MWF_SCALING \
+	MONO_DEBUG
 
 # prevent Gecko from printing scary message about "double free or corruption" on shutdown
 # (See FWNX-1216.)  Tom Hindle suggested this hack as a stopgap.
