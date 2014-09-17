@@ -371,7 +371,7 @@ namespace Bloom.Workspace
 
 		private void deepBloomPaperToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", "Deep Bloom.pdf"));
+			OpenInfoFile("Deep Bloom.pdf");
 		}
 
 		private void _showLogMenuItem_Click(object sender, EventArgs e)
@@ -430,6 +430,25 @@ namespace Bloom.Workspace
 			//_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
 		}
 
+		private void bloomContentDemonstrationToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenInfoFile("BloomContentDemonstration.pdf");
+		}
+
+		private void shellBookInstructionsToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenInfoFile("BloomShellBook.pdf");
+		}
+
+		private void trainingManualToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenInfoFile("BloomTrainingManualIntro.pdf");
+		}
+
+		private static void OpenInfoFile(string fileName)
+		{
+			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", fileName));
+		}
 
 	}
 
