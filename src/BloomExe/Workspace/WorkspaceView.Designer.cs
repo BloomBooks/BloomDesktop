@@ -42,6 +42,9 @@
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this._releaseNotesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.deepBloomPaperToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.bloomContentDemonstrationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.shellBookInstructionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.trainingManualToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._divider2 = new System.Windows.Forms.ToolStripSeparator();
 			this._makeASuggestionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._webSiteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -110,7 +113,7 @@
 			this._toolStrip.Location = new System.Drawing.Point(0, 0);
 			this._toolStrip.Name = "_toolStrip";
 			this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolStrip.Size = new System.Drawing.Size(272, 46);
+			this._toolStrip.Size = new System.Drawing.Size(272, 65);
 			this._toolStrip.TabIndex = 28;
 			this._toolStrip.Text = "_toolStrip";
 			// 
@@ -153,6 +156,9 @@
             this.toolStripSeparator1,
             this._releaseNotesMenuItem,
             this.deepBloomPaperToolStripMenuItem,
+            this.bloomContentDemonstrationToolStripMenuItem,
+            this.shellBookInstructionsToolStripMenuItem,
+            this.trainingManualToolStripMenuItem,
             this._divider2,
             this._makeASuggestionMenuItem,
             this._webSiteMenuItem,
@@ -182,14 +188,14 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._documentationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._documentationMenuItem, "HelpMenu.documentationMenuItem");
 			this._documentationMenuItem.Name = "_documentationMenuItem";
-			this._documentationMenuItem.Size = new System.Drawing.Size(196, 22);
+			this._documentationMenuItem.Size = new System.Drawing.Size(199, 22);
 			this._documentationMenuItem.Text = "Documentation";
 			this._documentationMenuItem.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
 			// 
 			// toolStripSeparator1
 			// 
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(193, 6);
+			this.toolStripSeparator1.Size = new System.Drawing.Size(196, 6);
 			// 
 			// _releaseNotesMenuItem
 			// 
@@ -197,7 +203,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._releaseNotesMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._releaseNotesMenuItem, "HelpMenu.releaseNotesMenuItem");
 			this._releaseNotesMenuItem.Name = "_releaseNotesMenuItem";
-			this._releaseNotesMenuItem.Size = new System.Drawing.Size(196, 22);
+			this._releaseNotesMenuItem.Size = new System.Drawing.Size(199, 22);
 			this._releaseNotesMenuItem.Text = "Release Notes...";
 			this._releaseNotesMenuItem.Click += new System.EventHandler(this._releaseNotesMenuItem_Click);
 			// 
@@ -209,14 +215,50 @@
 			this._L10NSharpExtender.SetLocalizationPriority(this.deepBloomPaperToolStripMenuItem, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this.deepBloomPaperToolStripMenuItem, "HelpMenu.deepBloomPaperToolStripMenuItem");
 			this.deepBloomPaperToolStripMenuItem.Name = "deepBloomPaperToolStripMenuItem";
-			this.deepBloomPaperToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+			this.deepBloomPaperToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
 			this.deepBloomPaperToolStripMenuItem.Text = "Deep Bloom Paper";
 			this.deepBloomPaperToolStripMenuItem.Click += new System.EventHandler(this.deepBloomPaperToolStripMenuItem_Click);
+			// 
+			// bloomContentDemonstrationToolStripMenuItem
+			// 
+			this.bloomContentDemonstrationToolStripMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.bloomContentDemonstrationToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.bloomContentDemonstrationToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this.bloomContentDemonstrationToolStripMenuItem, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this.bloomContentDemonstrationToolStripMenuItem, "HelpMenu.bloomContentDemonstrationToolStripMenuItem");
+			this.bloomContentDemonstrationToolStripMenuItem.Name = "bloomContentDemonstrationToolStripMenuItem";
+			this.bloomContentDemonstrationToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+			this.bloomContentDemonstrationToolStripMenuItem.Text = "Content Demonstration";
+			this.bloomContentDemonstrationToolStripMenuItem.Click += new System.EventHandler(this.bloomContentDemonstrationToolStripMenuItem_Click);
+			// 
+			// shellBookInstructionsToolStripMenuItem
+			// 
+			this.shellBookInstructionsToolStripMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.shellBookInstructionsToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.shellBookInstructionsToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this.shellBookInstructionsToolStripMenuItem, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this.shellBookInstructionsToolStripMenuItem, "HelpMenu.shellBookInstructionsToolStripMenuItem");
+			this.shellBookInstructionsToolStripMenuItem.Name = "shellBookInstructionsToolStripMenuItem";
+			this.shellBookInstructionsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+			this.shellBookInstructionsToolStripMenuItem.Text = "Shell Book Instructions";
+			this.shellBookInstructionsToolStripMenuItem.Click += new System.EventHandler(this.shellBookInstructionsToolStripMenuItem_Click);
+			// 
+			// trainingManualToolStripMenuItem
+			// 
+			this.trainingManualToolStripMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.trainingManualToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.trainingManualToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this.trainingManualToolStripMenuItem, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this.trainingManualToolStripMenuItem, "HelpMenu.trainingManualToolStripMenuItem");
+			this.trainingManualToolStripMenuItem.Name = "trainingManualToolStripMenuItem";
+			this.trainingManualToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+			this.trainingManualToolStripMenuItem.Text = "Training Manual";
+			this.trainingManualToolStripMenuItem.Click += new System.EventHandler(this.trainingManualToolStripMenuItem_Click);
 			// 
 			// _divider2
 			// 
 			this._divider2.Name = "_divider2";
-			this._divider2.Size = new System.Drawing.Size(193, 6);
+			this._divider2.Size = new System.Drawing.Size(196, 6);
 			// 
 			// _makeASuggestionMenuItem
 			// 
@@ -225,7 +267,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._makeASuggestionMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._makeASuggestionMenuItem, "HelpMenu._makeASuggestionMenuItem");
 			this._makeASuggestionMenuItem.Name = "_makeASuggestionMenuItem";
-			this._makeASuggestionMenuItem.Size = new System.Drawing.Size(196, 22);
+			this._makeASuggestionMenuItem.Size = new System.Drawing.Size(199, 22);
 			this._makeASuggestionMenuItem.Text = "Make a Suggestion";
 			this._makeASuggestionMenuItem.Click += new System.EventHandler(this._makeASuggestionMenuItem_Click);
 			// 
@@ -235,14 +277,14 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._webSiteMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._webSiteMenuItem, "HelpMenu._webSiteMenuItem");
 			this._webSiteMenuItem.Name = "_webSiteMenuItem";
-			this._webSiteMenuItem.Size = new System.Drawing.Size(196, 22);
+			this._webSiteMenuItem.Size = new System.Drawing.Size(199, 22);
 			this._webSiteMenuItem.Text = "Web Site";
 			this._webSiteMenuItem.Click += new System.EventHandler(this._webSiteMenuItem_Click);
 			// 
 			// _divider3
 			// 
 			this._divider3.Name = "_divider3";
-			this._divider3.Size = new System.Drawing.Size(193, 6);
+			this._divider3.Size = new System.Drawing.Size(196, 6);
 			// 
 			// _showLogMenuItem
 			// 
@@ -251,14 +293,14 @@
 			this._L10NSharpExtender.SetLocalizationPriority(this._showLogMenuItem, L10NSharp.LocalizationPriority.Low);
 			this._L10NSharpExtender.SetLocalizingId(this._showLogMenuItem, "HelpMenu.showEventLogMenuItem");
 			this._showLogMenuItem.Name = "_showLogMenuItem";
-			this._showLogMenuItem.Size = new System.Drawing.Size(196, 22);
+			this._showLogMenuItem.Size = new System.Drawing.Size(199, 22);
 			this._showLogMenuItem.Text = "Show Event Log";
 			this._showLogMenuItem.Click += new System.EventHandler(this._showLogMenuItem_Click);
 			// 
 			// _divider4
 			// 
 			this._divider4.Name = "_divider4";
-			this._divider4.Size = new System.Drawing.Size(193, 6);
+			this._divider4.Size = new System.Drawing.Size(196, 6);
 			// 
 			// _checkForNewVersionMenuItem
 			// 
@@ -266,7 +308,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._checkForNewVersionMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._checkForNewVersionMenuItem, "HelpMenu.checkForNewVersionToolStripMenuItem");
 			this._checkForNewVersionMenuItem.Name = "_checkForNewVersionMenuItem";
-			this._checkForNewVersionMenuItem.Size = new System.Drawing.Size(196, 22);
+			this._checkForNewVersionMenuItem.Size = new System.Drawing.Size(199, 22);
 			this._checkForNewVersionMenuItem.Text = "Check For New Version";
 			this._checkForNewVersionMenuItem.Click += new System.EventHandler(this._checkForNewVersionMenuItem_Click);
 			// 
@@ -276,7 +318,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._registrationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._registrationMenuItem, "HelpMenu.registrationMenuItem");
 			this._registrationMenuItem.Name = "_registrationMenuItem";
-			this._registrationMenuItem.Size = new System.Drawing.Size(196, 22);
+			this._registrationMenuItem.Size = new System.Drawing.Size(199, 22);
 			this._registrationMenuItem.Text = "Registration";
 			this._registrationMenuItem.Click += new System.EventHandler(this.OnRegistrationMenuItem_Click);
 			// 
@@ -286,7 +328,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._aboutBloomMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._aboutBloomMenuItem, "HelpMenu.creditsMenuItem");
 			this._aboutBloomMenuItem.Name = "_aboutBloomMenuItem";
-			this._aboutBloomMenuItem.Size = new System.Drawing.Size(196, 22);
+			this._aboutBloomMenuItem.Size = new System.Drawing.Size(199, 22);
 			this._aboutBloomMenuItem.Text = "About Bloom";
 			this._aboutBloomMenuItem.Click += new System.EventHandler(this.OnAboutBoxClick);
 			// 
@@ -456,6 +498,9 @@
         private System.Windows.Forms.ToolStripSeparator _divider4;
         private System.Windows.Forms.ToolStripMenuItem _checkForNewVersionMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _registrationMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem bloomContentDemonstrationToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem shellBookInstructionsToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem trainingManualToolStripMenuItem;
 
 
     }
