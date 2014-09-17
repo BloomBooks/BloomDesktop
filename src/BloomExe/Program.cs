@@ -400,7 +400,16 @@ namespace Bloom
 			using (var dlg = new SimpleMessageDialog("Waiting for other Bloom to finish..."))
 			{
 				dlg.TopMost = true;
-				dlg.Show();
+				if (mutexAcquired)
+				{
+					// On Linux if we don't create this control the splash screen won't update
+					// properly. If we create this dialog it works better. We don't want to show
+					// the dialog unless we have to, because that doesn't update properly either.
+					dlg.CreateControl();
+				}
+				else
+					dlg.Show();
+
 				try
 				{
 					_onlyOneBloomMutex = Mutex.OpenExisting(_mutexId);
