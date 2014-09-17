@@ -644,10 +644,10 @@
     </tu>
     <tu tuid="Download.Completed">
       <tuv xml:lang="en">
-        <seg>Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
+        <seg>Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
       </tuv>
       <tuv xml:lang="es">
-        <seg>Su descarga ({0}) es completa. Se puede ver en la sección de sus colecciones, "Libros de la Bloom Library". Si usted no parece estar en el medio de hacer algo, Bloom seleccionará por usted.</seg>
+        <seg>Su descarga ({0}) es completa. Se puede ver en la sección de sus colecciones, "Libros de BloomLibrary.org". Si usted no parece estar en el medio de hacer algo, Bloom seleccionará por usted.</seg>
       </tuv>
     </tu>
     <tu tuid="Download.CompletedCaption">
