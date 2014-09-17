@@ -470,7 +470,11 @@ ReaderToolsModel.prototype.getElementsToCheck = function() {
     var page = parent.window.document.getElementById('page');
 
     // this happens during unit testing
-    if (!page) return $(".bloom-content1.bloom-editable");
+    if (!page) {
+        return $('.bloom-page')
+            .not('.bloom-frontMatter, .bloom-backMatter')
+            .find('.bloom-content1.bloom-editable');
+    }
 
     // if this is a cover page, return an empty set
     var cover = $('body', page.contentWindow.document).find('div.cover');
