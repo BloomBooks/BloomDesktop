@@ -36,6 +36,9 @@ namespace Bloom
 
 		public string SettingsPath { get; private set; }
 
+		public const string kReaderToolsWordsFileNamePrefix = "ReaderToolsWords-";
+		public const string kReaderToolsWordsFileNameFormat = "ReaderToolsWords-{0}.json";
+
         public ProjectContext(string projectSettingsPath, IContainer parentContainer)
         {
 	        SettingsPath = projectSettingsPath;

@@ -10,6 +10,8 @@ using Bloom.ReaderTools;
 using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.Xml;
+using Palaso.IO;
+using System.Collections.Generic;
 
 namespace Bloom.web
 {
@@ -20,10 +22,14 @@ namespace Bloom.web
 	/// </summary>
 	static class ReadersHandler
 	{
+		private static bool _savingReaderWords;
+		private const string _synphonyFileNameSuffix = "_lang_data.js";
+
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
 		// whole-book counts. If we ever support having more than one book open, ReadersHandler will need to stop being static, or
 		// some similar change. But by then, we may have the whole book in the main DOM, anyway, and getTextOfPages may be obsolete.
 		public static Book.Book CurrentBook { get; set; }
+
 		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
 		{
 			var lastSep = localPath.IndexOf("/", StringComparison.Ordinal);
@@ -67,6 +73,11 @@ namespace Bloom.web
 					info.WriteCompleteOutput(GetTextOfPages());
 					return true;
 
+				case "saveReaderToolsWords":
+					info.ContentType = "text/plain";
+					info.WriteCompleteOutput(SaveReaderToolsWordsFile(info.GetPostData()["data"]));
+					return true;
+
 				case "makeLetterAndWordList":
 					MakeLetterAndWordList(info.GetPostData()["settings"], info.GetPostData()["allWords"]);
 					info.ContentType = "text/plain";
@@ -105,18 +116,49 @@ namespace Bloom.web
 		private static string GetSampleTextsList(string settingsFilePath)
 		{
 			var path = Path.Combine(Path.GetDirectoryName(settingsFilePath), "Sample Texts");
-			var fileList = "";
+			if (!Directory.Exists(path))
+				Directory.CreateDirectory(path);
 
-			if (Directory.Exists(path))
+			var fileList1 = new List<string>();
+			var langFileName = string.Format(ProjectContext.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var langFile = Path.Combine(path, langFileName);
+
+			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
+			if (DirectoryUtilities.DirectoryIsEmpty(path, true))
 			{
-				foreach (var file in Directory.GetFiles(path))
+				var bloomAppDirInfo = new DirectoryInfo(ProjectContext.GetBloomAppDataFolder());
+
+				// get the most recent file
+				var foundFile = bloomAppDirInfo.GetFiles(langFileName, SearchOption.AllDirectories).OrderByDescending(fi => fi.LastWriteTime).FirstOrDefault();
+
+				if (foundFile != null)
 				{
-					if (fileList.Length == 0) fileList = Path.GetFileName(file);
-					else fileList += "\r" + Path.GetFileName(file);
+					// copy it
+					File.Copy(Path.Combine(foundFile.DirectoryName, foundFile.Name), langFile);
 				}
+
+				return string.Empty;
 			}
 
-			return fileList;
+			// first look for ReaderToolsWords-<iso>.json
+			if (File.Exists(langFile))
+				fileList1.Add(langFile);
+
+			// next look for <language_name>_lang_data.js
+			foreach (var file in Directory.GetFiles(path, "*" + _synphonyFileNameSuffix))
+			{
+				if (!fileList1.Contains(file))
+					fileList1.Add(file);
+			}
+
+			// now add the rest
+			foreach (var file in Directory.GetFiles(path))
+			{
+				if (!fileList1.Contains(file))
+					fileList1.Add(file);
+			}
+
+			return string.Join("\r", fileList1.ToArray());
 		}
 
 		/// <summary>Gets the contents of a Sample Text file</summary>
@@ -195,6 +237,37 @@ namespace Bloom.web
 			// open the file
 			Process.Start(fileName);
 		}
+		
+		/// <summary></summary>
+		/// <param name="jsonString">The contents of the ReaderToolsWords file</param>
+		/// <returns>OK</returns>
+		private static string SaveReaderToolsWordsFile(string jsonString)
+		{
+			while (_savingReaderWords)
+				System.Threading.Thread.Sleep(0);
 
+			try
+			{
+				_savingReaderWords = true;
+
+				// insert LangName and LangID if missing
+				if (jsonString.Contains("\"LangName\":\"\""))
+					jsonString = jsonString.Replace("\"LangName\":\"\"", "\"LangName\":\"" + CurrentBook.CollectionSettings.Language1Name + "\"");
+
+				if (jsonString.Contains("\"LangID\":\"\""))
+					jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.Language1Iso639Code + "\"");
+
+				var fileName = string.Format(ProjectContext.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+				fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
+
+				File.WriteAllText(fileName, jsonString, Encoding.UTF8);
+			}
+			finally
+			{
+				_savingReaderWords = false;
+			}
+			
+			return "OK";
+		}
 	}
 }
