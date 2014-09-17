@@ -470,14 +470,20 @@ ReaderToolsModel.prototype.getElementsToCheck = function() {
     var page = parent.window.document.getElementById('page');
 
     // this happens during unit testing
-    if (!page) return $(".bloom-content1");
+    if (!page) {
+        return $('.bloom-page')
+            .not('.bloom-frontMatter, .bloom-backMatter')
+            .find('.bloom-content1.bloom-editable');
+    }
 
     // if this is a cover page, return an empty set
     var cover = $('body', page.contentWindow.document).find('div.cover');
     if (cover['length'] > 0) return $();
 
     // not a cover page, return elements to check
-    return $(".bloom-content1", page.contentWindow.document);
+    return $('.bloom-page', page.contentWindow.document)
+        .not('.bloom-frontMatter, .bloom-backMatter')
+        .find('.bloom-content1.bloom-editable');
 };
 
 // Make a selection in the specified node at the specified offset
@@ -488,14 +494,14 @@ ReaderToolsModel.prototype.selectAtOffset = function(node, offset) {
     var range = parent.window.document.getElementById('page').contentWindow.document.createRange();
     range.setStart(node, offset);
     range.setEnd(node, offset);
-    var selection = parent.window.document.getElementById('page').contentWindow.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
+    var selection1 = parent.window.document.getElementById('page').contentWindow.getSelection();
+    selection1.removeAllRanges();
+    selection1.addRange(range);
 //    console.log("Selected at " + offset + " in node of type " + node.localName + " with text '" + node.textContent + "' (of length) " + node.textContent.length);
 //    if (node.localName === null && node.textContent.length > 0 && node.textContent.charCodeAt(0) == 10) {
 //        console.log("first character " + node.textContent.charCodeAt(0));
 //    }
-}
+};
 
 ReaderToolsModel.prototype.makeSelectionIn = function(node, offset, divBrCount, atStart) {
     if (node.nodeType === 3) {
@@ -623,7 +629,7 @@ ReaderToolsModel.prototype.noteFocus = function(element) {
 
 ReaderToolsModel.prototype.shouldHandleUndo = function() {
     return this.currentMarkupType !== MarkupType.None;
-}
+};
 
 ReaderToolsModel.prototype.undo = function() {
     if (!this.activeElement) return;
@@ -642,7 +648,7 @@ ReaderToolsModel.prototype.canUndo = function() {
         return 'yes';
     }
     return 'no';
-}
+};
 
 
 ReaderToolsModel.prototype.redo = function() {
@@ -667,15 +673,20 @@ ReaderToolsModel.prototype.doMarkup = function() {
     if (this.activeElement) oldSelectionPosition = this.getActiveElementSelectionIndex();
 
     var editableElements = this.getElementsToCheck();
-    if (editableElements.length == 0) return;
+
     // qtips can be orphaned if the element they belong to is deleted
     // (and so the mouse can't move off their owning element, and they never go away).
-    $(editableElements[0]).closest('body').children('.qtip').remove();
+    if (editableElements.length > 0)
+        $(editableElements[0]).closest('body').children('.qtip').remove();
 
     switch(this.currentMarkupType) {
         case MarkupType.Leveled:
-            var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage(), maxWordsPerPage: this.maxWordsPerPage()};
-            editableElements.checkLeveledReader(options);
+
+            if (editableElements.length > 0) {
+                var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage(), maxWordsPerPage: this.maxWordsPerPage()};
+                editableElements.checkLeveledReader(options);
+            }
+
             this.updateMaxWordsPerSentenceOnPage();
             this.updateTotalWordsOnPage();
             this.getTextOfWholeBook();
@@ -683,6 +694,8 @@ ReaderToolsModel.prototype.doMarkup = function() {
             break;
 
         case MarkupType.Decodable:
+
+            if (editableElements.length == 0) return;
 
             // get current stage and all previous stages
             var stages = this.synphony.getStages(this.stageNumber);
@@ -790,7 +803,7 @@ ReaderToolsModel.prototype.uniqueWordsInBook = function (pageStrings) {
 
         for (j = 0; j < fragments.length; j++) {
             var words = fragments[j].words;
-            for (k = 0; k < words.length; k++) {
+            for (var k = 0; k < words.length; k++) {
                 wordMap[words[k]] = 1;
             }
         }
