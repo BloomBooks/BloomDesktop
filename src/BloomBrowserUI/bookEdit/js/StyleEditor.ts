@@ -34,15 +34,27 @@ class StyleEditor {
                 return classes[i];
             }
         }
+
         // For awhile between v1 and v2 we used 'coverTitle' in Factory-XMatter
-        // In case this is one of those books, we'll replace it with 'coverTitle-style'
-        var coverTitleClass = 'coverTitle';
-        if ($(target).hasClass(coverTitleClass)) {
-            $(target).removeClass(coverTitleClass);
-            var newStyleName = 'coverTitle-style';
-            $(target).addClass(newStyleName);
+        // In case this is one of those books, we'll replace it with 'Title-On-Cover-style'
+        var coverTitleClass: string = StyleEditor.updateCoverStyleName(target, 'coverTitle');
+
+        // For awhile in v2 we used 'coverTitle-style' in Factory-XMatter
+        // In case this is one of those books, we'll replace it with 'Title-On-Cover-style'
+        if (!coverTitleClass)
+            coverTitleClass =  StyleEditor.updateCoverStyleName(target, 'coverTitle-style');
+
+        return coverTitleClass;
+    }
+
+    static updateCoverStyleName(target: HTMLElement, oldCoverTitleClass: string): string {
+
+        if ($(target).hasClass(oldCoverTitleClass)) {
+            var newStyleName: string = 'Title-On-Cover-style';
+            $(target).removeClass(oldCoverTitleClass).addClass(newStyleName);
             return newStyleName;
         }
+
         return null;
     }
 
