@@ -21,10 +21,11 @@ function processExternalMessage(event) {
                 $(this).qtip({ content: 'This word is not decodable in this stage.' });
             });
 
-            //we're considering dropping this entirely
-            editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-                $(this).qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
-            });
+            // we're considering dropping this entirely
+            // We are disabling the "Possible Word" feature at this time.
+            //editableElements.find('span.' + $.cssPossibleWord()).each(function() {
+            //    $(this).qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
+            //});
 
             editableElements.find('span.' + $.cssSentenceTooLong()).each(function() {
                 $(this).qtip({ content: 'This sentence is too long for this level.' });

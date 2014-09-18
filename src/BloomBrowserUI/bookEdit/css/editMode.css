@@ -465,10 +465,10 @@ SPAN.sentence-too-long
 }
 
 
-/* 
-    
+/*
+
     this was all a nice idea, but not a localizable approach
-    
+
 .page-too-many-words .marginBox::after {
     content: 'Too many words on page';
     position: absolute;
@@ -504,13 +504,15 @@ SPAN.word-not-found
     background-color: #1D94A4;/*bloomblue       #D65649; /* bloomRed */
 
 }
+
+/* We are disabling the "Possible Word" feature at this time.
 SPAN.possible-word
 {
 	-moz-text-decoration-style: wavy;
 	-moz-text-decoration-line: underline;
 	-moz-text-decoration-color: blue;
 }
-
+*/
 
 /*
  * Layout Mode (origami) switch (from proto.io)
