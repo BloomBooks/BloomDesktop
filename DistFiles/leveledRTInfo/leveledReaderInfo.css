@@ -1,0 +1,10 @@
+pre {
+  font-family: inherit;
+  font-size: inherit;
+}
+.poetry {
+  line-height: 150%;
+}
+.author {
+  padding-left: 20px;
+}
