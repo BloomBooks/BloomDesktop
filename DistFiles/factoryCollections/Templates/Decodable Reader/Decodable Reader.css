@@ -8,3 +8,6 @@ div.bloom-page {
 div.bloom-editable {
     line-height: 1.5
 }
+div.bloom-page div.pageLabel{
+    font-size: 10pt;
+}
