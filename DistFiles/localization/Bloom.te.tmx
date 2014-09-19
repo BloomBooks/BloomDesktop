@@ -14,25 +14,7 @@
         <seg>డికోడాబల్ రీడర్ </seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.DecodableReaderToolCheckbox">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Decodable Reader Tool</seg>
-      </tuv>
-      <tuv xml:lang="te">
-        <seg>డికోడాబల్ రీడర్ </seg>
-      </tuv>
-    </tu>
     <tu tuid="Accordion.LeveledReaderTool">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Leveled Reader Tool</seg>
-      </tuv>
-      <tuv xml:lang="te">
-        <seg>తనపై రీడర్ సాధనం</seg>
-      </tuv>
-    </tu>
-    <tu tuid="Accordion.LeveledReaderToolCheckbox">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader Tool</seg>
