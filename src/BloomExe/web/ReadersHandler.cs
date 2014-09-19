@@ -90,7 +90,7 @@ namespace Bloom.web
 		}
 
 		/// <summary>
-		/// Needs to return a string with the bloom-content1 text of each non-x-matter page, separated by /r
+		/// Needs to return a json string with the page guid and the bloom-content1 text of each non-x-matter page
 		/// </summary>
 		/// <returns></returns>
 		private static string GetTextOfPages()
