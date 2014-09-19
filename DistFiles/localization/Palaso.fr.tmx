@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">2.0.1084.0</prop>
+	<prop type="x-appversion">3.0.23.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -11,6 +11,30 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>À propos de</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="AboutDialog.NoUpdates">
+	  <tuv xml:lang="en">
+		<seg>No Updates</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Aucune mise à jour</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="AboutDialog._checkForUpdates">
+	  <tuv xml:lang="en">
+		<seg>Check For Updates</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Rechercher des mises à jour</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="AboutDialog._releaseNotesLabel">
+	  <tuv xml:lang="en">
+		<seg>Release Notes</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Description des fonctionalités</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="Common.CancelButton">
@@ -126,6 +150,14 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Modifier...</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ImageToolbox.EnterSearchTerms">
+	  <tuv xml:lang="en">
+		<seg>This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Voici la galerie 'Art Of Reading'. Saisir un mot à rechercher dans la zone ci-dessus, puis appuyer sur Entrée. On peut saisir des mots en anglais ou en indonésien.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ImageToolbox.FileButton">
@@ -318,6 +350,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="LanguageLookup.LookupISOControl._searchText">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>?</seg>
 	  </tuv>
