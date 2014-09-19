@@ -38,6 +38,10 @@ function processDLRMessage(event) {
         case 'SetupType':
             getSetupDialogWindow().postMessage('SetupType\n' + model.setupType, '*');
             return;
+
+        case 'SetMarkupType':
+            model.setMarkupType(parseInt(params[1]));
+            return;
     }
 }
 
@@ -58,7 +62,7 @@ var ReaderToolsModel = function() {
     this.levelNumber = 1;
     this.synphony = new SynphonyApi(); // default state
     this.sort = SortType.alphabetic;
-    this.currentMarkupType = MarkupType.Decodable;
+    this.currentMarkupType = MarkupType.None;
     this.allWords = {};
     this.texts = [];
     this.textCounter = 0;
@@ -1012,7 +1016,7 @@ ReaderToolsModel.prototype.restoreState = function() {
     var state = libsynphony.dbGet('drt_state');
     if (!state) state = new DRTState();
 
-    this.currentMarkupType = state.markupType;
+    if (!this.currentMarkupType) this.currentMarkupType = state.markupType;
     this.setStageNumber(state.stage);
     this.setLevelNumber(state.level);
 };
