@@ -77,6 +77,9 @@ var ReaderToolsModel = function() {
 
     /** @type DirectoryWatcher directoryWatcher */
     this.directoryWatcher = null;
+
+    // remember words so we can update the counts real-time
+    this.bookPageWords = [];
 };
 
 ReaderToolsModel.prototype.incrementStage = function() {
@@ -689,11 +692,21 @@ ReaderToolsModel.prototype.doMarkup = function() {
             if (editableElements.length > 0) {
                 var options = {maxWordsPerSentence: this.maxWordsPerSentenceOnThisPage(), maxWordsPerPage: this.maxWordsPerPage()};
                 editableElements.checkLeveledReader(options);
+
+                // update current page words
+                var pageDiv = $('body', iframeChannel.getPageWindow().document).find('div.bloom-page');
+                if (pageDiv.length) {
+                    if (pageDiv[0].id) {
+
+                        this.bookPageWords[pageDiv[0].id] = editableElements['allWords'];
+                        console.log(this.bookPageWords);
+                    }
+                }
             }
 
             this.updateMaxWordsPerSentenceOnPage();
             this.updateTotalWordsOnPage();
-            this.getTextOfWholeBook();
+            this.displayBookTotals();
 
             break;
 
@@ -770,7 +783,15 @@ ReaderToolsModel.prototype.getTextOfWholeBook = function () {
 };
 
 ReaderToolsModel.prototype.updateWholeBookCounts = function (pageSource) {
-    var pageStrings = pageSource.split('\r');
+
+    this.bookPageWords = JSON.parse(pageSource);
+    this.displayBookTotals();
+};
+
+ReaderToolsModel.prototype.displayBookTotals = function () {
+
+    var pageStrings = _.values(this.bookPageWords);
+
     this.updateActualCount(this.countWordsInBook(pageStrings), this.maxWordsPerBook(), 'actualWordCount');
     this.updateActualCount(this.maxWordsPerPageInBook(pageStrings), this.maxWordsPerPage(), 'actualWordsPerPageBook');
     this.updateActualCount(this.uniqueWordsInBook(pageStrings), this.maxUniqueWordsPerBook(), 'actualUniqueWords');
