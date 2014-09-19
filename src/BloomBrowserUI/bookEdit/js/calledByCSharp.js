@@ -5,22 +5,6 @@ var CalledByCSharp = (function () {
         this.invokeAccordionWithOneParameter('restoreAccordionSettings', settings);
     };
 
-    CalledByCSharp.prototype.handleUndo = function () {
-        var contentWindow = this.getAccordionContent();
-        if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo()) {
-            return 'fail';
-        }
-        contentWindow.model.undo();
-        return 'success';
-    };
-
-    CalledByCSharp.prototype.canUndo = function () {
-        var contentWindow = this.getAccordionContent();
-        if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo())
-            return 'fail'; // we don't want to decide
-        return contentWindow.model.canUndo();
-    };
-
     CalledByCSharp.prototype.loadReaderToolSettings = function (settings, bookFontName) {
         var contentWindow = this.getAccordionContent();
         if (!contentWindow)

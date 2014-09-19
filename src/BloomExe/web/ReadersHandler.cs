@@ -74,6 +74,7 @@ namespace Bloom.web
 					return true;
 
 				case "saveReaderToolsWords":
+					//info.ContentType = "application/json";
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(SaveReaderToolsWordsFile(info.GetPostData()["data"]));
 					return true;
@@ -94,6 +95,8 @@ namespace Bloom.web
 		/// <returns></returns>
 		private static string GetTextOfPages()
 		{
+			var pageTexts = new List<string>();
+
 			var pages = CurrentBook.RawDom.SafeSelectNodes("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]")
 				.Cast<XmlElement>()
 				.Where(p =>
@@ -101,16 +104,17 @@ namespace Bloom.web
 					var cls = " " + p.Attributes["class"].Value + " ";
 					return !cls.Contains(" bloom-frontMatter ") && !cls.Contains(" bloom-backMatter ");
 				});
-			var sb = new StringBuilder();
+
 			foreach (var page in pages)
 			{
-				if (sb.Length > 0)
-					sb.Append("\r");
+				var pageWords = string.Empty;
 				foreach (XmlElement node in page.SafeSelectNodes(".//div[contains(concat(' ', @class, ' '), ' bloom-content1 ')]"))
-					sb.Append(node.InnerText.Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " "));
+					pageWords += " " + node.InnerText;
+
+				pageTexts.Add("\"" + page.GetAttribute("id") + "\":\"" + pageWords.Trim() + "\"");
 			}
-			var temp = sb.ToString();
-			return temp;
+
+			return "{" + String.Join(",", pageTexts.ToArray()) + "}";
 		}
 
 		private static string GetSampleTextsList(string settingsFilePath)
