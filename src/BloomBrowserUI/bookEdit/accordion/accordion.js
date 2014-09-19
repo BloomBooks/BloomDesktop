@@ -116,6 +116,9 @@ function loadPanelsAndSetCurrent(panels, currentPanel) {
                 // the index is the last segment of the element id
                 idx = this.id.substr(this.id.lastIndexOf('-') + 1);
 
+                // set the markup type to the current panel
+                window.postMessage('SetMarkupType\n' + (this.dataset['markuptype'] || 0), '*');
+
                 // break from the each() loop
                 return false;
             }
