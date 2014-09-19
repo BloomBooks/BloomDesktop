@@ -57,18 +57,19 @@ html
 				ul#thingsToRemember
 			.section(style='margin-left: 8px;')
 				span(data-i18n='LeveledReaderTool.KeepInMind') Keep in mind
+				div
+					span &nbsp;&nbsp;
+					a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?Predictability")', data-i18n='LeveledReaderTool.Predictability') Predictability
 				ul
-					li
-						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?Predictability")', data-i18n='LeveledReaderTool.Predictability') Predictability
 					li
 						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?PatternAndRecognition")', data-i18n='LeveledReaderTool.PatternAndRecognition') Pattern and recognition
 					li
 						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?IllustrationSupport")', data-i18n='LeveledReaderTool.IllustrationSupport') Illustration support
 					li
 						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?ConceptLoad")', data-i18n='LeveledReaderTool.ConceptLoad') Concept load
-					li
+					//-li
 						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?TopicFamiliarity")', data-i18n='LeveledReaderTool.TopicFamiliarity') Topic familiarity
-				a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?HowToMakeLeveledReader")', data-i18n='LeveledReaderTool.HowToMakeLeveledReader') How to make a great leveled reader
+				//-a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?HowToMakeLeveledReader")', data-i18n='LeveledReaderTool.HowToMakeLeveledReader') How to make a great leveled reader
 			script(type='text/javascript').
 				$(document).ready(function() {
 					setTimeout(initializeLeveledRT, 100);
