@@ -101,19 +101,7 @@
 		<seg>Decodable Reader Tool</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="Accordion.DecodableReaderToolCheckbox">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Decodable Reader Tool</seg>
-	  </tuv>
-	</tu>
 	<tu tuid="Accordion.LeveledReaderTool">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Leveled Reader Tool</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="Accordion.LeveledReaderToolCheckbox">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Leveled Reader Tool</seg>
