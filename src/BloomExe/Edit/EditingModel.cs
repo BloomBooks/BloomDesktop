@@ -538,6 +538,14 @@ namespace Bloom.Edit
 		{
 			System.Windows.Forms.Application.Idle -= OnIdleAfterDocumentSupposedlyCompleted;
 
+			//Work-around for BL-422: https://jira.sil.org/browse/BL-422
+			if (_currentlyDisplayedBook == null)
+			{
+				Debug.Fail(
+					"Debug Only: BL-422 reproduction (currentlyDisplayedBook was null in OnIdleAfterDocumentSupposedlyCompleted).");
+				Logger.WriteEvent("BL-422 happened just now (currentlyDisplayedBook was null in OnIdleAfterDocumentSupposedlyCompleted).");
+				return;
+			}
 			// listen for events raised by javascript
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
 			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
