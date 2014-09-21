@@ -21,7 +21,7 @@
 - Leveled Reader Tool helps you develop books for readers at various levels of ability by setting limits on the number of words per sentence, page, and book.
 - Holding down a key now shows a "Special Characters Panel" that lets you select from similar characters.
 - New "Custom" page that lets you divide up the page into text and picture portions. You can then just use the page, or treat it like a template for other pages in the book.  The ability to use that page in other books is expected in the next version of Bloom.
-- Support for Right-To-Left Languages
+- Languages can be marked as Right-To-Left. However, changing the page order would be up to the user, using a PDF editor like Adobe Acrobat.
 - Initial Linux Version (Precise and Trusty).
 
 ### Known Bugs & Limitations
