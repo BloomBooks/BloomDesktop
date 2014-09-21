@@ -688,10 +688,10 @@ namespace Bloom
 			}
 			catch(Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e,
-					"Sorry, Bloom choked on something on this page (invalid incoming html).{1}{1}+{0}",
-					e, Environment.NewLine);
-				return;
+				Debug.Fail("Debug Mode Only: Error while trying to read changes to CSSRules. In Release, this just gets swallowed. Will now re-throw the exception.");
+#if DEBUG
+				throw;
+#endif
 			}
 
 			try
