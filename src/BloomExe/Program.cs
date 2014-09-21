@@ -294,6 +294,10 @@ namespace Bloom
 		{
 			if (_splashForm != null)
 			{
+				if (RegistrationDialog.ShouldWeShowRegistrationDialog())
+				{
+					_splashForm.Hide();//the fading was getting stuck when we showed the registration.
+				}
 				_splashForm.FadeAndClose(); //it's going to hang around while it fades, 
 				_splashForm = null; //but we are done with it
 			}
