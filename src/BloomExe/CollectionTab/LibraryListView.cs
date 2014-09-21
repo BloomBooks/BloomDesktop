@@ -517,6 +517,12 @@ namespace Bloom.CollectionTab
     		
 			button.Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont;
 
+			// Setting the AutoEllipsis property is strange but makes it behave the same on
+			// Windows and Linux. Despite its name it won't show an ellipsis but wrap the line
+			// at a word boundary if the text is too long (at least if the height is large
+			// enough - didn't try what happens if the text doesn't fit in multiple lines)
+			button.AutoEllipsis = true;
+			button.AutoSize = false;
 
     		button.Tag=bookInfo;
 
