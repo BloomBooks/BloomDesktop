@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
@@ -13,6 +12,7 @@ using Bloom.ToPalaso.Experimental;
 using Bloom.web;
 using BloomTemp;
 using DesktopAnalytics;
+using Newtonsoft.Json;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
@@ -551,25 +551,6 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", PreparePageForEditingAfterOrigamiChanges);
-
-			var tools = _currentlyDisplayedBook.BookInfo.Tools.Where(t => t.Enabled == true);
-			var settings = new Dictionary<string, object>();
-
-			settings.Add("showPE", tools.Any(t => t.Name == "pageElements").ToInt());
-			settings.Add("showDRT", tools.Any(t => t.Name == "decodableReader").ToInt());
-			settings.Add("showLRT", tools.Any(t => t.Name == "leveledReader").ToInt());
-			settings.Add("current", AccordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool));
-
-			var decodableTool = tools.FirstOrDefault(t => t.Name == "decodableReader");
-			if (decodableTool != null && !string.IsNullOrEmpty(decodableTool.State))
-				settings.Add("decodableState", decodableTool.State);
-			var leveledTool = tools.FirstOrDefault(t => t.Name == "leveledReader");
-			if (leveledTool != null && !string.IsNullOrEmpty(leveledTool.State))
-				settings.Add("leveledState", leveledTool.State);
-
-			var settingsStr = CleanUpJsonDataForJavascript(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
-
-			_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.restoreAccordionSettings(\"" + settingsStr + "\"); }");
 		}
 
 		private void PreparePageForEditingAfterOrigamiChanges(string obj)
@@ -714,19 +695,65 @@ namespace Bloom.Edit
 
 			var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 
+			// embed settings on the page
+			var tools = _currentlyDisplayedBook.BookInfo.Tools.Where(t => t.Enabled == true).ToList();
+
+			var settings = new Dictionary<string, object>
+			{
+				{"current", AccordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool)}
+			};
+
+			var decodableTool = tools.FirstOrDefault(t => t.Name == "decodableReader");
+			if (decodableTool != null && !string.IsNullOrEmpty(decodableTool.State))
+				settings.Add("decodableState", decodableTool.State);
+			var leveledTool = tools.FirstOrDefault(t => t.Name == "leveledReader");
+			if (leveledTool != null && !string.IsNullOrEmpty(leveledTool.State))
+				settings.Add("leveledState", leveledTool.State);
+
+			var settingsStr = JsonConvert.SerializeObject(settings);
+			settingsStr = String.Format("function GetAccordionSettings() {{ return {0};}}", settingsStr) +
+				"\n$(document).ready(function() { restoreAccordionSettings(GetAccordionSettings()); });";
+
+			var scriptElement = domForAccordion.RawDom.CreateElement("script");
+			scriptElement.SetAttribute("type", "text/javascript");
+			scriptElement.SetAttribute("id", "ui-accordionSettings");
+			scriptElement.InnerText = settingsStr;
+
+			domForAccordion.Head.InsertAfter(scriptElement, domForAccordion.Head.LastChild);
+
+			// get additional tabs to load
+			var checkedBoxes = new List<string>();
+
+			if (tools.Any(t => t.Name == "decodableReader"))
+			{
+				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "DecodableRT", "DecodableRT.htm")));
+				checkedBoxes.Add("showDRT");
+			}
+
+			if (tools.Any(t => t.Name == "leveledReader"))
+			{
+				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "LeveledRT", "LeveledRT.htm")));
+				checkedBoxes.Add("showLRT");
+			}
+
 			// Load settings into the accordion panel
-			AppendAccordionSettingsPanel(domForAccordion);
+			AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "settings", "Settings.htm")));
+
+			// check the appropriate boxes
+			foreach (var checkBoxId in checkedBoxes)
+			{
+				domForAccordion.Body.SelectSingleNode("//div[@id='" + checkBoxId + "']").InnerXml = "&#10004;";
+			}
+
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForAccordion.RawDom);
 			return TempFileUtils.CreateHtml5StringFromXml(domForAccordion.RawDom);
 		}
 
-		/// <summary>Loads the initial panel into the accordion</summary>
-		private void AppendAccordionSettingsPanel(HtmlDom domForAccordion)
+		/// <summary>Loads the requested panel into the accordion</summary>
+		private void AppendAccordionPanel(HtmlDom domForAccordion, string fileName)
 		{
 			var accordion = domForAccordion.Body.SelectSingleNode("//div[@id='accordion']");
-			var subFolder = Path.Combine(_accordionFolder, "settings");
-			var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, "Settings.htm");
-			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath));
+			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(fileName));
 			AppendAllChildren(subPanelDom.Body, accordion);
 		}
 
