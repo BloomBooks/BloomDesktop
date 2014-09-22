@@ -5,6 +5,22 @@ class CalledByCSharp {
 		this.invokeAccordionWithOneParameter('restoreAccordionSettings', settings);
 	}
 
+	handleUndo(): string {
+		var contentWindow = this.getAccordionContent();
+		if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo()) {
+			return 'fail';
+		}
+		contentWindow.model.undo();
+		return 'success';
+	}
+
+	canUndo(): string {
+		var contentWindow = this.getAccordionContent();
+		if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo())
+			return 'fail'; // we don't want to decide
+		return contentWindow.model.canUndo();
+	}
+
 	loadReaderToolSettings(settings: string, bookFontName: string) {
 
 		var contentWindow = this.getAccordionContent();

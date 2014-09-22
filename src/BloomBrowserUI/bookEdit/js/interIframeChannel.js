@@ -91,6 +91,10 @@ var interIframeChannel = (function () {
 
         $.ajax(ajaxSettings);
     };
+
+    interIframeChannel.prototype.getPageWindow = function () {
+        return document.getElementById('page').contentWindow;
+    };
     return interIframeChannel;
 })();
 //# sourceMappingURL=interIframeChannel.js.map

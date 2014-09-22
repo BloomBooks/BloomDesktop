@@ -3,11 +3,9 @@ using System.Diagnostics;
 using System.Text;
 using System.Linq;
 using System.IO;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.ReaderTools;
-using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.Xml;
 using Palaso.IO;
@@ -23,7 +21,7 @@ namespace Bloom.web
 	static class ReadersHandler
 	{
 		private static bool _savingReaderWords;
-		private const string _synphonyFileNameSuffix = "_lang_data.js";
+		private const string kSynphonyFileNameSuffix = "_lang_data.js";
 
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
 		// whole-book counts. If we ever support having more than one book open, ReadersHandler will need to stop being static, or
@@ -89,11 +87,13 @@ namespace Bloom.web
 		}
 
 		/// <summary>
-		/// Needs to return a string with the bloom-content1 text of each non-x-matter page, separated by /r
+		/// Needs to return a json string with the page guid and the bloom-content1 text of each non-x-matter page
 		/// </summary>
 		/// <returns></returns>
 		private static string GetTextOfPages()
 		{
+			var pageTexts = new List<string>();
+
 			var pages = CurrentBook.RawDom.SafeSelectNodes("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]")
 				.Cast<XmlElement>()
 				.Where(p =>
@@ -101,16 +101,22 @@ namespace Bloom.web
 					var cls = " " + p.Attributes["class"].Value + " ";
 					return !cls.Contains(" bloom-frontMatter ") && !cls.Contains(" bloom-backMatter ");
 				});
-			var sb = new StringBuilder();
+
 			foreach (var page in pages)
 			{
-				if (sb.Length > 0)
-					sb.Append("\r");
+				var pageWords = string.Empty;
 				foreach (XmlElement node in page.SafeSelectNodes(".//div[contains(concat(' ', @class, ' '), ' bloom-content1 ')]"))
-					sb.Append(node.InnerText.Replace("\r\n", " ").Replace("\r", " ").Replace("\n", " "));
+					pageWords += " " + node.InnerText;
+
+				pageTexts.Add("\"" + page.GetAttribute("id") + "\":\"" + EscapeJsonValue(pageWords.Trim()) + "\"");
 			}
-			var temp = sb.ToString();
-			return temp;
+
+			return "{" + String.Join(",", pageTexts.ToArray()) + "}";
+		}
+
+		private static string EscapeJsonValue(string value)
+		{
+			return value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
 		}
 
 		private static string GetSampleTextsList(string settingsFilePath)
@@ -145,7 +151,7 @@ namespace Bloom.web
 				fileList1.Add(langFile);
 
 			// next look for <language_name>_lang_data.js
-			foreach (var file in Directory.GetFiles(path, "*" + _synphonyFileNameSuffix))
+			foreach (var file in Directory.GetFiles(path, "*" + kSynphonyFileNameSuffix))
 			{
 				if (!fileList1.Contains(file))
 					fileList1.Add(file);
