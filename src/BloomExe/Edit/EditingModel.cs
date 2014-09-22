@@ -42,6 +42,11 @@ namespace Bloom.Edit
 		private string _accordionFolder;
         private EnhancedImageServer _server;
 
+		// As a precaution against the remote possibility that SaveNow can be called from another thread,
+		// please protect all access to these two variables by locking on _tasksToDoAfterSaving.
+	    private bool _inProcessOfSaving;
+		private List<Action> _tasksToDoAfterSaving = new List<Action>(); 
+
     	//public event EventHandler UpdatePageList;
 
         public delegate EditingModel Factory();//autofac uses this
@@ -158,7 +163,19 @@ namespace Bloom.Edit
 
         private void OnDeletePage()
         {
-            try
+	        lock (_tasksToDoAfterSaving)
+	        {
+		        if (_inProcessOfSaving)
+		        {
+			        // Somehow (BL-431) it's possible that a Save is still in progress when we start executing a delete page.
+			        // If this happens, to prevent crashes we need to let the Save complete before we go ahead with the delete.
+			        // I don't _think_ Save can happen on another thread, but let's make this as robust as possible.
+			        _tasksToDoAfterSaving.Add(OnDeletePage);
+
+			        return;
+		        }
+	        }
+	        try
             {
                 _inProcessOfDeleting = true;
                 _domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
@@ -781,8 +798,32 @@ namespace Bloom.Edit
         {
             if (_domForCurrentPage != null)
             {
-                _view.CleanHtmlAndCopyToPageDom();
-                _bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+	            try
+	            {
+		            lock (_tasksToDoAfterSaving)
+		            {
+						_inProcessOfSaving = true;
+						_tasksToDoAfterSaving.Clear();
+		            }
+		            _view.CleanHtmlAndCopyToPageDom();
+					_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+	            }
+	            finally
+	            {
+		            lock (_tasksToDoAfterSaving)
+		            {
+			            _inProcessOfSaving = false;
+		            }
+	            }
+	            lock (_tasksToDoAfterSaving)
+	            {
+		            while (_tasksToDoAfterSaving.Count > 0)
+		            {
+			            var task = _tasksToDoAfterSaving[0];
+			            _tasksToDoAfterSaving.RemoveAt(0);
+			            task(); // Review: should we release the lock while we do this?
+		            }
+	            }
             }
         }
 
