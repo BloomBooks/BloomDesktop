@@ -157,6 +157,12 @@
 		<seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="BookEditor.ForTextInLang">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>This formatting is for all {0} text in boxes with '{1}' style</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Advanced Program Settings</seg>
