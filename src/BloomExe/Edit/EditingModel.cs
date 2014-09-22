@@ -39,6 +39,7 @@ namespace Bloom.Edit
 		private List<ContentLanguage> _contentLanguages;
 		private IPage _previouslySelectedPage;
 		private bool _inProcessOfDeleting;
+		private bool _inProcessOfInserting;
 		private string _accordionFolder;
 		private EnhancedImageServer _server;
 
@@ -190,9 +191,18 @@ namespace Bloom.Edit
 
 		private void OnInsertTemplatePage(object sender, EventArgs e)
 		{
-			_bookSelection.CurrentSelection.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
-			_view.UpdatePageList(false);
-			//_pageSelection.SelectPage(newPage);
+			_inProcessOfInserting = true;
+			try
+			{
+				_bookSelection.CurrentSelection.InsertPageAfter(
+					DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
+				_view.UpdatePageList(false);
+				//_pageSelection.SelectPage(newPage);
+			}
+			finally
+			{
+				_inProcessOfInserting = false;
+			}
 			try
 			{
 				Analytics.Track("Insert Template Page", new Dictionary<string, string>
@@ -446,7 +456,10 @@ namespace Bloom.Edit
 			{
 				if (_previouslySelectedPage != null && _domForCurrentPage != null)
 				{
-					if(!_inProcessOfDeleting)//this is a mess.. before if you did a delete and quickly selected another page, events transpired such that you're now trying to save a deleted page
+					//this is a mess.. before if you did a delete and quickly selected another page, events transpired such that you're now trying to save a deleted page
+					//Also preventing save of newly inserted page.  The current reason for this is the Custom Template needs to open in layout mode
+					// and we remove the layout mode class upon save.
+					if(!_inProcessOfDeleting && !_inProcessOfInserting)
 						SaveNow();
 					_view.UpdateThumbnailAsync(_previouslySelectedPage);
 				}
