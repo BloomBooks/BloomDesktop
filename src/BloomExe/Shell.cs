@@ -134,7 +134,7 @@ namespace Bloom
 				file = file.TrimStart('/');
 			var fi = new FileInfo(file);
 
-			return string.Format("{0}",fi.CreationTime.ToString("dd-MMM-yyyy"));
+			return string.Format("{0}",fi.CreationTimeUtc.ToString("dd-MMM-yyyy"));
 		}
 
 		public static string GetShortVersionInfo()
