@@ -153,7 +153,7 @@
 			this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(214)))), ((int)(((byte)(86)))), ((int)(((byte)(73)))));
 			this.label4.Location = new System.Drawing.Point(55, 9);
 			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(124, 41);
+			this.label4.Size = new System.Drawing.Size(150, 41);
 			this.label4.TabIndex = 25;
 			this.label4.Text = "All Children Reading";
 			// 
