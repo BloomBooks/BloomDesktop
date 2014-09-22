@@ -101,4 +101,8 @@ class interIframeChannel {
 
         $.ajax(ajaxSettings)
     }
+
+    getPageWindow(): Window {
+        return (<HTMLIFrameElement>document.getElementById('page')).contentWindow;
+    }
 }

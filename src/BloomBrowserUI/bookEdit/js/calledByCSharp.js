@@ -17,7 +17,7 @@ var CalledByCSharp = (function () {
     CalledByCSharp.prototype.canUndo = function () {
         var contentWindow = this.getAccordionContent();
         if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo())
-            return 'fail'; // we don't want to decide
+            return 'fail';
         return contentWindow.model.canUndo();
     };
 
