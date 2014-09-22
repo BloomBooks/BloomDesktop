@@ -14,6 +14,8 @@ function FindOrCreateConfigDiv(title) {
 function showSetupDialog(showWhat) {
 
     var accordion = document.getElementById('accordion').contentWindow;
+    accordion.localizationManager.loadStrings(getSettingsDialogLocalizedStrings(), null, function() {
+
     var title;
     if (showWhat == 'stages')
         title = accordion.localizationManager.getText('ReaderSetup.SetUpDecodableReaderTool', 'Set up Decodable Reader Tool');
@@ -44,7 +46,8 @@ function showSetupDialog(showWhat) {
         modal: "true",
         buttons: {
             Help: {
-                text: "Help",
+                // For consistency, I would have made this 'Common.Help', but we already had 'HelpMenu.Help Menu' translated
+                text: accordion.localizationManager.getText('HelpMenu.Help Menu', 'Help'),
                 class: 'left-button',
                 click: function() {
                     document.getElementById('settings_frame').contentWindow.postMessage('Help', '*');
@@ -77,6 +80,19 @@ function showSetupDialog(showWhat) {
     });
 
     accordion.SynphonyApi.fireCSharpEvent('setModalStateEvent', 'true');
+    });
+
+}
+
+function getSettingsDialogLocalizedStrings() {
+    // Without preloading these, they are not available when the dialog is created
+    var pairs = {};
+    pairs['ReaderSetup.SetUpDecodableReaderTool'] = 'Set up Decodable Reader Tool';
+    pairs['ReaderSetup.SetUpLeveledReaderTool'] = 'Set up Leveled Reader Tool';
+    pairs['HelpMenu.Help Menu'] = 'Help';
+    pairs['Common.OK'] = 'OK';
+    pairs['Common.Cancel'] = 'Cancel';
+    return pairs;
 }
 
 //noinspection JSUnusedGlobalSymbols
