@@ -45,10 +45,31 @@ namespace Bloom.Publish
 			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
 						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
 
-			new MakePdfUsingGeckofxHtmlToPdfComponent().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, owner, worker, doWorkEventArgs);
+			// Try up to 4 times. This is a last-resort attempt to handle BL-361.
+			// Most likely that was caused by a race condition in MakePdfUsingGeckofxHtmlToPdfComponent.MakePdf,
+			// but as it was an intermittent problem and we're not sure that was the cause, this might help.
+			for (int i = 0; i < 4; i++)
+			{
+				new MakePdfUsingGeckofxHtmlToPdfComponent().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape,
+					owner, worker, doWorkEventArgs);
 
-			if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
-				return;
+				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
+					return;
+				if (File.Exists(outputPdfPath))
+					break; // normally the first time
+			}
+			if (!File.Exists(outputPdfPath) && owner != null)
+			{
+				// Should never happen, but...
+				owner.Invoke((Action) (() =>
+				{
+					// Review: should we localize this? Hopefully the user never sees it...don't want to increase burden on localizers...
+					MessageBox.Show(
+						"Bloom unexpectedly failed to create the PDF. If this happens repeatedy please report it to the developers. Probably it will work if you just try again.",
+						"Pdf creation failed", MessageBoxButtons.OK);
+				}));
+			}
+
 			if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet)
 			{
 				//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
