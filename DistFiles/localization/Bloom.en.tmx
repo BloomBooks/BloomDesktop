@@ -1522,11 +1522,6 @@
         <seg>Log in to BloomLibrary.org</seg>
       </tuv>
     </tu>
-    <tu tuid="LoginDialog.label3">
-      <tuv xml:lang="en">
-        <seg>label3</seg>
-      </tuv>
-    </tu>
     <tu tuid="LoginDialog.showPassword">
       <tuv xml:lang="en">
         <seg>&amp;Show Password</seg>

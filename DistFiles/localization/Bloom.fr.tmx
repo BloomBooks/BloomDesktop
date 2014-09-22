@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.23.0</prop>
+    <prop type="x-appversion">3.0.34.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -158,6 +158,15 @@
         <seg>Outil de livre gradué</seg>
       </tuv>
     </tu>
+    <tu tuid="Accordion.More">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>More...</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Plus...</seg>
+      </tuv>
+    </tu>
     <tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
@@ -189,7 +198,7 @@
         <seg>Bloom was not able to install that Bloom Pack</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Bloom n'a pas pu installer ce paquet Bloom.</seg>
+        <seg>Bloom n'a pas pu installer ce BloomPack.</seg>
       </tuv>
     </tu>
     <tu tuid="BloomPackInstallDialog.Extracting">
@@ -298,6 +307,22 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>La couverture, les pages liminaires et les parties annexes</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeft">
+      <tuv xml:lang="en">
+        <seg>Right To Left</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>De droite à gauche</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftTip">
+      <tuv xml:lang="en">
+        <seg>Select languages that are written from right to left</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Sélectionner les langues qui s'écrivent de droite à gauche</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
@@ -488,7 +513,7 @@
         <seg>Front/Back Matter Pack</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Module des pages liminaires et des parties annexes</seg>
+        <seg>La couverture, les pages liminaires et les parties annexes</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.label5">
@@ -765,7 +790,7 @@
         <seg>Make Bloom Pack</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Créer un paquet Bloom</seg>
+        <seg>Créer BloomPack</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.advancedToolStripMenuItem">
@@ -968,7 +993,7 @@
     <tu tuid="DecodableReaderTool.MakeLetterWordList">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Make a Letter and Word List File</seg>
+        <seg>Open a Letter and Word List File</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Créer un fichier de lettres et mots</seg>
@@ -1012,7 +1037,7 @@
     </tu>
     <tu tuid="Download.Completed">
       <tuv xml:lang="en">
-        <seg>Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
+        <seg>Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Le téléchargement ({0}) est terminé. Vous pouvez le voir dans la section 'Livres de BloomLibrary.org' de vos collections. Si Bloom pense que vous n'êtes pas en train de faire quelque chose, il le sélectionnera pour vous.</seg>
@@ -1378,7 +1403,7 @@
         <seg>Template Pages</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Pages Modèles</seg>
+        <seg>Pages modèles</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
@@ -1850,6 +1875,14 @@
         <seg>Site web</seg>
       </tuv>
     </tu>
+    <tu tuid="HelpMenu.bloomContentDemonstrationToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Content Demonstration</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Démonstration de fonctionnalités</seg>
+      </tuv>
+    </tu>
     <tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Check For New Version</seg>
@@ -1898,12 +1931,28 @@
         <seg>Description des fonctionnalités...</seg>
       </tuv>
     </tu>
+    <tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Shell Book Instructions</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Instructions de livres canevas</seg>
+      </tuv>
+    </tu>
     <tu tuid="HelpMenu.showEventLogMenuItem">
       <tuv xml:lang="en">
         <seg>Show Event Log</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Afficher le journal d'évènements</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.trainingManualToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Training Manual</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Manuel de formation</seg>
       </tuv>
     </tu>
     <tu tuid="InDesignXmlInformationDialog.WindowTitle">
@@ -1995,6 +2044,15 @@
         <seg>Actuel</seg>
       </tuv>
     </tu>
+    <tu tuid="LeveledReaderTool.ConceptLoad">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Concept load</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Charge d'idée</seg>
+      </tuv>
+    </tu>
     <tu tuid="LeveledReaderTool.FoThisLevel">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2002,6 +2060,24 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Pour ce niveau</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>How to make a great leveled reader</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Comment créer un excellent livre gradué</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.IllustrationSupport">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Illustration support</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Soutien d'illustration</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.KeepInMind">
@@ -2040,6 +2116,15 @@
         <seg>Max</seg>
       </tuv>
     </tu>
+    <tu tuid="LeveledReaderTool.PatternAndRecognition">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Pattern and recognition</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Motif et reconnaissance</seg>
+      </tuv>
+    </tu>
     <tu tuid="LeveledReaderTool.PerPage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2056,6 +2141,15 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>par phrase</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Predictability">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Predictability</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Prévisibilité</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.SetUpLevels">
@@ -2083,6 +2177,15 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Cette page</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.TopicFamiliarity">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Topic familiarity</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Connaissance du sujet</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.Total">
@@ -2245,7 +2348,7 @@
         <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Une collection des livres canevas ou des livres modèles dans une ou plusieurs langues véhiculaires, à partir de laquelle vous pouvez créer un paquet Bloom pour donner aux autres pour qu'ils puissent l'utiliser pour créer des livres vernaculaires.</seg>
+        <seg>Une collection des livres canevas ou des livres modèles dans une ou plusieurs langues véhiculaires, à partir de laquelle vous pouvez créer un BloomPack pour donner aux autres pour qu'ils puissent l'utiliser pour créer des livres vernaculaires.</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
@@ -3069,6 +3172,24 @@
         <seg>À propos des listes de mots et des échantillon de texte\nSi on place des fichiers texte dans le dossier d'échantillons de texte, l'outil de livre de base peut suggérer des mots lorsqu'on crée des livres.</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.AboutSampleTexts2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Si on n'a pas encore une liste de mots dans cette langue, considérer le logiciel WeSay (qui vient gratuit de SIL) et la technique de RapidWords.net pour collecter facilement beaucoup de mots afin de commencer un dictionnaire.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AboutSampleTexts4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Si on n'a pas encore des textes dans cette langue, considérer le logiciel SayMore (qui vient gratuit de SIL), avec lequel on peut enregistrer des entrevues puis transcrire ce que les gens ont dit.</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.AddLevel">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -3121,15 +3242,6 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Cliquer sur une lettre pour l'ajouter à cette étape.</seg>
-      </tuv>
-    </tu>
-    <tu tuid="ReaderSetup.CombinationHelp1">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Separate by spaces</seg>
-      </tuv>
-      <tuv xml:lang="fr">
-        <seg>*Séparés par des espaces</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.CombinationHelp2">
@@ -3202,15 +3314,6 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Noter des lettres et des composants des mot par ordre alphabétique.</seg>
-      </tuv>
-    </tu>
-    <tu tuid="ReaderSetup.LetterHelp2">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Separate by spaces</seg>
-      </tuv>
-      <tuv xml:lang="fr">
-        <seg>*Séparés par des espaces</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.LetterHelp3">
@@ -3315,7 +3418,7 @@
     <tu tuid="ReaderSetup.MatchingWords">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg> matching words</seg>
+        <seg>matching words</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg> mots correspondants</seg>
@@ -3625,6 +3728,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Lettres</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+      <tuv xml:lang="en">
+        <seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this BloomPack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>De plus, ce BloomPack portera la configuration la plus récente pour des livres de base et des livres gradués en langue {0}. Si une personne ouvre ce BloomPack puis une collection en langue {0}, la configuration pour des livres de base et des livres gradués dans ce BloomPack remplacera sa configuration actuelle. Elle recevra également l'ensemble actuel de mots disponibles pour des livres de base.</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
