@@ -790,6 +790,11 @@ ReaderToolsModel.prototype.updateWholeBookCounts = function (pageSource) {
 
 ReaderToolsModel.prototype.displayBookTotals = function () {
 
+    if (this.bookPageWords.length === 0) {
+        this.getTextOfWholeBook();
+        return;
+    }
+
     var pageStrings = _.values(this.bookPageWords);
 
     this.updateActualCount(this.countWordsInBook(pageStrings), this.maxWordsPerBook(), 'actualWordCount');
@@ -863,7 +868,7 @@ ReaderToolsModel.prototype.maxWordsPerPageInBook = function(pageStrings) {
 
 ReaderToolsModel.prototype.updateActualCount = function(actual, max, id) {
     $('#' + id).html(actual.toString());
-    var acceptable = actual <= max;
+    var acceptable = (actual <= max) || (max === 0);
     // The two styles here must match ones defined in ReaderTools.htm or its stylesheet.
     // It's important NOT to use two names where one is a substring of the other (e.g., unacceptable
     // instead of tooLarge). That will mess things up going from the longer to the shorter.
