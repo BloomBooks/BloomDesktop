@@ -191,7 +191,7 @@
     function replacePreviousLetterWithText(text) {
         var sel, textNode, clone;
         var range = caretPosition;
-        if (window.getSelection && range) {
+        if (window.getSelection && range && range.startOffset != 0) {
             sel = window.getSelection();
             if (sel.getRangeAt && sel.rangeCount) {
                 textNode = document.createTextNode(text);
