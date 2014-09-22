@@ -152,6 +152,14 @@
 		<seg>మార్చు...</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="ImageToolbox.EnterSearchTerms">
+	  <tuv xml:lang="en">
+		<seg>This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</seg>
+	  </tuv>
+	  <tuv xml:lang="te">
+		<seg>ఈ 'కళ చాలక గ్యాలరీ' ఉంది. పైన బాక్స్ లో ENTER నొక్కండి, అప్పుడు మీరు శోధిస్తున్నారు ఏమి టైప్ చేయండి. మీరు ఇంగ్లీష్ మరియు ఇండోనేషియా లో టైప్ చేయవచ్చు.</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="ImageToolbox.FileButton">
 	  <tuv xml:lang="en">
 		<seg>File</seg>
@@ -312,6 +320,14 @@
 	  </tuv>
 	  <tuv xml:lang="te">
 		<seg>భాష కోడ్ వెదకండి</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LanguageLookup.LookupISOControl._searchText">
+	  <tuv xml:lang="en">
+		<seg>?</seg>
+	  </tuv>
+	  <tuv xml:lang="te">
+		<seg>?</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LanguageLookup.PrimaryNameHeader">
