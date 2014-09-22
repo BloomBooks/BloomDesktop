@@ -1,10 +1,6 @@
 var CalledByCSharp = (function () {
     function CalledByCSharp() {
     }
-    CalledByCSharp.prototype.restoreAccordionSettings = function (settings) {
-        this.invokeAccordionWithOneParameter('restoreAccordionSettings', settings);
-    };
-
     CalledByCSharp.prototype.handleUndo = function () {
         var contentWindow = this.getAccordionContent();
         if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo()) {

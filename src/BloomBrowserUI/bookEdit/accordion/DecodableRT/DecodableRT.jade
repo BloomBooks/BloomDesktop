@@ -2,13 +2,13 @@ html
 	head
 
 	body
-		h3(data-markuptype='1', data-order='10', data-i18n='Accordion.DecodableReaderTool') Decodable Reader Tool
-		div
+		h3(data-panelId='DecodableRT', data-markuptype='1', data-order='10', data-i18n='Accordion.DecodableReaderTool') Decodable Reader Tool
+		div(data-panelId='DecodableRT')
 			img#decodable-keys(src='/bloom/images/keys-white.png', style='margin-left: 14px')
 			.stageLine
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decStage
 				span.stageLabel.stageLine
-					stage(data-i18n='DecodableReaderTool.Stage') Stage
+					span(data-i18n='DecodableReaderTool.Stage') Stage
 					= ' '
 					span#stageNumber 1
 					= ' '
