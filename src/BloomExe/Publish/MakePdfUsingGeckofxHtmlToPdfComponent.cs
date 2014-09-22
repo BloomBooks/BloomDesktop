@@ -44,7 +44,6 @@ namespace Bloom.Publish
 					var mainThreadTask = (Action)(() => {
 						progress = new ConversionProgress(conversionOrder);
 						progress.Finished += (sender, args) => {
-							waitHandle.Set();
 							if (!File.Exists(tempOutput.Path))
 							{
 								throw new ApplicationException(
@@ -55,6 +54,7 @@ namespace Bloom.Publish
 							try
 							{
 								File.Move(tempOutput.Path, outputPdfPath);
+								waitHandle.Set();
 							}
 							catch (IOException e)
 							{
