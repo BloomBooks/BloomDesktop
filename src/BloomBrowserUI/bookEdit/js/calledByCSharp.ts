@@ -1,10 +1,6 @@
 
 class CalledByCSharp {
 
-    restoreAccordionSettings(settings: string) {
-        this.invokeAccordionWithOneParameter('restoreAccordionSettings', settings);
-    }
-
     handleUndo(): string {
         var contentWindow = this.getAccordionContent();
         if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo()) {

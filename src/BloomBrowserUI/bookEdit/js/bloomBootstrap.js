@@ -27,7 +27,6 @@ document.write('<script type="text/javascript" src="' + libDir + 'jquery.myimgsc
 document.write('<script type="text/javascript" src="' + libDir + 'jquery.resize.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'jquery.hotkeys.js"></script>');
 
-document.write('<script type="text/javascript" src="' + thisDir + 'bloomEditing.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'BloomAccordion.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'StyleEditor.js"></script>');
 
@@ -44,6 +43,8 @@ document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/s
 document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/bloom_lib.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'synphonyApi.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'readerTools.js"></script>');
+
+document.write('<script type="text/javascript" src="' + thisDir + 'bloomEditing.js"></script>');
 
 document.write('<script type="text/javascript" src="' + libDir + 'split-pane/split-pane.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'origami.js"></script>');

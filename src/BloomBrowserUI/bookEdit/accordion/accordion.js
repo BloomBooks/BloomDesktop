@@ -38,31 +38,21 @@ function showOrHidePanel_click(chkbox) {
     else {
         chkbox.innerHTML = '';
         fireCSharpAccordionEvent('saveAccordionSettingsEvent', chkbox.id + "\t0");
-        $('*:data(panelId)').filter(function() { return $(this).data('panelId') === panel; }).remove();
+        $('*[data-panelId]').filter(function() { return $(this).attr('data-panelId') === panel; }).remove();
     }
 
     resizeAccordion();
 }
 
 /**
- * Called by C# to restore user settings
- * @param {String} settings
- */
+* Called by C# to restore user settings
+* @param {String} settings
+*/
 function restoreAccordionSettings(settings) {
 
-    var opts = JSON.parse(settings);
+    var opts = settings;
     var currentPanel = opts['current'] || '';
     var state;
-    var panels = [];
-
-    if (opts['showPE'])
-        panels.push(['showPE', 'PageElements']);
-
-    if (opts['showDRT'])
-        panels.push(['showDRT', 'DecodableRT']);
-
-    if (opts['showLRT'])
-        panels.push(['showLRT', 'LeveledRT']);
 
     if (opts['decodableState']) {
         state = libsynphony.dbGet('drt_state');
@@ -78,31 +68,16 @@ function restoreAccordionSettings(settings) {
         libsynphony.dbSet('drt_state', state);
     }
 
-    loadPanelsAndSetCurrent(panels, currentPanel);
+    setCurrentPanel(currentPanel);
 }
 
 /**
- * This function requests one panel, and then sets itself up to be called again after the panel is loaded. If there
- * are no more panels to load, it attempts to activate the panel whose "data-panelId" attribute is equal to the value
+ * This function attempts to activate the panel whose "data-panelId" attribute is equal to the value
  * of "currentPanel" (the last panel displayed).
- * @param {Array} panels An array of arrays.
  * @param {String} currentPanel
  */
-function loadPanelsAndSetCurrent(panels, currentPanel) {
+function setCurrentPanel(currentPanel) {
 
-    // if there are still panels to load, load the next one
-    if (panels && (panels.length > 0)) {
-
-        // remove the first panel from the array
-        var panel = panels.shift();
-
-        // request the panel from localhost
-        requestPanel(panel[0], panel[1], loadPanelsAndSetCurrent, panels, currentPanel);
-
-        return;
-    }
-
-    // If you are here, there are no more panels to load, so try to make the "currentPanel" active.
     // NOTE: panels without a "data-panelId" attribute (such as the More panel) cannot be the "currentPanel."
     var idx = '0';
     var accordion = $('#accordion');
@@ -111,13 +86,16 @@ function loadPanelsAndSetCurrent(panels, currentPanel) {
 
         // find the index of the panel whose "data-panelId" attribute equals the value of "currentPanel"
         accordion.find('> h3').each(function() {
-            if ($(this).data('panelId') === currentPanel) {
+            if ($(this).attr('data-panelId') === currentPanel) {
 
                 // the index is the last segment of the element id
                 idx = this.id.substr(this.id.lastIndexOf('-') + 1);
 
                 // set the markup type to the current panel
-                window.postMessage('SetMarkupType\n' + (this.dataset['markuptype'] || 0), '*');
+                if (model) {
+                    model.setMarkupType(parseInt(this.dataset['markuptype']));
+                    setTimeout(function() { model.doMarkup(); }, 500);
+                }
 
                 // break from the each() loop
                 return false;
@@ -139,8 +117,8 @@ function loadPanelsAndSetCurrent(panels, currentPanel) {
     // when a panel is activated, save its data-panelId so state can be restored when Bloom is restarted.
     accordion.onOnce('accordionactivate.accordion', function(event, ui) {
 
-        if (ui.newHeader.data('panelId'))
-            fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t" + ui.newHeader.data('panelId').toString());
+        if (ui.newHeader.attr('data-panelId'))
+            fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
         else
             fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t");
     });
@@ -214,10 +192,7 @@ function loadAccordionPanel(newContent, panelId) {
     var insertBefore = accordion.children().filter(function() { return $(this).data('order') > order; }).first();
 
     // Insert now.
-    // NOTE: tag each of the items with the "panelId" so they are easier to locate when it is time to remove them.
-    tab.data('panelId', panelId);
     tab.insertBefore(insertBefore);
-    div.data('panelId', panelId);
     div.insertBefore(insertBefore);
 
     accordion.accordion('refresh');
@@ -232,8 +207,8 @@ function loadAccordionPanel(newContent, panelId) {
         // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
         accordion.onOnce('accordionactivate.accordion', function(event, ui) {
 
-            if (ui.newHeader.data('panelId'))
-                fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t" + ui.newHeader.data('panelId').toString());
+            if (ui.newHeader.attr('data-panelId'))
+                fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
             else
                 fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t");
         });
