@@ -49,6 +49,7 @@
       </tuv>
     </tu>
     <tu tuid="BloomPackInstallDialog.Extracting">
+      <note>Shown while BloomPacks are being installed</note>
       <tuv xml:lang="en">
         <seg>Extracting...</seg>
       </tuv>
@@ -70,6 +71,15 @@
       </tuv>
       <tuv xml:lang="te">
         <seg>ప్రారంభ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>శైలి '{0}' మరియు భాష '{1}'. \ N ప్రస్తుత పరిమాణం {2} pt మోస్తున్న అన్ని బాక్సులను కోసం టెక్స్ట్ పరిమాణం మార్పులు.</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -294,6 +304,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.Restart">
+      <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
       <tuv xml:lang="en">
         <seg>Restart</seg>
       </tuv>
@@ -311,7 +322,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
       <tuv xml:lang="en">
-        <seg>Bloom will now open this HTML document in your word processing program (normally Word or Libre Office). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
       </tuv>
       <tuv xml:lang="te">
         <seg>వర్ధిల్లు ఇప్పుడు ఈ HTML పత్రం తెరుచుకోవడం</seg>
@@ -343,7 +354,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
       <tuv xml:lang="en">
-        <seg>Export to Word or Libre Office...</seg>
+        <seg>Export to Word or LibreOffice...</seg>
       </tuv>
       <tuv xml:lang="te">
         <seg>పదం లేదా లిబ్రేఆఫీస్ ఎగుమతి</seg>
@@ -351,7 +362,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
       <tuv xml:lang="en">
-        <seg>Export To XML For InDesign...</seg>
+        <seg>Export to XML for InDesign...</seg>
       </tuv>
       <tuv xml:lang="te">
         <seg>InDesign కోసం XML ఎగుమతి</seg>
@@ -438,6 +449,15 @@
         <seg>డిస్కులో ఫోల్డర్ను తెరువు</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.Health">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Health</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఆరోగ్యం</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.MakeBookUsingThisTemplate">
       <tuv xml:lang="en">
         <seg>Make a book using this source</seg>
@@ -513,6 +533,22 @@
         <seg>బ్లూమ్ తిరిగి తయారు</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template BloomPack...</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>రీడర్ టెంప్లేట్ బ్లూమ్ ప్యాక్ చేయి ...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.advancedToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Advanced</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>అధునాతన</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.bloomLibraryLinkLabel">
       <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
       <tuv xml:lang="en">
@@ -580,6 +616,24 @@
         <seg>కొత్త గుండ్లు కోసం వర్గాలు</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.BackButton">
+      <note>In a wizard, this button takes you to the previous step.</note>
+      <tuv xml:lang="en">
+        <seg>Back</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>తిరిగి</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Cancel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Cancel</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>రద్దు</seg>
+      </tuv>
+    </tu>
     <tu tuid="Common.CancelButton">
       <tuv xml:lang="en">
         <seg>&amp;Cancel</seg>
@@ -606,6 +660,24 @@
         <seg>తదుపరి</seg>
       </tuv>
     </tu>
+    <tu tuid="Common.NextButton">
+      <note>In a wizard, this button takes you to the next step.</note>
+      <tuv xml:lang="en">
+        <seg>Next</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>తదుపరి</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.OK">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>OK</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>సరే</seg>
+      </tuv>
+    </tu>
     <tu tuid="Common.OKButton">
       <tuv xml:lang="en">
         <seg>&amp;OK</seg>
@@ -628,6 +700,24 @@
       </tuv>
       <tuv xml:lang="te">
         <seg>భవనం</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.LettersInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters in this stage</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఈ దశలో లెటర్స్.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.MakeLetterWordList">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Open a Letter and Word List File</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఒక అక్షరం మరియు పద జాబితా ఫైలు తెరువు</seg>
       </tuv>
     </tu>
     <tu tuid="DecodableReaderTool.SetUpStages">
@@ -655,6 +745,15 @@
       </tuv>
       <tuv xml:lang="te">
         <seg>యొక్క</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.WordsInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Words in this stage</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఈ దశలో పదాలు.</seg>
       </tuv>
     </tu>
     <tu tuid="Download.Completed">
@@ -763,6 +862,23 @@
         <seg>మార్చు</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FontMissing">
+      <tuv xml:lang="en">
+        <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ప్రస్తుత ఎంపిక ఫాంట్ '{0}' ఉంది, కానీ అది ఈ కంప్యూటర్లో ఇన్స్టాల్ కాలేదు. కొన్ని ఇతర font ఉపయోగించబడుతుంది.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>శైలి మోస్తున్న అన్ని బాక్సులను కోసం టెక్స్ట్ పరిమాణం మారుస్తుంది {0} 'మరియు భాష' {1} '/n ప్రస్తుత పరిమాణం {2}pt </seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -788,6 +904,33 @@
       </tuv>
       <tuv xml:lang="te">
         <seg>ఏ ఫండింగ్ ఏజెన్సీలు గుర్తించి ఈ ఉపయోగించడానికి</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.ISBNPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>అంతర్జాతీయ ప్రామాణిక పుస్తకం సంఖ్య. మీరు ఈ ఒక లేదు లేకపోతే వదిలివేయండి.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Original (or Shell) Acknowledgments in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఒరిజినల్ (లేదా shell) {భాషను} లో రసీదులు</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalContributorsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>{భాషను}, మొదలైనవి రచయితలు, చిత్రకారులు, సంపాదకులు, చేసిన రచనలు</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.TopicPrompt">
@@ -844,6 +987,14 @@
         <seg>లేఅవుట్ను మార్చడం</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.NoImageFoundOnClipboard">
+      <tuv xml:lang="en">
+        <seg>Before you can paste an image, copy one onto your 'clipboard', from another program.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>మీరు చిత్రం పేస్ట్ ముందు, మరొక కార్యక్రమం నుండి మీ 'క్లిప్బోర్డ్కు' పై ఒక కాపీ</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.PageList.Heading">
       <tuv xml:lang="en">
         <seg>Pages</seg>
@@ -858,6 +1009,78 @@
       </tuv>
       <tuv xml:lang="te">
         <seg>ఒక పేజీ పరిమాణం మరియు దిశను ఎంపిక</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.BorderToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the border and background</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>సరిహద్దు మరియు నేపథ్య మార్చడానికి</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontFaceToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font face</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఫాంట్ ముఖం మార్చండి</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontSizeToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font size</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఫాంట్ పరిమాణాన్ని మార్చు</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.LineSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between lines of text</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>టెక్స్ట్ యొక్క పంక్తులు మధ్య ఖాళీలో మార్పులు</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingExtraWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Extra Wide</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>విస్తృత అదనపు</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingNormal">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>సాధారణ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between words</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>పదాల మధ్య ఖాళీలో మార్పులు</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wide</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>వైడ్</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.StyleEditorTip">
@@ -1257,6 +1480,14 @@
         <seg>ఈ పుస్తకం లో అన్ని ఇతర చిత్రాలు ఈ సమాచారాన్ని కాపీ?</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+      <tuv xml:lang="en">
+        <seg>This option is only available in the Publish tab.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఈ ఐచ్చికము మాత్రమే ప్రచురించవచ్చు టాబ్ లో ఉంది.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.monolingual">
       <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       <tuv xml:lang="en">
@@ -1452,6 +1683,132 @@
         <seg>B5చిత్తరువు</seg>
       </tuv>
     </tu>
+    <tu tuid="LeveledReaderTool.Actual">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Actual</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>అసలు</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.FoThisLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>For this Level</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఈ స్థాయి కోసం</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.KeepInMind">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Keep in mind</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>గుర్తుంచుకోండి</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Level">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level </seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>స్థాయి</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.LevelOf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg> of </seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఆఫ్</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Max">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Max</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>మాక్స్</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per page</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>పేజీకి</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per sentence</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>వాక్యం పెర్</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.SetUpLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Levels</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>అప్ సెట్ స్థాయిలు</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisBook">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Book</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఈ బుక్</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Page</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఈ పేజీని</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Total">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>total</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>మొత్తం</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Unique">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>unique</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ప్రత్యేక</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.WordCounts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Word counts</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>పద కౌంట్స్</seg>
+      </tuv>
+    </tu>
     <tu tuid="LoginDialog.AgreeToTerms">
       <tuv xml:lang="en">
         <seg>I agree to the Bloom Library's Terms of Use</seg>
@@ -1524,6 +1881,14 @@
         <seg>షో పాస్వర్డ్ను</seg>
       </tuv>
     </tu>
+    <tu tuid="NewCollectionWizard.AlreadyCollectionWithThatName">
+      <tuv xml:lang="en">
+        <seg>There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఆ పేరు తో ఒక సేకరణ ఇప్పటికే ఉంది, at &lt;a href='file;//{0}'&gt;{0}&lt;/a&gt;.\n Please pick a unique name.</seg>
+      </tuv>
+    </tu>
     <tu tuid="NewCollectionWizard.ChooseLanguagePage">
       <tuv xml:lang="en">
         <seg>Choose the Main Language For This Collection</seg>
@@ -1580,6 +1945,14 @@
         <seg>మూలం సేకరణ</seg>
       </tuv>
     </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+      <tuv xml:lang="en">
+        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>విస్తృత కమ్యూనికేషన్ ఒకటి లేదా ఎక్కువ భాషలలో షెల్ లేదా టెంప్లేట్ పుస్తకాల సేకరణ. మీరు BloomLibrary.org ఈ గుండ్లు అప్లోడ్ మరియు వైకల్పికంగా వారు మీ పెంకులు తో వ్యావహారికంలో పుస్తకాలు చేయవచ్చు తద్వారా ఇతరులకు ఇవ్వాలని ఒక BloomPack తయారు చేయగలరు.</seg>
+      </tuv>
+    </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
       <tuv xml:lang="en">
         <seg>Vernacular/Local Language Collection</seg>
@@ -1618,6 +1991,14 @@
       </tuv>
       <tuv xml:lang="te">
         <seg>జిల్లా</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
+      <tuv xml:lang="en">
+        <seg>These are optional. Bloom will place them in the right places on title page of books you create.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఈ వైకల్పికం. బ్లూమ్ మీరు సృష్టించడానికి పుస్తకాల టైటిల్ పేజీలో కుడి ప్రదేశాల్లో వాటిని ఉంచండి</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.LocationPage.Province">
@@ -1667,6 +2048,14 @@
       </tuv>
       <tuv xml:lang="te">
         <seg>మీరు పుస్తకాలు మేకింగ్ ప్రారంభించడానికి దాదాపు సిద్ధంగా ఉన్నాయి</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine2">
+      <tuv xml:lang="en">
+        <seg>In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. So the first thing we need to do is make one for you.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>సాధారణ మరియు వ్యవస్థీకృత విషయాలను చేయడానికి.బ్లూమ్ మీరు ఒకటి లేదా ఎక్కువ చేసే అన్ని పుస్తకాలు ఉంచుతుంది &lt;i&gt; సేకరణలు &lt;/ i&gt;కాబట్టి మేము చెయ్యాల్సిన మొదటి విషయం మీరు ఒక చేయడానికి ఉంది.</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine3">
@@ -2555,6 +2944,60 @@
         <seg>అక్షరాలు</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.Letters.Header">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters and Letter Combinations</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>అక్షరాలు మరియు అక్షరాలు కలయికలు.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>మీరు దానిని decodable పాఠకులు మీకు సహాయం చేయడానికి, వికసించిన అక్షరాలు మరియు మీరు బోధించే ఉంటుంది అక్షరాలు కాంబినేషన్ తెలుసుకోవాలి.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఒక ఖాళీ తో ప్రతి అక్షరం లేదా లేఖ కలయిక విభజించండి. ఉదాహరణకు, ఇక్కడ, మేము ఆంగ్ల భాష కోసం ఉపయోగించుకునే ఏమిటి.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Notice that the English list includes symbols that are used to make words, like ' in </seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఇంగ్లీష్ జాబితాలో వంటి, పదాలను తయారు ఉపయోగిస్తారు చిహ్నాలు కలిగి గమనించండి.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>it's</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఇది</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>.</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.LevelHeader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2735,6 +3178,24 @@
         <seg>ప్రతి వాక్యం లో గరిష్ట పదాలు</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.SetUpDecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Decodable Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>దానిని decodable రీడర్ టూల్ అప్ సెట్</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetUpLeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Leveled Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>సెటప్ రీడర్ టూల్ సమం.</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.SetupAlphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2825,6 +3286,51 @@
         <seg>ఏకైక</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.Words">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Words</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>పదాలు.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>మీరు దానిని decodable పాఠకులు మీకు సహాయం చేయడానికి, బ్లూమ్ ప్రస్తుత దశలో తగిన పదాలు సూచించగలరు. వర్ధిల్లు పదాలు ఇవ్వాలని రెండు మార్గం ఉన్నాయి:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.PlaceTextFiles">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>2) Place Text Files in Your</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>2) ప్లేస్ టెక్స్ట్ ఫైళ్లు మీ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.SampleTextFolder">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Text Folder</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>మాదిరి వచనం ఫోల్డర్</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.TypeWordsHere">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>1) Type Words Here</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>1) ఇక్కడ టైప్</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.lettersHeader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2832,6 +3338,38 @@
       </tuv>
       <tuv xml:lang="te">
         <seg>అక్షరాలు</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+      <tuv xml:lang="en">
+        <seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this BloomPack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>అదనంగా, ఈ BloomPack "{0}" భాష కోసం మీ తాజా దానిని decodable మరియు తనపై రీడర్ సెట్టింగులు, అప్పుడు ఒక "{0}" సేకరణ తెరుస్తుంది ఎవరు ఈ BloomPack ప్రారంభ ఎవరైనా, తమ ప్రస్తుత దానిని decodable మరియు తనపై రీడర్ అమరికలు settings భర్తీ ఉంటుంది ఉంటాను ఈ BloomPack సెట్టింగులు ద్వారా భర్తీ. వారు కూడా దానిని decodable పాఠకులు ఉపయోగం కోసం పదాల ప్రస్తుత సెట్ పొందుతారు.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
+      <tuv xml:lang="en">
+        <seg>The following books will be made into templates:</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>తరువాతి పుస్తకాలను టెంప్లేట్లు తయారు చేస్తుంది.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+      <tuv xml:lang="en">
+        <seg>Save BloomPack</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>సేవ్ BloomPack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template BloomPack</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>రీడర్ మూస BloomPack చేయండి</seg>
       </tuv>
     </tu>
     <tu tuid="RegisterDialog.Email">
@@ -3150,6 +3688,15 @@
       </tuv>
       <tuv xml:lang="te">
         <seg>సెటప్</seg>
+      </tuv>
+    </tu>
+    <tu tuid="You may use this space for author/illustrator, or anything else.">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You may use this space for author/illustrator, or anything else.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>రచయిత / చిత్రకారుడు, లేదా మరేదైనా కోసం ఈ స్థలం ఉపయోగించవచ్చు.</seg>
       </tuv>
     </tu>
   </body>
