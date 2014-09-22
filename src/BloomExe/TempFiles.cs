@@ -61,7 +61,7 @@ namespace BloomTemp
 	{
 		public static TempFile CreateHtm5FromXml(XmlNode dom)
 		{
-			var temp = TempFile.TrackExisting(GetHtmlTempPath());
+			var temp = TempFile.WithFilenameInTempFolder("tempHtml.htm");
 
 			var settings = GetXmlWriterSettingsForHtml5();
 			
@@ -125,18 +125,6 @@ namespace BloomTemp
 			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
 			//now insert the non-xml-ish <!doctype html>
 	        return string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine, xhtml);
-		}
-
-		private static string GetHtmlTempPath()
-		{
-			string x,y;
-			do
-			{
-				x = Path.GetTempFileName();
-				y = x + ".htm";
-			} while (File.Exists(y));
-			File.Move(x,y);
-			return y;
 		}
 	}
 
