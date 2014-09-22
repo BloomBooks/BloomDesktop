@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">3.0.23.0</prop>
+	<prop type="x-appversion">3.0.34.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -350,10 +350,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="LanguageLookup.LookupISOControl._searchText">
-	  <prop type="x-nolongerused">true</prop>
-	  <tuv xml:lang="en">
-		<seg>?</seg>
-	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>?</seg>
 	  </tuv>
@@ -557,7 +553,7 @@
 	</tu>
 	<tu tuid="SettingsProtection.LauncherButtonLabel">
 	  <tuv xml:lang="en">
-		<seg>Settings Protection...</seg>
+		<seg>Settings...</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Configuration...</seg>
