@@ -80,7 +80,7 @@ namespace Bloom.Workspace
 			
 			//NB: the rest of these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
 			_settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
-			_settingsLauncherHelper.ManageComponent(deepBloomPaperToolStripMenuItem);
+			_settingsLauncherHelper.ManageComponent(trainingMaterialsMenuItem);
 			_settingsLauncherHelper.ManageComponent(_makeASuggestionMenuItem);
 			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
             _settingsLauncherHelper.ManageComponent(_showLogMenuItem);
@@ -369,11 +369,6 @@ namespace Bloom.Workspace
 			HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
 		}
 
-		private void deepBloomPaperToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			OpenInfoFile("Deep Bloom.pdf");
-		}
-
 		private void _showLogMenuItem_Click(object sender, EventArgs e)
 		{
 			try
@@ -430,26 +425,35 @@ namespace Bloom.Workspace
             //_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
         }
 
-		private void bloomContentDemonstrationToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			OpenInfoFile("BloomContentDemonstration.pdf");
-		}
-
-		private void shellBookInstructionsToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			OpenInfoFile("BloomShellBook.pdf");
-		}
-
-		private void trainingManualToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			OpenInfoFile("BloomTrainingManualIntro.pdf");
-		}
-
 		private static void OpenInfoFile(string fileName)
 		{
 			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", fileName));
 		}
 
+		private void introductionMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenInfoFile("01-Bloom-Training-Manual-Intro.pdf");
+		}
+
+		private void contentDemonstrationMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenInfoFile("02-Bloom-Content-Demonstration.pdf");
+		}
+
+		private void shellBooksMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenInfoFile("03-Bloom-Shell-Books.pdf");
+		}
+
+		private void decodableReadersMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenInfoFile("04-Bloom-Decodable-Reader-Tool.pdf");
+		}
+
+		private void leveledReadersMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenInfoFile("05-Bloom-Leveled-Reader-Tool.pdf");
+		}
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
