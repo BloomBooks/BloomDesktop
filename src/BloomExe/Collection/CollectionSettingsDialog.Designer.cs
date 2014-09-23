@@ -281,7 +281,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._language1Label, "CollectionSettingsDialog.LanguageTab._language1Label");
 			this._language1Label.Location = new System.Drawing.Point(26, 24);
 			this._language1Label.Name = "_language1Label";
-			this._language1Label.Size = new System.Drawing.Size(139, 19);
+			this._language1Label.Size = new System.Drawing.Size(140, 19);
 			this._language1Label.TabIndex = 7;
 			this._language1Label.Text = "Vernacular Language";
 			// 
@@ -383,39 +383,39 @@ namespace Bloom.Collection
 			this._language3FontLabel.AutoSize = true;
 			this._language3FontLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._language3FontLabel, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._language3FontLabel, null);
-			this._L10NSharpExtender.SetLocalizingId(this._language3FontLabel, "CollectionSettingsDialog.BookMakingTab.Font");
+			this._L10NSharpExtender.SetLocalizationComment(this._language3FontLabel, "{0} is a language name.");
+			this._L10NSharpExtender.SetLocalizingId(this._language3FontLabel, "CollectionSettingsDialog.BookMakingTab.DefaultFontFor");
 			this._language3FontLabel.Location = new System.Drawing.Point(27, 178);
 			this._language3FontLabel.Name = "_language3FontLabel";
-			this._language3FontLabel.Size = new System.Drawing.Size(185, 19);
+			this._language3FontLabel.Size = new System.Drawing.Size(131, 19);
 			this._language3FontLabel.TabIndex = 24;
-			this._language3FontLabel.Text = "Default Font for Language 3";
+			this._language3FontLabel.Text = "Default Font for {0}";
 			// 
 			// _language2FontLabel
 			// 
 			this._language2FontLabel.AutoSize = true;
 			this._language2FontLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._language2FontLabel, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._language2FontLabel, null);
-			this._L10NSharpExtender.SetLocalizingId(this._language2FontLabel, "CollectionSettingsDialog.BookMakingTab.Font");
+			this._L10NSharpExtender.SetLocalizationComment(this._language2FontLabel, "{0} is a language name.");
+			this._L10NSharpExtender.SetLocalizingId(this._language2FontLabel, "CollectionSettingsDialog.BookMakingTab.DefaultFontFor");
 			this._language2FontLabel.Location = new System.Drawing.Point(27, 109);
 			this._language2FontLabel.Name = "_language2FontLabel";
-			this._language2FontLabel.Size = new System.Drawing.Size(185, 19);
+			this._language2FontLabel.Size = new System.Drawing.Size(131, 19);
 			this._language2FontLabel.TabIndex = 23;
-			this._language2FontLabel.Text = "Default Font for Language 2";
+			this._language2FontLabel.Text = "Default Font for {0}";
 			// 
 			// _language1FontLabel
 			// 
 			this._language1FontLabel.AutoSize = true;
 			this._language1FontLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._language1FontLabel, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._language1FontLabel, null);
-			this._L10NSharpExtender.SetLocalizingId(this._language1FontLabel, "CollectionSettingsDialog.BookMakingTab.Font");
+			this._L10NSharpExtender.SetLocalizationComment(this._language1FontLabel, "{0} is a language name.");
+			this._L10NSharpExtender.SetLocalizingId(this._language1FontLabel, "CollectionSettingsDialog.BookMakingTab.DefaultFontFor");
 			this._language1FontLabel.Location = new System.Drawing.Point(27, 40);
 			this._language1FontLabel.Name = "_language1FontLabel";
-			this._language1FontLabel.Size = new System.Drawing.Size(183, 19);
+			this._language1FontLabel.Size = new System.Drawing.Size(131, 19);
 			this._language1FontLabel.TabIndex = 22;
-			this._language1FontLabel.Text = "Default Font for Language 1";
+			this._language1FontLabel.Text = "Default Font for {0}";
 			// 
 			// _aboutBookMakingSettingsButton
 			// 
@@ -569,7 +569,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._countryLabel, "CollectionSettingsDialog.ProjectInformationTab.Country");
 			this._countryLabel.Location = new System.Drawing.Point(28, 23);
 			this._countryLabel.Name = "_countryLabel";
-			this._countryLabel.Size = new System.Drawing.Size(60, 19);
+			this._countryLabel.Size = new System.Drawing.Size(59, 19);
 			this._countryLabel.TabIndex = 2;
 			this._countryLabel.Text = "Country";
 			// 
