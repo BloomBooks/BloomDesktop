@@ -82,6 +82,13 @@ namespace Bloom.ReaderTools
 			// add default levels
 			Levels.Add(new ReaderLevel
 			{
+				MaxWordsPerSentence = 2,
+				MaxWordsPerPage = 2,
+				MaxWordsPerBook = 20,
+			});
+
+			Levels.Add(new ReaderLevel
+			{
 				MaxWordsPerSentence = 5,
 				MaxWordsPerPage = 5,
 				MaxWordsPerBook = 23,
@@ -106,18 +113,17 @@ namespace Bloom.ReaderTools
 
 			Levels.Add(new ReaderLevel
 			{
-				MaxWordsPerSentence = 9,
-				MaxWordsPerPage = 22,
-				MaxWordsPerBook = 294,
-				MaxUniqueWordsPerBook = 50
+				MaxWordsPerSentence = 12,
+				MaxWordsPerPage = 25,
+				MaxWordsPerBook = 500,
+				MaxUniqueWordsPerBook = 64
 			});
 
 			Levels.Add(new ReaderLevel
 			{
-				MaxWordsPerSentence = 10,
-				MaxWordsPerPage = 25,
-				MaxWordsPerBook = 500,
-				MaxUniqueWordsPerBook = 64
+				MaxWordsPerSentence = 20,
+				MaxWordsPerPage = 50,
+				MaxWordsPerBook = 1000,
 			});
 		}
 
