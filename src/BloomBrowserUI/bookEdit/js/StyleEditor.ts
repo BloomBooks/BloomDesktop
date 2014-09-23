@@ -359,7 +359,9 @@ class StyleEditor {
 				// Enhance: lineHeight may well be something like 35px; what should we select initially?
 
 				var fonts = fontData.split(',');
-				var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:900;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">'
+					var forTextInLang = localizationManager.getText('BookEditor.ForTextInLang','This formatting is for all {0} text in boxes with \'{1}\' style', lang, styleName);
+
+					var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:900;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">'
 					+ '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt;margin-bottom: 5pt"></div>'
 					+ editor.makeSelect(fonts, 5, fontName, 'fontSelect', 15) + ' '
 					+ editor.makeSelect(sizes, 5, ptSize, 'sizeSelect') + ' '
@@ -375,7 +377,7 @@ class StyleEditor {
 					+ '<div style="margin-left:5px;display:inline-block;border:2px solid black;height:10pt;width:10pt;margin-right:2px;position:relative;top:2px"></div>'
 						+ editor.makeBorderSelect(box)
 					+ '</span>'
-					+ '<div class="format-toolbar-description">This formatting is for all ' + lang + ' text in boxes with \'' + styleName + '\' style</div>'
+					+ '<div class="format-toolbar-description">' + forTextInLang + '</div>'
 					+ '</div>';
 				$('#format-toolbar').remove(); // in case there's still one somewhere else
 				$('body').after(html);
