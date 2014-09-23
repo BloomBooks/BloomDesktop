@@ -98,7 +98,19 @@ namespace Bloom
                 {
                     if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
                     {
-                        using (var dlg = new BloomPackInstallDialog(args[0]))
+	                    var path = args[0];
+						// This allows local links to bloom packs.
+	                    if (path.ToLowerInvariant().StartsWith("bloom://"))
+	                    {
+		                    path = path.Substring("bloom://".Length);
+		                    if (!File.Exists(path))
+		                    {
+			                    path = FileLocator.GetFileDistributedWithApplication(true, path);
+			                    if (!File.Exists(path))
+				                    return;
+		                    }
+	                    }
+	                    using (var dlg = new BloomPackInstallDialog(path))
                         {
                             dlg.ShowDialog();
                         }
