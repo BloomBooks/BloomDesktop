@@ -5,6 +5,40 @@
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
+    <tu tuid=".addMakeReaderTemplateBloomPackToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template BloomPack...</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Gukora Ipaki ntangarugero ya Bloom y'umusomyi...</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".advancedToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Advanced</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ku rwego rwo hejuru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.DecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Igikoresho gifasha umusomyi gusobanukirwa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.LeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Igikoresho cy'umusomyi umenyereye</seg>
+      </tuv>
+    </tu>
     <tu tuid="Accordion.More">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -53,6 +87,24 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Indimi eshatu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Book title in {lang}">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Izina ry'igitabo mu {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Click to choose topic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to choose topic</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kanda uhitemo insanganyamatsiko</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -145,7 +197,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
-      <note>In a vernacular collection, we say 'Vernacular Language', but in a souce collection, Vernacular has no relevance, so we use this different label</note>
+      <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
       <tuv xml:lang="en">
         <seg>Language 1</seg>
       </tuv>
@@ -154,7 +206,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
-      <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a souce collection, National Language has no relevance, so we use this different label</note>
+      <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       <tuv xml:lang="en">
         <seg>Language 2</seg>
       </tuv>
@@ -163,7 +215,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
-      <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a souce collection, National Language has no relevance, so we use this different label</note>
+      <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
       <tuv xml:lang="en">
         <seg>Language 3</seg>
       </tuv>
@@ -177,6 +229,15 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Indimi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+      <note>If there is no third language specified, the link changes to this.</note>
+      <tuv xml:lang="en">
+        <seg>Set...</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Gutunganya...</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
@@ -308,6 +369,14 @@
         <seg>Gusiba Igitabo</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
+      <tuv xml:lang="en">
+        <seg>Export to Word or LibreOffice...</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kwimurira muri Word cyangwa LibreOffice...</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
       <tuv xml:lang="en">
         <seg>Export To XML For InDesign...</seg>
@@ -346,7 +415,7 @@
         <seg>Rescue Missing Images...</seg>
       </tuv>
       <tuv xml:lang="rw">
-        <seg>Kugaruraamashusho yose abura...</seg>
+        <seg>Garura amashusho yose abura...</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.CollectionMenu.showHistory">
@@ -395,6 +464,15 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Gufungura idosiye iri ku idisiki</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Health">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Health</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ubuzima</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.MakeBookUsingThisTemplate">
@@ -589,21 +667,40 @@
         <seg>Kwemeza ko bisibwa</seg>
       </tuv>
     </tu>
-    <tu tuid="ConfirmRecycleDialog._messageLabel">
-      <note>In your translation, put the {0} placeholder where you want the name of the thing to be deleted to appear.</note>
-      <tuv xml:lang="en">
-        <seg>{0} will be moved to the Recycle Bin.</seg>
-      </tuv>
-      <tuv xml:lang="rw">
-        <seg>{0} irahita yoherezwa mu gakangara k'ibyasiibwe</seg>
-      </tuv>
-    </tu>
     <tu tuid="ConfirmRecycleDialog.deleteBtn">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>&amp;Delete</seg>
       </tuv>
       <tuv xml:lang="rw">
         <seg>&amp;Guhanagura</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.SetUpStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Stages</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Guteganya intambwe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.Stage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Intambwe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.StageOf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>of</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>cya</seg>
       </tuv>
     </tu>
     <tu tuid="Download.Completed">
@@ -638,12 +735,46 @@
         <seg>Habaye ikibazo mu gukurura igitabo cyawe</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Niba ukeneye ahantu ho gushyira amakuru y'inyongera kuri iki gitabo, ushobora gukoresha iyiu paji, ariyo gikobokobo cy'inyuma ku gice cyacyo cy'imbere.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BackMatter.OutsideBackCoverTextPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Niba ukeneye ahantu ho gushyira amakuru y'inyongera kuri iki gitabo, ushobora gukoresha iyi paji, ariyo gikobokobo cy'inyuma ku gice cyacyo cy'inyuma.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
+      <tuv xml:lang="en">
+        <seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Gufungura Html yakoreshejwe hakorwa iyi PDF, muri Chrom (igomba kuba iri ku nzira)</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.CannotChangeCopyright">
       <tuv xml:lang="en">
         <seg>Sorry, the copyright and license for this book cannot be changed.</seg>
       </tuv>
       <tuv xml:lang="rw">
         <seg>Tukwiseguyeho, uburenganzira bw'umwanditsi kimwe n'uburenganzira kuri iki gitabo ntibishobora guhindurwa.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CantPasteImageLocked">
+      <tuv xml:lang="en">
+        <seg>Sorry, this book is locked down so that images cannot be changed.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Tukwiseguyeho, iki gitabo kirafunzwe kugira ngo amashusho yacyo adahindurwa.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
@@ -667,7 +798,7 @@
         <seg>This page will be permanently removed.</seg>
       </tuv>
       <tuv xml:lang="rw">
-        <seg>Iyi paji irahita ikurwamo burundu.</seg>
+        <seg>{0} irahita yoherezwa mu gakangara k'ibyasiibwe</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Edit">
@@ -676,6 +807,23 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Kunoza</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FontMissing">
+      <tuv xml:lang="en">
+        <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Inyuguti yatoranyijwe ubu ni '{0}', ariko rero ntyensitaye kuri iyi mudasobwa. Izindi nyuguti ziri bukoreshwe mu mwanya wayo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Guhindura ubunini bw'inyuguti zigize umwandiko ku tuzu twose dufite inyuguti '{0}' n'ururimi '{1}'.\nubunini bw'iki gihe ni {2}pt.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
@@ -696,6 +844,42 @@
         <seg>Kanda uhindure Uburenganzira bw'umwanditsi &amp; n'amabwiriza</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.FrontMatter.FundingAgenciesPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Use this to acknowledge any funding agencies.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Koresha aha mu gushimira urwego urwo ari rwo rwose rwaguteye inkunga.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.ISBNPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Inomero mpuzamahanga ndangabuziranenge bw'igitabo. Siga uyu mwanya urimo ubusa niba nta yo ufite.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Original (or Shell) Acknowledgments in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ugushimira umwimerere (cyangwa Intangarugero) wakoreshejwe mu {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalContributorsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ibyatanzwe n'abanditsi, abashushanyi, abanonosoranyandiko, nbd., mu {lang}</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FrontMatter.TopicPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -703,6 +887,42 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Kanda uhitemo insanganyamatsiko</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Acknowledgments for translated version, in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ugushimira inonosora rishingiye ku ihindurandimi, mu {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.ChangeImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Image</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Guhindura ishusho</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.PasteImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Paste Image</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kubambikaho ishusho</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.LayoutMode.ChangeLayout">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Layout</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Guhindura imisusire</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.PageList.Heading">
@@ -721,12 +941,21 @@
         <seg>Guhitamo ubunini bw'urupapuro n'icyerekezo</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.StyleEditorTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Adjust formatting for style</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Tengeneza imiterere y'inyuguti</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.TemplatePagesList.Heading">
       <tuv xml:lang="en">
         <seg>Template Pages</seg>
       </tuv>
       <tuv xml:lang="rw">
-        <seg>Amapaji y'intangarugero</seg>
+        <seg>Amapaji ntangarugero</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.1">
@@ -1048,7 +1277,7 @@
         <seg>Copy</seg>
       </tuv>
       <tuv xml:lang="rw">
-        <seg>Gukoporora</seg>
+        <seg>Koporora</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab._cutButton">
@@ -1056,7 +1285,7 @@
         <seg>Cut</seg>
       </tuv>
       <tuv xml:lang="rw">
-        <seg>Gukata</seg>
+        <seg>Kata</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab._deletePageButton">
@@ -1064,7 +1293,15 @@
         <seg>Remove Page</seg>
       </tuv>
       <tuv xml:lang="rw">
-        <seg>Gukuramo ipaji</seg>
+        <seg>Kuramo ipaji</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._duplicatePageButton">
+      <tuv xml:lang="en">
+        <seg>Duplicate\n   Page</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Koramo\n   Ebyiri</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab._pasteButton">
@@ -1072,7 +1309,7 @@
         <seg>Paste</seg>
       </tuv>
       <tuv xml:lang="rw">
-        <seg>Kubambika</seg>
+        <seg>Bambika</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab._undoButton">
@@ -1080,7 +1317,7 @@
         <seg>Undo</seg>
       </tuv>
       <tuv xml:lang="rw">
-        <seg>Gusubizayo</seg>
+        <seg>Subizayo</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.bilingual">
@@ -1099,6 +1336,15 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Ururimi rumwe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.noOtherLayouts">
+      <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+      <tuv xml:lang="en">
+        <seg>There are no other layout options for this template.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Nta yinsi misusire iriho kuri iyi ntangarugero.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
@@ -1278,6 +1524,132 @@
         <seg>Urupapuro ruhagaze B5</seg>
       </tuv>
     </tu>
+    <tu tuid="LeveledReaderTool.Actual">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Actual</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Cy'ukuri</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.FoThisLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>For this Level</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>By'iyi ntambwe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.KeepInMind">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Keep in mind</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kuzirikana</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Level">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level </seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Urwego</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.LevelOf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg> of </seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg> cya </seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Max">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Max</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Hejuru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per page</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>ku ipaji</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per sentence</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>ku nteruro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.SetUpLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Levels</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Guteganya inzego</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisBook">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Book</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Iki gitabo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Page</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Iyi paji</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Total">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>total</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>igiteranyo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Unique">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>unique</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>cyihariye</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.WordCounts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Word counts</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ukubara amagambo</seg>
+      </tuv>
+    </tu>
     <tu tuid="LoginDialog.AgreeToTerms">
       <tuv xml:lang="en">
         <seg>I agree to the Bloom Library's Terms of Use</seg>
@@ -1358,12 +1730,36 @@
         <seg>Ikusanyirizo rifite izina nk'iri risanzweho, warisanga kuri &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nTwagusabaga guhitamo izina rindi.</seg>
       </tuv>
     </tu>
+    <tu tuid="NewCollectionWizard.ChooseLanguagePage">
+      <tuv xml:lang="en">
+        <seg>Choose the Main Language For This Collection</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Guhitamo ururimo rw'ibanze rw'iri kisanyirizo</seg>
+      </tuv>
+    </tu>
     <tu tuid="NewCollectionWizard.CollectionNamePage.ExampleText">
       <tuv xml:lang="en">
         <seg>Examples: "Health Books", "PNG Animal Stories"</seg>
       </tuv>
       <tuv xml:lang="rw">
         <seg>Ingero: "Ibitabo by'ubuzima", "Inkuru z'inyamaswa PNG" </seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
+      <tuv xml:lang="en">
+        <seg>What would you like to call this collection?</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Wifuza kwita ute iri kusanyirizo?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionWillBeCreatedAt">
+      <tuv xml:lang="en">
+        <seg>Collection will be created at: {0}</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ikusanyirizo riri bushyirwe kuri: {0}</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.FinishPage">
@@ -1374,12 +1770,28 @@
         <seg>Itegure gukora ikusanyirizo rishya</seg>
       </tuv>
     </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage">
+      <tuv xml:lang="en">
+        <seg>Choose the Collection Type</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Guhitamo ubwoko bw'ikusanyirizo</seg>
+      </tuv>
+    </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
       <tuv xml:lang="en">
         <seg>Source Collection</seg>
       </tuv>
       <tuv xml:lang="rw">
         <seg>Inkomoko y'ikusanyirizo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+      <tuv xml:lang="en">
+        <seg>Vernacular/Local Language Collection</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ikusanyirizo mu rurimi kavukire/Ururimi gakondo</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
@@ -1437,6 +1849,14 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Gukora ikusanyirizo rishya rya Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
+      <tuv xml:lang="en">
+        <seg>Unable to create a new collection using that name.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Gukora ikusanyirizo rishya  ukoresheje iri zina ntibyashobotse</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.WelcomePage">
@@ -1534,7 +1954,7 @@
         <seg>Replace Existing</seg>
       </tuv>
       <tuv xml:lang="rw">
-        <seg>Gusimbuza ibisanzwemo</seg>
+        <seg>Simbuza ibisanzwemo</seg>
       </tuv>
     </tu>
     <tu tuid="OverwriteWarning.WindowTitle">
@@ -1543,6 +1963,22 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Icyitonderwa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PageList.CantMoveXMatter">
+      <tuv xml:lang="en">
+        <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Iri hindura ntiryemewe. Igikobokobo cy'imbere n'igikobokobo cy'inyuma bigomba kuguma aho biri</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PageList.CantMoveXMatterCaption">
+      <tuv xml:lang="en">
+        <seg>Invalid Move</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Iyimura ridafite akamaro</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
@@ -1577,12 +2013,31 @@
         <seg>Imbere h'agatabo</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.BodyOnlyRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make a booklet from the inside pages of the book.
+ Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kora agatabo ukoresheje amapaji y'imbere muri iki gitabo. Amapaji araramburwa ku buryo yipanga ku murongo maze igihe uyazinze aze gutanga agatabo.</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.ButtonThatShowsUploadForm">
       <tuv xml:lang="en">
         <seg>Upload</seg>
       </tuv>
       <tuv xml:lang="rw">
         <seg>Koherezayo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ButtonThatShowsUploadForm-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Upload to BloomLibrary.org, where others can download and localize into their own language.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kohereza kuri BloomLibrary.org, aho abandi bashobora gukurura igitabo cyawe bakagihindura mu ndimi kavukire z'iwabo.</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.CoverOnlyRadio">
@@ -1609,6 +2064,14 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Kora PDF ya buri paji y'igitabo,ipaji imwe ku urupapuro rumwe.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
+      <tuv xml:lang="en">
+        <seg>Open the PDF in the default system pdf viewer</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Fungura PDF muri sisitemu ntangarugero isoma pdf</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PrintButton">
@@ -1699,12 +2162,44 @@
         <seg>Habaye ikibazo cyo gukurura igitabo cyawe. Urasabwa kongera gutangira Bloom cyangwa gushaka ubufasha bwa tekiniki.</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.Upload.ErrorUploading">
+      <tuv xml:lang="en">
+        <seg>Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Tukwiseguyeho, habaye ikibazo cyo kwinjizamo {0}. Amakuru arambuye ni akurikira. Ushobora gukenera ubufasha bwa tekiniki.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.FieldsNeedAttention">
+      <tuv xml:lang="en">
+        <seg>One or more fields above need your attention before uploading</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Umwe cyanwa myinshi mu myanya yo hejuru ikeneye ko uyitaho mbere yo kwinjizamo</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.Upload.FinalUploadFailureNotice">
       <tuv xml:lang="en">
         <seg>Sorry, "{0}" was not successfully uploaded</seg>
       </tuv>
       <tuv xml:lang="rw">
         <seg>Tukwiseguyeho, "{0}" kwinjizamo ibitabo ntibyakunze</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Gaurantee">
+      <tuv xml:lang="en">
+        <seg>By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Mu gihe winjijemo, wemeye amabwiriza y'ubwumvikane bw'imikoreshereze ya Bloom Library kandi utanze uburenganzira ayo masezerano avuga.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.GenericUploadProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem uploading your book.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Habaye ikibazo mu kwinjizamo igitabo cyawe.</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.Languages">
@@ -1731,12 +2226,44 @@
         <seg>Iyi konti isanzweho</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.Upload.Login.AlreadyHaveAccount">
+      <tuv xml:lang="en">
+        <seg>We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ntidushoboye kutuma winjira ukoresheje iyo aderese, kuberako dusanzwe dufite konti iyikoresha. Waba se ahubwo wifuza kwinjira?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginConnectFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to verify your login. Please check your network connection.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Bloom ntishobora kwihuza na seriveri ngo igenzure ikwinjira kwawe. Twagusabaga ko ugenzura konegisiyo y'urusobe mpuzamasangano rwawe.</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.Upload.Login.LoginFailed">
       <tuv xml:lang="en">
         <seg>Login failed</seg>
       </tuv>
       <tuv xml:lang="rw">
         <seg>Kwinjiramo byanze</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Bloom ntiyashoboye kwihuza burundu na seriveri kugira ngo urangize kwinjira cyangwa gusohoka. Ibi bishobora kuba byatewe na konegisiyo yawe ya interineti, seriveri yacu cyangwa ibikoresho bimwe bihuza izo nzira bitameze neza.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.MustAgreeTerms">
+      <tuv xml:lang="en">
+        <seg>In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kugira ngo wiyandikishe kuri konti ya BloomLibrary.org, usabwa gukanda ku kazu kagaragaza ko wemeye amabwiriza y'imikoreshereze ya BloomLibrary.</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.Login.Need Email">
@@ -1771,6 +2298,22 @@
         <seg>Turasaba ko wakwemeranya n'amabwiriza y'ikoreshwa</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.Upload.Login.PleaseProvideEmail">
+      <tuv xml:lang="en">
+        <seg>Please enter a valid email address. We will send an email to this address so you can reset your password.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Turagusaba ko wakwinjizamo aderese ya imeyili nyayo. Turi bukoherereze imeyili kuriyi aderese kugira ngo ushobore guhindura ijambobanga ryawe.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetConnectFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to reset your password. Please check your network connection.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Bloom ntishobora kwihuza na seriveri ngo uhindure ijambo banga ryawe. Twasabaga ko wagenzura konegisiyo yawe ya interineti.</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.Upload.Login.ResetFailed">
       <tuv xml:lang="en">
         <seg>Reset Password failed</seg>
@@ -1785,6 +2328,14 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Guhindura ijambobanga</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.SendingResetPassword">
+      <tuv xml:lang="en">
+        <seg>We are sending an email to {0} with instructions for how to reset your password</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Twohereje imeyili kuri {0} n'amabwiriza y'uburyo bwo guhindura ijambobanga ryawe</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.Login.Signup">
@@ -1833,6 +2384,15 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Twagusabaga kubanza kwinjira muri BloomLibrary.org (cyangwa kwiyandikisha) mbereyo kwinjizamo ibitabo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.PleaseSetThis">
+      <note>This shows next to the license, if the license has not yet been set.</note>
+      <tuv xml:lang="en">
+        <seg>Please set this from the edit tab</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Twasabaga ko wasibanganya ibi mu mwanya w'inonosora</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.Step1">
@@ -1939,6 +2499,510 @@
         <seg>Kwiyandikisha kuri BloomLibrary.org</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.AddLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Level</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kongeraho intera</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Stage</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kongeraho intambwe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddTexts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Please add texts to the Sample Texts folder.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Twagusabaga ko wongera inyandiko mu idosiye y'inyandiko z'icyitegererezo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.BookHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Igitabo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.BookMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Words per Book</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Amagambo yose ashoboka ku gitabo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ClickLetter">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click on letters to add them to this stage.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kanda ku nyuguti uzongere kuri iyi ntambwe.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.CombinationHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Separate by spaces</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Gitandukanya 'imyanya</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.CombinationHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>E.g. "ai oo sh ng th ing"</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Urg. "ai oo sh ng th ing"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Combinations">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letter Combinations (Graphemes)</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Iyungikanya ry'inyuguti (Ibihekane)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.DecodableStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Stages</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Inzego zo gusemura ubutumwa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.FirstSetupAlphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>First,</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ubwa mbere,</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.FormatNotSupported">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Cannot read this format</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ntishobora gusoma iyi miterere</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.HowToExport">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Help exporting and converting files to use as sample texts</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Gufasha mu kwimuririra ahandi no guhindura amafishiye yo gukoreshwa nk'imyandiko ntangarugero</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Language">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Language</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ururimi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>List letters and word-forming characters in alphabetic order.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Gutondekanya inyuguti n'inyandiko y'ikomora ry'amagambo mu buryo bw'itonde ry'inyuguti.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Separate by spaces</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Gitandukanya 'imyanya</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>E.g. "a b c d"</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Urg. "a b c d"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Inyuguti</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.Header">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters and Letter Combinations</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Inyuguti n'ibihekane</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>it's</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>ni</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LevelHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Urwego</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LevelLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level </seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Urwego</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Levels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reader Levels</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Inzego z'abasomyi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MatchingWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg> matching words</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg> uguhuza amagambo </seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MaxUniqueWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Unique Words per Book</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Amagambo yose ashoboka kuri buri gitabo mu gihe agaragaye rimwe gusa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MoreWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>More Words</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Andi magambo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.OpenSampleTexts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Open the sample texts folder for this language.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Gufungura idosiye y'inyandiko z'icyitegererezo z'uru rurimi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Page</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ipaji</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PageMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Words on each Page</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Amagambo yose ashoboka kuri buri paaji</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PoweredBy">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Powered by </seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Byakozwe na</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReaderLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reader Levels</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Inzego z'abasomyi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.RemoveLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Remove Level {0}</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kuramo urwego {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.RemoveStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Remove Stage {0}</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kuramo intambwe {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReorderLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Drag rows to reorder levels.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kurubana imbariro upange neza inzego.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReorderStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Drag rows to reorder stages.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Kurubana imbariro upange neza intambwe.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SampleTexts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Word Lists and Sample Texts</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Urutonde rw'amagambo n'inyandiko z'icyitegererezo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SearchEngine">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>, the Search Engine for Literacy.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>, Urubuga rw'ishakisha ku bijyanye n'ugusoma no kwandika.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SelectedLetters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Previous and New Letters</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Inyuguti zabanje n'inshya</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentenceHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sentence</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Interuro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentenceMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Words in each Sentence</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Amagambo yose ashoboka muri buri nteruro</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetupAlphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>set up the alphabet for this language.</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>gushyiraho itonde ry'inyuguti z'uru rurimi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordHelp">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>What are sight words?</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Amagambo y'irebero ni iki?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>New Sight Words</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Amagambo mashya y'irebero</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordsHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sight Words</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Amagambo y'irebero</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.StageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Intambwe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.StageLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage </seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Intambwe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Stages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stages</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Intambwe</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Synphony">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Synphony</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>SynPhony</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ToRemember">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Things to remember for this level:</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Ibintu ukwiye kuzirikana kuri uru rwego:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.UniqueHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Unique</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Cyihariye</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Words</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Amagambo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.PlaceTextFiles">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>2) Place Text Files in Your</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>2) Gushyira ifishiye y'inyandiko zawe muri</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.SampleTextFolder">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Text Folder</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Idosiye ibamo inyandiko z'icyitegererezo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.TypeWordsHere">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>1) Type Words Here</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>1) Andika amagambo hano</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.lettersHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Inyuguti</seg>
+      </tuv>
+    </tu>
     <tu tuid="RegisterDialog.Email">
       <tuv xml:lang="en">
         <seg>Email Address</seg>
@@ -2030,6 +3094,24 @@
       </tuv>
       <tuv xml:lang="rw">
         <seg>Igitabo kinini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Decodable Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Umusomyi ugishakisha</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Leveled Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader</seg>
+      </tuv>
+      <tuv xml:lang="rw">
+        <seg>Umusomyi umenyereye</seg>
       </tuv>
     </tu>
     <tu tuid="Template.Picture Dictionary">
