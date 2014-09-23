@@ -617,6 +617,8 @@ namespace Bloom
 			if (_pageEditDom != _rootDom)
 			{
 				// Assume _editDom corresponds to a frame called 'page' in the root. This may eventually need to be more configurable.
+				if (_browser.Window == null || _browser.Window.Document == null)
+					return;
 				var frameElement = _browser.Window.Document.GetElementById("page") as GeckoIFrameElement;
 				if (frameElement == null)
 					return;
