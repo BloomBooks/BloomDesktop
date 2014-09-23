@@ -291,6 +291,9 @@ namespace Bloom
 			//it will continue to show in firebug, so i won't forget about it
 			errorsToHide.Add("jquery.js at line 622");
 
+			// There are 3 errors in this file that occur when you click to edit a book on some virtual machines and on Linux
+			errorsToHide.Add("chrome://global/content/alerts/alert.js");
+
 			WebBrowser.JavascriptError += (sender, error) =>
 			{
 				// Warnings began popping up when we started using http rather than file urls for script tags.
