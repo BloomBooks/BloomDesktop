@@ -200,9 +200,9 @@
         <seg>Book Making</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
       <tuv xml:lang="en">
-        <seg>Default Font for Language 1</seg>
+        <seg>Default Font for {0}</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
