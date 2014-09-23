@@ -103,6 +103,12 @@ namespace Bloom
 						if (path.ToLowerInvariant().StartsWith("bloom://"))
 						{
 							path = path.Substring("bloom://".Length);
+							if (!File.Exists(path))
+							{
+								path = FileLocator.GetFileDistributedWithApplication(true, path);
+								if (!File.Exists(path))
+									return;
+							}
 						}
 						using (var dlg = new BloomPackInstallDialog(path))
 						{
