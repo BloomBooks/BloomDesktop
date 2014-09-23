@@ -219,7 +219,7 @@ function getLevelValue(innerHTML) {
 
 function setLevelValue(value) {
 
-    if (value === '') return '-';
+    if ((value === '') || (parseInt(value) === 0)) return '-';
     return value;
 }
 
