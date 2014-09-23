@@ -696,13 +696,17 @@ jQuery.fn.IsOverflowing = function () {
     // so we'll apply the same 'fudge' factor to both comparisons.
     var focusedBorderFudgeFactor = 2;
 
-   //the "basic book" template has a "Just Text" page which does some weird things to get vertically-centered
+   //The "basic book" template has a "Just Text" page which does some weird things to get vertically-centered
    //text. I don't know why, but this makes the clientHeight 2 pixels larger than the scrollHeight once it
    //is beyond its minimum height. We can detect that we're using this because it has this "firefoxHeight" data
-   //element.
+   //element. This problem also shows up (and is detectable the same way) in Big Book. Except it turns out the
+     //number of pixels to fudge is related to the point size. I think at base it's a preferred line spacing issue.
    var growFromCenterVerticalFudgeFactor =0;
    if($(element).data('firefoxheight')){
-    growFromCenterVerticalFudgeFactor = 2;
+        var fontSizeRemnant = GetEditor().GetCalculatedFontSizeInPoints($(element)) - 22;
+        if (fontSizeRemnant > 0) {
+            growFromCenterVerticalFudgeFactor = (fontSizeRemnant / 5) + 1;
+        }
    }
 
    //in the Picture Dictionary template, all words have a scrollheight that is 3 greater than the client height.
