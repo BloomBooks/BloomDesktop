@@ -54,21 +54,22 @@ function restoreAccordionSettings(settings) {
     var currentPanel = opts['current'] || '';
     var state;
 
+    // Before we set stage/level, as it initializes them to 1.
+    setCurrentPanel(currentPanel);
+
     if (opts['decodableState']) {
         state = libsynphony.dbGet('drt_state');
         if (!state) state = new DRTState();
-        state.stage = 0 + opts['decodableState'];
+        state.stage = parseInt(opts['decodableState']);
         libsynphony.dbSet('drt_state', state);
     }
 
     if (opts['leveledState']) {
         state = libsynphony.dbGet('drt_state');
         if (!state) state = new DRTState();
-        state.level = 0 + opts['leveledState'];
+        state.level = parseInt(opts['leveledState']);
         libsynphony.dbSet('drt_state', state);
     }
-
-    setCurrentPanel(currentPanel);
 }
 
 /**
