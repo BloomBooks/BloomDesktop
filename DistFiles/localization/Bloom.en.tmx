@@ -151,6 +151,12 @@
 		<seg>Opening {0}...</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Book title in {lang}">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Book title in {lang}</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="BookEditor.FontSizeTip">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -161,6 +167,12 @@
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>This formatting is for all {0} text in boxes with '{1}' style</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Click to choose topic">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Click to choose topic</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -201,6 +213,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+	  <note>{0} is a language name.</note>
 	  <tuv xml:lang="en">
 		<seg>Default Font for {0}</seg>
 	  </tuv>
@@ -208,6 +221,16 @@
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
 	  <tuv xml:lang="en">
 		<seg>Front/Back Matter Pack</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeft">
+	  <tuv xml:lang="en">
+		<seg>Right To Left</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftTip">
+	  <tuv xml:lang="en">
+		<seg>Select languages that are written from right to left</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
@@ -474,6 +497,12 @@
 	<tu tuid="CollectionTab.SettingsButton">
 	  <tuv xml:lang="en">
 		<seg>Settings</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.Source Collection">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Source Collection</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
@@ -993,6 +1022,12 @@
 		<seg>Credits Page</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Custom">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Custom</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 1">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1279,6 +1314,11 @@
 		<seg>Web Site</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="HelpMenu.bloomContentDemonstrationToolStripMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Content Demonstration</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Check For New Version</seg>
@@ -1309,9 +1349,19 @@
 		<seg>Release Notes...</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Shell Book Instructions</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="HelpMenu.showEventLogMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Show Event Log</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.trainingManualToolStripMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Training Manual</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="InDesignXmlInformationDialog.WindowTitle">
@@ -1347,6 +1397,12 @@
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>A4Portrait</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LayoutChoices.A5Landscape">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>A5Landscape</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LayoutChoices.A5Portrait">
