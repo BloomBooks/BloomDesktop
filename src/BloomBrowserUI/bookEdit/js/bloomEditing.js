@@ -68,6 +68,13 @@ function isBrOrWhitespace(node) {
            (node.nodeType == 3 && /^\s*$/.test(node.nodeValue) ) );
 }
 
+function removeTrailingWhiteSpace(node) {
+    if (node && node.nodeType == 3 && node.nodeValue) {
+        // Removes one or more (+) whitespace (\s) at the end ($), across multiple lines (m)
+        node.nodeValue = node.nodeValue.replace(/\s+$/m, "");
+    }
+}
+
 function TrimTrailingLineBreaksInDivs(node) {
     while ( isBrOrWhitespace(node.firstChild) ) {
         node.removeChild(node.firstChild);
@@ -75,6 +82,8 @@ function TrimTrailingLineBreaksInDivs(node) {
     while ( isBrOrWhitespace(node.lastChild) ) {
         node.removeChild(node.lastChild);
     }
+    // Without this, FF can display a space which isn't a space due to a trailing \r\n
+    removeTrailingWhiteSpace(node.lastChild);
 }
 
 function CanChangeBookLicense() {
