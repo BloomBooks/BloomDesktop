@@ -1379,10 +1379,22 @@
 		<seg>Concept load</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="LeveledReaderTool.ConcreteFamiliarTopic">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Concrete, Familiar Topics</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="LeveledReaderTool.FoThisLevel">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>For this Level</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.Formatting">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Formatting</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
@@ -1479,6 +1491,12 @@
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>unique</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.Vocabulary">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Vocabulary</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LeveledReaderTool.WordCounts">
