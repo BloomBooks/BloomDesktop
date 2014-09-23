@@ -230,6 +230,8 @@ DIV.bloom-page.A4Portrait
 	width: 266.1mm;
 	margin-top: 15mm;
 	height: 178.5mm;
+	
+	position: absolute; /* see https://jira.sil.org/browse/BL-289 Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
 }
 .A4LandscapeSideBySide DIV.marginBox
 {
