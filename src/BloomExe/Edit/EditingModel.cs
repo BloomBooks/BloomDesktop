@@ -42,6 +42,10 @@ namespace Bloom.Edit
 		private string _accordionFolder;
 		private EnhancedImageServer _server;
 
+		// These variables are not thread-safe. Access only on UI thread.
+		private bool _inProcessOfSaving;
+		private List<Action> _tasksToDoAfterSaving = new List<Action>();
+
 		//public event EventHandler UpdatePageList;
 
 		public delegate EditingModel Factory();//autofac uses this
@@ -152,12 +156,24 @@ namespace Bloom.Edit
 			}
 			catch (Exception error)
 			{
-				ErrorReport.NotifyUserOfProblem(error, "Could not duplicate that page. Try quiting Bloom, run it again, and then attempt to duplicate the page again. And please click 'details' below and report this to us.");
+				ErrorReport.NotifyUserOfProblem(error,
+					"Could not duplicate that page. Try quiting Bloom, run it again, and then attempt to duplicate the page again. And please click 'details' below and report this to us.");
 			}
 		}
 
 		private void OnDeletePage()
 		{
+			// This can only be called on the UI thread in response to a user button click.
+			// If that ever changed we might need to arrange locking for access to _inProcessOfSaving and _tasksToDoAfterSaving.
+			Debug.Assert(!_view.InvokeRequired);
+			if (_inProcessOfSaving)
+			{
+				// Somehow (BL-431) it's possible that a Save is still in progress when we start executing a delete page.
+				// If this happens, to prevent crashes we need to let the Save complete before we go ahead with the delete.
+				_tasksToDoAfterSaving.Add(OnDeletePage);
+
+				return;
+			}
 			try
 			{
 				_inProcessOfDeleting = true;
@@ -781,8 +797,27 @@ namespace Bloom.Edit
 		{
 			if (_domForCurrentPage != null)
 			{
-				_view.CleanHtmlAndCopyToPageDom();
-				_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+				try
+				{
+					// CleanHtml already requires that we are on UI thread. But it's worth asserting here too in case that changes.
+					// If we weren't sure of that we would need locking for access to _tasksToDoAfterSaving and _inProcessOfSaving,
+					// and would need to be careful about whether any delayed tasks needed to be on the UI thread.
+					Debug.Assert(!_view.InvokeRequired);
+					_inProcessOfSaving = true;
+					_tasksToDoAfterSaving.Clear();
+					_view.CleanHtmlAndCopyToPageDom();
+					_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+				}
+				finally
+				{
+					_inProcessOfSaving = false;
+				}
+				while (_tasksToDoAfterSaving.Count > 0)
+				{
+					var task = _tasksToDoAfterSaving[0];
+					_tasksToDoAfterSaving.RemoveAt(0);
+					task();
+				}
 			}
 		}
 
