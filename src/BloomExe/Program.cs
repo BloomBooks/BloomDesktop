@@ -71,6 +71,9 @@ namespace Bloom
 					Settings.Default.Save();
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
+#if !USING_CHORUS
+				Settings.Default.ShowSendReceive = false; // in case someone turned it on before we disabled
+#endif
 #if DEBUG
 				if (args.Length > 0)
 				{
