@@ -276,7 +276,16 @@ class StyleEditor {
             }
             if (valueToMatch <= optionNumber) {
                 lineHeight = listOfOptions[i];
-                break; // Enhance: possibly it is closer to the option before, should we check for that?
+                // possibly it is closer to the option before
+                if (i > 0) {
+                    var prevOptionNumber = parseFloat(listOfOptions[i - 1]);
+                    var deltaCurrent = optionNumber - valueToMatch;
+                    var deltaPrevious = valueToMatch - prevOptionNumber;
+                    if (deltaPrevious < deltaCurrent) {
+                        lineHeight = listOfOptions[i - 1];
+                    }
+                }
+                break;
             }
         }
         if (valueToMatch > parseFloat(listOfOptions[listOfOptions.length - 1])) {
