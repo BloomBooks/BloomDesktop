@@ -390,7 +390,18 @@ namespace Bloom
 				builder.AppendLine(client.DownloadString(_url));
 			}
 			Clipboard.SetText(builder.ToString());
-			MessageBox.Show("Debugging information has been placed on your clipboard. You can paste it into an email.");
+
+			// NOTE: it seems strange to call BeginInvoke to display the MessageBox. However, this
+			// is necessary on Linux: this method gets called from the context menu which on Linux
+			// is displayed by GTK (which has its own message loop). Calling MessageBox.Show
+			// directly kind of works but has all kinds of side-effects like the message box not
+			// properly updating and geckofx not properly working anymore. Displaying the message
+			// box asynchronously lets us get out of the GTK message loop and displays it
+			// properly on the SWF message loop. Technically this is only necessary on Linux, but
+			// it doesn't hurt on Windows.
+			BeginInvoke((Action) delegate() {
+				MessageBox.Show("Debugging information has been placed on your clipboard. You can paste it into an email.");
+			});
 		}
 
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
@@ -609,6 +620,8 @@ namespace Bloom
 			if (_pageEditDom != _rootDom)
 			{
 				// Assume _editDom corresponds to a frame called 'page' in the root. This may eventually need to be more configurable.
+				if (_browser.Window == null || _browser.Window.Document == null)
+					return;
 				var frameElement = _browser.Window.Document.GetElementById("page") as GeckoIFrameElement;
 				if (frameElement == null)
 					return;
