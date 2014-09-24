@@ -1429,16 +1429,10 @@
         <seg>Actual</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ConceptLoad">
+    <tu tuid="LeveledReaderTool.ChoiceOfTopic">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Concept load</seg>
-      </tuv>
-    </tu>
-    <tu tuid="LeveledReaderTool.ConcreteFamiliarTopic">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Concrete, Familiar Topics</seg>
+        <seg>Choice of Topic</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.FoThisLevel">
@@ -1453,16 +1447,10 @@
         <seg>Formatting</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>How to make a great leveled reader</seg>
-      </tuv>
-    </tu>
     <tu tuid="LeveledReaderTool.IllustrationSupport">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Illustration support</seg>
+        <seg>Illustration Support</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.KeepInMind">
@@ -1487,12 +1475,6 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Max</seg>
-      </tuv>
-    </tu>
-    <tu tuid="LeveledReaderTool.PatternAndRecognition">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Pattern and recognition</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.PerPage">
@@ -1529,12 +1511,6 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Page</seg>
-      </tuv>
-    </tu>
-    <tu tuid="LeveledReaderTool.TopicFamiliarity">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Topic familiarity</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.Total">
