@@ -510,6 +510,32 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void DuplicatePageAfterRelocatePage()
+		{
+			var book = CreateBook();
+			var pages = book.GetPages().ToArray();
+
+			book.RelocatePage(pages[1], 2);
+			var rearrangedPages = book.GetPages().ToArray();
+
+			book.DuplicatePage(pages[2]);
+			var newPages = book.GetPages().ToArray();
+
+			Assert.AreEqual(3, rearrangedPages.Length);
+			Assert.AreEqual(4, newPages.Length);
+
+			// New page (with its own, unique Id) should be directly after the page we copied it from.
+			// It was getting inserted first (BL-467)
+			Assert.AreEqual("guid1", rearrangedPages[0].Id);
+			Assert.AreEqual("guid3", rearrangedPages[1].Id);
+			Assert.AreEqual("guid2", rearrangedPages[2].Id);
+
+			Assert.AreEqual("guid1", newPages[0].Id);
+			Assert.AreEqual("guid3", newPages[1].Id);
+			Assert.AreEqual("guid2", newPages[3].Id);
+		}
+
+		[Test]
 		public void DeletePage_OnLastPage_Deletes()
 		{
 			var book = CreateBook();
