@@ -125,7 +125,7 @@
 			this._shortVersionLabel.Name = "_shortVersionLabel";
 			this._shortVersionLabel.Size = new System.Drawing.Size(89, 37);
 			this._shortVersionLabel.TabIndex = 23;
-			this._shortVersionLabel.Text = "9.8.71";
+			this._shortVersionLabel.Text = "19.8.710";
 			this._shortVersionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
 			// label1
@@ -180,11 +180,11 @@
 			this.ClientSize = new System.Drawing.Size(412, 309);
 			this.ControlBox = false;
 			this.Controls.Add(this.pictureBox2);
-			this.Controls.Add(this.pictureBox1);
 			this.Controls.Add(this.pictureBox4);
 			this.Controls.Add(this.pictureBox3);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.flowLayoutPanel1);
+			this.Controls.Add(this.pictureBox1);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this._feedbackStatusLabel);
 			this.Controls.Add(this._longVersionInfo);
