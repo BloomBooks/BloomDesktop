@@ -1429,16 +1429,16 @@
 		<seg>Actual</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="LeveledReaderTool.ChoiceOfTopic">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Choice of Topic</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="LeveledReaderTool.ConceptLoad">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Concept load</seg>
-	  </tuv>
-	</tu>
-	<tu tuid="LeveledReaderTool.ConcreteFamiliarTopic">
-	  <prop type="x-dynamic">true</prop>
-	  <tuv xml:lang="en">
-		<seg>Concrete, Familiar Topics</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LeveledReaderTool.FoThisLevel">
@@ -1462,7 +1462,7 @@
 	<tu tuid="LeveledReaderTool.IllustrationSupport">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Illustration support</seg>
+		<seg>Illustration Support</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LeveledReaderTool.KeepInMind">
