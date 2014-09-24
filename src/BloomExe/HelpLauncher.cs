@@ -11,11 +11,11 @@ namespace Bloom
 	{
 		public static void Show(Control parent)
 		{
-			Help.ShowHelp(parent, FileLocator.GetFileDistributedWithApplication("Bloom.CHM"));
+			Help.ShowHelp(parent, FileLocator.GetFileDistributedWithApplication("Bloom.chm"));
 		}
 		public static void Show(Control parent, string topic)
 		{
-			Show(parent, "Bloom.CHM", topic);
+			Show(parent, "Bloom.chm", topic);
 		}
 
         public static void Show(Control parent, string helpFileName, string topic)
