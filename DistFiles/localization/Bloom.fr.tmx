@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.34.0</prop>
+    <prop type="x-appversion">3.0.44.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -294,8 +294,9 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
-        <seg>Default Font for Language 3</seg>
+        <seg>Font</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Police</seg>
@@ -1876,6 +1877,7 @@
       </tuv>
     </tu>
     <tu tuid="HelpMenu.bloomContentDemonstrationToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Content Demonstration</seg>
       </tuv>
@@ -1900,6 +1902,7 @@
       </tuv>
     </tu>
     <tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Deep Bloom Paper</seg>
       </tuv>
@@ -1932,6 +1935,7 @@
       </tuv>
     </tu>
     <tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Shell Book Instructions</seg>
       </tuv>
@@ -1948,6 +1952,7 @@
       </tuv>
     </tu>
     <tu tuid="HelpMenu.trainingManualToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Training Manual</seg>
       </tuv>
@@ -2044,6 +2049,15 @@
         <seg>Actuel</seg>
       </tuv>
     </tu>
+    <tu tuid="LeveledReaderTool.ChoiceOfTopic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Choice of Topic</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Choix de sujet</seg>
+      </tuv>
+    </tu>
     <tu tuid="LeveledReaderTool.ConceptLoad">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2062,6 +2076,15 @@
         <seg>Pour ce niveau</seg>
       </tuv>
     </tu>
+    <tu tuid="LeveledReaderTool.Formatting">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Formatting</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Mise en page</seg>
+      </tuv>
+    </tu>
     <tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2074,10 +2097,10 @@
     <tu tuid="LeveledReaderTool.IllustrationSupport">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Illustration support</seg>
+        <seg>Illustration Support</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Soutien d'illustration</seg>
+        <seg>Soutien par des illustrations</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.KeepInMind">
@@ -2204,6 +2227,15 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>unique</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Vocabulary">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Vocabulary</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Vocabulaire</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.WordCounts">
