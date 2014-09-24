@@ -1,7 +1,7 @@
 #!/bin/bash
 # server=build.palaso.org
 # project=Bloom
-# build=Bloom 3.0 AllChildrenReading Linux
+# build=Bloom-3.0-Linux64-Continuous
 # root_dir=..
 # $Id: d32984f53cd52f171a9cba46cd3879538ad23431 $
 
@@ -65,7 +65,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 
 # *** Results ***
-# build: Bloom 3.0 AllChildrenReading Linux (bt420)
+# build: Bloom-3.0-Linux64-Continuous (bt420)
 # project: Bloom
 # URL: http://build.palaso.org/viewType.html?buildTypeId=bt420
 # VCS: https://bitbucket.org/hatton/bloom-desktop [bloom-3.0]
