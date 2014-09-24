@@ -3272,10 +3272,10 @@
     <tu tuid="ReaderSetup.Synphony">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Synphony</seg>
+        <seg>SynPhony</seg>
       </tuv>
       <tuv xml:lang="ta">
-        <seg>Synphony</seg>
+        <seg>SynPhony</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.ToRemember">
