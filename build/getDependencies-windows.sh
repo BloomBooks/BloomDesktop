@@ -74,13 +74,13 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
-#     revision: latest.lastSuccessful
+#     revision: bloom-3.0.tcbuildtag
 #     paths: {"geckofx.zip!**"=>"lib/dotnet", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "connections.dll"=>"DistFiles", "*.chm"=>"DistFiles", "Andika.zip!**"=>"Downloads"}
 # [1] build: LibSynphony (bt394)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt394
 #     clean: true
-#     revision: latest.lastSuccessful
+#     revision: bloom-3.0.tcbuildtag
 #     paths: {"libsynphony-js.zip!**"=>"src/BloomBrowserUI/bookEdit/js/libsynphony", "libsynphony-test-js.zip!**"=>"src/BloomBrowserUI/bookEdit/test/libsynphony"}
 #     VCS: https://bitbucket.org/phillip_hopper/synphony [default]
 # [2] build: pdf.js (bt401)
@@ -141,13 +141,13 @@ mkdir -p ../src/BloomBrowserUI/bookEdit/js/libsynphony
 mkdir -p ../src/BloomBrowserUI/bookEdit/test/libsynphony
 
 # download artifact dependencies
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/geckofx.zip ../Downloads/geckofx.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/optipng-0.7.4-win32/optipng.exe ../DistFiles/optipng.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Andika.zip ../Downloads/Andika.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/libsynphony-js.zip ../Downloads/libsynphony-js.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/libsynphony-test-js.zip ../Downloads/libsynphony-test-js.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-3.0.tcbuildtag/geckofx.zip ../Downloads/geckofx.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-3.0.tcbuildtag/optipng-0.7.4-win32/optipng.exe ../DistFiles/optipng.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-3.0.tcbuildtag/connections.dll ../DistFiles/connections.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-3.0.tcbuildtag/Bloom.chm ../DistFiles/Bloom.chm
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/bloom-3.0.tcbuildtag/Andika.zip ../Downloads/Andika.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/bloom-3.0.tcbuildtag/libsynphony-js.zip ../Downloads/libsynphony-js.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/bloom-3.0.tcbuildtag/libsynphony-test-js.zip ../Downloads/libsynphony-test-js.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt401/bloom-3.0.tcbuildtag/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom-3.0.tcbuildtag/policy_9_0_Microsoft_VC90_CRT_x86.msm ../build/ChorusInstallerStuff/policy_9_0_Microsoft_VC90_CRT_x86.msm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom-3.0.tcbuildtag/Vulcan.Uczniowie.HelpProvider.dll ../output/release/Vulcan.Uczniowie.HelpProvider.dll
