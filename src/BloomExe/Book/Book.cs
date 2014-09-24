@@ -1237,7 +1237,20 @@ namespace Bloom.Book
 			var newpageDiv = (XmlElement) pageDiv.CloneNode(true);
 			BookStarter.SetupIdAndLineage(pageDiv, newpageDiv);
 			var body = pageDiv.ParentNode;
-			int currentPageIndex = _pagesCache.IndexOf(page);
+			int currentPageIndex = -1;
+
+			// Have to compare Ids; can't use _pagesCache.IndexOf(page) -- (BL-467)
+			foreach (IPage cachedPage in _pagesCache)
+				if (cachedPage.Id.Equals(page.Id))
+				{
+					currentPageIndex = _pagesCache.IndexOf(cachedPage);
+					break;
+				}
+
+			// This should never happen. But just in case, don't do something we don't want to do.
+			if (currentPageIndex < 0)
+				return;
+
 			body.InsertAfter(newpageDiv, pages[currentPageIndex]);
 
 			ClearPagesCache();
