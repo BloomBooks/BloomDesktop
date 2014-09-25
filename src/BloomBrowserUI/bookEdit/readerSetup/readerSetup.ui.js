@@ -204,6 +204,12 @@ function requestWordsForSelectedStage() {
 * @param  div
 */
 function selectLetter(div) {
+    var tr = $('#stages-table').find('tbody tr.selected');
+
+    // do not do anything if there is no selected stage
+    if (tr.length === 0)
+        return;
+
     // update the css classes
     if (div.classList.contains('unselected-letter'))
         $(div).removeClass('unselected-letter').addClass('current-letter');
@@ -216,7 +222,7 @@ function selectLetter(div) {
     var letters = $('.current-letter').map(function () {
         return this.innerHTML;
     });
-    $('#stages-table').find('tbody tr.selected td:nth-child(2)').html($.makeArray(letters).join(' '));
+    tr.find('td:nth-child(2)').html($.makeArray(letters).join(' '));
 
     requestWordsForSelectedStage();
 }
@@ -479,7 +485,16 @@ function removeStage() {
             tbody.find('tr:nth-child(' + current_stage + ')').click();
         else
             tbody.find('tr:nth-child(' + rows.length + ')').click();
+    } else {
+        resetStageDetail();
     }
+}
+
+function resetStageDetail() {
+    document.getElementById('setup-words-count').innerHTML = '0';
+    document.getElementById('rs-matching-words').innerHTML = '';
+    document.getElementById('setup-stage-sight-words').value = '';
+    $('.rs-letters').removeClass('current-letter').removeClass('previous-letter').addClass('unselected-letter');
 }
 
 function renumberRows(rows) {
@@ -493,7 +508,7 @@ function renumberRows(rows) {
 function removeLevel() {
     var tbody = $('#levels-table').find('tbody');
 
-    // remove the current stage
+    // remove the current level
     var current_row = tbody.find('tr.selected');
     var current_stage = parseInt(current_row.find("td").eq(0).html());
     current_row.remove();
@@ -509,7 +524,20 @@ function removeLevel() {
             tbody.find('tr:nth-child(' + current_stage + ')').click();
         else
             tbody.find('tr:nth-child(' + rows.length + ')').click();
+    } else {
+        resetLevelDetail();
     }
+}
+
+function resetLevelDetail() {
+    document.getElementById('setup-level-number').innerHTML = '0';
+
+    setLevelCheckBoxValue('words-per-sentence', '-');
+    setLevelCheckBoxValue('words-per-page', '-');
+    setLevelCheckBoxValue('words-per-book', '-');
+    setLevelCheckBoxValue('unique-words-per-book', '-');
+
+    document.getElementById('things-to-remember').innerHTML = '<li contenteditable="true"></li>';
 }
 
 /**
