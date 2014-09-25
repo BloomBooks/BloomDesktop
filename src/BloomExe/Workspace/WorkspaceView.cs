@@ -80,7 +80,7 @@ namespace Bloom.Workspace
 			
 			//NB: the rest of these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
 			_settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
-			_settingsLauncherHelper.ManageComponent(trainingMaterialsMenuItem);
+			_settingsLauncherHelper.ManageComponent(deepBloomMenuItem);
 			_settingsLauncherHelper.ManageComponent(_makeASuggestionMenuItem);
 			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
             _settingsLauncherHelper.ManageComponent(_showLogMenuItem);
@@ -430,29 +430,19 @@ namespace Bloom.Workspace
 			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", fileName));
 		}
 
-		private void introductionMenuItem_Click(object sender, EventArgs e)
+		private void deepBloomMenuItem_Click(object sender, EventArgs e)
 		{
-			OpenInfoFile("01-Bloom-Training-Manual-Intro.pdf");
+			OpenInfoFile("Deep Bloom.pdf");
 		}
 
-		private void contentDemonstrationMenuItem_Click(object sender, EventArgs e)
+		private void buildingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
 		{
-			OpenInfoFile("02-Bloom-Content-Demonstration.pdf");
+			OpenInfoFile("Building and Distributing Reader Templates in Bloom.pdf");
 		}
 
-		private void shellBooksMenuItem_Click(object sender, EventArgs e)
+		private void usingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
 		{
-			OpenInfoFile("03-Bloom-Shell-Books.pdf");
-		}
-
-		private void decodableReadersMenuItem_Click(object sender, EventArgs e)
-		{
-			OpenInfoFile("04-Bloom-Decodable-Reader-Tool.pdf");
-		}
-
-		private void leveledReadersMenuItem_Click(object sender, EventArgs e)
-		{
-			OpenInfoFile("05-Bloom-Leveled-Reader-Tool.pdf");
+			OpenInfoFile("Using Bloom Reader Templates.pdf");
 		}
 	}
 
