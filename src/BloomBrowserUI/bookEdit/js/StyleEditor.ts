@@ -1,4 +1,5 @@
 /// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../lib/jquery-ui.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
@@ -13,10 +14,6 @@ interface qtipInterface extends JQuery {
 
 interface overflowInterface extends JQuery {
 	IsOverflowing(): boolean;
-}
-
-interface draggableInterface extends JQuery {
-	draggable(): void;
 }
 
 class StyleEditor {
@@ -382,7 +379,7 @@ class StyleEditor {
 				$('#format-toolbar').remove(); // in case there's still one somewhere else
 				$('body').after(html);
 				var toolbar = $('#format-toolbar');
-				(<draggableInterface>toolbar).draggable();
+				toolbar.draggable();
 				toolbar.css('opacity', 1.0);
 				$('#fontSelect').change(function () { editor.changeFont(); });
 				editor.AddQtipToElement($('#fontSelect'), localizationManager.getText('EditTab.StyleEditor.FontFaceToolTip', 'Change the font face'), 1500);
