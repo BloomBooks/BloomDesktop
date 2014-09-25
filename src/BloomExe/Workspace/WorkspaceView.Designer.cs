@@ -42,7 +42,7 @@
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this._releaseNotesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.deepBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+			this._divider1 = new System.Windows.Forms.ToolStripSeparator();
 			this.buildingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.usingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._divider2 = new System.Windows.Forms.ToolStripSeparator();
@@ -113,7 +113,7 @@
 			this._toolStrip.Location = new System.Drawing.Point(0, 0);
 			this._toolStrip.Name = "_toolStrip";
 			this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolStrip.Size = new System.Drawing.Size(272, 65);
+			this._toolStrip.Size = new System.Drawing.Size(272, 46);
 			this._toolStrip.TabIndex = 28;
 			this._toolStrip.Text = "_toolStrip";
 			// 
@@ -156,7 +156,7 @@
             this.toolStripSeparator1,
             this._releaseNotesMenuItem,
             this.deepBloomMenuItem,
-            this.toolStripMenuItem1,
+            this._divider1,
             this.buildingReaderTemplatesMenuItem,
             this.usingReaderTemplatesMenuItem,
             this._divider2,
@@ -219,10 +219,10 @@
 			this.deepBloomMenuItem.Text = "Deep Bloom Paper";
 			this.deepBloomMenuItem.Click += new System.EventHandler(this.deepBloomMenuItem_Click);
 			// 
-			// toolStripMenuItem1
+			// _divider1
 			// 
-			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(212, 6);
+			this._divider1.Name = "_divider1";
+			this._divider1.Size = new System.Drawing.Size(212, 6);
 			// 
 			// buildingReaderTemplatesMenuItem
 			// 
@@ -493,7 +493,7 @@
 		private System.Windows.Forms.ToolStripMenuItem deepBloomMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem buildingReaderTemplatesMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem usingReaderTemplatesMenuItem;
-		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+		private System.Windows.Forms.ToolStripSeparator _divider1;
 
 
     }
