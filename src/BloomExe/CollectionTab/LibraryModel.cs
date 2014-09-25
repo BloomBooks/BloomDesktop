@@ -392,7 +392,8 @@ namespace Bloom.CollectionTab
 		    try
 		    {
 		        var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
-
+			    if (newBook == null)
+				    return; //This can happen if there is a configuration dialog and the user clicks Cancel
 
 		        TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
 
