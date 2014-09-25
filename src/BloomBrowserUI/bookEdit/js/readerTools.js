@@ -110,7 +110,7 @@ ReaderToolsModel.prototype.setStageNumber = function(val) {
 ReaderToolsModel.prototype.updateStageLabel = function() {
     var stages = this.synphony.getStages();
     if (stages.length <= 0) {
-        this.updateElementContent("stageNumber", "");
+        this.updateElementContent("stageNumber", "0");
         return;
     }
     this.updateElementContent("stageNumber", stages[this.stageNumber - 1].getName());
@@ -143,7 +143,7 @@ ReaderToolsModel.prototype.setLevelNumber = function(val) {
 ReaderToolsModel.prototype.updateLevelLabel = function() {
     var levels = this.synphony.getLevels();
     if (levels.length <= 0) {
-        this.updateElementContent("levelNumber", "");
+        this.updateElementContent("levelNumber", "0");
         return;
     }
 
