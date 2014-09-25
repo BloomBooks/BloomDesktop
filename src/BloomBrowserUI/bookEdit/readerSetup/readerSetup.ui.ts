@@ -181,6 +181,7 @@ function requestWordsForSelectedStage():void {
 
     var tr = $('#stages-table').find('tbody tr.selected').get(0);
 
+
     desiredGPCs = (tr.cells[1].innerHTML).split(' ');
     previousGPCs = $.makeArray($(tr).prevAll().map(function() {
         return this.cells[1].innerHTML.split(' ');
@@ -206,6 +207,11 @@ function requestWordsForSelectedStage():void {
  */
 function selectLetter(div: HTMLDivElement): void {
 
+    var tr: JQuery = $('#stages-table').find('tbody tr.selected');
+
+    // do not do anything if there is no selected stage
+    if (tr.length === 0) return;
+
     // update the css classes
     if (div.classList.contains('unselected-letter'))
         $(div).removeClass('unselected-letter').addClass('current-letter');
@@ -218,7 +224,7 @@ function selectLetter(div: HTMLDivElement): void {
     var letters = $('.current-letter').map(function() {
         return this.innerHTML;
     });
-    $('#stages-table').find('tbody tr.selected td:nth-child(2)').html($.makeArray(letters).join(' '));
+    tr.find('td:nth-child(2)').html($.makeArray(letters).join(' '));
 
     requestWordsForSelectedStage();
 }
@@ -489,6 +495,17 @@ function removeStage(): void {
         else
             tbody.find('tr:nth-child(' + rows.length + ')').click();
     }
+    else {
+        resetStageDetail();
+    }
+}
+
+function resetStageDetail(): void {
+
+    document.getElementById('setup-words-count').innerHTML = '0';
+    document.getElementById('rs-matching-words').innerHTML = '';
+    (<HTMLInputElement>document.getElementById('setup-stage-sight-words')).value = '';
+    $('.rs-letters').removeClass('current-letter').removeClass('previous-letter').addClass('unselected-letter');
 }
 
 function renumberRows(rows: JQuery): void {
@@ -504,7 +521,7 @@ function removeLevel(): void {
 
     var tbody: JQuery = $('#levels-table').find('tbody');
 
-    // remove the current stage
+    // remove the current level
     var current_row: JQuery = tbody.find('tr.selected');
     var current_stage: number = parseInt(current_row.find("td").eq(0).html());
     current_row.remove();
@@ -522,6 +539,21 @@ function removeLevel(): void {
         else
             tbody.find('tr:nth-child(' + rows.length + ')').click();
     }
+    else {
+        resetLevelDetail();
+    }
+}
+
+function resetLevelDetail(): void {
+
+    document.getElementById('setup-level-number').innerHTML = '0';
+
+    setLevelCheckBoxValue('words-per-sentence', '-');
+    setLevelCheckBoxValue('words-per-page', '-');
+    setLevelCheckBoxValue('words-per-book', '-');
+    setLevelCheckBoxValue('unique-words-per-book', '-');
+
+    document.getElementById('things-to-remember').innerHTML = '<li contenteditable="true"></li>';
 }
 
 /**
