@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">3.0.44.0</prop>
+	<prop type="x-appversion">3.0.45.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -1869,12 +1869,28 @@
 		<seg>À utiliser pour la reconnaissance des bailleurs de fonds</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="HelpMenu.BuildingReaderTemplatesMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Building Reader Templates</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Construction des modèles de livres gradués et de livres de base</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="HelpMenu.Help Menu">
 	  <tuv xml:lang="en">
 		<seg>Help</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Aide</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Using Reader Templates</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Utilisation des modèles de livres gradués et de livres de base</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu._makeASuggestionMenuItem">
@@ -1919,7 +1935,6 @@
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
-	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Deep Bloom Paper</seg>
 	  </tuv>

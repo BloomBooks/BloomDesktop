@@ -1299,9 +1299,19 @@
 		<seg>Use this to acknowledge any funding agencies.</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="HelpMenu.BuildingReaderTemplatesMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Building Reader Templates</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="HelpMenu.Help Menu">
 	  <tuv xml:lang="en">
 		<seg>Help</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Using Reader Templates</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu._makeASuggestionMenuItem">
@@ -1315,6 +1325,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.bloomContentDemonstrationToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Content Demonstration</seg>
 	  </tuv>
@@ -1350,6 +1361,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Shell Book Instructions</seg>
 	  </tuv>
@@ -1360,6 +1372,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.trainingManualToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Training Manual</seg>
 	  </tuv>
