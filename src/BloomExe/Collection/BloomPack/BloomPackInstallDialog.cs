@@ -4,12 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using System.Linq;
-using System.Xml;
-using Bloom.Properties;
-using DesktopAnalytics;
-using Ionic.Zip;
+using ICSharpCode.SharpZipLib.Zip;
 using Palaso.Reporting;
-using Palaso.Xml;
 
 namespace Bloom.Collection.BloomPack
 {
@@ -43,7 +39,7 @@ namespace Bloom.Collection.BloomPack
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("{0} does not exist", _path);
 				return;
 			}
-			using (var zip = ZipFile.Read(_path))
+			using (var zip = new ZipFile(_path))
 			{
 				_folderName = GetRootFolderName(zip);
 				if (_folderName == null)
@@ -74,6 +70,7 @@ namespace Bloom.Collection.BloomPack
 								destinationFolder), error);
 					}
 				}
+				zip.Close();
 			}
 			Logger.WriteEvent("Installing BloomPack " + _path);
 			_okButton.Enabled = false;
@@ -105,9 +102,9 @@ namespace Bloom.Collection.BloomPack
 		private string GetRootFolderName(ZipFile zip)
 		{
 			string fileName = null;
-			foreach (var f in zip.Entries)
+			foreach (ZipEntry zipEntry in zip)
 			{
-				var parts = f.FileName.Split(new[] {'/', '\\'});
+				var parts = zipEntry.Name.Split(new[] { '/', '\\' });
 				if (fileName != null && fileName != parts[0])
 				{
 					string msg = "Bloom Packs should have only a single collection folder at the top level of the zip file.";
@@ -125,25 +122,19 @@ namespace Bloom.Collection.BloomPack
 		{
 			//nb: we want exceptions to be uncaught, to be transferred up to the worker completed event
 
-			using (var zip = ZipFile.Read(_path))
+			using (var zip = new ZipFile(_path))
 			{
 				_folderName = GetRootFolderName(zip);
 				if (_folderName == null)
 					return;
-
-				//NB: in the version i have at the moment, EntriesExtracted & EntriesTotal are always 0
-				zip.ExtractProgress +=(o, extractProgress) =>
-					_backgroundWorker.ReportProgress(extractProgress.EntriesExtracted/
-													 (extractProgress.EntriesTotal > 0 ? extractProgress.EntriesTotal : 1));
-
-				zip.ZipError += (o, args) => { throw args.Exception; };
-
-				zip.ExtractAll(ProjectContext.GetInstalledCollectionsDirectory());
-
-				var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
-				CopyXMatterFoldersToWhereTheyBelong(newlyAddedFolderOfThePack);
-				CopyReaderToolsSettingsToWhereTheyBelong(newlyAddedFolderOfThePack);
+				zip.Close();
 			}
+			var fastZip = new FastZip { CreateEmptyDirectories = true };
+			fastZip.ExtractZip(_path, ProjectContext.GetInstalledCollectionsDirectory(), null);
+
+			var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
+			CopyXMatterFoldersToWhereTheyBelong(newlyAddedFolderOfThePack);
+			CopyReaderToolsSettingsToWhereTheyBelong(newlyAddedFolderOfThePack);
 		}
 
 		private void CopyReaderToolsSettingsToWhereTheyBelong(string newlyAddedFolderOfThePack)
