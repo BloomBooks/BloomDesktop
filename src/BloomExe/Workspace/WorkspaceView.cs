@@ -171,6 +171,7 @@ namespace Bloom.Workspace
 		/// Fix the menu font for Linux/Mono.  Without this fix, the menu may
 		/// still show boxes for Chinese characters when the rest of the UI is
 		/// properly showing Chinese characters.
+		/// Code is adapted from FieldWorks: FwCoreDlgs.FwNewLangProject.ctor
 		/// </summary>
 		/// <param name="menuItem">the ToolStripItem</param>
 		private void FixMenuFont(ToolStripItem menuItem)
