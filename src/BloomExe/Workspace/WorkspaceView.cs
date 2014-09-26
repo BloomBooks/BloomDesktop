@@ -166,18 +166,38 @@ namespace Bloom.Workspace
 				!SettingsProtectionSettings.Default.NormallyHidden;
 		}
 
+#if __MonoCS__
+		/// <summary>
+		/// Fix the menu font for Linux/Mono.  Without this fix, the menu may
+		/// still show boxes for Chinese characters when the rest of the UI is
+		/// properly showing Chinese characters.
+		/// </summary>
+		/// <param name="menuItem">the ToolStripItem</param>
+		private void FixMenuFont(ToolStripItem menuItem)
+		{
+			var oldFont = menuItem.Font;
+			menuItem.Font = new Font("Sans", oldFont.Size, oldFont.Style, oldFont.Unit);
+		}
+#endif
+
 		private void SetupUILanguageMenu()
 		{
 			_uiLanguageMenu.DropDownItems.Clear();
+#if __MonoCS__
+			FixMenuFont(_uiLanguageMenu);
+#endif
 			foreach (var lang in L10NSharp.LocalizationManager.GetUILanguages(true))
 			{
 				string englishName="";
-				var langaugeNamesRecognizableByOtherLatinScriptReaders = new List<string> {"en","fr","es","it","tpi"};
-				if((lang.EnglishName != lang.NativeName) && !(langaugeNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
+				var languageNamesRecognizableByOtherLatinScriptReaders = new List<string> {"en","fr","es","it","tpi"};
+				if((lang.EnglishName != lang.NativeName) && !(languageNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
 				{
 					englishName = " (" + lang.EnglishName + ")";
 				}
 				var item = _uiLanguageMenu.DropDownItems.Add(lang.NativeName + englishName);
+#if __MonoCS__
+				FixMenuFont(item);
+#endif
 				item.Tag = lang;
 				item.Click += new EventHandler((a, b) =>
 				                               	{
