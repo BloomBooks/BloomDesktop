@@ -58,9 +58,9 @@ override_dh_auto_install:
 	# Install icon for our mime type so that it shows up as icon for a bloompack
 	# NOTE: mime type installation is handled by dh_installmime
 	install -d $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/
-	install -m 644 debian/bloom.png $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/application-bloom.png
+	install -m 644 debian/BloomPack.png $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/application-bloom.png
 	install -d $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/
-	install -m 644 debian/bloom.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/application-bloom.svg
+	install -m 644 debian/BloomPack.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/application-bloom.svg
 
 # Don't export any assemblies to other packages
 override_dh_makeclilibs:
