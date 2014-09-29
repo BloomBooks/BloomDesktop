@@ -1,49 +1,50 @@
+var scripts = [
+    'lib/jquery-1.10.1.js',               // nb: we just rename whatever version of jquery we have to this.
+    'lib/jquery-ui-1.10.3.custom.min.js', // nb: we just rename whatever version of jquery-ui we have to this.
+    'lib/jquery.easytabs.js',
+    'lib/jquery.hashchange.min.js',       // needed by easytabs
+    'lib/jquery.qtip.js',
+    'lib/jquery.qtipSecondary.js',
+    'bookEdit/js/getIframeChannel.js',
+    'lib/localizationManager.js',
+    'lib/jquery.i18n.custom.js',
+    'lib/jquery.sizes.js',
+    'lib/jquery.watermark.js',
+    'lib/jquery.myimgscale.js',
+    'lib/jquery.resize.js',
+    'bookEdit/js/jquery.hotkeys.js',
+    'bookEdit/js/BloomAccordion.js',
+    'bookEdit/js/StyleEditor.js',
+    'bookEdit/js/toolbar/jquery.toolbar.js',
+    'bookEdit/js/libsynphony/underscore_min_152.js', // start of SynPhony support files
+    'bookEdit/js/libsynphony/xregexp-all-min.js',
+    'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
+    'bookEdit/js/libsynphony/jquery.text-markup.js',
+    'bookEdit/js/jquery.div-columns.js',
+    'bookEdit/js/libsynphony/synphony_lib.js',
+    'bookEdit/js/libsynphony/bloom_lib.js',
+    'bookEdit/js/readerSettings.js',
+    'bookEdit/js/synphonyApi.js',
+    'bookEdit/js/readerTools.js', // end of SynPhony support files
+    'bookEdit/js/bloomEditing.js',
+    'lib/split-pane/split-pane.js',
+    'bookEdit/js/origami.js',
+    'lib/long-press/jquery.mousewheel.js',
+    'lib/long-press/jquery.longpress.js'
+];
 
-document.write('<script type="text/javascript" src="/bloom/lib/jquery-1.10.1.js"></script>');//nb: we just rename whatever version of jquery we have to this.
-document.write('<script type="text/javascript" src="/bloom/lib/jquery-ui-1.10.3.custom.min.js"></script>');//nb: we just rename whatever version of jqueryui we have to this.
-document.write('<link rel="stylesheet" type="text/css" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css">');
-document.write('<link rel="stylesheet" type="text/css" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css">');
+var styleSheets = [
+    'themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css',
+    'themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css',
+    'lib/jquery.qtip.css',
+    'bookEdit/js/toolbar/jquery.toolbars.css',
+    'bookEdit/css/origami.css'
+];
 
-document.write('<script type="text/javascript" src="/bloom/lib/jquery.easytabs.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/lib/jquery.hashchange.min.js"></script>');//needed by easytabs
+for (var i = 0; i < scripts.length; i++) {
+    document.write('<script type="text/javascript" src="/bloom/' + scripts[i] + '"></script>');
+}
 
-document.write('<script type="text/javascript" src="/bloom/lib/jquery.qtip.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/lib/jquery.qtipSecondary.js"></script>');
-document.write('<link rel="stylesheet" type="text/css" href="/bloom/lib/jquery.qtip.css">');
-
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/getIframeChannel.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/lib/localizationManager.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/lib/jquery.i18n.custom.js"></script>');
-
-document.write('<script type="text/javascript" src="/bloom/lib/jquery.sizes.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/lib/jquery.watermark.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/lib/jquery.myimgscale.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/lib/jquery.resize.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/jquery.hotkeys.js"></script>');
-
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/BloomAccordion.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/StyleEditor.js"></script>');
-
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/toolbar/jquery.toolbar.js"></script>');
-document.write('<link rel="stylesheet" type="text/css" href="/bloom/bookEdit/js/toolbar/jquery.toolbars.css">');
-
-// synphony-related scripts
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/libsynphony/underscore_min_152.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/libsynphony/xregexp-all-min.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/libsynphony/bloom_xregexp_categories.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/libsynphony/jquery.text-markup.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/jquery.div-columns.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/libsynphony/synphony_lib.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/libsynphony/bloom_lib.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/readerSettings.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/synphonyApi.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/readerTools.js"></script>');
-
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/bloomEditing.js"></script>');
-
-document.write('<script type="text/javascript" src="/bloom/lib/split-pane/split-pane.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/bookEdit/js/origami.js"></script>');
-document.write('<link rel="stylesheet" type="text/css" href="/bloom/bookEdit/css/origami.css">');
-
-document.write('<script type="text/javascript" src="/bloom/lib/long-press/jquery.mousewheel.js"></script>');
-document.write('<script type="text/javascript" src="/bloom/lib/long-press/jquery.longpress.js"></script>');
+for (var j = 0; j < styleSheets.length; j++) {
+    document.write('<link rel="stylesheet" type="text/css" href="/bloom/' + styleSheets[j] + '">');
+}
