@@ -1,3 +1,4 @@
+/// <reference path="StyleEditor.ts"/>
 
 class CalledByCSharp {
 
@@ -70,7 +71,7 @@ class CalledByCSharp {
         var accordion = <HTMLIFrameElement>document.getElementById('accordion');
         return (accordion) ? accordion.contentWindow : null;
     }
-    
+
     // Temporary fix for BL-516, not remembering style on linux
     getUserModifiedStyles(): string {
 
