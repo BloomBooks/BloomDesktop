@@ -144,6 +144,7 @@ namespace Bloom.web
 
 				case "availableFontNames":
 					InstalledFontCollection installedFontCollection = new InstalledFontCollection();
+					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(string.Join(",", installedFontCollection.Families.Select(f => f.Name)));
 					return true;
 

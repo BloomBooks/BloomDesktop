@@ -171,12 +171,12 @@ class StyleEditor {
 		this.AddQtipToElement($('#formatButton'), toolTip);
 	}
 
-	GetOrCreateUserModifiedStyleSheet(): StyleSheet {
+	GetOrCreateUserModifiedStyleSheet(): CSSStyleSheet {
 		//note, this currently just makes an element in the document, not a separate file
 		for (var i = 0; i < document.styleSheets.length; i++) {
-			if ((<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title == "userModifiedStyles") {
+			if ((<CSSStyleSheet>(<any>document.styleSheets[i]).ownerNode).title == "userModifiedStyles") {
 				// alert("Found userModifiedStyles sheet: i= " + i + ", title= " + (<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
-				return <StyleSheet><any>document.styleSheets[i];
+				return <CSSStyleSheet><any>document.styleSheets[i];
 			}
 		}
 		// alert("Will make userModifiedStyles Sheet:" + document.head.outerHTML);
@@ -187,7 +187,7 @@ class StyleEditor {
 		newSheet.type = "text/css";
 		// alert("newSheet: " + document.head.innerHTML);
 
-		return <StyleSheet><any>newSheet;
+		return <CSSStyleSheet><any>newSheet;
 	}
 
 	GetOrCreateRuleForStyle(styleName: string, langAttrValue: string): CSSStyleRule {

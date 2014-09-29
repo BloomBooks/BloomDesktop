@@ -70,6 +70,20 @@ var CalledByCSharp = (function () {
         var accordion = document.getElementById('accordion');
         return (accordion) ? accordion.contentWindow : null;
     };
+    CalledByCSharp.prototype.getUserModifiedStyles = function () {
+        var page = this.getPageContent();
+        if (typeof page['GetEditor'] !== 'function')
+            return '';
+
+        var styleEditor = page['GetEditor']();
+        var sheet = styleEditor.GetOrCreateUserModifiedStyleSheet();
+        var rules = [];
+
+        for (var i = 0; i < sheet.cssRules.length; i++) {
+            rules.push(sheet.cssRules[i].cssText);
+        }
+        return JSON.stringify(rules);
+    };
     return CalledByCSharp;
 })();
 //# sourceMappingURL=calledByCSharp.js.map
