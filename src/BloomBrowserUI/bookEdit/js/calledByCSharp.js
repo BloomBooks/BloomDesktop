@@ -1,3 +1,4 @@
+/// <reference path="StyleEditor.ts"/>
 var CalledByCSharp = (function () {
     function CalledByCSharp() {
     }
@@ -70,6 +71,8 @@ var CalledByCSharp = (function () {
         var accordion = document.getElementById('accordion');
         return (accordion) ? accordion.contentWindow : null;
     };
+
+    // Temporary fix for BL-516, not remembering style on linux
     CalledByCSharp.prototype.getUserModifiedStyles = function () {
         var page = this.getPageContent();
         if (typeof page['GetEditor'] !== 'function')

@@ -1,3 +1,4 @@
+/// <reference path="StyleEditor.ts"/>
 
 class CalledByCSharp {
 
