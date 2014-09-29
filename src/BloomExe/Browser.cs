@@ -17,6 +17,7 @@ using Bloom.Book;
 using Gecko;
 using Gecko.DOM;
 using Gecko.Events;
+using Newtonsoft.Json;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.Xml;
@@ -282,6 +283,9 @@ namespace Bloom
 			errorsToHide.Add("xulrunner"); // can happen when mootools (used by calendar) is loaded
 
 			errorsToHide.Add("calledByCSharp"); // this can happen while switching pages quickly, when the page unloads after the script starts executing.
+
+			// Temporary fix for BL-516, not remembering style on linux
+			errorsToHide.Add ("insecure"); // this can happen on mono when saving while exiting
 
 #if !DEBUG
 			errorsToHide.Add("Cleanup"); // TODO: can happen when switching pages quickly, as it tries to run it on about:blank. This suggests that sometimes pages aren't cleaned up.
@@ -676,19 +680,35 @@ namespace Bloom
 				}
 				_pageEditDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
 
-                var userModifiedStyleSheet = contentDocument.StyleSheets.FirstOrDefault(s =>
-					{
-						// workaround for bug #40 (https://bitbucket.org/geckofx/geckofx-29.0/issue/40/xpath-error-hresult-0x805b0034)
-						// var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
-						var titleNode = s.OwnerNode.EvaluateXPath("@title").GetNodes().FirstOrDefault();
-						if (titleNode == null)
-							return false;
-						return titleNode.NodeValue == "userModifiedStyles";
-					});
-
-				if (userModifiedStyleSheet != null)
+				// Temporary fix for BL-516, not remembering style on linux
+				if (Palaso.PlatformUtilities.Platform.IsMono)
 				{
-					SaveCustomizedCssRules(userModifiedStyleSheet);
+					if (RunJavaScript("calledByCSharp ? 'y' : 'f'") == "y")
+					{
+						var stylesStr = RunJavaScript("calledByCSharp.getUserModifiedStyles()");
+						if (!string.IsNullOrEmpty(stylesStr))
+						{
+							var rules = JsonConvert.DeserializeObject<List<string>>(stylesStr);
+							SaveCustomizedCssRulesLinux(rules);
+						}
+					}
+				}
+				else
+				{
+					var userModifiedStyleSheet = contentDocument.StyleSheets.FirstOrDefault(s =>
+						{
+							// workaround for bug #40 (https://bitbucket.org/geckofx/geckofx-29.0/issue/40/xpath-error-hresult-0x805b0034)
+							// var titleNode = s.OwnerNode.EvaluateXPath("@title").GetSingleNodeValue();
+							var titleNode = s.OwnerNode.EvaluateXPath("@title").GetNodes().FirstOrDefault();
+							if (titleNode == null)
+								return false;
+							return titleNode.NodeValue == "userModifiedStyles";
+						});
+
+					if (userModifiedStyleSheet != null)
+					{
+						SaveCustomizedCssRules(userModifiedStyleSheet);
+					}
 				}
 
 				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen 
@@ -738,6 +758,31 @@ namespace Bloom
 				foreach (var cssRule in userModifiedStyleSheet.CssRules)
 				{
 					styles.AppendLine(cssRule.CssText);
+				}
+				styles.AppendLine("</style>");
+				Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);
+				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = styles.ToString();
+			}
+			catch (GeckoJavaScriptException jsex)
+			{
+				/* We are attempting to catch and ignore all JavaScript errors encountered here,
+				 * specifically addEventListener errors and JSError (BL-279, BL-355, et al.).
+				 */
+				Logger.WriteEvent("GeckoJavaScriptException (" + jsex.Message + "). We're swallowing it but listing it here in the log.");
+				Debug.Fail("GeckoJavaScriptException(" + jsex.Message + "). In Release version, this would not show.");
+			}
+		}
+
+		// Temporary fix for BL-516, not remembering style on linux
+		private void SaveCustomizedCssRulesLinux(IEnumerable<string> userModifiedStyleSheetRules)
+		{
+			try
+			{
+				var styles = new StringBuilder();
+				styles.AppendLine("<style title='userModifiedStyles' type='text/css'>");
+				foreach (var cssRule in userModifiedStyleSheetRules)
+				{
+					styles.AppendLine(cssRule);
 				}
 				styles.AppendLine("</style>");
 				Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);

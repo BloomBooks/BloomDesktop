@@ -70,4 +70,21 @@ class CalledByCSharp {
         var accordion = <HTMLIFrameElement>document.getElementById('accordion');
         return (accordion) ? accordion.contentWindow : null;
     }
+    
+    // Temporary fix for BL-516, not remembering style on linux
+    getUserModifiedStyles(): string {
+
+        var page = this.getPageContent();
+        if (typeof page['GetEditor'] !== 'function')
+            return '';
+
+        var styleEditor: StyleEditor = page['GetEditor']();
+        var sheet: CSSStyleSheet = styleEditor.GetOrCreateUserModifiedStyleSheet();
+        var rules = [];
+
+        for (var i = 0; i < sheet.cssRules.length; i++) {
+            rules.push(sheet.cssRules[i].cssText);
+        }
+        return JSON.stringify(rules);
+    }
 }
