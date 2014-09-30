@@ -44,6 +44,7 @@ namespace Bloom.Book
 					var c = _configuratorFactory(containingDestinationFolder);
 					if (DialogResult.Cancel == c.ShowConfigurationDialog(pathToFolderOfNewBook))
 					{
+						Directory.Delete(pathToFolderOfNewBook, true);
 						return null; // the template had a configuration page and they clicked "cancel"
 					}
 					c.ConfigureBook(BookStorage.FindBookHtmlInFolder(pathToFolderOfNewBook));
