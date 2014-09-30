@@ -93,6 +93,7 @@ namespace Bloom.Edit
 				//shown so the view has never been full constructed, so we're not in a good state to do a refresh
 				if (Visible)
 				{
+					SaveNow();
 					RefreshDisplayOfCurrentPage();
 					//_view.UpdateDisplay();
 					_view.UpdatePageList(false);
