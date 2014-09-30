@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">3.0.34.0</prop>
+	<prop type="x-appversion">3.1.000.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -190,7 +190,7 @@
 		<seg>The {0} Collection is now ready to use on this computer.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>La collection {0} est maintenant prête à utiliser sur cet ordinateur.</seg>
+		<seg>La collection {0} est maintenant disponible sur cet ordinateur.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="BloomPackInstallDialog.ErrorInstallingBloomPack">
@@ -226,13 +226,40 @@
 		<seg>En train d'ouvrir {0}...</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Book title in {lang}">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Book title in {lang}</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Titre du livre en {lang}</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="BookEditor.FontSizeTip">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Modifier la taille du texte pour tous les endroits portant le style '{0}' et la langue '{1}'.\nLa taille actuelle est {2}pt.</seg>
+		<seg>Modifier la taille du texte pour tous les endroits avec le style '{0}' et la langue '{1}'.\nLa taille actuelle est {2}pt.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="BookEditor.ForTextInLang">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>This formatting is for all {0} text in boxes with '{1}' style</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Ce format s'applique à chaque texte en langue {0} avec le style '{1}'.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Click to choose topic">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Click to choose topic</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Cliquer sur un sujet pour le choisir</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -293,9 +320,19 @@
 		<seg>Création de livre</seg>
 	  </tuv>
 	</tu>
-	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+	<tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+	  <note>{0} is a language name.</note>
 	  <tuv xml:lang="en">
-		<seg>Default Font for Language 3</seg>
+		<seg>Default Font for {0}</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Police par défaut pour {0}</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+	  <prop type="x-nolongerused">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Font</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Police</seg>
@@ -741,6 +778,15 @@
 		<seg>Configuration</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="CollectionTab.Source Collection">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Source Collection</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Collection source</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
 	  <tuv xml:lang="en">
 		<seg>Open Additional Collections Folder</seg>
@@ -791,6 +837,14 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Créer BloomPack</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Make Reader Template BloomPack...</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Créer BloomPack avec modèle de livres de base et de livres gradués</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.advancedToolStripMenuItem">
@@ -996,7 +1050,7 @@
 		<seg>Open a Letter and Word List File</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Créer un fichier de lettres et mots</seg>
+		<seg>Ouvrir un fichier de lettres et mots</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="DecodableReaderTool.SetUpStages">
@@ -1173,7 +1227,7 @@
 		<seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Modifier la taille du texte pour tous les endroits portant le style '{0}' et la langue '{1}'.\nTaille actuelle est {2}pt.</seg>
+		<seg>Modifier la taille du texte pour tous les endroits avec le style '{0}' et la langue '{1}'.\nTaille actuelle est {2}pt.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.FrontMatter.BookTitlePrompt">
@@ -1442,6 +1496,15 @@
 		<seg>Page de copyright</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Custom">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Custom</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Personnalisé</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 1">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1502,7 +1565,7 @@
 		<seg>Front Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Première de couverture</seg>
+		<seg>1re de couverture</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
@@ -1529,7 +1592,7 @@
 		<seg>Inside Back Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Troisième de couverture</seg>
+		<seg>3e de couverture</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
@@ -1538,7 +1601,7 @@
 		<seg>Inside Front Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Deuxième de couverture</seg>
+		<seg>2e de couverture</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Instructions">
@@ -1583,7 +1646,7 @@
 		<seg>Outside Back Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Quatrième de couverture</seg>
+		<seg>4e de couverture</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
@@ -1851,12 +1914,28 @@
 		<seg>À utiliser pour la reconnaissance des bailleurs de fonds</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="HelpMenu.BuildingReaderTemplatesMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Building Reader Templates</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Construction des modèles de livres gradués et de livres de base</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="HelpMenu.Help Menu">
 	  <tuv xml:lang="en">
 		<seg>Help</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Aide</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
+	  <tuv xml:lang="en">
+		<seg>Using Reader Templates</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Utilisation des modèles de livres gradués et de livres de base</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu._makeASuggestionMenuItem">
@@ -1876,6 +1955,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.bloomContentDemonstrationToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Content Demonstration</seg>
 	  </tuv>
@@ -1932,6 +2012,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Shell Book Instructions</seg>
 	  </tuv>
@@ -1948,6 +2029,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.trainingManualToolStripMenuItem">
+	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Training Manual</seg>
 	  </tuv>
@@ -2008,6 +2090,15 @@
 		<seg>A4 Portrait</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="LayoutChoices.A5Landscape">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>A5Landscape</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>A5 Paysage</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="LayoutChoices.A5Portrait">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -2044,13 +2135,22 @@
 		<seg>Actuel</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="LeveledReaderTool.ChoiceOfTopic">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Choice of Topic</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Choix de sujet</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="LeveledReaderTool.ConceptLoad">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Concept load</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Charge d'idée</seg>
+		<seg>Charge conceptuelle</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LeveledReaderTool.FoThisLevel">
@@ -2060,6 +2160,15 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Pour ce niveau</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.Formatting">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Formatting</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Mise en page</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
@@ -2074,10 +2183,10 @@
 	<tu tuid="LeveledReaderTool.IllustrationSupport">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Illustration support</seg>
+		<seg>Illustration Support</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Soutien d'illustration</seg>
+		<seg>Soutien par des illustrations</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LeveledReaderTool.KeepInMind">
@@ -2122,7 +2231,7 @@
 		<seg>Pattern and recognition</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Motif et reconnaissance</seg>
+		<seg>Reconnaissance des formes</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LeveledReaderTool.PerPage">
@@ -2204,6 +2313,15 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>unique</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LeveledReaderTool.Vocabulary">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Vocabulary</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Vocabulaire</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LeveledReaderTool.WordCounts">
@@ -2486,7 +2604,7 @@
 		<seg>Copy From Chorus Hub on Local Network</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Copier de 'Chorus Hub' sur le réseau local</seg>
+		<seg>Copier à partir de 'Chorus Hub' sur le réseau local</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="OpenCreateNewCollectionsDialog.CopyFromInternet">
@@ -2567,7 +2685,7 @@
 		<seg>Invalid Move</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Deplacement non valide</seg>
+		<seg>Déplacement non valide</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
@@ -2633,7 +2751,7 @@
 		<seg>Booklet Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Couverture</seg>
+		<seg>Couverture du livret</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.CoverOnlyRadio-tooltip">
@@ -3241,7 +3359,7 @@
 		<seg>Click on letters to add them to this stage.</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Cliquer sur une lettre pour l'ajouter à cette étape.</seg>
+		<seg>Cliquer sur des lettres pour les ajouter à cette étape.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.CombinationHelp2">
@@ -3421,7 +3539,7 @@
 		<seg>matching words</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg> mots correspondants</seg>
+		<seg>mots correspondants</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.MaxUniqueWords">
@@ -3583,7 +3701,7 @@
 		<seg>Set up Leveled Reader Tool</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Configurer l'outil pour des livres gradués</seg>
+		<seg>Configurer l'outil de livres gradués</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.SetupAlphabet">
@@ -3752,6 +3870,14 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Enregistrer BloomPack</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
+	  <tuv xml:lang="en">
+		<seg>Make Reader Template BloomPack</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Créer BloomPack avec modèle de livres de base et de livres gradués</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.Email">
