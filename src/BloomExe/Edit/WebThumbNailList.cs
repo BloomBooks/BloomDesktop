@@ -60,7 +60,7 @@ namespace Bloom.Edit
                 this._browser.Size = new System.Drawing.Size(150, 491);
                 this._browser.TabIndex = 0;
 	            _browser.ScaleToFullWidthOfPage = false;
-	            _browser.VerticalScroll.Visible = true;
+	            _browser.VerticalScroll.Visible = false;
                 this.Controls.Add(_browser);
             }
         }
