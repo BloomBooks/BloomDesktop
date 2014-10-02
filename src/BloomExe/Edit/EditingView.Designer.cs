@@ -491,6 +491,8 @@
 			this.Name = "EditingView";
 			this.Size = new System.Drawing.Size(1200, 561);
 			this.Load += new System.EventHandler(this.EditingView_Load);
+			betterToolTip1.L10NSharpExt = _L10NSharpExtender; // Add optional L10NSharp functionality to BetterToolTip
+			_L10NSharpExtender.AddMultipleStrings(betterToolTip1);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this._splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).EndInit();
