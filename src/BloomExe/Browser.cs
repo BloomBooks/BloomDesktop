@@ -976,6 +976,31 @@ namespace Bloom
 				eventArgs.Handled = true;
 			}
 		}
+
+		public int HtmlScrollTop
+		{
+			get
+			{
+				try
+				{
+					return _browser.Document.DocumentElement.ScrollTop;
+				}
+				catch
+				{
+				}
+				return 0;
+			}
+			set
+			{
+				try
+				{
+					_browser.Document.DocumentElement.ScrollTop = value;
+				}
+				catch
+				{
+				}
+			}
+		}
 	}
 
 }

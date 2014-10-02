@@ -35,6 +35,7 @@ namespace Bloom.Edit
 		private Image _placeHolderImage;
 		public event EventHandler PageSelectedChanged;
 		private Bloom.Browser _browser;
+		private int _scrollTop;
 
 		public WebThumbNailList()
 		{
@@ -596,7 +597,9 @@ namespace Bloom.Edit
 				captionDiv.InnerText = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + captionOrPageNumber, captionOrPageNumber);
 			}
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
+			_scrollTop = _browser.HtmlScrollTop;
 			_browser.Navigate(pageDoc, null);
+//		    _browser.HtmlScrollTop = scrollTop;
 			return result;
 		}
 
@@ -610,6 +613,7 @@ namespace Bloom.Edit
 			_browser.AddMessageEventListener("gridClick", ItemClick);
 			_browser.AddMessageEventListener("gridReordered", GridReordered);
 			SelectPage(_selectedPage);
+			_browser.HtmlScrollTop = _scrollTop;
 		}
 
 		private void ItemClick(string s)
