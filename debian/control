@@ -17,7 +17,11 @@ Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
 Package: bloom-desktop-unstable
 Architecture: all
 Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
- mono-sil, libgdiplus-sil, geckofx29
+ mono-sil, libgdiplus-sil, geckofx29,
+ chmsee,
+ fonts-sil-andika,
+ optipng
+Suggests: art-of-reading
 Description: Literacy materials development for language communities
  Bloom Desktop is an application that dramatically "lowers the bar" for
  language communities who want books in their own languages. Bloom delivers
