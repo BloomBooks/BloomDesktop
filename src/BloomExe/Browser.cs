@@ -977,7 +977,10 @@ namespace Bloom
 			}
 		}
 
-		public int HtmlScrollTop
+		/*
+		 * Sets or retrieves the distance between the top of the object and the topmost portion of the content currently visible in the window (scrollTop)
+		 */
+		public int VerticalScrollDistance
 		{
 			get
 			{
