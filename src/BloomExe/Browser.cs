@@ -976,6 +976,34 @@ namespace Bloom
                 eventArgs.Handled = true;
             }
         }
+
+		/*
+		 * Sets or retrieves the distance between the top of the object and the topmost portion of the content currently visible in the window (scrollTop)
+		 */
+		public int VerticalScrollDistance
+		{
+			get
+			{
+				try
+				{
+					return _browser.Document.DocumentElement.ScrollTop;
+				}
+				catch
+				{
+				}
+				return 0;
+			}
+			set
+			{
+				try
+				{
+					_browser.Document.DocumentElement.ScrollTop = value;
+				}
+				catch
+				{
+				}
+			}
+		}
     }
 
 }
