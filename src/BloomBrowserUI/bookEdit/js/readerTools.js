@@ -92,6 +92,9 @@ ReaderToolsModel.prototype.decrementStage = function() {
 
 ReaderToolsModel.prototype.setStageNumber = function(val) {
 
+    // this may result in a need to resize the word list
+    previousHeight = 0;
+
     val = parseInt(val);
 
     var stages = this.synphony.getStages();
@@ -287,58 +290,55 @@ ReaderToolsModel.prototype.updateDisabledLimit = function(eltId, isDisabled) {
  */
 ReaderToolsModel.prototype.updateWordList = function() {
 
-    document.getElementById('wordList').innerHTML = '';
+    var wordList = document.getElementById('wordList');
+    if (wordList) document.getElementById('wordList').innerHTML = '';
 
-    // using setTimeout to jump to another thread so the page refreshes before the word list is displayed
-    setTimeout(function() {
+    var stages = this.synphony.getStages();
+    if (stages.length === 0) return;
 
-        var stages = model.synphony.getStages();
-        if (stages.length === 0) return;
+    var words = this.getStageWordsAndSightWords(this.stageNumber);
 
-        var words = model.getStageWordsAndSightWords(model.stageNumber);
-
-        // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
-        // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
-        switch(model.sort) {
-            case SortType.alphabetic:
-                words.sort(function(a, b) {
+    // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
+    // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
+    switch(this.sort) {
+        case SortType.alphabetic:
+            words.sort(function(a, b) {
+                return a.Name.localeCompare(b.Name);
+            });
+            break;
+        case SortType.byLength:
+            words.sort(function(a, b) {
+                if (a.Name.length === b.Name.length) {
                     return a.Name.localeCompare(b.Name);
-                });
-                break;
-            case SortType.byLength:
-                words.sort(function(a, b) {
-                    if (a.Name.length === b.Name.length) {
-                        return a.Name.localeCompare(b.Name);
-                    }
-                    return a.Name.length - b.Name.length;
-                });
-                break;
-            case SortType.byFrequency:
-                words.sort(function(a, b) {
-                    var aFreq = a.Count;
-                    var bFreq = b.Count;
-                    if (aFreq === bFreq) {
-                        return a.Name.localeCompare(b.Name);
-                    }
-                    return bFreq - aFreq; // MOST frequent first
-                });
-                break;
-            default:
-        }
+                }
+                return a.Name.length - b.Name.length;
+            });
+            break;
+        case SortType.byFrequency:
+            words.sort(function(a, b) {
+                var aFreq = a.Count;
+                var bFreq = b.Count;
+                if (aFreq === bFreq) {
+                    return a.Name.localeCompare(b.Name);
+                }
+                return bFreq - aFreq; // MOST frequent first
+            });
+            break;
+        default:
+    }
 
-        // add the words
-        var result = '';
-        var longestWord = '';
-        for (var i = 0; i < words.length; i++) {
-            var w = words[i];
-            result += '<div class="word' + (w.isSightWord ? ' sight-word' : '') + '">' + w.Name + '</div>';
-            if (w.Name.length > longestWord.length) longestWord = w.Name;
-        }
+    // add the words
+    var result = '';
+    var longestWord = '';
+    for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        result += '<div class="word' + (w.isSightWord ? ' sight-word' : '') + '">' + w.Name + '</div>';
+        if (w.Name.length > longestWord.length) longestWord = w.Name;
+    }
 
-        model.updateElementContent("wordList", result);
+    this.updateElementContent("wordList", result);
 
-        $.divsToColumnsFaster('word', longestWord);
-    }, 10);
+    $.divsToColumnsFaster('word', longestWord);
 };
 
 /**
@@ -1298,6 +1298,31 @@ function loadExternalLink(url) {
     });
 }
 
+var previousHeight = 0;
+
+/**
+ * We need to check the size of the decodable reader tool pane periodically so we can adjust the height of the word list
+ */
 function resizeWordList() {
 
+    var div = $('body').find('div[data-panelId="DecodableRT"]');
+    if (div.length === 0) return; // if not found, the tool was closed
+
+    var currentHeight = div.height();
+
+    // resize the word list if the size of the pane changed
+    if (previousHeight !== currentHeight) {
+        previousHeight = currentHeight;
+
+        var wordList = div.find('#wordList');
+        var top = wordList.parent().position().top;
+
+        var height = Math.floor(currentHeight - top - 20);
+
+        if (height < 50) height = 50;
+
+        wordList.parent().css('height', height + 'px');
+    }
+
+    setTimeout(function() { resizeWordList(); }, 500);
 }
