@@ -599,7 +599,6 @@ namespace Bloom.Edit
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 		    _scrollTop = _browser.HtmlScrollTop;
 			_browser.Navigate(pageDoc, null);
-//		    _browser.HtmlScrollTop = scrollTop;
 			return result;
 		}
 
