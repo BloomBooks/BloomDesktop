@@ -56,8 +56,11 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (Palaso.PlatformUtilities.Platform.IsLinux)
 			{
-				// TODO-Linux: no idea what has to happen to register a url handler...probably not this, though.
-				// See also where these registry entries are made by the wix installer (file Installer.wxs).
+				// This will be done by the package installer.
+				// To manually install it:
+				// sudo cp debian/bloom.desktop /usr/share/applications
+				// sudo update-desktop-database
+				// (and bloom startup wrapper needs to be in the path)
 				return;
 			}
 

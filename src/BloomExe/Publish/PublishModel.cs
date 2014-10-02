@@ -326,7 +326,11 @@ namespace Bloom.Publish
 
 //			System.Diagnostics.Process.Start(tempHtml.Path);
 
-			System.Diagnostics.Process.Start("Chrome.exe",MakeFinalHtmlForPdfMaker().Path);
+			var htmlFilePath = MakeFinalHtmlForPdfMaker().Path;
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+				Process.Start("Chrome.exe", htmlFilePath);
+			else
+				Process.Start("xdg-open", htmlFilePath);
 		}
 
         public void RefreshValuesUponActivation()

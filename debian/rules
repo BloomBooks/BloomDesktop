@@ -46,7 +46,7 @@ override_dh_auto_install:
 	# Install browser support files
 	cp -r src/BloomBrowserUI $(DESTDIR)/$(LIB)/
 	chmod -R a+rX,og-w $(DESTDIR)/$(LIB)/BloomBrowserUI
-	# Install executables
+	# Install wrapper script
 	install -d $(DESTDIR)/usr/bin
 	install debian/bloom $(DESTDIR)/usr/bin
 	# Add to Applications menu
@@ -55,6 +55,12 @@ override_dh_auto_install:
 	install -m 644 debian/bloom.svg $(DESTDIR)/usr/share/pixmaps/
 	install -d $(DESTDIR)/usr/share/applications
 	desktop-file-install --dir $(DESTDIR)/usr/share/applications debian/bloom.desktop
+	# Install icon for our mime type so that it shows up as icon for a bloompack
+	# NOTE: mime type installation is handled by dh_installmime
+	install -d $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/
+	install -m 644 debian/BloomPack.png $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/application-bloom.png
+	install -d $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/
+	install -m 644 debian/BloomPack.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/application-bloom.svg
 
 # Don't export any assemblies to other packages
 override_dh_makeclilibs:

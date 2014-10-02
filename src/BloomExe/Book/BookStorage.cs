@@ -225,6 +225,7 @@ namespace Bloom.Book
 			string errors = ValidateBook(tempPath);
 			if (!string.IsNullOrEmpty(errors))
 			{
+				Logger.WriteEvent("Errors saving book {0}: {1}", PathToExistingHtml, errors);
 				var badFilePath = PathToExistingHtml + ".bad";
 				File.Copy(tempPath, badFilePath, true);
 				//hack so we can package this for palaso reporting
@@ -622,16 +623,23 @@ namespace Bloom.Book
         /// </summary>
         private void UpdateSupportFiles()
         {
-            UpdateIfNewer("placeHolder.png");
-            UpdateIfNewer("basePage.css");
-            UpdateIfNewer("previewMode.css");
-            UpdateIfNewer("origami.css");
-
-			foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
+			if (IsPathReadonly(_folderPath))
 			{
-				var file = Path.GetFileName(path);
-				//if (file.ToLower().Contains("portrait") || file.ToLower().Contains("landscape"))
+				Logger.WriteEvent("Not updating files in folder {0} because the directory is read-only.", _folderPath);
+			}
+			else
+			{
+				UpdateIfNewer("placeHolder.png");
+				UpdateIfNewer("basePage.css");
+				UpdateIfNewer("previewMode.css");
+				UpdateIfNewer("origami.css");
+
+				foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
+				{
+					var file = Path.GetFileName(path);
+					//if (file.ToLower().Contains("portrait") || file.ToLower().Contains("landscape"))
 					UpdateIfNewer(file);
+				}
 			}
 
 			//by default, this comes from the collection, but the book can select one, inlucing "null" to select the factory-supplied empty xmatter
@@ -640,6 +648,11 @@ namespace Bloom.Book
 			UpdateIfNewer(Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation), helper.PathToStyleSheetForPaperAndOrientation);
 
         }
+
+		private bool IsPathReadonly(string path)
+		{
+			return (File.GetAttributes(path) & FileAttributes.ReadOnly) != 0;
+		}
 
 		private void UpdateIfNewer(string fileName, string factoryPath = "")
         {
@@ -672,9 +685,11 @@ namespace Bloom.Book
                 var documentTime = File.GetLastWriteTimeUtc(documentPath);
                 if(factoryTime> documentTime)
                 {
-                    if((File.GetAttributes(documentPath) & FileAttributes.ReadOnly) != 0)
+					if (IsPathReadonly(documentPath))
                     {
-                        Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
+						var msg = string.Format("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
+						Logger.WriteEvent(msg);
+                        Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
                         return;
                     }
                     Logger.WriteEvent("BookStorage.UpdateIfNewer() Updating file {0} to {1}", factoryPath, documentPath);
