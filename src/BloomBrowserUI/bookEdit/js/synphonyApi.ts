@@ -1,22 +1,13 @@
 /// <reference path="libsynphony/synphony.d.ts" />
 /// <reference path="libsynphony/underscore-1.5.2.d.ts" />
 /// <reference path="../../lib/jquery.d.ts" />
-
-/**
- * Decodable Leveled Reader Settings
- */
-class DLRSettings {
-	levels: Level[] = [];
-	stages: Stage[] = [];
-	letters: string = '';
-	moreWords: string = '';
-}
+/// <reference path="readerSettings.ts" />
 
 class SynphonyApi {
 
 	stages = [];
 	levels = [];
-	source: DLRSettings;
+	source: ReaderSettings;
 
 	/**
 	 *
@@ -28,7 +19,7 @@ class SynphonyApi {
 
 		if (!fileContent) return;
 
-		var data: DLRSettings = <DLRSettings>jQuery.extend(new DLRSettings(), fileContent);
+		var data: ReaderSettings = <ReaderSettings>jQuery.extend(new ReaderSettings(), fileContent);
 
 		this.source = data;
 
@@ -41,7 +32,7 @@ class SynphonyApi {
 			if (stgs) {
 				this.stages = [];
 				for (var j = 0; j < stgs.length; j++) {
-					this.AddStage(<Stage>jQuery.extend(true, new Stage((j+1).toString()), stgs[j]));
+					this.AddStage(<ReaderStage>jQuery.extend(true, new ReaderStage((j+1).toString()), stgs[j]));
 				}
 			}
 		}
@@ -50,14 +41,14 @@ class SynphonyApi {
 		if (lvls) {
 			this.levels = [];
 			for (var i = 0; i < lvls.length; i++) {
-				this.addLevel(<Level>jQuery.extend(true, new Level((i+1).toString()), lvls[i]));
+				this.addLevel(<ReaderLevel>jQuery.extend(true, new ReaderLevel((i+1).toString()), lvls[i]));
 			}
 		}
 	}
 
 	loadFromLangData(langData: LanguageData): void {
 
-		if (!this.source) this.source = new DLRSettings();
+		if (!this.source) this.source = new ReaderSettings();
 
 		if (this.source.letters === '') {
 
@@ -70,12 +61,13 @@ class SynphonyApi {
 
 	static fireCSharpEvent(eventName: string, eventData: any) {
 
+		//noinspection TaskProblemsInspection
 		var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
 		document.dispatchEvent(event);
 	}
 
 	// This is at least useful for testing; maybe for real use.
-	AddStage(stage: Stage): void {
+	AddStage(stage: ReaderStage): void {
 		this.stages.push(stage);
 	}
 
@@ -112,7 +104,7 @@ class SynphonyApi {
 	 * @param {int} [stageNumber] Optional. If present, returns all stages up to and including stageNumber. If missing, returns all stages.
 	 * @returns {Stage[]} An array of Stage objects
 	 */
-	getStages(stageNumber: number): Stage[] {
+	getStages(stageNumber: number): ReaderStage[] {
 
 		if (typeof stageNumber === 'undefined')
 			return this.stages;
@@ -120,64 +112,11 @@ class SynphonyApi {
 			return _.first(this.stages, stageNumber);
 	}
 
-	getLevels(): Level[] {
+	getLevels(): ReaderLevel[] {
 		return this.levels;
 	}
 
-	addLevel(aLevel: Level): void {
+	addLevel(aLevel: ReaderLevel): void {
 		this.levels.push(aLevel);
-	}
-}
-
-
-// Defines an object to hold data about one stage in the decodable books tool
-class Stage {
-
-	name: string;
-	sightWords: string = '';
-
-	constructor(name: string) {
-		this.name = name;
-	}
-
-	getName(): string {
-		return this.name;
-	}
-}
-
-// Defines an object to hold data about one level in the leveled reader tool
-class Level {
-
-	name: string;
-	thingsToRemember: string[] = [];
-
-	// For each of these, 0 signifies unlimited.
-	maxWordsPerPage: number = 0;
-	maxWordsPerSentence: number = 0;
-	maxWordsPerBook: number = 0;
-	maxUniqueWordsPerBook: number = 0;
-
-	constructor(name: string) {
-		this.name = name;
-	}
-
-	getName(): string {
-		return this.name;
-	}
-
-	getMaxWordsPerPage(): number {
-		return this.maxWordsPerPage || 0;
-	}
-
-	getMaxWordsPerSentence(): number {
-		return this.maxWordsPerSentence || 0;
-	}
-
-	getMaxWordsPerBook(): number {
-		return this.maxWordsPerBook || 0;
-	}
-
-	getMaxUniqueWordsPerBook(): number {
-		return this.maxUniqueWordsPerBook || 0;
 	}
 }

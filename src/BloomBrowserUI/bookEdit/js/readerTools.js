@@ -247,7 +247,7 @@ ReaderToolsModel.prototype.enableLevelButtons = function() {
 ReaderToolsModel.prototype.updateLevelLimits = function() {
     var level = this.synphony.getLevels()[this.levelNumber - 1];
     if (!level)
-        level = new Level("");
+        level = new ReaderLevel("");
 
     this.updateLevelLimit("maxWordsPerPage", level.getMaxWordsPerPage());
     this.updateLevelLimit("maxWordsPerPageBook", level.getMaxWordsPerPage());

@@ -1,19 +1,7 @@
 /// <reference path="libsynphony/synphony.d.ts" />
 /// <reference path="libsynphony/underscore-1.5.2.d.ts" />
 /// <reference path="../../lib/jquery.d.ts" />
-/**
-* Decodable Leveled Reader Settings
-*/
-var DLRSettings = (function () {
-    function DLRSettings() {
-        this.levels = [];
-        this.stages = [];
-        this.letters = '';
-        this.moreWords = '';
-    }
-    return DLRSettings;
-})();
-
+/// <reference path="readerSettings.ts" />
 var SynphonyApi = (function () {
     function SynphonyApi() {
         this.stages = [];
@@ -30,7 +18,7 @@ var SynphonyApi = (function () {
         if (!fileContent)
             return;
 
-        var data = jQuery.extend(new DLRSettings(), fileContent);
+        var data = jQuery.extend(new ReaderSettings(), fileContent);
 
         this.source = data;
 
@@ -43,7 +31,7 @@ var SynphonyApi = (function () {
             if (stgs) {
                 this.stages = [];
                 for (var j = 0; j < stgs.length; j++) {
-                    this.AddStage(jQuery.extend(true, new Stage((j + 1).toString()), stgs[j]));
+                    this.AddStage(jQuery.extend(true, new ReaderStage((j + 1).toString()), stgs[j]));
                 }
             }
         }
@@ -52,14 +40,14 @@ var SynphonyApi = (function () {
         if (lvls) {
             this.levels = [];
             for (var i = 0; i < lvls.length; i++) {
-                this.addLevel(jQuery.extend(true, new Level((i + 1).toString()), lvls[i]));
+                this.addLevel(jQuery.extend(true, new ReaderLevel((i + 1).toString()), lvls[i]));
             }
         }
     };
 
     SynphonyApi.prototype.loadFromLangData = function (langData) {
         if (!this.source)
-            this.source = new DLRSettings();
+            this.source = new ReaderSettings();
 
         if (this.source.letters === '') {
             var sorted = langData.LanguageSortOrder.join(' ').toLowerCase().split(' ');
@@ -70,6 +58,7 @@ var SynphonyApi = (function () {
     };
 
     SynphonyApi.fireCSharpEvent = function (eventName, eventData) {
+        //noinspection TaskProblemsInspection
         var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
         document.dispatchEvent(event);
     };
@@ -128,50 +117,5 @@ var SynphonyApi = (function () {
         this.levels.push(aLevel);
     };
     return SynphonyApi;
-})();
-
-// Defines an object to hold data about one stage in the decodable books tool
-var Stage = (function () {
-    function Stage(name) {
-        this.sightWords = '';
-        this.name = name;
-    }
-    Stage.prototype.getName = function () {
-        return this.name;
-    };
-    return Stage;
-})();
-
-// Defines an object to hold data about one level in the leveled reader tool
-var Level = (function () {
-    function Level(name) {
-        this.thingsToRemember = [];
-        // For each of these, 0 signifies unlimited.
-        this.maxWordsPerPage = 0;
-        this.maxWordsPerSentence = 0;
-        this.maxWordsPerBook = 0;
-        this.maxUniqueWordsPerBook = 0;
-        this.name = name;
-    }
-    Level.prototype.getName = function () {
-        return this.name;
-    };
-
-    Level.prototype.getMaxWordsPerPage = function () {
-        return this.maxWordsPerPage || 0;
-    };
-
-    Level.prototype.getMaxWordsPerSentence = function () {
-        return this.maxWordsPerSentence || 0;
-    };
-
-    Level.prototype.getMaxWordsPerBook = function () {
-        return this.maxWordsPerBook || 0;
-    };
-
-    Level.prototype.getMaxUniqueWordsPerBook = function () {
-        return this.maxUniqueWordsPerBook || 0;
-    };
-    return Level;
 })();
 //# sourceMappingURL=synphonyApi.js.map
