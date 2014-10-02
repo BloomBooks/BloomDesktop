@@ -41,6 +41,7 @@ document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/j
 document.write('<script type="text/javascript" src="' + thisDir + 'jquery.div-columns.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/synphony_lib.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/bloom_lib.js"></script>');
+document.write('<script type="text/javascript" src="' + thisDir + 'readerSettings.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'synphonyApi.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'readerTools.js"></script>');
 

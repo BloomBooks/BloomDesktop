@@ -9,11 +9,11 @@ describe("SynphonyApi tests", function() {
     });
     it("remembers added stages", function() {
         var api = new SynphonyApi();
-        var stage1 = new Stage("1");
+        var stage1 = new ReaderStage("1");
         api.AddStage(stage1);
         expect(api.getStages()[0]).toBe(stage1);
 
-        var stage2 = new Stage("2");
+        var stage2 = new ReaderStage("2");
         api.AddStage(stage2);
         expect(api.getStages()[0]).toBe(stage1);
         expect(api.getStages()[1]).toBe(stage2);
@@ -22,7 +22,7 @@ describe("SynphonyApi tests", function() {
 
 describe("Stage tests", function() {
     it("remembers its name", function() {
-        var stage = new Stage("X");
+        var stage = new ReaderStage("X");
         expect(stage.getName()).toBe("X");
     });
 });
