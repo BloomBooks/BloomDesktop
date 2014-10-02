@@ -596,6 +596,16 @@ namespace Bloom.Edit
 					return null;//not an image
 				}
 			}
+
+			if (Clipboard.ContainsText() && File.Exists(Clipboard.GetText()))
+				try
+				{
+					return Image.FromStream(new FileStream(Clipboard.GetText(), FileMode.Open));
+				}
+				catch
+				{
+				}
+
 			return null;
 		}
 

@@ -11,14 +11,13 @@ namespace Bloom.Collection
 	{
 		public static void CreateDirectoryShortcut(string targetPath, string whereToPutItPath)
 		{
-#if !__MonoCS__
 			var name = Path.GetFileName(targetPath);
-			var WshShell = new WshShellClass();
 			string linkPath = Path.Combine(whereToPutItPath, name) + ".lnk";
 			if(File.Exists(linkPath))
-			{
 				File.Delete(linkPath);
-			}
+
+#if !__MonoCS__
+			var WshShell = new WshShellClass();
 			var shortcut = (IWshShortcut)WshShell.CreateShortcut(linkPath);
 
 			try
@@ -35,8 +34,18 @@ namespace Bloom.Collection
 			}
 			shortcut.Save();
 #else
-			// TODO-Linux
-			throw new NotImplementedException();
+			// It's tempting to use symbolic links instead which would work much nicer - iff
+			// the UnixSymbolicLinkInfo class wouldn't cause us to crash...
+//			var name = Path.GetFileName(targetPath);
+//			string linkPath = Path.Combine(whereToPutItPath, name);
+//			var shortcut = new Mono.Unix.UnixSymbolicLinkInfo(linkPath);
+//			if (shortcut.Exists)
+//				shortcut.Delete();
+//
+//			var target = new Mono.Unix.UnixSymbolicLinkInfo(targetPath);
+//			target.CreateSymbolicLink(linkPath);
+
+			File.WriteAllText(linkPath, targetPath);
 #endif
 		}
 	}
