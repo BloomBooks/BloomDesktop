@@ -1,5 +1,9 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 /*+clearfix {*/
+BODY
+{
+    background-color: #363333;
+}
 .tool-items:after
 {
 	content: ".";

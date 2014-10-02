@@ -170,6 +170,7 @@
     <Compile Include="XmlHtmlConverterTests.cs" />
     <Compile Include="web\EnhancedImageServerTests.cs" />
     <Compile Include="PretendRequestInfo.cs" />
+    <Compile Include="Collection\ShortcutMakerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bloom-ChorusPlugin\BloomChorusPlugin.csproj">
