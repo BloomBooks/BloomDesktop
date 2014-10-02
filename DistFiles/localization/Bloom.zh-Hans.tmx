@@ -1,0 +1,3536 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tmx version="1.4">
+  <header srclang="zh-Hans" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.0.16.0</prop>
+    <prop type="x-hardlinebreakreplacement">\n</prop>
+  </header>
+  <body>
+    <tu tuid=".addMakeReaderTemplateBloomPackToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template BloomPack...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>制作读者模板Bloom群...</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".advancedToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Advanced</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>高级</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.DecodableReaderToolCheckbox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>解码读者工具</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.LeveledReaderToolCheckbox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>等级读者器</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstalled">
+      <tuv xml:lang="en">
+        <seg>The {0} Collection is now ready to use on this computer.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>{0}丛刊已能在这计算机上使用。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.ErrorInstallingBloomPack">
+      <tuv xml:lang="en">
+        <seg>Bloom was not able to install that Bloom Pack</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom不能安装这Bloom群</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.Extracting">
+      <note>Shown while BloomPacks are being installed</note>
+      <tuv xml:lang="en">
+        <seg>Extracting...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>正在解压缩</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.MustRestartToSee">
+      <tuv xml:lang="en">
+        <seg>Bloom is already running, but the contents will not show up until the next time you run Bloom</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom已启动，但是内容要再开动Bloom时才被显示。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.Opening">
+      <tuv xml:lang="en">
+        <seg>Opening {0}...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>正在打开{0}...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Book title in {lang}">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>{lang}书名</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Click to choose topic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to choose topic</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>单击这里，选择主题</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+      <tuv xml:lang="en">
+        <seg>Advanced Program Settings</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>高级程序设置</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+      <tuv xml:lang="en">
+        <seg>Show Experimental Commands (e.g. Export XML for InDesign)</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>显示在试验中的命令（例：以XML格式导出给InDesign）</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
+      <tuv xml:lang="en">
+        <seg>Show Experimental Templates (e.g. Picture Dictionary)</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>显示在试验中的模板（例：图片词典）</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
+      <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
+      <tuv xml:lang="en">
+        <seg>Use Image Server to reduce memory usage with large images.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>操作大图像时请使用图像服务器，这样能减少内存用量。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive">
+      <tuv xml:lang="en">
+        <seg>(Experimental) Show Send/Receive Controls</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>（试验中）显示发送/接受控制</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+      <tuv xml:lang="en">
+        <seg>Book Making</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>书制作</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+      <tuv xml:lang="en">
+        <seg>Default Font for Language 3</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>语言3默认字体</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+      <tuv xml:lang="en">
+        <seg>Front/Back Matter Pack</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>前页/后页群</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
+      <tuv xml:lang="en">
+        <seg>About These Settings</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>关于这些设置</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+      <tuv xml:lang="en">
+        <seg>Settings</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>设置</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+      <tuv xml:lang="en">
+        <seg>Change...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>改变...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+      <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      <tuv xml:lang="en">
+        <seg>Language 1</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>语言1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+      <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <tuv xml:lang="en">
+        <seg>Language 2</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>语言2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+      <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <tuv xml:lang="en">
+        <seg>Language 3</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>语言3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+      <tuv xml:lang="en">
+        <seg>Languages</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>语言</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+      <note>If there is no third language specified, the link changes to this.</note>
+      <tuv xml:lang="en">
+        <seg>Set...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>设立...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
+      <tuv xml:lang="en">
+        <seg>About These Settings</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>关于这些设备</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
+      <tuv xml:lang="en">
+        <seg>Vernacular Language</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>土语</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._language2Label">
+      <tuv xml:lang="en">
+        <seg>Language 2 (e.g. National Language)</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>语言2（例如：国家语言）</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._language3Label">
+      <tuv xml:lang="en">
+        <seg>Language 3 (e.g. Regional Language)   (Optional)</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>语言3（例如：区域语言）（可选）</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
+      <tuv xml:lang="en">
+        <seg>Remove</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>删除</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+      <tuv xml:lang="en">
+        <seg>Bloom Collection Name</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom丛刊名称</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.Country">
+      <tuv xml:lang="en">
+        <seg>Country</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>国家</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.District">
+      <tuv xml:lang="en">
+        <seg>District</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>区域</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+      <tuv xml:lang="en">
+        <seg>Project Information</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>项目信息</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.Province">
+      <tuv xml:lang="en">
+        <seg>Province</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>省份</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
+      <tuv xml:lang="en">
+        <seg>About These Settings</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>关于这些设置</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.Restart">
+      <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
+      <tuv xml:lang="en">
+        <seg>Restart</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>重新启动</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog._restartMessage">
+      <tuv xml:lang="en">
+        <seg>Bloom will close and re-open this project with the new settings.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom将会关闭，然后以新设置打开项目。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
+      <tuv xml:lang="en">
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom将以文字处理程序打开这HTML文件(Word 或是 LibreOffice)。请注意，你可以处理书里的文本或图像，但不一定能保存布局。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
+      <tuv xml:lang="en">
+        <seg>Update Book</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>更新书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu._updateThumbnail">
+      <tuv xml:lang="en">
+        <seg>Update Thumbnail</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>更新缩略图</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.deleteBook">
+      <tuv xml:lang="en">
+        <seg>Delete Book</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>删除书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
+      <tuv xml:lang="en">
+        <seg>Export to Word or LibreOffice...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>导出到Word或LibreOffice...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
+      <tuv xml:lang="en">
+        <seg>Export to XML for InDesign...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>以XML格式导出给InDesign...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Books From BloomLibrary.org">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Books From BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>BloomLibrary.org 的书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+      <tuv xml:lang="en">
+        <seg>Do Updates of All Books</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>更新全部书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.doChecksOfAllBooks">
+      <tuv xml:lang="en">
+        <seg>Do Checks of All Books</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>检查全部书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.rescueMissingImages">
+      <tuv xml:lang="en">
+        <seg>Rescue Missing Images...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>保全失踪图像...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.showHistory">
+      <tuv xml:lang="en">
+        <seg>Collection History...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>丛刊历史...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.showNotes">
+      <tuv xml:lang="en">
+        <seg>Collection Notes...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>丛刊笔记...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionTabLabel">
+      <tuv xml:lang="en">
+        <seg>Collections</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Collections">
+      <tuv xml:lang="en">
+        <seg>Collections</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.ConfirmRecycleDescription">
+      <tuv xml:lang="en">
+        <seg>The book '{0}'</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>{0}书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.ContextMenu._openFolderOnDisk">
+      <tuv xml:lang="en">
+        <seg>Open Folder on Disk</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>打开磁盘里的文件夹</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Health">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Health</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>健康</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.MakeBookUsingThisTemplate">
+      <tuv xml:lang="en">
+        <seg>Make a book using this source</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>以这源头制作书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Open/CreateCollectionButton">
+      <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+      <tuv xml:lang="en">
+        <seg>Other Collection</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>其他丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.PNG Animal Stories - Copy">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>PNG Animal Stories - Copy</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>PNG 动物故事 - 复制</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Sample Shells">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Shells</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>样本壳</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SendReceive">
+      <tuv xml:lang="en">
+        <seg>Send/Receive</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>发送/接收</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SettingsButton">
+      <tuv xml:lang="en">
+        <seg>Settings</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>设置</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+      <tuv xml:lang="en">
+        <seg>Open Additional Collections Folder</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>打开更多丛刊文件夹</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Templates">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Templates</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>模板</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Zaza Reader Templates">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Zaza Reader Templates</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Zaza读者模板</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab._editBookButton">
+      <tuv xml:lang="en">
+        <seg>Edit this book</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>编辑这本书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab._makeBloomPackButton">
+      <tuv xml:lang="en">
+        <seg>Make Bloom Pack</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>制作Bloom群</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.bloomLibraryLinkLabel">
+      <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
+      <tuv xml:lang="en">
+        <seg>Get more source books at BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>BloomLibrary.org里更多的源头书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
+      <note>get this clicking on BloomLibrary.org link in source collection</note>
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>源头丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.bookSourceHeading">
+      <tuv xml:lang="en">
+        <seg>Sources For New Books</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>新书源头</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.bookSourcesLockNotice">
+      <tuv xml:lang="en">
+        <seg>This collection is locked, so new books cannot be added/removed.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>这丛刊已锁，不能添加或删除书。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
+      <tuv xml:lang="en">
+        <seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>因这是源头丛刊，Bloom没有现有的壳可提供。如你要在壳里添加语言，你要编辑拥有这壳的丛刊，而不是复制它。还有，你不能以挂历来制作新壳。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.hiddenBooksNotice">
+      <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
+      <tuv xml:lang="en">
+        <seg>Where's the rest?</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>其余的在那里？</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+      <tuv xml:lang="en">
+        <seg>More...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>更多...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.sourcesForNewShellsHeading">
+      <tuv xml:lang="en">
+        <seg>Sources For New Shells</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>新壳源头</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.CancelButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Cancel</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>撤消(&amp;C)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Finish">
+      <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
+      <tuv xml:lang="en">
+        <seg>&amp;Finish</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>完毕(&amp;F)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Next">
+      <note>Used for the Next button in wizards, like that used for making a New Collection</note>
+      <tuv xml:lang="en">
+        <seg>&amp;Next</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>之后(&amp;N)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.OKButton">
+      <tuv xml:lang="en">
+        <seg>&amp;OK</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>确定(&amp;O)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Optional">
+      <tuv xml:lang="en">
+        <seg>optional</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>可选</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ConfiguringBookMessage">
+      <tuv xml:lang="en">
+        <seg>Building...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>正在建设...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.SetUpStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Stages</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>设立阶段</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.Stage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage </seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>阶段</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.StageOf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg> of </seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>的</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.Completed">
+      <tuv xml:lang="en">
+        <seg>Your download ({0}) is complete. You can see it in the 'Books from the Bloom Library' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>{0}已下载完成。你可在丛刊里“Bloom Library的书”部分找到。如你不在编辑当中，Bloom会自动选择它。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.CompletedCaption">
+      <tuv xml:lang="en">
+        <seg>Download complete</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>下载完毕</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.DownloadingDialogTitle">
+      <tuv xml:lang="en">
+        <seg>Downloading book</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>正在下载</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.GenericDownloadProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem downloading your book.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>下载书时出了故障。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>如你需要存放更多书的资料，你可使用这页(三封)。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BackMatter.OutsideBackCoverTextPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>如你需要存放更多书的资料，你可使用这页(后页)。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
+      <tuv xml:lang="en">
+        <seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>在Chrome阅览器里打开制作这PDF的html文件（Chrome一定要在路径里）</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CannotChangeCopyright">
+      <tuv xml:lang="en">
+        <seg>Sorry, the copyright and license for this book cannot be changed.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>抱歉，不能更改这书的版权和许可证。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CantPasteImageLocked">
+      <tuv xml:lang="en">
+        <seg>Sorry, this book is locked down so that images cannot be changed.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>抱歉，这本书已锁，不能更改图像。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
+      <tuv xml:lang="en">
+        <seg>Really Delete Page?</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>确定删除这页吗？</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ConfirmRemovePageDialog.DeleteButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Delete</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>删除(&amp;D)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ConfirmRemovePageDialog._messageLabel">
+      <tuv xml:lang="en">
+        <seg>This page will be permanently removed.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>这页将被永远删除。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Edit">
+      <tuv xml:lang="en">
+        <seg>Edit</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>编辑</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FontMissing">
+      <tuv xml:lang="en">
+        <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>当选字体“{0}”不存在。其他字体将被用。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>更改所有属于{1}语言与{0}样式里的方块文本大小。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>{lang}书名</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.CopyrightPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to Edit Copyright &amp; License</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>单击这里，编辑版权与许可证</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.FundingAgenciesPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Use this to acknowledge any funding agencies.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>以这搭理资助机构。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.ISBNPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>国际标准书号。如果没有，请留空号。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Original (or Shell) Acknowledgments in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>{lang}原本(或壳)应答</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalContributorsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>在{lang}里：作家，插画者，编辑，和其他人所做出的贡献。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.TopicPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to choose topic</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>单击这里，选择主题</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Acknowledgments for translated version, in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>已翻译语言({lang})的确认</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.ChangeImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Image</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>改变图象</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.EditMetadata">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Edit Image Credits, Copyright, &amp; License</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>编辑图像致谢，版权和许可证。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.PasteImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Paste Image</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>粘贴图像</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.LayoutMode.ChangeLayout">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Layout</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>改变布局</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.NoImageFoundOnClipboard">
+      <tuv xml:lang="en">
+        <seg>Before you can paste an image, copy one onto your 'clipboard', from another program.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>粘贴图像前,请以另外程式复制到剪贴板上。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PageList.Heading">
+      <tuv xml:lang="en">
+        <seg>Pages</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>页</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PageSizeAndOrientation.Tooltip">
+      <tuv xml:lang="en">
+        <seg>Choose a page size and orientation</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请选择页面大小和方向</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditorTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Adjust formatting for style</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>调整样式格式</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TemplatePagesList.Heading">
+      <tuv xml:lang="en">
+        <seg>Template Pages</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>模板页</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>1</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>2</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>3</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>4</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>4</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.5">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>5</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>5</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.6">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>6</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>6</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.7">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>7</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>7</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.8">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>8</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>8</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.9">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>9</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>9</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Alphabet</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>字母</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Text &amp; Image</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>基本文本和图像</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Text &amp; Picture</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>基本文本和照片</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Credits Page">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Credits Page</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>致谢页</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 1</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>第1天</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 2</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>第2天</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 3</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>第3天</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 4</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>第5天</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 5a">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 5a</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>第5a天</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 5b">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 5b</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>第5b天</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Front Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Front Cover</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>封面</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Image On Bottom</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>图像在底部</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Image in Middle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Image in Middle</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>图像在中间</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Inside Back Cover</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>封三</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Inside Front Cover</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>封二</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Instructions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Instructions</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>指示</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Just Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just Text</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>只是文本</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Just a Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just a Picture</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>只是照片</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Just an Image">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just an Image</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>只是图像</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Outside Back Cover</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>后盖外</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture &amp; Word</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>照片和词句</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture On Bottom</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>图片在底部</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture in Middle</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>图片在中间</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Page Is Intentionally Blank</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>此页有意空白</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Title Page">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Title Page</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>扉页</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._contentLanguagesDropdown">
+      <tuv xml:lang="en">
+        <seg>Multilingual Settings</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>多种语言设置</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._copyButton">
+      <tuv xml:lang="en">
+        <seg>Copy</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>副本</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._cutButton">
+      <tuv xml:lang="en">
+        <seg>Cut</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>剪切</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._deletePageButton">
+      <tuv xml:lang="en">
+        <seg>Remove\n  Page</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>删除\n页</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._duplicatePageButton">
+      <tuv xml:lang="en">
+        <seg>Duplicate\n   Page</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>复制\n页</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._pasteButton">
+      <tuv xml:lang="en">
+        <seg>Paste</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>粘贴</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._undoButton">
+      <tuv xml:lang="en">
+        <seg>Undo</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>撤消</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.bilingual">
+      <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
+      <tuv xml:lang="en">
+        <seg>Two Languages</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>两种语言</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.copyImageIPMetdataQuestion">
+      <note>get this after you edit the metadata of an image</note>
+      <tuv xml:lang="en">
+        <seg>Copy this information to all other pictures in this book?</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请问你要把这信息复制入这本书里所有图片吗？</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+      <tuv xml:lang="en">
+        <seg>This option is only available in the Publish tab.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>这选项只能在出版标签里用。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.monolingual">
+      <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+      <tuv xml:lang="en">
+        <seg>One Language</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>一种语言</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.noOtherLayouts">
+      <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+      <tuv xml:lang="en">
+        <seg>There are no other layout options for this template.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>这模板没有其他的布局选项。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
+      <tuv xml:lang="en">
+        <seg>Picture Intellectual Property Information</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>图片知识产权信息</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.trilingual">
+      <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+      <tuv xml:lang="en">
+        <seg>Three Languages</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>三种语言</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.Help Menu">
+      <tuv xml:lang="en">
+        <seg>Help</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>帮助</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu._makeASuggestionMenuItem">
+      <tuv xml:lang="en">
+        <seg>Make a Suggestion</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>提供意见</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu._webSiteMenuItem">
+      <tuv xml:lang="en">
+        <seg>Web Site</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>网站</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Check For New Version</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>搜索新版本</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.creditsMenuItem">
+      <tuv xml:lang="en">
+        <seg>About Bloom</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>关于Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Deep Bloom Paper</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom深入说明</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.documentationMenuItem">
+      <tuv xml:lang="en">
+        <seg>Documentation</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>文档</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.registrationMenuItem">
+      <tuv xml:lang="en">
+        <seg>Registration</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>登记</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.releaseNotesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Release Notes...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>出版说明...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.showEventLogMenuItem">
+      <tuv xml:lang="en">
+        <seg>Show Event Log</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>显示事件日志</seg>
+      </tuv>
+    </tu>
+    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+      <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
+      <tuv xml:lang="en">
+        <seg>InDesign XML Information</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>InDesign XML 信息</seg>
+      </tuv>
+    </tu>
+    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+      <tuv xml:lang="en">
+        <seg>Don't Show This Again</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>不再显示</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A4Landscape</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>A4 横向</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Landscape SideBySide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A4Landscape SideBySide</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>A4 横向并排</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Landscape SplitAcrossPages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A4Landscape SplitAcrossPages</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>A4横向跨页拆分</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A4Portrait</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>A4纵向</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A5Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A5Portrait</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>A5纵向</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A5Portrait BottomAlign">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A5Portrait BottomAlign</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>A5纵向底部对齐</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.B5Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>B5Portrait</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>B5纵向</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Actual">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Actual</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>实际</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.FoThisLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>For this Level</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>这等级</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.KeepInMind">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Keep in mind</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>记住</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Level">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level </seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>等级</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.LevelOf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg> of </seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>的</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Max">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Max</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>极量</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per page</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>每页</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per sentence</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>每句</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.SetUpLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Levels</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>设立等级</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisBook">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Book</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>此书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Page</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>此页</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Total">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>total</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>总计</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Unique">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>unique</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>独特</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.WordCounts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Word counts</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>词句计数</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.AgreeToTerms">
+      <tuv xml:lang="en">
+        <seg>I agree to the Bloom Library's Terms of Use</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>我同意Bloom Library的使用条款</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.Email">
+      <tuv xml:lang="en">
+        <seg>Email Address</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>电子邮件地址</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.ForgotPassword">
+      <tuv xml:lang="en">
+        <seg>Forgot Password</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>忘记密码</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.LoginButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Login</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>登录(&amp;L)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.Password">
+      <tuv xml:lang="en">
+        <seg>Password</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>密码</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.ShowTerms">
+      <tuv xml:lang="en">
+        <seg>Show Terms of Use</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>显示使用条款</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Log in to BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>登录BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.label3">
+      <tuv xml:lang="en">
+        <seg>label3</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>标签3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.showPassword">
+      <tuv xml:lang="en">
+        <seg>&amp;Show Password</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>显示密码(&amp;S)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.AlreadyCollectionWithThatName">
+      <tuv xml:lang="en">
+        <seg>There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>这丛刊名已被用：&lt;a href='file://{0}'&gt;{0}&gt;/a&gt;。\n请选择独特名称。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.ChooseLanguagePage">
+      <tuv xml:lang="en">
+        <seg>Choose the Main Language For This Collection</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请选择这丛刊的主要语言</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionNamePage.ExampleText">
+      <tuv xml:lang="en">
+        <seg>Examples: "Health Books", "PNG Animal Stories"</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>例如： 健康书籍,PNG动物故事</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
+      <tuv xml:lang="en">
+        <seg>What would you like to call this collection?</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>你怎么命名这丛刊呢？</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionWillBeCreatedAt">
+      <tuv xml:lang="en">
+        <seg>Collection will be created at: {0}</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>在{0}新建丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.FinishPage">
+      <tuv xml:lang="en">
+        <seg>Ready To Create New Collection</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>准备创建新丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage">
+      <tuv xml:lang="en">
+        <seg>Choose the Collection Type</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请选择丛刊类型</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>源头丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+      <tuv xml:lang="en">
+        <seg>Vernacular/Local Language Collection</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>土语/当地语言丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
+      <tuv xml:lang="en">
+        <seg>A collection of books in a local language.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>当地语言丛书。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage">
+      <tuv xml:lang="en">
+        <seg>Give Language Location</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请供应语言地点</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.Country">
+      <tuv xml:lang="en">
+        <seg>Country</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>国家</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.District">
+      <tuv xml:lang="en">
+        <seg>District</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>区域</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
+      <tuv xml:lang="en">
+        <seg>These are optional. Bloom will place them in the right places on title page of books you create.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>这些是可选项。Bloom会加入你创建的书里的扉页。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.Province">
+      <tuv xml:lang="en">
+        <seg>Province</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>省份</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.NewBookPattern">
+      <note>The {0} is replaced by the name of the language.</note>
+      <tuv xml:lang="en">
+        <seg>{0} Books</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>{0}书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.NewCollectionWindowTitle">
+      <tuv xml:lang="en">
+        <seg>Create New Bloom Collection</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>新建Bloom丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
+      <tuv xml:lang="en">
+        <seg>Unable to create a new collection using that name.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>不能以这名称创建新丛刊。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage">
+      <tuv xml:lang="en">
+        <seg>Welcome To Bloom!</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>欢迎来到Bloom!</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine1">
+      <tuv xml:lang="en">
+        <seg>You are almost ready to start making books.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>你快要做好制书的准备了。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine2">
+      <tuv xml:lang="en">
+        <seg>In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. So the first thing we need to do is make one for you.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom会把你制作的书，以简单而有组织的方式存在&lt;i&gt;丛刊&lt;/i&gt;里。我们需要先创建一个丛刊。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine3">
+      <tuv xml:lang="en">
+        <seg>Click 'Next' to get started.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请单击”之后“。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.Bloom Collections">
+      <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
+      <tuv xml:lang="en">
+        <seg>Bloom Collections</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
+      <tuv xml:lang="en">
+        <seg>Browse for another collection on this computer</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>阅览这计算机里的其他丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
+      <tuv xml:lang="en">
+        <seg>Copy From Chorus Hub on Local Network</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>从Chorus Hub复制到区域网</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CopyFromInternet">
+      <tuv xml:lang="en">
+        <seg>Copy from Internet</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>从互联网上复制</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CopyFromUsbDrive">
+      <tuv xml:lang="en">
+        <seg>Copy from USB Drive</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>从U盘上复制</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CreateNewCollection">
+      <tuv xml:lang="en">
+        <seg>Create New Collection</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>新建丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
+      <tuv xml:lang="en">
+        <seg>Open/Create Collections</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>打开/创建丛刊</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.ReadMoreLink">
+      <note>This opens the Chorus Help to learn more about send/receive.</note>
+      <tuv xml:lang="en">
+        <seg>Read More</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>阅读更多</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
+      <tuv xml:lang="en">
+        <seg>Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>有人曾经以“发送/接收”与你分享丛刊吗？\n你可以其中的红按钮把他们的丛刊复制到你计算机上。\n之后，也以“发送/接受”与他们分享你的作品。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+      <tuv xml:lang="en">
+        <seg>Replace Existing</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>取代现有</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OverwriteWarning.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Notice</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>通告</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PageList.CantMoveXMatter">
+      <tuv xml:lang="en">
+        <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>不能更改。前页与后页位子不能移。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PageList.CantMoveXMatterCaption">
+      <tuv xml:lang="en">
+        <seg>Invalid Move</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>不合法的动作</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
+      <tuv xml:lang="en">
+        <seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>如要在Bloom显示已完成的书，请安装Adobe Reader。要不，你可以PDF保存书，然后再以其他程式打开。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.AdobeReaderControl.ProblemShowingPDF">
+      <tuv xml:lang="en">
+        <seg>That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>奇怪...显示PDF时Adobe Reader有错误。但你还可以保存PDF书。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.AdobeReaderControl.UnknownError">
+      <tuv xml:lang="en">
+        <seg>Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>抱歉，Adobe Reader不能被显示，所以看不到完整的书。\n请卸载现在的“Adobe Reader”，然后重新安装。\n在还没处理好之前，你还可以保存PDF书，然后以其他软件打开。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.BodyOnlyRadio">
+      <tuv xml:lang="en">
+        <seg>Booklet Insides</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>小册子内部</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.BodyOnlyRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>以书的内页制作小册子。页面将被重新排序与布局。这样，当你折叠时，它将形成一个小册子。\n</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ButtonThatShowsUploadForm">
+      <tuv xml:lang="en">
+        <seg>Upload</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>上载</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ButtonThatShowsUploadForm-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Upload to BloomLibrary.org, where others can download and localize into their own language.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>上载到BloomLibrary.org，这样其他人可以下载，然后本土化。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.CoverOnlyRadio">
+      <tuv xml:lang="en">
+        <seg>Booklet Cover</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>小册子封面</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.CoverOnlyRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make a PDF of just the front and back (both sides), so you can  print on colored paper.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>制作PDF文件,仅包括封面与后盖(双页)。你可以彩色纸打印出来。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OnePagePerPaperRadio">
+      <note>Instead of making a booklet, just make normal pages</note>
+      <tuv xml:lang="en">
+        <seg>Simple</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>简单</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OnePagePerPaperRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make a PDF of every page of the book, one page per piece of paper.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>制作PDF文件，里面有书的每一页，一页一张纸。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
+      <tuv xml:lang="en">
+        <seg>Open the PDF in the default system pdf viewer</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>以系统默认pdf阅览器打开PDF文件</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PrintButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Print...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>打印(&amp;P)...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Publish">
+      <tuv xml:lang="en">
+        <seg>Publish</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>出版</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.SaveButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Save PDF...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>保存PDF(&amp;S)...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ShowCropMarks">
+      <tuv xml:lang="en">
+        <seg>Crop Marks</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>剪裁标记</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Acknowledgments">
+      <tuv xml:lang="en">
+        <seg>Acknowledgments</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>确认</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.AdditionalRequests">
+      <tuv xml:lang="en">
+        <seg>AdditionalRequests: </seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>其他要求：</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.AllReserved">
+      <tuv xml:lang="en">
+        <seg>All rights reserved (Contact the Copyright holder for any permissions.)</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>版权所有（如有需要，请联络版权持有者）</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.ConfirmReplaceExisting">
+      <tuv xml:lang="en">
+        <seg>BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>BloomLibrary.org 已有你之前的版本。如再上载，它将取代旧的书。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Copyright">
+      <tuv xml:lang="en">
+        <seg>Copyright</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>版权</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Credits">
+      <tuv xml:lang="en">
+        <seg>credits</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>致谢</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.DownloadProblem">
+      <tuv xml:lang="en">
+        <seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>下载书时出了故障。你可能需要重新启动Bloom或获取技术帮助。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.ErrorUploading">
+      <tuv xml:lang="en">
+        <seg>Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>抱歉，上载{0}时出了故障。以下有详细资料。你可能需有技术帮助。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.FieldsNeedAttention">
+      <tuv xml:lang="en">
+        <seg>One or more fields above need your attention before uploading</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>上载前请注意以上字段。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.FinalUploadFailureNotice">
+      <tuv xml:lang="en">
+        <seg>Sorry, "{0}" was not successfully uploaded</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>抱歉，{0}上载不成功</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Gaurantee">
+      <tuv xml:lang="en">
+        <seg>By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>如上载，这表示你认同Bloom Library的使用条款，也授予里面说明的权限。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.GenericUploadProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem uploading your book.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>上传书时出了故障。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Languages">
+      <tuv xml:lang="en">
+        <seg>Languages</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>语言</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.License">
+      <tuv xml:lang="en">
+        <seg>Usage/License</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>用法/许可证</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.AccountAlreadyExists">
+      <tuv xml:lang="en">
+        <seg>Account Already Exists</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>帐户已存在</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.AlreadyHaveAccount">
+      <tuv xml:lang="en">
+        <seg>We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>这电子邮件地址已被注册，请登录。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginConnectFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to verify your login. Please check your network connection.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom不能接上服务器，登录验证不成功。请检查网络连接。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginFailed">
+      <tuv xml:lang="en">
+        <seg>Login failed</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>登录失败</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom不能接上服务器，不能完成注册或登录。网络连接、服务器、或之间的仪器有故障。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.MustAgreeTerms">
+      <tuv xml:lang="en">
+        <seg>In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>如要注册BloomLibrary.org帐户，你必须认可BloomLibrary.org的使用条款，勾选核取项。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.Need Email">
+      <tuv xml:lang="en">
+        <seg>Email Needed</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>必须填上电子邮件</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.NoRecordOfUser">
+      <tuv xml:lang="en">
+        <seg>We don't have a user on record with that email. Would you like to sign up?</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>用户记录不存在。请问你要注册吗？</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PasswordMismatch">
+      <tuv xml:lang="en">
+        <seg>Password and user ID did not match</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>用户识别与密码不符合</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PleaseAgreeTerms">
+      <tuv xml:lang="en">
+        <seg>Please agree to terms of use</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请接受使用条本</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PleaseProvideEmail">
+      <tuv xml:lang="en">
+        <seg>Please enter a valid email address. We will send an email to this address so you can reset your password.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请输入真确的电子邮件地址。我们会把重设密码的指示发送给你。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetConnectFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to reset your password. Please check your network connection.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom不能接上服务器，重设密码不成功。请检查网络连接。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetFailed">
+      <tuv xml:lang="en">
+        <seg>Reset Password failed</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>重设密码失败</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetPassword">
+      <tuv xml:lang="en">
+        <seg>Resetting Password</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>正在重设密码</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.SendingResetPassword">
+      <tuv xml:lang="en">
+        <seg>We are sending an email to {0} with instructions for how to reset your password</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>重设密码的指示以发送到这邮件地址：{0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.Signup">
+      <tuv xml:lang="en">
+        <seg>Sign up for Bloom Library.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>注册Bloom Library。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.UnknownUser">
+      <tuv xml:lang="en">
+        <seg>Unknown user</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>不明用户</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.LoginFailure">
+      <tuv xml:lang="en">
+        <seg>Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom不能以你保存的凭证登录到BloomLibrary.org。请检查网络连接。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Logout">
+      <tuv xml:lang="en">
+        <seg>Log out of BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>退出BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.MakingPdf">
+      <tuv xml:lang="en">
+        <seg>Making PDF Preview...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>正在制作PDF预览...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.MakingThumbnail">
+      <tuv xml:lang="en">
+        <seg>Making thumbnail image...</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>正在制作缩略图像...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.OldVersion">
+      <tuv xml:lang="en">
+        <seg>Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>抱歉，Bloom桌面版本与BloomLibrary.org不兼容。请提升版本。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.PleaseLogIn">
+      <tuv xml:lang="en">
+        <seg>Please log in to BloomLibrary.org (or sign up) before uploading</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>上传前请登录BloomLibrary.org（或登记）</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.PleaseSetThis">
+      <note>This shows next to the license, if the license has not yet been set.</note>
+      <tuv xml:lang="en">
+        <seg>Please set this from the edit tab</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请在编辑标签里设立</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Step1">
+      <tuv xml:lang="en">
+        <seg>Step 1: Confirm Metadata</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>第1步: 确定元数据</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Step2">
+      <tuv xml:lang="en">
+        <seg>Step 2: Upload</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>第2步: 上载</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.SuggestAssignCC">
+      <tuv xml:lang="en">
+        <seg>Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>建议：如引用创作公用授权，你能够更容易的把某些权限授予大家。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.SuggestChangeCC">
+      <tuv xml:lang="en">
+        <seg>Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>建议：创作公用授权让大家更容易的运用你的书，虽然他们对你语言的自定权限了解不多。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Summary">
+      <tuv xml:lang="en">
+        <seg>Summary</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>总结</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.TermsLink">
+      <tuv xml:lang="en">
+        <seg>Show Terms of Use</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>显示使用条款</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Title">
+      <tuv xml:lang="en">
+        <seg>Title</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>标题</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadButton">
+      <tuv xml:lang="en">
+        <seg>Upload Book</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>上载书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadCompleteNotice">
+      <tuv xml:lang="en">
+        <seg>Congratulations, "{0}" is now available on BloomLibrary.org ({1})</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>好消息，“{0}”可用在BloomLibrary.org ({1})里。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadNotAllowed">
+      <tuv xml:lang="en">
+        <seg>Upload Not Allowed</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>不能上载</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem uploading your book. You may need to restart Bloom or get technical help.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>上传书时出了故障。你可能需要重新启动Bloom或获取技术帮助。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadProgress">
+      <tuv xml:lang="en">
+        <seg>Upload Progress</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>上载进程</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadSandbox">
+      <tuv xml:lang="en">
+        <seg>Upload Book (to Sandbox)</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>上载书(入沙箱)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadingBookMetadata">
+      <note>In this step, Bloom is uploading things like title, languages, &amp; topic tags to the bloomlibrary.org database.</note>
+      <tuv xml:lang="en">
+        <seg>Uploading book metadata</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>正在上载书元数据</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadingStatus">
+      <tuv xml:lang="en">
+        <seg>Uploading {0}</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>正在上载{0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.ccLink">
+      <tuv xml:lang="en">
+        <seg>CC-BY-NC</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>CC-BY-NC</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.loginLink">
+      <tuv xml:lang="en">
+        <seg>Log in to BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>登录BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.signupLink">
+      <tuv xml:lang="en">
+        <seg>Sign up for BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>注册BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AboutSampleTexts1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>About Word Lists and Sample TextsWhen you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>词表和样本文本。如你把文本文件放入样本文本文件夹里，当你制作读者时，解码读者工具就能提供词句。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AboutSampleTexts2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>没有你语言的单词列表吗？查看SIL免费的WeSay软件。加上RapidWords.net的方法，能让你很容易的收集大量的单词，并写成字典。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AboutSampleTexts4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>没有你语言里的文本吗？查看SIL免费的SayMore软件。它能把录音自动抄写出来。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Level</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>添加级别</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Stage</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>添加阶级</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddTexts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Please add texts to the Sample Texts folder.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请在标本文本文件夹里添加文本。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.BookHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.BookMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Words per Book</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>每本书最大字数</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ClickLetter">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click on letters to add them to this stage.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请单击要加入这阶段的字母。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.CombinationHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Separate by spaces</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>用空格分隔</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.CombinationHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>E.g. "ai oo sh ng th ing"</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>例："ai oo sh ng th ing"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Combinations">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letter Combinations (Graphemes)</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>字母组合（字位）</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.DecodableStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Stages</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>解码阶段</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.FirstSetupAlphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>First,</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>首先，</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.FormatNotSupported">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Cannot read this format</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>不能阅读这格式</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.HowToExport">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Help exporting and converting files to use as sample texts</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>导出和转换成样本文本的帮助</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Language">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Language</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>语言</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>List letters and word-forming characters in alphabetic order.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>按字母顺序列出字母与形成字的字符。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Separate by spaces</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>用空格分隔</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>E.g. "a b c d"</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>例："a b c d"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>字母</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.Header">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters and Letter Combinations</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>字母与字母组合</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>制作解码读者之前，Bloom需要知道你要教的字母和字母组合。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>For example, here is what we might use for the English language:</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>以下是英语可用的例子：</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Notice that the English list includes symbols that are used to make words, like ' in </seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请注意：英文列表里有用来造字的符号，比如：“‘ in”。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>it's</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>这是</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LevelHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>等级</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LevelLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level </seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>等级</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Levels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reader Levels</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>读者等级</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MatchingWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg> matching words</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>匹配词句</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MaxUniqueWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Unique Words per Book</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>每本书最大独特字数</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MoreWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>More Words</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>更多词句</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.OpenSampleTexts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Open the sample texts folder for this language.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>打开这语言的样本文本文件夹。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Page</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>页</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PageMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Words on each Page</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>每页最大字数</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PoweredBy">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Powered by </seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>电源来自</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReaderLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reader Levels</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>读者等级</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.RemoveLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Remove Level {0}</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>删除等级{0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.RemoveStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Remove Stage {0}</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>删除阶段{0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReorderLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Drag rows to reorder levels.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>拖动行来重新排序等级。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReorderStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Drag rows to reorder stages.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>拖动行来重新排序阶段。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SampleTexts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Word Lists and Sample Texts</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>词表和样本文本</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SearchEngine">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>, the Search Engine for Literacy.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>, 读写能力搜索器。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SelectedLetters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Previous and New Letters</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>之前与新的字母</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentenceHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sentence</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>句</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentenceMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Words in each Sentence</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>每句最大字数</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetupAlphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>set up the alphabet for this language.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>设立这语言的字母。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordHelp">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>What are sight words?</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>什么是英语常用词句?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>New Sight Words</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>新的英语常见词</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordsHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sight Words</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>英语常用词句</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.StageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>阶段</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.StageLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage </seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>阶段</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Stages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stages</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>阶段</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Synphony">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Synphony</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Synphony</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ToRemember">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Things to remember for this level:</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>这级别所要记住的:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.UniqueHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Unique</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>独特</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Words</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>词</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>Bloom能提供适合这阶段的解码读者词句。提供给Bloom词句的方法有两种：</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.PlaceTextFiles">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>2) Place Text Files in Your</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>2) 放置你的文本文件</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.SampleTextFolder">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Text Folder</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>样本文本文件夹</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.TypeWordsHere">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>1) Type Words Here</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>1) 输入词</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.lettersHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>字母</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Email">
+      <tuv xml:lang="en">
+        <seg>Email Address</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>电子邮件地址</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.FirstName">
+      <tuv xml:lang="en">
+        <seg>First Name</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>名字</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Heading">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="en">
+        <seg>Please take a minute to register {0}</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请立刻登记{0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.HowAreYouUsing">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="en">
+        <seg>How are you using {0}?</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>请问你怎么使用{0}？</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.IAmStuckLabel">
+      <tuv xml:lang="en">
+        <seg>I'm stuck, I'll finish this later.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>我卡住了，稍后再完成。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Organization">
+      <tuv xml:lang="en">
+        <seg>Organization</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>组织</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.RegisterButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Register</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>登记(&amp;R)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Surname">
+      <tuv xml:lang="en">
+        <seg>Surname</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>姓</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.WindowTitle">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="en">
+        <seg>Register {0}</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>{0}登记</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Basic Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Book</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>基本书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Big Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Big Book</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>大书</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Decodable Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>解码读者</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Leveled Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>等级读者</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Picture Dictionary">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture Dictionary</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>图片词典</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Wall Calendar">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wall Calendar</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>挂历</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Agriculture">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Agriculture</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>农业</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Animal Stories">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Animal Stories</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>动物故事</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Business">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Business</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>业务</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Community Living">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Community Living</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>社区生活</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Culture">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Culture</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>文化</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Dictionary">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Dictionary</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>词典</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Environment">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Environment</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>环境</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Fiction">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Fiction</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>虚构小说</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Health">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Health</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>健康</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.How To">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>How To</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>怎么</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Math">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Math</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>数学</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Non Fiction">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Non Fiction</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>非虚构小说</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Personal Development">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Personal Development</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>个人发展</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Primer">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Primer</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>入门课程</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Science">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Science</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>科学</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Spiritual">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Spiritual</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>属灵</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Tradition">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Tradition</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>传统</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Traditional Story">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Traditional Story</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>传统故事</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WallCalendar.TitleOfSetupDialog">
+      <note>This is the dialog used to set up the wall calendar</note>
+      <tuv xml:lang="en">
+        <seg>Setup</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>设立</seg>
+      </tuv>
+    </tu>
+    <tu tuid="You may use this space for author/illustrator, or anything else.">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You may use this space for author/illustrator, or anything else.</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>这里存放作者，插画者，或其他的资料。</seg>
+      </tuv>
+    </tu>
+    <tu tuid="button3">
+      <tuv xml:lang="en">
+        <seg>button3</seg>
+      </tuv>
+      <tuv xml:lang="zh-Hans">
+        <seg>按钮3</seg>
+      </tuv>
+    </tu>
+  </body>
+</tmx>
