@@ -181,6 +181,9 @@ DIV.bloom-page.A4Portrait
 	max-height: 297mm;
 }
 /*Margins*/
+.textWholePage DIV.marginBox {
+	position: absolute; /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
+}
 .A5Portrait DIV.marginBox
 {
 	width: 108mm;
