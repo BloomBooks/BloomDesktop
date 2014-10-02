@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.1.000.0</prop>
+    <prop type="x-appversion">3.0.45.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -2144,15 +2144,6 @@
         <seg>Choix de sujet</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ConceptLoad">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Concept load</seg>
-      </tuv>
-      <tuv xml:lang="fr">
-        <seg>Charge conceptuelle</seg>
-      </tuv>
-    </tu>
     <tu tuid="LeveledReaderTool.FoThisLevel">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2169,15 +2160,6 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Mise en page</seg>
-      </tuv>
-    </tu>
-    <tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>How to make a great leveled reader</seg>
-      </tuv>
-      <tuv xml:lang="fr">
-        <seg>Comment créer un excellent livre gradué</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.IllustrationSupport">
@@ -2223,15 +2205,6 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Max</seg>
-      </tuv>
-    </tu>
-    <tu tuid="LeveledReaderTool.PatternAndRecognition">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Pattern and recognition</seg>
-      </tuv>
-      <tuv xml:lang="fr">
-        <seg>Reconnaissance des formes</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.PerPage">
@@ -2286,15 +2259,6 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Cette page</seg>
-      </tuv>
-    </tu>
-    <tu tuid="LeveledReaderTool.TopicFamiliarity">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Topic familiarity</seg>
-      </tuv>
-      <tuv xml:lang="fr">
-        <seg>Connaissance du sujet</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.Total">
