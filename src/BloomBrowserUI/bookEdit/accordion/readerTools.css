@@ -38,9 +38,13 @@ span.disabledIcon { visibility: hidden; }
 td.disabledLimit { visibility: hidden; }
 
 div.wordList, div.letterList { margin: 4px; }
-div.word, div.letter { margin: 2px; float: left; }
-div.word { min-width: 40px; }
-div.letter { min-width: 20px; }
+div.wordList {
+	-webkit-column-count: 3;
+	-moz-column-count: 3;
+	column-count: 3;
+}
+div.letter { margin: 2px; float: left; min-width: 20px; }
+div.word { margin: 2px; width: auto; }
 div.sight-word {
 	-moz-text-decoration-style: wavy;
 	-moz-text-decoration-line: underline;
