@@ -226,6 +226,15 @@
 		<seg>En train d'ouvrir {0}...</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="Book title in {lang}">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Book title in {lang}</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Titre du livre en {lang}</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="BookEditor.FontSizeTip">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -242,6 +251,15 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Ce format s'applique à chaque texte en langue {0} avec le style '{1}'.</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="Click to choose topic">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Click to choose topic</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Cliquer sur un sujet pour le choisir</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -300,6 +318,15 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Création de livre</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+	  <note>{0} is a language name.</note>
+	  <tuv xml:lang="en">
+		<seg>Default Font for {0}</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Police par défaut pour {0}</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
@@ -749,6 +776,15 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>Configuration</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="CollectionTab.Source Collection">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Source Collection</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Collection source</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
@@ -1460,6 +1496,15 @@
 		<seg>Page de copyright</seg>
 	  </tuv>
 	</tu>
+	<tu tuid="EditTab.ThumbnailCaptions.Custom">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>Custom</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>Personnalisé</seg>
+	  </tuv>
+	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 1">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1520,7 +1565,7 @@
 		<seg>Front Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Première de couverture</seg>
+		<seg>1re de couverture</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
@@ -1547,7 +1592,7 @@
 		<seg>Inside Back Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Troisième de couverture</seg>
+		<seg>3e de couverture</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
@@ -1556,7 +1601,7 @@
 		<seg>Inside Front Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Deuxième de couverture</seg>
+		<seg>2e de couverture</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Instructions">
@@ -1601,7 +1646,7 @@
 		<seg>Outside Back Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="fr">
-		<seg>Quatrième de couverture</seg>
+		<seg>4e de couverture</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
@@ -2043,6 +2088,15 @@
 	  </tuv>
 	  <tuv xml:lang="fr">
 		<seg>A4 Portrait</seg>
+	  </tuv>
+	</tu>
+	<tu tuid="LayoutChoices.A5Landscape">
+	  <prop type="x-dynamic">true</prop>
+	  <tuv xml:lang="en">
+		<seg>A5Landscape</seg>
+	  </tuv>
+	  <tuv xml:lang="fr">
+		<seg>A5 Paysage</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="LayoutChoices.A5Portrait">
