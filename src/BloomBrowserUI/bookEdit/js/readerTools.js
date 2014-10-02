@@ -100,11 +100,11 @@ ReaderToolsModel.prototype.setStageNumber = function(val) {
     }
     this.stageNumber = val;
     this.updateStageLabel();
-    this.updateWordList();
     this.updateLetterList();
     this.enableStageButtons();
     this.saveState();
     this.doMarkup();
+    this.updateWordList();
 };
 
 ReaderToolsModel.prototype.updateStageLabel = function() {
@@ -169,8 +169,8 @@ ReaderToolsModel.prototype.sortAlphabetically = function() {
 
 ReaderToolsModel.prototype.setSort = function(sortType) {
     this.sort = sortType;
-    this.updateWordList();
     this.updateSortStatus();
+    this.updateWordList();
 };
 
 ReaderToolsModel.prototype.updateSortStatus = function() {
@@ -187,7 +187,6 @@ ReaderToolsModel.prototype.updateSelectedStatus = function(eltId, isSelected) {
 // Should be called when the browser has loaded the page, and when the user has changed configuration.
 // It updates various things in the UI to be consistent with the state of things in the model.
 ReaderToolsModel.prototype.updateControlContents = function() {
-    this.updateWordList();
     this.updateLetterList();
     this.updateNumberOfStages();
     this.updateNumberOfLevels();
@@ -196,6 +195,7 @@ ReaderToolsModel.prototype.updateControlContents = function() {
     this.enableLevelButtons();
     this.updateLevelLimits();
     this.updateLevelLabel();
+    this.updateWordList();
 };
 
 ReaderToolsModel.prototype.updateNumberOfStages = function() {
@@ -286,49 +286,59 @@ ReaderToolsModel.prototype.updateDisabledLimit = function(eltId, isDisabled) {
  * Displays the list of words for the current Stage.
  */
 ReaderToolsModel.prototype.updateWordList = function() {
-    var stages = this.synphony.getStages();
-    if (stages.length === 0) return;
 
-    var words = this.getStageWordsAndSightWords(this.stageNumber);
+    document.getElementById('wordList').innerHTML = '';
 
-    // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
-    // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
-    switch(this.sort) {
-        case SortType.alphabetic:
-            words.sort(function(a, b) {
-                return a.Name.localeCompare(b.Name);
-            });
-            break;
-        case SortType.byLength:
-            words.sort(function(a, b) {
-                if (a.Name.length === b.Name.length) {
+    // using setTimeout to jump to another thread so the page refreshes before the word list is displayed
+    setTimeout(function() {
+
+        var stages = model.synphony.getStages();
+        if (stages.length === 0) return;
+
+        var words = model.getStageWordsAndSightWords(model.stageNumber);
+
+        // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
+        // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
+        switch(model.sort) {
+            case SortType.alphabetic:
+                words.sort(function(a, b) {
                     return a.Name.localeCompare(b.Name);
-                }
-                return a.Name.length - b.Name.length;
-            });
-            break;
-        case SortType.byFrequency:
-            words.sort(function(a, b) {
-                var aFreq = a.Count;
-                var bFreq = b.Count;
-                if (aFreq === bFreq) {
-                    return a.Name.localeCompare(b.Name);
-                }
-                return bFreq - aFreq; // MOST frequent first
-            });
-            break;
-    }
+                });
+                break;
+            case SortType.byLength:
+                words.sort(function(a, b) {
+                    if (a.Name.length === b.Name.length) {
+                        return a.Name.localeCompare(b.Name);
+                    }
+                    return a.Name.length - b.Name.length;
+                });
+                break;
+            case SortType.byFrequency:
+                words.sort(function(a, b) {
+                    var aFreq = a.Count;
+                    var bFreq = b.Count;
+                    if (aFreq === bFreq) {
+                        return a.Name.localeCompare(b.Name);
+                    }
+                    return bFreq - aFreq; // MOST frequent first
+                });
+                break;
+            default:
+        }
 
-    // Review JohnH (JohnT): should they be arranged across rows or down columns?
-    var result = "";
-    for (var i = 0; i < words.length; i++) {
-        var w = words[i];
-        result += '<div class="word' + (w.isSightWord ? ' sight-word' : '') + '">' + w.Name + '</div>';
-    }
+        // add the words
+        var result = '';
+        var longestWord = '';
+        for (var i = 0; i < words.length; i++) {
+            var w = words[i];
+            result += '<div class="word' + (w.isSightWord ? ' sight-word' : '') + '">' + w.Name + '</div>';
+            if (w.Name.length > longestWord.length) longestWord = w.Name;
+        }
 
-    this.updateElementContent("wordList", result);
+        model.updateElementContent("wordList", result);
 
-    $.divsToColumns('word');
+        $.divsToColumnsFaster('word', longestWord);
+    }, 10);
 };
 
 /**
@@ -942,8 +952,8 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
     // if there are no more files, process the word lists now
     if (this.textCounter >= this.texts.length) {
         this.addWordsToSynphony();
-        this.updateWordList();
         this.doMarkup();
+        this.updateWordList();
         processWordListChangedListeners();
 
         // write out the ReaderToolsWords-xyz.json file
@@ -1078,7 +1088,7 @@ function initializeDecodableRT() {
 
     model.updateControlContents();
 
-    setTimeout(function() { $.divsToColumns('word'); }, 100);
+    setTimeout(function() { resizeWordList(); }, 100);
     setTimeout(function() { $.divsToColumns('letter'); }, 100);
 }
 
@@ -1286,4 +1296,8 @@ function loadExternalLink(url) {
         // ignore response
         // in this case, we just want to open an external browser with a link, so we don't want to process the response
     });
+}
+
+function resizeWordList() {
+    
 }

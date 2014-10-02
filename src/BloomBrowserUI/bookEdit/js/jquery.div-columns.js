@@ -13,19 +13,65 @@
         * @param {String} cssClassName
         */
         divsToColumns: function (cssClassName) {
-            var elements = $('div.' + cssClassName);
-            var div = elements.first();
+            var div = $('div.' + cssClassName + ':first');
+            if (div.length === 0)
+                return;
+
             var minWidth = parseInt(div.css('min-width'));
             var marginLeft = parseInt(div.css('margin-left'));
             var marginRight = parseInt(div.css('margin-right'));
+
+            // limit the list to elements with text wider than min-width allows
+            var elements = $('div.' + cssClassName).filter(function () {
+                return this.offsetWidth > minWidth;
+            });
 
             elements.css('width', function () {
                 var w = this.offsetWidth;
                 var i = Math.ceil(w / minWidth);
                 w = minWidth * i + (i - 1) * (marginLeft + marginRight);
-                this.style.width = w + 'px';
+                return w + 'px';
             });
+        },
+        divsToColumnsFaster: function (cssClassName, longestWord) {
+            var div = $('div.' + cssClassName + ':first');
+            if (div.length === 0)
+                return;
+
+            var parent = div.parent();
+            var parentWidth = parent.width() - 20;
+            var colCount = parent.css('column-count');
+            var colWidth = Math.floor(parentWidth / colCount);
+
+            var elements = $('div.' + cssClassName);
+            if (elements.length === 0)
+                return;
+
+            var maxWidth = textWidth(div, longestWord);
+
+            //if (maxWidth < colWidth) return;
+            colCount = Math.floor(parentWidth / maxWidth);
+            parent.css('column-count', colCount);
+            parent.css('-webkit-column-count', colCount);
+            parent.css('-moz-column-count', colCount);
         }
     });
+
+    function textWidth(div, longestWord) {
+        var _t = jQuery(div);
+        var html_calcS = '<span>' + longestWord + '</span>';
+        jQuery('body').append(html_calcS);
+
+        var _lastSpan = jQuery('span').last();
+        _lastSpan.css({
+            'font-size': _t.css('font-size'),
+            'font-family': _t.css('font-family')
+        });
+
+        var width = _lastSpan.width() + 5;
+
+        _lastSpan.remove();
+        return width;
+    }
 }(jQuery));
 //# sourceMappingURL=jquery.div-columns.js.map
