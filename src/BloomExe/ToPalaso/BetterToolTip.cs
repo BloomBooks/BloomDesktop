@@ -6,10 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Design;
 using System.Drawing;
-using System.Drawing.Design;
 using System.Windows.Forms;
+using L10NSharp;
 
 namespace Bloom.ToPalaso
 {
@@ -21,7 +20,7 @@ namespace Bloom.ToPalaso
 	/// extender properties that can be used to show tooltip messages when the associated
 	/// control is disabled.
 	/// </summary>
-	public class BetterToolTip : ToolTip
+	public class BetterToolTip : ToolTip, IMultiStringContainer
 	{
 		#region ========== Required constructor ==========
 		// This constructor is required for the Windows Forms Designer to instantiate
@@ -165,6 +164,37 @@ namespace Bloom.ToPalaso
 				m_BetterTooltipTransparentOverlay.Remove(p_control);
 			}
 		}
+		#endregion
+
+		#region L10NSharp IMultiStringContainer support
+
+		internal L10NSharp.UI.L10NSharpExtender L10NSharpExt { get; set; }
+
+		public IEnumerable<LocalizingInfo> GetAllLocalizingInfoObjects()
+		{
+			var result = new List<LocalizingInfo>();
+			foreach (var kvp in m_ToolTipWhenDisabled)
+			{
+				var ctrl = kvp.Key;
+				var idPrefix = L10NSharpExt.GetLocalizingId(ctrl);
+				var normalTip = GetToolTip(ctrl);
+				if (!string.IsNullOrEmpty(normalTip))
+				{
+					var liNormal = new LocalizingInfo(ctrl, idPrefix + ".ToolTip")
+						{Text = normalTip, Category = LocalizationCategory.MultiStringContainer};
+					result.Add(liNormal);
+				}
+				var disabledTip = GetToolTipWhenDisabled(ctrl);
+				if (!string.IsNullOrEmpty(disabledTip))
+				{
+					var liDisabled = new LocalizingInfo(ctrl, idPrefix + ".ToolTipWhenDisabled")
+						{ Text = disabledTip, Category = LocalizationCategory.MultiStringContainer };
+					result.Add(liDisabled);
+				}
+			}
+			return result;
+		}
+
 		#endregion
 
 		#region ========== Support for the oversized transparent sheet to cover multiple visual controls. ==========
