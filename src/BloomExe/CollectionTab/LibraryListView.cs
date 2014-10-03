@@ -235,7 +235,7 @@ namespace Bloom.CollectionTab
 
 		    _sourceBooksFlow.SuspendLayout();
 		    _sourceBooksFlow.Controls.Clear();
-		    var bookSourcesHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
+			var bookSourcesHeader = new ListHeader() { ForeColor = Palette.TextAgainstDarkBackground, Width = 450 };
 
 		    string shellSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.sourcesForNewShellsHeading",
 		                                                                        "Sources For New Shells");
