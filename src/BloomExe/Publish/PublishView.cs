@@ -218,20 +218,22 @@ namespace Bloom.Publish
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
 			//_showCropMarks.Checked = _model.ShowCropMarks;
 
+			var layout = _model.PageLayout;
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
 			_layoutChoices.DropDownItems.Clear();
 //			_layoutChoices.Items.AddRange(layoutChoices.ToArray());
 //			_layoutChoices.SelectedText = _model.BookSelection.CurrentSelection.GetLayout().ToString();
-			foreach (var l in layoutChoices)
+			foreach (var lc in layoutChoices)
 			{
-				ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(l.ToString());
-				item.Tag = l;
-				item.Text = l.ToString();
-				item.Checked = l.ToString() == _model.PageLayout.ToString();
+				var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + lc, lc.ToString());
+				ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(text);
+				item.Tag = lc;
+				item.Text = text;
+				item.Checked = lc.ToString() == layout.ToString();
 				item.CheckOnClick = true;
-				item.Click += new EventHandler(OnLayoutChosen);
+				item.Click += OnLayoutChosen;
 			}
-			_layoutChoices.Text = _model.PageLayout.ToString();
+			_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
 		}
 
 		private void OnLayoutChosen(object sender, EventArgs e)
