@@ -234,6 +234,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>About These Settings</seg>
       </tuv>
@@ -284,6 +285,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>About These Settings</seg>
       </tuv>
@@ -334,6 +336,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>About These Settings</seg>
       </tuv>
@@ -613,6 +616,11 @@
       <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
       <tuv xml:lang="en">
         <seg>&amp;Finish</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.HelpButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Help</seg>
       </tuv>
     </tu>
     <tu tuid="Common.Next">
