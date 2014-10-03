@@ -14,11 +14,11 @@ td.statistics-label { padding-right: 5px; }
 td.statistics-max { padding-right: 3px; text-align: center; }
 td.statistics-actual { padding-right: 3px; text-align: center; }
 span.setup { font-size: xx-small; margin-left: 10px; }
-div.tableHolder { overflow: auto; max-height: 300px; }
+div.tableHolder { overflow: auto; }
 div.sortBlock {
     position: relative;
     float: right;
-    margin: -4px 14px 0 15px;
+    margin: 0 14px 8px 6px;
     display: inline-block;
     border: 1px solid #fff;
 }
@@ -38,9 +38,13 @@ span.disabledIcon { visibility: hidden; }
 td.disabledLimit { visibility: hidden; }
 
 div.wordList, div.letterList { margin: 4px; }
-div.word, div.letter { margin: 2px; float: left; }
-div.word { min-width: 40px; }
-div.letter { min-width: 20px; }
+div.wordList {
+    -webkit-column-count: 3;
+    -moz-column-count: 3;
+    column-count: 3;
+}
+div.letter { margin: 2px; float: left; min-width: 20px; }
+div.word { margin: 2px; width: auto; }
 div.sight-word {
 	-moz-text-decoration-style: wavy;
 	-moz-text-decoration-line: underline;
