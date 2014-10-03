@@ -77,6 +77,8 @@ namespace Bloom.ToPalaso
 				if (m_EvtControlEnabledChanged != null)
 				{
 					p_control.EnabledChanged -= m_EvtControlEnabledChanged[p_control];
+					m_EvtControlEnabledChanged.Remove(p_control);
+					m_EvtControlPaint.Remove(p_control);
 				}
 			}
 		}
@@ -170,6 +172,14 @@ namespace Bloom.ToPalaso
 
 		internal L10NSharp.UI.L10NSharpExtender L10NSharpExt { get; set; }
 
+		private static string NORMAL_TIP = ".ToolTip";
+		private static string DISABLED_TIP = ".ToolTipWhenDisabled";
+
+		/// <summary>
+		/// Allows the BetterToolTip to give L10NSharp the information it needs to put strings
+		/// into the localization UI to be localized.
+		/// </summary>
+		/// <returns>A list of LocalizingInfo objects</returns>
 		public IEnumerable<LocalizingInfo> GetAllLocalizingInfoObjects()
 		{
 			var result = new List<LocalizingInfo>();
@@ -180,19 +190,46 @@ namespace Bloom.ToPalaso
 				var normalTip = GetToolTip(ctrl);
 				if (!string.IsNullOrEmpty(normalTip))
 				{
-					var liNormal = new LocalizingInfo(ctrl, idPrefix + ".ToolTip")
+					var liNormal = new LocalizingInfo(ctrl, idPrefix + NORMAL_TIP)
 						{Text = normalTip, Category = LocalizationCategory.MultiStringContainer};
 					result.Add(liNormal);
 				}
 				var disabledTip = GetToolTipWhenDisabled(ctrl);
 				if (!string.IsNullOrEmpty(disabledTip))
 				{
-					var liDisabled = new LocalizingInfo(ctrl, idPrefix + ".ToolTipWhenDisabled")
+					var liDisabled = new LocalizingInfo(ctrl, idPrefix + DISABLED_TIP)
 						{ Text = disabledTip, Category = LocalizationCategory.MultiStringContainer };
 					result.Add(liDisabled);
 				}
 			}
 			return result;
+		}
+
+		/// <summary>
+		/// L10NSharp sends the localized string back to the IMultiStringContainer to be
+		/// applied, since L10NSharp doesn't know the internal workings of the container.
+		/// We assume that the container is a collection of subcontrols that have string
+		/// ids that need localizing.
+		/// </summary>
+		/// <param name="obj">somewhere in this control is a string to be localized</param>
+		/// <param name="id">a key into the subControl allowing it to know what string to localize</param>
+		/// <param name="localization">the actual localized string</param>
+		public void ApplyLocalizationToString(object obj, string id, string localization)
+		{
+			if ((obj as Control) == null || string.IsNullOrEmpty(id) || string.IsNullOrEmpty(localization))
+				return;
+
+			var subControl = obj as Control;
+			var isDisabledToolTip = id.EndsWith(DISABLED_TIP);
+			if (isDisabledToolTip)
+			{
+				// setting an existing TipWhenDisabled throws a dictionary exception,
+				// so we need to remove the existing one first
+				SetToolTipWhenDisabled(subControl, null);
+				SetToolTipWhenDisabled(subControl, localization);
+			}
+			else
+				SetToolTip(subControl, localization);
 		}
 
 		#endregion
