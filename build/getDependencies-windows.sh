@@ -61,7 +61,7 @@ cd -
 
 
 # *** Results ***
-# build: Bloom 2 Publish (bt392)
+# build: Bloom 2 BETA Publish (bt392)
 # project: Bloom
 # URL: http://build.palaso.org/viewType.html?buildTypeId=bt392
 # VCS: https://bitbucket.org/hatton/bloom-desktop [Version2.0]
@@ -76,8 +76,8 @@ cd -
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt2
 #     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"policy_9_0_Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "Vulcan.Uczniowie.HelpProvider.dll"=>"output/release", "Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "ChorusMergeModule.msm"=>"build\\ChorusInstallerStuff", "*.exe"=>"lib/dotnet", "*.dll"=>"lib/dotnet", "Mercurial.zip!**"=>".", "MercurialExtensions/**"=>"MercurialExtensions"}
+#     revision: bloom2.tcbuildtag
+#     paths: {"policy_9_0_Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "Vulcan.Uczniowie.HelpProvider.dll"=>"output/release", "Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "ChorusMergeModule.msm"=>"build\\ChorusInstallerStuff", "*.exe"=>"lib/dotnet", "*.dll"=>"lib/dotnet", "Mercurial.zip!**"=>"Mercurial", "MercurialExtensions/**"=>"MercurialExtensions"}
 #     VCS: https://github.com/sillsdev/chorus.git [master]
 # [2] build: geckofx-11 Continuous (bt143)
 #     project: GeckoFx
@@ -97,7 +97,7 @@ cd -
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt223
 #     clean: false
 #     revision: Bloom2.tcbuildtag
-#     paths: {"Palaso.BuildTasks.dll"=>"build/", "exiftool/*.*"=>"DistFiles", "*.dll"=>"lib/dotnet"}
+#     paths: {"Palaso.BuildTasks.dll"=>"build/", "*.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/libpalaso.git []
 # [5] build: PdfDroplet-Win-Dev-Continuous (bt54)
 #     project: PdfDroplet
@@ -123,50 +123,52 @@ mkdir -p ../output/release
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/wkhtmltopdf-0.10.0_rc2.zip ../Downloads/wkhtmltopdf-0.10.0_rc2.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt326/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/policy_9_0_Microsoft_VC90_CRT_x86.msm ../build/ChorusInstallerStuff/policy_9_0_Microsoft_VC90_CRT_x86.msm
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Vulcan.Uczniowie.HelpProvider.dll ../output/release/Vulcan.Uczniowie.HelpProvider.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Microsoft_VC90_CRT_x86.msm ../build/ChorusInstallerStuff/Microsoft_VC90_CRT_x86.msm
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/ChorusMergeModule.msm ../build/ChorusInstallerStuff/ChorusMergeModule.msm
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Chorus.exe ../lib/dotnet/Chorus.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/ChorusHubApp.exe ../lib/dotnet/ChorusHubApp.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/ChorusMerge.exe ../lib/dotnet/ChorusMerge.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/Chorus.exe ../lib/dotnet/Chorus.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/ChorusMerge.exe ../lib/dotnet/ChorusMerge.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Autofac.dll ../lib/dotnet/Autofac.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/LibChorus.dll ../lib/dotnet/LibChorus.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Palaso.dll ../lib/dotnet/Palaso.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Vulcan.Uczniowie.HelpProvider.dll ../lib/dotnet/Vulcan.Uczniowie.HelpProvider.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/Autofac.dll ../lib/dotnet/Autofac.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/LibChorus.dll ../lib/dotnet/LibChorus.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Mercurial.zip ../Downloads/Mercurial.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/.guidsForInstaller.xml ../MercurialExtensions/.guidsForInstaller.xml
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/Dummy.txt ../MercurialExtensions/Dummy.txt
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/.gitignore ../MercurialExtensions/fixutf8/.gitignore
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/.guidsForInstaller.xml ../MercurialExtensions/fixutf8/.guidsForInstaller.xml
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/.hg_archival.txt ../MercurialExtensions/fixutf8/.hg_archival.txt
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/.hgignore ../MercurialExtensions/fixutf8/.hgignore
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/README. ../MercurialExtensions/fixutf8/README.
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/buildcpmap.py ../MercurialExtensions/fixutf8/buildcpmap.py
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/cpmap.pyc ../MercurialExtensions/fixutf8/cpmap.pyc
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/fixutf8.py ../MercurialExtensions/fixutf8/fixutf8.py
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/fixutf8.pyc ../MercurialExtensions/fixutf8/fixutf8.pyc
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/fixutf8.pyo ../MercurialExtensions/fixutf8/fixutf8.pyo
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/osutil.py ../MercurialExtensions/fixutf8/osutil.py
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/osutil.pyc ../MercurialExtensions/fixutf8/osutil.pyc
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/osutil.pyo ../MercurialExtensions/fixutf8/osutil.pyo
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/win32helper.py ../MercurialExtensions/fixutf8/win32helper.py
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/win32helper.pyc ../MercurialExtensions/fixutf8/win32helper.pyc
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/fixutf8/win32helper.pyo ../MercurialExtensions/fixutf8/win32helper.pyo
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/policy_9_0_Microsoft_VC90_CRT_x86.msm ../build/ChorusInstallerStuff/policy_9_0_Microsoft_VC90_CRT_x86.msm
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/Vulcan.Uczniowie.HelpProvider.dll ../output/release/Vulcan.Uczniowie.HelpProvider.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/Microsoft_VC90_CRT_x86.msm ../build/ChorusInstallerStuff/Microsoft_VC90_CRT_x86.msm
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/ChorusMergeModule.msm ../build/ChorusInstallerStuff/ChorusMergeModule.msm
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/Chorus.exe ../lib/dotnet/Chorus.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/ChorusHubApp.exe ../lib/dotnet/ChorusHubApp.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/ChorusMerge.exe ../lib/dotnet/ChorusMerge.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/debug/Chorus.exe ../lib/dotnet/Chorus.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/debug/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/debug/ChorusMerge.exe ../lib/dotnet/ChorusMerge.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/Autofac.dll ../lib/dotnet/Autofac.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/LibChorus.dll ../lib/dotnet/LibChorus.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/Palaso.dll ../lib/dotnet/Palaso.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/Vulcan.Uczniowie.HelpProvider.dll ../lib/dotnet/Vulcan.Uczniowie.HelpProvider.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/debug/Autofac.dll ../lib/dotnet/Autofac.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/debug/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/debug/LibChorus.dll ../lib/dotnet/LibChorus.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/Mercurial.zip ../Downloads/Mercurial.zip
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/.guidsForInstaller.xml ../MercurialExtensions/.guidsForInstaller.xml
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/Dummy.txt ../MercurialExtensions/Dummy.txt
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/.gitignore ../MercurialExtensions/fixutf8/.gitignore
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/.guidsForInstaller.xml ../MercurialExtensions/fixutf8/.guidsForInstaller.xml
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/.hg_archival.txt ../MercurialExtensions/fixutf8/.hg_archival.txt
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/.hgignore ../MercurialExtensions/fixutf8/.hgignore
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/README. ../MercurialExtensions/fixutf8/README.
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/buildcpmap.py ../MercurialExtensions/fixutf8/buildcpmap.py
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/cpmap.pyc ../MercurialExtensions/fixutf8/cpmap.pyc
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/fixutf8.py ../MercurialExtensions/fixutf8/fixutf8.py
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/fixutf8.pyc ../MercurialExtensions/fixutf8/fixutf8.pyc
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/fixutf8.pyo ../MercurialExtensions/fixutf8/fixutf8.pyo
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/osutil.py ../MercurialExtensions/fixutf8/osutil.py
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/osutil.pyc ../MercurialExtensions/fixutf8/osutil.pyc
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/osutil.pyo ../MercurialExtensions/fixutf8/osutil.pyo
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/win32helper.py ../MercurialExtensions/fixutf8/win32helper.py
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/win32helper.pyc ../MercurialExtensions/fixutf8/win32helper.pyc
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/bloom2.tcbuildtag/MercurialExtensions/fixutf8/win32helper.pyo ../MercurialExtensions/fixutf8/win32helper.pyo
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt143/latest.lastSuccessful/geckofx-11.dll ../lib/dotnet/geckofx-11.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt332/latest.lastSuccessful/xulrunner-11.0.en-US.win32.zip ../Downloads/xulrunner-11.0.en-US.win32.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/Palaso.BuildTasks.dll ../build/Palaso.BuildTasks.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/exiftool/exiftool.exe ../DistFiles/exiftool.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/Enchant.Net.dll ../lib/dotnet/Enchant.Net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/Interop.WIA.dll ../lib/dotnet/Interop.WIA.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/Ionic.Zip.dll ../lib/dotnet/Ionic.Zip.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/Keyman7Interop.dll ../lib/dotnet/Keyman7Interop.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/KeymanLink.dll ../lib/dotnet/KeymanLink.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/L10NSharp.dll ../lib/dotnet/L10NSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/Palaso.BuildTasks.dll ../lib/dotnet/Palaso.BuildTasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/Palaso.DictionaryServices.dll ../lib/dotnet/Palaso.DictionaryServices.dll
@@ -180,6 +182,8 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/SIL.Archiving.dll ../lib/dotnet/SIL.Archiving.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/debug/Interop.WIA.dll ../lib/dotnet/Interop.WIA.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/debug/Ionic.Zip.dll ../lib/dotnet/Ionic.Zip.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/debug/Keyman7Interop.dll ../lib/dotnet/Keyman7Interop.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/debug/KeymanLink.dll ../lib/dotnet/KeymanLink.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/debug/L10NSharp.dll ../lib/dotnet/L10NSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/debug/Palaso.BuildTasks.dll ../lib/dotnet/Palaso.BuildTasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt223/Bloom2.tcbuildtag/debug/Palaso.DictionaryServices.dll ../lib/dotnet/Palaso.DictionaryServices.dll
@@ -205,6 +209,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.last
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/wkhtmltopdf-0.10.0_rc2.zip -d ../lib
-unzip -uqo ../Downloads/Mercurial.zip -d ../.
+unzip -uqo ../Downloads/Mercurial.zip -d ../Mercurial
 unzip -uqo ../Downloads/xulrunner-11.0.en-US.win32.zip -d ../lib
 # End of script
