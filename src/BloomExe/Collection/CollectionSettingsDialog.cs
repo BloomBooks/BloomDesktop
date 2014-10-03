@@ -252,26 +252,6 @@ namespace Bloom.Collection
 			DialogResult = _restartRequired ? DialogResult.Yes : DialogResult.OK;
 		}
 
-		private void label4_Click(object sender, EventArgs e)
-		{
-
-		}
-
-		private void OnAboutLanguageSettings(object sender, EventArgs e)
-		{
-			HelpLauncher.Show(this, "Tasks/Basic_tasks/Change_languages.htm");
-		}
-
-		private void OnAboutBookMakingSettings(object sender, EventArgs e)
-		{
-			HelpLauncher.Show(this, "Tasks/Basic_tasks/Select_front_matter_or_back_matter_from_a_pack.htm");
-		}
-
-		private void OnAboutProjectInformationSetingsButton_Click(object sender, EventArgs e)
-		{
-			HelpLauncher.Show(this, "Tasks/Basic_tasks/Enter_project_information.htm");
-		}
-
 		private void _useImageServer_CheckedChanged(object sender, EventArgs e)
 		{
 			if (_useImageServer.CheckState == CheckState.Unchecked
@@ -345,6 +325,18 @@ namespace Bloom.Collection
 		{
 			this.DialogResult = DialogResult.Cancel;
 			Close();
+		}
+
+		private void _helpButton_Click(object sender, EventArgs e)
+		{
+			if (_tab.SelectedTab == tabPage1)
+				HelpLauncher.Show(this, "Tasks/Basic_tasks/Change_languages.htm");
+			else if (_tab.SelectedTab == tabPage2)
+				HelpLauncher.Show(this, "Tasks/Basic_tasks/Select_front_matter_or_back_matter_from_a_pack.htm");
+			else if (_tab.SelectedTab == tabPage3)
+				HelpLauncher.Show(this, "Tasks/Basic_tasks/Enter_project_information.htm");
+			else
+				HelpLauncher.Show(this, "User_Interface/Dialog_boxes/Settings_dialog_box.htm");
 		}
 
 		private void _bloomCollectionName_TextChanged(object sender, EventArgs e)
