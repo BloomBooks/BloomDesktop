@@ -92,6 +92,9 @@ ReaderToolsModel.prototype.decrementStage = function() {
 
 ReaderToolsModel.prototype.setStageNumber = function(val) {
 
+    // this may result in a need to resize the word list
+    previousHeight = 0;
+
     val = parseInt(val);
 
     var stages = this.synphony.getStages();
@@ -100,11 +103,11 @@ ReaderToolsModel.prototype.setStageNumber = function(val) {
     }
     this.stageNumber = val;
     this.updateStageLabel();
-    this.updateWordList();
     this.updateLetterList();
     this.enableStageButtons();
     this.saveState();
     this.doMarkup();
+    this.updateWordList();
 };
 
 ReaderToolsModel.prototype.updateStageLabel = function() {
@@ -169,8 +172,8 @@ ReaderToolsModel.prototype.sortAlphabetically = function() {
 
 ReaderToolsModel.prototype.setSort = function(sortType) {
     this.sort = sortType;
-    this.updateWordList();
     this.updateSortStatus();
+    this.updateWordList();
 };
 
 ReaderToolsModel.prototype.updateSortStatus = function() {
@@ -187,7 +190,6 @@ ReaderToolsModel.prototype.updateSelectedStatus = function(eltId, isSelected) {
 // Should be called when the browser has loaded the page, and when the user has changed configuration.
 // It updates various things in the UI to be consistent with the state of things in the model.
 ReaderToolsModel.prototype.updateControlContents = function() {
-    this.updateWordList();
     this.updateLetterList();
     this.updateNumberOfStages();
     this.updateNumberOfLevels();
@@ -196,6 +198,7 @@ ReaderToolsModel.prototype.updateControlContents = function() {
     this.enableLevelButtons();
     this.updateLevelLimits();
     this.updateLevelLabel();
+    this.updateWordList();
 };
 
 ReaderToolsModel.prototype.updateNumberOfStages = function() {
@@ -286,6 +289,10 @@ ReaderToolsModel.prototype.updateDisabledLimit = function(eltId, isDisabled) {
  * Displays the list of words for the current Stage.
  */
 ReaderToolsModel.prototype.updateWordList = function() {
+
+    var wordList = document.getElementById('wordList');
+    if (wordList) document.getElementById('wordList').innerHTML = '';
+
     var stages = this.synphony.getStages();
     if (stages.length === 0) return;
 
@@ -317,18 +324,21 @@ ReaderToolsModel.prototype.updateWordList = function() {
                 return bFreq - aFreq; // MOST frequent first
             });
             break;
+        default:
     }
 
-    // Review JohnH (JohnT): should they be arranged across rows or down columns?
-    var result = "";
+    // add the words
+    var result = '';
+    var longestWord = '';
     for (var i = 0; i < words.length; i++) {
         var w = words[i];
         result += '<div class="word' + (w.isSightWord ? ' sight-word' : '') + '">' + w.Name + '</div>';
+        if (w.Name.length > longestWord.length) longestWord = w.Name;
     }
 
     this.updateElementContent("wordList", result);
 
-    $.divsToColumns('word');
+    $.divsToColumnsFaster('word', longestWord);
 };
 
 /**
@@ -942,8 +952,8 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
     // if there are no more files, process the word lists now
     if (this.textCounter >= this.texts.length) {
         this.addWordsToSynphony();
-        this.updateWordList();
         this.doMarkup();
+        this.updateWordList();
         processWordListChangedListeners();
 
         // write out the ReaderToolsWords-xyz.json file
@@ -1078,7 +1088,7 @@ function initializeDecodableRT() {
 
     model.updateControlContents();
 
-    setTimeout(function() { $.divsToColumns('word'); }, 100);
+    setTimeout(function() { resizeWordList(); }, 100);
     setTimeout(function() { $.divsToColumns('letter'); }, 100);
 }
 
@@ -1286,4 +1296,33 @@ function loadExternalLink(url) {
         // ignore response
         // in this case, we just want to open an external browser with a link, so we don't want to process the response
     });
+}
+
+var previousHeight = 0;
+
+/**
+ * We need to check the size of the decodable reader tool pane periodically so we can adjust the height of the word list
+ */
+function resizeWordList() {
+
+    var div = $('body').find('div[data-panelId="DecodableRT"]');
+    if (div.length === 0) return; // if not found, the tool was closed
+
+    var currentHeight = div.height();
+
+    // resize the word list if the size of the pane changed
+    if (previousHeight !== currentHeight) {
+        previousHeight = currentHeight;
+
+        var wordList = div.find('#wordList');
+        var top = wordList.parent().position().top;
+
+        var height = Math.floor(currentHeight - top - 20);
+
+        if (height < 50) height = 50;
+
+        wordList.parent().css('height', height + 'px');
+    }
+
+    setTimeout(function() { resizeWordList(); }, 500);
 }
