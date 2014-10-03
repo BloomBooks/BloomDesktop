@@ -35,7 +35,6 @@ namespace Bloom.Collection
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CollectionSettingsDialog));
 			this._tab = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
-			this._aboutLanguageSettingsButton = new System.Windows.Forms.Button();
 			this._removeLanguage3Link = new System.Windows.Forms.LinkLabel();
 			this._changeLanguage3Link = new System.Windows.Forms.LinkLabel();
 			this._changeLanguage2Link = new System.Windows.Forms.LinkLabel();
@@ -55,13 +54,11 @@ namespace Bloom.Collection
 			this._language3FontLabel = new System.Windows.Forms.Label();
 			this._language2FontLabel = new System.Windows.Forms.Label();
 			this._language1FontLabel = new System.Windows.Forms.Label();
-			this._aboutBookMakingSettingsButton = new System.Windows.Forms.Button();
 			this._xmatterPackLabel = new System.Windows.Forms.Label();
 			this._xmatterPackCombo = new System.Windows.Forms.ComboBox();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
 			this._bloomCollectionName = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
-			this._aboutProjectInformationSetingsButton = new System.Windows.Forms.Button();
 			this._districtText = new System.Windows.Forms.TextBox();
 			this._provinceText = new System.Windows.Forms.TextBox();
 			this._countryText = new System.Windows.Forms.TextBox();
@@ -78,6 +75,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._cancelButton = new System.Windows.Forms.Button();
 			this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
+			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
@@ -106,7 +104,6 @@ namespace Bloom.Collection
 			// 
 			// tabPage1
 			// 
-			this.tabPage1.Controls.Add(this._aboutLanguageSettingsButton);
 			this.tabPage1.Controls.Add(this._removeLanguage3Link);
 			this.tabPage1.Controls.Add(this._changeLanguage3Link);
 			this.tabPage1.Controls.Add(this._changeLanguage2Link);
@@ -127,25 +124,6 @@ namespace Bloom.Collection
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Languages";
 			this.tabPage1.UseVisualStyleBackColor = true;
-			// 
-			// _aboutLanguageSettingsButton
-			// 
-			this._aboutLanguageSettingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._aboutLanguageSettingsButton.FlatAppearance.BorderSize = 0;
-			this._aboutLanguageSettingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._aboutLanguageSettingsButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._aboutLanguageSettingsButton.Image = global::Bloom.Properties.Resources.help24x24;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._aboutLanguageSettingsButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._aboutLanguageSettingsButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._aboutLanguageSettingsButton, "CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton");
-			this._aboutLanguageSettingsButton.Location = new System.Drawing.Point(477, 24);
-			this._aboutLanguageSettingsButton.Name = "_aboutLanguageSettingsButton";
-			this._aboutLanguageSettingsButton.Size = new System.Drawing.Size(113, 73);
-			this._aboutLanguageSettingsButton.TabIndex = 19;
-			this._aboutLanguageSettingsButton.Text = "About These Settings";
-			this._aboutLanguageSettingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._aboutLanguageSettingsButton.UseVisualStyleBackColor = true;
-			this._aboutLanguageSettingsButton.Click += new System.EventHandler(this.OnAboutLanguageSettings);
 			// 
 			// _removeLanguage3Link
 			// 
@@ -256,7 +234,6 @@ namespace Bloom.Collection
 			this._language2Label.Size = new System.Drawing.Size(238, 19);
 			this._language2Label.TabIndex = 10;
 			this._language2Label.Text = "Language 2 (e.g. National Language)";
-			this._language2Label.Click += new System.EventHandler(this.label4_Click);
 			// 
 			// _language1Name
 			// 
@@ -294,7 +271,6 @@ namespace Bloom.Collection
 			this.tabPage2.Controls.Add(this._language3FontLabel);
 			this.tabPage2.Controls.Add(this._language2FontLabel);
 			this.tabPage2.Controls.Add(this._language1FontLabel);
-			this.tabPage2.Controls.Add(this._aboutBookMakingSettingsButton);
 			this.tabPage2.Controls.Add(this._xmatterPackLabel);
 			this.tabPage2.Controls.Add(this._xmatterPackCombo);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage2, null);
@@ -323,7 +299,7 @@ namespace Bloom.Collection
 			this._menusToolStrip.Location = new System.Drawing.Point(258, 131);
 			this._menusToolStrip.Name = "_menusToolStrip";
 			this._menusToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-			this._menusToolStrip.Size = new System.Drawing.Size(132, 26);
+			this._menusToolStrip.Size = new System.Drawing.Size(101, 26);
 			this._menusToolStrip.TabIndex = 2;
 			this._menusToolStrip.Text = "toolStrip1";
 			// 
@@ -417,25 +393,6 @@ namespace Bloom.Collection
 			this._language1FontLabel.TabIndex = 22;
 			this._language1FontLabel.Text = "Default Font for {0}";
 			// 
-			// _aboutBookMakingSettingsButton
-			// 
-			this._aboutBookMakingSettingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._aboutBookMakingSettingsButton.FlatAppearance.BorderSize = 0;
-			this._aboutBookMakingSettingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._aboutBookMakingSettingsButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._aboutBookMakingSettingsButton.Image = global::Bloom.Properties.Resources.help24x24;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._aboutBookMakingSettingsButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._aboutBookMakingSettingsButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._aboutBookMakingSettingsButton, "CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton");
-			this._aboutBookMakingSettingsButton.Location = new System.Drawing.Point(468, 30);
-			this._aboutBookMakingSettingsButton.Name = "_aboutBookMakingSettingsButton";
-			this._aboutBookMakingSettingsButton.Size = new System.Drawing.Size(113, 73);
-			this._aboutBookMakingSettingsButton.TabIndex = 20;
-			this._aboutBookMakingSettingsButton.Text = "About These Settings";
-			this._aboutBookMakingSettingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._aboutBookMakingSettingsButton.UseVisualStyleBackColor = true;
-			this._aboutBookMakingSettingsButton.Click += new System.EventHandler(this.OnAboutBookMakingSettings);
-			// 
 			// _xmatterPackLabel
 			// 
 			this._xmatterPackLabel.AutoSize = true;
@@ -465,7 +422,6 @@ namespace Bloom.Collection
 			// 
 			this.tabPage3.Controls.Add(this._bloomCollectionName);
 			this.tabPage3.Controls.Add(this.label1);
-			this.tabPage3.Controls.Add(this._aboutProjectInformationSetingsButton);
 			this.tabPage3.Controls.Add(this._districtText);
 			this.tabPage3.Controls.Add(this._provinceText);
 			this.tabPage3.Controls.Add(this._countryText);
@@ -506,26 +462,6 @@ namespace Bloom.Collection
 			this.label1.Size = new System.Drawing.Size(158, 19);
 			this.label1.TabIndex = 21;
 			this.label1.Text = "Bloom Collection Name";
-			// 
-			// _aboutProjectInformationSetingsButton
-			// 
-			this._aboutProjectInformationSetingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._aboutProjectInformationSetingsButton.FlatAppearance.BorderSize = 0;
-			this._aboutProjectInformationSetingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this._aboutProjectInformationSetingsButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._aboutProjectInformationSetingsButton.Image = global::Bloom.Properties.Resources.help24x24;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._aboutProjectInformationSetingsButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._aboutProjectInformationSetingsButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._aboutProjectInformationSetingsButton, "CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsBut" +
-        "ton");
-			this._aboutProjectInformationSetingsButton.Location = new System.Drawing.Point(479, 21);
-			this._aboutProjectInformationSetingsButton.Name = "_aboutProjectInformationSetingsButton";
-			this._aboutProjectInformationSetingsButton.Size = new System.Drawing.Size(113, 88);
-			this._aboutProjectInformationSetingsButton.TabIndex = 20;
-			this._aboutProjectInformationSetingsButton.Text = "About These Settings";
-			this._aboutProjectInformationSetingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._aboutProjectInformationSetingsButton.UseVisualStyleBackColor = true;
-			this._aboutProjectInformationSetingsButton.Click += new System.EventHandler(this.OnAboutProjectInformationSetingsButton_Click);
 			// 
 			// _districtText
 			// 
@@ -741,6 +677,20 @@ namespace Bloom.Collection
 			this.settingsProtectionLauncherButton1.Size = new System.Drawing.Size(257, 37);
 			this.settingsProtectionLauncherButton1.TabIndex = 20;
 			// 
+			// _helpButton
+			// 
+			this._helpButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._helpButton, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._helpButton, null);
+			this._L10NSharpExtender.SetLocalizingId(this._helpButton, "Common.HelpButton");
+			this._helpButton.Location = new System.Drawing.Point(13, 393);
+			this._helpButton.Name = "_helpButton";
+			this._helpButton.Size = new System.Drawing.Size(75, 23);
+			this._helpButton.TabIndex = 22;
+			this._helpButton.Text = "&Help";
+			this._helpButton.UseVisualStyleBackColor = true;
+			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
+			// 
 			// CollectionSettingsDialog
 			// 
 			this.AcceptButton = this._okButton;
@@ -749,6 +699,7 @@ namespace Bloom.Collection
 			this.CancelButton = this._cancelButton;
 			this.ClientSize = new System.Drawing.Size(620, 431);
 			this.ControlBox = false;
+			this.Controls.Add(this._helpButton);
 			this.Controls.Add(this._cancelButton);
 			this.Controls.Add(this.settingsProtectionLauncherButton1);
 			this.Controls.Add(this._restartReminder);
@@ -809,9 +760,6 @@ namespace Bloom.Collection
 		private System.Windows.Forms.LinkLabel _removeLanguage3Link;
 		private System.Windows.Forms.Label _restartReminder;
 		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton settingsProtectionLauncherButton1;
-		private System.Windows.Forms.Button _aboutLanguageSettingsButton;
-		private System.Windows.Forms.Button _aboutBookMakingSettingsButton;
-		private System.Windows.Forms.Button _aboutProjectInformationSetingsButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.TabPage tabPage4;
 		private System.Windows.Forms.CheckBox _useImageServer;
@@ -831,5 +779,6 @@ namespace Bloom.Collection
 		private System.Windows.Forms.CheckBox _showExperimentCommands;
 		private System.Windows.Forms.ToolStrip _menusToolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _rtlLanguagesCombo;
+		private Button _helpButton;
 	}
 }
