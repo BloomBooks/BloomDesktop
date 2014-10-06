@@ -36,13 +36,18 @@
 			this._errorImage = new System.Windows.Forms.PictureBox();
 			this._backgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._startupTimer = new System.Windows.Forms.Timer(this.components);
+			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._errorImage)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// pictureBox1
 			// 
 			this.pictureBox1.Image = global::Bloom.Properties.Resources.BloomPack64x64;
+			this._L10NSharpExtender.SetLocalizableToolTip(this.pictureBox1, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.pictureBox1, null);
+			this._L10NSharpExtender.SetLocalizingId(this.pictureBox1, "BloomPackInstallDialog.pictureBox1");
 			this.pictureBox1.Location = new System.Drawing.Point(12, 12);
 			this.pictureBox1.Name = "pictureBox1";
 			this.pictureBox1.Size = new System.Drawing.Size(67, 68);
@@ -51,6 +56,9 @@
 			// 
 			// _okButton
 			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._okButton, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._okButton, null);
+			this._L10NSharpExtender.SetLocalizingId(this._okButton, "Common.OKButton");
 			this._okButton.Location = new System.Drawing.Point(317, 126);
 			this._okButton.Name = "_okButton";
 			this._okButton.Size = new System.Drawing.Size(75, 23);
@@ -67,6 +75,10 @@
 			this._message.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this._message.Enabled = false;
 			this._message.Font = new System.Drawing.Font("Segoe UI", 9F);
+			this._message.ForeColor = System.Drawing.SystemColors.ControlText;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._message, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._message, null);
+			this._L10NSharpExtender.SetLocalizingId(this._message, "BloomPackInstallDialog._message");
 			this._message.Location = new System.Drawing.Point(96, 12);
 			this._message.Multiline = true;
 			this._message.Name = "_message";
@@ -78,6 +90,9 @@
 			// _errorImage
 			// 
 			this._errorImage.Image = global::Bloom.Properties.Resources.Error70x70;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._errorImage, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._errorImage, null);
+			this._L10NSharpExtender.SetLocalizingId(this._errorImage, "BloomPackInstallDialog._errorImage");
 			this._errorImage.Location = new System.Drawing.Point(12, 106);
 			this._errorImage.Name = "_errorImage";
 			this._errorImage.Size = new System.Drawing.Size(42, 43);
@@ -98,6 +113,11 @@
 			this._startupTimer.Enabled = true;
 			this._startupTimer.Tick += new System.EventHandler(this._startupTimer_Tick);
 			// 
+			// _L10NSharpExtender
+			// 
+			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+			this._L10NSharpExtender.PrefixForNewItems = "BloomPackInstallDialog";
+			// 
 			// BloomPackInstallDialog
 			// 
 			this.AcceptButton = this._okButton;
@@ -109,12 +129,16 @@
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this.pictureBox1);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+			this._L10NSharpExtender.SetLocalizationComment(this, null);
+			this._L10NSharpExtender.SetLocalizingId(this, "BloomPackInstallDialog.BloomPackInstallation");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "BloomPackInstallDialog";
 			this.Text = "Bloom Pack Installation";
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this._errorImage)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -128,5 +152,6 @@
 		private System.Windows.Forms.PictureBox _errorImage;
 		private System.ComponentModel.BackgroundWorker _backgroundWorker;
 		private System.Windows.Forms.Timer _startupTimer;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }
