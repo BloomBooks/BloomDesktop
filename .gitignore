@@ -3,8 +3,8 @@ src/Bloom.suo
 lib/GeckoFx/Skybound.Gecko/*
 output/*
 */.svn
-*/bin/*
-*/obj
+bin/
+obj/
 userProject
 templates/A4LandscapeBooklet/starter.pdf
 src/_ReSharper.Bloom/*
@@ -29,6 +29,8 @@ lib/dotnet/Palaso*.dll
 DistFiles/factoryCollections/Templates/BasicBook/basePage.css
 DistFiles/factoryCollections/Templates/BasicBook/previewMode.css
 DistFiles/factoryCollections/Templates/BasicBook/languageDisplay.css
+DistFiles/factoryCollections/Templates/Decodable Reader/Basic Book.css
+DistFiles/factoryCollections/Templates/Leveled Reader/Basic Book.css
 *.bak
 **/Sample Shells/**/previewMode.css
 **/Sample Shells/**/languageDisplay.css
@@ -76,6 +78,7 @@ jasmine.d.ts
 connections.dll
 DistFiles/Bloom.chw
 DistFiles/Bloom.chm
+DistFiles/optipng.exe
 build/ChorusInstallerStuff/ChorusMergeModule.msm
 build/JohnsTestInstallerBuild.bat
 src/BloomBrowserUI/bookEdit/js/libsynphony/
