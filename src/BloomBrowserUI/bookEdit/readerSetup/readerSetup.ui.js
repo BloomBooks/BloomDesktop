@@ -595,19 +595,6 @@ function firstSetupLetters() {
 }
 
 /**
-* Fires an event for C# to handle.
-* The listeners in C# are set up in EditingModel.cs, in the function "DocumentCompleted()", and using this
-* syntax: _view.AddMessageEventListener("nameOfEvent", FunctionThatHandlesTheEvent);
-* @param {String} eventName
-* @param {String} eventData Note: use JSON.stringify if passing object data.
-*/
-function fireCSharpSetupEvent(eventName, eventData) {
-    //noinspection TaskProblemsInspection
-    var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
-    document.dispatchEvent(event);
-}
-
-/**
 * Event handlers
 *
 * NOTE: Returning false from a click event handler cancels the default action of the element.
@@ -617,7 +604,7 @@ function fireCSharpSetupEvent(eventName, eventData) {
 function attachEventHandlers() {
     if (typeof ($) === "function") {
         $("#open-text-folder").onOnce('click', function () {
-            fireCSharpSetupEvent('openTextsFolderEvent', 'open');
+            getIframeChannel().simpleAjaxNoCallback('/bloom/readers/openTextsFolder');
             return false;
         });
 

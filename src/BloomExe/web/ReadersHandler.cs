@@ -81,6 +81,12 @@ namespace Bloom.web
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput("OK");
 					return true;
+
+				case "openTextsFolder":
+					OpenTextsFolder();
+					info.ContentType = "text/plain";
+					info.WriteCompleteOutput("OK");
+					return true;
 			}
 
 			return false;
@@ -274,6 +280,14 @@ namespace Bloom.web
 			}
 
 			return "OK";
+		}
+
+		private static void OpenTextsFolder()
+		{
+			if (CurrentBook.CollectionSettings.SettingsFilePath == null) return;
+			var path = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Sample Texts");
+			if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+			Process.Start(path);
 		}
 	}
 }

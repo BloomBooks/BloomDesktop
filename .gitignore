@@ -1,7 +1,7 @@
 src/Bloom.suo
 *.user
-lib/GeckoFx/Skybound.Gecko/*
-output/*
+lib/GeckoFx/Skybound.Gecko/
+output/
 */.svn
 bin/
 obj/
@@ -92,6 +92,6 @@ DistFiles/ReleaseNotes.html
 ReadMe_*.html
 B3.sln
 B2.sln
-node_modules/*
+node_modules/
 *.usertasks
 Andika-R.ttf
