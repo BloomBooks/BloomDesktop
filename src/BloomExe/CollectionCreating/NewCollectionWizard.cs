@@ -100,6 +100,10 @@ namespace Bloom.CollectionCreating
 																   "Welcome To Bloom!");
 			this._kindOfCollectionPage.Text = LocalizationManager.GetString("NewCollectionWizard.KindOfCollectionPage",
 																			"Choose the Collection Type");
+			_collectionNamePage.Text = LocalizationManager.GetString("NewCollectionWizard.ProjectName",
+																			"Project Name");
+			_collectionNameProblemPage.Text = LocalizationManager.GetString("NewCollectionWizard.CollectionNameProblem",
+																			"Collection Name Problem");
 			this._languageLocationPage.Text = LocalizationManager.GetString("NewCollectionWizard.LocationPage",
 																			"Give Language Location");
 			this._vernacularLanguagePage.Text = LocalizationManager.GetString("NewCollectionWizard.ChooseLanguagePage",
@@ -110,6 +114,7 @@ namespace Bloom.CollectionCreating
 																		  "Used for the Next button in wizards, like that used for making a New Collection");
 			wizardControl1.FinishButtonText = LocalizationManager.GetString("Common.Finish", "&Finish",
 																			"Used for the Finish button in wizards, like that used for making a New Collection");
+			wizardControl1.CancelButtonText = LocalizationManager.GetString("Common.CancelButton", "&Cancel");
 
 			var one = L10NSharp.LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine1",
 																 "You are almost ready to start making books.");

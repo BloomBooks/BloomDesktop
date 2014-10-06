@@ -82,8 +82,10 @@ namespace Bloom.Wizard
 				SetTitle = (value) => _aeroWizard.Title = value;
 				GetNextButtonText = () => _aeroWizard.NextButtonText;
 				SetNextButtonText = (value) => _aeroWizard.NextButtonText = value;
-				GetFinishButtonText= () => _aeroWizard.FinishButtonText;
-				SetFinishButtonText= (value) => _aeroWizard.FinishButtonText = value;
+				GetFinishButtonText = () => _aeroWizard.FinishButtonText;
+				SetFinishButtonText = (value) => _aeroWizard.FinishButtonText = value;
+				GetCancelButtonText = () => _aeroWizard.CancelButtonText;
+				SetCancelButtonText = (value) => _aeroWizard.CancelButtonText = value;
 				GetIcon = () => _aeroWizard.TitleIcon;
 				SetIcon = (icon) => _aeroWizard.TitleIcon = icon;
 
@@ -180,6 +182,8 @@ namespace Bloom.Wizard
 		Action<string> SetNextButtonText;
 		Func<string> GetFinishButtonText;
 		Action<string> SetFinishButtonText;
+		Func<string> GetCancelButtonText;
+		Action<string> SetCancelButtonText;
 		Func<Icon> GetIcon;
 		Action<Icon> SetIcon;
 		Action BeginInitLogic;
@@ -242,6 +246,17 @@ namespace Bloom.Wizard
 			set
 			{
 				SetFinishButtonText(value);
+			}
+		}
+		public string CancelButtonText
+		{
+			get
+			{
+				return GetCancelButtonText();
+			}
+			set
+			{
+				SetCancelButtonText(value);
 			}
 		}
 
