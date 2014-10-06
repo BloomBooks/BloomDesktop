@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
+using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
 using Palaso.Extensions;
@@ -19,6 +20,7 @@ using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
 using System.Net;
+using L10NSharp.UI;
 
 namespace Bloom.Edit
 {
@@ -825,16 +827,40 @@ namespace Bloom.Edit
 		{
 			UpdateButtonEnabled(_cutButton, _cutCommand);
 			UpdateButtonEnabled(_copyButton, _copyCommand);
-			UpdateButtonEnabled(_pasteButton,_pasteCommand);
+			UpdateButtonEnabled(_pasteButton ,_pasteCommand);
 			UpdateButtonEnabled(_undoButton, _undoCommand);
 			UpdateButtonEnabled(_duplicatePageButton, _duplicatePageCommand);
 			UpdateButtonEnabled(_deletePageButton, _deletePageCommand);
 		}
 
+		public void UpdateButtonLocalizations()
+		{
+			// This seems to be the only way to ensure that BetterToolTip updates itself
+			// with new localization strings.
+			CycleEditButtons();
+		}
+
+		private void CycleEditButtons()
+		{
+			CycleOneButton(_cutButton, _cutCommand);
+			CycleOneButton(_copyButton, _copyCommand);
+			CycleOneButton(_pasteButton, _pasteCommand);
+			CycleOneButton(_undoButton, _undoCommand);
+			CycleOneButton(_duplicatePageButton, _duplicatePageCommand);
+			CycleOneButton(_deletePageButton, _deletePageCommand);
+		}
+
+		private void CycleOneButton(Button button, Command command)
+		{
+			var isEnabled = command.Enabled;
+			button.Enabled = !isEnabled;
+			UpdateButtonEnabled(button, command);
+		}
+
 		private void UpdateButtonEnabled(Button button, Command command)
 		{
 			button.Enabled = command != null && command.Enabled;
-			//doesn't work becuase the forecolor is ignored when disabled...
+			//doesn't work because the forecolor is ignored when disabled...
 			button.ForeColor = button.Enabled ? _enabledToolbarColor : _disabledToolbarColor;//.DimGray;
 			button.Invalidate();
 		}

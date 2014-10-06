@@ -220,6 +220,8 @@ namespace Bloom.ToPalaso
 				return;
 
 			var subControl = obj as Control;
+			var normalTip = GetToolTip(subControl);
+			SetToolTip(subControl, null); // setting the tooltip to null helps us get it to refresh dynamically
 			var isDisabledToolTip = id.EndsWith(DISABLED_TIP);
 			if (isDisabledToolTip)
 			{
@@ -227,9 +229,12 @@ namespace Bloom.ToPalaso
 				// so we need to remove the existing one first
 				SetToolTipWhenDisabled(subControl, null);
 				SetToolTipWhenDisabled(subControl, localization);
+				SetToolTip(subControl, normalTip);
 			}
 			else
+			{
 				SetToolTip(subControl, localization);
+			}
 		}
 
 		#endregion

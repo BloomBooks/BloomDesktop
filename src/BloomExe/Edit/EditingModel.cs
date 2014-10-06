@@ -94,6 +94,7 @@ namespace Bloom.Edit
 				if (Visible)
 				{
 					SaveNow();
+					_view.UpdateButtonLocalizations();
 					RefreshDisplayOfCurrentPage();
 					//_view.UpdateDisplay();
 					_view.UpdatePageList(false);
