@@ -51,6 +51,8 @@ milepost "Configuring pull behavior ..."
 
 git config branch.autosetupmerge true
 git config branch.autosetuprebase always
+git config lsdev.firstlinelen 75
+git config lsdev.linelen 75
 
 for BRANCH in $(git branch | cut -c3-)
 do
