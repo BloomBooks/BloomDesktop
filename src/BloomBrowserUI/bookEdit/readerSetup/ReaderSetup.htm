@@ -1,243 +1,235 @@
 <!DOCTYPE html>
 <html>
   <head>
-	<meta charset="UTF-8">
-	<link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css" type="text/css">
-	<link rel="stylesheet" href="readerSetup.css" type="text/css">
-	<script src="/bloom/lib/jquery-1.10.1.js"></script>
-	<script src="/bloom/lib/jquery-ui-1.10.3.custom.min.js"></script>
-	<script src="/bloom/bookEdit/js/jquery.div-columns.js"></script>
-	<script src="/bloom/bookEdit/js/libsynphony/underscore_min_152.js"></script>
-	<script src="/bloom/bookEdit/js/libsynphony/jquery.text-markup.js"></script>
-	<script src="/bloom/bookEdit/js/libsynphony/synphony_lib.js"></script>
-	<script src="/bloom/bookEdit/js/libsynphony/bloom_lib.js"></script>
-	<script src="/bloom/bookEdit/js/getIframeChannel.js"></script>
-	<script src="/bloom/lib/localizationManager.js"></script>
-	<script src="/bloom/lib/jquery.i18n.custom.js"></script>
-	<script src="/bloom/bookEdit/js/readerSettings.js"></script>
-	<script src="readerSetup.io.js"></script>
-	<script src="readerSetup.ui.js"></script>
-	<script type="text/javascript">$(function() {$("#dlstabs").tabs();});</script>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css" type="text/css">
+    <link rel="stylesheet" href="readerSetup.css" type="text/css">
+    <script src="/bloom/lib/jquery-1.10.1.js"></script>
+    <script src="/bloom/lib/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="/bloom/bookEdit/js/jquery.div-columns.js"></script>
+    <script src="/bloom/bookEdit/js/libsynphony/underscore_min_152.js"></script>
+    <script src="/bloom/bookEdit/js/libsynphony/jquery.text-markup.js"></script>
+    <script src="/bloom/bookEdit/js/libsynphony/synphony_lib.js"></script>
+    <script src="/bloom/bookEdit/js/libsynphony/bloom_lib.js"></script>
+    <script src="/bloom/bookEdit/js/getIframeChannel.js"></script>
+    <script src="/bloom/lib/localizationManager.js"></script>
+    <script src="/bloom/lib/jquery.i18n.custom.js"></script>
+    <script src="/bloom/bookEdit/js/readerSettings.js"></script>
+    <script src="readerSetup.io.js"></script>
+    <script src="readerSetup.ui.js"></script>
+    <script type="text/javascript">$(function() {$("#dlstabs").tabs();});</script>
   </head>
   <body>
-	<div id="dlstabs" class="ui-dialog ui-widget">
-	  <div id="powered-by" class="smaller"><span data-i18n="ReaderSetup.PoweredBy">Powered by&nbsp;</span><a href="http://call.canil.ca/" data-i18n="ReaderSetup.Synphony">SynPhony</a><span data-i18n="ReaderSetup.SearchEngine">, the Search Engine for Literacy.</span></div>
-	  <ul>
-		<li><a href="#dlstabs-0" data-i18n="ReaderSetup.Letters">Letters</a></li>
-		<li><a href="#dlstabs-1" data-i18n="ReaderSetup.Words">Words</a></li>
-		<li><a href="#dlstabs-2" data-i18n="ReaderSetup.DecodableStages">Decodable Stages</a></li>
-		<li><a href="#dlstabs-3" data-i18n="ReaderSetup.ReaderLevels">Reader Levels</a></li>
-	  </ul>
-	  <div id="dlstabs-0" class="reader-setup-tab">
-		<div class="floating">
-		  <p data-i18n="ReaderSetup.Letters.Intro">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</p><br>
-		  <label data-i18n="ReaderSetup.Letters.Header">Letters and Letter Combinations</label><br>
-		  <textarea id="dls_letters" style="height: 55px; width: 325px" class="book-font"></textarea>
-		  <p data-i18n="ReaderSetup.Letters.LetterHelp1">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</p>
-		  <p>a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z ' -</p>
-		  <p><span data-i18n="ReaderSetup.Letters.LetterHelp2">Notice that the English list includes symbols that are used to make words, like ' in&nbsp;</span><i data-i18n="ReaderSetup.Letters.LetterHelp3">it's</i><span data-i18n="ReaderSetup.Letters.LetterHelp4">.</span></p>
-		</div>
-	  </div>
-	  <div id="dlstabs-1" class="reader-setup-tab">
-		<p data-i18n="ReaderSetup.Words.Intro">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</p>
-		<div id="more-words-div" style="width: 30%" class="floating">
-		  <label for="dls_more_words" data-i18n="ReaderSetup.Words.TypeWordsHere">1) Type Words Here</label><br>
-		  <textarea id="dls_more_words" style="height: 328px;width:100%" class="book-font"></textarea>
-		</div>
-		<div id="word-lists-div" class="floating">
-		  <label for="dls_word_lists"><span data-i18n="ReaderSetup.Words.PlaceTextFiles">2) Place Text Files in Your</span> <a id="open-text-folder" href="" data-i18n="ReaderSetup.Words.SampleTextFolder" class="blue-link">Sample Text Folder</a>
-		  </label><br>
-		  <div id="dls_word_lists"></div>
-		  <div id="how_to_export" style="display: none"><a href="" onclick="return getIframeChannel().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');" data-i18n="ReaderSetup.HowToExport">Help exporting and converting files to use as sample texts</a></div>
-		</div>
-	  </div>
-	  <div id="dlstabs-2" class="reader-setup-tab">
-		<div style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" class="floating">
-		  <table>
-			<tr>
-			  <td><img src="/bloom/images/keys.png"></td>
-			  <td style="vertical-align: baseline; white-space: nowrap"><span style="margin: auto 0" data-i18n="ReaderSetup.Stages" class="rs-heading">Stages</span></td>
-			</tr>
-		  </table>
-		</div>
-		<div id="stage-list-container" class="floating tab-list-container">
-		  <div id="stage-list" class="tab-list">
-			<div class="scrolling-table-container">
-			  <div class="scrolling-table-header"></div>
-			  <div class="scrolling-table-container-inner">
-				<table id="stages-table" style="border-collapse: collapse">
-				  <thead>
-					<tr>
-					  <th style="min-width: 25px">
-						<div data-i18n="ReaderSetup.StageHeader">Stage</div>
-					  </th>
-					  <th style="min-width: 35px">
-						<div data-i18n="ReaderSetup.lettersHeader">Letters</div>
-					  </th>
-					  <th style="width: 100%">
-						<div data-i18n="ReaderSetup.SightWordsHeader">Sight Words</div>
-					  </th>
-					</tr>
-				  </thead>
-				  <tbody></tbody>
-				  <tfoot>
-					<tr>
-					  <td colspan="3"><a id="setup-add-stage" href="" data-i18n="ReaderSetup.AddStage">Add Stage</a></td>
-					</tr>
-				  </tfoot>
-				</table>
-			  </div>
-			</div>
-		  </div>
-		  <div style="float: left" data-i18n="ReaderSetup.ReorderStages" class="smaller">Drag rows to reorder stages.</div>
-		  <div style="float: right"><a id="setup-remove-stage" href="" data-i18n="ReaderSetup.RemoveStage" class="blue-link smaller">Remove Stage {0}</a></div>
-		</div>
-		<div id="stage-detail" class="floating tab-detail">
-		  <div style="display: block; margin: 6px 10px"><span style="margin: auto 0" data-i18n="ReaderSetup.StageLabel" class="rs-subheading">Stage&nbsp;</span><span id="setup-stage-number" class="rs-subheading">1</span></div>
-		  <div id="setup-stage-letters-and-words" class="sub-float">
-			<div style="width: 100%">
-			  <label for="setup-stage-sight-words" data-i18n="ReaderSetup.SightWordLabel">New Sight Words</label>
-			  <textarea id="setup-stage-sight-words" style="height: 35px; width: 100%; box-sizing:border-box;" class="book-font"></textarea>
-			</div><br>
-			<div style="display: block; margin-top: 12px;">
-			  <label data-i18n="ReaderSetup.SelectedLetters">Previous and New Letters</label>
-			</div>
-			<div id="setup-selected-letters" class="rs-letter-container">
-			  <!-- If an alphabet is already set up, the innerHTML of #setup-selected-letters will be replaced with a list of letters and letter combinations.-->
-			  <div style="height: 80px">
-				<p><span data-i18n="ReaderSetup.FirstSetupAlphabet">First,</span> <a id="first-setup-alphabet" href="" onclick="return firstSetupLetters();" data-i18n="ReaderSetup.SetupAlphabet">set up the alphabet for this language.</a>
-				</p>
-			  </div>
-			</div>
-			<div id="click-letters" style="float: left" data-i18n="ReaderSetup.ClickLetter" class="smaller">Click on letters to add them to this stage.</div>
-		  </div>
-		  <div id="setup-stage-matching-words" class="sub-float">
-			<table style="height:100%;width:100%;margin-top:-3px;">
-			  <tr>
-				<td>
-				  <label><span id="setup-words-count">0</span> <span data-i18n="ReaderSetup.MatchingWords">matching words</span>
-				  </label>
-				</td>
-			  </tr>
-			  <tr>
-				<td style="height:100%">
-				  <div class="rs-word-container">
-					<div id="rs-matching-words" style="margin-left: 8px"></div>
-				  </div>
-				</td>
-			  </tr>
-			</table>
-		  </div>
-		</div>
-	  </div>
-	  <div id="dlstabs-3" class="reader-setup-tab">
-		<div style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" class="floating">
-		  <table>
-			<tr>
-			  <td><img src="/bloom/images/steps.png" height="32"></td>
-			  <td style="vertical-align: baseline; white-space: nowrap"><span style="margin: auto 0" data-i18n="ReaderSetup.Levels" class="rs-heading">Reader Levels</span></td>
-			</tr>
-		  </table>
-		</div>
-		<div id="level-list-container" class="floating tab-list-container">
-		  <div id="level-list" class="tab-list">
-			<div class="scrolling-table-container">
-			  <div class="scrolling-table-header"></div>
-			  <div class="scrolling-table-container-inner">
-				<table id="levels-table" style="border-collapse: collapse; width: 100%">
-				  <thead>
-					<tr>
-					  <th style="width: 17%">
-						<div data-i18n="ReaderSetup.LevelHeader">Level</div>
-					  </th>
-					  <th style="width: 24%">
-						<div data-i18n="ReaderSetup.SentenceHeader">Sentence</div>
-					  </th>
-					  <th style="width: 17%">
-						<div data-i18n="ReaderSetup.PageHeader">Page</div>
-					  </th>
-					  <th style="width: 17%">
-						<div data-i18n="ReaderSetup.BookHeader">Book</div>
-					  </th>
-					  <th style="width: 25%">
-						<div data-i18n="ReaderSetup.UniqueHeader">Unique</div>
-					  </th>
-					  <th style="display: none"></th>
-					</tr>
-				  </thead>
-				  <tbody></tbody>
-				  <tfoot>
-					<tr>
-					  <td colspan="5"><a id="setup-add-level" href="" data-i18n="ReaderSetup.AddLevel">Add Level</a></td>
-					</tr>
-				  </tfoot>
-				</table>
-			  </div>
-			</div>
-		  </div>
-		  <div style="float: left" data-i18n="ReaderSetup.ReorderLevels" class="smaller">Drag rows to reorder levels.</div>
-		  <div style="float: right"><a id="setup-remove-level" href="" data-i18n="ReaderSetup.RemoveLevel" class="blue-link smaller">Remove Level {0}</a></div>
-		</div>
-		<div id="level-detail" class="floating tab-detail">
-		  <div style="display: block; margin: 0 10px 6px"><span style="margin: auto 0" data-i18n="ReaderSetup.LevelLabel" class="rs-subheading">Level&nbsp;</span><span id="setup-level-number" class="rs-subheading">1</span></div>
-		  <table>
-			<tr>
-			  <td>
-				<input id="use-words-per-sentence" type="checkbox" class="level-checkbox">
-			  </td>
-			  <td style="padding-left: 0">
-				<label for="use-words-per-sentence" data-i18n="ReaderSetup.SentenceMaxWords">Maximum Words in each Sentence</label>
-			  </td>
-			  <td>
-				<input id="max-words-per-sentence" type="text" class="level-textbox">
-			  </td>
-			</tr>
-			<tr>
-			  <td>
-				<input id="use-words-per-page" type="checkbox" class="level-checkbox">
-			  </td>
-			  <td>
-				<label for="use-words-per-page" data-i18n="ReaderSetup.PageMaxWords">Maximum Words on each Page</label>
-			  </td>
-			  <td>
-				<input id="max-words-per-page" type="text" class="level-textbox">
-			  </td>
-			</tr>
-			<tr>
-			  <td>
-				<input id="use-words-per-book" type="checkbox" class="level-checkbox">
-			  </td>
-			  <td>
-				<label for="use-words-per-book" data-i18n="ReaderSetup.BookMaxWords">Maximum Words per Book</label>
-			  </td>
-			  <td>
-				<input id="max-words-per-book" type="text" class="level-textbox">
-			  </td>
-			</tr>
-			<tr>
-			  <td>
-				<input id="use-unique-words-per-book" type="checkbox" class="level-checkbox">
-			  </td>
-			  <td>
-				<label for="use-unique-words-per-book" data-i18n="ReaderSetup.MaxUniqueWords">Maximum Unique Words per Book</label>
-			  </td>
-			  <td>
-				<input id="max-unique-words-per-book" type="text" class="level-textbox">
-			  </td>
-			</tr>
-		  </table>
-		  <div id="things-to-remember-container">
-			<label for="things-to-remember" data-i18n="ReaderSetup.ToRemember">Things to remember for this level:</label>
-			<ul id="things-to-remember">
-			  <li contenteditable="true"></li>
-			</ul>
-		  </div>
-		</div>
-	  </div>
-	</div>
-	<div id="hiddenWordList" style="display: none">
-	  <label id="please-add-texts"></label>
-	  <label id="format_not_supported" data-i18n="ReaderSetup.FormatNotSupported">Cannot read this format</label>
-	</div>
+    <div id="dlstabs" class="ui-dialog ui-widget">
+      <div id="powered-by" class="smaller"><span data-i18n="ReaderSetup.PoweredBy">Powered by&nbsp;</span><a href="http://call.canil.ca/" data-i18n="ReaderSetup.Synphony">SynPhony</a><span data-i18n="ReaderSetup.SearchEngine">, the Search Engine for Literacy.</span></div>
+      <ul>
+        <li><a href="#dlstabs-0" data-i18n="ReaderSetup.Letters">Letters</a></li>
+        <li><a href="#dlstabs-1" data-i18n="ReaderSetup.Words">Words</a></li>
+        <li><a href="#dlstabs-2" data-i18n="ReaderSetup.DecodableStages">Decodable Stages</a></li>
+        <li><a href="#dlstabs-3" data-i18n="ReaderSetup.ReaderLevels">Reader Levels</a></li>
+      </ul>
+      <div id="dlstabs-0" class="reader-setup-tab">
+        <div class="floating">
+          <p data-i18n="ReaderSetup.Letters.Intro">To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</p><br>
+          <label data-i18n="ReaderSetup.Letters.Header">Letters and Letter Combinations</label><br>
+          <textarea id="dls_letters" style="height: 55px; width: 325px" class="book-font"></textarea>
+          <p data-i18n="ReaderSetup.Letters.LetterHelp1">Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</p>
+          <p>a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z ' -</p>
+          <p><span data-i18n="ReaderSetup.Letters.LetterHelp2">Notice that the English list includes symbols that are used to make words, like ' in&nbsp;</span><i data-i18n="ReaderSetup.Letters.LetterHelp3">it's</i><span data-i18n="ReaderSetup.Letters.LetterHelp4">.</span></p>
+        </div>
+      </div>
+      <div id="dlstabs-1" class="reader-setup-tab">
+        <p data-i18n="ReaderSetup.Words.Intro">To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</p>
+        <div id="more-words-div" style="width: 30%" class="floating">
+          <label for="dls_more_words" data-i18n="ReaderSetup.Words.TypeWordsHere">1) Type Words Here</label><br>
+          <textarea id="dls_more_words" style="height: 328px;width:100%" class="book-font"></textarea>
+        </div>
+        <div id="word-lists-div" class="floating">
+          <label for="dls_word_lists"><span data-i18n="ReaderSetup.Words.PlaceTextFiles">2) Place Text Files in Your</span> <a id="open-text-folder" href="" data-i18n="ReaderSetup.Words.SampleTextFolder" class="blue-link">Sample Text Folder</a>
+          </label><br>
+          <div id="dls_word_lists"></div>
+          <div id="how_to_export" style="display: none"><a href="" onclick="return getIframeChannel().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');" data-i18n="ReaderSetup.HowToExport">Help exporting and converting files to use as sample texts</a></div>
+        </div>
+      </div>
+      <div id="dlstabs-2" class="reader-setup-tab">
+        <div style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" class="floating">
+          <table>
+            <tr>
+              <td><img src="/bloom/images/keys.png"></td>
+              <td style="vertical-align: baseline; white-space: nowrap"><span style="margin: auto 0" data-i18n="ReaderSetup.Stages" class="rs-heading">Stages</span></td>
+            </tr>
+          </table>
+        </div>
+        <div id="stage-list-container" class="floating tab-list-container">
+          <div id="stage-list" class="tab-list">
+            <div class="scrolling-table-container">
+              <div class="scrolling-table-header"></div>
+              <div class="scrolling-table-container-inner">
+                <table id="stages-table" style="border-collapse: collapse">
+                  <thead>
+                    <tr>
+                      <th style="min-width: 25px">
+                        <div data-i18n="ReaderSetup.StageHeader">Stage</div>
+                      </th>
+                      <th style="min-width: 35px">
+                        <div data-i18n="ReaderSetup.lettersHeader">Letters</div>
+                      </th>
+                      <th style="width: 100%">
+                        <div data-i18n="ReaderSetup.SightWordsHeader">Sight Words</div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="3"><a id="setup-add-stage" href="" data-i18n="ReaderSetup.AddStage">Add Stage</a></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div style="float: left" data-i18n="ReaderSetup.ReorderStages" class="smaller">Drag rows to reorder stages.</div>
+          <div style="float: right"><a id="setup-remove-stage" href="" data-i18n="ReaderSetup.RemoveStage" class="blue-link smaller">Remove Stage {0}</a></div>
+        </div>
+        <div id="stage-detail" class="floating tab-detail">
+          <div style="display: block; margin: 6px 10px"><span style="margin: auto 0" data-i18n="ReaderSetup.StageLabel" class="rs-subheading">Stage&nbsp;</span><span id="setup-stage-number" class="rs-subheading">1</span></div>
+          <div id="setup-stage-letters-and-words" class="sub-float">
+            <div style="width: 100%">
+              <label for="setup-stage-sight-words" data-i18n="ReaderSetup.SightWordLabel">New Sight Words</label>
+              <textarea id="setup-stage-sight-words" style="height: 35px; width: 100%; box-sizing:border-box;" class="book-font"></textarea>
+            </div><br>
+            <div style="display: block; margin-top: 12px;">
+              <label data-i18n="ReaderSetup.SelectedLetters">Previous and New Letters</label>
+            </div>
+            <div id="setup-selected-letters" class="rs-letter-container">
+              <!-- If an alphabet is already set up, the innerHTML of #setup-selected-letters will be replaced with a list of letters and letter combinations.-->
+              <div style="height: 80px">
+                <p><span data-i18n="ReaderSetup.FirstSetupAlphabet">First,</span> <a id="first-setup-alphabet" href="" onclick="return firstSetupLetters();" data-i18n="ReaderSetup.SetupAlphabet">set up the alphabet for this language.</a>
+                </p>
+              </div>
+            </div>
+            <div id="click-letters" style="float: left" data-i18n="ReaderSetup.ClickLetter" class="smaller">Click on letters to add them to this stage.</div>
+          </div>
+          <div id="setup-stage-matching-words" class="sub-float">
+            <div style="width: 100%; height: calc(100% - 18px);">
+              <label><span id="setup-words-count">0</span> <span data-i18n="ReaderSetup.MatchingWords">matching words</span>
+              </label>
+              <div class="rs-word-container">
+                <div id="rs-matching-words" style="margin-left: 8px" class="book-font"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="dlstabs-3" class="reader-setup-tab">
+        <div style="width: 100%; box-sizing: border-box; margin-bottom: 8px;" class="floating">
+          <table>
+            <tr>
+              <td><img src="/bloom/images/steps.png" height="32"></td>
+              <td style="vertical-align: baseline; white-space: nowrap"><span style="margin: auto 0" data-i18n="ReaderSetup.Levels" class="rs-heading">Reader Levels</span></td>
+            </tr>
+          </table>
+        </div>
+        <div id="level-list-container" class="floating tab-list-container">
+          <div id="level-list" class="tab-list">
+            <div class="scrolling-table-container">
+              <div class="scrolling-table-header"></div>
+              <div class="scrolling-table-container-inner">
+                <table id="levels-table" style="border-collapse: collapse; width: 100%">
+                  <thead>
+                    <tr>
+                      <th style="width: 17%">
+                        <div data-i18n="ReaderSetup.LevelHeader">Level</div>
+                      </th>
+                      <th style="width: 24%">
+                        <div data-i18n="ReaderSetup.SentenceHeader">Sentence</div>
+                      </th>
+                      <th style="width: 17%">
+                        <div data-i18n="ReaderSetup.PageHeader">Page</div>
+                      </th>
+                      <th style="width: 17%">
+                        <div data-i18n="ReaderSetup.BookHeader">Book</div>
+                      </th>
+                      <th style="width: 25%">
+                        <div data-i18n="ReaderSetup.UniqueHeader">Unique</div>
+                      </th>
+                      <th style="display: none"></th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="5"><a id="setup-add-level" href="" data-i18n="ReaderSetup.AddLevel">Add Level</a></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div style="float: left" data-i18n="ReaderSetup.ReorderLevels" class="smaller">Drag rows to reorder levels.</div>
+          <div style="float: right"><a id="setup-remove-level" href="" data-i18n="ReaderSetup.RemoveLevel" class="blue-link smaller">Remove Level {0}</a></div>
+        </div>
+        <div id="level-detail" class="floating tab-detail">
+          <div style="display: block; margin: 0 10px 6px"><span style="margin: auto 0" data-i18n="ReaderSetup.LevelLabel" class="rs-subheading">Level&nbsp;</span><span id="setup-level-number" class="rs-subheading">1</span></div>
+          <table>
+            <tr>
+              <td>
+                <input id="use-words-per-sentence" type="checkbox" class="level-checkbox">
+              </td>
+              <td style="padding-left: 0">
+                <label for="use-words-per-sentence" data-i18n="ReaderSetup.SentenceMaxWords">Maximum Words in each Sentence</label>
+              </td>
+              <td>
+                <input id="max-words-per-sentence" type="text" class="level-textbox">
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input id="use-words-per-page" type="checkbox" class="level-checkbox">
+              </td>
+              <td>
+                <label for="use-words-per-page" data-i18n="ReaderSetup.PageMaxWords">Maximum Words on each Page</label>
+              </td>
+              <td>
+                <input id="max-words-per-page" type="text" class="level-textbox">
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input id="use-words-per-book" type="checkbox" class="level-checkbox">
+              </td>
+              <td>
+                <label for="use-words-per-book" data-i18n="ReaderSetup.BookMaxWords">Maximum Words per Book</label>
+              </td>
+              <td>
+                <input id="max-words-per-book" type="text" class="level-textbox">
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input id="use-unique-words-per-book" type="checkbox" class="level-checkbox">
+              </td>
+              <td>
+                <label for="use-unique-words-per-book" data-i18n="ReaderSetup.MaxUniqueWords">Maximum Unique Words per Book</label>
+              </td>
+              <td>
+                <input id="max-unique-words-per-book" type="text" class="level-textbox">
+              </td>
+            </tr>
+          </table>
+          <div id="things-to-remember-container">
+            <label for="things-to-remember" data-i18n="ReaderSetup.ToRemember">Things to remember for this level:</label>
+            <ul id="things-to-remember">
+              <li contenteditable="true"></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="hiddenWordList" style="display: none">
+      <label id="please-add-texts"></label>
+      <label id="format_not_supported" data-i18n="ReaderSetup.FormatNotSupported">Cannot read this format</label>
+    </div>
   </body>
 </html>

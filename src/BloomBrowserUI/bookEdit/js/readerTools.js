@@ -338,7 +338,7 @@ ReaderToolsModel.prototype.updateWordList = function() {
 
     this.updateElementContent("wordList", result);
 
-    $.divsToColumnsFaster('word', longestWord);
+    $.divsToColumnsBasedOnLongestWord('word', longestWord);
 };
 
 /**

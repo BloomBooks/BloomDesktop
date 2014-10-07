@@ -33,15 +33,19 @@
                 return w + 'px';
             });
         },
-        divsToColumnsFaster: function (cssClassName, longestWord) {
+        /**
+        * Sets the number of columns based on the width of the longest word.
+        * NOTE: This method was added because divsToColumns is too slow for lists of more that a few hundred items.
+        * @param {String} cssClassName
+        * @param {String} longestWord
+        */
+        divsToColumnsBasedOnLongestWord: function (cssClassName, longestWord) {
             var div = $('div.' + cssClassName + ':first');
             if (div.length === 0)
                 return;
 
             var parent = div.parent();
             var parentWidth = parent.width() - 20;
-            var colCount = parent.css('column-count');
-            var colWidth = Math.floor(parentWidth / colCount);
 
             var elements = $('div.' + cssClassName);
             if (elements.length === 0)
@@ -49,17 +53,20 @@
 
             var maxWidth = textWidth(div, longestWord);
 
-            //if (maxWidth < colWidth) return;
-            colCount = Math.floor(parentWidth / maxWidth);
+            var colCount = Math.floor(parentWidth / maxWidth);
             parent.css('column-count', colCount);
-            parent.css('-webkit-column-count', colCount);
-            parent.css('-moz-column-count', colCount);
         }
     });
 
-    function textWidth(div, longestWord) {
+    /**
+    * Calculates the width of an element containing the specified text
+    * @param {HTMLDivElement} div
+    * @param {String} text
+    * @returns {number}
+    */
+    function textWidth(div, text) {
         var _t = jQuery(div);
-        var html_calcS = '<span>' + longestWord + '</span>';
+        var html_calcS = '<span>' + text + '</span>';
         jQuery('body').append(html_calcS);
 
         var _lastSpan = jQuery('span').last();
