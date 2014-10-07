@@ -1654,6 +1654,11 @@
 		<seg>What would you like to call this collection?</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="NewCollectionWizard.CollectionNameProblem">
+      <tuv xml:lang="en">
+        <seg>Collection Name Problem</seg>
+      </tuv>
+    </tu>
 	<tu tuid="NewCollectionWizard.CollectionWillBeCreatedAt">
 	  <tuv xml:lang="en">
 		<seg>Collection will be created at: {0}</seg>
@@ -1725,6 +1730,11 @@
 		<seg>Create New Bloom Collection</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="NewCollectionWizard.ProjectName">
+      <tuv xml:lang="en">
+        <seg>Project Name</seg>
+      </tuv>
+    </tu>
 	<tu tuid="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
 	  <tuv xml:lang="en">
 		<seg>Unable to create a new collection using that name.</seg>
