@@ -836,6 +836,18 @@
 		<seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Translator">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you make a book from a shell, use this box to tell who did the translation.</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab.FrontMatter.BookTitlePrompt">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
