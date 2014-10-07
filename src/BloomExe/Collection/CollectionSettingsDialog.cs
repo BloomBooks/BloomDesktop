@@ -299,11 +299,15 @@ namespace Bloom.Collection
 			_districtText.Text = _collectionSettings.District;
 			_bloomCollectionName.Text = _collectionSettings.CollectionName;
 			LoadFontCombo();
+			AdjustFontComboDropdownWidth();
 
 			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");
 		}
 
+		/*
+		 * If changes are made to have different values in each combobox, need to modify AdjustFontComboDropdownWidth.
+		 */
 		private void LoadFontCombo()
 		{
 			foreach (FontFamily fontFamily in FontFamily.Families)
@@ -320,6 +324,24 @@ namespace Bloom.Collection
 			}
 		}
 
+		/*
+		 * Makes the combobox wide enough to display the longest value.
+		 * Assumes all three font comboboxes have the same items.
+		 */
+		private void AdjustFontComboDropdownWidth()
+		{
+			int width = _fontComboLanguage1.DropDownWidth;
+			using (Graphics g = _fontComboLanguage1.CreateGraphics())
+			{
+				Font font = _fontComboLanguage1.Font;
+				int vertScrollBarWidth = (_fontComboLanguage1.Items.Count > _fontComboLanguage1.MaxDropDownItems) ? SystemInformation.VerticalScrollBarWidth : 0;
+
+				width = (from string s in _fontComboLanguage1.Items select (int)g.MeasureString(s, font).Width + vertScrollBarWidth).Concat(new[] { width }).Max();
+			}
+			_fontComboLanguage1.DropDownWidth = width;
+			_fontComboLanguage2.DropDownWidth = width;
+			_fontComboLanguage3.DropDownWidth = width;
+		}
 
 		private void _cancelButton_Click(object sender, EventArgs e)
 		{
