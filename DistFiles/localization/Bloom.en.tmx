@@ -125,11 +125,27 @@
 		<seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstallation">
+      <tuv xml:lang="en">
+        <seg>Bloom Pack Installation</seg>
+      </tuv>
+    </tu>
 	<tu tuid="BloomPackInstallDialog.BloomPackInstalled">
 	  <tuv xml:lang="en">
 		<seg>The {0} Collection is now ready to use on this computer.</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstaller">
+      <note>Displayed as the message box title</note>
+      <tuv xml:lang="en">
+        <seg>BloomPack Installer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.DoesNotExist">
+      <tuv xml:lang="en">
+        <seg>{0} does not exist</seg>
+      </tuv>
+    </tu>
 	<tu tuid="BloomPackInstallDialog.ErrorInstallingBloomPack">
 	  <tuv xml:lang="en">
 		<seg>Bloom was not able to install that Bloom Pack</seg>
@@ -146,11 +162,31 @@
 		<seg>Bloom is already running, but the contents will not show up until the next time you run Bloom</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="BloomPackInstallDialog.NotInstalled">
+      <tuv xml:lang="en">
+        <seg>The Bloom collection will not be installed.</seg>
+      </tuv>
+    </tu>
 	<tu tuid="BloomPackInstallDialog.Opening">
 	  <tuv xml:lang="en">
 		<seg>Opening {0}...</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="BloomPackInstallDialog.Replace">
+      <tuv xml:lang="en">
+        <seg>This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this BloomPack?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.SingleCollectionFolder">
+      <tuv xml:lang="en">
+        <seg>Bloom Packs should have only a single collection folder at the top level of the zip file.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.UnableToReplace">
+      <tuv xml:lang="en">
+        <seg>Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</seg>
+      </tuv>
+    </tu>
 	<tu tuid="Book title in {lang}">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">

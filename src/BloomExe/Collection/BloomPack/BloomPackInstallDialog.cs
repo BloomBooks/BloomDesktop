@@ -36,7 +36,8 @@ namespace Bloom.Collection.BloomPack
 		{
 			if (!File.Exists(_path))
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("{0} does not exist", _path);
+				string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.DoesNotExist", "{0} does not exist");
+				ErrorReport.NotifyUserOfProblem(msg, _path);
 				return;
 			}
 			using (var zip = new ZipFile(_path))
@@ -48,14 +49,15 @@ namespace Bloom.Collection.BloomPack
 				if (Directory.Exists(destinationFolder))
 				{
 					Logger.WriteEvent("BloomPack already exists, asking...");
-					var msg =
-						string.Format(
-							"This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this BloomPack?",
-							_folderName);
-					if (DialogResult.OK != MessageBox.Show(msg, "BloomPack Installer", MessageBoxButtons.OKCancel))
+					string title = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BloomPackInstaller",
+							"BloomPack Installer", "Displayed as the message box title");
+					string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.Replace",
+						"This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this BloomPack?");
+					msg = string.Format(msg, _folderName);
+					if (DialogResult.OK != MessageBox.Show(msg, title, MessageBoxButtons.OKCancel))
 					{
-						_message.Text = "The Bloom collection will not be installed.";
-						_okButton.Text = "&Cancel";
+						_message.Text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.NotInstalled", "The Bloom collection will not be installed.");
+						_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton", "&Cancel");
 						return;
 					}
 					try
@@ -65,9 +67,8 @@ namespace Bloom.Collection.BloomPack
 					}
 					catch (Exception error)
 					{
-						throw new ApplicationException(string.Format(
-								"Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running & try again. Otherwise, try again after restarting your computer.",
-								destinationFolder), error);
+						string text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.UnableToReplace", "Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running & try again. Otherwise, try again after restarting your computer.");
+						throw new ApplicationException(string.Format(text, destinationFolder), error);
 					}
 				}
 				zip.Close();
@@ -107,10 +108,11 @@ namespace Bloom.Collection.BloomPack
 				var parts = zipEntry.Name.Split(new[] { '/', '\\' });
 				if (fileName != null && fileName != parts[0])
 				{
-					string msg = "Bloom Packs should have only a single collection folder at the top level of the zip file.";
+					string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.SingleCollectionFolder",
+						"Bloom Packs should have only a single collection folder at the top level of the zip file.");
 					_message.Text = msg;
 					pictureBox1.Image = _errorImage.Image;
-					_okButton.Text = "&Cancel";
+					_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton", "&Cancel");
 					return null;
 				}
 				fileName = parts[0];
@@ -196,17 +198,17 @@ namespace Bloom.Collection.BloomPack
 				_errorImage.Visible = true;
 				_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton","&Cancel");
 				DesktopAnalytics.Analytics.ReportException(e.Error);
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e.Error, _message.Text);
+				ErrorReport.NotifyUserOfProblem(e.Error, _message.Text);
 				return;
 			}
 			var allDone = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BloomPackInstalled",
-																			  "The {0} Collection is now ready to use on this computer.");
+				"The {0} Collection is now ready to use on this computer.");
 			_message.Text = string.Format(allDone, _folderName);
 			if (Process.GetProcesses().Count(p => p.ProcessName.Contains("Bloom")) > 1)
 			{
-				_message.Text += System.Environment.NewLine + System.Environment.NewLine
-								 + L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.MustRestartToSee",
-																		   "Bloom is already running, but the contents will not show up until the next time you run Bloom");
+				_message.Text += Environment.NewLine + Environment.NewLine +
+					L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.MustRestartToSee",
+					"Bloom is already running, but the contents will not show up until the next time you run Bloom");
 			}
 			//Analytics.Track("Install BloomPack");
 		}
