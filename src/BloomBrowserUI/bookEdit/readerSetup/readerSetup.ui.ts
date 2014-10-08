@@ -300,6 +300,9 @@ function setLevelCheckBoxValue(id: string, value: string): void {
 
 function displayWordsForSelectedStage(wordsStr: string): void {
 
+	var wordList = document.getElementById('rs-matching-words');
+	wordList.innerHTML = '';
+
 	var wordsObj: Object = JSON.parse(wordsStr);
 	var words: DataWord[] = <DataWord[]>_.toArray(wordsObj);
 
@@ -326,19 +329,27 @@ function displayWordsForSelectedStage(wordsStr: string): void {
 	// sort the list
 	words = _.sortBy(words, function(w) { return w.Name; });
 
-	var result = '';
+	var result: string = '';
+	var longestWord: string = '';
+	var longestWordLength: number = 0;
+
 	_.each(words, function(w: DataWord) {
 
 		if (!w.html)
 			w.html = $.markupGraphemes(w.Name, w.GPCForm, desiredGPCs);
 		result += '<div class="book-font word">' + w.html + '</div>';
+
+		if (w.Name.length > longestWordLength) {
+			longestWord = w.Name;
+			longestWordLength = longestWord.length;
+		}
 	});
 
 	// set the list
-	$('#rs-matching-words').html(result);
+	wordList.innerHTML = result;
 
 	// make columns
-	$.divsToColumns('word');
+	$.divsToColumnsBasedOnLongestWord('word', longestWord);
 
 	// display the count
 	document.getElementById('setup-words-count').innerHTML = words.length.toString();
@@ -675,6 +686,14 @@ function attachEventHandlers(): void {
 	}
 }
 
+function setWordContainerHeight() {
+
+	// set height of word list
+	var div: JQuery = $('#setup-stage-matching-words').find('div:first-child');
+	var ht = $('setup-words-count').height();
+	div.css('height', 'calc(100% - ' + ht + 'px)');
+}
+
 /**
  * Called after localized strings are loaded.
  */
@@ -682,6 +701,7 @@ function finishInitializing() {
 	$('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
 	$('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
 	accordionWindow().postMessage('Texts', '*');
+	setWordContainerHeight();
 }
 
 /**
