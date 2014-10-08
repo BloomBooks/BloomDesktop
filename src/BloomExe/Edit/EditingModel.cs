@@ -100,6 +100,11 @@ namespace Bloom.Edit
 					_view.UpdatePageList(false);
 					_view.UpdateTemplateList();
 				}
+				else if (_view != null)
+				{
+					// otherwise changing UI language in Publish tab (for instance) won't update these localizations
+					_view.UpdateButtonLocalizations();
+				}
 			});
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
