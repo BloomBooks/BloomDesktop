@@ -145,7 +145,7 @@ namespace Bloom.CollectionTab
 			{
 				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
-				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title)))
+				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title), false, "Palaso"))
 				{
 					TheOneEditableCollection.DeleteBook(book.BookInfo);
 					_bookSelection.SelectBook(null);

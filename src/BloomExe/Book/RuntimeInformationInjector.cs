@@ -201,6 +201,10 @@ namespace Bloom.Book
 
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TopicPrompt", "Click to choose topic"); //doesn't work yet. https://jira.sil.org/browse/BL-189
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.ISBNPrompt", "International Standard Book Number. Leave blank if you don't have one of these.");
+
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BigBook.Contributions", "When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.");
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BigBook.Translator", "When you make a book from a shell, use this box to tell who did the translation.");
+			
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.InsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.BackMatter.OutsideBackCoverTextPrompt", "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.");
 

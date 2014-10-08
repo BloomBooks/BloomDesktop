@@ -1,27 +1,23 @@
 src/Bloom.suo
 *.user
-lib/GeckoFx/Skybound.Gecko/*
-output/*
-*/.svn
+*.orig
+lib/GeckoFx/Skybound.Gecko/
+output/
+.svn/
 bin/
 obj/
 userProject
 templates/A4LandscapeBooklet/starter.pdf
-src/_ReSharper.Bloom/*
+src/_ReSharper.Bloom/
 
-*/_ReSharper*
 Bloom VS2010.suo
-_ReSharper.Bloom VS2010/*
-Bloom VS2010.sln.orig
+_ReSharper.Bloom VS2010/
 HL - Health
 Stuff to convert
-_ReSharper
 _ReSharper*
 
 Szn's Shell Books - Copy
-lib/xulrunner
-lib/XulRunner*
-lib/xulrunner*
+lib/xulrunner*/
 **.idea
 DistFiles/root/tmp*
 *.pdb
@@ -51,7 +47,8 @@ Copy*.bat
 *.orig
 *.map
 *.ncrunchsolution
-Mercurial/
+Mercurial
+Mercurial*/
 Presentations/
 packages/
 videos
@@ -92,6 +89,7 @@ DistFiles/ReleaseNotes.html
 ReadMe_*.html
 B3.sln
 B2.sln
-node_modules/*
+node_modules/
 *.usertasks
 Andika-R.ttf
+*~

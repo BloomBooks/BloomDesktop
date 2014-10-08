@@ -88,6 +88,13 @@ namespace Bloom
 			}
 
 			Xpcom.Initialize(xulRunnerPath);
+
+			// BL-535: 404 error if system proxy settings not configured to bypass proxy for localhost
+			// See: https://developer.mozilla.org/en-US/docs/Mozilla/Preferences/Mozilla_networking_preferences
+			GeckoPreferences.User["network.proxy.http"] = string.Empty;
+			GeckoPreferences.User["network.proxy.http_port"] = 80;
+			GeckoPreferences.User["network.proxy.type"] = 1; // 0 = direct (uses system settings on Windows), 1 = manual configuration
+
 			Application.ApplicationExit += OnApplicationExit;
 		}
 

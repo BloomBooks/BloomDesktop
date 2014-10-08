@@ -566,7 +566,6 @@ namespace Bloom.Edit
 			}
 			// listen for events raised by javascript
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
-			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", PreparePageForEditingAfterOrigamiChanges);
 		}
@@ -694,16 +693,6 @@ namespace Bloom.Edit
 		{
 			jsonData = jsonData.Replace("\r", "").Replace("\n", "");
 			return CleanUpDataForJavascript(jsonData);
-		}
-
-		/// <summary>Opens Explorer (or Linux equivalent) displaying the contents of the Sample Texts directory</summary>
-		/// <param name="arg">Not Used, but required because it is being called by a javascrip MessageEvent</param>
-		private void OpenTextsFolder(string arg)
-		{
-			if (_collectionSettings.SettingsFilePath == null) return;
-			var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
-			if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-			Process.Start(path);
 		}
 
 		private string MakeAccordionContent()
