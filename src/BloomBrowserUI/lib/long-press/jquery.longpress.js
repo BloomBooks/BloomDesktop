@@ -4,7 +4,7 @@
  *  Author: Quentin Thiaucourt, http://toki-woki.net
  *    Licence: MIT License http://opensource.org/licenses/mit-license.php
  *
- *  Modified Sept 2014 to work with editable divs instead
+ *  Modified Oct 2014 to work with editable divs also
  */
 
 ;(function ($, window, undefined) {
@@ -126,10 +126,13 @@
         hidePopup();
     }
     function onTimer() {
-        var typedChar=$(activeElement).text().split('')[getCaretPosition(activeElement)-1];
+        var typedChar = isTextArea() ?
+            $(activeElement).val().split('')[getTextAreaCaretPosition(activeElement)-1] :
+            $(activeElement).text().split('')[getCaretPosition(activeElement)-1];
 
         if (moreChars[typedChar]) {
-            storeCaretPosition();
+            if (!isTextArea())
+                storeCaretPosition();
             showPopup((moreChars[typedChar]));
         } else {
             hidePopup();
@@ -175,7 +178,19 @@
 
     function updateChar() {
         var newChar=$('.long-press-letter.selected').text();
-        replacePreviousLetterWithText(newChar);
+        if (isTextArea()) {
+            var pos=getTextAreaCaretPosition(activeElement);
+            var arVal=$(activeElement).val().split('');
+            arVal[pos-1]=newChar;
+            $(activeElement).val(arVal.join(''));
+            setTextAreaCaretPosition(activeElement, pos);
+        } else {
+            replacePreviousLetterWithText(newChar);
+        }
+    }
+
+    function isTextArea() {
+        return $(activeElement).is('textarea');
     }
 
     function storeCaretPosition() {
@@ -234,6 +249,33 @@
             caretOffset = preCaretTextRange.text.length;
         }
         return caretOffset;
+    }
+
+    function getTextAreaCaretPosition (ctrl) {
+        var caretPos = 0;
+        if (document.selection) {
+            // IE Support
+            ctrl.focus ();
+            var sel = document.selection.createRange ();
+            sel.moveStart ('character', -ctrl.value.length);
+            caretPos = sel.text.length;
+        } else if (ctrl.selectionStart || ctrl.selectionStart == '0') {
+            // Firefox support
+            caretPos = ctrl.selectionStart;
+        }
+        return caretPos;
+    }
+    function setTextAreaCaretPosition(ctrl, pos) {
+        if (ctrl.setSelectionRange) {
+            ctrl.focus();
+            ctrl.setSelectionRange(pos,pos);
+        } else if (ctrl.createTextRange) {
+            var range = ctrl.createTextRange();
+            range.collapse(true);
+            range.moveEnd('character', pos);
+            range.moveStart('character', pos);
+            range.select();
+        }
     }
 
     function LongPress( element, options ) {
