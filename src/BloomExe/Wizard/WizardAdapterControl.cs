@@ -153,6 +153,8 @@ namespace Bloom.Wizard
 				SetNextButtonText = (value) => _winformsWizard.NextButtonText = value;
 				GetFinishButtonText= () => _winformsWizard.FinishButtonText;
 				SetFinishButtonText= (value) => _winformsWizard.FinishButtonText = value;
+				GetCancelButtonText = () => _winformsWizard.CancelButtonText;
+				SetCancelButtonText = (value) => _winformsWizard.CancelButtonText = value;
 				GetIcon = () => _winformsWizard.TitleIcon;
 				SetIcon = (icon) => _winformsWizard.TitleIcon = icon;
 

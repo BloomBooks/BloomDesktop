@@ -70,6 +70,12 @@ namespace Bloom.Wizard.WinForms
 			set;
 		}
 
+		public string CancelButtonText
+		{
+			get { return _cancelButton.Text; }
+			set { _cancelButton.Text = value; }
+		}
+
 		public Icon TitleIcon
 		{
 			get;
