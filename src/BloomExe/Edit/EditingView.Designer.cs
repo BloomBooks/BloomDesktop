@@ -53,7 +53,8 @@
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
 			this._browser1 = new Bloom.Browser();
 			this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
-			this.betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
+			this._betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
+			((System.ComponentModel.ISupportInitialize)(this._betterToolTip1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
 			this._splitContainer1.Panel2.SuspendLayout();
@@ -183,8 +184,8 @@
 			this._duplicatePageButton.Text = "Duplicate\r\n   Page";
 			this._duplicatePageButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._duplicatePageButton.TextDropShadow = false;
-			this.betterToolTip1.SetToolTip(this._duplicatePageButton, "Insert a new page which is a duplicate of this one");
-			this.betterToolTip1.SetToolTipWhenDisabled(this._duplicatePageButton, "This page cannot be duplicated");
+			this._betterToolTip1.SetToolTip(this._duplicatePageButton, "Insert a new page which is a duplicate of this one");
+			this._betterToolTip1.SetToolTipWhenDisabled(this._duplicatePageButton, "This page cannot be duplicated");
 			this._duplicatePageButton.UseVisualStyleBackColor = false;
 			this._duplicatePageButton.Click += new System.EventHandler(this._duplicatePageButton_Click);
 			// 
@@ -225,8 +226,8 @@
 			this._deletePageButton.Text = "Remove\r\n  Page";
 			this._deletePageButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._deletePageButton.TextDropShadow = false;
-			this.betterToolTip1.SetToolTip(this._deletePageButton, "Remove this page from the book");
-			this.betterToolTip1.SetToolTipWhenDisabled(this._deletePageButton, "This page cannot be removed");
+			this._betterToolTip1.SetToolTip(this._deletePageButton, "Remove this page from the book");
+			this._betterToolTip1.SetToolTipWhenDisabled(this._deletePageButton, "This page cannot be removed");
 			this._deletePageButton.UseVisualStyleBackColor = false;
 			this._deletePageButton.Click += new System.EventHandler(this._deletePageButton_Click_1);
 			// 
@@ -266,7 +267,7 @@
 			this._undoButton.Text = "Undo";
 			this._undoButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._undoButton.TextDropShadow = false;
-			this.betterToolTip1.SetToolTip(this._undoButton, "Undo (Ctrl+z)");
+			this._betterToolTip1.SetToolTip(this._undoButton, "Undo (Ctrl+z)");
 			this._undoButton.UseVisualStyleBackColor = false;
 			this._undoButton.Click += new System.EventHandler(this._undoButton_Click);
 			// 
@@ -306,8 +307,8 @@
 			this._cutButton.Text = "Cut";
 			this._cutButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._cutButton.TextDropShadow = false;
-			this.betterToolTip1.SetToolTip(this._cutButton, "Cut (Ctrl-x)");
-			this.betterToolTip1.SetToolTipWhenDisabled(this._cutButton, "You need to select some text before you can cut it");
+			this._betterToolTip1.SetToolTip(this._cutButton, "Cut (Ctrl-x)");
+			this._betterToolTip1.SetToolTipWhenDisabled(this._cutButton, "You need to select some text before you can cut it");
 			this._cutButton.UseVisualStyleBackColor = false;
 			this._cutButton.Click += new System.EventHandler(this._cutButton_Click);
 			// 
@@ -347,8 +348,8 @@
 			this._pasteButton.Text = "Paste";
 			this._pasteButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._pasteButton.TextDropShadow = false;
-			this.betterToolTip1.SetToolTip(this._pasteButton, "Paste (Ctrl+v)");
-			this.betterToolTip1.SetToolTipWhenDisabled(this._pasteButton, "There is nothing on the Clipboard that you can paste here.");
+			this._betterToolTip1.SetToolTip(this._pasteButton, "Paste (Ctrl+v)");
+			this._betterToolTip1.SetToolTipWhenDisabled(this._pasteButton, "There is nothing on the Clipboard that you can paste here.");
 			this._pasteButton.UseVisualStyleBackColor = false;
 			this._pasteButton.Click += new System.EventHandler(this._pasteButton_Click);
 			// 
@@ -491,8 +492,8 @@
 			this.Name = "EditingView";
 			this.Size = new System.Drawing.Size(1200, 561);
 			this.Load += new System.EventHandler(this.EditingView_Load);
-			betterToolTip1.L10NSharpExt = _L10NSharpExtender; // Add optional L10NSharp functionality to BetterToolTip
-			_L10NSharpExtender.AddMultipleStrings(betterToolTip1);
+			_betterToolTip1.L10NSharpExt = _L10NSharpExtender; // Add optional L10NSharp functionality to BetterToolTip
+			((System.ComponentModel.ISupportInitialize)(this._betterToolTip1)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this._splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).EndInit();
@@ -523,7 +524,7 @@
 		private System.Windows.Forms.ToolStrip _menusToolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _contentLanguagesDropdown;
 		private System.Windows.Forms.ToolStripDropDownButton _layoutChoices;
-		private ToPalaso.BetterToolTip betterToolTip1;
+		private ToPalaso.BetterToolTip _betterToolTip1;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _copyButton;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _pasteButton;
 		private Palaso.UI.WindowsForms.Widgets.BitmapButton _cutButton;

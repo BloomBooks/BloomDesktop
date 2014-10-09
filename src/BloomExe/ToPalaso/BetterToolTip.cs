@@ -20,7 +20,7 @@ namespace Bloom.ToPalaso
 	/// extender properties that can be used to show tooltip messages when the associated
 	/// control is disabled.
 	/// </summary>
-	public class BetterToolTip : ToolTip, IMultiStringContainer
+	public class BetterToolTip : ToolTip, IMultiStringContainer, ISupportInitialize
 	{
 		#region ========== Required constructor ==========
 		// This constructor is required for the Windows Forms Designer to instantiate
@@ -234,6 +234,46 @@ namespace Bloom.ToPalaso
 			else
 			{
 				SetToolTip(subControl, localization);
+			}
+		}
+
+		#endregion
+
+		#region ========== ISupportInitialize Members ==========
+
+		/// ------------------------------------------------------------------------------------
+		/// <summary>
+		/// Signals the object that initialization is starting.
+		/// </summary>
+		/// ------------------------------------------------------------------------------------
+		public void BeginInit()
+		{
+		}
+
+		/// ------------------------------------------------------------------------------------
+		/// <summary>
+		/// Signals the object that initialization is complete.
+		/// If L10NSharp localization is needed, set the L10NSharpExt property before the call
+		/// to this method and make sure this method is called before L10NSharp's EndInit().
+		/// </summary>
+		/// ------------------------------------------------------------------------------------
+		public void EndInit()
+		{
+			try
+			{
+				if (DesignMode)
+					return;
+
+				if (L10NSharpExt != null)
+				{
+					L10NSharpExt.AddMultipleStrings(this);
+				}
+			}
+			catch (Exception)
+			{
+#if DEBUG
+				throw;
+#endif
 			}
 		}
 
