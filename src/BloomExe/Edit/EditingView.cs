@@ -14,11 +14,9 @@ using Palaso.Extensions;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.ClearShare.WinFormsUI;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
-using System.Net;
 
 namespace Bloom.Edit
 {
@@ -652,59 +650,78 @@ namespace Bloom.Edit
 		private void OnChangeImage(DomEventArgs ge)
 		{
 			var imageElement = GetImageNode(ge);
-			if (imageElement == null)
-				return;
-			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
+			if (imageElement == null) return;
 
-			 if (!CheckIfLockedAndWarn(currentPath))
-					return;
+			var currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
+
+			if (!CheckIfLockedAndWarn(currentPath)) return;
+
 			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
-			if (target.ClassName.Contains("licenseImage"))
-				return;
+			if (target.ClassName.Contains("licenseImage")) return;
 
 			Cursor = Cursors.WaitCursor;
-
-			var imageInfo = new PalasoImage();
-			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
-
-			//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
-			if (!currentPath.ToLower().Contains("placeholder") && File.Exists(existingImagePath))
+			try
 			{
-				try
+				var imageInfo = new PalasoImage();
+				var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
+
+				//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
+				if (!currentPath.ToLower().Contains("placeholder") && File.Exists(existingImagePath))
 				{
-					imageInfo = PalasoImage.FromFile(existingImagePath);
-				}
-				catch (Exception)
-				{
-					//todo: log this
-				}
-			};
-			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
-			using(var dlg = new ImageToolboxDialog(imageInfo, null))
-			{
-				if(DialogResult.OK== dlg.ShowDialog())
-				{
-					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					try
 					{
-						 _model.ChangePicture(imageElement, dlg.ImageInfo, new NullProgress());
+						imageInfo = PalasoImage.FromFile(existingImagePath);
 					}
-					catch(System.IO.IOException error)
+					catch (Exception)
 					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
+						//todo: log this
+					}
+				}
+
+				Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
+				using (var dlg = new ImageToolboxDialog(imageInfo, null))
+				{
+					// BL-553: error setting metadata for files that do not support metadata
+					var result = DialogResult.None;
+					try
+					{
+						result = dlg.ShowDialog();
+					}
+					catch (NotSupportedException)
+					{
+						// ignore and continue
+						result = DialogResult.OK;
+					}
+					catch (Exception e)
+					{
+						ErrorReport.NotifyUserOfProblem(e, e.Message);
+					}
+
+					if (result != DialogResult.OK) return;
+
+					try
+					{
+						_model.ChangePicture(imageElement, dlg.ImageInfo, new NullProgress());
+					}
+					catch (IOException error)
+					{
+						ErrorReport.NotifyUserOfProblem(error, error.Message);
 					}
 					catch (ApplicationException error)
 					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
+						ErrorReport.NotifyUserOfProblem(error, error.Message);
 					}
 					catch (Exception error)
 					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom had a problem including that image");
+						ErrorReport.NotifyUserOfProblem(error, "Bloom had a problem including that image");
 					}
 				}
 			}
-			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
-			Cursor = Cursors.Default;
+			finally
+			{
+				Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
+				Cursor = Cursors.Default;
+			}
 		}
 
 		public void UpdateThumbnailAsync(IPage page)
