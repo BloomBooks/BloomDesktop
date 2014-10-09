@@ -77,3 +77,6 @@ DistFiles/ReleaseNotes.html
 ReadMe_*.html
 B2.sln
 Downloads/
+src/BloomExe/obj/
+src/BloomBrowserUI/obj/Debug/TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs
+src/BloomBrowserUI/obj/
