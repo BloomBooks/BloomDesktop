@@ -6,7 +6,7 @@
 0.0.0,1.1.99999, http://build.palaso.org/guestAuth/repository/download/bt392/.lastSuccessful/appcast.xml
 # 1.2 was released just to SHRP
 1.2.0, 1.2.99999,http://build.palaso.org/guestAuth/repository/download/bt370/.lastSuccessful/appcast.xml
-# 2.0 is now in beta
+# 2.0 is now stable; upgrade to latest patch
 2.0.0,2.0.99999,http://build.palaso.org/guestAuth/repository/download/bt392/.lastSuccessful/appcast.xml
 # 3.0 is now in development
 3.0.0,3.0.99999,http://build.palaso.org/guestAuth/repository/download/bt422/.lastSuccessful/appcast.xml
