@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using L10NSharp;
+using L10NSharp.UI;
 
 namespace Bloom.ToPalaso
 {
@@ -170,8 +171,6 @@ namespace Bloom.ToPalaso
 
 		#region L10NSharp ILocalizableComponent support
 
-		//internal L10NSharp.UI.L10NSharpExtender L10NSharpExt { get; set; }
-
 		private static string NORMAL_TIP = ".ToolTip";
 		private static string DISABLED_TIP = ".ToolTipWhenDisabled";
 
@@ -180,26 +179,25 @@ namespace Bloom.ToPalaso
 		/// into the localization UI to be localized.
 		/// </summary>
 		/// <returns>A list of LocalizingInfo objects</returns>
-		public IEnumerable<LocalizingInfo> GetAllLocalizingInfoObjects()
+		public IEnumerable<LocalizingInfo> GetAllLocalizingInfoObjects(L10NSharpExtender extender)
 		{
 			var result = new List<LocalizingInfo>();
 			foreach (var kvp in m_ToolTipWhenDisabled)
 			{
 				var ctrl = kvp.Key;
-				var idPrefix = "";
-				//var idPrefix = L10NSharpExt.GetLocalizingId(ctrl);
+				var idPrefix = extender.GetLocalizingId(ctrl);
 				var normalTip = GetToolTip(ctrl);
 				if (!string.IsNullOrEmpty(normalTip))
 				{
 					var liNormal = new LocalizingInfo(ctrl, idPrefix + NORMAL_TIP)
-						{Text = normalTip, Category = LocalizationCategory.MultiStringContainer};
+						{Text = normalTip, Category = LocalizationCategory.LocalizableComponent};
 					result.Add(liNormal);
 				}
 				var disabledTip = GetToolTipWhenDisabled(ctrl);
 				if (!string.IsNullOrEmpty(disabledTip))
 				{
 					var liDisabled = new LocalizingInfo(ctrl, idPrefix + DISABLED_TIP)
-						{ Text = disabledTip, Category = LocalizationCategory.MultiStringContainer };
+						{ Text = disabledTip, Category = LocalizationCategory.LocalizableComponent };
 					result.Add(liDisabled);
 				}
 			}
@@ -207,18 +205,20 @@ namespace Bloom.ToPalaso
 		}
 
 		/// <summary>
-		/// L10NSharp sends the localized string back to the BetterToolTip to be
-		/// applied, since L10NSharp doesn't know its internal workings.
+		/// L10NSharp will call this for each localized string so that the component can set
+		/// the correct value in the control.
 		/// </summary>
-		/// <param name="obj">a sub-control containing a string to be localized</param>
-		/// <param name="id">a key into the BetterToolTip allowing it to know what string to localize</param>
+		/// <param name="control">The control that was returned via the LocalizingInfo in
+		/// GetAllLocalizingInfoObjects(). Will be null if that value was null.</param>
+		/// <param name="id">a key into the ILocalizableComponent allowing it to know what
+		/// string to localize</param>
 		/// <param name="localization">the actual localized string</param>
-		public void ApplyLocalizationToString(object obj, string id, string localization)
+		public void ApplyLocalizationToString(object control, string id, string localization)
 		{
-			if ((obj as Control) == null || string.IsNullOrEmpty(id) || string.IsNullOrEmpty(localization))
+			if ((control as Control) == null || string.IsNullOrEmpty(id) || string.IsNullOrEmpty(localization))
 				return;
 
-			var subControl = obj as Control;
+			var subControl = control as Control;
 			var normalTip = GetToolTip(subControl);
 			SetToolTip(subControl, null); // setting the tooltip to null helps us get it to refresh dynamically
 			var isDisabledToolTip = id.EndsWith(DISABLED_TIP);
