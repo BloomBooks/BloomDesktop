@@ -20,7 +20,7 @@ namespace Bloom.ToPalaso
 	/// extender properties that can be used to show tooltip messages when the associated
 	/// control is disabled.
 	/// </summary>
-	public class BetterToolTip : ToolTip, IMultiStringContainer, ISupportInitialize
+	public class BetterToolTip : ToolTip, ILocalizableComponent
 	{
 		#region ========== Required constructor ==========
 		// This constructor is required for the Windows Forms Designer to instantiate
@@ -168,9 +168,9 @@ namespace Bloom.ToPalaso
 		}
 		#endregion
 
-		#region L10NSharp IMultiStringContainer support
+		#region L10NSharp ILocalizableComponent support
 
-		internal L10NSharp.UI.L10NSharpExtender L10NSharpExt { get; set; }
+		//internal L10NSharp.UI.L10NSharpExtender L10NSharpExt { get; set; }
 
 		private static string NORMAL_TIP = ".ToolTip";
 		private static string DISABLED_TIP = ".ToolTipWhenDisabled";
@@ -186,7 +186,8 @@ namespace Bloom.ToPalaso
 			foreach (var kvp in m_ToolTipWhenDisabled)
 			{
 				var ctrl = kvp.Key;
-				var idPrefix = L10NSharpExt.GetLocalizingId(ctrl);
+				var idPrefix = "";
+				//var idPrefix = L10NSharpExt.GetLocalizingId(ctrl);
 				var normalTip = GetToolTip(ctrl);
 				if (!string.IsNullOrEmpty(normalTip))
 				{
@@ -206,13 +207,11 @@ namespace Bloom.ToPalaso
 		}
 
 		/// <summary>
-		/// L10NSharp sends the localized string back to the IMultiStringContainer to be
-		/// applied, since L10NSharp doesn't know the internal workings of the container.
-		/// We assume that the container is a collection of subcontrols that have string
-		/// ids that need localizing.
+		/// L10NSharp sends the localized string back to the BetterToolTip to be
+		/// applied, since L10NSharp doesn't know its internal workings.
 		/// </summary>
-		/// <param name="obj">somewhere in this control is a string to be localized</param>
-		/// <param name="id">a key into the subControl allowing it to know what string to localize</param>
+		/// <param name="obj">a sub-control containing a string to be localized</param>
+		/// <param name="id">a key into the BetterToolTip allowing it to know what string to localize</param>
 		/// <param name="localization">the actual localized string</param>
 		public void ApplyLocalizationToString(object obj, string id, string localization)
 		{
@@ -234,46 +233,6 @@ namespace Bloom.ToPalaso
 			else
 			{
 				SetToolTip(subControl, localization);
-			}
-		}
-
-		#endregion
-
-		#region ========== ISupportInitialize Members ==========
-
-		/// ------------------------------------------------------------------------------------
-		/// <summary>
-		/// Signals the object that initialization is starting.
-		/// </summary>
-		/// ------------------------------------------------------------------------------------
-		public void BeginInit()
-		{
-		}
-
-		/// ------------------------------------------------------------------------------------
-		/// <summary>
-		/// Signals the object that initialization is complete.
-		/// If L10NSharp localization is needed, set the L10NSharpExt property before the call
-		/// to this method and make sure this method is called before L10NSharp's EndInit().
-		/// </summary>
-		/// ------------------------------------------------------------------------------------
-		public void EndInit()
-		{
-			try
-			{
-				if (DesignMode)
-					return;
-
-				if (L10NSharpExt != null)
-				{
-					L10NSharpExt.AddMultipleStrings(this);
-				}
-			}
-			catch (Exception)
-			{
-#if DEBUG
-				throw;
-#endif
 			}
 		}
 

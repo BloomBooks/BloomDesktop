@@ -54,7 +54,6 @@
 			this._browser1 = new Bloom.Browser();
 			this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
-			((System.ComponentModel.ISupportInitialize)(this._betterToolTip1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).BeginInit();
 			this._splitContainer1.Panel2.SuspendLayout();
@@ -454,6 +453,7 @@
 			this._browser1.ScaleToFullWidthOfPage = false;
 			this._browser1.Size = new System.Drawing.Size(826, 561);
 			this._browser1.TabIndex = 1;
+			this._browser1.VerticalScrollDistance = 0;
 			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
 			// 
 			// _splitTemplateAndSource
@@ -481,6 +481,12 @@
 			this._splitTemplateAndSource.TabIndex = 0;
 			this._splitTemplateAndSource.TabStop = false;
 			// 
+			// _betterToolTip1
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._betterToolTip1, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._betterToolTip1, null);
+			this._L10NSharpExtender.SetLocalizingId(this._betterToolTip1, "BTT_id");
+			// 
 			// EditingView
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -492,8 +498,6 @@
 			this.Name = "EditingView";
 			this.Size = new System.Drawing.Size(1200, 561);
 			this.Load += new System.EventHandler(this.EditingView_Load);
-			_betterToolTip1.L10NSharpExt = _L10NSharpExtender; // Add optional L10NSharp functionality to BetterToolTip
-			((System.ComponentModel.ISupportInitialize)(this._betterToolTip1)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this._splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).EndInit();
