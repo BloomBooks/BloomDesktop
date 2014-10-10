@@ -75,6 +75,11 @@ namespace Bloom
 				return _container.Resolve<OpenAndCreateCollectionDialog>();
 			}
 
+			public Sparkle ApplicationUpdator
+			{
+				get { return _container.Resolve<Sparkle>(); }
+			}
+
 			public LocalizationManager LocalizationManager;
 
 			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
