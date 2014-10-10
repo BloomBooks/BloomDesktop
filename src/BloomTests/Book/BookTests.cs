@@ -1248,6 +1248,52 @@ namespace BloomTests.Book
 			Assert.AreEqual("a sour book", book.Title);
 		}
 
+		/*
+		 * TranslationGroupManager.UpdateContentLanguageClasses() sees that we have three active languages and adds
+		 * bloom-trilingual as a class at the page level.  However, it was not getting added to the stored version
+		 * of the page.  Thus, we are now checking that SavePage() adds it.
+		 */
+		[Test]
+		public void SavePage_MultiLingualClassUpdated()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div id='bloomDataDiv'>
+						<div data-book='contentLanguage1' lang='*'>
+							xyz
+						</div>
+						<div data-book='contentLanguage2' lang='*'>
+							en
+						</div>
+						<div data-book='contentLanguage3' lang='*'>
+							fr
+						</div>
+					</div>
+					<div class='bloom-page' id='guid1'>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+						<div class='bloom-editable bloom-content2' contenteditable='true'></div>
+						<div class='bloom-editable bloom-content3' contenteditable='true'></div>
+					</div>
+				  </body></html>");
+
+			var book = CreateBook();
+
+			// Initially, bloom-trilingual isn't there
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and contains(@class,'bloom-trilingual')]", 0);
+
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[0]);
+
+			// bloom-trilingual was added to the temp version of the page
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and contains(@class,'bloom-trilingual')]", 1);
+
+			book.SavePage(dom);
+
+			// bloom-trilingual was also added to the stored version of the page
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and contains(@class,'bloom-trilingual')]", 1);
+		}
 
 
 		private Mock<IPage> CreateTemplatePage(string divContent)
