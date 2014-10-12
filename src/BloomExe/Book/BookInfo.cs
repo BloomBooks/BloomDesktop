@@ -253,7 +253,7 @@ namespace Bloom.Book
 					File.WriteAllText(MetaDataPath, MetaData.Json);
 					return;
 				}
-				catch (Exception e)
+				catch (IOException e)
 				{
 					Thread.Sleep(500);
 					count++;
