@@ -14,6 +14,7 @@ namespace Bloom.Wizard.WinForms
 		internal event System.EventHandler<EventArgs> AllowNextChanged;
 
 		bool _allowNext;
+		private WizardPage _nextPage;
 		Label TitelLabel;
 		Panel PagePanel;
 
@@ -63,8 +64,15 @@ namespace Bloom.Wizard.WinForms
 
 		public WizardPage NextPage
 		{
-			get;
-			internal set;
+			get
+			{
+				if (_nextPage == null)
+					return null;
+				if (_nextPage.Suppress)
+					return _nextPage.NextPage;
+				return _nextPage;
+			}
+			internal set { _nextPage = value;  }
 		}
 
 		public bool IsFinishPage

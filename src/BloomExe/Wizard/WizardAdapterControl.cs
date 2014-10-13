@@ -104,6 +104,7 @@ namespace Bloom.Wizard
 
 						_aeroWizard.EndInit();
 					};
+				AfterInitialization = () => { };
 
 			}
 			else
@@ -172,6 +173,7 @@ namespace Bloom.Wizard
 
 					_winformsWizard.EndInit();
 				};
+				AfterInitialization = () => _winformsWizard.ShowFirstPage();
 			}
 		}
 
@@ -190,6 +192,7 @@ namespace Bloom.Wizard
 		Action<Icon> SetIcon;
 		Action BeginInitLogic;
 		Action EndInitLogic;
+		internal Action AfterInitialization;
 
 		#endregion
 

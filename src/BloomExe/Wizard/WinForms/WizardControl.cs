@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
+using Bloom.Book;
 using L10NSharp;
 
 namespace Bloom.Wizard.WinForms
@@ -21,7 +22,6 @@ namespace Bloom.Wizard.WinForms
 		Panel _contentPanel;
 		Panel _buttonPanel;
 		Button _nextAndFinishedButton;
-		Button _backButton;
 		Button _cancelButton;
 		int _currentPageIndex;
 		WizardPage _currentShownPage;
@@ -84,8 +84,6 @@ namespace Bloom.Wizard.WinForms
 
 		public void BeginInit()
 		{
-			_backButton = new Button { Text = "Back", Size = new Size(75, 25), Left = 0};
-			_backButton.Text = LocalizationManager.GetString("Common.BackButton", "Back", "In a wizard, this button takes you to the previous step.");
 			_nextAndFinishedButton = new Button { Text = "Next", Size = new Size(75, 25), Left = 80};
 			_nextAndFinishedButton.Text = LocalizationManager.GetString("Common.NextButton", "Next", "In a wizard, this button takes you to the next step.");
 			_cancelButton = new Button { Text = "Cancel", Size = new Size(75, 25), Left = 160 };
@@ -95,7 +93,6 @@ namespace Bloom.Wizard.WinForms
 
 			_buttonPanel = new Panel { Dock = DockStyle.Bottom, Height = 35, Padding = new Padding(5) };
 			var panel = new Panel { Dock = DockStyle.Right, AutoSize = true };
-			panel.Controls.Add(_backButton);
 			panel.Controls.Add(_nextAndFinishedButton);
 			panel.Controls.Add(_cancelButton);
 
@@ -104,27 +101,22 @@ namespace Bloom.Wizard.WinForms
 
 		public void EndInit()
 		{
-			ShowPage(0);
-
 			_nextAndFinishedButton.Click += nextAndFinishedButton_Click;
-			_backButton.Click += _backButton_Click;
 			_cancelButton.Click += _cancelButton_Click;
 
 			Controls.Add(_contentPanel);
 			Controls.Add(_buttonPanel);
 		}
 
+		public void ShowFirstPage()
+		{
+			ShowPage(0);
+		}
+
 		void _cancelButton_Click(object sender, EventArgs e)
 		{
 			if (Cancelled != null)
 				Cancelled(this, EventArgs.Empty);
-		}
-
-		void _backButton_Click(object sender, EventArgs e)
-		{
-			ShowPage(--_currentPageIndex);
-
-			InvokePagedChangedEvent();
 		}
 
 		void nextAndFinishedButton_Click(object sender, EventArgs e)
@@ -137,7 +129,7 @@ namespace Bloom.Wizard.WinForms
 				return;
 			}
 
-			ShowPage(++_currentPageIndex);
+			ShowPage(GetNextPage());
 			InvokePagedChangedEvent();
 		}
 
@@ -158,18 +150,46 @@ namespace Bloom.Wizard.WinForms
 
 		protected virtual void ShowPage(int pageNumber)
 		{
+			ShowPage(Pages[pageNumber], pageNumber);
+		}
+
+		protected virtual void ShowPage(WizardPage page)
+		{
+			ShowPage(page, Pages.IndexOf(page));
+		}
+
+		private void ShowPage(WizardPage page, int pageNumber)
+		{
+			if (page.Suppress)
+			{
+				ShowPage(GetNextPage());
+				return;
+			}
 			if (_currentShownPage != null)
 				_contentPanel.Controls.Remove(_currentShownPage);
 
 			_currentPageIndex = pageNumber;
-			_currentShownPage = Pages[pageNumber];
+			_currentShownPage = page;
 			_currentShownPage.InvokeInitializeEvent();
 			_currentShownPage.Dock = DockStyle.Fill;
 			_contentPanel.Controls.Add(_currentShownPage);
-			_backButton.Enabled = pageNumber != 0;
 			_nextAndFinishedButton.Enabled = _currentShownPage.AllowNext;
 			_currentShownPage.AllowNextChanged -= _currentShownPage_AllowNextChanged;
 			_currentShownPage.AllowNextChanged += _currentShownPage_AllowNextChanged;
+		}
+
+		private WizardPage GetNextPage()
+		{
+			if (_currentShownPage != null && _currentShownPage.NextPage != null)
+				return _currentShownPage.NextPage;
+			try
+			{
+				return Pages[++_currentPageIndex];
+			}
+			catch (IndexOutOfRangeException)
+			{
+				return null;
+			}
 		}
 
 		void _currentShownPage_AllowNextChanged(object sender, EventArgs e)
