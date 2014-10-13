@@ -178,15 +178,7 @@
 
     function updateChar() {
         var newChar=$('.long-press-letter.selected').text();
-        if (isTextArea()) {
-            var pos=getTextAreaCaretPosition(activeElement);
-            var arVal=$(activeElement).val().split('');
-            arVal[pos-1]=newChar;
-            $(activeElement).val(arVal.join(''));
-            setTextAreaCaretPosition(activeElement, pos);
-        } else {
-            replacePreviousLetterWithText(newChar);
-        }
+        replacePreviousLetterWithText(newChar);
     }
 
     function isTextArea() {
@@ -204,25 +196,33 @@
         }
     }
     function replacePreviousLetterWithText(text) {
-        var sel, textNode, clone;
-        var range = caretPosition;
-        if (window.getSelection && range && range.startOffset != 0) {
-            sel = window.getSelection();
-            if (sel.getRangeAt && sel.rangeCount) {
-                textNode = document.createTextNode(text);
+        if (isTextArea()) {
+            var pos=getTextAreaCaretPosition(activeElement);
+            var arVal=$(activeElement).val().split('');
+            arVal[pos-1]=text;
+            $(activeElement).val(arVal.join(''));
+            setTextAreaCaretPosition(activeElement, pos);
+        } else {
+            var sel, textNode, clone;
+            var range = caretPosition;
+            if (window.getSelection && range && range.startOffset != 0) {
+                sel = window.getSelection();
+                if (sel.getRangeAt && sel.rangeCount) {
+                    textNode = document.createTextNode(text);
 
-                clone = range.cloneRange();
-                clone.setStart(range.startContainer, range.startOffset - 1);
-                clone.setEnd(range.startContainer, range.startOffset);
-                clone.deleteContents();
-                range.insertNode(textNode);
+                    clone = range.cloneRange();
+                    clone.setStart(range.startContainer, range.startOffset - 1);
+                    clone.setEnd(range.startContainer, range.startOffset);
+                    clone.deleteContents();
+                    range.insertNode(textNode);
 
-                // Move caret to the end of the newly inserted text node
-                range.setStart(textNode, textNode.length);
-                range.setEnd(textNode, textNode.length);
+                    // Move caret to the end of the newly inserted text node
+                    range.setStart(textNode, textNode.length);
+                    range.setEnd(textNode, textNode.length);
 
-                sel.removeAllRanges();
-                sel.addRange(range);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
             }
         }
     }
