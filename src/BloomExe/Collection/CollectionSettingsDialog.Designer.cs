@@ -46,8 +46,9 @@ namespace Bloom.Collection
 			this._language1Name = new System.Windows.Forms.Label();
 			this._language1Label = new System.Windows.Forms.Label();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
-			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
-			this._rtlLanguagesCombo = new System.Windows.Forms.ToolStripDropDownButton();
+			this._rtlLanguage3CheckBox = new System.Windows.Forms.CheckBox();
+			this._rtlLanguage2CheckBox = new System.Windows.Forms.CheckBox();
+			this._rtlLanguage1CheckBox = new System.Windows.Forms.CheckBox();
 			this._fontComboLanguage3 = new System.Windows.Forms.ComboBox();
 			this._fontComboLanguage2 = new System.Windows.Forms.ComboBox();
 			this._fontComboLanguage1 = new System.Windows.Forms.ComboBox();
@@ -80,7 +81,6 @@ namespace Bloom.Collection
 			this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.tabPage2.SuspendLayout();
-			this._menusToolStrip.SuspendLayout();
 			this.tabPage3.SuspendLayout();
 			this.tabPage4.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -264,7 +264,9 @@ namespace Bloom.Collection
 			// 
 			// tabPage2
 			// 
-			this.tabPage2.Controls.Add(this._menusToolStrip);
+			this.tabPage2.Controls.Add(this._rtlLanguage3CheckBox);
+			this.tabPage2.Controls.Add(this._rtlLanguage2CheckBox);
+			this.tabPage2.Controls.Add(this._rtlLanguage1CheckBox);
 			this.tabPage2.Controls.Add(this._fontComboLanguage3);
 			this.tabPage2.Controls.Add(this._fontComboLanguage2);
 			this.tabPage2.Controls.Add(this._fontComboLanguage1);
@@ -284,36 +286,50 @@ namespace Bloom.Collection
 			this.tabPage2.Text = "Book Making";
 			this.tabPage2.UseVisualStyleBackColor = true;
 			// 
-			// _menusToolStrip
+			// _rtlLanguage3CheckBox
 			// 
-			this._menusToolStrip.CanOverflow = false;
-			this._menusToolStrip.Dock = System.Windows.Forms.DockStyle.None;
-			this._menusToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._rtlLanguagesCombo});
-			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._menusToolStrip, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
-			this._menusToolStrip.Location = new System.Drawing.Point(258, 131);
-			this._menusToolStrip.Name = "_menusToolStrip";
-			this._menusToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-			this._menusToolStrip.Size = new System.Drawing.Size(101, 26);
-			this._menusToolStrip.TabIndex = 2;
-			this._menusToolStrip.Text = "toolStrip1";
+			this._rtlLanguage3CheckBox.AutoSize = true;
+			this._rtlLanguage3CheckBox.Font = new System.Drawing.Font("Segoe UI", 8F);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._rtlLanguage3CheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._rtlLanguage3CheckBox, null);
+			this._L10NSharpExtender.SetLocalizingId(this._rtlLanguage3CheckBox, "CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem");
+			this._rtlLanguage3CheckBox.Location = new System.Drawing.Point(32, 247);
+			this._rtlLanguage3CheckBox.Name = "_rtlLanguage3CheckBox";
+			this._rtlLanguage3CheckBox.Size = new System.Drawing.Size(170, 17);
+			this._rtlLanguage3CheckBox.TabIndex = 26;
+			this._rtlLanguage3CheckBox.Text = "Right to Left Writing System";
+			this._rtlLanguage3CheckBox.UseVisualStyleBackColor = true;
+			this._rtlLanguage3CheckBox.CheckedChanged += new System.EventHandler(this._rtlLanguageCheckBox_CheckedChanged);
 			// 
-			// _rtlLanguagesCombo
+			// _rtlLanguage2CheckBox
 			// 
-			this._rtlLanguagesCombo.BackColor = System.Drawing.SystemColors.ButtonFace;
-			this._rtlLanguagesCombo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-			this._rtlLanguagesCombo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this._rtlLanguagesCombo, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._rtlLanguagesCombo, null);
-			this._L10NSharpExtender.SetLocalizingId(this._rtlLanguagesCombo, "CollectionSettingsDialog.BookMakingTab.RightToLeft");
-			this._rtlLanguagesCombo.Name = "_rtlLanguagesCombo";
-			this._rtlLanguagesCombo.Size = new System.Drawing.Size(100, 23);
-			this._rtlLanguagesCombo.Text = "Right To Left";
+			this._rtlLanguage2CheckBox.AutoSize = true;
+			this._rtlLanguage2CheckBox.Font = new System.Drawing.Font("Segoe UI", 8F);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._rtlLanguage2CheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._rtlLanguage2CheckBox, null);
+			this._L10NSharpExtender.SetLocalizingId(this._rtlLanguage2CheckBox, "CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem");
+			this._rtlLanguage2CheckBox.Location = new System.Drawing.Point(32, 160);
+			this._rtlLanguage2CheckBox.Name = "_rtlLanguage2CheckBox";
+			this._rtlLanguage2CheckBox.Size = new System.Drawing.Size(170, 17);
+			this._rtlLanguage2CheckBox.TabIndex = 24;
+			this._rtlLanguage2CheckBox.Text = "Right to Left Writing System";
+			this._rtlLanguage2CheckBox.UseVisualStyleBackColor = true;
+			this._rtlLanguage2CheckBox.CheckedChanged += new System.EventHandler(this._rtlLanguageCheckBox_CheckedChanged);
+			// 
+			// _rtlLanguage1CheckBox
+			// 
+			this._rtlLanguage1CheckBox.AutoSize = true;
+			this._rtlLanguage1CheckBox.Font = new System.Drawing.Font("Segoe UI", 8F);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._rtlLanguage1CheckBox, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._rtlLanguage1CheckBox, null);
+			this._L10NSharpExtender.SetLocalizingId(this._rtlLanguage1CheckBox, "CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem");
+			this._rtlLanguage1CheckBox.Location = new System.Drawing.Point(32, 73);
+			this._rtlLanguage1CheckBox.Name = "_rtlLanguage1CheckBox";
+			this._rtlLanguage1CheckBox.Size = new System.Drawing.Size(170, 17);
+			this._rtlLanguage1CheckBox.TabIndex = 22;
+			this._rtlLanguage1CheckBox.Text = "Right to Left Writing System";
+			this._rtlLanguage1CheckBox.UseVisualStyleBackColor = true;
+			this._rtlLanguage1CheckBox.CheckedChanged += new System.EventHandler(this._rtlLanguageCheckBox_CheckedChanged);
 			// 
 			// _fontComboLanguage3
 			// 
@@ -322,10 +338,10 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._fontComboLanguage3, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._fontComboLanguage3, null);
 			this._L10NSharpExtender.SetLocalizingId(this._fontComboLanguage3, "CollectionSettingsDialog._fontComboLanguage3");
-			this._fontComboLanguage3.Location = new System.Drawing.Point(31, 200);
+			this._fontComboLanguage3.Location = new System.Drawing.Point(31, 220);
 			this._fontComboLanguage3.Name = "_fontComboLanguage3";
-			this._fontComboLanguage3.Size = new System.Drawing.Size(146, 25);
-			this._fontComboLanguage3.TabIndex = 26;
+			this._fontComboLanguage3.Size = new System.Drawing.Size(190, 25);
+			this._fontComboLanguage3.TabIndex = 25;
 			this._fontComboLanguage3.SelectedIndexChanged += new System.EventHandler(this._fontComboLanguage3_SelectedIndexChanged);
 			// 
 			// _fontComboLanguage2
@@ -335,10 +351,10 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._fontComboLanguage2, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._fontComboLanguage2, null);
 			this._L10NSharpExtender.SetLocalizingId(this._fontComboLanguage2, "CollectionSettingsDialog._fontComboLanguage2");
-			this._fontComboLanguage2.Location = new System.Drawing.Point(31, 131);
+			this._fontComboLanguage2.Location = new System.Drawing.Point(31, 133);
 			this._fontComboLanguage2.Name = "_fontComboLanguage2";
-			this._fontComboLanguage2.Size = new System.Drawing.Size(146, 25);
-			this._fontComboLanguage2.TabIndex = 25;
+			this._fontComboLanguage2.Size = new System.Drawing.Size(190, 25);
+			this._fontComboLanguage2.TabIndex = 23;
 			this._fontComboLanguage2.SelectedIndexChanged += new System.EventHandler(this._fontComboLanguage2_SelectedIndexChanged);
 			// 
 			// _fontComboLanguage1
@@ -348,9 +364,9 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._fontComboLanguage1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._fontComboLanguage1, null);
 			this._L10NSharpExtender.SetLocalizingId(this._fontComboLanguage1, "CollectionSettingsDialog._fontComboLanguage1");
-			this._fontComboLanguage1.Location = new System.Drawing.Point(31, 62);
+			this._fontComboLanguage1.Location = new System.Drawing.Point(31, 46);
 			this._fontComboLanguage1.Name = "_fontComboLanguage1";
-			this._fontComboLanguage1.Size = new System.Drawing.Size(146, 25);
+			this._fontComboLanguage1.Size = new System.Drawing.Size(190, 25);
 			this._fontComboLanguage1.TabIndex = 21;
 			this._fontComboLanguage1.SelectedIndexChanged += new System.EventHandler(this._fontComboLanguage1_SelectedIndexChanged);
 			// 
@@ -361,7 +377,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._language3FontLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._language3FontLabel, "{0} is a language name.");
 			this._L10NSharpExtender.SetLocalizingId(this._language3FontLabel, "CollectionSettingsDialog.BookMakingTab.DefaultFontFor");
-			this._language3FontLabel.Location = new System.Drawing.Point(27, 178);
+			this._language3FontLabel.Location = new System.Drawing.Point(27, 198);
 			this._language3FontLabel.Name = "_language3FontLabel";
 			this._language3FontLabel.Size = new System.Drawing.Size(131, 19);
 			this._language3FontLabel.TabIndex = 24;
@@ -374,7 +390,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._language2FontLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._language2FontLabel, "{0} is a language name.");
 			this._L10NSharpExtender.SetLocalizingId(this._language2FontLabel, "CollectionSettingsDialog.BookMakingTab.DefaultFontFor");
-			this._language2FontLabel.Location = new System.Drawing.Point(27, 109);
+			this._language2FontLabel.Location = new System.Drawing.Point(27, 111);
 			this._language2FontLabel.Name = "_language2FontLabel";
 			this._language2FontLabel.Size = new System.Drawing.Size(131, 19);
 			this._language2FontLabel.TabIndex = 23;
@@ -382,14 +398,13 @@ namespace Bloom.Collection
 			// 
 			// _language1FontLabel
 			// 
-			this._language1FontLabel.AutoSize = true;
 			this._language1FontLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._language1FontLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._language1FontLabel, "{0} is a language name.");
 			this._L10NSharpExtender.SetLocalizingId(this._language1FontLabel, "CollectionSettingsDialog.BookMakingTab.DefaultFontFor");
-			this._language1FontLabel.Location = new System.Drawing.Point(27, 40);
+			this._language1FontLabel.Location = new System.Drawing.Point(27, 24);
 			this._language1FontLabel.Name = "_language1FontLabel";
-			this._language1FontLabel.Size = new System.Drawing.Size(131, 19);
+			this._language1FontLabel.Size = new System.Drawing.Size(250, 19);
 			this._language1FontLabel.TabIndex = 22;
 			this._language1FontLabel.Text = "Default Font for {0}";
 			// 
@@ -400,7 +415,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._xmatterPackLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._xmatterPackLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._xmatterPackLabel, "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack");
-			this._xmatterPackLabel.Location = new System.Drawing.Point(254, 40);
+			this._xmatterPackLabel.Location = new System.Drawing.Point(289, 24);
 			this._xmatterPackLabel.Name = "_xmatterPackLabel";
 			this._xmatterPackLabel.Size = new System.Drawing.Size(156, 19);
 			this._xmatterPackLabel.TabIndex = 1;
@@ -413,10 +428,10 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._xmatterPackCombo, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._xmatterPackCombo, null);
 			this._L10NSharpExtender.SetLocalizingId(this._xmatterPackCombo, "CollectionSettingsDialog._xmatterPackCombo");
-			this._xmatterPackCombo.Location = new System.Drawing.Point(258, 62);
+			this._xmatterPackCombo.Location = new System.Drawing.Point(293, 46);
 			this._xmatterPackCombo.Name = "_xmatterPackCombo";
 			this._xmatterPackCombo.Size = new System.Drawing.Size(146, 25);
-			this._xmatterPackCombo.TabIndex = 0;
+			this._xmatterPackCombo.TabIndex = 27;
 			// 
 			// tabPage3
 			// 
@@ -446,7 +461,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._bloomCollectionName, "CollectionSettingsDialog.BloomProjectName");
 			this._bloomCollectionName.Location = new System.Drawing.Point(32, 246);
 			this._bloomCollectionName.Name = "_bloomCollectionName";
-			this._bloomCollectionName.Size = new System.Drawing.Size(214, 25);
+			this._bloomCollectionName.Size = new System.Drawing.Size(291, 25);
 			this._bloomCollectionName.TabIndex = 22;
 			this._bloomCollectionName.TextChanged += new System.EventHandler(this._bloomCollectionName_TextChanged);
 			// 
@@ -471,7 +486,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._districtText, "CollectionSettingsDialog._districtText");
 			this._districtText.Location = new System.Drawing.Point(32, 177);
 			this._districtText.Name = "_districtText";
-			this._districtText.Size = new System.Drawing.Size(214, 25);
+			this._districtText.Size = new System.Drawing.Size(291, 25);
 			this._districtText.TabIndex = 5;
 			// 
 			// _provinceText
@@ -482,7 +497,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._provinceText, "CollectionSettingsDialog._provinceText");
 			this._provinceText.Location = new System.Drawing.Point(32, 112);
 			this._provinceText.Name = "_provinceText";
-			this._provinceText.Size = new System.Drawing.Size(214, 25);
+			this._provinceText.Size = new System.Drawing.Size(291, 25);
 			this._provinceText.TabIndex = 4;
 			// 
 			// _countryText
@@ -493,7 +508,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._countryText, "CollectionSettingsDialog._countryText");
 			this._countryText.Location = new System.Drawing.Point(32, 45);
 			this._countryText.Name = "_countryText";
-			this._countryText.Size = new System.Drawing.Size(214, 25);
+			this._countryText.Size = new System.Drawing.Size(291, 25);
 			this._countryText.TabIndex = 3;
 			// 
 			// _countryLabel
@@ -722,8 +737,6 @@ namespace Bloom.Collection
 			this.tabPage1.PerformLayout();
 			this.tabPage2.ResumeLayout(false);
 			this.tabPage2.PerformLayout();
-			this._menusToolStrip.ResumeLayout(false);
-			this._menusToolStrip.PerformLayout();
 			this.tabPage3.ResumeLayout(false);
 			this.tabPage3.PerformLayout();
 			this.tabPage4.ResumeLayout(false);
@@ -777,8 +790,9 @@ namespace Bloom.Collection
 		private System.Windows.Forms.ComboBox _fontComboLanguage3;
         private System.Windows.Forms.CheckBox _showExperimentalTemplates;
 		private System.Windows.Forms.CheckBox _showExperimentCommands;
-		private System.Windows.Forms.ToolStrip _menusToolStrip;
-		private System.Windows.Forms.ToolStripDropDownButton _rtlLanguagesCombo;
 		private Button _helpButton;
+		private CheckBox _rtlLanguage3CheckBox;
+		private CheckBox _rtlLanguage2CheckBox;
+		private CheckBox _rtlLanguage1CheckBox;
 	}
 }
