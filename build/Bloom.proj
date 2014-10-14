@@ -209,7 +209,7 @@
 	</Target>
 
 	<Target Name="SignIfPossible">
-		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"' ContinueOnError="true "></Exec>
+		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"' ContinueOnError="true"></Exec>
 	</Target>
 
 
