@@ -702,5 +702,6 @@ $(document).ready(function () {
     $('body').find('*[data-i18n]').localize(finishInitializing);
     var accordion = accordionWindow();
     accordion['addWordListChangedListener']('wordListChanged.ReaderSetup', wordListChangedCallback);
+    $('textarea').longPress();
 });
 //# sourceMappingURL=readerSetup.ui.js.map

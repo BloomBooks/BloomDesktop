@@ -38,7 +38,8 @@ var styleSheets = [
     'themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css',
     'lib/jquery.qtip.css',
     'bookEdit/js/toolbar/jquery.toolbars.css',
-    'bookEdit/css/origami.css'
+    'bookEdit/css/origami.css',
+    'lib/long-press/longpress.css'
 ];
 
 for (var i = 0; i < scripts.length; i++) {
