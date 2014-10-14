@@ -199,14 +199,7 @@ namespace Bloom.Wizard.WinForms
 		{
 			if (_currentShownPage != null && _currentShownPage.NextPage != null)
 				return _currentShownPage.NextPage;
-			try
-			{
-				return Pages[++_currentPageIndex];
-			}
-			catch (IndexOutOfRangeException)
-			{
-				return null;
-			}
+			return Pages[++_currentPageIndex];
 		}
 
 		void _currentShownPage_AllowNextChanged(object sender, EventArgs e)
