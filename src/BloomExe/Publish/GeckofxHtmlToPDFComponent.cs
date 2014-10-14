@@ -87,6 +87,15 @@ namespace GeckofxHtmlToPdf
 			File.Delete(_conversionOrder.OutputPdfPath);
 			_checkForBrowserNavigatedTimer.Enabled = true;
 			Status = "Loading Html...";
+
+			// Why set a size here? If we don't, images sometimes don't show up in the PDF. See BL-408.
+			// A size of 500x500 was enough to fix the problem for the most reproducible case,
+			// JohnH's version of Pame's Family Battles Maleria. The size used here is based
+			// on an unproved hypothesis that it's important for at least one picture to be
+			// visible in the imaginary browser window; thus, we've made it big enough for a
+			// 16x11 big-book page at fairly high screen resolution of 120dpi.
+			_browser.Size = new Size(1920, 1320);
+
 			_browser.Navigate(_conversionOrder.InputHtmlPath);
 		}
 
