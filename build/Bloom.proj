@@ -191,7 +191,6 @@
 
 	<!-- remove an existing one with the same name, if necessary -->
 	<Delete Files="$(RootDir)\output\installer\$(InstallerFileName)" TreatErrorsAsWarnings="false" />
-	<Exec Command='sign "$(RootDir)\output\installer\BloomInstaller.msi"'></Exec>
 
 	<Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
 		  DestinationFiles="$(RootDir)\output\installer\$(InstallerFileName)"
@@ -200,7 +199,18 @@
 	<!-- remove the installer which has no version number (wouldn't need this if the copy above was a move, instead) -->
 	<Delete Files="$(RootDir)\output\installer\BloomInstaller.msi" TreatErrorsAsWarnings="false" />
 
-  </Target>
+	</Target>
+
+	<!-- These targets are designed to be additional steps on TeamCity after running target Installer. Pick the appropriate one
+	depending on whether your project's output MUST be signed or it's only nice if it is. For example, a continuous build
+	might use SignIfPossible, while a Publication build must use SignInstaller.-->
+	<Target Name="SignInstaller">
+		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"'></Exec>
+	</Target>
+
+	<Target Name="SignIfPossible">
+		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"' ContinueOnError="WarnAndContinue "></Exec>
+	</Target>
 
 
   <Target Name="MakeWixForDistFiles" DependsOnTargets="DownloadDistFiles">
