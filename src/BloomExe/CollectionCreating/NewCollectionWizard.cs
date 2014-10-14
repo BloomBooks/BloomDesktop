@@ -85,7 +85,9 @@ namespace Bloom.CollectionCreating
 			wizardControl1.Controls.Add(chooser);
 
 			SetLocalizedStrings();
-	   }
+
+			wizardControl1.AfterInitialization();
+		}
 
 		void chooser_SelectedValueChanged(object sender, EventArgs e)
 		{
