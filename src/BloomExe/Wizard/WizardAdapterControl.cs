@@ -32,7 +32,8 @@ namespace Bloom.Wizard
 
 		protected WinForms.WizardControl _winformsWizard;
 
-		internal static bool _useAeroWizard = Palaso.PlatformUtilities.Platform.IsWindows && (System.Environment.GetEnvironmentVariable("USE_WINFORM_WIZARD") == null);
+		internal static bool _useAeroWizard = false;
+		//Palaso.PlatformUtilities.Platform.IsWindows && (System.Environment.GetEnvironmentVariable("USE_WINFORM_WIZARD") == null);
 
 		#region Implemetaion specific logic
 		public void Setup()

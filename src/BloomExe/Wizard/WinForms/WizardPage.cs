@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 
@@ -15,7 +12,7 @@ namespace Bloom.Wizard.WinForms
 
 		bool _allowNext;
 		private WizardPage _nextPage;
-		Label TitelLabel;
+		Label TitleLabel;
 		Panel PagePanel;
 
 		public WizardPage()
@@ -23,26 +20,25 @@ namespace Bloom.Wizard.WinForms
 			AllowNext = true;
 			BackColor = Color.White;
 
-			var titelPanel = new Panel {
-				Padding = new Padding(10),
+			var titlePanel = new Panel {
+				Padding = new Padding(30, 30, 30, 0),
 				AutoSize = true,
 				Dock = DockStyle.Top,
 			};
-			TitelLabel = new Label {
-				Padding = new Padding(10),
+			TitleLabel = new Label {
 				AutoSize = true,
-				Font = new Font(new FontFamily("Arial"), 14),
+				Font = new Font(new FontFamily("Arial"), 12),
 				Dock = DockStyle.Top,
-				ForeColor = Color.SteelBlue
+				ForeColor = Color.DarkBlue
 			};
-			titelPanel.Controls.Add(TitelLabel);
+			titlePanel.Controls.Add(TitleLabel);
 			PagePanel = new Panel {
-				Padding = new Padding(10),
+				Padding = new Padding(30),
 				AutoSize = true,
 				Dock = DockStyle.Fill
 			};
 			Controls.Add(PagePanel);
-			Controls.Add(titelPanel);
+			Controls.Add(titlePanel);
 		}
 
 		public bool Suppress
@@ -93,7 +89,7 @@ namespace Bloom.Wizard.WinForms
 			set
 			{
 				base.Text = value;
-				TitelLabel.Text = value;
+				TitleLabel.Text = value;
 			}
 		}
 
