@@ -204,11 +204,11 @@
 	<!-- These targets are designed to be additional steps on TeamCity after running target Installer. Pick the appropriate one
 	depending on whether your project's output MUST be signed or it's only nice if it is. For example, a continuous build
 	might use SignIfPossible, while a Publication build must use SignInstaller.-->
-	<Target Name="SignInstaller">
+	<Target Name="SignInstaller" DependsOnTargets="VersionNumbers">
 		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"'></Exec>
 	</Target>
 
-	<Target Name="SignIfPossible">
+	<Target Name="SignIfPossible" DependsOnTargets="VersionNumbers">
 		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"' ContinueOnError="true"></Exec>
 	</Target>
 
