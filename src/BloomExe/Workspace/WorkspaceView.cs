@@ -9,14 +9,15 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
-using Palaso.UI.WindowsForms.ReleaseNotes;
 using Bloom.Registration;
 using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
 using Messir.Windows.Forms;
+using NetSparkle;
 using Palaso.IO;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.ReleaseNotes;
 using Palaso.UI.WindowsForms.SettingProtection;
 
 namespace Bloom.Workspace
@@ -36,7 +37,7 @@ namespace Bloom.Workspace
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
-
+		private Sparkle _sparkleApplicationUpdater;
 		private readonly LocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
 
@@ -56,6 +57,7 @@ namespace Bloom.Workspace
 							LocalizationChangedEvent localizationChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory,
 							ChorusSystem chorusSystem,
+							Sparkle sparkleApplicationUpdater,
 							LocalizationManager localizationManager
 
 			)
@@ -67,10 +69,14 @@ namespace Bloom.Workspace
 			_localizationChangedEvent = localizationChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_chorusSystem = chorusSystem;
+			_sparkleApplicationUpdater = sparkleApplicationUpdater;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
+#if !DEBUG
+			_sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
+#endif
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
@@ -422,7 +428,9 @@ namespace Bloom.Workspace
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
 		{
-			//_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
+#if !__MonoCS__
+			_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
+#endif
 		}
 
 		private static void OpenInfoFile(string fileName)

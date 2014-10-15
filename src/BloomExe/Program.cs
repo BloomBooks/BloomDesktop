@@ -625,6 +625,10 @@ namespace Bloom
 			{
 				Application.Idle +=new EventHandler(ReopenProject);
 			}
+			else if (((Shell)sender).QuitForVersionUpdate)
+			{
+				Application.Exit();
+			}
 			else
 			{
 				Application.Exit();
