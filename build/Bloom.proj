@@ -54,7 +54,7 @@
 	<ItemGroup>
 	  <AssemblyInfoFiles Include="$(RootDir)/src/**/AssemblyInfo.cs"/>
 	</ItemGroup>
-	<StampAssemblies Version="$(FullVersion)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
+	<StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
   </Target>
 
   <Target Name="Build" DependsOnTargets="SetAssemblyVersion">
@@ -126,18 +126,26 @@
 
 		-->
 
-	<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-				 DatePlaceholder='VERSION_NUMBER'
-				Regex='VERSION_NUMBER'
-				 ReplacementText ="$(Version)" />
-		<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-				 DatePlaceholder='VERSION_NUMBER'
-				Regex='TEAMCITY_CONFIGURATION'
-				 ReplacementText ="$(BuildConfigurationID)" />
+	<FileUpdate Condition=" '$(Label)' == '' "
+		File="$(RootDir)\output\installer\appcast.xml"
+		Regex='VERSION_NUMBER_WITH_LABEL'
+		ReplacementText ="$(Version)" />
+	<FileUpdate Condition=" '$(Label)' != '' "
+		File="$(RootDir)\output\installer\appcast.xml"
+		Regex='VERSION_NUMBER_WITH_LABEL'
+		ReplacementText ="$(Version).$(Label)" />
+	<FileUpdate
+		File="$(RootDir)\output\installer\appcast.xml"
+		Regex='VERSION_NUMBER'
+		ReplacementText ="$(Version)" />
+	<FileUpdate
+		File="$(RootDir)\output\installer\appcast.xml"
+		Regex='TEAMCITY_CONFIGURATION'
+		ReplacementText ="$(BuildConfigurationID)" />
 	<!--<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-				   DatePlaceholder='DEV_RELEASE_DATE'
-				  Regex='DEV_VERSION_NUMBER'
-				   ReplacementText ="$(Version)" />-->
+		DatePlaceholder='DEV_RELEASE_DATE'
+		Regex='DEV_VERSION_NUMBER'
+		ReplacementText ="$(Version)" />-->
 
 	<!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
 
@@ -191,7 +199,6 @@
 
 	<!-- remove an existing one with the same name, if necessary -->
 	<Delete Files="$(RootDir)\output\installer\$(InstallerFileName)" TreatErrorsAsWarnings="false" />
-	<Exec Command='sign "$(RootDir)\output\installer\BloomInstaller.msi"'></Exec>
 
 	<Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
 		  DestinationFiles="$(RootDir)\output\installer\$(InstallerFileName)"
@@ -200,7 +207,18 @@
 	<!-- remove the installer which has no version number (wouldn't need this if the copy above was a move, instead) -->
 	<Delete Files="$(RootDir)\output\installer\BloomInstaller.msi" TreatErrorsAsWarnings="false" />
 
-  </Target>
+	</Target>
+
+	<!-- These targets are designed to be additional steps on TeamCity after running target Installer. Pick the appropriate one
+	depending on whether your project's output MUST be signed or it's only nice if it is. For example, a continuous build
+	might use SignIfPossible, while a Publication build must use SignInstaller.-->
+	<Target Name="SignInstaller" DependsOnTargets="VersionNumbers">
+		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"'></Exec>
+	</Target>
+
+	<Target Name="SignIfPossible" DependsOnTargets="VersionNumbers">
+		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"' ContinueOnError="true"></Exec>
+	</Target>
 
 
   <Target Name="MakeWixForDistFiles" DependsOnTargets="DownloadDistFiles">

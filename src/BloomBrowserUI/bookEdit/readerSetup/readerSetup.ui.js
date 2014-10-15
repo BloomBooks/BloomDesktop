@@ -297,6 +297,9 @@ function setLevelCheckBoxValue(id, value) {
 }
 
 function displayWordsForSelectedStage(wordsStr) {
+    var wordList = document.getElementById('rs-matching-words');
+    wordList.innerHTML = '';
+
     var wordsObj = JSON.parse(wordsStr);
     var words = _.toArray(wordsObj);
 
@@ -324,17 +327,25 @@ function displayWordsForSelectedStage(wordsStr) {
     });
 
     var result = '';
+    var longestWord = '';
+    var longestWordLength = 0;
+
     _.each(words, function (w) {
         if (!w.html)
             w.html = $.markupGraphemes(w.Name, w.GPCForm, desiredGPCs);
         result += '<div class="book-font word">' + w.html + '</div>';
+
+        if (w.Name.length > longestWordLength) {
+            longestWord = w.Name;
+            longestWordLength = longestWord.length;
+        }
     });
 
     // set the list
-    $('#rs-matching-words').html(result);
+    wordList.innerHTML = result;
 
     // make columns
-    $.divsToColumns('word');
+    $.divsToColumnsBasedOnLongestWord('word', longestWord);
 
     // display the count
     document.getElementById('setup-words-count').innerHTML = words.length.toString();
@@ -657,6 +668,13 @@ function attachEventHandlers() {
     }
 }
 
+function setWordContainerHeight() {
+    // set height of word list
+    var div = $('#setup-stage-matching-words').find('div:first-child');
+    var ht = $('setup-words-count').height();
+    div.css('height', 'calc(100% - ' + ht + 'px)');
+}
+
 /**
 * Called after localized strings are loaded.
 */
@@ -664,6 +682,7 @@ function finishInitializing() {
     $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
     $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
     accordionWindow().postMessage('Texts', '*');
+    setWordContainerHeight();
 }
 
 /**
@@ -683,5 +702,6 @@ $(document).ready(function () {
     $('body').find('*[data-i18n]').localize(finishInitializing);
     var accordion = accordionWindow();
     accordion['addWordListChangedListener']('wordListChanged.ReaderSetup', wordListChangedCallback);
+    $('textarea').longPress();
 });
 //# sourceMappingURL=readerSetup.ui.js.map

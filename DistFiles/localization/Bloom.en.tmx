@@ -260,15 +260,22 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeft">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Right To Left</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftTip">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Select languages that are written from right to left</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <tuv xml:lang="en">
+        <seg>Right to Left Writing System</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">

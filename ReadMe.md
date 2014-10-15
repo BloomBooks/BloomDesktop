@@ -69,6 +69,12 @@ Now, Mozilla puts out a new version of XulRunner every 6 weeks at the time of th
 Bloom uses various web services that require identification. We can't really keep those a secret, but we can at least not make them google'able by not checking them into github. To get the file that contains user and test-level authorization codes, just get the connections.dll file out of a shipping version of a Bloom, and place it in your Bloom/DistFiles directory.
 
 
+## Disable analytics
+
+We don't want developer and tester runs (and crashes) polluting our statistics. On Windows, add the environment variable "feedback" with value "off". On Linux, edit $HOME/.profile and add:
+
+		export FEEDBACK=off 
+
 # Special instructions for building on Linux
 
 These notes were written by JohnT on 16 July 2014 based on previous two half-days working with

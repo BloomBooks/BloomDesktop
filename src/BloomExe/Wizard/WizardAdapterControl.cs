@@ -32,7 +32,8 @@ namespace Bloom.Wizard
 
 		protected WinForms.WizardControl _winformsWizard;
 
-		internal static bool _useAeroWizard = Palaso.PlatformUtilities.Platform.IsWindows && (System.Environment.GetEnvironmentVariable("USE_WINFORM_WIZARD") == null);
+		internal static bool _useAeroWizard = false;
+		//Palaso.PlatformUtilities.Platform.IsWindows && (System.Environment.GetEnvironmentVariable("USE_WINFORM_WIZARD") == null);
 
 		#region Implemetaion specific logic
 		public void Setup()
@@ -104,6 +105,7 @@ namespace Bloom.Wizard
 
 						_aeroWizard.EndInit();
 					};
+				AfterInitialization = () => { };
 
 			}
 			else
@@ -153,6 +155,8 @@ namespace Bloom.Wizard
 				SetNextButtonText = (value) => _winformsWizard.NextButtonText = value;
 				GetFinishButtonText= () => _winformsWizard.FinishButtonText;
 				SetFinishButtonText= (value) => _winformsWizard.FinishButtonText = value;
+				GetCancelButtonText = () => _winformsWizard.CancelButtonText;
+				SetCancelButtonText = (value) => _winformsWizard.CancelButtonText = value;
 				GetIcon = () => _winformsWizard.TitleIcon;
 				SetIcon = (icon) => _winformsWizard.TitleIcon = icon;
 
@@ -170,6 +174,7 @@ namespace Bloom.Wizard
 
 					_winformsWizard.EndInit();
 				};
+				AfterInitialization = () => _winformsWizard.ShowFirstPage();
 			}
 		}
 
@@ -188,6 +193,7 @@ namespace Bloom.Wizard
 		Action<Icon> SetIcon;
 		Action BeginInitLogic;
 		Action EndInitLogic;
+		internal Action AfterInitialization;
 
 		#endregion
 

@@ -1323,6 +1323,8 @@ namespace Bloom.Book
 
 				page.InnerXml = divElement.InnerXml;
 
+				page.SetAttribute("class", divElement.GetAttribute("class"));
+
 				// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
 				// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
 				// The idea is to match class attriutes which have class bloom-ui, but may have other classes. We don't want to match

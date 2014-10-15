@@ -4,7 +4,7 @@
  *  Author: Quentin Thiaucourt, http://toki-woki.net
  *    Licence: MIT License http://opensource.org/licenses/mit-license.php
  *
- *  Modified Sept 2014 to work with editable divs instead
+ *  Modified Oct 2014 to work with editable divs also
  */
 
 ;(function ($, window, undefined) {
@@ -126,10 +126,13 @@
         hidePopup();
     }
     function onTimer() {
-        var typedChar=$(activeElement).text().split('')[getCaretPosition(activeElement)-1];
+        var typedChar = isTextArea() ?
+            $(activeElement).val().split('')[getTextAreaCaretPosition(activeElement)-1] :
+            $(activeElement).text().split('')[getCaretPosition(activeElement)-1];
 
         if (moreChars[typedChar]) {
-            storeCaretPosition();
+            if (!isTextArea())
+                storeCaretPosition();
             showPopup((moreChars[typedChar]));
         } else {
             hidePopup();
@@ -178,6 +181,10 @@
         replacePreviousLetterWithText(newChar);
     }
 
+    function isTextArea() {
+        return $(activeElement).is('textarea');
+    }
+
     function storeCaretPosition() {
         var sel;
         caretPosition = null;
@@ -189,25 +196,33 @@
         }
     }
     function replacePreviousLetterWithText(text) {
-        var sel, textNode, clone;
-        var range = caretPosition;
-        if (window.getSelection && range && range.startOffset != 0) {
-            sel = window.getSelection();
-            if (sel.getRangeAt && sel.rangeCount) {
-                textNode = document.createTextNode(text);
+        if (isTextArea()) {
+            var pos=getTextAreaCaretPosition(activeElement);
+            var arVal=$(activeElement).val().split('');
+            arVal[pos-1]=text;
+            $(activeElement).val(arVal.join(''));
+            setTextAreaCaretPosition(activeElement, pos);
+        } else {
+            var sel, textNode, clone;
+            var range = caretPosition;
+            if (window.getSelection && range && range.startOffset != 0) {
+                sel = window.getSelection();
+                if (sel.getRangeAt && sel.rangeCount) {
+                    textNode = document.createTextNode(text);
 
-                clone = range.cloneRange();
-                clone.setStart(range.startContainer, range.startOffset - 1);
-                clone.setEnd(range.startContainer, range.startOffset);
-                clone.deleteContents();
-                range.insertNode(textNode);
+                    clone = range.cloneRange();
+                    clone.setStart(range.startContainer, range.startOffset - 1);
+                    clone.setEnd(range.startContainer, range.startOffset);
+                    clone.deleteContents();
+                    range.insertNode(textNode);
 
-                // Move caret to the end of the newly inserted text node
-                range.setStart(textNode, textNode.length);
-                range.setEnd(textNode, textNode.length);
+                    // Move caret to the end of the newly inserted text node
+                    range.setStart(textNode, textNode.length);
+                    range.setEnd(textNode, textNode.length);
 
-                sel.removeAllRanges();
-                sel.addRange(range);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
             }
         }
     }
@@ -234,6 +249,33 @@
             caretOffset = preCaretTextRange.text.length;
         }
         return caretOffset;
+    }
+
+    function getTextAreaCaretPosition (ctrl) {
+        var caretPos = 0;
+        if (document.selection) {
+            // IE Support
+            ctrl.focus ();
+            var sel = document.selection.createRange ();
+            sel.moveStart ('character', -ctrl.value.length);
+            caretPos = sel.text.length;
+        } else if (ctrl.selectionStart || ctrl.selectionStart == '0') {
+            // Firefox support
+            caretPos = ctrl.selectionStart;
+        }
+        return caretPos;
+    }
+    function setTextAreaCaretPosition(ctrl, pos) {
+        if (ctrl.setSelectionRange) {
+            ctrl.focus();
+            ctrl.setSelectionRange(pos,pos);
+        } else if (ctrl.createTextRange) {
+            var range = ctrl.createTextRange();
+            range.collapse(true);
+            range.moveEnd('character', pos);
+            range.moveStart('character', pos);
+            range.select();
+        }
     }
 
     function LongPress( element, options ) {

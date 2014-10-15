@@ -204,12 +204,12 @@ namespace Bloom.CollectionCreating
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.ClientSize = new System.Drawing.Size(759, 464);
-			this.ControlBox = false;
+			this.ControlBox = true;
 			this.Controls.Add(this.wizardControl1);
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "NewCollectionWizard";
-			this.ShowIcon = false;
+			this.ShowIcon = true;
 			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 			((System.ComponentModel.ISupportInitialize)(this.wizardControl1)).EndInit();

@@ -66,6 +66,14 @@ namespace Bloom
 														UserWantsToOpenADifferentProject = true;
 														Close();
 													});
+
+			_sparkle.AboutToExitForInstallerRun += ((x, cancellable) =>
+			{
+				cancellable.Cancel = false;
+				QuitForVersionUpdate = true;
+				Close();
+			});
+
 			_workspaceView.ReopenCurrentProject += ((x, y) =>
 			{
 				UserWantsToOpeReopenProject = true;
@@ -148,6 +156,14 @@ namespace Bloom
 		public bool UserWantsToOpenADifferentProject { get; set; }
 
 		public bool UserWantsToOpeReopenProject;
+
+		/// <summary>
+		/// used when the user does an in-app installer download; after we close down, Program will read this and return control to Sparkle
+		/// </summary>
+		public bool QuitForVersionUpdate;
+
+		public bool QuitForSystemShutdown;
+
 		private string _nameToChangeCollectionUponClosing;
 
 

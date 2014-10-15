@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
+using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.Extensions;
-using System.Xml;
+using Palaso.Reporting;
 
 namespace Bloom.Book
 {
@@ -239,7 +243,32 @@ namespace Bloom.Book
 
 		public void Save()
 		{
-			File.WriteAllText(MetaDataPath, MetaData.Json);
+			// https://jira.sil.org/browse/BL-354 "The requested operation cannot be performed on a file with a user-mapped section open"
+			var count = 0;
+
+			do
+			{
+				try
+				{
+					File.WriteAllText(MetaDataPath, MetaData.Json);
+					return;
+				}
+				catch (IOException e)
+				{
+					Thread.Sleep(500);
+					count++;
+
+					// stop trying after 5 attempts to save the file.
+					if (count > 4)
+					{
+						Debug.Fail("Reproduction of BL-354 that we have taken steps to avoid");
+
+						var msg = LocalizationManager.GetDynamicString("Bloom", "BookEditor.ErrorSavingPage", "Bloom wasn't able to save the changes to the page.");
+						ErrorReport.NotifyUserOfProblem(e, msg);
+					}
+				}
+
+			} while (count < 5);
 		}
 
 		internal string MetaDataPath
