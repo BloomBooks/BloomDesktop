@@ -1,0 +1,57 @@
+<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="1086" measuredH="521" mockupW="1026" mockupH="501">
+  <controls>
+    <control controlID="0" controlTypeID="com.balsamiq.mockups::TabBar" x="60" y="20" w="471" h="229" measuredW="258" measuredH="100" zOrder="0" locked="false" isInGroup="-1">
+      <controlProperties>
+        <selectedIndex>1</selectedIndex>
+        <text>Characters%2C%20More%2C%20Style%20Name</text>
+      </controlProperties>
+    </control>
+    <control controlID="1" controlTypeID="com.balsamiq.mockups::Image" x="81" y="121" w="-1" h="-1" measuredW="136" measuredH="36" zOrder="1" locked="false" isInGroup="-1">
+      <controlProperties>
+        <src>./assets/word%2520spacing.png</src>
+        <text/>
+      </controlProperties>
+    </control>
+    <control controlID="2" controlTypeID="com.balsamiq.mockups::Image" x="81" y="73" w="-1" h="-1" measuredW="187" measuredH="33" zOrder="2" locked="false" isInGroup="-1">
+      <controlProperties>
+        <src>./assets/borderAndBackground.png</src>
+      </controlProperties>
+    </control>
+    <control controlID="3" controlTypeID="com.balsamiq.mockups::TabBar" x="71" y="292" w="397" h="229" measuredW="258" measuredH="100" zOrder="3" locked="false" isInGroup="-1">
+      <controlProperties>
+        <selectedIndex>0</selectedIndex>
+        <text>Characters%2C%20More%2C%20Style%20Name</text>
+      </controlProperties>
+    </control>
+    <control controlID="4" controlTypeID="com.balsamiq.mockups::Image" x="93" y="351" w="-1" h="-1" measuredW="212" measuredH="31" zOrder="4" locked="false" isInGroup="-1">
+      <controlProperties>
+        <src>./assets/fontPicker.png</src>
+        <text/>
+      </controlProperties>
+    </control>
+    <control controlID="6" controlTypeID="com.balsamiq.mockups::Image" x="305" y="350" w="-1" h="-1" measuredW="79" measuredH="33" zOrder="5" locked="false" isInGroup="-1">
+      <controlProperties>
+        <src>./assets/lineSpacingPicker.png</src>
+        <text/>
+      </controlProperties>
+    </control>
+    <control controlID="7" controlTypeID="com.balsamiq.mockups::TabBar" x="615" y="35" w="471" h="229" measuredW="258" measuredH="100" zOrder="6" locked="false" isInGroup="-1">
+      <controlProperties>
+        <selectedIndex>2</selectedIndex>
+        <text>Characters%2C%20More%2C%20Style%20Name</text>
+      </controlProperties>
+    </control>
+    <control controlID="10" controlTypeID="com.balsamiq.mockups::Paragraph" x="93" y="455" w="390" h="44" measuredW="275" measuredH="80" zOrder="7" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>10066329</color>
+        <text>This%20formatting%20is%20for%20all%20Norwegian%20text%20boxes%20with%20%22Title%20On%20Cover%22%20style.</text>
+      </controlProperties>
+    </control>
+    <control controlID="11" controlTypeID="com.balsamiq.mockups::Paragraph" x="640" y="84" w="390" h="56" measuredW="275" measuredH="80" zOrder="8" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>0</color>
+        <text>This%20formatting%20is%20for%20all%20Norwegian%20text%20boxes%20with%20%22Normal%22%20style.%20You%20can%20change%20the%20style%20name%20of%20this%20box%20to%20match%20an%20existing%20style%2C%20or%20make%20a%20new%20one.</text>
+      </controlProperties>
+    </control>
+  </controls>
+</mockup>

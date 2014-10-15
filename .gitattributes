@@ -23,4 +23,5 @@
 *.patch -whitespace
 *.svg -whitespace
 *.xml -whitespace
+*.bmml -whitespace
 changelog -whitespace
