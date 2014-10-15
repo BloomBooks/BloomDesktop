@@ -372,7 +372,7 @@ namespace Bloom
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", new EventHandler(OnOpenPageInStylizer));
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
-			e.ContextMenu.MenuItems.Add("Open Page in System Browser", new EventHandler(OnOpenPageInSystemBrowser));
+			e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)", new EventHandler(OnOpenPageInSystemBrowser));
 
 			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
 		}
@@ -417,7 +417,11 @@ namespace Bloom
 			var  temp = Palaso.IO.TempFile.WithExtension(".htm");
 			var src = _url.FromLocalhost();
 			File.Copy(src, temp.Path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
-			Process.Start(temp.Path.ToLocalhost());
+
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+				Process.Start("Firefox.exe", temp.Path.ToLocalhost());
+			else
+				Process.Start("xdg-open", temp.Path.ToLocalhost()); ;
 		}
 
 		public void OnOpenPageInStylizer(object sender, EventArgs e)
