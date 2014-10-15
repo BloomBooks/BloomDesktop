@@ -6,10 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Design;
 using System.Drawing;
-using System.Drawing.Design;
 using System.Windows.Forms;
+using L10NSharp;
+using L10NSharp.UI;
 
 namespace Bloom.ToPalaso
 {
@@ -21,7 +21,7 @@ namespace Bloom.ToPalaso
 	/// extender properties that can be used to show tooltip messages when the associated
 	/// control is disabled.
 	/// </summary>
-	public class BetterToolTip : ToolTip
+	public class BetterToolTip : ToolTip, ILocalizableComponent
 	{
 		#region ========== Required constructor ==========
 		// This constructor is required for the Windows Forms Designer to instantiate
@@ -47,9 +47,36 @@ namespace Bloom.ToPalaso
 
 		#region ========== ToolTipWhenDisabled extender property support ==========
 		private Dictionary<Control, string> m_ToolTipWhenDisabled = new Dictionary<Control, string>();
+		private List<Control> m_allControlsHavingToolTips = new List<Control>();
 		private Dictionary<Control, BetterTooltipTransparentOverlay> m_BetterTooltipTransparentOverlay = new Dictionary<Control, BetterTooltipTransparentOverlay>();
 		private Dictionary<Control, PaintEventHandler> m_EvtControlPaint = new Dictionary<Control, PaintEventHandler>();
 		private Dictionary<Control, EventHandler> m_EvtControlEnabledChanged = new Dictionary<Control, EventHandler>();
+
+		public new void SetToolTip(Control control, string value)
+		{
+			if (control == null)
+			{
+				throw new ArgumentNullException("control");
+			}
+
+			UpdateAllControlsList(control, value);
+
+			base.SetToolTip(control, value);
+		}
+
+		private void UpdateAllControlsList(Control control, string value)
+		{
+			if (String.IsNullOrEmpty(value))
+			{
+				if (m_allControlsHavingToolTips.Contains(control))
+					m_allControlsHavingToolTips.Remove(control);
+			}
+			else
+			{
+				if (!m_allControlsHavingToolTips.Contains(control))
+					m_allControlsHavingToolTips.Add(control);
+			}
+		}
 
 		public void SetToolTipWhenDisabled(Control p_control, string value)
 		{
@@ -57,6 +84,8 @@ namespace Bloom.ToPalaso
 			{
 				throw new ArgumentNullException("control");
 			}
+
+			UpdateAllControlsList(p_control, value);
 
 			if (!String.IsNullOrEmpty(value))
 			{
@@ -78,6 +107,8 @@ namespace Bloom.ToPalaso
 				if (m_EvtControlEnabledChanged != null)
 				{
 					p_control.EnabledChanged -= m_EvtControlEnabledChanged[p_control];
+					m_EvtControlEnabledChanged.Remove(p_control);
+					m_EvtControlPaint.Remove(p_control);
 				}
 			}
 		}
@@ -165,6 +196,74 @@ namespace Bloom.ToPalaso
 				m_BetterTooltipTransparentOverlay.Remove(p_control);
 			}
 		}
+		#endregion
+
+		#region L10NSharp ILocalizableComponent support
+
+		private static string NORMAL_TIP = ".ToolTip";
+		private static string DISABLED_TIP = ".ToolTipWhenDisabled";
+
+		/// <summary>
+		/// Allows the BetterToolTip to give L10NSharp the information it needs to put strings
+		/// into the localization UI to be localized.
+		/// </summary>
+		/// <returns>A list of LocalizingInfo objects</returns>
+		public IEnumerable<LocalizingInfo> GetAllLocalizingInfoObjects(L10NSharpExtender extender)
+		{
+			var result = new List<LocalizingInfo>();
+			foreach (var ctrl in m_allControlsHavingToolTips)
+			{
+				var idPrefix = extender.GetLocalizingId(ctrl);
+				var normalTip = GetToolTip(ctrl);
+				if (!string.IsNullOrEmpty(normalTip))
+				{
+					var liNormal = new LocalizingInfo(ctrl, idPrefix + NORMAL_TIP)
+						{Text = normalTip, Category = LocalizationCategory.LocalizableComponent};
+					result.Add(liNormal);
+				}
+				var disabledTip = GetToolTipWhenDisabled(ctrl);
+				if (!string.IsNullOrEmpty(disabledTip))
+				{
+					var liDisabled = new LocalizingInfo(ctrl, idPrefix + DISABLED_TIP)
+						{ Text = disabledTip, Category = LocalizationCategory.LocalizableComponent };
+					result.Add(liDisabled);
+				}
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// L10NSharp will call this for each localized string so that the component can set
+		/// the correct value in the control.
+		/// </summary>
+		/// <param name="control">The control that was returned via the LocalizingInfo in
+		/// GetAllLocalizingInfoObjects(). Will be null if that value was null.</param>
+		/// <param name="id">a key into the ILocalizableComponent allowing it to know what
+		/// string to localize</param>
+		/// <param name="localization">the actual localized string</param>
+		public void ApplyLocalizationToString(object control, string id, string localization)
+		{
+			if ((control as Control) == null || string.IsNullOrEmpty(id) || string.IsNullOrEmpty(localization))
+				return;
+
+			var subControl = control as Control;
+			var normalTip = GetToolTip(subControl);
+			SetToolTip(subControl, null); // setting the tooltip to null helps us get it to refresh dynamically
+			var isDisabledToolTip = id.EndsWith(DISABLED_TIP);
+			if (isDisabledToolTip)
+			{
+				// setting an existing TipWhenDisabled throws a dictionary exception,
+				// so we need to remove the existing one first
+				SetToolTipWhenDisabled(subControl, null);
+				SetToolTipWhenDisabled(subControl, localization);
+				SetToolTip(subControl, normalTip);
+			}
+			else
+			{
+				SetToolTip(subControl, localization);
+			}
+		}
+
 		#endregion
 
 		#region ========== Support for the oversized transparent sheet to cover multiple visual controls. ==========

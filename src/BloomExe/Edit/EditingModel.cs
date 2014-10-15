@@ -94,10 +94,16 @@ namespace Bloom.Edit
 				if (Visible)
 				{
 					SaveNow();
+					_view.UpdateButtonLocalizations();
 					RefreshDisplayOfCurrentPage();
 					//_view.UpdateDisplay();
 					_view.UpdatePageList(false);
 					_view.UpdateTemplateList();
+				}
+				else if (_view != null)
+				{
+					// otherwise changing UI language in Publish tab (for instance) won't update these localizations
+					_view.UpdateButtonLocalizations();
 				}
 			});
 			_contentLanguages = new List<ContentLanguage>();

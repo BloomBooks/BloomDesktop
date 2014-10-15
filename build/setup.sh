@@ -68,4 +68,3 @@ download hooks/commit-msg.00-formatting
 download hooks/pre-commit
 download hooks/pre-commit.00-whitespace
 download hooks/pre-commit.01-filenames
-
