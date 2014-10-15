@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="hi" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">3.0.424.0</prop>
+    <prop type="x-appversion">3.0.53.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -82,6 +82,15 @@
 		<seg>सभी बक्से की शैली '{0}' और भाषा '{1}' को ले जाने के लिए पाठ का आकार बदलता है।\nवर्तमान आकार {2} पीटी है।</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="BookEditor.ForTextInLang">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This formatting is for all {0} text in boxes with '{1}' style</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>इस स्वरूपण सभी {0} पाठ बक्सों में '{1}' शैली के साथ के लिए है</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Advanced Program Settings</seg>
@@ -132,6 +141,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Default Font for Language 3</seg>
 	  </tuv>
@@ -516,6 +526,15 @@
 		<seg>सेटिंग्स</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionTab.Source Collection">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>स्रोत संग्रह</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
 	  <tuv xml:lang="en">
 		<seg>Open Additional Collections Folder</seg>
@@ -1233,6 +1252,15 @@
 		<seg>क्रेडिट पृष्ठ</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Custom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Custom</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>कस्टम</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 1">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1563,6 +1591,14 @@
 		<seg>वेब साइट</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.bloomContentDemonstrationToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Content Demonstration</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>सामग्री प्रदर्शन</seg>
+      </tuv>
+    </tu>
 	<tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Check For New Version</seg>
@@ -1611,6 +1647,14 @@
 		<seg>रिलीज नोट्स...</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Shell Book Instructions</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>शैल पुस्तक निर्देश</seg>
+      </tuv>
+    </tu>
 	<tu tuid="HelpMenu.showEventLogMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Show Event Log</seg>
@@ -1619,6 +1663,14 @@
 		<seg>इवेंट लॉग दिखाएँ</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.trainingManualToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Training Manual</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>प्रशिक्षण मैनुअल</seg>
+      </tuv>
+    </tu>
 	<tu tuid="InDesignXmlInformationDialog.WindowTitle">
 	  <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
 	  <tuv xml:lang="en">
@@ -1672,6 +1724,15 @@
 		<seg>A4चित्र</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LayoutChoices.A5Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A5Landscape</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>A5Landscape</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LayoutChoices.A5Portrait">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1708,6 +1769,15 @@
 		<seg>वास्तविक</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.ChoiceOfTopic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Choice of Topic</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>विषय के विकल्प</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.ConceptLoad">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1726,6 +1796,15 @@
 		<seg>इस स्तर के लिए</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.Formatting">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Formatting</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>स्वरूपण</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1870,6 +1949,15 @@
 		<seg>अद्वितीय</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.Vocabulary">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Vocabulary</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>शब्दावली</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.WordCounts">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -3337,7 +3425,7 @@
 		<seg>SynPhony</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
-		<seg>सिंफोनी</seg>
+        <seg>SynPhony</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.ToRemember">

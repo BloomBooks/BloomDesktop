@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="ta" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">3.0.486.0</prop>
+    <prop type="x-appversion">3.0.53.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -73,6 +73,15 @@
 		<seg>திறக்கிறது {0}...</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="Book title in {lang}">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>புத்தக தலைப்பு உள்ள {lang}</seg>
+      </tuv>
+    </tu>
 	<tu tuid="BookEditor.FontSizeTip">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -82,6 +91,24 @@
 		<seg>அனைத்து பெட்டிகளை சுமந்து பாணி '{0}' மற்றும் மொழி '{1}' உரை அளவை மாற்றும்.\n{2} தமிழகத்தில் நடப்பு அளவு உள்ளது.</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="BookEditor.ForTextInLang">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This formatting is for all {0} text in boxes with '{1}' style</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>அனைத்து {0} உரை பெட்டிகளிலும் '{1}' பாணியுடன் உள்ளது இந்த வடிவமைத்தல்</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Click to choose topic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to choose topic</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>தலைப்பை தேர்வு செய்ய கிளிக் செய்யவும்</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Advanced Program Settings</seg>
@@ -131,7 +158,17 @@
 		<seg>புத்தகத்தை வெளியிடுகிறார்</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+      <note>{0} is a language name.</note>
+      <tuv xml:lang="en">
+        <seg>Default Font for {0}</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>இயல்புநிலை எழுத்துருவை {0}</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Default Font for Language 1</seg>
 	  </tuv>
@@ -147,7 +184,24 @@
 		<seg>முன்/பின் விவகாரத்தை கட்டு</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeft">
+      <tuv xml:lang="en">
+        <seg>Right To Left</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>வலமிருந்து இடமாக</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftTip">
+      <tuv xml:lang="en">
+        <seg>Select languages that are written from right to left</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>வலமிருந்து இடமாக எழுதப்பட்ட மொழிகள் தேர்ந்தெடு</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
@@ -216,6 +270,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
@@ -296,6 +351,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
@@ -509,6 +565,15 @@
 		<seg>அமைப்புகள்</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionTab.Source Collection">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>மூல தொகுப்பை</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
 	  <tuv xml:lang="en">
 		<seg>Open Additional Collections Folder</seg>
@@ -660,6 +725,14 @@
 		<seg>பூர்த்தி செய்</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="Common.HelpButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Help</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>உதவி</seg>
+      </tuv>
+    </tu>
 	<tu tuid="Common.Next">
 	  <note>Used for the Next button in wizards, like that used for making a New Collection</note>
 	  <tuv xml:lang="en">
@@ -750,7 +823,7 @@
 	<tu tuid="DecodableReaderTool.StageOf">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg> of </seg>
+        <seg>of</seg>
 	  </tuv>
 	  <tuv xml:lang="ta">
 		<seg>நிலை இருந்த</seg>
@@ -963,7 +1036,7 @@
 	<tu tuid="EditTab.Image.ChangeImage">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Change Image!!</seg>
+        <seg>Change Image</seg>
 	  </tuv>
 	  <tuv xml:lang="ta">
 		<seg>உருவத்தை மாற்று!!</seg>
@@ -1226,6 +1299,15 @@
 		<seg>வரைவு பக்கம்</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Custom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Custom</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>விருப்பம்</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 1">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1532,6 +1614,14 @@
 		<seg>மூன்று மொழிகள்</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.BuildingReaderTemplatesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Building Reader Templates</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>கட்டிடம் படிப்பவர் வார்ப்புருக்கள்</seg>
+      </tuv>
+    </tu>
 	<tu tuid="HelpMenu.Help Menu">
 	  <tuv xml:lang="en">
 		<seg>Help</seg>
@@ -1540,6 +1630,14 @@
 		<seg>உதவி</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Using Reader Templates </seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>படிப்பவர் வார்ப்புருக்கள் பயன்படுத்தி</seg>
+      </tuv>
+    </tu>
 	<tu tuid="HelpMenu._makeASuggestionMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Make a Suggestion</seg>
@@ -1556,6 +1654,15 @@
 		<seg>வலை தளம்</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.bloomContentDemonstrationToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Content Demonstration</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>உள்ளடக்க ஆர்ப்பாட்டத்தை</seg>
+      </tuv>
+    </tu>
 	<tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Check For New Version</seg>
@@ -1604,6 +1711,15 @@
 		<seg>வெளியீட்டு அறிக்கை...</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Shell Book Instructions</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>கூடு புத்தகம் நெறிமுறைகள்</seg>
+      </tuv>
+    </tu>
 	<tu tuid="HelpMenu.showEventLogMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Show Event Log</seg>
@@ -1612,6 +1728,15 @@
 		<seg>நிகழ்வு பதிவை காண்பி</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.trainingManualToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Training Manual</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>பயிற்சி கையேடு</seg>
+      </tuv>
+    </tu>
 	<tu tuid="InDesignXmlInformationDialog.WindowTitle">
 	  <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
 	  <tuv xml:lang="en">
@@ -1665,6 +1790,15 @@
 		<seg>A4 உருவப்படம்</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LayoutChoices.A5Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A5Landscape</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>A5Landscape</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LayoutChoices.A5Portrait">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1701,6 +1835,15 @@
 		<seg>சரியான</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.ChoiceOfTopic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Choice of Topic</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>தலைப்பை இடம்பெயர</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.FoThisLevel">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1710,6 +1853,24 @@
 		<seg>இந்த நிலை</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.Formatting">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Formatting</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>வடிவமைத்தல்</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.IllustrationSupport">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Illustration support</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>சித்திரம் ஆதரவு</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.KeepInMind">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1764,6 +1925,15 @@
 		<seg>ஒரு வாக்கியத்தை</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.Predictability">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Predictability</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>கணிப்பது</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.SetUpLevels">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1809,6 +1979,15 @@
 		<seg>பிரத்யேக</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.Vocabulary">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Vocabulary</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>சொல்லகராதி</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.WordCounts">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -3008,6 +3187,15 @@
 		<seg>அது</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>.</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>.</seg>
+      </tuv>
+    </tu>
 	<tu tuid="ReaderSetup.LevelHeader">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -3038,7 +3226,7 @@
 	<tu tuid="ReaderSetup.MatchingWords">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
-		<seg> matching words</seg>
+        <seg>matching words</seg>
 	  </tuv>
 	  <tuv xml:lang="ta">
 		<seg>பொருத்தமான சொற்கள்</seg>
