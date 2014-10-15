@@ -126,18 +126,26 @@
 
 		-->
 
-	<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-				 DatePlaceholder='VERSION_NUMBER'
-				Regex='VERSION_NUMBER'
-				 ReplacementText ="$(Version)" />
-		<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-				 DatePlaceholder='VERSION_NUMBER'
-				Regex='TEAMCITY_CONFIGURATION'
-				 ReplacementText ="$(BuildConfigurationID)" />
+	<FileUpdate Condition=" '$(Label)' == '' "
+		File="$(RootDir)\output\installer\appcast.xml"
+		Regex='VERSION_NUMBER_WITH_LABEL'
+		ReplacementText ="$(Version)" />
+	<FileUpdate Condition=" '$(Label)' != '' "
+		File="$(RootDir)\output\installer\appcast.xml"
+		Regex='VERSION_NUMBER_WITH_LABEL'
+		ReplacementText ="$(Version).$(Label)" />
+	<FileUpdate
+		File="$(RootDir)\output\installer\appcast.xml"
+		Regex='VERSION_NUMBER'
+		ReplacementText ="$(Version)" />
+	<FileUpdate
+		File="$(RootDir)\output\installer\appcast.xml"
+		Regex='TEAMCITY_CONFIGURATION'
+		ReplacementText ="$(BuildConfigurationID)" />
 	<!--<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-				   DatePlaceholder='DEV_RELEASE_DATE'
-				  Regex='DEV_VERSION_NUMBER'
-				   ReplacementText ="$(Version)" />-->
+		DatePlaceholder='DEV_RELEASE_DATE'
+		Regex='DEV_VERSION_NUMBER'
+		ReplacementText ="$(Version)" />-->
 
 	<!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
 
