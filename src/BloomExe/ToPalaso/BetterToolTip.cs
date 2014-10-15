@@ -47,9 +47,36 @@ namespace Bloom.ToPalaso
 
 		#region ========== ToolTipWhenDisabled extender property support ==========
 		private Dictionary<Control, string> m_ToolTipWhenDisabled = new Dictionary<Control, string>();
+		private List<Control> m_allControlsHavingToolTips = new List<Control>();
 		private Dictionary<Control, BetterTooltipTransparentOverlay> m_BetterTooltipTransparentOverlay = new Dictionary<Control, BetterTooltipTransparentOverlay>();
 		private Dictionary<Control, PaintEventHandler> m_EvtControlPaint = new Dictionary<Control, PaintEventHandler>();
 		private Dictionary<Control, EventHandler> m_EvtControlEnabledChanged = new Dictionary<Control, EventHandler>();
+
+		public new void SetToolTip(Control control, string value)
+		{
+			if (control == null)
+			{
+				throw new ArgumentNullException("control");
+			}
+
+			UpdateAllControlsList(control, value);
+
+			base.SetToolTip(control, value);
+		}
+
+		private void UpdateAllControlsList(Control control, string value)
+		{
+			if (String.IsNullOrEmpty(value))
+			{
+				if (m_allControlsHavingToolTips.Contains(control))
+					m_allControlsHavingToolTips.Remove(control);
+			}
+			else
+			{
+				if (!m_allControlsHavingToolTips.Contains(control))
+					m_allControlsHavingToolTips.Add(control);
+			}
+		}
 
 		public void SetToolTipWhenDisabled(Control p_control, string value)
 		{
@@ -57,6 +84,8 @@ namespace Bloom.ToPalaso
 			{
 				throw new ArgumentNullException("control");
 			}
+
+			UpdateAllControlsList(p_control, value);
 
 			if (!String.IsNullOrEmpty(value))
 			{
@@ -182,9 +211,8 @@ namespace Bloom.ToPalaso
 		public IEnumerable<LocalizingInfo> GetAllLocalizingInfoObjects(L10NSharpExtender extender)
 		{
 			var result = new List<LocalizingInfo>();
-			foreach (var kvp in m_ToolTipWhenDisabled)
+			foreach (var ctrl in m_allControlsHavingToolTips)
 			{
-				var ctrl = kvp.Key;
 				var idPrefix = extender.GetLocalizingId(ctrl);
 				var normalTip = GetToolTip(ctrl);
 				if (!string.IsNullOrEmpty(normalTip))
