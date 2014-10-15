@@ -213,6 +213,7 @@ namespace Bloom.Publish
 			_uploadRadio.Enabled = _model.AllowUpload;
 			_bookletBodyRadio.Enabled = _model.ShowBookletOption;
 			_bookletCoverRadio.Enabled = _model.ShowCoverOption;
+			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
 
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
