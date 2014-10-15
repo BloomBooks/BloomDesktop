@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="te" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">3.0.424.0</prop>
+    <prop type="x-appversion">3.0.53.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -141,6 +141,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Default Font for Language 3</seg>
 	  </tuv>
@@ -525,6 +526,15 @@
 		<seg>సెట్టింగులు</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionTab.Source Collection">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>మూలం సేకరణ</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
 	  <tuv xml:lang="en">
 		<seg>Open Additional Collections Folder</seg>
@@ -1242,6 +1252,15 @@
 		<seg>క్రెడిట్స్ పేజీ</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Custom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Custom</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>కస్టమ్</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Day 1">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1705,6 +1724,15 @@
 		<seg>A4చిత్తరువు</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LayoutChoices.A5Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A5Landscape</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>A5 భూభాగం</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LayoutChoices.A5Portrait">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1741,6 +1769,15 @@
 		<seg>అసలు</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.ChoiceOfTopic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Choice of Topic</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>విషయం యొక్క ఎంపిక</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.ConceptLoad">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1759,6 +1796,15 @@
 		<seg>ఈ స్థాయి కోసం</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.Formatting">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Formatting</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఫార్మాటింగ్</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1903,6 +1949,15 @@
 		<seg>ప్రత్యేక</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.Vocabulary">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Vocabulary</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>పదజాలం</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.WordCounts">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">

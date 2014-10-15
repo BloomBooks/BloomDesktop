@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="hi" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-	<prop type="x-appversion">3.0.424.0</prop>
+    <prop type="x-appversion">3.0.53.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -322,6 +322,12 @@
 		<seg>लुकअप भाषा कोड...</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LanguageLookup.LookupISOControl._searchText">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="hi">
+        <seg>?</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LanguageLookup.PrimaryNameHeader">
 	  <tuv xml:lang="en">
 		<seg>Name</seg>
