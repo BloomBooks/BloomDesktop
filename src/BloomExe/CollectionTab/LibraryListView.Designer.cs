@@ -219,7 +219,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizingId(this.makeReaderTemplateBloomPackToolStripMenuItem, "CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem");
 			this.makeReaderTemplateBloomPackToolStripMenuItem.Name = "makeReaderTemplateBloomPackToolStripMenuItem";
 			this.makeReaderTemplateBloomPackToolStripMenuItem.Size = new System.Drawing.Size(267, 22);
-			this.makeReaderTemplateBloomPackToolStripMenuItem.Text = "Make Reader Template BloomPack...";
+			this.makeReaderTemplateBloomPackToolStripMenuItem.Text = "Make Reader Template Bloom Pack...";
 			this.makeReaderTemplateBloomPackToolStripMenuItem.Click += new System.EventHandler(this.makeReaderTemplateBloomPackToolStripMenuItem_Click);
 			// 
 			// advancedToolStripMenuItem

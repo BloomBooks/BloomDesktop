@@ -10,7 +10,7 @@ using Palaso.Reporting;
 namespace Bloom.Collection.BloomPack
 {
 	/// <summary>
-	/// A BloomPack is just a zipped collection folder (a folder full of book folders).
+	/// A Bloom Pack is just a zipped collection folder (a folder full of book folders).
 	/// </summary>
 	public partial class BloomPackInstallDialog : Form
 	{
@@ -48,11 +48,11 @@ namespace Bloom.Collection.BloomPack
 				string destinationFolder = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
 				if (Directory.Exists(destinationFolder))
 				{
-					Logger.WriteEvent("BloomPack already exists, asking...");
+					Logger.WriteEvent("Bloom Pack already exists, asking...");
 					string title = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BloomPackInstaller",
-							"BloomPack Installer", "Displayed as the message box title");
+							"Bloom Pack Installer", "Displayed as the message box title");
 					string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.Replace",
-						"This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this BloomPack?");
+						"This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?");
 					msg = string.Format(msg, _folderName);
 					if (DialogResult.OK != MessageBox.Show(msg, title, MessageBoxButtons.OKCancel))
 					{
@@ -62,7 +62,7 @@ namespace Bloom.Collection.BloomPack
 					}
 					try
 					{
-						Logger.WriteEvent("Deleting existing BloomPack at " + destinationFolder);
+						Logger.WriteEvent("Deleting existing Bloom Pack at " + destinationFolder);
 						DeleteExistingDirectory(destinationFolder);
 					}
 					catch (Exception error)
@@ -73,7 +73,7 @@ namespace Bloom.Collection.BloomPack
 				}
 				zip.Close();
 			}
-			Logger.WriteEvent("Installing BloomPack " + _path);
+			Logger.WriteEvent("Installing Bloom Pack " + _path);
 			_okButton.Enabled = false;
 			_message.Text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.Extracting", "Extracting...", "Shown while BloomPacks are being installed");
 			_backgroundWorker.RunWorkerAsync();
@@ -210,7 +210,7 @@ namespace Bloom.Collection.BloomPack
 					L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.MustRestartToSee",
 					"Bloom is already running, but the contents will not show up until the next time you run Bloom");
 			}
-			//Analytics.Track("Install BloomPack");
+			//Analytics.Track("Install Bloom Pack");
 		}
 
 		private void _backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)

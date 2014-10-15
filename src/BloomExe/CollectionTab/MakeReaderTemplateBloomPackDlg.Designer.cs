@@ -86,7 +86,7 @@
 			this._btnSaveBloomPack.Name = "_btnSaveBloomPack";
 			this._btnSaveBloomPack.Size = new System.Drawing.Size(113, 23);
 			this._btnSaveBloomPack.TabIndex = 3;
-			this._btnSaveBloomPack.Text = "Save BloomPack";
+			this._btnSaveBloomPack.Text = "Save Bloom Pack";
 			this._btnSaveBloomPack.UseVisualStyleBackColor = true;
 			// 
 			// _btnCancel
@@ -128,7 +128,7 @@
 			this.Name = "MakeReaderTemplateBloomPackDlg";
 			this.ShowIcon = false;
 			this.ShowInTaskbar = false;
-			this.Text = "Make Reader Template BloomPack";
+			this.Text = "Make Reader Template Bloom Pack";
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
