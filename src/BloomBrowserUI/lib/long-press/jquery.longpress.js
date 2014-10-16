@@ -89,6 +89,7 @@
     var timer;
     var activeElement;
     var caretPosition; // Technically, the object is a range, but for us it should always be a point
+    var textAreaCaretPosition;
 
     var popup=$('<ul class=long-press-popup />');
 
@@ -128,11 +129,10 @@
     function onTimer() {
         var typedChar = isTextArea() ?
             $(activeElement).val().split('')[getTextAreaCaretPosition(activeElement)-1] :
-            $(activeElement).text().split('')[getCaretPosition(activeElement)-1];
+            $(activeElement).text().split('')[getCaretPositionOffset(activeElement)-1];
 
         if (moreChars[typedChar]) {
-            if (!isTextArea())
-                storeCaretPosition();
+            storeCaretPosition();
             showPopup((moreChars[typedChar]));
         } else {
             hidePopup();
@@ -144,10 +144,15 @@
         for (var i=0; i<chars.length; i++) {
             letter=$('<li class=long-press-letter />').text(chars[i]);
             letter.mouseenter(activateLetter);
+            letter.click(onPopupLetterClick);
             popup.append(letter);
         }
         $('body').append(popup);
         selectedCharIndex=-1;
+    }
+    function onPopupLetterClick(e) {
+        restoreCaretPosition();
+        hidePopup();
     }
     function activateLetter(e) {
         selectCharIndex($(e.target).index());
@@ -186,15 +191,21 @@
     }
 
     function storeCaretPosition() {
-        var sel;
-        caretPosition = null;
-        if (window.getSelection) {
-            sel = window.getSelection();
-            if (sel.getRangeAt && sel.rangeCount) {
-                caretPosition = sel.getRangeAt(0);
-            }
+        if (isTextArea()) {
+            textAreaCaretPosition = getTextAreaCaretPosition(activeElement);
+        } else {
+            caretPosition = getCaretPosition();
         }
     }
+
+    function restoreCaretPosition() {
+        if (isTextArea()) {
+            setTextAreaCaretPosition(activeElement, textAreaCaretPosition);
+        } else {
+            setCaretPosition();
+        }
+    }
+
     function replacePreviousLetterWithText(text) {
         if (isTextArea()) {
             var pos=getTextAreaCaretPosition(activeElement);
@@ -204,7 +215,7 @@
             setTextAreaCaretPosition(activeElement, pos);
         } else {
             var sel, textNode, clone;
-            var range = caretPosition;
+            var range = getCaretPosition();
             if (window.getSelection && range && range.startOffset != 0) {
                 sel = window.getSelection();
                 if (sel.getRangeAt && sel.rangeCount) {
@@ -227,7 +238,23 @@
         }
     }
 
-    function getCaretPosition(element) {
+    function getCaretPosition() {
+        var sel = window.getSelection();
+        return sel.getRangeAt(0);
+    }
+
+    function setCaretPosition() {
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(caretPosition);
+        window.setTimeout(function() {
+            if (activeElement && typeof activeElement.focus != "undefined") {
+                activeElement.focus();
+            }
+        }, 1);
+    }
+
+    function getCaretPositionOffset(element) {
         var caretOffset = 0;
         var doc = element.ownerDocument || element.document;
         var win = doc.defaultView || doc.parentWindow;
