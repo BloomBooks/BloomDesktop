@@ -307,6 +307,7 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="GeckoFxCore" />
 	  <ComponentRef Id="GeckoFxWinforms" />
 	  <ComponentRef Id="Ionic.Zip.Reduced.dll"/>
+	  <ComponentRef Id="ICSharpCode.SharpZipLib.dll"/>
 	  <ComponentRef Id="NetSparkle.Net40.dll"/>
 	  <ComponentRef Id="Interop.IWshRuntimeLibrary.dll"/>
 	  <ComponentRef Id="PdfSharp.dll" />
