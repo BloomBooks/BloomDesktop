@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SendReceive;
@@ -175,6 +174,14 @@ namespace Bloom.Edit
 			get { return _bookSelection.CurrentSelection != null; }
 		}
 
+		public bool IsCurrentBookCalendar
+		{
+			get
+			{
+				return CurrentBook.IsCalendar;
+			}
+		}
+
 		public Book.Book CurrentBook
 		{
 			get { return _bookSelection.CurrentSelection; }
@@ -265,6 +272,8 @@ namespace Bloom.Edit
 					|| _bookSelection.CurrentSelection.MultilingualContentLanguage3 == _collectionSettings.Language3Iso639Code;
 				}
 
+				if (IsCurrentBookCalendar)
+					return new List<ContentLanguage>() {_contentLanguages[0]};
 
 				return _contentLanguages;
 			}
@@ -322,7 +331,7 @@ namespace Bloom.Edit
 
 		public int NumberOfDisplayedLanguages
 		{
-			get { return ContentLanguages.Where(l => l.Selected).Count(); }
+			get { return IsCurrentBookCalendar ? 1 : ContentLanguages.Where(l => l.Selected).Count(); }
 		}
 
 		public bool CanEditCopyrightAndLicense

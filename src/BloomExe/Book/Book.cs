@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -1669,6 +1668,17 @@ namespace Bloom.Book
 		public string GetBookLineage()
 		{
 			return OurHtmlDom.GetMetaValue("bloomBookLineage","");
+		}
+
+		public bool IsCalendar
+		{
+			get
+			{
+				if (OurHtmlDom == null)
+					return false;
+
+				return OurHtmlDom.GetMetaValue("defaultBookletLayout", "") == "Calendar";
+			}
 		}
 	}
 }
