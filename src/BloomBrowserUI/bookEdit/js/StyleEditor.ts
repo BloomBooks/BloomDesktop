@@ -525,34 +525,46 @@ class StyleEditor {
 			//rule.style.setProperty("border-style", "none");
 			rule.style.removeProperty("border-style");
 			rule.style.removeProperty("border");
-			rule.style.removeProperty("border-color");
-			rule.style.setProperty("background-color", "transparent ");
-			rule.style.setProperty("border-radius", "0px");
+            rule.style.removeProperty("border-color");
+            rule.style.removeProperty("border-radius");
+            rule.style.removeProperty("padding");
+            rule.style.removeProperty("background-color");
+            rule.style.removeProperty("box-sizing");
 			break;
 		case 'black':
 			rule.style.setProperty("border", "1pt solid black");
 			rule.style.setProperty("background-color", "transparent ");
-			rule.style.setProperty("border-radius", "0px");
+            rule.style.setProperty("border-radius", "0px");
+            rule.style.setProperty("padding", "10px");
+            rule.style.setProperty("box-sizing", "border-box");
 			break;
 		case 'black-grey':
 			rule.style.setProperty("border", "1pt solid black");
 			rule.style.setProperty("background-color", "LightGray ");
-			rule.style.setProperty("border-radius", "0px");
+            rule.style.setProperty("border-radius", "0px");
+            rule.style.setProperty("padding", "10px");
+            rule.style.setProperty("box-sizing", "border-box");
 			break;
 		case 'black-round':
 			rule.style.setProperty("border", "1pt solid black");
 			rule.style.setProperty("border-radius", "10px");
-			rule.style.setProperty("background-color", "transparent ");
+            rule.style.setProperty("background-color", "transparent ");
+            rule.style.setProperty("padding", "10px");
+            rule.style.setProperty("box-sizing", "border-box");
 			break;
 		case 'grey':
 			rule.style.setProperty("border", "1pt solid Grey");
 			rule.style.setProperty("background-color", "transparent ");
-			rule.style.setProperty("border-radius", "0px");
+            rule.style.setProperty("border-radius", "0px");
+            rule.style.setProperty("padding", "10px");
+            rule.style.setProperty("box-sizing", "border-box");
 			break;
 		case 'grey-round':
 			rule.style.setProperty("border", "1pt solid Grey");
 			rule.style.setProperty("border-radius", "10px");
-			rule.style.setProperty("background-color", "transparent ");
+            rule.style.setProperty("background-color", "transparent ");
+            rule.style.setProperty("padding", "10px");
+            rule.style.setProperty("box-sizing", "border-box");
 			break;
 		}
 
