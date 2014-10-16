@@ -138,7 +138,7 @@
     <tu tuid="BloomPackInstallDialog.BloomPackInstaller">
       <note>Displayed as the message box title</note>
       <tuv xml:lang="en">
-        <seg>BloomPack Installer</seg>
+        <seg>Bloom Pack Installer</seg>
       </tuv>
     </tu>
     <tu tuid="BloomPackInstallDialog.DoesNotExist">
@@ -174,7 +174,7 @@
 	</tu>
     <tu tuid="BloomPackInstallDialog.Replace">
       <tuv xml:lang="en">
-        <seg>This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this BloomPack?</seg>
+        <seg>This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</seg>
       </tuv>
     </tu>
     <tu tuid="BloomPackInstallDialog.SingleCollectionFolder">
@@ -587,7 +587,7 @@
 	</tu>
 	<tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
 	  <tuv xml:lang="en">
-		<seg>Make Reader Template BloomPack...</seg>
+		<seg>Make Reader Template Bloom Pack...</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.advancedToolStripMenuItem">
@@ -1700,7 +1700,7 @@
 	</tu>
 	<tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
 	  <tuv xml:lang="en">
-		<seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
+		<seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a Bloom Pack to give to others so that they can make vernacular books with your shells.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
@@ -2621,7 +2621,7 @@
 	</tu>
 	<tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
 	  <tuv xml:lang="en">
-		<seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this BloomPack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
+		<seg>In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
@@ -2631,12 +2631,12 @@
 	</tu>
 	<tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
 	  <tuv xml:lang="en">
-		<seg>Save BloomPack</seg>
+		<seg>Save Bloom Pack</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
 	  <tuv xml:lang="en">
-		<seg>Make Reader Template BloomPack</seg>
+		<seg>Make Reader Template Bloom Pack</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="RegisterDialog.Email">
