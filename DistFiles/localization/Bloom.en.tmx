@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.13.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
 	<prop type="x-appversion">3.0.000.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
@@ -101,12 +101,26 @@
 		<seg>Decodable Reader Tool</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="Accordion.DecodableReaderToolCheckbox">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader Tool</seg>
+      </tuv>
+    </tu>
 	<tu tuid="Accordion.LeveledReaderTool">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Leveled Reader Tool</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="Accordion.LeveledReaderToolCheckbox">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader Tool</seg>
+      </tuv>
+    </tu>
 	<tu tuid="Accordion.More">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -254,6 +268,12 @@
 		<seg>Default Font for {0}</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
 	  <tuv xml:lang="en">
 		<seg>Front/Back Matter Pack</seg>
@@ -529,6 +549,13 @@
 		<seg>Other Collection</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionTab.PNG Animal Stories - Copy">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>PNG Animal Stories - Copy</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionTab.Sample Shells">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -569,6 +596,13 @@
 		<seg>{0} Books</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionTab.Zaza Reader Templates">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Zaza Reader Templates</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionTab._addToLibraryButton">
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
@@ -1511,6 +1545,13 @@
 		<seg>Choice of Topic</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.ConceptLoad">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Concept load</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.FoThisLevel">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1523,6 +1564,13 @@
 		<seg>Formatting</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>How to make a great leveled reader</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.IllustrationSupport">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1553,6 +1601,13 @@
 		<seg>Max</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.PatternAndRecognition">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Pattern and recognition</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.PerPage">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1589,6 +1644,13 @@
 		<seg>This Page</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.TopicFamiliarity">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Topic familiarity</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.Total">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1648,6 +1710,12 @@
 		<seg>Log in to BloomLibrary.org</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LoginDialog.label3">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>label3</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LoginDialog.showPassword">
 	  <tuv xml:lang="en">
 		<seg>&amp;Show Password</seg>
@@ -2873,6 +2941,12 @@
 		<seg>You may use this space for author/illustrator, or anything else.</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="button3">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>button3</seg>
+      </tuv>
+    </tu>
 	<tu tuid="checkBox1.checkBox1">
 	  <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
