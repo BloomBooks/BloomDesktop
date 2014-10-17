@@ -203,6 +203,7 @@
 	<Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
 		  DestinationFiles="$(RootDir)\output\installer\$(InstallerFileName)"
 		  />
+	<Message Text="Copied installer to $(RootDir)\output\installer\$(InstallerFileName)" Importance="high"/>
 
 	<!-- remove the installer which has no version number (wouldn't need this if the copy above was a move, instead) -->
 	<Delete Files="$(RootDir)\output\installer\BloomInstaller.msi" TreatErrorsAsWarnings="false" />
@@ -214,6 +215,7 @@
 	might use SignIfPossible, while a Publication build must use SignInstaller.-->
 	<Target Name="SignInstaller" DependsOnTargets="VersionNumbers">
 		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"'></Exec>
+		<Message Text="Signed installer at $(RootDir)\output\installer\$(InstallerFileName)" Importance="high"/>
 	</Target>
 
 	<Target Name="SignIfPossible" DependsOnTargets="VersionNumbers">
