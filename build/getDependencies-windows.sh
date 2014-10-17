@@ -209,6 +209,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.last
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/wkhtmltopdf-0.10.0_rc2.zip -d ../lib
-unzip -uqo ../Downloads/Mercurial.zip -d ../Mercurial
+unzip -uqo ../Downloads/Mercurial.zip -d ../.
 unzip -uqo ../Downloads/xulrunner-11.0.en-US.win32.zip -d ../lib
 # End of script

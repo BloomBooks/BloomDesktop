@@ -65,6 +65,7 @@ lib/dotnet/Chorus*.*
 DistFiles/exiftool.exe
 Copy*.bat
 DistFiles/wkhtmltopdf/
+lib/wkhtmltopdf/
 lib/wkhtmltopdf-*.zip
 .nuget/NuGet.exe
 LibChorus.*
