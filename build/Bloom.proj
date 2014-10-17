@@ -166,7 +166,7 @@
 
 
 
-  <Target Name="Upload" DependsOnTargets="VersionNumbers; Installer" >
+  <Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
 	<Message Text="Attempting rsync of $(InstallerFileName)" Importance="high"/>
 
 	<!--Kludge, but S3BuildPublisher needs this file in the build folder-->
@@ -213,7 +213,7 @@
 	<!-- These targets are designed to be additional steps on TeamCity after running target Installer. Pick the appropriate one
 	depending on whether your project's output MUST be signed or it's only nice if it is. For example, a continuous build
 	might use SignIfPossible, while a Publication build must use SignInstaller.-->
-	<Target Name="SignInstaller" DependsOnTargets="VersionNumbers">
+	<Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
 		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"'></Exec>
 		<Message Text="Signed installer at $(RootDir)\output\installer\$(InstallerFileName)" Importance="high"/>
 	</Target>
