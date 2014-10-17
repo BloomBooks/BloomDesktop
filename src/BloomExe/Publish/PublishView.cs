@@ -449,7 +449,7 @@ namespace Bloom.Publish
 		}
 		private void _openPDF_Click(object sender, EventArgs e)
 		{
-			Process.Start(_model.PdfFilePath);
+			PathUtilities.OpenFileInApplication(_model.PdfFilePath);
 		}
 
 		/// <summary>

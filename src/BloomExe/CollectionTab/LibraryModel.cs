@@ -164,7 +164,7 @@ namespace Bloom.CollectionTab
 
 		public void OpenFolderOnDisk()
 		{
-			Process.Start(_bookSelection.CurrentSelection.FolderPath);
+			PathUtilities.OpenDirectoryInExplorer(_bookSelection.CurrentSelection.FolderPath);
 		}
 
 		public void BringBookUpToDate()
@@ -262,7 +262,7 @@ namespace Bloom.CollectionTab
 						}
 						//show it
 						Logger.WriteEvent("Showing BloomPack on disk");
-						Process.Start("explorer.exe", "/select, \"" + path + "\"");
+						PathUtilities.SelectFileInExplorer(path);
 						Analytics.Track("Create BloomPack");
 					}
 					finally
@@ -332,7 +332,7 @@ namespace Bloom.CollectionTab
 					MessageBox.Show("Bloom will now open a list of problems it found.");
 					var path = Path.GetTempFileName() + ".txt";
 					File.WriteAllText(path, dlg.ProgressString.Text);
-					System.Diagnostics.Process.Start(path);
+					PathUtilities.OpenFileInApplication(path);
 				}
 				else
 				{
@@ -357,7 +357,7 @@ namespace Bloom.CollectionTab
 
 				var path = Path.GetTempFileName() + ".txt";
 				File.WriteAllText(path, dlg.ProgressString.Text);
-				System.Diagnostics.Process.Start(path);
+				PathUtilities.OpenFileInApplication(path);
 			}
 
 		}

@@ -10,6 +10,7 @@ using System.Xml;
 using Bloom.Book;
 using System.Linq;
 using Palaso.Xml;
+using Palaso.IO;
 
 namespace Bloom.Publish
 {
@@ -80,7 +81,7 @@ namespace Bloom.Publish
 				}
 			}
 			//this folder won't be fully populated yet, but as they watch it will fill up
-			Process.Start("explorer.exe", " \"" + exportFolder + "\"");
+			PathUtilities.OpenDirectoryInExplorer(exportFolder);
 		}
 		private void HandleThumbnailerError(HtmlDom pageDom, Exception error)
 		{

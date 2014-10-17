@@ -247,7 +247,7 @@ namespace Bloom.web
 			File.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
 
 			// open the file
-			Process.Start(fileName);
+			PathUtilities.OpenFileInApplication(fileName);
 		}
 
 		/// <summary></summary>
@@ -284,10 +284,12 @@ namespace Bloom.web
 
 		private static void OpenTextsFolder()
 		{
-			if (CurrentBook.CollectionSettings.SettingsFilePath == null) return;
+			if (CurrentBook.CollectionSettings.SettingsFilePath == null)
+				return;
 			var path = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Sample Texts");
-			if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-			Process.Start(path);
+			if (!Directory.Exists(path))
+				Directory.CreateDirectory(path);
+			PathUtilities.OpenDirectoryInExplorer(path);
 		}
 	}
 }

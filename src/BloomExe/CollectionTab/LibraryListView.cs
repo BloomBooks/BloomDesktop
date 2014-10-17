@@ -17,6 +17,7 @@ using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.UI.WindowsForms.Widgets;
 using L10NSharp;
+using Palaso.IO;
 
 namespace Bloom.CollectionTab
 {
@@ -108,9 +109,7 @@ namespace Bloom.CollectionTab
 					try
 					{
 						_model.ExportInDesignXml(dlg.FileName);
-#if !__MonoCS__
-						Process.Start("explorer.exe", "/select, \"" + dlg.FileName + "\"");
-#endif
+						PathUtilities.SelectFileInExplorer(dlg.FileName);
 						Analytics.Track("Exported XML For InDesign");
 					}
 					catch (Exception error)
@@ -788,7 +787,7 @@ namespace Bloom.CollectionTab
 
 		private void OnOpenAdditionalCollectionsFolderClick(object sender, EventArgs e)
 		{
-			Process.Start(ProjectContext.GetInstalledCollectionsDirectory());
+			PathUtilities.OpenDirectoryInExplorer(ProjectContext.GetInstalledCollectionsDirectory());
 		}
 
 		private void OnVernacularProjectHistoryClick(object sender, EventArgs e)
@@ -872,10 +871,7 @@ namespace Bloom.CollectionTab
 					"Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much."));
 				var destPath = _bookSelection.CurrentSelection.GetPathHtmlFile().Replace(".htm", ".doc");
 				_model.ExportDocFormat(destPath);
-#if !__MonoCS__
-				//Process.Start("explorer.exe", "/select, \"" + destPath + "\"");
-				Process.Start(destPath);
-#endif
+				PathUtilities.OpenFileInApplication(destPath);
 				Analytics.Track("Exported To Doc format");
 			}
 			catch (IOException error)
