@@ -1670,6 +1670,7 @@ namespace Bloom.Book
 			return OurHtmlDom.GetMetaValue("bloomBookLineage","");
 		}
 
+
 		public bool IsCalendar
 		{
 			get
