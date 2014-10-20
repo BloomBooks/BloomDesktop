@@ -174,6 +174,7 @@ ReaderToolsModel.prototype.setSort = function(sortType) {
     this.sort = sortType;
     this.updateSortStatus();
     this.updateWordList();
+    this.saveState();
 };
 
 ReaderToolsModel.prototype.updateSortStatus = function() {
@@ -1038,7 +1039,7 @@ ReaderToolsModel.prototype.saveState = function() {
     state.stage = this.stageNumber;
     state.level = this.levelNumber;
     state.markupType = this.currentMarkupType;
-    fireCSharpAccordionEvent('saveAccordionSettingsEvent', "state\tdecodableReader\t" + this.stageNumber);
+    fireCSharpAccordionEvent('saveAccordionSettingsEvent', "state\tdecodableReader\t" + "stage:" + this.stageNumber + ";sort:"+this.sort);
     fireCSharpAccordionEvent('saveAccordionSettingsEvent', "state\tleveledReader\t" + this.levelNumber);
     libsynphony.dbSet('drt_state', state);
 };
