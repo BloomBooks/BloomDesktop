@@ -14,15 +14,12 @@ ENDLAYOUTS
 	/*+placement:anchor-bottom-left 0 0;*/
 	position: absolute;
 	left: 0;
-	bottom: 0;
 	text-align: center;
 	width: 100%;
 	height: 64px;
-	display: table !important;
 }
 DIV.calendarBelowBigPictureText DIV.bloom-content1
 {
-	display: table-cell !important;
 	vertical-align: bottom;
 	width: 100%;
 	min-height: 14pt;
@@ -108,4 +105,18 @@ TD P
 .marginBox
 {
 	margin-left: 0.3cm !important;
+}
+
+/* bilingual */
+.calendarMonthTop.bloom-bilingual .bloom-imageContainer
+{
+	width: 100%;
+	height: 320px;
+}
+
+/* trilingual */
+.calendarMonthTop.bloom-trilingual .bloom-imageContainer
+{
+	width: 100%;
+	height: 260px;
 }
