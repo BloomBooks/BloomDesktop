@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
+using DesktopAnalytics;
 using Gecko;
 using Gecko.Events;
 using Gecko.Utils;
@@ -182,11 +183,22 @@ namespace Bloom
 
 		private Size SetWidthAndHeight(GeckoWebBrowser browser)
 		{
-			if (_syncControl.InvokeRequired)
+			try
 			{
-				return (Size)_syncControl.Invoke(new Func<GeckoWebBrowser, Size>(SetWidthAndHeight), browser);
+				if (_syncControl.InvokeRequired)
+				{
+					return (Size) _syncControl.Invoke(new Func<GeckoWebBrowser, Size>(SetWidthAndHeight), browser);
+				}
 			}
-						Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
+			catch (Exception e)
+			{
+				Debug.Fail("Reproduction of BL-524: Crash making thumbnail?");
+				//otherwise, don't tell the user, just log and send exception if they're online
+				Logger.WriteEvent("***Error making thumbnail, possible bl-524 reproduction, swallowed. "+ e.Message);
+				Analytics.ReportException(e);
+			}
+
+			Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
 			var div = browser.Document.ActiveElement.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault() as GeckoElement;
 						if (div == null)
 						{
