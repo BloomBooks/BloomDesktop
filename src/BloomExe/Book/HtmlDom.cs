@@ -468,6 +468,10 @@ namespace Bloom.Book
 			AddClass((XmlElement)dom.SelectSingleNode("//body"),"publishMode");
 		}
 
+		public static void AddHidePlaceHoldersClassToBody(XmlDocument dom)
+		{
+			AddClass((XmlElement)dom.SelectSingleNode("//body"), "hidePlaceHolders");
+		}
 
 
 		public void UpdateStyleSheetLinkPaths(IFileLocator fileLocator, string folderPath, IProgress log)
