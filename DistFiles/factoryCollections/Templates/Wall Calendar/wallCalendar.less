@@ -4,10 +4,10 @@ STARTLAYOUTS
 ENDLAYOUTS
 */
 /*Top with Picture and a little text*/
+@base-image-height: 365px;
 .calendarMonthTop .bloom-imageContainer
 {
-	width: 100%;
-	height: 363px;
+	height: @base-image-height;
 }
 .bloom-translationGroup.calendarBelowBigPictureText
 {
@@ -16,12 +16,10 @@ ENDLAYOUTS
 	left: 0;
 	text-align: center;
 	width: 100%;
-	height: 64px;
+	padding-top: 20px; // fudge since without display: table + table-cell we can't get vertical-alignment: bottom
 }
 DIV.calendarBelowBigPictureText DIV.bloom-content1
 {
-	vertical-align: bottom;
-	width: 100%;
 	min-height: 14pt;
 }
 /*Bottom with day grid*/
@@ -110,13 +108,19 @@ TD P
 /* bilingual */
 .calendarMonthTop.bloom-bilingual .bloom-imageContainer
 {
-	width: 100%;
-	height: 320px;
+	height: @base-image-height - 45;
+}
+DIV.calendarBelowBigPictureText DIV.bloom-content2
+{
+  min-height: 12pt;
 }
 
 /* trilingual */
 .calendarMonthTop.bloom-trilingual .bloom-imageContainer
 {
-	width: 100%;
-	height: 260px;
+	height: @base-image-height - 85;
+}
+DIV.calendarBelowBigPictureText DIV.bloom-content3
+{
+  min-height: 12pt;
 }

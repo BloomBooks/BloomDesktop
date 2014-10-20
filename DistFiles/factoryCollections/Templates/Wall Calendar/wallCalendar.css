@@ -5,8 +5,7 @@ ENDLAYOUTS
 */
 /*Top with Picture and a little text*/
 .calendarMonthTop .bloom-imageContainer {
-  width: 100%;
-  height: 363px;
+  height: 365px;
 }
 .bloom-translationGroup.calendarBelowBigPictureText {
   /*+placement:anchor-bottom-left 0 0;*/
@@ -14,11 +13,9 @@ ENDLAYOUTS
   left: 0;
   text-align: center;
   width: 100%;
-  height: 64px;
+  padding-top: 20px;
 }
 DIV.calendarBelowBigPictureText DIV.bloom-content1 {
-  vertical-align: bottom;
-  width: 100%;
   min-height: 14pt;
 }
 /*Bottom with day grid*/
@@ -90,11 +87,15 @@ TD P {
 }
 /* bilingual */
 .calendarMonthTop.bloom-bilingual .bloom-imageContainer {
-  width: 100%;
   height: 320px;
+}
+DIV.calendarBelowBigPictureText DIV.bloom-content2 {
+  min-height: 12pt;
 }
 /* trilingual */
 .calendarMonthTop.bloom-trilingual .bloom-imageContainer {
-  width: 100%;
-  height: 260px;
+  height: 280px;
+}
+DIV.calendarBelowBigPictureText DIV.bloom-content3 {
+  min-height: 12pt;
 }
