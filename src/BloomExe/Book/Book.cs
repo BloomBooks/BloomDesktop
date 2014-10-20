@@ -19,6 +19,7 @@ using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
+using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.Xml;
 using Image = System.Drawing.Image;
@@ -502,8 +503,7 @@ namespace Bloom.Book
 				Save();
 			}
 
-			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(BookInfo.BookLineage +", "
-														+ _storage.Dom.GetMetaValue("bloomBookLineage","")) /* had a case where the lineage hadn't been moved over to json yet */)
+			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
 			{
 				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
 			}
@@ -1679,6 +1679,10 @@ namespace Bloom.Book
 
 				return OurHtmlDom.GetMetaValue("defaultBookletLayout", "") == "Calendar";
 			}
+		}
+		public MultiTextBase GetDataItem(string name)
+		{
+			return _bookData.GetMultiTextVariableOrEmpty(name);
 		}
 	}
 }
