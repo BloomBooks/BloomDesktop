@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
+using DesktopAnalytics;
 using Gecko;
 using Gecko.Events;
 using Gecko.Utils;
@@ -182,11 +183,23 @@ namespace Bloom
 
 		private Size SetWidthAndHeight(GeckoWebBrowser browser)
 		{
-			if (_syncControl.InvokeRequired)
+			try
 			{
-				return (Size)_syncControl.Invoke(new Func<GeckoWebBrowser, Size>(SetWidthAndHeight), browser);
+				if (_syncControl.InvokeRequired)
+				{
+					return (Size) _syncControl.Invoke(new Func<GeckoWebBrowser, Size>(SetWidthAndHeight), browser);
+				}
 			}
-						Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
+			catch (Exception e)
+			{
+				//Debug.Fail("Reproduction of BL-524: Crash making thumbnail?");
+				//otherwise, don't tell the user, just log and send exception if they're online
+				Logger.WriteEvent("***Error making thumbnail, possible bl-524 reproduction, swallowed. "+ e.Message);
+				Analytics.ReportException(e);
+				return new Size(0,0); // this tells the caller we failed
+			}
+
+			Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
 			var div = browser.Document.ActiveElement.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault() as GeckoElement;
 						if (div == null)
 						{
@@ -239,6 +252,9 @@ namespace Bloom
 					return false;
 
 				var browserSize = SetWidthAndHeight(browser);
+				if (browserSize.Height == 0) //happens when we run into the as-yet-unreproduced-or-fixed bl-254
+					return false; // will try again later
+
 				try
 				{
 					Logger.WriteMinorEvent("HtmlThumNailer ({2}): browser.GetBitmap({0},{1})", browserSize.Width,
