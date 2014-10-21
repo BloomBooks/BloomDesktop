@@ -482,6 +482,8 @@ namespace Bloom.Edit
 							try
 							{
 								_model.CopyImageMetadataToWholeBook(dlg.Metadata);
+								// There might be more than one image on this page. Update overlays.
+								_model.RefreshDisplayOfCurrentPage();
 							}
 							catch (Exception e)
 							{
