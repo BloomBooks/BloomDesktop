@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="te" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="te" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.13.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
     <prop type="x-appversion">3.0.53.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
@@ -32,6 +32,14 @@
 		<seg>మరింత</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstallation">
+      <tuv xml:lang="en">
+        <seg>Bloom Pack Installation</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>బ్లూమ్ ప్యాక్ సంస్థాపన</seg>
+      </tuv>
+    </tu>
 	<tu tuid="BloomPackInstallDialog.BloomPackInstalled">
 	  <tuv xml:lang="en">
 		<seg>The {0} Collection is now ready to use on this computer.</seg>
@@ -73,6 +81,15 @@
 		<seg>ప్రారంభ</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="Book title in {lang}">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>పుస్తకం టైటిల్ {భాషను}</seg>
+      </tuv>
+    </tu>
 	<tu tuid="BookEditor.FontSizeTip">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -91,6 +108,15 @@
 		<seg>ఈ ఫార్మాటింగ్ '{1}' శైలి తో బాక్సులను అన్ని {0} టెక్స్ట్ ఉంది</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="Click to choose topic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to choose topic</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>విషయం ఎంచుకోవడానికి క్లిక్ చేయండి</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
 	  <tuv xml:lang="en">
 		<seg>Advanced Program Settings</seg>
@@ -140,10 +166,19 @@
 		<seg>పందెపులెక్కలు</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+      <note>{0} is a language name.</note>
+      <tuv xml:lang="en">
+        <seg>Default Font for {0}</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>డిఫాల్ట్ ఫాంట్ {0}</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
       <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Default Font for Language 3</seg>
+        <seg>Font</seg>
 	  </tuv>
 	  <tuv xml:lang="te">
 		<seg>భాష 3 డిఫాల్ట్ ఫాంట్</seg>
@@ -158,6 +193,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeft">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Right To Left</seg>
 	  </tuv>
@@ -166,6 +202,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftTip">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Select languages that are written from right to left</seg>
 	  </tuv>
@@ -173,7 +210,16 @@
 		<seg>కుడి నుండి వ్రాసిన భాషలను ఎంచుకోండి</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <tuv xml:lang="en">
+        <seg>Right to Left Writing System</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>కుడి ఎడమ వ్రాసే వ్యవస్థ</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
@@ -242,6 +288,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
@@ -322,6 +369,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
@@ -686,6 +734,14 @@
 		<seg>ముగింపు</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="Common.HelpButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Help</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>&amp;సహాయం</seg>
+      </tuv>
+    </tu>
 	<tu tuid="Common.Next">
 	  <note>Used for the Next button in wizards, like that used for making a New Collection</note>
 	  <tuv xml:lang="en">
@@ -843,7 +899,7 @@
 	</tu>
 	<tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
 	  <tuv xml:lang="en">
-		<seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
+        <seg>Open the Html used to make this PDF, in Firefox (must be on path)</seg>
 	  </tuv>
 	  <tuv xml:lang="te">
 		<seg>క్షమించండి, ఈ పుస్తకం కాపీరైట్ మరియు లైసెన్స్ మారలేదు</seg>
@@ -914,6 +970,24 @@
 		<seg>శైలి మోస్తున్న అన్ని బాక్సులను కోసం టెక్స్ట్ పరిమాణం మారుస్తుంది {0} 'మరియు భాష' {1} '/n ప్రస్తుత పరిమాణం {2}pt </seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>మీరు ఒక అసలు పుస్తకం తయారు చేసినప్పుడు, మొదలైనవి రచయితలు, చిత్రకారులు, సంపాదకులు, చేసిన రచనలు రికార్డ్ చేయడానికి ఈ పెట్టెను ఉపయోగించండి,</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Translator">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you make a book from a shell, use this box to tell who did the translation.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>మీరు ఒక షెల్ నుండి ఒక పుస్తకం తయారు చేసినప్పుడు, అనువాద చేసింది ఎవరు చెప్పడానికి ఈ పెట్టెను ఉపయోగించండి.</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab.FrontMatter.BookTitlePrompt">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1474,6 +1548,22 @@
 		<seg>కట్</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._cutButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Cut (Ctrl-x)</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>కట్ (Ctrl + x)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._cutButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>You need to select some text before you can cut it</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>మీరు కట్ ముందు మీరు కొంత టెక్స్ట్ ఎంచుకోండి అవసరం</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._deletePageButton">
 	  <tuv xml:lang="en">
 		<seg>Remove\n  Page</seg>
@@ -1482,6 +1572,22 @@
 		<seg>తొలగించడానికి \n పేజీ</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._deletePageButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Remove this page from the book</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>పుస్తకం నుండి ఈ పేజీని తొలగించండి</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._deletePageButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>This page cannot be removed</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఈ పేజీ తొలగించడం సాధ్యం కాదు</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._duplicatePageButton">
 	  <tuv xml:lang="en">
 		<seg>Duplicate\n   Page</seg>
@@ -1490,6 +1596,22 @@
 		<seg>నకిలీ \n పేజీ</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._duplicatePageButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Insert a new page which is a duplicate of this one</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఈ ఒక నకిలీ ఉంది దీనిలో ఒక కొత్త పేజీ ఇన్సర్ట్</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._duplicatePageButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>This page cannot be duplicated</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ఈ పేజీకి నకలు ఉండకూడదు</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._pasteButton">
 	  <tuv xml:lang="en">
 		<seg>Paste</seg>
@@ -1498,6 +1620,22 @@
 		<seg>పేస్ట్</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._pasteButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Paste (Ctrl+v)</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>అతికించండి (Ctrl + z)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._pasteButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>There is nothing on the Clipboard that you can paste here.</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>మీరు ఇక్కడ అతికించండి క్లిప్బోర్డ్కు న ఏమీ లేదు</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._undoButton">
 	  <tuv xml:lang="en">
 		<seg>Undo</seg>
@@ -1506,6 +1644,14 @@
 		<seg>దిద్దుబాటు రద్దుచెయ్యి</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._undoButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Undo (Ctrl+z)</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>నాశనము చేసినది (Ctrl+z)</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab.bilingual">
 	  <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
 	  <tuv xml:lang="en">
@@ -1567,6 +1713,14 @@
 		<seg>మూడు భాషా</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.BuildingReaderTemplatesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Building Reader Templates</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>భవనం రీడర్ టెంప్లేట్లు</seg>
+      </tuv>
+    </tu>
 	<tu tuid="HelpMenu.Help Menu">
 	  <tuv xml:lang="en">
 		<seg>Help</seg>
@@ -1575,6 +1729,14 @@
 		<seg>సహాయం</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Using Reader Templates </seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>రీడర్ టెంప్లేట్ ఉపయోగించి</seg>
+      </tuv>
+    </tu>
 	<tu tuid="HelpMenu._makeASuggestionMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Make a Suggestion</seg>
@@ -1592,6 +1754,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.bloomContentDemonstrationToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Content Demonstration</seg>
 	  </tuv>
@@ -1648,6 +1811,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Shell Book Instructions</seg>
 	  </tuv>
@@ -1664,6 +1828,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="HelpMenu.trainingManualToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Training Manual</seg>
 	  </tuv>
@@ -2071,6 +2236,14 @@
 		<seg>మీరు ఈ సేకరణ కాల్ ఏమి చేయాలనుకుంటున్నారు?</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="NewCollectionWizard.CollectionNameProblem">
+      <tuv xml:lang="en">
+        <seg>Collection Name Problem</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>సేకరణ పేరును సమస్య</seg>
+      </tuv>
+    </tu>
 	<tu tuid="NewCollectionWizard.CollectionWillBeCreatedAt">
 	  <tuv xml:lang="en">
 		<seg>Collection will be created at: {0}</seg>
@@ -2184,6 +2357,14 @@
 		<seg>కొత్త వికసించిన సేకరణ సృష్టించడానికి</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="NewCollectionWizard.ProjectName">
+      <tuv xml:lang="en">
+        <seg>Project Name</seg>
+      </tuv>
+      <tuv xml:lang="te">
+        <seg>ప్రాజెక్ట్ పేరు</seg>
+      </tuv>
+    </tu>
 	<tu tuid="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
 	  <tuv xml:lang="en">
 		<seg>Unable to create a new collection using that name.</seg>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="hi" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="hi" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.13.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
     <prop type="x-appversion">3.0.53.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
@@ -157,7 +157,7 @@
 		<seg>This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
-		<seg>इस 'पढ़ने की कला' गैलरी है। उपरोक्त बॉक्स, में लिखें क्या आप के लिए खोज रहे हैं, तो ENTER दबाएँ। आप शब्दों के अंग्रेजी और इंडोनेशिया में टाइप कर सकते हैं।</seg>
+        <seg>इस 'पढ़ने की कला' गैलरी है। उपरोक्त बॉक्स, में लिखें क्या आप के लिए खोज रहे हैं, तो दर्ज दबाएँ। आप शब्दों के अंग्रेजी और इंडोनेशिया में टाइप कर सकते हैं।</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ImageToolbox.FileButton">
@@ -181,7 +181,7 @@
 		<seg>Sorry, something went wrong with the ImageToolbox</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
-		<seg>क्षमा करें, कुछ ImageToolbox के साथ गलत हो गया था</seg>
+        <seg>क्षमा करें, कुछ छवि उपकरण बॉक्स के साथ गलत हो गया था</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ImageToolbox.GetPicture">
@@ -495,7 +495,7 @@
 		<seg>The button will show up when you hold down the Ctrl and Shift keys together.</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
-		<seg>जब आप Ctrl और Shift कुंजियाँ एक साथ पकड़ बटन दिखाई देंगे।</seg>
+        <seg>जब आप संयम और पाली कुंजियाँ एक साथ पकड़ बटन दिखाई देंगे।</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="SettingsProtection.LauncherButtonLabel">
@@ -584,7 +584,7 @@
 		<seg>Windows keyboard settings</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
-		<seg>Windows कुंजीपटल सेटिंग्स</seg>
+        <seg>विंडोज़  कुंजीपटल सेटिंग्स</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="WSKeyboardControl.KeyboardsAvailable">

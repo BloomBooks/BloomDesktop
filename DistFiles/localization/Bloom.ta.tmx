@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="ta" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="ta" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.13.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
     <prop type="x-appversion">3.0.53.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
@@ -32,6 +32,14 @@
 		<seg>மேலும்...</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstallation">
+      <tuv xml:lang="en">
+        <seg>Bloom Pack Installation</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>Bloom தொகுப்பு நிறுவல்</seg>
+      </tuv>
+    </tu>
 	<tu tuid="BloomPackInstallDialog.BloomPackInstalled">
 	  <tuv xml:lang="en">
 		<seg>The {0} Collection is now ready to use on this computer.</seg>
@@ -170,7 +178,7 @@
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
       <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Default Font for Language 1</seg>
+        <seg>Font</seg>
 	  </tuv>
 	  <tuv xml:lang="ta">
 		<seg>இயல்புநிலை எழுத்துருவை மொழி 1</seg>
@@ -185,6 +193,7 @@
 	  </tuv>
 	</tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeft">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Right To Left</seg>
       </tuv>
@@ -193,11 +202,20 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftTip">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Select languages that are written from right to left</seg>
       </tuv>
       <tuv xml:lang="ta">
         <seg>வலமிருந்து இடமாக எழுதப்பட்ட மொழிகள் தேர்ந்தெடு</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <tuv xml:lang="en">
+        <seg>Right to Left Writing System</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>வலமிருந்து இடமாக எழுதும் முறைமை</seg>
       </tuv>
     </tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
@@ -890,7 +908,7 @@
 	</tu>
 	<tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
 	  <tuv xml:lang="en">
-		<seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
+        <seg>Open the Html used to make this PDF, in Firefox (must be on path)</seg>
 	  </tuv>
 	  <tuv xml:lang="ta">
 		<seg>திற, Html பயன்படும் இந்த PDF, Chrome (இருக்க வேண்டும் பாதை) செய்யவும்</seg>
@@ -961,6 +979,24 @@
 		<seg>அனைத்து பெட்டிகளை சுமந்து பாணி '{0}' மற்றும் மொழி '{1}' உரை அளவை மாற்றும்.\n{2} தமிழகத்தில் நடப்பு அளவு உள்ளது.</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>போது நீங்கள் ஒரு மூல புத்தகம் குறித்து, எழுத்தாளர்கள், illustrators, அரசியல்வாதிகளாகவும், ஆகிய செய்த பங்களிப்புகள் பதிவிட இந்த பெட்டியை பயன்படுத்தவும்.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Translator">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you make a book from a shell, use this box to tell who did the translation.</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>ஒரு புத்தகத்தில் இருந்து ஒரு கூடு மேற்கொள்ளும்போது, இந்தப் பெட்டியைப் பயன்படுத்தி மொழிபெயர்ப்பு யார் இட்டு கூறுங்கள்.</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab.FrontMatter.BookTitlePrompt">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1521,6 +1557,22 @@
 		<seg>வெட்டு</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._cutButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Cut (Ctrl-x)</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>(Ctrl-x) வெட்டு</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._cutButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>You need to select some text before you can cut it</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>நீங்கள் நீங்கள் அதை வெட்ட முடியும் முன் சில உரையை தேர்ந்தெடுக்க வேண்டும்</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._deletePageButton">
 	  <tuv xml:lang="en">
 		<seg>Remove\n  Page</seg>
@@ -1529,6 +1581,22 @@
 		<seg>நீக்கு \nபக்கம்</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._deletePageButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Remove this page from the book</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>இப்பக்கம் கடைசியாக புத்தகத்தில் இருந்து அகற்று</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._deletePageButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>This page cannot be removed</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>இப்பக்கம் கடைசியாக நீக்க முடியாது</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._duplicatePageButton">
 	  <tuv xml:lang="en">
 		<seg>Duplicate\n   Page</seg>
@@ -1537,6 +1605,22 @@
 		<seg>நகல் பக்கம்</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._duplicatePageButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Insert a new page which is a duplicate of this one</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>இதை, பிரதி இது ஒரு புதிய பக்கத்தை செருகு</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._duplicatePageButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>This page cannot be duplicated</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>இப்பக்கம் கடைசியாக படியெடுக்க இயலாது</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._pasteButton">
 	  <tuv xml:lang="en">
 		<seg>Paste</seg>
@@ -1545,6 +1629,22 @@
 		<seg>ஒட்டு</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._pasteButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Paste (Ctrl+v)</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>ஒட்டு (Ctrl + v)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._pasteButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>There is nothing on the Clipboard that you can paste here.</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>எதுவும் இல்லை என்று நீங்கள் இங்கே ஒட்டலாம் கிளிப்போர்டில்.</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._undoButton">
 	  <tuv xml:lang="en">
 		<seg>Undo</seg>
@@ -1553,6 +1653,14 @@
 		<seg>செயல்தவிர்</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._undoButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Undo (Ctrl+z)</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>(Ctrl + z) செயல்தவிர்</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab.bilingual">
 	  <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
 	  <tuv xml:lang="en">
@@ -1961,6 +2069,15 @@
 		<seg>இப்பக்கம் கடைசியாக</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="LeveledReaderTool.TopicFamiliarity">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Topic familiarity</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>தலைப்பை familiarity</seg>
+      </tuv>
+    </tu>
 	<tu tuid="LeveledReaderTool.Total">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -2101,6 +2218,14 @@
 		<seg>என்ன விரும்புகிறீர்கள் இந்தத் தொகுப்பில் அழைப்பு?</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="NewCollectionWizard.CollectionNameProblem">
+      <tuv xml:lang="en">
+        <seg>Collection Name Problem</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>தொகுப்பு பெயர் கோளாறு</seg>
+      </tuv>
+    </tu>
 	<tu tuid="NewCollectionWizard.CollectionWillBeCreatedAt">
 	  <tuv xml:lang="en">
 		<seg>Collection will be created at: {0}</seg>
@@ -2214,6 +2339,14 @@
 		<seg>புதிய Bloom தொகுப்பை உருவாக்க</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="NewCollectionWizard.ProjectName">
+      <tuv xml:lang="en">
+        <seg>Project Name</seg>
+      </tuv>
+      <tuv xml:lang="ta">
+        <seg>திட்டப்பணி பெயர்</seg>
+      </tuv>
+    </tu>
 	<tu tuid="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
 	  <tuv xml:lang="en">
 		<seg>Unable to create a new collection using that name.</seg>
