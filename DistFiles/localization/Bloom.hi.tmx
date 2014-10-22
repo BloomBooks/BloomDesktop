@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="hi" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="hi" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.13.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
     <prop type="x-appversion">3.0.53.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
@@ -32,6 +32,14 @@
 		<seg>और अधिक...</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstallation">
+      <tuv xml:lang="en">
+        <seg>Bloom Pack Installation</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>ब्लूम पैक स्थापना</seg>
+      </tuv>
+    </tu>
 	<tu tuid="BloomPackInstallDialog.BloomPackInstalled">
 	  <tuv xml:lang="en">
 		<seg>The {0} Collection is now ready to use on this computer.</seg>
@@ -73,6 +81,15 @@
 		<seg>{0} खोलने...</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="Book title in {lang}">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>{भाषा } में पुस्तक शीर्षक</seg>
+      </tuv>
+    </tu>
 	<tu tuid="BookEditor.FontSizeTip">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -89,6 +106,15 @@
       </tuv>
       <tuv xml:lang="hi">
         <seg>इस स्वरूपण सभी {0} पाठ बक्सों में '{1}' शैली के साथ के लिए है</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Click to choose topic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to choose topic</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>विषय चुनने के लिए क्लिक करें</seg>
       </tuv>
     </tu>
 	<tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
@@ -140,10 +166,19 @@
 		<seg>पुस्तक बनाना</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+      <note>{0} is a language name.</note>
+      <tuv xml:lang="en">
+        <seg>Default Font for {0}</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>{0} के लिए डिफ़ॉल्ट फ़ॉन्ट</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
       <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
-		<seg>Default Font for Language 3</seg>
+        <seg>Font</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
 		<seg>3 भाषा के लिए डिफ़ॉल्ट फ़ॉन्ट</seg>
@@ -158,6 +193,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeft">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Right To Left</seg>
 	  </tuv>
@@ -166,6 +202,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftTip">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>Select languages that are written from right to left</seg>
 	  </tuv>
@@ -173,7 +210,16 @@
 		<seg>दाएँ से बाएँ से लिखा हैं कि भाषाओं का चयन करें</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <tuv xml:lang="en">
+        <seg>Right to Left Writing System</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>बाईं करने के लिए सही लेखन प्रणाली</seg>
+      </tuv>
+    </tu>
 	<tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
@@ -242,6 +288,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
@@ -322,6 +369,7 @@
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
+      <prop type="x-nolongerused">true</prop>
 	  <tuv xml:lang="en">
 		<seg>About These Settings</seg>
 	  </tuv>
@@ -351,7 +399,7 @@
 		<seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
-		<seg>ब्लूम अब अपने शब्द संसाधन प्रोग्राम (सामान्य रूप से शब्द या Libre कार्यालय) में इस HTML दस्तावेज़ खुलेगा। आप पाठ और इस पुस्तक की छवियों के साथ काम करने में सक्षम हो जाएगा, लेकिन इन कार्यक्रमों के साथ बहुत अच्छी तरह से लेआउट, इतनी ज्यादा उम्मीद नहीं बनाए सामान्य रूप से नहीं है।</seg>
+        <seg>ब्लूम अब अपने शब्द संसाधन प्रोग्राम (सामान्य रूप से शब्द या लिब्रे कार्यालय) में इस HTML दस्तावेज़ खुलेगा। आप पाठ और इस पुस्तक की छवियों के साथ काम करने में सक्षम हो जाएगा, लेकिन इन कार्यक्रमों के साथ बहुत अच्छी तरह से लेआउट, इतनी ज्यादा उम्मीद नहीं बनाए सामान्य रूप से नहीं है।</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
@@ -686,6 +734,14 @@
 		<seg>समाप्त करें</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="Common.HelpButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Help</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>मदद</seg>
+      </tuv>
+    </tu>
 	<tu tuid="Common.Next">
 	  <note>Used for the Next button in wizards, like that used for making a New Collection</note>
 	  <tuv xml:lang="en">
@@ -843,7 +899,7 @@
 	</tu>
 	<tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
 	  <tuv xml:lang="en">
-		<seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
+        <seg>Open the Html used to make this PDF, in Firefox (must be on path)</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
 		<seg>खुला Html (पथ पर होना चाहिए) क्रोम में इस पीडीएफ बनाने के लिए इस्तेमाल किया</seg>
@@ -914,6 +970,24 @@
 		<seg>सभी बक्से की शैली '{0}' और भाषा '{1}' को ले जाने के लिए पाठ का आकार बदलता है।\nवर्तमान आकार {2} पीटी है।</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>जब आप किसी मूल किताब बना रही हैं, लेखकों, स्‍पष्‍टकर्ता, संपादकों, आदि द्वारा किए गए योगदान को रिकॉर्ड करने के लिए इस बॉक्स का उपयोग करें।</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Translator">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you make a book from a shell, use this box to tell who did the translation.</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>जब आप एक किताब एक शैल से बना, जो अनुवाद किया था बताने के लिए इस बॉक्स का उपयोग करें।</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab.FrontMatter.BookTitlePrompt">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">
@@ -1348,7 +1422,7 @@
 		<seg>Inside Back Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
-		<seg>अंदर िपछला कवर वापस</seg>
+        <seg>पीछे के कवर के अंदर</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
@@ -1402,7 +1476,7 @@
 		<seg>Outside Back Cover</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
-		<seg>बाहर िपछला कवर वापस</seg>
+        <seg>पीछे के कवर बाहर</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
@@ -1474,6 +1548,22 @@
 		<seg>कट</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._cutButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Cut (Ctrl-x)</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>(कंट्रोल -x) में कटौती</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._cutButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>You need to select some text before you can cut it</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>आप की जरूरत है इससे पहले कि आप उसे काट कर सकते हैं कुछ पाठ का चयन करने के लिए</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._deletePageButton">
 	  <tuv xml:lang="en">
 		<seg>Remove\n  Page</seg>
@@ -1482,6 +1572,22 @@
 		<seg>हटाने\nपृष्ठ</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._deletePageButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Remove this page from the book</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>यह पृष्ठ किताब से निकालें</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._deletePageButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>This page cannot be removed</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>यह पृष्ठ नहीं निकाला जा सकता</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._duplicatePageButton">
 	  <tuv xml:lang="en">
 		<seg>Duplicate\n   Page</seg>
@@ -1490,6 +1596,22 @@
 		<seg>नकल\nपृष्ठ</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._duplicatePageButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Insert a new page which is a duplicate of this one</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>जो इस एक की नकल है एक नया पृष्ठ सम्मिलित करें</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._duplicatePageButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>This page cannot be duplicated</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>यह पृष्ठ दोहराया नहीं जा सकता</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._pasteButton">
 	  <tuv xml:lang="en">
 		<seg>Paste</seg>
@@ -1498,6 +1620,22 @@
 		<seg>चिपकाएँ</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._pasteButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Paste (Ctrl+v)</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>पेस्ट (कंट्रोल  + v)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._pasteButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>There is nothing on the Clipboard that you can paste here.</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>वहाँ कुछ भी नहीं है कि तुम यहाँ पेस्ट कर सकते हैं क्लिपबोर्ड पर।</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab._undoButton">
 	  <tuv xml:lang="en">
 		<seg>Undo</seg>
@@ -1506,6 +1644,14 @@
 		<seg>पूर्ववत् करें</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="EditTab._undoButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Undo (Ctrl+z)</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>पूर्ववत् करें (कंट्रोल  + z)</seg>
+      </tuv>
+    </tu>
 	<tu tuid="EditTab.bilingual">
 	  <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
 	  <tuv xml:lang="en">
@@ -1567,6 +1713,14 @@
 		<seg>तीन भाषाओं</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.BuildingReaderTemplatesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Building Reader Templates</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>इमारत पाठक टेम्पलेट्स</seg>
+      </tuv>
+    </tu>
 	<tu tuid="HelpMenu.Help Menu">
 	  <tuv xml:lang="en">
 		<seg>Help</seg>
@@ -1575,6 +1729,14 @@
 		<seg>मदद</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Using Reader Templates </seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>पाठक टेम्पलेट्स का उपयोग करना</seg>
+      </tuv>
+    </tu>
 	<tu tuid="HelpMenu._makeASuggestionMenuItem">
 	  <tuv xml:lang="en">
 		<seg>Make a Suggestion</seg>
@@ -1592,6 +1754,7 @@
 	  </tuv>
 	</tu>
     <tu tuid="HelpMenu.bloomContentDemonstrationToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Content Demonstration</seg>
       </tuv>
@@ -1648,6 +1811,7 @@
 	  </tuv>
 	</tu>
     <tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Shell Book Instructions</seg>
       </tuv>
@@ -1664,6 +1828,7 @@
 	  </tuv>
 	</tu>
     <tu tuid="HelpMenu.trainingManualToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Training Manual</seg>
       </tuv>
@@ -1730,7 +1895,7 @@
         <seg>A5Landscape</seg>
       </tuv>
       <tuv xml:lang="hi">
-        <seg>A5Landscape</seg>
+        <seg>A5लैंडस्केप </seg>
       </tuv>
     </tu>
 	<tu tuid="LayoutChoices.A5Portrait">
@@ -2071,6 +2236,14 @@
 		<seg>आप क्या कहते हैं इस संग्रह के लिए चाहते हैं?</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="NewCollectionWizard.CollectionNameProblem">
+      <tuv xml:lang="en">
+        <seg>Collection Name Problem</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>संग्रह नाम समस्या</seg>
+      </tuv>
+    </tu>
 	<tu tuid="NewCollectionWizard.CollectionWillBeCreatedAt">
 	  <tuv xml:lang="en">
 		<seg>Collection will be created at: {0}</seg>
@@ -2184,6 +2357,14 @@
 		<seg>नई ब्लूम संग्रह बनाएँ</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="NewCollectionWizard.ProjectName">
+      <tuv xml:lang="en">
+        <seg>Project Name</seg>
+      </tuv>
+      <tuv xml:lang="hi">
+        <seg>प्रोजेक्ट का नाम</seg>
+      </tuv>
+    </tu>
 	<tu tuid="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
 	  <tuv xml:lang="en">
 		<seg>Unable to create a new collection using that name.</seg>
@@ -2335,7 +2516,7 @@
 		<seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
-		<seg>ताकि खिल अपनी पूरी किताब दिखा सकते हैं Adobe रीडर स्थापित कृपया। तब तक, तुम अब भी पीडीएफ किताब बचाने कर सकते हैं और इसे कुछ अन्य प्रोग्राम में खुला।</seg>
+        <seg>ताकि खिल अपनी पूरी किताब दिखा सकते हैं अडोब रीडर स्थापित कृपया। तब तक, तुम अब भी पीडीएफ किताब बचाने कर सकते हैं और इसे कुछ अन्य प्रोग्राम में खुला।</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="PublishTab.AdobeReaderControl.ProblemShowingPDF">
@@ -2921,7 +3102,7 @@
 		<seg>About Word Lists and Sample TextsWhen you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
-		<seg>शब्द सूचियों और नमूना आप पाठ फ़ाइलें आपके नमूना ग्रंथों में जगह फ़ोल्डर TextsWhen के बारे में, पाठक के लिए Decodable उपकरण करने के लिए सुझाव है कि आप अपने पाठकों का निर्माण कर रहे हैं, जबकि शब्द पा सकते हैं।</seg>
+        <seg>शब्द सूचियों और नमूना आप पाठ फ़ाइलें आपके नमूना ग्रंथों में जगह फ़ोल्डर ग्रंथों जब के बारे में, पाठक के लिए Decodable उपकरण करने के लिए सुझाव है कि आप अपने पाठकों का निर्माण कर रहे हैं, जबकि शब्द पा सकते हैं।</seg>
 	  </tuv>
 	</tu>
 	<tu tuid="ReaderSetup.AboutSampleTexts2">
@@ -3856,7 +4037,7 @@
 		<seg>You may use this space for author/illustrator, or anything else.</seg>
 	  </tuv>
 	  <tuv xml:lang="hi">
-		<seg>लेखक/illustrator, या कुछ और के लिए आप इस स्थान का उपयोग हो सकता।</seg>
+        <seg>लेखक/स्‍पष्‍टकर्ता, या कुछ और के लिए आप इस स्थान का उपयोग हो सकता।</seg>
 	  </tuv>
 	</tu>
   </body>
