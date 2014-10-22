@@ -235,6 +235,9 @@ namespace Bloom.Publish
 				item.Click += OnLayoutChosen;
 			}
 			_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
+
+			// "EditTab" because it is the same text.  No sense in having it listed twice.
+			_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip", "Choose a page size and orientation");
 		}
 
 		private void OnLayoutChosen(object sender, EventArgs e)
