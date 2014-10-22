@@ -7,7 +7,7 @@
 
 # Different settings for javascript, typescript, html and tmx files
 *.js   whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
-*.ts   whitespace=-indent-with-non-tab,trailing-space,tabwidth=2
+*.ts   whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
 *.htm* whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
 *.tmx  whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
 
