@@ -138,7 +138,7 @@
 			this._openCreateCollectionButton.Image = global::Bloom.Properties.Resources.OpenCreateLibrary24x24;
 			this._openCreateCollectionButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this._openCreateCollectionButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._openCreateCollectionButton, null);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._openCreateCollectionButton, "Open/Create/Get Collection");
 			this._L10NSharpExtender.SetLocalizationComment(this._openCreateCollectionButton, "This is is the button you use to create a new collection, open a new one, or get " +
         "one from a repository somewhere");
 			this._L10NSharpExtender.SetLocalizingId(this._openCreateCollectionButton, "CollectionTab.Open/CreateCollectionButton");
@@ -146,7 +146,6 @@
 			this._openCreateCollectionButton.Size = new System.Drawing.Size(98, 43);
 			this._openCreateCollectionButton.Text = "Other Collection";
 			this._openCreateCollectionButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._openCreateCollectionButton.ToolTipText = "Open/Create/Get Collection";
 			this._openCreateCollectionButton.Click += new System.EventHandler(this.OnOpenCreateLibrary_Click);
 			// 
 			// _helpMenu
@@ -172,14 +171,13 @@
 			this._helpMenu.Image = global::Bloom.Properties.Resources.help24x24;
 			this._helpMenu.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this._helpMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._helpMenu, null);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._helpMenu, "Get Help");
 			this._L10NSharpExtender.SetLocalizationComment(this._helpMenu, null);
 			this._L10NSharpExtender.SetLocalizingId(this._helpMenu, "HelpMenu.Help Menu");
 			this._helpMenu.Name = "_helpMenu";
 			this._helpMenu.Size = new System.Drawing.Size(45, 43);
 			this._helpMenu.Text = "Help";
 			this._helpMenu.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._helpMenu.ToolTipText = "Get Help";
 			// 
 			// _documentationMenuItem
 			// 

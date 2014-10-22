@@ -417,13 +417,12 @@
 			this._contentLanguagesDropdown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
 			this._contentLanguagesDropdown.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._contentLanguagesDropdown.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._contentLanguagesDropdown, null);
+			this._L10NSharpExtender.SetLocalizableToolTip(this._contentLanguagesDropdown, "Choose language to make this a bilingual or trilingual book");
 			this._L10NSharpExtender.SetLocalizationComment(this._contentLanguagesDropdown, null);
 			this._L10NSharpExtender.SetLocalizingId(this._contentLanguagesDropdown, "EditTab._contentLanguagesDropdown");
 			this._contentLanguagesDropdown.Name = "_contentLanguagesDropdown";
 			this._contentLanguagesDropdown.Size = new System.Drawing.Size(129, 19);
 			this._contentLanguagesDropdown.Text = "Multilingual Settings";
-			this._contentLanguagesDropdown.ToolTipText = "Choose language to make this a bilingual or trilingual book";
 			// 
 			// _layoutChoices
 			// 
