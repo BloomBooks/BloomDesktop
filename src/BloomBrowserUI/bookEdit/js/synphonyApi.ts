@@ -104,7 +104,7 @@ class SynphonyApi {
 	 * @param {int} [stageNumber] Optional. If present, returns all stages up to and including stageNumber. If missing, returns all stages.
 	 * @returns {Stage[]} An array of Stage objects
 	 */
-	getStages(stageNumber: number): ReaderStage[] {
+	getStages(stageNumber?: number): ReaderStage[] {
 
 		if (typeof stageNumber === 'undefined')
 			return this.stages;
