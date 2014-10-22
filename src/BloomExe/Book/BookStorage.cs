@@ -5,7 +5,6 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters;
 using System.Security;
 using System.Text;
 using System.Xml;
@@ -13,11 +12,9 @@ using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Palaso.Code;
-using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
-using Palaso.UI.WindowsForms.FileSystem;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -662,6 +659,18 @@ namespace Bloom.Book
 				{
 					return; //we don't want to copy custom xmatters around to the program files directory, template directories, the Bloom src code folders, etc.
 				}
+			}
+
+			// do not attempt to copy files to the "Program Files" directory
+			var targetDirInfo = new DirectoryInfo(_folderPath);
+			var programsDirInfo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+			if (String.Compare(targetDirInfo.FullName, programsDirInfo.FullName, StringComparison.InvariantCultureIgnoreCase) == 0) return;
+
+			// do not attempt to copy files to the "Program Files (x86)" directory either
+			if (Environment.Is64BitOperatingSystem)
+			{
+				programsDirInfo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
+				if (String.Compare(targetDirInfo.FullName, programsDirInfo.FullName, StringComparison.InvariantCultureIgnoreCase) == 0) return;
 			}
 
 			string documentPath="notSet";
