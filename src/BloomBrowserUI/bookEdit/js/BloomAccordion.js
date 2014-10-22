@@ -1,5 +1,5 @@
 ﻿/// <reference path="../../lib/jquery.d.ts" />
-
+/// <reference path="../../lib/jquery-ui.d.ts" />
 var BloomAccordion = (function () {
     function BloomAccordion() {
         $("#accordion").accordion({
