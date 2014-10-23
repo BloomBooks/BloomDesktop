@@ -27,19 +27,28 @@ function process_UI_Message(event: MessageEvent): void {
 
 				var files: string[] = s.split('\r');
 				var extensions: string[] = getIframeChannel().readableFileExtensions;
+                var needsTxtExtension: string = document.getElementById('needs_txt_extension').innerHTML;
 				var notSupported: string = document.getElementById('format_not_supported').innerHTML;
 				var foundNotSupported: boolean = false;
 				files.forEach(function(element, index, array) {
-					var ext: string = element.split('.').pop();
-					if (extensions.indexOf(ext) === -1) {
-						array[index] = element + ' ' + '<span class="format-not-supported">' + notSupported + '</span>';
+                    var filenameComponents: string[] = element.split('.');
+                    if (filenameComponents.length < 2) {
+                        array[index] = element + ' ' + '<span class="format-not-supported">' + needsTxtExtension + '</span>';
 						foundNotSupported = true;
+                    } else {
+                        var ext:string = filenameComponents.pop();
+                        if (extensions.indexOf(ext) === -1) {
+                            array[index] = element + ' ' + '<span class="format-not-supported">' + notSupported + '</span>';
+                            foundNotSupported = true;
+                        }
 					}
 				});
 				s = files.join('\r');
 
 				if (foundNotSupported)
 					document.getElementById('how_to_export').style.display = '';
+                else
+                    document.getElementById('how_to_export').style.display = 'none';
 			}
 
 			var fileList: string = s || document.getElementById('please-add-texts').innerHTML;
