@@ -80,6 +80,9 @@ var ReaderToolsModel = function() {
 
     // remember words so we can update the counts real-time
     this.bookPageWords = [];
+
+    // BL-599: Speed up the decodable reader tool
+    this.stageGraphemes = [];
 };
 
 ReaderToolsModel.prototype.incrementStage = function() {
@@ -102,6 +105,10 @@ ReaderToolsModel.prototype.setStageNumber = function(val) {
         return;
     }
     this.stageNumber = val;
+
+    // BL-599: Speed up the decodable reader tool
+    this.stageGraphemes = this.getKnownGraphemes(val);
+
     this.updateStageLabel();
     this.updateLetterList();
     this.enableStageButtons();
@@ -350,7 +357,7 @@ ReaderToolsModel.prototype.updateLetterList = function() {
     if (stages.length === 0) return;
 
     // Letters up through current stage
-    var letters = this.getKnownGraphemes(this.stageNumber);
+    var letters = this.stageGraphemes;
 
     // All the letters in the order they were entered on the Letters tab in the set up dialog
     var allLetters = this.synphony.source.letters.split(' ');
@@ -431,9 +438,8 @@ ReaderToolsModel.prototype.getKnownGraphemes = function(stageNumber) {
  */
 ReaderToolsModel.prototype.getStageWords = function(stageNumber) {
 
-    var g = this.getKnownGraphemes(stageNumber);
-    if (g.length === 0) return [];
-    return this.selectWordsFromSynphony(false, g, g, true, true);
+    if (this.stageGraphemes === 0) return [];
+    return this.selectWordsFromSynphony(false, this.stageGraphemes, this.stageGraphemes, true, true);
 };
 
 ReaderToolsModel.prototype.getStageWordsAndSightWords = function(stageNumber) {
@@ -733,14 +739,11 @@ ReaderToolsModel.prototype.doMarkup = function() {
             var cumulativeWords = this.getStageWords(this.stageNumber);
             var sightWords = this.getSightWords(this.stageNumber);
 
-            // get known grapheme list from stages
-            var knownGraphemes = this.getKnownGraphemes(this.stageNumber);
-
             editableElements.checkDecodableReader({
                 focusWords: cumulativeWords,
                 previousWords: cumulativeWords,
                 sightWords: sightWords,
-                knownGraphemes: knownGraphemes
+                knownGraphemes: this.stageGraphemes
             });
 
             break;
@@ -984,8 +987,7 @@ ReaderToolsModel.prototype.getNextSampleFile = function() {
 ReaderToolsModel.prototype.addWordsToSynphony = function() {
 
     // add words to the word list
-    var syn = this.getSynphony();
-    syn.addWords(this.allWords);
+    SynphonyApi.addWords(this.allWords);
     libsynphony.processVocabularyGroups();
 };
 
@@ -1022,7 +1024,7 @@ ReaderToolsModel.prototype.selectWordsFromSynphony = function(justWordName, desi
     if (justWordName)
         return libsynphony.selectGPCWordNamesWithArrayCompare(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
     else
-        return libsynphony.selectGPCWordsWithArrayCompare(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
+        return libsynphony.selectGPCWordsFromCache(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
 };
 
 ReaderToolsModel.prototype.saveState = function() {
