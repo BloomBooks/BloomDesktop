@@ -85,6 +85,8 @@ to try them on another system. If you do, please correct as needed.
 Note that as of 16 July 2014, Bloom does not work very well on Linux. Something more may be
 needed by the time we get it fully working. Hopefully these notes will be updated.
 
+Updated when Andrew was setting up his system on Precise Linux VM Oct. 2014. Note this VM also had previously been used for FLEx development.
+
 At various points you will be asked for your password.
 
 1. Install `wget`
@@ -98,7 +100,9 @@ At various points you will be asked for your password.
 
 3. Make sure you have your system set up to look at the main and testing SIL repositories
 
-	You need synaptic to look in some extra places for components. In Synaptic, go to
+	Install Synaptic if you haven't (sudo apt-get install synaptic).
+
+	You need Synaptic to look in some extra places for components. In Synaptic, go to
 	`Settings->Repositories`, `Other Software` tab. You want to see the following lines (replace
 	`precise` with your distribution version):
 
@@ -122,18 +126,17 @@ At various points you will be asked for your password.
 
 		mkdir $HOME/palaso
 		cd $HOME/palaso
-		hg clone https://bitbucket.org/hatton/bloom-desktop.
+		git clone https://github.com/BloomBooks/BloomDesktop.git
 
 	This should leave you in the default branch, which is currently correct for Linux. Don't be
-	misled into activating the Linux branch, which is no longer used. Note that after about
-	October, you should be using a git repo, if things go as planned.
+	misled into activating the Linux branch, which is no longer used.
 
 6. Install MonoDevelop 5 (or later)
 
 	A current MonoDevelop can be found on launchpad: https://launchpad.net/~ermshiperete/+archive/ubuntu/monodevelop
 	or https://launchpad.net/~ermshiperete/+archive/ubuntu/monodevelop-beta.
 
-	Follow the instructions on the launchpad website.
+	Follow the installation instructions on the launchpad website (currently a link called "Read about installing").
 
 	Make a shortcut to launch MonoDevelop (or just use this command line). The shortcut should execute something like this:
 
@@ -150,11 +153,19 @@ At various points you will be asked for your password.
 		./install-deps # (Note the initial dot)
 
 	This will also install a custom mono version in `/opt/mono-sil`. However, to successfully
-	use it with MonoDevelop, you'll need to do some additional steps:
+	use it with MonoDevelop, you'll need to do some additional steps.
+
+	Copy this script to /opt/mono-sil/bin:
 
 		wget https://raw.githubusercontent.com/sillsdev/mono-calgary/develop/mono-sil
 		sudo mv mono-sil /opt/mono-sil/bin
-		sudo (cd /opt/mono-sil/bin && ln -s mono-sgen mono-real && rm mono && ln -s mono-sil mono)
+		sudo chmod +x /opt/mono-sil/bin/mono-sil
+
+	Delete /opt/mono-sil/bin/mono and create two symlinks instead:
+
+		sudo rm /opt/mono-sil/bin/mono
+		sudo ln -s /opt/mono-sil/bin/mono-sgen /opt/mono-sil/bin/mono-real
+		sudo ln -s /opt/mono-sil/bin/mono-sil /opt/mono-sil/bin/mono
 
 8. Get binary dependencies:
 
@@ -162,17 +173,23 @@ At various points you will be asked for your password.
 		./getDependencies-Linux.sh  # (Note the initial dot)
 		cd ..
 		. environ #(note the '.')
-		mozroots --import --sync
+		sudo mozroots --import --sync
 
 9. Open solution in MonoDevelop
 
 	Run MonoDevelop using the shortcut. Open the solution BloomLinux.sln. Go to
-	`Edit ->Preferences`, `Packages/Sources`. The list should include
+	`Edit -> Preferences`, `Packages/Sources`. The list should include
 	`https://www.nuget.org/api/v2/`, and `http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/`
 	(not sure the second is necessary).
 
+	Add the /opt/mono-sil/ as additional runtime in MonoDevelop (`Edit -> Preferences`, `Projects/.NET Runtimes`). Currently, this is 3.0.4.1 (Oct. 2014).
+
+	When you want to run Bloom you'll have to select the /opt/mono-sil/ as current runtime (Project/Active Runtime).
+
 	At this point you should be able to build the whole BloomLinux solution (right-click in
 	Solution pane, choose Build).
+
+10. You'll have to remember to redo the symlink step (end of #7) every time you install a new mono-sil package. You'll notice quickly if you forget because you get an error saying that it can't find XULRUNNER - that's an indication that it didn't source the environ file, either because the wrong runtime is selected or /opt/mono-sil/bin/mono points to mono-sgen instead of the wrapper script mono-sil.
 
 Hopefully we can streamline this process eventually.
 
