@@ -1553,7 +1553,8 @@ namespace Bloom.Book
 			}
 
 			_thumbnailProvider.RemoveFromCache(_storage.Key);
-			thumbnailOptions.DrawBorderDashed = Type != BookType.Publication;
+
+			thumbnailOptions.BorderStyle = (Type == BookType.Publication)?HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid : HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed;
 			GetThumbNailOfBookCoverAsync(thumbnailOptions, image=>callback(this.BookInfo,image),
 				error=>
 					{

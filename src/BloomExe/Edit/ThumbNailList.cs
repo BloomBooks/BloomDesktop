@@ -145,7 +145,7 @@ namespace Bloom.Edit
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
 			{
 				BackgroundColor = Palette.TextAgainstDarkBackground,
-				DrawBorderDashed = false,
+				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid,
 				CenterImageUsingTransparentPadding = true
 			};
 			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, pageDom, thumbnailOptions, image => RefreshOneThumbnailCallback(page, image),
