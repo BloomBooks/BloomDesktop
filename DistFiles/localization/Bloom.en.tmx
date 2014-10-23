@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.13.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.17.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
 	<prop type="x-appversion">3.0.000.0</prop>
 	<prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
@@ -2375,6 +2375,12 @@
 		<seg>Decodable Stages</seg>
 	  </tuv>
 	</tu>
+    <tu tuid="ReaderSetup.FileNeedsTxtExtension">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>File needs .txt extension</seg>
+      </tuv>
+    </tu>
 	<tu tuid="ReaderSetup.FirstSetupAlphabet">
 	  <prop type="x-dynamic">true</prop>
 	  <tuv xml:lang="en">

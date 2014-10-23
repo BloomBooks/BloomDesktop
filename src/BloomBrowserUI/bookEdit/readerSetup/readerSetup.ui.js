@@ -23,19 +23,28 @@ function process_UI_Message(event) {
             if (s.length > 0) {
                 var files = s.split('\r');
                 var extensions = getIframeChannel().readableFileExtensions;
+                var needsTxtExtension = document.getElementById('needs_txt_extension').innerHTML;
                 var notSupported = document.getElementById('format_not_supported').innerHTML;
                 var foundNotSupported = false;
                 files.forEach(function (element, index, array) {
-                    var ext = element.split('.').pop();
-                    if (extensions.indexOf(ext) === -1) {
-                        array[index] = element + ' ' + '<span class="format-not-supported">' + notSupported + '</span>';
+                    var filenameComponents = element.split('.');
+                    if (filenameComponents.length < 2) {
+                        array[index] = element + ' ' + '<span class="format-not-supported">' + needsTxtExtension + '</span>';
                         foundNotSupported = true;
+                    } else {
+                        var ext = filenameComponents.pop();
+                        if (extensions.indexOf(ext) === -1) {
+                            array[index] = element + ' ' + '<span class="format-not-supported">' + notSupported + '</span>';
+                            foundNotSupported = true;
+                        }
                     }
                 });
                 s = files.join('\r');
 
                 if (foundNotSupported)
                     document.getElementById('how_to_export').style.display = '';
+                else
+                    document.getElementById('how_to_export').style.display = 'none';
             }
 
             var fileList = s || document.getElementById('please-add-texts').innerHTML;

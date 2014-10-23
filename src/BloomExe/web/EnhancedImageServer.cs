@@ -207,6 +207,7 @@ namespace Bloom.web
 				_sampleTextsWatcher = new FileSystemWatcher {Path = path};
 				_sampleTextsWatcher.Created += SampleTextsOnChange;
 				_sampleTextsWatcher.Changed += SampleTextsOnChange;
+				_sampleTextsWatcher.Renamed += SampleTextsOnChange;
 				_sampleTextsWatcher.Deleted += SampleTextsOnChange;
 				_sampleTextsWatcher.EnableRaisingEvents = true;
 			}
