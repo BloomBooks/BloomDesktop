@@ -26,4 +26,5 @@
 *.xml -whitespace
 *.bmml -whitespace
 *.DotSettings -whitespace
+*.mdpolicy -whitespace
 changelog -whitespace
