@@ -11,3 +11,7 @@ interface String {
 interface Window {
 	postMessage(message: string, context: any): void;
 }
+
+interface longPressInterface extends JQuery {
+	longPress(options?: any): JQuery;
+}
