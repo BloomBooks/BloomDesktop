@@ -32,161 +32,161 @@
  */
 class LocalizationManager {
 
-	public dictionary: any;
-	private inlineDictionaryLoaded: boolean = false;
+  public dictionary: any;
+  private inlineDictionaryLoaded: boolean = false;
 
-	constructor() {
-		if (typeof document['getIframeChannel'] === 'function')
-			this.dictionary = document['getIframeChannel']().localizationManagerDictionary;
-		else
-			this.dictionary = {};
-	}
+  constructor() {
+    if (typeof document['getIframeChannel'] === 'function')
+      this.dictionary = document['getIframeChannel']().localizationManagerDictionary;
+    else
+      this.dictionary = {};
+  }
 
-	/**
-	 * Retrieves localized strings from the server
-	 * Used in Bloom 2.1
-	 * @param {Object} [keyValuePairs] Optional. Each property name (i.e. keyValuePairs.keys) is a string id, and the
-	 * property value is the default value/english text. If keyValuePairs is omitted, all dictionary entries will be
-	 * returned, otherwise only the requested entries will be returned.
-	 * @param [elementsToLocalize]
-	 * @param {Function} [callbackDone] Optional function to call when done.
-	 */
-	loadStrings(keyValuePairs, elementsToLocalize, callbackDone): void {
+  /**
+   * Retrieves localized strings from the server
+   * Used in Bloom 2.1
+   * @param {Object} [keyValuePairs] Optional. Each property name (i.e. keyValuePairs.keys) is a string id, and the
+   * property value is the default value/english text. If keyValuePairs is omitted, all dictionary entries will be
+   * returned, otherwise only the requested entries will be returned.
+   * @param [elementsToLocalize]
+   * @param {Function} [callbackDone] Optional function to call when done.
+   */
+  loadStrings(keyValuePairs, elementsToLocalize, callbackDone): void {
 
-		// NOTE: This function is not used in Bloom 2.0, but will be used in Bloom 2.1
+    // NOTE: This function is not used in Bloom 2.0, but will be used in Bloom 2.1
 
-		var ajaxSettings = {type: 'POST', url: '/bloom/i18n/loadStrings'};
-		if (keyValuePairs) ajaxSettings['data'] = keyValuePairs;
+    var ajaxSettings = {type: 'POST', url: '/bloom/i18n/loadStrings'};
+    if (keyValuePairs) ajaxSettings['data'] = keyValuePairs;
 
-		$.ajax(ajaxSettings)
-			.done(function (data) {
-				localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
+    $.ajax(ajaxSettings)
+      .done(function (data) {
+        localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
 
-				// if callback is passes without a list of elements to localize...
-				if (typeof elementsToLocalize === 'function') {
-					elementsToLocalize()
-				}
-				else if (elementsToLocalize) {
-					$(elementsToLocalize).each(function() {
-						localizationManager.setElementText(this);
-					});
-					if (typeof callbackDone === 'function') callbackDone();
-				}
-				else if (typeof callbackDone === 'function') callbackDone();
-			});
-	}
+        // if callback is passes without a list of elements to localize...
+        if (typeof elementsToLocalize === 'function') {
+          elementsToLocalize()
+        }
+        else if (elementsToLocalize) {
+          $(elementsToLocalize).each(function() {
+            localizationManager.setElementText(this);
+          });
+          if (typeof callbackDone === 'function') callbackDone();
+        }
+        else if (typeof callbackDone === 'function') callbackDone();
+      });
+  }
 
-	/**
-	 * Set dictionary values from an object.
-	 * Used in Bloom 2.0
-	 * @param {Object} keyValuePairObject
-	 */
-	loadStringsFromObject(keyValuePairObject): void {
-		// TODO: Evaluate if this function is needed in Bloom 2.1
-		this.dictionary = keyValuePairObject;
-	}
+  /**
+   * Set dictionary values from an object.
+   * Used in Bloom 2.0
+   * @param {Object} keyValuePairObject
+   */
+  loadStringsFromObject(keyValuePairObject): void {
+    // TODO: Evaluate if this function is needed in Bloom 2.1
+    this.dictionary = keyValuePairObject;
+  }
 
-	/**
-	 * Gets translated text.
-	 * Additional parameters after the englishText are treated as arguments for SimpleDotNetFormat.
-	 * @param {String} stringId
-	 * @param {String} [englishText]
-	 * @param [args]
-	 * @returns {String}
-	 */
-	getText(stringId: string, englishText?: string, ...args): string {
+  /**
+   * Gets translated text.
+   * Additional parameters after the englishText are treated as arguments for SimpleDotNetFormat.
+   * @param {String} stringId
+   * @param {String} [englishText]
+   * @param [args]
+   * @returns {String}
+   */
+  getText(stringId: string, englishText?: string, ...args): string {
 
-		if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
-			if (Object.keys(this.dictionary).length == 0) {
-				this.inlineDictionaryLoaded = true;
-				$.extend(localizationManager.dictionary, GetInlineDictionary());
-			}
-		}
+    if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
+      if (Object.keys(this.dictionary).length == 0) {
+        this.inlineDictionaryLoaded = true;
+        $.extend(localizationManager.dictionary, GetInlineDictionary());
+      }
+    }
 
-		// check if englishText is missing
-		englishText = englishText || stringId;
+    // check if englishText is missing
+    englishText = englishText || stringId;
 
-		// get the translation
-		var text = this.dictionary[stringId];
-		if (!text) {
-			text = this.dictionary[stringId.replace('&','&amp;')];
-		}
+    // get the translation
+    var text = this.dictionary[stringId];
+    if (!text) {
+      text = this.dictionary[stringId.replace('&','&amp;')];
+    }
 
-		// try to get from L10NSharp
-		if (!text) {
+    // try to get from L10NSharp
+    if (!text) {
 
-			var ajaxSettings = {type: 'POST', url: '/bloom/i18n/loadStrings'};
-			var pair = {};
-			pair[stringId] = englishText;
-			ajaxSettings['data'] = pair;
+      var ajaxSettings = {type: 'POST', url: '/bloom/i18n/loadStrings'};
+      var pair = {};
+      pair[stringId] = englishText;
+      ajaxSettings['data'] = pair;
 
-			$.ajax(ajaxSettings)
-				.done(function (data) {
-					localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
-				});
+      $.ajax(ajaxSettings)
+        .done(function (data) {
+          localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
+        });
 
-			text = englishText;
-		}
+      text = englishText;
+    }
 
-		// is this a string.format style request?
-		if (args.length > 0) {
+    // is this a string.format style request?
+    if (args.length > 0) {
 
-			// Do the formatting.
-			text = SimpleDotNetFormat(text, args);
-		}
+      // Do the formatting.
+      text = SimpleDotNetFormat(text, args);
+    }
 
-		return HtmlDecode(text);
-	}
+    return HtmlDecode(text);
+  }
 
-	/**
-	 * Sets the translated text of element.
-	 * @param element
-	 */
-	setElementText(element): void {
+  /**
+   * Sets the translated text of element.
+   * @param element
+   */
+  setElementText(element): void {
 
-		var key = element.dataset['i18n'];
-		if (!key) return;
+    var key = element.dataset['i18n'];
+    if (!key) return;
 
-		var elem = $(element);
-		var text = this.getText(key, elem.html());
+    var elem = $(element);
+    var text = this.getText(key, elem.html());
 
-		if (text) elem.html(text);
-	}
+    if (text) elem.html(text);
+  }
 
-	/**
-	 * Hints sometimes have a {lang} tag in the text that needs to be substituted.
-	 * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
-	 * @param {String} whatToSay
-	 * @param {element} targetElement
-	 * @returns {String}
-	 */
-	getLocalizedHint(whatToSay, targetElement: any): string {
+  /**
+   * Hints sometimes have a {lang} tag in the text that needs to be substituted.
+   * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
+   * @param {String} whatToSay
+   * @param {element} targetElement
+   * @returns {String}
+   */
+  getLocalizedHint(whatToSay, targetElement: any): string {
 
-		var args = Array.prototype.slice.call(arguments);
-		args[1] = null; //we're passing null into the gettext englishText arg
-		// this awkward, fragile method call sends along the 2 fixed arguments
-		// to the method, plus any extra arguments we might have been called with,
-		// as parameters for a  c#-style template string
-		var translated = this.getText.apply(this, args);
+    var args = Array.prototype.slice.call(arguments);
+    args[1] = null; //we're passing null into the gettext englishText arg
+    // this awkward, fragile method call sends along the 2 fixed arguments
+    // to the method, plus any extra arguments we might have been called with,
+    // as parameters for a  c#-style template string
+    var translated = this.getText.apply(this, args);
 
-		// stick in the language
-		if (translated.indexOf('{lang}') != -1) {
-			//This is the preferred approach, but it's not working yet.
-			//var languageName = localizationManager.dictionary[$(targetElement).attr('lang')];
-			var languageName = GetInlineDictionary()[$(targetElement).attr('lang')];
-			translated = translated.replace("{lang}", languageName);
-		}
+    // stick in the language
+    if (translated.indexOf('{lang}') != -1) {
+      //This is the preferred approach, but it's not working yet.
+      //var languageName = localizationManager.dictionary[$(targetElement).attr('lang')];
+      var languageName = GetInlineDictionary()[$(targetElement).attr('lang')];
+      translated = translated.replace("{lang}", languageName);
+    }
 
-		return translated;
-	}
+    return translated;
+  }
 
-	getVernacularLang(): string {
-		return this.getText('vernacularLang');
-	}
+  getVernacularLang(): string {
+    return this.getText('vernacularLang');
+  }
 
-	getLanguageName(iso): string {
-		return this.getText(iso);
-	}
+  getLanguageName(iso): string {
+    return this.getText(iso);
+  }
 }
 
 
@@ -201,11 +201,11 @@ var localizationManager: LocalizationManager = new LocalizationManager();
  */
 function SimpleDotNetFormat(format, args) {
 
-	for (var i = 0; i < args.length; i++) {
-		var regex = new RegExp('\\{' + i + '\\}', 'g');
-		format = format.replace(regex, args[i]);
-	}
-	return format;
+  for (var i = 0; i < args.length; i++) {
+    var regex = new RegExp('\\{' + i + '\\}', 'g');
+    format = format.replace(regex, args[i]);
+  }
+  return format;
 }
 
 /**
@@ -213,7 +213,7 @@ function SimpleDotNetFormat(format, args) {
  * @param {String} text
  */
 function HtmlDecode(text): string {
-	var div = document.createElement('div');
-	div.innerHTML = text;
-	return div.firstChild.nodeValue;
+  var div = document.createElement('div');
+  div.innerHTML = text;
+  return div.firstChild.nodeValue;
 }

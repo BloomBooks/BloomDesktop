@@ -5,13 +5,13 @@
 declare function GetInlineDictionary(): any;
 
 interface String {
-	startsWith(str: string): boolean
+  startsWith(str: string): boolean
 }
 
 interface Window {
-	postMessage(message: string, context: any): void;
+  postMessage(message: string, context: any): void;
 }
 
 interface longPressInterface extends JQuery {
-	longPress(options?: any): JQuery;
+  longPress(options?: any): JQuery;
 }

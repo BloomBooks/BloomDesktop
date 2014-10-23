@@ -1,73 +1,73 @@
 
 class CalledByCSharp {
 
-	handleUndo(): string {
-		var contentWindow = this.getAccordionContent();
-		if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo()) {
-			return 'fail';
-		}
-		contentWindow.model.undo();
-		return 'success';
-	}
+  handleUndo(): string {
+    var contentWindow = this.getAccordionContent();
+    if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo()) {
+      return 'fail';
+    }
+    contentWindow.model.undo();
+    return 'success';
+  }
 
-	canUndo(): string {
-		var contentWindow = this.getAccordionContent();
-		if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo())
-			return 'fail'; // we don't want to decide
-		return contentWindow.model.canUndo();
-	}
+  canUndo(): string {
+    var contentWindow = this.getAccordionContent();
+    if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo())
+      return 'fail'; // we don't want to decide
+    return contentWindow.model.canUndo();
+  }
 
-	loadReaderToolSettings(settings: string, bookFontName: string) {
+  loadReaderToolSettings(settings: string, bookFontName: string) {
 
-		var contentWindow = this.getAccordionContent();
-		if (!contentWindow) return;
+    var contentWindow = this.getAccordionContent();
+    if (!contentWindow) return;
 
-		if (typeof contentWindow['initializeSynphony'] === 'function')
-			contentWindow['initializeSynphony'](settings, bookFontName);
-	}
+    if (typeof contentWindow['initializeSynphony'] === 'function')
+      contentWindow['initializeSynphony'](settings, bookFontName);
+  }
 
-	setSampleTextsList(fileList: string) {
-		this.invokeAccordionWithOneParameter('setTextsList', fileList);
-	}
+  setSampleTextsList(fileList: string) {
+    this.invokeAccordionWithOneParameter('setTextsList', fileList);
+  }
 
-	setSampleFileContents(fileContents: string) {
-		this.invokeAccordionWithOneParameter('setSampleFileContents', fileContents);
-	}
+  setSampleFileContents(fileContents: string) {
+    this.invokeAccordionWithOneParameter('setSampleFileContents', fileContents);
+  }
 
-	setCopyrightAndLicense(contents) {
+  setCopyrightAndLicense(contents) {
 
-		var contentWindow = this.getPageContent();
-		if (!contentWindow) return;
+    var contentWindow = this.getPageContent();
+    if (!contentWindow) return;
 
-		if (typeof contentWindow['SetCopyrightAndLicense'] === 'function')
-			contentWindow['SetCopyrightAndLicense'](contents);
-	}
+    if (typeof contentWindow['SetCopyrightAndLicense'] === 'function')
+      contentWindow['SetCopyrightAndLicense'](contents);
+  }
 
-	removeSynphonyMarkup() {
+  removeSynphonyMarkup() {
 
-		var page = this.getPageContent();
-		if (!page) return;
+    var page = this.getPageContent();
+    if (!page) return;
 
-		if ((typeof page['jQuery'] !== 'undefined') && (page['jQuery'].fn.removeSynphonyMarkup))
-			page['jQuery']('.bloom-content1').removeSynphonyMarkup();
-	}
+    if ((typeof page['jQuery'] !== 'undefined') && (page['jQuery'].fn.removeSynphonyMarkup))
+      page['jQuery']('.bloom-content1').removeSynphonyMarkup();
+  }
 
-	invokeAccordionWithOneParameter(functionName: string, value: string) {
+  invokeAccordionWithOneParameter(functionName: string, value: string) {
 
-		var contentWindow = this.getAccordionContent();
-		if (!contentWindow) return;
+    var contentWindow = this.getAccordionContent();
+    if (!contentWindow) return;
 
-		if (typeof contentWindow[functionName] === 'function')
-			contentWindow[functionName](value);
-	}
+    if (typeof contentWindow[functionName] === 'function')
+      contentWindow[functionName](value);
+  }
 
-	getPageContent(): Window {
-		var page = <HTMLIFrameElement>document.getElementById('page');
-		return (page) ? page.contentWindow : null;
-	}
+  getPageContent(): Window {
+    var page = <HTMLIFrameElement>document.getElementById('page');
+    return (page) ? page.contentWindow : null;
+  }
 
-	getAccordionContent(): Window {
-		var accordion = <HTMLIFrameElement>document.getElementById('accordion');
-		return (accordion) ? accordion.contentWindow : null;
-	}
+  getAccordionContent(): Window {
+    var accordion = <HTMLIFrameElement>document.getElementById('accordion');
+    return (accordion) ? accordion.contentWindow : null;
+  }
 }
