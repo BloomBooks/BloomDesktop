@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.ComponentModel.Composition;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using System.Linq;
+using Palaso.Progress;
 using Palaso.Xml;
 
 namespace Bloom.Publish
@@ -30,7 +33,7 @@ namespace Bloom.Publish
 
 		public static bool ExtensionIsApplicable(Book.Book book)
 		{
-			return book.Title.Contains("Pupil") && book.GetDataItem("week") != null;
+			return book.Title.Contains("Folio") || book.Title.Contains("Pupil") || book.Title.Contains("Primer");
 		}
 
 		[Import("PathToBookFolder")]
@@ -54,17 +57,41 @@ namespace Bloom.Publish
 
 		private void MakeThumbnailsForTeachersGuide(object sender, EventArgs e)
 		{
+
+//			var dlg = new Palaso.UI.WindowsForms.Progress.ProgressDialog();
+//			dlg.Overview = "Creating thumbnail files...";
+//			BackgroundWorker preprocessWorker = new BackgroundWorker();
+//			preprocessWorker.DoWork += PlaceThumbnailOrders;
+//			dlg.BackgroundWorker = preprocessWorker;
+//			dlg.CanCancel = true;
+//			dlg.ShowDialog();
+			PlaceThumbnailOrders(null,null);
+		}
+
+		private void PlaceThumbnailOrders(object sender, DoWorkEventArgs doWorkEventArgs)
+		{
+			//var state = (ProgressState)doWorkEventArgs.Argument;
+
 			var exportFolder = Path.Combine(BookFolder, "Thumbnails");
 
+			//state.StatusLabel = "Creating thumbnail folder at " + exportFolder;
 			if (Directory.Exists(exportFolder))
 			{
+				//state.StatusLabel = "Deleting existing thumbnail directory";
 				Directory.Delete(exportFolder, true);
+				Thread.Sleep(1000); //let any open windows explorers deal with this before we move on
 			}
 			Directory.CreateDirectory(exportFolder);
+			//state.StatusLabel = "Creating Thumbnail Directory";
+			Thread.Sleep(1000); //let any open windows explorers deal with this before we move on
+
+			//state.StatusLabel = "Ordering page thumbnails";
+
 			foreach (var pageDom in GetPageDoms())
 			{
-				if (null != pageDom.SelectSingleNode("//div[contains(@class,'oddPage') or contains(@class,'evenPage')]"))
+				if (null != pageDom.SelectSingleNode("//div[contains(@class,'oddPage') or contains(@class,'evenPage') or contains(@class,'leftPage')  or contains(@class,'rightPage') or contains(@class,'primerPage')]"))
 				{
+
 					const double kproportionOfWidthToHeightForB5 = 0.708;
 					const int heightInPixels = 700;
 					const int widthInPixels = (int) (heightInPixels*kproportionOfWidthToHeightForB5);
@@ -75,7 +102,10 @@ namespace Bloom.Publish
 			}
 			//this folder won't be fully populated yet, but as they watch it will fill up
 			Process.Start("explorer.exe", " \"" + exportFolder + "\"");
+
+			//state.WriteToLog("Now sit tight and wait for the thumbnail directory to stop filling up.");
 		}
+
 		private void HandleThumbnailerError(HtmlDom pageDom, Exception error)
 		{
 			throw new NotImplementedException();
