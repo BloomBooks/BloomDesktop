@@ -25,4 +25,5 @@
 *.svg -whitespace
 *.xml -whitespace
 *.bmml -whitespace
+*.DotSettings -whitespace
 changelog -whitespace
