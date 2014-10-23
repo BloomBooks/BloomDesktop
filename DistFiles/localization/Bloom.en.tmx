@@ -2915,6 +2915,13 @@
         <seg>Spiritual</seg>
       </tuv>
     </tu>
+    <tu tuid="Topics.Story Book">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Story Book</seg>
+      </tuv>
+    </tu>
     <tu tuid="Topics.Tradition">
       <note>shows in the topics chooser in the edit tab</note>
       <prop type="x-dynamic">true</prop>
