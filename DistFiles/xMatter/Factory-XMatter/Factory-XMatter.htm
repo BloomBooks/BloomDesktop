@@ -1,111 +1,111 @@
 <!DOCTYPE html>
 <html>
   <head>
-	<meta charset="UTF-8">
-	<meta name="BloomFormatVersion" content="2.0">
-	<title>Factory-default Front & Back Matter</title>
-	<link rel="stylesheet" href="basePage.css" type="text/css"/>
-	<link rel="stylesheet" href="editMode.css" type="text/css"/>
-	<link rel="stylesheet" href="Factory-XMatter.css" type="text/css"/>
+    <meta charset="UTF-8">
+    <meta name="BloomFormatVersion" content="2.0">
+    <title>Factory-default Front & Back Matter</title>
+    <link rel="stylesheet" href="basePage.css" type="text/css"/>
+    <link rel="stylesheet" href="editMode.css" type="text/css"/>
+    <link rel="stylesheet" href="Factory-XMatter.css" type="text/css"/>
   </head>
   <body>
-	<!-- FRONT COVER-->
-	<div class="A5Portrait bloom-page cover frontCover outsideFrontCover coverColor bloom-frontMatter" data-page="required singleton" data-export="front-matter-cover" id="74731b2d-18b0-420f-ac96-6de20f659810">
-	  <div lang="en" class="pageLabel">Front Cover</div>
-	  <div class="marginBox">
-		<div class="bloom-translationGroup">
-		  <label class="bubble">Book title in {lang}</label>
-		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bookTitle Title-On-Cover-style" data-book="bookTitle">
-		  </div>
-		</div>
-		<div class="bloom-imageContainer"><img src="placeHolder.png" data-book="coverImage"/></div>
-		<div lang="V" contenteditable="true" class="bloom-content1 bloom-editable smallCoverCredits Credits-On-Cover-style" data-book="smallCoverCredits">
-		  <label class="bubble">*You may use this space for author/illustrator, or anything else.</label>
-		</div>
-		<div class="coverBottomLangName">
-		  <div data-library="nameOfLanguage" lang="N1">{Lang in N1}</div>
-		</div>
-		<div data-functionOnHintClick="ShowTopicChooser()" data-hint="Click to choose topic" class="bloom-translationGroup coverBottomBookTopic bloom-readOnlyInTranslationMode">
-		  <div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable"></div>
-		</div>
-	  </div>
-	</div>
-	<!-- Inside Front Cover CREDITS PAGE-->
-	<div class="A5Portrait bloom-page cover frontCover outsideFrontCover coverColor bloom-frontMatter verso" data-page="required singleton" data-export="front-matter-credits" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
-	  <div lang="en" class="pageLabel">Credits Page</div>
-	  <div class="marginBox">
-		<div class="bloom-translationGroup originalAcknowledgments">
-		  <label class="bubble">Original (or Shell) Acknowledgments in {lang}</label>
-		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bloom-readOnlyInTranslationMode bloom-copyFromOtherLanguageIfNecessary Original-Acknowledgments-On-Inside-Front-Cover-style" data-book="originalAcknowledgments">{Original Acknowledgments}
-		  </div>
-		</div>
-		<div data-functiononhintclick="bookMetadataEditor" data-hint="Click to Edit Copyright &amp; License" id="versoLicenseAndCopyright" class="bloom-metaData">
-		  <div data-book="copyright" lang="*" class="copyright">{copyright}</div><img src="" data-book="licenseImage" class="licenseImage"/>
-		  <div data-book="licenseUrl" lang="en" class="licenseUrl">{License Url}</div>
-		  <div data-book="licenseNotes" lang="en" class="licenseNotes">{License Notes}</div>
-		  <div data-book="licenseDescription" lang="en" class="licenseDescription">{License Description}</div>
-		</div>
-		<div data-hint="International Standard Book Number. Leave blank if you don't have one of these." class="ISBNContainer"><span class="bloom-doNotPublishIfParentOtherwiseEmpty">ISBN</span>
-		  <div data-book="ISBN" lang="*" class="bloom-editable"></div>
-		</div>
-		<!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.-->
-		<div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable versionAcknowledgments Version-Acknowledgments-On-Inside-Front-Cover--style bloom-readOnlyInEditMode" data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}">
-		</div>
-	  </div>
-	</div>
-	<!-- TITLE PAGE-->
-	<div class="A5Portrait bloom-page titlePage bloom-frontMatter bloom-startPageNumbering" data-page="required singleton" data-export="front-matter-title-page" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
-	  <div lang="en" class="pageLabel">Title Page</div>
-	  <div class="marginBox">
-		<div class="bloom-translationGroup" id="titePageTitleBlock">
-		  <label class="bubble">Book title in {lang}</label>
-		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable Title-On-Title-Page-style" data-book="bookTitle">
-		  </div>
-		</div>
-		<div class="bloom-translationGroup" id="originalContributions">
-		  <label class="bubble">The contributions made by writers, illustrators, editors, etc., in {lang}</label>
-		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable credits bloom-readOnlyInTranslationMode Original-Contributors-On-Title-Page-style" data-book="originalContributions">
-		  </div>
-		</div>
-		<div class="bloom-translationGroup" id="funding">
-		  <label class="bubble">Use this to acknowledge any funding agencies.</label>
-		  <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable funding Funding-On-Title-Page-style" data-book="funding">
-		  </div>
-		</div>
-		<div id="languageInformation">
-		  <div class="bloom-translationGroup">
-			<!-- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.-->
-			<div data-library="nameOfLanguage" class="langName"></div>
-		  </div>
-		  <!-- review: can we get rid of these "langName" classes?-->
-		  <div class="bloom-translationGroup">
-			<!-- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.-->
-			<div data-library="dialect" class="langName"></div>
-		  </div>
-		  <div class="bloom-translationGroup">
-			<!-- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.-->
-			<div data-library="languageLocation" class="langName"></div>
-		  </div>
-		</div>
-	  </div>
-	</div>
-	<!-- Inside Back Cover-->
-	<div class="A5Portrait bloom-page cover coverColor insideBackCover bloom-backMatter" data-page="required singleton" data-export="back-matter-inside-back-cover" id="502BE62F-A4D0-4225-A598-1A203FA73239">
-	  <div lang="en" class="pageLabel">Inside Back Cover</div>
-	  <div class="marginBox">
-		<div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable Inside-Back-Cover-style" data-book="insideBackCover">
-		  <label class="bubble">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</label>
-		</div>
-	  </div>
-	</div>
-	<!-- Outside Back Cover-->
-	<div class="A5Portrait bloom-page cover coverColor outsideBackCover bloom-backMatter" data-page="required singleton" data-export="back-matter-back-cover" id="6AB1D898-9E35-498E-99D4-132B46FAFDA4">
-	  <div lang="en" class="pageLabel">Outside Back Cover</div>
-	  <div class="marginBox">
-		<div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable Outside-Back-Cover-style" data-book="outsideBackCover">
-		  <label class="bubble">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
-		</div>
-	  </div>
-	</div>
+    <!-- FRONT COVER-->
+    <div class="A5Portrait bloom-page cover frontCover outsideFrontCover coverColor bloom-frontMatter" data-page="required singleton" data-export="front-matter-cover" id="74731b2d-18b0-420f-ac96-6de20f659810">
+      <div lang="en" class="pageLabel">Front Cover</div>
+      <div class="marginBox">
+        <div class="bloom-translationGroup">
+          <label class="bubble">Book title in {lang}</label>
+          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bookTitle Title-On-Cover-style" data-book="bookTitle">
+          </div>
+        </div>
+        <div class="bloom-imageContainer"><img src="placeHolder.png" data-book="coverImage"/></div>
+        <div lang="V" contenteditable="true" class="bloom-content1 bloom-editable smallCoverCredits Credits-On-Cover-style" data-book="smallCoverCredits">
+          <label class="bubble">*You may use this space for author/illustrator, or anything else.</label>
+        </div>
+        <div class="coverBottomLangName">
+          <div data-library="nameOfLanguage" lang="N1">{Lang in N1}</div>
+        </div>
+        <div data-functionOnHintClick="ShowTopicChooser()" data-hint="Click to choose topic" class="bloom-translationGroup coverBottomBookTopic bloom-readOnlyInTranslationMode">
+          <div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Inside Front Cover CREDITS PAGE-->
+    <div class="A5Portrait bloom-page cover frontCover outsideFrontCover coverColor bloom-frontMatter verso" data-page="required singleton" data-export="front-matter-credits" id="B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9">
+      <div lang="en" class="pageLabel">Credits Page</div>
+      <div class="marginBox">
+        <div class="bloom-translationGroup originalAcknowledgments">
+          <label class="bubble">Original (or Shell) Acknowledgments in {lang}</label>
+          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bloom-readOnlyInTranslationMode bloom-copyFromOtherLanguageIfNecessary Original-Acknowledgments-On-Inside-Front-Cover-style" data-book="originalAcknowledgments">{Original Acknowledgments}
+          </div>
+        </div>
+        <div data-functiononhintclick="bookMetadataEditor" data-hint="Click to Edit Copyright &amp; License" id="versoLicenseAndCopyright" class="bloom-metaData">
+          <div data-book="copyright" lang="*" class="copyright">{copyright}</div><img src="" data-book="licenseImage" class="licenseImage"/>
+          <div data-book="licenseUrl" lang="en" class="licenseUrl">{License Url}</div>
+          <div data-book="licenseNotes" lang="en" class="licenseNotes">{License Notes}</div>
+          <div data-book="licenseDescription" lang="en" class="licenseDescription">{License Description}</div>
+        </div>
+        <div data-hint="International Standard Book Number. Leave blank if you don't have one of these." class="ISBNContainer"><span class="bloom-doNotPublishIfParentOtherwiseEmpty">ISBN</span>
+          <div data-book="ISBN" lang="*" class="bloom-editable"></div>
+        </div>
+        <!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.-->
+        <div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable versionAcknowledgments Version-Acknowledgments-On-Inside-Front-Cover--style bloom-readOnlyInEditMode" data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}">
+        </div>
+      </div>
+    </div>
+    <!-- TITLE PAGE-->
+    <div class="A5Portrait bloom-page titlePage bloom-frontMatter bloom-startPageNumbering" data-page="required singleton" data-export="front-matter-title-page" id="5dcd48df-e9ab-4a07-afd4-6a24d0398381">
+      <div lang="en" class="pageLabel">Title Page</div>
+      <div class="marginBox">
+        <div class="bloom-translationGroup" id="titePageTitleBlock">
+          <label class="bubble">Book title in {lang}</label>
+          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable Title-On-Title-Page-style" data-book="bookTitle">
+          </div>
+        </div>
+        <div class="bloom-translationGroup" id="originalContributions">
+          <label class="bubble">The contributions made by writers, illustrators, editors, etc., in {lang}</label>
+          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable credits bloom-readOnlyInTranslationMode Original-Contributors-On-Title-Page-style" data-book="originalContributions">
+          </div>
+        </div>
+        <div class="bloom-translationGroup" id="funding">
+          <label class="bubble">Use this to acknowledge any funding agencies.</label>
+          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable funding Funding-On-Title-Page-style" data-book="funding">
+          </div>
+        </div>
+        <div id="languageInformation">
+          <div class="bloom-translationGroup">
+            <!-- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.-->
+            <div data-library="nameOfLanguage" class="langName"></div>
+          </div>
+          <!-- review: can we get rid of these "langName" classes?-->
+          <div class="bloom-translationGroup">
+            <!-- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.-->
+            <div data-library="dialect" class="langName"></div>
+          </div>
+          <div class="bloom-translationGroup">
+            <!-- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.-->
+            <div data-library="languageLocation" class="langName"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Inside Back Cover-->
+    <div class="A5Portrait bloom-page cover coverColor insideBackCover bloom-backMatter" data-page="required singleton" data-export="back-matter-inside-back-cover" id="502BE62F-A4D0-4225-A598-1A203FA73239">
+      <div lang="en" class="pageLabel">Inside Back Cover</div>
+      <div class="marginBox">
+        <div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable Inside-Back-Cover-style" data-book="insideBackCover">
+          <label class="bubble">If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</label>
+        </div>
+      </div>
+    </div>
+    <!-- Outside Back Cover-->
+    <div class="A5Portrait bloom-page cover coverColor outsideBackCover bloom-backMatter" data-page="required singleton" data-export="back-matter-back-cover" id="6AB1D898-9E35-498E-99D4-132B46FAFDA4">
+      <div lang="en" class="pageLabel">Outside Back Cover</div>
+      <div class="marginBox">
+        <div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable Outside-Back-Cover-style" data-book="outsideBackCover">
+          <label class="bubble">If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</label>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
