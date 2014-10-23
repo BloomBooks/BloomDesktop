@@ -2,126 +2,126 @@
 
 <html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<link rel="stylesheet" type="text/css" href="bookEdit/editor/gridly version/jquery.gridly.css" />
-	<script src="http://localhost:8089/bloom/bookEdit/editor/gridly version/jquery-2.0.3.js" type="text/javascript"></script>
-	<script type="text/javascript" src="http://localhost:8089/bloom/bookEdit/editor/gridly version/jquery.gridly.js"></script>
-	<script>
-		var reorder = function (elements) {
-			var ids = "";
-			elements.each(function () {
-				var id = $(this).attr('id');
-				if (id)
-					ids += "," + id;
-			});
-			fireCSharpEvent("gridReordered", ids);
-		};
-		jQuery(document).ready(function () {
-			$('.gridly').gridly({
-				base: 35, // px
-				gutter: 10, // px
-				columns: 4,
-				callbacks: {
-					reordered: reorder
-				}
-			});
-			jQuery('.gridItem').click(function () {
-				fireCSharpEvent("gridClick", $(this).attr('id'));
-			});
-		});
-		function fireCSharpEvent(eventName, eventData) {
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="bookEdit/editor/gridly version/jquery.gridly.css" />
+    <script src="http://localhost:8089/bloom/bookEdit/editor/gridly version/jquery-2.0.3.js" type="text/javascript"></script>
+    <script type="text/javascript" src="http://localhost:8089/bloom/bookEdit/editor/gridly version/jquery.gridly.js"></script>
+    <script>
+        var reorder = function (elements) {
+            var ids = "";
+            elements.each(function () {
+                var id = $(this).attr('id');
+                if (id)
+                    ids += "," + id;
+            });
+            fireCSharpEvent("gridReordered", ids);
+        };
+        jQuery(document).ready(function () {
+            $('.gridly').gridly({
+                base: 35, // px
+                gutter: 10, // px
+                columns: 4,
+                callbacks: {
+                    reordered: reorder
+                }
+            });
+            jQuery('.gridItem').click(function () {
+                fireCSharpEvent("gridClick", $(this).attr('id'));
+            });
+        });
+        function fireCSharpEvent(eventName, eventData) {
 
-			var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
-			document.dispatchEvent(event);
-		}
-	</script>
-	<title></title>
-	<style>
-		body {
-			background-color: DarkGray;
-		}
-		div.bloom-page {
-			/* bizarrely, the translate moves it to the top left instead of the middle of the original space.
-				If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
-			transform: scale(0.075) translate(617%,-617%);
-			position: absolute;
-			right: 0px;
-		}
-		div.bloom-page.A4Portrait {
-			/* bizarrely, the translate moves it to the top left instead of the middle of the original space.
-				If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
-			transform: scale(0.05) translate(950%,-950%);
-			position: absolute;
-			right: 0px;
-		}
-		.gridly {
-			position: relative;
-		}
-		div.gridItem {
-			width: 80px;
-			height: 100px;
-			opacity: 1;
-			overflow:hidden;
-		}
-		div.gridItem:nth-child(even) div.bloom-page {
-			transform: scale(0.075) translate(-617%,-617%);
-			right: auto;
-			left: 0px;
-		}
-		div.gridItem:nth-child(even) div.bloom-page.A4Portrait {
-			transform: scale(0.05) translate(-950%,-950%);
-			right: auto;
-			left: 0px;
-		}
+            var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
+            document.dispatchEvent(event);
+        }
+    </script>
+    <title></title>
+    <style>
+        body {
+            background-color: DarkGray;
+        }
+        div.bloom-page {
+            /* bizarrely, the translate moves it to the top left instead of the middle of the original space.
+                If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
+            transform: scale(0.075) translate(617%,-617%);
+            position: absolute;
+            right: 0px;
+        }
+        div.bloom-page.A4Portrait {
+            /* bizarrely, the translate moves it to the top left instead of the middle of the original space.
+                If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
+            transform: scale(0.05) translate(950%,-950%);
+            position: absolute;
+            right: 0px;
+        }
+        .gridly {
+            position: relative;
+        }
+        div.gridItem {
+            width: 80px;
+            height: 100px;
+            opacity: 1;
+            overflow:hidden;
+        }
+        div.gridItem:nth-child(even) div.bloom-page {
+            transform: scale(0.075) translate(-617%,-617%);
+            right: auto;
+            left: 0px;
+        }
+        div.gridItem:nth-child(even) div.bloom-page.A4Portrait {
+            transform: scale(0.05) translate(-950%,-950%);
+            right: auto;
+            left: 0px;
+        }
 
-		.div.gridItem.dragging {
-			opacity: .8;
-		}
-		div.thumbnailCaption {
-			position: absolute;
-			top: 60px;
-			color: white;
-			overflow: hidden;
-			text-align:right;
-			width: 80px;
-		}
-		div.gridItem:nth-child(even) div.thumbnailCaption {
-			text-align: left;
-		}
-		div.placeholder {
-			pointer-events: none;
-		}
+        .div.gridItem.dragging {
+            opacity: .8;
+        }
+        div.thumbnailCaption {
+            position: absolute;
+            top: 60px;
+            color: white;
+            overflow: hidden;
+            text-align:right;
+            width: 80px;
+        }
+        div.gridItem:nth-child(even) div.thumbnailCaption {
+            text-align: left;
+        }
+        div.placeholder {
+            pointer-events: none;
+        }
 
-		.gridSelected .pageContainer {
-			border: 3px solid rgb(255, 255, 163);/*matches the current tooltip yellow*/
-		}
-		 div.gridItem:nth-child(odd) .pageContainer {
-			 float: right; /*towards the center*/
-		}
+        .gridSelected .pageContainer {
+            border: 3px solid rgb(255, 255, 163);/*matches the current tooltip yellow*/
+        }
+         div.gridItem:nth-child(odd) .pageContainer {
+             float: right; /*towards the center*/
+        }
 
-		 /* the nature of how we're doing the thumbnails (relying on scaling) seems to mess up
-			 the browser's normal ability to assign a width to the parent div. So our parent
-			 here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
-			 moment, we assign appropriate sizes, by hand. We rely on c# code to add these
-			 classes, since we can't write a rule in css3 that peeks into a child attribute.
-		 */
-		.gridSelected .pageContainer.A5Portrait {
-			height: 60px;
-			width: 42px;
-		}
-		.gridSelected .pageContainer.A4Portrait {
-			height: 56px;
-			width: 40px;
-		}
-		.gridSelected .pageContainer.A4Landscape {
-			height: 59px;
-			width: 74px;
-		}
-	</style>
+         /* the nature of how we're doing the thumbnails (relying on scaling) seems to mess up
+             the browser's normal ability to assign a width to the parent div. So our parent
+             here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
+             moment, we assign appropriate sizes, by hand. We rely on c# code to add these
+             classes, since we can't write a rule in css3 that peeks into a child attribute.
+         */
+        .gridSelected .pageContainer.A5Portrait {
+            height: 60px;
+            width: 42px;
+        }
+        .gridSelected .pageContainer.A4Portrait {
+            height: 56px;
+            width: 40px;
+        }
+        .gridSelected .pageContainer.A4Landscape {
+            height: 59px;
+            width: 74px;
+        }
+    </style>
 </head>
 <body id="body">
-	<div class="gridly">
-		<div class="gridItem placeholder" id="placeholder"></div>
-	</div>
+    <div class="gridly">
+        <div class="gridItem placeholder" id="placeholder"></div>
+    </div>
 </body>
 </html>
