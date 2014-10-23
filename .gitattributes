@@ -5,8 +5,11 @@
 *.h     diff=cpp
 *.idh   diff=cpp
 
-# Different settings for javascript files
-*.js whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
+# Different settings for javascript, typescript, html and tmx files
+*.js   whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
+*.ts   whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
+*.htm* whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
+*.tmx  whitespace=-indent-with-non-tab,tab-in-indent,trailing-space,tabwidth=2
 
 # Don't check (nor fix) whitespace for generated files
 *.csproj -whitespace
@@ -21,4 +24,5 @@
 *.patch -whitespace
 *.svg -whitespace
 *.xml -whitespace
+*.bmml -whitespace
 changelog -whitespace
