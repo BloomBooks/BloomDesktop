@@ -83,7 +83,7 @@
 			this._toolSpecificPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
 			this._toolSpecificPanel.Location = new System.Drawing.Point(333, 2);
 			this._toolSpecificPanel.Name = "_toolSpecificPanel";
-			this._toolSpecificPanel.Size = new System.Drawing.Size(484, 66);
+			this._toolSpecificPanel.Size = new System.Drawing.Size(700, 66);
 			this._toolSpecificPanel.TabIndex = 17;
 			// 
 			// _panelHoldingToolStrip
