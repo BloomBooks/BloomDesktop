@@ -3,64 +3,64 @@
  * Decodable Leveled Reader Settings
  */
 class ReaderSettings {
-	levels: ReaderLevel[] = [];
-	stages: ReaderStage[] = [];
-	letters: string = '';
-	moreWords: string = '';
+  levels: ReaderLevel[] = [];
+  stages: ReaderStage[] = [];
+  letters: string = '';
+  moreWords: string = '';
 
 }
 
 // Defines an object to hold data about one stage in the decodable books tool
 class ReaderStage {
 
-	name: string;
-	sightWords: string = '';
-	letters: string = '';
+  name: string;
+  sightWords: string = '';
+  letters: string = '';
 
-	constructor(name: string) {
-		this.name = name;
-	}
+  constructor(name: string) {
+    this.name = name;
+  }
 
-	getName(): string {
-		return this.name;
-	}
+  getName(): string {
+    return this.name;
+  }
 }
 
 // Defines an object to hold data about one level in the leveled reader tool
 class ReaderLevel {
 
-	name: string;
-	thingsToRemember: string[] = [];
+  name: string;
+  thingsToRemember: string[] = [];
 
-	// For each of these, 0 signifies unlimited.
-	maxWordsPerPage: number = 0;
-	maxWordsPerSentence: number = 0;
-	maxWordsPerBook: number = 0;
-	maxUniqueWordsPerBook: number = 0;
+  // For each of these, 0 signifies unlimited.
+  maxWordsPerPage: number = 0;
+  maxWordsPerSentence: number = 0;
+  maxWordsPerBook: number = 0;
+  maxUniqueWordsPerBook: number = 0;
 
-	constructor(name: string) {
-		this.name = name;
-	}
+  constructor(name: string) {
+    this.name = name;
+  }
 
-	getName(): string {
-		return this.name;
-	}
+  getName(): string {
+    return this.name;
+  }
 
-	getMaxWordsPerPage(): number {
-		return this.maxWordsPerPage || 0;
-	}
+  getMaxWordsPerPage(): number {
+    return this.maxWordsPerPage || 0;
+  }
 
-	getMaxWordsPerSentence(): number {
-		return this.maxWordsPerSentence || 0;
-	}
+  getMaxWordsPerSentence(): number {
+    return this.maxWordsPerSentence || 0;
+  }
 
-	getMaxWordsPerBook(): number {
-		return this.maxWordsPerBook || 0;
-	}
+  getMaxWordsPerBook(): number {
+    return this.maxWordsPerBook || 0;
+  }
 
-	getMaxUniqueWordsPerBook(): number {
-		return this.maxUniqueWordsPerBook || 0;
-	}
+  getMaxUniqueWordsPerBook(): number {
+    return this.maxUniqueWordsPerBook || 0;
+  }
 }
 
 /**
@@ -72,8 +72,8 @@ class ReaderLevel {
  */
 function ReaderSettingsReplacer(key: string, value: any): any {
 
-	// we do not want to save the "name" value
-	if (key === 'name') return undefined;
+  // we do not want to save the "name" value
+  if (key === 'name') return undefined;
 
-	return value;
+  return value;
 }

@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html>
   <head>
-	<meta charset="UTF-8">
-	<link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css" type="text/css">
-	<link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css" type="text/css">
-	<link rel="stylesheet" href="/bloom/bookEdit/accordion/accordion.css" type="text/css">
-	<link rel="stylesheet" href="/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css" type="text/css">
-	<script src="/bloom/bookEdit/js/interIframeChannel.js"></script>
-	<script src="/bloom/lib/jquery-1.10.1.js"></script>
-	<script src="/bloom/lib/jquery-ui-1.10.3.custom.min.js"></script>
-	<script src="/bloom/bookEdit/js/editViewFrame.js"></script>
-	<script src="/bloom/bookEdit/js/calledByCSharp.js"></script>
-	<script type="text/javascript">var calledByCSharp = new CalledByCSharp();</script>
-	<script type="text/javascript">
-	  var interIframeChannel;
-	  $(document).ready(function () {
-	   // The iframe communication channel needs to be initialized before the child documents are loaded.
-	   interIframeChannel = new interIframeChannel();
-	   document.getElementById('page').src = '/bloom/currentPageContent';
-	   document.getElementById('accordion').src = '/bloom/accordionContent';
-	  });
-	</script>
-	<style type="text/css">
-	  html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
-	  body { overflow:hidden }
-	  .accordion #left { margin-right: 200px;}
-	  .accordion #right { width: 200px; float: right;}
-	  .no-accordion #left { width: 100%;}
-	  .no-accordion #right { display: none;}
-	</style>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css" type="text/css">
+    <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css" type="text/css">
+    <link rel="stylesheet" href="/bloom/bookEdit/accordion/accordion.css" type="text/css">
+    <link rel="stylesheet" href="/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css" type="text/css">
+    <script src="/bloom/bookEdit/js/interIframeChannel.js"></script>
+    <script src="/bloom/lib/jquery-1.10.1.js"></script>
+    <script src="/bloom/lib/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="/bloom/bookEdit/js/editViewFrame.js"></script>
+    <script src="/bloom/bookEdit/js/calledByCSharp.js"></script>
+    <script type="text/javascript">var calledByCSharp = new CalledByCSharp();</script>
+    <script type="text/javascript">
+      var interIframeChannel;
+      $(document).ready(function () {
+       // The iframe communication channel needs to be initialized before the child documents are loaded.
+       interIframeChannel = new interIframeChannel();
+       document.getElementById('page').src = '/bloom/currentPageContent';
+       document.getElementById('accordion').src = '/bloom/accordionContent';
+      });
+    </script>
+    <style type="text/css">
+      html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
+      body { overflow:hidden }
+      .accordion #left { margin-right: 200px;}
+      .accordion #right { width: 200px; float: right;}
+      .no-accordion #left { width: 100%;}
+      .no-accordion #right { display: none;}
+    </style>
   </head>
   <body class="no-accordion">
-	<div id="right">
-	  <iframe id="accordion" width="100%" height="100%" src="">Your browser does not support iframes.</iframe>
-	</div>
-	<div id="left">
-	  <iframe id="page" width="100%" height="100%" src="">Your browser does not support iframes.</iframe>
-	</div>
+    <div id="right">
+      <iframe id="accordion" width="100%" height="100%" src="">Your browser does not support iframes.</iframe>
+    </div>
+    <div id="left">
+      <iframe id="page" width="100%" height="100%" src="">Your browser does not support iframes.</iframe>
+    </div>
   </body>
 </html>

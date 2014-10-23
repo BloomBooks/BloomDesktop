@@ -3,15 +3,15 @@
 
 class BloomAccordion {
 
-	constructor() {
-		$("#accordion").accordion({
-			heightStyle: "fill"
-		});
-	}
+  constructor() {
+    $("#accordion").accordion({
+      heightStyle: "fill"
+    });
+  }
 
-	static Resize() {
-		$("#accordion").accordion("refresh");
-		//var myHeight = $(document).find(".accordionRoot").innerHeight();
-		//console.log("Refreshed accordion to: "+myHeight);
-	}
+  static Resize() {
+    $("#accordion").accordion("refresh");
+    //var myHeight = $(document).find(".accordionRoot").innerHeight();
+    //console.log("Refreshed accordion to: "+myHeight);
+  }
 }
