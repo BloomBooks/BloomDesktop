@@ -37,6 +37,8 @@ namespace BloomTests.ToPalaso
 			public void Dispose()
 			{
 				File.Delete(FileName);
+
+				GC.SuppressFinalize(this);
 			}
 		}
 

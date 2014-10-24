@@ -570,6 +570,8 @@ namespace Bloom
 			}
 			_browserCacheForDifferentPaperSizes.Clear();
 			_theOnlyOneAllowed = null;
+
+			GC.SuppressFinalize(this);
 		}
 
 		/// <summary>

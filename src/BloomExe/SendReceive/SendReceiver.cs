@@ -134,6 +134,8 @@ namespace Bloom.SendReceive
 			if(_chorusSystem!=null)
 				_chorusSystem.Dispose();
 			_chorusSystem = null;
+
+			GC.SuppressFinalize(this);
 		}
 	}
 }
