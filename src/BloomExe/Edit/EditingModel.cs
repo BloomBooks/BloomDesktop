@@ -494,6 +494,7 @@ namespace Bloom.Edit
 			_server.CurrentPageContent = TempFileUtils.CreateHtml5StringFromXml(_domForCurrentPage.RawDom);
 			_server.AccordionContent = MakeAccordionContent();
 			_server.CurrentBook = _currentlyDisplayedBook;
+			_server.AuthorMode = ShowTemplatePanel;
 		}
 
 		/// <summary>
