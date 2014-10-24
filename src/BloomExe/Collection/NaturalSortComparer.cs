@@ -94,6 +94,8 @@ namespace Bloom.Collection
 		{
 			table.Clear();
 			table = null;
+
+			GC.SuppressFinalize(this);
 		}
 	}
 }

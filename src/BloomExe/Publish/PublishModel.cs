@@ -207,6 +207,8 @@ namespace Bloom.Publish
 
 				}
 			}
+
+			GC.SuppressFinalize(this);
 		}
 
 		public BookletPortions BookletPortion { get; set; }

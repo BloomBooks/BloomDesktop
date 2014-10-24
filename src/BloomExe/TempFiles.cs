@@ -179,7 +179,9 @@ namespace BloomTemp
 
 		public void Dispose()
 		{
-		   DeleteFolderThatMayBeInUse(_path);
+			DeleteFolderThatMayBeInUse(_path);
+
+			GC.SuppressFinalize(this);
 		}
 
 		[Obsolete("It's better to wrap the use of this in a using() so that it is automatically cleaned up, even if a test fails.")]

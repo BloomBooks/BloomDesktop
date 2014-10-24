@@ -414,6 +414,8 @@ namespace Bloom
 			if (_httpServer != null)
 				_httpServer.Dispose();
 			_httpServer = null;
+
+			GC.SuppressFinalize(this);
 		}
 
 		/// <summary>

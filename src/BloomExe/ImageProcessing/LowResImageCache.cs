@@ -48,6 +48,8 @@ namespace Bloom.ImageProcessing
 			//NB: this turns out to be dangerous. Without it, we still delete all we can, leave some files around
 			//each time, and then deleting them on the next run
 			//			_cacheFolder.Dispose();
+
+			GC.SuppressFinalize(this);
 		}
 
 		private void TryToDeleteCachedImages()

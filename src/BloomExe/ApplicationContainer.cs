@@ -88,6 +88,8 @@ namespace Bloom
 			{
 				_container.Dispose();
 				_container = null;
+
+				GC.SuppressFinalize(this);
 			}
 
 			public ProjectContext CreateProjectContext(string projectPath)
