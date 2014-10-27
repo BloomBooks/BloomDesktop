@@ -236,7 +236,9 @@ namespace Bloom.web
 
 		protected static string GetLocalPathWithoutQuery(IRequestInfo info)
 		{
-			var r = info.LocalPathWithoutQuery.Replace("/bloom/", "");
+			var r = info.LocalPathWithoutQuery;
+			if (r.StartsWith("/bloom/"))
+				r = r.Substring(7, r.Length - 7);
 			r = r.Replace("%3A", ":");
 			r = r.Replace("%20", " ");
 			r = r.Replace("%27", "'");

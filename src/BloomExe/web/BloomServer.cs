@@ -40,7 +40,9 @@ namespace Bloom.web
 			if (base.ProcessRequest(info))
 				return true;
 
-			var r = info.LocalPathWithoutQuery.Replace("/bloom/", "");
+			var r = info.LocalPathWithoutQuery;
+			if (r.StartsWith("/bloom/"))
+				r = r.Substring(7, r.Length - 7);
 			r = r.Replace("library/", "");
 			if (r.Contains("libraryContents"))
 			{
