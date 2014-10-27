@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.53.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.17.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.0.62.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -185,12 +185,37 @@
         <seg>Pour mettre plus d'information sur ce livre, vous pouvez utiliser cette page, qui est la quatrième de couverture.</seg>
       </tuv>
     </tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstallation">
+      <tuv xml:lang="en">
+        <seg>Bloom Pack Installation</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Installation d'un BloomPack</seg>
+      </tuv>
+    </tu>
     <tu tuid="BloomPackInstallDialog.BloomPackInstalled">
       <tuv xml:lang="en">
         <seg>The {0} Collection is now ready to use on this computer.</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>La collection {0} est maintenant disponible sur cet ordinateur.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstaller">
+      <note>Displayed as the message box title</note>
+      <tuv xml:lang="en">
+        <seg>Bloom Pack Installer</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Installation d'un BloomPack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.DoesNotExist">
+      <tuv xml:lang="en">
+        <seg>{0} does not exist</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>{0} n'existe pas</seg>
       </tuv>
     </tu>
     <tu tuid="BloomPackInstallDialog.ErrorInstallingBloomPack">
@@ -218,12 +243,44 @@
         <seg>Bloom est déjà actif, mais le contenu ne sera pas affiché avant de redémarrer Bloom.</seg>
       </tuv>
     </tu>
+    <tu tuid="BloomPackInstallDialog.NotInstalled">
+      <tuv xml:lang="en">
+        <seg>The Bloom collection will not be installed.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Cette collection Bloom ne sera pas installée.</seg>
+      </tuv>
+    </tu>
     <tu tuid="BloomPackInstallDialog.Opening">
       <tuv xml:lang="en">
         <seg>Opening {0}...</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>En train d'ouvrir {0}...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.Replace">
+      <tuv xml:lang="en">
+        <seg>This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Cet ordinateur a déjà une collection Bloom nommée '{0}'. Voulez-vous la remplacer par celle de ce BloomPack ?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.SingleCollectionFolder">
+      <tuv xml:lang="en">
+        <seg>Bloom Packs should have only a single collection folder at the top level of the zip file.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Un BloomPack devrait avoir un seul dossier de collection au niveau supérieur du fichier zip.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.UnableToReplace">
+      <tuv xml:lang="en">
+        <seg>Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom n'a pas pu supprimer la copie existante de '{0}'. Quitter Bloom, si nécessaire, et réessayer. Sinon, réessayer après le redémarrage de votre ordinateur.</seg>
       </tuv>
     </tu>
     <tu tuid="Book title in {lang}">
@@ -347,6 +404,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeft">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Right To Left</seg>
       </tuv>
@@ -355,11 +413,20 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftTip">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Select languages that are written from right to left</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Sélectionner les langues qui s'écrivent de droite à gauche</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <tuv xml:lang="en">
+        <seg>Right to Left Writing System</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Système d'écriture de droite à gauche</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
@@ -1152,7 +1219,7 @@
     </tu>
     <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
       <tuv xml:lang="en">
-        <seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
+        <seg>Open the Html used to make this PDF, in Firefox (must be on path)</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Ouvrir le fichier HTML (utilisé pour créer ce PDF) dans le logiciel Chrome (qui doit être sur le chemin)</seg>
@@ -1239,6 +1306,24 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Modifier la taille du texte pour tous les endroits avec le style '{0}' et la langue '{1}'.\nTaille actuelle est {2}pt.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Lorsqu'on fait un livre original, utiliser cette zone pour noter les contributions apportées par les auteurs, illustrateurs, éditeurs, etc.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Translator">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you make a book from a shell, use this box to tell who did the translation.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Lorsqu'on fait un livre à partir d'un livre canevas, utiliser cette zone pour noter les traducteurs.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
@@ -2155,6 +2240,16 @@
         <seg>Choix de sujet</seg>
       </tuv>
     </tu>
+    <tu tuid="LeveledReaderTool.ConceptLoad">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Concept load</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Charge conceptuelle</seg>
+      </tuv>
+    </tu>
     <tu tuid="LeveledReaderTool.FoThisLevel">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2404,6 +2499,14 @@
         <seg>Comment voulez-vous appeler cette collection ?</seg>
       </tuv>
     </tu>
+    <tu tuid="NewCollectionWizard.CollectionNameProblem">
+      <tuv xml:lang="en">
+        <seg>Collection Name Problem</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Problème de nom de collection</seg>
+      </tuv>
+    </tu>
     <tu tuid="NewCollectionWizard.CollectionWillBeCreatedAt">
       <tuv xml:lang="en">
         <seg>Collection will be created at: {0}</seg>
@@ -2515,6 +2618,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Créer une nouvelle collection Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.ProjectName">
+      <tuv xml:lang="en">
+        <seg>Project Name</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Nom du projet</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
