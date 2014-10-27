@@ -31,6 +31,7 @@ namespace Bloom.web
 
 		public string CurrentPageContent { get; set; }
 		public string AccordionContent { get; set; }
+		public bool AuthorMode { get; set; }
 
 		/// <summary>
 		/// There can really only be one of these globally, since ReadersHandler is static. But for now that's true anyway
@@ -145,6 +146,10 @@ namespace Bloom.web
 				case "availableFontNames":
 					InstalledFontCollection installedFontCollection = new InstalledFontCollection();
 					info.WriteCompleteOutput(string.Join(",", installedFontCollection.Families.Select(f => f.Name)));
+					return true;
+
+				case "authorMode":
+					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
 					return true;
 
 				case "help":

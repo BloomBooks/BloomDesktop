@@ -36,6 +36,8 @@ namespace Bloom_ChorusPlugin
 		public void Dispose()
 		{
 			xmlFile.Dispose();
+
+			GC.SuppressFinalize(this);
 		}
 	}
 }

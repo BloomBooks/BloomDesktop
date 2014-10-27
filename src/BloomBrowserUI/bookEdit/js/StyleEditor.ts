@@ -22,6 +22,9 @@ class StyleEditor {
     private _supportFilesRoot: string;
     private MIN_FONT_SIZE: number = 7;
     private boxBeingEdited: HTMLElement;
+    private ignoreControlChanges: boolean;
+    private styles: string[];
+    private authorMode: boolean; // true if authoring (rather than translating)
 
     constructor(supportFilesRoot: string) {
         this._supportFilesRoot = supportFilesRoot;
@@ -64,10 +67,12 @@ class StyleEditor {
         return null;
     }
 
+    // obsolete?
     MakeBigger(target: HTMLElement) {
         this.ChangeSize(target, 2);
         (<qtipInterface>$("div.bloom-editable, textarea")).qtip('reposition');
     }
+    // obsolete?
     MakeSmaller(target: HTMLElement) {
         this.ChangeSize(target, -2);
         (<qtipInterface>$("div.bloom-editable, textarea")).qtip('reposition');
@@ -113,6 +118,12 @@ class StyleEditor {
         return styleName;
     }
 
+    static SetStyleNameForElement(target: HTMLElement, newStyle: string) {
+        var oldStyle: string = this.GetStyleClassFromElement(target);
+        $(target).removeClass(oldStyle);
+        $(target).addClass(newStyle);
+    }
+
     static GetLangValueOrNull(target: HTMLElement): string {
         var langAttr = $(target).attr("lang");
         if (!langAttr)
@@ -120,6 +131,7 @@ class StyleEditor {
         return langAttr.valueOf().toString();
     }
 
+    // obsolete?
     ChangeSize(target: HTMLElement, change: number) {
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName)
@@ -168,6 +180,37 @@ class StyleEditor {
         this.AddQtipToElement($('#formatButton'), toolTip);
     }
 
+    // Get the names that should be offered in the styles combo box.
+    // Basically any defined styles without dots in their definition (except the first one).
+    // (We don't allow users to create styles with dot or any other special characters.)
+    getFormattingStyles(): String[] {
+        var result = [];
+        for (var i = 0; i < document.styleSheets.length; i++) {
+            var sheet = <StyleSheet>(<any>document.styleSheets[i]);
+            var rules: CSSRuleList = (<any>sheet).cssRules;
+            if (rules) {
+                for (var j = 0; j < rules.length; j++) {
+                    var index = rules[j].cssText.indexOf('{');
+                    if (index == -1) continue;
+                    var label = rules[j].cssText.substring(0, index);
+                    var index2 = label.indexOf("-style");
+                    if (index2 > 0 && label.startsWith(".")) {
+                        var name = label.substring(1, index2);
+                        if (name.indexOf(".") == -1) {
+                            result.push(name);
+                        }
+                    }
+                }
+            }
+        }
+        // It's bizarre not to offer 'normal' since that's the standard initial style.
+        // But in fact our default template doesn't define it.
+        if (result.indexOf('normal') == -1) {
+            result.push('normal');
+        }
+        return result;
+    }
+
     GetOrCreateUserModifiedStyleSheet(): StyleSheet {
         //note, this currently just makes an element in the document, not a separate file
         for (var i = 0; i < document.styleSheets.length; i++) {
@@ -191,11 +234,16 @@ class StyleEditor {
         var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         var x: CSSRuleList = (<any>styleSheet).cssRules;
         var styleAndLang = styleName;
-        if (langAttrValue && langAttrValue.length > 0)
-            styleAndLang = styleName + '[lang="' + langAttrValue + '"]';
-        else
-            styleAndLang = styleName + ":not([lang])";
-
+        // if we are authoring a book, style changes should apply to all translations of it
+        // if we are translating, changes should only apply to this language.
+        // a downside of this is that when authoring in multiple languages, to get a different
+        // appearance for different languages a different style must be created.
+        if (!this.authorMode) {
+            if (langAttrValue && langAttrValue.length > 0)
+                styleAndLang = styleName + '[lang="' + langAttrValue + '"]';
+            else
+                styleAndLang = styleName + ":not([lang])";
+        }
         for (var i = 0; i < x.length; i++) {
             if (x[i].cssText.indexOf(styleAndLang) > -1) {
                 return <CSSStyleRule> x[i];
@@ -291,10 +339,94 @@ class StyleEditor {
         return lineHeight;
     }
 
+    getPointSizes() {
+        return ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72']; // Same options as Word 2010
+    }
+
+    getLineSpaceOptions() {
+        return ['1.0', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.8', '2.0', '2.5', '3.0'];
+    }
+
+    getWordSpaceOptions() {
+        return [localizationManager.getText('EditTab.StyleEditor.WordSpacingNormal', 'Normal'),
+            localizationManager.getText('EditTab.StyleEditor.WordSpacingWide', 'Wide'),
+            localizationManager.getText('EditTab.StyleEditor.WordSpacingExtraWide', 'Extra Wide')];
+    }
+
+    // Returns an object giving the current selection for each format control.
+    getFormatValues() {
+        var box = $(this.boxBeingEdited);
+        var sizeString = box.css('font-size');
+        var pxSize = parseInt(sizeString);
+        var ptSize = this.ConvertPxToPt(pxSize, false);
+        var sizes = this.getPointSizes();
+        ptSize = StyleEditor.GetClosestValueInList(sizes, ptSize);
+
+        var fontName = box.css('font-family');
+        if (fontName[0] == '\'' || fontName[0] == '"') {
+            fontName = fontName.substring(1, fontName.length - 1); // strip off quotes
+        }
+
+        var lineHeightString = box.css('line-height');
+        var lineHeightPx = parseInt(lineHeightString);
+        var lineHeightNumber = Math.round(lineHeightPx / pxSize * 10) / 10.0;
+        var lineSpaceOptions = this.getLineSpaceOptions();
+        var lineHeight = StyleEditor.GetClosestValueInList(lineSpaceOptions, lineHeightNumber);
+
+        var wordSpaceOptions = this.getWordSpaceOptions();
+
+        var wordSpaceString = box.css('word-spacing');
+        var wordSpacing = wordSpaceOptions[0];
+        if (wordSpaceString != "0px") {
+            var pxSpace = parseInt(wordSpaceString);
+            var ptSpace = this.ConvertPxToPt(pxSpace);
+            if (ptSpace > 7.5) {
+                wordSpacing = wordSpaceOptions[2];
+            } else {
+                wordSpacing = wordSpaceOptions[1];
+            }
+        }
+        var borderStyle: string = box.css('border-bottom-style');
+        var borderColor = box.css('border-bottom-color');
+        var borderRadius: string = box.css('border-top-left-radius');
+        var backColor: string = box.css('background-color');
+        //alert(borderStyle + ',' + borderColor + ',' + borderRadius + ',' + backColor);
+        var borderChoice = "";
+        // Detecting 'none' is difficult because our edit boxes inherit a faint grey border
+        // Currently we use plain rgb for our official borders, and the inherited one uses rgba(0, 0, 0, 0.2).
+        // Rather arbitrarily we will consider a border less than 50% opaque to be 'none'.
+        if (!borderStyle || borderStyle === 'none' || !borderColor || (borderColor.toLowerCase().startsWith("rgba(") && parseFloat(borderColor.split(',')[3]) < 0.5)) {
+            borderChoice = 'none';
+        }
+        else if (borderColor.toLowerCase() == 'rgb(128, 128, 128)') {
+            if (parseInt(borderRadius) == 0) {
+                borderChoice = 'grey';
+            } else {
+                borderChoice = 'grey-round';
+            }
+        }
+        else if (backColor.toLowerCase() == 'rgb(211, 211, 211)') {
+            borderChoice = 'black-grey';
+        } else if (parseInt(borderRadius) > 0) {
+            borderChoice = 'black-round';
+        } else {
+            borderChoice = 'black';
+        }
+        return { ptSize: ptSize, fontName: fontName, lineHeight: lineHeight, wordSpacing: wordSpacing, borderChoice:borderChoice };
+    }
+
     AttachToBox(targetBox: HTMLElement) {
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName)
             return;
+        var editor = this;
+        // I'm assuming here that since we're dealing with a local server, we'll get a result long before
+        // the user could actually modify a style and thus need the information.
+        // More dangerous is using it in getDescription. But as that is launched by a later
+        // async request, I think it should be OK.
+        iframeChannel.simpleAjaxGet('/bloom/authorMode', function (result) {
+            editor.authorMode = result == "true";
+        });
 
         if (this._previousBox != null) {
             StyleEditor.CleanupElement(this._previousBox);
@@ -305,7 +437,6 @@ class StyleEditor {
         var bottom = $(targetBox).position().top + $(targetBox).height();
         var t = bottom + "px";
 
-        var editor = this;
         $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton'); // after we create it!
         var txt = localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style');
@@ -316,64 +447,49 @@ class StyleEditor {
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
                 styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
                 var box = $(targetBox);
-
-                var sizeString = box.css('font-size');
-                var pxSize = parseInt(sizeString);
-                var ptSize = editor.ConvertPxToPt(pxSize, false);
-                var sizes = ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72']; // Same options as Word 2010
-                ptSize = StyleEditor.GetClosestValueInList(sizes, ptSize);
-
                 var lang = box.attr('lang');
                 lang = localizationManager.getText(lang);
-                var fontName = box.css('font-family');
-                if (fontName[0] == '\'' || fontName[0] == '"') {
-                    fontName = fontName.substring(1, fontName.length - 1); // strip off quotes
-                }
+                var current = editor.getFormatValues();
 
-                var lineHeightString = box.css('line-height');
-                var lineHeightPx = parseInt(lineHeightString);
-                var lineHeightNumber = Math.round(lineHeightPx / pxSize * 10) / 10.0;
-                var lineSpaceOptions = ['1.0', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.8', '2.0', '2.5', '3.0'];
-                var lineHeight = StyleEditor.GetClosestValueInList(lineSpaceOptions, lineHeightNumber);
-
-                var wordSpaceOptions =
-                    [localizationManager.getText('EditTab.StyleEditor.WordSpacingNormal', 'Normal'),
-                        localizationManager.getText('EditTab.StyleEditor.WordSpacingWide', 'Wide'),
-                        localizationManager.getText('EditTab.StyleEditor.WordSpacingExtraWide', 'Extra Wide')];
-                var wordSpaceString = box.css('word-spacing');
-                var wordSpacing = wordSpaceOptions[0];
-                if (wordSpaceString != "0px") {
-                    var pxSpace = parseInt(wordSpaceString);
-                    var ptSpace = editor.ConvertPxToPt(pxSpace);
-                    if (ptSpace > 7.5) {
-                        wordSpacing = wordSpaceOptions[2];
-                    } else {
-                        wordSpacing = wordSpaceOptions[1];
-                    }
-                }
                 //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
                 // Enhance: lineHeight may well be something like 35px; what should we select initially?
 
                 var fonts = fontData.split(',');
-                var forTextInLang = localizationManager.getText('BookEditor.ForTextInLang', 'This formatting is for all {0} text in boxes with \'{1}\' style', lang, styleName);
+                var forTextInLang = editor.getDescription();
+                editor.styles = editor.getFormattingStyles();
+                if (editor.styles.indexOf(styleName) == -1) {
+                    editor.styles.push(styleName);
+                }
+                editor.styles.sort(function (a, b) {
+                    return a.toLowerCase().localeCompare(b.toLowerCase());
+                });
+                var borderItems = ['none', 'black', 'black-grey', 'black-round', 'grey', 'grey-round'];
 
                 var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:900;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">'
-                    + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt;margin-bottom: 5pt"></div>'
-                    + editor.makeSelect(fonts, 5, fontName, 'fontSelect', 15) + ' '
-                    + editor.makeSelect(sizes, 5, ptSize, 'sizeSelect') + ' '
+                    + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt"></div>'
+                    + '<div class="tab-pane" id="tabRoot">'
+                    + '<div class="tab-page" id="formatPage"><h2 class="tab">Format</h2>'
+                    + '<div>'
+                    + editor.makeSelect(fonts, 5, current.fontName, 'fontSelect', 15) + ' '
+                    + editor.makeSelect(editor.getPointSizes(), 5, current.ptSize, 'sizeSelect') + ' '
                     + '<span style="white-space: nowrap">'
                     + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:8px;position:relative;top:6px">'
-                    + editor.makeSelect(lineSpaceOptions, 2, lineHeight, 'lineHeightSelect') + ' '
+                    + editor.makeSelect(editor.getLineSpaceOptions(), 2, current.lineHeight, 'lineHeightSelect') + ' '
                     + '</span>' + ' '
                     + '<span style="white-space: nowrap">'
                     + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">'
-                    + editor.makeSelect(wordSpaceOptions, 2, wordSpacing, 'wordSpaceSelect')
+                    + editor.makeSelect(editor.getWordSpaceOptions(), 2, current.wordSpacing, 'wordSpaceSelect')
                     + '</span>' + ' '
                     + '<span style="white-space: nowrap">'
                     + '<div style="margin-left:5px;display:inline-block;border:2px solid black;height:10pt;width:10pt;margin-right:2px;position:relative;top:2px"></div>'
-                    + editor.makeBorderSelect(box)
-                    + '</span>'
-                    + '<div class="format-toolbar-description">' + forTextInLang + '</div>'
+                    + editor.makeSelect(borderItems, 0, current.borderChoice, 'borderSelect')
+                    + '</span></div>'
+                    + '<div class="format-toolbar-description" id="formatDesc">' + forTextInLang + '</div>'
+                    + '</div>' // end of tab-page div for format
+                    + '<div class="tab-page"><h2 class="tab">Style Name</h2>'
+                    + editor.makeEditableSelect(editor.styles, 5, styleName, 'styleSelect')
+                    + "</div>" // end of format-styleName div
+                    + '</div>' // end of tab-page div for style name
                     + '</div>';
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
                 $('body').after(html);
@@ -390,6 +506,11 @@ class StyleEditor {
                 editor.AddQtipToElement($('#wordSpaceSelect').parent(), localizationManager.getText('EditTab.StyleEditor.WordSpacingToolTip', 'Change the spacing between words'), 1500);
                 $('#borderSelect').change(function () { editor.changeBorderSelect(); });
                 editor.AddQtipToElement($('#borderSelect').parent(), localizationManager.getText('EditTab.StyleEditor.BorderToolTip', 'Change the border and background'), 1500);
+                $('#styleSelect').change(function () { editor.selectStyle(); });
+                $('#styleSelectInput').alpha({allowSpace:false});
+                new WebFXTabPane($('#tabRoot').get(0), false, function(n) {
+                    editor.tabSelected(n);
+                });
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
                 //alert(offset.left + "," + $(document).width() + "," + $(targetBox).offset().left);
@@ -422,6 +543,69 @@ class StyleEditor {
         editor.AttachLanguageTip($(targetBox), bottom);
     }
 
+    getDescription() {
+        var styleName = StyleEditor.GetStyleNameForElement(this.boxBeingEdited);
+        if (styleName) {
+            var index = styleName.indexOf("-style");
+            if (index > 0) styleName = styleName.substring(0, index);
+        }
+        var lang = "";
+        if (!this.authorMode) {
+            lang = $(this.boxBeingEdited).attr('lang');
+        }
+        // The replace fixes the double-space typically left if language is not specified.
+        // Enhance: we may need a better way of localizing when language is not specified, since just leaving it out may not
+        // produce nice sentences in every language. However, we already have several translations of this string, so I'd
+        // rather not change it unless we must.
+        return localizationManager.getText('BookEditor.ForTextInLang', 'This formatting is for all {0} text in boxes with \'{1}\' style', lang, styleName).replace("  ", " ");
+    }
+
+    tabSelected(n) {
+        if (n != 0) return;
+        // switching back to format tab. User may have defined a new style.
+        var typedStyle = $('#styleSelectInput').val();
+        if (!typedStyle) {
+            // If the user didn't type a new style name, there is nothing to do.
+            // We updated the format controls when the style was selected.
+            return;
+        }
+
+        // did the user type the name of an existing style?
+        for (var i = 0; i < this.styles.length; i++) {
+            if (typedStyle == this.styles[i]) {
+                // just act as if he'd selected that item
+                $('#styleSelect').val(typedStyle);
+                this.selectStyle(); // surprisingly, this doesn't happen automatically
+                return;
+            }
+        }
+
+        // Make a new style. Initialize to all current values.
+        StyleEditor.SetStyleNameForElement(this.boxBeingEdited, typedStyle + '-style');
+        this.changeFont();
+        this.changeSize();
+        this.changeLineheight();
+        this.changeWordSpace();
+        this.changeBorderSelect();
+
+        // Insert it into our list and the option control on the second page.
+        this.insertOption(typedStyle);
+        //$('#styleSelect option:eq(' + typedStyle + ')').prop('selected', true);
+        $('#styleSelect').val(typedStyle);
+    }
+
+    insertOption(typedStyle) {
+        var newOption = $('<option value="' + typedStyle + '">' + typedStyle + '</option>');
+        for (var j = 0; j < this.styles.length; j++) {
+            if (typedStyle.toLowerCase() < this.styles[j].toLowerCase()) {
+                this.styles.splice(j, 0, typedStyle);
+                newOption.insertBefore('#styleSelect :nth-child(' + (j + 1) + ')');
+                return;
+            }
+        }
+        $('#styleSelect').append(newOption);
+    }
+
     makeSelect(items, marginLeft, current, id, maxlength?) {
         var result = '<select id="' + id + '" style="margin-left:' + marginLeft + 'px">';
         for (var i = 0; i < items.length; i++) {
@@ -436,50 +620,58 @@ class StyleEditor {
         return result + '</select>';
     }
 
-    makeBorderSelect(box) {
-        var borderStyle: string = box.css('border-bottom-style');
-        var borderColor = box.css('border-bottom-color');
-        var borderRadius: string = box.css('border-top-left-radius');
-        var backColor: string = box.css('background-color');
-        //alert(borderStyle + ',' + borderColor + ',' + borderRadius + ',' + backColor);
-        var noneSelected: string = "";
-        var blackSelected: string = "";
-        var blackGreySelected: string = "";
-        var blackRoundSelected: string = "";
-        var greySelected: string = "";
-        var greyRoundSelected: string = "";
-        // Detecting 'none' is difficult because our edit boxes inherit a faint grey border
-        // Currently we use plain rgb for our official borders, and the inherited one uses rgba(0, 0, 0, 0.2).
-        // Rather arbitrarily we will consider a border less than 50% opaque to be 'none'.
-        if (!borderStyle || borderStyle === 'none' || !borderColor || (borderColor.toLowerCase().startsWith("rgba(") && parseFloat(borderColor.split(',')[3]) < 0.5)) {
-            noneSelected = ' selected';
-        }
-        else if (borderColor.toLowerCase() == 'rgb(128, 128, 128)') {
-            if (parseInt(borderRadius) == 0) {
-                greySelected = ' selected';
-            } else {
-                greyRoundSelected = ' selected';
-            }
-        }
-        else if (backColor.toLowerCase() == 'rgb(211, 211, 211)') {
-            blackGreySelected = ' selected';
-        } else if (parseInt(borderRadius) > 0) {
-            blackRoundSelected = ' selected';
-        } else {
-            blackSelected = ' selected';
-        }
+    // This version makes an elegant HTML5 input box which, when you open the page in the system browser,
+    // lets you type a style name and shows a pop-up for choosing styles when you type an incomplete
+    // name or clear out the box and click.
+    // I thought it was worth saving the code, but
+    // - there is no visual clue that there is a list to choose from, especially if the current text doesn't match the start of any styles
+    // - for some baffling reason, it doesn't work at all inside Bloom.
+    //makeEditableSelect(items, marginLeft, current, id) {
+    //    var tempVarName = id + 'Items';
+    //    var result = '<input type="text" id = "' + id + '" value="' + current + '" style="margin-left:' + marginLeft + 'px" list="' + tempVarName + '">';
 
-        var result = '<select id="borderSelect">';
-        result += '<option value="none"' + noneSelected + '>None</option>';
-        result += '<option value="black"' + blackSelected + '>Black Border</option>';
-        result += '<option value="black-grey"' + blackGreySelected + '>&nbsp;&nbsp;...Grey Background</option>';
-        result += '<option value="black-round"' + blackRoundSelected + '>&nbsp;&nbsp;...Rounded</option>';
-        result += '<option value="grey"' + greySelected + '>Grey Border</option>';
-        result += '<option value="grey-round"' + greyRoundSelected + '>&nbsp;&nbsp;...Rounded</option>';
-        return result + '</select>';
+    //    result += '<datalist id="' + tempVarName + '">';
+    //    for (var i = 0; i < items.length; i++) {
+    //        result += '<option value="' + items[i] + '">';
+    //    }
+    //    result += '</datalist>';
+    //    return result;
+    //}
+
+    //makeEditableSelect(items, marginLeft, current, id) {
+    //    var choose = localizationManager.getText('EditTab.StyleEditor.Choose', 'Choose:');
+    //    var result = '<p style="margin-left:' + marginLeft + 'px"><label for="' + id + '">' + choose + '</label><select id="' + id + '">';
+    //    for (var i = 0; i < items.length; i++) {
+    //        var selected: string = "";
+    //        if (current == items[i]) selected = ' selected';
+    //        var text = items[i];
+    //        result += '<option value="' + items[i] + '"' + selected + '>' + text + '</option>';
+    //    }
+    //    result += '</select></p>';
+    //    var orNew = localizationManager.getText('EditTab.StyleEditor.OrCreateNew', 'or create new:');
+    //    result += '<p style = "margin-left:' + marginLeft + 'px" ><label for= "' + id + 'Input" > ' + orNew + ' </label >';
+    //    result += '<input type="text" id = "' + id + 'Input"/>';
+    //    return result;
+    //}
+
+    makeEditableSelect(items, marginLeft, current, id) {
+        var choose = localizationManager.getText('EditTab.StyleEditor.Choose', 'Choose:');
+        var result = '<table style="margin-left:' + marginLeft + 'px;font-size:11px"><tr><td style="text-align:end;padding-right:5px; width:30px;white-space:nowrap"><label for="' + id + '">' + choose + '</label></td><td style="padding-bottom:5px"><select id="' + id + '">';
+        for (var i = 0; i < items.length; i++) {
+            var selected: string = "";
+            if (current == items[i]) selected = ' selected';
+            var text = items[i];
+            result += '<option value="' + items[i] + '"' + selected + '>' + text + '</option>';
+        }
+        result += '</select></td></tr>';
+        var orNew = localizationManager.getText('EditTab.StyleEditor.OrCreateNew', 'or create new:');
+        result += '<tr><td style="text-align:end;padding-right:5px; width:30px;white-space:nowrap"><label for= "' + id + 'Input" > ' + orNew + ' </label ></td>';
+        result += '<td><input type="text" id = "' + id + 'Input"/></td></tr></table>';
+        return result;
     }
 
     changeFont() {
+        if (this.ignoreControlChanges) return;
         var rule = this.getStyleRule();
         var font = $('#fontSelect').val();
         rule.style.setProperty("font-family", font, "important");
@@ -487,6 +679,7 @@ class StyleEditor {
     }
 
     changeSize() {
+        if (this.ignoreControlChanges) return;
         var rule = this.getStyleRule();
         var fontSize = $('#sizeSelect').val();
         var units = 'pt';
@@ -498,6 +691,7 @@ class StyleEditor {
     }
 
     changeLineheight() {
+        if (this.ignoreControlChanges) return;
         var rule = this.getStyleRule();
         var lineHeight = $('#lineHeightSelect').val();
         rule.style.setProperty("line-height", lineHeight, "important");
@@ -505,6 +699,7 @@ class StyleEditor {
     }
 
     changeWordSpace() {
+        if (this.ignoreControlChanges) return;
         var rule = this.getStyleRule();
         var wordSpace = $('#wordSpaceSelect').val();
         if (wordSpace === 'Wide')
@@ -517,6 +712,7 @@ class StyleEditor {
     }
 
     changeBorderSelect() {
+        if (this.ignoreControlChanges) return;
         var rule = this.getStyleRule();
         var borderOpt = $('#borderSelect').val();
         switch (borderOpt) {
@@ -531,42 +727,60 @@ class StyleEditor {
                 rule.style.removeProperty("box-sizing");
                 break;
             case 'black':
-                rule.style.setProperty("border", "1pt solid black");
-                rule.style.setProperty("background-color", "transparent ");
-                rule.style.setProperty("border-radius", "0px");
-                rule.style.setProperty("padding", "10px");
-                rule.style.setProperty("box-sizing", "border-box");
+                rule.style.setProperty("border", "1pt solid black", "important");
+                rule.style.setProperty("background-color", "transparent ", "important");
+                rule.style.setProperty("border-radius", "0px", "important");
+                rule.style.setProperty("padding", "10px", "important");
+                rule.style.setProperty("box-sizing", "border-box", "important");
                 break;
             case 'black-grey':
-                rule.style.setProperty("border", "1pt solid black");
-                rule.style.setProperty("background-color", "LightGray ");
-                rule.style.setProperty("border-radius", "0px");
-                rule.style.setProperty("padding", "10px");
-                rule.style.setProperty("box-sizing", "border-box");
+                rule.style.setProperty("border", "1pt solid black", "important");
+                rule.style.setProperty("background-color", "LightGray ", "important");
+                rule.style.setProperty("border-radius", "0px", "important");
+                rule.style.setProperty("padding", "10px", "important");
+                rule.style.setProperty("box-sizing", "border-box", "important");
                 break;
             case 'black-round':
-                rule.style.setProperty("border", "1pt solid black");
-                rule.style.setProperty("border-radius", "10px");
-                rule.style.setProperty("background-color", "transparent ");
-                rule.style.setProperty("padding", "10px");
-                rule.style.setProperty("box-sizing", "border-box");
+                rule.style.setProperty("border", "1pt solid black", "important");
+                rule.style.setProperty("border-radius", "10px", "important");
+                rule.style.setProperty("background-color", "transparent ", "important");
+                rule.style.setProperty("padding", "10px", "important");
+                rule.style.setProperty("box-sizing", "border-box", "important");
                 break;
             case 'grey':
-                rule.style.setProperty("border", "1pt solid Grey");
-                rule.style.setProperty("background-color", "transparent ");
-                rule.style.setProperty("border-radius", "0px");
-                rule.style.setProperty("padding", "10px");
-                rule.style.setProperty("box-sizing", "border-box");
+                rule.style.setProperty("border", "1pt solid Grey", "important");
+                rule.style.setProperty("background-color", "transparent ", "important");
+                rule.style.setProperty("border-radius", "0px", "important");
+                rule.style.setProperty("padding", "10px", "important");
+                rule.style.setProperty("box-sizing", "border-box", "important");
                 break;
             case 'grey-round':
-                rule.style.setProperty("border", "1pt solid Grey");
-                rule.style.setProperty("border-radius", "10px");
-                rule.style.setProperty("background-color", "transparent ");
-                rule.style.setProperty("padding", "10px");
-                rule.style.setProperty("box-sizing", "border-box");
+                rule.style.setProperty("border", "1pt solid Grey", "important");
+                rule.style.setProperty("border-radius", "10px", "important");
+                rule.style.setProperty("background-color", "transparent ", "important");
+                rule.style.setProperty("padding", "10px", "important");
+                rule.style.setProperty("box-sizing", "border-box", "important");
                 break;
         }
 
+        this.cleanupAfterStyleChange();
+    }
+
+    selectStyle() {
+        var style = $('#styleSelect').val();
+        $('#styleSelectInput').val(""); // we've chosen a style from the list, so we aren't creating a new one.
+        StyleEditor.SetStyleNameForElement(this.boxBeingEdited, style + "-style");
+        var current = this.getFormatValues();
+        // There's no point in updating the style definition as a side effect of updating the controls.
+        // Doing so might well even make a real change, because the controls can only be an approximation
+        // of the settings that can be achieved using raw stylesheet editing.
+        this.ignoreControlChanges = true;
+        $('#fontSelect').val(current.fontName);
+        $('#sizeSelect').val(current.ptSize);
+        $('#lineHeightSelect').val(current.lineHeight);
+        $('#wordSpaceSelect').val(current.wordSpacing);
+        $('#borderSelect').val(current.borderChoice);
+        this.ignoreControlChanges = false;
         this.cleanupAfterStyleChange();
     }
 
@@ -589,6 +803,7 @@ class StyleEditor {
             $(target).addClass('overflow');
         else
             $(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
+        $('#formatDesc').html(this.getDescription());
 
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip

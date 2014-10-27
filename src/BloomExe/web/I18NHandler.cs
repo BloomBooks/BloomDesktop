@@ -34,10 +34,13 @@ namespace Bloom.web
 						var d = new Dictionary<string, string>();
 						var post = info.GetPostData();
 
-						foreach (string key in post.Keys)
+						if (post != null)
 						{
-							var translation = LocalizationManager.GetDynamicString("Bloom", key, post[key]);
-							if (!d.ContainsKey(key)) d.Add(key, translation);
+							foreach (string key in post.Keys)
+							{
+								var translation = LocalizationManager.GetDynamicString("Bloom", key, post[key]);
+								if (!d.ContainsKey(key)) d.Add(key, translation);
+							}
 						}
 
 						info.ContentType = "application/json";

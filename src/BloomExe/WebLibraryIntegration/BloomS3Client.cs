@@ -413,6 +413,8 @@ namespace Bloom.WebLibraryIntegration
 				_amazonS3.Dispose();
 				_amazonS3 = null;
 			}
+
+			GC.SuppressFinalize(this);
 		}
 
 	}

@@ -661,16 +661,33 @@ namespace Bloom.Book
 				}
 			}
 
-			// do not attempt to copy files to the "Program Files" directory
+			// do not attempt to copy files to the installation directory
 			var targetDirInfo = new DirectoryInfo(_folderPath);
-			var programsDirInfo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
-			if (String.Compare(targetDirInfo.FullName, programsDirInfo.FullName, StringComparison.InvariantCultureIgnoreCase) == 0) return;
-
-			// do not attempt to copy files to the "Program Files (x86)" directory either
-			if (Environment.Is64BitOperatingSystem)
+			if (Palaso.PlatformUtilities.Platform.IsMono)
 			{
-				programsDirInfo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
-				if (String.Compare(targetDirInfo.FullName, programsDirInfo.FullName, StringComparison.InvariantCultureIgnoreCase) == 0) return;
+				// do not attempt to copy files to the "/usr" directory
+				if (targetDirInfo.FullName.StartsWith("/usr")) return;
+			}
+			else
+			{
+				// do not attempt to copy files to the "Program Files" directory
+				var programFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+				if (!string.IsNullOrEmpty(programFolderPath))
+				{
+					var programsDirInfo = new DirectoryInfo(programFolderPath);
+					if (String.Compare(targetDirInfo.FullName, programsDirInfo.FullName, StringComparison.InvariantCultureIgnoreCase) == 0) return;
+				}
+
+				// do not attempt to copy files to the "Program Files (x86)" directory either
+				if (Environment.Is64BitOperatingSystem)
+				{
+					programFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+					if (!string.IsNullOrEmpty(programFolderPath))
+					{
+						var programsDirInfo = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+						if (String.Compare(targetDirInfo.FullName, programsDirInfo.FullName, StringComparison.InvariantCultureIgnoreCase) == 0) return;
+					}
+				}
 			}
 
 			string documentPath="notSet";
