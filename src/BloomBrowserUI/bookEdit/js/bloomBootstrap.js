@@ -15,6 +15,7 @@ var scripts = [
     'bookEdit/js/jquery.hotkeys.js',
     'bookEdit/js/BloomAccordion.js',
     'bookEdit/js/StyleEditor.js',
+    'lib/tabpane.js',
     'bookEdit/js/toolbar/jquery.toolbar.js',
     'bookEdit/js/libsynphony/underscore_min_152.js', // start of SynPhony support files
     'bookEdit/js/libsynphony/xregexp-all-min.js',
@@ -30,6 +31,7 @@ var scripts = [
     'lib/split-pane/split-pane.js',
     'bookEdit/js/origami.js',
     'lib/long-press/jquery.mousewheel.js',
+    'lib/jquery.alphanum.js',
     'lib/long-press/jquery.longpress.js'
 ];
 
@@ -39,6 +41,7 @@ var styleSheets = [
     'lib/jquery.qtip.css',
     'bookEdit/js/toolbar/jquery.toolbars.css',
     'bookEdit/css/origami.css',
+    'bookEdit/css/tab.css',
     'lib/long-press/longpress.css'
 ];
 
