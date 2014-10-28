@@ -41,8 +41,9 @@ namespace Bloom.web
 				return true;
 
 			var r = info.LocalPathWithoutQuery;
-			if (r.StartsWith("/bloom/"))
-				r = r.Substring(7, r.Length - 7);
+			const string slashBloomSlash = "/bloom/";
+			if (r.StartsWith(slashBloomSlash))
+				r = r.Substring(slashBloomSlash.Length);
 			r = r.Replace("library/", "");
 			if (r.Contains("libraryContents"))
 			{
