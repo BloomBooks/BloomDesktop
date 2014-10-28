@@ -997,7 +997,8 @@ namespace Bloom
 			{
 				try
 				{
-					return _browser.Document.DocumentElement.ScrollTop;
+					if (_browser != null)
+						return _browser.Document.DocumentElement.ScrollTop;
 				}
 				catch
 				{
@@ -1008,7 +1009,8 @@ namespace Bloom
 			{
 				try
 				{
-					_browser.Document.DocumentElement.ScrollTop = value;
+					if (_browser != null) // avoids a lot of initialization exceptions
+						_browser.Document.DocumentElement.ScrollTop = value;
 				}
 				catch
 				{
