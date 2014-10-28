@@ -3,6 +3,7 @@
 * Common options: alphanumeric, alphabetic or numeric
 * Kevin Sheedy, 2012
 * http://github.com/KevinSheedy/jquery.alphanum
+* John Thomson added trimNotification and preventLeadingNumeric
 *********************************************************************/
 (function( $ ){
 
@@ -197,8 +198,11 @@
         var validatedText              = trimFunction(potentialTextAfterKeypress, settings);
 
         // If the keypress would cause the textbox to contain invalid characters, then cancel the keypress event
-        if(validatedText != potentialTextAfterKeypress)
+        if(validatedText != potentialTextAfterKeypress) {
           e.preventDefault();
+          // SIL (John Thomson) addition.
+          if (typeof this.trimNotification === 'function') this.trimNotification(this);
+        }
       });
     });
 
@@ -264,6 +268,9 @@
       $textBox.alphanum_caret(caretPos - 1);
     else
       $textBox.alphanum_caret(caretPos);
+    // SIL (John Thomson) addition.
+    var box = $textBox.get(0);
+    if (typeof box.trimNotification === 'function') box.trimNotification(box);
   }
 
   function getCombinedSettingsAlphaNum(settings, defaultSettings){
@@ -317,6 +324,9 @@
 
     if(!settings.allowNumeric && DIGITS[Char])
       return false;
+
+    if (settings.preventLeadingNumeric && DIGITS[Char] && validatedStringFragment.length == 0)
+        return false;
 
     if(!settings.allowUpper && isUpper(Char))
       return false;
