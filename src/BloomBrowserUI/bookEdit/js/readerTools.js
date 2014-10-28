@@ -438,7 +438,7 @@ ReaderToolsModel.prototype.getKnownGraphemes = function(stageNumber) {
  */
 ReaderToolsModel.prototype.getStageWords = function(stageNumber) {
 
-    if (this.stageGraphemes === 0) return [];
+    if ((!this.stageGraphemes) || (this.stageGraphemes.length === 0)) return [];
     return this.selectWordsFromSynphony(false, this.stageGraphemes, this.stageGraphemes, true, true);
 };
 
