@@ -1222,7 +1222,7 @@
         <seg>Open the Html used to make this PDF, in Firefox (must be on path)</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Ouvrir le fichier HTML (utilisé pour créer ce PDF) dans le logiciel Chrome (qui doit être sur le chemin)</seg>
+        <seg>Ouvrir le fichier HTML (utilisé pour créer ce PDF) dans le logiciel Firefox (qui doit être sur le chemin)</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.CannotChangeCopyright">
