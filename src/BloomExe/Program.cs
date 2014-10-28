@@ -511,7 +511,9 @@ namespace Bloom
 				_projectContext.ProjectWindow.Closed += HandleProjectWindowClosed;
 				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;
 				CopyRelevantNewReaderSettings();
-
+#if DEBUG
+				CheckLinuxFileAssociations();
+#endif
 				_projectContext.ProjectWindow.Show();
 
 				if(_splashForm!=null)
@@ -809,7 +811,97 @@ namespace Bloom
 			}
 
 		}
+
+		/// <summary>
+		/// Creates mime types and file associations on developer machine
+		/// </summary>
+		private static void CheckLinuxFileAssociations()
+		{
+			if (!Palaso.PlatformUtilities.Platform.IsLinux)
+				return;
+
+			// on Linux, Environment.SpecialFolder.LocalApplicationData defaults to ~/.local/share
+			var shareDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+			var mimeDir = Path.Combine(shareDir, "mime", "packages");                   // check for mime-type files in ~/.local/share/mime/packages
+			var imageDir = Path.Combine(shareDir, "icons", "hicolor", "48x48", "apps"); // check for mime-type icons in ~/.local/share/icons/hicolor/48x48/apps
+
+			// make sure target directories exist
+			if (!Directory.Exists(mimeDir))
+				Directory.CreateDirectory(mimeDir);
+
+			if (!Directory.Exists(imageDir))
+				Directory.CreateDirectory(imageDir);
+
+			// list of files to copy
+			var updateNeeded = false;
+			var filesToCheck = new System.Collections.Generic.Dictionary<string, string>
+			{
+				{"bloom-collection.sharedmimeinfo", Path.Combine(mimeDir, "application-bloom-collection.xml")},
+				{"bloom-collection.png", Path.Combine(imageDir, "application-bloom-collection.png")}
+			}; // Dictionary<sourceFileName, destinationFullFileName>
+
+			// check each file now
+			var sourceDir = FileLocator.DirectoryOfApplicationOrSolution;
+			foreach(var entry in filesToCheck)
+			{
+				var destFile = entry.Value;
+				if (!File.Exists(destFile))
+				{
+					var sourceFile = Path.Combine(sourceDir, "debian", entry.Key);
+					if (File.Exists(sourceFile))
+					{
+						updateNeeded = true;
+						File.Copy(sourceFile, destFile);
+					}
+				}
+			}
+
+			if (!updateNeeded) return;
+
+			// if there were changes, notify the system
+			var proc = new Process
+			{
+				StartInfo = {
+					FileName = "update-desktop-database",
+					Arguments = Path.Combine(shareDir, "applications"),
+					UseShellExecute = false
+				},
+				EnableRaisingEvents = true // so we can run another process when this one finishes
+			};
+
+			// after the desktop database is updated, update the mime database
+			proc.Exited += (sender, eventArgs) => {
+				var proc2 = new Process
+				{
+					StartInfo = {
+						FileName = "update-mime-database",
+						Arguments = Path.Combine(shareDir, "mime"),
+						UseShellExecute = false
+					},
+					EnableRaisingEvents = true // so we can run another process when this one finishes
+				};
+
+				// after the mime database is updated, set the file association
+				proc2.Exited += (sender2, eventArgs2) => {
+					var proc3 = new Process
+					{
+						StartInfo = {
+							FileName = "xdg-mime",
+							Arguments = "default bloom.desktop application/bloom-collection",
+							UseShellExecute = false
+						}
+					};
+
+					Debug.Print("Setting file association");
+					proc3.Start();
+				};
+
+				Debug.Print("Executing update-mime-database");
+				proc2.Start();
+			};
+
+			Debug.Print("Executing update-desktop-database");
+			proc.Start();
+		}
 	}
-
-
 }
