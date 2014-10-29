@@ -69,7 +69,14 @@ namespace Bloom.Edit
 
 			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
 
+			// Adding this renderer prevents a white line from showing up under the components.
+#if !__MonoCS__
+			// TODO Linux - But on Linux, it also prevents the checkmarks from painting. (https://jira.sil.org/browse/BL-509)
+			// Currently, Linux looks awful anyway, and not using this renderer is not a regression.
+			// We must do a similar hack in PublishView, but the problem cannot be fixed in the renderer itself
+			// as simply adding the renderer seems to cause the problem with the checkmarks.
 			_menusToolStrip.Renderer = new FixedToolStripRenderer();
+#endif
 
 			//we're giving it to the parent control through the TopBarControls property
 			Controls.Remove(_topBarPanel);
@@ -94,12 +101,15 @@ namespace Bloom.Edit
 			}
 		}
 
-
+		/// <summary>
+		/// Prevents a white line from appearing below the tool strip
+		/// Be careful if using this on Linux; it can have strange side-effects (https://jira.sil.org/browse/BL-509).
+		/// </summary>
 		public class FixedToolStripRenderer : ToolStripSystemRenderer
 		{
 			protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
 			{
-				//just don't draw a boarder
+				//just don't draw a border
 			}
 		}
 
