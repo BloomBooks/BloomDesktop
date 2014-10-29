@@ -178,7 +178,8 @@ namespace Bloom.Workspace
 			//when we need to use Ctrl+Shift to display stuff, we don't want it also firing up the localization dialog (which shouldn't be done by a user under settings protection anyhow)
 
 			LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog =
-				!SettingsProtectionSettings.Default.NormallyHidden;
+				!SettingsProtectionSettings.Default.NormallyHidden
+				&& Palaso.PlatformUtilities.Platform.IsWindows;
 		}
 
 		private void SetupUILanguageMenu()
@@ -210,16 +211,18 @@ namespace Bloom.Workspace
 				}
 			}
 
-
-			_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
-			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.menuToBringUpLocalizationDialog","More..."));
-			menu.Click += new EventHandler((a, b) =>
-											{
-												_localizationManager.ShowLocalizationDialogBox(false);
-												SetupUILanguageMenu();
-												LocalizationManager.ReapplyLocalizationsToAllObjectsInAllManagers(); //review: added this based on its name... does it help?
-												_localizationChangedEvent.Raise(null);
-											});
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			{
+				_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
+				var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.menuToBringUpLocalizationDialog","More..."));
+				menu.Click += new EventHandler((a, b) =>
+				{
+					_localizationManager.ShowLocalizationDialogBox(false);
+					SetupUILanguageMenu();
+					LocalizationManager.ReapplyLocalizationsToAllObjectsInAllManagers(); //review: added this based on its name... does it help?
+					_localizationChangedEvent.Raise(null);
+				});
+			}
 		}
 
 
