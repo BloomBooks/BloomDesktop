@@ -40,7 +40,7 @@ namespace Bloom.Edit
 		private IPage _previouslySelectedPage;
 		private bool _inProcessOfDeleting;
 		private string _accordionFolder;
-		private EnhancedImageServer _server;
+		public EnhancedImageServer Server { get; set; }
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
@@ -73,7 +73,7 @@ namespace Bloom.Edit
 			_deletePageCommand = deletePageCommand;
 			_collectionSettings = collectionSettings;
 			_sendReceiver = sendReceiver;
-			_server = server;
+			Server = server;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -107,8 +107,8 @@ namespace Bloom.Edit
 				}
 			});
 			_contentLanguages = new List<ContentLanguage>();
-			_server.CurrentCollectionSettings = _collectionSettings;
-			_server.CurrentBook = CurrentBook;
+			Server.CurrentCollectionSettings = _collectionSettings;
+			Server.CurrentBook = CurrentBook;
 		}
 
 
@@ -141,7 +141,7 @@ namespace Bloom.Edit
 			var wasNull = _domForCurrentPage == null;
 			_domForCurrentPage = null;
 			_currentlyDisplayedBook = null;
-			_server.CurrentBook = CurrentBook;
+			Server.CurrentBook = CurrentBook;
 			if (Visible)
 			{
 				_view.ClearOutDisplay();
@@ -491,10 +491,10 @@ namespace Bloom.Edit
 		{
 			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
-			_server.CurrentPageContent = TempFileUtils.CreateHtml5StringFromXml(_domForCurrentPage.RawDom);
-			_server.AccordionContent = MakeAccordionContent();
-			_server.CurrentBook = _currentlyDisplayedBook;
-			_server.AuthorMode = ShowTemplatePanel;
+			Server.CurrentPageContent = TempFileUtils.CreateHtml5StringFromXml(_domForCurrentPage.RawDom);
+			Server.AccordionContent = MakeAccordionContent();
+			Server.CurrentBook = _currentlyDisplayedBook;
+			Server.AuthorMode = ShowTemplatePanel;
 		}
 
 		/// <summary>

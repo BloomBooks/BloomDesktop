@@ -5,12 +5,16 @@ using System.Diagnostics;
 using System.Drawing.Text;
 using System.Globalization;
 using System.Linq;
+using System.Net;
+using System.Windows.Forms;
 using Bloom.ImageProcessing;
 using System.IO;
 using L10NSharp;
 using Microsoft.Win32;
 using Palaso.IO;
 using Bloom.Collection;
+using Palaso.Reporting;
+using Palaso.UI.WindowsForms.ImageToolbox;
 
 
 namespace Bloom.web
@@ -24,6 +28,8 @@ namespace Bloom.web
 		private bool _sampleTextsChanged = true;
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
+
+		public event EventHandler<ImageChangedEventArgs> ImageChanged;
 
 		public EnhancedImageServer(LowResImageCache cache): base(cache)
 		{
@@ -161,6 +167,11 @@ namespace Bloom.web
 					info.ContentType = "text/html";
 					info.WriteCompleteOutput(CurrentBook.NextStyleNumber.ToString(CultureInfo.InvariantCulture));
 					return true;
+
+				case "changeImage":
+					// BL-482 Art of Reading dialog not scrolling correctly
+					ShowImageDialog(info.GetPostData()["data"]);
+					return true;
 			}
 
 			string path = null;
@@ -235,6 +246,68 @@ namespace Bloom.web
 			_sampleTextsChanged = true;
 		}
 
+		// BL-482 Art of Reading dialog not scrolling correctly
+		private void ShowImageDialog(string currentSrc)
+		{
+			currentSrc = currentSrc.FromLocalhost().Replace("%20", " ");
+
+			var imageInfo = new PalasoImage();
+
+			// don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
+			if (!currentSrc.ToLower().Contains("placeholder") && File.Exists(currentSrc))
+			{
+				try
+				{
+					imageInfo = PalasoImage.FromFile(currentSrc);
+				}
+				catch (Exception e)
+				{
+					Logger.WriteMinorEvent("Not able to load image for ImageToolboxDialog: " + e.Message);
+				}
+			}
+
+			// on Linux we need to set the dialog owner
+			Form shellForm = null;
+			for (var i = 0; i < Application.OpenForms.Count; i++)
+			{
+				if (Application.OpenForms[i].Name == "Shell")
+				{
+					shellForm = Application.OpenForms[i];
+					break;
+				}
+			}
+
+			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
+
+			if (shellForm == null) return;
+
+			// crashes on Windows if you Invoke, but crashes on Linux if you don't
+			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			{
+				shellForm.Invoke(new Action(() => ShowDialogNow(imageInfo)));
+			}
+			else
+			{
+				ShowDialogNow(imageInfo);
+			}
+
+			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
+		}
+
+		// BL-482 Art of Reading dialog not scrolling correctly
+		private void ShowDialogNow(PalasoImage imageInfo)
+		{
+			using (var dlg = new ImageToolboxDialog(imageInfo, null))
+			{
+				if (DialogResult.OK != dlg.ShowDialog()) return;
+
+				var handler = ImageChanged;
+				var args = new ImageChangedEventArgs { ImageInfo = dlg.ImageInfo };
+
+				if (handler != null) handler(this, args);
+			}
+		}
+
 		protected override void Dispose(bool fDisposing)
 		{
 			if (fDisposing)
@@ -248,6 +321,11 @@ namespace Bloom.web
 			}
 
 			base.Dispose(fDisposing);
+		}
+
+		public class ImageChangedEventArgs : EventArgs
+		{
+			public PalasoImage ImageInfo { get; set; }
 		}
 	}
 }
