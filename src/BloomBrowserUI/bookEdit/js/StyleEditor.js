@@ -426,7 +426,7 @@ var StyleEditor = (function () {
         var bottom = $(targetBox).position().top + $(targetBox).height();
         var t = bottom + "px";
 
-        $(targetBox).after('<div id="formatButton"  style="top: ' + t + '" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
+        $(targetBox).after('<div id="formatButton"  style="top: ' + t + '; min-height: 21px" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
         var txt = localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
