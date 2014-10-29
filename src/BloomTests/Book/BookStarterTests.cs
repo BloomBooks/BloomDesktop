@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
@@ -9,6 +10,7 @@ using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
+using Palaso.Xml;
 
 namespace BloomTests.Book
 {
@@ -634,5 +636,26 @@ namespace BloomTests.Book
 //				Assert.That(File.Exists(dest.Combine("inner", "more inner", "two.txt")));
 //			}
 //		}
+
+
+		[Test]
+		public void SetupPage_LanguageSettingsHaveChanged_LangAttributesUpdated()
+		{
+			var contents = @"<div class='bloom-page'>
+						<div>
+							 <div data-book='somethingInN1' lang='en' data-metalanguage='N1'></div>
+							<div data-book='somethingInN2' lang='en' data-metalanguage='N2'></div>
+							<div data-book='somethingInV' lang='en' data-metalanguage='V'></div>
+						</div>
+					</div>";
+
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+
+			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _librarySettings.Object, "abc", "def");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInN1' and @lang='fr']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInN2' and @lang='es']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInV' and @lang='xyz']", 1);
+		}
 	}
 }

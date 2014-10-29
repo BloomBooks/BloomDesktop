@@ -127,14 +127,16 @@ namespace Bloom.Book
 				//we want the xmatter pages to match what we found in the source book
 				SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, layout);
 
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"' + writingSystemCodes["V"] + '"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"V\"", '"' + writingSystemCodes["V"] + '"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N1'", '"' + writingSystemCodes["N1"] + '"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N1\"", '"' + writingSystemCodes["N1"] + '"');
-				if (!String.IsNullOrEmpty(writingSystemCodes["N2"]))  //otherwise, styleshee will hide it
+				//any @lang attributes that have a metalanguage code (N1, N2, V) get filled with the actual code.
+				//note that this older method is crude, as you're in trouble if the user changes one of those to
+				//a different language. Instead, use data-metalanguage.
+				foreach ( XmlElement node in newPageDiv.SafeSelectNodes("//*[@lang]"))
 				{
-					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N2'", '"' + writingSystemCodes["N2"] + '"');
-					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N2\"", '"' + writingSystemCodes["N2"] + '"');
+					var lang = node.GetAttribute("lang");
+					if (writingSystemCodes.ContainsKey(lang))
+					{
+						node.SetAttribute("lang", writingSystemCodes[lang]);
+					}
 				}
 
 				_bookDom.RawDom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);
