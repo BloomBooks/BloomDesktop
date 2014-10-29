@@ -1,4 +1,4 @@
-/// <reference path="../../lib/jquery.d.ts" />
+﻿/// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
@@ -120,7 +120,7 @@ var StyleEditor = (function () {
             return;
         var fontSize = this.GetCalculatedFontSizeInPoints(target);
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);
-        var rule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
+        var rule = this.GetOrCreateRuleForStyle(styleName, langAttrValue, this.authorMode);
         var units = 'pt';
         var sizeString = (fontSize + change).toString();
         if (parseInt(sizeString) < this.MIN_FONT_SIZE)
@@ -153,7 +153,7 @@ var StyleEditor = (function () {
             return;
         }
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);
-        var rule = this.GetOrCreateRuleForStyle(styleName, langAttrValue);
+        var rule = this.GetOrCreateRuleForStyle(styleName, langAttrValue, this.authorMode);
         var units = "pt";
         var sizeString = newSize.toString();
         rule.style.setProperty("font-size", sizeString + units, "important");
@@ -214,7 +214,13 @@ var StyleEditor = (function () {
         return newSheet;
     };
 
-    StyleEditor.prototype.GetOrCreateRuleForStyle = function (styleName, langAttrValue) {
+    // Get a style rule with a specified name that can be modified to change the apperance of text in this
+    // style.
+    // If ignoreLanguage is true, this will be a rule that just specifies the name (.myStyle). This is
+    // always used for the More tab, and for everything except font name when authoring.
+    // Otherwise, it will specify language: .myStyle[lang="code"], or if langAttrValue is null, .myStyle:not([lang]).
+    // This is used for all of character tab when localizing, and always for font name.
+    StyleEditor.prototype.GetOrCreateRuleForStyle = function (styleName, langAttrValue, ignoreLanguage) {
         var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         var x = styleSheet.cssRules;
         var styleAndLang = styleName;
@@ -223,7 +229,7 @@ var StyleEditor = (function () {
         // if we are translating, changes should only apply to this language.
         // a downside of this is that when authoring in multiple languages, to get a different
         // appearance for different languages a different style must be created.
-        if (!this.authorMode) {
+        if (!ignoreLanguage) {
             if (langAttrValue && langAttrValue.length > 0)
                 styleAndLang = styleName + '[lang="' + langAttrValue + '"]';
             else
@@ -377,9 +383,7 @@ var StyleEditor = (function () {
         var borderStyle = box.css('border-bottom-style');
         var borderColor = box.css('border-bottom-color');
         var borderRadius = box.css('border-top-left-radius');
-        var backColor = box.css('background-color');
 
-        //alert(borderStyle + ',' + borderColor + ',' + borderRadius + ',' + backColor);
         var borderChoice = "";
 
         // Detecting 'none' is difficult because our edit boxes inherit a faint grey border
@@ -389,18 +393,27 @@ var StyleEditor = (function () {
             borderChoice = 'none';
         } else if (borderColor.toLowerCase() == 'rgb(128, 128, 128)') {
             if (parseInt(borderRadius) == 0) {
-                borderChoice = 'grey';
+                borderChoice = 'gray';
             } else {
-                borderChoice = 'grey-round';
+                borderChoice = 'gray-round';
             }
-        } else if (backColor.toLowerCase() == 'rgb(211, 211, 211)') {
-            borderChoice = 'black-grey';
         } else if (parseInt(borderRadius) > 0) {
             borderChoice = 'black-round';
         } else {
             borderChoice = 'black';
         }
-        return { ptSize: ptSize, fontName: fontName, lineHeight: lineHeight, wordSpacing: wordSpacing, borderChoice: borderChoice };
+        var backColor = 'none';
+        if (box.css('background-color').toLowerCase() != 'transparent') {
+            backColor = 'gray';
+        }
+        var weight = box.css('font-weight');
+        var bold = (parseInt(weight) > 600);
+
+        var italic = box.css('font-style') == 'italic';
+        var underline = box.css('text-decoration') == 'underline';
+        var center = box.css('text-align') == 'center';
+
+        return { ptSize: ptSize, fontName: fontName, lineHeight: lineHeight, wordSpacing: wordSpacing, borderChoice: borderChoice, backColor: backColor, bold: bold, italic: italic, underline: underline, center: center };
     };
 
     StyleEditor.prototype.AttachToBox = function (targetBox) {
@@ -411,7 +424,7 @@ var StyleEditor = (function () {
 
         // I'm assuming here that since we're dealing with a local server, we'll get a result long before
         // the user could actually modify a style and thus need the information.
-        // More dangerous is using it in getDescription. But as that is launched by a later
+        // More dangerous is using it in getCharTabDescription. But as that is launched by a later
         // async request, I think it should be OK.
         iframeChannel.simpleAjaxGet('/bloom/authorMode', function (result) {
             editor.authorMode = result == "true";
@@ -443,7 +456,6 @@ var StyleEditor = (function () {
                 //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
                 // Enhance: lineHeight may well be something like 35px; what should we select initially?
                 var fonts = fontData.split(',');
-                var forTextInLang = editor.getDescription();
                 editor.styles = editor.getFormattingStyles();
                 if (editor.styles.indexOf(styleName) == -1) {
                     editor.styles.push(styleName);
@@ -451,41 +463,90 @@ var StyleEditor = (function () {
                 editor.styles.sort(function (a, b) {
                     return a.toLowerCase().localeCompare(b.toLowerCase());
                 });
-                var borderItems = ['none', 'black', 'black-grey', 'black-round', 'grey', 'grey-round'];
 
-                var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:900;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">' + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt"></div>' + '<div class="tab-pane" id="tabRoot">' + '<div class="tab-page" id="formatPage"><h2 class="tab">Format</h2>' + '<div>' + editor.makeSelect(fonts, 5, current.fontName, 'fontSelect', 15) + ' ' + editor.makeSelect(editor.getPointSizes(), 5, current.ptSize, 'sizeSelect') + ' ' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:8px;position:relative;top:6px">' + editor.makeSelect(editor.getLineSpaceOptions(), 2, current.lineHeight, 'lineHeightSelect') + ' ' + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<img src="' + editor._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">' + editor.makeSelect(editor.getWordSpaceOptions(), 2, current.wordSpacing, 'wordSpaceSelect') + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<div style="margin-left:5px;display:inline-block;border:2px solid black;height:10pt;width:10pt;margin-right:2px;position:relative;top:2px"></div>' + editor.makeSelect(borderItems, 0, current.borderChoice, 'borderSelect') + '</span></div>' + '<div class="format-toolbar-description" id="formatDesc">' + forTextInLang + '</div>' + '</div>' + '<div class="tab-page"><h2 class="tab">Style Name</h2>' + editor.makeEditableSelect(editor.styles, 5, styleName, 'styleSelect') + "</div>" + '</div>' + '</div>';
+                var emphasis = localizationManager.getText('EditTab.Emphasis', 'Emphasis');
+                var position = localizationManager.getText('EditTab.Position', 'Position');
+                var borders = localizationManager.getText('EditTab.Borders', 'Borders');
+                var background = localizationManager.getText('EditTab.Background', 'Background');
+                var style = localizationManager.getText('EditTab.StyleEditor.Style', 'Style:');
+                var dontSee = localizationManager.getText('EditTab.StyleEditor.DontSeeNeed', "Don't see what you need?");
+                var createStyle = localizationManager.getText('EditTab.StyleEditor.CreateStyle', 'Create a new style');
+                var newStyle = localizationManager.getText('EditTab.StyleEditor.NewStyle', 'New style');
+                var create = localizationManager.getText('EditTab.StyleEditor.Create', 'Create');
+                var pleaseUseAlpha = localizationManager.getText('EditTab.StyleEditor.PleaseUseAlpha', 'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".');
+
+                var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:900;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">' + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt"></div>';
+                if (editor.authorMode) {
+                    html += '<div class="tab-pane" id="tabRoot">' + '<div class="tab-page"><h2 class="tab">Style Name</h2>' + editor.makeDiv(null, null, null, style) + editor.makeSelect(editor.styles, 0, styleName, 'styleSelect') + editor.makeDiv('dont-see', null, null, dontSee + ' <a id="show-create-style" href="">' + createStyle + '</a>') + editor.makeDiv('create-style', null, 'display:none', editor.makeDiv(null, null, null, newStyle) + editor.makeDiv(null, null, null, '<input type = "text" id = "style-select-input"/> <input type="button" id="create-button" disabled value="' + create + '">') + editor.makeDiv("please-use-alpha", null, 'display:none', pleaseUseAlpha)) + "</div>" + '<div class="tab-page" id="formatPage"><h2 class="tab">Characters</h2>' + editor.makeCharactersContent(fonts, current) + '</div>' + '<div class="tab-page"><h2 class="tab">More</h2>' + editor.makeDiv(null, null, null, editor.makeDiv(null, 'mainBlock leftBlock', null, editor.makeDiv(null, null, null, emphasis) + editor.makeDiv(null, null, null, editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', 'B') + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', 'I') + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', 'U'))) + editor.makeDiv(null, 'mainBlock', null, editor.makeDiv(null, null, null, position) + editor.makeDiv(null, null, null, editor.makeDiv('position-leading', 'icon16x16', null, editor.makeImage('text_align_left.png')) + editor.makeDiv('position-center', 'icon16x16', null, editor.makeImage('text_align_center.png'))))) + editor.makeDiv(null, null, 'margin-top:10px', editor.makeDiv(null, 'mainBlock leftBlock', null, editor.makeDiv(null, null, null, borders) + editor.makeDiv(null, null, 'margin-top:-11px', editor.makeDiv('border-none', 'icon16x16', null, editor.makeImage('grayX.png')) + editor.makeDiv('border-black', 'iconHtml', null, editor.makeDiv(null, 'iconBox', 'border-color: black', '')) + editor.makeDiv('border-black-round', 'iconHtml', null, editor.makeDiv(null, 'iconBox rounded', 'border-color: black', ''))) + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', editor.makeDiv('border-gray', 'iconHtml', null, editor.makeDiv(null, 'iconBox', 'border-color: gray', '')) + editor.makeDiv('border-gray-round', 'iconHtml', null, editor.makeDiv(null, 'iconBox rounded', 'border-color: gray', '')))) + editor.makeDiv(null, 'mainBlock', null, editor.makeDiv(null, null, null, background) + editor.makeDiv(null, null, 'margin-top:-11px', editor.makeDiv('background-none', 'icon16x16', null, editor.makeImage('grayX.png')) + editor.makeDiv('background-gray', 'iconHtml', null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), ''))))) + '<div class="format-toolbar-description" id="formatMoreDesc">' + editor.getMoreTabDescription() + '</div>' + '</div>' + '</div>'; // end of tab-pane div
+                } else {
+                    // not in authorMode...much simpler dialog, no tabs, just the body of the characters tab.
+                    html += editor.makeCharactersContent(fonts, current);
+                }
+                html += '</div>';
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
                 $('body').after(html);
                 var toolbar = $('#format-toolbar');
                 toolbar.draggable();
                 toolbar.css('opacity', 1.0);
-                $('#fontSelect').change(function () {
+
+                $('#font-select').change(function () {
                     editor.changeFont();
                 });
-                editor.AddQtipToElement($('#fontSelect'), localizationManager.getText('EditTab.StyleEditor.FontFaceToolTip', 'Change the font face'), 1500);
-                $('#sizeSelect').change(function () {
+                editor.AddQtipToElement($('#font-select'), localizationManager.getText('EditTab.StyleEditor.FontFaceToolTip', 'Change the font face'), 1500);
+                $('#size-select').change(function () {
                     editor.changeSize();
                 });
-                editor.AddQtipToElement($('#sizeSelect'), localizationManager.getText('EditTab.StyleEditor.FontSizeToolTip', 'Change the font size'), 1500);
-                $('#lineHeightSelect').change(function () {
+                editor.AddQtipToElement($('#size-select'), localizationManager.getText('EditTab.StyleEditor.FontSizeToolTip', 'Change the font size'), 1500);
+                $('#line-height-select').change(function () {
                     editor.changeLineheight();
                 });
-                editor.AddQtipToElement($('#lineHeightSelect').parent(), localizationManager.getText('EditTab.StyleEditor.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
-                $('#wordSpaceSelect').change(function () {
+                editor.AddQtipToElement($('#line-height-select').parent(), localizationManager.getText('EditTab.StyleEditor.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
+                $('#word-space-select').change(function () {
                     editor.changeWordSpace();
                 });
-                editor.AddQtipToElement($('#wordSpaceSelect').parent(), localizationManager.getText('EditTab.StyleEditor.WordSpacingToolTip', 'Change the spacing between words'), 1500);
-                $('#borderSelect').change(function () {
-                    editor.changeBorderSelect();
-                });
-                editor.AddQtipToElement($('#borderSelect').parent(), localizationManager.getText('EditTab.StyleEditor.BorderToolTip', 'Change the border and background'), 1500);
-                $('#styleSelect').change(function () {
-                    editor.selectStyle();
-                });
-                $('#styleSelectInput').alpha({ allowSpace: false });
-                new WebFXTabPane($('#tabRoot').get(0), false, function (n) {
-                    editor.tabSelected(n);
-                });
+                editor.AddQtipToElement($('#word-space-select').parent(), localizationManager.getText('EditTab.StyleEditor.WordSpacingToolTip', 'Change the spacing between words'), 1500);
+                if (editor.authorMode) {
+                    $('#border-select').change(function () {
+                        editor.changeBorderSelect();
+                    });
+                    editor.AddQtipToElement($('#border-select').parent(), localizationManager.getText('EditTab.StyleEditor.BorderToolTip', 'Change the border and background'), 1500);
+                    $('#styleSelect').change(function () {
+                        editor.selectStyle();
+                    });
+                    $('#style-select-input').alphanum({ allowSpace: false, preventLeadingNumeric: true });
+                    $('#style-select-input').on('input', function () {
+                        editor.styleInputChanged();
+                    }); // not .change(), only fires on loss of focus
+                    $('#style-select-input').get(0).trimNotification = function () {
+                        editor.badCharacterTrimmed();
+                    };
+                    $('#show-create-style').click(function (event) {
+                        event.preventDefault();
+                        editor.showCreateStyle();
+                        return false;
+                    });
+                    $('#create-button').click(function () {
+                        editor.createStyle();
+                    });
+                    var buttonIds = ['bold', 'italic', 'underline', 'position-leading', 'position-center', 'border-none', 'border-black', 'border-black-round', 'border-gray', 'border-gray-round', 'background-none', 'background-gray'];
+                    for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
+                        var button = $('#' + buttonIds[idIndex]);
+                        button.click(function () {
+                            editor.buttonClick(this);
+                        });
+                        button.addClass('propButton');
+                    }
+                    editor.selectButton('bold', current.bold);
+                    editor.selectButton('italic', current.italic);
+                    editor.selectButton('underline', current.underline);
+                    editor.selectButton('position-center', current.center);
+                    editor.selectButton('position-leading', !current.center);
+                    editor.selectButton('border-' + current.borderChoice, true);
+                    editor.selectButton('background-' + current.backColor, true);
+                    new WebFXTabPane($('#tabRoot').get(0), false, function (n) {
+                        editor.tabSelected(n);
+                    });
+                }
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
 
@@ -503,64 +564,173 @@ var StyleEditor = (function () {
                     // this stops an event inside the dialog from propagating to the html element, which would close the dialog
                     event.stopPropagation();
                 });
-                //formatButton.toolbar({
-                //    content: '#format-toolbar',
-                //    position: 'right',
-                //    hideOnClick: true
-                //});
             });
         });
 
         editor.AttachLanguageTip($(targetBox), bottom);
     };
 
-    StyleEditor.prototype.getDescription = function () {
+    StyleEditor.prototype.makeCharactersContent = function (fonts, current) {
+        var font = localizationManager.getText('EditTab.Font', 'Font');
+        var spacing = localizationManager.getText('EditTab.Spacing', 'Spacing');
+        return this.makeDiv(null, null, null, this.makeDiv(null, null, null, font) + this.makeDiv(null, null, null, this.makeSelect(fonts, 5, current.fontName, 'font-select', 15) + ' ' + this.makeSelect(this.getPointSizes(), 5, current.ptSize, 'size-select')) + this.makeDiv(null, null, null, spacing) + this.makeDiv(null, null, null, '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:8px;position:relative;top:6px">' + this.makeSelect(this.getLineSpaceOptions(), 2, current.lineHeight, 'line-height-select') + ' ' + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">' + this.makeSelect(this.getWordSpaceOptions(), 2, current.wordSpacing, 'word-space-select') + '</span>')) + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, this.getCharTabDescription());
+    };
+
+    StyleEditor.prototype.badCharacterTrimmed = function () {
+        // the main point here is to remove the display:none. But it's easier to replace with color:red here than to have it there to
+        // begin with and then figure out how to remove just part of the style.
+        $('#please-use-alpha').attr('style', 'color:red');
+    };
+
+    StyleEditor.prototype.styleInputChanged = function () {
+        var typedStyle = $('#style-select-input').val();
+        $('#create-button').get(0).disabled = !typedStyle || this.inputStyleExists();
+    };
+
+    StyleEditor.prototype.showCreateStyle = function () {
+        $('#create-style').removeAttr('style');
+        $('#dont-see').attr('style', 'display:none');
+        return false;
+    };
+
+    StyleEditor.prototype.buttonClick = function (buttonDiv) {
+        var button = $(buttonDiv);
+        var id = button.attr('id');
+        var index = id.indexOf("-");
+        if (index >= 0) {
+            button.addClass('selectedIcon');
+            var group = id.substring(0, index);
+            $('.propButton').each(function () {
+                var item = $(this);
+                if (this != button.get(0) && item.attr('id').startsWith(group)) {
+                    item.removeClass('selectedIcon');
+                }
+            });
+        } else {
+            // button is not part of a group, so must toggle
+            if (button.hasClass('selectedIcon')) {
+                button.removeClass('selectedIcon');
+            } else {
+                button.addClass('selectedIcon');
+            }
+        }
+
+        // Now make it so
+        if (id == 'bold')
+            this.changeBold();
+        else if (id == 'italic')
+            this.changeItalic();
+        else if (id == 'underline')
+            this.changeUnderline();
+        else if (id.startsWith('background'))
+            this.changeBackground();
+        else if (id.startsWith('border'))
+            this.changeBorderSelect();
+        else if (id.startsWith('position'))
+            this.changePosition();
+    };
+
+    StyleEditor.prototype.selectButton = function (id, val) {
+        if (val) {
+            $('#' + id).addClass('selectedIcon');
+        }
+    };
+
+    StyleEditor.prototype.preferredGray = function () {
+        return 'hsl(0,0%,86%)';
+    };
+
+    StyleEditor.prototype.makeImage = function (fileName) {
+        return '<img src="' + this._supportFilesRoot + '/img/' + fileName + '">';
+    };
+
+    StyleEditor.prototype.makeDiv = function (id, className, style, content) {
+        var result = '<div';
+        if (id)
+            result += ' id="' + id + '"';
+        if (className)
+            result += ' class="' + className + '"';
+        if (style)
+            result += ' style="' + style + '"';
+        result += '>';
+        if (content)
+            result += content;
+        return result + '</div>';
+    };
+
+    // The Char tab description is language-dependent when localizing, not when authoring.
+    StyleEditor.prototype.getCharTabDescription = function () {
         var styleName = StyleEditor.GetStyleNameForElement(this.boxBeingEdited);
         if (styleName) {
             var index = styleName.indexOf("-style");
             if (index > 0)
                 styleName = styleName.substring(0, index);
         }
-        var lang = "";
-        if (!this.authorMode) {
-            lang = $(this.boxBeingEdited).attr('lang');
+        if (this.authorMode) {
+            return localizationManager.getText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName);
         }
+        var lang = $(this.boxBeingEdited).attr('lang');
+        return localizationManager.getText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName);
+    };
 
-        // The replace fixes the double-space typically left if language is not specified.
-        // Enhance: we may need a better way of localizing when language is not specified, since just leaving it out may not
-        // produce nice sentences in every language. However, we already have several translations of this string, so I'd
-        // rather not change it unless we must.
-        return localizationManager.getText('BookEditor.ForTextInLang', 'This formatting is for all {0} text in boxes with \'{1}\' style', lang, styleName).replace("  ", " ");
+    // The More tab settings are never language-dependent
+    StyleEditor.prototype.getMoreTabDescription = function () {
+        var styleName = StyleEditor.GetStyleNameForElement(this.boxBeingEdited);
+        if (styleName) {
+            var index = styleName.indexOf("-style");
+            if (index > 0)
+                styleName = styleName.substring(0, index);
+        }
+        return localizationManager.getText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName);
     };
 
     StyleEditor.prototype.tabSelected = function (n) {
-        if (n != 0)
+        if (n == 0)
             return;
 
         // switching back to format tab. User may have defined a new style.
-        var typedStyle = $('#styleSelectInput').val();
+        var typedStyle = $('#style-select-input').val();
         if (!typedStyle) {
             // If the user didn't type a new style name, there is nothing to do.
             // We updated the format controls when the style was selected.
             return;
         }
 
-        for (var i = 0; i < this.styles.length; i++) {
-            if (typedStyle == this.styles[i]) {
-                // just act as if he'd selected that item
-                $('#styleSelect').val(typedStyle);
-                this.selectStyle(); // surprisingly, this doesn't happen automatically
-                return;
-            }
+        if (this.inputStyleExists()) {
+            // just act as if he'd selected that item
+            $('#styleSelect').val(typedStyle);
+            this.selectStyle(); // surprisingly, this doesn't happen automatically
+            return;
         }
 
-        // Make a new style. Initialize to all current values.
+        this.createStyle();
+    };
+
+    // did the user type the name of an existing style?
+    StyleEditor.prototype.inputStyleExists = function () {
+        var typedStyle = $('#style-select-input').val();
+        for (var i = 0; i < this.styles.length; i++) {
+            if (typedStyle == this.styles[i]) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    // Make a new style. Initialize to all current values. Caller should ensure it is a valid new style.
+    StyleEditor.prototype.createStyle = function () {
+        var typedStyle = $('#style-select-input').val();
         StyleEditor.SetStyleNameForElement(this.boxBeingEdited, typedStyle + '-style');
         this.changeFont();
         this.changeSize();
         this.changeLineheight();
         this.changeWordSpace();
         this.changeBorderSelect();
+        this.changeBold();
+        this.changeItalic();
+        this.changeUnderline();
+        this.changeBackground();
+        this.changePosition();
 
         // Insert it into our list and the option control on the second page.
         this.insertOption(typedStyle);
@@ -596,59 +766,38 @@ var StyleEditor = (function () {
         return result + '</select>';
     };
 
-    // This version makes an elegant HTML5 input box which, when you open the page in the system browser,
-    // lets you type a style name and shows a pop-up for choosing styles when you type an incomplete
-    // name or clear out the box and click.
-    // I thought it was worth saving the code, but
-    // - there is no visual clue that there is a list to choose from, especially if the current text doesn't match the start of any styles
-    // - for some baffling reason, it doesn't work at all inside Bloom.
-    //makeEditableSelect(items, marginLeft, current, id) {
-    //    var tempVarName = id + 'Items';
-    //    var result = '<input type="text" id = "' + id + '" value="' + current + '" style="margin-left:' + marginLeft + 'px" list="' + tempVarName + '">';
-    //    result += '<datalist id="' + tempVarName + '">';
-    //    for (var i = 0; i < items.length; i++) {
-    //        result += '<option value="' + items[i] + '">';
-    //    }
-    //    result += '</datalist>';
-    //    return result;
-    //}
-    //makeEditableSelect(items, marginLeft, current, id) {
-    //    var choose = localizationManager.getText('EditTab.StyleEditor.Choose', 'Choose:');
-    //    var result = '<p style="margin-left:' + marginLeft + 'px"><label for="' + id + '">' + choose + '</label><select id="' + id + '">';
-    //    for (var i = 0; i < items.length; i++) {
-    //        var selected: string = "";
-    //        if (current == items[i]) selected = ' selected';
-    //        var text = items[i];
-    //        result += '<option value="' + items[i] + '"' + selected + '>' + text + '</option>';
-    //    }
-    //    result += '</select></p>';
-    //    var orNew = localizationManager.getText('EditTab.StyleEditor.OrCreateNew', 'or create new:');
-    //    result += '<p style = "margin-left:' + marginLeft + 'px" ><label for= "' + id + 'Input" > ' + orNew + ' </label >';
-    //    result += '<input type="text" id = "' + id + 'Input"/>';
-    //    return result;
-    //}
-    StyleEditor.prototype.makeEditableSelect = function (items, marginLeft, current, id) {
-        var choose = localizationManager.getText('EditTab.StyleEditor.Choose', 'Choose:');
-        var result = '<table style="margin-left:' + marginLeft + 'px;font-size:11px"><tr><td style="text-align:end;padding-right:5px; width:30px;white-space:nowrap"><label for="' + id + '">' + choose + '</label></td><td style="padding-bottom:5px"><select id="' + id + '">';
-        for (var i = 0; i < items.length; i++) {
-            var selected = "";
-            if (current == items[i])
-                selected = ' selected';
-            var text = items[i];
-            result += '<option value="' + items[i] + '"' + selected + '>' + text + '</option>';
-        }
-        result += '</select></td></tr>';
-        var orNew = localizationManager.getText('EditTab.StyleEditor.OrCreateNew', 'or create new:');
-        result += '<tr><td style="text-align:end;padding-right:5px; width:30px;white-space:nowrap"><label for= "' + id + 'Input" > ' + orNew + ' </label ></td>';
-        result += '<td><input type="text" id = "' + id + 'Input"/></td></tr></table>';
-        return result;
+    StyleEditor.prototype.changeBold = function () {
+        if (this.ignoreControlChanges)
+            return;
+        var rule = this.getStyleRule(true);
+        var val = $('#bold').hasClass('selectedIcon');
+        rule.style.setProperty("font-weight", (val ? 'bold' : 'normal'), "important");
+        this.cleanupAfterStyleChange();
+    };
+
+    StyleEditor.prototype.changeItalic = function () {
+        if (this.ignoreControlChanges)
+            return;
+        var rule = this.getStyleRule(true);
+        var val = $('#italic').hasClass('selectedIcon');
+        rule.style.setProperty("font-style", (val ? 'italic' : 'normal'), "important");
+        this.cleanupAfterStyleChange();
+    };
+
+    StyleEditor.prototype.changeUnderline = function () {
+        if (this.ignoreControlChanges)
+            return;
+        var rule = this.getStyleRule(true);
+        var val = $('#underline').hasClass('selectedIcon');
+        rule.style.setProperty("text-decoration", (val ? 'underline' : 'none'), "important");
+        this.cleanupAfterStyleChange();
     };
 
     StyleEditor.prototype.changeFont = function () {
         if (this.ignoreControlChanges)
             return;
-        var rule = this.getStyleRule();
-        var font = $('#fontSelect').val();
+        var rule = this.getStyleRule(false);
+        var font = $('#font-select').val();
         rule.style.setProperty("font-family", font, "important");
         this.cleanupAfterStyleChange();
     };
@@ -656,8 +805,8 @@ var StyleEditor = (function () {
     StyleEditor.prototype.changeSize = function () {
         if (this.ignoreControlChanges)
             return;
-        var rule = this.getStyleRule();
-        var fontSize = $('#sizeSelect').val();
+        var rule = this.getStyleRule(this.authorMode);
+        var fontSize = $('#size-select').val();
         var units = 'pt';
         var sizeString = fontSize.toString();
         if (parseInt(sizeString) < this.MIN_FONT_SIZE)
@@ -669,8 +818,8 @@ var StyleEditor = (function () {
     StyleEditor.prototype.changeLineheight = function () {
         if (this.ignoreControlChanges)
             return;
-        var rule = this.getStyleRule();
-        var lineHeight = $('#lineHeightSelect').val();
+        var rule = this.getStyleRule(this.authorMode);
+        var lineHeight = $('#line-height-select').val();
         rule.style.setProperty("line-height", lineHeight, "important");
         this.cleanupAfterStyleChange();
     };
@@ -678,8 +827,8 @@ var StyleEditor = (function () {
     StyleEditor.prototype.changeWordSpace = function () {
         if (this.ignoreControlChanges)
             return;
-        var rule = this.getStyleRule();
-        var wordSpace = $('#wordSpaceSelect').val();
+        var rule = this.getStyleRule(this.authorMode);
+        var wordSpace = $('#word-space-select').val();
         if (wordSpace === 'Wide')
             wordSpace = '5pt';
         else if (wordSpace === 'Extra Wide') {
@@ -689,57 +838,62 @@ var StyleEditor = (function () {
         this.cleanupAfterStyleChange();
     };
 
+    StyleEditor.prototype.changeBackground = function () {
+        if (this.ignoreControlChanges)
+            return;
+        var backColor = 'transparent';
+        if ($('#background-gray').hasClass('selectedIcon'))
+            backColor = this.preferredGray();
+        var rule = this.getStyleRule(true);
+        rule.style.setProperty("background-color", backColor, "important");
+        this.cleanupAfterStyleChange();
+    };
+
+    StyleEditor.prototype.changePosition = function () {
+        if (this.ignoreControlChanges)
+            return;
+        var rule = this.getStyleRule(true);
+        var position = 'initial';
+        if ($('#position-center').hasClass('selectedIcon')) {
+            position = 'center';
+        }
+
+        rule.style.setProperty('text-align', position, "important");
+        this.cleanupAfterStyleChange();
+    };
+
     StyleEditor.prototype.changeBorderSelect = function () {
         if (this.ignoreControlChanges)
             return;
-        var rule = this.getStyleRule();
-        var borderOpt = $('#borderSelect').val();
-        switch (borderOpt) {
-            case 'none':
-                //rule.style.setProperty("border-style", "none");
-                rule.style.removeProperty("border-style");
-                rule.style.removeProperty("border");
-                rule.style.removeProperty("border-color");
-                rule.style.removeProperty("border-radius");
-                rule.style.removeProperty("padding");
-                rule.style.removeProperty("background-color");
-                rule.style.removeProperty("box-sizing");
-                break;
-            case 'black':
-                rule.style.setProperty("border", "1pt solid black", "important");
-                rule.style.setProperty("background-color", "transparent ", "important");
-                rule.style.setProperty("border-radius", "0px", "important");
-                rule.style.setProperty("padding", "10px", "important");
-                rule.style.setProperty("box-sizing", "border-box", "important");
-                break;
-            case 'black-grey':
-                rule.style.setProperty("border", "1pt solid black", "important");
-                rule.style.setProperty("background-color", "LightGray ", "important");
-                rule.style.setProperty("border-radius", "0px", "important");
-                rule.style.setProperty("padding", "10px", "important");
-                rule.style.setProperty("box-sizing", "border-box", "important");
-                break;
-            case 'black-round':
-                rule.style.setProperty("border", "1pt solid black", "important");
-                rule.style.setProperty("border-radius", "10px", "important");
-                rule.style.setProperty("background-color", "transparent ", "important");
-                rule.style.setProperty("padding", "10px", "important");
-                rule.style.setProperty("box-sizing", "border-box", "important");
-                break;
-            case 'grey':
-                rule.style.setProperty("border", "1pt solid Grey", "important");
-                rule.style.setProperty("background-color", "transparent ", "important");
-                rule.style.setProperty("border-radius", "0px", "important");
-                rule.style.setProperty("padding", "10px", "important");
-                rule.style.setProperty("box-sizing", "border-box", "important");
-                break;
-            case 'grey-round':
-                rule.style.setProperty("border", "1pt solid Grey", "important");
-                rule.style.setProperty("border-radius", "10px", "important");
-                rule.style.setProperty("background-color", "transparent ", "important");
-                rule.style.setProperty("padding", "10px", "important");
-                rule.style.setProperty("box-sizing", "border-box", "important");
-                break;
+        var rule = this.getStyleRule(true);
+        if ($('#border-none').hasClass('selectedIcon')) {
+            //rule.style.setProperty("border-style", "none");
+            rule.style.removeProperty("border-style");
+            rule.style.removeProperty("border");
+            rule.style.removeProperty("border-color");
+            rule.style.removeProperty("border-radius");
+            rule.style.removeProperty("padding");
+            rule.style.removeProperty("box-sizing");
+        } else if ($('#border-black').hasClass('selectedIcon')) {
+            rule.style.setProperty("border", "1pt solid black", "important");
+            rule.style.setProperty("border-radius", "0px", "important");
+            rule.style.setProperty("padding", "10px", "important");
+            rule.style.setProperty("box-sizing", "border-box", "important");
+        } else if ($('#border-black-round').hasClass('selectedIcon')) {
+            rule.style.setProperty("border", "1pt solid black", "important");
+            rule.style.setProperty("border-radius", "10px", "important");
+            rule.style.setProperty("padding", "10px", "important");
+            rule.style.setProperty("box-sizing", "border-box", "important");
+        } else if ($('#border-gray').hasClass('selectedIcon')) {
+            rule.style.setProperty("border", "1pt solid Grey", "important");
+            rule.style.setProperty("border-radius", "0px", "important");
+            rule.style.setProperty("padding", "10px", "important");
+            rule.style.setProperty("box-sizing", "border-box", "important");
+        } else if ($('#border-gray-round').hasClass('selectedIcon')) {
+            rule.style.setProperty("border", "1pt solid Grey", "important");
+            rule.style.setProperty("border-radius", "10px", "important");
+            rule.style.setProperty("padding", "10px", "important");
+            rule.style.setProperty("box-sizing", "border-box", "important");
         }
 
         this.cleanupAfterStyleChange();
@@ -747,7 +901,7 @@ var StyleEditor = (function () {
 
     StyleEditor.prototype.selectStyle = function () {
         var style = $('#styleSelect').val();
-        $('#styleSelectInput').val(""); // we've chosen a style from the list, so we aren't creating a new one.
+        $('#style-select-input').val(""); // we've chosen a style from the list, so we aren't creating a new one.
         StyleEditor.SetStyleNameForElement(this.boxBeingEdited, style + "-style");
         var current = this.getFormatValues();
 
@@ -755,22 +909,22 @@ var StyleEditor = (function () {
         // Doing so might well even make a real change, because the controls can only be an approximation
         // of the settings that can be achieved using raw stylesheet editing.
         this.ignoreControlChanges = true;
-        $('#fontSelect').val(current.fontName);
-        $('#sizeSelect').val(current.ptSize);
-        $('#lineHeightSelect').val(current.lineHeight);
-        $('#wordSpaceSelect').val(current.wordSpacing);
-        $('#borderSelect').val(current.borderChoice);
+        $('#font-select').val(current.fontName);
+        $('#size-select').val(current.ptSize);
+        $('#line-height-select').val(current.lineHeight);
+        $('#word-space-select').val(current.wordSpacing);
+        $('#border-select').val(current.borderChoice);
         this.ignoreControlChanges = false;
         this.cleanupAfterStyleChange();
     };
 
-    StyleEditor.prototype.getStyleRule = function () {
+    StyleEditor.prototype.getStyleRule = function (ignoreLanguage) {
         var target = this.boxBeingEdited;
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName)
             return;
         var langAttrValue = StyleEditor.GetLangValueOrNull(target);
-        return this.GetOrCreateRuleForStyle(styleName, langAttrValue);
+        return this.GetOrCreateRuleForStyle(styleName, langAttrValue, ignoreLanguage);
     };
 
     StyleEditor.prototype.cleanupAfterStyleChange = function () {
@@ -782,7 +936,8 @@ var StyleEditor = (function () {
             $(target).addClass('overflow');
         else
             $(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
-        $('#formatDesc').html(this.getDescription());
+        $('#formatCharDesc').html(this.getCharTabDescription());
+        $('#formatMoreDesc').html(this.getMoreTabDescription());
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip
         //var toolTip = this.GetToolTip(target, styleName);
