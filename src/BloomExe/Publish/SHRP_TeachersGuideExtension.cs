@@ -26,18 +26,12 @@ namespace Bloom.Publish
 					continue; // term intro books don't have weeks
 
 				var week = weekDataNode.InnerText.Trim();
-
-				var thumbnailHolders = pageDiv.SafeSelectNodes(".//img");
-				if (thumbnailHolders.Count == 2)
+				// TODO: need a better way to identify thumbnails, like a class that is always there, lest  we replace some other img that we don't want to replace
+				foreach (XmlElement thumbnailContainer in pageDiv.SafeSelectNodes(".//img"))
 				{
 					++page;
-					((XmlElement)thumbnailHolders[0]).SetAttribute("src", language1Iso639Code+"-t"+term + "-w" + week + "-p" + page + ".png");
-					++page;
-					((XmlElement)thumbnailHolders[1]).SetAttribute("src", language1Iso639Code + "-t" + term + "-w" + week + "-p" + page + ".png");
+					thumbnailContainer.SetAttribute("src", language1Iso639Code + "-t" + term + "-w" + week + "-p" + page + ".png");
 				}
-				//day1Thumbnail day2Thumbnail day4Thumbnail
-				//unfortunately Day3 went out with  an img container just copied from day1, with erroneous "day1Thumbnail" class
-
 			}
 		}
 	}

@@ -91,6 +91,8 @@ namespace Bloom.Publish
 			{
 				if (null != pageDom.SelectSingleNode("//div[contains(@class,'oddPage') or contains(@class,'evenPage') or contains(@class,'leftPage')  or contains(@class,'rightPage') or contains(@class,'primerPage')]"))
 				{
+//					if(null != pageDom.SelectSingleNode("//div[contains(@class,'bloom-frontMatter')]"))
+//						continue; //c2 p2 had a term intro page with the class "rigthPage" which gives the prior query a false positive
 
 					const double kproportionOfWidthToHeightForB5 = 0.708;
 					const int heightInPixels = 700;
@@ -113,31 +115,50 @@ namespace Bloom.Publish
 
 		private void ThumbnailReady(string exportFolder, HtmlDom dom, Image image)
 		{
-			var term = dom.SelectSingleNode("//div[contains(@data-book,'term')]").InnerText.Trim();
-			var week = dom.SelectSingleNode("//div[contains(@data-book,'week')]").InnerText.Trim();
+			string term;
+			string week;
+			try
+			{
+				term = dom.SelectSingleNode("//div[contains(@data-book,'term')]").InnerText.Trim();
+				week = dom.SelectSingleNode("//div[contains(@data-book,'week')]").InnerText.Trim();
+			}
+			catch (Exception e)
+			{
+				Debug.Fail("Book missing either term or week variable");
+				throw new ApplicationException("This page is lacking either a term or week data-book variable.");
+			}
 			//the selector for day one is different because it doesn't have @data-* attribute
 			XmlElement dayNode = dom.SelectSingleNode("//div[contains(@class,'DayStyle')]");
 			string page="?";
 			// many pupil books don't have a specific day per page
-			if (dayNode != null)
+
+			if (dom.SelectSingleNode("//div[contains(@class,'day5Left')]") != null) // in P2, we have 2 pages for day 5, so we can't use the 'DayStyle' to differentiate them
+			{
+				page = "5";
+			}
+			else if (dom.SelectSingleNode("//div[contains(@class,'day5Right')]") != null)
+			{
+				page = "6";
+			}
+			else if (dayNode != null)
 			{
 				page = dayNode.InnerText.Trim();
 			}
 			else
 			{
-				if (dom.SelectSingleNode("//div[contains(@class,'page1')]") != null)
+				if (dom.SelectSingleNode("//div[contains(@class,'page1') or contains(@class,'storyPageLeft')]") != null)
 				{
 					page = "1";
 				}
-				else if (dom.SelectSingleNode("//div[contains(@class,'page2')]") != null)
+				else if (dom.SelectSingleNode("//div[contains(@class,'page2') or contains(@class,'storyPageRight')]") != null)
 				{
 					page = "2";
 				}
-				else if (dom.SelectSingleNode("//div[contains(@class,'page3')]") != null)
+				else if (dom.SelectSingleNode("//div[contains(@class,'page3') or contains(@class,'thirdPage')]") != null)
 				{
 					page = "3";
 				}
-				else if (dom.SelectSingleNode("//div[contains(@class,'page4')]") != null)
+				else if (dom.SelectSingleNode("//div[contains(@class,'page4') or contains(@class,'fourthPage')]") != null)
 				{
 					page = "4";
 				}
