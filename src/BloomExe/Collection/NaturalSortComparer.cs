@@ -8,7 +8,7 @@ namespace Bloom.Collection
 	/// From James McCormack, http://zootfroot.blogspot.com/2009/09/natural-sort-compare-with-linq-orderby.html
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class NaturalSortComparer<T> : IComparer<string>, IDisposable
+	public class NaturalSortComparer<T> : IComparer<string>
 	{
 		private bool isAscending;
 
@@ -90,12 +90,5 @@ namespace Bloom.Collection
 
 		private Dictionary<string, string[]> table = new Dictionary<string, string[]>();
 
-		public void Dispose()
-		{
-			table.Clear();
-			table = null;
-
-			GC.SuppressFinalize(this);
-		}
 	}
 }
