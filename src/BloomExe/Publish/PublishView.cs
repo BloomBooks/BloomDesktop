@@ -69,7 +69,14 @@ namespace Bloom.Publish
 //        	tableLayoutPanel1.Controls.Add(linkLabel);
 //#endif
 
+			// Adding this renderer prevents a white line from showing up under the components.
+#if !__MonoCS__
+			// TODO Linux - But on Linux, it also prevents the checkmarks from painting. (https://jira.sil.org/browse/BL-509)
+			// Currently, Linux looks awful anyway, and not using this renderer is not a regression.
+			// We must do a similar hack in EditingView, but the problem cannot be fixed in the renderer itself
+			// as simply adding the renderer seems to cause the problem with the checkmarks.
 			_menusToolStrip.Renderer = new EditingView.FixedToolStripRenderer();
+#endif
 			GeckoPreferences.Default["pdfjs.disabled"] = false;
 			SetupLocalization();
 			localizationChangedEvent.Subscribe(o=>SetupLocalization());
