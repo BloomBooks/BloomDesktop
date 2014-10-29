@@ -357,6 +357,8 @@ namespace Bloom.Book
 		{
 			TranslationGroupManager.PrepareElementsInPageOrDocument(pageDiv, collectionSettings);
 
+			SetLanguageForElementsWithMetaLanguage(pageDiv, collectionSettings);
+
 			// a page might be "extra" as far as the template is concerned, but
 			// once a page is inserted into book (which may become a shell), it's
 			// just a normal page
@@ -364,7 +366,44 @@ namespace Bloom.Book
 			ClearAwayDraftText(pageDiv);
 	   }
 
+		/// <summary>
+		/// In xmatter, text fields are normally labeled with a "meta" language code, like "N1" for first national language.
+		/// This method detects those and then looks them up, returning the actual language code in use at the moment.
+		/// </summary>
+		/// <remarks>This is a little uncomfortable in this class, as this feature is not currently used in any
+		/// bloom-translationGroup elements.
+		/// </remarks>
+		public static void SetLanguageForElementsWithMetaLanguage(XmlNode elementOrDom, CollectionSettings settings)
+		{
+			foreach (XmlElement element in elementOrDom.SafeSelectNodes(".//*[@data-metalanguage]"))
+			{
+				string lang = "";
+				string metaLanguage = element.GetStringAttribute("data-metalanguage").Trim();
+				switch (metaLanguage)
+				{
+					case "V":
+						lang = settings.Language1Iso639Code;
+						break;
+					case "N1":
+						lang = settings.Language2Iso639Code;
+						break;
+					case "N2":
+						lang = settings.Language3Iso639Code;
+						break;
+					default:
+						var msg = "Element called for meta language '" + metaLanguage + "', which is unrecognized.";
+						Debug.Fail(msg);
+						Logger.WriteEvent(msg);
+						continue;
+						break;
+				}
+				element.SetAttribute("lang", lang);
 
+				// As an aside: if the field also has a class "bloom-copyFromOtherLanguageIfNecessary", then elsewhere we will copy from the old
+				// national language (or regional, or whatever) to this one if necessary, so as not to lose what they had before.
+
+			}
+		}
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
 		{
 			//NB: this works even if the parent and child are the same, which is the case when making a new book
