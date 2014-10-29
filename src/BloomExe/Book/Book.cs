@@ -257,6 +257,8 @@ namespace Bloom.Book
 		{
 			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings, _collectionSettings.Language1Iso639Code, _bookData.MultilingualContentLanguage2,
 													 _bookData.MultilingualContentLanguage3);
+
+			BookStarter.SetLanguageForElementsWithMetaLanguage(dom.RawDom, _collectionSettings);
 		}
 
 		private HtmlDom GetHtmlDomWithJustOnePage(IPage page)

@@ -162,7 +162,7 @@ mixin field-mono-version1(language, bubbleText)
 //- Language is always mandatory, but you can use '*' to mean "Don't worry what language it is"
 mixin field-mono-meta(language, dataBookName)
 	- requireTwoArguments('field-mono-meta', arguments);
-	+editable(language)(data-book=dataBookName,attributes)
+	+editable(language)(data-book=dataBookName,data-metalanguage=language,attributes)
 		block
 
 //- A splittable page is one that has each element tagged with either 'bloom-leadingElement' or 'bloom-trailingElement'.
