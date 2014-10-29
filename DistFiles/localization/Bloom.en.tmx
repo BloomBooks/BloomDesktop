@@ -2880,6 +2880,12 @@
         <seg>Math</seg>
       </tuv>
     </tu>
+    <tu tuid="Topics.NoTopic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>No Topic</seg>
+      </tuv>
+    </tu>
     <tu tuid="Topics.Non Fiction">
       <note>shows in the topics chooser in the edit tab</note>
       <prop type="x-dynamic">true</prop>

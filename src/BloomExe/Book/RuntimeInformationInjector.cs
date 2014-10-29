@@ -184,7 +184,7 @@ namespace Bloom.Book
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.OriginalAcknowledgmentsPrompt",
 				"Original (or Shell) Acknowledgments in {lang}");
 
-			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TopicPrompt", "Click to choose topic"); //doesn't work yet. https://jira.sil.org/browse/BL-189
+			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.TopicPrompt", "Click to choose topic");
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.ISBNPrompt", "International Standard Book Number. Leave blank if you don't have one of these.");
 
 			AddTranslationToDictionaryUsingEnglishAsKey(d, "EditTab.FrontMatter.BigBook.Contributions", "When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.");
@@ -208,6 +208,9 @@ namespace Bloom.Book
 			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditor.LineSpacingToolTip", "Change the spacing between lines of text");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditor.WordSpacingToolTip", "Change the spacing between words");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditor.BorderToolTip", "Change the border and background");
+
+			// "No Topic" localization for Topic Chooser
+			AddTranslationToDictionaryUsingKey(d, "Topics.NoTopic", "No Topic");
 		}
 
 		private static void AddTranslationToDictionaryUsingKey(Dictionary<string, string> dictionary, string key, string defaultText)
@@ -277,7 +280,6 @@ namespace Bloom.Book
 			}
 			builder.Append("]");
 			d.Add("topics", builder.ToString().Replace(", ]","]"));
-//            d.Add("topics", "['Agriculture', 'Animal Stories', 'Business', 'Culture', 'Community Living', 'Dictionary', 'Environment', 'Fiction', 'Health', 'How To', 'Math', 'Non Fiction', 'Spiritual', 'Personal Development', 'Primer', 'Science', 'Tradition']".Replace("'", "\\\""));
 
 			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 

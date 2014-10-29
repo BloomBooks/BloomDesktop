@@ -932,6 +932,7 @@ function SetBookCopyrightAndLicenseButtonVisibility(container) {
 function FindOrCreateTopicDialogDiv() {
     var dialogContents = $("body").find("div#topicChooser");
     if (!dialogContents.length) {
+        var noTopic = localizationManager.getText("Topics.NoTopic");
         dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
 
         var topics = JSON.parse(GetSettings().topics).sort();
@@ -939,6 +940,7 @@ function FindOrCreateTopicDialogDiv() {
         // "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
 
         dialogContents.append("<ol id='topics'></ol>");
+        $("ol#topics").append("<li class='ui-widget-content'>(" + noTopic + ")</li>");
         for (i in topics) {
             $("ol#topics").append("<li class='ui-widget-content'>" + topics[i] + "</li>");
         }
@@ -992,7 +994,12 @@ function ShowTopicChooser() {
             "OK": function () {
                 var t = $("ol#topics li.ui-selected");
                 if (t.length) {
-                    $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
+                    var topicText = t[0].innerHTML;
+                    if (topicText.startsWith("(")) {
+                        $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text("");
+                    } else {
+                        $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
+                    }
                 }
                 $(this).dialog("close");
             }
