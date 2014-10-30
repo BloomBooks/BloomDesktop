@@ -3,6 +3,7 @@
  */
 
 declare function GetInlineDictionary(): any;
+declare function WebFXTabPane(el: HTMLElement, bUseCookie?: boolean, selectFn?: (e: HTMLElement) => any): void;
 
 interface String {
   startsWith(str: string): boolean

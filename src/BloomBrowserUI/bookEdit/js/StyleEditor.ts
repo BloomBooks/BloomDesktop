@@ -1,5 +1,6 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
+/// <reference path="../../lib/jquery.alphanum.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
 /// <reference path="toolbar/toolbar.d.ts"/>
@@ -183,7 +184,7 @@ class StyleEditor {
     // Get the names that should be offered in the styles combo box.
     // Basically any defined styles without dots in their definition (except the first one).
     // (We don't allow users to create styles with dot or any other special characters.)
-    getFormattingStyles(): String[] {
+    getFormattingStyles(): string[] {
         var result = [];
         for (var i = 0; i < document.styleSheets.length; i++) {
             var sheet = <StyleSheet>(<any>document.styleSheets[i]);
@@ -556,7 +557,7 @@ class StyleEditor {
                     $('#border-select').change(function() { editor.changeBorderSelect(); });
                     editor.AddQtipToElement($('#border-select').parent(), localizationManager.getText('EditTab.StyleEditor.BorderToolTip', 'Change the border and background'), 1500);
                     $('#styleSelect').change(function() { editor.selectStyle(); });
-                    $('#style-select-input').alphanum({ allowSpace: false, preventLeadingNumeric: true });
+                    (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
                     $('#style-select-input').on('input', function() { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
                     $('#style-select-input').get(0).trimNotification = function() { editor.badCharacterTrimmed(); }
                     $('#show-create-style').click(function(event) {
