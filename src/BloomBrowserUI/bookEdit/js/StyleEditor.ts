@@ -183,7 +183,7 @@ class StyleEditor {
     // Get the names that should be offered in the styles combo box.
     // Basically any defined styles without dots in their definition (except the first one).
     // (We don't allow users to create styles with dot or any other special characters.)
-    getFormattingStyles(): String[] {
+    getFormattingStyles(): string[] {
         var result = [];
         for (var i = 0; i < document.styleSheets.length; i++) {
             var sheet = <StyleSheet>(<any>document.styleSheets[i]);
@@ -489,7 +489,7 @@ class StyleEditor {
                 var create = localizationManager.getText('EditTab.StyleEditor.Create', 'Create');
                 var pleaseUseAlpha = localizationManager.getText('EditTab.StyleEditor.PleaseUseAlpha', 'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".');
 
-                var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:900;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">'
+                var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:1010;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">'
                     + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt"></div>';
                 if (editor.authorMode) {
                     html += '<div class="tab-pane" id="tabRoot">'
