@@ -20,6 +20,7 @@ using Ionic.Zip;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms;
 using Palaso.Xml;
 using Palaso.UI.WindowsForms.FileSystem;
 
@@ -227,7 +228,7 @@ namespace Bloom.CollectionTab
 					File.Delete(path);
 				}
 				Logger.WriteEvent("Making BloomPack");
-				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack..."))
+				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack...", "Bloom"))
 				{
 					try
 					{
