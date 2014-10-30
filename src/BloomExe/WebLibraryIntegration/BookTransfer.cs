@@ -578,19 +578,39 @@ namespace Bloom.WebLibraryIntegration
 			MakeThumbnail(book, 256, invokeTarget);
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
 			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
-			// If there is not already a locked preview in the book folder
-			// (which we take to mean the user has created a customized one that he prefers),
-			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
-			if (!FileUtils.IsFileLocked(uploadPdfPath))
+			// Books in the library should all show as locked-down, so new users are automatically in localization mode.
+			var wasLocked = book.RecordedAsLockedDown;
+			if (!wasLocked)
 			{
-				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
-				publishView.MakePublishPreview();
-				if (File.Exists(publishView.PdfPreviewPath))
-				{
-					File.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
-				}
+				book.RecordedAsLockedDown = true;
+				book.Save();
 			}
-			string result = UploadBook(bookFolder, progressBox, out parseId);
+			string result;
+			try
+			{
+				// If there is not already a locked preview in the book folder
+				// (which we take to mean the user has created a customized one that he prefers),
+				// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
+				if (!FileUtils.IsFileLocked(uploadPdfPath))
+				{
+					progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
+					publishView.MakePublishPreview();
+					if (File.Exists(publishView.PdfPreviewPath))
+					{
+						File.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
+					}
+				}
+				result = UploadBook(bookFolder, progressBox, out parseId);
+			}
+			finally
+			{
+				// Restore the original locked-down state if necessary.
+				if (!wasLocked)
+				{
+					book.RecordedAsLockedDown = false;
+					book.Save();
+				}				
+			}
 			return result;
 		}
 

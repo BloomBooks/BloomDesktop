@@ -799,9 +799,30 @@ namespace Bloom.Book
 			{
 				if(_collectionSettings.IsSourceCollection) //nothing is locked if we're in a shell-making library
 					return false;
+				return RecordedAsLockedDown;
+			}
+		}
 
+		/// <summary>
+		/// This is how the book's LockedDown state will be reported in a vernacular collection.
+		/// </summary>
+		public bool RecordedAsLockedDown
+		{
+			get
+			{
 				var node = OurHtmlDom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
 				return node.Count > 0;
+			}
+			set
+			{
+				if (value)
+				{
+					OurHtmlDom.UpdateMetaElement("lockedDownAsShell", "true");
+				}
+				else
+				{
+					OurHtmlDom.RemoveMetaElement("lockedDownAsShell");
+				}
 			}
 		}
 
