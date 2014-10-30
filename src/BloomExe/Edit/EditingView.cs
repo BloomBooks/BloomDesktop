@@ -8,19 +8,15 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
-using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.ClearShare.WinFormsUI;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
-using System.Net;
-using L10NSharp.UI;
 
 namespace Bloom.Edit
 {
@@ -35,12 +31,12 @@ namespace Bloom.Edit
 		private readonly UndoCommand _undoCommand;
 		private readonly DuplicatePageCommand _duplicatePageCommand;
 		private readonly DeletePageCommand _deletePageCommand;
-		private GeckoElement _previousClickElement;
 		private Action _pendingMessageHandler;
 		private bool _updatingDisplay;
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
 		private Color _disabledToolbarColor= Color.FromArgb(114,74,106);
 		private bool _visible;
+		private GeckoHtmlElement _targetElement;
 
 		public delegate EditingView Factory();//autofac uses this
 
@@ -80,6 +76,9 @@ namespace Bloom.Edit
 
 			//we're giving it to the parent control through the TopBarControls property
 			Controls.Remove(_topBarPanel);
+
+			// BL-482 Art of Reading dialog not scrolling correctly
+			_model.Server.ImageChanged += ServerOnImageChanged;
 		}
 
 #if TooExpensive
@@ -396,7 +395,7 @@ namespace Bloom.Edit
 				return;
 			}
 			if (target.ClassName.Contains("changeImageButton"))
-				OnChangeImage(ge);
+				_targetElement = GetImageNode(ge);
 			if (target.ClassName.Contains("pasteImageButton"))
 				OnPasteImage(ge);
 			if (target.ClassName.Contains("editMetadataButton"))
@@ -568,8 +567,6 @@ namespace Bloom.Edit
 			Cursor = Cursors.Default;
 		}
 
-
-
 		private Image GetImageFromClipboard()
 		{
 			if(Clipboard.ContainsImage())
@@ -623,14 +620,12 @@ namespace Bloom.Edit
 			return null;
 		}
 
-
 		private static GeckoHtmlElement GetImageNode(DomEventArgs ge)
 		{
-			GeckoHtmlElement imageElement = null;
 			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
 			foreach (var n in target.Parent.ChildNodes)
 			{
-				imageElement = n as GeckoHtmlElement;
+				var imageElement = n as GeckoHtmlElement;
 				if (imageElement != null && imageElement.TagName.ToLower() == "img")
 				{
 					return imageElement;
@@ -641,84 +636,30 @@ namespace Bloom.Edit
 			return null;
 		}
 
-		/// <summary>
-		/// Returns true if it is either: a) OK to change images, or b) user overrides
-		/// Returns false if user cancels message box
-		/// </summary>
-		/// <param name="imagePath"></param>
-		/// <returns></returns>
-		private bool CheckIfLockedAndWarn(string imagePath)
+		// BL-482 Art of Reading dialog not scrolling correctly
+		private void ServerOnImageChanged(object sender, EnhancedImageServer.ImageChangedEventArgs eventArgs)
 		{
-			// Enhance: we may want to reinstate some sort of (disableable) warning when they edit a picture while translating.
-			// Original comment:  this would let them set it once without us bugging them, but after that if they
-			//go to change it, we would bug them because we don't have a way of knowing that it was a placeholder before.
-			//if (!imagePath.ToLower().Contains("placeholder")  //always allow them to put in something over a placeholder
-			//	&& !_model.CanChangeImages())
-			//{
-			//	if (DialogResult.Cancel == MessageBox.Show(LocalizationManager.GetString("EditTab.ImageChangeWarning", "This book is locked down as shell. Are you sure you want to change the picture?"), LocalizationManager.GetString("EditTab.ChangeImage", "Change Image"), MessageBoxButtons.OKCancel))
-			//	{
-			//		return false;
-			//	}
-			//}
-			return true;
-		}
+			if (_targetElement == null) return;
 
-		private void OnChangeImage(DomEventArgs ge)
-		{
-			var imageElement = GetImageNode(ge);
-			if (imageElement == null)
-				return;
-			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
-
-			 if (!CheckIfLockedAndWarn(currentPath))
-					return;
-			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
-			if (target.ClassName.Contains("licenseImage"))
-				return;
-
-			Cursor = Cursors.WaitCursor;
-
-			var imageInfo = new PalasoImage();
-			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
-
-			//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
-			if (!currentPath.ToLower().Contains("placeholder") && File.Exists(existingImagePath))
+			try
 			{
-				try
-				{
-					imageInfo = PalasoImage.FromFile(existingImagePath);
-				}
-				catch (Exception)
-				{
-					//todo: log this
-				}
-			};
-			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
-			using(var dlg = new ImageToolboxDialog(imageInfo, null))
-			{
-				if(DialogResult.OK== dlg.ShowDialog())
-				{
-					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
-					try
-					{
-						 _model.ChangePicture(imageElement, dlg.ImageInfo, new NullProgress());
-					}
-					catch(System.IO.IOException error)
-					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
-					}
-					catch (ApplicationException error)
-					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
-					}
-					catch (Exception error)
-					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom had a problem including that image");
-					}
-				}
+				Invoke(new Action(() => _model.ChangePicture(_targetElement, eventArgs.ImageInfo, new NullProgress())));
 			}
-			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
-			Cursor = Cursors.Default;
+			catch (IOException error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, error.Message);
+			}
+			catch (ApplicationException error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, error.Message);
+			}
+			catch (Exception error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, "Bloom had a problem including that image");
+			}
+
+			// reset _targetElement
+			_targetElement = null;
 		}
 
 		public void UpdateThumbnailAsync(IPage page)

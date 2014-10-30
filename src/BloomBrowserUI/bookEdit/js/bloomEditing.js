@@ -518,6 +518,21 @@ function SetupImageContainer(containerDiv) {
         $(this).prepend('<button class="pasteImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
         $(this).prepend('<button class="changeImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.ChangeImage") + '"></button>');
 
+        // BL-482 Art of Reading dialog not scrolling correctly
+        $('.changeImageButton').onOnce('click.changeImage', function () {
+
+            // get the target element
+            var img = $(this.parentNode).find('img').first();
+            if (img.length === 0) return;
+
+            // do not change licenseImage images
+            if (img.hasClass('licenseImage')) return;
+
+            // show the dialog
+            var src = img[0].src;
+            getIframeChannel().simpleAjaxNoCallback('/bloom/changeImage', src);
+        });
+
         var img = $(this).find('img');
         if (CreditsAreRelevantForImage(img)) {
             $(this).prepend('<button class="editMetadataButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.EditMetadata") + '"></button>');
