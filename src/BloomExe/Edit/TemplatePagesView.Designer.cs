@@ -30,33 +30,32 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			System.Windows.Forms.Label label1;
 			System.Windows.Forms.Panel panel1;
+			this._templatePagesListHeading = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._thumbNailList = new Bloom.Edit.ThumbNailList();
-			label1 = new System.Windows.Forms.Label();
 			panel1 = new System.Windows.Forms.Panel();
 			panel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
-			// label1
+			// _templatePagesListHeading
 			// 
-			label1.AutoSize = true;
-			label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			label1.ForeColor = System.Drawing.Color.WhiteSmoke;
-			this._L10NSharpExtender.SetLocalizableToolTip(label1, null);
-			this._L10NSharpExtender.SetLocalizationComment(label1, null);
-			this._L10NSharpExtender.SetLocalizingId(label1, "EditTab.TemplatePagesList.Heading");
-			label1.Location = new System.Drawing.Point(2, 7);
-			label1.Name = "label1";
-			label1.Size = new System.Drawing.Size(129, 18);
-			label1.TabIndex = 1;
-			label1.Text = "Template Pages";
+			this._templatePagesListHeading.AutoSize = true;
+			this._templatePagesListHeading.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._templatePagesListHeading.ForeColor = System.Drawing.Color.WhiteSmoke;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._templatePagesListHeading, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._templatePagesListHeading, null);
+			this._L10NSharpExtender.SetLocalizingId(this._templatePagesListHeading, "EditTab.TemplatePagesList.Heading");
+			this._templatePagesListHeading.Location = new System.Drawing.Point(2, 7);
+			this._templatePagesListHeading.Name = "_templatePagesListHeading";
+			this._templatePagesListHeading.Size = new System.Drawing.Size(129, 18);
+			this._templatePagesListHeading.TabIndex = 1;
+			this._templatePagesListHeading.Text = "Template Pages";
 			// 
 			// panel1
 			// 
-			panel1.Controls.Add(label1);
+			panel1.Controls.Add(this._templatePagesListHeading);
 			panel1.Dock = System.Windows.Forms.DockStyle.Top;
 			panel1.Location = new System.Drawing.Point(0, 0);
 			panel1.Name = "panel1";
@@ -109,5 +108,6 @@
 
 		private Bloom.Edit.ThumbNailList _thumbNailList;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private System.Windows.Forms.Label _templatePagesListHeading;
     }
 }
