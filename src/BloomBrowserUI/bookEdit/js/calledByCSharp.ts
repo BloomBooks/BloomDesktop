@@ -1,3 +1,4 @@
+/// <reference path="readerTools.d.ts"/>
 
 class CalledByCSharp {
 

@@ -80,6 +80,7 @@
     <TypeScriptCompile Include="bookEdit\js\jquery.div-columns.ts" />
     <TypeScriptCompile Include="bookEdit\js\libsynphony\underscore-1.5.2.d.ts" />
     <TypeScriptCompile Include="bookEdit\js\readerSettings.ts" />
+    <TypeScriptCompile Include="bookEdit\js\readerTools.d.ts" />
     <TypeScriptCompile Include="bookEdit\js\StyleEditor.ts" />
     <Content Include="bookEdit\js\toolbar\bootstrap.icons.css" />
     <Content Include="bookEdit\js\toolbar\glyphicons-halflings.png" />
