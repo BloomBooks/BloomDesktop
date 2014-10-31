@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -20,6 +19,7 @@ using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
+using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.Xml;
 using Image = System.Drawing.Image;
@@ -553,8 +553,7 @@ namespace Bloom.Book
 				Save();
 			}
 
-			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(BookInfo.BookLineage +", "
-														+ _storage.Dom.GetMetaValue("bloomBookLineage","")) /* had a case where the lineage hadn't been moved over to json yet */)
+			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
 			{
 				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
 			}
@@ -851,9 +850,30 @@ namespace Bloom.Book
 			{
 				if(_collectionSettings.IsSourceCollection) //nothing is locked if we're in a shell-making library
 					return false;
+				return RecordedAsLockedDown;
+			}
+		}
 
+		/// <summary>
+		/// This is how the book's LockedDown state will be reported in a vernacular collection.
+		/// </summary>
+		public bool RecordedAsLockedDown
+		{
+			get
+			{
 				var node = OurHtmlDom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
 				return node.Count > 0;
+			}
+			set
+			{
+				if (value)
+				{
+					OurHtmlDom.UpdateMetaElement("lockedDownAsShell", "true");
+				}
+				else
+				{
+					OurHtmlDom.RemoveMetaElement("lockedDownAsShell");
+				}
 			}
 		}
 
@@ -1814,6 +1834,22 @@ namespace Bloom.Book
 		public string GetBookLineage()
 		{
 			return OurHtmlDom.GetMetaValue("bloomBookLineage","");
+		}
+
+
+		public bool IsCalendar
+		{
+			get
+			{
+				if (OurHtmlDom == null)
+					return false;
+
+				return OurHtmlDom.GetMetaValue("defaultBookletLayout", "") == "Calendar";
+			}
+		}
+		public MultiTextBase GetDataItem(string name)
+		{
+			return _bookData.GetMultiTextVariableOrEmpty(name);
 		}
 	}
 }

@@ -15,11 +15,9 @@ using Palaso.Extensions;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.ClearShare.WinFormsUI;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
-using System.Net;
 using L10NSharp.UI;
 
 namespace Bloom.Edit

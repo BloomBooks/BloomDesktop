@@ -720,7 +720,7 @@ namespace Bloom.Book
 
 		public void SetLicenseMetdata(Metadata metadata)
 		{
-			var data = new DataSet();
+			var data = GatherDataItemsFromCollectionSettings(_collectionSettings);
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
 			GatherDataItemsFromXElement(data,  _dom.RawDom, itemsToDelete);
 

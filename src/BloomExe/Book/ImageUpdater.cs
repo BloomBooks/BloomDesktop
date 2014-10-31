@@ -143,6 +143,10 @@ namespace Bloom.Book
 			int completed = 0;
 			foreach (string path in imageFiles)
 			{
+
+				if (Path.GetFileName(path).ToLower() == "placeholder.png")
+					return;
+
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);
 				CompressImage(path, progress);
 				completed++;
