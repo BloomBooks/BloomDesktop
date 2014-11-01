@@ -130,10 +130,8 @@ namespace Bloom.WebLibraryIntegration
 			}
 			catch (Exception e)
 			{
-				ShellWindow.Invoke((Action) (() =>
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-						LocalizationManager.GetString("PublishTab.Upload.DownloadProblem",
-							"There was a problem downloading your book. You may need to restart Bloom or get technical help."))));
+				DisplayProblem(e, LocalizationManager.GetString("PublishTab.Upload.DownloadProblem",
+					"There was a problem downloading your book. You may need to restart Bloom or get technical help."));
 				Analytics.Track("DownloadedBook-Failure",
 					new Dictionary<string, string>() { { "url", url }, { "title", title } });
 				Analytics.ReportException(e);
@@ -141,13 +139,20 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		private static void DisplayProblem(Exception e, string message)
+		{
+			var action = new Action(() => Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, message));
+				var shellWindow = ShellWindow;
+				if (shellWindow != null)
+					shellWindow.Invoke(action);
+				else
+					action.Invoke();
+		}
+
 		private static void DisplayNetworkDownloadProblem(Exception e)
 		{
-			ShellWindow.Invoke((Action) (() =>
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					LocalizationManager.GetString("Download.GenericDownloadProblemNotice",
-						"There was a problem downloading your book."))));
-
+			DisplayProblem(e, LocalizationManager.GetString("Download.GenericDownloadProblemNotice",
+				"There was a problem downloading your book."));
 		}
 
 		private static void DisplayNetworkUploadProblem(Exception e, IProgress progress)
