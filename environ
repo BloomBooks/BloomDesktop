@@ -75,5 +75,9 @@ export \
 # (See FWNX-1216.)  Tom Hindle suggested this hack as a stopgap.
 export MALLOC_CHECK_=0
 
+# set HGRCPATH so that we ignore ~/.hgrc files which might have content that is
+# incompatible with our version of Mercurial
+export HGRCPATH=
+
 #sets keyboard input method to none
 unset XMODIFIERS
