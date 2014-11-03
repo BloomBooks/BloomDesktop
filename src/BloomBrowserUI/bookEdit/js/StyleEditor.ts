@@ -7,6 +7,7 @@
 /// <reference path="getIframeChannel.ts"/>
 
 declare var simpleAjaxGet: any;
+declare var WebFXTabPane;
 var iframeChannel = getIframeChannel();
 
 interface qtipInterface extends JQuery {

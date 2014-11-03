@@ -153,6 +153,7 @@
     <Content Include="lib\long-press\jquery.mousewheel.js" />
     <Content Include="lib\split-pane\split-pane.css" />
     <Content Include="lib\split-pane\split-pane.js" />
+    <Content Include="lib\tabpane.js" />
     <Content Include="nonProductionStuff\.guidsForInstaller.xml" />
     <Content Include="nonProductionStuff\alignmentTest.css" />
     <Content Include="nonProductionStuff\alignmentTest.html" />

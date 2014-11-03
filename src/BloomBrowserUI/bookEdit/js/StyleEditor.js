@@ -5,6 +5,7 @@
 /// <reference path="../../lib/jquery.alphanum.d.ts"/>
 /// <reference path="toolbar/toolbar.d.ts"/>
 /// <reference path="getIframeChannel.ts"/>
+
 var iframeChannel = getIframeChannel();
 
 var StyleEditor = (function () {
