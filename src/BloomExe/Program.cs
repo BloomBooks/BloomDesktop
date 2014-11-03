@@ -20,6 +20,7 @@ using L10NSharp;
 using Palaso.IO;
 using Palaso.Reporting;
 using Skybound.Gecko;
+using Palaso.UI.WindowsForms.UniqueToken;
 using System.Linq;
 
 namespace Bloom
@@ -41,7 +42,6 @@ namespace Bloom
 #if PerProjectMutex
 		private static Mutex _oneInstancePerProjectMutex;
 #else
-		private static Mutex _onlyOneBloomMutex;
 		private static DateTime _earliestWeShouldCloseTheSplashScreen;
 		private static SplashScreen _splashForm;
 		private static bool _alreadyHadSplashOnce;
@@ -52,6 +52,7 @@ namespace Bloom
 		[HandleProcessCorruptedStateExceptions]
 		static void Main(string[] args)
 		{
+			bool skipReleaseToken = false;
 			try
 			{
 				Application.EnableVisualStyles();
@@ -140,11 +141,11 @@ namespace Bloom
 						PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
 						// If another instance is running, this one has served its purpose and can exit right away.
 						// Otherwise, carry on with starting up normally.
-						if (TryToGrabMutexForBloom())
+						if (UniqueToken.AcquireTokenQuietly(_mutexId))
 							FinishStartup();
 						else
 						{
-							_onlyOneBloomMutex = null; // we don't own it, so ReleaseMutexForBloom must not try to release it.
+							skipReleaseToken = true; // we don't own it, so we better not try to release it
 							string caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
 							string message = LocalizationManager.GetString("Download.Completed",
 								@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. "
@@ -155,7 +156,7 @@ namespace Bloom
 						return;
 					}
 
-					if (!GrabMutexForBloom())
+					if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
 						return;
 
 					OldVersionCheck();
@@ -222,7 +223,8 @@ namespace Bloom
 			}
 			finally
 			{
-				ReleaseMutexForBloom();
+				if (!skipReleaseToken)
+					UniqueToken.ReleaseToken();
 			}
 		}
 
@@ -410,75 +412,6 @@ namespace Bloom
 		}
 #endif
 
-		private static bool GrabMutexForBloom()
-		{
-			//ok, here's how this complex method works...
-			//First, we try to get the mutex quickly and quitely.
-			//If that fails, we put up a dialog and wait a number of seconds,
-			//while we wait for the mutex to come free.
-
-			var mutexAcquired = TryToGrabMutexForBloom();
-
-			using (var dlg = new SimpleMessageDialog("Waiting for other Bloom to finish..."))
-			{
-				dlg.TopMost = true;
-				if (mutexAcquired)
-				{
-					// On Linux if we don't create this control the splash screen won't update
-					// properly. If we create this dialog it works better. We don't want to show
-					// the dialog unless we have to, because that doesn't update properly either.
-					dlg.CreateControl();
-				}
-				else
-					dlg.Show();
-
-				try
-				{
-					_onlyOneBloomMutex = Mutex.OpenExisting(_mutexId);
-					mutexAcquired = _onlyOneBloomMutex.WaitOne(TimeSpan.FromMilliseconds(10 * 1000), false);
-				}
-				catch (AbandonedMutexException e)
-				{
-					_onlyOneBloomMutex = new Mutex(true, _mutexId, out mutexAcquired);
-					mutexAcquired = true;
-				}
-				catch (Exception e)
-				{
-					ErrorReport.NotifyUserOfProblem(e,
-						"There was a problem starting Bloom which might require that you restart your computer.");
-				}
-			}
-
-			if (!mutexAcquired) // cannot acquire?
-			{
-				_onlyOneBloomMutex = null;
-				ErrorReport.NotifyUserOfProblem("Another copy of Bloom is already running. If you cannot find that Bloom, restart your computer.");
-				return false;
-			}
-			return true;
-		}
-
-		private static bool TryToGrabMutexForBloom()
-		{
-			bool mutexAcquired = false;
-			_onlyOneBloomMutex = new Mutex(true, _mutexId, out mutexAcquired);
-			if (!mutexAcquired)
-			{
-				// Already existed...see if we can get it.
-				mutexAcquired = _onlyOneBloomMutex.WaitOne(TimeSpan.FromMilliseconds(1 * 1000), false);
-			}
-
-			return mutexAcquired;
-		}
-
-		public static void ReleaseMutexForBloom()
-		{
-			if (_onlyOneBloomMutex != null)
-			{
-				_onlyOneBloomMutex.ReleaseMutex();
-				_onlyOneBloomMutex = null;
-			}
-		}
 
 		/// ------------------------------------------------------------------------------------
 		private static void StartUpShellBasedOnMostRecentUsedIfPossible()
