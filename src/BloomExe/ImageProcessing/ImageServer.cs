@@ -40,8 +40,12 @@ namespace Bloom.ImageProcessing
 
 		protected override void Dispose(bool fDisposing)
 		{
-			//the container that gave us this will dispose of it: _cache.Dispose();
-			_cache = null;
+			if (fDisposing)
+			{
+				if (_cache != null)
+					_cache.Dispose();
+				_cache = null;
+			}
 
 			base.Dispose(fDisposing);
 		}

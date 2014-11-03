@@ -37,7 +37,10 @@ namespace Bloom
 		/// </summary>
 		private static ProjectContext _projectContext;
 		private static ApplicationContainer _applicationContainer;
+		public static bool ApplicationExiting;
 		public static bool StartUpWithFirstOrNewVersionBehavior;
+
+		private static GeckoWebBrowser _debugServerStarter;
 
 #if PerProjectMutex
 		private static Mutex _oneInstancePerProjectMutex;
@@ -48,6 +51,7 @@ namespace Bloom
 		private static BookDownloadSupport _bookDownloadSupport;
 #endif
 		internal static string PathToBookDownloadedAtStartup { get; set; }
+
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
 		static void Main(string[] args)
@@ -100,25 +104,27 @@ namespace Bloom
 					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
 					{
 						SetUpErrorHandling();
-						_applicationContainer = new ApplicationContainer();
-						SetUpLocalization();
-						var path = args[0];
-						// This allows local links to bloom packs.
-						if (path.ToLowerInvariant().StartsWith("bloom://"))
+						using (_applicationContainer = new ApplicationContainer())
 						{
-							path = path.Substring("bloom://".Length);
-							if (!File.Exists(path))
+							SetUpLocalization();
+							var path = args[0];
+							// This allows local links to bloom packs.
+							if (path.ToLowerInvariant().StartsWith("bloom://"))
 							{
-								path = FileLocator.GetFileDistributedWithApplication(true, path);
+								path = path.Substring("bloom://".Length);
 								if (!File.Exists(path))
-									return;
+								{
+									path = FileLocator.GetFileDistributedWithApplication(true, path);
+									if (!File.Exists(path))
+										return;
+								}
 							}
+							using (var dlg = new BloomPackInstallDialog(path))
+							{
+								dlg.ShowDialog();
+							}
+							return;
 						}
-						using (var dlg = new BloomPackInstallDialog(path))
-						{
-							dlg.ShowDialog();
-						}
-						return;
 					}
 					if (IsBloomBookOrder(args))
 					{
@@ -129,31 +135,34 @@ namespace Bloom
 						// step of copying the template to the new book. Hopefully users have (or will soon learn) enough sense not to
 						// try to use a template while in the middle of downloading a new version.
 						SetUpErrorHandling();
-						_applicationContainer = new ApplicationContainer();
-						SetUpLocalization();
-						Logger.Init();
-						new BookDownloadSupport();
-						Browser.SetUpXulRunner();
-						L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-						var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-							_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
-						transfer.HandleBloomBookOrder(args[0]);
-						PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
-						// If another instance is running, this one has served its purpose and can exit right away.
-						// Otherwise, carry on with starting up normally.
-						if (UniqueToken.AcquireTokenQuietly(_mutexId))
-							FinishStartup();
-						else
+						using (_applicationContainer = new ApplicationContainer())
 						{
-							skipReleaseToken = true; // we don't own it, so we better not try to release it
-							string caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
-							string message = LocalizationManager.GetString("Download.Completed",
-								@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. "
-								+ "If you don't seem to be in the middle of doing something, Bloom will select it for you.");
-							message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
-							MessageBox.Show(message, caption);
+							SetUpLocalization();
+							Logger.Init();
+							new BookDownloadSupport();
+							Browser.SetUpXulRunner();
+							Browser.XulRunnerShutdown += OnXulRunnerShutdown;
+							L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+								_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
+							transfer.HandleBloomBookOrder(args[0]);
+							PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
+							// If another instance is running, this one has served its purpose and can exit right away.
+							// Otherwise, carry on with starting up normally.
+							if (UniqueToken.AcquireTokenQuietly(_mutexId))
+								FinishStartup();
+							else
+							{
+								skipReleaseToken = true; // we don't own it, so we better not try to release it
+								string caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
+								string message = LocalizationManager.GetString("Download.Completed",
+									@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. "
+									+ "If you don't seem to be in the middle of doing something, Bloom will select it for you.");
+								message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
+								MessageBox.Show(message, caption);
+							}
+							return;
 						}
-						return;
 					}
 
 					if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
@@ -163,62 +172,65 @@ namespace Bloom
 
 					SetUpErrorHandling();
 
-					_applicationContainer = new ApplicationContainer();
-
-					if (args.Length == 2 && args[0].ToLowerInvariant() == "--upload")
+					using (_applicationContainer = new ApplicationContainer())
 					{
-						// A special path to upload chunks of stuff. This is not currently documented and is not very robust.
-						// - User must log in before running this
-						// - For best results each bloom book needs to be part of a collection in its parent folder
-						// - little error checking (e.g., we don't apply the usual constaints that a book must have title and licence info)
+						if (args.Length == 2 && args[0].ToLowerInvariant() == "--upload")
+						{
+							// A special path to upload chunks of stuff. This is not currently documented and is not very robust.
+							// - User must log in before running this
+							// - For best results each bloom book needs to be part of a collection in its parent folder
+							// - little error checking (e.g., we don't apply the usual constaints that a book must have title and licence info)
+							SetUpLocalization();
+							Browser.SetUpXulRunner();
+								Browser.XulRunnerShutdown += OnXulRunnerShutdown;
+							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
+								_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
+							transfer.UploadFolder(args[1], _applicationContainer);
+							return;
+						}
+
+						new BookDownloadSupport(); // creating this sets some things up so we can download.
+
 						SetUpLocalization();
+						Logger.Init();
+
+
+						if (args.Length == 1)
+						{
+							Debug.Assert(args[0].ToLower().EndsWith(".bloomcollection")); // Anything else handled above.
+							Settings.Default.MruProjects.AddNewPath(args[0]);
+						}
+
+						if (args.Length > 0 && args[0] == "--rename")
+						{
+							try
+							{
+								var pathToNewCollection = CollectionSettings.RenameCollection(args[1], args[2]);
+								//MessageBox.Show("Your collection has been renamed.");
+								Settings.Default.MruProjects.AddNewPath(pathToNewCollection);
+							}
+							catch (ApplicationException error)
+							{
+								Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
+								Environment.Exit(-1);
+							}
+							catch (Exception error)
+							{
+								Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+									"Bloom could not finish renaming your collection folder. Restart your computer and try again.");
+								Environment.Exit(-1);
+							}
+
+						}
 						Browser.SetUpXulRunner();
-						var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-							_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
-						transfer.UploadFolder(args[1], _applicationContainer);
-						return;
-					}
-
-					new BookDownloadSupport(); // creating this sets some things up so we can download.
-
-					SetUpLocalization();
-					Logger.Init();
-
-
-					if (args.Length == 1)
-					{
-						Debug.Assert(args[0].ToLower().EndsWith(".bloomcollection")); // Anything else handled above.
-						Settings.Default.MruProjects.AddNewPath(args[0]);
-					}
-
-					if (args.Length > 0 && args[0] == "--rename")
-					{
-						try
-						{
-							var pathToNewCollection = CollectionSettings.RenameCollection(args[1], args[2]);
-							//MessageBox.Show("Your collection has been renamed.");
-							Settings.Default.MruProjects.AddNewPath(pathToNewCollection);
-						}
-						catch (ApplicationException error)
-						{
-							Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
-							Environment.Exit(-1);
-						}
-						catch (Exception error)
-						{
-							Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
-								"Bloom could not finish renaming your collection folder. Restart your computer and try again.");
-							Environment.Exit(-1);
-						}
-
-					}
-					Browser.SetUpXulRunner();
+						Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 #if DEBUG
-					StartDebugServer();
+						StartDebugServer();
 #endif
-					L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+						L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
-					FinishStartup();
+						FinishStartup();
+					}
 				}
 			}
 			finally
@@ -226,6 +238,15 @@ namespace Bloom
 				if (!skipReleaseToken)
 					UniqueToken.ReleaseToken();
 			}
+		}
+
+		private static void OnXulRunnerShutdown(object sender, EventArgs e)
+		{
+			ApplicationExiting = true;
+			Browser.XulRunnerShutdown -= OnXulRunnerShutdown;
+			if (_debugServerStarter != null)
+				_debugServerStarter.Dispose();
+			_debugServerStarter = null;
 		}
 
 		private static void FinishStartup()
@@ -602,18 +623,18 @@ namespace Bloom
 			// remote debugging doesn't work.
 			var chromeDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "remoteDebugging");
 			registerChromeDir(chromeDir);
-			var browser = new GeckoWebBrowser();
-			browser.NavigationError += (s, e) =>
-			{
+			_debugServerStarter = new GeckoWebBrowser();
+			_debugServerStarter.NavigationError += (s, e) => {
 				Console.WriteLine(">>>StartDebugServer error: " + e.ErrorCode.ToString("X"));
-				browser.Dispose();
+				_debugServerStarter.Dispose();
+				_debugServerStarter = null;
 			};
-			browser.DocumentCompleted += (s, e) =>
-			{
+			_debugServerStarter.DocumentCompleted += (s, e) => {
 				Console.WriteLine(">>>StartDebugServer complete");
-				browser.Dispose();
+				_debugServerStarter.Dispose();
+				_debugServerStarter = null;
 			};
-			browser.Navigate("chrome://remoteDebugging/content/moz-remote-debug.html");
+			_debugServerStarter.Navigate("chrome://remoteDebugging/content/moz-remote-debug.html");
 		}
 
 		private static void ReopenProject(object sender, EventArgs e)
