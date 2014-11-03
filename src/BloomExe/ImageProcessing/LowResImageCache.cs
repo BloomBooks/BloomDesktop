@@ -20,13 +20,13 @@ namespace Bloom.ImageProcessing
 		private readonly BookRenamedEvent _bookRenamedEvent;
 		public int TargetDimension=500;
 		private Dictionary<string,string> _paths;
-		private TemporaryFolder _cacheFolder;
+		private string _cacheFolder;
 
 		public LowResImageCache(BookRenamedEvent bookRenamedEvent)
 		{
 			_bookRenamedEvent = bookRenamedEvent;
 			_paths = new Dictionary<string, string>();
-			_cacheFolder = new TemporaryFolder("Bloom");
+			_cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom");
 			_bookRenamedEvent.Subscribe(OnBookRenamed);
 		}
 
@@ -117,7 +117,7 @@ namespace Bloom.ImageProcessing
 							g.DrawImage(original, 0, 0, destWidth, destHeight);
 						}
 
-						var temp = _cacheFolder.GetPathForNewTempFile(false, Path.GetExtension(originalPath));
+						var temp = Path.Combine(_cacheFolder, Path.GetRandomFileName() + Path.GetExtension(originalPath));
 
 
 						//Hatton July 2012:

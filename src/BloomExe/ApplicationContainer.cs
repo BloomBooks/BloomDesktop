@@ -9,6 +9,7 @@ using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using NetSparkle;
 using Palaso.Reporting;
+using System.Windows.Forms;
 
 
 namespace Bloom
@@ -68,6 +69,14 @@ namespace Bloom
 				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(c.Resolve<NavigationIsolator>())).SingleInstance();
 
 				_container = builder.Build();
+
+				Application.ApplicationExit += OnApplicationExit;
+			}
+
+			private void OnApplicationExit(object sender, EventArgs e)
+			{
+				Application.ApplicationExit -= OnApplicationExit;
+				Dispose();
 			}
 
 			public OpenAndCreateCollectionDialog OpenAndCreateCollectionDialog()
@@ -86,7 +95,8 @@ namespace Bloom
 
 			public void Dispose()
 			{
-				_container.Dispose();
+				if (_container != null)
+					_container.Dispose();
 				_container = null;
 
 				GC.SuppressFinalize(this);
