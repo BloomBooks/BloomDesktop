@@ -454,11 +454,11 @@ namespace Bloom.Collection
 		{
 			try
 			{
-				return Directory.GetFiles(folderPath, "*.BloomCollection").First();
+				return Directory.GetFiles(folderPath, "*.bloomCollection").First();
 			}
 			catch (Exception)
 			{
-				throw new ApplicationException(string.Format("Bloom expected to find a .BloomCollectionFile in {0}, but there isn't one.", folderPath));
+				throw new ApplicationException(string.Format("Bloom expected to find a .bloomCollectionFile in {0}, but there isn't one.", folderPath));
 			}
 		}
 
