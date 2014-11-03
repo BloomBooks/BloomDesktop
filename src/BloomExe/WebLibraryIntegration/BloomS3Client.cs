@@ -16,6 +16,7 @@ using Palaso.Code;
 using Palaso.Progress;
 using Palaso.UI.WindowsForms.Progress;
 using RestSharp.Contrib;
+using Palaso.IO;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -389,7 +390,7 @@ namespace Bloom.WebLibraryIntegration
 				//if we're on the same volume, we can just move it. Else copy it.
 				// It's important that books appear as nearly complete as possible, because a file watcher will very soon add the new
 				// book to the list of downloaded books the user can make new ones from, once it appears in the target directory.
-				if (Directory.GetDirectoryRoot(pathToDestinationParentDirectory) == Directory.GetDirectoryRoot(tempDestination.FolderPath))
+				if (PathUtilities.PathsAreOnSameVolume(pathToDestinationParentDirectory, tempDestination.FolderPath))
 				{
 					Directory.Move(children[0], destinationPath);
 				}
