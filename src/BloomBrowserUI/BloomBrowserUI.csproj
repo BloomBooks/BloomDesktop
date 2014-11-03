@@ -287,7 +287,7 @@
     <Folder Include="bookPreview\img\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bookEdit\js\StyleEditor.js.map">
+    <Content Include="bookEdit\StyleEditor\StyleEditor.js.map">
       <DependentUpon>StyleEditor.ts</DependentUpon>
     </Content>
   </ItemGroup>

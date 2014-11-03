@@ -1,4 +1,4 @@
-/// <reference path="../../bookEdit/js/StyleEditor.ts" />
+/// <reference path="../../bookEdit/StyleEditor/StyleEditor.ts" />
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jasmine/jasmine.d.ts"/>
 

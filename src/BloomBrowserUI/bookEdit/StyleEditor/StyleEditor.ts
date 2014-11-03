@@ -615,13 +615,13 @@ class StyleEditor {
         var spacing = localizationManager.getText('EditTab.Spacing', 'Spacing');
         return this.makeDiv(null, null, null,
                 this.makeDiv(null, null, null, font)
-                + this.makeDiv(null, null, null,
-                    this.makeSelect(fonts, 5, current.fontName, 'font-select', 15) + ' '
+                + this.makeDiv(null, "control-section", null,
+                    this.makeSelect(fonts, 0, current.fontName, 'font-select', 15) + ' '
                     + this.makeSelect(this.getPointSizes(), 5, current.ptSize, 'size-select'))
-                + this.makeDiv(null, null, null, spacing)
+                + this.makeDiv(null, "spacing-fudge", null, spacing)
                 + this.makeDiv(null, null, null,
                     '<span style="white-space: nowrap">'
-                    + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:8px;position:relative;top:6px">'
+                    + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="position:relative;top:6px">'
                     + this.makeSelect(this.getLineSpaceOptions(), 2, current.lineHeight, 'line-height-select') + ' '
                     + '</span>' + ' '
                     + '<span style="white-space: nowrap">'

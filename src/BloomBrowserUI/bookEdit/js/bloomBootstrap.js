@@ -14,7 +14,7 @@ var scripts = [
     'lib/jquery.resize.js',
     'bookEdit/js/jquery.hotkeys.js',
     'bookEdit/js/BloomAccordion.js',
-    'bookEdit/js/StyleEditor.js',
+    'bookEdit/StyleEditor/StyleEditor.js',
     'lib/tabpane.js',
     'bookEdit/js/toolbar/jquery.toolbar.js',
     'bookEdit/js/libsynphony/underscore_min_152.js', // start of SynPhony support files
@@ -41,7 +41,9 @@ var styleSheets = [
     'lib/jquery.qtip.css',
     'bookEdit/js/toolbar/jquery.toolbars.css',
     'bookEdit/css/origami.css',
-    'bookEdit/css/tab.css',
+    'bookEdit/css/tab.winclassic.css',
+    'bookEdit/StyleEditor/StyleEditor.css',
+    'bookEdit/css/bloomDialog.css',
     'lib/long-press/longpress.css'
 ];
 
