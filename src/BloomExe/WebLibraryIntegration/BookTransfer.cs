@@ -110,6 +110,15 @@ namespace Bloom.WebLibraryIntegration
 
 				Analytics.Track("DownloadedBook-Success",
 					new Dictionary<string, string>() {{"url", url}, {"title",title}});
+				// Try to lock it. What we want to do is Book.RecordedAsLockedDown = true; Book.Save().
+				// But all kinds of things have to be set up before we can create a Book. So we duplicate a few bits of code.
+				var htmlFile = BookStorage.FindBookHtmlInFolder(destinationPath);
+				if (htmlFile == "")
+					return destinationPath; //argh! we can't lock it.
+				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
+				var dom = new HtmlDom(xmlDomFromHtmlFile);
+				dom.UpdateMetaElement("lockedDownAsShell", "true");
+				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, htmlFile);
 				return destinationPath;
 			}
 			catch (WebException e)
