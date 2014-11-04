@@ -1,14 +1,15 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
-using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
 using Palaso.Extensions;
@@ -18,7 +19,6 @@ using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
-using L10NSharp.UI;
 
 namespace Bloom.Edit
 {
@@ -39,6 +39,7 @@ namespace Bloom.Edit
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
 		private Color _disabledToolbarColor= Color.FromArgb(114,74,106);
 		private bool _visible;
+		private GeckoHtmlElement _targetElement;
 
 		public delegate EditingView Factory();//autofac uses this
 
@@ -670,13 +671,13 @@ namespace Bloom.Edit
 
 		private void OnChangeImage(DomEventArgs ge)
 		{
-			var imageElement = GetImageNode(ge);
-			if (imageElement == null)
+			_targetElement = GetImageNode(ge);
+			if (_targetElement == null)
 				return;
-			 string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
+			var currentPath = _targetElement.GetAttribute("src").Replace("%20", " ");
 
-			 if (!CheckIfLockedAndWarn(currentPath))
-					return;
+			if (!CheckIfLockedAndWarn(currentPath))
+				return;
 			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
 			if (target.ClassName.Contains("licenseImage"))
 				return;
@@ -693,37 +694,106 @@ namespace Bloom.Edit
 				{
 					imageInfo = PalasoImage.FromFile(existingImagePath);
 				}
-				catch (Exception)
+				catch (Exception e)
 				{
-					//todo: log this
+					Logger.WriteMinorEvent("Not able to load image for ImageToolboxDialog: " + e.Message);
 				}
-			};
+			}
+
 			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
-			using(var dlg = new ImageToolboxDialog(imageInfo, null))
+
+			// BL-482: Scrollbar in image dialog is losing focus.
+			//
+			// For some reason, in Windows the EnhancedImageServer is causing the scroll bar of ListView controls
+			// to lose focus while scrolling. This results in the scroll bar "sticking" and the user has to go back
+			// and click on it again to resume scrolling.
+			//
+			// Running the dialog on a thread other than the main UI thread seems to prevent this behavior in
+			// Windows, but it causes Linux to crash.
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
 			{
-				if(DialogResult.OK== dlg.ShowDialog())
+				using (BackgroundWorker worker = new BackgroundWorker())
 				{
-					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
-					try
+					worker.WorkerSupportsCancellation = true;
+					worker.DoWork += ShowImageDialogWorker;
+					worker.RunWorkerAsync(imageInfo);
+
+					// This gives the appearance of freezing the main UI by not calling Application.DoEvents() until
+					// we are finished. It is not actually frozen, just appears that way to the user. If the user
+					// clicks on something it will happen after the image dialog closes.
+					while (worker.IsBusy)
 					{
-						 _model.ChangePicture(imageElement, dlg.ImageInfo, new NullProgress());
-					}
-					catch(System.IO.IOException error)
-					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
-					}
-					catch (ApplicationException error)
-					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
-					}
-					catch (Exception error)
-					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom had a problem including that image");
+						Thread.Sleep(50);
+
+						if (worker.CancellationPending)
+							Application.DoEvents();
 					}
 				}
 			}
+			else
+			{
+				ShowImageDialog(imageInfo);
+			}
+
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
+		}
+
+		private void ShowImageDialogWorker(object sender, DoWorkEventArgs e)
+		{
+			BackgroundWorker worker = sender as BackgroundWorker;
+
+			using (var dlg = new ImageToolboxDialog((PalasoImage)e.Argument, null))
+			{
+				var result = dlg.ShowDialog();
+
+				// releases the UI now so the image can be updated
+				if (worker != null) worker.CancelAsync();
+
+				if (result != DialogResult.OK) return;
+
+				UpdateImageElement(dlg.ImageInfo);
+			}
+		}
+
+		private void ShowImageDialog(PalasoImage imageInfo)
+		{
+			using (var dlg = new ImageToolboxDialog(imageInfo, null))
+			{
+				if (DialogResult.OK != dlg.ShowDialog()) return;
+				UpdateImageElement(dlg.ImageInfo);
+			}
+		}
+
+		private void UpdateImageElement(PalasoImage imageInfo)
+		{
+			try
+			{
+				if (InvokeRequired)
+				{
+					Invoke(new Action(() => _model.ChangePicture(_targetElement, imageInfo, new NullProgress())));
+				}
+				else
+				{
+					_model.ChangePicture(_targetElement, imageInfo, new NullProgress());
+				}
+			}
+			catch (IOException error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, error.Message);
+			}
+			catch (ApplicationException error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, error.Message);
+			}
+			catch (Exception error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, "Bloom had a problem including that image");
+			}
+			finally
+			{
+				_targetElement = null;
+			}
 		}
 
 		public void UpdateThumbnailAsync(IPage page)
