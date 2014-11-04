@@ -165,12 +165,33 @@ var StyleEditor = (function () {
     };
 
     // Get the names that should be offered in the styles combo box.
-    // Basically any defined styles without dots in their definition (except the first one).
+    // Basically any defined styles without dots in their definition (except the first one)
+    // that come from stylesheets in the book folder (e.g., we don't want ones from editMode.css).
     // (We don't allow users to create styles with dot or any other special characters.)
+    // As a special case, styles defined on DIV.bloom-editable are allowed; this lets us predefine
+    // styles like Heading1 and Heading2 and make their selectors specific enough to work,
+    // but not impossible to override with a custom definition.
+    // Figuring out the book folder is problematic, since the page file does not actually live there.
+    // One stylesheet that is guaranteed to exist in the book folder for any editable book
+    // (created by the Book.cs constructor) is languageDisplay.css. So we look for that.
+    // (Also we use sheets with null href, that is, those in the page html file itself.)
     StyleEditor.prototype.getFormattingStyles = function () {
         var result = [];
+        var folderPrefix;
+        for (var j = 0; j < document.styleSheets.length; j++) {
+            var href = document.styleSheets[j].href;
+            if (href == null)
+                continue;
+            var pos = href.indexOf("languageDisplay.css");
+            if (pos >= 0) {
+                folderPrefix = href.substring(0, pos);
+                break;
+            }
+        }
         for (var i = 0; i < document.styleSheets.length; i++) {
             var sheet = document.styleSheets[i];
+            if (sheet.href != null && !sheet.href.startsWith(folderPrefix))
+                continue;
             var rules = sheet.cssRules;
             if (rules) {
                 for (var j = 0; j < rules.length; j++) {
@@ -178,11 +199,21 @@ var StyleEditor = (function () {
                     if (index == -1)
                         continue;
                     var label = rules[j].cssText.substring(0, index);
-                    var index2 = label.indexOf("-style");
-                    if (index2 > 0 && label.startsWith(".")) {
-                        var name = label.substring(1, index2);
-                        if (name.indexOf(".") == -1) {
-                            result.push(name);
+                    var index2 = label.lastIndexOf("-style");
+                    if (index2 > 0) {
+                        if (label.startsWith(".")) {
+                            var name = label.substring(1, index2);
+                            if (name.indexOf(".") == -1 && result.indexOf(name) == -1) {
+                                result.push(name);
+                            }
+                        } else {
+                            var index3 = label.lastIndexOf('.');
+                            var name = label.substring(index3 + 1, index2);
+                            var previous = label.substring(0, index3);
+                            var index4 = previous.indexOf("DIV.bloom-editable");
+                            if (index4 >= 0 && result.indexOf(name) == -1) {
+                                result.push(name);
+                            }
                         }
                     }
                 }
@@ -334,7 +365,7 @@ var StyleEditor = (function () {
     };
 
     StyleEditor.prototype.getPointSizes = function () {
-        return ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
+        return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
     };
 
     StyleEditor.prototype.getLineSpaceOptions = function () {
