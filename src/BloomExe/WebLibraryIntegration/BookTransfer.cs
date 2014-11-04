@@ -110,6 +110,15 @@ namespace Bloom.WebLibraryIntegration
 
 				Analytics.Track("DownloadedBook-Success",
 					new Dictionary<string, string>() {{"url", url}, {"title",title}});
+				// Try to lock it. What we want to do is Book.RecordedAsLockedDown = true; Book.Save().
+				// But all kinds of things have to be set up before we can create a Book. So we duplicate a few bits of code.
+				var htmlFile = BookStorage.FindBookHtmlInFolder(destinationPath);
+				if (htmlFile == "")
+					return destinationPath; //argh! we can't lock it.
+				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
+				var dom = new HtmlDom(xmlDomFromHtmlFile);
+				dom.UpdateMetaElement("lockedDownAsShell", "true");
+				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, htmlFile);
 				return destinationPath;
 			}
 			catch (WebException e)
@@ -130,10 +139,8 @@ namespace Bloom.WebLibraryIntegration
 			}
 			catch (Exception e)
 			{
-				ShellWindow.Invoke((Action) (() =>
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-						LocalizationManager.GetString("PublishTab.Upload.DownloadProblem",
-							"There was a problem downloading your book. You may need to restart Bloom or get technical help."))));
+				DisplayProblem(e, LocalizationManager.GetString("PublishTab.Upload.DownloadProblem",
+					"There was a problem downloading your book. You may need to restart Bloom or get technical help."));
 				Analytics.Track("DownloadedBook-Failure",
 					new Dictionary<string, string>() { { "url", url }, { "title", title } });
 				Analytics.ReportException(e);
@@ -141,13 +148,20 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
+		private static void DisplayProblem(Exception e, string message)
+		{
+			var action = new Action(() => Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, message));
+				var shellWindow = ShellWindow;
+				if (shellWindow != null)
+					shellWindow.Invoke(action);
+				else
+					action.Invoke();
+		}
+
 		private static void DisplayNetworkDownloadProblem(Exception e)
 		{
-			ShellWindow.Invoke((Action) (() =>
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					LocalizationManager.GetString("Download.GenericDownloadProblemNotice",
-						"There was a problem downloading your book."))));
-
+			DisplayProblem(e, LocalizationManager.GetString("Download.GenericDownloadProblemNotice",
+				"There was a problem downloading your book."));
 		}
 
 		private static void DisplayNetworkUploadProblem(Exception e, IProgress progress)
@@ -578,19 +592,39 @@ namespace Bloom.WebLibraryIntegration
 			MakeThumbnail(book, 256, invokeTarget);
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
 			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
-			// If there is not already a locked preview in the book folder
-			// (which we take to mean the user has created a customized one that he prefers),
-			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
-			if (!FileUtils.IsFileLocked(uploadPdfPath))
+			// Books in the library should all show as locked-down, so new users are automatically in localization mode.
+			var wasLocked = book.RecordedAsLockedDown;
+			if (!wasLocked)
 			{
-				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
-				publishView.MakePublishPreview();
-				if (File.Exists(publishView.PdfPreviewPath))
+				book.RecordedAsLockedDown = true;
+				book.Save();
+			}
+			string result;
+			try
+			{
+				// If there is not already a locked preview in the book folder
+				// (which we take to mean the user has created a customized one that he prefers),
+				// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
+				if (!FileUtils.IsFileLocked(uploadPdfPath))
 				{
-					File.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
+					progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
+					publishView.MakePublishPreview();
+					if (File.Exists(publishView.PdfPreviewPath))
+					{
+						File.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
+					}
+				}
+				result = UploadBook(bookFolder, progressBox, out parseId);
+			}
+			finally
+			{
+				// Restore the original locked-down state if necessary.
+				if (!wasLocked)
+				{
+					book.RecordedAsLockedDown = false;
+					book.Save();
 				}
 			}
-			string result = UploadBook(bookFolder, progressBox, out parseId);
 			return result;
 		}
 

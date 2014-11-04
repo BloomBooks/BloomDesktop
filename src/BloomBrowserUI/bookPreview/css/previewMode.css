@@ -155,3 +155,8 @@ DIV.marginBox
 and as a result, the labels are shifted to this many pixels to the width. This shifts them back.*/
 	padding-left: 22px;
 }
+
+/* when making a PDF or a thumbnail, if no image is chosen, just don't show anything */
+.hidePlaceHolders img[src="placeHolder.png"] {
+	display: none;
+}

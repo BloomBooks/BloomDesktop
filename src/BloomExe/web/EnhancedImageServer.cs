@@ -149,6 +149,7 @@ namespace Bloom.web
 					return true;
 
 				case "authorMode":
+					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
 					return true;
 

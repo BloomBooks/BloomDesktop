@@ -15,11 +15,9 @@ using Palaso.Extensions;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.ClearShare.WinFormsUI;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
-using System.Net;
 using L10NSharp.UI;
 
 namespace Bloom.Edit
@@ -314,6 +312,13 @@ namespace Bloom.Edit
 				Application.Idle += new EventHandler(VisibleNowAddSlowContents);
 				Cursor = Cursors.WaitCursor;
 				Logger.WriteEvent("Entered Edit Tab");
+
+				if (Palaso.PlatformUtilities.Platform.IsLinux)
+				{
+					// This hack fixes a problem related to the better tooltip preventing the buttons from repainting.
+					// We do not have this problem in Windows, so no reason for extra overhead.
+					CycleEditButtons();
+				}
 			}
 			else
 			{

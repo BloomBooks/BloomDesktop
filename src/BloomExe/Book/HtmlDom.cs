@@ -113,8 +113,16 @@ namespace Bloom.Book
 		public void SetBaseForRelativePaths(string path)
 		{
 			var head = _dom.SelectSingleNodeHonoringDefaultNS("//head");
-			Guard.AgainstNull(head, "Expected the DOM to already have a head element");
-
+			if (head == null)
+			{
+				var folder = "";
+				if (path.Length > 0) // not unit tests
+					folder = Path.GetDirectoryName(path);
+				Guard.AgainstNull(head,
+					"Expected the DOM to already have a head element in file: " + path +
+					". If possible, please send the entire folder '" + folder +
+					"' to the developers. You may need to move this folder to another location or delete it in order to keep working.");
+			}
 			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
 			{
 				head.RemoveChild(baseNode);
@@ -480,6 +488,10 @@ namespace Bloom.Book
 			AddClass((XmlElement)dom.SelectSingleNode("//body"),"publishMode");
 		}
 
+		public static void AddHidePlaceHoldersClassToBody(XmlDocument dom)
+		{
+			AddClass((XmlElement)dom.SelectSingleNode("//body"), "hidePlaceHolders");
+		}
 
 
 		public void UpdateStyleSheetLinkPaths(IFileLocator fileLocator, string folderPath, IProgress log)

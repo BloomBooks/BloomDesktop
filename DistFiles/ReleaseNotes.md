@@ -43,7 +43,6 @@ Templates can now have a markdown "readme" for telling people about the template
 ## 2.0.1021 BETA 9 May 2014
 Can now publish books to books.bloomlibrary.org
 Can now get books at books.bloomlibrary.org and they will open in Bloom
-Can can font sizes of all similar books
 New Big Book template & Front matter
 Basic Book now auto-enlarges fonts if you make it A4Landscape (for making a5 books into Big Books)
 

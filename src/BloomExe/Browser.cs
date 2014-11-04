@@ -38,6 +38,7 @@ namespace Bloom
 		private  CutCommand _cutCommand;
 		private bool _disposed;
 		public event EventHandler OnBrowserClick;
+		public static event EventHandler XulRunnerShutdown;
 
 		private static int XulRunnerVersion
 		{
@@ -102,6 +103,9 @@ namespace Bloom
 		{
 			// We come here iff we initialized Xpcom. In that case we want to call shutdown,
 			// otherwise the app might not exit properly.
+			if (XulRunnerShutdown != null)
+				XulRunnerShutdown(null, EventArgs.Empty);
+
 			if (Xpcom.IsInitialized)
 				Xpcom.Shutdown();
 			Application.ApplicationExit -= OnApplicationExit;
@@ -627,43 +631,45 @@ namespace Bloom
 			if (_pageEditDom == null)
 				return;
 
-			var contentDocument = _browser.Document;
-			if (_pageEditDom != _rootDom)
-			{
-				// Assume _editDom corresponds to a frame called 'page' in the root. This may eventually need to be more configurable.
-				if (_browser.Window == null || _browser.Window.Document == null)
-					return;
-				var frameElement = _browser.Window.Document.GetElementById("page") as GeckoIFrameElement;
-				if (frameElement == null)
-					return;
-				contentDocument = frameElement.ContentDocument;
-			}
-			if (contentDocument == null)
-				return; // can this happen?
-			// As of august 2012 textareas only occur in the Calendar
-			if (_pageEditDom.SelectNodes("//textarea").Count > 0)
-			{
-				//This approach was to force an onblur so that we can get at the actual user-edited value.
-				//This caused problems, with Bloom itself (the Shell) not knowing that it is active.
-				//_browser.WebBrowserFocus.Deactivate();
-				//_browser.WebBrowserFocus.Activate();
-
-				// Now, we just do the blur directly.
-				var activeElement = contentDocument.ActiveElement;
-				if (activeElement != null)
-					activeElement.Blur();
-			}
-
-			var body = contentDocument.GetElementsByTagName("body");
-			if (body.Length ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
-				return;
-
-			var content = body[0].InnerHtml;
-			XmlDocument dom;
-
-			//todo: deal with exception that can come out of this
+			GeckoDocument contentDocument = null;
 			try
 			{
+				if (_pageEditDom == _rootDom)
+					contentDocument = _browser.Document;
+				else
+				{
+					// Assume _editDom corresponds to a frame called 'page' in the root. This may eventually need to be more configurable.
+					if (_browser.Window == null || _browser.Window.Document == null)
+						return;
+					var frameElement = _browser.Window.Document.GetElementById("page") as GeckoIFrameElement;
+					if (frameElement == null)
+						return;
+					contentDocument = frameElement.ContentDocument;
+				}
+				if (contentDocument == null)
+					return; // can this happen?
+				// As of august 2012 textareas only occur in the Calendar
+				if (_pageEditDom.SelectNodes("//textarea").Count > 0)
+				{
+					//This approach was to force an onblur so that we can get at the actual user-edited value.
+					//This caused problems, with Bloom itself (the Shell) not knowing that it is active.
+					//_browser.WebBrowserFocus.Deactivate();
+					//_browser.WebBrowserFocus.Activate();
+
+					// Now, we just do the blur directly.
+					var activeElement = contentDocument.ActiveElement;
+					if (activeElement != null)
+						activeElement.Blur();
+				}
+
+				var body = contentDocument.GetElementsByTagName("body");
+				if (body.Length ==0)	//review: this does happen... onValidating comes along, but there is no body. Assuming it is a timing issue.
+					return;
+
+				var content = body[0].InnerHtml;
+				XmlDocument dom;
+
+				//todo: deal with exception that can come out of this
 				dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
 				var bodyDom = dom.SelectSingleNode("//body");
 
@@ -720,6 +726,11 @@ namespace Bloom
 				throw;
 #endif
 			}
+			finally
+			{
+				if (contentDocument != null)
+					contentDocument.Dispose();
+			}
 
 			try
 			{
@@ -727,7 +738,7 @@ namespace Bloom
 			}
 			catch (Exception e)
 			{
-				var exceptionWithHtmlContents = new Exception(content);
+				//var exceptionWithHtmlContents = new Exception(content);
 				ErrorReport.NotifyUserOfProblem(e,
 					"Sorry, Bloom choked on something on this page (validating page).{1}{1}+{0}",
 					e.Message, Environment.NewLine);

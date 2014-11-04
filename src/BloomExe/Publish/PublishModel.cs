@@ -129,6 +129,7 @@ namespace Bloom.Publish
 			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
 			HtmlDom.AddPublishClassToBody(dom);
+			HtmlDom.AddHidePlaceHoldersClassToBody(dom);
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
@@ -362,7 +363,15 @@ namespace Bloom.Publish
 					});
 					foreach (var page in  book.GetPages())
 					{
-						yield return book.GetPreviewXmlDocumentForPage(page);
+						//yield return book.GetPreviewXmlDocumentForPage(page);
+
+						var previewXmlDocumentForPage = book.GetPreviewXmlDocumentForPage(page);
+						//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
+						BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, book.FolderPath, false);
+						HtmlDom.AddPublishClassToBody(previewXmlDocumentForPage.RawDom);
+						HtmlDom.AddHidePlaceHoldersClassToBody(previewXmlDocumentForPage.RawDom);
+
+						yield return previewXmlDocumentForPage;
 					}
 				}
 			}
@@ -380,6 +389,8 @@ namespace Bloom.Publish
 					var previewXmlDocumentForPage = BookSelection.CurrentSelection.GetPreviewXmlDocumentForPage(page);
 					//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
 					BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, BookSelection.CurrentSelection.FolderPath, false);
+					HtmlDom.AddPublishClassToBody(previewXmlDocumentForPage.RawDom);
+					HtmlDom.AddHidePlaceHoldersClassToBody(previewXmlDocumentForPage.RawDom);
 					yield return previewXmlDocumentForPage;
 				}
 			}
@@ -392,7 +403,10 @@ namespace Bloom.Publish
 			{
 				BackgroundColor = Color.White,
 				DrawBorderDashed = false,
-				CenterImageUsingTransparentPadding = false
+				CenterImageUsingTransparentPadding = false,
+				//210x147 is about what the TG's expect, but we're going to tripple that in case it makes for better printing
+				Height = 630,
+				Width = 441
 			};
 			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom,thumbnailOptions,onReady, onError);
 		}
@@ -401,8 +415,7 @@ namespace Bloom.Publish
 		{
 			//for now we're not doing real extension dlls, just kind of faking it. So we will limit this load
 			//to books we know go with this currently "built-in" "extension" for SIL LEAD's SHRP Project.
-			//TODO: this should work, but it doesn't because BookInfo.BookLineage isn't working: if (SHRP_PupilBookExtension.ExtensionIsApplicable(BookSelection.CurrentSelection.BookInfo.BookLineage))
-			if (SHRP_PupilBookExtension.ExtensionIsApplicable(BookSelection.CurrentSelection.GetBookLineage()))
+			if (SHRP_PupilBookExtension.ExtensionIsApplicable(BookSelection.CurrentSelection))
 			{
 				//load any extension assembly found in the template's root directory
 				//var catalog = new DirectoryCatalog(this.BookSelection.CurrentSelection.FindTemplateBook().FolderPath, "*.dll");

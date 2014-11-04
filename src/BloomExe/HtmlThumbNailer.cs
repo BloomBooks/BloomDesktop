@@ -310,6 +310,9 @@ namespace Bloom
 			if (order == null)
 				return;
 
+			if (Program.ApplicationExiting)
+				return;
+
 			Image pendingThumbnail = null;
 
 			lock (this)
@@ -321,6 +324,9 @@ namespace Bloom
 				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document);
 
 				var browser = GetBrowserForPaperSize(order.Document);
+				if (browser == null)
+					return;
+
 				if (!CreateThumbNail(order, browser, out pendingThumbnail))
 				{
 					// For some reason...possibly another navigation was in progress...we can't do this just now.
@@ -384,20 +390,22 @@ namespace Bloom
 
 		private GeckoWebBrowser GetBrowserForPaperSize(XmlDocument document)
 		{
-		   var paperSizeName = GetPaperSizeName(document);
+			var paperSizeName = GetPaperSizeName(document);
 
 			GeckoWebBrowser b;
 			if (_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out b))
 				return b;
 
 			if (_syncControl.InvokeRequired)
-				{
+			{
 				b = (GeckoWebBrowser)_syncControl.Invoke(new Func<GeckoWebBrowser>(MakeNewBrowser));
 			}
 			else
-					 b = MakeNewBrowser();
-					_browserCacheForDifferentPaperSizes.Add(paperSizeName, b);
-				return b;
+				b = MakeNewBrowser();
+
+			if (b != null)
+				_browserCacheForDifferentPaperSizes.Add(paperSizeName, b);
+			return b;
 		}
 
 		private static string GetPaperSizeName(XmlDocument document)
@@ -409,6 +417,9 @@ namespace Bloom
 
 		private GeckoWebBrowser MakeNewBrowser()
 		{
+			if (Program.ApplicationExiting)
+				return null;
+
 			Debug.WriteLine("making browser ({0})", Thread.CurrentThread.ManagedThreadId);
 #if !__MonoCS__
 			var browser = new GeckoWebBrowser();
@@ -562,11 +573,18 @@ namespace Bloom
 			_orders.Clear();
 			foreach (var browser in _browserCacheForDifferentPaperSizes)
 			{
-				browser.Value.Invoke((Action)(() =>
+				if (browser.Value.InvokeRequired)
 				{
+					browser.Value.Invoke((Action)(() => {
 						browser.Value.DocumentCompleted -= _browser_OnDocumentCompleted;
+						browser.Value.Dispose();
+					}));
+				}
+				else
+				{
+					browser.Value.DocumentCompleted -= _browser_OnDocumentCompleted;
 					browser.Value.Dispose();
-				}));
+				}
 			}
 			_browserCacheForDifferentPaperSizes.Clear();
 			_theOnlyOneAllowed = null;
