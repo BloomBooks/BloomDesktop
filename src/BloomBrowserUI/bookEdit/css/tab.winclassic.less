@@ -17,8 +17,8 @@
 @tabTextColorSelected: black;
 
 .dynamic-tab-pane-control.tab-pane {
-	position:	relative;
-	width:		100%;
+	position: relative;
+	width: 100%;
 }
 
 /* In a bloom page, * defaults to position:relative. This somehow breaks the active tab label
@@ -26,7 +26,7 @@
 	it doesn't set explicitly use default positioning.
 */
 .dynamic-tab-pane-control, .dynamic-tab-pane-control * {
-	position:static;
+	position: static;
 }
 
 .dynamic-tab-pane-control .tab-row .tab {
@@ -73,7 +73,6 @@
 .dynamic-tab-pane-control .tab-row .tab.selected a {
 	font: Menu;
 	color: @tabTextColorSelected;
-	text-decoration: italic;
 	cursor: default;
 }
 
@@ -82,20 +81,20 @@
 }
 
 .dynamic-tab-pane-control .tab-page {
-	clear:			both;
-	border:			1px solid;
-	border-color:	ThreeDHighlight ThreeDDarkShadow
+	clear: both;
+	border: 1px solid;
+	border-color: ThreeDHighlight ThreeDDarkShadow
 	ThreeDDarkShadow ThreeDHighlight;
-	background:		ThreeDFace;
-	z-index:		2;
-	position:		relative;
-	top:			-2px;
-	color:			WindowText;
-	font:			Message-Box;
-	padding:		10px;
+	background: ThreeDFace;
+	z-index: 2;
+	position: relative;
+	top: -2px;
+	color: WindowText;
+	font: Message-Box;
+	padding: 10px;
 }
 
 .dynamic-tab-pane-control .tab-row {
-	z-index:		1;
-	white-space:	nowrap;
+	z-index: 1;
+	white-space: nowrap;
 }

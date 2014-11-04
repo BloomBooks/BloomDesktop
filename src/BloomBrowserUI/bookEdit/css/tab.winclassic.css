@@ -54,7 +54,6 @@
 .dynamic-tab-pane-control .tab-row .tab.selected a {
   font: Menu;
   color: #000000;
-  text-decoration: italic;
   cursor: default;
 }
 .dynamic-tab-pane-control .tab-row .tab:hover {

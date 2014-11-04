@@ -4,11 +4,10 @@
 /// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
 /// <reference path="../../lib/jquery.alphanum.d.ts"/>
-/// <reference path="toolbar/toolbar.d.ts"/>
-/// <reference path="getIframeChannel.ts"/>
+/// <reference path="../js/toolbar/toolbar.d.ts"/>
+/// <reference path="../js/getIframeChannel.ts"/>
 
 declare var simpleAjaxGet: any;
-declare var WebFXTabPane;
 var iframeChannel = getIframeChannel();
 
 interface qtipInterface extends JQuery {
@@ -496,7 +495,7 @@ class StyleEditor {
                     + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt"></div>';
                 if (editor.authorMode) {
                     html += '<div class="tab-pane" id="tabRoot">'
-                        + '<div class="tab-page"><h2 class="tab">Style Name</h2>'
+                        + '<div id="style-tab" class="tab-page"><h2 class="tab">Style Name</h2>'
                         + editor.makeDiv(null, null, null, style)
                         + editor.makeSelect(editor.styles, 0, styleName, 'styleSelect')
                         + editor.makeDiv('dont-see', null, null, dontSee + ' <a id="show-create-style" href="">' + createStyle + '</a>')
