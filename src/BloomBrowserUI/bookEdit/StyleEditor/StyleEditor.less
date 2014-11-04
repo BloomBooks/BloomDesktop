@@ -23,3 +23,29 @@
 #style-select-input {
 	width: 143px; // with 1px border this makes it the same as the #styleSelect combo
 }
+
+// State Machine styles
+.state-initial #dont-see {
+	display: block;
+}
+.state-initial #create-style {
+	display: none;
+}
+.state-entering-style #create-style {
+	display: block;
+}
+.state-entering-style #dont-see, .state-entering-style #please-use-alpha, .state-entering-style #already-exists {
+	display: none;
+}
+.state-invalid-characters #please-use-alpha {
+	display: block;
+}
+.state-invalid-characters #already-exists, .state-invalid-characters #dont-see {
+	display: none;
+}
+.state-already-exists #already-exists {
+	display: block;
+}
+.state-already-exists #please-use-alpha, .state-already-exists #dont-see {
+	display: none;
+}
