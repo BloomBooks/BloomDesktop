@@ -166,8 +166,10 @@ var StyleEditor = (function () {
     };
 
     // Get the names that should be offered in the styles combo box.
-    // Basically any defined styles without dots in their definition (except the first one).
-    // (We don't allow users to create styles with dot or any other special characters.)
+    // Basically any defined rules for classes that end in -style.
+    // Only the last class in a sequence is used; this lets us predefine
+    // styles like DIV.bloom-editing.Heading1 and make their selectors specific enough to work,
+    // but not impossible to override with a custom definition.
     StyleEditor.prototype.getFormattingStyles = function () {
         var result = [];
         for (var i = 0; i < document.styleSheets.length; i++) {
@@ -178,11 +180,12 @@ var StyleEditor = (function () {
                     var index = rules[j].cssText.indexOf('{');
                     if (index == -1)
                         continue;
-                    var label = rules[j].cssText.substring(0, index);
-                    var index2 = label.indexOf("-style");
-                    if (index2 > 0 && label.startsWith(".")) {
-                        var name = label.substring(1, index2);
-                        if (name.indexOf(".") == -1) {
+                    var label = rules[j].cssText.substring(0, index).trim();
+                    var index2 = label.lastIndexOf('-style');
+                    if (index2 !== -1 && index2 == label.length - '-style'.length) {
+                        var index3 = label.lastIndexOf('.');
+                        var name = label.substring(index3 + 1, index2);
+                        if (result.indexOf(name) == -1) {
                             result.push(name);
                         }
                     }
@@ -190,10 +193,42 @@ var StyleEditor = (function () {
             }
         }
 
-        // It's bizarre not to offer 'normal' since that's the standard initial style.
-        // But in fact our default template doesn't define it.
+        // 'normal' is the standard initial style for at least origami pages.
+        // But our default template doesn't define it; by default it just has default properties.
+        // Make sure it's available to choose again.
         if (result.indexOf('normal') == -1) {
             result.push('normal');
+        }
+        return result;
+    };
+
+    // Get the existing rule for the specified style.
+    // Will return null if the style has no definition, OR if it already has a user-defined version
+    StyleEditor.prototype.getPredefinedStyle = function (target) {
+        var result = null;
+        for (var i = 0; i < document.styleSheets.length; i++) {
+            var sheet = document.styleSheets[i];
+            var rules = sheet.cssRules;
+            if (rules) {
+                for (var j = 0; j < rules.length; j++) {
+                    var index = rules[j].cssText.indexOf('{');
+                    if (index == -1)
+                        continue;
+                    var label = rules[j].cssText.substring(0, index).trim();
+                    if (label.indexOf(target) >= 0) {
+                        // We have a rule for our target!
+                        // Is this the user-defined stylesheet?
+                        if (document.styleSheets[i].ownerNode.title == "userModifiedStyles") {
+                            return null;
+                        } else {
+                            // return the last one we find.
+                            // This is not strictly sound, there COULD be many rules for this style which each
+                            // contribute different properties. Choosing not to handle this case.
+                            result = rules[j];
+                        }
+                    }
+                }
+            }
         }
         return result;
     };
@@ -238,7 +273,17 @@ var StyleEditor = (function () {
                 styleAndLang = styleName + ":not([lang])";
         }
         for (var i = 0; i < x.length; i++) {
-            if (x[i].cssText.indexOf(styleAndLang) > -1) {
+            var index = x[i].cssText.indexOf('{');
+            if (index == -1)
+                continue;
+            var match = x[i].cssText.substring(0, index);
+
+            // if we're not ignoring language, we simply need a match for styleAndLang, which includes a lang component.
+            // if we're ignoring language, we must find a rule that doesn't specify language at all, even if we
+            // have one that does.
+            // It's probably pathological to worry about the style name occurring in the body of some other rule,
+            // especially with the -style suffix, but it seems safer not to risk it.
+            if (match.indexOf(styleAndLang) > -1 && (!ignoreLanguage || match.indexOf('[lang') == -1)) {
                 return x[i];
             }
         }
@@ -335,7 +380,7 @@ var StyleEditor = (function () {
     };
 
     StyleEditor.prototype.getPointSizes = function () {
-        return ['7', '8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
+        return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
     };
 
     StyleEditor.prototype.getLineSpaceOptions = function () {
@@ -495,10 +540,6 @@ var StyleEditor = (function () {
                 });
                 editor.AddQtipToElement($('#word-space-select').parent(), localizationManager.getText('EditTab.StyleEditor.WordSpacingToolTip', 'Change the spacing between words'), 1500);
                 if (editor.authorMode) {
-                    $('#border-select').change(function () {
-                        editor.changeBorderSelect();
-                    });
-                    editor.AddQtipToElement($('#border-select').parent(), localizationManager.getText('EditTab.StyleEditor.BorderToolTip', 'Change the border and background'), 1500);
                     $('#styleSelect').change(function () {
                         editor.selectStyle();
                     });
@@ -517,7 +558,7 @@ var StyleEditor = (function () {
                     $('#create-button').click(function () {
                         editor.createStyle();
                     });
-                    var buttonIds = ['bold', 'italic', 'underline', 'position-leading', 'position-center', 'border-none', 'border-black', 'border-black-round', 'border-gray', 'border-gray-round', 'background-none', 'background-gray'];
+                    var buttonIds = editor.getButtonIds();
                     for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
                         var button = $('#' + buttonIds[idIndex]);
                         button.click(function () {
@@ -525,13 +566,7 @@ var StyleEditor = (function () {
                         });
                         button.addClass('propButton');
                     }
-                    editor.selectButton('bold', current.bold);
-                    editor.selectButton('italic', current.italic);
-                    editor.selectButton('underline', current.underline);
-                    editor.selectButton('position-center', current.center);
-                    editor.selectButton('position-leading', !current.center);
-                    editor.selectButton('border-' + current.borderChoice, true);
-                    editor.selectButton('background-' + current.backColor, true);
+                    editor.selectButtons(current);
                     new WebFXTabPane($('#tabRoot').get(0), false, function (n) {
                         editor.tabSelected(n);
                     });
@@ -557,6 +592,19 @@ var StyleEditor = (function () {
         });
 
         editor.AttachLanguageTip($(targetBox), bottom);
+    };
+
+    StyleEditor.prototype.getButtonIds = function () {
+        return ['bold', 'italic', 'underline', 'position-leading', 'position-center', 'border-none', 'border-black', 'border-black-round', 'border-gray', 'border-gray-round', 'background-none', 'background-gray'];
+    };
+    StyleEditor.prototype.selectButtons = function (current) {
+        this.selectButton('bold', current.bold);
+        this.selectButton('italic', current.italic);
+        this.selectButton('underline', current.underline);
+        this.selectButton('position-center', current.center);
+        this.selectButton('position-leading', !current.center);
+        this.selectButton('border-' + current.borderChoice, true);
+        this.selectButton('background-' + current.backColor, true);
     };
 
     StyleEditor.prototype.makeCharactersContent = function (fonts, current) {
@@ -733,6 +781,16 @@ var StyleEditor = (function () {
     StyleEditor.prototype.createStyle = function () {
         var typedStyle = $('#style-select-input').val();
         StyleEditor.SetStyleNameForElement(this.boxBeingEdited, typedStyle + '-style');
+        this.updateStyle();
+
+        // Insert it into our list and the option control on the second page.
+        this.insertOption(typedStyle);
+
+        //$('#styleSelect option:eq(' + typedStyle + ')').prop('selected', true);
+        $('#styleSelect').val(typedStyle);
+    };
+
+    StyleEditor.prototype.updateStyle = function () {
         this.changeFont();
         this.changeSize();
         this.changeLineheight();
@@ -743,12 +801,6 @@ var StyleEditor = (function () {
         this.changeUnderline();
         this.changeBackground();
         this.changePosition();
-
-        // Insert it into our list and the option control on the second page.
-        this.insertOption(typedStyle);
-
-        //$('#styleSelect option:eq(' + typedStyle + ')').prop('selected', true);
-        $('#styleSelect').val(typedStyle);
         this.styleStateChange('initial'); // go back to initial state so user knows it worked
     };
 
@@ -912,21 +964,64 @@ var StyleEditor = (function () {
         this.cleanupAfterStyleChange();
     };
 
+    StyleEditor.prototype.getSettings = function (ruleInput) {
+        var index1 = ruleInput.indexOf('{');
+        var rule = ruleInput;
+        if (index1 >= 0) {
+            rule = rule.substring(index1 + 1, rule.length);
+            rule = rule.replace("}", "").trim();
+        }
+        return rule.split(";");
+    };
+
     StyleEditor.prototype.selectStyle = function () {
         var style = $('#styleSelect').val();
         $('#style-select-input').val(""); // we've chosen a style from the list, so we aren't creating a new one.
         StyleEditor.SetStyleNameForElement(this.boxBeingEdited, style + "-style");
-        var current = this.getFormatValues();
+        var predefined = this.getPredefinedStyle(style + "-style");
+        if (predefined) {
+            // doesn't exist in user-defined yet; need to copy it there
+            // (so it works even if from a stylesheet not part of the book)
+            // and make defined settings !important so they win over anything else.
+            var rule = this.getStyleRule(true);
+            var settings = this.getSettings(predefined.cssText);
+            for (var j = 0; j < settings.length; j++) {
+                var parts = settings[j].split(':');
+                if (parts.length != 2)
+                    continue;
+                var selector = parts[0].trim();
+                var val = parts[1].trim();
+                var index2 = val.indexOf('!');
+                if (index2 >= 0) {
+                    val = val.substring(0, index2);
+                }
 
-        // There's no point in updating the style definition as a side effect of updating the controls.
-        // Doing so might well even make a real change, because the controls can only be an approximation
-        // of the settings that can be achieved using raw stylesheet editing.
+                // per our standard convention, font-family is only ever specified for a specific language.
+                // If we're applying a style, we're in author mode, and all other settings apply to all languages.
+                // Even if we weren't in author mode, the factory definition of a style should be language-neutral,
+                // so we'd want to insert it into our book that way.
+                if (selector == 'font-family') {
+                    this.getStyleRule(false).style.setProperty(selector, val, "important");
+                } else {
+                    // review: may be desirable to do something if val is not one of the values
+                    // we can generate, or just possibly if selector is not one of the ones we manipulate.
+                    rule.style.setProperty(selector, val, "important");
+                }
+            }
+        }
+
+        // Now update all the controls to reflect the effect of applying this style.
+        var current = this.getFormatValues();
         this.ignoreControlChanges = true;
         $('#font-select').val(current.fontName);
         $('#size-select').val(current.ptSize);
         $('#line-height-select').val(current.lineHeight);
         $('#word-space-select').val(current.wordSpacing);
-        $('#border-select').val(current.borderChoice);
+        var buttonIds = this.getButtonIds();
+        for (var i = 0; i < buttonIds.length; i++) {
+            $('#' + buttonIds[i]).removeClass('selectedIcon');
+        }
+        this.selectButtons(current);
         this.ignoreControlChanges = false;
         this.cleanupAfterStyleChange();
     };
