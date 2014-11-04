@@ -579,3 +579,12 @@ DIV.customPage.A5Portrait.bloom-monolingual DIV.bloom-translationGroup
 /*.customPage.bloom-bilingual DIV.bloom-translationGroup*/
 /*{*/
 /*}*/
+
+/* Predefined styles user can apply. Must not be !important otherwise they beat user mods; must be as specific as possible so they otherwise win */
+TEXTAREA.Heading1-style,  DIV.bloom-editable.Heading1-style{
+	font-size: 16pt;
+}
+TEXTAREA.Heading2-style,  DIV.bloom-editable.Heading2-style {
+	font-size: 13pt;
+	font-weight: bold;
+}

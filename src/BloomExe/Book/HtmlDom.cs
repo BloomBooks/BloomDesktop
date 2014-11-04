@@ -513,6 +513,16 @@ namespace Bloom.Book
 				if (!fileName.StartsWith("xx"))
 					//I use xx  as a convenience to temporarily turn off stylesheets during development
 				{
+					if (fileName == href)
+					{
+						// a local file ref, use the one in the book folder if it exists.
+						var localPath = Path.Combine(folderPath, fileName);
+						if (File.Exists(localPath))
+						{
+							linkNode.SetAttribute("href", localPath.ToLocalhost());
+							continue;
+						}
+					}
 					var path = fileLocator.LocateOptionalFile(fileName);
 
 					//we want these stylesheets to come from the book folder
