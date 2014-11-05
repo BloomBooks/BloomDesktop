@@ -499,12 +499,12 @@ class StyleEditor {
                         + editor.makeDiv(null, null, null, style)
                         + editor.makeDiv("style-group", "state-initial", null,
                             editor.makeSelect(editor.styles, 0, styleName, 'styleSelect')
-                          + editor.makeDiv('dont-see', null, null, dontSee + ' <a id="show-create-style" href="">' + createStyle + '</a>')
-                          + editor.makeDiv('create-style', null, null,
-                              editor.makeDiv(null, null, null, newStyle)
-                            + editor.makeDiv(null, null, null, '<input type = "text" id="style-select-input"/> <input type="button" id="create-button" disabled value="' + create + '">')
-                            + editor.makeDiv("please-use-alpha", null, 'color: red;', pleaseUseAlpha)
-                            + editor.makeDiv("already-exists", null, 'color: red;', alreadyExists)))
+                            + editor.makeDiv('dont-see', null, null, dontSee + ' <a id="show-create-style" href="">' + createStyle + '</a>')
+                            + editor.makeDiv('create-style', null, null,
+                                editor.makeDiv(null, null, null, newStyle)
+                                + editor.makeDiv(null, null, null, '<input type = "text" id="style-select-input"/> <input type="button" id="create-button" disabled value="' + create + '">')
+                                + editor.makeDiv("please-use-alpha", null, 'color: red;', pleaseUseAlpha)
+                                + editor.makeDiv("already-exists", null, 'color: red;', alreadyExists)))
                         + "</div>" // end of Style Name tab-page div
                         + '<div class="tab-page" id="formatPage"><h2 class="tab">Characters</h2>'
                         + editor.makeCharactersContent(fonts, current)
