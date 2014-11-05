@@ -81,7 +81,6 @@
     <TypeScriptCompile Include="bookEdit\js\libsynphony\underscore-1.5.2.d.ts" />
     <TypeScriptCompile Include="bookEdit\js\readerSettings.ts" />
     <TypeScriptCompile Include="bookEdit\js\readerTools.d.ts" />
-    <TypeScriptCompile Include="bookEdit\js\StyleEditor.ts" />
     <Content Include="bookEdit\js\toolbar\bootstrap.icons.css" />
     <Content Include="bookEdit\js\toolbar\glyphicons-halflings.png" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />
@@ -271,6 +270,7 @@
     <TypeScriptCompile Include="bookEdit\js\synphonyApi.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />
+    <TypeScriptCompile Include="bookEdit\StyleEditor\StyleEditor.ts" />
     <TypeScriptCompile Include="lib\jquery.alphanum.d.ts" />
     <TypeScriptCompile Include="lib\jquery.i18n.custom.ts" />
     <TypeScriptCompile Include="lib\localizationManager.ts" />
@@ -322,6 +322,7 @@
     <Content Include="bookEdit\readerSetup\ReaderSetup.jade" />
     <Content Include="bookEdit\css\origami.less" />
     <Content Include="bookEdit\html\font-awesome\fonts\fontawesome-webfont.woff" />
+    <Content Include="bookEdit\StyleEditor\StyleEditor.less" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

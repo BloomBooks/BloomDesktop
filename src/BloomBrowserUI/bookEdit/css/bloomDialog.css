@@ -44,15 +44,15 @@
 .control-section {
   margin: 0px 0px 12px 0px;
 }
-INPUT[type="button"] {
+BUTTON {
   border-radius: 4px;
   border: 1px solid #d3d3d3;
 }
-INPUT[type="button"]:hover {
+BUTTON:hover {
   background-color: #d3d3d3;
   border: 1px solid black;
 }
-INPUT[type="button"][disabled] {
+BUTTON[disabled] {
   border: 1px solid #d3d3d3;
   background-color: #d3d3d3 !important;
 }

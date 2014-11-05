@@ -1,6 +1,7 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
+/// <reference path="../../lib/jquery.i18n.custom.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
 /// <reference path="../../lib/jquery.alphanum.d.ts"/>
 /// <reference path="../js/toolbar/toolbar.d.ts"/>
@@ -462,9 +463,6 @@ class StyleEditor {
                 editor.boxBeingEdited = targetBox;
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
                 styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
-                var box = $(targetBox);
-                var lang = box.attr('lang');
-                lang = localizationManager.getText(lang);
                 var current = editor.getFormatValues();
 
                 //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
@@ -479,61 +477,55 @@ class StyleEditor {
                     return a.toLowerCase().localeCompare(b.toLowerCase());
                 });
 
-                var emphasis = localizationManager.getText('EditTab.Emphasis', 'Emphasis');
-                var position = localizationManager.getText('EditTab.Position', 'Position');
-                var borders = localizationManager.getText('EditTab.Borders', 'Borders');
-                var background = localizationManager.getText('EditTab.Background', 'Background');
-                var style = localizationManager.getText('EditTab.StyleEditor.Style', 'Style:');
-                var dontSee = localizationManager.getText('EditTab.StyleEditor.DontSeeNeed', "Don't see what you need?");
-                var createStyle = localizationManager.getText('EditTab.StyleEditor.CreateStyle', 'Create a new style');
-                var newStyle = localizationManager.getText('EditTab.StyleEditor.NewStyle', 'New style');
-                var create = localizationManager.getText('EditTab.StyleEditor.Create', 'Create');
-                var pleaseUseAlpha = localizationManager.getText('EditTab.StyleEditor.PleaseUseAlpha', 'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".');
-                var alreadyExists = localizationManager.getText('EditTab.StyleEditor.AlreadyExists', 'That style already exists. Please choose another name.');
-
                 var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:1010;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">'
                     + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt"></div>';
                 if (editor.authorMode) {
                     html += '<div class="tab-pane" id="tabRoot">'
                         + '<div class="tab-page"><h2 class="tab">Style Name</h2>'
-                        + editor.makeDiv(null, null, null, style)
-                        + editor.makeDiv("style-group", "state-initial", null,
+                        + editor.makeDiv(null, null, null, 'EditTab.StyleEditor.Style', 'Style:')
+                        + editor.makeDiv("style-group", "state-initial", null, null,
                             editor.makeSelect(editor.styles, 0, styleName, 'styleSelect')
-                            + editor.makeDiv('dont-see', null, null, dontSee + ' <a id="show-create-style" href="">' + createStyle + '</a>')
-                            + editor.makeDiv('create-style', null, null,
-                                editor.makeDiv(null, null, null, newStyle)
-                                + editor.makeDiv(null, null, null, '<input type = "text" id="style-select-input"/> <input type="button" id="create-button" disabled value="' + create + '">')
-                                + editor.makeDiv("please-use-alpha", null, 'color: red;', pleaseUseAlpha)
-                                + editor.makeDiv("already-exists", null, 'color: red;', alreadyExists)))
+                            + editor.makeDiv('dont-see', null, null, null,
+                                '<span data-i18n="EditTab.StyleEditor.DontSeeNeed">'+"Don't see what you need?"+'</span>'
+                                + ' <a id="show-create-style" href="" data-i18n="EditTab.StyleEditor.CreateStyle">Create a new style</a>')
+                            + editor.makeDiv('create-style', null, null, null,
+                                editor.makeDiv(null, null, null, 'EditTab.StyleEditor.NewStyle', 'New style')
+                                + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.StyleEditor.Create" disabled>Create</button>')
+                                + editor.makeDiv("please-use-alpha", null, 'color: red;',
+                                    'EditTab.StyleEditor.PleaseUseAlpha',
+                                    'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".')
+                                + editor.makeDiv("already-exists", null, 'color: red;', 'EditTab.StyleEditor.AlreadyExists',
+                                    'That style already exists. Please choose another name.')))
                         + "</div>" // end of Style Name tab-page div
                         + '<div class="tab-page" id="formatPage"><h2 class="tab">Characters</h2>'
                         + editor.makeCharactersContent(fonts, current)
                         + '</div>' // end of tab-page div for format
                         + '<div class="tab-page"><h2 class="tab">More</h2>'
-                        + editor.makeDiv(null, null, null,
-                            editor.makeDiv(null, 'mainBlock leftBlock', null,
-                                editor.makeDiv(null, null, null, emphasis) + editor.makeDiv(null, null, null,
-                                    editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', 'B')
-                                    + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', 'I')
-                                    + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', 'U')))
-                            + editor.makeDiv(null, 'mainBlock', null,
-                                editor.makeDiv(null, null, null, position) + editor.makeDiv(null, null, null,
-                                    editor.makeDiv('position-leading', 'icon16x16', null, editor.makeImage('text_align_left.png'))
-                                    + editor.makeDiv('position-center', 'icon16x16', null, editor.makeImage('text_align_center.png')))))
-                        + editor.makeDiv(null, null, 'margin-top:10px',
-                            editor.makeDiv(null, 'mainBlock leftBlock', null,
-                                editor.makeDiv(null, null, null, borders)
-                                + editor.makeDiv(null, null, 'margin-top:-11px',
-                                    editor.makeDiv('border-none', 'icon16x16', null, editor.makeImage('grayX.png'))
-                                    + editor.makeDiv('border-black', 'iconHtml', null, editor.makeDiv(null, 'iconBox', 'border-color: black', ''))
-                                    + editor.makeDiv('border-black-round', 'iconHtml', null, editor.makeDiv(null, 'iconBox rounded', 'border-color: black', '')))
-                                + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px',
-                                    editor.makeDiv('border-gray', 'iconHtml', null, editor.makeDiv(null, 'iconBox', 'border-color: gray', ''))
-                                    + editor.makeDiv('border-gray-round', 'iconHtml', null, editor.makeDiv(null, 'iconBox rounded', 'border-color: gray', ''))))
-                            + editor.makeDiv(null, 'mainBlock', null,
-                                editor.makeDiv(null, null, null, background) + editor.makeDiv(null, null, 'margin-top:-11px',
-                                    editor.makeDiv('background-none', 'icon16x16', null, editor.makeImage('grayX.png'))
-                                    + editor.makeDiv('background-gray', 'iconHtml', null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), '')))))
+                        + editor.makeDiv(null, null, null, null,
+                            editor.makeDiv(null, 'mainBlock leftBlock', null, null,
+                                editor.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis') + editor.makeDiv(null, null, null, null,
+                                    editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', null, 'B')
+                                    + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', null, 'I')
+                                    + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', null, 'U')))
+                            + editor.makeDiv(null, 'mainBlock', null, null,
+                                editor.makeDiv(null, null, null, 'EditTab.Position', 'Position') + editor.makeDiv(null, null, null, null,
+                                    editor.makeDiv('position-leading', 'icon16x16', null, null, editor.makeImage('text_align_left.png'))
+                                    + editor.makeDiv('position-center', 'icon16x16', null, null, editor.makeImage('text_align_center.png')))))
+                        + editor.makeDiv(null, null, 'margin-top:10px', null,
+                            editor.makeDiv(null, 'mainBlock leftBlock', null, null,
+                                editor.makeDiv(null, null, null, 'EditTab.Borders', 'Borders')
+                                + editor.makeDiv(null, null, 'margin-top:-11px', null,
+                                    editor.makeDiv('border-none', 'icon16x16', null, null, editor.makeImage('grayX.png'))
+                                    + editor.makeDiv('border-black', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: black', null, ''))
+                                    + editor.makeDiv('border-black-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox rounded', 'border-color: black', null, '')))
+                                + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', null,
+                                    editor.makeDiv('border-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: gray', null, ''))
+                                    + editor.makeDiv('border-gray-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox rounded', 'border-color: gray', null, ''))))
+                            + editor.makeDiv(null, 'mainBlock', null, null,
+                                editor.makeDiv(null, null, null, 'EditTab.Background', 'Background')
+                                    + editor.makeDiv(null, null, 'margin-top:-11px', null,
+                                    editor.makeDiv('background-none', 'icon16x16', null, null, editor.makeImage('grayX.png'))
+                                    + editor.makeDiv('background-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), null, '')))))
                         + '<div class="format-toolbar-description" id="formatMoreDesc">' + editor.getMoreTabDescription() + '</div>'
                         + '</div>' // end of tab-page div for 'more' tab
                         + '</div>'; // end of tab-pane div
@@ -545,6 +537,7 @@ class StyleEditor {
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
                 $('body').after(html);
                 var toolbar = $('#format-toolbar');
+                toolbar.find('*[data-i18n]').localize();
                 toolbar.draggable();
                 toolbar.css('opacity', 1.0);
 
@@ -613,15 +606,13 @@ class StyleEditor {
     }
 
     makeCharactersContent(fonts, current): string {
-        var font = localizationManager.getText('EditTab.Font', 'Font');
-        var spacing = localizationManager.getText('EditTab.Spacing', 'Spacing');
-        return this.makeDiv(null, null, null,
-                this.makeDiv(null, null, null, font)
-                + this.makeDiv(null, "control-section", null,
+        return this.makeDiv(null, null, null, null,
+                this.makeDiv(null, null, null, 'EditTab.Font', 'Font')
+                + this.makeDiv(null, "control-section", null, null,
                     this.makeSelect(fonts, 0, current.fontName, 'font-select', 15) + ' '
                     + this.makeSelect(this.getPointSizes(), 5, current.ptSize, 'size-select'))
-                + this.makeDiv(null, "spacing-fudge", null, spacing)
-                + this.makeDiv(null, null, null,
+                + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing')
+                + this.makeDiv(null, null, null, null,
                     '<span style="white-space: nowrap">'
                     + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="position:relative;top:6px">'
                     + this.makeSelect(this.getLineSpaceOptions(), 2, current.lineHeight, 'line-height-select') + ' '
@@ -630,7 +621,7 @@ class StyleEditor {
                     + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">'
                     + this.makeSelect(this.getWordSpaceOptions(), 2, current.wordSpacing, 'word-space-select')
                     + '</span>'))
-            + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, this.getCharTabDescription());
+            + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, this.getCharTabDescription());
     }
 
     // Generic State Machine changes a class on the specified id from class 'state-X' to 'state-newState'
@@ -716,10 +707,11 @@ class StyleEditor {
         return '<img src="' + this._supportFilesRoot + '/img/' + fileName + '">';
     }
 
-    makeDiv(id: string, className: string, style: string, content: string): string {
+    makeDiv(id: string, className: string, style: string, i18nAttr: string, content: string): string {
         var result = '<div';
         if (id) result += ' id="' + id + '"';
         if (className) result += ' class="' + className + '"';
+        if (i18nAttr) result += ' data-i18n="' + i18nAttr + '"';
         if (style) result += ' style="' + style + '"';
         result += '>';
         if (content) result += content;
