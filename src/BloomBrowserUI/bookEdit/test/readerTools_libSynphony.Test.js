@@ -65,11 +65,11 @@ describe("readerTools-libSynphony tests", function() {
 
         expect(synphony.stages.length).toBe(3);
         model.setStageNumber(1);
-        expect(_.pluck(model.getStageWords(), 'Name')).toEqual(['cat', 'mat', 'rat']);
+        expect(_.pluck(model.getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'rat']);
         model.setStageNumber(2);
-        expect(_.pluck(model.getStageWords(), 'Name')).toEqual(['cat', 'sat', 'mat', 'rat']);
+        expect(_.pluck(model.getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'rat', 'sat']);
         model.setStageNumber(3);
-        expect(_.pluck(model.getStageWords(), 'Name')).toEqual(['cat', 'sat', 'mat', 'rat', 'three', 'one', 'on', 'the']);
+        expect(_.pluck(model.getStageWords(), 'Name').sort()).toEqual(['cat', 'mat', 'on', 'one', 'rat', 'sat', 'the', 'three']);
 
         expect(synphony.stages[0].sightWords).toEqual('canine feline');
         expect(synphony.stages[1].sightWords).toEqual('carnivore omnivore');

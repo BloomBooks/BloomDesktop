@@ -50,7 +50,6 @@
     <Content Include="bookEdit\js\libsynphony\underscore_min_152.js" />
     <Content Include="bookEdit\js\libsynphony\xregexp-all-min.js" />
     <Content Include="bookEdit\js\origami.js" />
-    <Content Include="bookEdit\js\readerTools.js" />
     <Content Include="bookEdit\css\editMode.css" />
     <Content Include="bookEdit\css\editOriginalMode.css" />
     <Content Include="bookEdit\css\editPaneGlobal.css" />
@@ -80,7 +79,6 @@
     <TypeScriptCompile Include="bookEdit\js\jquery.div-columns.ts" />
     <TypeScriptCompile Include="bookEdit\js\libsynphony\underscore-1.5.2.d.ts" />
     <TypeScriptCompile Include="bookEdit\js\readerSettings.ts" />
-    <TypeScriptCompile Include="bookEdit\js\readerTools.d.ts" />
     <Content Include="bookEdit\js\toolbar\bootstrap.icons.css" />
     <Content Include="bookEdit\js\toolbar\glyphicons-halflings.png" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />
@@ -267,6 +265,8 @@
     <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_cccccc_256x240.png" />
     <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_ffffff_256x240.png" />
     <Content Include="themes\bloom-jqueryui-theme\jquery-ui-1.8.16.custom.css" />
+    <TypeScriptCompile Include="bookEdit\js\readerTools.ts" />
+    <TypeScriptCompile Include="bookEdit\js\readerToolsModel.ts" />
     <TypeScriptCompile Include="bookEdit\js\synphonyApi.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />
@@ -313,7 +313,6 @@
     <Content Include="bookEdit\LibSynphonyTests.jstd" />
     <Content Include="bookEdit\ReaderToolsTests.jstd" />
     <Content Include="bookEdit\SynphonyApiTests.jstd" />
-    <Content Include="bookEdit\js\calledByCSharp.js.map" />
     <Content Include="bookEdit\accordion\Accordion.jade" />
     <Content Include="bookEdit\accordion\DecodableRT\DecodableRT.jade" />
     <Content Include="bookEdit\accordion\LeveledRT\LeveledRT.jade" />

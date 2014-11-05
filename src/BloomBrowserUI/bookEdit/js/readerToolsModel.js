@@ -37,7 +37,6 @@ var DRTState = (function () {
     return DRTState;
 })();
 
-//******************************************************************
 var ReaderToolsModel = (function () {
     function ReaderToolsModel() {
         this.stageNumber = 1;
@@ -59,6 +58,8 @@ var ReaderToolsModel = (function () {
         // BL-599: Speed up the decodable reader tool
         this.stageGraphemes = [];
         this.wordListChangedListeners = {};
+        // some things need to wait until the word list has finished loading
+        this.wordListLoaded = false;
         // this happens during testing
         if (iframeChannel)
             this.readableFileExtensions = iframeChannel.readableFileExtensions;
@@ -88,6 +89,10 @@ var ReaderToolsModel = (function () {
         this.updateLetterList();
         this.enableStageButtons();
         this.saveState();
+
+        if (!this.wordListLoaded)
+            return;
+
         this.doMarkup();
         this.updateWordList();
     };
@@ -264,6 +269,9 @@ var ReaderToolsModel = (function () {
     * Displays the list of words for the current Stage.
     */
     ReaderToolsModel.prototype.updateWordList = function () {
+        if (!this.wordListLoaded)
+            return;
+
         var wordList = document.getElementById('wordList');
         if (wordList)
             document.getElementById('wordList').innerHTML = '';
@@ -407,6 +415,9 @@ var ReaderToolsModel = (function () {
     };
 
     ReaderToolsModel.prototype.getStageWordsAndSightWords = function (stageNumber) {
+        if (!this.wordListLoaded)
+            return;
+
         // first get the sight words
         var sightWords = this.getSightWordsAsObjects(stageNumber);
         var stageWords = this.getStageWords();
@@ -663,6 +674,8 @@ var ReaderToolsModel = (function () {
     * Displays the correct markup for the current page.
     */
     ReaderToolsModel.prototype.doMarkup = function () {
+        if (!this.wordListLoaded)
+            return;
         if (this.currentMarkupType === MarkupType.None)
             return;
 
@@ -933,12 +946,19 @@ var ReaderToolsModel = (function () {
         // if there are no more files, process the word lists now
         if (this.textCounter >= this.texts.length) {
             this.addWordsToSynphony();
-            this.doMarkup();
-            this.updateWordList();
-            this.processWordListChangedListeners();
 
-            // write out the ReaderToolsWords-xyz.json file
-            iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(lang_data));
+            // The word list has been received. Now we are using setTimeout() to move the remainder of the word
+            // list processing to another thread so the UI doesn't appear frozen as long. This is essentially
+            // the JavaScript version of Application.DoEvents().
+            setTimeout(function () {
+                model.wordListLoaded = true;
+                model.doMarkup();
+                model.updateWordList();
+                model.processWordListChangedListeners();
+
+                // write out the ReaderToolsWords-xyz.json file
+                iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(lang_data));
+            }, 200);
 
             return;
         }

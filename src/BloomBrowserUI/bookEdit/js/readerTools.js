@@ -147,15 +147,6 @@ function setTextsList(textsList) {
     model.getNextSampleFile();
 }
 
-/**
-* Called in response to a request for the contents of a sample text file
-* @param fileContents
-*/
-function setSampleFileContents(fileContents) {
-    model.addWordsFromFile(fileContents);
-    model.getNextSampleFile();
-}
-
 function setDefaultFont(fontName) {
     model.fontName = fontName;
 }
