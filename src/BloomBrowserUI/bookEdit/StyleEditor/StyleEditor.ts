@@ -1,10 +1,10 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
-/// <reference path="../../lib/jquery.alphanum.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
-/// <reference path="toolbar/toolbar.d.ts"/>
-/// <reference path="getIframeChannel.ts"/>
+/// <reference path="../../lib/jquery.alphanum.d.ts"/>
+/// <reference path="../js/toolbar/toolbar.d.ts"/>
+/// <reference path="../js/getIframeChannel.ts"/>
 
 declare var simpleAjaxGet: any;
 var iframeChannel = getIframeChannel();
@@ -489,6 +489,7 @@ class StyleEditor {
                 var newStyle = localizationManager.getText('EditTab.StyleEditor.NewStyle', 'New style');
                 var create = localizationManager.getText('EditTab.StyleEditor.Create', 'Create');
                 var pleaseUseAlpha = localizationManager.getText('EditTab.StyleEditor.PleaseUseAlpha', 'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".');
+                var alreadyExists = localizationManager.getText('EditTab.StyleEditor.AlreadyExists', 'That style already exists. Please choose another name.');
 
                 var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:1010;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">'
                     + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt"></div>';
@@ -496,13 +497,15 @@ class StyleEditor {
                     html += '<div class="tab-pane" id="tabRoot">'
                         + '<div class="tab-page"><h2 class="tab">Style Name</h2>'
                         + editor.makeDiv(null, null, null, style)
-                        + editor.makeSelect(editor.styles, 0, styleName, 'styleSelect')
-                        + editor.makeDiv('dont-see', null, null, dontSee + ' <a id="show-create-style" href="">' + createStyle + '</a>')
-                        + editor.makeDiv('create-style', null, 'display:none',
-                            editor.makeDiv(null, null, null, newStyle)
-                            + editor.makeDiv(null, null, null, '<input type = "text" id = "style-select-input"/> <input type="button" id="create-button" disabled value="' + create + '">')
-                            + editor.makeDiv("please-use-alpha", null, 'display:none', pleaseUseAlpha))
-                        + "</div>" // end of format-styleName div
+                        + editor.makeDiv("style-group", "state-initial", null,
+                            editor.makeSelect(editor.styles, 0, styleName, 'styleSelect')
+                            + editor.makeDiv('dont-see', null, null, dontSee + ' <a id="show-create-style" href="">' + createStyle + '</a>')
+                            + editor.makeDiv('create-style', null, null,
+                                editor.makeDiv(null, null, null, newStyle)
+                                + editor.makeDiv(null, null, null, '<input type = "text" id="style-select-input"/> <input type="button" id="create-button" disabled value="' + create + '">')
+                                + editor.makeDiv("please-use-alpha", null, 'color: red;', pleaseUseAlpha)
+                                + editor.makeDiv("already-exists", null, 'color: red;', alreadyExists)))
+                        + "</div>" // end of Style Name tab-page div
                         + '<div class="tab-page" id="formatPage"><h2 class="tab">Characters</h2>'
                         + editor.makeCharactersContent(fonts, current)
                         + '</div>' // end of tab-page div for format
@@ -559,7 +562,7 @@ class StyleEditor {
                     $('#styleSelect').change(function() { editor.selectStyle(); });
                     (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
                     $('#style-select-input').on('input', function() { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
-                    $('#style-select-input').get(0).trimNotification = function() { editor.badCharacterTrimmed(); }
+                    $('#style-select-input').get(0).trimNotification = function() { editor.styleStateChange('invalid-characters'); }
                     $('#show-create-style').click(function(event) {
                         event.preventDefault();
                         editor.showCreateStyle();
@@ -614,13 +617,13 @@ class StyleEditor {
         var spacing = localizationManager.getText('EditTab.Spacing', 'Spacing');
         return this.makeDiv(null, null, null,
                 this.makeDiv(null, null, null, font)
-                + this.makeDiv(null, null, null,
-                    this.makeSelect(fonts, 5, current.fontName, 'font-select', 15) + ' '
+                + this.makeDiv(null, "control-section", null,
+                    this.makeSelect(fonts, 0, current.fontName, 'font-select', 15) + ' '
                     + this.makeSelect(this.getPointSizes(), 5, current.ptSize, 'size-select'))
-                + this.makeDiv(null, null, null, spacing)
+                + this.makeDiv(null, "spacing-fudge", null, spacing)
                 + this.makeDiv(null, null, null,
                     '<span style="white-space: nowrap">'
-                    + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:8px;position:relative;top:6px">'
+                    + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="position:relative;top:6px">'
                     + this.makeSelect(this.getLineSpaceOptions(), 2, current.lineHeight, 'line-height-select') + ' '
                     + '</span>' + ' '
                     + '<span style="white-space: nowrap">'
@@ -630,20 +633,42 @@ class StyleEditor {
             + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, this.getCharTabDescription());
     }
 
-    badCharacterTrimmed() {
-        // the main point here is to remove the display:none. But it's easier to replace with color:red here than to have it there to
-        // begin with and then figure out how to remove just part of the style.
-        $('#please-use-alpha').attr('style', 'color:red');
+    // Generic State Machine changes a class on the specified id from class 'state-X' to 'state-newState'
+    stateChange(id:string, newState:string) {
+        var stateToAdd = "state-"+newState;
+        var stateElement = $("#"+id);
+        var existingClasses = stateElement.attr('class').split(/\s+/);
+        $.each(existingClasses, function(index, elem) {
+            if(elem.startsWith("state-"))
+                stateElement.removeClass(elem);
+        });
+        stateElement.addClass(stateToAdd);
+    }
+
+    // Specific State Machine changes the Style section state
+    styleStateChange(newState:string) {
+        if(newState == 'entering-style' && $('#style-select-input').val()) {
+            $('#create-button').removeAttr('disabled');
+        } else {
+            $('#create-button').attr('disabled', true);
+        }
+        this.stateChange("style-group", newState);
     }
 
     styleInputChanged() {
         var typedStyle = $('#style-select-input').val();
-        $('#create-button').get(0).disabled = !typedStyle || this.inputStyleExists();
+        // change state based on input
+        if (typedStyle) {
+            if(this.inputStyleExists()) {
+                this.styleStateChange('already-exists');
+                return;
+            }
+        }
+        this.styleStateChange('entering-style');
     }
 
     showCreateStyle() {
-        $('#create-style').removeAttr('style');
-        $('#dont-see').attr('style', 'display:none');
+        this.styleStateChange('entering-style')
         return false; // prevent default click
     }
 
@@ -775,6 +800,7 @@ class StyleEditor {
         this.insertOption(typedStyle);
         //$('#styleSelect option:eq(' + typedStyle + ')').prop('selected', true);
         $('#styleSelect').val(typedStyle);
+        this.styleStateChange('initial'); // go back to initial state so user knows it worked
     }
 
     insertOption(typedStyle) {

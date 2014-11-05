@@ -36,7 +36,7 @@ module.exports = function (config) {
             //under the assumption that anything we want to test will be written with typescript (at least eventually)
             '**/js/bloomBootstrap.js',
             '**/js/bloomEditing.js',
-            '**/js/StyleEditor.js',
+            '**/StyleEditor/StyleEditor.js',
             // as long as the test filename is in the test/specs folder, it will be included in the test run
             'test/specs/**/*.js',
 

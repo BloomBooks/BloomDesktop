@@ -1139,7 +1139,7 @@ else {
  * Note: settingsFileContent may be empty.
  *
  * @param {String} settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
- * @global {ReaderToolsModel) model
+ * @global {ReaderToolsModel} model
  */
 function initializeSynphony(settingsFileContent) {
 

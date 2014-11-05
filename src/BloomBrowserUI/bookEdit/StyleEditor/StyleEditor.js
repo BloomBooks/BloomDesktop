@@ -1,10 +1,10 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
-/// <reference path="../../lib/jquery.alphanum.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
-/// <reference path="toolbar/toolbar.d.ts"/>
-/// <reference path="getIframeChannel.ts"/>
+/// <reference path="../../lib/jquery.alphanum.d.ts"/>
+/// <reference path="../js/toolbar/toolbar.d.ts"/>
+/// <reference path="../js/getIframeChannel.ts"/>
 var iframeChannel = getIframeChannel();
 
 var StyleEditor = (function () {
@@ -475,10 +475,11 @@ var StyleEditor = (function () {
                 var newStyle = localizationManager.getText('EditTab.StyleEditor.NewStyle', 'New style');
                 var create = localizationManager.getText('EditTab.StyleEditor.Create', 'Create');
                 var pleaseUseAlpha = localizationManager.getText('EditTab.StyleEditor.PleaseUseAlpha', 'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".');
+                var alreadyExists = localizationManager.getText('EditTab.StyleEditor.AlreadyExists', 'That style already exists. Please choose another name.');
 
                 var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:1010;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">' + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt"></div>';
                 if (editor.authorMode) {
-                    html += '<div class="tab-pane" id="tabRoot">' + '<div class="tab-page"><h2 class="tab">Style Name</h2>' + editor.makeDiv(null, null, null, style) + editor.makeSelect(editor.styles, 0, styleName, 'styleSelect') + editor.makeDiv('dont-see', null, null, dontSee + ' <a id="show-create-style" href="">' + createStyle + '</a>') + editor.makeDiv('create-style', null, 'display:none', editor.makeDiv(null, null, null, newStyle) + editor.makeDiv(null, null, null, '<input type = "text" id = "style-select-input"/> <input type="button" id="create-button" disabled value="' + create + '">') + editor.makeDiv("please-use-alpha", null, 'display:none', pleaseUseAlpha)) + "</div>" + '<div class="tab-page" id="formatPage"><h2 class="tab">Characters</h2>' + editor.makeCharactersContent(fonts, current) + '</div>' + '<div class="tab-page"><h2 class="tab">More</h2>' + editor.makeDiv(null, null, null, editor.makeDiv(null, 'mainBlock leftBlock', null, editor.makeDiv(null, null, null, emphasis) + editor.makeDiv(null, null, null, editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', 'B') + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', 'I') + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', 'U'))) + editor.makeDiv(null, 'mainBlock', null, editor.makeDiv(null, null, null, position) + editor.makeDiv(null, null, null, editor.makeDiv('position-leading', 'icon16x16', null, editor.makeImage('text_align_left.png')) + editor.makeDiv('position-center', 'icon16x16', null, editor.makeImage('text_align_center.png'))))) + editor.makeDiv(null, null, 'margin-top:10px', editor.makeDiv(null, 'mainBlock leftBlock', null, editor.makeDiv(null, null, null, borders) + editor.makeDiv(null, null, 'margin-top:-11px', editor.makeDiv('border-none', 'icon16x16', null, editor.makeImage('grayX.png')) + editor.makeDiv('border-black', 'iconHtml', null, editor.makeDiv(null, 'iconBox', 'border-color: black', '')) + editor.makeDiv('border-black-round', 'iconHtml', null, editor.makeDiv(null, 'iconBox rounded', 'border-color: black', ''))) + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', editor.makeDiv('border-gray', 'iconHtml', null, editor.makeDiv(null, 'iconBox', 'border-color: gray', '')) + editor.makeDiv('border-gray-round', 'iconHtml', null, editor.makeDiv(null, 'iconBox rounded', 'border-color: gray', '')))) + editor.makeDiv(null, 'mainBlock', null, editor.makeDiv(null, null, null, background) + editor.makeDiv(null, null, 'margin-top:-11px', editor.makeDiv('background-none', 'icon16x16', null, editor.makeImage('grayX.png')) + editor.makeDiv('background-gray', 'iconHtml', null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), ''))))) + '<div class="format-toolbar-description" id="formatMoreDesc">' + editor.getMoreTabDescription() + '</div>' + '</div>' + '</div>'; // end of tab-pane div
+                    html += '<div class="tab-pane" id="tabRoot">' + '<div class="tab-page"><h2 class="tab">Style Name</h2>' + editor.makeDiv(null, null, null, style) + editor.makeDiv("style-group", "state-initial", null, editor.makeSelect(editor.styles, 0, styleName, 'styleSelect') + editor.makeDiv('dont-see', null, null, dontSee + ' <a id="show-create-style" href="">' + createStyle + '</a>') + editor.makeDiv('create-style', null, null, editor.makeDiv(null, null, null, newStyle) + editor.makeDiv(null, null, null, '<input type = "text" id="style-select-input"/> <input type="button" id="create-button" disabled value="' + create + '">') + editor.makeDiv("please-use-alpha", null, 'color: red;', pleaseUseAlpha) + editor.makeDiv("already-exists", null, 'color: red;', alreadyExists))) + "</div>" + '<div class="tab-page" id="formatPage"><h2 class="tab">Characters</h2>' + editor.makeCharactersContent(fonts, current) + '</div>' + '<div class="tab-page"><h2 class="tab">More</h2>' + editor.makeDiv(null, null, null, editor.makeDiv(null, 'mainBlock leftBlock', null, editor.makeDiv(null, null, null, emphasis) + editor.makeDiv(null, null, null, editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', 'B') + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', 'I') + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', 'U'))) + editor.makeDiv(null, 'mainBlock', null, editor.makeDiv(null, null, null, position) + editor.makeDiv(null, null, null, editor.makeDiv('position-leading', 'icon16x16', null, editor.makeImage('text_align_left.png')) + editor.makeDiv('position-center', 'icon16x16', null, editor.makeImage('text_align_center.png'))))) + editor.makeDiv(null, null, 'margin-top:10px', editor.makeDiv(null, 'mainBlock leftBlock', null, editor.makeDiv(null, null, null, borders) + editor.makeDiv(null, null, 'margin-top:-11px', editor.makeDiv('border-none', 'icon16x16', null, editor.makeImage('grayX.png')) + editor.makeDiv('border-black', 'iconHtml', null, editor.makeDiv(null, 'iconBox', 'border-color: black', '')) + editor.makeDiv('border-black-round', 'iconHtml', null, editor.makeDiv(null, 'iconBox rounded', 'border-color: black', ''))) + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', editor.makeDiv('border-gray', 'iconHtml', null, editor.makeDiv(null, 'iconBox', 'border-color: gray', '')) + editor.makeDiv('border-gray-round', 'iconHtml', null, editor.makeDiv(null, 'iconBox rounded', 'border-color: gray', '')))) + editor.makeDiv(null, 'mainBlock', null, editor.makeDiv(null, null, null, background) + editor.makeDiv(null, null, 'margin-top:-11px', editor.makeDiv('background-none', 'icon16x16', null, editor.makeImage('grayX.png')) + editor.makeDiv('background-gray', 'iconHtml', null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), ''))))) + '<div class="format-toolbar-description" id="formatMoreDesc">' + editor.getMoreTabDescription() + '</div>' + '</div>' + '</div>'; // end of tab-pane div
                 } else {
                     // not in authorMode...much simpler dialog, no tabs, just the body of the characters tab.
                     html += editor.makeCharactersContent(fonts, current);
@@ -519,7 +520,7 @@ var StyleEditor = (function () {
                         editor.styleInputChanged();
                     }); // not .change(), only fires on loss of focus
                     $('#style-select-input').get(0).trimNotification = function () {
-                        editor.badCharacterTrimmed();
+                        editor.styleStateChange('invalid-characters');
                     };
                     $('#show-create-style').click(function (event) {
                         event.preventDefault();
@@ -574,23 +575,46 @@ var StyleEditor = (function () {
     StyleEditor.prototype.makeCharactersContent = function (fonts, current) {
         var font = localizationManager.getText('EditTab.Font', 'Font');
         var spacing = localizationManager.getText('EditTab.Spacing', 'Spacing');
-        return this.makeDiv(null, null, null, this.makeDiv(null, null, null, font) + this.makeDiv(null, null, null, this.makeSelect(fonts, 5, current.fontName, 'font-select', 15) + ' ' + this.makeSelect(this.getPointSizes(), 5, current.ptSize, 'size-select')) + this.makeDiv(null, null, null, spacing) + this.makeDiv(null, null, null, '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="margin-left:8px;position:relative;top:6px">' + this.makeSelect(this.getLineSpaceOptions(), 2, current.lineHeight, 'line-height-select') + ' ' + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">' + this.makeSelect(this.getWordSpaceOptions(), 2, current.wordSpacing, 'word-space-select') + '</span>')) + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, this.getCharTabDescription());
+        return this.makeDiv(null, null, null, this.makeDiv(null, null, null, font) + this.makeDiv(null, "control-section", null, this.makeSelect(fonts, 0, current.fontName, 'font-select', 15) + ' ' + this.makeSelect(this.getPointSizes(), 5, current.ptSize, 'size-select')) + this.makeDiv(null, "spacing-fudge", null, spacing) + this.makeDiv(null, null, null, '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="position:relative;top:6px">' + this.makeSelect(this.getLineSpaceOptions(), 2, current.lineHeight, 'line-height-select') + ' ' + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">' + this.makeSelect(this.getWordSpaceOptions(), 2, current.wordSpacing, 'word-space-select') + '</span>')) + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, this.getCharTabDescription());
     };
 
-    StyleEditor.prototype.badCharacterTrimmed = function () {
-        // the main point here is to remove the display:none. But it's easier to replace with color:red here than to have it there to
-        // begin with and then figure out how to remove just part of the style.
-        $('#please-use-alpha').attr('style', 'color:red');
+    // Generic State Machine changes a class on the specified id from class 'state-X' to 'state-newState'
+    StyleEditor.prototype.stateChange = function (id, newState) {
+        var stateToAdd = "state-" + newState;
+        var stateElement = $("#" + id);
+        var existingClasses = stateElement.attr('class').split(/\s+/);
+        $.each(existingClasses, function (index, elem) {
+            if (elem.startsWith("state-"))
+                stateElement.removeClass(elem);
+        });
+        stateElement.addClass(stateToAdd);
+    };
+
+    // Specific State Machine changes the Style section state
+    StyleEditor.prototype.styleStateChange = function (newState) {
+        if (newState == 'entering-style' && $('#style-select-input').val()) {
+            $('#create-button').removeAttr('disabled');
+        } else {
+            $('#create-button').attr('disabled', true);
+        }
+        this.stateChange("style-group", newState);
     };
 
     StyleEditor.prototype.styleInputChanged = function () {
         var typedStyle = $('#style-select-input').val();
-        $('#create-button').get(0).disabled = !typedStyle || this.inputStyleExists();
+
+        // change state based on input
+        if (typedStyle) {
+            if (this.inputStyleExists()) {
+                this.styleStateChange('already-exists');
+                return;
+            }
+        }
+        this.styleStateChange('entering-style');
     };
 
     StyleEditor.prototype.showCreateStyle = function () {
-        $('#create-style').removeAttr('style');
-        $('#dont-see').attr('style', 'display:none');
+        this.styleStateChange('entering-style');
         return false;
     };
 
@@ -738,6 +762,7 @@ var StyleEditor = (function () {
 
         //$('#styleSelect option:eq(' + typedStyle + ')').prop('selected', true);
         $('#styleSelect').val(typedStyle);
+        this.styleStateChange('initial'); // go back to initial state so user knows it worked
     };
 
     StyleEditor.prototype.insertOption = function (typedStyle) {

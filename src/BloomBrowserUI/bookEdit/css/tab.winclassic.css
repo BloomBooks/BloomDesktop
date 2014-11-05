@@ -1,12 +1,11 @@
-﻿/* Derived from the work of Erik Arvidsson
+/* Derived from the work of Erik Arvidsson
 	(http://webfx.eae.net/contact.html#erik)
 	in the project WebFX (http://webfx.eae.net/).
 	Considerably changed for Bloom.
 */
 .dynamic-tab-pane-control.tab-pane {
   position: relative;
-  margin-right: -2px;
-  /* to make room for the shadow */
+  width: 100%;
 }
 /* In a bloom page, * defaults to position:relative. This somehow breaks the active tab label
 	overlaying the border of the main content. This stylesheet is supposed to have everything
@@ -19,54 +18,61 @@
 .dynamic-tab-pane-control .tab-row .tab {
   width: 70px;
   height: 18px;
+  font: Menu;
+  cursor: Default;
+  display: inline;
+  margin: 1px -2px 1px 2px;
+  float: left;
+  padding: 2px 5px 3px 5px;
+  background: #1f0da8;
+  border: 1px solid;
+  border-color: #919b9c;
+  border-bottom: 0;
+  z-index: 1;
   position: relative;
   top: 0;
-  display: inline;
-  float: left;
-  overflow: hidden;
-  cursor: Default;
-  margin: 1px -1px 1px 2px;
-  padding: 2px 0px 0px 0px;
-  border-width: 1px 1px 0px 1px;
-  border-style: solid;
-  border-color: #919b9c;
-  z-index: 1;
-  font-size: 11px;
-  white-space: nowrap;
   text-align: center;
-  background: #eaf2ff;
 }
 .dynamic-tab-pane-control .tab-row .tab.selected {
-  width: 74px !important;
-  height: 20px !important;
-  border-bottom-width: 0;
+  color: #000000;
+  background: #f2f167;
+  border-bottom: 0;
   z-index: 3;
-  padding: 2px 0 0px 0;
-  margin: 1px -3px -3px 0px;
+  padding: 2px 6px 5px 7px;
+  margin: 1px -3px -2px 0px;
   top: -2px;
-  font-size: 11px;
+}
+.dynamic-tab-pane-control .tab-row .tab.selected:hover {
+  background-color: #f2f167;
 }
 .dynamic-tab-pane-control .tab-row .tab a {
-  color: Black;
+  font: Menu;
+  color: #ffffff;
   text-decoration: none;
   cursor: default;
 }
-.dynamic-tab-pane-control .tab-row .tab.hover {
-  width: 70px;
-  height: 18px;
+.dynamic-tab-pane-control .tab-row .tab.selected a {
+  font: Menu;
+  color: #000000;
+  cursor: default;
+}
+.dynamic-tab-pane-control .tab-row .tab:hover {
+  background-color: #6e8aaf;
 }
 .dynamic-tab-pane-control .tab-page {
   clear: both;
-  border: 1px solid #919b9c;
-  background: #fcfcfe;
+  border: 1px solid;
+  border-color: ThreeDHighlight ThreeDDarkShadow
+	ThreeDDarkShadow ThreeDHighlight;
+  background: ThreeDFace;
   z-index: 2;
   position: relative;
   top: -2px;
-  color: Black;
+  color: WindowText;
+  font: Message-Box;
   padding: 10px;
 }
 .dynamic-tab-pane-control .tab-row {
   z-index: 1;
   white-space: nowrap;
 }
-/*# sourceMappingURL=tab.css.map */

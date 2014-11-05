@@ -80,6 +80,7 @@
     <TypeScriptCompile Include="bookEdit\js\jquery.div-columns.ts" />
     <TypeScriptCompile Include="bookEdit\js\libsynphony\underscore-1.5.2.d.ts" />
     <TypeScriptCompile Include="bookEdit\js\readerSettings.ts" />
+    <TypeScriptCompile Include="bookEdit\js\readerTools.d.ts" />
     <TypeScriptCompile Include="bookEdit\js\StyleEditor.ts" />
     <Content Include="bookEdit\js\toolbar\bootstrap.icons.css" />
     <Content Include="bookEdit\js\toolbar\glyphicons-halflings.png" />
@@ -132,6 +133,7 @@
     <Content Include="lib\jquery-ui-1.10.3.custom.min.js" />
     <Content Include="lib\jquery-ui.css" />
     <Content Include="lib\jquery-ui.js" />
+    <Content Include="lib\jquery.alphanum.js" />
     <Content Include="lib\jquery.d.ts" />
     <Content Include="lib\jquery.easytabs - b4 refactor.js" />
     <Content Include="lib\jquery.easytabs - Copy.js" />
@@ -151,6 +153,7 @@
     <Content Include="lib\long-press\jquery.mousewheel.js" />
     <Content Include="lib\split-pane\split-pane.css" />
     <Content Include="lib\split-pane\split-pane.js" />
+    <Content Include="lib\tabpane.js" />
     <Content Include="nonProductionStuff\.guidsForInstaller.xml" />
     <Content Include="nonProductionStuff\alignmentTest.css" />
     <Content Include="nonProductionStuff\alignmentTest.html" />
@@ -268,6 +271,7 @@
     <TypeScriptCompile Include="bookEdit\js\synphonyApi.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />
+    <TypeScriptCompile Include="lib\jquery.alphanum.d.ts" />
     <TypeScriptCompile Include="lib\jquery.i18n.custom.ts" />
     <TypeScriptCompile Include="lib\localizationManager.ts" />
     <TypeScriptCompile Include="test\specs\StyleEditorSpec.ts" />
@@ -283,7 +287,7 @@
     <Folder Include="bookPreview\img\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bookEdit\js\StyleEditor.js.map">
+    <Content Include="bookEdit\StyleEditor\StyleEditor.js.map">
       <DependentUpon>StyleEditor.ts</DependentUpon>
     </Content>
   </ItemGroup>
