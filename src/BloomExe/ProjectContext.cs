@@ -184,18 +184,19 @@ namespace Bloom
 
 				builder.RegisterType<CreateFromSourceBookCommand>().InstancePerLifetimeScope();
 
-				string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);
-				if (Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
-				{
-					// REVIEW: This seems to be used only for testing purposes
-					BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
-					var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
-					_httpServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
-				}
-				else
-				{
-					_httpServer = new EnhancedImageServer(new LowResImageCache(bookRenameEvent));
-				}
+				// See related comment below for BL-688
+//				string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);
+//				if (Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
+//				{
+//					// REVIEW: This seems to be used only for testing purposes
+//					BookCollection editableCollection = _scope.Resolve<BookCollection.Factory>()(collectionDirectory, BookCollection.CollectionType.TheOneEditableCollection);
+//					var sourceCollectionsList = _scope.Resolve<SourceCollectionsList>();
+//					_httpServer = new BloomServer(_scope.Resolve<CollectionSettings>(), editableCollection, sourceCollectionsList, parentContainer.Resolve<HtmlThumbNailer>());
+//				}
+//				else
+//				{
+				_httpServer = new EnhancedImageServer(new LowResImageCache(bookRenameEvent));
+//				}
 				builder.Register((c => _httpServer)).AsSelf().SingleInstance();
 
 				builder.Register<Func<WorkspaceView>>(c => ()=>
