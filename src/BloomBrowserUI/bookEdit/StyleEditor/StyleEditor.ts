@@ -520,7 +520,7 @@ class StyleEditor {
                 });
 
                 var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:1010;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">'
-                    + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt"></div>';
+                    + '<div data-i18n="EditTab.StyleEditor.Format" class="bloomDialogTitleBar">Format</div>';
                 if (editor.authorMode) {
                     html += '<div class="tab-pane" id="tabRoot">'
                         + '<div class="tab-page"><h2 class="tab">Style Name</h2>'
@@ -529,8 +529,8 @@ class StyleEditor {
                             editor.makeSelect(editor.styles, 0, styleName, 'styleSelect')
                             + editor.makeDiv('dont-see', null, null, null,
                                 '<span data-i18n="EditTab.StyleEditor.DontSeeNeed">'+"Don't see what you need?"+'</span>'
-                                + ' <a id="show-create-style" href="" data-i18n="EditTab.StyleEditor.CreateStyle">Create a new style</a>')
-                            + editor.makeDiv('create-style', null, null, null,
+                                + ' <a id="show-createStyle" href="" data-i18n="EditTab.StyleEditor.CreateStyle">Create a new style</a>')
+                            + editor.makeDiv('createStyle', null, null, null,
                                 editor.makeDiv(null, null, null, 'EditTab.StyleEditor.NewStyle', 'New style')
                                 + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.StyleEditor.Create" disabled>Create</button>')
                                 + editor.makeDiv("please-use-alpha", null, 'color: red;',
@@ -573,7 +573,9 @@ class StyleEditor {
                         + '</div>'; // end of tab-pane div
                 } else {
                     // not in authorMode...much simpler dialog, no tabs, just the body of the characters tab.
-                    html += editor.makeCharactersContent(fonts, current);
+                    html += '<div class="bloomDialogMainPage">'
+                        + editor.makeCharactersContent(fonts, current)
+                        + '</div>';
                 }
                 html += '</div>';
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
@@ -596,7 +598,7 @@ class StyleEditor {
                     (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
                     $('#style-select-input').on('input', function() { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
                     $('#style-select-input').get(0).trimNotification = function() { editor.styleStateChange('invalid-characters'); }
-                    $('#show-create-style').click(function(event) {
+                    $('#show-createStyle').click(function(event) {
                         event.preventDefault();
                         editor.showCreateStyle();
                         return false;
@@ -685,7 +687,7 @@ class StyleEditor {
 
     // Specific State Machine changes the Style section state
     styleStateChange(newState:string) {
-        if(newState == 'entering-style' && $('#style-select-input').val()) {
+        if(newState == 'enteringStyle' && $('#style-select-input').val()) {
             $('#create-button').removeAttr('disabled');
         } else {
             $('#create-button').attr('disabled', true);
@@ -702,11 +704,11 @@ class StyleEditor {
                 return;
             }
         }
-        this.styleStateChange('entering-style');
+        this.styleStateChange('enteringStyle');
     }
 
     showCreateStyle() {
-        this.styleStateChange('entering-style')
+        this.styleStateChange('enteringStyle')
         return false; // prevent default click
     }
 
