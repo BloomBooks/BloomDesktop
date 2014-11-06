@@ -401,15 +401,12 @@ UL.toolbox LI
 	display: inline-block;
 	width: 162px;
 }
-.heading1-style
-{
-	font-weight: bold;
-	font-size: 14pt;
+TEXTAREA.Heading1-style,  DIV.bloom-editable.Heading1-style{
+	font-size: 16pt;
 }
-.heading2-style
-{
-	font-weight: bold;
+TEXTAREA.Heading2-style,  DIV.bloom-editable.Heading2-style {
 	font-size: 13pt;
+	font-weight: bold;
 }
 .centered
 {
