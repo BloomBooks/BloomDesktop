@@ -26,6 +26,7 @@ var scripts = [
     'bookEdit/js/libsynphony/bloom_lib.js',
     'bookEdit/js/readerSettings.js',
     'bookEdit/js/synphonyApi.js',
+    'bookEdit/js/readerToolsModel.js',
     'bookEdit/js/readerTools.js', // end of SynPhony support files
     'bookEdit/js/bloomEditing.js',
     'lib/split-pane/split-pane.js',

@@ -100,7 +100,7 @@ var SynphonyApi = (function () {
     /**
     *
     * @param {int} [stageNumber] Optional. If present, returns all stages up to and including stageNumber. If missing, returns all stages.
-    * @returns {Stage[]} An array of Stage objects
+    * @returns {ReaderStage[]} An array of ReaderStage objects
     */
     SynphonyApi.prototype.getStages = function (stageNumber) {
         if (typeof stageNumber === 'undefined')
