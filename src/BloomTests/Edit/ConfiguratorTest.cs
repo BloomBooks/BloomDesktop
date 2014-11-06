@@ -16,6 +16,7 @@ using Gecko;
 namespace BloomTests.Edit
 {
 	[TestFixture]
+	[RequiresSTA]
 	public class ConfiguratorTest
 	{
 		private FileLocator _fileLocator;

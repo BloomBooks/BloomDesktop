@@ -14,6 +14,7 @@ using Bloom;
 namespace BloomTests
 {
 	[TestFixture]
+	[RequiresSTA]
 	public class PdfMakerTests
 	{
 		[TestFixtureSetUp]
