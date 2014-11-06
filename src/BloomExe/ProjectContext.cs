@@ -190,17 +190,21 @@ namespace Bloom
 
 
 				builder.Register<Func<WorkspaceView>>(c => ()=>
-													{
-														var factory = c.Resolve<WorkspaceView.Factory>();
-														if (projectSettingsPath.ToLower().Contains("web"))
-														{
-															return factory(c.Resolve<WebLibraryView>());
-														}
-														else
-														{
-															return factory(c.Resolve<LibraryView>());
-														}
-													});
+				{
+					var factory = c.Resolve<WorkspaceView.Factory>();
+
+					// Removing this check because finding "web" anywhere in the path is problematic.
+					// This was discovered by a user whose username included "web" (https://jira.sil.org/browse/BL-688)
+					// It appears this code block was for some experimental development but no longer works anyway.
+//					if (projectSettingsPath.ToLower().Contains("web"))
+//					{
+//						return factory(c.Resolve<WebLibraryView>());
+//					}
+//					else
+//					{
+					return factory(c.Resolve<LibraryView>());
+//					}
+				});
 			});
 
 		}
