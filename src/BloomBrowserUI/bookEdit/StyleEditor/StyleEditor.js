@@ -788,6 +788,11 @@ var StyleEditor = (function () {
 
         //$('#styleSelect option:eq(' + typedStyle + ')').prop('selected', true);
         $('#styleSelect').val(typedStyle);
+
+        // This control has been hidden, but the user could show it again.
+        // And showing it does not run the duplicate style check, since we expect it to be empty
+        // at that point, so that made a loophole for creating duplicate styles.
+        $('#style-select-input').val("");
     };
 
     StyleEditor.prototype.updateStyle = function () {
