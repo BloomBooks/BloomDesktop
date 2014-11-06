@@ -770,7 +770,7 @@ var StyleEditor = (function () {
     StyleEditor.prototype.inputStyleExists = function () {
         var typedStyle = $('#style-select-input').val();
         for (var i = 0; i < this.styles.length; i++) {
-            if (typedStyle == this.styles[i]) {
+            if (typedStyle.toLocaleLowerCase() == this.styles[i].toLocaleLowerCase()) {
                 return true;
             }
         }

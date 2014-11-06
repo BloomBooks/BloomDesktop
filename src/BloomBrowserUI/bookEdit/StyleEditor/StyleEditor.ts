@@ -815,7 +815,7 @@ class StyleEditor {
     inputStyleExists() : boolean {
         var typedStyle = $('#style-select-input').val();
         for (var i = 0; i < this.styles.length; i++) {
-            if (typedStyle == this.styles[i]) {
+            if (typedStyle.toLocaleLowerCase() == this.styles[i].toLocaleLowerCase()) {
                 return true;
             }
         }
