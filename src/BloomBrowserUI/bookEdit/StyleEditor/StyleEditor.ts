@@ -519,7 +519,7 @@ class StyleEditor {
                     return a.toLowerCase().localeCompare(b.toLowerCase());
                 });
 
-                var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:1010;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">'
+                var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">'
                     + '<div data-i18n="EditTab.StyleEditor.Format" class="bloomDialogTitleBar">Format</div>';
                 if (editor.authorMode) {
                     html += '<div class="tab-pane" id="tabRoot">'

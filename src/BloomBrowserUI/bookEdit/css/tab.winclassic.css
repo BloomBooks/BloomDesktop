@@ -3,6 +3,10 @@
 	in the project WebFX (http://webfx.eae.net/).
 	Considerably changed for Bloom.
 */
+.dynamic-tab-pane-control {
+  font: Segoe UI, Arial, sans-serif;
+  font-size: 10pt;
+}
 .dynamic-tab-pane-control.tab-pane {
   position: relative;
   width: 100%;
@@ -17,8 +21,7 @@
 }
 .dynamic-tab-pane-control .tab-row .tab {
   width: 70px;
-  height: 18px;
-  font: Menu;
+  height: 20px;
   cursor: Default;
   display: inline;
   margin: 1px -2px 1px 2px;
@@ -35,7 +38,7 @@
 }
 .dynamic-tab-pane-control .tab-row .tab.selected {
   color: #000000;
-  background: #f4f6f6;
+  background: #ffffff;
   border-bottom: 0;
   z-index: 3;
   padding: 2px 6px 5px 7px;
@@ -43,37 +46,28 @@
   top: -2px;
 }
 .dynamic-tab-pane-control .tab-row .tab:hover {
-  background: -webkit-gradient(linear, 0 0, 0 70%, from(#e8e8f9), to(#ffffff));
-  background: -webkit-linear-gradient(#e8e8f9, #ffffff 70%);
-  background: -moz-linear-gradient(#e8e8f9, #ffffff 70%);
-  background: -ms-linear-gradient(#e8e8f9, #ffffff 70%);
-  background: linear-gradient(#e8e8f9, #ffffff 70%);
+  background: -webkit-gradient(linear, 0 0, 0 70%, from(#e2e2f3), to(#ffffff));
+  background: -webkit-linear-gradient(#e2e2f3, #ffffff 70%);
+  background: -moz-linear-gradient(#e2e2f3, #ffffff 70%);
+  background: -ms-linear-gradient(#e2e2f3, #ffffff 70%);
+  background: linear-gradient(#e2e2f3, #ffffff 70%);
 }
 .dynamic-tab-pane-control .tab-row .tab a {
-  font: Menu;
   color: #000000;
   text-decoration: none;
   cursor: default;
 }
 .dynamic-tab-pane-control .tab-row .tab.selected a {
-  font: Menu;
   color: #000000;
   cursor: default;
-}
-.dynamic-tab-pane-control .tab-row .tab:hover {
-  background-color: #bac1d5;
 }
 .dynamic-tab-pane-control .tab-page {
   clear: both;
   border: 1px solid;
-  border-color: ThreeDHighlight ThreeDDarkShadow
-	ThreeDDarkShadow ThreeDHighlight;
-  background: ThreeDFace;
+  background: white;
   z-index: 2;
   position: relative;
   top: -2px;
-  color: WindowText;
-  font: Message-Box;
   padding: 10px;
 }
 .dynamic-tab-pane-control .tab-row {
