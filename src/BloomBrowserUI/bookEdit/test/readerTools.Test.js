@@ -32,15 +32,17 @@ describe("Bloom Edit Controls tests", function() {
         model.addWordsToSynphony();
         model.updateWordList();
 
-        spyOn(model, 'updateElementContent');
+        model.setStageNumber(1);
+
+        spyOn(ReaderToolsModel, 'updateElementContent');
         // simulated values of class attribute. Currently we ignore the attrName argument, since we only modify class.
         classValues = {decStage: "something", incStage: "something", decLevel: "something", incLevel: "something"};
-        model.setElementAttribute = function(elementId, attrName, val) {
+        ReaderToolsModel.setElementAttribute = function(elementId, attrName, val) {
             classValues[elementId] = val;
         };
 
         //noinspection JSUnusedLocalSymbols
-        model.getElementAttribute = function(elementId, attrName) {
+        ReaderToolsModel.getElementAttribute = function(elementId, attrName) {
             var result = classValues[elementId];
             if (result) {
                 return result;
@@ -51,141 +53,141 @@ describe("Bloom Edit Controls tests", function() {
 
     it("increments stage to limit on stage right button", function() {
         model.incrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "2");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("stageNumber", "2");
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.incrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "3");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("stageNumber", "3");
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.incrementStage();
-        expect(model.updateElementContent).not.toHaveBeenCalled();
+        expect(ReaderToolsModel.updateElementContent).not.toHaveBeenCalled();
     });
 
     it("decrements stage to 1 on stage left button", function() {
         model.setStageNumber(3);
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.decrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "2");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("stageNumber", "2");
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.decrementStage();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "1");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("stageNumber", "1");
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.decrementStage();
-        expect(model.updateElementContent).not.toHaveBeenCalled();
+        expect(ReaderToolsModel.updateElementContent).not.toHaveBeenCalled();
     });
 
     it("increments level to limit on level right button", function() {
         model.incrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "2");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("levelNumber", "2");
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.incrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "3");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("levelNumber", "3");
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.incrementLevel();
-        expect(model.updateElementContent).not.toHaveBeenCalled();
+        expect(ReaderToolsModel.updateElementContent).not.toHaveBeenCalled();
     });
 
     it("decrements level to 1 on level left button", function() {
         model.setLevelNumber(3);
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.decrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "2");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("levelNumber", "2");
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.decrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "1");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("levelNumber", "1");
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.decrementLevel();
-        expect(model.updateElementContent).not.toHaveBeenCalled();
+        expect(ReaderToolsModel.updateElementContent).not.toHaveBeenCalled();
     });
 
     it("setting stage updates stage button visibility", function() {
         model.setStageNumber(3);
-        expect(model.getElementAttribute("decStage", "class")).toBe("something");
-        expect(model.getElementAttribute("incStage", "class")).toBe("something disabledIcon");
+        expect(ReaderToolsModel.getElementAttribute("decStage", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("incStage", "class")).toBe("something disabledIcon");
 
         model.decrementStage();
-        expect(model.getElementAttribute("incStage", "class")).toBe("something");
-        expect(model.getElementAttribute("decStage", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("incStage", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("decStage", "class")).toBe("something");
 
         model.decrementStage();
-        expect(model.getElementAttribute("incStage", "class")).toBe("something");
-        expect(model.getElementAttribute("decStage", "class")).toBe("something disabledIcon");
+        expect(ReaderToolsModel.getElementAttribute("incStage", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("decStage", "class")).toBe("something disabledIcon");
 
         model.incrementStage();
-        expect(model.getElementAttribute("incStage", "class")).toBe("something");
-        expect(model.getElementAttribute("decStage", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("incStage", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("decStage", "class")).toBe("something");
 
         model.incrementStage();
-        expect(model.getElementAttribute("decStage", "class")).toBe("something");
-        expect(model.getElementAttribute("incStage", "class")).toBe("something disabledIcon");
+        expect(ReaderToolsModel.getElementAttribute("decStage", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("incStage", "class")).toBe("something disabledIcon");
     });
 
     it("updates level button visibility when setting level", function() {
         model.setLevelNumber(3);
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
-        expect(model.getElementAttribute("incLevel", "class")).toBe("something disabledIcon");
+        expect(ReaderToolsModel.getElementAttribute("decLevel", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("incLevel", "class")).toBe("something disabledIcon");
 
         model.decrementLevel();
-        expect(model.getElementAttribute("incLevel", "class")).toBe("something");
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("incLevel", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("decLevel", "class")).toBe("something");
 
         model.decrementLevel();
-        expect(model.getElementAttribute("incLevel", "class")).toBe("something");
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something disabledIcon");
+        expect(ReaderToolsModel.getElementAttribute("incLevel", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("decLevel", "class")).toBe("something disabledIcon");
 
         model.incrementLevel();
-        expect(model.getElementAttribute("incLevel", "class")).toBe("something");
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("incLevel", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("decLevel", "class")).toBe("something");
 
         model.incrementLevel();
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something");
-        expect(model.getElementAttribute("incLevel", "class")).toBe("something disabledIcon");
+        expect(ReaderToolsModel.getElementAttribute("decLevel", "class")).toBe("something");
+        expect(ReaderToolsModel.getElementAttribute("incLevel", "class")).toBe("something disabledIcon");
     });
 
     it("updates content of level element when setting level", function() {
         model.setLevelNumber(3);
-        expect(model.updateElementContent).toHaveBeenCalledWith("levelNumber", "3");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("levelNumber", "3");
     });
 
     it("sorts word list correctly when sort buttons clicked", function() {
 
         model.setStageNumber(2);
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
 
         // Default is currently alphabetic
         model.setStageNumber(1);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div>');
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div>');
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.sortByLength();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">rate</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word sight-word">rodent</div>');
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">rate</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word sight-word">rodent</div>');
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.sortByFrequency();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div>');
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div>');
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.sortAlphabetically();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div>');
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div>');
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.setStageNumber(2);
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">bob</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word">fob</div><div class="word sight-word">one</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div><div class="word sight-word">two</div>');
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">bob</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word">fob</div><div class="word sight-word">one</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div><div class="word sight-word">two</div>');
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.sortByLength(); // same-length ones should be alphabetic
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">bob</div><div class="word">fob</div><div class="word sight-word">one</div><div class="word">sat</div><div class="word sight-word">two</div><div class="word">rate</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word sight-word">rodent</div>');
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">bob</div><div class="word">fob</div><div class="word sight-word">one</div><div class="word">sat</div><div class="word sight-word">two</div><div class="word">rate</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word sight-word">rodent</div>');
 
-        model.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.reset();
         model.sortByFrequency();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">bob</div><div class="word">catty</div><div class="word">fob</div><div class="word sight-word">feline</div><div class="word sight-word">one</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word sight-word">two</div>');
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">bob</div><div class="word">catty</div><div class="word">fob</div><div class="word sight-word">feline</div><div class="word sight-word">one</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word sight-word">two</div>');
     });
 
     it ("sets selected class when sort button clicked", function() {
@@ -194,63 +196,63 @@ describe("Bloom Edit Controls tests", function() {
         classValues.sortFrequency = "sortItem";
 
         model.sortByLength();
-        expect(model.getElementAttribute("sortAlphabetic", "class")).toBe("sortItem");
-        expect(model.getElementAttribute("sortLength", "class")).toBe("sortItem sortIconSelected");
+        expect(ReaderToolsModel.getElementAttribute("sortAlphabetic", "class")).toBe("sortItem");
+        expect(ReaderToolsModel.getElementAttribute("sortLength", "class")).toBe("sortItem sortIconSelected");
 
         model.sortByFrequency();
-        expect(model.getElementAttribute("sortLength", "class")).toBe("sortItem");
-        expect(model.getElementAttribute("sortFrequency", "class")).toBe("sortItem sortIconSelected");
+        expect(ReaderToolsModel.getElementAttribute("sortLength", "class")).toBe("sortItem");
+        expect(ReaderToolsModel.getElementAttribute("sortFrequency", "class")).toBe("sortItem sortIconSelected");
 
         model.sortAlphabetically();
-        expect(model.getElementAttribute("sortFrequency", "class")).toBe("sortItem");
-        expect(model.getElementAttribute("sortAlphabetic", "class")).toBe("sortItem sortIconSelected");
+        expect(ReaderToolsModel.getElementAttribute("sortFrequency", "class")).toBe("sortItem");
+        expect(ReaderToolsModel.getElementAttribute("sortAlphabetic", "class")).toBe("sortItem sortIconSelected");
 
         classValues.sortLength = "sortItem sortIconSelected"; // anomolous...length is also selected, though not properly current.
         classValues.sortAlphabetic = "sortItem"; // anomolous...doesn't have property, though it is current.
 
         model.sortByLength();
-        expect(model.getElementAttribute("sortAlphabetic", "class")).toBe("sortItem");
-        expect(model.getElementAttribute("sortLength", "class")).toBe("sortItem sortIconSelected");
+        expect(ReaderToolsModel.getElementAttribute("sortAlphabetic", "class")).toBe("sortItem");
+        expect(ReaderToolsModel.getElementAttribute("sortLength", "class")).toBe("sortItem sortIconSelected");
     });
 
     it ("updates word list on init", function() {
         model.updateControlContents();
-        expect(model.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class=\"word sight-word\">feline</div><div class="word">rate</div><div class=\"word sight-word\">rodent</div><div class="word">sat</div>');
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class=\"word sight-word\">feline</div><div class="word">rate</div><div class=\"word sight-word\">rodent</div><div class="word">sat</div>');
     });
 
     it ("updates stage count and buttons on init", function() {
         model.updateControlContents();
-        expect(model.updateElementContent).toHaveBeenCalledWith("numberOfStages", "3");
-        expect(model.getElementAttribute("decStage", "class")).toBe("something disabledIcon");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("numberOfStages", "3");
+        expect(ReaderToolsModel.getElementAttribute("decStage", "class")).toBe("something disabledIcon");
     });
 
     it ("updates level buttons on init", function() {
         model.updateControlContents();
-        expect(model.updateElementContent).toHaveBeenCalledWith("numberOfLevels", "3");
-        expect(model.getElementAttribute("decLevel", "class")).toBe("something disabledIcon");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("numberOfLevels", "3");
+        expect(ReaderToolsModel.getElementAttribute("decLevel", "class")).toBe("something disabledIcon");
     });
 
     it ("updates stage label on init", function() {
         model.updateControlContents();
-        expect(model.updateElementContent).toHaveBeenCalledWith("stageNumber", "1");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("stageNumber", "1");
     });
 
     it("sets level max values on init", function() {
         model.updateControlContents();
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPage", "6");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPageBook", "6");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerBook", "90");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerSentence", "3");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("maxWordsPerPage", "6");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("maxWordsPerPageBook", "6");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("maxWordsPerBook", "90");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("maxWordsPerSentence", "3");
         //expect(model.updateElementContent).toHaveBeenCalledWith("maxUniqueWordsPerBook", "0");
-        expect(model.getElementAttribute("maxWordsPerBook", "class")).toBe("");
+        expect(ReaderToolsModel.getElementAttribute("maxWordsPerBook", "class")).toBe("");
     });
 
     it("updates max values when level changes", function() {
         model.incrementLevel();
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPage", "10");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerPageBook", "10");
-        expect(model.updateElementContent).not.toHaveBeenCalledWith("maxWordsPerBook", "0");
-        expect(model.updateElementContent).toHaveBeenCalledWith("maxWordsPerSentence", "5");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("maxWordsPerPage", "10");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("maxWordsPerPageBook", "10");
+        expect(ReaderToolsModel.updateElementContent).not.toHaveBeenCalledWith("maxWordsPerBook", "0");
+        expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("maxWordsPerSentence", "5");
         //expect(model.updateElementContent).toHaveBeenCalledWith("maxUniqueWordsPerBook", "12");
         //expect(model.getElementAttribute("maxWordsPerBook", "class")).toBe("disabledLimit");
     });
