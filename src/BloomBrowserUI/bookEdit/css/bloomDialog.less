@@ -47,17 +47,34 @@
 }
 BUTTON {
 	.rounded;
-	border: 1px solid #d3d3d3;
+	border: 1px solid #8abbf4;
+	-webkit-box-shadow: #CCC 0 0 .25em;
+	-moz-box-shadow: #CCC 0 0 .25em;
+	box-shadow: #CCC 0 0 .25em;
 }
 BUTTON:hover {
-	background-color: #d3d3d3;
-	border: 1px solid black;
+	background-color: #c5daf3;
 }
 BUTTON[disabled] {
 	border: 1px solid #d3d3d3;
 	background-color: #d3d3d3 !important;
+	color: grey;
 }
 .propButton:NOT(.selectedIcon) {
 	border: 1px solid #d3d3d3;
 	.rounded;
+}
+.bloomDialogTitleBar {
+	background-color: rgb(140, 183, 220);
+	opacity:1;
+	position:relative;
+	top:0;
+	left:0;
+	right:0;
+	height: 2em;
+	text-align: center;
+}
+.bloomDialogMainPage {
+	background: #ffffff;
+	margin-left: 2em;
 }

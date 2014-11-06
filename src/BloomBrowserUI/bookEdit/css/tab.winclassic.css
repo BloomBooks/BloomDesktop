@@ -24,7 +24,7 @@
   margin: 1px -2px 1px 2px;
   float: left;
   padding: 2px 5px 3px 5px;
-  background: #1f0da8;
+  background: #dfdfe4;
   border: 1px solid;
   border-color: #919b9c;
   border-bottom: 0;
@@ -35,19 +35,23 @@
 }
 .dynamic-tab-pane-control .tab-row .tab.selected {
   color: #000000;
-  background: #f2f167;
+  background: #f4f6f6;
   border-bottom: 0;
   z-index: 3;
   padding: 2px 6px 5px 7px;
   margin: 1px -3px -2px 0px;
   top: -2px;
 }
-.dynamic-tab-pane-control .tab-row .tab.selected:hover {
-  background-color: #f2f167;
+.dynamic-tab-pane-control .tab-row .tab:hover {
+  background: -webkit-gradient(linear, 0 0, 0 70%, from(#e8e8f9), to(#ffffff));
+  background: -webkit-linear-gradient(#e8e8f9, #ffffff 70%);
+  background: -moz-linear-gradient(#e8e8f9, #ffffff 70%);
+  background: -ms-linear-gradient(#e8e8f9, #ffffff 70%);
+  background: linear-gradient(#e8e8f9, #ffffff 70%);
 }
 .dynamic-tab-pane-control .tab-row .tab a {
   font: Menu;
-  color: #ffffff;
+  color: #000000;
   text-decoration: none;
   cursor: default;
 }
@@ -57,7 +61,7 @@
   cursor: default;
 }
 .dynamic-tab-pane-control .tab-row .tab:hover {
-  background-color: #6e8aaf;
+  background-color: #bac1d5;
 }
 .dynamic-tab-pane-control .tab-page {
   clear: both;
