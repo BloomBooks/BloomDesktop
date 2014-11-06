@@ -88,8 +88,8 @@
     var lastWhich;
     var timer;
     var activeElement;
-    var caretPosition; // Technically, the object is a range, but for us it should always be a point
     var textAreaCaretPosition;
+    var storedOffset;
 
     var popup=$('<ul class=long-press-popup />');
 
@@ -194,7 +194,7 @@
         if (isTextArea()) {
             textAreaCaretPosition = getTextAreaCaretPosition(activeElement);
         } else {
-            caretPosition = getCaretPosition();
+            storedOffset = EditableDivUtils.getElementSelectionIndex(activeElement);
         }
     }
 
@@ -202,8 +202,17 @@
         if (isTextArea()) {
             setTextAreaCaretPosition(activeElement, textAreaCaretPosition);
         } else {
-            setCaretPosition();
+            EditableDivUtils.makeSelectionIn(activeElement, storedOffset, null, true);
+            setFocusDelayed();
         }
+    }
+
+    function setFocusDelayed() {
+        window.setTimeout(function() {
+            if (activeElement && typeof activeElement.focus != "undefined") {
+                activeElement.focus();
+            }
+        }, 1);
     }
 
     function replacePreviousLetterWithText(text) {
@@ -241,17 +250,6 @@
     function getCaretPosition() {
         var sel = window.getSelection();
         return sel.getRangeAt(0);
-    }
-
-    function setCaretPosition() {
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(caretPosition);
-        window.setTimeout(function() {
-            if (activeElement && typeof activeElement.focus != "undefined") {
-                activeElement.focus();
-            }
-        }, 1);
     }
 
     function getCaretPositionOffset(element) {
