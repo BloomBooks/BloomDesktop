@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Gecko;
 using Palaso.IO;
 using Palaso.Reporting;
+using Bloom;
 
 namespace GeckofxHtmlToPdf
 {
@@ -30,55 +31,7 @@ namespace GeckofxHtmlToPdf
 				this.ShowInTaskbar = false;
 			}
 
-			var xulRunnerPath = GetXulRunnerPath();
-			_pdfMaker.Initialize(xulRunnerPath);
-		}
-
-		// Todo: common code in Browser.cs
-		string GetXulRunnerPath()
-		{
-			string xulRunnerPath = Environment.GetEnvironmentVariable("XULRUNNER");
-			if (!Directory.Exists(xulRunnerPath))
-			{
-				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
-				if (!Directory.Exists(xulRunnerPath))
-				{
-					//if this is a programmer, go look in the lib directory
-					xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-						Path.Combine("lib", "xulrunner"));
-
-					//on my build machine, I really like to have the dir labelled with the version.
-					//but it's a hassle to update all the other parts (installer, build machine) with this number,
-					//so we only use it if we don't find the unnumbered alternative.
-					if (!Directory.Exists(xulRunnerPath))
-					{
-						xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-							Path.Combine("lib", "xulrunner" + XulRunnerVersion));
-					}
-
-					if (!Directory.Exists(xulRunnerPath))
-					{
-						throw new ConfigurationException(
-							"Can't find the directory where xulrunner (version {0}) is installed",
-							XulRunnerVersion);
-					}
-				}
-			}
-			return xulRunnerPath;
-		}
-
-		private static int XulRunnerVersion
-		{
-			get
-			{
-				var geckofx = Assembly.GetAssembly(typeof(GeckoWebBrowser));
-				if (geckofx == null)
-					return 0;
-
-				var versionAttribute = geckofx.GetCustomAttributes(typeof(AssemblyFileVersionAttribute), true)
-					.FirstOrDefault() as AssemblyFileVersionAttribute;
-				return versionAttribute == null ? 0 : new Version(versionAttribute.Version).Major;
-			}
+			Browser.SetUpXulRunner();
 		}
 
 		private void ConversionProgress_Load(object sender, EventArgs e)
