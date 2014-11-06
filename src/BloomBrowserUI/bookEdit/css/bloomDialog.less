@@ -58,15 +58,9 @@ BUTTON, INPUT, SELECT {
 BUTTON {
 	.rounded;
 	border: 1px solid #8abbf4;
-	-webkit-box-shadow: #CCC 0 0 .25em;
-	-moz-box-shadow: #CCC 0 0 .25em;
 	box-shadow: #CCC 0 0 .25em;
 }
 BUTTON:hover, INPUT:hover, SELECT:hover {
-	background: -webkit-gradient(linear, 0 0, 0 70%, from(@backgroundColorHover), to(@backgroundColorSelected));
-	background: -webkit-linear-gradient(@backgroundColorHover, @backgroundColorSelected 70%);
-	background: -moz-linear-gradient(@backgroundColorHover, @backgroundColorSelected 70%);
-	background: -ms-linear-gradient(@backgroundColorHover, @backgroundColorSelected 70%);
 	background: linear-gradient(@backgroundColorHover, @backgroundColorSelected 70%);
 }
 BUTTON[disabled] {
@@ -79,10 +73,6 @@ BUTTON[disabled] {
 	.rounded;
 }
 .propButton:hover {
-	background: -webkit-gradient(linear, 0 0, 0 70%, from(@backgroundColorHover), to(@backgroundColorSelected));
-	background: -webkit-linear-gradient(@backgroundColorHover, @backgroundColorSelected 70%);
-	background: -moz-linear-gradient(@backgroundColorHover, @backgroundColorSelected 70%);
-	background: -ms-linear-gradient(@backgroundColorHover, @backgroundColorSelected 70%);
 	background: linear-gradient(@backgroundColorHover, @backgroundColorSelected 70%);
 }
 .bloomDialogContainer {

@@ -46,10 +46,6 @@
   top: -2px;
 }
 .dynamic-tab-pane-control .tab-row .tab:hover {
-  background: -webkit-gradient(linear, 0 0, 0 70%, from(#e2e2f3), to(#ffffff));
-  background: -webkit-linear-gradient(#e2e2f3, #ffffff 70%);
-  background: -moz-linear-gradient(#e2e2f3, #ffffff 70%);
-  background: -ms-linear-gradient(#e2e2f3, #ffffff 70%);
   background: linear-gradient(#e2e2f3, #ffffff 70%);
 }
 .dynamic-tab-pane-control .tab-row .tab a {
