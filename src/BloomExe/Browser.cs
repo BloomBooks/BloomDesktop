@@ -305,17 +305,41 @@ namespace Bloom
 			// There are 3 errors in this file that occur when you click to edit a book on some virtual machines and on Linux
 			errorsToHide.Add("chrome://global/content/alerts/alert.js");
 
-			WebBrowser.JavascriptError += (sender, error) =>
+			// BL-676: nsBlocklistService.js, "gApp is not defined" on Linux for Big Book and Calendar.
+			errorsToHide.Add("resource://gre/components/nsBlocklistService.js");
+
+			// these javascript warnings will not be logged
+			var warningsToHide = new List<string>
 			{
 				// Warnings began popping up when we started using http rather than file urls for script tags.
 				// 21 JUL 2014, PH: This is a confirmed bug in firefox (https://bugzilla.mozilla.org/show_bug.cgi?id=1020846)
 				//   and is supposed to be fixed in firefox 33.
-				if (error.Flags.HasFlag(Gecko.ErrorFlags.REPORT_WARNING)
-					&& error.Message.Contains("is being assigned a //# sourceMappingURL, but already has one"))
+				"is being assigned a //# sourceMappingURL, but already has one"
+			};
+
+			WebBrowser.JavascriptError += (sender, error) =>
+			{
+				// It should be safe to ignore all JavaScript warnings, but we will log them and send to the console
+				if (error.Flags.HasFlag(ErrorFlags.REPORT_WARNING))
+				{
+					string logMsg;
+					if (string.IsNullOrEmpty(error.Filename))
+						logMsg = string.Format("There was a JScript warning: {0}", error.Message);
+					else
+						logMsg = string.Format("There was a JScript warning in {0} at line {1}: {2}", error.Filename, error.Line, error.Message);
+
+					// don't log warnings in the warningsToHide list
+					if (warningsToHide.Any(matchString => logMsg.Contains(matchString)))
+						return;
+
+					Logger.WriteMinorEvent(logMsg);
+					Console.Out.WriteLine(logMsg);
 					return;
+				}
 
 				var msg = string.Format("There was a JScript error in {0} at line {1}: {2}",
 										error.Filename, error.Line, error.Message);
+
 				if (!errorsToHide.Any(matchString => msg.Contains(matchString)))
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
 			};
