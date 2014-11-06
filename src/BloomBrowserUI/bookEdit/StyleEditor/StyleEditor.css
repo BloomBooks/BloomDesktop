@@ -10,7 +10,7 @@
   line-height: normal;
 }
 .leftBlock {
-  width: 175px;
+  width: 150px;
 }
 .spacing-fudge {
   margin: 0px 0px -5px 0px;
@@ -22,18 +22,21 @@
 #style-select-input {
   width: 143px;
 }
+.bloomDialogContainer {
+  width: 350px !important;
+}
 .state-initial #dont-see {
   display: block;
 }
-.state-initial #create-style {
+.state-initial #createStyle {
   display: none;
 }
-.state-entering-style #create-style {
+.state-enteringStyle #createStyle {
   display: block;
 }
-.state-entering-style #dont-see,
-.state-entering-style #please-use-alpha,
-.state-entering-style #already-exists {
+.state-enteringStyle #dont-see,
+.state-enteringStyle #please-use-alpha,
+.state-enteringStyle #already-exists {
   display: none;
 }
 .state-invalid-characters #please-use-alpha {

@@ -508,12 +508,12 @@ var StyleEditor = (function () {
                     return a.toLowerCase().localeCompare(b.toLowerCase());
                 });
 
-                var html = '<div id="format-toolbar" style="background-color:white;opacity:1;z-index:1010;position:absolute;line-height:1.8;font-family:Segoe UI" class="bloom-ui">' + '<div style="background-color:darkGrey;opacity:1;position:relative;top:0;left:0;right:0;height: 10pt"></div>';
+                var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">' + '<div data-i18n="EditTab.StyleEditor.Format" class="bloomDialogTitleBar">Format</div>';
                 if (editor.authorMode) {
-                    html += '<div class="tab-pane" id="tabRoot">' + '<div class="tab-page"><h2 class="tab">Style Name</h2>' + editor.makeDiv(null, null, null, 'EditTab.StyleEditor.Style', 'Style:') + editor.makeDiv("style-group", "state-initial", null, null, editor.makeSelect(editor.styles, 0, styleName, 'styleSelect') + editor.makeDiv('dont-see', null, null, null, '<span data-i18n="EditTab.StyleEditor.DontSeeNeed">' + "Don't see what you need?" + '</span>' + ' <a id="show-create-style" href="" data-i18n="EditTab.StyleEditor.CreateStyle">Create a new style</a>') + editor.makeDiv('create-style', null, null, null, editor.makeDiv(null, null, null, 'EditTab.StyleEditor.NewStyle', 'New style') + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.StyleEditor.Create" disabled>Create</button>') + editor.makeDiv("please-use-alpha", null, 'color: red;', 'EditTab.StyleEditor.PleaseUseAlpha', 'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".') + editor.makeDiv("already-exists", null, 'color: red;', 'EditTab.StyleEditor.AlreadyExists', 'That style already exists. Please choose another name.'))) + "</div>" + '<div class="tab-page" id="formatPage"><h2 class="tab">Characters</h2>' + editor.makeCharactersContent(fonts, current) + '</div>' + '<div class="tab-page"><h2 class="tab">More</h2>' + editor.makeDiv(null, null, null, null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis') + editor.makeDiv(null, null, null, null, editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', null, 'B') + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', null, 'I') + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', null, 'U'))) + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Position', 'Position') + editor.makeDiv(null, null, null, null, editor.makeDiv('position-leading', 'icon16x16', null, null, editor.makeImage('text_align_left.png')) + editor.makeDiv('position-center', 'icon16x16', null, null, editor.makeImage('text_align_center.png'))))) + editor.makeDiv(null, null, 'margin-top:10px', null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Borders', 'Borders') + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('border-none', 'icon16x16', null, null, editor.makeImage('grayX.png')) + editor.makeDiv('border-black', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: black', null, '')) + editor.makeDiv('border-black-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox rounded', 'border-color: black', null, ''))) + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', null, editor.makeDiv('border-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: gray', null, '')) + editor.makeDiv('border-gray-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox rounded', 'border-color: gray', null, '')))) + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Background', 'Background') + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('background-none', 'icon16x16', null, null, editor.makeImage('grayX.png')) + editor.makeDiv('background-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), null, ''))))) + '<div class="format-toolbar-description" id="formatMoreDesc">' + editor.getMoreTabDescription() + '</div>' + '</div>' + '</div>'; // end of tab-pane div
+                    html += '<div class="tab-pane" id="tabRoot">' + '<div class="tab-page"><h2 class="tab">Style Name</h2>' + editor.makeDiv(null, null, null, 'EditTab.StyleEditor.Style', 'Style:') + editor.makeDiv("style-group", "state-initial", null, null, editor.makeSelect(editor.styles, 0, styleName, 'styleSelect') + editor.makeDiv('dont-see', null, null, null, '<span data-i18n="EditTab.StyleEditor.DontSeeNeed">' + "Don't see what you need?" + '</span>' + ' <a id="show-createStyle" href="" data-i18n="EditTab.StyleEditor.CreateStyle">Create a new style</a>') + editor.makeDiv('createStyle', null, null, null, editor.makeDiv(null, null, null, 'EditTab.StyleEditor.NewStyle', 'New style') + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.StyleEditor.Create" disabled>Create</button>') + editor.makeDiv("please-use-alpha", null, 'color: red;', 'EditTab.StyleEditor.PleaseUseAlpha', 'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".') + editor.makeDiv("already-exists", null, 'color: red;', 'EditTab.StyleEditor.AlreadyExists', 'That style already exists. Please choose another name.'))) + "</div>" + '<div class="tab-page" id="formatPage"><h2 class="tab">Characters</h2>' + editor.makeCharactersContent(fonts, current) + '</div>' + '<div class="tab-page"><h2 class="tab">More</h2>' + editor.makeDiv(null, null, null, null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis') + editor.makeDiv(null, null, null, null, editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', null, 'B') + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', null, 'I') + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', null, 'U'))) + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Position', 'Position') + editor.makeDiv(null, null, null, null, editor.makeDiv('position-leading', 'icon16x16', null, null, editor.makeImage('text_align_left.png')) + editor.makeDiv('position-center', 'icon16x16', null, null, editor.makeImage('text_align_center.png'))))) + editor.makeDiv(null, null, 'margin-top:10px', null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Borders', 'Borders') + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('border-none', 'icon16x16', null, null, editor.makeImage('grayX.png')) + editor.makeDiv('border-black', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: black', null, '')) + editor.makeDiv('border-black-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox rounded', 'border-color: black', null, ''))) + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', null, editor.makeDiv('border-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: gray', null, '')) + editor.makeDiv('border-gray-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox rounded', 'border-color: gray', null, '')))) + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Background', 'Background') + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('background-none', 'icon16x16', null, null, editor.makeImage('grayX.png')) + editor.makeDiv('background-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), null, ''))))) + '<div class="format-toolbar-description" id="formatMoreDesc">' + editor.getMoreTabDescription() + '</div>' + '</div>' + '</div>'; // end of tab-pane div
                 } else {
                     // not in authorMode...much simpler dialog, no tabs, just the body of the characters tab.
-                    html += editor.makeCharactersContent(fonts, current);
+                    html += '<div class="bloomDialogMainPage">' + editor.makeCharactersContent(fonts, current) + '</div>';
                 }
                 html += '</div>';
                 $('#format-toolbar').remove(); // in case there's still one somewhere else
@@ -550,7 +550,7 @@ var StyleEditor = (function () {
                     $('#style-select-input').get(0).trimNotification = function () {
                         editor.styleStateChange('invalid-characters');
                     };
-                    $('#show-create-style').click(function (event) {
+                    $('#show-createStyle').click(function (event) {
                         event.preventDefault();
                         editor.showCreateStyle();
                         return false;
@@ -625,7 +625,7 @@ var StyleEditor = (function () {
 
     // Specific State Machine changes the Style section state
     StyleEditor.prototype.styleStateChange = function (newState) {
-        if (newState == 'entering-style' && $('#style-select-input').val()) {
+        if (newState == 'enteringStyle' && $('#style-select-input').val()) {
             $('#create-button').removeAttr('disabled');
         } else {
             $('#create-button').attr('disabled', true);
@@ -643,11 +643,11 @@ var StyleEditor = (function () {
                 return;
             }
         }
-        this.styleStateChange('entering-style');
+        this.styleStateChange('enteringStyle');
     };
 
     StyleEditor.prototype.showCreateStyle = function () {
-        this.styleStateChange('entering-style');
+        this.styleStateChange('enteringStyle');
         return false;
     };
 
@@ -770,7 +770,7 @@ var StyleEditor = (function () {
     StyleEditor.prototype.inputStyleExists = function () {
         var typedStyle = $('#style-select-input').val();
         for (var i = 0; i < this.styles.length; i++) {
-            if (typedStyle == this.styles[i]) {
+            if (typedStyle.toLocaleLowerCase() == this.styles[i].toLocaleLowerCase()) {
                 return true;
             }
         }

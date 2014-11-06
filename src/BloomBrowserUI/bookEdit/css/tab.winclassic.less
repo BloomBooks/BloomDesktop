@@ -4,17 +4,21 @@
 	Considerably changed for Bloom.
 */
 
-@tabRowHeight: 18px;
+@tabRowHeight: 20px;
 @tabWidth: 70px;
 
 @borderColor: rgb(145, 155, 156);
 
-@tabBackgroundColor: #1f0da8;
-@tabBackgroundColorHover: #6e8aaf;
-@tabBackgroundColorSelected: #f2f167;
+@tabBackgroundColor: #dfdfe4;
+@tabBackgroundColorHover: #e2e2f3;
+@tabBackgroundColorSelected: white;
 
-@tabTextColor: white;
-@tabTextColorSelected: black;
+@tabTextColor: black;
+
+.dynamic-tab-pane-control {
+	font: Segoe UI, Arial, sans-serif;
+	font-size: 10pt;
+}
 
 .dynamic-tab-pane-control.tab-pane {
 	position: relative;
@@ -33,7 +37,6 @@
 	width: @tabWidth;
 	height: @tabRowHeight;
 
-	font: Menu;
 	cursor: Default;
 	display: inline;
 	margin: 1px -2px 1px 2px;
@@ -50,7 +53,7 @@
 }
 
 .dynamic-tab-pane-control .tab-row .tab.selected {
-	color: @tabTextColorSelected;
+	color: @tabTextColor;
 	background: @tabBackgroundColorSelected;
 	border-bottom: 0;
 	z-index: 3;
@@ -59,38 +62,28 @@
 	top: -2px;
 }
 
-.dynamic-tab-pane-control .tab-row .tab.selected:hover {
-	background-color: @tabBackgroundColorSelected;
+.dynamic-tab-pane-control .tab-row .tab:hover {
+	background: linear-gradient(@tabBackgroundColorHover, @tabBackgroundColorSelected 70%);
 }
 
 .dynamic-tab-pane-control .tab-row .tab a {
-	font: Menu;
 	color: @tabTextColor;
 	text-decoration: none;
 	cursor: default;
 }
 
 .dynamic-tab-pane-control .tab-row .tab.selected a {
-	font: Menu;
-	color: @tabTextColorSelected;
+	color: @tabTextColor;
 	cursor: default;
-}
-
-.dynamic-tab-pane-control .tab-row .tab:hover {
-	background-color: @tabBackgroundColorHover;
 }
 
 .dynamic-tab-pane-control .tab-page {
 	clear: both;
 	border: 1px solid;
-	border-color: ThreeDHighlight ThreeDDarkShadow
-	ThreeDDarkShadow ThreeDHighlight;
-	background: ThreeDFace;
+	background: white;
 	z-index: 2;
 	position: relative;
 	top: -2px;
-	color: WindowText;
-	font: Message-Box;
 	padding: 10px;
 }
 
