@@ -941,7 +941,7 @@
         <seg>Guhitamo ubunini bw'urupapuro n'icyerekezo</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditorTip">
+    <tu tuid="EditTab.FormatDialogTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Adjust formatting for style</seg>

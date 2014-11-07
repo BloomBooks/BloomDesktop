@@ -982,55 +982,55 @@
         <seg>Choose a page size and orientation</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.BorderToolTip">
+    <tu tuid="EditTab.FormatDialog.BorderToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the border and background</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.FontFaceToolTip">
+    <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the font face</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.FontSizeToolTip">
+    <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the font size</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.LineSpacingToolTip">
+    <tu tuid="EditTab.FormatDialog.LineSpacingToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the spacing between lines of text</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingExtraWide">
+    <tu tuid="EditTab.FormatDialog.WordSpacingExtraWide">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Extra Wide</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingNormal">
+    <tu tuid="EditTab.FormatDialog.WordSpacingNormal">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Normal</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingToolTip">
+    <tu tuid="EditTab.FormatDialog.WordSpacingToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the spacing between words</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingWide">
+    <tu tuid="EditTab.FormatDialog.WordSpacingWide">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Wide</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditorTip">
+    <tu tuid="EditTab.FormatDialogTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Adjust formatting for style</seg>
@@ -1937,7 +1937,8 @@
     <tu tuid="PublishTab.BodyOnlyRadio-tooltip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
+        <seg>Make a booklet from the inside pages of the book.
+ Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.ButtonThatShowsUploadForm">

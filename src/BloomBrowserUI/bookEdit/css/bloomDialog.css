@@ -80,7 +80,7 @@ BUTTON[disabled] {
   z-index: 1010;
   position: absolute;
   line-height: 1.8;
-  font-family: Segoe UI;
+  font-family: Segoe UI, Open Sans, Arial, sans-serif;
 }
 .bloomDialogTitleBar {
   background-color: #8cb7dc;
