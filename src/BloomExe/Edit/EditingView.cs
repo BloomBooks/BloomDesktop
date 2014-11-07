@@ -1,15 +1,14 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
+using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
 using Palaso.Extensions;
@@ -37,11 +36,11 @@ namespace Bloom.Edit
 		private Action _pendingMessageHandler;
 		private bool _updatingDisplay;
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
-		private Color _disabledToolbarColor= Color.FromArgb(114,74,106);
+		private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
 		private bool _visible;
 		private GeckoHtmlElement _targetElement;
 
-		public delegate EditingView Factory();//autofac uses this
+		public delegate EditingView Factory(); //autofac uses this
 
 
 		public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView,
@@ -59,14 +58,14 @@ namespace Bloom.Edit
 			_deletePageCommand = deletePageCommand;
 			InitializeComponent();
 			_browser1.Isolator = isolator;
-			_splitContainer1.Tag = _splitContainer1.SplitterDistance;//save it
+			_splitContainer1.Tag = _splitContainer1.SplitterDistance; //save it
 			//don't let it grow automatically
 //            _splitContainer1.SplitterMoved+= ((object sender, SplitterEventArgs e) => _splitContainer1.SplitterDistance = (int)_splitContainer1.Tag);
 			SetupThumnailLists();
 			_model.SetView(this);
-			_browser1.SetEditingCommands(cutCommand, copyCommand,pasteCommand, undoCommand);
+			_browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
 
-			_browser1.GeckoReady+=new EventHandler(OnGeckoReady);
+			_browser1.GeckoReady += new EventHandler(OnGeckoReady);
 
 			// Adding this renderer prevents a white line from showing up under the components.
 #if !__MonoCS__
@@ -158,7 +157,7 @@ namespace Bloom.Edit
 		{
 			try
 			{
-				if(!_model.CanEditCopyrightAndLicense)
+				if (!_model.CanEditCopyrightAndLicense)
 				{
 					MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright", "Sorry, the copyright and license for this book cannot be changed."));
 					return;
@@ -199,7 +198,7 @@ namespace Bloom.Edit
 						var rights = dlg.Metadata.License.RightsStatement;
 						dlg.Metadata.License.RightsStatement = rights;
 						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
-						string licenseImageName = licenseImage==null? string.Empty: "license.png";
+						string licenseImageName = licenseImage == null ? string.Empty : "license.png";
 						string result =
 							string.Format(
 								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
@@ -239,7 +238,7 @@ namespace Bloom.Edit
 
 		private void SetupThumnailLists()
 		{
-			_pageListView.Dock=DockStyle.Fill;
+			_pageListView.Dock = DockStyle.Fill;
 			_pageListView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			_templatePagesView.BackColor = _pageListView.BackColor = _splitContainer1.Panel1.BackColor;
 			_splitContainer1.Panel1.Controls.Add(_pageListView);
@@ -255,7 +254,7 @@ namespace Bloom.Edit
 			_splitTemplateAndSource.Panel1.Controls.Clear();
 			_splitTemplateAndSource.Panel2.Controls.Clear();
 
-			if (_model.ShowTemplatePanel)        //Templates only
+			if (_model.ShowTemplatePanel) //Templates only
 			{
 				_splitContainer2.Panel2Collapsed = false;
 				_splitContainer2.Panel2.Controls.Add(_templatePagesView);
@@ -268,11 +267,11 @@ namespace Bloom.Edit
 
 		void VisibleNowAddSlowContents(object sender, EventArgs e)
 		{
-		   //TODO: this is causing green boxes when you quit while it is still working
-		   //we should change this to a proper background task, with good
-		   //cancellation in case we switch documents.  Note we may also switch
-		   //to some other way of making the thumbnails... e.g. it would be nice
-		   //to have instant placeholders, with thumbnails later.
+			//TODO: this is causing green boxes when you quit while it is still working
+			//we should change this to a proper background task, with good
+			//cancellation in case we switch documents.  Note we may also switch
+			//to some other way of making the thumbnails... e.g. it would be nice
+			//to have instant placeholders, with thumbnails later.
 
 			Application.Idle -= new EventHandler(VisibleNowAddSlowContents);
 
@@ -286,23 +285,23 @@ namespace Bloom.Edit
 		private void CheckFontAvailablility()
 		{
 			var fontMessage = _model.GetFontAvailabilityMessage();
-			if(!string.IsNullOrEmpty(fontMessage))
+			if (!string.IsNullOrEmpty(fontMessage))
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(),
-																 fontMessage);
+					fontMessage);
 			}
 		}
 
 
 		/// <summary>
-	   /// this is called by our model, as a result of a "SelectedTabChangedEvent". So it's a lot more reliable than the normal winforms one.
+		/// this is called by our model, as a result of a "SelectedTabChangedEvent". So it's a lot more reliable than the normal winforms one.
 		/// </summary>
 		public void OnVisibleChanged(bool visible)
 		{
 			_visible = visible;
 			if (visible)
 			{
-				if(_model.GetBookHasChanged())
+				if (_model.GetBookHasChanged())
 				{
 					//now we're doing it based on the focus textarea: ShowOrHideSourcePane(_model.ShowTranslationPanel);
 					SetTranslationPanelVisibility();
@@ -323,8 +322,8 @@ namespace Bloom.Edit
 			}
 			else
 			{
-				Application.Idle -= new EventHandler(VisibleNowAddSlowContents);//make sure
-				_browser1.Navigate("about:blank", false);//so we don't see the old one for moment, the next time we open this tab
+				Application.Idle -= new EventHandler(VisibleNowAddSlowContents); //make sure
+				_browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
 			}
 		}
 
@@ -377,6 +376,7 @@ namespace Bloom.Edit
 		{
 			_templatePagesView.Update();
 		}
+
 		public void UpdatePageList(bool emptyThumbnailCache)
 		{
 			if (emptyThumbnailCache)
@@ -393,9 +393,9 @@ namespace Bloom.Edit
 		{
 			var ge = e as DomEventArgs;
 			if (ge == null || ge.Target == null)
-				return;//I've seen this happen
+				return; //I've seen this happen
 
-			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+			var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
 			if (target.ClassName.Contains("sourceTextTab"))
 			{
 				RememberSourceTabChoice(target);
@@ -409,9 +409,9 @@ namespace Bloom.Edit
 				OnEditImageMetdata(ge);
 
 			var anchor = target as Gecko.DOM.GeckoAnchorElement;
-			if(anchor!=null && anchor.Href!="" && anchor.Href!="#")
+			if (anchor != null && anchor.Href != "" && anchor.Href != "#")
 			{
-				if(anchor.Href.Contains("bookMetadataEditor"))
+				if (anchor.Href.Contains("bookMetadataEditor"))
 				{
 					OnShowBookMetadataEditor();
 					ge.Handled = true;
@@ -425,7 +425,7 @@ namespace Bloom.Edit
 					return;
 				}
 
-				if(anchor.Href.ToLower().StartsWith("http"))//will cover https also
+				if (anchor.Href.ToLower().StartsWith("http")) //will cover https also
 				{
 					// do not open in external browser if localhost...except for some links in the accordion
 					if (anchor.Href.ToLowerInvariant().StartsWith(ServerBase.PathEndingInSlash))
@@ -438,9 +438,9 @@ namespace Bloom.Edit
 					ge.Handled = true;
 					return;
 				}
-				if (anchor.Href.ToLower().StartsWith("file"))//source bubble tabs
+				if (anchor.Href.ToLower().StartsWith("file")) //source bubble tabs
 				{
-					ge.Handled = false;//let gecko handle it
+					ge.Handled = false; //let gecko handle it
 					return;
 				}
 				else
@@ -457,7 +457,7 @@ namespace Bloom.Edit
 		private void RememberSourceTabChoice(GeckoHtmlElement target)
 		{
 			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
-			var start = 1+ target.OuterHtml.IndexOf("#");
+			var start = 1 + target.OuterHtml.IndexOf("#");
 			var end = target.OuterHtml.IndexOf("\">");
 			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
@@ -473,8 +473,8 @@ namespace Bloom.Edit
 			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
 			using (var imageInfo = PalasoImage.FromFile(path))
 			{
-				bool looksOfficial = imageInfo.Metadata!=null && !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
-				if(looksOfficial)
+				bool looksOfficial = imageInfo.Metadata != null && !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
+				if (looksOfficial)
 				{
 					MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
 					return;
@@ -492,7 +492,7 @@ namespace Bloom.Edit
 						editor.UpdateMetdataAttributesOnImgElement(imageElement, imageInfo);
 
 						var answer = MessageBox.Show(LocalizationManager.GetString("EditTab.copyImageIPMetdataQuestion","Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"), LocalizationManager.GetString("EditTab.titleOfCopyIPToWholeBooksDialog","Picture Intellectual Property Information"), MessageBoxButtons.YesNo);
-						if(answer == DialogResult.Yes)
+						if (answer == DialogResult.Yes)
 						{
 							Cursor = Cursors.WaitCursor;
 							try
@@ -535,7 +535,7 @@ namespace Bloom.Edit
 					return;
 				}
 
-				var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+				var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
 				if (target.ClassName.Contains("licenseImage"))
 					return;
 
@@ -578,12 +578,12 @@ namespace Bloom.Edit
 
 		private Image GetImageFromClipboard()
 		{
-			if(Clipboard.ContainsImage())
+			if (Clipboard.ContainsImage())
 				return Clipboard.GetImage();
 
 			var dataObject = Clipboard.GetDataObject();
-			if(dataObject==null)
-			   return null;
+			if (dataObject == null)
+				return null;
 
 			// the ContainsImage() returns false when copying an PNG from MS Word
 			// so here we explicitly ask for a PNG and see if we can convert it.
@@ -599,7 +599,7 @@ namespace Bloom.Edit
 				}
 			}
 
-		   //People can do a "copy" from the WIndows Photo Viewer but what it puts on the clipboard is a path, not an image
+			//People can do a "copy" from the WIndows Photo Viewer but what it puts on the clipboard is a path, not an image
 			if (dataObject.GetDataPresent(DataFormats.FileDrop))
 			{
 				//This line gets all the file paths that were selected in explorer
@@ -613,7 +613,7 @@ namespace Bloom.Edit
 				}
 				catch (Exception)
 				{
-					return null;//not an image
+					return null; //not an image
 				}
 			}
 
@@ -633,7 +633,7 @@ namespace Bloom.Edit
 		private static GeckoHtmlElement GetImageNode(DomEventArgs ge)
 		{
 			GeckoHtmlElement imageElement = null;
-			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+			var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
 			foreach (var n in target.Parent.ChildNodes)
 			{
 				imageElement = n as GeckoHtmlElement;
@@ -671,14 +671,14 @@ namespace Bloom.Edit
 
 		private void OnChangeImage(DomEventArgs ge)
 		{
-			_targetElement = GetImageNode(ge);
-			if (_targetElement == null)
+			var imageElement = GetImageNode(ge);
+			if (imageElement == null)
 				return;
-			var currentPath = _targetElement.GetAttribute("src").Replace("%20", " ");
+			string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
 
 			if (!CheckIfLockedAndWarn(currentPath))
 				return;
-			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+			var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
 			if (target.ClassName.Contains("licenseImage"))
 				return;
 
@@ -699,101 +699,32 @@ namespace Bloom.Edit
 					Logger.WriteMinorEvent("Not able to load image for ImageToolboxDialog: " + e.Message);
 				}
 			}
-
 			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
-
-			// BL-482: Scrollbar in image dialog is losing focus.
-			//
-			// For some reason, in Windows the EnhancedImageServer is causing the scroll bar of ListView controls
-			// to lose focus while scrolling. This results in the scroll bar "sticking" and the user has to go back
-			// and click on it again to resume scrolling.
-			//
-			// Running the dialog on a thread other than the main UI thread seems to prevent this behavior in
-			// Windows, but it causes Linux to crash.
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			using (var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
-				using (BackgroundWorker worker = new BackgroundWorker())
+				if (DialogResult.OK == dlg.ShowDialog())
 				{
-					worker.WorkerSupportsCancellation = true;
-					worker.DoWork += ShowImageDialogWorker;
-					worker.RunWorkerAsync(imageInfo);
-
-					// This gives the appearance of freezing the main UI by not calling Application.DoEvents() until
-					// we are finished. It is not actually frozen, just appears that way to the user. If the user
-					// clicks on something it will happen after the image dialog closes.
-					while (worker.IsBusy)
+					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
+					try
 					{
-						Thread.Sleep(50);
-
-						if (worker.CancellationPending)
-							Application.DoEvents();
+						_model.ChangePicture(imageElement, dlg.ImageInfo, new NullProgress());
+					}
+					catch (System.IO.IOException error)
+					{
+						ErrorReport.NotifyUserOfProblem(error, error.Message);
+					}
+					catch (ApplicationException error)
+					{
+						ErrorReport.NotifyUserOfProblem(error, error.Message);
+					}
+					catch (Exception error)
+					{
+						ErrorReport.NotifyUserOfProblem(error, "Bloom had a problem including that image");
 					}
 				}
 			}
-			else
-			{
-				ShowImageDialog(imageInfo);
-			}
-
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
-		}
-
-		private void ShowImageDialogWorker(object sender, DoWorkEventArgs e)
-		{
-			BackgroundWorker worker = sender as BackgroundWorker;
-
-			using (var dlg = new ImageToolboxDialog((PalasoImage)e.Argument, null))
-			{
-				var result = dlg.ShowDialog();
-
-				// releases the UI now so the image can be updated
-				if (worker != null) worker.CancelAsync();
-
-				if (result != DialogResult.OK) return;
-
-				UpdateImageElement(dlg.ImageInfo);
-			}
-		}
-
-		private void ShowImageDialog(PalasoImage imageInfo)
-		{
-			using (var dlg = new ImageToolboxDialog(imageInfo, null))
-			{
-				if (DialogResult.OK != dlg.ShowDialog()) return;
-				UpdateImageElement(dlg.ImageInfo);
-			}
-		}
-
-		private void UpdateImageElement(PalasoImage imageInfo)
-		{
-			try
-			{
-				if (InvokeRequired)
-				{
-					Invoke(new Action(() => _model.ChangePicture(_targetElement, imageInfo, new NullProgress())));
-				}
-				else
-				{
-					_model.ChangePicture(_targetElement, imageInfo, new NullProgress());
-				}
-			}
-			catch (IOException error)
-			{
-				ErrorReport.NotifyUserOfProblem(error, error.Message);
-			}
-			catch (ApplicationException error)
-			{
-				ErrorReport.NotifyUserOfProblem(error, error.Message);
-			}
-			catch (Exception error)
-			{
-				ErrorReport.NotifyUserOfProblem(error, "Bloom had a problem including that image");
-			}
-			finally
-			{
-				_targetElement = null;
-			}
 		}
 
 		public void UpdateThumbnailAsync(IPage page)
@@ -843,11 +774,11 @@ namespace Bloom.Edit
 				var layoutChoices = _model.GetLayoutChoices();
 				foreach (var l in layoutChoices)
 				{
-					var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices."+l.ToString(), l.ToString());
+					var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + l.ToString(), l.ToString());
 					ToolStripMenuItem item = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(text);
 					item.Tag = l;
 					//we don't allow the split options here
-					if(l.ElementDistribution == Book.Layout.ElementDistributionChoices.SplitAcrossPages)
+					if (l.ElementDistribution == Book.Layout.ElementDistributionChoices.SplitAcrossPages)
 					{
 						item.Enabled = false;
 						item.ToolTipText = LocalizationManager.GetString("EditTab.layoutInPublishTabOnlyNotice","This option is only available in the Publish tab.");
@@ -856,14 +787,14 @@ namespace Bloom.Edit
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
 				}
 
-				if(layoutChoices.Count()<2)
+				if (layoutChoices.Count() < 2)
 				{
 					ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(LocalizationManager.GetString("EditTab.noOtherLayouts","There are no other layout options for this template.","Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice"));
 					item.Tag = null;
 					item.Enabled = false;
 				}
 
-				_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices."+layout, layout.ToString());
+				_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
 
 				switch (_model.NumberOfDisplayedLanguages)
 				{
@@ -895,17 +826,17 @@ namespace Bloom.Edit
 
 		void OnPaperSizeAndOrientationMenuClick(object sender, EventArgs e)
 		{
-			var item = (ToolStripMenuItem)sender;
-			_model.SetLayout((Layout)item.Tag);
+			var item = (ToolStripMenuItem) sender;
+			_model.SetLayout((Layout) item.Tag);
 			UpdateDisplay();
 		}
 
 		void OnContentLanguageDropdownItem_CheckedChanged(object sender, EventArgs e)
 		{
-			if(_updatingDisplay)
+			if (_updatingDisplay)
 				return;
 			var item = (ToolStripMenuItem) sender;
-			((EditingModel.ContentLanguage)item.Tag).Selected = item.Checked;
+			((EditingModel.ContentLanguage) item.Tag).Selected = item.Checked;
 
 			_model.ContentLanguagesSelectionChanged();
 		}
@@ -914,7 +845,7 @@ namespace Bloom.Edit
 		{
 			UpdateButtonEnabled(_cutButton, _cutCommand);
 			UpdateButtonEnabled(_copyButton, _copyCommand);
-			UpdateButtonEnabled(_pasteButton ,_pasteCommand);
+			UpdateButtonEnabled(_pasteButton, _pasteCommand);
 			UpdateButtonEnabled(_undoButton, _undoCommand);
 			UpdateButtonEnabled(_duplicatePageButton, _duplicatePageCommand);
 			UpdateButtonEnabled(_deletePageButton, _deletePageCommand);
@@ -948,7 +879,7 @@ namespace Bloom.Edit
 		{
 			button.Enabled = command != null && command.Enabled;
 			//doesn't work because the forecolor is ignored when disabled...
-			button.ForeColor = button.Enabled ? _enabledToolbarColor : _disabledToolbarColor;//.DimGray;
+			button.ForeColor = button.Enabled ? _enabledToolbarColor : _disabledToolbarColor; //.DimGray;
 			button.Invalidate();
 		}
 
@@ -970,12 +901,12 @@ namespace Bloom.Edit
 		public void ClearOutDisplay()
 		{
 			_pageListView.Clear();
-			_browser1.Navigate("about:blank",false);
+			_browser1.Navigate("about:blank", false);
 		}
 
 		private void _deletePageButton_Click_1(object sender, EventArgs e)
 		{
-			if(ConfirmRemovePageDialog.Confirm())
+			if (ConfirmRemovePageDialog.Confirm())
 			{
 				_deletePageCommand.Execute();
 			}
@@ -990,8 +921,8 @@ namespace Bloom.Edit
 		{
 			//Why the check for null? In bl-283, user had been in settings dialog, which caused a closing down, but something
 			//then did a callback to this view, such that ParentForm was null, and this died
-			Debug.Assert(ParentForm!=null);
-			if(ParentForm!=null)
+			Debug.Assert(ParentForm != null);
+			if (ParentForm != null)
 			{
 				ParentForm.Activated += new EventHandler(ParentForm_Activated);
 			}

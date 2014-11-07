@@ -46,11 +46,11 @@ namespace Bloom.CollectionTab
 		private ButtonManagementStage _buttonManagementStage = ButtonManagementStage.LoadPrimary;
 
 		/// <summary>
-		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in prefered language
+		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in preferred language
 		/// A stack would be better for updating "the thing I just changed", but we're using a queue at the moment simply because we
 		/// want you'd see at the top of the screen to update before what's at the bottom or offscreen
 		/// </summary>
-		private ConcurrentQueue<Button> _buttonsNeedingSlowUpdate;
+		private readonly ConcurrentQueue<ButtonInfo> _buttonsNeedingSlowUpdate;
 
 		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
@@ -62,7 +62,7 @@ namespace Bloom.CollectionTab
 			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
 			_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
 			_bookTransferrer = bookTransferrer;
-			_buttonsNeedingSlowUpdate = new ConcurrentQueue<Button>();
+			_buttonsNeedingSlowUpdate = new ConcurrentQueue<ButtonInfo>();
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
 			_primaryCollectionFlow.HorizontalScroll.Visible = false;
@@ -302,15 +302,16 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-				/// <summary>
+		/// <summary>
 		/// Called at idle time after everything else is set up, and only when this tab is visible
 		/// </summary>
 		private void ImproveAndRefreshBookButtons()
 		{
-			Button button;
-			if(!_buttonsNeedingSlowUpdate.TryDequeue(out button))
+			ButtonInfo buttonInfo;
+			if (!_buttonsNeedingSlowUpdate.TryDequeue(out buttonInfo))
 				return;
 
+			Button button = buttonInfo.Button;
 			BookInfo bookInfo = button.Tag as BookInfo;
 			Book.Book book;
 			try
@@ -345,10 +346,8 @@ namespace Bloom.CollectionTab
 				button.Text = titleBestForUserDisplay;
 			}
 			}
-			if (button.ImageIndex==999)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
-			{
+			if (buttonInfo.ThumbnailRefreshNeeded)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
 				ScheduleRefreshOfOneThumbnail(book);
-			}
 		}
 
 		void OnBloomLibrary_Click(object sender, EventArgs e)
@@ -532,7 +531,7 @@ namespace Bloom.CollectionTab
 			flowLayoutPanel.Controls.Add(button);
 
 			Image img;
-
+			bool refreshThumbnail = false;
 			//review: we could do this at idle time, too:
 			if (bookInfo.TryGetPremadeThumbnail(out img))
 			{
@@ -542,10 +541,9 @@ namespace Bloom.CollectionTab
 			{
 				//show this one for now, in the background someone will do the slow work of getting us a better one
 				RefreshOneThumbnail(bookInfo,Resources.placeHolderBookThumbnail);
-				//hack to signal that we need to make a real one when get a chance
-				button.ImageIndex = 999;
+				refreshThumbnail = true;
 			}
-			_buttonsNeedingSlowUpdate.Enqueue(button);
+			_buttonsNeedingSlowUpdate.Enqueue(new ButtonInfo(button, refreshThumbnail));
 
 //			bookInfo.GetThumbNailOfBookCoverAsync(bookInfo.Type != Book.Book.BookType.Publication,
 //				                                  image => RefreshOneThumbnail(bookInfo, image),
@@ -927,5 +925,16 @@ namespace Bloom.CollectionTab
 //				}
 //			}
 //		}
+
+		private class ButtonInfo
+		{
+			public ButtonInfo(Button button, bool thumbnailRefreshNeeded)
+			{
+				Button = button;
+				ThumbnailRefreshNeeded = thumbnailRefreshNeeded;
+			}
+			public Button Button { get; set; }
+			public bool ThumbnailRefreshNeeded { get; set; }
+		}
 	}
 }
