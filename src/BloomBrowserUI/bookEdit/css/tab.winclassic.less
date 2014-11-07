@@ -36,7 +36,7 @@
 }
 
 .dynamic-tab-pane-control .tab-row .tab {
-	width: @tabWidth;
+	min-width: @tabWidth;
 	height: @tabRowHeight;
 
 	cursor: Default;
@@ -64,14 +64,14 @@
 	top: -2px;
 }
 
-.dynamic-tab-pane-control .tab-row .tab:hover {
+.tab-row .tab:hover {
 	background: linear-gradient(@tabBackgroundColorHoverLight, @tabBackgroundColorHoverDark);
 }
 
 .dynamic-tab-pane-control .tab-row .tab a {
 	color: @tabTextColor;
-	text-decoration: none;
 	cursor: default;
+	text-decoration: none;
 }
 
 .dynamic-tab-pane-control .tab-row .tab.selected a {

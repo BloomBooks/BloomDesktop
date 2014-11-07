@@ -20,7 +20,7 @@
   position: static;
 }
 .dynamic-tab-pane-control .tab-row .tab {
-  width: 70px;
+  min-width: 70px;
   height: 20px;
   cursor: Default;
   display: inline;
@@ -45,13 +45,13 @@
   margin: 1px -3px -2px 0px;
   top: -2px;
 }
-.dynamic-tab-pane-control .tab-row .tab:hover {
+.tab-row .tab:hover {
   background: linear-gradient(#ecf4fc, #dcecfc);
 }
 .dynamic-tab-pane-control .tab-row .tab a {
   color: #000000;
-  text-decoration: none;
   cursor: default;
+  text-decoration: none;
 }
 .dynamic-tab-pane-control .tab-row .tab.selected a {
   color: #000000;
