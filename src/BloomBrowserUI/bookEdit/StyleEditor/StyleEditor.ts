@@ -523,7 +523,7 @@ class StyleEditor {
                     + '<div data-i18n="EditTab.FormatDialog.Format" class="bloomDialogTitleBar">Format</div>';
                 if (editor.authorMode) {
                     html += '<div class="tab-pane" id="tabRoot">'
-                        + '<div class="tab-page"><h2 class="tab">Style Name</h2>'
+                        + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.StyleNameTab">Style Name</h2>'
                         + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style:')
                         + editor.makeDiv("style-group", "state-initial", null, null,
                             editor.makeSelect(editor.styles, styleName, 'styleSelect')
@@ -539,10 +539,10 @@ class StyleEditor {
                                 + editor.makeDiv("already-exists", null, 'color: red;', 'EditTab.FormatDialog.AlreadyExists',
                                     'That style already exists. Please choose another name.')))
                         + "</div>" // end of Style Name tab-page div
-                        + '<div class="tab-page" id="formatPage"><h2 class="tab">Characters</h2>'
+                        + '<div class="tab-page" id="formatPage"><h2 class="tab" data-i18n="EditTab.FormatDialog.CharactersTab">Characters</h2>'
                         + editor.makeCharactersContent(fonts, current)
                         + '</div>' // end of tab-page div for format
-                        + '<div class="tab-page"><h2 class="tab">More</h2>'
+                        + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.MoreTab">More</h2>'
                         + editor.makeDiv(null, null, null, null,
                             editor.makeDiv(null, 'mainBlock leftBlock', null, null,
                                 editor.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis') + editor.makeDiv(null, null, null, null,
