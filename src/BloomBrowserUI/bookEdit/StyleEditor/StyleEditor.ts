@@ -526,7 +526,7 @@ class StyleEditor {
                         + '<div class="tab-page"><h2 class="tab">Style Name</h2>'
                         + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style:')
                         + editor.makeDiv("style-group", "state-initial", null, null,
-                            editor.makeSelect(editor.styles, 0, styleName, 'styleSelect')
+                            editor.makeSelect(editor.styles, styleName, 'styleSelect')
                             + editor.makeDiv('dont-see', null, null, null,
                                 '<span data-i18n="EditTab.FormatDialog.DontSeeNeed">'+"Don't see what you need?"+'</span>'
                                 + ' <a id="show-createStyle" href="" data-i18n="EditTab.FormatDialog.CreateStyle">Create a new style</a>')
@@ -658,17 +658,17 @@ class StyleEditor {
         return this.makeDiv(null, null, null, null,
                 this.makeDiv(null, null, null, 'EditTab.Font', 'Font')
                 + this.makeDiv(null, "control-section", null, null,
-                    this.makeSelect(fonts, 0, current.fontName, 'font-select', 15) + ' '
-                    + this.makeSelect(this.getPointSizes(), 5, current.ptSize, 'size-select'))
+                    this.makeSelect(fonts, current.fontName, 'font-select', 15) + ' '
+                    + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select'))
                 + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing')
                 + this.makeDiv(null, null, null, null,
                     '<span style="white-space: nowrap">'
                     + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="position:relative;top:6px">'
-                    + this.makeSelect(this.getLineSpaceOptions(), 2, current.lineHeight, 'line-height-select') + ' '
+                    + this.makeSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select') + ' '
                     + '</span>' + ' '
                     + '<span style="white-space: nowrap">'
                     + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">'
-                    + this.makeSelect(this.getWordSpaceOptions(), 2, current.wordSpacing, 'word-space-select')
+                    + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select')
                     + '</span>'))
             + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, this.getCharTabDescription());
     }
@@ -864,8 +864,8 @@ class StyleEditor {
         $('#styleSelect').append(newOption);
     }
 
-    makeSelect(items, marginLeft, current, id, maxlength?) {
-        var result = '<select id="' + id + '" style="margin-left:' + marginLeft + 'px">';
+    makeSelect(items, current, id, maxlength?) {
+        var result = '<select id="' + id + '">';
         for (var i = 0; i < items.length; i++) {
             var selected: string = "";
             if (current == items[i]) selected = ' selected';

@@ -15,6 +15,17 @@
 .spacing-fudge {
   margin: 0px 0px -5px 0px;
 }
+#size-select {
+  width: 43px;
+  margin-left: 5px;
+}
+#line-height-select {
+  width: 45px;
+  margin-left: 2px;
+}
+#word-space-select {
+  margin-left: 2px;
+}
 #styleSelect {
   margin: 0px 0px 12px 0px;
   width: 145px;
