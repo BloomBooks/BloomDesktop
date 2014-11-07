@@ -26,8 +26,8 @@
   display: inline;
   margin: 1px -2px 1px 2px;
   float: left;
-  padding: 2px 5px 3px 5px;
-  background: #dfdfe4;
+  padding: 0px 5px 3px 5px;
+  background: linear-gradient(#f0f0f0, #e6e6e6);
   border: 1px solid;
   border-color: #919b9c;
   border-bottom: 0;
@@ -46,7 +46,7 @@
   top: -2px;
 }
 .dynamic-tab-pane-control .tab-row .tab:hover {
-  background: linear-gradient(#e2e2f3, #ffffff 70%);
+  background: linear-gradient(#ecf4fc, #dcecfc);
 }
 .dynamic-tab-pane-control .tab-row .tab a {
   color: #000000;
