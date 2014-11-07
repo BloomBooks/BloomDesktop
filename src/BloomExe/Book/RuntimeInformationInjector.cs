@@ -246,11 +246,10 @@ namespace Bloom.Book
 		/// </summary>
 		public static void AddUISettingsToDom(HtmlDom pageDom, CollectionSettings collectionSettings, IFileLocator fileLocator)
 		{
-			XmlElement element = pageDom.RawDom.SelectSingleNode("//script[@id='ui-settings']") as XmlElement;
-			if (element != null)
-				element.ParentNode.RemoveChild(element);
 
-			element = pageDom.RawDom.CreateElement("script");
+			XmlElement existingElement = pageDom.RawDom.SelectSingleNode("//script[@id='ui-settings']") as XmlElement;
+
+			XmlElement element = pageDom.RawDom.CreateElement("script");
 			element.SetAttribute("type", "text/javascript");
 			element.SetAttribute("id", "ui-settings");
 			var d = new Dictionary<string, string>();
@@ -284,7 +283,10 @@ namespace Bloom.Book
 			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
 			var head = pageDom.RawDom.SelectSingleNode("//head");
-			head.InsertAfter(element, head.LastChild);
+			if (existingElement != null)
+				head.ReplaceChild(element, existingElement);
+			else
+				head.InsertAfter(element, head.LastChild);
 		}
 	}
 }
