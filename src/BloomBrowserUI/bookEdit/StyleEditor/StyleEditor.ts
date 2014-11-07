@@ -524,7 +524,7 @@ class StyleEditor {
                 if (editor.authorMode) {
                     html += '<div class="tab-pane" id="tabRoot">'
                         + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.StyleNameTab">Style Name</h2>'
-                        + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style:')
+                        + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style')
                         + editor.makeDiv("style-group", "state-initial", null, null,
                             editor.makeSelect(editor.styles, styleName, 'styleSelect')
                             + editor.makeDiv('dont-see', null, null, null,
@@ -808,7 +808,8 @@ class StyleEditor {
             return;
         }
 
-        this.createStyle();
+        // We don't want to create a style just by clicking another tab!
+        // this.createStyle();
     }
 
      // did the user type the name of an existing style?
