@@ -31,5 +31,20 @@ namespace Bloom.CollectionChoosing
 		{
 			get { return _openAndCreateControl.SelectedPath; }
 		}
+
+		private void OpenAndCreateCollectionDialog_DragEnter(object sender, DragEventArgs e)
+		{
+			if (e.Data.GetDataPresent(DataFormats.FileDrop))
+				e.Effect = DragDropEffects.Copy;
+		}
+
+		private void OpenAndCreateCollectionDialog_DragDrop(object sender, DragEventArgs e)
+		{
+			var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+			if (files.Length == 1)
+			{
+				_openAndCreateControl.SelectCollectionAndClose(files[0]);
+			}
+		}
 	}
 }
