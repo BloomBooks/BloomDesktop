@@ -74,9 +74,13 @@ namespace Bloom
 
 		public class ThumbnailOptions
 		{
+			public enum BorderStyles
+			{
+				Solid, Dashed, None
+			}
 			public Color BackgroundColor = Color.White;
 			public Color BorderColor = Color.Transparent;
-			public bool DrawBorderDashed = false;
+			public BorderStyles BorderStyle;
 
 			/// <summary>
 			/// Use this when all thumbnails need to be the centered in the same size png.
@@ -494,16 +498,19 @@ namespace Bloom
 						0,0, bmp.Width, bmp.Height, //source
 						GraphicsUnit.Pixel, WhiteToBackground);
 
-				using (var pn = new Pen(Color.Black, 1))
+				if (options.BorderStyle != ThumbnailOptions.BorderStyles.None)
 				{
-					if (options.DrawBorderDashed)
+					using (var pn = new Pen(Color.Black, 1))
 					{
-						pn.DashStyle = DashStyle.Dash;
-						pn.Width = 2;
+						if (options.BorderStyle == ThumbnailOptions.BorderStyles.Dashed)
+						{
+							pn.DashStyle = DashStyle.Dash;
+							pn.Width = 2;
+						}
+					destRect.Height--; //hack, we were losing the bottom
+						destRect.Width--;
+						graphics.DrawRectangle(pn, destRect);
 					}
-				destRect.Height--;//hack, we were losing the bottom
-					destRect.Width--;
-					graphics.DrawRectangle(pn, destRect);
 				}
 			}
 			return thumbnail;

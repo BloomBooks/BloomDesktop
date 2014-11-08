@@ -402,7 +402,7 @@ namespace Bloom.Publish
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
 			{
 				BackgroundColor = Color.White,
-				DrawBorderDashed = false,
+				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.None,
 				CenterImageUsingTransparentPadding = false,
 				//210x147 is about what the TG's expect, but we're going to tripple that in case it makes for better printing
 				Height = 630,
