@@ -779,12 +779,22 @@ function AddEditKeyHandlers(container) {
         document.execCommand("formatBlock", false, "H2");
     });
 
-    //there doesn't appear to be a good simple way to clear out formatting
-    $(container).find("div.bloom-editable").on('keydown', null, 'ctrl+space', function (e) {
-        e.preventDefault();
-        document.execCommand("removeFormat", false, false);//will remove bold, italics, etc. but not things that use elements, like h1
-        //TODO now for elements (h1, span, etc), we could do a regex and remove them. The following is just a temporary bandaid
-        //Recommended, but didn't work: document.execCommand("formatBlock", false, 'div');
+    $(document).bind('keydown', 'ctrl+space', function (e) {
+      e.preventDefault();
+      document.execCommand("removeFormat", false, false);//will remove bold, italics, etc. but not things that use elements, like h1
+    });
+
+    $(document).bind('keydown', 'ctrl+u', function (e) {
+      e.preventDefault();
+      document.execCommand("underline", null, null);
+    });
+    $(document).bind('keydown', 'ctrl+b', function (e) {
+      e.preventDefault();
+      document.execCommand("bold", null, null);
+    });
+    $(document).bind('keydown', 'ctrl+i', function (e) {
+      e.preventDefault();
+      document.execCommand("italic", null, null);
     });
 
 }

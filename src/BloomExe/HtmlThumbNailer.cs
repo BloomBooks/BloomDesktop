@@ -114,7 +114,7 @@ namespace Bloom
 
 			//In our cache?
 			Image image;
-			if (_images.TryGetValue(key, out image))
+			if (!String.IsNullOrWhiteSpace(key) && _images.TryGetValue(key, out image))
 			{
 				callback(image);
 				return;
@@ -130,7 +130,8 @@ namespace Bloom
 					using (image = Image.FromFile(thumbNailFilePath))
 					{
 						var thumbnail = new Bitmap(image) { Tag = thumbNailFilePath };
-						_images.Add(key, thumbnail);
+						if (!String.IsNullOrWhiteSpace(key))
+							_images.Add(key, thumbnail);
 						callback(thumbnail);
 						return;
 					}
