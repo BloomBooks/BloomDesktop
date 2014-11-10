@@ -510,11 +510,22 @@ class ReaderToolsModel {
   }
 
   doKeypressMarkup(): void {
-    if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
-      this.keypressTimer.clearTimeout();
-    }
-    var self = this;
-    this.keypressTimer = setTimeout(function () {
+
+    // BL-599: "Unresponsive script" while typing in text.
+    // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
+    // function called "clearTimeout." Because of this, the jQuery method $.isFunction(this.keypressTimer.clearTimeout)
+    // will always return false (since "this.keypressTimer.clearTimeout" is undefined) and the result is a new 500
+    // millisecond timer being created every time the doKeypress method is called, but none of the pre-existing timers
+    // being cleared. The correct way to clear a timeout is to call clearTimeout(), passing it the integer returned by
+    // the function setTimeout().
+
+    //if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
+    //  this.keypressTimer.clearTimeout();
+    //}
+    if (model.keypressTimer)
+      clearTimeout(model.keypressTimer);
+
+    model.keypressTimer = setTimeout(function () {
 
       // This happens 500ms after the user stops typing.
       var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById('page');
@@ -550,11 +561,13 @@ class ReaderToolsModel {
 
       var atStart: boolean = myRange.endOffset === 0;
 
-      self.doMarkup();
+      model.doMarkup();
 
       // Now we try to restore the selection at the specified position.
       EditableDivUtils.makeSelectionIn(active, offset, divBrCount, atStart);
 
+      // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
+      model.keypressTimer = null;
     }, 500);
   }
 
