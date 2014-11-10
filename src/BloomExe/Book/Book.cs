@@ -342,7 +342,8 @@ namespace Bloom.Book
 				}
 				onFirst =false;
 			}
-			foreach (XmlElement node in bookDom.SafeSelectNodes("//script"))
+			//Without casting to array, Mono considers this manipulating the enumerable list
+			foreach (var node in bookDom.SafeSelectNodes("//script").Cast<XmlNode>().ToArray())
 			{
 				//TODO: this removes image scaling, which is ok so long as it's already scaled with width/height attributes
 				node.ParentNode.RemoveChild(node);

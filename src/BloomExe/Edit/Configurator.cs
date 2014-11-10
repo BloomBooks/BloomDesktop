@@ -128,14 +128,8 @@ namespace Bloom.Edit
 			Cursor.Current = Cursors.WaitCursor;
 			try
 			{
-				//browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
-				/* in geckofx14, this never fires (perhaps it does for docs, but not javascript?):
 				browser.DocumentCompleted -= browser_DocumentNavigated;
 				browser.DocumentCompleted += browser_DocumentNavigated;
-			 */
-
-				browser.Navigated -= browser_DocumentNavigated;
-				browser.Navigated += browser_DocumentNavigated;
 
 				_isolator.Navigate(browser, url);
 
@@ -145,6 +139,7 @@ namespace Bloom.Edit
 				while (DateTime.Now < giveUpTime && browser.Tag == null)
 				{
 					Application.DoEvents();
+					Application.RaiseIdle(new EventArgs()); //required for Mono
 				}
 				if (browser.Tag == null)
 					throw new ApplicationException("Timed out waiting for browser to configure book");
@@ -154,6 +149,7 @@ namespace Bloom.Edit
 				while (DateTime.Now < minimumTimeToWait)
 				{
 					Application.DoEvents();
+					Application.RaiseIdle(new EventArgs()); //required for Mono
 				}
 			}
 			finally
