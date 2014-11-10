@@ -1,4 +1,4 @@
-/// <reference path="readerTools.d.ts"/>
+/// <reference path="readerToolsModel.ts" />
 var CalledByCSharp = (function () {
     function CalledByCSharp() {
     }

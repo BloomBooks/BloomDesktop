@@ -1,4 +1,4 @@
-/// <reference path="readerTools.d.ts"/>
+/// <reference path="readerToolsModel.ts" />
 
 class CalledByCSharp {
 
@@ -67,8 +67,8 @@ class CalledByCSharp {
     return (page) ? page.contentWindow : null;
   }
 
-  getAccordionContent(): Window {
+  getAccordionContent(): ReaderToolsWindow {
     var accordion = <HTMLIFrameElement>document.getElementById('accordion');
-    return (accordion) ? accordion.contentWindow : null;
+    return (accordion) ? <ReaderToolsWindow>accordion.contentWindow : null;
   }
 }

@@ -33,6 +33,7 @@ describe("Bloom Edit Controls tests", function() {
         model.updateWordList();
 
         model.setStageNumber(1);
+        model.wordListLoaded = true;
 
         spyOn(ReaderToolsModel, 'updateElementContent');
         // simulated values of class attribute. Currently we ignore the attrName argument, since we only modify class.

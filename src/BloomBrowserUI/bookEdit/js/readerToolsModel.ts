@@ -38,7 +38,12 @@ class DRTState {
 
 declare function fireCSharpAccordionEvent(eventName: string, eventData: string);
 
-//******************************************************************
+interface ReaderToolsWindow extends Window {
+  model: ReaderToolsModel;
+  canUndo(): string;
+  shouldHandleUndo(): string;
+}
+
 class ReaderToolsModel {
 
   stageNumber: number = 1;
@@ -68,6 +73,9 @@ class ReaderToolsModel {
   redoStack: any[];
 
   wordListChangedListeners: any = {};
+
+  // some things need to wait until the word list has finished loading
+  wordListLoaded: boolean = false;
 
   constructor() {
 
@@ -102,6 +110,9 @@ class ReaderToolsModel {
     this.updateLetterList();
     this.enableStageButtons();
     this.saveState();
+
+    if (!this.wordListLoaded) return;
+
     this.doMarkup();
     this.updateWordList();
   }
@@ -281,6 +292,8 @@ class ReaderToolsModel {
    */
   updateWordList(): void {
 
+    if (!this.wordListLoaded) return;
+
     var wordList = document.getElementById('wordList');
     if (wordList) document.getElementById('wordList').innerHTML = '';
 
@@ -425,6 +438,8 @@ class ReaderToolsModel {
   }
 
   getStageWordsAndSightWords(stageNumber: number): DataWord[] {
+
+    if (!this.wordListLoaded) return;
 
     // first get the sight words
     var sightWords = this.getSightWordsAsObjects(stageNumber);
@@ -593,6 +608,7 @@ class ReaderToolsModel {
    */
   doMarkup(): void {
 
+    if (!this.wordListLoaded) return;
     if (this.currentMarkupType === MarkupType.None) return;
 
     var oldSelectionPosition = -1;
@@ -865,12 +881,20 @@ class ReaderToolsModel {
     // if there are no more files, process the word lists now
     if (this.textCounter >= this.texts.length) {
       this.addWordsToSynphony();
-      this.doMarkup();
-      this.updateWordList();
-      this.processWordListChangedListeners();
 
-      // write out the ReaderToolsWords-xyz.json file
-      iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(lang_data));
+      // The word list has been received. Now we are using setTimeout() to move the remainder of the word
+      // list processing to another thread so the UI doesn't appear frozen as long. This is essentially
+      // the JavaScript version of Application.DoEvents().
+      setTimeout(function() {
+
+        model.wordListLoaded = true;
+        model.doMarkup();
+        model.updateWordList();
+        model.processWordListChangedListeners();
+
+        // write out the ReaderToolsWords-xyz.json file
+        iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(lang_data));
+      }, 200);
 
       return;
     }
