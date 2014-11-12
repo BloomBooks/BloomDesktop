@@ -567,9 +567,7 @@ var StyleEditor = (function () {
                         button.addClass('propButton');
                     }
                     editor.selectButtons(current);
-                    new WebFXTabPane($('#tabRoot').get(0), false, function (n) {
-                        editor.tabSelected(n);
-                    });
+                    new WebFXTabPane($('#tabRoot').get(0), false, null);
                 }
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
@@ -742,28 +740,6 @@ var StyleEditor = (function () {
                 styleName = styleName.substring(0, index);
         }
         return localizationManager.getText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName);
-    };
-
-    StyleEditor.prototype.tabSelected = function (n) {
-        if (n == 0)
-            return;
-
-        // switching back to format tab. User may have defined a new style.
-        var typedStyle = $('#style-select-input').val();
-        if (!typedStyle) {
-            // If the user didn't type a new style name, there is nothing to do.
-            // We updated the format controls when the style was selected.
-            return;
-        }
-
-        if (this.inputStyleExists()) {
-            // just act as if he'd selected that item
-            $('#styleSelect').val(typedStyle);
-            this.selectStyle(); // surprisingly, this doesn't happen automatically
-            return;
-        }
-        // We don't want to create a style just by clicking another tab!
-        // this.createStyle();
     };
 
     // did the user type the name of an existing style?
