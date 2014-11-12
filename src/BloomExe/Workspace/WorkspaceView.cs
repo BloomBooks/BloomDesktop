@@ -469,5 +469,12 @@ namespace Bloom.Workspace
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
 	{
 		protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { }
+
+		protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+		{
+			// this is needed, especially on Linux
+			e.SizeTextRectangleToText();
+			base.OnRenderItemText(e);
+		}
 	}
 }
