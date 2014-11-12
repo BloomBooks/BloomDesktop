@@ -11,10 +11,12 @@ using NUnit.Framework;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
+using Gecko;
 
 namespace BloomTests.Edit
 {
 	[TestFixture]
+	[RequiresSTA]
 	public class ConfiguratorTest
 	{
 		private FileLocator _fileLocator;
@@ -22,10 +24,11 @@ namespace BloomTests.Edit
 		private TemporaryFolder _shellCollectionFolder;
 		private TemporaryFolder _libraryFolder;
 
-		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool SetDllDirectory(string lpPathName);
-
+		[TestFixtureSetUp]
+		public void FixtureSetup()
+		{
+			Browser.SetUpXulRunner();
+		}
 
 		[SetUp]
 		public void Setup()
@@ -54,11 +57,12 @@ namespace BloomTests.Edit
 			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), library.Object);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
+		}
 
-			Browser.SetUpXulRunner();
-
-
-
+		[TestFixtureTearDown]
+		public void FixtureTearDown()
+		{
+			Xpcom.Shutdown();
 		}
 
 		[Test]

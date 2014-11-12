@@ -9,12 +9,20 @@ using System.Windows.Forms;
 using Bloom.Publish;
 using NUnit.Framework;
 using Palaso.IO;
+using Bloom;
 
 namespace BloomTests
 {
 	[TestFixture]
+	[RequiresSTA]
 	public class PdfMakerTests
 	{
+		[TestFixtureSetUp]
+		public void FixtureSetup()
+		{
+			Browser.SetUpXulRunner();
+		}
+
 		[TestFixtureTearDown]
 		public void FixtureTearDown()
 		{
@@ -86,11 +94,16 @@ namespace BloomTests
 				//we don't actually have a way of knowing it did a booklet
 				Assert.IsTrue(File.Exists(output.Path));
 			}
+		}
 
+		[Test]
+		public void MakePdf_BookNameIsNonAscii_OutputsPdf()
+		{
+			var maker = new PdfMaker();
 			using (var input = TempFile.WithFilename("എന്റെ ബുക്ക്.htm"))
 			using (var output = TempFile.WithFilename("എന്റെ ബുക്ക്.pdf"))
 			{
-				File.WriteAllText(input.Path, "<html><body>എന്റെ ബുക്ക്</body></html>");
+				File.WriteAllText(input.Path, "<META HTTP-EQUIV=\"content-type\" CONTENT=\"text/html; charset=utf-8\"><html><body>എന്റെ ബുക്ക്</body></html>");
 				File.Delete(output.Path);
 				RunMakePdf((worker, args, owner) =>
 					maker.MakePdf(input.Path, output.Path, "A5", false, PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.BookletPages, worker, args, owner));
