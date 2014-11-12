@@ -559,10 +559,10 @@ class StyleEditor {
                                 + editor.makeDiv(null, null, 'margin-top:-11px', null,
                                     editor.makeDiv('border-none', 'icon16x16', null, null, editor.makeImage('grayX.png'))
                                     + editor.makeDiv('border-black', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: black', null, ''))
-                                    + editor.makeDiv('border-black-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox rounded', 'border-color: black', null, '')))
+                                    + editor.makeDiv('border-black-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: black', null, '')))
                                 + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', null,
                                     editor.makeDiv('border-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: gray', null, ''))
-                                    + editor.makeDiv('border-gray-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox rounded', 'border-color: gray', null, ''))))
+                                    + editor.makeDiv('border-gray-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: gray', null, ''))))
                             + editor.makeDiv(null, 'mainBlock', null, null,
                                 editor.makeDiv(null, null, null, 'EditTab.Background', 'Background')
                                     + editor.makeDiv(null, null, 'margin-top:-11px', null,

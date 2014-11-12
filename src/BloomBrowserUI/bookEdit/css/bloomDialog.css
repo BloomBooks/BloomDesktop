@@ -1,77 +1,77 @@
-.selectedIcon {
+.bloomDialogContainer .selectedIcon {
   background-color: #c9e0f7;
   border: 1px solid #62a2e4;
   border-radius: 4px;
 }
-.iconLetter {
+.bloomDialogContainer .iconLetter {
   width: 19px;
   height: 19px;
   display: inline-block;
   padding: 2px 2px 2px 2px;
   text-align: center;
 }
-.icon16x16 {
+.bloomDialogContainer .icon16x16 {
   width: 19px;
   height: 19px;
   display: inline-block;
   padding: 2px;
 }
-.icon16x16 IMG {
+.bloomDialogContainer .icon16x16 IMG {
   margin-top: 1px;
   margin-left: 1px;
   vertical-align: 5px;
 }
-.iconHtml {
+.bloomDialogContainer .iconHtml {
   width: 22px;
   height: 22px;
   margin-top: 10px;
   display: inline-block;
   padding: 1px 0px 0px 1px;
 }
-.iconBox {
+.bloomDialogContainer .iconBox {
   width: 14px;
   height: 14px;
   margin: 2px;
   border: 1px solid;
   display: block;
 }
-.iconBack {
+.bloomDialogContainer .iconBack {
   width: 16px;
   height: 16px;
   margin: 2px;
   display: block;
 }
-.rounded {
+.bdRounded {
   border-radius: 4px;
 }
-.control-section {
+.bloomDialogContainer .control-section {
   margin: 0px 0px 12px 0px;
 }
-BUTTON,
-INPUT,
-SELECT {
+.bloomDialogContainer BUTTON,
+.bloomDialogContainer INPUT,
+.bloomDialogContainer SELECT {
   background: linear-gradient(#f0f0f0, #e6e6e6);
 }
-BUTTON {
+.bloomDialogContainer BUTTON {
   border-radius: 4px;
   border: 1px solid #8abbf4;
   box-shadow: #CCC 0 0 .25em;
 }
-BUTTON:hover,
-INPUT:hover,
-SELECT:hover {
+.bloomDialogContainer BUTTON:hover,
+.bloomDialogContainer INPUT:hover,
+.bloomDialogContainer SELECT:hover {
   background: linear-gradient(#ecf4fc, #dcecfc);
 }
-BUTTON[disabled] {
+.bloomDialogContainer BUTTON[disabled] {
   border: 1px solid #d3d3d3;
   background: #f0f0f0;
   color: #d3d3d3;
 }
-.propButton:NOT(.selectedIcon) {
+.bloomDialogContainer .propButton:NOT(.selectedIcon) {
   border: 1px solid #d3d3d3;
   border-radius: 4px;
 }
-.propButton:hover {
+.bloomDialogContainer .propButton:hover {
   background: linear-gradient(#ecf4fc, #dcecfc);
 }
 .bloomDialogContainer {
@@ -82,7 +82,7 @@ BUTTON[disabled] {
   line-height: 1.8;
   font-family: Segoe UI, Open Sans, Arial, sans-serif;
 }
-.bloomDialogTitleBar {
+.bloomDialogContainer .bloomDialogTitleBar {
   background-color: #8cb7dc;
   opacity: 1;
   position: relative;
@@ -92,7 +92,7 @@ BUTTON[disabled] {
   height: 2em;
   text-align: center;
 }
-.bloomDialogMainPage {
+.bloomDialogContainer .bloomDialogMainPage {
   background: #ffffff;
   margin-left: 1em;
   font: Segoe UI, Open Sans, Arial, sans-serif;
