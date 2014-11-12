@@ -491,7 +491,7 @@ namespace Bloom.Edit
 						var editor = new PageEditingModel();
 						editor.UpdateMetdataAttributesOnImgElement(imageElement, imageInfo);
 
-						var answer = MessageBox.Show(LocalizationManager.GetString("EditTab.copyImageIPMetdataQuestion","Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"), LocalizationManager.GetString("EditTab.titleOfCopyIPToWholeBooksDialog","Picture Intellectual Property Information"), MessageBoxButtons.YesNo);
+						var answer = MessageBox.Show(LocalizationManager.GetString("EditTab.copyImageIPMetdataQuestion","Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"), LocalizationManager.GetString("EditTab.titleOfCopyIPToWholeBooksDialog","Picture Intellectual Property Information"),  MessageBoxButtons.YesNo, MessageBoxIcon.Question,MessageBoxDefaultButton.Button2);
 						if (answer == DialogResult.Yes)
 						{
 							Cursor = Cursors.WaitCursor;
