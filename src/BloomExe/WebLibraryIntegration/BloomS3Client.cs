@@ -101,7 +101,7 @@ namespace Bloom.WebLibraryIntegration
 
 			var deleteObjectsRequest = new DeleteObjectsRequest()
 			{
-				BucketName = UnitTestBucketName,
+				BucketName = _bucketName,
 				Objects = matchingFilesResponse.S3Objects.Select(s3Object => new KeyVersion() { Key = s3Object.Key }).ToList()
 			};
 
