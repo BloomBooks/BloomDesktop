@@ -966,7 +966,7 @@
         <seg>请选择页面大小和方向</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditorTip">
+    <tu tuid="EditTab.FormatDialogTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Adjust formatting for style</seg>
@@ -2082,7 +2082,8 @@
     <tu tuid="PublishTab.BodyOnlyRadio-tooltip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
+        <seg>Make a booklet from the inside pages of the book.
+ Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
       </tuv>
       <tuv xml:lang="zh-Hans">
         <seg>以书的内页制作小册子。页面将被重新排序与布局。这样，当你折叠时，它将形成一个小册子。\n</seg>

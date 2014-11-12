@@ -1093,7 +1093,7 @@
         <seg>اختر حجم الصفحة والاتجاه</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.BorderToolTip">
+    <tu tuid="EditTab.FormatDialog.BorderToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the border and background</seg>
@@ -1102,7 +1102,7 @@
         <seg>تغيير الحدود والخلفية</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.FontFaceToolTip">
+    <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the font face</seg>
@@ -1111,7 +1111,7 @@
         <seg>تغيير الخط الوجه</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.FontSizeToolTip">
+    <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the font size</seg>
@@ -1120,7 +1120,7 @@
         <seg>تغيير حجم الخط</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.LineSpacingToolTip">
+    <tu tuid="EditTab.FormatDialog.LineSpacingToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the spacing between lines of text</seg>
@@ -1129,7 +1129,7 @@
         <seg>تغيير التباعد بين أسطر النص</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingExtraWide">
+    <tu tuid="EditTab.FormatDialog.WordSpacingExtraWide">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Extra Wide</seg>
@@ -1138,7 +1138,7 @@
         <seg>نطاق إضافي</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingNormal">
+    <tu tuid="EditTab.FormatDialog.WordSpacingNormal">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Normal</seg>
@@ -1147,7 +1147,7 @@
         <seg>عادي</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingToolTip">
+    <tu tuid="EditTab.FormatDialog.WordSpacingToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the spacing between words</seg>
@@ -1156,7 +1156,7 @@
         <seg>تغيير التباعد بين الكلمات</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingWide">
+    <tu tuid="EditTab.FormatDialog.WordSpacingWide">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Wide</seg>
@@ -1165,7 +1165,7 @@
         <seg>على نطاق واسع</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditorTip">
+    <tu tuid="EditTab.FormatDialogTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Adjust formatting for style</seg>

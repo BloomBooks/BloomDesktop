@@ -199,15 +199,15 @@ namespace Bloom.Book
 
 			// tool tips for style editor
 			AddTranslationToDictionaryUsingKey(d, "BookEditor.FontSizeTip", "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditorTip", "Adjust formatting for style");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditor.WordSpacingNormal", "Normal");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditor.WordSpacingWide", "Wide");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditor.WordSpacingExtraWide", "Extra Wide");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditor.FontFaceToolTip", "Change the font face");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditor.FontSizeToolTip", "Change the font size");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditor.LineSpacingToolTip", "Change the spacing between lines of text");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditor.WordSpacingToolTip", "Change the spacing between words");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.StyleEditor.BorderToolTip", "Change the border and background");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialogTip", "Adjust formatting for style");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.WordSpacingNormal", "Normal");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.WordSpacingWide", "Wide");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.WordSpacingExtraWide", "Extra Wide");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.FontFaceToolTip", "Change the font face");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.FontSizeToolTip", "Change the font size");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.LineSpacingToolTip", "Change the spacing between lines of text");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.WordSpacingToolTip", "Change the spacing between words");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.BorderToolTip", "Change the border and background");
 
 			// "No Topic" localization for Topic Chooser
 			AddTranslationToDictionaryUsingKey(d, "Topics.NoTopic", "No Topic");

@@ -1120,7 +1120,7 @@
         <seg>एक पृष्ठ आकार और ओरिएंटेशन का चयन</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.BorderToolTip">
+    <tu tuid="EditTab.FormatDialog.BorderToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the border and background</seg>
@@ -1129,7 +1129,7 @@
         <seg>बॉर्डर और पृष्ठभूमि परिवर्तित करें</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.FontFaceToolTip">
+    <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the font face</seg>
@@ -1138,7 +1138,7 @@
         <seg>फ़ॉन्ट चेहरा बदल</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.FontSizeToolTip">
+    <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the font size</seg>
@@ -1147,7 +1147,7 @@
         <seg>फ़ॉन्ट आकार बदलें</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.LineSpacingToolTip">
+    <tu tuid="EditTab.FormatDialog.LineSpacingToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the spacing between lines of text</seg>
@@ -1156,7 +1156,7 @@
         <seg>पाठ की पंक्तियों के बीच की रिक्ति परिवर्तित करें</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingExtraWide">
+    <tu tuid="EditTab.FormatDialog.WordSpacingExtraWide">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Extra Wide</seg>
@@ -1165,7 +1165,7 @@
         <seg>अतिरिक्त व्यापक</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingNormal">
+    <tu tuid="EditTab.FormatDialog.WordSpacingNormal">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Normal</seg>
@@ -1174,7 +1174,7 @@
         <seg>सामान्य</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingToolTip">
+    <tu tuid="EditTab.FormatDialog.WordSpacingToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the spacing between words</seg>
@@ -1183,7 +1183,7 @@
         <seg>शब्दों के बीच की रिक्ति परिवर्तित करें</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditor.WordSpacingWide">
+    <tu tuid="EditTab.FormatDialog.WordSpacingWide">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Wide</seg>
@@ -1192,7 +1192,7 @@
         <seg>विस्तृत</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.StyleEditorTip">
+    <tu tuid="EditTab.FormatDialogTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Adjust formatting for style</seg>

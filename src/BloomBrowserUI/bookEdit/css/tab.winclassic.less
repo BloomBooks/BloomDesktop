@@ -9,14 +9,16 @@
 
 @borderColor: rgb(145, 155, 156);
 
-@tabBackgroundColor: #dfdfe4;
-@tabBackgroundColorHover: #e2e2f3;
+@tabBackgroundColorLight: rgb(240, 240, 240);
+@tabBackgroundColorDark: rgb(230, 230, 230);
 @tabBackgroundColorSelected: white;
+@tabBackgroundColorHoverLight: rgb(236, 244, 252);
+@tabBackgroundColorHoverDark: rgb(220, 236, 252);
 
 @tabTextColor: black;
 
 .dynamic-tab-pane-control {
-	font: Segoe UI, Arial, sans-serif;
+	font: Segoe UI, Open Sans, Arial, sans-serif;
 	font-size: 10pt;
 }
 
@@ -34,15 +36,15 @@
 }
 
 .dynamic-tab-pane-control .tab-row .tab {
-	width: @tabWidth;
+	min-width: @tabWidth;
 	height: @tabRowHeight;
 
 	cursor: Default;
 	display: inline;
 	margin: 1px -2px 1px 2px;
 	float: left;
-	padding: 2px 5px 3px 5px;
-	background: @tabBackgroundColor;
+	padding: 0px 5px 3px 5px;
+	background: linear-gradient(@tabBackgroundColorLight, @tabBackgroundColorDark);
 	border: 1px solid;
 	border-color: @borderColor;
 	border-bottom: 0;
@@ -62,14 +64,14 @@
 	top: -2px;
 }
 
-.dynamic-tab-pane-control .tab-row .tab:hover {
-	background: linear-gradient(@tabBackgroundColorHover, @tabBackgroundColorSelected 70%);
+.tab-row .tab:hover {
+	background: linear-gradient(@tabBackgroundColorHoverLight, @tabBackgroundColorHoverDark);
 }
 
 .dynamic-tab-pane-control .tab-row .tab a {
 	color: @tabTextColor;
-	text-decoration: none;
 	cursor: default;
+	text-decoration: none;
 }
 
 .dynamic-tab-pane-control .tab-row .tab.selected a {

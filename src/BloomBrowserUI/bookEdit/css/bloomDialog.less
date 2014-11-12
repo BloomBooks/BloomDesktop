@@ -1,7 +1,9 @@
 // Common styles to be applied to htm-js-css dialogs in Bloom
-@backgroundColor: #dfdfe4;
-@backgroundColorHover: #e2e2f3;
-@backgroundColorSelected: white;
+@backgroundColorLight: rgb(240, 240, 240);
+@backgroundColorDark: rgb(230, 230, 230);
+@backgroundColorTitleBar: rgb(140, 183, 220);
+@backgroundColorHoverLight: rgb(236, 244, 252);
+@backgroundColorHoverDark: rgb(220, 236, 252);
 
 .selectedIcon {
 	background-color: rgb(201, 224, 247);
@@ -53,7 +55,7 @@
 	margin: 0px 0px 12px 0px;
 }
 BUTTON, INPUT, SELECT {
-	background-color: @backgroundColor;
+	background: linear-gradient(@backgroundColorLight, @backgroundColorDark);
 }
 BUTTON {
 	.rounded;
@@ -61,19 +63,19 @@ BUTTON {
 	box-shadow: #CCC 0 0 .25em;
 }
 BUTTON:hover, INPUT:hover, SELECT:hover {
-	background: linear-gradient(@backgroundColorHover, @backgroundColorSelected 70%);
+	background: linear-gradient(@backgroundColorHoverLight, @backgroundColorHoverDark);
 }
 BUTTON[disabled] {
 	border: 1px solid #d3d3d3;
+	background: @backgroundColorLight;
 	color: #d3d3d3;
-	background: whitesmoke;
 }
 .propButton:NOT(.selectedIcon) {
 	border: 1px solid #d3d3d3;
 	.rounded;
 }
 .propButton:hover {
-	background: linear-gradient(@backgroundColorHover, @backgroundColorSelected 70%);
+	background: linear-gradient(@backgroundColorHoverLight, @backgroundColorHoverDark);
 }
 .bloomDialogContainer {
 	background-color: white;
@@ -81,10 +83,10 @@ BUTTON[disabled] {
 	z-index: 1010;
 	position: absolute;
 	line-height: 1.8;
-	font-family: Segoe UI
+	font-family: Segoe UI, Open Sans, Arial, sans-serif;
 }
 .bloomDialogTitleBar {
-	background-color: rgb(140, 183, 220);
+	background-color: @backgroundColorTitleBar;
 	opacity:1;
 	position:relative;
 	top:0;
@@ -96,6 +98,6 @@ BUTTON[disabled] {
 .bloomDialogMainPage {
 	background: #ffffff;
 	margin-left: 1em;
-	font: Segoe UI, Arial, sans-serif;
+	font: Segoe UI, Open Sans, Arial, sans-serif;
 	font-size: 10pt;
 }

@@ -398,9 +398,9 @@ class StyleEditor {
     }
 
     getWordSpaceOptions() {
-        return [localizationManager.getText('EditTab.StyleEditor.WordSpacingNormal', 'Normal'),
-            localizationManager.getText('EditTab.StyleEditor.WordSpacingWide', 'Wide'),
-            localizationManager.getText('EditTab.StyleEditor.WordSpacingExtraWide', 'Extra Wide')];
+        return [localizationManager.getText('EditTab.FormatDialog.WordSpacingNormal', 'Normal'),
+            localizationManager.getText('EditTab.FormatDialog.WordSpacingWide', 'Wide'),
+            localizationManager.getText('EditTab.FormatDialog.WordSpacingExtraWide', 'Extra Wide')];
     }
 
     // Returns an object giving the current selection for each format control.
@@ -498,7 +498,7 @@ class StyleEditor {
 
         $(targetBox).after('<div id="formatButton"  style="top: ' + t + '; min-height: 21px" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton'); // after we create it!
-        var txt = localizationManager.getText('EditTab.StyleEditorTip', 'Adjust formatting for style');
+        var txt = localizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
         formatButton.click(function () {
             iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
@@ -520,29 +520,29 @@ class StyleEditor {
                 });
 
                 var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">'
-                    + '<div data-i18n="EditTab.StyleEditor.Format" class="bloomDialogTitleBar">Format</div>';
+                    + '<div data-i18n="EditTab.FormatDialog.Format" class="bloomDialogTitleBar">Format</div>';
                 if (editor.authorMode) {
                     html += '<div class="tab-pane" id="tabRoot">'
-                        + '<div class="tab-page"><h2 class="tab">Style Name</h2>'
-                        + editor.makeDiv(null, null, null, 'EditTab.StyleEditor.Style', 'Style:')
+                        + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.StyleNameTab">Style Name</h2>'
+                        + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style')
                         + editor.makeDiv("style-group", "state-initial", null, null,
-                            editor.makeSelect(editor.styles, 0, styleName, 'styleSelect')
+                            editor.makeSelect(editor.styles, styleName, 'styleSelect')
                             + editor.makeDiv('dont-see', null, null, null,
-                                '<span data-i18n="EditTab.StyleEditor.DontSeeNeed">'+"Don't see what you need?"+'</span>'
-                                + ' <a id="show-createStyle" href="" data-i18n="EditTab.StyleEditor.CreateStyle">Create a new style</a>')
+                                '<span data-i18n="EditTab.FormatDialog.DontSeeNeed">'+"Don't see what you need?"+'</span>'
+                                + ' <a id="show-createStyle" href="" data-i18n="EditTab.FormatDialog.CreateStyle">Create a new style</a>')
                             + editor.makeDiv('createStyle', null, null, null,
-                                editor.makeDiv(null, null, null, 'EditTab.StyleEditor.NewStyle', 'New style')
-                                + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.StyleEditor.Create" disabled>Create</button>')
+                                editor.makeDiv(null, null, null, 'EditTab.FormatDialog.NewStyle', 'New style')
+                                + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.FormatDialog.Create" disabled>Create</button>')
                                 + editor.makeDiv("please-use-alpha", null, 'color: red;',
-                                    'EditTab.StyleEditor.PleaseUseAlpha',
+                                    'EditTab.FormatDialog.PleaseUseAlpha',
                                     'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".')
-                                + editor.makeDiv("already-exists", null, 'color: red;', 'EditTab.StyleEditor.AlreadyExists',
+                                + editor.makeDiv("already-exists", null, 'color: red;', 'EditTab.FormatDialog.AlreadyExists',
                                     'That style already exists. Please choose another name.')))
                         + "</div>" // end of Style Name tab-page div
-                        + '<div class="tab-page" id="formatPage"><h2 class="tab">Characters</h2>'
+                        + '<div class="tab-page" id="formatPage"><h2 class="tab" data-i18n="EditTab.FormatDialog.CharactersTab">Characters</h2>'
                         + editor.makeCharactersContent(fonts, current)
                         + '</div>' // end of tab-page div for format
-                        + '<div class="tab-page"><h2 class="tab">More</h2>'
+                        + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.MoreTab">More</h2>'
                         + editor.makeDiv(null, null, null, null,
                             editor.makeDiv(null, 'mainBlock leftBlock', null, null,
                                 editor.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis') + editor.makeDiv(null, null, null, null,
@@ -586,13 +586,13 @@ class StyleEditor {
                 toolbar.css('opacity', 1.0);
 
                 $('#font-select').change(function () { editor.changeFont(); });
-                editor.AddQtipToElement($('#font-select'), localizationManager.getText('EditTab.StyleEditor.FontFaceToolTip', 'Change the font face'), 1500);
+                editor.AddQtipToElement($('#font-select'), localizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
                 $('#size-select').change(function () { editor.changeSize(); });
-                editor.AddQtipToElement($('#size-select'), localizationManager.getText('EditTab.StyleEditor.FontSizeToolTip', 'Change the font size'), 1500);
+                editor.AddQtipToElement($('#size-select'), localizationManager.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
                 $('#line-height-select').change(function () { editor.changeLineheight(); });
-                editor.AddQtipToElement($('#line-height-select').parent(), localizationManager.getText('EditTab.StyleEditor.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
+                editor.AddQtipToElement($('#line-height-select').parent(), localizationManager.getText('EditTab.FormatDialog.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
                 $('#word-space-select').change(function () { editor.changeWordSpace(); });
-                editor.AddQtipToElement($('#word-space-select').parent(), localizationManager.getText('EditTab.StyleEditor.WordSpacingToolTip', 'Change the spacing between words'), 1500);
+                editor.AddQtipToElement($('#word-space-select').parent(), localizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
                 if (editor.authorMode) {
                     $('#styleSelect').change(function() { editor.selectStyle(); });
                     (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
@@ -611,9 +611,7 @@ class StyleEditor {
                         button.addClass('propButton');
                     }
                     editor.selectButtons(current);
-                    new WebFXTabPane($('#tabRoot').get(0), false, function(n) {
-                        editor.tabSelected(n);
-                    });
+                    new WebFXTabPane($('#tabRoot').get(0), false, null);
                 }
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
@@ -658,17 +656,17 @@ class StyleEditor {
         return this.makeDiv(null, null, null, null,
                 this.makeDiv(null, null, null, 'EditTab.Font', 'Font')
                 + this.makeDiv(null, "control-section", null, null,
-                    this.makeSelect(fonts, 0, current.fontName, 'font-select', 15) + ' '
-                    + this.makeSelect(this.getPointSizes(), 5, current.ptSize, 'size-select'))
+                    this.makeSelect(fonts, current.fontName, 'font-select', 15) + ' '
+                    + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select'))
                 + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing')
                 + this.makeDiv(null, null, null, null,
                     '<span style="white-space: nowrap">'
                     + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="position:relative;top:6px">'
-                    + this.makeSelect(this.getLineSpaceOptions(), 2, current.lineHeight, 'line-height-select') + ' '
+                    + this.makeSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select') + ' '
                     + '</span>' + ' '
                     + '<span style="white-space: nowrap">'
                     + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">'
-                    + this.makeSelect(this.getWordSpaceOptions(), 2, current.wordSpacing, 'word-space-select')
+                    + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select')
                     + '</span>'))
             + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, this.getCharTabDescription());
     }
@@ -791,26 +789,6 @@ class StyleEditor {
         return localizationManager.getText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName);
     }
 
-    tabSelected(n) {
-        if (n == 0) return;
-        // switching back to format tab. User may have defined a new style.
-        var typedStyle = $('#style-select-input').val();
-        if (!typedStyle) {
-            // If the user didn't type a new style name, there is nothing to do.
-            // We updated the format controls when the style was selected.
-            return;
-        }
-
-        if (this.inputStyleExists()) {
-            // just act as if he'd selected that item
-            $('#styleSelect').val(typedStyle);
-            this.selectStyle(); // surprisingly, this doesn't happen automatically
-            return;
-        }
-
-        this.createStyle();
-    }
-
      // did the user type the name of an existing style?
     inputStyleExists() : boolean {
         var typedStyle = $('#style-select-input').val();
@@ -864,8 +842,8 @@ class StyleEditor {
         $('#styleSelect').append(newOption);
     }
 
-    makeSelect(items, marginLeft, current, id, maxlength?) {
-        var result = '<select id="' + id + '" style="margin-left:' + marginLeft + 'px">';
+    makeSelect(items, current, id, maxlength?) {
+        var result = '<select id="' + id + '">';
         for (var i = 0; i < items.length; i++) {
             var selected: string = "";
             if (current == items[i]) selected = ' selected';

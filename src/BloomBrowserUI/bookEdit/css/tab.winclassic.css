@@ -4,7 +4,7 @@
 	Considerably changed for Bloom.
 */
 .dynamic-tab-pane-control {
-  font: Segoe UI, Arial, sans-serif;
+  font: Segoe UI, Open Sans, Arial, sans-serif;
   font-size: 10pt;
 }
 .dynamic-tab-pane-control.tab-pane {
@@ -20,14 +20,14 @@
   position: static;
 }
 .dynamic-tab-pane-control .tab-row .tab {
-  width: 70px;
+  min-width: 70px;
   height: 20px;
   cursor: Default;
   display: inline;
   margin: 1px -2px 1px 2px;
   float: left;
-  padding: 2px 5px 3px 5px;
-  background: #dfdfe4;
+  padding: 0px 5px 3px 5px;
+  background: linear-gradient(#f0f0f0, #e6e6e6);
   border: 1px solid;
   border-color: #919b9c;
   border-bottom: 0;
@@ -45,13 +45,13 @@
   margin: 1px -3px -2px 0px;
   top: -2px;
 }
-.dynamic-tab-pane-control .tab-row .tab:hover {
-  background: linear-gradient(#e2e2f3, #ffffff 70%);
+.tab-row .tab:hover {
+  background: linear-gradient(#ecf4fc, #dcecfc);
 }
 .dynamic-tab-pane-control .tab-row .tab a {
   color: #000000;
-  text-decoration: none;
   cursor: default;
+  text-decoration: none;
 }
 .dynamic-tab-pane-control .tab-row .tab.selected a {
   color: #000000;

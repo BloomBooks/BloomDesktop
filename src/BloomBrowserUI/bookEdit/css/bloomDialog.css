@@ -50,7 +50,7 @@
 BUTTON,
 INPUT,
 SELECT {
-  background-color: #dfdfe4;
+  background: linear-gradient(#f0f0f0, #e6e6e6);
 }
 BUTTON {
   border-radius: 4px;
@@ -60,19 +60,19 @@ BUTTON {
 BUTTON:hover,
 INPUT:hover,
 SELECT:hover {
-  background: linear-gradient(#e2e2f3, #ffffff 70%);
+  background: linear-gradient(#ecf4fc, #dcecfc);
 }
 BUTTON[disabled] {
   border: 1px solid #d3d3d3;
+  background: #f0f0f0;
   color: #d3d3d3;
-  background: whitesmoke;
 }
 .propButton:NOT(.selectedIcon) {
   border: 1px solid #d3d3d3;
   border-radius: 4px;
 }
 .propButton:hover {
-  background: linear-gradient(#e2e2f3, #ffffff 70%);
+  background: linear-gradient(#ecf4fc, #dcecfc);
 }
 .bloomDialogContainer {
   background-color: white;
@@ -80,7 +80,7 @@ BUTTON[disabled] {
   z-index: 1010;
   position: absolute;
   line-height: 1.8;
-  font-family: Segoe UI;
+  font-family: Segoe UI, Open Sans, Arial, sans-serif;
 }
 .bloomDialogTitleBar {
   background-color: #8cb7dc;
@@ -95,6 +95,6 @@ BUTTON[disabled] {
 .bloomDialogMainPage {
   background: #ffffff;
   margin-left: 1em;
-  font: Segoe UI, Arial, sans-serif;
+  font: Segoe UI, Open Sans, Arial, sans-serif;
   font-size: 10pt;
 }
