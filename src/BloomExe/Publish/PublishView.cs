@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition.Primitives;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -14,7 +13,6 @@ using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using L10NSharp;
 using Palaso.Reporting;
-using Palaso.UI.WindowsForms.SuperToolTip;
 using Gecko;
 using Palaso.IO;
 
@@ -46,6 +44,12 @@ namespace Bloom.Publish
 			_model.View = this;
 
 			_makePdfBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(_makePdfBackgroundWorker_RunWorkerCompleted);
+
+			// BL-625: With mono, if a RadioButton group has its AutoCheck properties set to true, the default RadioButton.OnEnter
+			//         event checks to make sure one of the RadioButtons is checked. If none are checked, the one the mouse pointer
+			//         is over is checked, causing the CheckChanged event to fire.
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+				SetAutoCheck(false);
 
 			//NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
 			//off the tab itself changing, either to us or away from us.
@@ -80,6 +84,17 @@ namespace Bloom.Publish
 			GeckoPreferences.Default["pdfjs.disabled"] = false;
 			SetupLocalization();
 			localizationChangedEvent.Subscribe(o=>SetupLocalization());
+		}
+
+		private void SetAutoCheck(bool autoCheck)
+		{
+			if (_simpleAllPagesRadio.AutoCheck == autoCheck)
+				return;
+
+			_simpleAllPagesRadio.AutoCheck = autoCheck;
+			_bookletCoverRadio.AutoCheck = autoCheck;
+			_bookletBodyRadio.AutoCheck = autoCheck;
+			_uploadRadio.AutoCheck = autoCheck;
 		}
 
 		private void SetupLocalization()
@@ -329,6 +344,10 @@ namespace Bloom.Publish
 		{
 			if (!_activated)
 				return;
+
+			// BL-625: One of the RadioButtons is now checked, so it is safe to re-enable AutoCheck.
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+				SetAutoCheck(true);
 
 			var oldPortion = _model.BookletPortion;
 			var oldCrop = _model.ShowCropMarks; // changing to or from cloud radio CAN change this.
