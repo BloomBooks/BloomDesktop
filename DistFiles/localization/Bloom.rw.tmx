@@ -1404,14 +1404,7 @@
         <seg>Ibirebana na Bloom</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
-      <tuv xml:lang="en">
-        <seg>Deep Bloom Paper</seg>
-      </tuv>
-      <tuv xml:lang="rw">
-        <seg>Inyandiko ivuga birambuye kuri Bloom</seg>
-      </tuv>
-    </tu>
+
     <tu tuid="HelpMenu.documentationMenuItem">
       <tuv xml:lang="en">
         <seg>Documentation</seg>

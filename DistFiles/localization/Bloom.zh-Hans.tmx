@@ -1446,14 +1446,7 @@
         <seg>关于Bloom</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
-      <tuv xml:lang="en">
-        <seg>Deep Bloom Paper</seg>
-      </tuv>
-      <tuv xml:lang="zh-Hans">
-        <seg>Bloom深入说明</seg>
-      </tuv>
-    </tu>
+
     <tu tuid="HelpMenu.documentationMenuItem">
       <tuv xml:lang="en">
         <seg>Documentation</seg>

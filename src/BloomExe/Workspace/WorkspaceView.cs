@@ -86,7 +86,7 @@ namespace Bloom.Workspace
 
 			//NB: the rest of these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
 			_settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
-			_settingsLauncherHelper.ManageComponent(deepBloomMenuItem);
+			_settingsLauncherHelper.ManageComponent(_keyBloomConceptsMenuItem);
 			_settingsLauncherHelper.ManageComponent(_makeASuggestionMenuItem);
 			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
 			_settingsLauncherHelper.ManageComponent(_showLogMenuItem);
@@ -450,9 +450,9 @@ namespace Bloom.Workspace
 			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", fileName));
 		}
 
-		private void deepBloomMenuItem_Click(object sender, EventArgs e)
+		private void keyBloomConceptsMenuItem_Click(object sender, EventArgs e)
 		{
-			OpenInfoFile("Deep Bloom.pdf");
+			OpenInfoFile("KeyBloomConcepts.pdf");
 		}
 
 		private void buildingReaderTemplatesMenuItem_Click(object sender, EventArgs e)

@@ -41,7 +41,7 @@
 			this._documentationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this._releaseNotesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.deepBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this._keyBloomConceptsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._divider1 = new System.Windows.Forms.ToolStripSeparator();
 			this.buildingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.usingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -154,7 +154,7 @@
             this._documentationMenuItem,
             this.toolStripSeparator1,
             this._releaseNotesMenuItem,
-            this.deepBloomMenuItem,
+            this._keyBloomConceptsMenuItem,
             this._divider1,
             this.buildingReaderTemplatesMenuItem,
             this.usingReaderTemplatesMenuItem,
@@ -205,17 +205,17 @@
 			this._releaseNotesMenuItem.Text = "Release Notes...";
 			this._releaseNotesMenuItem.Click += new System.EventHandler(this._releaseNotesMenuItem_Click);
 			// 
-			// deepBloomMenuItem
+			// _keyBloomConceptsMenuItem
 			// 
-			this.deepBloomMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
-			this._L10NSharpExtender.SetLocalizableToolTip(this.deepBloomMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.deepBloomMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this.deepBloomMenuItem, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this.deepBloomMenuItem, "HelpMenu.deepBloomPaperToolStripMenuItem");
-			this.deepBloomMenuItem.Name = "deepBloomMenuItem";
-			this.deepBloomMenuItem.Size = new System.Drawing.Size(215, 22);
-			this.deepBloomMenuItem.Text = "Deep Bloom Paper";
-			this.deepBloomMenuItem.Click += new System.EventHandler(this.deepBloomMenuItem_Click);
+			this._keyBloomConceptsMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._keyBloomConceptsMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._keyBloomConceptsMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._keyBloomConceptsMenuItem, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._keyBloomConceptsMenuItem, "HelpMenu.keyBloomConceptsToolStripMenuItem");
+			this._keyBloomConceptsMenuItem.Name = "_keyBloomConceptsMenuItem";
+			this._keyBloomConceptsMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._keyBloomConceptsMenuItem.Text = "Key Bloom Concepts";
+			this._keyBloomConceptsMenuItem.Click += new System.EventHandler(this.keyBloomConceptsMenuItem_Click);
 			// 
 			// _divider1
 			// 
@@ -488,7 +488,7 @@
         private System.Windows.Forms.ToolStripSeparator _divider4;
         private System.Windows.Forms.ToolStripMenuItem _checkForNewVersionMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _registrationMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem deepBloomMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _keyBloomConceptsMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem buildingReaderTemplatesMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem usingReaderTemplatesMenuItem;
 		private System.Windows.Forms.ToolStripSeparator _divider1;

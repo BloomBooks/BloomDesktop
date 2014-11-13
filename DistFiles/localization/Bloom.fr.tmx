@@ -2075,14 +2075,6 @@
         <seg>À propos de Bloom</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
-      <tuv xml:lang="en">
-        <seg>Deep Bloom Paper</seg>
-      </tuv>
-      <tuv xml:lang="fr">
-        <seg>Documentation détaillée de Bloom</seg>
-      </tuv>
-    </tu>
     <tu tuid="HelpMenu.documentationMenuItem">
       <tuv xml:lang="en">
         <seg>Documentation</seg>

@@ -1545,9 +1545,9 @@
         <seg>About Bloom</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
+    <tu tuid="HelpMenu.keyBloomConceptsMenuItem">
       <tuv xml:lang="en">
-        <seg>Deep Bloom Paper</seg>
+        <seg>Key Bloom Concepts</seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu.documentationMenuItem">

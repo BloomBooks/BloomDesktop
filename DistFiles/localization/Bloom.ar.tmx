@@ -1670,14 +1670,6 @@
         <seg>عن لوم</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
-      <tuv xml:lang="en">
-        <seg>Deep Bloom Paper</seg>
-      </tuv>
-      <tuv xml:lang="ar">
-        <seg>ورقة العميق بلوم</seg>
-      </tuv>
-    </tu>
     <tu tuid="HelpMenu.documentationMenuItem">
       <tuv xml:lang="en">
         <seg>Documentation</seg>
