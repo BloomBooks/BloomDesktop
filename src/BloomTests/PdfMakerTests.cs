@@ -14,14 +14,18 @@ using Bloom;
 namespace BloomTests
 {
 	[TestFixture]
+#if __MonoCS__
 	[RequiresSTA]
+#endif
 	public class PdfMakerTests
 	{
+#if __MonoCS__
 		[TestFixtureSetUp]
 		public void FixtureSetup()
 		{
 			Browser.SetUpXulRunner();
 		}
+#endif
 
 		[TestFixtureTearDown]
 		public void FixtureTearDown()

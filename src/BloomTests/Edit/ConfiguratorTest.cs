@@ -16,7 +16,9 @@ using Gecko;
 namespace BloomTests.Edit
 {
 	[TestFixture]
+#if __MonoCS__
 	[RequiresSTA]
+#endif
 	public class ConfiguratorTest
 	{
 		private FileLocator _fileLocator;
@@ -24,11 +26,13 @@ namespace BloomTests.Edit
 		private TemporaryFolder _shellCollectionFolder;
 		private TemporaryFolder _libraryFolder;
 
+#if __MonoCS__
 		[TestFixtureSetUp]
 		public void FixtureSetup()
 		{
 			Browser.SetUpXulRunner();
 		}
+#endif
 
 		[SetUp]
 		public void Setup()
@@ -57,6 +61,10 @@ namespace BloomTests.Edit
 			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), library.Object);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
+
+#if !__MonoCS__
+			Browser.SetUpXulRunner();
+#endif
 		}
 
 		[TestFixtureTearDown]
