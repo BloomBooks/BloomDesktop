@@ -469,5 +469,30 @@ namespace Bloom.Workspace
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
 	{
 		protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { }
+
+		protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+		{
+			var textSize = e.Graphics.MeasureString(e.Text, e.TextFont);
+
+			// adjust the rectangle to fit the calculated text size
+			Rectangle rc = e.TextRectangle;
+			if (rc.Width < textSize.Width + 2)
+			{
+				int diffX = (int)System.Math.Ceiling(textSize.Width + 2 - rc.Width);
+				rc.X -= (int)(diffX / 2);
+				rc.Width += diffX;
+			}
+
+			if (rc.Height < textSize.Height + 2)
+			{
+				int diffY = (int)System.Math.Ceiling(textSize.Height + 2 - rc.Height);
+				rc.Y -= (int)(diffY / 2);
+				rc.Height += diffY;
+			}
+
+			e.TextRectangle = rc;
+
+			base.OnRenderItemText(e);
+		}
 	}
 }
