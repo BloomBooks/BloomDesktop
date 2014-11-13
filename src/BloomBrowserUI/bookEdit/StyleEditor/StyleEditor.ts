@@ -266,8 +266,7 @@ class StyleEditor {
         return <StyleSheet><any>newSheet;
     }
 
-    // Get a style rule with a specified name that can be modified to change the apperance of text in this
-    // style.
+    // Get a style rule with a specified name that can be modified to change the appearance of text in this style.
     // If ignoreLanguage is true, this will be a rule that just specifies the name (.myStyle). This is
     // always used for the More tab, and for everything except font name when authoring.
     // Otherwise, it will specify language: .myStyle[lang="code"], or if langAttrValue is null, .myStyle:not([lang]).
@@ -287,9 +286,15 @@ class StyleEditor {
                 styleAndLang = styleName + ":not([lang])";
         }
         for (var i = 0; i < x.length; i++) {
+            var bloomEditable = '.bloom-editable';
+            if (!x[i].cssText.startsWith(bloomEditable)) { // we might need to update old rules?
+                var oldText = x[i].cssText;
+                (<CSSStyleSheet>styleSheet).deleteRule(i);
+                (<CSSStyleSheet>styleSheet).insertRule(bloomEditable + oldText, i);
+            }
             var index = x[i].cssText.indexOf('{');
             if (index == -1) continue;
-            var match = x[i].cssText.substring(0, index);
+            var match = x[i].cssText.substring(bloomEditable.length, index);
             // if we're not ignoring language, we simply need a match for styleAndLang, which includes a lang component.
             // if we're ignoring language, we must find a rule that doesn't specify language at all, even if we
             // have one that does.
@@ -299,7 +304,7 @@ class StyleEditor {
                 return <CSSStyleRule> x[i];
             }
         }
-        (<CSSStyleSheet>styleSheet).insertRule('.' + styleAndLang + "{ }", x.length);
+        (<CSSStyleSheet>styleSheet).insertRule(bloomEditable + '.' + styleAndLang + "{ }", x.length);
 
         return <CSSStyleRule> x[x.length - 1]; //new guy is last
     }
