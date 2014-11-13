@@ -294,7 +294,7 @@ function AddToolbox(container){
             });
         });
         $(this).qtipSecondary({
-            content: "<div id='experimentNotice'><img src='file://" + GetSettings().bloomBrowserUIFolder + "/images/experiment.png'/>This is an experimental prototype of template-making within Bloom itself. Much more work is needed before it is ready for real work, so don't bother reporting problems with it yet. The Trello board is <a href='https://trello.com/board/bloom-custom-template-dev/4fb2501b34909fbe417a7b7d'>here</a></b></div>",
+            content: "<div id='experimentNotice'><img src='/bloom/images/experiment.png'/>This is an experimental prototype of template-making within Bloom itself. Much more work is needed before it is ready for real work, so don't bother reporting problems with it yet. The Trello board is <a href='https://trello.com/board/bloom-custom-template-dev/4fb2501b34909fbe417a7b7d'>here</a></b></div>",
             show: { ready: true },
             hide: false,
             position: {
@@ -312,7 +312,7 @@ function AddToolbox(container){
 
 function AddExperimentalNotice(element) {
     $(element).qtipSecondary({
-        content: "<div id='experimentNotice'><img src='file://" + GetSettings().bloomBrowserUIFolder + "/images/experiment.png'/>This page is an experimental prototype which may have many problems, for which we apologize.<div/>"
+        content: "<div id='experimentNotice'><img src='/bloom/images/experiment.png'/>This page is an experimental prototype which may have many problems, for which we apologize.<div/>"
                          , show: { ready: true }
                          , hide: false
                          , position: { at: 'right top',
@@ -1028,12 +1028,7 @@ function DecodeHtml(encodedString) {
 }
 
 function GetEditor() {
-    if (GetSettings().bloomBrowserUIFolder.indexOf('http') === 0) {
-        return new StyleEditor(GetSettings().bloomBrowserUIFolder + "/bookEdit");
-    }
-    else {
-        return new StyleEditor('file://' + GetSettings().bloomBrowserUIFolder + "/bookEdit");
-    }
+    return new StyleEditor("/bloom/bookEdit");
 }
 
 function SetupImage(image) {
@@ -1173,45 +1168,44 @@ function SetupElements(container) {
     //TODO if you do Ctrl+A and delete, you're now outside of our <p></p> zone. clicking out will trigger the blur handerl above, which will restore it.
     });
 
-    // invoke function when a bloom-editable element loses focus.
-    $(container).find('.bloom-editable').focusout(function () {
-        var accordion = parent.window.document.getElementById("accordion");
-        if (accordion) {
-            accordion.contentWindow.model.doMarkup(); // 'This' is the element that just lost focus.
-        }
-    });
+    var accordion = parent.window.document.getElementById("accordion");
+    var model;
 
-    $(container).find('.bloom-editable').focusin(function () {
-        var accordion = parent.window.document.getElementById("accordion");
-        if (accordion) {
-            accordion.contentWindow.model.noteFocus(this); // 'This' is the element that just got focus.
-        }
-    });
+    // accordion will be undefined during unit testing
+    if (accordion) model = accordion.contentWindow['model'];
 
-    // and a slightly different one for keypresses
-    $(container).find('.bloom-editable').keypress(function () {
-        var accordion = parent.window.document.getElementById("accordion");
-        if (accordion) {
-            accordion.contentWindow.model.doKeypressMarkup();
-        }
-    });
+    // model will be undefined if the reader tools are not loaded
+    if (model) {
 
-    $(container).find('.bloom-editable').keydown(function (e) {
-        if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrlz or ctrl-Y
-            var accordion = parent.window.document.getElementById("accordion");
-            if (accordion && accordion.contentWindow.model.currentMarkupType !== MarkupType.None) {
-                e.preventDefault();
-                if (e.shiftKey || e.keyCode == 89) { // crtl-shift-z or ctrl-y
-                    accordion.contentWindow.model.redo();
+        // invoke function when a bloom-editable element loses focus.
+        $(container).find('.bloom-editable').focusout(function () {
+            model.doMarkup();
+        });
+
+        $(container).find('.bloom-editable').focusin(function () {
+            model.noteFocus(this); // 'This' is the element that just got focus.
+        });
+
+        // and a slightly different one for keypresses
+        $(container).find('.bloom-editable').keypress(function () {
+            model.doKeypressMarkup();
+        });
+
+        $(container).find('.bloom-editable').keydown(function (e) {
+            if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrl-z or ctrl-Y
+                if (model.currentMarkupType !== MarkupType.None) {
+                    e.preventDefault();
+                    if (e.shiftKey || e.keyCode == 89) { // ctrl-shift-z or ctrl-y
+                        model.redo();
+                    }
+                    else {
+                        model.undo();
+                    }
+                    return false;
                 }
-                else {
-                    accordion.contentWindow.model.undo();
-                }
-                return false;
             }
-        }
-    });
-
+        });
+    }
 
     SetBookCopyrightAndLicenseButtonVisibility(container);
 
