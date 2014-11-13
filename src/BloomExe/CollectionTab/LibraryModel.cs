@@ -10,13 +10,12 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Edit;
 using Bloom.SendReceive;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
-using Chorus.FileTypeHanders.OurWord;
 using DesktopAnalytics;
-using Ionic.Zip;
+using ICSharpCode.SharpZipLib.Core;
+using ICSharpCode.SharpZipLib.Zip;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
@@ -224,44 +223,42 @@ namespace Bloom.CollectionTab
 			{
 				if(File.Exists(path))
 				{
-					//UI already got permission for this
+					// UI already got permission for this
 					File.Delete(path);
 				}
+
 				Logger.WriteEvent("Making BloomPack");
+
 				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack...", "Bloom"))
 				{
 					try
 					{
 						pleaseWait.Show();
 						pleaseWait.BringToFront();
-						Application.DoEvents();//actually show it
+						Application.DoEvents(); // actually show it
 						Cursor.Current = Cursors.WaitCursor;
-						using (var zip = new ZipFile(Encoding.UTF8))
-						{
-							string dir = TheOneEditableCollection.PathToDirectory;
-							string rootName = Path.GetFileName(dir);
-							foreach (var directory in Directory.GetDirectories(dir))
-							{
-								string repairPath;
-								string repairContent;
 
-								var dirName = Path.GetFileName(directory);
-								if (dirName.ToLowerInvariant() == "sample texts")
-									continue; // Don't want to bundle these up
-								var zipName = Path.Combine(rootName, dirName);
-								zip.AddDirectory(directory, zipName);
-								if (forReaderTools)
-									ReplaceBookWithTemplate(zip, directory, rootName);
-							}
-							foreach (var file in Directory.GetFiles(dir))
+						var dir = TheOneEditableCollection.PathToDirectory;
+
+						var rootName = Path.GetFileName(dir);
+						if (rootName == null) return;
+
+						var dirNameOffest = dir.Length - rootName.Length;
+
+						using (var fsOut = File.Create(path))
+						{
+							using (ZipOutputStream zipStream = new ZipOutputStream(fsOut))
 							{
-								zip.AddFile(file, rootName);
+								zipStream.SetLevel(9);
+
+								CompressDirectory(dir, zipStream, dirNameOffest, forReaderTools);
+
+								zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
+								zipStream.Close();
 							}
-							//nb: without this second argument, we don't get the outer directory included, and we need that for the name of the collection
-							//zip.AddDirectory(dir, System.IO.Path.GetFileName(dir));
-							zip.Save(path);
 						}
-						//show it
+
+						// show it
 						Logger.WriteEvent("Showing BloomPack on disk");
 						PathUtilities.SelectFileInExplorer(path);
 						Analytics.Track("Create BloomPack");
@@ -275,26 +272,95 @@ namespace Bloom.CollectionTab
 			}
 			catch (Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Could not make the BloomPack");
+				ErrorReport.NotifyUserOfProblem(e, "Could not make the BloomPack");
 			}
 		}
 
-		private void ReplaceBookWithTemplate(ZipFile zip, string directory, string rootName)
+		/// <summary>
+		/// Adds a directory, along with all files and subdirectories, to the ZipStream.
+		/// </summary>
+		/// <param name="directoryPath">The directory to add recursively</param>
+		/// <param name="zipStream">The ZipStream to which the files and directories will be added</param>
+		/// <param name="dirNameOffest">This number of characters will be removed from the full directory or file name
+		/// before creating the zip entry name</param>
+		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
+		/// and leveled readers before they are added to the ZipStream</param>
+		private static void CompressDirectory(string directoryPath, ZipOutputStream zipStream, int dirNameOffest,
+			bool forReaderTools)
 		{
-			var bookFile = BookStorage.FindBookHtmlInFolder(directory);
-			if (string.IsNullOrEmpty(bookFile))
-				return;
+			var files = Directory.GetFiles(directoryPath);
+			var bookFile = BookStorage.FindBookHtmlInFolder(directoryPath);
+
+			foreach (var fileName in files)
+			{
+				FileInfo fi = new FileInfo(fileName);
+
+				var entryName = fileName.Substring(dirNameOffest);  // Makes the name in zip based on the folder
+				entryName = ZipEntry.CleanName(entryName);          // Removes drive from name and fixes slash direction
+				ZipEntry newEntry = new ZipEntry(entryName) { DateTime = fi.LastWriteTime };
+				byte[] bookContent = {};
+
+				// if this is a ReaderTools book, call GetBookReplacedWithTemplate() to get the contents
+				if (forReaderTools && (bookFile == fileName))
+				{
+					bookContent = GetBookReplacedWithTemplate(fileName);
+					newEntry.Size = bookContent.Length;
+				}
+				else
+				{
+					newEntry.Size = fi.Length;
+				}
+
+				zipStream.PutNextEntry(newEntry);
+
+				if (bookContent.Length > 0)
+				{
+					using (var memStream = new MemoryStream(bookContent))
+					{
+						StreamUtils.Copy(memStream, zipStream, new byte[bookContent.Length]);
+					}
+				}
+				else
+				{
+					// Zip the file in buffered chunks
+					byte[] buffer = new byte[4096];
+					using (var streamReader = File.OpenRead(fileName))
+					{
+						StreamUtils.Copy(streamReader, zipStream, buffer);
+					}
+				}
+
+				zipStream.CloseEntry();
+			}
+
+			var folders = Directory.GetDirectories(directoryPath);
+
+			foreach (var folder in folders)
+			{
+				var dirName = Path.GetFileName(folder);
+				if ((dirName == null) || (dirName.ToLowerInvariant() == "sample texts"))
+					continue; // Don't want to bundle these up
+
+				CompressDirectory(folder, zipStream, dirNameOffest, forReaderTools);
+			}
+		}
+
+		/// <summary>
+		/// Does some pre-processing on reader files
+		/// </summary>
+		/// <param name="bookFile"></param>
+		/// <returns>A UTF8-encoded byte array filled with the contents of the bookFile</returns>
+		private static byte[] GetBookReplacedWithTemplate(string bookFile)
+		{
 			var text = File.ReadAllText(bookFile, Encoding.UTF8);
 			// Note that we're getting rid of preceding newline but not following one. Hopefully we cleanly remove a whole line.
 			// I'm not sure the </meta> ever occurs in html files, but just in case we'll match if present.
 			var regex = new Regex("\\s*<meta\\s+name=(['\\\"])lockedDownAsShell\\1 content=(['\\\"])true\\2>(</meta>)? *");
 			var match = regex.Match(text);
-			if (!match.Success)
-				return; // nothing to remove
-			var newText = text.Substring(0, match.Index) + text.Substring(match.Index + match.Length);
-			var zipName = Path.Combine(rootName, Path.GetFileName(directory), Path.GetFileName(bookFile));
-			zip.RemoveEntry(zipName);
-			zip.AddEntry(zipName, newText);
+			if (match.Success)
+				text = text.Substring(0, match.Index) + text.Substring(match.Index + match.Length);
+
+			return Encoding.UTF8.GetBytes(text);
 		}
 
 		public string GetSuggestedBloomPackPath()

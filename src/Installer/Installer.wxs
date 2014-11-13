@@ -245,9 +245,6 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="AxInterop.AcroPDFLib.dll" Name="AxInterop.AcroPDFLib.dll" KeyPath="yes" Source="..\..\output\release\AxInterop.AcroPDFLib.dll" />
 		  </Component>
 
-		  <Component Id="Ionic.Zip.Reduced.dll" Guid="{D40A976F-244D-4C0E-924D-AB98040649F6}">
-			<File Id="Ionic.Zip.Reduced.dll" Name="Ionic.Zip.Reduced.dll" KeyPath="yes" Source="..\..\output\release\Ionic.Zip.Reduced.dll" />
-		  </Component>
 		  <Component Id="ICSharpCode.SharpZipLib.dll" Guid="{4B1E06ED-B1E2-4936-ADD9-0480421AB547}">
 			<File Id="ICSharpCode.SharpZipLib.dll" Name="ICSharpCode.SharpZipLib.dll" KeyPath="yes" Source="..\..\output\release\ICSharpCode.SharpZipLib.dll" />
 		  </Component>
@@ -306,7 +303,6 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 	  <ComponentRef Id="msvcr100.dll"/> <!-- needed by libtidy -->
 	  <ComponentRef Id="GeckoFxCore" />
 	  <ComponentRef Id="GeckoFxWinforms" />
-	  <ComponentRef Id="Ionic.Zip.Reduced.dll"/>
 	  <ComponentRef Id="ICSharpCode.SharpZipLib.dll"/>
 	  <ComponentRef Id="NetSparkle.Net40.dll"/>
 	  <ComponentRef Id="Interop.IWshRuntimeLibrary.dll"/>
