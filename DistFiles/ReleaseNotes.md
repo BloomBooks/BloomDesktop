@@ -4,18 +4,18 @@
 - Use the new "Custom" page template to make your own unique page layouts.
 - Use "Duplicate" button to reuse your custom page within a book.
 - You can now set a default font family for each of the languages in a book.
-- You can now apply styles name (like Word / Libre Office) to text boxes keep things consistent throughout the book
+- You can now apply styles name (like Word / LibreOffice) to text boxes keep things consistent throughout the book
 - You can now set the font family, size, line spacing, word spacing, justification, border, and background of each text box, along with all other boxes with the same "style". Just click on the little "gear" icon in the lower left of a text box.
 
 ### Improved PDF Making
-- Bloom now uses the same rendering engine for editing and pdf-making, eliminating WYSIWYG glitches of previous versions.
+- Bloom now uses the same rendering engine for both editing and pdf-making, eliminating WYSIWYG glitches of previous versions.
 - New PDF engine renders fonts better.
 - Languages requiring Graphite Complex-non-roman script rendering are now supported.
 - Adobe Acrobat no longer needed to view PDFs in the Publish tab
 
 ### Other
 - You can now right click on a book and export its contents to Word or Libre Office (most formatting will be lost).
-- Bloom's interface has new translations, in Tamil (India), Hindi (India), Tulugu (India), and Kinyarwanda (Rwanda). French and Spanish translations have been updated.
+- Bloom's interface has new translations, in Arabic, Chinese, Tamil (India), Hindi (India), Telugu (India), and Kinyarwanda (Rwanda). French and Spanish translations have been updated.
 - Andika Font is now installed along with Bloom
 
 ###Experimental Features in this release
@@ -24,10 +24,12 @@
 	* Words that are not appropriate for the current stage are highlighted.
 	* You can export a file detailing each decodable stage: letters, sight words, and available words to use.
 	* Thanks to Norbert Rennert for sharing code from his Synphony engine.
+  * See "Help: Building/User Reader Templates" for more information.
 - Leveled Reader Tool helps you develop books for readers at various levels of ability by setting limits on the number of words per sentence, page, and book.
+  * See "Help: Building/User Reader Templates" for more information.
 - Holding down a key now shows a "Special Characters Panel" that lets you select from similar characters.
 - New "Custom" page that lets you divide up the page into text and picture portions. You can then just use the page, or treat it like a template for other pages in the book.  The ability to use that page in other books is expected in the next version of Bloom.
-- Languages can be marked as Right-To-Left. However, changing the page order would be up to the user, using a PDF editor like Adobe Acrobat.
+- Languages can be marked as Right-To-Left. However, changing the page order is still up to you, using a PDF editor like Adobe Acrobat (or maybe use the RTL option in PdfDroplet)?
 - Initial Linux Version (Precise and Trusty).
 
 ### Known Bugs & Limitations
