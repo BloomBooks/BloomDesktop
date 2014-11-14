@@ -285,8 +285,8 @@ class StyleEditor {
             else
                 styleAndLang = styleName + ":not([lang])";
         }
+        var bloomEditable = '.bloom-editable';
         for (var i = 0; i < x.length; i++) {
-            var bloomEditable = '.bloom-editable';
             if (!x[i].cssText.startsWith(bloomEditable)) { // we might need to update old rules?
                 var oldText = x[i].cssText;
                 (<CSSStyleSheet>styleSheet).deleteRule(i);
