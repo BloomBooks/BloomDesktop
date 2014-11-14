@@ -285,8 +285,8 @@ class StyleEditor {
             else
                 styleAndLang = styleName + ":not([lang])";
         }
+        var bloomEditable = '.bloom-editable';
         for (var i = 0; i < x.length; i++) {
-            var bloomEditable = '.bloom-editable';
             if (!x[i].cssText.startsWith(bloomEditable)) { // we might need to update old rules?
                 var oldText = x[i].cssText;
                 (<CSSStyleSheet>styleSheet).deleteRule(i);
@@ -777,8 +777,8 @@ class StyleEditor {
             var index = styleName.indexOf("-style");
             if (index > 0) styleName = styleName.substring(0, index);
         }
-        if (this.authorMode) {
-            return localizationManager.getText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName);
+        if (this.shouldSetDefaultRule()) {
+            return localizationManager.getText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName);
         }
         var lang = $(this.boxBeingEdited).attr('lang');
         return localizationManager.getText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName);
@@ -893,37 +893,67 @@ class StyleEditor {
         this.cleanupAfterStyleChange();
     }
 
+    // Return true if font-tab changes (other than font family) for the current element should be applied
+    // to the default rule as well as a language-specific rule.
+    // Currently this requires that the element's language is the project's first language, which happens
+    // to be available to us through the injected setting 'languageForNewTextBoxes'.
+    // (If that concept diverges from 'the language whose style settings are the default' we may need to
+    // inject a distinct value.)
+    shouldSetDefaultRule() {
+        var target = this.boxBeingEdited;
+        // GetSettings is injected into the page by C#.
+        var defLang = GetSettings().languageForNewTextBoxes;
+        if ($(target).attr("lang") !== defLang) return false;
+        // We need to some way of detecting that we don't want to set
+        // default rule for blocks like the main title, where factory rules do things like
+        // making .bookTitle.bloom-contentNational1 120% and .bookTitle.bloom-content1 250%.
+        return !$(target).hasClass('bloom-nodefaultstylerule');
+    }
+
     changeSize() {
         if (this.ignoreControlChanges) return;
-        var rule = this.getStyleRule(this.authorMode);
         var fontSize = $('#size-select').val();
         var units = 'pt';
         var sizeString = fontSize.toString();
         if (parseInt(sizeString) < this.MIN_FONT_SIZE)
             return; // should not be possible?
+        // Always set the value in the language-specific rule
+        var rule = this.getStyleRule(false);
         rule.style.setProperty("font-size", sizeString + units, "important");
+        if (this.shouldSetDefaultRule()) {
+            rule = this.getStyleRule(true);
+            rule.style.setProperty("font-size", sizeString + units, "important");
+        }
         this.cleanupAfterStyleChange();
     }
 
     changeLineheight() {
         if (this.ignoreControlChanges) return;
-        var rule = this.getStyleRule(this.authorMode);
         var lineHeight = $('#line-height-select').val();
+        var rule = this.getStyleRule(false);
         rule.style.setProperty("line-height", lineHeight, "important");
-        this.cleanupAfterStyleChange();
+        if (this.shouldSetDefaultRule()) {
+            rule = this.getStyleRule(true);
+            rule.style.setProperty("line-height", lineHeight, "important");
+        }
+       this.cleanupAfterStyleChange();
     }
 
     changeWordSpace() {
         if (this.ignoreControlChanges) return;
-        var rule = this.getStyleRule(this.authorMode);
         var wordSpace = $('#word-space-select').val();
         if (wordSpace === 'Wide')
             wordSpace = '5pt';
         else if (wordSpace === 'Extra Wide') {
             wordSpace = '10pt';
         }
+        var rule = this.getStyleRule(false);
         rule.style.setProperty("word-spacing", wordSpace, "important");
-        this.cleanupAfterStyleChange();
+        if (this.shouldSetDefaultRule()) {
+            rule = this.getStyleRule(true);
+            rule.style.setProperty("word-spacing", wordSpace, "important");
+        }
+       this.cleanupAfterStyleChange();
     }
 
     changeBackground() {
