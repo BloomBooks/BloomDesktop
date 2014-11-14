@@ -6,8 +6,9 @@
 /// <reference path="../../lib/jquery.alphanum.d.ts"/>
 /// <reference path="../js/toolbar/toolbar.d.ts"/>
 /// <reference path="../js/getIframeChannel.ts"/>
+/// <reference path="../js/interIframeChannel.ts"/>
+/// <reference path="../js/collectionSettings.d.ts"/>
 
-declare var simpleAjaxGet: any;
 var iframeChannel = getIframeChannel();
 
 interface qtipInterface extends JQuery {

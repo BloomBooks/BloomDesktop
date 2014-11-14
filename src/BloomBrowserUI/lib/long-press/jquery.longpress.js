@@ -82,7 +82,27 @@
         '=':'≈≠≡'
 
     };
-    var ignoredKeys=[8, 13, 37, 38, 39, 40];
+    // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
+    // 8  backspace
+    // 9  tab
+    // 13 enter
+    // 16 shift (by itself; it still works to hold down capital letters)
+    // 17 ctrl
+    // 18 alt
+    // 27 escape
+    // 33 page up
+    // 34 page down
+    // 35 end
+    // 36 home
+    // 37 left arrow
+    // 38 up arrow
+    // 39 right arrow
+    // 40 down arrow
+    // 45 insert
+    // 46 delete
+    // Review: there are others we could add, function keys, num lock, scroll lock, break, forward & back slash, etc.
+    //  not sure how much we gain from that...
+    var ignoredKeys=[8, 9, 13, 16, 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
 
     var selectedCharIndex;
     var lastWhich;
