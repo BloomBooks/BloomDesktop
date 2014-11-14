@@ -82,7 +82,15 @@
         '=':'≈≠≡'
 
     };
-    var ignoredKeys=[8, 13, 37, 38, 39, 40];
+    // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
+    // 8  backspace
+    // 13 enter
+    // 37 left arrow
+    // 38 up arrow
+    // 39 right arrow
+    // 40 down arrow
+    // 46 delete
+    var ignoredKeys=[8, 13, 37, 38, 39, 40, 46];
 
     var selectedCharIndex;
     var lastWhich;
