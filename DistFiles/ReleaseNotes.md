@@ -1,16 +1,22 @@
-﻿## 3.0
+﻿## 3.0.66 BETA (Windows Only)
 
-#New Features
+### Flexible Layouts and Styling
+- Use the new "Custom" page template to make your own unique page layouts.
+- Use "Duplicate" button to reuse your custom page within a book.
+- You can now set a default font family for each of the languages in a book.
+- You can now apply styles name (like Word / Libre Office) to text boxes keep things consistent throughout the book
+- You can now set the font family, size, line spacing, word spacing, justification, border, and background of each text box, along with all other boxes with the same "style". Just click on the little "gear" icon in the lower left of a text box.
 
+### Improved PDF Making
 - Bloom now uses the same rendering engine for editing and pdf-making, eliminating WYSIWYG glitches of previous versions.
 - New PDF engine renders fonts better.
 - Languages requiring Graphite Complex-non-roman script rendering are now supported.
 - Adobe Acrobat no longer needed to view PDFs in the Publish tab
-- Andika Font is now installed along with Bloom
-- You can now set a default font family for each of the languages in a book.
-- You can now set the font family, size, line spacing, word spacing, border, and background of each text box, along with all other boxes with the same "style". Just click on the little "gear" icon in the lower left of a text box.
+
+### Other
 - You can now right click on a book and export its contents to Word or Libre Office (most formatting will be lost).
 - Bloom's interface has new translations, in Tamil (India), Hindi (India), Tulugu (India), and Kinyarwanda (Rwanda). French and Spanish translations have been updated.
+- Andika Font is now installed along with Bloom
 
 ###Experimental Features in this release
 - Decodable Reader Tool helps you develop a series of books that introduce a few letters at a time.
@@ -29,6 +35,8 @@
 - Page Template names are always shown in English.
 - Books with Graphite complex-non-roman scripts cannot be printed directly from Bloom yet. Instead, open the PDF in Adobe Reader and print from there.
 - Sample texts for use with the decodable reader must be saved as unicode text files.
+
+## 2.0 RELEASE October 2014
 
 ## 2.0.1038 BETA 23 July 2014
 A4Landscape with "Picture on top" now gives 70% of the page to the picture, was previously 45%.
