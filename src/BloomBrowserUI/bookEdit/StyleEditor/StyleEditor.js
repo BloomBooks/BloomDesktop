@@ -277,8 +277,7 @@ var StyleEditor = (function () {
         for (var i = 0; i < x.length; i++) {
             if (!x[i].cssText.startsWith(bloomEditable)) {
                 var oldText = x[i].cssText;
-                styleSheet.deleteRule(i);
-                styleSheet.insertRule(bloomEditable + oldText, i);
+                this.ReplaceExistingStyle(styleSheet, i, bloomEditable + oldText);
             }
             var index = x[i].cssText.indexOf('{');
             if (index == -1)
@@ -297,6 +296,12 @@ var StyleEditor = (function () {
         styleSheet.insertRule(bloomEditable + '.' + styleAndLang + "{ }", x.length);
 
         return x[x.length - 1];
+    };
+
+    // Replaces a style in 'sheet' at the specified 'index' with a (presumably) modified style.
+    StyleEditor.prototype.ReplaceExistingStyle = function (sheet, index, newStyle) {
+        sheet.deleteRule(index);
+        sheet.insertRule(newStyle, index);
     };
 
     StyleEditor.prototype.ConvertPxToPt = function (pxSize, round) {

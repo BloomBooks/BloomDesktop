@@ -290,8 +290,7 @@ class StyleEditor {
         for (var i = 0; i < x.length; i++) {
             if (!x[i].cssText.startsWith(bloomEditable)) { // we might need to update old rules?
                 var oldText = x[i].cssText;
-                (<CSSStyleSheet>styleSheet).deleteRule(i);
-                (<CSSStyleSheet>styleSheet).insertRule(bloomEditable + oldText, i);
+                this.ReplaceExistingStyle((<CSSStyleSheet>styleSheet), i, bloomEditable + oldText);
             }
             var index = x[i].cssText.indexOf('{');
             if (index == -1) continue;
@@ -308,6 +307,12 @@ class StyleEditor {
         (<CSSStyleSheet>styleSheet).insertRule(bloomEditable + '.' + styleAndLang + "{ }", x.length);
 
         return <CSSStyleRule> x[x.length - 1]; //new guy is last
+    }
+
+    // Replaces a style in 'sheet' at the specified 'index' with a (presumably) modified style.
+    ReplaceExistingStyle(sheet: CSSStyleSheet, index: number, newStyle: string): void {
+        sheet.deleteRule(index);
+        sheet.insertRule(newStyle, index);
     }
 
     ConvertPxToPt(pxSize: number, round = true): number {
