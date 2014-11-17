@@ -19,7 +19,7 @@ namespace Bloom.Publish
 	class MakePdfUsingGeckofxHtmlToPdfComponent
 	{
 		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName,
-			bool landscape, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
+			bool landscape, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, int pageCount)
 		{
 			ConversionProgress progress = null;
 			try
@@ -37,7 +37,12 @@ namespace Bloom.Publish
 					Landscape = landscape,
 					InputHtmlPath = inputHtmlPath,
 					OutputPdfPath = tempOutput.Path,
-					PageSizeName = paperSizeName
+					PageSizeName = paperSizeName,
+					// We always want to print all the pages. However, for a reason we have not been able to determine,
+					// Gecko sometimes adds a blank page at the end (so far observed only when printing the interior
+					// pages of an A5 booklet). This messes up the PDFDroplet page arrangement. Explicitly specifying
+					// the page range by using the LastPage property prevents this. See BL-705.
+					LastPage = pageCount
 				};
 				using (var waitHandle = new AutoResetEvent(false))
 				{

@@ -40,7 +40,10 @@ namespace Bloom.Publish
 		/// <param name="worker">If not null, the Background worker which is running this task, and may be queried to determine whether a cancel is being attempted</param>
 		/// <param name="doWorkEventArgs">The event passed to the worker when it was started. If a cancel is successful, it's Cancel property should be set true.</param>
 		/// <param name="owner">A control which can be used to invoke parts of the work which must be done on the ui thread.</param>
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner)
+		/// <param name="pageCount">optional count of pages in document. If -1, ignored.</param>
+		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod,
+			PublishModel.BookletPortions bookletPortion, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner,
+			int pageCount = -1)
 		{
 			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
 						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
@@ -51,7 +54,7 @@ namespace Bloom.Publish
 			for (int i = 0; i < 4; i++)
 			{
 				new MakePdfUsingGeckofxHtmlToPdfComponent().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape,
-					owner, worker, doWorkEventArgs);
+					owner, worker, doWorkEventArgs, pageCount);
 
 				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
 					return;

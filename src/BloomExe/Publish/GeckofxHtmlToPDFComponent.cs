@@ -228,6 +228,12 @@ namespace GeckofxHtmlToPdf
 
 			printSettings.SetPrintBGColorsAttribute(true);
 			printSettings.SetPrintBGImagesAttribute(true);
+			if (_conversionOrder.LastPage > 0)
+			{
+				printSettings.SetPrintRangeAttribute(1); // specified range
+				printSettings.SetStartPageRangeAttribute(1);
+				printSettings.SetEndPageRangeAttribute(_conversionOrder.LastPage);
+			}
 
 
 			//TODO: doesn't seem to do anything. Probably a problem in the geckofx wrapper

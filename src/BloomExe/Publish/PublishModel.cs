@@ -96,7 +96,8 @@ namespace Bloom.Publish
 
 			try
 			{
-				using(var tempHtml = MakeFinalHtmlForPdfMaker())
+				int pageCount;
+				using(var tempHtml = MakeFinalHtmlForPdfMaker(out pageCount))
 				{
 					if (doWorkEventArgs.Cancel)
 						return;
@@ -108,7 +109,7 @@ namespace Bloom.Publish
 						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
 
 					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape,
-									  layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
+									  layoutMethod, BookletPortion, worker, doWorkEventArgs, View, pageCount);
 				}
 			}
 			catch (Exception e)
@@ -122,11 +123,11 @@ namespace Bloom.Publish
 		}
 
 
-		private TempFile MakeFinalHtmlForPdfMaker()
+		private TempFile MakeFinalHtmlForPdfMaker(out int pageCount)
 		{
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
-			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
+			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer, out pageCount);
 
 			HtmlDom.AddPublishClassToBody(dom);
 			HtmlDom.AddHidePlaceHoldersClassToBody(dom);
@@ -329,7 +330,8 @@ namespace Bloom.Publish
 
 //			System.Diagnostics.Process.Start(tempHtml.Path);
 
-			var htmlFilePath = MakeFinalHtmlForPdfMaker().Path;
+			int pageCount;
+			var htmlFilePath = MakeFinalHtmlForPdfMaker(out pageCount).Path;
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
 				Process.Start("Firefox.exe", htmlFilePath);
 			else
