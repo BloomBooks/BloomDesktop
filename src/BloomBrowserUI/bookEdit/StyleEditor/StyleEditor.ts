@@ -115,7 +115,7 @@ class StyleEditor {
         // In case this is one of those books, we'll replace it with 'normal-style'
         if (styleName == 'default-style') {
             $(target).removeClass(styleName);
-            styleName = 'normal-style';
+            styleName = 'normal-style'; // This will be capitalized before presenting it to the user.
             $(target).addClass(styleName);
         }
         return styleName;
@@ -188,6 +188,7 @@ class StyleEditor {
     // Only the last class in a sequence is used; this lets us predefine
     // styles like DIV.bloom-editing.Heading1 and make their selectors specific enough to work,
     // but not impossible to override with a custom definition.
+    // N.B. these are not the final user-visible versions of style names, but the internal version.
     getFormattingStyles(): string[] {
         var result = [];
         for (var i = 0; i < document.styleSheets.length; i++) {
@@ -213,14 +214,14 @@ class StyleEditor {
         // But our default template doesn't define it; by default it just has default properties.
         // Make sure it's available to choose again.
         if (result.indexOf('normal') == -1) {
-            result.push('normal');
+            result.push('normal'); // This will be capitalized before presenting it to the user.
         }
         return result;
     }
 
     // Get the existing rule for the specified style.
     // Will return null if the style has no definition, OR if it already has a user-defined version
-    getPredefinedStyle(target: string) {
+    getPredefinedStyle(target: string): CSSRule {
         var result = null;
         for (var i = 0; i < document.styleSheets.length; i++) {
             var sheet = <StyleSheet>(<any>document.styleSheets[i]);
@@ -514,8 +515,10 @@ class StyleEditor {
         formatButton.click(function () {
             iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
+                // This line is needed inside the click function to keep from using a stale version of 'styleName'
+                // and chopping off 6 characters each time!
+                styleName = StyleEditor.GetStyleNameForElement(targetBox);
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
-                styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
                 var current = editor.getFormatValues();
 
                 //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
@@ -859,6 +862,10 @@ class StyleEditor {
             var selected: string = "";
             if (current == items[i]) selected = ' selected';
             var text = items[i];
+            text = text.replace(/-/g, ' '); //show users a space instead of dashes
+            if (text == 'normal') {
+                text = 'Normal'; // capitalize for user
+            }
             if (maxlength && text.length > maxlength) {
                 text = text.substring(0, maxlength) + "...";
             }

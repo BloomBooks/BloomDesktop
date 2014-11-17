@@ -7,7 +7,7 @@ mixin image-leading
 //- items marked with 'bloom-trailingElement' will be on the right page of a side-by-side layout
 mixin field-trailing
 	//- Is default-style needed? Yes, but it needs to be normal-style. (BL-26)
-	+field(attributes).bloom-trailingElement.Normal-style
+	+field(attributes).bloom-trailingElement.normal-style
 
 doctype html
 html
@@ -55,7 +55,7 @@ html
 
 		+page-choice('Picture & Word').pictureAndWordPage#FD115DFF-0415-4444-8E76-3D2A18DBBD27
 			+image-leading
-			+field(attributes).bloom-trailingElement.Big-Words-style
+			+field(attributes).bloom-trailingElement.BigWords-style
 
 		+page-choice-layout('Custom').customPage#5dcd48df-e9ab-4a07-afd4-6a24d0398386
 			.split-pane-component-inner
