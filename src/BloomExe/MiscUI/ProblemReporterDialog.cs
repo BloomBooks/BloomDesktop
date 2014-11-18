@@ -16,14 +16,15 @@ using Palaso.Reporting;
 namespace Bloom.MiscUI
 {
 	/// <summary>
-	/// This dialog lets users bring up an issue with us. 
+	/// This dialog lets users bring up an issue with us.
 	/// It can include a description, a screenshot, and the file they were working on.
-	/// It can try to send directly via internet. If this fails, it can make a single 
+	/// It can try to send directly via internet. If this fails, it can make a single
 	/// zip file and direct the user to email that to us.
 	/// </summary>
 	public partial class ProblemReporterDialog : Form
 	{
 		public delegate ProblemReporterDialog Factory(Control targetOfScreenshot);//autofac uses this
+
 		private enum State { WaitingForSubmission, ZippingUpBook, Submitting, CouldNotAutomaticallySubmit, Success }
 
 		private readonly BookSelection _bookSelection;
@@ -32,6 +33,7 @@ namespace Bloom.MiscUI
 		private string _emailableReportFilePath;
 		private string _jiraProjectKey = "BL";
 		private bool _closeAfterSubmittingForUnitTest;
+		private Issue _jiraIssue;
 
 		public ProblemReporterDialog(Control targetOfScreenshot, BookSelection bookSelection)
 		{
@@ -39,30 +41,26 @@ namespace Bloom.MiscUI
 
 			InitializeComponent();
 
-			
 			if (targetOfScreenshot != null)
 			{
 				//important to do this early, before this dialog obstructs the application
 				GetScreenshot(targetOfScreenshot);
-				_includeScreenshot.Visible = _screenshot != null; // if for some reason we couldn't get a screenshot, this will be null
-				_includeScreenshot.Checked = _includeScreenshot.Visible;
+				_includeScreenshot.Checked = _screenshot != null; // if for some reason we couldn't get a screenshot, this will be null
+				_includeScreenshot.Visible = _screenshot != null;
 			}
 			else
 			{
 				_includeScreenshot.Visible = false;
 				_includeScreenshot.Checked = false;
-			}		
+			}
 
-			
 			_email.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.Email;
 			_name.Text = (Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName + " " +
 						 Palaso.UI.WindowsForms.Registration.Registration.Default.Surname).Trim();
-			
+
 			_screenshotHolder.Image = _screenshot;
-			
 
-
-			if (bookSelection!=null && bookSelection.CurrentSelection != null)
+			if (bookSelection != null && bookSelection.CurrentSelection != null)
 			{
 				_includeBook.Checked = false;
 				_includeBook.Text = String.Format(_includeBook.Text, bookSelection.CurrentSelection.TitleBestForUserDisplay);
@@ -79,7 +77,6 @@ namespace Bloom.MiscUI
 			ChangeState(State.WaitingForSubmission);
 		}
 
-
 		private void GetScreenshot(Control targetOfScreenshot)
 		{
 			try
@@ -88,7 +85,6 @@ namespace Bloom.MiscUI
 				_screenshot = new Bitmap(bounds.Width, bounds.Height);
 				using (var g = Graphics.FromImage(_screenshot))
 				{
-
 					g.CopyFromScreen(targetOfScreenshot.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty, bounds.Size);
 				}
 			}
@@ -117,7 +113,6 @@ namespace Bloom.MiscUI
 
 		private void ChangeState(State state)
 		{
-
 			_state = state;
 			UpdateDisplay();
 			Application.DoEvents();// make the state change show up.
@@ -139,49 +134,58 @@ namespace Bloom.MiscUI
 			{
 				case State.WaitingForSubmission:
 					_status.Visible = false;
+					_seeDetails.Visible = true;
 					Cursor = Cursors.Default;
 					break;
+
 				case State.ZippingUpBook:
+					_seeDetails.Visible = false;
 					_status.Visible = true;
 					_status.HTML = LocalizationManager.GetString("ReportProblemDialog.Zipping", "Zipping up book...",
 						"This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.");
 					_submitButton.Enabled = false;
 					Cursor = Cursors.WaitCursor;
 					break;
+
 				case State.Submitting:
+					_seeDetails.Visible = false;
 					_status.Visible = true;
 					_status.HTML = LocalizationManager.GetString("ReportProblemDialog.Submitting", "Submitting to server...",
 						"This is shown while Bloom is sending the problem report to our server.");
 					_submitButton.Enabled = false;
 					Cursor = Cursors.WaitCursor;
 					break;
-					
+
 				case State.CouldNotAutomaticallySubmit:
+					_seeDetails.Visible = false;
 					_status.Visible = true;
-	                var message = LocalizationManager.GetString("ReportProblemDialog.CouldNotSendToServer",
-                        "Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.");
-					_status.HTML = string.Format("<span style='color:red'>"+message+"</span>", "<a href='file://" + _emailableReportFilePath + "'>" + Path.GetFileName(_emailableReportFilePath) + "</a>", "<a href='mailto://issues@bloomlibrary.org?subject=Problem Report'>issues@bloomlibrary.org</a>");
+					var message = LocalizationManager.GetString("ReportProblemDialog.CouldNotSendToServer",
+						"Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.");
+					_status.HTML = string.Format("<span style='color:red'>" + message + "</span>", "<a href='file://" + _emailableReportFilePath + "'>" + Path.GetFileName(_emailableReportFilePath) + "</a>", "<a href='mailto://issues@bloomlibrary.org?subject=Problem Report'>issues@bloomlibrary.org</a>");
 
 					_submitButton.Text = LocalizationManager.GetString("ReportProblemDialog.Retry", "Retry",
 						"Shown if there was an error submitting the report. Lets the user try submitting it again.");
 					Cursor = Cursors.Default;
 					break;
+
 				case State.Success:
+					_seeDetails.Visible = false;
 					_status.Visible = true;
 					_submitButton.Enabled = true;
-					_submitButton.Text = LocalizationManager.GetString("ReportProblemDialog.Close", "Close","Shown in the button that closes the dialog after a successful report submission.");
-	                message = LocalizationManager.GetString("ReportProblemDialog.Success",
-                        "We received your report, thanks for taking the time to help make Bloom better!");
+					_submitButton.Text = LocalizationManager.GetString("ReportProblemDialog.Close", "Close", "Shown in the button that closes the dialog after a successful report submission.");
+					message = LocalizationManager.GetString("ReportProblemDialog.Success",
+						"We received your report, thanks for taking the time to help make Bloom better!");
 					this.AcceptButton = _submitButton;
 					_submitButton.Focus();
-					_status.HTML = string.Format("<span style='color:blue'>"+message+"</span>", "<a href='file://" + _emailableReportFilePath + "'>" + Path.GetFileName(_emailableReportFilePath) + "</a>", "<a href='mailto://issues@bloomlibrary.org?subject=Problem Report'>issues@bloomlibrary.org</a>");
+					_status.HTML = string.Format("<span style='color:blue'>" + message + "</span><br/><a href='{0}'>{1}</a>", _jiraIssue.Jira.Url + "browse/" + _jiraIssue.Key.Value, _jiraIssue.Key.Value);
 
 					Cursor = Cursors.Default;
 					if (_closeAfterSubmittingForUnitTest)
 					{
-						_okButton_Click(this,null);
+						_okButton_Click(this, null);
 					}
 					break;
+
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
@@ -215,7 +219,7 @@ namespace Bloom.MiscUI
 		}
 
 		/// <summary>
-		/// Using the Atlassian SDK here. That SDK doesn't permit looking up users, so we can't submit 
+		/// Using the Atlassian SDK here. That SDK doesn't permit looking up users, so we can't submit
 		/// the report as if it were from this person, even if they have an account (well, not without
 		/// asking them for credentials, which is just not gonna happen). So we submit with an
 		/// account we created just for this purpose, "auto_report_creator".
@@ -228,13 +232,12 @@ namespace Bloom.MiscUI
 				ChangeState(State.Submitting);
 
 				var jira = new Jira("https://jira.sil.org", "auto_report_creator", "thisIsInOpenSourceCode");
-				var issue = jira.CreateIssue(_jiraProjectKey);
-				issue.Type = "Awaiting Classification";
-				issue.Summary = "User Problem Report "+ _email.Text;
-				issue.Description = GetFullDescriptionContents();
+				_jiraIssue = jira.CreateIssue(_jiraProjectKey);
+				_jiraIssue.Type = "Awaiting Classification";
+				_jiraIssue.Summary = "User Problem Report " + _email.Text;
+				_jiraIssue.Description = GetFullDescriptionContents();
 
-				issue.SaveChanges();
-
+				_jiraIssue.SaveChanges();
 
 				//this could all be done in one go, but I'm doing it in stages so as to increase the chance of success in bad internet situations
 				if (_includeScreenshot.Checked)
@@ -242,26 +245,25 @@ namespace Bloom.MiscUI
 					using (var file = TempFile.WithFilenameInTempFolder("screenshot.png"))
 					{
 						_screenshot.Save(file.Path, ImageFormat.Png);
-						issue.AddAttachment(file.Path);
+						_jiraIssue.AddAttachment(file.Path);
 					}
 				}
-				
+
 				ChangeState(State.ZippingUpBook);
 				if (_includeBook.Checked)
 				{
-
 					//using (var bookZip = TempFile.WithExtension(".zip"))
 					using (var bookZip = TempFile.WithExtension(".zip"))
 					{
 						var zip = new BloomZipFile(bookZip.Path);
 						zip.AddDirectory(_bookSelection.CurrentSelection.FolderPath);
 						zip.Save();
-						issue.AddAttachment(bookZip.Path);
+						_jiraIssue.AddAttachment(bookZip.Path);
 					}
 				}
 
 				ChangeState(State.Submitting);
-				issue.SaveChanges();
+				_jiraIssue.SaveChanges();
 				ChangeState(State.Success);
 				return true;
 			}
@@ -279,7 +281,7 @@ namespace Bloom.MiscUI
 		/// </summary>
 		private void MakeEmailableReportFile()
 		{
-			var filename = ("Error Report " + DateTime.UtcNow.ToString("u")+".zip").Replace(':','.');
+			var filename = ("Report " + DateTime.UtcNow.ToString("u") + ".zip").Replace(':', '.');
 			filename = filename.SanitizeFilename('#');
 			var zipFile = TempFile.WithFilename(filename);
 			_emailableReportFilePath = zipFile.Path;
@@ -358,16 +360,23 @@ namespace Bloom.MiscUI
 			Close();
 		}
 
-
 		public void SetupForUnitTest(string jiraProjectKey)
 		{
-			this.Load+= (sender, e) =>
+			this.Load += (sender, e) =>
 			{
 				_jiraProjectKey = jiraProjectKey;
-				_description.Text = "created by unit test of "+Assembly.GetAssembly(this.GetType()).FullName;
+				_description.Text = "created by unit test of " + Assembly.GetAssembly(this.GetType()).FullName;
 				_closeAfterSubmittingForUnitTest = true;
 				_okButton_Click(sender, e);
 			};
+		}
+
+		private void _seeDetails_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			var temp = TempFile.WithExtension(".txt");
+			File.WriteAllText(temp.Path, GetFullDescriptionContents());
+			Process.Start(temp.Path);
+			//yes, we're leaking this temp file
 		}
 	}
 }

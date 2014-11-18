@@ -195,16 +195,18 @@
 			// 
 			this._seeDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this._seeDetails.AutoSize = true;
+			this._seeDetails.LinkColor = System.Drawing.Color.Black;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._seeDetails, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._seeDetails, null);
 			this._L10NSharpExtender.SetLocalizingId(this._seeDetails, "ReportProblemDialog.SeeDetails");
-			this._seeDetails.Location = new System.Drawing.Point(21, 467);
+			this._seeDetails.Location = new System.Drawing.Point(19, 472);
 			this._seeDetails.Name = "_seeDetails";
 			this._seeDetails.Size = new System.Drawing.Size(154, 13);
 			this._seeDetails.TabIndex = 5;
 			this._seeDetails.TabStop = true;
 			this._seeDetails.Text = "See what else will be submitted";
 			this._seeDetails.Visible = false;
+			this._seeDetails.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._seeDetails_LinkClicked);
 			// 
 			// _cancelButton
 			// 
@@ -245,7 +247,6 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this._cancelButton;
 			this.ClientSize = new System.Drawing.Size(487, 512);
-			this.Controls.Add(this._status);
 			this.Controls.Add(this._seeDetails);
 			this.Controls.Add(this._includeBook);
 			this.Controls.Add(this._submitButton);
@@ -258,6 +259,7 @@
 			this.Controls.Add(this._description);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this._cancelButton);
+			this.Controls.Add(this._status);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "ReportProblemDialog.WindowTitle");

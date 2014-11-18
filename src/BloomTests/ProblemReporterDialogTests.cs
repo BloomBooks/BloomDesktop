@@ -29,7 +29,7 @@ namespace BloomTests
 			Xpcom.Shutdown();
 #endif
 		}
-	
+
 		/// <summary>
 		/// This is just a smoke-test that will notify us if the SIL JIRA stops working with the API we're relying on.
 		/// It sends reports to https://jira.sil.org/browse/AUT
@@ -37,7 +37,7 @@ namespace BloomTests
 		[Test]
 		public void CanSubmitToSILJiraAutomatedTestProject()
 		{
-			using (var dlg = new ProblemReporterDialog(null,null))
+			using (var dlg = new ProblemReporterDialog(null, null))
 			{
 				dlg.SetupForUnitTest("AUT");
 				dlg.ShowDialog();
