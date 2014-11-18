@@ -98,7 +98,7 @@ var StyleEditor = (function () {
         // In case this is one of those books, we'll replace it with 'normal-style'
         if (styleName == 'default-style') {
             $(target).removeClass(styleName);
-            styleName = 'normal-style';
+            styleName = 'normal-style'; // This will be capitalized before presenting it to the user.
             $(target).addClass(styleName);
         }
         return styleName;
@@ -172,6 +172,7 @@ var StyleEditor = (function () {
     // Only the last class in a sequence is used; this lets us predefine
     // styles like DIV.bloom-editing.Heading1 and make their selectors specific enough to work,
     // but not impossible to override with a custom definition.
+    // N.B. these are not the final user-visible versions of style names, but the internal version.
     StyleEditor.prototype.getFormattingStyles = function () {
         var result = [];
         for (var i = 0; i < document.styleSheets.length; i++) {
@@ -199,7 +200,7 @@ var StyleEditor = (function () {
         // But our default template doesn't define it; by default it just has default properties.
         // Make sure it's available to choose again.
         if (result.indexOf('normal') == -1) {
-            result.push('normal');
+            result.push('normal'); // This will be capitalized before presenting it to the user.
         }
         return result;
     };
@@ -277,8 +278,7 @@ var StyleEditor = (function () {
         for (var i = 0; i < x.length; i++) {
             if (!x[i].cssText.startsWith(bloomEditable)) {
                 var oldText = x[i].cssText;
-                styleSheet.deleteRule(i);
-                styleSheet.insertRule(bloomEditable + oldText, i);
+                this.ReplaceExistingStyle(styleSheet, i, bloomEditable + oldText);
             }
             var index = x[i].cssText.indexOf('{');
             if (index == -1)
@@ -297,6 +297,12 @@ var StyleEditor = (function () {
         styleSheet.insertRule(bloomEditable + '.' + styleAndLang + "{ }", x.length);
 
         return x[x.length - 1];
+    };
+
+    // Replaces a style in 'sheet' at the specified 'index' with a (presumably) modified style.
+    StyleEditor.prototype.ReplaceExistingStyle = function (sheet, index, newStyle) {
+        sheet.deleteRule(index);
+        sheet.insertRule(newStyle, index);
     };
 
     StyleEditor.prototype.ConvertPxToPt = function (pxSize, round) {
@@ -500,8 +506,11 @@ var StyleEditor = (function () {
         formatButton.click(function () {
             iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
+
+                // This line is needed inside the click function to keep from using a stale version of 'styleName'
+                // and chopping off 6 characters each time!
+                styleName = StyleEditor.GetStyleNameForElement(targetBox);
                 styleName = styleName.substr(0, styleName.length - 6); // strip off '-style'
-                styleName = styleName.replace(/-/g, ' '); //show users a space instead of dashes
                 var current = editor.getFormatValues();
 
                 //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
@@ -811,6 +820,10 @@ var StyleEditor = (function () {
             if (current == items[i])
                 selected = ' selected';
             var text = items[i];
+            text = text.replace(/-/g, ' '); //show users a space instead of dashes
+            if (text == 'normal') {
+                text = 'Normal'; // capitalize for user
+            }
             if (maxlength && text.length > maxlength) {
                 text = text.substring(0, maxlength) + "...";
             }
