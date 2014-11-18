@@ -87,6 +87,9 @@ namespace Bloom
 			this.Controls.Add(this._workspaceView);
 
 			SetWindowText();
+
+			// BL-552: Program icon wrong on Linux
+			this.Icon = global::Bloom.Properties.Resources.Bloom;
 		}
 
 		protected override void OnClosing(CancelEventArgs e)

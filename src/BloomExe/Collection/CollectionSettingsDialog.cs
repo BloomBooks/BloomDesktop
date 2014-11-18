@@ -64,6 +64,9 @@ namespace Bloom.Collection
 			_useImageServer.CheckStateChanged += new EventHandler(_useImageServer_CheckedChanged);
 
 			UpdateDisplay();
+
+			// BL-375: Remove conditional compile code from designer file
+			this.Icon = global::Bloom.Properties.Resources.Bloom;
 		}
 
 		private void UpdateDisplay()
