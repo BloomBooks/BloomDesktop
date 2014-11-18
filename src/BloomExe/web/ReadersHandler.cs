@@ -289,7 +289,24 @@ namespace Bloom.web
 			var path = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Sample Texts");
 			if (!Directory.Exists(path))
 				Directory.CreateDirectory(path);
+
 			PathUtilities.OpenDirectoryInExplorer(path);
+
+			// BL-673: Make sure the folder comes to the front in Linux
+			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			{
+				// allow the external process to execute
+				System.Threading.Thread.Sleep(100);
+
+				// if the system has wmctrl installed, use it to bring the folder to the front
+				Process.Start(new ProcessStartInfo()
+					{
+						FileName = "wmctrl",
+						Arguments = "-a \"Sample Texts\"",
+						UseShellExecute = false,
+						ErrorDialog = false // do not show a message if not successful
+					});
+			}
 		}
 	}
 }
