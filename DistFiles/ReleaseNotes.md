@@ -14,6 +14,7 @@
 - Adobe Acrobat no longer needed to view PDFs in the Publish tab
 
 ### Other
+- Holding down a key now shows a "Special Characters Panel" that lets you select from similar characters. Use you mouse, mouse wheel, or arrow keys to select the character you want (see screenshot below).
 - You can now right click on a book and export its contents to Word or Libre Office (most formatting will be lost).
 - Bloom's interface has new translations, in Arabic, Chinese, Tamil (India), Hindi (India), Telugu (India), and Kinyarwanda (Rwanda). French and Spanish translations have been updated.
 - Andika Font is now installed along with Bloom
@@ -27,8 +28,7 @@
   * See "Help: Building/User Reader Templates" for more information.
 - Leveled Reader Tool helps you develop books for readers at various levels of ability by setting limits on the number of words per sentence, page, and book.
   * See "Help: Building/User Reader Templates" for more information.
-- Holding down a key now shows a "Special Characters Panel" that lets you select from similar characters.
-- New "Custom" page that lets you divide up the page into text and picture portions. You can then just use the page, or treat it like a template for other pages in the book.  The ability to use that page in other books is expected in the next version of Bloom.
+- New "Custom" page that lets you divide up the page into text and picture portions. You can then just use the page, or treat it like a template for other pages in the book.
 - Languages can be marked as Right-To-Left. However, changing the page order is still up to you, using a PDF editor like Adobe Acrobat (or maybe use the RTL option in PdfDroplet)?
 - Initial Linux Version (Precise and Trusty).
 
