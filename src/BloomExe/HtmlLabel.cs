@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using Gecko;
+using Palaso.IO;
 using Palaso.UI.WindowsForms.Extensions;
 
 namespace Bloom
@@ -18,6 +19,11 @@ namespace Bloom
 		public HtmlLabel()
 		{
 			InitializeComponent();
+
+			if (this.DesignModeAtAll())
+			{
+				return;
+			}
 
 			_browser = new GeckoWebBrowser();
 
@@ -42,17 +48,22 @@ namespace Bloom
 				if (this.DesignModeAtAll())
 					return;
 
-				if (_browser!=null)
+				if (_browser != null)
 				{
 					_browser.Visible = !string.IsNullOrEmpty(_html);
 					var htmlColor = ColorTranslator.ToHtml(ForeColor);
-					if(_browser.Visible)
-						_browser.LoadHtml("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body><span style=\"color:" + htmlColor + "; font-family:Segoe UI, Arial; font-size:" + Font.Size.ToString() + "pt\">" + _html + "</span></body></html>");
+					var backgroundColor = ColorTranslator.ToHtml(BackColor);
+					if (_browser.Visible)
+					{
+						var s = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body style=\"background-color: " +
+						        backgroundColor +
+						        "\"><span style=\"color:" + htmlColor + "; font-family:Segoe UI, Arial; font-size:" + Font.Size.ToString() +
+						        "pt\">" + _html + "</span></body></html>";
+						_browser.LoadHtml(s);
+					}
 				}
 			}
 		}
-
-		//public string ColorName;
 
 		private void HtmlLabel_Load(object sender, EventArgs e)
 		{
@@ -74,7 +85,15 @@ namespace Bloom
 			if (ge.Target.CastToGeckoElement().TagName=="A")
 			{
 				var url = ge.Target.CastToGeckoElement().GetAttribute("href");
-				System.Diagnostics.Process.Start(url);
+				if (url.StartsWith("file://"))
+				{
+					var path = url.Replace("file://", "");
+					PathUtilities.SelectFileInExplorer(path);
+				}
+				else
+				{
+					System.Diagnostics.Process.Start(url);
+				}
 				ge.Handled = true; //don't let the browser navigate itself
 			}
 		}
