@@ -48,6 +48,10 @@ namespace GeckofxHtmlToPdf
 		//[Args.ArgsMemberSwitch("R", "-margin-right")]
 		public string RightMargin { get; set; }
 
+		[Description("1-based index of last page to print;-1 to print all")]
+		[DefaultValue(-1)]
+		public int LastPage { get; set; }
+
 		private double GetMillimeters(string distance)
 		{
 			//TODO: convert to mm. For now, just strips "mm"

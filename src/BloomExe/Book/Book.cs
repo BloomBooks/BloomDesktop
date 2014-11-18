@@ -352,13 +352,31 @@ namespace Bloom.Book
 
 		private static void HidePages(XmlDocument bookDom, Func<XmlElement, bool> hidePredicate)
 		{
-			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]"))
+			foreach (XmlElement node in GetPageNodes(bookDom))
 			{
 				if (hidePredicate(node))
 				{
 					node.SetAttribute("style", "", "display:none");
 				}
 			}
+		}
+
+		private static int CountVisiblePages(XmlDocument bookDom, Func<XmlElement, bool> hidePredicate)
+		{
+			int result = 0;
+			foreach (XmlElement node in GetPageNodes(bookDom))
+			{
+				if (!hidePredicate(node))
+				{
+					result++;
+				}
+			}
+			return result;
+		}
+
+		private static XmlNodeList GetPageNodes(XmlDocument bookDom)
+		{
+			return bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
 		}
 
 		internal IFileLocator GetFileLocator()
@@ -1517,7 +1535,7 @@ namespace Bloom.Book
 			return -1;
 		}
 
-		public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer)
+		public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer, out int pageCount)
 		{
 			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 			//dom.LoadXml(OurHtmlDom.OuterXml);
@@ -1536,19 +1554,23 @@ namespace Bloom.Book
 			var pathSafeForWkHtml2Pdf = Palaso.IO.FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
 			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf, false);
 
+			Func<XmlElement, bool> hidePredicate = p => false; // none hidden
 			switch (bookletPortion)
 			{
 				case PublishModel.BookletPortions.AllPagesNoBooklet:
 					break;
 				case PublishModel.BookletPortions.BookletCover:
-					HidePages(printingDom.RawDom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
+					hidePredicate = p => !p.GetAttribute("class").ToLower().Contains("cover");
+					HidePages(printingDom.RawDom, hidePredicate);
 					break;
 				 case PublishModel.BookletPortions.BookletPages:
-					HidePages(printingDom.RawDom, p => p.GetAttribute("class").ToLower().Contains("cover"));
+					hidePredicate = p => p.GetAttribute("class").ToLower().Contains("cover");
+					HidePages(printingDom.RawDom, hidePredicate);
 					break;
 				 default:
 					throw new ArgumentOutOfRangeException("bookletPortion");
 			}
+			pageCount = CountVisiblePages(printingDom.RawDom, hidePredicate);
 			AddCoverColor(printingDom, Color.White);
 			AddPreviewJScript(printingDom);
 			return printingDom.RawDom;
