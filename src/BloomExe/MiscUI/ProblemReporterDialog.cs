@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using Atlassian.Jira;
@@ -23,21 +24,35 @@ namespace Bloom.MiscUI
 	public partial class ProblemReporterDialog : Form
 	{
 		public delegate ProblemReporterDialog Factory(Control targetOfScreenshot);//autofac uses this
-		private enum State { WaitingForSubmission, CreatingReport, ZippingUpBook, Submitting, CouldNotAutomaticallySubmit, Success }
+		private enum State { WaitingForSubmission, ZippingUpBook, Submitting, CouldNotAutomaticallySubmit, Success }
 
 		private readonly BookSelection _bookSelection;
 		private Bitmap _screenshot;
 		private State _state;
 		private string _emailableReportFilePath;
+		private string _jiraProjectKey = "BL";
+		private bool _closeAfterSubmittingForUnitTest;
 
 		public ProblemReporterDialog(Control targetOfScreenshot, BookSelection bookSelection)
 		{
 			_bookSelection = bookSelection;
-			
-			//important to do this early, before this dialog obstructs the application
-			GetScreenshot(targetOfScreenshot);
-			
+
 			InitializeComponent();
+
+			
+			if (targetOfScreenshot != null)
+			{
+				//important to do this early, before this dialog obstructs the application
+				GetScreenshot(targetOfScreenshot);
+				_includeScreenshot.Visible = _screenshot != null; // if for some reason we couldn't get a screenshot, this will be null
+				_includeScreenshot.Checked = _includeScreenshot.Visible;
+			}
+			else
+			{
+				_includeScreenshot.Visible = false;
+				_includeScreenshot.Checked = false;
+			}		
+
 			
 			_email.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.Email;
 			_name.Text = (Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName + " " +
@@ -45,10 +60,9 @@ namespace Bloom.MiscUI
 			
 			_screenshotHolder.Image = _screenshot;
 			
-			_includeScreenshot.Visible = _screenshot != null; // if for some reason we couldn't get a screenshot, this will be null
-			_includeScreenshot.Checked = true;
 
-			if (bookSelection.CurrentSelection != null)
+
+			if (bookSelection!=null && bookSelection.CurrentSelection != null)
 			{
 				_includeBook.Checked = false;
 				_includeBook.Text = String.Format(_includeBook.Text, bookSelection.CurrentSelection.TitleBestForUserDisplay);
@@ -74,6 +88,7 @@ namespace Bloom.MiscUI
 				_screenshot = new Bitmap(bounds.Width, bounds.Height);
 				using (var g = Graphics.FromImage(_screenshot))
 				{
+
 					g.CopyFromScreen(targetOfScreenshot.PointToScreen(new Point(bounds.Left, bounds.Top)), Point.Empty, bounds.Size);
 				}
 			}
@@ -162,7 +177,10 @@ namespace Bloom.MiscUI
 					_status.HTML = string.Format("<span style='color:blue'>"+message+"</span>", "<a href='file://" + _emailableReportFilePath + "'>" + Path.GetFileName(_emailableReportFilePath) + "</a>", "<a href='mailto://issues@bloomlibrary.org?subject=Problem Report'>issues@bloomlibrary.org</a>");
 
 					Cursor = Cursors.Default;
-
+					if (_closeAfterSubmittingForUnitTest)
+					{
+						_okButton_Click(this,null);
+					}
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -210,7 +228,7 @@ namespace Bloom.MiscUI
 				ChangeState(State.Submitting);
 
 				var jira = new Jira("https://jira.sil.org", "auto_report_creator", "thisIsInOpenSourceCode");
-				var issue = jira.CreateIssue("AUT");
+				var issue = jira.CreateIssue(_jiraProjectKey);
 				issue.Type = "Awaiting Classification";
 				issue.Summary = "User Problem Report "+ _email.Text;
 				issue.Description = GetFullDescriptionContents();
@@ -340,7 +358,16 @@ namespace Bloom.MiscUI
 			Close();
 		}
 
-		
 
+		public void SetupForUnitTest(string jiraProjectKey)
+		{
+			this.Load+= (sender, e) =>
+			{
+				_jiraProjectKey = jiraProjectKey;
+				_description.Text = "created by unit test of "+Assembly.GetAssembly(this.GetType()).FullName;
+				_closeAfterSubmittingForUnitTest = true;
+				_okButton_Click(sender, e);
+			};
+		}
 	}
 }
