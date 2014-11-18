@@ -350,14 +350,30 @@ namespace Bloom.Book
 			}
 		}
 
-		private static void HidePages(XmlDocument bookDom, Func<XmlElement, bool> hidePredicate)
+		private static void DeletePages(XmlDocument bookDom, Func<XmlElement, bool> pageSelectingPredicate)
 		{
+			// Seems safest to make a list so we're not modifying the document while iterating through it.
+			var pagesToDelete = new List<XmlElement>();
 			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]"))
 			{
-				if (hidePredicate(node))
+				if (pageSelectingPredicate(node))
 				{
-					node.SetAttribute("style", "", "display:none");
+					pagesToDelete.Add(node);
 				}
+			}
+			foreach (var node in pagesToDelete)
+			{
+				// An earlier version of this method just set the visibility of the pages we don't want
+				// in this printout to display:none, like this:
+				//node.SetAttribute("style", "", "display:none");
+				// However, this runs up against a defect in Gecko PDF generation: apparently when
+				// all the content after the last page in a paginated document is display:none, Gecko
+				// puts in an extra blank page. We suspect something like code that detects that
+				// the current page is finished and the document is not finished and starts a new page,
+				// which turns out not to be needed. The extra blank page can mess up booklet generation
+				// and cause an extra sheet of paper to be used (leaving a wasted four blank pages at
+				// the end). See BL-705.
+				node.ParentNode.RemoveChild(node);
 			}
 		}
 
@@ -1541,10 +1557,10 @@ namespace Bloom.Book
 				case PublishModel.BookletPortions.AllPagesNoBooklet:
 					break;
 				case PublishModel.BookletPortions.BookletCover:
-					HidePages(printingDom.RawDom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
+					DeletePages(printingDom.RawDom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
 					break;
 				 case PublishModel.BookletPortions.BookletPages:
-					HidePages(printingDom.RawDom, p => p.GetAttribute("class").ToLower().Contains("cover"));
+					DeletePages(printingDom.RawDom, p => p.GetAttribute("class").ToLower().Contains("cover"));
 					break;
 				 default:
 					throw new ArgumentOutOfRangeException("bookletPortion");
