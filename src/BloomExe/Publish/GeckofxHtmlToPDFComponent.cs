@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using Gecko;
+using L10NSharp;
 
 namespace GeckofxHtmlToPdf
 {
@@ -86,7 +87,8 @@ namespace GeckofxHtmlToPdf
 			_pathToTempPdf = tempFileName + ".pdf";
 			File.Delete(_conversionOrder.OutputPdfPath);
 			_checkForBrowserNavigatedTimer.Enabled = true;
-			Status = "Loading Html...";
+			Status = LocalizationManager.GetString("PublishTab.PdfMakingDialog.ConversionProgress.LoadingHtml", "Loading Html...");
+			
 
 			// Why set a size here? If we don't, images sometimes don't show up in the PDF. See BL-408.
 			// A size of 500x500 was enough to fix the problem for the most reproducible case,
@@ -235,7 +237,7 @@ namespace GeckofxHtmlToPdf
 
 			printSettings.SetOutputFormatAttribute(2); // 2 == kOutputFormatPDF
 
-			Status = "Making PDF..";
+			Status = LocalizationManager.GetString("PublishTab.PdfMakingDialog.ConversionProgress.Making", "Making PDF..");
 
 			_print.Print(printSettings, this);
 			_checkForPdfFinishedTimer.Enabled = true;
