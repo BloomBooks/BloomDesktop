@@ -40,8 +40,11 @@ jQuery(document).ready(function () {
     //make images scale up to their container without distorting their proportions, while being centered within it.
     $(".bloom-imageContainer img").scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
 
-    $(".bloom-page").mouseenter(function(){$(this).addClass("disabledVisual")});
-    $(".bloom-page").mouseleave(function(){$(this).removeClass("disabledVisual")});
+    // Preview is currently used for the main document window when not editing, but also for the template pages view.
+    // We want the disabledVisual style for the main page when not editing, but not in the template pages chooser.
+    // Pages in the latter view are embedded in a .gridItem div, so we use that to suppress adding the style.
+    $(".bloom-page:not('.gridItem .bloom-page')").mouseenter(function(){$(this).addClass("disabledVisual")});
+    $(".bloom-page:not('.gridItem .bloom-page')").mouseleave(function () { $(this).removeClass("disabledVisual") });
 
         //Allow labels and separators to be marked such that if the user doesn't fill in a value, the label will be invisible when published.
     //NB: why in cleanup? it's not ideal, but if it gets called after each editing session, then things will be left in the proper state.
