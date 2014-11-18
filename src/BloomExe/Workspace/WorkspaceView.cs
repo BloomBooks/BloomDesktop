@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Registration;
@@ -463,6 +464,14 @@ namespace Bloom.Workspace
 		private void usingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
 		{
 			OpenInfoFile("Using Bloom Reader Templates.pdf");
+		}
+
+		private void _reportAProblemMenuItem_Click(object sender, EventArgs e)
+		{
+			using (var dlg = new ReportProblemDialog())
+			{
+				dlg.ShowDialog();
+			}
 		}
 	}
 
