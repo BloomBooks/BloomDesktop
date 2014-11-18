@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Windows.Forms;
-using Gecko;
-using Palaso.IO;
-using Palaso.Reporting;
+using L10NSharp;
 using Bloom;
 
 namespace GeckofxHtmlToPdf
@@ -49,8 +44,6 @@ namespace GeckofxHtmlToPdf
 
 		void OnPdfMaker_Finished(object sender, EventArgs e)
 		{
-			_statusLabel.Text = "Finished";
-
 			//on windows 7 (at least) you won't see 100% if you close before the system has had a chance to "animate" the increase.
 			//On very short documents, you won't see it get past around 20%. Now good. So, the
 			//trick here is to go *down* to 99, that going downwards makes it skip the animation delay.

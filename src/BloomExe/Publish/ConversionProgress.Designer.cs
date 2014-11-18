@@ -31,12 +31,17 @@
 			this.components = new System.ComponentModel.Container();
 			this._statusLabel = new System.Windows.Forms.Label();
 			this._progressBar = new System.Windows.Forms.ProgressBar();
-			this._pdfMaker = new GeckofxHtmlToPdfComponent(this.components);
+			this._pdfMaker = new GeckofxHtmlToPdf.GeckofxHtmlToPdfComponent(this.components);
+			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// _statusLabel
 			// 
 			this._statusLabel.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._statusLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._statusLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._statusLabel, "PublishTab.PdfMakingDialog.ConversionProgress._statusLabel");
 			this._statusLabel.Location = new System.Drawing.Point(27, 19);
 			this._statusLabel.Name = "_statusLabel";
 			this._statusLabel.Size = new System.Drawing.Size(54, 13);
@@ -53,7 +58,12 @@
 			// _pdfMaker
 			// 
 			this._pdfMaker.Finished += new System.EventHandler(this.OnPdfMaker_Finished);
-			this._pdfMaker.StatusChanged += new System.EventHandler<PdfMakingStatus>(this.OnPdfMaker_StatusChanged);
+			this._pdfMaker.StatusChanged += new System.EventHandler<GeckofxHtmlToPdf.PdfMakingStatus>(this.OnPdfMaker_StatusChanged);
+			// 
+			// _L10NSharpExtender
+			// 
+			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
+			this._L10NSharpExtender.PrefixForNewItems = "PublishTab.PdfMakingDialog";
 			// 
 			// ConversionProgress
 			// 
@@ -63,9 +73,13 @@
 			this.ControlBox = false;
 			this.Controls.Add(this._progressBar);
 			this.Controls.Add(this._statusLabel);
+			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
+			this._L10NSharpExtender.SetLocalizationComment(this, null);
+			this._L10NSharpExtender.SetLocalizingId(this, "PublishTab.PdfMakingDialog.WindowTitle");
 			this.Name = "ConversionProgress";
-			this.Text = "GeckoFxHtmlToPdf";
+			this.Text = "Making PDF...";
 			this.Load += new System.EventHandler(this.ConversionProgress_Load);
+			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -76,5 +90,6 @@
 		private System.Windows.Forms.Label _statusLabel;
 		private System.Windows.Forms.ProgressBar _progressBar;
 		private GeckofxHtmlToPdfComponent _pdfMaker;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }
