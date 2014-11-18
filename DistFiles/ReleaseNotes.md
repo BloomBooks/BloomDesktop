@@ -29,6 +29,7 @@
 - Leveled Reader Tool helps you develop books for readers at various levels of ability by setting limits on the number of words per sentence, page, and book.
   * See "Help: Building/User Reader Templates" for more information.
 - New "Custom" page that lets you divide up the page into text and picture portions. You can then just use the page, or treat it like a template for other pages in the book.
+- Holding down a key now shows a "Special Characters Panel" that lets you select from similar characters.
 - Languages can be marked as Right-To-Left. However, changing the page order is still up to you, using a PDF editor like Adobe Acrobat (or maybe use the RTL option in PdfDroplet)?
 - Initial Linux Version (Precise and Trusty).
 
