@@ -28,10 +28,13 @@ namespace Bloom
 
 		public void AddTopLevelFile(string path)
 		{
+			AddFile(path, Path.GetFileName(path));
+		}
+
+		private void AddFile(string path, string entryName)
+		{
 			var fi = new FileInfo(path);
-			var entryName = Path.GetFileName(path);
-			//entryName = ZipEntry.CleanName(entryName); // Removes drive from name and fixes slash direction
-			var newEntry = new ZipEntry(entryName) { DateTime = fi.LastWriteTime, Size = fi.Length };
+			var newEntry = new ZipEntry(entryName) {DateTime = fi.LastWriteTime, Size = fi.Length};
 
 			_zipStream.PutNextEntry(newEntry);
 
@@ -49,9 +52,6 @@ namespace Bloom
 		/// Adds a directory, along with all files and subdirectories
 		/// </summary>
 		/// <param name="directoryPath">The directory to add recursively</param>
-		/// <param name="zipStream">The ZipStream to which the files and directories will be added</param>
-		/// <param name="dirNameOffest">This number of characters will be removed from the full directory or file name
-		/// before creating the zip entry name</param>
 		public void AddDirectory(string directoryPath)
 		{
 			var rootName = Path.GetFileName(directoryPath);
@@ -62,26 +62,14 @@ namespace Bloom
 			AddDirectory(directoryPath, dirNameOffest);
 		}
 
-		public void AddDirectory(string directoryPath, int dirNameOffest)
+		private void AddDirectory(string directoryPath, int dirNameOffest)
 		{
 			var files = Directory.GetFiles(directoryPath);
 			foreach (var path in files)
 			{
-				var fi = new FileInfo(path);
 				var entryName = path.Substring(dirNameOffest); 
 				entryName = ZipEntry.CleanName(entryName); // Removes drive from name and fixes slash direction
-				var newEntry = new ZipEntry(entryName) { DateTime = fi.LastWriteTime, Size = fi.Length };
-
-				_zipStream.PutNextEntry(newEntry);
-
-				// Zip the file in buffered chunks
-				var buffer = new byte[4096];
-				using (var streamReader = File.OpenRead(path))
-				{
-					StreamUtils.Copy(streamReader, _zipStream, buffer);
-				}
-
-				_zipStream.CloseEntry();
+				AddFile(path, entryName);
 			}
 
 			var folders = Directory.GetDirectories(directoryPath);

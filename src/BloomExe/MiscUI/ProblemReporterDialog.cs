@@ -249,10 +249,9 @@ namespace Bloom.MiscUI
 					}
 				}
 
-				ChangeState(State.ZippingUpBook);
 				if (_includeBook.Checked)
 				{
-					//using (var bookZip = TempFile.WithExtension(".zip"))
+					ChangeState(State.ZippingUpBook);
 					using (var bookZip = TempFile.WithExtension(".zip"))
 					{
 						var zip = new BloomZipFile(bookZip.Path);
