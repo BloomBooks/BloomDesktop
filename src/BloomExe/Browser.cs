@@ -532,13 +532,20 @@ namespace Bloom
 
 		public void Navigate(string url, bool cleanupFileAfterNavigating)
 		{
+			// BL-513: Navigating to "about:blank" is causing the Pages panel to not be updated for a new book on Linux.
+			if (url == "about:blank")
+			{
+				NavigateRawHtml("<!DOCTYPE html><html><head></head><body></body></html>");
+				return;
+			}
+
 			if (InvokeRequired)
 			{
 				Invoke(new Action<string, bool>(Navigate), url, cleanupFileAfterNavigating);
 				return;
 			}
 
-			_url=url; //TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
+			_url = url; //TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
 			if(cleanupFileAfterNavigating && !_url.EndsWith(".pdf"))
 			{
 				SetNewTempFile(TempFile.TrackExisting(url));
