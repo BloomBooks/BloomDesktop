@@ -6,6 +6,9 @@ using System.Windows.Forms;
 using Bloom;
 using Bloom.MiscUI;
 using NUnit.Framework;
+#if __MonoCS__
+	using Gecko;
+#endif
 
 namespace BloomTests
 {
