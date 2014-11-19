@@ -33,6 +33,7 @@
     <Content Include="bookEdit\accordion\settings\Settings.htm" />
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.htm" />
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.js" />
+    <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.htm" />
     <Content Include="bookEdit\css\origami.css" />
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />

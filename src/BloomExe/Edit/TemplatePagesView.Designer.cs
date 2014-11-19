@@ -33,11 +33,19 @@
 			System.Windows.Forms.Panel panel1;
 			this._templatePagesListHeading = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._thumbNailList = new Bloom.Edit.ThumbNailList();
 			panel1 = new System.Windows.Forms.Panel();
 			panel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
+			// 
+			// panel1
+			// 
+			panel1.Controls.Add(this._templatePagesListHeading);
+			panel1.Dock = System.Windows.Forms.DockStyle.Top;
+			panel1.Location = new System.Drawing.Point(0, 0);
+			panel1.Name = "panel1";
+			panel1.Size = new System.Drawing.Size(155, 39);
+			panel1.TabIndex = 3;
 			// 
 			// _templatePagesListHeading
 			// 
@@ -53,50 +61,22 @@
 			this._templatePagesListHeading.TabIndex = 1;
 			this._templatePagesListHeading.Text = "Template Pages";
 			// 
-			// panel1
-			// 
-			panel1.Controls.Add(this._templatePagesListHeading);
-			panel1.Dock = System.Windows.Forms.DockStyle.Top;
-			panel1.Location = new System.Drawing.Point(0, 0);
-			panel1.Name = "panel1";
-			panel1.Size = new System.Drawing.Size(155, 39);
-			panel1.TabIndex = 3;
-			// 
 			// _L10NSharpExtender
 			// 
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
-			// 
-			// _thumbNailList
-			// 
-			this._thumbNailList.BackColor = System.Drawing.SystemColors.Control;
-			this._thumbNailList.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._thumbNailList.Font = new System.Drawing.Font("Tahoma", 9F);
-			this._thumbNailList.ForeColor = System.Drawing.SystemColors.WindowText;
-			this._thumbNailList.ItemWhichWouldPrecedeANewPageInsertion = null;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._thumbNailList, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._thumbNailList, null);
-			this._L10NSharpExtender.SetLocalizingId(this._thumbNailList, "TemplatePagesView.ThumbNailList");
-			this._thumbNailList.Location = new System.Drawing.Point(0, 39);
-			this._thumbNailList.Name = "_thumbNailList";
-			this._thumbNailList.PreferPageNumbers = false;
-			this._thumbNailList.RelocatePageEvent = null;
-			this._thumbNailList.Size = new System.Drawing.Size(155, 140);
-			this._thumbNailList.TabIndex = 2;
 			// 
 			// TemplatePagesView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-			this.Controls.Add(this._thumbNailList);
 			this.Controls.Add(panel1);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "EditTab.TemplatePagesList");
 			this.Name = "TemplatePagesView";
 			this.Size = new System.Drawing.Size(155, 179);
-			this.BackColorChanged += new System.EventHandler(this.TemplatePagesView_BackColorChanged);
 			panel1.ResumeLayout(false);
 			panel1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
@@ -106,8 +86,7 @@
 
         #endregion
 
-		private Bloom.Edit.ThumbNailList _thumbNailList;
-        private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
+		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.Label _templatePagesListHeading;
     }
 }
