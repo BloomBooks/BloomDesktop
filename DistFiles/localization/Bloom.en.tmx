@@ -1545,14 +1545,20 @@
         <seg>About Bloom</seg>
       </tuv>
     </tu>
+    <tu tuid="HelpMenu.documentationMenuItem">
+      <tuv xml:lang="en">
+        <seg>Documentation</seg>
+      </tuv>
+    </tu>
     <tu tuid="HelpMenu.keyBloomConceptsMenuItem">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Key Bloom Concepts</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.documentationMenuItem">
+    <tu tuid="HelpMenu.keyBloomConceptsToolStripMenuItem">
       <tuv xml:lang="en">
-        <seg>Documentation</seg>
+        <seg>Key Bloom Concepts</seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu.registrationMenuItem">
@@ -1563,6 +1569,11 @@
     <tu tuid="HelpMenu.releaseNotesMenuItem">
       <tuv xml:lang="en">
         <seg>Release Notes...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.reportAProblemToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Report a Problem...</seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
@@ -2804,7 +2815,7 @@
     </tu>
     <tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
       <tuv xml:lang="en">
-        <seg>In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this Bloom Pack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</seg>
+        <seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this BloomPack , who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
@@ -2868,6 +2879,80 @@
       <note>Place a {0} where the name of the program goes.</note>
       <tuv xml:lang="en">
         <seg>Register {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Close">
+      <note>Shown in the button that closes the dialog after a successful report submission.</note>
+      <tuv xml:lang="en">
+        <seg>Close</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.CouldNotSendToServer">
+      <tuv xml:lang="en">
+        <seg>Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Email">
+      <tuv xml:lang="en">
+        <seg>Email</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.IncludeBookButton">
+      <tuv xml:lang="en">
+        <seg>Include Book '{0}'</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.IncludeScreenshotButton">
+      <tuv xml:lang="en">
+        <seg>Include this screenshot</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Name">
+      <tuv xml:lang="en">
+        <seg>Name</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Retry">
+      <note>Shown if there was an error submitting the report. Lets the user try submitting it again.</note>
+      <tuv xml:lang="en">
+        <seg>Retry</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.SeeDetails">
+      <tuv xml:lang="en">
+        <seg>See what else will be submitted</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.SubmitButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Submit</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Submitting">
+      <note>This is shown while Bloom is sending the problem report to our server.</note>
+      <tuv xml:lang="en">
+        <seg>Submitting to server...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Success">
+      <tuv xml:lang="en">
+        <seg>We received your report, thanks for taking the time to help make Bloom better!</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.WhatsTheProblem">
+      <tuv xml:lang="en">
+        <seg>What seems to be the problem?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Report A Problem</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Zipping">
+      <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
+      <tuv xml:lang="en">
+        <seg>Zipping up book...</seg>
       </tuv>
     </tu>
     <tu tuid="SendReceiveutton">

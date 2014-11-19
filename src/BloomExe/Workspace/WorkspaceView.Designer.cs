@@ -60,6 +60,7 @@
 			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
+			this._reportAProblemMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._panelHoldingToolStrip.SuspendLayout();
 			this._toolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -113,7 +114,7 @@
 			this._toolStrip.Location = new System.Drawing.Point(0, 0);
 			this._toolStrip.Name = "_toolStrip";
 			this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolStrip.Size = new System.Drawing.Size(272, 46);
+			this._toolStrip.Size = new System.Drawing.Size(272, 65);
 			this._toolStrip.TabIndex = 28;
 			this._toolStrip.Text = "_toolStrip";
 			// 
@@ -159,6 +160,7 @@
             this.buildingReaderTemplatesMenuItem,
             this.usingReaderTemplatesMenuItem,
             this._divider2,
+            this._reportAProblemMenuItem,
             this._makeASuggestionMenuItem,
             this._webSiteMenuItem,
             this._divider3,
@@ -340,7 +342,7 @@
 			// _L10NSharpExtender
 			// 
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
-			this._L10NSharpExtender.PrefixForNewItems = null;
+			this._L10NSharpExtender.PrefixForNewItems = "HelpMenu";
 			// 
 			// _tabStrip
 			// 
@@ -432,6 +434,16 @@
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
+			// _reportAProblemMenuItem
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._reportAProblemMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._reportAProblemMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this._reportAProblemMenuItem, "HelpMenu.reportAProblemToolStripMenuItem");
+			this._reportAProblemMenuItem.Name = "_reportAProblemMenuItem";
+			this._reportAProblemMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._reportAProblemMenuItem.Text = "Report a Problem...";
+			this._reportAProblemMenuItem.Click += new System.EventHandler(this._reportAProblemMenuItem_Click);
+			// 
 			// WorkspaceView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -492,6 +504,7 @@
 		private System.Windows.Forms.ToolStripMenuItem buildingReaderTemplatesMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem usingReaderTemplatesMenuItem;
 		private System.Windows.Forms.ToolStripSeparator _divider1;
+		private System.Windows.Forms.ToolStripMenuItem _reportAProblemMenuItem;
 
 
     }

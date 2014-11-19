@@ -208,6 +208,9 @@
   <data name="cloneFromUsb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\cloneFromUsb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="RecycleBin" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RecycleBin.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="construction" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\construction.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -231,6 +234,9 @@
   </data>
   <data name="coverOnly" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\coverOnly.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="greyTriangleButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\greyTriangleButton.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="sil logo on dark 132x127" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\sil logo on dark 132x127.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -256,14 +262,11 @@
   <data name="help24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\help24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="settings" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\settings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="OpenCreateLibrary24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\OpenCreateLibrary24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Cut16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Cut16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="deletePage24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\deletePage24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Usb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Usb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -319,14 +322,11 @@
   <data name="LogoForLibraryChoosingDialog" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\LogoForLibraryChoosingDialog.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="RecycleBin" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\RecycleBin.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="settings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\settings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="duplicatePageDisabled32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\duplicatePageDisabled32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="unstable" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\unstable.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="simplePages" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\simplePages.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -334,8 +334,11 @@
   <data name="LogoForSplashScreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\LogoForSplashScreen.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="OpenCreateLibrary24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\OpenCreateLibrary24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="deletePage24x24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\deletePage24x24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="unstable" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\unstable.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="newBook" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\newBook.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -346,7 +349,7 @@
   <data name="edit" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\edit.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="greyTriangleButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\greyTriangleButton.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="MediumOnWhite" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MediumOnWhite.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

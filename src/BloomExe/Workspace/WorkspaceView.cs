@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Registration;
@@ -30,6 +31,7 @@ namespace Bloom.Workspace
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
+		private readonly ProblemReporterDialog.Factory _problemReportDialogFactory;
 		private readonly ChorusSystem _chorusSystem;
 		private LibraryView _collectionView;
 		private EditingView _editingView;
@@ -56,6 +58,7 @@ namespace Bloom.Workspace
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							LocalizationChangedEvent localizationChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory,
+							ProblemReporterDialog.Factory problemReportDialogFactory,
 							ChorusSystem chorusSystem,
 							Sparkle sparkleApplicationUpdater,
 							LocalizationManager localizationManager
@@ -68,6 +71,7 @@ namespace Bloom.Workspace
 			_selectedTabChangedEvent = selectedTabChangedEvent;
 			_localizationChangedEvent = localizationChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
+			_problemReportDialogFactory = problemReportDialogFactory;
 			_chorusSystem = chorusSystem;
 			_sparkleApplicationUpdater = sparkleApplicationUpdater;
 			_localizationManager = localizationManager;
@@ -463,6 +467,14 @@ namespace Bloom.Workspace
 		private void usingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
 		{
 			OpenInfoFile("Using Bloom Reader Templates.pdf");
+		}
+
+		private void _reportAProblemMenuItem_Click(object sender, EventArgs e)
+		{
+			using (var dlg = _problemReportDialogFactory(this))
+			{
+				dlg.ShowDialog();
+			}
 		}
 	}
 
