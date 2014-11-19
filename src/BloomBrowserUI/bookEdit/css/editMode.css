@@ -424,6 +424,8 @@ TEXTAREA.Heading2-style,  DIV.bloom-editable.Heading2-style {
 	color: rgba(0, 0, 0, 0.2);
 	font-size: small;
 	font-family: Arial, sans-serif; /* Arial matches .qtip-content */
+	font-style: normal;
+	font-weight: normal;
 }
 .languageTip
 {
