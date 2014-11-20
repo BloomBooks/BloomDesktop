@@ -565,29 +565,17 @@ namespace Bloom.Edit
 				pageContainer.SetAttribute("class", "pageContainer");
 				pageContainer.AppendChild(pageThumbnail);
 
-
 				/* And here it gets fragile (for not).
-				   The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
+					The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
 					the browser's normal ability to assign a width to the parent div. So our parent
 					here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
 					moment, we assign appropriate sizes, by hand. We rely on c# code to add these
 					classes, since we can't write a rule in css3 that peeks into a child attribute.
 				*/
-				var pageClasses = pageThumbnail.GetStringAttribute("class");
-
-				//enhance: there is doubtless code somewhere else that picks these size/orientations out elegantly
-				if (pageClasses.ToLower().Contains("a5portrait"))
-				{
-					pageContainer.SetAttribute("class", "pageContainer A5Portrait");
-				}
-				if (pageClasses.ToLower().Contains("a4portrait"))
-				{
-					pageContainer.SetAttribute("class", "pageContainer A4Portrait");
-				}
-				if (pageClasses.ToLower().Contains("a4landscape"))
-				{
-					pageContainer.SetAttribute("class", "pageContainer A4Landscape");
-				}
+				var pageClasses = pageThumbnail.GetStringAttribute("class").Split(new[] {' '});
+				var cssClass = pageClasses.FirstOrDefault(c => c.ToLower().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
+				if (!string.IsNullOrEmpty(cssClass))
+					pageContainer.SetAttribute("class", "pageContainer " + cssClass);
 
 				cellDiv.AppendChild(pageContainer);
 				var captionDiv = pageDoc.CreateElement("div");

@@ -44,17 +44,13 @@
         div.bloom-page {
             /* bizarrely, the translate moves it to the top left instead of the middle of the original space.
                 If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
-            transform: scale(0.075) translate(617%,-617%);
+            transform: scale(0.075) translate(617%,-617%); /* Default scaling is A5 Portrait */
             position: absolute;
             right: 0px;
         }
-        div.bloom-page.A4Portrait {
-            /* bizarrely, the translate moves it to the top left instead of the middle of the original space.
-                If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
-            transform: scale(0.05) translate(950%,-950%);
-            position: absolute;
-            right: 0px;
-        }
+        div.bloom-page.A4Portrait { transform: scale(0.05) translate(950%,-950%); }
+        div.bloom-page.B5Portrait { transform: scale(0.06) translate(783%,-783%); }
+
         .gridly {
             position: relative;
         }
@@ -65,15 +61,12 @@
             overflow:hidden;
         }
         div.gridItem:nth-child(even) div.bloom-page {
-            transform: scale(0.075) translate(-617%,-617%);
+            transform: scale(0.075) translate(-617%,-617%); /* Default scaling is A5 Portrait */
             right: auto;
-            left: 0px;
+            left: 0;
         }
-        div.gridItem:nth-child(even) div.bloom-page.A4Portrait {
-            transform: scale(0.05) translate(-950%,-950%);
-            right: auto;
-            left: 0px;
-        }
+        div.gridItem:nth-child(even) div.bloom-page.A4Portrait { transform: scale(0.05) translate(-950%,-950%); }
+        div.gridItem:nth-child(even) div.bloom-page.B5Portrait { transform: scale(0.06) translate(-783%,-783%); }
 
         .div.gridItem.dragging {
             opacity: .8;
@@ -93,31 +86,24 @@
             pointer-events: none;
         }
 
-        .gridSelected .pageContainer {
+        .gridSelected .pageContainer { /* Default scaling is A5 Portrait */
             border: 3px solid rgb(255, 255, 163);/*matches the current tooltip yellow*/
+            height: 60px;
+            width: 42px;
         }
-         div.gridItem:nth-child(odd) .pageContainer {
-             float: right; /*towards the center*/
+        div.gridItem:nth-child(odd) .pageContainer {
+            float: right; /*towards the center*/
         }
 
-         /* the nature of how we're doing the thumbnails (relying on scaling) seems to mess up
+         /* The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
              the browser's normal ability to assign a width to the parent div. So our parent
              here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
              moment, we assign appropriate sizes, by hand. We rely on c# code to add these
              classes, since we can't write a rule in css3 that peeks into a child attribute.
          */
-        .gridSelected .pageContainer.A5Portrait {
-            height: 60px;
-            width: 42px;
-        }
-        .gridSelected .pageContainer.A4Portrait {
-            height: 56px;
-            width: 40px;
-        }
-        .gridSelected .pageContainer.A4Landscape {
-            height: 59px;
-            width: 74px;
-        }
+        .gridSelected .pageContainer.A4Portrait { height: 56px; width: 40px; }
+        .gridSelected .pageContainer.A4Landscape { height: 59px; width: 74px; }
+        .gridSelected .pageContainer.B5Portrait { height: 57px; width: 40px; }
     </style>
 </head>
 <body id="body">
