@@ -1,4 +1,13 @@
-﻿## 3.0.66 BETA (Windows Only)
+﻿## 3.0.69 BETA (Windows Only)
+
+The Help menu now has has a "Report Problem" command.
+Now installs the newly updated Andika version 5.
+Fixed problem with "Booklet Insides" publishing option. 
+Fixed several issues in the Format dialog.
+Modifier keys no longer trigger the Special Characters popup.
+Several other minor fixes.
+
+## 3.0.66 BETA (Windows Only)
 
 ### Flexible Layouts and Styling
 - Use the new "Custom" page template to make your own unique page layouts.
