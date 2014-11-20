@@ -341,7 +341,14 @@ namespace Bloom
 										error.Filename, error.Line, error.Message);
 
 				if (!errorsToHide.Any(matchString => msg.Contains(matchString)))
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
+				{
+#if DEBUG
+					ErrorReport.NotifyUserOfProblem("This is only shown while debugging. " + msg);
+#else
+					Logger.WriteMinorEvent(msg);
+					Console.Out.WriteLine(msg);
+#endif
+				}
 			};
 
 			GeckoPreferences.User["mousewheel.withcontrolkey.action"] = 3;
