@@ -2798,7 +2798,7 @@
     <tu tuid="ReaderSetup.Words.SampleTextFolder">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Sample Text Folder</seg>
+        <seg>Sample Texts Folder</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Words.TypeWordsHere">
