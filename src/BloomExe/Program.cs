@@ -1,12 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Pipes;
 using System.Net;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
-using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
@@ -15,11 +12,9 @@ using Bloom.Properties;
 using Bloom.Registration;
 using Bloom.WebLibraryIntegration;
 using Gecko;
-using DesktopAnalytics;
 using L10NSharp;
 using Palaso.IO;
 using Palaso.Reporting;
-using Skybound.Gecko;
 using Palaso.UI.WindowsForms.UniqueToken;
 using System.Linq;
 
@@ -51,6 +46,8 @@ namespace Bloom
 		private static BookDownloadSupport _bookDownloadSupport;
 #endif
 		internal static string PathToBookDownloadedAtStartup { get; set; }
+
+		private static bool _supressRegistrationDialog = false;
 
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
@@ -101,6 +98,9 @@ namespace Bloom
 #endif
 
 				{
+					// do not show the registration dialog if bloom was started for a special purpose
+					if (args.Length > 0) _supressRegistrationDialog = true;
+
 					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
 					{
 						SetUpErrorHandling();
@@ -343,7 +343,7 @@ namespace Bloom
 				_splashForm = null; //but we are done with it
 			}
 
-			if (RegistrationDialog.ShouldWeShowRegistrationDialog())
+			if (RegistrationDialog.ShouldWeShowRegistrationDialog() && !_supressRegistrationDialog)
 			{
 				using (var dlg = new RegistrationDialog(false))
 				{
