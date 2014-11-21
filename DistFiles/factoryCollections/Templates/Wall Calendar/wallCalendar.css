@@ -60,13 +60,13 @@ TD P {
   top: -1px !important;
 }
 .calendarMonthBottom TD TEXTAREA {
-  width: 90%;
+  width: 96%;
   height: 62%;
-  font-size: 90%;
-  /*+placement:shift 5px -3px;*/
+  font-size: 65%;
+  /*+placement:shift 0px -6px;*/
   position: relative;
-  left: 5px;
-  top: -3px;
+  left: 0px;
+  top: -6px;
   line-height: 11pt;
 }
 .calendarBottomPageHeader {
@@ -80,6 +80,7 @@ TD P {
   position: relative;
   left: -34px;
   top: -7px;
+  font-style: italic;
 }
 /*Since this is calendar-fold, we want to defeat the left page vs. right page margin shifting */
 .marginBox {
