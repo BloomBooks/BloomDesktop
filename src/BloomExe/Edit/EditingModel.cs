@@ -326,9 +326,13 @@ namespace Bloom.Edit
 					}
 				}
 				//update the selections
-				_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language2Iso639Code).First().Selected =
+				_contentLanguages.First(l => l.Iso639Code == _collectionSettings.Language2Iso639Code).Selected =
 					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.Language2Iso639Code;
 
+				//the first language is always selected. This covers the common situation in shellbook collections where
+				//we have English as both the 1st and national language. https://jira.sil.org/browse/BL-756
+				_contentLanguages.First(l => l.Iso639Code == _collectionSettings.Language1Iso639Code).Selected = true;
+					
 
 				var contentLanguageMatchingNatLan2 =
 					_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language3Iso639Code).FirstOrDefault();
