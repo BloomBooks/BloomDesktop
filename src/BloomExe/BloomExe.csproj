@@ -121,9 +121,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="AeroWizard">
-      <HintPath>..\..\lib\dotnet\AeroWizard.dll</HintPath>
-    </Reference>
     <Reference Include="AxInterop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
     </Reference>
