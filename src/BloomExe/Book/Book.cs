@@ -86,6 +86,8 @@ namespace Bloom.Book
 			_bookData = new BookData(OurHtmlDom,
 					_collectionSettings, UpdateImageMetadataAttributes);
 
+			InjectStringListingActiveLanguagesOfBook(); 
+
 			if (IsEditable && !HasFatalError)
 			{
 				_bookData.SynchronizeDataItemsThroughoutDOM();

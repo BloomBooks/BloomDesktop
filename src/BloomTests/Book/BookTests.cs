@@ -109,12 +109,22 @@ namespace BloomTests.Book
 			_thumbnailer.Object.Dispose();
 		}
 
-		private Bloom.Book.Book CreateBook()
+		private Bloom.Book.Book CreateBook(CollectionSettings collectionSettings)
 		{
-			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
+			_collectionSettings = collectionSettings;
 			return new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
 				_collectionSettings,
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+		}
+
+		private Bloom.Book.Book CreateBook()
+		{
+			return CreateBook(CreateDefaultCollectionsSettings());
+		}
+
+		private CollectionSettings CreateDefaultCollectionsSettings()
+		{
+			return new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 		}
 
 //        [Test]
@@ -1199,6 +1209,16 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			var title = (XmlElement)book.RawDom.SelectSingleNodeHonoringDefaultNS("//title");
 			Assert.AreEqual("original", title.InnerText);
+		}
+
+		[Test]
+		public void Constructor_LanguagesOfBookIsSet()
+		{
+			var collectionSettings = CreateDefaultCollectionsSettings();
+			collectionSettings.Language1Iso639Code = "en";
+			var book = CreateBook(collectionSettings);
+			var langs = book.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='languagesOfBook']") as XmlElement;
+			Assert.AreEqual("English", langs.InnerText);
 		}
 
 		private void MakeSamplePngImageWithMetadata(string path)
