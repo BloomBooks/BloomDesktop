@@ -98,10 +98,9 @@
     <Reference Include="NetSparkle.Net40">
       <HintPath>..\..\lib\dotnet\NetSparkle.Net40.dll</HintPath>
     </Reference>
-    <Reference Include="PdfDroplet, Version=2.3.495.0, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="PdfDroplet, Version=2.3.20.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <ExecutableExtension>.exe</ExecutableExtension>
-      <HintPath>..\..\packages\PdfDroplet.2.3.14.0\lib\net40-Client\PdfDroplet.exe</HintPath>
+      <HintPath>..\..\packages\PdfDroplet.2.3.20.0\lib\net40-Client\PdfDroplet.exe</HintPath>
     </Reference>
     <Reference Include="PdfSharp">
       <HintPath>..\..\lib\dotnet\PdfSharp.dll</HintPath>
