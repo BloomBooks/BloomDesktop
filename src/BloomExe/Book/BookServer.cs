@@ -27,18 +27,30 @@ namespace Bloom.Book
 			//Review: Note that this isn't doing any caching yet... worried that caching will just eat up memory, but if anybody is holding onto these, then the memory won't be freed anyhow
 
 			var book = _bookFactory(bookInfo, _storageFactory(bookInfo.FolderPath));
+			// If it doesn't already have a cover color give it one.
+			if (book.OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]").Count == 0)
+			{
+				book.InitCoverColor();
+				if (bookInfo.IsEditable)
+					book.Save();  // make that cover color permanent!
+			}
 			return book;
 		}
 
 		public Book CreateFromSourceBook(Book sourceBook, string containingDestinationFolder)
 		{
+			return CreateFromSourceBook(sourceBook.FolderPath, containingDestinationFolder);
+		}
+
+		public Book CreateFromSourceBook(string sourceBookFolder, string containingDestinationFolder)
+		{
 			string pathToFolderOfNewBook = null;
 
-			Logger.WriteMinorEvent("Starting CreateFromSourceBook({0})", sourceBook.FolderPath);
+			Logger.WriteMinorEvent("Starting CreateFromSourceBook({0})", sourceBookFolder);
 			try
 			{
 				var starter = _bookStarterFactory();
-				pathToFolderOfNewBook = starter.CreateBookOnDiskFromTemplate(sourceBook.FolderPath, containingDestinationFolder);
+				pathToFolderOfNewBook = starter.CreateBookOnDiskFromTemplate(sourceBookFolder, containingDestinationFolder);
 				if (Configurator.IsConfigurable(pathToFolderOfNewBook))
 				{
 					var c = _configuratorFactory(containingDestinationFolder);
@@ -53,7 +65,7 @@ namespace Bloom.Book
 				var newBookInfo = new BookInfo(pathToFolderOfNewBook,true); // _bookInfos.Find(b => b.FolderPath == pathToFolderOfNewBook);
 				if (newBookInfo is ErrorBookInfo)
 				{
-					throw ((ErrorBookInfo)newBookInfo).Exception;
+					throw ((ErrorBookInfo) newBookInfo).Exception;
 				}
 
 				Book newBook = GetBookFromBookInfo(newBookInfo);

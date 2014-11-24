@@ -20,9 +20,6 @@ namespace Bloom.Book
 	/// </summary>
 	public class BookInfo
 	{
-		public static Color[] CoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(176, 222, 228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
-		private static int _coverColorIndex = 0;
-
 		private BookMetaData _metadata;
 
 		private BookMetaData MetaData
@@ -35,7 +32,6 @@ namespace Bloom.Book
 			IsSuitableForVernacularLibrary = true; // default
 			FolderPath = folderPath;
 			Id = Guid.NewGuid().ToString();
-			CoverColor = NextBookColor();
 
 			var jsonPath = MetaDataPath;
 			if (File.Exists(jsonPath))
@@ -74,8 +70,6 @@ namespace Bloom.Book
 			get { return MetaData.Id; }
 			set { MetaData.Id = value; }
 		}
-
-		public Color CoverColor { get; set; }
 
 		public string FolderPath { get; set; }
 
@@ -234,11 +228,6 @@ namespace Bloom.Book
 			}
 			image = null;
 			return false;
-		}
-
-		public static Color NextBookColor()
-		{
-			return CoverColors[_coverColorIndex++%CoverColors.Length];
 		}
 
 		public void Save()
