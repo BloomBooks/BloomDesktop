@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Shell));
 			this._contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this._size1024x586 = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
@@ -90,7 +89,6 @@
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.ClientSize = new System.Drawing.Size(1012, 548);
 			this.ContextMenuStrip = this._contextMenu;
-
 			this.MinimumSize = new System.Drawing.Size(400, 300);
 			this.Name = "Shell";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -98,6 +96,7 @@
 			this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
 			this.Activated += new System.EventHandler(this.Shell_Activated);
 			this.Deactivate += new System.EventHandler(this.Shell_Deactivate);
+			this.Load += new System.EventHandler(this.Shell_Load);
 			this._contextMenu.ResumeLayout(false);
 			this.ResumeLayout(false);
 

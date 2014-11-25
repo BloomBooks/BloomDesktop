@@ -28,19 +28,20 @@ namespace Bloom.Publish
 		/// </summary>
 		public bool ShowCropMarks;
 
-		/// <summary>
-		///
-		/// </summary>
+		///  <summary>
+		/// 
+		///  </summary>
 		/// <param name="inputHtmlPath"></param>
 		/// <param name="outputPdfPath"></param>
 		/// <param name="paperSizeName">A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B10,B2,B3,B4,B5,B6,B7,B8,B9,C5E,Comm10E,DLE,Executive,Folio,Ledger,Legal,Letter,Tabloid</param>
 		/// <param name="landscape"> </param>
+		/// <param name="layoutPagesForRightToLeft"></param>
 		/// <param name="booketLayoutMethod"> </param>
 		/// <param name="bookletPortion"></param>
 		/// <param name="worker">If not null, the Background worker which is running this task, and may be queried to determine whether a cancel is being attempted</param>
 		/// <param name="doWorkEventArgs">The event passed to the worker when it was started. If a cancel is successful, it's Cancel property should be set true.</param>
 		/// <param name="owner">A control which can be used to invoke parts of the work which must be done on the ui thread.</param>
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner)
+		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, bool layoutPagesForRightToLeft, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner)
 		{
 			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
 						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
@@ -73,7 +74,7 @@ namespace Bloom.Publish
 			if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet)
 			{
 				//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
-				MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod);
+				MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod, layoutPagesForRightToLeft);
 			}
 		}
 
@@ -108,13 +109,14 @@ namespace Bloom.Publish
 			return 1.04;
 		}
 
-		/// <summary>
-		///
-		/// </summary>
+		///  <summary>
+		/// 
+		///  </summary>
 		/// <param name="pdfPath">this is the path where it already exists, and the path where we leave the transformed version</param>
 		/// <param name="incomingPaperSize"></param>
 		/// <param name="booketLayoutMethod"></param>
-		private void MakeBooklet(string pdfPath, string incomingPaperSize, PublishModel.BookletLayoutMethod booketLayoutMethod)
+		/// <param name="layoutPagesForRightToLeft"></param>
+		private void MakeBooklet(string pdfPath, string incomingPaperSize, PublishModel.BookletLayoutMethod booketLayoutMethod, bool layoutPagesForRightToLeft)
 		{
 			//TODO: we need to let the user chose the paper size, as they do in PdfDroplet.
 			//For now, just assume a size double the original
@@ -150,8 +152,6 @@ namespace Bloom.Publish
 					throw new ApplicationException("PdfMaker.MakeBooklet() does not contain a map from " + incomingPaperSize + " to a PdfSharp paper size.");
 			}
 
-
-
 			using (var incoming = new TempFile())
 			{
 				File.Delete(incoming.Path);
@@ -177,7 +177,7 @@ namespace Bloom.Publish
 				}
 				var paperTarget = new PaperTarget("ZZ"/*we're not displaying this anyhwere, so we don't need to know the name*/, pageSize);
 				var pdf = XPdfForm.FromFile(incoming.Path);//REVIEW: this whole giving them the pdf and the file too... I checked once and it wasn't wasting effort...the path was only used with a NullLayout option
-				method.Layout(pdf, incoming.Path, pdfPath, paperTarget, /*TODO: rightToLeft*/ false, ShowCropMarks);
+				method.Layout(pdf, incoming.Path, pdfPath, paperTarget, layoutPagesForRightToLeft, ShowCropMarks);
 			}
 		}
 	}

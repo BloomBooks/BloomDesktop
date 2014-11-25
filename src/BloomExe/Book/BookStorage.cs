@@ -328,7 +328,9 @@ namespace Bloom.Book
 			{
 				Logger.WriteEvent("Renaming folder from '{0}' to '{1}'", FolderPath, newFolderPath);
 
-				Palaso.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
+				//This one can't handle network paths and isn't necessary, since we know these are on the same volume:
+				//Palaso.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
+				Directory.Move(FolderPath, newFolderPath);
 
 				_fileLocator.RemovePath(FolderPath);
 				_fileLocator.AddPath(newFolderPath);

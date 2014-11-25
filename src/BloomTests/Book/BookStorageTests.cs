@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Xml;
 using Bloom;
@@ -34,7 +36,7 @@ namespace BloomTests.Book
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
 											});
 			_fixtureFolder = new TemporaryFolder("BloomBookStorageTest");
-			_folder = new TemporaryFolder(_fixtureFolder,"theBook");
+			_folder = new TemporaryFolder(_fixtureFolder, "theBook");
 
 			_bookPath = _folder.Combine("theBook.htm");
 		}
@@ -49,7 +51,7 @@ namespace BloomTests.Book
 		public void Save_BookHadOnlyPaperSizeStyleSheet_StillHasIt()
 		{
 			GetInitialStorageWithCustomHtml("<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
-			 AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'Basic Book')]", 1);
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'Basic Book')]", 1);
 		}
 
 		[Test]
@@ -60,16 +62,42 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 		}
 
-//
-//        [Test]
-//        public void Delete_IsDeleted()
-//        {
-//            BookStorage storage = GetInitialStorageWithCustomHtml();
-//            Assert.IsTrue(Directory.Exists(_folder.Path));
-//            Assert.IsTrue(storage.DeleteBook());
-//            Thread.Sleep(2000);
-//            Assert.IsFalse(Directory.Exists(_folder.Path));
-//        }
+		//
+		//        [Test]
+		//        public void Delete_IsDeleted()
+		//        {
+		//            BookStorage storage = GetInitialStorageWithCustomHtml();
+		//            Assert.IsTrue(Directory.Exists(_folder.Path));
+		//            Assert.IsTrue(storage.DeleteBook());
+		//            Thread.Sleep(2000);
+		//            Assert.IsFalse(Directory.Exists(_folder.Path));
+		//        }
+
+		[Test]
+		public void Save_PathIsUNCRatherThanDriveLetter()
+		{
+			var storage = GetInitialStorageUsingUNCPath();
+			storage.Save();
+		}
+
+		private BookStorage GetInitialStorageUsingUNCPath()
+		{
+			var testFolder = new TemporaryFolder();
+			var bookPath = testFolder.Combine("theBook.htm");
+			File.WriteAllText(bookPath,
+				"<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
+			var collectionSettings = new CollectionSettings(Path.Combine(testFolder.Path, "test.bloomCollection"));
+			var folderPath = ConvertToNetworkPath(testFolder.Path);
+			Debug.WriteLine(Path.GetPathRoot(folderPath));
+			var storage = new BookStorage(folderPath, _fileLocator, new BookRenamedEvent(), collectionSettings);
+			return storage;
+		}
+
+		private string ConvertToNetworkPath(string drivePath)
+		{
+			string driveLetter = Directory.GetDirectoryRoot(drivePath);
+			return drivePath.Replace(driveLetter, "//localhost/" + driveLetter.Replace(":\\", "") + "$/");
+		}
 
 		private BookStorage GetInitialStorageWithCustomHtml(string html)
 		{
@@ -88,7 +116,7 @@ namespace BloomTests.Book
 
 		private BookStorage GetInitialStorageWithCustomHead(string head)
 		{
-			File.WriteAllText(_bookPath, "<html><head>"+head+" </head></body></html>");
+			File.WriteAllText(_bookPath, "<html><head>" + head + " </head></body></html>");
 			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), new CollectionSettings());
 			storage.Save();
 			return storage;
@@ -108,12 +136,12 @@ namespace BloomTests.Book
 		[Test]
 		public void SetBookName_EasyCase_ChangesFolderAndFileName()
 		{
-		   var storage = GetInitialStorage();
-		   using (var newFolder = new TemporaryFolder(_fixtureFolder,"newName"))
-		   {
-			   Directory.Delete(newFolder.Path);
-			   ChangeNameAndCheck(newFolder, storage);
-		   }
+			var storage = GetInitialStorage();
+			using (var newFolder = new TemporaryFolder(_fixtureFolder, "newName"))
+			{
+				Directory.Delete(newFolder.Path);
+				ChangeNameAndCheck(newFolder, storage);
+			}
 		}
 
 		[Test]
@@ -124,7 +152,6 @@ namespace BloomTests.Book
 			using (var y = new TemporaryFolder(_folder, "foo1"))
 			using (var z = new TemporaryFolder(_folder, "foo2"))
 			{
-
 				File.WriteAllText(Path.Combine(original.Path, "original.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
 
 				var projectFolder = new TemporaryFolder("BookStorage_ProjectCollection");
@@ -134,11 +161,11 @@ namespace BloomTests.Book
 
 				Directory.Delete(z.Path);
 				//so, we ask for "foo", but should get "foo2", because there is already a foo and foo1
-			var newBookName = Path.GetFileName(x.Path);
-			storage.SetBookName(newBookName);
-			var newPath = z.Combine("foo2.htm");
-			Assert.IsTrue(Directory.Exists(z.Path), "Expected folder:" + z.Path);
-			Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
+				var newBookName = Path.GetFileName(x.Path);
+				storage.SetBookName(newBookName);
+				var newPath = z.Combine("foo2.htm");
+				Assert.IsTrue(Directory.Exists(z.Path), "Expected folder:" + z.Path);
+				Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
 			}
 		}
 
@@ -146,7 +173,7 @@ namespace BloomTests.Book
 		public void SetBookName_FolderNameWasDifferentThanFileName_ChangesFolderAndFileName()
 		{
 			var storage = GetInitialStorageWithDifferentFileName("foo");
-			using (var newFolder = new TemporaryFolder(_fixtureFolder,"newName"))
+			using (var newFolder = new TemporaryFolder(_fixtureFolder, "newName"))
 			{
 				Directory.Delete(newFolder.Path);
 				ChangeNameAndCheck(newFolder, storage);
@@ -163,6 +190,22 @@ namespace BloomTests.Book
 		}
 
 		/// <summary>
+		/// regression test
+		/// </summary>
+		[Test]
+		public void SetBookName_PathIsAUNCToLocalHost_NoErrors()
+		{
+			var storage = GetInitialStorageUsingUNCPath();
+			var path = storage.FolderPath;
+			var newName = Guid.NewGuid().ToString();
+			path = path.Replace(Path.GetFileName(path), newName);
+			storage.SetBookName(newName);
+
+			Assert.IsTrue(Directory.Exists(path));
+			Assert.IsTrue(File.Exists(Path.Combine(path, newName + ".htm")));
+		}
+
+		/// <summary>
 		/// This is really testing some Book.cs functionality, but it has to manipulate real files with a real storage,
 		/// so it seems to fit better here.
 		/// </summary>
@@ -170,7 +213,7 @@ namespace BloomTests.Book
 		public void BringBookUpToDate_ConvertsTagsToJsonWithExpectedDefaults()
 		{
 			var storage = GetInitialStorage();
-			var locator = (FileLocator) storage.GetFileLocator();
+			var locator = (FileLocator)storage.GetFileLocator();
 			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 			locator.AddPath(root.CombineForPath("bookLayout"));
 			var folder = storage.FolderPath;
@@ -208,14 +251,13 @@ namespace BloomTests.Book
 			Assert.That(storage.MetaData.FormatVersion, Is.EqualTo(BookStorage.kBloomFormatVersion));
 		}
 
-
 		private void ChangeNameAndCheck(TemporaryFolder newFolder, BookStorage storage)
 		{
 			var newBookName = Path.GetFileName(newFolder.Path);
 			storage.SetBookName(newBookName);
-			var newPath = newFolder.Combine(newBookName+".htm");
+			var newPath = newFolder.Combine(newBookName + ".htm");
 			Assert.IsTrue(Directory.Exists(newFolder.Path), "Expected folder:" + newFolder.Path);
-			Assert.IsTrue(File.Exists(newPath), "Expected file:" +newPath);
+			Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
 		}
 	}
 }

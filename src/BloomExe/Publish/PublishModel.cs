@@ -107,7 +107,7 @@ namespace Bloom.Publish
 					else
 						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
 
-					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape,
+					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape, LayoutPagesForRightToLeft,
 									  layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 				}
 			}
@@ -121,6 +121,11 @@ namespace Bloom.Publish
 			}
 		}
 
+		private bool LayoutPagesForRightToLeft
+		{
+			get { return _collectionSettings.IsLanguage1Rtl;  }
+
+		}
 
 		private TempFile MakeFinalHtmlForPdfMaker()
 		{
