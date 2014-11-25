@@ -29,6 +29,8 @@ namespace Bloom.Book
 	public class Book
 	{
 		public delegate Book Factory(BookInfo info, IBookStorage storage);//autofac uses this
+		public static Color[] CoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(176, 222, 228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
+		private static int _coverColorIndex = 0;
 
 		private readonly ITemplateFinder _templateFinder;
 		private readonly CollectionSettings _collectionSettings;
@@ -93,10 +95,26 @@ namespace Bloom.Book
 				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
 				OurHtmlDom.AddStyleSheet(@"languageDisplay.css");
 			}
-
+			// If it doesn't already have a cover color give it one.
+			if (OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]").Count == 0)
+			{
+				InitCoverColor();
+				if (info.IsEditable)
+				{
+					// make that cover color permanent!
+					// We don't use simply Save() because that does some extra work we don't need here
+					// and it causes at least one unit test to fail.
+					_storage.Save();
+				}
+			}
 			FixBookIdAndLineageIfNeeded();
 			_storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
+		}
+
+		public static Color NextBookColor()
+		{
+			return CoverColors[_coverColorIndex++ % CoverColors.Length];
 		}
 
 		public CollectionSettings CollectionSettings { get { return _collectionSettings; }}
@@ -239,7 +257,6 @@ namespace Bloom.Book
 			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css").ToLocalhost());
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
-			AddCoverColor(pageDom, CoverColor);
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _collectionSettings);
 			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _collectionSettings, _storage.GetFileLocator());
 			UpdateMultilingualSettings(pageDom);
@@ -312,7 +329,6 @@ namespace Bloom.Book
 
 			pageDom.SortStyleSheetLinks();
 
-			AddCoverColor(pageDom, CoverColor);
 			AddPreviewJScript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
 			return pageDom;
 		}
@@ -326,7 +342,6 @@ namespace Bloom.Book
 
 			var bookDom = GetBookDomWithStyleSheets("previewMode.css","thumbnail.css");
 
-			AddCoverColor(bookDom, CoverColor);
 			HideEverythingButFirstPageAndRemoveScripts(bookDom.RawDom);
 			return bookDom.RawDom;
 		}
@@ -551,7 +566,6 @@ namespace Bloom.Book
 				primaryLanguage = _collectionSettings.Language2Iso639Code;
 
 			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, _collectionSettings, primaryLanguage, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
-			AddCoverColor(previewDom, CoverColor);
 
 			AddPreviewJScript(previewDom);
 			previewDom.AddPublishClassToBody();
@@ -756,8 +770,6 @@ namespace Bloom.Book
 			}
 			targetElement.SetAttribute("class", templateElement.GetAttribute("class"));
 		}
-
-		public Color CoverColor { get { return BookInfo.CoverColor; } }
 
 		public bool IsShellOrTemplate
 		{
@@ -1091,17 +1103,24 @@ namespace Bloom.Book
 			}
 		}
 
+		// Assign the next of the standard cover colors which will be used consistently henceforth for this book
+		// (except when actually printing...for that we switch to white so the
+		// actual cardstock color comes through unchanged).
+		internal void InitCoverColor()
+		{
+			AddCoverColor(this.OurHtmlDom, NextBookColor());
+		}
+
 		private void AddCoverColor(HtmlDom dom, Color coverColor)
 		{
 			var colorValue = ColorTranslator.ToHtml(coverColor);
 //            var colorValue = String.Format("#{0:X2}{1:X2}{2:X2}", coverColor.R, coverColor.G, coverColor.B);
 			XmlElement colorStyle = dom.RawDom.CreateElement("style");
 			colorStyle.SetAttribute("type","text/css");
-			colorStyle.InnerXml = @"<!--
-
+			colorStyle.InnerXml = @"
 				DIV.coverColor  TEXTAREA	{		background-color: colorValue !important;	}
 				DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
-				-->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
+				".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
 			var header = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//head");
 			header.AppendChild(colorStyle);

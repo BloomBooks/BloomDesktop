@@ -268,7 +268,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
 			book.SavePage(dom);
-			_storage.Verify(s => s.Save(), Times.Once());
+			_storage.Verify(s => s.Save(), Times.AtLeastOnce());
 		}
 
 		[Test]
