@@ -68,7 +68,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 # build: Bloom-Default-Continuous (bt222)
 # project: Bloom
 # URL: http://build.palaso.org/viewType.html?buildTypeId=bt222
-# VCS: https://bitbucket.org/hatton/bloom-desktop [default]
+# VCS: git://github.com/BloomBooks/BloomDesktop.git [master]
 # dependencies:
 # [0] build: bloom-3.-win32-static-dependencies (bt396)
 #     project: Bloom
@@ -163,11 +163,17 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastS
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Autofac.dll ../lib/dotnet/Autofac.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/LibChorus.dll ../lib/dotnet/LibChorus.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Palaso.Lift.dll ../lib/dotnet/Palaso.Lift.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Palaso.dll ../lib/dotnet/Palaso.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/PalasoUIWindowsForms.dll ../lib/dotnet/PalasoUIWindowsForms.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Vulcan.Uczniowie.HelpProvider.dll ../lib/dotnet/Vulcan.Uczniowie.HelpProvider.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/Autofac.dll ../lib/dotnet/Autofac.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/debug/LibChorus.dll ../lib/dotnet/LibChorus.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu.net.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/icudt40.dll ../lib/dotnet/icudt40.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/icuin40.dll ../lib/dotnet/icuin40.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/icuuc40.dll ../lib/dotnet/icuuc40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/Mercurial.zip ../Downloads/Mercurial.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/.guidsForInstaller.xml ../MercurialExtensions/.guidsForInstaller.xml
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt2/latest.lastSuccessful/MercurialExtensions/Dummy.txt ../MercurialExtensions/Dummy.txt
