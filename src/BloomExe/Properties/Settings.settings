@@ -47,5 +47,11 @@
     <Setting Name="UseAdobePdfViewer" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="MaximizeWindow" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="WindowSizeAndLocation" Type="Palaso.UI.WindowsForms.PortableSettingsProvider.FormSettings" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

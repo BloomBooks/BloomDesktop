@@ -11,10 +11,12 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
+using Bloom.Properties;
 using Bloom.Workspace;
 using NetSparkle;
 using Palaso.Reporting;
 using Palaso.Extensions;
+using Palaso.UI.WindowsForms.PortableSettingsProvider;
 
 namespace Bloom
 {
@@ -210,6 +212,37 @@ namespace Bloom
 			Focus();
 			BringToFront();
 			TopMost = false;
+		}
+
+		private void Shell_Load(object sender, EventArgs e)
+		{
+			//Handle window sizing/location. Normally, we just Maximize the window.
+			//The exceptions to this are if we are in a DEBUG build or the settings have a MaximizeWindow=='False", which at this time
+			//must be done by hand (no user UI is provided).
+			try
+			{
+				if(Settings.Default.WindowSizeAndLocation == null)
+				{
+					StartPosition = FormStartPosition.WindowsDefaultLocation;
+					WindowState = FormWindowState.Maximized;
+					Settings.Default.WindowSizeAndLocation = FormSettings.Create(this);
+					Settings.Default.Save();
+				}
+
+				//This feature is not yet a normal part of Bloom, since we think just maximizing is more rice-farmer-friendly.
+				//However, we added the ability to remember this stuff at the request of the person making videos, who needs Bloom to open in the same place / size each time.
+				if (Settings.Default.MaximizeWindow == false)
+				{
+					Settings.Default.WindowSizeAndLocation.InitializeForm(this);
+				}
+			}
+			catch (Exception error)
+			{
+				Debug.Fail(error.Message);
+				//Not worth bothering the user. Just reset the values to something reasonable.
+				StartPosition = FormStartPosition.WindowsDefaultLocation;
+				WindowState = FormWindowState.Maximized;
+			}
 		}
 
 	}
