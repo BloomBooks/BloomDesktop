@@ -15,6 +15,7 @@ using Palaso.Extensions;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
+using Palaso.UI.WindowsForms.ImageGallery;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
@@ -700,6 +701,10 @@ namespace Bloom.Edit
 				}
 			}
 			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
+			// Deep in the ImageTooboxDialog, when the user asks to see images from the ArtOfReading,
+			// We need to use the Gecko version of the thumbnail viewer, since the original ListView
+			// one has a sticky scroll bar in applications that are using Gecko.
+			ThumbnailViewer.UseWebViewer = true;
 			using (var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
 				if (DialogResult.OK == dlg.ShowDialog())
