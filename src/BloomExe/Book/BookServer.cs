@@ -27,13 +27,6 @@ namespace Bloom.Book
 			//Review: Note that this isn't doing any caching yet... worried that caching will just eat up memory, but if anybody is holding onto these, then the memory won't be freed anyhow
 
 			var book = _bookFactory(bookInfo, _storageFactory(bookInfo.FolderPath));
-			// If it doesn't already have a cover color give it one.
-			if (book.OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]").Count == 0)
-			{
-				book.InitCoverColor();
-				if (bookInfo.IsEditable)
-					book.Save();  // make that cover color permanent!
-			}
 			return book;
 		}
 

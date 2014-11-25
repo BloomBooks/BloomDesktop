@@ -95,7 +95,18 @@ namespace Bloom.Book
 				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
 				OurHtmlDom.AddStyleSheet(@"languageDisplay.css");
 			}
-
+			// If it doesn't already have a cover color give it one.
+			if (OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]").Count == 0)
+			{
+				InitCoverColor();
+				if (info.IsEditable)
+				{
+					// make that cover color permanent!
+					// We don't use simply Save() because that does some extra work we don't need here
+					// and it causes at least one unit test to fail.
+					_storage.Save();
+				}
+			}
 			FixBookIdAndLineageIfNeeded();
 			_storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
@@ -1092,7 +1103,7 @@ namespace Bloom.Book
 			}
 		}
 
-		// Assign a random cover color which will be used consistently henceforth
+		// Assign the next of the standard cover colors which will be used consistently henceforth for this book
 		// (except when actually printing...for that we switch to white so the
 		// actual cardstock color comes through unchanged).
 		internal void InitCoverColor()
