@@ -68,7 +68,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 # build: Bloom-Default-Continuous (bt222)
 # project: Bloom
 # URL: http://build.palaso.org/viewType.html?buildTypeId=bt222
-# VCS: https://bitbucket.org/hatton/bloom-desktop [default]
+# VCS: git://github.com/BloomBooks/BloomDesktop.git [master]
 # dependencies:
 # [0] build: bloom-3.-win32-static-dependencies (bt396)
 #     project: Bloom
