@@ -40,6 +40,9 @@ namespace Bloom
 		public event EventHandler OnBrowserClick;
 		public static event EventHandler XulRunnerShutdown;
 
+		private static JavaScriptErrorHandler _jsErrorHandler;
+		private static JavaScriptCallHook _jsCallHook;
+
 		private static int XulRunnerVersion
 		{
 			get
@@ -90,6 +93,44 @@ namespace Bloom
 
 			Xpcom.Initialize(xulRunnerPath);
 
+			var errorsToHide = new List<string>
+			{
+				"['Shockwave Flash'] is undefined", // can happen when mootools (used by calendar) is loaded
+				"mootools", // can happen when mootools (used by calendar) is loaded
+				"PlacesCategoriesStarter.js", // happens if you let bloom sit there long enough
+				"PlacesDBUtils", // happens if you let bloom sit there long enough
+				"privatebrowsing", // no idea why it shows this error sometimes
+				"xulrunner", // can happen when mootools (used by calendar) is loaded
+				"calledByCSharp", // this can happen while switching pages quickly, when the page unloads after the script starts executing.
+				"resource://gre/components/nsBlocklistService.js", // BL-676: nsBlocklistService.js, "gApp is not defined" on Linux for Big Book and Calendar.
+				"chrome://", // these errors/warnings are coming from internal firefox files
+				"jar:",      // these errors/warnings are coming from internal firefox files
+
+				//This one started appearing, only on the ImageOnTop pages, when I introduced jquery.resize.js
+				//and then added the ResetRememberedSize() function to it. So it's my fault somehow, but I haven't tracked it down yet.
+				//it will continue to show in firebug, so i won't forget about it
+				"jquery.js at line 622",
+
+				// Warnings began popping up when we started using http rather than file urls for script tags.
+				// 21 JUL 2014, PH: This is a confirmed bug in firefox (https://bugzilla.mozilla.org/show_bug.cgi?id=1020846)
+				//   and is supposed to be fixed in firefox 33.
+				"is being assigned a //# sourceMappingURL, but already has one"
+			};
+
+			// Do this so we can get the call stack of a JavaScript error
+			_jsErrorHandler = new JavaScriptErrorHandler(errorsToHide);
+			_jsCallHook = new JavaScriptCallHook(_jsErrorHandler);
+			_jsCallHook.JavaScriptError += _jsCallHook_JavaScriptError;
+			using (var jsd = Xpcom.GetService2<jsdIDebuggerService>(Contracts.DebuggerService))
+			{
+				jsd.Instance.SetErrorHookAttribute(_jsErrorHandler);
+				jsd.Instance.SetDebugHookAttribute(_jsCallHook);
+				using (var runtime = Xpcom.GetService2<nsIJSRuntimeService>(Contracts.RuntimeService))
+				{
+					jsd.Instance.ActivateDebugger(runtime.Instance.GetRuntimeAttribute());
+				}
+			}
+
 			// BL-535: 404 error if system proxy settings not configured to bypass proxy for localhost
 			// See: https://developer.mozilla.org/en-US/docs/Mozilla/Preferences/Mozilla_networking_preferences
 			GeckoPreferences.User["network.proxy.http"] = string.Empty;
@@ -97,6 +138,22 @@ namespace Bloom
 			GeckoPreferences.User["network.proxy.type"] = 1; // 0 = direct (uses system settings on Windows), 1 = manual configuration
 
 			Application.ApplicationExit += OnApplicationExit;
+		}
+
+		private static void _jsCallHook_JavaScriptError(object sender, JavaScriptErrorArgs e)
+		{
+			// pop-up the error messages if a debugger is attached or an environment variable is set
+			var popUpErrors = Debugger.IsAttached || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DEBUG_BLOOM"));
+
+			// log the error message
+			var errorMsg = e.Message + Environment.NewLine + "Call stack:" + Environment.NewLine
+						+ e.CallStack + Environment.NewLine;
+
+			Logger.WriteMinorEvent(errorMsg);
+			Console.Out.WriteLine(errorMsg);
+
+			if (popUpErrors)
+				ErrorReport.NotifyUserOfProblem(errorMsg);
 		}
 
 		private static void OnApplicationExit(object sender, EventArgs e)
@@ -228,6 +285,13 @@ namespace Bloom
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing)
 		{
+			if (_jsCallHook != null)
+			{
+				_jsCallHook.JavaScriptError -= _jsCallHook_JavaScriptError;
+				_jsCallHook = null;
+			}
+			_jsErrorHandler = null;
+
 			if (_tempHtmlFile != null)
 			{
 				_tempHtmlFile.Dispose();
@@ -263,7 +327,7 @@ namespace Bloom
 			_browser.ShowContextMenu += OnShowContextMenu;
 
 			_browser.Navigating += _browser_Navigating;
-		   // NB: registering for domclicks seems to stop normal hyperlinking (which we don't
+			//NB: registering for domclicks seems to stop normal hyperlinking (which we don't
 			//necessarily need).  When I comment this out, I get an error if the href had, for example,
 			//"bloom" for the protocol.  We could probably install that as a protocol, rather than
 			//using the click to just get a target and go from there, if we wanted.
@@ -278,71 +342,6 @@ namespace Bloom
 			_browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
 
 			_updateCommandsTimer.Enabled = true;//hack
-			var errorsToHide = new List<string>();
-			errorsToHide.Add("['Shockwave Flash'] is undefined"); // can happen when mootools (used by calendar) is loaded
-			//after swalling that one, you just get another... do this for now
-			errorsToHide.Add("mootools"); // can happen when mootools (used by calendar) is loaded
-
-			errorsToHide.Add("PlacesCategoriesStarter.js"); //happens if you let bloom sit there long enough
-
-			errorsToHide.Add("PlacesDBUtils"); //happens if you let bloom sit there long enough
-
-			errorsToHide.Add("privatebrowsing"); //no idea why it shows this error sometimes
-
-			//again, more generally
-			errorsToHide.Add("xulrunner"); // can happen when mootools (used by calendar) is loaded
-
-			errorsToHide.Add("calledByCSharp"); // this can happen while switching pages quickly, when the page unloads after the script starts executing.
-
-#if !DEBUG
-			errorsToHide.Add("Cleanup"); // TODO: can happen when switching pages quickly, as it tries to run it on about:blank. This suggests that sometimes pages aren't cleaned up.
-#endif
-			//This one started appearing, only on the ImageOnTop pages, when I introduced jquery.resize.js
-			//and then added the ResetRememberedSize() function to it. So it's my fault somehow, but I haven't tracked it down yet.
-			//it will continue to show in firebug, so i won't forget about it
-			errorsToHide.Add("jquery.js at line 622");
-
-			// There are 3 errors in this file that occur when you click to edit a book on some virtual machines and on Linux
-			errorsToHide.Add("chrome://global/content/alerts/alert.js");
-
-			// BL-676: nsBlocklistService.js, "gApp is not defined" on Linux for Big Book and Calendar.
-			errorsToHide.Add("resource://gre/components/nsBlocklistService.js");
-
-			// these javascript warnings will not be logged
-			var warningsToHide = new List<string>
-			{
-				// Warnings began popping up when we started using http rather than file urls for script tags.
-				// 21 JUL 2014, PH: This is a confirmed bug in firefox (https://bugzilla.mozilla.org/show_bug.cgi?id=1020846)
-				//   and is supposed to be fixed in firefox 33.
-				"is being assigned a //# sourceMappingURL, but already has one"
-			};
-
-			WebBrowser.JavascriptError += (sender, error) =>
-			{
-				// It should be safe to ignore all JavaScript warnings, but we will log them and send to the console
-				if (error.Flags.HasFlag(ErrorFlags.REPORT_WARNING))
-				{
-					string logMsg;
-					if (string.IsNullOrEmpty(error.Filename))
-						logMsg = string.Format("There was a JScript warning: {0}", error.Message);
-					else
-						logMsg = string.Format("There was a JScript warning in {0} at line {1}: {2}", error.Filename, error.Line, error.Message);
-
-					// don't log warnings in the warningsToHide list
-					if (warningsToHide.Any(matchString => logMsg.Contains(matchString)))
-						return;
-
-					Logger.WriteMinorEvent(logMsg);
-					Console.Out.WriteLine(logMsg);
-					return;
-				}
-
-				var msg = string.Format("There was a JScript error in {0} at line {1}: {2}",
-										error.Filename, error.Line, error.Message);
-
-				if (!errorsToHide.Any(matchString => msg.Contains(matchString)))
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
-			};
 
 			GeckoPreferences.User["mousewheel.withcontrolkey.action"] = 3;
 			GeckoPreferences.User["browser.zoom.full"] = true;
