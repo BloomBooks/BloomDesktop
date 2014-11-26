@@ -47,39 +47,33 @@ DIV.calendarMonthTop DIV.imageHolder {
 }
 .calendarMonthBottom TD {
   width: 96px;
-  height: 50px;
+  height: 64px;
   border: 1px solid #000000;
   padding: 0 0 0 2px;
-  vertical-align: top;
-}
-TD P {
-  margin-left: 1cm;
-  /*+placement:shift -35px -1px;*/
-  position: relative !important;
-  left: -35px !important;
-  top: -1px !important;
+  position: relative;
 }
 .calendarMonthBottom TD TEXTAREA {
-  width: 90%;
-  height: 62%;
-  font-size: 90%;
-  /*+placement:shift 5px -3px;*/
+  width: 96%;
+  height: 95%;
+  font-size: 65%;
   position: relative;
-  left: 5px;
-  top: -3px;
-  line-height: 11pt;
+  left: 1px;
+  margin-top: -20px;
+  line-height: 1.3em;
+  text-indent: 2.3em;
+  background: transparent;
+}
+.calendarMonthBottom TD P {
+  position: relative;
+  font-style: italic;
+  top: -1px;
+  z-index: 5;
 }
 .calendarBottomPageHeader {
   text-align: center;
   font: 240% sans-serif;
   width: 100%;
   height: 32px;
-}
-.calendarMonthBottom TD P {
-  /*+placement:shift -34px -7px;*/
-  position: relative;
-  left: -34px;
-  top: -7px;
 }
 /*Since this is calendar-fold, we want to defeat the left page vs. right page margin shifting */
 .marginBox {
