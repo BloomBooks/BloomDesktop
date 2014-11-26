@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -9,18 +8,16 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.Book;
 using Gecko;
 using Gecko.DOM;
 using Gecko.Events;
 using Palaso.IO;
 using Palaso.Reporting;
-using Palaso.Xml;
 using BloomTemp;
+using Bloom.Workspace;
 
 namespace Bloom
 {
@@ -102,9 +99,9 @@ namespace Bloom
 				"privatebrowsing", // no idea why it shows this error sometimes
 				"xulrunner", // can happen when mootools (used by calendar) is loaded
 				"calledByCSharp", // this can happen while switching pages quickly, when the page unloads after the script starts executing.
-				"resource://gre/components/nsBlocklistService.js", // BL-676: nsBlocklistService.js, "gApp is not defined" on Linux for Big Book and Calendar.
-				"chrome://", // these errors/warnings are coming from internal firefox files
-				"jar:",      // these errors/warnings are coming from internal firefox files
+				"resource://", // these errors/warnings are coming from internal firefox files
+				"chrome://",   // these errors/warnings are coming from internal firefox files
+				"jar:",        // these errors/warnings are coming from internal firefox files
 
 				//This one started appearing, only on the ImageOnTop pages, when I introduced jquery.resize.js
 				//and then added the ResetRememberedSize() function to it. So it's my fault somehow, but I haven't tracked it down yet.
@@ -239,7 +236,7 @@ namespace Bloom
 				if (_pasteCommand.Enabled)
 				{
 					//prevent pasting images (BL-93)
-					_pasteCommand.Enabled = Clipboard.ContainsText();
+					_pasteCommand.Enabled = BloomClipboard.ContainsText();
 				}
 				_undoCommand.Enabled = CanUndo;
 
@@ -375,7 +372,7 @@ namespace Bloom
 					Debug.WriteLine("Paste not enabled, so ignoring.");
 					e.PreventDefault();
 				}
-				else if(_browser.CanPaste && Clipboard.ContainsText())
+				else if(_browser.CanPaste && BloomClipboard.ContainsText())
 				{
 					e.PreventDefault(); //we'll take it from here, thank you very much
 					PasteFilteredText();
@@ -387,9 +384,9 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
-			var originalText = Clipboard.GetText(TextDataFormat.UnicodeText);
+			var originalText = BloomClipboard.GetText(TextDataFormat.UnicodeText);
 			//setting clears everything else:
-			Clipboard.SetText(originalText, TextDataFormat.UnicodeText);
+			BloomClipboard.SetText(originalText, TextDataFormat.UnicodeText);
 			_browser.Paste();
 		}
 
@@ -423,7 +420,7 @@ namespace Bloom
 			{
 				builder.AppendLine(client.DownloadString(_url));
 			}
-			Clipboard.SetText(builder.ToString());
+			BloomClipboard.SetText(builder.ToString());
 
 			// NOTE: it seems strange to call BeginInvoke to display the MessageBox. However, this
 			// is necessary on Linux: this method gets called from the context menu which on Linux

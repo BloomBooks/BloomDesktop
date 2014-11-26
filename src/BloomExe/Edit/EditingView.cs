@@ -8,7 +8,6 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
-using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
 using Palaso.Extensions;
@@ -19,6 +18,7 @@ using Palaso.UI.WindowsForms.ImageGallery;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
+using Bloom.Workspace;
 
 namespace Bloom.Edit
 {
@@ -575,59 +575,9 @@ namespace Bloom.Edit
 			Cursor = Cursors.Default;
 		}
 
-
-
-		private Image GetImageFromClipboard()
+		private static Image GetImageFromClipboard()
 		{
-			if (Clipboard.ContainsImage())
-				return Clipboard.GetImage();
-
-			var dataObject = Clipboard.GetDataObject();
-			if (dataObject == null)
-				return null;
-
-			// the ContainsImage() returns false when copying an PNG from MS Word
-			// so here we explicitly ask for a PNG and see if we can convert it.
-			if (dataObject.GetDataPresent("PNG"))
-			{
-				var o = dataObject.GetData("PNG") as System.IO.Stream;
-				try
-				{
-					return Image.FromStream(o);
-				}
-				catch (Exception)
-				{
-				}
-			}
-
-			//People can do a "copy" from the WIndows Photo Viewer but what it puts on the clipboard is a path, not an image
-			if (dataObject.GetDataPresent(DataFormats.FileDrop))
-			{
-				//This line gets all the file paths that were selected in explorer
-				string[] files = dataObject.GetData(DataFormats.FileDrop) as string[];
-				//Get the name of the file. This line only gets the first file name if many file were selected in explorer
-				string path = files[0];
-
-				try
-				{
-					return Image.FromFile(path);
-				}
-				catch (Exception)
-				{
-					return null; //not an image
-				}
-			}
-
-			if (Clipboard.ContainsText() && File.Exists(Clipboard.GetText()))
-				try
-				{
-					return Image.FromStream(new FileStream(Clipboard.GetText(), FileMode.Open));
-				}
-				catch
-				{
-				}
-
-			return null;
+			return BloomClipboard.GetImageFromClipboard();
 		}
 
 
