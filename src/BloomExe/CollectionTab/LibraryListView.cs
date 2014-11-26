@@ -9,13 +9,11 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using DesktopAnalytics;
 using Palaso.Reporting;
-using Palaso.UI.WindowsForms.ImageToolbox;
-using Palaso.UI.WindowsForms.Widgets;
 using L10NSharp;
 using Palaso.IO;
 
@@ -941,6 +939,29 @@ namespace Bloom.CollectionTab
 			}
 			public Button Button { get; set; }
 			public bool ThumbnailRefreshNeeded { get; set; }
+		}
+
+		private void openCreateCollectionToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var workspaceView = GetWorkspaceView(this, typeof(WorkspaceView));
+			if (workspaceView != null)
+				workspaceView.OpenCreateLibrary();
+		}
+
+		private static WorkspaceView GetWorkspaceView(Control ctrl, Type workspaceViewType)
+		{
+			while (true)
+			{
+				var parent = ctrl.Parent;
+
+				if (parent == null)
+					return null;
+
+				if (parent.GetType() == workspaceViewType)
+					return (WorkspaceView) parent;
+
+				ctrl = parent;
+			}
 		}
 	}
 }

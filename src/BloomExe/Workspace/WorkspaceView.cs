@@ -255,6 +255,11 @@ namespace Bloom.Workspace
 
 		private void OnOpenCreateLibrary_Click(object sender, EventArgs e)
 		{
+			OpenCreateLibrary();
+		}
+
+		public void OpenCreateLibrary()
+		{
 			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
 			{
 
