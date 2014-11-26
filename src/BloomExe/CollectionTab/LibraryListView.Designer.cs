@@ -60,6 +60,7 @@ namespace Bloom.CollectionTab
 			this.label9 = new System.Windows.Forms.Label();
 			this._dividerPanel = new System.Windows.Forms.Panel();
 			this._settingsProtectionHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
+			this.openCreateCollectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._bookContextMenu.SuspendLayout();
 			this._sourcePaneMenuStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -203,6 +204,7 @@ namespace Bloom.CollectionTab
 			// _vernacularCollectionMenuStrip
 			// 
 			this._vernacularCollectionMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openCreateCollectionToolStripMenuItem,
             this.makeReaderTemplateBloomPackToolStripMenuItem,
             this.advancedToolStripMenuItem});
 			this._L10NSharpExtender.SetLocalizableToolTip(this._vernacularCollectionMenuStrip, null);
@@ -210,7 +212,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizationPriority(this._vernacularCollectionMenuStrip, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._vernacularCollectionMenuStrip, "CollectionTab.CollectionMenu.contextMenuStrip2");
 			this._vernacularCollectionMenuStrip.Name = "_vernacularCollectionMenuStrip";
-			this._vernacularCollectionMenuStrip.Size = new System.Drawing.Size(268, 48);
+			this._vernacularCollectionMenuStrip.Size = new System.Drawing.Size(271, 92);
 			// 
 			// makeReaderTemplateBloomPackToolStripMenuItem
 			// 
@@ -218,7 +220,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizationComment(this.makeReaderTemplateBloomPackToolStripMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this.makeReaderTemplateBloomPackToolStripMenuItem, "CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem");
 			this.makeReaderTemplateBloomPackToolStripMenuItem.Name = "makeReaderTemplateBloomPackToolStripMenuItem";
-			this.makeReaderTemplateBloomPackToolStripMenuItem.Size = new System.Drawing.Size(267, 22);
+			this.makeReaderTemplateBloomPackToolStripMenuItem.Size = new System.Drawing.Size(270, 22);
 			this.makeReaderTemplateBloomPackToolStripMenuItem.Text = "Make Reader Template Bloom Pack...";
 			this.makeReaderTemplateBloomPackToolStripMenuItem.Click += new System.EventHandler(this.makeReaderTemplateBloomPackToolStripMenuItem_Click);
 			// 
@@ -235,7 +237,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizationComment(this.advancedToolStripMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this.advancedToolStripMenuItem, "CollectionTab.advancedToolStripMenuItem");
 			this.advancedToolStripMenuItem.Name = "advancedToolStripMenuItem";
-			this.advancedToolStripMenuItem.Size = new System.Drawing.Size(267, 22);
+			this.advancedToolStripMenuItem.Size = new System.Drawing.Size(270, 22);
 			this.advancedToolStripMenuItem.Text = "Advanced";
 			// 
 			// _showHistoryMenu
@@ -576,6 +578,16 @@ namespace Bloom.CollectionTab
 			this._dividerPanel.Size = new System.Drawing.Size(350, 1);
 			this._dividerPanel.TabIndex = 6;
 			// 
+			// openCreateCollectionToolStripMenuItem
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this.openCreateCollectionToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.openCreateCollectionToolStripMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this.openCreateCollectionToolStripMenuItem, "CollectionTab.openCreateCollectionToolStripMenuItem");
+			this.openCreateCollectionToolStripMenuItem.Name = "openCreateCollectionToolStripMenuItem";
+			this.openCreateCollectionToolStripMenuItem.Size = new System.Drawing.Size(270, 22);
+			this.openCreateCollectionToolStripMenuItem.Text = "Open/Create Collection";
+			this.openCreateCollectionToolStripMenuItem.Click += new System.EventHandler(this.openCreateCollectionToolStripMenuItem_Click);
+			// 
 			// LibraryListView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -648,5 +660,6 @@ namespace Bloom.CollectionTab
 		private ToolStripMenuItem advancedToolStripMenuItem;
 		private ToolStripMenuItem exportToWordOrLibreOfficeToolStripMenuItem;
 		private PictureBox _menuTriangle;
+		private ToolStripMenuItem openCreateCollectionToolStripMenuItem;
     }
 }
