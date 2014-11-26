@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Text;
 using System.Xml;
@@ -17,8 +16,21 @@ namespace Bloom.Book
 	/// </summary>
 	public class RuntimeInformationInjector
 	{
+		// Collecting dynamic strings is slow, it only applies to English, and we only need to do it one time.
+		private static bool _collectDynamicStrings;
+		private static bool _foundEnglish;
+
 		public static void AddUIDictionaryToDom(HtmlDom pageDom, CollectionSettings collectionSettings)
 		{
+			// if the ui language changes, check for English
+			if (!_foundEnglish && (LocalizationManager.UILanguageId == "en"))
+			{
+				_foundEnglish = true;
+
+				// if the current language is English, check the dynamic strings once
+				_collectDynamicStrings = true;
+			}
+
 			// add dictionary script to the page
 			XmlElement dictionaryScriptElement = pageDom.RawDom.SelectSingleNode("//script[@id='ui-dictionary']") as XmlElement;
 			if (dictionaryScriptElement != null)
@@ -49,8 +61,6 @@ namespace Bloom.Book
 
 			MakePageLabelLocalizable(pageDom, d);
 
-			AddLocalizedHintContentsToDictionary(pageDom, d, collectionSettings);
-
 			// Hard-coded localizations for 2.0
 			AddHtmlUiStrings(d);
 
@@ -60,6 +70,8 @@ namespace Bloom.Book
 			AddLocalizationTriggerToDom(pageDom);
 
 			pageDom.Head.InsertAfter(dictionaryScriptElement, pageDom.Head.LastChild);
+
+			_collectDynamicStrings = false;
 		}
 
 		/// <summary>
@@ -120,50 +132,6 @@ namespace Bloom.Book
 				d.Add(key, name);
 		}
 
-		private static void AddLocalizedHintContentsToDictionary(HtmlDom singlePageHtmlDom, Dictionary<string, string> dictionary, CollectionSettings collectionSettings)
-		{
-			/*  Disabling this, generic data-hint localization at the moment, as it is interfering with the primary factory-supplied ones.
-			 * when we bring it back, lets think of ways to get nice ids in there that don't rely on the english. E.g., we could do
-			 * something like this: data-hint="[ColorBook.ColorPrompt]What color do you want?" and then we could take that id and prepend something
-			 * like "BookEdit.MiscBooks." so we end up with BookEdit.MiscBooks.ColorBook.ColorPrompt
-
-			var nameOfXMatterPack = singlePageHtmlDom.GetMetaValue("xMatter", collectionSettings.XMatterPackName);
-
-
-			string idPrefix = "";
-			var pageElement = singlePageHtmlDom.RawDom.SelectSingleNode("//div") as XmlElement;
-			if (XMatterHelper.IsFrontMatterPage(pageElement))
-			{
-				idPrefix = "FrontMatter." + nameOfXMatterPack + ".";
-			}
-			else if (XMatterHelper.IsBackMatterPage(pageElement))
-			{
-				idPrefix = "BackMatter." + nameOfXMatterPack + ".";
-			}
-			foreach (XmlElement element in singlePageHtmlDom.RawDom.SelectNodes("//*[@data-hint]"))
-			{
-				//why aren't we just doing: element.SetAttribute("data-hint", translation);  instead of bothering to write out a dictionary?
-				//because (especially since we're currently just assuming it is in english), we would later save it with the translation, and then next time try to translate that, and poplute the
-				//list of strings that we tell people to translate
-				var key = element.GetAttribute("data-hint");
-				if (!dictionary.ContainsKey(key))
-				{
-					string translation;
-					var id = idPrefix + key;
-					if (key.Contains("{lang}"))
-					{
-						translation = LocalizationManager.GetDynamicString("Bloom", id, key, "Put {lang} in your translation, so it can be replaced by the language name.");
-					}
-					else
-					{
-						translation = LocalizationManager.GetDynamicString("Bloom", id, key);
-					}
-					dictionary.Add(key, translation);
-				}
-			}
-			 */
-		}
-
 		/// <summary>
 		/// For Bloom 2.0 this list is hard-coded
 		/// </summary>
@@ -215,21 +183,26 @@ namespace Bloom.Book
 
 		private static void AddTranslationToDictionaryUsingKey(Dictionary<string, string> dictionary, string key, string defaultText)
 		{
-			var translation = LocalizationManager.GetDynamicString("Bloom", key, defaultText);
+			var translation = _collectDynamicStrings
+				? LocalizationManager.GetDynamicString("Bloom", key, defaultText)
+				: LocalizationManager.GetString(key, defaultText);
+
 			if (!dictionary.ContainsKey(key))
 			{
 				dictionary.Add(key, translation);
 			}
 		}
 
-		private static void AddTranslationToDictionaryUsingEnglishAsKey(Dictionary<string, string> dictionary, string key, string defaultText)  {
-
-			var translation = LocalizationManager.GetDynamicString("Bloom", key, defaultText);
+		private static void AddTranslationToDictionaryUsingEnglishAsKey(Dictionary<string, string> dictionary, string key, string defaultText)
+		{
+			var translation = _collectDynamicStrings
+				? LocalizationManager.GetDynamicString("Bloom", key, defaultText)
+				: LocalizationManager.GetString(key, defaultText);
 
 			//We have to match on some key. Ideally, we'd match on something "key-ish", like BookEditor.FrontMatter.BookTitlePrompt
 			//But that would require changes to all the templates to have that key somehow, in adition to or in place of the current English
 			//So for now, we're just keeping the real key on the c#/tmx side of things, and letting the javascript work by matching our defaultText to the English text in the html
-			string keyUsedInTheJavascriptDictionary = defaultText;
+			var keyUsedInTheJavascriptDictionary = defaultText;
 			if (!dictionary.ContainsKey(keyUsedInTheJavascriptDictionary))
 			{
 				dictionary.Add(keyUsedInTheJavascriptDictionary, WebUtility.HtmlEncode(translation));
