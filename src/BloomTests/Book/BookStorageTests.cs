@@ -74,6 +74,7 @@ namespace BloomTests.Book
 		//        }
 
 		[Test]
+		[Platform(Exclude = "Linux", Reason = "UNC paths for network drives are only used on Windows")]
 		public void Save_PathIsUNCRatherThanDriveLetter()
 		{
 			var storage = GetInitialStorageUsingUNCPath();
@@ -193,6 +194,7 @@ namespace BloomTests.Book
 		/// regression test
 		/// </summary>
 		[Test]
+		[Platform(Exclude = "Linux", Reason = "UNC paths for network drives are only used on Windows")]
 		public void SetBookName_PathIsAUNCToLocalHost_NoErrors()
 		{
 			var storage = GetInitialStorageUsingUNCPath();
