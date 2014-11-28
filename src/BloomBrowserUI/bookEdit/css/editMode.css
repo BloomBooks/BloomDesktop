@@ -420,6 +420,7 @@ TEXTAREA.Heading2-style,  DIV.bloom-editable.Heading2-style {
 {
 	position: absolute;
 	right: 0;
+	bottom: 0px;
 	/*Same grey color as pageLabel*/
 	color: rgba(0, 0, 0, 0.2);
 	font-size: small;
