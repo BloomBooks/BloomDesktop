@@ -123,6 +123,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Font</seg>
       </tuv>
@@ -139,6 +140,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>About These Settings</seg>
       </tuv>
@@ -198,6 +200,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>About These Settings</seg>
       </tuv>
@@ -278,6 +281,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>About These Settings</seg>
       </tuv>
@@ -618,6 +622,7 @@
       </tuv>
     </tu>
     <tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Confirm Delete</seg>
       </tuv>
@@ -635,6 +640,7 @@
       </tuv>
     </tu>
     <tu tuid="ConfirmRecycleDialog.deleteBtn">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>&amp;Delete</seg>
       </tuv>
@@ -1512,6 +1518,7 @@
       </tuv>
     </tu>
     <tu tuid="LoginDialog.label3">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>label3</seg>
       </tuv>
