@@ -1,4 +1,4 @@
-/// <reference path="../../lib/jquery.d.ts" />
+﻿/// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
@@ -14,8 +14,6 @@ var StyleEditor = (function () {
     function StyleEditor(supportFilesRoot) {
         this.MIN_FONT_SIZE = 7;
         this._supportFilesRoot = supportFilesRoot;
-
-        var sheet = this.GetOrCreateUserModifiedStyleSheet();
     }
     StyleEditor.GetStyleClassFromElement = function (target) {
         var c = $(target).attr("class");
@@ -495,11 +493,7 @@ var StyleEditor = (function () {
         }
         this._previousBox = targetBox;
 
-        //wasn't being used: var toolTip = this.GetToolTip(targetBox, styleName);
-        var bottom = $(targetBox).position().top + $(targetBox).height();
-        var t = bottom + "px";
-
-        $(targetBox).after('<div id="formatButton"  style="top: ' + t + '; min-height: 21px" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
+        $(targetBox).after('<div id="formatButton" class="bloom-ui"><img src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
         var txt = localizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
@@ -605,7 +599,7 @@ var StyleEditor = (function () {
             });
         });
 
-        editor.AttachLanguageTip($(targetBox), bottom);
+        editor.AttachLanguageTip($(targetBox));
     };
 
     StyleEditor.prototype.getButtonIds = function () {
@@ -1089,9 +1083,9 @@ var StyleEditor = (function () {
 
     //Attach and detach a language tip which is used when the applicable edittable div has focus.
     //This works around a couple FF bugs with the :after pseudoelement.  See BL-151.
-    StyleEditor.prototype.AttachLanguageTip = function (targetBox, bottom) {
+    StyleEditor.prototype.AttachLanguageTip = function (targetBox) {
         if ($(targetBox).attr('data-languagetipcontent')) {
-            $(targetBox).after('<div style="top: ' + (bottom - 17) + 'px" class="languageTip bloom-ui">' + $(targetBox).attr('data-languagetipcontent') + '</div>');
+            $(targetBox).after('<div class="languageTip bloom-ui">' + $(targetBox).attr('data-languagetipcontent') + '</div>');
         }
     };
 
