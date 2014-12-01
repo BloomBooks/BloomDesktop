@@ -624,6 +624,7 @@ namespace Bloom.CollectionTab
 
 				deleteMenuItem.Enabled = _model.CanDeleteSelection;
 				_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
+				exportToWordOrLibreOfficeToolStripMenuItem.Visible = _model.CanExportSelection;
 				_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
 			}
 			catch (Exception error)
