@@ -92,6 +92,10 @@
     <Reference Include="NetSparkle.Net40">
       <HintPath>..\..\lib\dotnet\NetSparkle.Net40.dll</HintPath>
     </Reference>
+    <Reference Include="PalasoUIWindowsForms.GeckoBrowserAdapter, Version=2.5.284.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.GeckoBrowserAdapter.dll</HintPath>
+    </Reference>
     <Reference Include="PdfDroplet, Version=2.3.21.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\PdfDroplet.2.3.21.0\lib\net40-Client\PdfDroplet.exe</HintPath>
