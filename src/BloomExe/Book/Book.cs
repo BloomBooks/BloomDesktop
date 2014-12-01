@@ -954,7 +954,10 @@ namespace Bloom.Book
 		{
 			get { return IsEditable && !HasFatalError; }
 		}
-
+		public virtual bool CanExport
+		{
+			get { return IsEditable && !HasFatalError; }
+		}
 
 		/// <summary>
 		/// In a vernacular library, we want to hide books that are meant only for people making shells

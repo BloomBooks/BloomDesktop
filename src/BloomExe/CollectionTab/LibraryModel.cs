@@ -67,6 +67,12 @@ namespace Bloom.CollectionTab
 			get { return _bookSelection.CurrentSelection != null && _collectionSettings.AllowDeleteBooks && _bookSelection.CurrentSelection.CanDelete; }
 
 		}
+
+		public bool CanExportSelection
+		{
+			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanExport; }
+		}
+
 		public bool CanUpdateSelection
 		{
 			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanUpdate; }
