@@ -254,8 +254,8 @@ namespace Bloom.Book
 			foreach (var topic in topics)
 			{
 				var localized = _collectDynamicStrings
-					? LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topicComment)
-					: LocalizationManager.GetString("Topics." + topic, topicComment);
+					? LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic, topicComment)
+					: LocalizationManager.GetString("Topics." + topic, topic, topicComment);
 				TopicReversal[localized] = topic;
 				builder.Append("\""+localized+"\", ");
 			}
