@@ -22,14 +22,7 @@ namespace Bloom.Book
 
 		public static void AddUIDictionaryToDom(HtmlDom pageDom, CollectionSettings collectionSettings)
 		{
-			// if the ui language changes, check for English
-			if (!_foundEnglish && (LocalizationManager.UILanguageId == "en"))
-			{
-				_foundEnglish = true;
-
-				// if the current language is English, check the dynamic strings once
-				_collectDynamicStrings = true;
-			}
+			CheckDynamicStrings();
 
 			// add dictionary script to the page
 			XmlElement dictionaryScriptElement = pageDom.RawDom.SelectSingleNode("//script[@id='ui-dictionary']") as XmlElement;
@@ -72,6 +65,18 @@ namespace Bloom.Book
 			pageDom.Head.InsertAfter(dictionaryScriptElement, pageDom.Head.LastChild);
 
 			_collectDynamicStrings = false;
+		}
+
+		private static void CheckDynamicStrings()
+		{
+			// if the ui language changes, check for English
+			if (!_foundEnglish && (LocalizationManager.UILanguageId == "en"))
+			{
+				_foundEnglish = true;
+
+				// if the current language is English, check the dynamic strings once
+				_collectDynamicStrings = true;
+			}
 		}
 
 		/// <summary>
@@ -219,6 +224,7 @@ namespace Bloom.Book
 		/// </summary>
 		public static void AddUISettingsToDom(HtmlDom pageDom, CollectionSettings collectionSettings, IFileLocator fileLocator)
 		{
+			CheckDynamicStrings();
 
 			XmlElement existingElement = pageDom.RawDom.SelectSingleNode("//script[@id='ui-settings']") as XmlElement;
 
@@ -244,9 +250,12 @@ namespace Bloom.Book
 			var builder = new StringBuilder();
 			builder.Append("[");
 			TopicReversal = new Dictionary<string, string>();
+			var topicComment = @"shows in the topics chooser in the edit tab";
 			foreach (var topic in topics)
 			{
-				var localized = LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic, "shows in the topics chooser in the edit tab");
+				var localized = _collectDynamicStrings
+					? LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topicComment)
+					: LocalizationManager.GetString("Topics." + topic, topicComment);
 				TopicReversal[localized] = topic;
 				builder.Append("\""+localized+"\", ");
 			}
@@ -260,6 +269,8 @@ namespace Bloom.Book
 				head.ReplaceChild(element, existingElement);
 			else
 				head.InsertAfter(element, head.LastChild);
+
+			_collectDynamicStrings = false;
 		}
 	}
 }
