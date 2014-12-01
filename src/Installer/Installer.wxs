@@ -194,6 +194,9 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 			<File Id="PalasoUIWindowsForms.dll" Name="PalasoUIWindowsForms.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.dll" />
 		  </Component>
 -->
+			<Component Id="PalasoUIWindowsForms.GeckoBrowserAdapter.dll" Guid="{08979FB7-3EFD-4E65-BB57-DEE09B799288}">
+				<File Id="PalasoUIWindowsForms.GeckoBrowserAdapter.dll" Name="PalasoUIWindowsForms.GeckoBrowserAdapter.dll" KeyPath="yes" Source="..\..\output\release\PalasoUIWindowsForms.GeckoBrowserAdapter.dll" />
+			</Component>
 		  <Component Id="L10NSharp.dll" Guid="{59DBC21F-518C-4FA4-AF2F-EBDAC3A7697B}">
 			<File Id="L10NSharp.dll" Name="L10NSharp.dll" KeyPath="yes" Source="..\..\output\release\L10NSharp.dll" />
 		  </Component>
@@ -289,7 +292,9 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 		<ComponentRef Id="PalasoUIWindowsForms.dll" />
 		<ComponentRef Id="Palaso.dll"/>
 	  -->
-	 <ComponentRef Id="L10NSharp.dll"/>
+	  <ComponentRef Id="PalasoUIWindowsForms.GeckoBrowserAdapter.dll" />
+
+	  <ComponentRef Id="L10NSharp.dll"/>
 
 	  <ComponentRef Id="InstallFonts"/>
 
