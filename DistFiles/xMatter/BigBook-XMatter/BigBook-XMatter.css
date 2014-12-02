@@ -3,6 +3,7 @@
 {
 	/*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
 	height: 188.2mm;
+	position: absolute; /* see https://jira.sil.org/browse/BL-561; Without this we get an extra page in the PDF. */
 }
 .Title-On-Cover-style
 {
