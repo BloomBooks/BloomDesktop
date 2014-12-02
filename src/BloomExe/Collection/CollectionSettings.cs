@@ -103,7 +103,7 @@ namespace Bloom.Collection
 			set
 			{
 				_language1Iso639Code = value;
-				Language1Name = GetLanguage1Name(Language2Iso639Code);
+				Language1Name = GetLanguage1Name_NoCache(Language2Iso639Code);
 			}
 		}
 
@@ -125,6 +125,11 @@ namespace Bloom.Collection
 			if(!string.IsNullOrEmpty(this.Language1Name))
 				return Language1Name;
 
+			return GetLanguage1Name_NoCache(inLanguage);
+		}
+
+		private string GetLanguage1Name_NoCache(string inLanguage)
+		{
 			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(Language1Iso639Code);
 			if (exactLanguageMatch == null)
 				return "L1-Unknown-" + Language1Iso639Code;
