@@ -503,7 +503,7 @@ class StyleEditor {
         this._previousBox = targetBox;
 
         // put the format button in the editable text box itself, so that it's always in the right place.
-        // unfortanately it will be subject to deletion becuase this is an editable box. But we can mark it as unedtable, so that
+        // unfortunately it will be subject to deletion because this is an editable box. But we can mark it as uneditable, so that
         // the user won't see resize and drag controls when they click on it
         $(targetBox).append('<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
