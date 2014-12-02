@@ -77,6 +77,12 @@ namespace Bloom.Registration
 
 		public static bool ShouldWeShowRegistrationDialog()
 		{
+			//there is no point registering if we are are developer/tester
+			string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
+			if (!string.IsNullOrEmpty(feedbackSetting) && feedbackSetting.ToLower() != "yes" &&
+			    feedbackSetting.ToLower() != "true")
+				return false;
+
 			if (!_haveRegisteredLaunch)//in case the client app calls this more then once during a single run (like Bloom does when opening a different collection)
 			{
 				_haveRegisteredLaunch=true;
