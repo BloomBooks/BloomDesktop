@@ -550,6 +550,7 @@
       </tuv>
     </tu>
     <tu tuid="CollectionTab.PNG Animal Stories - Copy">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>PNG Animal Stories - Copy</seg>
@@ -2063,6 +2064,7 @@
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.TopicFamiliarity">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Topic familiarity</seg>
@@ -2164,6 +2166,7 @@
       </tuv>
     </tu>
     <tu tuid="LoginDialog.label3">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>label3</seg>
       </tuv>
@@ -3082,6 +3085,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.AboutSampleTexts1">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>About Word Lists and Sample TextsWhen you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.</seg>
@@ -3091,6 +3095,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.AboutSampleTexts2">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.</seg>
@@ -3100,6 +3105,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.AboutSampleTexts4">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.</seg>
