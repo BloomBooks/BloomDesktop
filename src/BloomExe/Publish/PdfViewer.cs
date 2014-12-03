@@ -71,11 +71,9 @@ namespace Bloom.Publish
 				// This is unfortunately rather fragile and may not do exactly what we want if the viewer.html file
 				// defining the pdfjs viewer changes.
 				GeckoStyleSheet stylesheet = browser.Document.StyleSheets.First();
-				stylesheet.CssRules.Add("#openFile, #toolbarViewerLeft, #toolbarViewerRight, #print, #download, #viewOutline, #viewAttachments, #viewBookmark, #pageRotateCw, #pageRotateCcw, #secondaryToolbarButtonContainer div:nth-of-type(2)  {display: none}");
-				var outerContainerElem = browser.Document.GetElementById("outerContainer");
-				var containerClasses = outerContainerElem.GetAttribute("class");
-				containerClasses += " sidebarOpen"; // open sidebar showing page thumbs
-				outerContainerElem.SetAttribute("class", containerClasses);
+				stylesheet.CssRules.Add("#toolbarViewerRight, #viewOutline, #viewAttachments, #viewThumbnail, #viewFind {display: none}");
+				stylesheet.CssRules.Add("#previous, #next, #pageNumberLabel, #pageNumber, #numPages {display: none}");
+				stylesheet.CssRules.Add("#toolbarViewerLeft .splitToolbarButtonSeparator {display: none}");
 			};
 			return true;
 		}
