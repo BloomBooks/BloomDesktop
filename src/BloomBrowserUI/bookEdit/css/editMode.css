@@ -354,11 +354,8 @@ DIV.bloom-editable.Heading2-style {
   text-align: center;
 }
 /*Put in little grey language tooltips in the bottom-right of the editable divs*/
-/*.languageTip is used when the box has focus to work around a couple FF bugs.  See BL-151.*/
-/*The :after pseudoelement is used when the box does not have focus.*/
-/*The goal is to have them appear exactly the same so nothing changes when focus is gained/lost.*/
 .languageTip,
-.bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):not(:focus):after {
+.bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):after {
   position: absolute;
   right: 0;
   bottom: 0px;
@@ -375,7 +372,7 @@ DIV.bloom-editable.Heading2-style {
   margin-right: 1px;
   text-align: right;
 }
-.bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):not(:focus):after {
+.bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):after {
   content: attr(data-languageTipContent);
   bottom: 0px;
   margin-right: 2px;

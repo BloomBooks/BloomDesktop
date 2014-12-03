@@ -1,4 +1,4 @@
-﻿/// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
 /// <reference path="../../lib/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
@@ -494,7 +494,7 @@ var StyleEditor = (function () {
         this._previousBox = targetBox;
 
         // put the format button in the editable text box itself, so that it's always in the right place.
-        // unfortanately it will be subject to deletion becuase this is an editable box. But we can mark it as unedtable, so that
+        // unfortunately it will be subject to deletion because this is an editable box. But we can mark it as uneditable, so that
         // the user won't see resize and drag controls when they click on it
         $(targetBox).append('<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
@@ -601,8 +601,6 @@ var StyleEditor = (function () {
                 });
             });
         });
-
-        editor.AttachLanguageTip($(targetBox));
     };
 
     StyleEditor.prototype.getButtonIds = function () {
@@ -1082,21 +1080,6 @@ var StyleEditor = (function () {
         // Now update tooltip
         //var toolTip = this.GetToolTip(target, styleName);
         //this.AddQtipToElement($('#formatButton'), toolTip);
-    };
-
-    //Attach and detach a language tip which is used when the applicable edittable div has focus.
-    //This works around a couple FF bugs with the :after pseudoelement.  See BL-151.
-    StyleEditor.prototype.AttachLanguageTip = function (targetBox) {
-        if ($(targetBox).attr('data-languagetipcontent')) {
-            $(targetBox).after('<div class="languageTip bloom-ui">' + $(targetBox).attr('data-languagetipcontent') + '</div>');
-        }
-    };
-
-    StyleEditor.prototype.DetachLanguageTip = function (element) {
-        //we're placing these controls *after* the target, not inside it; that's why we go up to parent
-        $(element).parent().find(".languageTip.bloom-ui").each(function () {
-            $(this).remove();
-        });
     };
 
     StyleEditor.CleanupElement = function (element) {

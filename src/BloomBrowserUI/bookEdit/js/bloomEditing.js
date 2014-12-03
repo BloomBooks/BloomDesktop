@@ -1509,10 +1509,6 @@ function SetupElements(container) {
         $(this).focus(function() {
            editor.AttachToBox(this);
         });
-
-        $(this).focusout(function () {
-            editor.DetachLanguageTip(this);
-        });
     });
 
     $(container).find('.bloom-editable').longPress();
