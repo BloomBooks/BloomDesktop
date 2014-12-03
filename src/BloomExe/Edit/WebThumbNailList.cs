@@ -521,6 +521,7 @@ namespace Bloom.Edit
 		}
 
 		private bool _usingTwoColumns;
+		private string PageContainerClass = "pageContainer";
 
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
 		{
@@ -562,7 +563,7 @@ namespace Bloom.Edit
 				//we wrap our incredible-shrinking page in a plain 'ol div so that we
 				//have something to give a border to when this page is selected
 				var pageContainer = pageDoc.CreateElement("div");
-				pageContainer.SetAttribute("class", "pageContainer");
+				pageContainer.SetAttribute("class", PageContainerClass);
 				pageContainer.AppendChild(pageThumbnail);
 
 				/* And here it gets fragile (for not).
@@ -697,10 +698,19 @@ namespace Bloom.Edit
 		{
 			var targetClass = "bloom-page";
 			var gridElt = GetGridElementForPage(page);
-			var pageElt = GetFirstChildWithClass(gridElt, targetClass);
+			var pageContainerElt = GetFirstChildWithClass(gridElt, PageContainerClass) as GeckoElement;
+			if (pageContainerElt == null)
+			{
+				Debug.Fail("Can't update page...missing pageContainer element");
+				return; // for end user we just won't update the thumbnail.
+			}
+			var pageElt = GetFirstChildWithClass(pageContainerElt, targetClass);
 			if (pageElt == null)
-				return; // Should not happen.
-			var replaceChild = gridElt.ReplaceChild(MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, page.GetDivNodeForThisPage()), pageElt);
+			{
+				Debug.Fail("Can't update page...missing page element");
+				return; // for end user we just won't update the thumbnail.
+			}
+			pageContainerElt.ReplaceChild(MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, page.GetDivNodeForThisPage()), pageElt);
 		}
 
 		private GeckoElement GetGridElementForPage(IPage page)
