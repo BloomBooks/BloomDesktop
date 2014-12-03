@@ -1093,6 +1093,8 @@ function SetupElements(container) {
     //Eventually we may use a wysiwyg add-on which does this conversion as you type, but for now, we change it when
     //you tab or click out.
     $(container).find(".bloom-editable").blur(function () {
+        //in the focus event that came long before this blur event, we may have added an empty span to work around a gecko bug. Get rid of it now.
+        $(this).children("span.bloom-ui").remove();
 
         //This might mess some things up, so we're only applying it selectively
         if ($(this).closest('.bloom-requiresParagraphs').length == 0
@@ -1137,9 +1139,24 @@ function SetupElements(container) {
 
     //when we discover an empty text box that has been marked to use paragraphs, start us off on the right foot
     $(container).find('.bloom-editable').focus(function () {
-        if ($(this).closest('.bloom-requiresParagraphs').length == 0
-            && ($(this).css('border-top-style') != 'dashed')) //this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
-                return;
+        // box without the .bloom-requiresParagraphs class
+
+        var requireParagraphs = $(this).closest('.bloom-requiresParagraphs').length > 0
+            || ($(this).css('border-top-style') != 'dashed');//this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
+
+        if (!requireParagraphs) {
+            // Work around a bug in geckofx. The effect was that if you clicked in a completely empty text box
+            // the cursor is oddly positioned and typing does nothing. There is evidence that what is going on is that the focus 
+            // is on the English qtip (in the FF inspector, the qtip block highlights when you type). https://jira.sil.org/browse/BL-786
+            // This bug mentions the cursor being in the wrong place: https://bugzilla.mozilla.org/show_bug.cgi?id=904846
+            // so the solution is just to insert a span that you can't see, here during the focus event.
+            // Then, we remove that span in the blur event.
+            if ($(this).text() == '') {
+                //add a span with only a zero-width space in it
+                $(this).html('<span class="bloom-ui">&#8203;</span>');
+            }
+            return;
+        }
 
         if ($(this).text() == '') {
             //stick in a paragraph, which makes FF do paragraphs instead of BRs.
