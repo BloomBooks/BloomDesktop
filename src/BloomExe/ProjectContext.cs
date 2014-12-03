@@ -136,7 +136,7 @@ namespace Bloom
 
 				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>(),c.Resolve<CreateFromSourceBookCommand>(),c.Resolve<BookServer>(), c.Resolve<CurrentEditableCollectionSelection>())).InstancePerLifetimeScope();
 
-				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations())).InstancePerLifetimeScope();
+				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations(), GetAfterXMatterFileLocations())).InstancePerLifetimeScope();
 
 				builder.Register<LanguageSettings>(c =>
 													{
@@ -227,12 +227,13 @@ namespace Bloom
 
 
 		/// <summary>
-		/// Give the locations of the bedrock files/folders that come with Bloom. These will have priority
+		/// Give the locations of the bedrock files/folders that come with Bloom. These will have priority.
+		/// (But compare GetAfterXMatterFileLocations, for further paths that are searched after factory XMatter).
 		/// </summary>
 		public static IEnumerable<string> GetFactoryFileLocations()
 		{
 			//bookLayout has basepage.css. We have it first because it will find its way to many other folders, but this is the authoritative one
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI","bookLayout");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI", "bookLayout");
 
 			//hack to get the distfiles folder itself
 			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
@@ -256,7 +257,15 @@ namespace Bloom
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 
-			//yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter", "Factory-XMatter");
+		}
+
+		/// <summary>
+		/// Per BL-785, we want to search xMatter/*-XMatter folders (handled by the XMatterPackFinder) before we search
+		/// the template folders.
+		/// </summary>
+		/// <returns></returns>
+		public static IEnumerable<string> GetAfterXMatterFileLocations()
+		{
 			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
 
 			yield return templatesDir;
