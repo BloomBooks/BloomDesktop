@@ -2448,6 +2448,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.AddTexts">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Please add texts to the Sample Texts folder.</seg>
@@ -2472,18 +2473,21 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.CombinationHelp1">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Separate by spaces</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.CombinationHelp2">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>E.g. "ai oo sh ng th ing"</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Combinations">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Letter Combinations (Graphemes)</seg>
@@ -2520,24 +2524,28 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Language">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Language</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.LetterHelp1">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>List letters and word-forming characters in alphabetic order.</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.LetterHelp2">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Separate by spaces</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.LetterHelp3">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>E.g. "a b c d"</seg>
@@ -2616,12 +2624,14 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.MoreWords">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More Words</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.OpenSampleTexts">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Open the sample texts folder for this language.</seg>
@@ -2676,6 +2686,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SampleTexts">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Word Lists and Sample Texts</seg>
@@ -2724,6 +2735,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SightWordHelp">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>What are sight words?</seg>
