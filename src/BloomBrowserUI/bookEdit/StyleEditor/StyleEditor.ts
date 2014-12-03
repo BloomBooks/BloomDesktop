@@ -646,8 +646,6 @@ class StyleEditor {
                 });
             });
         });
-
-        editor.AttachLanguageTip($(targetBox));
     }
 
     getButtonIds() {
@@ -1108,21 +1106,6 @@ class StyleEditor {
         //var toolTip = this.GetToolTip(target, styleName);
         //this.AddQtipToElement($('#formatButton'), toolTip);
 
-    }
-
-    //Attach and detach a language tip which is used when the applicable edittable div has focus.
-    //This works around a couple FF bugs with the :after pseudoelement.  See BL-151.
-    private AttachLanguageTip(targetBox) {
-        if ($(targetBox).attr('data-languagetipcontent')) {
-            $(targetBox).after('<div class="languageTip bloom-ui">' + $(targetBox).attr('data-languagetipcontent') + '</div>');
-        }
-    }
-
-    DetachLanguageTip(element) {
-        //we're placing these controls *after* the target, not inside it; that's why we go up to parent
-        $(element).parent().find(".languageTip.bloom-ui").each(function () {
-            $(this).remove();
-        });
     }
 
     static CleanupElement(element) {
