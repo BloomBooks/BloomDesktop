@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
@@ -34,6 +35,9 @@ namespace Bloom.Edit
 		private readonly CollectionSettings _collectionSettings;
 		private readonly SendReceiver _sendReceiver;
 		private HtmlDom _domForCurrentPage;
+		// We dispose of this when we create a new one. It may hang around a little longer than needed, but memory
+		// is the only resource being used, and there is only one instance of this object.
+		private SimulatedPageFile _currentPage;
 		public bool Visible;
 		private Book.Book _currentlyDisplayedBook;
 		private EditingView _view;
@@ -512,7 +516,9 @@ namespace Bloom.Edit
 		{
 			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
-			_server.CurrentPageContent = TempFileUtils.CreateHtml5StringFromXml(_domForCurrentPage.RawDom);
+			if (_currentPage != null)
+				_currentPage.Dispose();
+			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage);
 
 			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
 				_server.AccordionContent = MakeAccordionContent();
@@ -536,17 +542,17 @@ namespace Bloom.Edit
 
 		/// <summary>
 		/// Return the top-level document that should be displayed in the browser for the current page.
-		/// Enhance JohnT: Since EditViewFrame.htm does not change, it should be possible to modify
-		/// the caller so that it just loads that file directly, rather than making a temp file out of
-		/// the DOM we make out of the file. However, we probably soon want to make the accordion optional,
-		/// at which point we may just return _domForCurrentPage when it is turned off, or more likely,
-		/// return a modified DOM which hides it.
 		/// </summary>
 		/// <returns></returns>
 		public HtmlDom GetXmlDocumentForEditScreenWebPage()
 		{
 			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit", "EditViewFrame.htm");
-			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+			// {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
+			// We don't really make a file for the page, the contents are just saved in our local server.
+			// But we give it a url that makes it seem to be in the book folder so local urls work.
+			// See EnhancedImageServer.MakeSimulatedPageFileInBookFolder() for more details.
+			var frameText = File.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
+			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 
 			// only show the accordion when the template enables it
 			var css_class = dom.Body.GetAttributeNode("class");

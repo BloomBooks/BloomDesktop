@@ -370,7 +370,7 @@ namespace Bloom.Book
 			return pageDom;
 		}
 
-		public XmlDocument GetPreviewXmlDocumentForFirstPage()
+		public HtmlDom GetPreviewXmlDocumentForFirstPage()
 		{
 			if (_log.ErrorEncountered)
 			{
@@ -380,7 +380,7 @@ namespace Bloom.Book
 			var bookDom = GetBookDomWithStyleSheets("previewMode.css","thumbnail.css");
 
 			HideEverythingButFirstPageAndRemoveScripts(bookDom.RawDom);
-			return bookDom.RawDom;
+			return bookDom;
 		}
 
 		private static void HideEverythingButFirstPageAndRemoveScripts(XmlDocument bookDom)
@@ -1604,7 +1604,7 @@ namespace Bloom.Book
 			return -1;
 		}
 
-		public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer)
+		public HtmlDom GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer)
 		{
 			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 			//dom.LoadXml(OurHtmlDom.OuterXml);
@@ -1621,7 +1621,7 @@ namespace Bloom.Book
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
 
 			var pathSafeForWkHtml2Pdf = Palaso.IO.FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
-			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf, false);
+			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf);
 
 			switch (bookletPortion)
 			{
@@ -1638,7 +1638,7 @@ namespace Bloom.Book
 			}
 			AddCoverColor(printingDom, Color.White);
 			AddPreviewJScript(printingDom);
-			return printingDom.RawDom;
+			return printingDom;
 		}
 
 		/// <summary>

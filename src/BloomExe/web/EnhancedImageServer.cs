@@ -1,15 +1,20 @@
 ﻿// Copyright (c) 2014-2015 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Xml;
+using Bloom.Book;
 using System.IO;
-using System.Threading;
-using Microsoft.Win32;
+using Bloom.ImageProcessing;
+using BloomTemp;
 using L10NSharp;
+using Microsoft.Win32;
 using Palaso.IO;
 using Bloom.Collection;
-using Bloom.ImageProcessing;
+using Palaso.Xml;
+using RestSharp.Contrib;
 
 namespace Bloom.web
 {
@@ -21,10 +26,21 @@ namespace Bloom.web
 	/// thread-safe.</remarks>
 	public class EnhancedImageServer: ImageServer
 	{
+		// A string unlikely to occur in a book name which we can substitute for a single quote
+		// when making a book path name to insert into JavaScript.
+		private const string QuoteSubstitute = "$xquotex$";
+		private const string OriginalImageMarker = "OriginalImages"; // Inserted into simulated page urls to suppress image processing
 		private FileSystemWatcher _sampleTextsWatcher;
 		private bool _sampleTextsChanged = true;
+		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
+
+		/// <summary>
+		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
+		/// </summary>
+		internal EnhancedImageServer() : base( new RuntimeImageProcessor(new BookRenamedEvent()))
+		{ }
 
 		public EnhancedImageServer(RuntimeImageProcessor cache): base(cache)
 		{
@@ -38,7 +54,6 @@ namespace Bloom.web
 		// used to synchronize access to various other methods
 		private object SyncObj = new object();
 
-		public string CurrentPageContent { get; set; }
 		public string AccordionContent { get; set; }
 		public bool AuthorMode { get; set; }
 
@@ -53,6 +68,69 @@ namespace Bloom.web
 			set { ReadersHandler.CurrentBook = value; }
 		}
 
+		/// <summary>
+		/// This code sets things up so that we can edit (or make a thumbnail of, etc.) one page of a book.
+		/// This is trickly because we have to satisfy several constraints:
+		/// - We need to make this page content the 'src' of an iframe in a browser. So it has to be
+		/// locatable by url.
+		/// - It needs to appear to the browser to be a document in the book's folder. This allows local
+		/// hrefs (e.g., src of images) that are normally relative to the whole-book file to locate
+		/// the images. (We previously did this by making a file elsewhere and setting the 'base'
+		/// for interpreting urls. But this fails for internal hrefs (starting with #)).
+		/// - We don't want to risk leaving junk page files in the real book folder if anything goes wrong.
+		/// - There may be several of these simulated pages around at the same time (e.g., when the thumbnailer is
+		/// working on several threads).
+		/// - The simulated files need to hang around for an unpredictable time (until the browser is done
+		/// with them).
+		/// The solution we have adopted is to make this server simulate files in the book folder.
+		/// That is, the src for the page iframe is set to a localhost: url which maps to a file in the
+		/// book folder. This means that any local hrefs (e.g., to images) will become server requests
+		/// for the right file in the right folder. However, the page file never exists as a real file
+		/// system file; instead, a request for the page file itself will be intercepted, and this server
+		/// simply returns the content it has remembered.
+		/// To manage the lifetime of the page data, we use a SimulatedPageFile object, which the Browser
+		/// disposes of when it is no longer looking at that URL. Its dispose method tells this class
+		/// to discard the simulated page data.
+		/// To handle the need for multiple simulated page files and quickly check whether a particular
+		/// url is one of them, we have a dictionary in which the urls are keys.
+		/// A marker is inserted into the generated urls if the input HtmlDom wants to use original images.
+		/// </summary>
+		/// <param name="dom"></param>
+		/// <returns></returns>
+		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom)
+		{
+			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".htm");
+			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
+			if (dom.BaseForRelativePaths != null)
+			{
+				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths, simulatedPageFileName).Replace('\\', '/');
+			}
+			// It doesn't seem to matter if we make a url with most non-standard characters, but a single quote ends up as
+			// a JavaScript constant (that we want to assign to be the page src) and terminates the constant
+			// prematurely, with disastrous consequences.
+			// FromLocalHost is smart about doing nothing if it is not a localhost url. In case it is, we
+			// want the OriginalImageMarker (if any) after the localhost stuff.
+			pathToSimulatedPageFile = pathToSimulatedPageFile.FromLocalhost().Replace("'", QuoteSubstitute);
+			if (dom.UseOriginalImages)
+				pathToSimulatedPageFile = OriginalImageMarker + "/" + pathToSimulatedPageFile;
+			var url = pathToSimulatedPageFile.ToLocalhost();
+			var key = pathToSimulatedPageFile.Replace('\\', '/');
+			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
+			lock (_urlToSimulatedPageContent)
+			{
+				_urlToSimulatedPageContent[key] = html5String;
+			}
+			return new SimulatedPageFile() {Key = url};
+		}
+
+		internal static void RemoveSimulatedPageFile(string key)
+		{
+			lock (_urlToSimulatedPageContent)
+			{
+				_urlToSimulatedPageContent.Remove(key.FromLocalhost());
+			}
+		}
+
 		// Every path should return false or send a response.
 		// Otherwise we can get a timeout error as the browser waits for a response.
 		//
@@ -64,6 +142,27 @@ namespace Bloom.web
 
 			var localPath = GetLocalPathWithoutQuery(info);
 
+			string content;
+			bool gotSimulatedPage;
+			lock (_urlToSimulatedPageContent)
+			{
+				gotSimulatedPage = _urlToSimulatedPageContent.TryGetValue(localPath, out content);
+			}
+			if (gotSimulatedPage)
+			{
+				info.ContentType = "text/html";
+				info.WriteCompleteOutput(content ?? "");
+				return true;
+			}
+
+			if (localPath.StartsWith(OriginalImageMarker))
+			{
+				// Path relative to simulated page file, and we want the file contents without modification.
+				// (Note that the simulated page file's own URL starts with this, so it's important to check
+				// for that BEFORE we do this check.)
+				localPath = localPath.Substring(OriginalImageMarker.Length + 1);
+				return ProcessAnyFileContent(info, localPath);
+			}
 			// routing
 			if (localPath.StartsWith("readers/", StringComparison.InvariantCulture))
 			{
@@ -184,10 +283,6 @@ namespace Bloom.web
 			// have to lock
 			switch (localPath)
 			{
-				case "currentPageContent":
-					info.ContentType = "text/html";
-					info.WriteCompleteOutput(CurrentPageContent ?? "");
-					return true;
 				case "accordionContent":
 					info.ContentType = "text/html";
 					info.WriteCompleteOutput(AccordionContent ?? "");
@@ -215,14 +310,18 @@ namespace Bloom.web
 
 		private static bool ProcessAnyFileContent(IRequestInfo info, string localPath)
 		{
+			string modPath = localPath;
 			string path = null;
+			string tempPath = modPath.Replace(QuoteSubstitute, "'");
+			if (File.Exists(tempPath))
+				modPath = tempPath;
 			try
 			{
 				// Surprisingly, this method will return localPath unmodified if it is a fully rooted path
 				// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
 				// can return contents of any file that exists if the URL gives its full path...even ones that
 				// are generated temp files most certainly NOT distributed with the application.
-				path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", localPath);
+				path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", modPath);
 			}
 			catch (ApplicationException)
 			{
@@ -230,7 +329,7 @@ namespace Bloom.web
 			}
 			if (!File.Exists(path))
 				return false;
-			info.ContentType = GetContentType(Path.GetExtension(localPath));
+			info.ContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);
 			return true;
 		}
