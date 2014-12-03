@@ -234,22 +234,30 @@ var StyleEditor = (function () {
         return result;
     };
 
-    StyleEditor.prototype.GetOrCreateUserModifiedStyleSheet = function () {
+    StyleEditor.prototype.FindExistingUserModifiedStyleSheet = function () {
         for (var i = 0; i < document.styleSheets.length; i++) {
             if (document.styleSheets[i].ownerNode.title == "userModifiedStyles") {
                 // alert("Found userModifiedStyles sheet: i= " + i + ", title= " + (<StyleSheet>(<any>document.styleSheets[i]).ownerNode).title + ", sheet= " + document.styleSheets[i].ownerNode.textContent);
                 return document.styleSheets[i];
             }
         }
+        return null;
+    };
 
-        // alert("Will make userModifiedStyles Sheet:" + document.head.outerHTML);
-        var newSheet = document.createElement('style');
-        document.getElementsByTagName("head")[0].appendChild(newSheet);
-        newSheet.title = "userModifiedStyles";
-        newSheet.type = "text/css";
+    //note, this currently just makes an element in the document, not a separate file
+    StyleEditor.prototype.GetOrCreateUserModifiedStyleSheet = function () {
+        var styleSheet = this.FindExistingUserModifiedStyleSheet();
+        if (styleSheet == null) {
+            var newSheet = document.createElement('style');
+            document.getElementsByTagName("head")[0].appendChild(newSheet);
+            newSheet.title = "userModifiedStyles";
+            newSheet.type = "text/css";
 
-        // alert("newSheet: " + document.head.innerHTML);
-        return newSheet;
+            //at this point, we are tempted to just return newSheet, but in the FF29 we're using, that is just an element at this point, not a really stylesheet.
+            //so we just go searching for it again in the document.styleSheets array, and this time we will find it.
+            styleSheet = this.FindExistingUserModifiedStyleSheet();
+        }
+        return styleSheet;
     };
 
     // Get a style rule with a specified name that can be modified to change the appearance of text in this style.
@@ -259,7 +267,15 @@ var StyleEditor = (function () {
     // This is used for all of character tab when localizing, and always for font name.
     StyleEditor.prototype.GetOrCreateRuleForStyle = function (styleName, langAttrValue, ignoreLanguage) {
         var styleSheet = this.GetOrCreateUserModifiedStyleSheet();
-        var x = styleSheet.cssRules;
+        if (styleSheet == null) {
+            alert('styleSheet == null');
+        }
+
+        var ruleList = styleSheet.cssRules;
+        if (ruleList == null) {
+            ruleList = [];
+        }
+
         var styleAndLang = styleName;
 
         // if we are authoring a book, style changes should apply to all translations of it
@@ -273,15 +289,15 @@ var StyleEditor = (function () {
                 styleAndLang = styleName + ":not([lang])";
         }
         var bloomEditable = '.bloom-editable';
-        for (var i = 0; i < x.length; i++) {
-            if (!x[i].cssText.startsWith(bloomEditable)) {
-                var oldText = x[i].cssText;
+        for (var i = 0; i < ruleList.length; i++) {
+            if (!ruleList[i].cssText.startsWith(bloomEditable)) {
+                var oldText = ruleList[i].cssText;
                 this.ReplaceExistingStyle(styleSheet, i, bloomEditable + oldText);
             }
-            var index = x[i].cssText.indexOf('{');
+            var index = ruleList[i].cssText.indexOf('{');
             if (index == -1)
                 continue;
-            var match = x[i].cssText.substring(bloomEditable.length, index);
+            var match = ruleList[i].cssText.substring(bloomEditable.length, index);
 
             // if we're not ignoring language, we simply need a match for styleAndLang, which includes a lang component.
             // if we're ignoring language, we must find a rule that doesn't specify language at all, even if we
@@ -289,12 +305,12 @@ var StyleEditor = (function () {
             // It's probably pathological to worry about the style name occurring in the body of some other rule,
             // especially with the -style suffix, but it seems safer not to risk it.
             if (match.indexOf(styleAndLang) > -1 && (!ignoreLanguage || match.indexOf('[lang') == -1)) {
-                return x[i];
+                return ruleList[i];
             }
         }
-        styleSheet.insertRule(bloomEditable + '.' + styleAndLang + "{ }", x.length);
+        styleSheet.insertRule(bloomEditable + '.' + styleAndLang + "{ }", ruleList.length);
 
-        return x[x.length - 1];
+        return ruleList[ruleList.length - 1];
     };
 
     // Replaces a style in 'sheet' at the specified 'index' with a (presumably) modified style.
