@@ -351,86 +351,53 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup
 	/*this margin is to separate us from content2 a bit*/
 	margin-top: 12px;
 }
-/*Image In Middle*/
-DIV.imageInMiddle.bloom-monolingual DIV.bloom-translationGroup DIV
-{
-	height: 100% !important;
-	width: 100%;
-}
-DIV.imageInMiddle.bloom-bilingual DIV.bloom-translationGroup DIV
-{
-	height: 50% !important;
-	width: 100%;
-}
-DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup DIV
-{
-	height: 33% !important;
-	width: 100%;
-}
-DIV.imageInMiddle DIV.bloom-translationGroup.top
-{
-	height: 30%;
-	width: 100%;
-}
-DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.top
-{
-	height: 6.9cm;
-	width: 488px;
-	/*+placement:anchor-top-left 26px 30px;*/
-	position: absolute;
-	left: 26px;
-	top: 30px;
-}
-DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.top
-{
-	height: 8.8cm;
-	width: 488px;
-	/*+placement:anchor-top-left 0 0;*/
-	position: absolute;
-	left: 0;
-	top: 0;
-}
-DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.bottom
-{
-	height: 9.1cm;
-	width: 488px;
-	/*+placement:shift 1px 365px;*/
-	position: relative;
-	left: 1px;
-	top: 365px;
-}
-DIV.imageInMiddle DIV.bloom-imageContainer
-{
-	width: 100%;
-	height: 30%;
-	margin-top: 30px;
-}
-DIV.imageInMiddle.bloom-trilingual.layout-style-SideBySide DIV.bloom-imageContainer
-{
-	/*+placement:anchor-top-left 549px -29px;*/
-	position: absolute !important;
-	left: 549px !important;
-	top: -29px !important;
-	height: 100%;
-	width: 45%;
-}
-DIV.imageInMiddle DIV.bloom-translationGroup.bottom
-{
-	height: 30%;
-	width: 100%;
-	/*+placement:anchor-bottom-left;*/
-	position: absolute;
-	left: 0;
-	bottom: 0;
-}
-DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.bottom
-{
-	height: 6.5cm;
-	width: 478px;
-	/*+placement:anchor-top-left 33px 490px;*/
-	position: absolute;
-	left: 33px;
-	top: 490px;
+
+.imageInMiddle {
+	// ----- IMAGE ------
+	.bloom-imageContainer {
+		width: 100%;
+		height: 30%;
+		position: absolute;
+		top: 35%;
+	}
+	// ----- GROUP ------
+	.bloom-translationGroup {
+		height: 33% !important;
+		width: 100%;
+		position: absolute;
+	}
+
+	@SpaceBetweenMultilingualAlternatives: 10px;
+
+	// ----- the top GROUP -----
+	.bloom-translationGroup:nth-of-type(1) {
+		top: 0;
+		left: 0;
+		.bloom-editable {
+			margin-bottom: @SpaceBetweenMultilingualAlternatives;
+		}
+	}
+	// ----- the bottom GROUP -----
+	.bloom-translationGroup:nth-of-type(3) { //NB: there is no "nth-of-class"; so we're selecting the 3rd child of the margin box
+		left: 0;
+		bottom: 0;
+		.bloom-editable {
+			margin-top: @SpaceBetweenMultilingualAlternatives;
+		}
+	}
+	// ----- Text Boxes ------
+	.bloom-editable {
+		width: 100%;
+	}
+	&.bloom-monolingual .bloom-editable {
+		height: calc(~'100% - @{SpaceBetweenMultilingualAlternatives}') !important;
+	}
+	&.bloom-bilingual .bloom-editable {
+		height: calc(~'50% - @{SpaceBetweenMultilingualAlternatives} - 1px') !important;
+	}
+	&.bloom-trilingual .bloom-editable {
+		height: calc(~'33% - @{SpaceBetweenMultilingualAlternatives} - 1px') !important;
+	}
 }
 /*Image On Bottom*/
 DIV.imageOnBottom DIV.bloom-translationGroup
