@@ -5,6 +5,9 @@ ENDLAYOUTS
 */
 /*Top with Picture and a little text*/
 @base-image-height: 365px;
+@A5PageHeight: 	14.8cm;
+@A5PageWidth: 	21cm;
+
 .calendarMonthTop .bloom-imageContainer
 {
 	height: @base-image-height;
@@ -58,14 +61,7 @@ DIV.calendarMonthTop DIV.imageHolder
 	text-align: center;
 	font-weight: bold;
 }
-.calendarMonthBottom TD
-{
-	width: 96px;
-	height: 64px; // have to allow for up to 6 rows of calendar
-	border: 1px solid #000000;
-	padding: 0 0 0 2px;
-	position: relative;
-}
+
 .calendarMonthBottom TD TEXTAREA
 {
 	width: 96%;
@@ -91,11 +87,26 @@ DIV.calendarMonthTop DIV.imageHolder
 	font: 240% sans-serif;
 	width: 100%;
 	height: 32px;
+	margin-bottom: 5mm;
 }
+@Border: 5mm;
+@DayTableWidth: @A5PageWidth - (2 * @Border);
 /*Since this is calendar-fold, we want to defeat the left page vs. right page margin shifting */
-.marginBox
+.A5Landscape.calendarMonthBottom .marginBox {
+	top: @Border;
+	left: @Border;
+	margin-left: 0;
+	width: @DayTableWidth;
+	height: @A5PageHeight - (2 * @Border);
+}
+
+.calendarMonthBottom TD
 {
-	margin-left: 0.3cm !important;
+	width: @DayTableWidth / 7;
+	height: 69px; // NB: have to allow for up to 6 rows of calendar, not 5!!!!!!!!!!!!
+	border: 1px solid #000000;
+	padding: 0 0 0 2px;
+	position: relative;
 }
 
 /* bilingual */
