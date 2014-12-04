@@ -34,7 +34,11 @@ namespace Bloom.Edit
 				CreateHandle();
 
 			var scn = Screen.FromControl(this);
-			var desiredHeight = tableLayout.Height + Padding.Top + Padding.Bottom + (Height - ClientSize.Height);
+			int padAbove = tableLayout.Top;
+			int padBetween = 17;        // empirically determined from initial layout in .Designer.cs file
+			int padBelow = Math.Max(15, ClientSize.Height - cancelBtn.Bottom);
+			var desiredHeight = padAbove + tableLayout.Height + padBetween + cancelBtn.Height + padBelow +
+				(Height - ClientSize.Height);        // overhead of dialog window
 			Height = Math.Min(desiredHeight, scn.WorkingArea.Height - 20);
 		}
 
