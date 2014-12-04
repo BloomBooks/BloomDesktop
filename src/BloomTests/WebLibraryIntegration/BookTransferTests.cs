@@ -77,10 +77,22 @@ namespace BloomTests.WebLibraryIntegration
 		/// <param name="uploader"></param>
 		/// <param name="data"></param>
 		/// <returns></returns>
-		public Tuple<string, string> UploadAndDownLoadNewBook(string bookName, string id, string uploader, string data)
+		public Tuple<string, string> UploadAndDownLoadNewBook(string bookName, string id, string uploader, string data, bool isTemplate = false)
 		{
 			//  Create a book folder with meta.json that includes an uploader and id and some other files.
 			var originalBookFolder = MakeBook(bookName, id, uploader, data);
+			if (isTemplate)
+			{
+				var htmlFile = BookStorage.FindBookHtmlInFolder(originalBookFolder);
+
+				if (!string.IsNullOrEmpty(htmlFile))
+				{
+					var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
+					var dom = new HtmlDom(xmlDomFromHtmlFile);
+					Bloom.Book.Book.LockDownAllowed(dom, false);
+					XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, htmlFile);
+				}
+			}
 			int fileCount = Directory.GetFiles(originalBookFolder).Length;
 
 			Login();
@@ -135,13 +147,44 @@ namespace BloomTests.WebLibraryIntegration
 			// Data uploaded with the same id but a different uploader should form a distinct book; the Jill data
 			// should not overwrite the Jack data. Likewise, data uploaded with a distinct Id by the same uploader should be separate.
 			var jacksFirstData = File.ReadAllText(firstPair.Item2.CombineForPath("one.htm"));
-			Assert.That(jacksFirstData, Is.EqualTo("Jack's data"));
+			// We use stringContaining here because upload does make some changes...for example connected with marking the
+			// book as lockedDown.
+			Assert.That(jacksFirstData, Is.StringContaining("Jack's data"));
 			var jillsData = File.ReadAllText(secondPair.Item2.CombineForPath("one.htm"));
-			Assert.That(jillsData, Is.EqualTo("Jill's data"));
+			Assert.That(jillsData, Is.StringContaining("Jill's data"));
 			var jacksSecondData = File.ReadAllText(thirdPair.Item2.CombineForPath("one.htm"));
-			Assert.That(jacksSecondData, Is.EqualTo("Jack's other data"));
+			Assert.That(jacksSecondData, Is.StringContaining("Jack's other data"));
 
 			// Todo: verify that we got three distinct book records in parse.com
+		}
+
+		/// <summary>
+		/// These two tests were worth writing but I don't think they are worth running every time.
+		/// Real uploads are slow and we get occasional failures when S3 is slow or something similar.
+		/// Use these tests if you are messing with the upload, download, or locking code.
+		/// </summary>
+		[Test, Ignore("slow and unlikely to fail")]
+		public void RoundTripBookLocksIt()
+		{
+			var pair = UploadAndDownLoadNewBook("first", "book1", "Jack", "Jack's data");
+			var originalFolder = pair.Item1;
+			var newFolder = pair.Item2;
+			var originalHtml = BookStorage.FindBookHtmlInFolder(originalFolder);
+			var newHtml = BookStorage.FindBookHtmlInFolder(newFolder);
+			AssertThatXmlIn.HtmlFile(originalHtml).HasNoMatchForXpath("//meta[@name='lockedDownAsShell' and @content='true']");
+			AssertThatXmlIn.HtmlFile(newHtml).HasAtLeastOneMatchForXpath("//meta[@name='lockedDownAsShell' and @content='true']");
+		}
+
+		[Test, Ignore("slow and unlikely to fail")]
+		public void RoundTripOfTemplateBookDoesNotLockIt()
+		{
+			var pair = UploadAndDownLoadNewBook("first", "book1", "Jack", "Jack's data", true);
+			var originalFolder = pair.Item1;
+			var newFolder = pair.Item2;
+			var originalHtml = BookStorage.FindBookHtmlInFolder(originalFolder);
+			var newHtml = BookStorage.FindBookHtmlInFolder(newFolder);
+			AssertThatXmlIn.HtmlFile(originalHtml).HasNoMatchForXpath("//meta[@name='lockedDownAsShell' and @content='true']");
+			AssertThatXmlIn.HtmlFile(newHtml).HasNoMatchForXpath("//meta[@name='lockedDownAsShell' and @content='true']");
 		}
 
 		[Test]
@@ -169,7 +212,7 @@ namespace BloomTests.WebLibraryIntegration
 			var newBookFolder = _transfer.DownloadBook(s3Id, dest);
 
 			var firstData = File.ReadAllText(newBookFolder.CombineForPath("one.htm"));
-			Assert.That(firstData, Is.EqualTo("something new"), "We should have overwritten the changed file");
+			Assert.That(firstData, Is.StringContaining("something new"), "We should have overwritten the changed file");
 			Assert.That(File.Exists(newBookFolder.CombineForPath("two.css")), Is.True, "We should have added the new file");
 			Assert.That(File.Exists(newBookFolder.CombineForPath("one.css")), Is.False, "We should have deleted the obsolete file");
 			// Verify that metadata was overwritten, new record not created.

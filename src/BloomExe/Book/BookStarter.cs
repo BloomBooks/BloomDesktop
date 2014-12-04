@@ -341,6 +341,9 @@ namespace Bloom.Book
 			{
 				storage.Dom.UpdateMetaElement("lockedDownAsShell", "true");
 			}
+			// Make sure that the new book is not considered a template for authoring new books, even though
+			// the template it was copied from very likely was.
+			Book.LockDownAllowed(storage.Dom, true);
 
 #if maybe //hard to pin down when a story primer, dictionary, etc. also becomes a new "source for new shells"
 			//things like picture dictionaries could be used repeatedly
