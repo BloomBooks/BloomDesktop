@@ -110,15 +110,6 @@ namespace Bloom.WebLibraryIntegration
 
 				Analytics.Track("DownloadedBook-Success",
 					new Dictionary<string, string>() {{"url", url}, {"title",title}});
-				// Try to lock it. What we want to do is Book.RecordedAsLockedDown = true; Book.Save().
-				// But all kinds of things have to be set up before we can create a Book. So we duplicate a few bits of code.
-				var htmlFile = BookStorage.FindBookHtmlInFolder(destinationPath);
-				if (htmlFile == "")
-					return destinationPath; //argh! we can't lock it.
-				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
-				var dom = new HtmlDom(xmlDomFromHtmlFile);
-				dom.UpdateMetaElement("lockedDownAsShell", "true");
-				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, htmlFile);
 				return destinationPath;
 			}
 			catch (WebException e)
@@ -308,80 +299,114 @@ namespace Bloom.WebLibraryIntegration
 
 		public string UploadBook(string bookFolder, IProgress progress, out string parseId)
 		{
+			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
+			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
+			// Such books must never be locked.
+			// So, typically we will try to lock it. What we want to do is Book.RecordedAsLockedDown = true; Book.Save().
+			// But all kinds of things have to be set up before we can create a Book. So we duplicate a few bits of code.
+			var htmlFile = BookStorage.FindBookHtmlInFolder(bookFolder);
+			bool wasLocked = false;
+			bool allowLocking = false;
+			HtmlDom domForLocking = null;
 			var metaDataText = MetaDataText(bookFolder);
 			var metadata = BookMetaData.FromString(metaDataText);
-			// In case we somehow have a book with no ID, we must have one to upload it.
-			if (string.IsNullOrEmpty(metadata.Id))
+			if (!string.IsNullOrEmpty(htmlFile))
 			{
-				metadata.Id = Guid.NewGuid().ToString();
+				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
+				domForLocking = new HtmlDom(xmlDomFromHtmlFile);
+				wasLocked = Book.Book.IsLockedDown(domForLocking);
+				allowLocking = !metadata.IsSuitableForMakingShells;
+				if (allowLocking && !wasLocked)
+				{
+					Book.Book.RecordAsLockedDown(domForLocking, true);
+					XmlHtmlConverter.SaveDOMAsHtml5(domForLocking.RawDom, htmlFile);
+				}
 			}
-			// And similarly it should have SOME title.
-			if (string.IsNullOrEmpty(metadata.Title))
-			{
-				metadata.Title = Path.GetFileNameWithoutExtension(bookFolder);
-			}
-			metadata.SetUploader(UserId);
-			var s3BookId = S3BookId(metadata);
-			metadata.DownloadSource = s3BookId;
-			// Any updated ID at least needs to become a permanent part of the book.
-			// The file uploaded must also contain the correct DownloadSource data, so that it can be used
-			// as an 'order' to download the book.
-			// It simplifies unit testing if the metadata file is also updated with the uploadedBy value.
-			// Not sure if there is any other reason to do it (or not do it).
-			// For example, do we want to send/receive who is the latest person to upload?
-			metadata.WriteToFolder(bookFolder);
-			// The metadata is also a book order...but we need it on the server with the desired file name,
-			// because we can't rename on download. The extension must be the one Bloom knows about,
-			// and we want the file name to indicate which book, so use the name of the book folder.
-			var metadataPath = BookMetaData.MetaDataPath(bookFolder);
-			var orderPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
-			File.Copy(metadataPath, orderPath, true);
-			parseId = "";
+			string s3BookId;
 			try
 			{
-				_s3Client.UploadBook(s3BookId, bookFolder, progress);
-				metadata.BaseUrl = _s3Client.BaseUrl;
-				metadata.BookOrder = _s3Client.BookOrderUrl;
-				progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database."));
-				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
-				var response = _parseClient.SetBookRecord(metadata.Json);
-				parseId = response.ResponseUri.LocalPath;
-				int index = parseId.LastIndexOf('/');
-				parseId = parseId.Substring(index + 1);
-				if (parseId == "books")
+				// In case we somehow have a book with no ID, we must have one to upload it.
+				if (string.IsNullOrEmpty(metadata.Id))
 				{
-					// For NEW books the response URL is useless...need to do a new query to get the ID.
-					var json = _parseClient.GetSingleBookRecord(metadata.Id);
-					parseId = json.objectId.Value;
+					metadata.Id = Guid.NewGuid().ToString();
 				}
-			 //   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
+				// And similarly it should have SOME title.
+				if (string.IsNullOrEmpty(metadata.Title))
 				{
-					Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title } });
+					metadata.Title = Path.GetFileNameWithoutExtension(bookFolder);
+				}
+				metadata.SetUploader(UserId);
+				s3BookId = S3BookId(metadata);
+				metadata.DownloadSource = s3BookId;
+				// Any updated ID at least needs to become a permanent part of the book.
+				// The file uploaded must also contain the correct DownloadSource data, so that it can be used
+				// as an 'order' to download the book.
+				// It simplifies unit testing if the metadata file is also updated with the uploadedBy value.
+				// Not sure if there is any other reason to do it (or not do it).
+				// For example, do we want to send/receive who is the latest person to upload?
+				metadata.WriteToFolder(bookFolder);
+				// The metadata is also a book order...but we need it on the server with the desired file name,
+				// because we can't rename on download. The extension must be the one Bloom knows about,
+				// and we want the file name to indicate which book, so use the name of the book folder.
+				var metadataPath = BookMetaData.MetaDataPath(bookFolder);
+				var orderPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
+				File.Copy(metadataPath, orderPath, true);
+				parseId = "";
+				try
+				{
+					_s3Client.UploadBook(s3BookId, bookFolder, progress);
+					metadata.BaseUrl = _s3Client.BaseUrl;
+					metadata.BookOrder = _s3Client.BookOrderUrl;
+					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database."));
+					// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
+					var response = _parseClient.SetBookRecord(metadata.Json);
+					parseId = response.ResponseUri.LocalPath;
+					int index = parseId.LastIndexOf('/');
+					parseId = parseId.Substring(index + 1);
+					if (parseId == "books")
+					{
+						// For NEW books the response URL is useless...need to do a new query to get the ID.
+						var json = _parseClient.GetSingleBookRecord(metadata.Id);
+						parseId = json.objectId.Value;
+					}
+					//   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
+					{
+						Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title } });
+					}
+				}
+				catch (WebException e)
+				{
+					DisplayNetworkUploadProblem(e, progress);
+					if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+					return "";
+				}
+				catch (AmazonServiceException e)
+				{
+					DisplayNetworkUploadProblem(e, progress);
+					if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+					return "";
+				}
+				catch (Exception e)
+				{
+					progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.UploadProblemNotice",
+						"There was a problem uploading your book. You may need to restart Bloom or get technical help."));
+					progress.WriteError(e.Message.Replace("{", "{{").Replace("}", "}}"));
+					progress.WriteVerbose(e.StackTrace);
+					if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() {{"url", metadata.BookOrder}, {"title", metadata.Title}, {"error", e.Message}});
+					return "";
 				}
 			}
-			catch (WebException e)
+			finally
 			{
-				DisplayNetworkUploadProblem(e, progress);
-				if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
-					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
-				return "";
-			}
-			catch (AmazonServiceException e)
-			{
-				DisplayNetworkUploadProblem(e, progress);
-				if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
-					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
-				return "";
-			}
-			catch (Exception e)
-			{
-				progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.UploadProblemNotice",
-								"There was a problem uploading your book. You may need to restart Bloom or get technical help."));
-				progress.WriteError(e.Message.Replace("{","{{").Replace("}","}}"));
-				progress.WriteVerbose(e.StackTrace);
-				if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
-					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
-				return "";
+				if (domForLocking != null && allowLocking && !wasLocked)
+				{
+					Book.Book.RecordAsLockedDown(domForLocking, false);
+					XmlHtmlConverter.SaveDOMAsHtml5(domForLocking.RawDom, htmlFile);
+				}
+
 			}
 			return s3BookId;
 		}
@@ -418,6 +443,21 @@ namespace Bloom.WebLibraryIntegration
 			{
 				var bookInfo = new BookInfo(destinationPath, false); // A downloaded book is a template, so never editable.
 				BookDownLoaded(this, new BookDownloadedEventArgs() {BookDetails = bookInfo});
+			}
+			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
+			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
+			// Such books should not be locked down.
+			// So, we try to lock it. What we want to do is Book.RecordedAsLockedDown = true; Book.Save().
+			// But all kinds of things have to be set up before we can create a Book. So we duplicate a few bits of code.
+			var htmlFile = BookStorage.FindBookHtmlInFolder(destinationPath);
+			if (htmlFile == "")
+				return destinationPath; //argh! we can't lock it.
+			var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
+			var dom = new HtmlDom(xmlDomFromHtmlFile);
+			if (!BookMetaData.FromString(MetaDataText(destinationPath)).IsSuitableForMakingShells)
+			{
+				Book.Book.RecordAsLockedDown(dom, true);
+				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, htmlFile);
 			}
 
 			return destinationPath;
@@ -592,40 +632,19 @@ namespace Bloom.WebLibraryIntegration
 			MakeThumbnail(book, 256, invokeTarget);
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
 			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
-			// Books in the library should all show as locked-down, so new users are automatically in localization mode.
-			var wasLocked = book.RecordedAsLockedDown;
-			if (!wasLocked)
+			// If there is not already a locked preview in the book folder
+			// (which we take to mean the user has created a customized one that he prefers),
+			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
+			if (!FileUtils.IsFileLocked(uploadPdfPath))
 			{
-				book.RecordedAsLockedDown = true;
-				book.Save();
-			}
-			string result;
-			try
-			{
-				// If there is not already a locked preview in the book folder
-				// (which we take to mean the user has created a customized one that he prefers),
-				// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
-				if (!FileUtils.IsFileLocked(uploadPdfPath))
+				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
+				publishView.MakePublishPreview();
+				if (File.Exists(publishView.PdfPreviewPath))
 				{
-					progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
-					publishView.MakePublishPreview();
-					if (File.Exists(publishView.PdfPreviewPath))
-					{
-						File.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
-					}
-				}
-				result = UploadBook(bookFolder, progressBox, out parseId);
-			}
-			finally
-			{
-				// Restore the original locked-down state if necessary.
-				if (!wasLocked)
-				{
-					book.RecordedAsLockedDown = false;
-					book.Save();
+					File.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
 				}
 			}
-			return result;
+			return UploadBook(bookFolder, progressBox, out parseId);
 		}
 
 		void MakeThumbnail(Book.Book book, int height, Control invokeTarget)

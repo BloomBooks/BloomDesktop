@@ -213,6 +213,17 @@ namespace BloomTests.Book
 			_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 		}
 
+		[Test]
+		public void CreateBookOnDiskFromTemplate_OriginalIsTemplate_CopyIsNotTemplate()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
+																			"Basic Book");
+			var originalMetaData = BookMetaData.FromFolder(source);
+			Assert.That(originalMetaData.IsSuitableForMakingShells);
+			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			var newMetaData = BookMetaData.FromFolder(path);
+			Assert.That(newMetaData.IsSuitableForMakingShells, Is.False);
+		}
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_CreatesWithCoverAndTitle()

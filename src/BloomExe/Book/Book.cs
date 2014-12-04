@@ -890,21 +890,28 @@ namespace Bloom.Book
 		/// </summary>
 		public bool RecordedAsLockedDown
 		{
-			get
-			{
-				var node = OurHtmlDom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
-				return node.Count > 0;
-			}
+			get { return IsLockedDown(OurHtmlDom); }
 			set
 			{
-				if (value)
-				{
-					OurHtmlDom.UpdateMetaElement("lockedDownAsShell", "true");
-				}
-				else
-				{
-					OurHtmlDom.RemoveMetaElement("lockedDownAsShell");
-				}
+				RecordAsLockedDown(OurHtmlDom, value);
+			}
+		}
+
+		public static bool IsLockedDown(HtmlDom dom)
+		{
+			var node = dom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
+			return node.Count > 0;
+		}
+
+		public static void RecordAsLockedDown(HtmlDom dom, bool locked)
+		{
+			if (locked)
+			{
+				dom.UpdateMetaElement("lockedDownAsShell", "true");
+			}
+			else
+			{
+				dom.RemoveMetaElement("lockedDownAsShell");
 			}
 		}
 
