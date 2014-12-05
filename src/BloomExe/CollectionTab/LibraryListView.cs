@@ -21,6 +21,8 @@ namespace Bloom.CollectionTab
 {
 	public partial class LibraryListView : UserControl
 	{
+		private const int ButtonHeight = 110;
+
 		public delegate LibraryListView Factory();//autofac uses this
 
 		private readonly LibraryModel _model;
@@ -335,9 +337,9 @@ namespace Bloom.CollectionTab
 			// we're not going to get a better title by digging into the document itself and overriding what the localizer
 			// chose to call it.
 			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
-			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay))
+			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay, button))
 			{
-			var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
+			var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay, button);
 			if (titleBestForUserDisplay != button.Text)
 			{
 					Debug.WriteLine(button.Text + " --> " + titleBestForUserDisplay);
@@ -495,12 +497,13 @@ namespace Bloom.CollectionTab
 
 		private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, bool localizeTitle)
 		{
-			var button = new Button(){Size=new Size(90,110)};
+			var button = new Button(){Size=new Size(90, ButtonHeight)};
 			string title = bookInfo.QuickTitleUserDisplay;
 			if (localizeTitle)
 				title = LocalizationManager.GetDynamicString("Bloom", "Template."+title,title);
 
-			button.Text = ShortenTitleIfNeeded(title);
+			button.Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont;
+			button.Text = ShortenTitleIfNeeded(title, button);
 			button.TextImageRelation = TextImageRelation.ImageAboveText;
 			button.ImageAlign = ContentAlignment.TopCenter;
 			button.TextAlign = ContentAlignment.BottomCenter;
@@ -511,8 +514,6 @@ namespace Bloom.CollectionTab
 			button.ContextMenuStrip = _bookContextMenu;
 			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
-
-			button.Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont;
 
 			// Setting the AutoEllipsis property is strange but makes it behave the same on
 			// Windows and Linux. Despite its name it won't show an ellipsis but wrap the line
@@ -550,10 +551,36 @@ namespace Bloom.CollectionTab
 
 		}
 
-		private string ShortenTitleIfNeeded(string title)
+		private string ShortenTitleIfNeeded(string title, Button button)
 		{
-			int kMaxCaptionLetters = 25; // This allows 2 rows of caption including ellipsis (if longer than that)
-			return title.Length > kMaxCaptionLetters ? title.Substring(0, kMaxCaptionLetters-2) + "…" : title;
+			var maxHeight = ButtonHeight - HtmlThumbNailer.ThumbnailOptions.DefaultHeight;
+			// -2 was determined experimentally. Any less and some titles go to three lines.
+			// "Pame's Family Battles Maleria" is especially close.
+			int width = button.Width - button.Margin.Horizontal - 2;
+			var targetSize = new Size(width, int.MaxValue);
+			// WordBreak is necessary for sensible measurment of line widths...otherwise it ignores the width
+			// constraint and puts all the text on one line.
+			// NoPrefix suppresses special treatment of ampersand.
+			var flags = TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix;
+			using (var g = this.CreateGraphics())
+			{
+				var size = TextRenderer.MeasureText(g, title, button.Font, targetSize, flags);
+				if (size.Height <= maxHeight)
+					return title;
+				var tooBig = title;
+				// It's remotely possible even 10 won't fit, but we won't go less than this; want to show some title.
+				var fits = title.Substring(0, 10);
+				while (tooBig.Length > fits.Length + 1)
+				{
+					var probe = title.Substring(0, (tooBig.Length + fits.Length)/2);
+					size = TextRenderer.MeasureText(g, probe + "…", button.Font, targetSize, flags);
+					if (size.Height <= maxHeight)
+						fits = probe;
+					else
+						tooBig = probe;
+				}
+				return fits + "…";
+			}
 		}
 
 		/// <summary>
@@ -679,7 +706,7 @@ namespace Bloom.CollectionTab
 				Book.Book book = SelectedBook;
 				if (book != null && SelectedButton != null)
 				{
-					SelectedButton.Text = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
+					SelectedButton.Text = ShortenTitleIfNeeded(book.TitleBestForUserDisplay, SelectedButton);
 
 					if (_thumbnailRefreshPending)
 					{
