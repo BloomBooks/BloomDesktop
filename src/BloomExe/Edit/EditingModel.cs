@@ -152,11 +152,16 @@ namespace Bloom.Edit
 
 		private void OnDuplicatePage()
 		{
+			DuplicatePage(_pageSelection.CurrentSelection);
+		}
+
+		internal void DuplicatePage(IPage page)
+		{
 			try
 			{
 				SaveNow(); //ensure current page is saved first
 				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
-				_currentlyDisplayedBook.DuplicatePage(_pageSelection.CurrentSelection);
+				_currentlyDisplayedBook.DuplicatePage(page);
 				_view.UpdatePageList(false);
 				Logger.WriteEvent("Duplicate Page");
 				Analytics.Track("Duplicate Page");
@@ -170,22 +175,26 @@ namespace Bloom.Edit
 
 		private void OnDeletePage()
 		{
+			DeletePage(_pageSelection.CurrentSelection);
+		}
+
+		internal void DeletePage(IPage page)
+		{
 			// This can only be called on the UI thread in response to a user button click.
 			// If that ever changed we might need to arrange locking for access to _inProcessOfSaving and _tasksToDoAfterSaving.
 			Debug.Assert(!_view.InvokeRequired);
-			if (_inProcessOfSaving)
+			if (_inProcessOfSaving && page == _pageSelection.CurrentSelection)
 			{
 				// Somehow (BL-431) it's possible that a Save is still in progress when we start executing a delete page.
 				// If this happens, to prevent crashes we need to let the Save complete before we go ahead with the delete.
 				_tasksToDoAfterSaving.Add(OnDeletePage);
-
 				return;
 			}
 			try
 			{
 				_inProcessOfDeleting = true;
 				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
-				_currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
+				_currentlyDisplayedBook.DeletePage(page);
 				_view.UpdatePageList(false);
 				Logger.WriteEvent("Delete Page");
 				Analytics.Track("Delete Page");
@@ -193,7 +202,7 @@ namespace Bloom.Edit
 			catch (Exception error)
 			{
 				ErrorReport.NotifyUserOfProblem(error,
-																 "Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us.");
+					"Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us.");
 			}
 			finally
 			{
