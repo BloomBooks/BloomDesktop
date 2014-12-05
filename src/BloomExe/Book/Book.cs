@@ -890,21 +890,58 @@ namespace Bloom.Book
 		/// </summary>
 		public bool RecordedAsLockedDown
 		{
-			get
-			{
-				var node = OurHtmlDom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
-				return node.Count > 0;
-			}
+			get { return IsLockedDown(OurHtmlDom); }
 			set
 			{
-				if (value)
-				{
-					OurHtmlDom.UpdateMetaElement("lockedDownAsShell", "true");
-				}
-				else
-				{
-					OurHtmlDom.RemoveMetaElement("lockedDownAsShell");
-				}
+				RecordAsLockedDown(OurHtmlDom, value);
+			}
+		}
+
+		public static bool IsLockedDown(HtmlDom dom)
+		{
+			var node = dom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
+			return node.Count > 0;
+		}
+
+		public static void RecordAsLockedDown(HtmlDom dom, bool locked)
+		{
+			if (locked)
+			{
+				dom.UpdateMetaElement("lockedDownAsShell", "true");
+			}
+			else
+			{
+				dom.RemoveMetaElement("lockedDownAsShell");
+			}
+		}
+
+		/// <summary>
+		/// Normally we are allowed to lock down a book (particularly during upload/download).
+		/// This can be prevented by manually adding an element
+		/// meta name="uploadableAuthoringTemplate" content="true"
+		/// to the head of the HTML file.
+		/// </summary>
+		public bool AllowLockDown
+		{
+			get { return IsLockDownAllowed(OurHtmlDom); }
+			set { LockDownAllowed(OurHtmlDom, value); }
+		}
+
+		public static bool IsLockDownAllowed(HtmlDom dom)
+		{
+			var node = dom.SafeSelectNodes(String.Format("//meta[@name='uploadableAuthoringTemplate' and @content='true']"));
+			return node.Count == 0;
+		}
+
+		public static void LockDownAllowed(HtmlDom dom, bool allow)
+		{
+			if (allow)
+			{
+				dom.RemoveMetaElement("uploadableAuthoringTemplate");
+			}
+			else
+			{
+				dom.UpdateMetaElement("uploadableAuthoringTemplate", "true");
 			}
 		}
 
