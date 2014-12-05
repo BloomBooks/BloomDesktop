@@ -328,75 +328,42 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup {
   /*this margin is to separate us from content2 a bit*/
   margin-top: 12px;
 }
-/*Image In Middle*/
-DIV.imageInMiddle.bloom-monolingual DIV.bloom-translationGroup DIV {
-  height: 100% !important;
+.imageInMiddle .bloom-imageContainer {
   width: 100%;
+  height: 30%;
+  position: absolute;
+  top: 35%;
 }
-DIV.imageInMiddle.bloom-bilingual DIV.bloom-translationGroup DIV {
-  height: 50% !important;
-  width: 100%;
-}
-DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup DIV {
+.imageInMiddle .bloom-translationGroup {
   height: 33% !important;
   width: 100%;
-}
-DIV.imageInMiddle DIV.bloom-translationGroup.top {
-  height: 30%;
-  width: 100%;
-}
-DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.top {
-  height: 6.9cm;
-  width: 488px;
-  /*+placement:anchor-top-left 26px 30px;*/
   position: absolute;
-  left: 26px;
-  top: 30px;
 }
-DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.top {
-  height: 8.8cm;
-  width: 488px;
-  /*+placement:anchor-top-left 0 0;*/
-  position: absolute;
-  left: 0;
+.imageInMiddle .bloom-translationGroup:nth-of-type(1) {
   top: 0;
+  left: 0;
 }
-DIV.imageInMiddle.bloom-trilingual.A4Landscape DIV.bloom-translationGroup.bottom {
-  height: 9.1cm;
-  width: 488px;
-  /*+placement:shift 1px 365px;*/
-  position: relative;
-  left: 1px;
-  top: 365px;
+.imageInMiddle .bloom-translationGroup:nth-of-type(1) .bloom-editable {
+  margin-bottom: 10px;
 }
-DIV.imageInMiddle DIV.bloom-imageContainer {
-  width: 100%;
-  height: 30%;
-  margin-top: 30px;
-}
-DIV.imageInMiddle.bloom-trilingual.layout-style-SideBySide DIV.bloom-imageContainer {
-  /*+placement:anchor-top-left 549px -29px;*/
-  position: absolute !important;
-  left: 549px !important;
-  top: -29px !important;
-  height: 100%;
-  width: 45%;
-}
-DIV.imageInMiddle DIV.bloom-translationGroup.bottom {
-  height: 30%;
-  width: 100%;
-  /*+placement:anchor-bottom-left;*/
-  position: absolute;
+.imageInMiddle .bloom-translationGroup:nth-of-type(3) {
   left: 0;
   bottom: 0;
 }
-DIV.imageInMiddle.bloom-trilingual DIV.bloom-translationGroup.bottom {
-  height: 6.5cm;
-  width: 478px;
-  /*+placement:anchor-top-left 33px 490px;*/
-  position: absolute;
-  left: 33px;
-  top: 490px;
+.imageInMiddle .bloom-translationGroup:nth-of-type(3) .bloom-editable {
+  margin-top: 10px;
+}
+.imageInMiddle .bloom-editable {
+  width: 100%;
+}
+.imageInMiddle.bloom-monolingual .bloom-editable {
+  height: calc(100% - 10px) !important;
+}
+.imageInMiddle.bloom-bilingual .bloom-editable {
+  height: calc(50% - 10px - 1px) !important;
+}
+.imageInMiddle.bloom-trilingual .bloom-editable {
+  height: calc(33% - 10px - 1px) !important;
 }
 /*Image On Bottom*/
 DIV.imageOnBottom DIV.bloom-translationGroup {
