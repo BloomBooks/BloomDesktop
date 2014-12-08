@@ -517,7 +517,7 @@ DIV.licenseNotes
 	/*+placement:anchor-top-left 0px 30px;*/
 	position: absolute;
 	left: 0px;
-	top: 30px;
+	top: 200px;
 	width: 100%;
 	height: 29px;
 }
@@ -566,12 +566,13 @@ BUTTON#editCopyrightAndLicense
 	top: 3px;
 	font-size: 90%;
 }
-DIV.licenseDescription
-{
+.licenseDescription, .licenseNotes{
 	font-size: 80% !important;
 	width: 100%;
+}
+.licenseDescription
+{
 	height: 57px;
-	/*+placement:anchor-top-left 0 123px;*/
 	position: absolute;
 	left: 0;
 	top: 123px;
