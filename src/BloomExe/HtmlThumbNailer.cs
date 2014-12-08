@@ -74,6 +74,7 @@ namespace Bloom
 
 		public class ThumbnailOptions
 		{
+			public const int DefaultHeight = 70;
 			public enum BorderStyles
 			{
 				Solid, Dashed, None
@@ -90,7 +91,7 @@ namespace Bloom
 			public bool CenterImageUsingTransparentPadding = true;
 
 			public int Width = 70;
-			public int Height = 70;
+			public int Height = DefaultHeight;
 			public string FileName = "thumbnail.png";
 		}
 
