@@ -23,6 +23,10 @@ namespace Bloom.Edit
 {
 	public partial class WebThumbNailList : UserControl
 	{
+		/// <summary>
+		/// The CSS class we give the main div for each page; the same element always has an id attr which identifies the page.
+		/// </summary>
+		internal const string ClassForGridItem = "gridItem";
 		private bool _inSelectionAlready;
 		private bool _intentionallyChangingSelection;
 
@@ -64,6 +68,12 @@ namespace Bloom.Edit
 				_browser.VerticalScroll.Visible = false;
 				this.Controls.Add(_browser);
 			}
+		}
+
+		public Action<GeckoContextMenuEventArgs> ContextMenuProvider
+		{
+			get { return _browser.ContextMenuProvider; }
+			set { _browser.ContextMenuProvider = value; }
 		}
 
 		protected bool ReallyDesignMode
@@ -553,10 +563,10 @@ namespace Bloom.Edit
 				result.Add(page);
 				var pageThumbnail = pageDoc.ImportNode(node, true);
 				var cellDiv = pageDoc.CreateElement("div");
-				cellDiv.SetAttribute("class", "gridItem");
+				cellDiv.SetAttribute("class", ClassForGridItem);
 				var gridId = GridId(page);
 				cellDiv.SetAttribute("id", gridId);
-				_pageMap[gridId] = page;
+				_pageMap.Add(gridId, page);
 				gridlyParent.AppendChild(cellDiv);
 
 
@@ -609,6 +619,42 @@ namespace Bloom.Edit
 			IPage page;
 			if (_pageMap.TryGetValue(s, out page))
 				InvokePageSelectedChanged(page);
+		}
+
+		/// <summary>
+		/// Given a particular node (typically one the user right-clicked), determine whether it is clearly part of
+		/// a particular page (inside a PageContainerClass div).
+		/// If so, return the corresponding Page object. If not, return null.
+		/// </summary>
+		/// <param name="clickNode"></param>
+		/// <returns></returns>
+		internal IPage GetPageContaining(GeckoNode clickNode)
+		{
+			bool gotPageElt = false;
+			for (var elt = clickNode as GeckoElement ?? clickNode.ParentElement; elt != null; elt = elt.ParentElement)
+			{
+				var classAttr = elt.Attributes["class"];
+				if (classAttr != null)
+				{
+					var className = " " + classAttr.NodeValue + " ";
+					if (className.Contains(" " + PageContainerClass + " "))
+					{
+						// Click is inside a page element: can succeed. But it's not this one.
+						gotPageElt = true;
+						continue;
+					}
+					if (className.Contains(" " + ClassForGridItem + " "))
+					{
+						if (!gotPageElt)
+							return null; // clicked somewhere in a grid, but not actually on the page: intended page may be ambiguous.
+						var id = elt.Attributes["id"].NodeValue;
+						IPage page;
+						_pageMap.TryGetValue(id, out page);
+						return page;
+					}
+				}
+			}
+			return null;
 		}
 
 		private void GridReordered(string s)

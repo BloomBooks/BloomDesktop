@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using BloomTemp;
+using L10NSharp;
 using Palaso.Reporting;
 
 namespace Bloom.Edit
@@ -30,8 +31,21 @@ namespace Bloom.Edit
 			_thumbNailList.RelocatePageEvent = relocatePageEvent;
 			_thumbNailList.PageSelectedChanged+=new EventHandler(OnPageSelectedChanged);
 			_thumbNailList.Isolator = isolator;
-		}
+			_thumbNailList.ContextMenuProvider = args =>
+			{
+				var page = _thumbNailList.GetPageContaining(args.TargetNode);
+				if (page == null)
+					return; // no page-related commands if we didn't click on one.
 
+				var dupPage = LocalizationManager.GetString("EditTab._duplicatePageButton", "Duplicate Page"); // same ID as button in toolbar
+				var dupItem = new MenuItem(dupPage, (sender, eventArgs) => _model.DuplicatePage(page));
+				args.ContextMenu.MenuItems.Add(dupItem);
+				var removePage = LocalizationManager.GetString("EditTab._deletePageButton", "Remove Page"); // same ID as button in toolbar
+				var removeItem = new MenuItem(removePage, (sender, eventArgs) => _model.DeletePage(page));
+				args.ContextMenu.MenuItems.Add(removeItem);
+				dupItem.Enabled = removeItem.Enabled = page != null && !page.Required;
+			};
+		}
 
 		private void OnPageSelectedChanged(object page, EventArgs e)
 		{
