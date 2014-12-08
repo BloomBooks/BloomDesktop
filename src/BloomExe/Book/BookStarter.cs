@@ -347,9 +347,9 @@ namespace Bloom.Book
 			//but things from Basic Book are normally not.
 			var x = GetMetaValue(storage.Dom, "DerivativesAreSuitableForMakingShells", "false");
 #else
-			var x = "false";
+			var x = false;
 #endif
-			storage.Dom.UpdateMetaElement("SuitableForMakingShells", x);
+			storage.MetaData.IsSuitableForMakingShells = x;
 		}
 
 
