@@ -160,7 +160,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
             return;
         shouldShowAlways = true;
 
-        if (functionCall.contains('('))
+        if (functionCall.indexOf('(') > 0)
             functionCall = 'javascript:' + functionCall + ';';
 
         whatToSay = "<a href='" + functionCall + "'>" + whatToSay + "</a>";
