@@ -1,13 +1,23 @@
 ﻿## 3.0.70 BETA (Windows Only)
 
-- If the Vernacular language is right-to-left, PDF Booklets will be ordered so that pages are ordered back-to-front (see Settings:Book Making).
-- Fixed "sticky" scrollbar on page template list and Art Of Reading gallery.
-- Fixed problems with opening books over a network.
-- Fixed problems with the front-cover language.
-- Fixed problem with booklet pdfs.
+### New
+
+- More Right TO Left support. If the Vernacular language is right-to-left, PDF Booklets will be ordered so that pages are ordered back-to-front (see Settings:Book Making).
+- New right-click menu on pages for removing and duplicating.
 - Language picker: when picking a language and there are more than 2 countries, now says, .e.g. "4 countries".
 - Language picker: when picking a language, you can now have major spelling differences and it will still find the language.
+
+### Fixes
+- Fixed "sticky" scrollbar on page template list and Art Of Reading gallery.
+- Fixed problems with opening books over a network (needs user testing in various environments, though).
+- Fixed problems with the front-cover language.
+- Fixed problem with booklet pdfs.
+- Fixed problem with downloading and then using book templates that are a collection of re-usable pages, e.g. Gleny's Water's Primer Template
 - Book colors will now always stay the same (until we add the option of selecting the color you want).
+- Many other small fixes
+
+### Known Issues
+- The gear-shaped button that brings up the Format box has positioning problems; we're working on a solution.
 
 ## 3.0.69 BETA (Windows Only)
 
