@@ -1,4 +1,9 @@
-﻿## 3.0.70 BETA (Windows Only)
+﻿## 3.0.72 BETA (Windows Only)
+
+### Known Issues
+- Fonts with modifiers like "Arial Narrow" cannot be shown. This appears to be a bug in Firefox (which is at the heart of Bloom). So for now we don't offer these fonts in the font-picking menu.
+
+## 3.0.70 BETA (Windows Only)
 
 ### New
 

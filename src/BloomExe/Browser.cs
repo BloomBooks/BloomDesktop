@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Text;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -1067,6 +1068,30 @@ namespace Bloom
 				}
 			}
 		}
-	}
 
+
+		/// <summary>
+		/// See https://jira.sil.org/browse/BL-802  and https://bugzilla.mozilla.org/show_bug.cgi?id=1108866
+		/// Until that gets fixed, we're better off not listing those fonts that are just going to cause confusion
+		/// </summary>
+		/// <returns></returns>
+		public static IEnumerable<string> NamesOfFontsThatBrowserCanRender()
+		{
+			using(var installedFontCollection = new InstalledFontCollection())
+			{
+				var modifierTerms = new string[] { "condensed", "semilight", "black", "bold", "medium", "semibold", "light", "narrow" };
+
+				foreach(var family in installedFontCollection.Families)
+				{
+					var name = family.Name.ToLowerInvariant();
+					if(modifierTerms.Any(modifierTerm => name.Contains(" " + modifierTerm)))
+					{
+						continue;
+						// sorry, we just can't display that font, it will come out as some browser default font (at least on Windows, and at least up to Firefox 36)
+					}
+					yield return family.Name;
+				}
+			}
+		}
+	}
 }

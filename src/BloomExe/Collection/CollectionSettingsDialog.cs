@@ -276,16 +276,16 @@ namespace Bloom.Collection
 		 */
 		private void LoadFontCombo()
 		{
-			foreach (FontFamily fontFamily in FontFamily.Families)
+			foreach (var font in Browser.NamesOfFontsThatBrowserCanRender())
 			{
-				_fontComboLanguage1.Items.Add(fontFamily.Name);
-				_fontComboLanguage2.Items.Add(fontFamily.Name);
-				_fontComboLanguage3.Items.Add(fontFamily.Name);
-				if (fontFamily.Name == _collectionSettings.DefaultLanguage1FontName)
+				_fontComboLanguage1.Items.Add(font);
+				_fontComboLanguage2.Items.Add(font);
+				_fontComboLanguage3.Items.Add(font);
+				if (font == _collectionSettings.DefaultLanguage1FontName)
 					_fontComboLanguage1.SelectedIndex = _fontComboLanguage1.Items.Count-1;
-				if (fontFamily.Name == _collectionSettings.DefaultLanguage2FontName)
+				if (font == _collectionSettings.DefaultLanguage2FontName)
 					_fontComboLanguage2.SelectedIndex = _fontComboLanguage2.Items.Count - 1;
-				if (fontFamily.Name == _collectionSettings.DefaultLanguage3FontName)
+				if (font == _collectionSettings.DefaultLanguage3FontName)
 					_fontComboLanguage3.SelectedIndex = _fontComboLanguage3.Items.Count - 1;
 			}
 		}
