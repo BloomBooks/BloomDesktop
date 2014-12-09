@@ -144,8 +144,7 @@ namespace Bloom.web
 					return true;
 
 				case "availableFontNames":
-					InstalledFontCollection installedFontCollection = new InstalledFontCollection();
-					info.WriteCompleteOutput(string.Join(",", installedFontCollection.Families.Select(f => f.Name)));
+					info.WriteCompleteOutput(string.Join(",", Browser.NamesOfFontsThatBrowserCanRender()));
 					return true;
 
 				case "authorMode":
