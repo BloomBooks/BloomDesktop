@@ -522,8 +522,10 @@ class StyleEditor {
         // the user won't see resize and drag controls when they click on it
         $(targetBox).append('<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         var formatButton = $('#formatButton');
+        /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened 
         var txt = localizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
+        */
         formatButton.click(function () {
             iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
