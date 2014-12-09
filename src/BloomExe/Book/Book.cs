@@ -30,7 +30,13 @@ namespace Bloom.Book
 	{
 		public delegate Book Factory(BookInfo info, IBookStorage storage);//autofac uses this
 		public static Color[] CoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(176, 222, 228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
-		private static int _coverColorIndex = 0;
+
+
+		//We only randomize the initial value for each run. Without it, we were making a lot 
+		// more red books than any other color, because the 
+		//first book for a given run would always be red, and people are unlikely to make more
+		//than one book per session.
+		private static int _coverColorIndex=new Random().Next(CoverColors.Length-1);
 
 		private readonly ITemplateFinder _templateFinder;
 		private readonly CollectionSettings _collectionSettings;
