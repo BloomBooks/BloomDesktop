@@ -120,7 +120,7 @@
 			this.deleteBtn.Name = "deleteBtn";
 			this.deleteBtn.Size = new System.Drawing.Size(75, 26);
 			this.deleteBtn.TabIndex = 0;
-			this.deleteBtn.Text = "&Delete";
+			this.deleteBtn.Text = "&Remove";
 			this.deleteBtn.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this.deleteBtn.UseVisualStyleBackColor = true;
 			this.deleteBtn.Click += new System.EventHandler(this.deleteBtn_Click);
@@ -153,7 +153,7 @@
 			this.ShowIcon = false;
 			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "Really Delete Page?";
+			this.Text = "Really Remove Page?";
 			this.tableLayout.ResumeLayout(false);
 			this.tableLayout.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureRecycleBin)).EndInit();
