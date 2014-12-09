@@ -78,7 +78,7 @@ namespace Bloom.Workspace
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
-#if !DEBUG
+#if !__MonoCS__ && !DEBUG
 			_sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
 #endif
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
