@@ -37,7 +37,7 @@ namespace BloomTests
 		/// This is just a smoke-test that will notify us if the SIL JIRA stops working with the API we're relying on.
 		/// It sends reports to https://jira.sil.org/browse/AUT
 		/// </summary>
-		[Test]
+		[Test, Ignore("Jira is down")]
 		public void CanSubmitToSILJiraAutomatedTestProject()
 		{
 			using (var dlg = new ProblemReporterDialog(null, null))
