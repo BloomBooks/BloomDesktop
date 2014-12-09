@@ -41,9 +41,13 @@ namespace Bloom.Edit
 				var dupItem = new MenuItem(dupPage, (sender, eventArgs) => _model.DuplicatePage(page));
 				args.ContextMenu.MenuItems.Add(dupItem);
 				var removePage = LocalizationManager.GetString("EditTab._deletePageButton", "Remove Page"); // same ID as button in toolbar
-				var removeItem = new MenuItem(removePage, (sender, eventArgs) => _model.DeletePage(page));
+				var removeItem = new MenuItem(removePage, (sender, eventArgs) =>
+				{
+					if (ConfirmRemovePageDialog.Confirm())
+					_model.DeletePage(page);
+				});
 				args.ContextMenu.MenuItems.Add(removeItem);
-				dupItem.Enabled = removeItem.Enabled = page != null && !page.Required;
+				dupItem.Enabled = removeItem.Enabled = page != null && !page.Required && !_model.CurrentBook.LockedDown;
 			};
 		}
 
