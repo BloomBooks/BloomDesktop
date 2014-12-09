@@ -172,7 +172,7 @@ namespace Bloom.Book
 
 			// tool tips for style editor
 			AddTranslationToDictionaryUsingKey(d, "BookEditor.FontSizeTip", "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.");
-			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialogTip", "Adjust formatting for style");
+			//No longer used. See BL-799 AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialogTip", "Adjust formatting for style");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.WordSpacingNormal", "Normal");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.WordSpacingWide", "Wide");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.FormatDialog.WordSpacingExtraWide", "Extra Wide");

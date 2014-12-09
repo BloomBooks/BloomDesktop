@@ -1023,6 +1023,7 @@
     </tu>
     <tu tuid="EditTab.FormatDialogTip">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Adjust formatting for style</seg>
       </tuv>
