@@ -585,7 +585,7 @@ namespace Bloom.CollectionTab
 			this._L10NSharpExtender.SetLocalizingId(this.openCreateCollectionToolStripMenuItem, "CollectionTab.openCreateCollectionToolStripMenuItem");
 			this.openCreateCollectionToolStripMenuItem.Name = "openCreateCollectionToolStripMenuItem";
 			this.openCreateCollectionToolStripMenuItem.Size = new System.Drawing.Size(270, 22);
-			this.openCreateCollectionToolStripMenuItem.Text = "Open/Create Collection";
+			this.openCreateCollectionToolStripMenuItem.Text = "Open or Create Another Collection";
 			this.openCreateCollectionToolStripMenuItem.Click += new System.EventHandler(this.openCreateCollectionToolStripMenuItem_Click);
 			// 
 			// LibraryListView

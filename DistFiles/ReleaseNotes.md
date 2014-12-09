@@ -1,13 +1,18 @@
-﻿## 3.0.72 BETA (Windows Only)
+﻿## 3.0.72 BETA
+
+- More French coverage of UI
+- Better captioning of books with long names
+- Calendar now has smaller margins, more room for text in day boxes
+- Restored vertical centering in "just text" page
 
 ### Known Issues
 - Fonts with modifiers like "Arial Narrow" cannot be shown. This appears to be a bug in Firefox (which is at the heart of Bloom). So for now we don't offer these fonts in the font-picking menu.
 
-## 3.0.70 BETA (Windows Only)
+## 3.0.70 BETA
 
 ### New
 
-- More Right TO Left support. If the Vernacular language is right-to-left, PDF Booklets will be ordered so that pages are ordered back-to-front (see Settings:Book Making).
+- More Right To Left support. If the Vernacular language is right-to-left, PDF Booklets will be ordered so that pages are ordered back-to-front (see Settings:Book Making).
 - New right-click menu on pages for removing and duplicating.
 - Language picker: when picking a language and there are more than 2 countries, now says, .e.g. "4 countries".
 - Language picker: when picking a language, you can now have major spelling differences and it will still find the language.
