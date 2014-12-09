@@ -562,24 +562,58 @@ namespace Bloom.CollectionTab
 			// constraint and puts all the text on one line.
 			// NoPrefix suppresses special treatment of ampersand.
 			var flags = TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix;
+			var source = title;
+			var firstLine = ""; // May be used if the first line starts with a long word; see below.
 			using (var g = this.CreateGraphics())
 			{
-				var size = TextRenderer.MeasureText(g, title, button.Font, targetSize, flags);
-				if (size.Height <= maxHeight)
-					return title;
-				var tooBig = title;
-				// It's remotely possible even 10 won't fit, but we won't go less than this; want to show some title.
-				var fits = title.Substring(0, 10);
-				while (tooBig.Length > fits.Length + 1)
+				var size = TextRenderer.MeasureText(g, source, button.Font, targetSize, flags);
+				if (size.Height <= maxHeight && size.Width <= width)
+					return source;
+				var tooBig = source;
+				var fits = source.Substring(0, 4); // include something not entirely trivial
+				for (int i = 0; i < 2; i++) // trick to get a second iteration for long word on first line
 				{
-					var probe = title.Substring(0, (tooBig.Length + fits.Length)/2);
-					size = TextRenderer.MeasureText(g, probe + "…", button.Font, targetSize, flags);
-					if (size.Height <= maxHeight)
-						fits = probe;
+					while (tooBig.Length > fits.Length + 1)
+					{
+						var probe = source.Substring(0, (tooBig.Length + fits.Length)/2);
+						size = TextRenderer.MeasureText(g, probe + "…", button.Font, targetSize, flags);
+						if (size.Height <= maxHeight && size.Width <= width)
+							fits = probe;
+						else
+							tooBig = probe;
+					}
+					if (i == 0 && size.Height <= maxHeight/2)
+					{
+						// Pesky TextRenderer won't break long words, but button layout code will.
+						// If we got a long word on first line, the algorithm above will truncate
+						// all the way down to ONE line. See if we can fit some more on the second line.
+						// (Note that we don't need to consider the case of a one-line result that
+						// contains white space. If it's possible to put even one short word on the
+						// first line, that's what the TextRenderer and the button layout code both do.)
+
+						// Enhance: this fix assumes that we are only showing two lines, even though
+						// most of the code here is designed to be more general. If there is room for
+						// three or more lines, the current code could still truncate to two if there
+						// is a long word on the second. It's somewhat tricky to make it handle n lines:
+						// we start to really need to know the line height to tell whether truncation
+						// happened. The space that's available for more lines may not be exactly
+						// the total minus the height of the first line. I decided to apply YAGNI.
+						maxHeight -= size.Height;
+						firstLine = fits;
+						source = source.Substring(firstLine.Length);
+						// Rather arbitrary, but 4 are pretty sure to fit, and trying to measure an
+						// empty string might be a problem.
+						fits = source.Substring(0, 4);
+						tooBig = source;
+					}
 					else
-						tooBig = probe;
+					{
+						// Already iterated, or what we have already takes two lines
+						// (maybe the long word was on the second line).
+						break;
+					}
 				}
-				return fits + "…";
+				return firstLine + fits + "…";
 			}
 		}
 
