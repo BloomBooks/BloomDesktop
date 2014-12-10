@@ -280,7 +280,7 @@ namespace Bloom.Publish
 				else if (string.IsNullOrEmpty((string)completedEvent.Result))
 				{
 					// Something went wrong, typically already reported.
-					string sorryMessage = LocalizationManager.GetString("PublishTab.Upload.FinalUploadFailureNotice", "Sorry, \"{0}\" was not successfully uploaded");
+					string sorryMessage = LocalizationManager.GetString("PublishTab.Upload.FinalUploadFailureNotice", "Sorry, \"{0}\" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.");
 					_progressBox.WriteError(sorryMessage, _book.Title);
 				}
 				else {
