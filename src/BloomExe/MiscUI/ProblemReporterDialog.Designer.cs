@@ -268,6 +268,7 @@
 			this.MinimumSize = new System.Drawing.Size(503, 525);
 			this.Name = "ProblemReporterDialog";
 			this.ShowIcon = false;
+			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.Text = "Report A Problem";
 			this.Load += new System.EventHandler(this.ProblemReporterDialog_Load);
