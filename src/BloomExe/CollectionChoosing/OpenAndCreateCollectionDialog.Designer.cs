@@ -65,9 +65,6 @@
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(820, 383);
             this.Controls.Add(this._openAndCreateControl);
-#if !__MonoCS__
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-#endif			
             this._L10NSharpExtender.SetLocalizableToolTip(this, null);
             this._L10NSharpExtender.SetLocalizationComment(this, null);
             this._L10NSharpExtender.SetLocalizingId(this, "OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle");

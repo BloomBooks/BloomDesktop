@@ -65,5 +65,13 @@ namespace Bloom
 										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
 										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid);
 		}
+
+		protected override void OnHandleCreated(EventArgs e)
+		{
+			base.OnHandleCreated(e);
+
+			// BL-552, BL-779: a bug in Mono requires us to wait to set Icon until handle created.
+			this.Icon = global::Bloom.Properties.Resources.Bloom;
+		}
 	}
 }
