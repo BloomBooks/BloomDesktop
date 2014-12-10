@@ -32,13 +32,15 @@
             this._collectionNameControl = new System.Windows.Forms.TextBox();
             this._exampleText = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
             this.htmlLabel1 = new Bloom.HtmlLabel();
-            this._nameCollectionLabel = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+            this._nameCollectionLabel = new System.Windows.Forms.Label();
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
             // 
             // _collectionNameControl
             // 
+            this._collectionNameControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+                | System.Windows.Forms.AnchorStyles.Right)));
             this._collectionNameControl.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this._L10NSharpExtender.SetLocalizableToolTip(this._collectionNameControl, null);
             this._L10NSharpExtender.SetLocalizationComment(this._collectionNameControl, null);
@@ -72,6 +74,8 @@
             // 
             // htmlLabel1
             // 
+            this.htmlLabel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+                | System.Windows.Forms.AnchorStyles.Right)));
             this.htmlLabel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.htmlLabel1.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.htmlLabel1.HTML = null;
@@ -95,9 +99,7 @@
             this._L10NSharpExtender.SetLocalizationComment(this._nameCollectionLabel, null);
             this._L10NSharpExtender.SetLocalizingId(this._nameCollectionLabel, "NewCollectionWizard.CollectionNamePage.NameCollectionLabel");
             this._nameCollectionLabel.Location = new System.Drawing.Point(3, 0);
-            this._nameCollectionLabel.Multiline = true;
             this._nameCollectionLabel.Name = "_nameCollectionLabel";
-            this._nameCollectionLabel.ReadOnly = true;
             this._nameCollectionLabel.Size = new System.Drawing.Size(321, 23);
             this._nameCollectionLabel.TabIndex = 15;
             this._nameCollectionLabel.TabStop = false;
@@ -133,7 +135,7 @@
 		protected System.Windows.Forms.TextBox _collectionNameControl;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _exampleText;
 		private HtmlLabel htmlLabel1;
-		private Palaso.UI.WindowsForms.Widgets.BetterLabel _nameCollectionLabel;
+		private System.Windows.Forms.Label _nameCollectionLabel;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }
