@@ -128,7 +128,6 @@
 			this.Controls.Add(this._message);
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this.pictureBox1);
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "BloomPackInstallDialog.BloomPackInstallation");

@@ -190,7 +190,6 @@
 			this.Controls.Add(this._longVersionInfo);
 			this.Cursor = System.Windows.Forms.Cursors.AppStarting;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MinimizeBox = false;
 			this.Name = "SplashScreen";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

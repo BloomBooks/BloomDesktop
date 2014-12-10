@@ -1,7 +1,8 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Windows.Forms;
+using L10NSharp;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
-using L10NSharp;
 
 namespace Bloom.CollectionChoosing
 {
@@ -25,7 +26,13 @@ namespace Bloom.CollectionChoosing
 																};
 		}
 
+		protected override void OnHandleCreated(EventArgs e)
+		{
+			base.OnHandleCreated(e);
 
+			// BL-552, BL-779: a bug in Mono requires us to wait to set Icon until handle created.
+			this.Icon = global::Bloom.Properties.Resources.Bloom;
+		}
 
 		public string SelectedPath
 		{
