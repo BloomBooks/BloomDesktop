@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing.Text;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using Bloom.ImageProcessing;
 using System.IO;
 using L10NSharp;
@@ -129,6 +130,14 @@ namespace Bloom.web
 				// If the above failed, either for lack of default browser or exception, try this:
 				Process.Start("\"" + cleanUrl + "\"");
 				return false;
+			} else if (localPath.StartsWith("localhost/"))
+			{
+				// project on network mapped drive like localhost\C$.
+				// URL was something like /bloom///localhost/C$/, but info.LocalPathWithoutQuery uses Uri.LocalPath
+				// which for some reason drops the needed leading slashes.
+				var temp = "//" + localPath;
+				if (File.Exists(temp))
+					localPath = temp;
 			}
 
 			switch (localPath)
@@ -166,6 +175,10 @@ namespace Bloom.web
 			string path = null;
 			try
 			{
+				// Surprisingly, this method will return localPath unmodified if it is a fully rooted path
+				// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
+				// can return contents of any file that exists if the URL gives its full path...even ones that
+				// are generated temp files most certainly NOT distributed with the application.
 				path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", localPath);
 			}
 			catch (ApplicationException)
