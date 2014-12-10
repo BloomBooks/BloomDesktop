@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.17.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.62.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.21.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.0.71.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -298,7 +298,16 @@
         <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Modifier la taille du texte pour tous les endroits avec le style '{0}' et la langue '{1}'.\nLa taille actuelle est {2}pt.</seg>
+        <seg>Modifier la taille du texte pour toutes les zones de texte avec le style '{0}' et la langue '{1}'.\nLa taille actuelle est {2}pt.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.ForText">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This formatting is for all text boxes with '{0}' style</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ce format s'applique à toutes les zones de texte avec le style '{0}'</seg>
       </tuv>
     </tu>
     <tu tuid="BookEditor.ForTextInLang">
@@ -911,7 +920,7 @@
     </tu>
     <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
       <tuv xml:lang="en">
-        <seg>Make Reader Template BloomPack...</seg>
+        <seg>Make Reader Template Bloom Pack...</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Créer BloomPack avec modèle de livres de base et de livres gradués</seg>
@@ -982,6 +991,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Plus...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.openCreateCollectionToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Open/Create Collection</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ouvrir/créer une collection</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.sourcesForNewShellsHeading">
@@ -1217,12 +1234,30 @@
         <seg>Si on a besoin d'un endroit pour ajouter d'information à propos de ce livre, on peut utiliser cette page, qui est la quatrième de couverture.</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.Background">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Background</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Arrière-plan</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
       <tuv xml:lang="en">
         <seg>Open the Html used to make this PDF, in Firefox (must be on path)</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Ouvrir le fichier HTML (utilisé pour créer ce PDF) dans le logiciel Firefox (qui doit être sur le chemin)</seg>
+        <seg>Ouvrir le fichier HTML (utilisé pour créer ce PDF) dans le logiciel Chrome (qui doit être sur le chemin)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Borders">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Borders</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bordures</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.CannotChangeCopyright">
@@ -1291,6 +1326,24 @@
         <seg>Collections</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.Emphasis">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Emphasis</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Mise en relief</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Font">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Police</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.FontMissing">
       <tuv xml:lang="en">
         <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
@@ -1306,6 +1359,186 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Modifier la taille du texte pour tous les endroits avec le style '{0}' et la langue '{1}'.\nTaille actuelle est {2}pt.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.AlreadyExists">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>That style already exists. Please choose another name.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ce style existe déjà. Veuillez choisir un autre nom.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.BorderToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the border and background</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Modifier la bordure et l'arrière-plan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.CharactersTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Characters</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Caractères</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Create">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Create</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Créer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.CreateStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Create a new style</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Créer un nouveau style</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.DontSeeNeed">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Don't see what you need?</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Il vous manque quelque chose ?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font face</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Modifier le type de police</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font size</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Modifier la taille de la police</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Format">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Format</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Format</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.LineSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between lines of text</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Modifier l'espacement entre les lignes de texte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.MoreTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>More</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Plus</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.NewStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>New style</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Nouveau style</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.PleaseUseAlpha">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Veuillez utiliser uniquement des caractères alphabétiques, sauf que des chiffres à la fin sont autorisés, comme "part2".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Style">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Style</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Style</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.StyleNameTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Style Name</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Nom du style</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingExtraWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Extra Wide</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Très large</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingNormal">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Normal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between words</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Modifier l'espacement entre les mots</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wide</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Large</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialogTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Adjust formatting for style</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ajuster le format du style</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
@@ -1467,7 +1700,25 @@
         <seg>Choisir la taille et l'orientation de la page</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FormatDialog.BorderToolTip">
+    <tu tuid="EditTab.Position">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Position</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Position</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Spacing">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Spacing</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Espacement</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.BorderToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the border and background</seg>
@@ -1476,7 +1727,7 @@
         <seg>Changer la bordure et l'arrière-plan</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
+    <tu tuid="EditTab.StyleEditor.FontFaceToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the font face</seg>
@@ -1485,7 +1736,7 @@
         <seg>Changer le type de police</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
+    <tu tuid="EditTab.StyleEditor.FontSizeToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the font size</seg>
@@ -1494,7 +1745,7 @@
         <seg>Changer la taille de la police</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FormatDialog.LineSpacingToolTip">
+    <tu tuid="EditTab.StyleEditor.LineSpacingToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the spacing between lines of text</seg>
@@ -1503,7 +1754,7 @@
         <seg>Modifier l'espacement entre des lignes de texte</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FormatDialog.WordSpacingExtraWide">
+    <tu tuid="EditTab.StyleEditor.WordSpacingExtraWide">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Extra Wide</seg>
@@ -1512,7 +1763,7 @@
         <seg>Très large</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FormatDialog.WordSpacingNormal">
+    <tu tuid="EditTab.StyleEditor.WordSpacingNormal">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Normal</seg>
@@ -1521,7 +1772,7 @@
         <seg>Normal</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FormatDialog.WordSpacingToolTip">
+    <tu tuid="EditTab.StyleEditor.WordSpacingToolTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change the spacing between words</seg>
@@ -1530,7 +1781,7 @@
         <seg>Modifier l'espacement entre des mots</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FormatDialog.WordSpacingWide">
+    <tu tuid="EditTab.StyleEditor.WordSpacingWide">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Wide</seg>
@@ -1539,7 +1790,7 @@
         <seg>Large</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FormatDialogTip">
+    <tu tuid="EditTab.StyleEditorTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Adjust formatting for style</seg>
@@ -1553,7 +1804,7 @@
         <seg>Template Pages</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Pages modèles</seg>
+        <seg>Pages Modèles</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
@@ -2028,7 +2279,7 @@
     </tu>
     <tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
       <tuv xml:lang="en">
-        <seg>Using Reader Templates</seg>
+        <seg>Using Reader Templates </seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Utilisation des modèles de livres gradués et de livres de base</seg>
@@ -2075,12 +2326,29 @@
         <seg>À propos de Bloom</seg>
       </tuv>
     </tu>
+    <tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Deep Bloom Paper</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Documentation détaillée de Bloom</seg>
+      </tuv>
+    </tu>
     <tu tuid="HelpMenu.documentationMenuItem">
       <tuv xml:lang="en">
         <seg>Documentation</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Documentation</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.keyBloomConceptsToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Key Bloom Concepts</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Concepts clés de Bloom</seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu.registrationMenuItem">
@@ -2097,6 +2365,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Description des fonctionnalités...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.reportAProblemToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Report a Problem...</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Signaler un problème...</seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
@@ -2233,8 +2509,8 @@
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.ConceptLoad">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Concept load</seg>
       </tuv>
@@ -2533,7 +2809,7 @@
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
       <tuv xml:lang="en">
-        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
+        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a Bloom Pack to give to others so that they can make vernacular books with your shells.</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Une collection des livres canevas ou des livres modèles dans une ou plusieurs langues véhiculaires, à partir de laquelle vous pouvez créer un BloomPack pour donner aux autres pour qu'ils puissent l'utiliser pour créer des livres vernaculaires.</seg>
@@ -3361,8 +3637,8 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.AboutSampleTexts1">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>About Word Lists and Sample TextsWhen you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.</seg>
       </tuv>
@@ -3371,8 +3647,8 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.AboutSampleTexts2">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.</seg>
       </tuv>
@@ -3381,8 +3657,8 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.AboutSampleTexts4">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.</seg>
       </tuv>
@@ -3410,6 +3686,7 @@
     </tu>
     <tu tuid="ReaderSetup.AddTexts">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Please add texts to the Sample Texts folder.</seg>
       </tuv>
@@ -3446,6 +3723,7 @@
     </tu>
     <tu tuid="ReaderSetup.CombinationHelp2">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>E.g. "ai oo sh ng th ing"</seg>
       </tuv>
@@ -3455,6 +3733,7 @@
     </tu>
     <tu tuid="ReaderSetup.Combinations">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Letter Combinations (Graphemes)</seg>
       </tuv>
@@ -3469,6 +3748,15 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Étapes de base</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.FileNeedsTxtExtension">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>File needs .txt extension</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Le fichier doit avoir l'extension .txt</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.FirstSetupAlphabet">
@@ -3500,6 +3788,7 @@
     </tu>
     <tu tuid="ReaderSetup.Language">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Language</seg>
       </tuv>
@@ -3509,6 +3798,7 @@
     </tu>
     <tu tuid="ReaderSetup.LetterHelp1">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>List letters and word-forming characters in alphabetic order.</seg>
       </tuv>
@@ -3518,6 +3808,7 @@
     </tu>
     <tu tuid="ReaderSetup.LetterHelp3">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>E.g. "a b c d"</seg>
       </tuv>
@@ -3635,6 +3926,7 @@
     </tu>
     <tu tuid="ReaderSetup.MoreWords">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>More Words</seg>
       </tuv>
@@ -3644,6 +3936,7 @@
     </tu>
     <tu tuid="ReaderSetup.OpenSampleTexts">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Open the sample texts folder for this language.</seg>
       </tuv>
@@ -3725,6 +4018,7 @@
     </tu>
     <tu tuid="ReaderSetup.SampleTexts">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Word Lists and Sample Texts</seg>
       </tuv>
@@ -3797,6 +4091,7 @@
     </tu>
     <tu tuid="ReaderSetup.SightWordHelp">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>What are sight words?</seg>
       </tuv>
@@ -3906,7 +4201,7 @@
     <tu tuid="ReaderSetup.Words.SampleTextFolder">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Sample Text Folder</seg>
+        <seg>Sample Texts Folder</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>dossier d'échantillons de texte</seg>
@@ -3932,7 +4227,7 @@
     </tu>
     <tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
       <tuv xml:lang="en">
-        <seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this BloomPack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
+        <seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this BloomPack , who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>De plus, ce BloomPack portera la configuration la plus récente pour des livres de base et des livres gradués en langue {0}. Si une personne ouvre ce BloomPack puis une collection en langue {0}, la configuration pour des livres de base et des livres gradués dans ce BloomPack remplacera sa configuration actuelle. Elle recevra également l'ensemble actuel de mots disponibles pour des livres de base.</seg>
@@ -3948,7 +4243,7 @@
     </tu>
     <tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
       <tuv xml:lang="en">
-        <seg>Save BloomPack</seg>
+        <seg>Save Bloom Pack</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Enregistrer BloomPack</seg>
@@ -3956,7 +4251,7 @@
     </tu>
     <tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
       <tuv xml:lang="en">
-        <seg>Make Reader Template BloomPack</seg>
+        <seg>Make Reader Template Bloom Pack</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Créer BloomPack avec modèle de livres de base et de livres gradués</seg>
@@ -4035,6 +4330,122 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>S'inscrire à {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Close">
+      <note>Shown in the button that closes the dialog after a successful report submission.</note>
+      <tuv xml:lang="en">
+        <seg>Close</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Fermer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.CouldNotSendToServer">
+      <tuv xml:lang="en">
+        <seg>Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom n'a pas pu envoyé votre rapport directement à notre serveur. Veuillez réessayer ou envoyer {0} à {1}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Email">
+      <tuv xml:lang="en">
+        <seg>Email</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Adresse de courriel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.IncludeBookButton">
+      <tuv xml:lang="en">
+        <seg>Include Book '{0}'</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Inclure le livre '{0}'</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.IncludeScreenshotButton">
+      <tuv xml:lang="en">
+        <seg>Include this screenshot</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Inclure cette capture d'écran</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Name">
+      <tuv xml:lang="en">
+        <seg>Name</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Nom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Retry">
+      <note>Shown if there was an error submitting the report. Lets the user try submitting it again.</note>
+      <tuv xml:lang="en">
+        <seg>Retry</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Réessayer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.SeeDetails">
+      <tuv xml:lang="en">
+        <seg>See what else will be submitted</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Voir quoi d'autre sera envoyé</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.SubmitButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Submit</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Envoyer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Submitting">
+      <note>This is shown while Bloom is sending the problem report to our server.</note>
+      <tuv xml:lang="en">
+        <seg>Submitting to server...</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Envoi au serveur...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Success">
+      <tuv xml:lang="en">
+        <seg>We received your report, thanks for taking the time to help make Bloom better!</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Nous avons reçu votre rapport. Merci d'avoir pris le temps pour aider à améliorer Bloom !</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.WhatsTheProblem">
+      <tuv xml:lang="en">
+        <seg>What seems to be the problem?</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Quel est le problème ?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Report A Problem</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Signaler un problème</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Zipping">
+      <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
+      <tuv xml:lang="en">
+        <seg>Zipping up book...</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Compression de livre en cours...</seg>
       </tuv>
     </tu>
     <tu tuid="SendReceiveutton">
@@ -4210,6 +4621,15 @@
         <seg>Mathématiques</seg>
       </tuv>
     </tu>
+    <tu tuid="Topics.NoTopic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>No Topic</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Sans thème</seg>
+      </tuv>
+    </tu>
     <tu tuid="Topics.Non Fiction">
       <note>shows in the topics chooser in the edit tab</note>
       <prop type="x-dynamic">true</prop>
@@ -4258,6 +4678,16 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Spirituel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Story Book">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Story Book</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Livre de contes</seg>
       </tuv>
     </tu>
     <tu tuid="Topics.Tradition">
