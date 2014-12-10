@@ -49,6 +49,9 @@
   color: #cccccc;
   font-family: arial;
 }
+.origami-toggle > :first-of-type {
+  display: inline;
+}
 .origami-layout-mode ~ .origami-toggle {
   color: black;
 }

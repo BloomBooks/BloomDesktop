@@ -139,9 +139,9 @@ function getSplitPaneComponentInner() {
 }
 
 function getOnOffSwitch() {
-    var switchLabel = localizationManager.getText('EditTab.LayoutMode.ChangeLayout', 'Change Layout');
     return $('\
-<div class="origami-toggle bloom-ui">' + switchLabel + ' \
+<div class="origami-toggle bloom-ui"> \
+    <div data-i18n="EditTab.LayoutMode.ChangeLayout">Change Layout</div> \
     <div class="onoffswitch"> \
         <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch"> \
         <label class="onoffswitch-label" for="myonoffswitch"> \
