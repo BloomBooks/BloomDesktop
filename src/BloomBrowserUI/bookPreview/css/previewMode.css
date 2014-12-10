@@ -18,6 +18,10 @@ DIV.bloom-page.coverColor
 {
 	opacity: 0.4;
 }
+/* Some images, like the copyright one, have no src initially. Don't puzzle the user with a missing-image icon.''*/
+img[src=""] {
+   display: none;
+}
 .disabledVisual DIV
 {
 	opacity: 0.4;

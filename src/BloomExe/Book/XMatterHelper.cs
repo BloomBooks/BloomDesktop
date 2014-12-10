@@ -106,7 +106,7 @@ namespace Bloom.Book
 			//note: for debugging the template/css purposes, it makes our life easier if, at runtime, the html is pointing the original.
 			//makes it easy to drop into a css editor and fix it up with the content we're looking at.
 			//TODO:But then later, we want to save it so that these are found in the same dir as the book.
-			_bookDom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation);
+			_bookDom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation.ToLocalhost());
 
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
 			//REVIEW: I think all stylesheets now get sorted once they are all added: see HtmlDoc.SortStyleSheetLinks()
