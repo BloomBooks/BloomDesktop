@@ -3,7 +3,7 @@ $(function() {
 });
 
 function setupOrigami() {
-    $('.customPage').append(getOnOffSwitch());
+    $('.customPage').append(getOnOffSwitch().append(createTypeSelectors()));
 
     $('.origami-toggle .onoffswitch').change(layoutToggleClickHandler);
 
@@ -141,7 +141,7 @@ function getSplitPaneComponentInner() {
 function getOnOffSwitch() {
     return $('\
 <div class="origami-toggle bloom-ui"> \
-    <div data-i18n="EditTab.LayoutMode.ChangeLayout">Change Layout</div> \
+    <div data-i18n="EditTab.CustomPage.ChangeLayout">Change Layout</div> \
     <div class="onoffswitch"> \
         <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch"> \
         <label class="onoffswitch-label" for="myonoffswitch"> \
@@ -203,14 +203,19 @@ function getCloseButton() {
     closeButton.click(closeClickHandler);
     return closeButton;
 }
-function getTypeSelectors() {
+function createTypeSelectors() {
+    var space = " ";
     var links = $('<div class="selector-links bloom-ui origami-ui"></div>');
-    var pictureLink = $('<a href="">Picture</a>');
+    var pictureLink = $('<a href="" data-i18n="EditTab.CustomPage.Picture">Picture</a>');
     pictureLink.click(makePictureFieldClickHandler);
-    var textLink = $('<a href="">Text</a>');
+    var textLink = $('<a href="" data-i18n="EditTab.CustomPage.Text">Text</a>');
     textLink.click(makeTextFieldClickHandler);
-    links.append(pictureLink).append(' or ').append(textLink);
-    return links;
+    var orDiv = $('<div data-i18n="EditTab.CustomPage.Or">or</div>');
+    links.append(pictureLink).append(space).append(orDiv).append(space).append(textLink);
+    return $('<div class="container-selector-links bloom-ui origami-ui"></div>').append(links);
+}
+function getTypeSelectors() {
+    return $('.container-selector-links > .selector-links').clone(true);
 }
 function makeTextFieldClickHandler(e) {
     e.preventDefault();
