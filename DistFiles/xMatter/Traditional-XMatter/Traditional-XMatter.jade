@@ -1,0 +1,25 @@
+include ../../jade/bloom-xmatter-mixins.jade
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title Trandtional Front & Back Matter
+		+stylesheets('Traditional-XMatter.css')
+	body
+		+factoryStandard-outsideFrontCover
+		+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='back-matter-inside-front-cover')#BA00DE13-734C-4036-9901-7040275B9000
+			+field-mono-meta("N1","insideFontCover").Inside-Front-Cover-style.bloom-copyFromOtherLanguageIfNecessary
+				label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.
+
+		+factoryStandard-titlePage
+
+		+page-xmatter("Credits Page").bloom-frontMatter.verso(data-export='front-matter-credits')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
+			+field-acknowledgments-originalVersion
+			+block-licenseAndCopyright#versoLicenseAndCopyright
+			+field-ISBN
+			+field-acknowledgments-localizedVersion
+
+		+factoryStandard-insideBackCover
+		+factoryStandard-outsideBackCover
