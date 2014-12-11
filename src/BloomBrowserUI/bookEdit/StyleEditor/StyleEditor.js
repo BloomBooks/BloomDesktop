@@ -513,6 +513,15 @@ var StyleEditor = (function () {
         // unfortunately it will be subject to deletion because this is an editable box. But we can mark it as uneditable, so that
         // the user won't see resize and drag controls when they click on it
         $(targetBox).append('<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
+
+        //make the button stay at the bottom if we overflow and thus scroll
+        $(targetBox).on("scroll", function () {
+            var newBottom = -1 * $(this).scrollTop();
+            $("#formatButton").css({
+                bottom: newBottom
+            });
+        });
+
         var formatButton = $('#formatButton');
 
         /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened
@@ -1095,20 +1104,16 @@ var StyleEditor = (function () {
             $(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
         $('#formatCharDesc').html(this.getCharTabDescription());
         $('#formatMoreDesc').html(this.getMoreTabDescription());
-        // alert("New size rule: " + rule.cssText);
-        // Now update tooltip
-        //var toolTip = this.GetToolTip(target, styleName);
-        //this.AddQtipToElement($('#formatButton'), toolTip);
     };
 
+    // Remove any additions we made to the element for the purpose of UI alone
     StyleEditor.CleanupElement = function (element) {
-        //NB: we're placing these controls *after* the target, not inside it; that's why we go up to parent
-        $(element).parent().find(".bloom-ui").each(function () {
+        $(element).find(".bloom-ui").each(function () {
             $(this).remove();
         });
-        $(".tool-container").each(function () {
-            $(this).remove();
-        });
+
+        //stop watching the scrolling event we used to keep the formatButton at the bottom
+        $(element).off("scroll");
     };
     return StyleEditor;
 })();
