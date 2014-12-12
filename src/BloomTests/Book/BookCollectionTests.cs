@@ -14,6 +14,7 @@ using Palaso.TestUtilities;
 
 namespace BloomTests.Book
 {
+	[TestFixture]
 	public class BookCollectionTests
 	{
 		private BookCollection _collection;

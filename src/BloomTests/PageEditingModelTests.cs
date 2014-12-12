@@ -13,6 +13,7 @@ using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace BloomTests
 {
+	[TestFixture]
 	public class PageEditingModelTests
 	{
 		private int kSampleImageDimension = 5;
