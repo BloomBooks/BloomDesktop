@@ -54,7 +54,7 @@ div.section ul li { color: #fff; }
 
 #make-letter-word-list-div {
   position: absolute;
-  bottom: 15px;
+  bottom: 60px; /* Enhance: this is now relative to whole accordion. Should be relative to own tab. Will be hidden if we add more tabs. */
   margin-left: 6px
 }
 #make-letter-word-list {

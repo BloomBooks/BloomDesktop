@@ -1,0 +1,3 @@
+Files jquery-ui.css and images folder were generated using http://jqueryui.com/themeroller, selecting the "UI Darkness" theme (mainly for the dark background wanted in the Decodable Reader accordion).
+
+We may want a different theme at some point, so it is recommended that the images here should only be used by jquery-ui. Choosing a particular theme at this point in jquery-ui seems to involve generating not only different image file contents, but also names, since the exact shade of color of the images is indicated in many file names.

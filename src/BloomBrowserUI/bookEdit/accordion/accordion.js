@@ -89,7 +89,7 @@ function restoreAccordionSettings(settings) {
 function setCurrentPanel(currentPanel) {
 
     // NOTE: panels without a "data-panelId" attribute (such as the More panel) cannot be the "currentPanel."
-    var idx = '0';
+    var idx = 0;
     var accordion = $('#accordion');
 
     if (currentPanel) {
@@ -97,9 +97,6 @@ function setCurrentPanel(currentPanel) {
         // find the index of the panel whose "data-panelId" attribute equals the value of "currentPanel"
         accordion.find('> h3').each(function() {
             if ($(this).attr('data-panelId') === currentPanel) {
-
-                // the index is the last segment of the element id
-                idx = this.id.substr(this.id.lastIndexOf('-') + 1);
 
                 // set the markup type to the current panel
                 if (model) {
@@ -110,6 +107,7 @@ function setCurrentPanel(currentPanel) {
                 // break from the each() loop
                 return false;
             }
+            idx++;
             return true;
         });
     }
@@ -119,7 +117,7 @@ function setCurrentPanel(currentPanel) {
     accordion.accordion('option', 'animate', false);
 
     // the index must be passed as an int, a string will not work
-    accordion.accordion('option', 'active', parseInt(idx));
+    accordion.accordion('option', 'active', idx);
 
     // turn animation back on
     accordion.accordion('option', 'animate', ani);
@@ -212,7 +210,15 @@ function loadAccordionPanel(newContent, panelId) {
         showingPanel = false;
         var id = tab.attr('id');
         id = parseInt(id.substr(id.lastIndexOf('_')));
-        accordion.accordion('option', 'active', id);
+        var idx = 0;
+        accordion.find('> h3').each(function() {
+            if (this === tab.get(0)) {
+                return false; // stop iteration
+            };
+            idx++;
+            return true; // keep iterating
+        });
+        accordion.accordion('option', 'active', idx);
 
         // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
         accordion.onOnce('accordionactivate.accordion', function(event, ui) {

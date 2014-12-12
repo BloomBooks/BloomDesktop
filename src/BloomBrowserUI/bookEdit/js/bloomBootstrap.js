@@ -38,7 +38,7 @@ var scripts = [
 ];
 
 var styleSheets = [
-    'themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css',
+    'themes/bloom-jqueryui-theme/jquery-ui.css',
     'themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css',
     'lib/jquery.qtip.css',
     'bookEdit/js/toolbar/jquery.toolbars.css',
