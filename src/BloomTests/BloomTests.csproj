@@ -172,6 +172,7 @@
     <Compile Include="web\EnhancedImageServerTests.cs" />
     <Compile Include="PretendRequestInfo.cs" />
     <Compile Include="Collection\ShortcutMakerTests.cs" />
+    <Compile Include="WebLibraryIntegration\ProxyManagerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bloom-ChorusPlugin\BloomChorusPlugin.csproj">
