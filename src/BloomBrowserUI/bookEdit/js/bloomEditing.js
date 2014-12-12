@@ -1142,7 +1142,7 @@ function SetupElements(container) {
         // box without the .bloom-requiresParagraphs class
 
         var requireParagraphs = $(this).closest('.bloom-requiresParagraphs').length > 0
-            || ($(this).css('border-top-style') != 'dashed');//this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
+            || ($(this).css('border-top-style') == 'dashed');//this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
 
         if (!requireParagraphs) {
             // Work around a bug in geckofx. The effect was that if you clicked in a completely empty text box
