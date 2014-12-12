@@ -1,6 +1,6 @@
 var scripts = [
     'lib/jquery-1.10.1.js',               // nb: we just rename whatever version of jquery we have to this.
-    'lib/jquery-ui-1.11.2.min.js', // nb: we may just rename whatever version of jquery-ui we have to this.
+    'lib/jquery-ui-1.10.3.custom.min.js', // nb: we just rename whatever version of jquery-ui we have to this.
     'lib/jquery.easytabs.js',
     'lib/jquery.hashchange.min.js',       // needed by easytabs
     'lib/jquery.qtip.js',

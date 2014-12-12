@@ -13,7 +13,7 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
             'lib/jquery-1.10.1.js',
-            'lib/jquery-ui-1.11.2.min.js',
+            'lib/jquery-ui-1.10.3.custom.min.js',
             'lib/jquery.myimgscale.js',
             'lib/jquery.qtip.js',
             'bookEdit/js/interIframeChannel.js',
