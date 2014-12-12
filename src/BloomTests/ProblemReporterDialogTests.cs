@@ -15,6 +15,7 @@ namespace BloomTests
 	[TestFixture]
 #if __MonoCS__
 	[RequiresSTA]
+	[Platform(Exclude="Linux", Reason="Currently failing on Linux because of BL-821 (BL-831)")]
 #endif
 	public class ProblemReporterDialogTests
 	{

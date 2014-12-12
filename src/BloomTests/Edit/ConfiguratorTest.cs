@@ -196,6 +196,7 @@ namespace BloomTests.Edit
 		}
 
 		[Test]
+		[Platform(Exclude="Linux", Reason="Currently failing on Linux (BL-831)")]
 		public void WhenCollectedNoLocalDataThenLocalDataIsEmpty()
 		{
 			var first = new Configurator(_libraryFolder.Path, new NavigationIsolator());

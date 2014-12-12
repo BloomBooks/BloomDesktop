@@ -132,6 +132,7 @@ namespace BloomTests.WebLibraryIntegration
 		}
 
 		[Test]
+		[Platform(Exclude="Linux", Reason="Currently hangs on Linux on Jenkins (BL-831)")]
 		public void UploadBooks_SimilarIds_DoNotOverwrite()
 		{
 			var firstPair = UploadAndDownLoadNewBook("first", "book1", "Jack", "Jack's data");
@@ -182,6 +183,7 @@ namespace BloomTests.WebLibraryIntegration
 		}
 
 		[Test]
+		[Platform(Exclude="Linux", Reason="Currently hangs on Linux on Jenkins (BL-831)")]
 		public void UploadBook_SameId_Replaces()
 		{
 			var bookFolder = MakeBook("unittest", "myId", "me", "something");

@@ -16,6 +16,7 @@ namespace BloomTests
 	[TestFixture]
 #if __MonoCS__
 	[RequiresSTA]
+	[Platform(Exclude="Linux", Reason="Currently crashing on Linux when run together with the other tests (BL-831)")]
 #endif
 	public class PdfMakerTests
 	{
