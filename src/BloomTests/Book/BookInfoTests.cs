@@ -11,6 +11,7 @@ using Palaso.TestUtilities;
 
 namespace BloomTests.Book
 {
+	[TestFixture]
 	public class BookInfoTests
 	{
 		private TemporaryFolder _fixtureFolder;

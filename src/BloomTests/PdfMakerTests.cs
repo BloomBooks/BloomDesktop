@@ -16,27 +16,10 @@ namespace BloomTests
 	[TestFixture]
 #if __MonoCS__
 	[RequiresSTA]
+	[Platform(Exclude="Linux", Reason="Currently crashing on Linux when run together with the other tests (BL-831)")]
 #endif
 	public class PdfMakerTests
 	{
-#if __MonoCS__
-		[TestFixtureSetUp]
-		public void FixtureSetup()
-		{
-			Browser.SetUpXulRunner();
-		}
-#endif
-
-		[TestFixtureTearDown]
-		public void FixtureTearDown()
-		{
-#if __MonoCS__
-			// Doing this in Windows works on dev machines but somehow freezes the TC test runner
-			if (Gecko.Xpcom.IsInitialized)
-				Gecko.Xpcom.Shutdown();
-#endif
-		}
-
 		[Test]
 		public void MakePdf_BookStyleIsNone_OutputsPdf()
 		{

@@ -755,6 +755,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="Workspace\BloomClipboard.cs" />
+    <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bloom.ico" />

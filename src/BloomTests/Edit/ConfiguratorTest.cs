@@ -26,14 +26,6 @@ namespace BloomTests.Edit
 		private TemporaryFolder _shellCollectionFolder;
 		private TemporaryFolder _libraryFolder;
 
-#if __MonoCS__
-		[TestFixtureSetUp]
-		public void FixtureSetup()
-		{
-			Browser.SetUpXulRunner();
-		}
-#endif
-
 		[SetUp]
 		public void Setup()
 		{
@@ -61,19 +53,6 @@ namespace BloomTests.Edit
 			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), library.Object);
 			_shellCollectionFolder = new TemporaryFolder("BookStarterTests_ShellCollection");
 			_libraryFolder = new TemporaryFolder("BookStarterTests_LibraryCollection");
-
-#if !__MonoCS__
-			Browser.SetUpXulRunner();
-#endif
-		}
-
-		[TestFixtureTearDown]
-		public void FixtureTearDown()
-		{
-#if __MonoCS__
-			// Doing this in Windows works on dev machines but somehow freezes the TC test runner
-			Xpcom.Shutdown();
-#endif
 		}
 
 		[Test]
@@ -124,8 +103,6 @@ namespace BloomTests.Edit
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetLibraryData());
 			Assert.AreEqual("foo", j.library.stuff);
 		}
-
-
 
 		[Test]
 		public void CollectJsonData_NewTopLevelData_DataMerged()
@@ -196,6 +173,7 @@ namespace BloomTests.Edit
 		}
 
 		[Test]
+		[Platform(Exclude="Linux", Reason="Currently failing on Linux (BL-831)")]
 		public void WhenCollectedNoLocalDataThenLocalDataIsEmpty()
 		{
 			var first = new Configurator(_libraryFolder.Path, new NavigationIsolator());

@@ -13,13 +13,6 @@ namespace BloomTests.LowResImageProcessing
 	[TestFixture]
 	public class LowResImageCacheTests
 	{
-
-		[SetUp]
-		public void Setup()
-		{
-
-		}
-
 		[Test]
 		public void GetWideImage_ReturnsShrunkImageWithCorrectProportions()
 		{

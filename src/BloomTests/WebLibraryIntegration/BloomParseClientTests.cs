@@ -9,6 +9,7 @@ using SayMore.UI.Utilities;
 
 namespace BloomTests.WebLibraryIntegration
 {
+	[TestFixture]
 	public class BloomParseClientTests
 	{
 		private BloomParseClient _client;

@@ -11,6 +11,7 @@ using Palaso.TestUtilities;
 
 namespace BloomTests.Chorus
 {
+	[TestFixture]
 	public class BookMergingTests
 	{
 		[Test]

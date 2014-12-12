@@ -17,6 +17,7 @@ using Palaso.Progress;
 using Palaso.UI.WindowsForms.Progress;
 using RestSharp.Contrib;
 using Palaso.IO;
+using System.Net;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -36,8 +37,18 @@ namespace Bloom.WebLibraryIntegration
 		public BloomS3Client(string bucketName)
 		{
 			_bucketName = bucketName;
+			var s3config = new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" };
+			var proxy = new ProxyManager();
+			if (!string.IsNullOrEmpty(proxy.Hostname))
+			{
+				s3config.ProxyHost = proxy.Hostname;
+				s3config.ProxyPort = proxy.Port;
+				if (!string.IsNullOrEmpty(proxy.Username))
+					s3config.ProxyCredentials = new NetworkCredential(proxy.Username, proxy.Password);
+			}
+
 			_amazonS3 = AWSClientFactory.CreateAmazonS3Client(KeyManager.S3AccessKey,
-				KeyManager.S3SecretAccessKey, new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" });
+				KeyManager.S3SecretAccessKey, s3config);
 			Guard.AgainstNull(_amazonS3, "Connection to AWS");
 			_transferUtility = new TransferUtility(_amazonS3);
 		}
@@ -333,7 +344,7 @@ namespace Bloom.WebLibraryIntegration
 				throw new DirectoryNotFoundException("The book we tried to download is no longer in the BloomLibrary");
 
 			using (var tempDestination =
-					new TemporaryFolder("BloomDownloadStaging " + storageKeyOfBookFolder + " " + Guid.NewGuid()))
+					new TemporaryFolder("BloomDownloadStaging_" + storageKeyOfBookFolder + "_" + Guid.NewGuid()))
 			{
 				var request = new TransferUtilityDownloadDirectoryRequest()
 				{
