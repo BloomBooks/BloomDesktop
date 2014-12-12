@@ -235,7 +235,7 @@ namespace Bloom.MiscUI
 				_jiraIssue = jira.CreateIssue(_jiraProjectKey);
 				_jiraIssue.Type = "Awaiting Classification";
 				_jiraIssue.Summary = "User Problem Report " + _email.Text;
-				_jiraIssue.Description = GetFullDescriptionContents();
+				_jiraIssue.Description = GetFullDescriptionContents(false);
 
 				_jiraIssue.SaveChanges();
 
@@ -258,6 +258,21 @@ namespace Bloom.MiscUI
 						zip.AddDirectory(_bookSelection.CurrentSelection.FolderPath);
 						zip.Save();
 						_jiraIssue.AddAttachment(bookZip.Path);
+					}
+				}
+
+				if (Logger.Singleton != null)
+				{
+					try
+					{
+						using (var logFile = GetLogFile())
+						{
+							_jiraIssue.AddAttachment(logFile.Path);
+						}
+					}
+					catch (Exception e)
+					{
+						_jiraIssue.Description += Environment.NewLine + "Got exception trying to attach log file: " + e.Message;
 					}
 				}
 
@@ -291,7 +306,7 @@ namespace Bloom.MiscUI
 			{
 				using (var stream = File.CreateText(file.Path))
 				{
-					stream.WriteLine(GetFullDescriptionContents());
+					stream.WriteLine(GetFullDescriptionContents(false));
 
 					if (_includeBook.Checked)
 					{
@@ -315,22 +330,36 @@ namespace Bloom.MiscUI
 					zip.AddTopLevelFile(file.Path);
 				}
 			}
+			if (Logger.Singleton != null)
+			{
+				try
+				{
+					using (var logFile = GetLogFile())
+					{
+						zip.AddTopLevelFile(logFile.Path);
+					}
+				}
+				catch (Exception)
+				{
+					// just ignore
+				}
+			}
 			zip.Save();
 		}
 
-		private string GetFullDescriptionContents()
+		private string GetFullDescriptionContents(bool appendLog)
 		{
 			var bldr = new StringBuilder();
 			bldr.AppendLine("Error Report from " + _name.Text + " (" + _email.Text + ") on " + DateTime.UtcNow.ToUniversalTime());
 			bldr.AppendLine("--Problem Description--");
 			bldr.AppendLine(_description.Text);
 			bldr.AppendLine();
-			GetStandardErrorReportingProperties(bldr);
+			GetStandardErrorReportingProperties(bldr, appendLog);
 			return bldr.ToString();
 		}
 
 		//enhance: this is just copied from LibPalaso. When we move this whole class over there, we can get rid of it.
-		private static void GetStandardErrorReportingProperties(StringBuilder bldr)
+		private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
 		{
 			bldr.AppendLine();
 			bldr.AppendLine("--Error Reporting Properties--");
@@ -341,17 +370,37 @@ namespace Bloom.MiscUI
 				bldr.AppendLine(ErrorReport.Properties[label]);
 			}
 
-			bldr.AppendLine();
-			bldr.AppendLine("--Log--");
+			if (appendLog || Logger.Singleton == null)
+			{
+				bldr.AppendLine();
+				bldr.AppendLine("--Log--");
+				try
+				{
+					bldr.Append(Logger.LogText);
+				}
+				catch (Exception err)
+				{
+					//We have more than one report of dieing while logging an exception.
+					bldr.AppendLine("****Could not read from log: " + err.Message);
+				}
+			}
+		}
+
+		private TempFile GetLogFile()
+		{
+			// NOTE: Logger holds a lock on the real log file, so we can't access it directly.
+			// Instead we create a new temporary file that holds the content of the log file.
+			var file = TempFile.WithFilenameInTempFolder(UsageReporter.AppNameToUseInReporting + ".log");
 			try
 			{
-				bldr.Append(Logger.LogText);
+				File.WriteAllText(file.Path, Logger.LogText);
 			}
 			catch (Exception err)
 			{
 				//We have more than one report of dieing while logging an exception.
-				bldr.AppendLine("****Could not read from log: " + err.Message);
+				File.WriteAllText(file.Path, "****Could not read from log: " + err.Message);
 			}
+			return file;
 		}
 
 		private void _cancelButton_Click(object sender, EventArgs e)
@@ -373,7 +422,7 @@ namespace Bloom.MiscUI
 		private void _seeDetails_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			var temp = TempFile.WithExtension(".txt");
-			File.WriteAllText(temp.Path, GetFullDescriptionContents());
+			File.WriteAllText(temp.Path, GetFullDescriptionContents(true));
 			Process.Start(temp.Path);
 			//yes, we're leaking this temp file
 		}
