@@ -3,7 +3,7 @@ $(function() {
 });
 
 function setupOrigami() {
-    $('.customPage').append(getOnOffSwitch().append(createTypeSelectors()));
+    $('.customPage').append(getOnOffSwitch().append(createTypeSelectors()).append(createTextBoxIdentifier()));
 
     $('.origami-toggle .onoffswitch').change(layoutToggleClickHandler);
 
@@ -17,11 +17,19 @@ function cleanupOrigami() {
     // Otherwise, we get a new one each time the page is loaded
     $('.split-pane-resize-shim').remove();
 }
-
+function isEmpty(el) {
+    var temp = $.trim(el.textContent);
+    //alert("-" + temp + "- equals empty string: " + (temp == "").toString());
+    return temp == "";
+}
 function setupLayoutMode() {
     $('.split-pane-component-inner').each(function() {
-        if (!$(this).find('.bloom-imageContainer, .bloom-translationGroup:not(.box-header-off)').length)
+        if (!$(this).find('.bloom-imageContainer, .bloom-translationGroup:not(.box-header-off)').length) {
             $(this).append(getTypeSelectors());
+        }
+        var contents = $(this).find('.bloom-translationGroup > .bloom-editable > p')[0];
+        if(contents && isEmpty(contents))
+            $(this).append(getTextBoxIdentifier());
         $(this).append(getButtons());
     });
     // Text should not be editable in layout mode
@@ -37,6 +45,7 @@ function layoutToggleClickHandler() {
         setupLayoutMode();
     } else {
         marginBox.removeClass('origami-layout-mode');
+        marginBox.find('.bloom-translationGroup .textBox-identifier').remove();
         fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
     }
 }
@@ -214,8 +223,15 @@ function createTypeSelectors() {
     links.append(pictureLink).append(space).append(orDiv).append(space).append(textLink);
     return $('<div class="container-selector-links bloom-ui origami-ui"></div>').append(links);
 }
+function createTextBoxIdentifier() {
+    var textBoxId = $('<div class="textBox-identifier bloom-ui origami-ui data-i18n="EditTab.CustomPage.TextBox">Text Box</div>');
+    return $('<div class="container-textBox-id bloom-ui origami.ui"></div>').append(textBoxId);
+}
 function getTypeSelectors() {
     return $('.container-selector-links > .selector-links').clone(true);
+}
+function getTextBoxIdentifier() {
+    return $('.container-textBox-id > .textBox-identifier').clone();
 }
 function makeTextFieldClickHandler(e) {
     e.preventDefault();
@@ -224,7 +240,7 @@ function makeTextFieldClickHandler(e) {
     var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement"></div>');
     //getIframeChannel().simpleAjaxGetWithCallbackParam('/bloom/getNextBookStyle', setStyle, translationGroup);
     $(translationGroup).addClass('normal-style'); // replaces above to make new text boxes normal
-    $(this).closest('.split-pane-component-inner').append(translationGroup);
+    $(this).closest('.split-pane-component-inner').append(translationGroup).append(getTextBoxIdentifier());
     $(this).closest('.selector-links').remove();
     //TODO: figure out if anything needs to get hooked up immediately
 }

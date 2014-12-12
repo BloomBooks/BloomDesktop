@@ -137,13 +137,12 @@
   height: 100%;
   padding: 2px;
   box-sizing: border-box;
-  overflow: hidden;
 }
 /*the commented line below would also add it to an empty bloom-content1 for re-entry to layout mode*/
 /*but that would be problematic/confusing in a multilingual context*/
 /*.origami-layout-mode .split-pane-component-inner .bloom-editable.bloom-content1:empty:before,*/
-.origami-layout-mode .split-pane-component-inner .bloom-translationGroup:before {
-  content: "Text Box";
+.origami-layout-mode .split-pane-component-inner .textBox-identifier {
+  /*content: "Text Box";*/
   color: #cccccc;
   white-space: nowrap;
   font-size: 32px;
@@ -154,6 +153,9 @@
   z-index: 50000;
 }
 .container-selector-links {
+  display: none;
+}
+.container-textBox-id {
   display: none;
 }
 .selector-links {

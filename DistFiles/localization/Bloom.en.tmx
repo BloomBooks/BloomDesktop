@@ -1144,6 +1144,12 @@
         <seg>or</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.CustomPage.TextBox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text Box</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.NoImageFoundOnClipboard">
       <tuv xml:lang="en">
         <seg>Before you can paste an image, copy one onto your 'clipboard', from another program.</seg>
