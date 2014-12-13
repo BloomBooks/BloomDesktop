@@ -134,6 +134,7 @@ namespace BloomTests.WebLibraryIntegration
 		}
 
 		[Test]
+		[Platform(Exclude="Win", Reason="Environment variables on Windows are case-insensitive")]
 		public void BothEnvironmentVariables_UsesLowercaseVariable()
 		{
 			Environment.SetEnvironmentVariable("http_proxy", "http://example1.com");
