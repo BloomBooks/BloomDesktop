@@ -1139,7 +1139,7 @@ function SetupElements(container) {
 
     //when we discover an empty text box that has been marked to use paragraphs, start us off on the right foot
     $(container).find('.bloom-editable').focus(function () {
-        // box without the .bloom-requiresParagraphs class
+        //enhance: we actually want everything to be done with paragraphs, but need to wait for the ReaderTools to be enhanced to cope with that.
 
         var requireParagraphs = $(this).closest('.bloom-requiresParagraphs').length > 0
             || ($(this).css('border-top-style') == 'dashed');//this signal used to let the css add this conversion after some SIL-LEAD SHRP books were already typed
@@ -1153,7 +1153,10 @@ function SetupElements(container) {
             // Then, we remove that span in the blur event.
             if ($(this).text() == '') {
                 //add a span with only a zero-width space in it
-                $(this).html('<span class="bloom-ui">&#8203;</span>');
+                //enhance: a zero-width placeholder would be a bit better, but libsynphony doesn't know this is a space: //$(this).html('<span class="bloom-ui">&#8203;</span>');
+                $(this).html('&nbsp;');
+                //now select it so that the user deletes it with their first typing (enhance: they might do something to change the selection first)
+                document.execCommand('selectAll', false, null);
             }
             return;
         }
