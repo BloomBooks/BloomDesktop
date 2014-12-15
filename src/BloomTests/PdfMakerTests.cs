@@ -18,6 +18,7 @@ namespace BloomTests
 	[RequiresSTA]
 	[Platform(Exclude="Linux", Reason="Currently crashing on Linux when run together with the other tests (BL-831)")]
 #endif
+	[NUnit.Framework.Category("RequiresUI")]
 	public class PdfMakerTests
 	{
 		[Test]

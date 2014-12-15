@@ -17,6 +17,7 @@ namespace BloomTests
 	[RequiresSTA]
 	[Platform(Exclude="Linux", Reason="Currently failing on Linux because of BL-821 (BL-831)")]
 #endif
+	[Category("RequiresUI")]
 	public class ProblemReporterDialogTests
 	{
 		/// <summary>

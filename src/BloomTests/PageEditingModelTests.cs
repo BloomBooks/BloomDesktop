@@ -19,6 +19,7 @@ namespace BloomTests
 		private int kSampleImageDimension = 5;
 
 		[Test]
+		[Category("RequiresUI")]
 		public void ChangePicture_PictureIsFromOutsideProject_PictureCopiedAndAttributeChanged()
 		{
 			var dom = new XmlDocument();
@@ -91,6 +92,7 @@ namespace BloomTests
 		/// Some (or maybe all?) browsers can't show tiff, so we might as well convert it
 		/// </summary>
 		[Test]
+		[Category("RequiresUI")]
 		public void ChangePicture_PictureIsTiff_ConvertedToPng()
 		{
 			var dom = new XmlDocument();
