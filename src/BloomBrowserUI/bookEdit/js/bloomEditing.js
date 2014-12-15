@@ -1516,6 +1516,27 @@ function SetupElements(container) {
 
     $(container).find('.bloom-editable').longPress();
 
+    //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed, 
+    //a blank line is shown and the letter pressed shows up after that.
+    //This detects that situation when we type the first key after the deletion, and first deletes the <br></br>.
+    $(container).find('.bloom-editable').keypress(function (event) {
+        //if (event.target.innerHTML == "<br>") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
+        if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
+            event.target.innerHTML = "";
+        }
+    });
+    //This detects that situation when we do CTRL+A and then type a letter, instead of DEL
+    $(container).find('.bloom-editable').keyup(function (event) {
+        //console.log(event.target.innerHTML);
+        // If they pressed a letter instead of DEL, we get this case:
+        if ($(event.target).find("#formatButton").length == 0) { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
+            //they have also deleted the formatButton, so put it back in
+            // console.log('attaching'); REVIEW: this shows that we're doing the attaching on the first character entered, even though it appears the editor was already attached.
+            //so we actually attach twice. That's ok, the editor handles that, but I don't know why we're passing the if, and it could be improved.
+            editor.AttachToBox(this);
+        }
+    });
+
     //focus on the first editable field
     $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 }
