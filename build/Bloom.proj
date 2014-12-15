@@ -85,6 +85,16 @@
 	</Target>
 
 	<Target Name="TestOnly" Condition="'$(teamcity_version)' == ''">
+		<NUnit Assemblies="@(TestAssemblies)"
+			ToolPath="$(RootDir)/packages/NUnit.Runners.Net4.2.6.3/tools"
+			TestInNewThread="false"
+			ExcludeCategory="$(excludedCategories)"
+			WorkingDirectory="$(RootDir)/output/$(Configuration)"
+			Force32Bit="$(useNUnit-x86)"
+			Verbose="true"
+			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"/>
+	</Target>
+
   <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
 		Condition="'$(OS)'=='Windows_NT'">
 	<!-- USES THESE PROPERTIES: Label, Version, BuildConfigurationID -->
