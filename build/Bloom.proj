@@ -1,20 +1,25 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
-		<RootDir>$(teamcity_build_checkoutDir)</RootDir>
+		<RootDir>$(MSBuildProjectDirectory)/..</RootDir>
 		<Solution>Bloom VS2010.sln</Solution>
 		<ApplicationName>Bloom</ApplicationName>
 		<Configuration>Release</Configuration>
+		<BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
+		<useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
+		<useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
+		<MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
 	</PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)" Condition="'$(OS)'=='Windows_NT'"/>
-	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" Condition="'$(OS)'=='Windows_NT'"/>
+	<UsingTask TaskName="NUnit" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"
+		Condition="'$(OS)'=='Windows_NT'"/>
+	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
+	<UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
 	<Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets"  Condition="'$(OS)'=='Windows_NT'"/>
-	<UsingTask AssemblyFile="C:\Program Files (x86)\MSBuild\MSBuildCommunityTasks\MSBuild.Community.Tasks.dll"
-		TaskName="MsBuild.Community.Tasks.WebDownload" Condition="'$(OS)'=='Windows_NT'"/>
 
   <PropertyGroup>
 	<AccessKey>AKIAJ24BTPKNQCTQ3WQQ</AccessKey> <!-- This is for JohnThomson, a user who can upload to our libraries; override with /p:AccessKey=; used by ConfigureS3 target-->
@@ -64,18 +69,24 @@
 			 Properties="Configuration=$(Configuration)" />
   </Target>
 
+	<ItemGroup>
+		<TestAssemblies Include="$(RootDir)/output/$(Configuration)/BloomTests.dll"/>
+	</ItemGroup>
 
-	<Target Name="Test" DependsOnTargets="Build; DownloadDistFilesNeedForTests;">
-		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
-			<Output ItemName="TestAssemblies" TaskParameter="Include" />
-		</CreateItem>
+	<Target Name="Test" DependsOnTargets="Build">
+		<CallTarget Targets="TestOnly"/>
+	</Target>
+
+	<Target Name="TestOnly" Condition="'$(teamcity_version)' != ''">
 		<NUnitTeamCity
 			Assemblies="@(TestAssemblies)"
 			ExcludeCategory="SkipOnTeamCity"
 			NUnitVersion="NUnit-2.5.5" />
 	</Target>
 
-  <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers" >
+	<Target Name="TestOnly" Condition="'$(teamcity_version)' == ''">
+  <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
+		Condition="'$(OS)'=='Windows_NT'">
 	<!-- USES THESE PROPERTIES: Label, Version, BuildConfigurationID -->
 
 
@@ -249,9 +260,6 @@
 	</MakeWixForDirTree>
 
   </Target>
-
-	<Target Name="DownloadDistFilesNeedForTests">
-	</Target>
 
 	<Target Name="DownloadDistFiles">
 		<Message Text="Downloading Bloom.chm help file" Importance="high"  />
