@@ -84,7 +84,7 @@
 	<Target Name="TestOnly" DependsOnTargets="RunNUnitTC;RunNUnit"/>
 
 	<Target Name="RunNUnitTC" Condition="'$(teamcity_version)' != ''">
-		<Message Text="teamcity_agent_home_dir=$(teamcity_agent_home_dir); agent_home_dir=$(agent_home_dir); TestAssemblies=@(TestAssemblies);teamcity.agent.home.dir=$(teamcity.agent.home.dir)"/>
+		<Message Text="teamcity_agent_home_dir=$(teamcity_agent_home_dir); agent_home_dir=$(agent_home_dir); TestAssemblies=@(TestAssemblies)"/>
 		<NUnitTeamCity
 			Assemblies="@(TestAssemblies)"
 			ExcludeCategory="SkipOnTeamCity"
