@@ -1,15 +1,14 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
-		<RootDir Condition="'$(teamcity_version)' == ''">$(MSBuildProjectDirectory)/..</RootDir>
-		<RootDir Condition="'$(teamcity_version)' != ''">$(teamcity_build_checkoutDir)</RootDir>
+		<RootDir Condition="'$(teamcity_version)' == '' Or '$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)/..</RootDir>
+		<RootDir Condition="'$(teamcity_version)' != '' And '$(OS)'=='Windows_NT'">$(teamcity_build_checkoutDir)</RootDir>
 		<Solution>Bloom VS2010.sln</Solution>
 		<ApplicationName>Bloom</ApplicationName>
 		<Configuration>Release</Configuration>
 		<BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
 		<useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
 		<useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
-		<MSBuildCommunityTasksPath Condition="'$(teamcity_version)' == ''">$(RootDir)/build</MSBuildCommunityTasksPath>
-		<MSBuildCommunityTasksPath Condition="'$(teamcity_version)' != ''">$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
+		<MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
 	</PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
