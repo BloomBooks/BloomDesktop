@@ -74,7 +74,9 @@
 	</ItemGroup>
 
 	<Target Name="Test" DependsOnTargets="Build">
+		<Message Text="Starting unit tests"/>
 		<CallTarget Targets="TestOnly"/>
+		<Message Text="Finished running unit tests"/>
 	</Target>
 
 	<Target Name="TestOnly" Condition="'$(teamcity_version)' != ''">
