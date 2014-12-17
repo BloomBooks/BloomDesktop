@@ -219,7 +219,7 @@ namespace Bloom.Edit
 		private string MergeJsonData(string a, string b)
 		{
 			//NB: this has got to be the ugliest code I have written since HighSchool.  There are just all these weird bugs, missing functions, etc. in the
-			//json libraries. And probably better ways to do this stuff, too.  Maybe it doesn't help that I'm using too different libaries in one function!
+			//json libraries. And probably better ways to do this stuff, too.  Maybe it doesn't help that I'm using two different libaries in one function!
 			//All I can say is it has unit test converage.
 			JObject existing = JObject.Parse(a.ToString());
 			foreach (KeyValuePair<string, dynamic> item in DynamicJson.Parse(b))
@@ -229,7 +229,7 @@ namespace Bloom.Edit
 				{
 					if (inExisting)
 					{
-						string merged = MergeJsonData(existing[item.Key].ToString().Replace("\r\n", "").Replace("\\", ""), item.Value.ToString());
+						string merged = MergeJsonData(existing[item.Key].ToString().Replace("\r\n", "").Replace("\n", "").Replace("\\", ""), item.Value.ToString());
 						existing.Remove(item.Key);
 						existing.Add(item.Key, JToken.Parse(merged));
 					}
