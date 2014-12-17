@@ -157,8 +157,10 @@ namespace Bloom.Book
 				{
 					return "Title Missing";
 				}
-				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
-				t = RemoveXmlMarkup(t);
+				// Handle both Windows and Linux line endings in case a file copied between the two
+				// ends up with the wrong one.
+				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("\n", " ").Replace("  "," ");
+				t = RemoveXmlMarkup(t).Trim();
 				return t;
 			}
 		}
