@@ -80,7 +80,7 @@
 		<Message Text="Finished running unit tests"/>
 	</Target>
 
-	<Target Name="TestOnly" DependesOnTargets="RunNUnitTC;RunNUnit"/>
+	<Target Name="TestOnly" DependsOnTargets="RunNUnitTC;RunNUnit"/>
 
 	<Target Name="RunNUnitTC" Condition="'$(teamcity_version)' != ''">
 		<Message Text="Running NUnitTeamCity task"/>
