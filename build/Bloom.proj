@@ -84,7 +84,7 @@
 
 	<Target Name="TestOnly" DependsOnTargets="RunNUnitTC;RunNUnit"/>
 
-	<Target Name="RunNUnitTC" Condition="'$(teamcity_version)' != ''">
+	<Target Name="RunNUnitTC" Condition="'$(teamcity_version)' != '' And '$(OS)'=='Windows_NT'">
 		<NUnitTeamCity
 			Assemblies="@(TestAssemblies)"
 			ExcludeCategory="SkipOnTeamCity"
