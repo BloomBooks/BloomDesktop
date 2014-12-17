@@ -16,11 +16,15 @@
 	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="NUnit" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"
-		Condition=" '$(teamcity_version)' != '' "/>
+	<UsingTask TaskName="NUnitTeamCity"
+		AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"
+		Condition=" '$(teamcity_version)' != '' And '$(OS)'=='Windows_NT'"/>
+	<UsingTask TaskName="NUnitTeamCity"
+		AssemblyFile="$(agent_home_dir)/plugins/dotnetPlugin/bin/JetBrains.BuildServer.MSBuildLoggers.dll"
+		Condition=" '$(teamcity_version)' != '' And '$(OS)'!='Windows_NT'"/>
 	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
 	<UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
-	<Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets"  Condition="'$(OS)'=='Windows_NT'"/>
+	<Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets" Condition="'$(OS)'=='Windows_NT'"/>
 
   <PropertyGroup>
 	<AccessKey>AKIAJ24BTPKNQCTQ3WQQ</AccessKey> <!-- This is for JohnThomson, a user who can upload to our libraries; override with /p:AccessKey=; used by ConfigureS3 target-->
@@ -75,15 +79,12 @@
 	</ItemGroup>
 
 	<Target Name="Test" DependsOnTargets="Build">
-		<Message Text="Starting unit tests; teamcity_version='$(teamcity_version)'"/>
 		<CallTarget Targets="TestOnly"/>
-		<Message Text="Finished running unit tests"/>
 	</Target>
 
 	<Target Name="TestOnly" DependsOnTargets="RunNUnitTC;RunNUnit"/>
 
 	<Target Name="RunNUnitTC" Condition="'$(teamcity_version)' != ''">
-		<Message Text="Running NUnitTeamCity task"/>
 		<NUnitTeamCity
 			Assemblies="@(TestAssemblies)"
 			ExcludeCategory="SkipOnTeamCity"
@@ -91,7 +92,6 @@
 	</Target>
 
 	<Target Name="RunNUnit" Condition="'$(teamcity_version)' == ''">
-		<Message Text="Running NUnit task"/>
 		<NUnit Assemblies="@(TestAssemblies)"
 			ToolPath="$(RootDir)/packages/NUnit.Runners.Net4.2.6.3/tools"
 			TestInNewThread="false"
