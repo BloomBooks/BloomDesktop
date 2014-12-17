@@ -16,7 +16,7 @@
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="NUnit" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"
-		Condition="'$(OS)'=='Windows_NT'"/>
+		Condition=" '$(TEAMCITY_VERSION)' != '' "/>
 	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
 	<UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
 	<Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets"  Condition="'$(OS)'=='Windows_NT'"/>
@@ -74,19 +74,21 @@
 	</ItemGroup>
 
 	<Target Name="Test" DependsOnTargets="Build">
-		<Message Text="Starting unit tests"/>
+		<Message Text="Starting unit tests; teamcity_version='$(TEAMCITY_VERSION)'"/>
 		<CallTarget Targets="TestOnly"/>
 		<Message Text="Finished running unit tests"/>
 	</Target>
 
-	<Target Name="TestOnly" Condition="'$(teamcity_version)' != ''">
+	<Target Name="TestOnly" Condition=" '$(TEAMCITY_VERSION)' != '' ">
+		<Message Text="Running NUnitTeamCity task"/>
 		<NUnitTeamCity
 			Assemblies="@(TestAssemblies)"
 			ExcludeCategory="SkipOnTeamCity"
 			NUnitVersion="NUnit-2.5.5" />
 	</Target>
 
-	<Target Name="TestOnly" Condition="'$(teamcity_version)' == ''">
+	<Target Name="TestOnly" Condition=" '$(TEAMCITY_VERSION)' == '' ">
+		<Message Text="Running NUnit task"/>
 		<NUnit Assemblies="@(TestAssemblies)"
 			ToolPath="$(RootDir)/packages/NUnit.Runners.Net4.2.6.3/tools"
 			TestInNewThread="false"
