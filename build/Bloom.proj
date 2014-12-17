@@ -20,7 +20,7 @@
 		AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"
 		Condition=" '$(teamcity_version)' != '' And '$(OS)'=='Windows_NT'"/>
 	<UsingTask TaskName="NUnitTeamCity"
-		AssemblyFile="$(agent_home_dir)/plugins/dotnetPlugin/bin/JetBrains.BuildServer.MSBuildLoggers.dll"
+		AssemblyFile="$(teamcity_agent_home_dir)/plugins/dotnetPlugin/bin/JetBrains.BuildServer.MSBuildLoggers.dll"
 		Condition=" '$(teamcity_version)' != '' And '$(OS)'!='Windows_NT'"/>
 	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
 	<UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
@@ -68,7 +68,6 @@
   </Target>
 
   <Target Name="Build" DependsOnTargets="SetAssemblyVersion">
-
 	<MSBuild Projects="$(RootDir)/$(Solution)"
 			 Targets="Rebuild"
 			 Properties="Configuration=$(Configuration)" />
