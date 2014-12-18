@@ -84,14 +84,14 @@
 
 	<Target Name="TestOnly" DependsOnTargets="RunNUnitTC;RunNUnit"/>
 
-	<Target Name="RunNUnitTC" Condition="'$(teamcity_version)' != '' And '$(OS)'=='Windows_NT'">
+	<Target Name="RunNUnitTC" Condition="'$(teamcity_version)' != ''">
 		<NUnitTeamCity
 			Assemblies="@(TestAssemblies)"
 			ExcludeCategory="SkipOnTeamCity"
 			NUnitVersion="NUnit-2.6.2" />
 	</Target>
 
-	<Target Name="RunNUnit" Condition="'$(teamcity_version)' == '' Or '$(OS)'!='Windows_NT'">
+	<Target Name="RunNUnit" Condition="'$(teamcity_version)' == ''">
 		<NUnit Assemblies="@(TestAssemblies)"
 			ToolPath="$(RootDir)/packages/NUnit.Runners.Net4.2.6.3/tools"
 			TestInNewThread="false"
