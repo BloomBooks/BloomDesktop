@@ -27,7 +27,7 @@ namespace BloomTests.WebLibraryIntegration
 		[SetUp]
 		public void Setup()
 		{
-			_workFolder = new TemporaryFolder("unittest");
+			_workFolder = new TemporaryFolder("unittest-" + Guid.NewGuid());
 			_workFolderPath = _workFolder.FolderPath;
 			Assert.AreEqual(0,Directory.GetDirectories(_workFolderPath).Count(),"Some stuff was left over from a previous test");
 			Assert.AreEqual(0, Directory.GetFiles(_workFolderPath).Count(),"Some stuff was left over from a previous test");

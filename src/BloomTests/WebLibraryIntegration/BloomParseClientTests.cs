@@ -41,27 +41,36 @@ namespace BloomTests.WebLibraryIntegration
 		[Test]
 		public void CreateDeleteAndLogin()
 		{
-			if (_client.LogIn("mytest@example.com", "nonsense"))
+			var accountInstanceId = Guid.NewGuid().ToString();
+			var account = string.Format("mytest-{0}@example.com", accountInstanceId);
+			var titleCaseAccount = string.Format("Mytest-{0}@example.com", accountInstanceId);
+			var titleCaseDomain = string.Format("Mytest-{0}@Example.com", accountInstanceId);;
+
+			if (_client.LogIn(account, "nonsense"))
 				_client.DeleteCurrentUser();
-			Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.False);
-			Assert.That(_client.UserExists("mytest@example.com"), Is.False);
-			_client.CreateUser("mytest@example.com", "nonsense");
-			Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.True);
-			Assert.That(_client.LogIn("Mytest@example.com", "nonsense"), Is.True, "login is not case-independent");
-			Assert.That(_client.UserExists("mytest@example.com"), Is.True);
-			Assert.That(_client.UserExists("Mytest@example.com"), Is.True, "UserExists is not case-independent");
+			Assert.That(_client.LogIn(account, "nonsense"), Is.False);
+			Assert.That(_client.UserExists(account), Is.False);
+
+			_client.CreateUser(account, "nonsense");
+			Assert.That(_client.LogIn(account, "nonsense"), Is.True);
+			Assert.That(_client.LogIn(titleCaseAccount, "nonsense"), Is.True, "login is not case-independent");
+			Assert.That(_client.UserExists(account), Is.True);
+			Assert.That(_client.UserExists(titleCaseAccount), Is.True, "UserExists is not case-independent");
+
 			_client.DeleteCurrentUser();
 			Assert.That(_client.LoggedIn, Is.False);
-			Assert.That(_client.UserExists("mytest@example.com"), Is.False);
-			Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.False);
-			_client.CreateUser("Mytest@Example.com", "nonsense");
-			Assert.That(_client.LogIn("Mytest@example.com", "nonsense"), Is.True, "CreateUser is not case-independent");
-			Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.True, "CreateUser is not case-independent");
-			Assert.That(_client.UserExists("Mytest@Example.com"), Is.True);
-			Assert.That(_client.UserExists("Mytest@example.com"), Is.True, "UserExists is not case-independent");
+			Assert.That(_client.UserExists(account), Is.False);
+			Assert.That(_client.LogIn(account, "nonsense"), Is.False);
+
+			_client.CreateUser(titleCaseDomain, "nonsense");
+			Assert.That(_client.LogIn(titleCaseAccount, "nonsense"), Is.True, "CreateUser is not case-independent");
+			Assert.That(_client.LogIn(account, "nonsense"), Is.True, "CreateUser is not case-independent");
+			Assert.That(_client.UserExists(titleCaseDomain), Is.True);
+			Assert.That(_client.UserExists(titleCaseAccount), Is.True, "UserExists is not case-independent");
+
 			_client.DeleteCurrentUser();
 			Assert.That(_client.LoggedIn, Is.False);
-			Assert.That(_client.LogIn("mytest@example.com", "nonsense"), Is.False);
+			Assert.That(_client.LogIn(account, "nonsense"), Is.False);
 		}
 
 		[Test]
