@@ -102,7 +102,8 @@
     // 46 delete
     // Review: there are others we could add, function keys, num lock, scroll lock, break, forward & back slash, etc.
     //  not sure how much we gain from that...
-    var ignoredKeys=[8, 9, 13, 16, 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
+    var ignoredKeyDownKeys=[8, 9, 13, 16, 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
+    var ignoredKeyUpKeys = [8, 9, 13, /*16,*/ 17, 18, 27, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46];
 
     var selectedCharIndex;
     var lastWhich;
@@ -126,7 +127,7 @@
             return;
         }
 
-        if (ignoredKeys.indexOf(e.which)>-1) return;
+        if (ignoredKeyDownKeys.indexOf(e.which)>-1) return;
         activeElement=e.target;
 
         if (e.which==lastWhich) {
@@ -137,8 +138,12 @@
         lastWhich=e.which;
     }
     function onKeyUp(e) {
-        if (ignoredKeys.indexOf(e.which)>-1) return;
-        if (activeElement==null) return;
+        if (ignoredKeyUpKeys.indexOf(e.which) > -1) return;
+        if (activeElement == null) return;
+
+        // allow them to hold down the shift key after pressing a letter, 
+        // then use their other hand to do mouse or arrow keys.
+        if (e.shiftKey) return;
 
         lastWhich=null;
         clearTimeout(timer);
