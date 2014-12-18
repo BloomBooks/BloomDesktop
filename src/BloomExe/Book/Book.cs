@@ -742,6 +742,9 @@ namespace Bloom.Book
 			progress.WriteStatus("Updating pages that were based on Basic Book...");
 			foreach (XmlElement templatePageDiv in templateDom.SafeSelectNodes("//body/div"))
 			{
+				if (templatePageDiv.GetOptionalStringAttribute("class", "").Contains("customPage"))
+					return; // we sure don't want to revert this page to its blank custom state
+
 				var templateId = templatePageDiv.GetStringAttribute("id");
 				if (string.IsNullOrEmpty(templateId))
 					return;
