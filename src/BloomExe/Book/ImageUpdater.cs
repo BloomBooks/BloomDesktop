@@ -73,14 +73,13 @@ namespace Bloom.Book
 		public static void UpdateImgMetdataAttributesToMatchImage(string folderPath, XmlElement imgElement, IProgress progress, Metadata metadata)
 		{
 			//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
-			var fileName = imgElement.GetOptionalStringAttribute("src", string.Empty).ToLower();
-
+			var fileName = imgElement.GetOptionalStringAttribute("src", string.Empty);
 			var end = fileName.IndexOf('?');
 			if (end > 0)
 			{
 				fileName = fileName.Substring(0, end);
 			}
-			if (fileName == "placeholder.png" || fileName == "license.png")
+			if (fileName.ToLowerInvariant() == "placeholder.png" || fileName.ToLowerInvariant() == "license.png")
 				return;
 			if (string.IsNullOrEmpty(fileName))
 			{

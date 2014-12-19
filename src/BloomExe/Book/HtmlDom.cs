@@ -434,10 +434,16 @@ namespace Bloom.Book
 
 		public void AddStyleSheetIfMissing(string path)
 		{
+			// Remember, Linux filenames are case sensitive.
+			var pathToCheck = path;
+			if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+				pathToCheck = pathToCheck.ToLowerInvariant();
 			foreach (XmlElement link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
-				var fileName = link.GetStringAttribute("href").ToLower();
-				if (fileName == path.ToLower())
+				var fileName = link.GetStringAttribute("href");
+				if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+					fileName = fileName.ToLowerInvariant();
+				if (fileName == pathToCheck)
 					return;
 			}
 			_dom.AddStyleSheet(path.Replace("file://", ""));
@@ -446,23 +452,30 @@ namespace Bloom.Book
 		public IEnumerable<string> GetTemplateStyleSheets()
 		{
 			var stylesheetsToIgnore = new List<string>();
-			stylesheetsToIgnore.Add("basepage.css");
-			stylesheetsToIgnore.Add("languagedisplay.css");
-			stylesheetsToIgnore.Add("editmode.css");
-			stylesheetsToIgnore.Add("editoriginalmode.css");
-			stylesheetsToIgnore.Add("previewmode.css");
-			stylesheetsToIgnore.Add("settingsCollectionStyles.css".ToLower());
-			stylesheetsToIgnore.Add("customCollectionStyles.css".ToLower());
-			stylesheetsToIgnore.Add("customBookStyles.css".ToLower());
-			stylesheetsToIgnore.Add("xmatter");
+			// Remember, Linux filenames are case sensitive!
+			stylesheetsToIgnore.Add("basePage.css");
+			stylesheetsToIgnore.Add("languageDisplay.css");
+			stylesheetsToIgnore.Add("editMode.css");
+			stylesheetsToIgnore.Add("editOriginalMode.css");
+			stylesheetsToIgnore.Add("previewMode.css");
+			stylesheetsToIgnore.Add("settingsCollectionStyles.css");
+			stylesheetsToIgnore.Add("customCollectionStyles.css");
+			stylesheetsToIgnore.Add("customBookStyles.css");
+			stylesheetsToIgnore.Add("XMatter");
 
 			foreach (XmlElement link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
-				var fileName = link.GetStringAttribute("href").ToLower();
+				var fileName = link.GetStringAttribute("href");
+				var nameToCheck = fileName;
+				if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+					nameToCheck = fileName.ToLowerInvariant();
 				bool match = false;
 				foreach (var nameOrFragment in stylesheetsToIgnore)
 				{
-					if (fileName.Contains(nameOrFragment))
+					var nameStyle = nameOrFragment;
+					if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+						nameStyle = nameStyle.ToLowerInvariant();
+					if (nameToCheck.Contains(nameStyle))
 					{
 						match = true;
 						break;

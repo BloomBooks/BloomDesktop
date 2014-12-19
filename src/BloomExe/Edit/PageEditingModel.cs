@@ -169,7 +169,7 @@ namespace Bloom.Edit
 			if(string.IsNullOrEmpty(imageInfo.FileName))
 				return false;
 
-			return  new []{"jpg", "jpeg"}.Contains(Path.GetExtension(imageInfo.FileName).ToLower());
+			return  new []{".jpg", ".jpeg"}.Contains(Path.GetExtension(imageInfo.FileName).ToLower());
 		}
 
 		public void UpdateMetdataAttributesOnImgElement(GeckoHtmlElement img, PalasoImage imageInfo)

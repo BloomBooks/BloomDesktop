@@ -938,6 +938,7 @@ namespace Bloom.Edit
 
 		public string GetFontAvailabilityMessage()
 		{
+			// REVIEW: does this ToLower() do the right thing on Linux, where filenames are case sensitive?
 			var name = _collectionSettings.DefaultLanguage1FontName.ToLower();
 
 			if(null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLower() == name))
