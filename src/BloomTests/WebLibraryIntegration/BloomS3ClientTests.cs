@@ -36,7 +36,7 @@ namespace BloomTests.WebLibraryIntegration
 
 		private string MakeBook()
 		{
-			var f = new TemporaryFolder(_workFolder, "unittest");
+			var f = new TemporaryFolder(_workFolder, "unittest-" + Guid.NewGuid());
 			File.WriteAllText(Path.Combine(f.FolderPath, "one.htm"), "test");
 			File.WriteAllText(Path.Combine(f.FolderPath, "one.css"), "test");
 			return f.FolderPath;
@@ -55,11 +55,14 @@ namespace BloomTests.WebLibraryIntegration
 			string srcBookPath = MakeBook();
 			var storageKeyOfBookFolder = UploadBook(srcBookPath);
 
-			Assert.AreEqual(Directory.GetFiles(srcBookPath).Count(), _client.GetCountOfAllFilesInBucket());
+			// It's possible that another unit test uploads a book at the same time, so we can't
+			// test for strict equality.
+			Assert.That(_client.GetCountOfAllFilesInBucket(), Is.AtLeast(Directory.GetFiles(srcBookPath).Count()));
 
+			var expectedDir = Path.GetFileName(srcBookPath);
 			foreach (var file in Directory.GetFiles(srcBookPath))
 			{
-				Assert.IsTrue(_client.FileExists(storageKeyOfBookFolder, "unittest", Path.GetFileName(file)));
+				Assert.IsTrue(_client.FileExists(storageKeyOfBookFolder, expectedDir, Path.GetFileName(file)));
 			}
 		}
 
