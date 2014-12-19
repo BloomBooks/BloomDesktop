@@ -68,7 +68,7 @@ namespace Bloom.WebLibraryIntegration
 				return;
 			var root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
 			var key = root.CreateSubKey(@"bloom\shell\open\command");
-			key.SetValue("", CommandToLaunchBloom);
+			key.SetValue("", CommandToLaunchBloomOnWindows);
 
 			key = root.CreateSubKey("bloom");
 			key.SetValue("", "BLOOM:URL Protocol");
@@ -80,7 +80,7 @@ namespace Bloom.WebLibraryIntegration
 			var key = root.OpenSubKey(@"bloom\shell\open\command");
 			if (key == null)
 				return false;
-			var wanted = CommandToLaunchBloom;
+			var wanted = CommandToLaunchBloomOnWindows;
 			if (wanted != (key.GetValue("") as string).ToLowerInvariant())
 				return false;
 			key = root.OpenSubKey("bloom");
@@ -91,7 +91,7 @@ namespace Bloom.WebLibraryIntegration
 			return true;
 		}
 
-		private string CommandToLaunchBloom
+		private string CommandToLaunchBloomOnWindows
 		{
 			get { return Application.ExecutablePath.ToLowerInvariant() + " \"%1\""; }
 		}

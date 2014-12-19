@@ -94,7 +94,7 @@ namespace Bloom.Book
 		public static SizeAndOrientation FromString(string name)
 		{
 			var nameLower = name.ToLower();
-			var startOfOrientationName = Math.Max(nameLower.ToLower().IndexOf("landscape"), nameLower.ToLower().IndexOf("portrait"));
+			var startOfOrientationName = Math.Max(nameLower.IndexOf("landscape"), nameLower.IndexOf("portrait"));
 			if(startOfOrientationName == -1)
 			{
 				Debug.Fail("No orientation name found in '"+nameLower+"'");
@@ -105,14 +105,14 @@ namespace Bloom.Book
 					};
 			}
 			int startOfAlternativeName=-1;
-			if(nameLower.ToLower().Contains("landscape"))
+			if(nameLower.Contains("landscape"))
 				startOfAlternativeName = startOfOrientationName + "landscape".Length;
 			else
 				startOfAlternativeName = startOfOrientationName + "portrait".Length;
 
 			return new SizeAndOrientation()
 					{
-						IsLandScape = nameLower.ToLower().Contains("landscape"),
+						IsLandScape = nameLower.Contains("landscape"),
 						PageSizeName = nameLower.Substring(0, startOfOrientationName).ToUpperFirstLetter(),
 						//AlternativeName = name.Substring(startOfAlternativeName, nameLower.Length - startOfAlternativeName)
 					};
@@ -133,8 +133,7 @@ namespace Bloom.Book
 					fileName.ToLower().Contains("matter") || fileName.ToLower().Contains("languagedisplay"))
 					continue;
 
-				fileName = fileName.Replace("file://", "").Replace("%5C", "/");
-				fileName = fileName.Replace("file://", "").Replace("%20", " ");
+				fileName = fileName.Replace("file://", "").Replace("%5C", "/").Replace("%20", " ");
 				var path = fileLocator.LocateFile(fileName);
 				if(string.IsNullOrEmpty(path))
 				{
