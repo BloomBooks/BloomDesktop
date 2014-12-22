@@ -1229,6 +1229,18 @@ function SetupElements(container) {
 
     SetBookCopyrightAndLicenseButtonVisibility(container);
 
+    //CSS normally can't get at the text in order to, for example, show something different if it is empty.
+    //This allows you to add .bloom-needs-data-text to a bloom-translationGroup in order to get
+    //its child bloom-editable's to have data-texts's on them
+    $(container).find(".bloom-translationGroup.bloom-text-for-css .bloom-editable").each(function () {
+        // initially fill it
+        $(this).attr('data-text', this.textContent);
+        // keep it up to date
+        $(this).on('blur paste input', function () {
+            $(this).attr('data-text', this.textContent);
+        });
+    });
+
     //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
     $(container).find(".bloom-translationGroup").each(function () {
         var contentElements = $(this).find("textarea, div.bloom-editable");
