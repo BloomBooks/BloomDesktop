@@ -456,7 +456,7 @@ namespace Bloom
 			File.Copy(src, temp.Path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
 
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
-				Process.Start("Firefox.exe", temp.Path.ToLocalhost());
+				Process.Start("Firefox.exe", '"' + temp.Path.ToLocalhost() + '"');
 			else
 				Process.Start("xdg-open", temp.Path.ToLocalhost()); ;
 		}

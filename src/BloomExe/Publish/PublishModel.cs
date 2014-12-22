@@ -336,7 +336,7 @@ namespace Bloom.Publish
 
 			var htmlFilePath = MakeFinalHtmlForPdfMaker().Path;
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
-				Process.Start("Firefox.exe", htmlFilePath);
+				Process.Start("Firefox.exe", '"' + htmlFilePath + '"');
 			else
 				Process.Start("xdg-open", htmlFilePath);
 		}
