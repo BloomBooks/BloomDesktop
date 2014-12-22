@@ -132,6 +132,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BloomFileLocatorTests.cs" />
     <Compile Include="Book\BookCollectionTests.cs" />
     <Compile Include="Book\BookInfoTests.cs" />
     <Compile Include="Book\HtmlDomTests.cs" />
