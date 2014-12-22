@@ -30,6 +30,11 @@ namespace Bloom.web
 
 		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
 		{
+			if (CurrentBook == null || CurrentBook.CollectionSettings == null)
+			{
+				Debug.Fail("BL-836 reproduction?");
+				return false;
+			}
 			var lastSep = localPath.IndexOf("/", StringComparison.Ordinal);
 			var lastSegment = (lastSep > -1) ? localPath.Substring(lastSep + 1) : localPath;
 
