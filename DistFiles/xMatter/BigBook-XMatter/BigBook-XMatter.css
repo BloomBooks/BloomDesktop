@@ -125,8 +125,12 @@ DIV.coverBottomLangName
 	content: '( ';
 }
 .metadataPage .nationalLanguage1Title[data-book='bookTitle']:after
-{
-	content: ')';
+{ 
+	content: ' )' !important;
+	/* now we have to override everything that would normall use the :after for a language tag */
+	position: relative !important;
+	color: black  !important;
+	font-size: inherit  !important;
 }
 .metadataPage .funding
 {
