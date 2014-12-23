@@ -1,4 +1,6 @@
-﻿## 3.0.74 BETA
+﻿- Overhauled the Credits page so that there is more room for text.
+
+## 3.0.74 BETA
 
 - A new Front/Backmatter option is available, named "Traditional". This puts the credits page on the back of the title page, rather than the inside of the front cover. This is good in cases where you pay by the page imprint, rather than by pieces of paper. You can select it from Settings:Book Making:Front/Back Matter Pack. Once you have chosen this, you won't see it on any existing books until you do these steps: In the Collection Tab, click on the little triangle, then select "Advanced: Do Updates of All Books".
 
