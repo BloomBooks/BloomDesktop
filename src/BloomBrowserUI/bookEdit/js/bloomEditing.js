@@ -1517,14 +1517,19 @@ function SetupElements(container) {
         SetupImage(this);
     });
 
-    var editor = GetEditor();
+        var editor = GetEditor();
 
-    $(container).find("div.bloom-editable:visible").each(function () {
-
-        $(this).focus(function() {
-           editor.AttachToBox(this);
+        $(container).find("div.bloom-editable:visible").each(function () {
+            // If the .bloom-editable or any of its ancestors (including <body>) has the class "bloom-userCannotModifyStyles",
+            // then the controls that allow the user to adjust the styles will not be shown.This does not prevent the user
+            // from doing character styling, e.g. CTRL+b for bold.
+            if ($(this).closest('.bloom-userCannotModifyStyles').length == 0) {
+                $(this).focus(function() {
+                    editor.AttachToBox(this);
+                });
+            }
         });
-    });
+    
 
     $(container).find('.bloom-editable').longPress();
 
@@ -1532,8 +1537,7 @@ function SetupElements(container) {
     //a blank line is shown and the letter pressed shows up after that.
     //This detects that situation when we type the first key after the deletion, and first deletes the <br></br>.
     $(container).find('.bloom-editable').keypress(function (event) {
-        //if (event.target.innerHTML == "<br>") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
-        if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
+         if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
             event.target.innerHTML = "";
         }
     });
