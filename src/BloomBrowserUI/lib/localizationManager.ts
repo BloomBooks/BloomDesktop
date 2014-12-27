@@ -201,11 +201,9 @@ var localizationManager: LocalizationManager = new LocalizationManager();
  */
 function SimpleDotNetFormat(format, args) {
 
-  for (var i = 0; i < args.length; i++) {
-    var regex = new RegExp('\\{' + i + '\\}', 'g');
-    format = format.replace(regex, args[i]);
-  }
-  return format;
+  return format.replace(/{(\d+)}/g, function(match: string, index: number) {
+    return (typeof args[index] !== 'undefined') ? args[index] : match;
+  });
 }
 
 /**
