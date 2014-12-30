@@ -22,6 +22,10 @@ namespace Bloom
 			IEnumerable<string> afterXMatterSearchPaths = null)
 			: base(factorySearchPaths.Concat( userInstalledSearchPaths))//review: is this even used, since we override GetSearchPaths()?
 		{
+			if (afterXMatterSearchPaths == null)
+			{
+				afterXMatterSearchPaths = new string[] {};
+			}
 			_bookSpecificSearchPaths = new List<string>();
 			_collectionSettings = collectionSettings;
 			_xMatterPackFinder = xMatterPackFinder;
