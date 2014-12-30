@@ -284,9 +284,12 @@ namespace Bloom
 		public static IEnumerable<string> GetFoundFileLocations()
 		{
 			var samplesDir = Path.Combine(FactoryCollectionsDirectory, "Sample Shells");
-			foreach (var dir in Directory.GetDirectories(samplesDir))
+			if (Directory.Exists(samplesDir))
 			{
-				yield return dir;
+				foreach (var dir in Directory.GetDirectories(samplesDir))
+				{
+					yield return dir;
+				}
 			}
 
 			foreach (var p in GetUserInstalledDirectories()) yield return p;
