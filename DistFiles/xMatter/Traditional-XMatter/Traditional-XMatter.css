@@ -1,3 +1,6 @@
+.insideFrontCover .bloom-editable {
+  height: 100%;
+}
 /*Cover Page*/
 .A5Portrait.bloom-frontMatter DIV.marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
@@ -563,7 +566,4 @@ DIV.versionAcknowledgments {
 .outsideBackCover DIV.bloom-editable {
   height: 100%;
   text-align: center;
-}
-.insideFrontCover .bloom-editable {
-  height: 100%;
 }

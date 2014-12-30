@@ -1,4 +1,4 @@
-include bloom-foundation-mixins
+include ../jade/bloom-foundation-mixins
 
 //- -------------------------------------------------------------------------------
 //-	This first group of mixins should be used to construct the factory as well
@@ -142,6 +142,11 @@ mixin factoryStandard-titlePage
 				//- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
 				.langName(data-library='languageLocation')
 
+mixin standard-blankInsideFrontCover
+	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='back-matter-inside-front-cover')#BA00DE13-734C-4036-9901-7040275B9000
+		+field-mono-meta("N1","insideFontCover").Inside-Front-Cover-style.bloom-copyFromOtherLanguageIfNecessary
+			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.
+
 mixin factoryStandard-insideBackCover
 	// Inside Back Cover
 	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(attributes, data-export='back-matter-inside-back-cover')#502BE62F-A4D0-4225-A598-1A203FA73239
@@ -154,3 +159,10 @@ mixin factoryStandard-outsideBackCover
 		//- +field-mono-version1("N1","If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.").outside-back-cover-style(data-book='outsideBackCover')
 		+field-mono-meta("N1","outsideBackCover").Outside-Back-Cover-style.bloom-copyFromOtherLanguageIfNecessary
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.
+
+mixin standard-ISOLanguageCode
+	.iso339Code
+		// TODO we need this to be localizable, so we can have "ISO 639-3 Language Code" or "Code langue ISO 639-3"
+		| ISO 639 Language Code:
+		DIV(data-collection='iso639Code')
+
