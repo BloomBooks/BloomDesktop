@@ -289,7 +289,23 @@ namespace Bloom
 				yield return dir;
 			}
 
-			//Note: This is ordering may no be sufficient. The intent is to use the versino of a css from
+			foreach (var p in GetUserInstalledDirectories()) yield return p;
+
+//			ENHANCE: Add, in the list of places we look, this library's "regional library" (when such a concept comes into being)
+//			so that things like IndonesiaA5Portrait.css work just the same as the Factory "A5Portrait.css"
+//			var templateCollectionList = parentContainer.Resolve<SourceCollectionsList>();
+//			foreach (var repo in templateCollectionList.RepositoryFolders)
+//			{
+//				foreach (var directory in Directory.GetDirectories(repo))
+//				{
+//					yield return directory;
+//				}
+//			}
+		}
+
+		public static IEnumerable<string> GetUserInstalledDirectories()
+		{
+//Note: This is ordering may no be sufficient. The intent is to use the versino of a css from
 			//the template directory, to aid the template developer (he/she will want to make tweaks in the
 			//original, not the copies with sample data). But this is very blunt; we're throwing in every
 			//template we can find; so the code which uses this big pot could easily link to the wrong thing
@@ -323,17 +339,6 @@ namespace Bloom
 					}
 				}
 			}
-
-//			TODO: Add, in the list of places we look, this library's "regional library" (when such a concept comes into being)
-//			so that things like IndonesiaA5Portrait.css work just the same as the Factory "A5Portrait.css"
-//			var templateCollectionList = parentContainer.Resolve<SourceCollectionsList>();
-//			foreach (var repo in templateCollectionList.RepositoryFolders)
-//			{
-//				foreach (var directory in Directory.GetDirectories(repo))
-//				{
-//					yield return directory;
-//				}
-//			}
 		}
 		private static string FactoryCollectionsDirectory
 		{
