@@ -65,6 +65,14 @@ namespace Bloom.Book
 					|| (s.ToLower().EndsWith("\\"+pair.Key)))
 					return pair.Value;
 			}
+
+
+			// "SHRP Labels.css" is used by the SIL LEAD SHRP project to inject vernacular labels for sections of the book
+			// we just need it to always come after the other stylesheet(s) of the book, which may supply default
+			// labels
+			if (s.ToLower().EndsWith("labels.css"))
+				return kDefaultValueForStyleSheetsThatShouldListInTheMiddle + 1;
+
 			return kDefaultValueForStyleSheetsThatShouldListInTheMiddle;
 		}
 	}
