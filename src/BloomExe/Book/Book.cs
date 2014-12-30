@@ -1404,7 +1404,13 @@ namespace Bloom.Book
 
 				page.InnerXml = divElement.InnerXml;
 
+				//Enhance: maybe we should just copy over all attributes?
 				page.SetAttribute("class", divElement.GetAttribute("class"));
+				//The SIL LEAD SHRP templates rely on "lang" on some ancestor to trigger the correct rules in labels.css.
+				//Those get set by putting data-metalanguage on Page, which then leads to a lang='xyz'. Let's save that
+				//back to the html in keeping with our goal of having the page look right if you were to just open the 
+				//html file in Firefox.
+				page.SetAttribute("lang", divElement.GetAttribute("lang"));
 
 				// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
 				// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
