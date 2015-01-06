@@ -603,7 +603,11 @@ namespace Bloom.CollectionTab
 						source = source.Substring(firstLine.Length);
 						// Rather arbitrary, but 4 are pretty sure to fit, and trying to measure an
 						// empty string might be a problem.
-						fits = source.Substring(0, 4);
+						if (source.Length > 4)
+							fits = source.Substring(0, 4);
+						else
+							fits = source;
+
 						tooBig = source;
 					}
 					else
