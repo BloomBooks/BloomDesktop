@@ -130,6 +130,8 @@ namespace Bloom.Collection
 					continue;
 				if (Path.GetFileName(folder.FullName).ToLower().Contains("xmatter"))
 					continue;
+				if(File.Exists(Path.Combine(folder.FullName, ".bloom-ignore")))
+					continue;
 				AddBookInfo(folder.FullName);
 			}
 		}
