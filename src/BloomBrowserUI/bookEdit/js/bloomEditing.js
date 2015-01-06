@@ -796,7 +796,15 @@ function AddEditKeyHandlers(container) {
       e.preventDefault();
       document.execCommand("italic", null, null);
     });
-
+    //note: these have the effect of introducing a <div> inside of the div.bloom-editable we're in.
+    $(document).bind('keydown', 'ctrl+r', function (e) {
+        e.preventDefault();
+        document.execCommand("justifyright", false, null);
+    });
+    $(document).bind('keydown', 'ctrl+l', function (e) {
+        e.preventDefault();
+        document.execCommand("justifyleft", false, null);
+    });
 }
 
 // Add little language tags
