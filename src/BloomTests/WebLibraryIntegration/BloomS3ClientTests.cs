@@ -14,6 +14,7 @@ namespace BloomTests.WebLibraryIntegration
 		private BloomS3Client _client;
 		private TemporaryFolder _workFolder;
 		private string _workFolderPath;
+		private string _storageKeyOfBookFolder;
 
 		[SetUp]
 		public void Setup()
@@ -23,16 +24,17 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.AreEqual(0,Directory.GetDirectories(_workFolderPath).Count(),"Some stuff was left over from a previous test");
 			Assert.AreEqual(0, Directory.GetFiles(_workFolderPath).Count(),"Some stuff was left over from a previous test");
 
+			_storageKeyOfBookFolder = Guid.NewGuid().ToString();
 			_client = new BloomS3Client(BloomS3Client.UnitTestBucketName);
-			_client.EmptyUnitTestBucket();
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
 			_workFolder.Dispose();
+			_client.EmptyUnitTestBucket(_storageKeyOfBookFolder);
+			_client.Dispose();
 		}
-
 
 		private string MakeBook()
 		{
@@ -44,9 +46,8 @@ namespace BloomTests.WebLibraryIntegration
 
 		private string UploadBook(string path)
 		{
-			string storageKeyOfBookFolder = Guid.NewGuid().ToString();
-			_client.UploadBook(storageKeyOfBookFolder, path, new NullProgress());
-			return storageKeyOfBookFolder;
+			_client.UploadBook(_storageKeyOfBookFolder, path, new NullProgress());
+			return _storageKeyOfBookFolder;
 		}
 
 		[Test]

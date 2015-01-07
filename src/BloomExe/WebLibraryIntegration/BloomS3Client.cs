@@ -132,12 +132,13 @@ namespace Bloom.WebLibraryIntegration
 			return _amazonS3.ListObjects(request).S3Objects.Count>0;
 		}
 
-		public void EmptyUnitTestBucket()
+		public void EmptyUnitTestBucket(string prefix)
 		{
 			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
 			{
 				//NB: this one intentionally hard-codes the folder it can delete, to protect from accidents
 				BucketName = UnitTestBucketName,
+				Prefix = prefix,
 			});
 			if (matchingFilesResponse.S3Objects.Count == 0)
 				return;
