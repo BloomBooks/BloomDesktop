@@ -79,21 +79,23 @@
       <div class="marginBox">
         <div class="bloom-translationGroup originalAcknowledgments">
           <label class="bubble">Original (or Shell) Acknowledgments in {lang}</label>
-          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bloom-readOnlyInTranslationMode bloom-copyFromOtherLanguageIfNecessary Original-Acknowledgments-On-Inside-Front-Cover-style" data-book="originalAcknowledgments">{Original Acknowledgments}
+          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bloom-readOnlyInTranslationMode bloom-copyFromOtherLanguageIfNecessary Credits-Page-style" data-book="originalAcknowledgments">{Original Acknowledgments}
           </div>
         </div>
-        <div data-functiononhintclick="bookMetadataEditor" data-hint="Click to Edit Copyright &amp; License" id="versoLicenseAndCopyright" class="bloom-metaData">
-          <div data-book="copyright" lang="*" class="copyright">{copyright}</div><img src="" data-book="licenseImage" class="licenseImage"/>
-          <div data-book="licenseUrl" lang="en" class="licenseUrl">{License Url}</div>
-          <div data-book="licenseNotes" lang="en" class="licenseNotes">{License Notes}</div>
-          <div data-book="licenseDescription" lang="en" class="licenseDescription">{License Description}</div>
+        <div data-functiononhintclick="bookMetadataEditor" data-hint="Click to Edit Copyright &amp; License" class="bloom-metaData licenseAndCopyrightBlock">
+          <div data-book="copyright" lang="*" class="copyright Credits-Page-style">{copyright}</div>
+          <div class="licenseBlock"><img src="" data-book="licenseImage" class="licenseImage"/>
+            <div data-book="licenseUrl" lang="en" class="licenseUrl">{License Url}</div>
+            <div data-book="licenseDescription" lang="en" class="licenseDescription Credits-Page-style">{License Description}</div>
+            <div data-book="licenseNotes" lang="en" class="licenseNotes Credits-Page-style">{License Notes}</div>
+          </div>
         </div>
         <div class="iso339Code">
           <!-- TODO we need this to be localizable, so we can have "ISO 639-3 Language Code" or "Code langue ISO 639-3"-->ISO 639 Language Code:
           <DIV data-collection="iso639Code"></DIV>
         </div>
         <!-- readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.-->
-        <div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable versionAcknowledgments Version-Acknowledgments-On-Inside-Front-Cover--style bloom-readOnlyInEditMode" data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}">
+        <div lang="N1" contenteditable="true" class="bloom-content1 bloom-editable versionAcknowledgments Credits-Page-style bloom-readOnlyInEditMode" data-book="versionAcknowledgments" data-hint="Acknowledgments for translated version, in {lang}">
         </div>
       </div>
     </div>

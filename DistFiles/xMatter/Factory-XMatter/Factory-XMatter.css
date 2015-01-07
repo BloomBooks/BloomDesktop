@@ -35,6 +35,7 @@
 }
 .credits .ISBNContainer .bloom-editable,
 .verso .ISBNContainer .bloom-editable {
+  text-align: left !important;
   width: 4.3cm !important;
   display: inline-block;
   vertical-align: text-top;

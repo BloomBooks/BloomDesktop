@@ -71,7 +71,7 @@ So if you change this, change it there. Note, this might not be the best long-te
 To handling the mis-match.*/
   font-size: 10pt;
 }
-DIV.ui-tooltip-content {
+.ui-tooltip-content {
   overflow: visible !important;
   font-size: 10pt;
   padding: 0px 9px;
@@ -85,7 +85,7 @@ DIV.ui-tooltip-content {
   z-index: 100;
 }
 TEXTAREA,
-DIV.bloom-editable,
+.bloom-editable,
 TD {
   resize: none;
   /*don't show those cute little resize controls in Firefox 4 and greater*/
@@ -95,7 +95,7 @@ TD {
   min-height: 20px;
   width: 100%;
 }
-DIV.bloom-page {
+.bloom-page {
   display: block;
   page-break-after: auto;
   background-color: #FFFFFF;
@@ -108,8 +108,7 @@ DIV#bloomDataDiv {
   display: none;
 }
 @media screen {
-  DIV.bloom-page {
-    /*[disabled]border:1px solid #000000;*/
+  .bloom-page {
   }
 }
 .centered {
@@ -118,24 +117,21 @@ DIV#bloomDataDiv {
 .centerJustify {
   text-align: center;
 }
-P {
-  /*[disabled]margin-left:1cm;*/
-}
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
-DIV.bloom-translationGroup DIV.bloom-editable {
+.bloom-editable {
   display: none;
   height: 100%;
 }
 /*Outside of frontmatter, we assume that if bloom gives it a content tag, then it should be visible*/
-DIV.bloom-page:not(.bloom-frontMatter) .bloom-content1,
-DIV.bloom-page:not(.bloom-frontMatter) .bloom-content2,
-DIV.bloom-page:not(.bloom-frontMatter) .bloom-content3 {
+.bloom-page:not(.bloom-frontMatter) .bloom-content1,
+.bloom-page:not(.bloom-frontMatter) .bloom-content2,
+.bloom-page:not(.bloom-frontMatter) .bloom-content3 {
   display: inherit;
 }
-DIV.bloom-page:not(.bloom-frontMatter) .bloom-content2 {
+.bloom-page:not(.bloom-frontMatter) .bloom-content2 {
   display: inherit;
 }
-/*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
+/*Notes on wkhtmltopdf and page sizes: Set the border color of .Page in preview.css so you can see what the pdf is doing
 these should be 14.8, but wkhtmltopdf shinks it
 The folowing are the values which work with a 1px border.  With 0px border, I could not get the pages to come out
 properly at all with wkhtmltopdf 0.10.0. It's as if the borders actually help by making the used part of each
@@ -144,61 +140,60 @@ page be the full page, regardless of the contents.
 To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
 preview.css.
 */
-DIV.bloom-page.A5Portrait {
+.bloom-page.A5Portrait {
   min-width: 14.8cm;
   max-width: 14.8cm;
   min-height: 21cm;
   max-height: 21cm;
 }
-DIV.bloom-page.A5Landscape {
+.bloom-page.A5Landscape {
   min-width: 21cm;
   max-width: 21cm;
   min-height: 14.8cm;
   max-height: 14.8cm;
 }
-DIV.bloom-page.B5Portrait {
+.bloom-page.B5Portrait {
   min-width: 176mm;
   max-width: 177mm;
   min-height: 250mm;
   max-height: 250mm;
 }
-DIV.bloom-page.A4Landscape {
+.bloom-page.A4Landscape {
   min-width: 297mm;
   max-width: 297mm;
   min-height: 210mm;
   max-height: 210mm;
 }
-DIV.bloom-page.A4LandscapeSideBySide {
+.bloom-page.A4LandscapeSideBySide {
   min-width: 297mm;
   max-width: 297mm;
   min-height: 210mm;
   max-height: 210mm;
 }
-DIV.bloom-page.A4Portrait {
+.bloom-page.A4Portrait {
   min-width: 210mm;
   max-width: 210mm;
   min-height: 297mm;
   max-height: 297mm;
 }
 /*Margins*/
-.textWholePage DIV.marginBox {
+.textWholePage .marginBox {
   position: absolute;
   /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
 }
-.A5Portrait DIV.marginBox {
+.A5Portrait .marginBox {
   width: 108mm;
   height: 175mm;
   margin-top: 15mm;
 }
-.A4Portrait DIV.marginBox {
+.A4Portrait .marginBox {
   width: 178mm;
   height: 266mm;
   margin-top: 1.5cm;
 }
-.B5Portrait DIV.marginBox {
+.B5Portrait .marginBox {
   width: 146mm;
   height: 220mm;
-  /*+placement:anchor-top-left 0 15mm;*/
   position: absolute;
   left: 0;
   top: 15mm;
@@ -215,22 +210,20 @@ DIV.bloom-page.A4Portrait {
   margin-left: auto;
   margin-right: auto;
 }
-.A5Landscape DIV.marginBox {
+.A5Landscape .marginBox {
   width: 176.6mm;
-  /*+placement:anchor-top-left 13.8mm 12.8mm;*/
   position: absolute;
   left: 13.8mm;
   top: 12.8mm;
   height: 119mm;
 }
-.A4Landscape DIV.marginBox {
+.A4Landscape .marginBox {
   width: 266.1mm;
   margin-top: 15mm;
   height: 178.5mm;
 }
-.A4LandscapeSideBySide DIV.marginBox {
+.A4LandscapeSideBySide .marginBox {
   width: 266.1mm;
-  /*+placement:anchor-top-left 13.8mm 12.8mm;*/
   position: absolute;
   left: 13.8mm;
   top: 12.8mm;
