@@ -18,7 +18,7 @@ namespace BloomTests
 		public void SimpleNavigation_JustHappens()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
@@ -30,11 +30,11 @@ namespace BloomTests
 		public void SecondNavigation_OnSameBrowser_HappensWhenFirstRaisesNavigated()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
-			string target2 = "some other web address";
+			string target2 = "http://some other web address";
 			isolator.Navigate(browser, target2);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second navigation should not have proceeded at once");
 
@@ -49,23 +49,25 @@ namespace BloomTests
 		public void TwoPendingNavigations_WithNavigatedEvents_AreHandledCorrectly()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
-			string target2 = "some other web address";
-			isolator.Navigate(browser, target2);
-			string target3 = "yet another other web address";
-			isolator.Navigate(browser, target3);
+			var browser2 = new BrowserStub();
+			string target2 = "http://some other web address";
+			isolator.Navigate(browser2, target2);
+			var browser3 = new BrowserStub();
+			string target3 = "http://yet another other web address";
+			isolator.Navigate(browser3, target3);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second and third navigation should not have proceeded at once");
 
 			browser.NormalTermination();
-			Assert.That(browser.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded when first completed (but third should not)");
+			Assert.That(browser2.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded when first completed (but third should not)");
 
-			browser.NormalTermination();
-			Assert.That(browser.NavigateTarget, Is.EqualTo(target3), "Third navigation should have proceeded when second completed");
+			browser2.NormalTermination();
+			Assert.That(browser3.NavigateTarget, Is.EqualTo(target3), "Third navigation should have proceeded when second completed");
 
-			browser.NormalTermination();
+			browser3.NormalTermination();
 			Assert.That(browser.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
 		}
 
@@ -73,14 +75,14 @@ namespace BloomTests
 		public void TwoPendingNavigationsOnDifferentBrowsers_WithNavigatedEvents_AreHandledCorrectly()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
-			string target2 = "some other web address";
+			string target2 = "http://some other web address";
 			var browser2 = new BrowserStub();
 			isolator.Navigate(browser2, target2);
-			string target3 = "yet another other web address";
+			string target3 = "http://yet another other web address";
 			var browser3 = new BrowserStub();
 			isolator.Navigate(browser3, target3);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second and third navigation should not have proceeded at once");
@@ -110,11 +112,11 @@ namespace BloomTests
 		public void SpuriousNavigatedEvents_AreIgnored()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
-			string target2 = "some other web address";
+			string target2 = "http://some other web address";
 			isolator.Navigate(browser, target2);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second navigation should not have proceeded at once");
 
@@ -132,12 +134,12 @@ namespace BloomTests
 		public void SecondRequest_WhenFirstNoLongerBusy_ProceedsAtOnce()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 			browser.IsBusy = false; // clear state without raising event
-			string target2 = "some other web address";
+			string target2 = "http://some other web address";
 			isolator.Navigate(browser, target2);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded since browser is already not busy");
 
@@ -151,11 +153,11 @@ namespace BloomTests
 		public void NoLongerBusy_EvenWithoutEvent_IsNoticed()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
-			string target2 = "some other web address";
+			string target2 = "http://some other web address";
 			isolator.Navigate(browser, target2);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second navigation should not have proceeded at once");
 			browser.IsBusy = false; // finished but did not raise event.
@@ -172,7 +174,7 @@ namespace BloomTests
 		public void IdleNavigation_WhenNothingHappening_ProceedsAtOnce()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			Assert.That(isolator.NavigateIfIdle(browser, target), Is.True);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
@@ -184,11 +186,11 @@ namespace BloomTests
 		public void IdleNavigation_NavigationInProgress_ReturnsFalse_NeverProceeds()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
-			string target2 = "some other web address";
+			string target2 = "http://some other web address";
 			Assert.That(isolator.NavigateIfIdle(browser, target2), Is.False);
 			browser.NormalTermination();
 			Assert.That(browser.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed after navigation completes");
@@ -199,12 +201,12 @@ namespace BloomTests
 		public void RegularNavigation_DelayedProperlyByIdleNavigation()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			Assert.That(isolator.NavigateIfIdle(browser, target), Is.True);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 
-			string target2 = "some other web address";
+			string target2 = "http://some other web address";
 			isolator.Navigate(browser, target2);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second navigation should not have proceeded at once");
 
@@ -219,38 +221,40 @@ namespace BloomTests
 		public void Isolation_AfterLongDelay_GivesUpAndMovesOn()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 
-			string target2 = "some other web address";
-			isolator.Navigate(browser, target2);
-			string target3 = "yet another web address";
-			isolator.Navigate(browser, target3);
+			var browser2 = new BrowserStub();
+			string target2 = "http://some other web address";
+			isolator.Navigate(browser2, target2);
+			var browser3 = new BrowserStub();
+			string target3 = "http://yet another web address";
+			isolator.Navigate(browser3, target3);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target), "Second navigation should not have proceeded at once");
 			var start = DateTime.Now;
 			while (DateTime.Now - start < new TimeSpan(0, 0, 0, 2, 300))
 				Application.DoEvents(); // allow timer to tick.
-			Assert.That(() => browser.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded eventually");
+			Assert.That(() => browser2.NavigateTarget, Is.EqualTo(target2), "Second navigation should have proceeded eventually");
 
-			browser.NormalTermination(); // possibly the long-delayed notification of the first nav, but more likely the second.
-			Assert.That(() => browser.NavigateTarget, Is.EqualTo(target3), "Third navigation should have proceeded when second finished");
+			browser2.NormalTermination(); // the second request.
+			Assert.That(() => browser3.NavigateTarget, Is.EqualTo(target3), "Third navigation should have proceeded when second finished");
 
-			browser.NormalTermination(); // hopefully from the third.
-			Assert.That(browser.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
+			browser3.NormalTermination(); // hopefully from the third.
+			Assert.That(browser3.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
 		}
 
 		[Test]
 		public void SingleTask_AfterLongDelay_AllowsIdleNavigation()
 		{
 			var browser = new BrowserStub();
-			string target = "any old web address";
+			string target = "http://any old web address";
 			var isolator = new NavigationIsolator();
 			isolator.Navigate(browser, target);
 			Assert.That(browser.NavigateTarget, Is.EqualTo(target));
 
-			string target2 = "some other web address";
+			string target2 = "http://some other web address";
 			var start = DateTime.Now;
 			var success = false;
 			while (!success && DateTime.Now - start < new TimeSpan(0, 0, 0, 2, 300))
@@ -263,6 +267,29 @@ namespace BloomTests
 
 			browser.NormalTermination(); // possibly the long-delayed notification of the first nav, but more likely the idle navigation.
 			Assert.That(browser.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
+		}
+
+		[Test]
+		public void SameBrowser_ReplacesPending()
+		{
+			var isolator = new NavigationIsolator();
+			var browser = new BrowserStub();
+			string target = "http://whatever";
+			isolator.Navigate(browser, target);
+
+			var browser2 = new BrowserStub();
+			string target2A = "http://first";
+			isolator.Navigate(browser2, target2A);
+			string target2B = "http://second";
+			isolator.Navigate(browser2, target2B);
+			// Signal the first browser to finish.
+			browser.NormalTermination();
+			Assert.That(() => browser2.NavigateTarget, Is.EqualTo(target2B), "Second navigation should have proceeded with its second choice");
+			// Signal the second browser to finish.
+			browser2.NormalTermination();
+
+			Assert.That(browser.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
+			Assert.That(browser2.EventHandlerCount, Is.EqualTo(0), "event handlers should be removed once last navigation completed");
 		}
 	}
 

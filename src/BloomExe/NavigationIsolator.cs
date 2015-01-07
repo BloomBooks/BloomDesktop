@@ -66,6 +66,17 @@ namespace Bloom
 			}
 			else
 			{
+				// Check whether we already have a pending navigation for this browser.
+				// If so, discard it since it's now irrelevant.  (It may also be impossible
+				// if it was for a temporary file: see https://jira.sil.org/browse/BL-863.)
+				for (int i = 0; i < _pending.Count; ++i)
+				{
+					if (browser.Equals(_pending[i].Browser))
+					{
+						_pending.RemoveAt(i);
+						break;
+					}
+				}
 				_pending.Add(task);
 			}
 		}
@@ -148,11 +159,24 @@ namespace Bloom
 		private void ForceDocumentCompleted()
 		{
 			Cleanup();
-			if (_pending.Count > 0)
+			while (_pending.Count > 0)
 			{
 				var task = _pending[0];
 				_pending.RemoveAt(0);
+				// If the file doesn't exist, calling _current.Browser.Navigate() results in the program
+				// silently stopping on Linux.  This should never happen with the check made above for
+				// superceded navigation requests before posting a pending navigation, but a race could
+				// occur between the old file being deleted, the next pending request being handled, and
+				// the new file being sent as a navigation requesting.  So we have this check as a backstop.
+				// (I always believe in both belts and suspenders, don't you?)  This is part of the fix
+				// for https://jira.sil.org/browse/BL-863.
+				if (!task.Url.StartsWith("http://") && !System.IO.File.Exists(task.Url))
+				{
+					Debug.Assert(false, String.Format(@"DEBUG: NavigationIsolator.ForceDocumentCompleted(): new file to display (""{0}"") does not exist!??", task.Url));
+					continue;
+				}
 				StartTask(task);
+				return;
 			}
 		}
 
@@ -232,6 +256,16 @@ namespace Bloom
 				return; // don't try to do anything to it.
 			_browser.Navigated += RaiseNavigated;
 			_browser.DocumentCompleted += RaiseNavigated;
+		}
+
+		/// <summary>
+		/// Check whether the specified object is an IsolatedBrowser that points to the same GeckoWebBrowser underneath.
+		/// </summary>
+		public override bool Equals(object obj)
+		{
+			if (obj is IsolatedBrowser)
+				return _browser == (obj as IsolatedBrowser)._browser;
+			return false;
 		}
 	}
 }
