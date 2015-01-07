@@ -520,7 +520,7 @@ namespace Bloom.Book
 				//TODO: see long comment on ProjectContextGetFileLocations() about linking to the right version of a css
 
 				//TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
-				href = href.Replace("%5C", "/");
+				href = FileUtils.NormalizePath(href.Replace("%5C", "/"));
 
 				var fileName = FileUtils.NormalizePath(Path.GetFileName(href));
 				if (!fileName.StartsWith("xx"))
