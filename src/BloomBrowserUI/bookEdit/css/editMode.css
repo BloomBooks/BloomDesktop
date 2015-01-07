@@ -218,7 +218,7 @@ TEXTAREA.province {
   margin-top: -8px;
   margin-right: 8px;
 }
-UL:not(.long-press-popup) {
+.ui-sourceTextsForBubble UL {
   padding: 0;
   z-index: 1;
   background-color: transparent;
@@ -229,7 +229,7 @@ UL:not(.long-press-popup) {
   left: -7px;
   top: 1px;
 }
-UL:not(.long-press-popup) LI {
+.ui-sourceTextsForBubble UL LI {
   display: inline-block;
   padding-right: 11px;
   padding-left: 7px;
@@ -237,7 +237,7 @@ UL:not(.long-press-popup) LI {
   margin-right: 11px;
   height: 31px;
 }
-UL LI A {
+.ui-sourceTextsForBubble UL LI A {
   display: block;
   padding: 5px;
   outline: none;
@@ -245,16 +245,16 @@ UL LI A {
   text-decoration: none;
   color: #000000;
 }
-UL LI A:hover {
+.ui-sourceTextsForBubble UL LI A:hover {
   text-decoration: underline;
 }
-UL LI.active {
+.ui-sourceTextsForBubble UL LI.active {
   padding-top: 1px;
   position: relative;
   top: 1px;
   font: bold 11pt sans-serif;
 }
-UL LI A.active {
+.ui-sourceTextsForBubble UL LI A.active {
   font-weight: bold;
 }
 .panel-container {
