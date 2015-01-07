@@ -559,6 +559,20 @@ namespace Bloom.Book
 				}
 			}
 		}
+		/// <summary>
+		/// The chosen xmatter changes, so we need to clear out any old ones
+		/// </summary>
+		public void RemoveXMatterStyleSheets()
+		{
+			foreach(XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
+			{
+				var href = linkNode.GetAttribute("href");
+				if(Path.GetFileName(href).ToLower().EndsWith("xmatter.css"))
+				{
+					linkNode.ParentNode.RemoveChild(linkNode);
+				}
+			}
+		}
 
 		internal void RemoveStyleSheetIfFound(string path)
 		{

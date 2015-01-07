@@ -755,6 +755,9 @@ namespace Bloom.Book
 		// NB: this knows nothing of book-specific css's... even "basic book.css"
 		private void EnsureHasLinksToStylesheets(HtmlDom dom)
 		{
+			//clear out any old ones
+			_dom.RemoveXMatterStyleSheets();
+
 			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
 			var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
 
