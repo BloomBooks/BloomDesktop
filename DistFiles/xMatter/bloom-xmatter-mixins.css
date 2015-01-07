@@ -1,3 +1,6 @@
 .insideFrontCover .bloom-editable {
   height: 100%;
 }
+.iso693Code * {
+  display: inline;
+}
