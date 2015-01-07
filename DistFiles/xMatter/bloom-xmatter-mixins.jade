@@ -41,35 +41,36 @@ mixin chooser-topic
 
 mixin field-ISBN
 	.ISBNContainer(data-hint="International Standard Book Number. Leave blank if you don't have one of these.")
-		span.bloom-doNotPublishIfParentOtherwiseEmpty
+		span.bloom-doNotPublishIfParentOtherwiseEmpty.Credits-Page-style
 			| ISBN
-		div.bloom-editable(data-book="ISBN", lang="*")
+		div.bloom-editable(data-book="ISBN", lang="*").Credits-Page-style.bloom-userCannotModifyStyles
 
 mixin field-acknowledgments-localizedVersion
 	// readOnlyInEditMode: we want to leave this blank for if/when someone takes this doc and is translating it.
-	//- Why both versionAcknowledgments && inside-cover-version-acknowledgments-style?
-	//-   versionAcknowledgments governs placement on the page, inside-cover-version-acknowledgments-style is a
+	//- Why both versionAcknowledgments && inside-cover-version-Credits-Page-style?
+	//-   versionAcknowledgments governs placement on the page, inside-cover-version-Credits-Page-style is a
 	//-   holding place for user style adjustments (like font-size)
-	+editable("N1").versionAcknowledgments.Version-Acknowledgments-On-Inside-Front-Cover--style.bloom-readOnlyInEditMode(data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
+	+editable("N1").versionAcknowledgments.Credits-Page-style.bloom-readOnlyInEditMode(data-book="versionAcknowledgments", data-hint="Acknowledgments for translated version, in {lang}")
 
 // TODO: this is a mess
 mixin field-acknowledgments-originalVersion
 	+field-prototypeDeclaredExplicity().originalAcknowledgments
 		label.bubble Original (or Shell) Acknowledgments in {lang}
-		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Original-Acknowledgments-On-Inside-Front-Cover-style(data-book='originalAcknowledgments')
+		+editable(kLanguageForPrototypeOnly).bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-book='originalAcknowledgments')
 			{Original Acknowledgments}
 
 mixin block-licenseAndCopyright
-	div.bloom-metaData(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")#versoLicenseAndCopyright
-		.copyright(data-book="copyright", lang="*")
+	.bloom-metaData.licenseAndCopyrightBlock(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")
+		.copyright(data-book="copyright", lang="*").Credits-Page-style
 			{copyright}
-		img.licenseImage(src="" data-book="licenseImage")
-		.licenseUrl(data-book="licenseUrl", lang="en")
-			{License Url}
-		.licenseNotes(data-book="licenseNotes", lang="en")
-			{License Notes}
-		.licenseDescription(data-book="licenseDescription",lang="en")
-			{License Description}
+		.licenseBlock
+			img.licenseImage(src="" data-book="licenseImage")
+			.licenseUrl(data-book="licenseUrl", lang="en")
+				{License Url}
+			.licenseDescription(data-book="licenseDescription",lang="en").Credits-Page-style
+				{License Description}
+			.licenseNotes(data-book="licenseNotes", lang="en").Credits-Page-style
+				{License Notes}
 
 
 
@@ -114,10 +115,10 @@ mixin factoryStandard-outsideFrontCover
 
 mixin factoryStandard-creditsInsideFrontCover
 	// Inside Front Cover CREDITS PAGE
-	+page-cover("Credits Page").verso(data-export='front-matter-credits')#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9
-		+field-acknowledgments-originalVersion
-		+block-licenseAndCopyright#versoLicenseAndCopyright
+	+page-cover("Credits Page").credits(data-export='front-matter-credits')#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9
+		+block-licenseAndCopyright
 		+field-ISBN
+		+field-acknowledgments-originalVersion
 		+field-acknowledgments-localizedVersion
 
 mixin factoryStandard-titlePage

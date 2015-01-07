@@ -1,3 +1,59 @@
+.credits .marginBox,
+.verso .marginBox {
+  font-size: 10pt;
+}
+.credits .marginBox .bloom-editable,
+.verso .marginBox .bloom-editable {
+  font-size: 10pt;
+}
+.credits .bloom-editable,
+.verso .bloom-editable {
+  min-height: 5em;
+  line-height: normal;
+}
+.credits .licenseAndCopyrightBlock,
+.verso .licenseAndCopyrightBlock,
+.credits #versoLicenseAndCopyright,
+.verso #versoLicenseAndCopyright {
+  min-height: 60px;
+}
+.credits .licenseAndCopyrightBlock .copyright,
+.verso .licenseAndCopyrightBlock .copyright,
+.credits #versoLicenseAndCopyright .copyright,
+.verso #versoLicenseAndCopyright .copyright {
+  margin-bottom: 2em;
+}
+.credits .licenseAndCopyrightBlock .licenseBlock,
+.verso .licenseAndCopyrightBlock .licenseBlock,
+.credits #versoLicenseAndCopyright .licenseBlock,
+.verso #versoLicenseAndCopyright .licenseBlock {
+  margin-bottom: 2em;
+}
+.credits .ISBNContainer,
+.verso .ISBNContainer {
+  margin-bottom: 2em;
+}
+.credits .ISBNContainer .bloom-editable,
+.verso .ISBNContainer .bloom-editable {
+  width: 4.3cm !important;
+  display: inline-block;
+  vertical-align: text-top;
+  max-height: 1.8em;
+  min-height: 1.8em;
+}
+.credits .ISBNContainer .ISBNContainer SPAN,
+.verso .ISBNContainer .ISBNContainer SPAN {
+  vertical-align: top;
+}
+.credits .originalAcknowledgments .bloom-contentNational1,
+.verso .originalAcknowledgments .bloom-contentNational1 {
+  display: block !important;
+  margin-bottom: 2em;
+}
+.credits .licenseUrl,
+.verso .licenseUrl {
+  display: none;
+}
 /*Cover Page*/
 .A5Portrait.bloom-frontMatter DIV.marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
@@ -28,20 +84,20 @@
   height: 1.3cm;
   width: 100%;
   display: block;
-  /*+placement:anchor-top-left 0px 130px;*/
+  /*+placement:anchor-top-left 0 130;*/
   position: absolute;
-  left: 0px;
-  top: 130px;
+  left: 0;
+  top: 130;
 }
 .B5Portrait.cover .bookTitle.bloom-contentNational1 {
   font-size: 120%;
   height: 1.3cm;
   width: 100%;
   display: block;
-  /*+placement:anchor-top-left 0px 130px;*/
+  /*+placement:anchor-top-left 0 130;*/
   position: absolute;
-  left: 0px;
-  top: 130px;
+  left: 0;
+  top: 130;
 }
 .A5Landscape.cover .bookTitle.bloom-contentNational1 {
   font-size: 120%;
@@ -57,9 +113,9 @@
   font-size: 120%;
   height: 0.8cm;
   width: 100%;
-  /*+placement:anchor-top-left 0px 112px;*/
+  /*+placement:anchor-top-left 0 112px;*/
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 112px;
   display: block;
 }
@@ -67,10 +123,10 @@
   font-size: 120%;
   height: 0.8cm;
   width: 100%;
-  /*+placement:anchor-top-left 0px 110px;*/
+  /*+placement:anchor-top-left 0 110;*/
   position: absolute;
-  left: 0px;
-  top: 110px;
+  left: 0;
+  top: 110;
   display: block;
 }
 /*Note: this vernacular/conent1 must come *after* the National1 block, else when we have English as the only language,
@@ -82,10 +138,10 @@ It will be treated as the 2ndary title, which is small and not at the top, and s
   width: 100%;
   display: block;
   line-height: 1;
-  /*+placement:anchor-top-left 0px 0px;*/
+  /*+placement:anchor-top-left 0 0;*/
   position: absolute;
-  left: 0px;
-  top: 0px;
+  left: 0;
+  top: 0;
 }
 .B5Portrait.cover .bookTitle.bloom-content1 {
   font-size: 250%;
@@ -93,20 +149,20 @@ It will be treated as the 2ndary title, which is small and not at the top, and s
   width: 100%;
   display: block;
   line-height: 1;
-  /*+placement:anchor-top-left 0px 0px;*/
+  /*+placement:anchor-top-left 0 0;*/
   position: absolute;
-  left: 0px;
-  top: 0px;
+  left: 0;
+  top: 0;
 }
 .A5Landscape.cover .bookTitle.bloom-content1 {
   font-size: 300%;
   height: 1.5cm;
   width: 100%;
   display: block;
-  /*+placement:anchor-top-left 0px 0px;*/
+  /*+placement:anchor-top-left 0 0;*/
   position: absolute;
-  left: 0px;
-  top: 0px;
+  left: 0;
+  top: 0;
 }
 .A4Landscape.cover .bookTitle.bloom-content1 {
   font-size: 250%;
@@ -114,10 +170,10 @@ It will be treated as the 2ndary title, which is small and not at the top, and s
   width: 100%;
   display: block;
   line-height: 1.2;
-  /*+placement:anchor-top-left 0px 0px;*/
+  /*+placement:anchor-top-left 0 0;*/
   position: absolute;
-  left: 0px;
-  top: 0px;
+  left: 0;
+  top: 0;
 }
 .A4Portrait.cover .bookTitle.bloom-content1 {
   font-size: 250%;
@@ -125,26 +181,26 @@ It will be treated as the 2ndary title, which is small and not at the top, and s
   width: 100%;
   display: block;
   line-height: 1.2;
-  /*+placement:anchor-top-left 0px 0px;*/
+  /*+placement:anchor-top-left 0 0;*/
   position: absolute;
-  left: 0px;
-  top: 0px;
+  left: 0;
+  top: 0;
 }
 /*......Image*/
 .A5Portrait.cover DIV.bloom-imageContainer {
   height: 10cm;
   width: 100%;
-  /*+placement:anchor-top-left 0px 193px;*/
+  /*+placement:anchor-top-left 0 193px;*/
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 193px;
 }
 .B5Portrait.cover DIV.bloom-imageContainer {
   height: 10cm;
   width: 100%;
-  /*+placement:anchor-top-left 0px 193px;*/
+  /*+placement:anchor-top-left 0 193px;*/
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 193px;
 }
 .A5Landscape.cover DIV.bloom-imageContainer {
@@ -158,67 +214,37 @@ It will be treated as the 2ndary title, which is small and not at the top, and s
 .A4Landscape.cover DIV.bloom-imageContainer {
   height: 11.3cm;
   width: 100%;
-  /*+placement:anchor-top-left 0px 158px;*/
+  /*+placement:anchor-top-left 0 158px;*/
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 158px;
 }
 .A4Portrait.cover DIV.bloom-imageContainer {
   height: 17.1cm;
   width: 100%;
-  /*+placement:anchor-top-left 0px 158px;*/
+  /*+placement:anchor-top-left 0 158px;*/
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 158px;
 }
 /*.....Small cover credits*/
 DIV.bloom-editable.smallCoverCredits {
   font-size: 100%;
   text-align: center;
-  /*+placement:anchor-top-left 0px 599px;*/
+  /*+placement:anchor-top-left 0 599px;*/
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 599px;
   height: 49px;
 }
 .A4Portrait DIV.bloom-editable.smallCoverCredits {
   font-size: 100%;
   text-align: center;
-  /*+placement:anchor-top-left 0px 834px;*/
+  /*+placement:anchor-top-left 0 834px;*/
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 834px;
   height: 49px;
-}
-DIV.ISBNContainer {
-  width: 100%;
-  /*[disabled]line-height:12pt;*/
-  /*[disabled]font-family:arial;*/
-  /*+placement:anchor-bottom-left 2px 216px;*/
-  position: absolute;
-  left: 2px;
-  bottom: 216px;
-}
-.A4Portrait DIV.ISBNContainer {
-  /*+placement:anchor-bottom-left 2px 450px;*/
-  position: absolute;
-  left: 2px;
-  bottom: 450px;
-}
-.A5Landscape DIV.ISBNContainer {
-  /*+placement:anchor-bottom-left 2px 120px;*/
-  position: absolute;
-  left: 2px;
-  bottom: 120px;
-}
-DIV.ISBNContainer .bloom-editable {
-  width: 4.3cm !important;
-  display: inline-block;
-  vertical-align: text-top;
-  max-height: 1.8em;
-}
-.ISBNContainer SPAN {
-  vertical-align: top;
 }
 /*.......Topic*/
 DIV.coverBottomBookTopic {
@@ -228,7 +254,7 @@ DIV.coverBottomBookTopic {
   position: absolute;
   right: 0;
   bottom: 0;
-  min-height: 20px;
+  min-height: 20;
   height: 58px;
   text-align: right;
 }
@@ -236,7 +262,7 @@ DIV.coverBottomBookTopic .bloom-contentNational1 {
   /*[disabled]overflow:hidden;*/
   text-align: right;
   width: 100%;
-  /*[disabled]min-height:20px;*/
+  /*[disabled]min-height:20;*/
   font-size: 110%;
   display: inline !important;
   height: 25px !important;
@@ -245,7 +271,7 @@ DIV.coverBottomBookTopic .bloom-contentNational1 {
 }
 DIV.coverBottomBookTopic DIV.bloom-contentNational1 {
   /*NB: we need placement because we want the national1 to be on top, regardless of its order in the parent div*/
-  /*[disabled]+placement:anchor-top-right 0px 0px;*/
+  /*[disabled]+placement:anchor-top-right 0 0;*/
 }
 .coverBottomBookTopic .bloom-contentNational2,
 .coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1) {
@@ -263,9 +289,9 @@ DIV.coverBottomLangName DIV {
   font-size: 110% !important;
   /*[disabled]vertical-align:bottom;*/
   /*This placement is to get vertical alignment with the topic*/
-  /*+placement:anchor-top-left 0px 4px;*/
+  /*+placement:anchor-top-left 0 4px;*/
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 4px;
 }
 DIV.coverBottomLangName {
@@ -277,10 +303,10 @@ DIV.coverBottomLangName {
   position: absolute;
   left: 0;
   bottom: 0;
-  margin-top: 0px;
-  margin-bottom: 0px;
+  margin-top: 0;
+  margin-bottom: 0;
   padding-top: 0;
-  padding-bottom: 0px;
+  padding-bottom: 0;
   line-height: 1;
 }
 /*Title Page*/
@@ -326,10 +352,10 @@ DIV#titePageTitleBlock DIV.bloom-content1 {
   text-align: center;
   width: 100%;
   display: block;
-  /*+placement:anchor-top-left 0px 0px;*/
+  /*+placement:anchor-top-left 0 0;*/
   position: absolute;
-  left: 0px;
-  top: 0px;
+  left: 0;
+  top: 0;
 }
 .titlePage .titleN1 {
   font-size: 140%;
@@ -338,7 +364,7 @@ DIV#titePageTitleBlock DIV.bloom-content1 {
   position: absolute;
   left: 16px;
   top: 121px;
-  width: 420px;
+  width: 420;
   height: 45px;
 }
 .titlePage .titleN2 {
@@ -348,7 +374,7 @@ DIV#titePageTitleBlock DIV.bloom-content1 {
   position: absolute;
   left: 16px;
   top: 168px;
-  width: 420px;
+  width: 420;
   height: 45px;
 }
 DIV.titlePage .credits {
@@ -364,9 +390,9 @@ DIV.titlePage .credits.bloom-contentNational1 {
   width: 100%;
   display: block;
   font-size: 100%;
-  /*+placement:anchor-top-left 0px 174px;*/
+  /*+placement:anchor-top-left 0 174px;*/
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 174px;
 }
 DIV.titlePage DIV#languageInformation {
@@ -387,173 +413,15 @@ DIV.titlePage DIV.langName.bloom-contentNational2 {
   display: none;
 }
 DIV.languageLocation {
-  /*+placement:anchor-top-left 6px 50px;*/
+  /*+placement:anchor-top-left 6px 50;*/
   position: absolute;
   left: 6px;
-  top: 50px;
+  top: 50;
   width: 407px;
 }
 DIV#titlePageTitleBlock,
 DIV#titePageTitleBlock {
   width: inherit;
-}
-/*Verso Page*/
-DIV.verso {
-  text-align: center;
-  line-height: normal !important;
-}
-DIV.verso DIV {
-  text-align: center;
-  line-height: normal;
-  /*I don't know why 100% was giving me 16pt, so now it is hard-coded to 10
-	  Had to take out the !important, though, to get user font-size to work on the verso page*/
-  font-size: 10pt;
-}
-/*...........originalAcknowledgments*/
-.A5Portrait DIV.originalAcknowledgments {
-  height: 156px;
-  width: 100%;
-  font-size: 100% !important;
-}
-.A5Landscape DIV.originalAcknowledgments {
-  height: 156px;
-  width: 100%;
-}
-DIV.originalAcknowledgments DIV.bloom-contentNational1 {
-  height: 5cm;
-  width: 100%;
-  display: block !important;
-}
-.A5Landscape DIV.originalAcknowledgments DIV.bloom-contentNational1 {
-  height: 3.5cm;
-}
-.A5Landscape DIV.versionAcknowledgments {
-  /*+placement:anchor-bottom-left 0 0;*/
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 100px !important;
-  width: 100%;
-}
-/*................license and copyright*/
-.A4Landscape DIV#versoLicenseAndCopyright {
-  /*+placement:anchor-top-left 0 242px;*/
-  position: absolute;
-  left: 0;
-  top: 242px;
-  width: 100%;
-}
-.A5Portrait DIV#versoLicenseAndCopyright {
-  width: 100%;
-  height: 129px;
-  /*+placement:shift 0px 37px;*/
-  position: relative;
-  left: 0px;
-  top: 37px;
-}
-.A5Landscape DIV#versoLicenseAndCopyright {
-  width: 100%;
-  height: 129px;
-  /*+placement:shift 0px -13px;*/
-  position: relative;
-  left: 0px;
-  top: -13px;
-}
-DIV.licenseNotes {
-  /*+placement:anchor-top-left 0px 30px;*/
-  position: absolute;
-  left: 0px;
-  top: 200px;
-  width: 100%;
-  height: 29px;
-}
-DIV.copyright {
-  width: 100%;
-  height: 34px;
-}
-IMG.licenseImage {
-  /*[disabled]width:114px;*/
-  /*[disabled]height:34px;*/
-  /*+placement:anchor-top-left 39% 60px;*/
-  position: absolute;
-  left: 39%;
-  top: 60px;
-}
-.A5Landscape IMG.licenseImage {
-  /*+placement:anchor-top-left 290px 30px;*/
-  position: absolute;
-  left: 290px;
-  top: 30px;
-}
-.A4Portrait IMG.licenseImage {
-  /*[disabled]width:114px;*/
-  /*[disabled]height:34px;*/
-  /*+placement:anchor-top-left 7.6cm 1.7cm;*/
-  position: absolute;
-  left: 7.6cm;
-  top: 1.7cm;
-}
-.A4Landscape IMG.licenseImage {
-  /*+placement:anchor-top-left 454px 58px;*/
-  position: absolute;
-  left: 454px;
-  top: 58px;
-}
-BUTTON#editCopyrightAndLicense {
-  /*+placement:anchor-top-left 125px 3px;*/
-  position: absolute;
-  left: 125px;
-  top: 3px;
-  font-size: 90%;
-}
-.licenseDescription,
-.licenseNotes {
-  font-size: 80% !important;
-  width: 100%;
-}
-.licenseDescription {
-  height: 57px;
-  position: absolute;
-  left: 0;
-  top: 123px;
-}
-.A5Landscape DIV.licenseDescription {
-  /*+placement:anchor-top-left 0 107px;*/
-  position: absolute;
-  left: 0;
-  top: 107px;
-}
-.A4Portrait DIV.licenseDescription {
-  width: 80%;
-  /*+placement:anchor-top-left 84px 127px;*/
-  position: absolute;
-  left: 84px;
-  top: 127px;
-}
-.A5Landscape DIV.licenseDescription {
-  /*+placement:anchor-top-left 0 107px;*/
-  position: absolute;
-  left: 0;
-  top: 107px;
-}
-.A4Portrait DIV.licenseDescription {
-  width: 80%;
-  /*+placement:anchor-top-left 84px 127px;*/
-  position: absolute;
-  left: 84px;
-  top: 127px;
-}
-DIV.licenseUrl {
-  display: none;
-}
-/*...................version acknowledgments*/
-DIV.versionAcknowledgments {
-  height: 204px !important;
-  width: 100%;
-  /*+placement:anchor-bottom-left 0px 0px;*/
-  position: absolute;
-  left: 0px;
-  bottom: 0px;
 }
 /*Inside Back Cover*/
 .insideBackCover DIV.bloom-editable {

@@ -1,4 +1,7 @@
-﻿## 3.0.80 BETA
+﻿## 3.0.83 BETA
+- Overhauled the Credits page so that there is more room for text.
+
+## 3.0.80 BETA
 - Fix: "Open in Firefox" should now work even if you have spaces in the path
 - Fix: BigBook National Language title was missinga parenthesis
 - Fix: Was hard to insert an uppercase character using the long-press special character feature

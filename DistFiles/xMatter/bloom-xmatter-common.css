@@ -1,0 +1,57 @@
+.credits .marginBox,
+.verso .marginBox {
+  font-size: 10pt;
+}
+.credits .marginBox .bloom-editable,
+.verso .marginBox .bloom-editable {
+  font-size: 10pt;
+}
+.credits .bloom-editable,
+.verso .bloom-editable {
+  min-height: 5em;
+  line-height: normal;
+}
+.credits .licenseAndCopyrightBlock,
+.verso .licenseAndCopyrightBlock,
+.credits #versoLicenseAndCopyright,
+.verso #versoLicenseAndCopyright {
+  min-height: 60px;
+}
+.credits .licenseAndCopyrightBlock .copyright,
+.verso .licenseAndCopyrightBlock .copyright,
+.credits #versoLicenseAndCopyright .copyright,
+.verso #versoLicenseAndCopyright .copyright {
+  margin-bottom: 2em;
+}
+.credits .licenseAndCopyrightBlock .licenseBlock,
+.verso .licenseAndCopyrightBlock .licenseBlock,
+.credits #versoLicenseAndCopyright .licenseBlock,
+.verso #versoLicenseAndCopyright .licenseBlock {
+  margin-bottom: 2em;
+}
+.credits .ISBNContainer,
+.verso .ISBNContainer {
+  margin-bottom: 2em;
+}
+.credits .ISBNContainer .bloom-editable,
+.verso .ISBNContainer .bloom-editable {
+  text-align: left !important;
+  width: 4.3cm !important;
+  display: inline-block;
+  vertical-align: text-top;
+  max-height: 1.8em;
+  min-height: 1.8em;
+}
+.credits .ISBNContainer .ISBNContainer SPAN,
+.verso .ISBNContainer .ISBNContainer SPAN {
+  vertical-align: top;
+}
+.credits .originalAcknowledgments .bloom-contentNational1,
+.verso .originalAcknowledgments .bloom-contentNational1 {
+  display: block !important;
+  margin-bottom: 2em;
+}
+.credits .licenseUrl,
+.verso .licenseUrl {
+  display: none;
+}

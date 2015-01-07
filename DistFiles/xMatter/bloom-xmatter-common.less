@@ -1,0 +1,54 @@
+//note that we allow ".verso" for historical reasons (verso means something like "backside of title page") but we can
+//put the credits page anywhere. If you remove ".verso", old books will be messed up until they get
+//an "update book" operation
+.credits, .verso {
+    @MarginBetweenBlocks: 2em;
+    //also called the "credits" page.
+    .marginBox {
+        // these extra levels are to increase our specificity score :-)
+        font-size: 10pt;
+        .bloom-editable {
+            // these extra levels are to increase our specificity score :-)
+            font-size: 10pt;
+        }
+    }
+    .bloom-editable {
+        min-height: 5em;
+        line-height: normal;
+    }
+
+    //the #versoLicenseAndCopyright is here to support books prior to Jan 2015, until they get a "book update"
+    //we moved away from "verso" because "credits" is more accurate; this page isn't always on the back of
+    //the title page, which is what "verso" means.
+    .licenseAndCopyrightBlock, #versoLicenseAndCopyright{
+        min-height: 60px;
+        .copyright {
+            margin-bottom: @MarginBetweenBlocks;
+        }
+        .licenseBlock{
+            margin-bottom: @MarginBetweenBlocks;
+        }
+    }
+
+    .ISBNContainer {
+        .bloom-editable {
+            text-align: left !important;//even if everything else is centered (including the ISBN Block) this needs to be tight against the label
+            width: 4.3cm !important;
+            display: inline-block;
+            vertical-align: text-top;
+            max-height: 1.8em;
+            min-height: 1.8em;
+        }
+        .ISBNContainer SPAN {
+            vertical-align: top;
+        }
+        margin-bottom: @MarginBetweenBlocks;
+    }
+    .originalAcknowledgments .bloom-contentNational1 {
+        display: block !important;
+        margin-bottom: @MarginBetweenBlocks;
+    }
+    .licenseUrl {
+        display: none;
+    }
+}
