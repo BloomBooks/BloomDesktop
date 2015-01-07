@@ -189,6 +189,11 @@ mixin editable(language)
 	.bloom-content1.bloom-editable(lang=language, contenteditable="true", attributes)
 		block
 
+mixin page-Custom()
+	+page-choice-layout('Custom').customPage#5dcd48df-e9ab-4a07-afd4-6a24d0398386
+		.split-pane-component-inner
+			.box-header-off.bloom-translationGroup
+
 //----- utility functions------------------------------
 - function requireZeroArguments(functionName, args) {
 -    if(args && args.length) throw "Usage Error: "+functionName+" takes no parameters."+args.length;
