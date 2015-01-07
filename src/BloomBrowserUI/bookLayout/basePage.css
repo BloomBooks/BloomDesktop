@@ -85,7 +85,7 @@ DIV.ui-tooltip-content {
   z-index: 100;
 }
 TEXTAREA,
-DIV.bloom-editable,
+.bloom-editable,
 TD {
   resize: none;
   /*don't show those cute little resize controls in Firefox 4 and greater*/
@@ -122,17 +122,17 @@ P {
   /*[disabled]margin-left:1cm;*/
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
-DIV.bloom-translationGroup DIV.bloom-editable {
+.bloom-editable {
   display: none;
   height: 100%;
 }
 /*Outside of frontmatter, we assume that if bloom gives it a content tag, then it should be visible*/
-DIV.bloom-page:not(.bloom-frontMatter) .bloom-content1,
+.bloom-page:not(.bloom-frontMatter) .bloom-content1,
 DIV.bloom-page:not(.bloom-frontMatter) .bloom-content2,
 DIV.bloom-page:not(.bloom-frontMatter) .bloom-content3 {
   display: inherit;
 }
-DIV.bloom-page:not(.bloom-frontMatter) .bloom-content2 {
+.bloom-page:not(.bloom-frontMatter) .bloom-content2 {
   display: inherit;
 }
 /*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
