@@ -32,7 +32,6 @@ namespace Bloom.Collection
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CollectionSettingsDialog));
 			this._tab = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
 			this._removeLanguage3Link = new System.Windows.Forms.LinkLabel();
@@ -46,6 +45,9 @@ namespace Bloom.Collection
 			this._language1Name = new System.Windows.Forms.Label();
 			this._language1Label = new System.Windows.Forms.Label();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
+			this._xmatterList = new System.Windows.Forms.ListView();
+			this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			this._xmatterDescription = new System.Windows.Forms.TextBox();
 			this._rtlLanguage3CheckBox = new System.Windows.Forms.CheckBox();
 			this._rtlLanguage2CheckBox = new System.Windows.Forms.CheckBox();
 			this._rtlLanguage1CheckBox = new System.Windows.Forms.CheckBox();
@@ -56,7 +58,6 @@ namespace Bloom.Collection
 			this._language2FontLabel = new System.Windows.Forms.Label();
 			this._language1FontLabel = new System.Windows.Forms.Label();
 			this._xmatterPackLabel = new System.Windows.Forms.Label();
-			this._xmatterPackCombo = new System.Windows.Forms.ComboBox();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
 			this._bloomCollectionName = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
@@ -101,6 +102,7 @@ namespace Bloom.Collection
 			this._tab.SelectedIndex = 0;
 			this._tab.Size = new System.Drawing.Size(618, 341);
 			this._tab.TabIndex = 0;
+			this._tab.SelectedIndexChanged += new System.EventHandler(this._tab_SelectedIndexChanged);
 			// 
 			// tabPage1
 			// 
@@ -258,12 +260,14 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._language1Label, "CollectionSettingsDialog.LanguageTab._language1Label");
 			this._language1Label.Location = new System.Drawing.Point(26, 24);
 			this._language1Label.Name = "_language1Label";
-			this._language1Label.Size = new System.Drawing.Size(140, 19);
+			this._language1Label.Size = new System.Drawing.Size(139, 19);
 			this._language1Label.TabIndex = 7;
 			this._language1Label.Text = "Vernacular Language";
 			// 
 			// tabPage2
 			// 
+			this.tabPage2.Controls.Add(this._xmatterList);
+			this.tabPage2.Controls.Add(this._xmatterDescription);
 			this.tabPage2.Controls.Add(this._rtlLanguage3CheckBox);
 			this.tabPage2.Controls.Add(this._rtlLanguage2CheckBox);
 			this.tabPage2.Controls.Add(this._rtlLanguage1CheckBox);
@@ -274,7 +278,6 @@ namespace Bloom.Collection
 			this.tabPage2.Controls.Add(this._language2FontLabel);
 			this.tabPage2.Controls.Add(this._language1FontLabel);
 			this.tabPage2.Controls.Add(this._xmatterPackLabel);
-			this.tabPage2.Controls.Add(this._xmatterPackCombo);
 			this._L10NSharpExtender.SetLocalizableToolTip(this.tabPage2, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.tabPage2, null);
 			this._L10NSharpExtender.SetLocalizingId(this.tabPage2, "CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel");
@@ -285,6 +288,41 @@ namespace Bloom.Collection
 			this.tabPage2.TabIndex = 1;
 			this.tabPage2.Text = "Book Making";
 			this.tabPage2.UseVisualStyleBackColor = true;
+			// 
+			// _xmatterList
+			// 
+			this._xmatterList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1});
+			this._xmatterList.FullRowSelect = true;
+			this._xmatterList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+			this._xmatterList.HideSelection = false;
+			this._xmatterList.Location = new System.Drawing.Point(293, 46);
+			this._xmatterList.MultiSelect = false;
+			this._xmatterList.Name = "_xmatterList";
+			this._xmatterList.Size = new System.Drawing.Size(310, 88);
+			this._xmatterList.TabIndex = 30;
+			this._xmatterList.UseCompatibleStateImageBehavior = false;
+			this._xmatterList.View = System.Windows.Forms.View.Details;
+			this._xmatterList.SelectedIndexChanged += new System.EventHandler(this._xmatterList_SelectedIndexChanged);
+			// 
+			// columnHeader1
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this.columnHeader1, null);
+			this._L10NSharpExtender.SetLocalizationComment(this.columnHeader1, null);
+			this._L10NSharpExtender.SetLocalizingId(this.columnHeader1, "columnHeader1");
+			this.columnHeader1.Width = 250;
+			// 
+			// _xmatterDescription
+			// 
+			this._xmatterDescription.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._xmatterDescription, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._xmatterDescription, null);
+			this._L10NSharpExtender.SetLocalizingId(this._xmatterDescription, "textBox1");
+			this._xmatterDescription.Location = new System.Drawing.Point(293, 149);
+			this._xmatterDescription.Multiline = true;
+			this._xmatterDescription.Name = "_xmatterDescription";
+			this._xmatterDescription.Size = new System.Drawing.Size(310, 115);
+			this._xmatterDescription.TabIndex = 29;
 			// 
 			// _rtlLanguage3CheckBox
 			// 
@@ -421,18 +459,6 @@ namespace Bloom.Collection
 			this._xmatterPackLabel.TabIndex = 1;
 			this._xmatterPackLabel.Text = "Front/Back Matter Pack";
 			// 
-			// _xmatterPackCombo
-			// 
-			this._xmatterPackCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this._xmatterPackCombo.FormattingEnabled = true;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._xmatterPackCombo, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._xmatterPackCombo, null);
-			this._L10NSharpExtender.SetLocalizingId(this._xmatterPackCombo, "CollectionSettingsDialog._xmatterPackCombo");
-			this._xmatterPackCombo.Location = new System.Drawing.Point(293, 46);
-			this._xmatterPackCombo.Name = "_xmatterPackCombo";
-			this._xmatterPackCombo.Size = new System.Drawing.Size(146, 25);
-			this._xmatterPackCombo.TabIndex = 27;
-			// 
 			// tabPage3
 			// 
 			this.tabPage3.Controls.Add(this._bloomCollectionName);
@@ -520,7 +546,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizingId(this._countryLabel, "CollectionSettingsDialog.ProjectInformationTab.Country");
 			this._countryLabel.Location = new System.Drawing.Point(28, 23);
 			this._countryLabel.Name = "_countryLabel";
-			this._countryLabel.Size = new System.Drawing.Size(59, 19);
+			this._countryLabel.Size = new System.Drawing.Size(60, 19);
 			this._countryLabel.TabIndex = 2;
 			this._countryLabel.Text = "Country";
 			// 
@@ -720,7 +746,6 @@ namespace Bloom.Collection
 			this.Controls.Add(this._restartReminder);
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this._tab);
-
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "CollectionSettingsDialog.CollectionSettingsWindowTitle");
@@ -761,7 +786,6 @@ namespace Bloom.Collection
 		protected System.Windows.Forms.Label _language2Name;
         protected System.Windows.Forms.Label _language2Label;
 		private System.Windows.Forms.Label _xmatterPackLabel;
-		private System.Windows.Forms.ComboBox _xmatterPackCombo;
 		private System.Windows.Forms.TextBox _districtText;
 		private System.Windows.Forms.TextBox _provinceText;
 		private System.Windows.Forms.TextBox _countryText;
@@ -792,5 +816,8 @@ namespace Bloom.Collection
 		private CheckBox _rtlLanguage3CheckBox;
 		private CheckBox _rtlLanguage2CheckBox;
 		private CheckBox _rtlLanguage1CheckBox;
+		private TextBox _xmatterDescription;
+		private ListView _xmatterList;
+		private ColumnHeader columnHeader1;
 	}
 }

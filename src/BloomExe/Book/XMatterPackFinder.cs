@@ -58,7 +58,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public object FactoryDefault
+		public XMatterInfo FactoryDefault
 		{
 			get { return All.FirstOrDefault(x => x.Key == "Factory"); }
 

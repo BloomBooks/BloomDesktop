@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 
 namespace Bloom.Book
@@ -9,6 +10,7 @@ namespace Bloom.Book
 		public XMatterInfo(string pathToFolder)
 		{
 			PathToFolder = pathToFolder;
+
 		}
 
 		public override string ToString()
@@ -24,6 +26,23 @@ namespace Bloom.Book
 				var x = Path.GetFileName(PathToFolder);
 				var end = x.ToLowerInvariant().IndexOf("-xmatter");
 				return x.Substring(0, end);
+			}
+		}
+
+		public string GetDescription()
+		{
+			try
+			{
+				var path = Path.Combine(PathToFolder, "description-en.txt");
+				if(File.Exists(path))
+				{
+					return File.ReadAllText(path);
+				}
+				return "";
+			}
+			catch (Exception error)
+			{
+				return error.Message;
 			}
 		}
 	}

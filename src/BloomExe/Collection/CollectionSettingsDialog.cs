@@ -109,12 +109,6 @@ namespace Bloom.Collection
 
 			_restartReminder.Visible = _restartRequired;
 			_okButton.Text = _restartRequired ? LocalizationManager.GetString("CollectionSettingsDialog.Restart", "Restart", "If you make certain changes in the settings dialog, the OK button changes to this.") : LocalizationManager.GetString("Common.OKButton", "&OK");
-
-			_xmatterPackCombo.Items.Clear();
-			_xmatterPackCombo.Items.AddRange(_xmatterPackFinder.All.ToArray());
-			_xmatterPackCombo.SelectedItem = _xmatterPackFinder.FindByKey(_collectionSettings.XMatterPackName);
-			if (_xmatterPackCombo.SelectedItem == null) //if something goes wrong
-				_xmatterPackCombo.SelectedItem = _xmatterPackFinder.FactoryDefault;
 		}
 
 		private void _language1ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -186,7 +180,10 @@ namespace Bloom.Collection
 		{
 			Logger.WriteMinorEvent("Settings Dialog OK Clicked");
 
-			_collectionSettings.XMatterPackName = ((XMatterInfo) _xmatterPackCombo.SelectedItem).Key;
+			if (_xmatterList.SelectedItems.Count > 0)
+			{
+				_collectionSettings.XMatterPackName = ((XMatterInfo) _xmatterList.SelectedItems[0].Tag).Key;
+			}
 			_collectionSettings.Country = _countryText.Text.Trim();
 			_collectionSettings.Province = _provinceText.Text.Trim();
 			_collectionSettings.District = _districtText.Text.Trim();
@@ -271,9 +268,38 @@ namespace Bloom.Collection
 			LoadFontCombo();
 			AdjustFontComboDropdownWidth();
 			SetupRtlCheckBoxes();
-
+			
 			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");
+		}
+
+		/// <summary>
+		/// NB The selection stuff is flakey if we attempt to select things before the control is all created, settled down, bored.
+		/// </summary>
+		private void SetupXMatterList()
+		{
+			var packsToSkip = new string[] {"null", "bigbook", "SHRP"};
+			_xmatterList.Items.Clear();
+			ListViewItem itemForFactoryDefault = null;
+			foreach(var pack in _xmatterPackFinder.All)
+			{
+				if (packsToSkip.Any(s => pack.Key.ToLower().Contains(s.ToLower())))
+					continue;
+
+				var item = _xmatterList.Items.Add(pack.Key);
+				item.Tag = pack;
+				if(pack.Key == _collectionSettings.XMatterPackName)
+					item.Selected = true;
+				if(pack.Key == _xmatterPackFinder.FactoryDefault.Key)
+				{
+					itemForFactoryDefault = item;
+				}
+			}
+			if(itemForFactoryDefault != null && _xmatterList.SelectedItems.Count == 0) //if the xmatter they used to have selected is gone or was renamed or something
+				itemForFactoryDefault.Selected = true;
+
+			if(_xmatterList.SelectedIndices.Count > 0)
+				_xmatterList.EnsureVisible(_xmatterList.SelectedIndices[0]);
 		}
 
 		/*
@@ -387,6 +413,20 @@ namespace Bloom.Collection
 		private void _rtlLanguageCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
 			RestartRequired();
+		}
+
+		private void _xmatterList_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (_xmatterList.SelectedItems.Count == 0 || _xmatterList.SelectedItems[0].Tag == null)
+				_xmatterDescription.Text = "";
+			else
+				_xmatterDescription.Text = ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).GetDescription();
+		}
+
+		private void _tab_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if(_tab.SelectedIndex == 1)
+				SetupXMatterList();
 		}
 
 	}
