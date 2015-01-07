@@ -300,26 +300,22 @@ class StyleEditor {
             else
                 styleAndLang = styleName + ":not([lang])";
         }
-        var bloomEditable = '.bloom-editable';
+
         for (var i = 0; i < ruleList.length; i++) {
-            if (!ruleList[i].cssText.startsWith(bloomEditable)) { // we might need to update old rules?
-                var oldText = ruleList[i].cssText;
-                this.ReplaceExistingStyle((<CSSStyleSheet>styleSheet), i, bloomEditable + oldText);
-            }
             var index = ruleList[i].cssText.indexOf('{');
             if (index == -1) continue;
-            var match = ruleList[i].cssText.substring(bloomEditable.length, index);
+            var match = ruleList[i].cssText;
             // if we're not ignoring language, we simply need a match for styleAndLang, which includes a lang component.
             // if we're ignoring language, we must find a rule that doesn't specify language at all, even if we
             // have one that does.
             // It's probably pathological to worry about the style name occurring in the body of some other rule,
             // especially with the -style suffix, but it seems safer not to risk it.
-            if (match.indexOf(styleAndLang) > -1 && (!ignoreLanguage || match.indexOf('[lang') == -1)) {
+            if (match.toLowerCase().indexOf(styleAndLang.toLowerCase()) > -1 && (!ignoreLanguage || match.indexOf('[lang') == -1)) {
                 return <CSSStyleRule> ruleList[i];
             }
         }
-        (<CSSStyleSheet>styleSheet).insertRule(bloomEditable + '.' + styleAndLang + "{ }", ruleList.length);
-
+        (<CSSStyleSheet>styleSheet).insertRule('.' + styleAndLang + "{ }", ruleList.length);
+       
         return <CSSStyleRule> ruleList[ruleList.length - 1]; //new guy is last
     }
 
