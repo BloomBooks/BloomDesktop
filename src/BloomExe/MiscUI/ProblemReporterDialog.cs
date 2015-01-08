@@ -121,6 +121,10 @@ namespace Bloom.MiscUI
 		private void UpdateDisplay(object sender, EventArgs e)
 		{
 			UpdateDisplay();
+#if __MonoCS__
+			// For some fonts that don't render properly in Mono BL-822
+			Refresh();
+#endif
 		}
 
 		private void UpdateDisplay()
