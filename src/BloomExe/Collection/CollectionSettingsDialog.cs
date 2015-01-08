@@ -9,6 +9,7 @@ using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.Extensions;
 using Palaso.WritingSystems;
+using System.Collections.Generic;
 
 namespace Bloom.Collection
 {
@@ -307,7 +308,11 @@ namespace Bloom.Collection
 		 */
 		private void LoadFontCombo()
 		{
-			foreach (var font in Browser.NamesOfFontsThatBrowserCanRender())
+			// Display the fonts in sorted order.  See https://jira.sil.org/browse/BL-864.
+			var fontNames = new List<string>();
+			fontNames.AddRange(Browser.NamesOfFontsThatBrowserCanRender());
+			fontNames.Sort();
+			foreach (var font in fontNames)
 			{
 				_fontComboLanguage1.Items.Add(font);
 				_fontComboLanguage2.Items.Add(font);
