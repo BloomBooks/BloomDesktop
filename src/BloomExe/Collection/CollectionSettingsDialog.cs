@@ -181,10 +181,6 @@ namespace Bloom.Collection
 		{
 			Logger.WriteMinorEvent("Settings Dialog OK Clicked");
 
-			if (_xmatterList.SelectedItems.Count > 0)
-			{
-				_collectionSettings.XMatterPackName = ((XMatterInfo) _xmatterList.SelectedItems[0].Tag).Key;
-			}
 			_collectionSettings.Country = _countryText.Text.Trim();
 			_collectionSettings.Province = _provinceText.Text.Trim();
 			_collectionSettings.District = _districtText.Text.Trim();
@@ -213,9 +209,16 @@ namespace Bloom.Collection
 				_queueRenameOfCollection.Raise(_bloomCollectionName.Text.SanitizeFilename('-'));
 				//_collectionSettings.PrepareToRenameCollection(_bloomCollectionName.Text.SanitizeFilename('-'));
 			}
-			_collectionSettings.Save();
-
 			Logger.WriteEvent("Closing Settings Dialog");
+			if(_xmatterList.SelectedItems.Count > 0 && ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).Key != _collectionSettings.XMatterPackName)
+			{
+				_collectionSettings.XMatterPackName = ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).Key;
+				var msg = LocalizationManager.GetString("settings",
+					"You have selected a different Front/Back Matter Pack. It will be used for books you make from here on. To switch an existing book to this front/back matter pack, right click on the book and choose '{0}'.");
+				msg = string.Format(msg, LocalizationManager.GetString("CollectionTab.BookMenu._updateFrontMatterToolStrip", "Update Book"));
+				MessageBox.Show(msg);
+			}
+			_collectionSettings.Save();
 			Close();
 			DialogResult = _restartRequired ? DialogResult.Yes : DialogResult.OK;
 		}

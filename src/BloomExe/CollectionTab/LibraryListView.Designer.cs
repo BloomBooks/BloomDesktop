@@ -112,7 +112,7 @@ namespace Bloom.CollectionTab
 			this._updateFrontMatterToolStripMenu.Size = new System.Drawing.Size(237, 22);
 			this._updateFrontMatterToolStripMenu.Text = "Update Book";
 			this._updateFrontMatterToolStripMenu.ToolTipText = "New versions of Bloom sometimes can fix or otherwise improve books. This should b" +
-    "e safe to do at any time, but is only worth doing if your are instructed to do i" +
+    "e safe to do at any time, but is only worth doing if need to update the front/back matter or you are instructed to do i" +
     "t by a Bloom specialist.";
 			this._updateFrontMatterToolStripMenu.Click += new System.EventHandler(this.OnBringBookUpToDate_Click);
 			// 
