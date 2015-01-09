@@ -1,65 +1,73 @@
-// Styles specific to the Style Editor dialog
-.format-toolbar-description {
-	font-size: small;
-	line-height: 1.2;
-	margin: 10px 0px 5px 0px;
-	color:grey;
-}
-.mainBlock {
-	display: inline-block;
-	vertical-align: top;
-	line-height: normal;
-}
-.leftBlock {
-	width: 150px;
-}
-.spacing-fudge {
-	margin: 0px 0px -5px 0px;
-}
-#size-select {
-	width: 43px;
-	margin-left: 5px;
-}
-#line-height-select {
-	width: 45px;
-	margin-left: 2px;
-}
-#word-space-select {
-	margin-left: 2px;
-}
-#styleSelect {
-	margin: 0px 0px 12px 0px;
-	width: 145px;
-}
-#style-select-input {
-	width: 143px; // with 1px border this makes it the same as the #styleSelect combo
-}
-.bloomDialogContainer {
-	width: 350px !important;
-}
+#format-toolbar {
+	*{
+		font-family: "Segoe UI", Arial, sans-serif;
+	}
+	H2{
+		font-size:10pt;
+	}
+	// Styles specific to the Style Editor dialog
+	.format-toolbar-description {
+		font-size: small;
+		line-height: 1.2;
+		margin: 10px 0px 5px 0px;
+		color: grey;
+	}
+	.mainBlock {
+		display: inline-block;
+		vertical-align: top;
+		line-height: normal;
+	}
+	.leftBlock {
+		width: 150px;
+	}
+	.spacing-fudge {
+		margin: 0px 0px -5px 0px;
+	}
+	#size-select {
+		width: 43px;
+		margin-left: 5px;
+	}
+	#line-height-select {
+		width: 45px;
+		margin-left: 2px;
+	}
+	#word-space-select {
+		margin-left: 2px;
+	}
+	#styleSelect {
+		margin: 0px 0px 12px 0px;
+		width: 145px;
+	}
+	#style-select-input {
+		width: 143px; // with 1px border this makes it the same as the #styleSelect combo
+	}
+	.bloomDialogContainer {
+		width: 350px !important;
+	}
 
-// State Machine styles
-.state-initial #dont-see {
-	display: block;
-}
-.state-initial #createStyle {
-	display: none;
-}
-.state-enteringStyle #createStyle {
-	display: block;
-}
-.state-enteringStyle #dont-see, .state-enteringStyle #please-use-alpha, .state-enteringStyle #already-exists {
-	display: none;
-}
-.state-invalid-characters #please-use-alpha {
-	display: block;
-}
-.state-invalid-characters #already-exists, .state-invalid-characters #dont-see {
-	display: none;
-}
-.state-already-exists #already-exists {
-	display: block;
-}
-.state-already-exists #please-use-alpha, .state-already-exists #dont-see {
-	display: none;
+	// State Machine styles
+	.state-initial #dont-see {
+		display: block;
+	}
+	.state-initial #createStyle {
+		display: none;
+	}
+	.state-enteringStyle #createStyle {
+		display: block;
+	}
+	.state-enteringStyle #dont-see, .state-enteringStyle #please-use-alpha, .state-enteringStyle #already-exists {
+		display: none;
+	}
+	.state-invalid-characters #please-use-alpha {
+		display: block;
+	}
+	.state-invalid-characters #already-exists, .state-invalid-characters #dont-see {
+		display: none;
+	}
+	.state-already-exists #already-exists {
+		display: block;
+	}
+	.state-already-exists #please-use-alpha, .state-already-exists #dont-see {
+		display: none;
+	}
 }

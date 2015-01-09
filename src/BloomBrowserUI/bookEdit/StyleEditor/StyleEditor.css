@@ -1,66 +1,72 @@
-.format-toolbar-description {
+#format-toolbar * {
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+#format-toolbar H2 {
+  font-size: 10pt;
+}
+#format-toolbar .format-toolbar-description {
   font-size: small;
   line-height: 1.2;
   margin: 10px 0px 5px 0px;
   color: grey;
 }
-.mainBlock {
+#format-toolbar .mainBlock {
   display: inline-block;
   vertical-align: top;
   line-height: normal;
 }
-.leftBlock {
+#format-toolbar .leftBlock {
   width: 150px;
 }
-.spacing-fudge {
+#format-toolbar .spacing-fudge {
   margin: 0px 0px -5px 0px;
 }
-#size-select {
+#format-toolbar #size-select {
   width: 43px;
   margin-left: 5px;
 }
-#line-height-select {
+#format-toolbar #line-height-select {
   width: 45px;
   margin-left: 2px;
 }
-#word-space-select {
+#format-toolbar #word-space-select {
   margin-left: 2px;
 }
-#styleSelect {
+#format-toolbar #styleSelect {
   margin: 0px 0px 12px 0px;
   width: 145px;
 }
-#style-select-input {
+#format-toolbar #style-select-input {
   width: 143px;
 }
-.bloomDialogContainer {
+#format-toolbar .bloomDialogContainer {
   width: 350px !important;
 }
-.state-initial #dont-see {
+#format-toolbar .state-initial #dont-see {
   display: block;
 }
-.state-initial #createStyle {
+#format-toolbar .state-initial #createStyle {
   display: none;
 }
-.state-enteringStyle #createStyle {
+#format-toolbar .state-enteringStyle #createStyle {
   display: block;
 }
-.state-enteringStyle #dont-see,
-.state-enteringStyle #please-use-alpha,
-.state-enteringStyle #already-exists {
+#format-toolbar .state-enteringStyle #dont-see,
+#format-toolbar .state-enteringStyle #please-use-alpha,
+#format-toolbar .state-enteringStyle #already-exists {
   display: none;
 }
-.state-invalid-characters #please-use-alpha {
+#format-toolbar .state-invalid-characters #please-use-alpha {
   display: block;
 }
-.state-invalid-characters #already-exists,
-.state-invalid-characters #dont-see {
+#format-toolbar .state-invalid-characters #already-exists,
+#format-toolbar .state-invalid-characters #dont-see {
   display: none;
 }
-.state-already-exists #already-exists {
+#format-toolbar .state-already-exists #already-exists {
   display: block;
 }
-.state-already-exists #please-use-alpha,
-.state-already-exists #dont-see {
+#format-toolbar .state-already-exists #please-use-alpha,
+#format-toolbar .state-already-exists #dont-see {
   display: none;
 }

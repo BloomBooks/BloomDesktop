@@ -767,14 +767,27 @@ function AddEditKeyHandlers(container) {
         }
     });
 
+    $(container).find("div.bloom-editable").on('keydown', null, 'ALT+CTRL+0', function (e) {//ctrl alt 0 is from google drive for "normal text"
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "P");
+    });
+
     // Make F7 apply top-level header style (H1)
     $(container).find("div.bloom-editable").on('keydown', null, 'F7', function (e) {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H1");
+    });
+    $(container).find("div.bloom-editable").on('keydown', null, 'ALT+CTRL+1', function (e) {//ctrl alt 1 is from google drive
         e.preventDefault();
         document.execCommand("formatBlock", false, "H1");
     });
 
     // Make F8 apply header style (H2)
     $(container).find("div.bloom-editable").on('keydown', null, 'F8', function (e) {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, "H2");
+    });
+    $(container).find("div.bloom-editable").on('keydown', null, 'ALT+CTRL+2', function (e) { //ctrl alt 2 is from google drive
         e.preventDefault();
         document.execCommand("formatBlock", false, "H2");
     });
@@ -804,6 +817,10 @@ function AddEditKeyHandlers(container) {
     $(document).bind('keydown', 'ctrl+l', function (e) {
         e.preventDefault();
         document.execCommand("justifyleft", false, null);
+    });
+    $(document).bind('keydown', 'ctrl+shift+e', function (e) { //ctrl+shiift+e is what google drive uses
+        e.preventDefault();
+        document.execCommand("justifycenter", false, null);
     });
 }
 
