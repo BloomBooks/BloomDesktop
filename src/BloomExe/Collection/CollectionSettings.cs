@@ -239,8 +239,8 @@ namespace Bloom.Collection
 				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
 				AddFontCssRule(sb, "BODY", GetDefaultFontName());
-				AddFontCssRule(sb, "DIV:lang(" + Language1Iso639Code + ")", DefaultLanguage1FontName);
-				AddFontCssRule(sb, "DIV:lang(" + Language2Iso639Code + ")", DefaultLanguage2FontName);
+				AddFontCssRule(sb, ":lang(" + Language1Iso639Code + ")", DefaultLanguage1FontName);
+				AddFontCssRule(sb, ":lang(" + Language2Iso639Code + ")", DefaultLanguage2FontName);
 				if (!string.IsNullOrEmpty(Language3Iso639Code))
 				{
 					AddFontCssRule(sb, "DIV:lang(" + Language3Iso639Code + ")", DefaultLanguage3FontName);
