@@ -98,7 +98,7 @@ mixin factoryStandard-outsideFrontCover
 		//- This current pattern is born of pre-jade days when it didn't matter much, but now in the
 		//- light of jade it is overly complicated.
 
-		+field-prototypeDeclaredExplicity
+		+field-prototypeDeclaredExplicity.bookTitle
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bookTitle.bloom-nodefaultstylerule.Title-On-Cover-style(data-book='bookTitle')
 
@@ -106,12 +106,13 @@ mixin factoryStandard-outsideFrontCover
 		.bloom-imageContainer
 			img(src="placeHolder.png", data-book='coverImage')
 
-		//- 'V' means this field is only available in the vernacular
-		+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.Credits-On-Cover-style
-			label.bubble *You may use this space for author/illustrator, or anything else.
-
-		.coverBottomLangName(data-book='languagesOfBook')
-		+chooser-topic.coverBottomBookTopic
+		.creditsWrapper
+			//- 'V' means this field is only available in the vernacular
+			+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.Credits-On-Cover-style
+				label.bubble *You may use this space for author/illustrator, or anything else.
+		.bottomBlock
+			.coverBottomLangName(data-book='languagesOfBook')
+			+chooser-topic.coverBottomBookTopic
 
 mixin factoryStandard-creditsInsideFrontCover
 	// Inside Front Cover CREDITS PAGE
@@ -144,7 +145,7 @@ mixin factoryStandard-titlePage
 				.langName(data-library='languageLocation')
 
 mixin standard-blankInsideFrontCover
-	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='back-matter-inside-front-cover')#BA00DE13-734C-4036-9901-7040275B9000
+	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover')#BA00DE13-734C-4036-9901-7040275B9000
 		+field-mono-meta("N1","insideFontCover").Inside-Front-Cover-style.bloom-copyFromOtherLanguageIfNecessary
 			label.bubble If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover.
 

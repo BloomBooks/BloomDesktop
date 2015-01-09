@@ -1,5 +1,17 @@
 ﻿## 3.0.83 BETA
-- Overhauled the Credits page so that there is more room for text.
+- [UserVoice Suggestion] Introduction of A6 Portrait option. **Feedback appreciated**
+- The image on the Cover page  will now automatically shrink so that whatever text you need can fit
+- Front cover & title page can now show title in all 3 languages
+- Fields on the Cover can now grow
+- [UserVoice Suggestion] Title page's funding box can now grow, to use for a cheap Table Of Contents if Needed
+- The Credits page now has more room for acknowledgments
+- When selecting a Front/Back Matter pack in the Settings dialog, you can now read a short description of each one
+- Trial of a Front/Back Matter pack for SIL Cameroon, which is like "Traditional" but includes the ISO 639 code of the language
+- Big Books now use the same Front/Back Matter pack as the rest of the collection. You can now delete the "instructions for teachers" page if you don't want it
+- Big Books now include the "Custom" page template
+- Removed the "A5 Portrait Bottom Align" option
+- CTRL+R will right-align the text, CTRL+L will left-align, CTRL+SHIFT+E will center (In the future we expect to introduce UI buttons for these things).
+
 
 ## 3.0.80 BETA
 - Fix: "Open in Firefox" should now work even if you have spaces in the path

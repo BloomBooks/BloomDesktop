@@ -1,61 +1,3 @@
-/*+init {*/
-* {
-  position: relative;
-  margin: 0;
-  padding: 0;
-  font-size: 1em;
-}
-H1,
-H2,
-H3,
-H4,
-H5,
-H6,
-TH {
-  font-weight: inherit;
-}
-ADDRESS,
-CITE,
-DFN,
-VAR {
-  font-style: inherit;
-}
-CAPTION,
-CODE,
-KBD,
-PRE,
-SAMP,
-TT,
-INPUT,
-TEXTAREA,
-SELECT,
-BUTTON {
-  font-family: inherit;
-}
-TABLE {
-  border-spacing: 0;
-}
-TH {
-  text-align: left;
-}
-HTML,
-BODY,
-THEAD,
-TBODY,
-TFOOT,
-TR,
-TH,
-TD,
-BR {
-  position: static;
-}
-INPUT[type=hidden] {
-  display: none !important;
-}
-FIELDSET,
-A IMG {
-  border: 0;
-}
 /*+}*/
 /*The following is json. Bloom reads it in order to know what size/orientation options this stylesheet supports
 STARTLAYOUTS
@@ -64,8 +6,14 @@ STARTLAYOUTS
 	  {
 		 "A5Portrait":{
 			"Styles":[
-			   "Default",
-			   "BottomAlign"
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "A6Portrait":{
+			"Styles":[
+			   "Default"
 			]
 		 }
 	  },
@@ -91,225 +39,299 @@ ENDLAYOUTS
 This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.*/
 /*Hide items that shouldn't show, depending on the current  multi-lingualism of this book.
 generic*/
-TEXTAREA {
-  /*specifying the font again, here, really is needed*/
-  font-family: "Andika Basic", "Gentium Basic", "Doulous SIL", Sans-Serif;
-  font-size: 14pt;
-  width: 100%;
-}
 .translators {
   text-align: center;
   height: 1.6cm;
   position: relative;
 }
-/*Image On Top*/
-DIV.imageOnTop DIV.bloom-imageContainer {
+.imageOnTop .bloom-translationGroup {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.imageOnTop:not(.layout-style-SideBySide) .bloom-imageContainer {
+  height: calc(45% - 10px);
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.bloom-monolingual.imageOnTop:not(.layout-style-SideBySide) .bloom-editable {
+  height: 49%;
+  position: absolute;
+  bottom: 0;
+}
+.bloom-bilingual.imageOnTop:not(.layout-style-SideBySide) .bloom-imageContainer {
+  top: 33%;
+  height: 32%;
+  margin-top: 5px;
+}
+.bloom-bilingual.imageOnTop:not(.layout-style-SideBySide) .bloom-editable {
+  height: 32%;
+}
+.bloom-bilingual.imageOnTop:not(.layout-style-SideBySide) .bloom-content2 {
+  position: absolute;
+  bottom: 0;
+}
+.bloom-bilingual.imageOnTop:not(.layout-style-SideBySide) .bloom-content3 {
+  position: absolute;
+  bottom: 0;
+}
+.bloom-trilingual.imageOnTop:not(.layout-style-SideBySide) .bloom-imageContainer {
+  top: calc(13px + 24%);
+  height: 24%;
+}
+.bloom-trilingual.imageOnTop:not(.layout-style-SideBySide) .bloom-editable {
+  height: 24%;
+}
+.bloom-trilingual.imageOnTop:not(.layout-style-SideBySide) .bloom-content2 {
+  position: absolute;
+  top: calc(1.3% + 24% +  24%);
+}
+.bloom-trilingual.imageOnTop:not(.layout-style-SideBySide) .bloom-content3 {
+  position: absolute;
+  bottom: 0;
+}
+.imageOnTop.layout-style-SideBySide .bloom-imageContainer {
+  width: 48%;
+  height: 100%;
+  position: absolute;
+  left: auto;
+  right: 0;
+}
+.imageOnTop.layout-style-SideBySide .bloom-translationGroup {
+  width: 44%;
+}
+.imageOnTop.layout-style-SideBySide .bloom-editable.bloom-monolingual {
+  height: 100%;
+}
+.bloom-bilingual.imageOnTop.layout-style-SideBySide .bloom-editable {
+  height: calc(50% - 10px);
+}
+.bloom-trilingual.imageOnTop.layout-style-SideBySide .bloom-editable {
+  height: calc(33% - 10px);
+}
+.nospecidalmovement_imageOnTop .bloom-imageContainer {
+  height: calc(45% - 10px);
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.nospecidalmovement_imageOnTop .bloom-translationGroup {
+  height: 50%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+.nospecidalmovement_imageOnTop .bloom-editable.bloom-monolingual {
+  height: 100%;
+}
+.bloom-bilingual.nospecidalmovement_imageOnTop .bloom-editable {
+  height: calc(50% - 10px);
+}
+.bloom-trilingual.nospecidalmovement_imageOnTop .bloom-editable {
+  height: calc(33% - 10px);
+}
+.nospecidalmovement_imageOnTop.A4Landscape.layout-style-SideBySide .bloom-imageContainer {
+  width: 48%;
+  height: 100%;
+  position: absolute;
+  left: auto;
+  right: 0;
+}
+.nospecidalmovement_imageOnTop.A4Landscape.layout-style-SideBySide .bloom-translationGroup {
+  height: 100%;
+  width: 45%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.ximageOnTop .bloom-translationGroup .bloom-editable.bloom-content2,
+.ximageOnTop .bloom-translationGroup .bloom-editable.bloom-content3 {
+  margin-top: 0;
+}
+.ximageOnTop .bloom-imageContainer {
   width: 100%;
   height: 45% !important;
-  /*above so buttons show*/
   z-index: 1000;
 }
-/*Note, to make bottomAlign work takes these 2 rules: one on the container (translationgroup) and another on the element*/
-.imageOnTop.layout-style-BottomAlign.bloom-monolingual .bloom-translationGroup {
+.ximageOnTop.A4Landscape DIV.bloom-translationGroup {
+  height: 25% !important;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
+.ximageOnTop.A4Landscape.bloom-trilingual DIV.bloom-translationGroup {
+  height: 50% !important;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
+.ximageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable {
+  width: 100%;
+  height: 30%;
+}
+.ximageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup,
+.ximageOnTop.A6Portrait.bloom-monolingual DIV.bloom-translationGroup {
+  height: 48% !important;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+.ximageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup,
+.ximageOnTop.A6Portrait.bloom-trilingual DIV.bloom-translationGroup {
+  height: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
+.ximageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup {
+  height: 48% !important;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+.ximageOnTop.layout-style-BottomAlign.bloom-monolingual .bloom-translationGroup {
   display: table;
 }
-.imageOnTop.layout-style-BottomAlign.bloom-monolingual DIV.bloom-editable {
+.ximageOnTop.layout-style-BottomAlign.bloom-monolingual DIV.bloom-editable {
   vertical-align: bottom;
   display: table-cell;
 }
-/*------A4L Side-by-side common*/
-.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer {
+.ximageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-imageContainer {
   width: 48%;
-  /*+placement:anchor-top-left 0 0;*/
   position: absolute;
   left: 0;
   top: 0;
   height: 100% !important;
-  /*[disabled]border:1px solid #000000;*/
 }
-.imageOnTop.A4Landscape.layout-style-SideBySide.bloom-monolingual .bloom-editable {
-  height: 17.7cm !important;
-}
-.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-translationGroup {
+.ximageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-translationGroup {
   height: 100% !important;
   width: 45%;
-  /*+placement:anchor-top-left 549px 2px;*/
   position: absolute !important;
   left: 549px !important;
   top: 2px !important;
 }
-.imageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-editable {
-  /*[disabled]height:33%;*/
-  /*[disabled]width:45%;*/
-  /*[disabled]+placement:anchor-top-left 549px 2px;*/
+.ximageOnTop.A4Landscape.layout-style-SideBySide DIV.bloom-editable {
   display: block;
 }
-.imageOnTop.A4Landscape.layout-style-SideBySide.bloom-bilingual .bloom-editable {
+.ximageOnTop.A4Landscape.layout-style-SideBySide.bloom-monolingual .bloom-editable {
+  height: 17.7cm !important;
+}
+.ximageOnTop.A4Landscape.layout-style-SideBySide.bloom-bilingual .bloom-editable {
   height: 8cm !important;
 }
-/*.......A4L Stacked*/
-.imageOnTop.A4Landscape DIV.bloom-imageContainer {
+.ximageOnTop.A4Landscape DIV.bloom-imageContainer {
   width: 100%;
-  /*+placement:anchor-top-left 0 0;*/
   position: absolute;
   left: 0;
   top: 0;
   height: 70% !important;
-  /*[disabled]border:1px solid #000000;*/
 }
-.imageOnTop.layout-style-SplitAcrossPages DIV.bloom-imageContainer {
-  width: 100%;
-  height: 100% !important;
-}
-.imageOnTop.layout-style-SplitAcrossPages .bloom-translationGroup {
-  width: 100%;
-  /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
-  /*[disabled]position:relative;*/
-  /*So instead, we're settling for starting the text part of the way down*/
-  position: relative !important;
-  display: block !important;
-  /*+placement:anchor-top-left 0 30%;*/
-  position: absolute;
-  left: 0;
-  top: 30%;
-}
-.imageOnTop.layout-style-SplitAcrossPages .bloom-editable {
-  font-size: 300%;
-}
-DIV.imageOnTop.A4Landscape DIV.bloom-translationGroup {
-  height: 25% !important;
-  /*+placement:anchor-bottom-left 0 0;*/
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-}
-.imageOnTop.A4Landscape.bloom-monolingual DIV.bloom-editable {
+.ximageOnTop.A4Landscape.bloom-monolingual DIV.bloom-editable {
   height: 100%;
 }
-.imageOnTop.A4Landscape.bloom-bilingual DIV.bloom-editable {
+.ximageOnTop.A4Landscape.bloom-bilingual DIV.bloom-editable {
   height: 50%;
 }
-.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable {
+.ximageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable {
   height: 30%;
 }
-.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-imageContainer {
+.ximageOnTop.A4Landscape.bloom-trilingual DIV.bloom-imageContainer {
   width: 100%;
-  /*+placement:anchor-top-left 0 0;*/
   position: absolute;
   left: 0;
   top: 0;
   height: 45% !important;
-  /*[disabled]border:1px solid #000000;*/
 }
-DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-translationGroup {
-  height: 50% !important;
-  /*+placement:anchor-bottom-left 0 0;*/
+.ximageOnTop.layout-style-SplitAcrossPages DIV.bloom-imageContainer {
+  width: 100%;
+  height: 100% !important;
+}
+.ximageOnTop.layout-style-SplitAcrossPages .bloom-translationGroup {
+  width: 100%;
+  position: relative !important;
+  display: block !important;
   position: absolute;
   left: 0;
-  bottom: 0;
-  width: 100%;
+  top: 30%;
 }
-DIV.imageOnTop.A4Landscape.bloom-trilingual DIV.bloom-editable {
-  /*[disabled]+placement:anchor-top-left 549px 2px;*/
-  width: 100%;
-  height: 30%;
+.ximageOnTop.layout-style-SplitAcrossPages .bloom-editable {
+  font-size: 300%;
 }
-/*...... A5P mono*/
-.imageOnTop.bloom-monolingual DIV.bloom-editable {
-  /*[disabled]height:100%;*/
-  /*[disabled]width:100%;*/
-  /*[disabled]display:table-cell;*/
-}
-DIV.imageOnTop.A5Portrait.bloom-monolingual DIV.bloom-translationGroup {
-  height: 48% !important;
-  width: 100%;
-  /*+placement:anchor-bottom-left 0 0;*/
-  position: absolute;
-  left: 0;
-  bottom: 0;
-}
-DIV.imageOnTop.A4Portrait.bloom-monolingual DIV.bloom-translationGroup {
-  height: 48% !important;
-  width: 100%;
-  /*+placement:anchor-bottom-left 0 0;*/
-  position: absolute;
-  left: 0;
-  bottom: 0;
-}
-/*........bilingual, placing 1st lang on top, 2nd below the picture*/
-.imageOnTop.A5Portrait.bloom-bilingual DIV.bloom-imageContainer {
+.ximageOnTop.A5Portrait.bloom-bilingual DIV.bloom-imageContainer,
+.ximageOnTop.A6Portrait.bloom-bilingual DIV.bloom-imageContainer {
   height: 30% !important;
-  /*+placement:anchor-top-left 0 228px;*/
   position: absolute;
   left: 0;
   top: 228px;
 }
-.imageOnTop.A5Portrait.bloom-bilingual DIV.bloom-translationGroup {
+.ximageOnTop.A5Portrait.bloom-bilingual DIV.bloom-translationGroup,
+.ximageOnTop.A6Portrait.bloom-bilingual DIV.bloom-translationGroup {
   height: 100%;
-  /*+placement:anchor-bottom-left 0 0;*/
   position: absolute;
   left: 0;
   bottom: 0;
   width: 100%;
 }
-.imageOnTop.A4Portrait.bloom-bilingual DIV.bloom-imageContainer {
-  height: 30% !important;
-  /*+placement:anchor-top-left 0 35%;*/
-  position: absolute;
-  left: 0;
-  top: 35%;
-}
-.imageOnTop.A4Portrait.bloom-bilingual DIV.bloom-translationGroup {
-  height: 100%;
-  /*+placement:anchor-bottom-left 0 0;*/
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-}
-.imageOnTop.bloom-bilingual DIV.bloom-editable {
-  height: 30%;
-}
-.imageOnTop.bloom-bilingual DIV.bloom-editable.bloom-content2 {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-}
-/*--------trilingual, with 1st lang on top, 2nd and 3rd below the picture*/
-.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-imageContainer {
+.ximageOnTop.A5Portrait.bloom-trilingual DIV.bloom-imageContainer,
+.ximageOnTop.A6Portrait.bloom-trilingual DIV.bloom-imageContainer {
   height: 27% !important;
-  /*+placement:anchor-top-left 1px 196px;*/
   position: absolute;
   left: 1px;
   top: 196px;
 }
-DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup {
+.ximageOnTop.A5Portrait.bloom-trilingual DIV.bloom-editable.bloom-content2,
+.ximageOnTop.A6Portrait.bloom-trilingual DIV.bloom-editable.bloom-content2 {
+  height: 19%;
+  position: relative;
+  left: 0;
+  top: 33%;
+}
+.ximageOnTop.A5Portrait.bloom-trilingual DIV.bloom-editable.bloom-content3,
+.ximageOnTop.A6Portrait.bloom-trilingual DIV.bloom-editable.bloom-content3 {
+  height: 19%;
+  position: relative;
+  left: 0;
+  top: 33%;
+  margin-top: 12px;
+}
+.ximageOnTop.A4Portrait.bloom-bilingual DIV.bloom-imageContainer {
+  height: 30% !important;
+  position: absolute;
+  left: 0;
+  top: 35%;
+}
+.ximageOnTop.A4Portrait.bloom-bilingual DIV.bloom-translationGroup {
   height: 100%;
-  /*+placement:anchor-bottom-left 0 0;*/
   position: absolute;
   left: 0;
   bottom: 0;
   width: 100%;
 }
-.imageOnTop.bloom-trilingual .bloom-content1 {
+.ximageOnTop.bloom-bilingual DIV.bloom-editable {
+  height: 30%;
+}
+.ximageOnTop.bloom-bilingual DIV.bloom-editable.bloom-content2 {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+.ximageOnTop.bloom-trilingual .bloom-content1 {
   height: 26%;
 }
-.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-editable.bloom-content2 {
-  height: 19%;
-  /*+placement:shift 0 33%;*/
-  position: relative;
-  left: 0;
-  top: 33%;
-}
-.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-editable.bloom-content3 {
-  height: 19%;
-  /*+placement:shift 0 33%;*/
-  position: relative;
-  left: 0;
-  top: 33%;
-  /*this margin is to separate us from content2 a bit*/
-  margin-top: 12px;
+.imageInMiddle .bloom-translationGroup .bloom-editable.bloom-content2,
+.imageInMiddle .bloom-translationGroup .bloom-editable.bloom-content3 {
+  margin-top: 0;
 }
 .imageInMiddle .bloom-imageContainer {
   width: 100%;
@@ -349,7 +371,7 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup {
   height: calc(33% - 10px - 1px) !important;
 }
 .imageOnBottom .bloom-imageContainer {
-  height: 45%;
+  height: calc(45% - 10px);
   width: 100%;
   position: absolute;
   left: 0;
@@ -367,110 +389,85 @@ DIV.imageOnTop.A5Portrait.bloom-trilingual DIV.bloom-translationGroup {
   width: 100%;
 }
 .imageOnBottom.bloom-bilingual .bloom-translationGroup .bloom-editable {
-  height: 50%;
+  height: calc(40%);
 }
 .imageOnBottom.bloom-trilingual .bloom-translationGroup .bloom-editable {
-  height: 33%;
+  height: calc(23%);
 }
 .imageOnBottom.A4Landscape.layout-style-SideBySide .bloom-imageContainer {
   width: 48%;
   height: 100%;
-  /*+placement:float-right 0 0;*/
-  float: right !important;
-  position: relative !important;
-  left: 0 !important;
-  top: 0 !important;
+  position: absolute;
+  left: auto;
+  right: 0;
 }
 .imageOnBottom.A4Landscape.layout-style-SideBySide .bloom-translationGroup {
-  height: 17.8cm !important;
+  height: 100%;
   width: 45%;
   position: absolute;
   left: 0;
   top: 0;
 }
-/*Image Whole Page*/
-DIV.imageWholePage DIV.bloom-imageContainer {
+.imageWholePage .bloom-imageContainer {
   width: 100%;
   height: 100%;
 }
-DIV.imageWholePage IMG {
-  display: table-cell;
-  /*doesn't work*/
-  vertical-align: middle;
-  /*doesn't work*/
-  max-height: 18.6cm;
-  /*marginBox takes care of this*/
-  /*[disabled]max-width:12.2cm;*/
-}
-DIV.imageWholePage TD {
-  text-align: center;
-}
-DIV.imageWholePage TABLE {
-  width: 556px;
-  height: 786px;
-}
 /*Text Whole Page
-The current version of this is centered verically; if you're looking for how that is done, it's not here, but rather
+The current version of this is centered vertically; if you're looking for how that is done, it's not here, but rather
 in javascript. Search for 'bloom-centerContentVertically'.
 */
+.textWholePage .bloom-editable {
+  min-height: 2em;
+}
 .textWholePage .bloom-translationGroup {
   width: 100%;
 }
-/*Picture and Word Page*/
-.pictureAndWordPage DIV.bloom-translationGroup {
-  width: 100%;
-  text-align: center;
-  /*+placement:anchor-bottom-left 0 0;*/
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 7.1cm;
+.pictureAndWordPage.A6Portrait .bloom-translationGroup {
+  height: 35%;
+}
+.pictureAndWordPage.A6Portrait .bloom-imageContainer {
+  height: 62%;
+}
+.pictureAndWordPage.A6Portrait .bloom-content1 {
+  font-size: 400%;
+}
+.pictureAndWordPage.A5Portrait .bloom-translationGroup {
+  height: 35%;
 }
 .pictureAndWordPage.A5Portrait .bloom-imageContainer {
-  max-height: 62%;
+  height: 62%;
+}
+.pictureAndWordPage.A5Portrait .bloom-content1 {
+  font-size: 400%;
+}
+.pictureAndWordPage.A4Portrait .bloom-translationGroup {
+  height: 23%;
 }
 .pictureAndWordPage.A4Portrait .bloom-imageContainer {
-  max-height: 74%;
+  height: 74%;
+}
+.pictureAndWordPage.A4Portrait .bloom-content1 {
+  font-size: 600%;
+}
+.pictureAndWordPage.A4Landscape .bloom-translationGroup {
+  height: 42%;
 }
 .pictureAndWordPage.A4Landscape .bloom-imageContainer {
   height: 55%;
 }
-.pictureAndWordPage .bloom-content1 {
-  font-size: 400%;
+.pictureAndWordPage.A4Landscape .bloom-content1 {
+  font-size: 600%;
+}
+.pictureAndWordPage .bloom-translationGroup {
+  width: 100%;
+  text-align: center;
+  padding-top: 10px;
+}
+.pictureAndWordPage .bloom-editable {
   vertical-align: middle;
-  margin-top: 17px;
+  height: auto;
 }
-.pictureAndWordPage.bloom-monolingual .bloom-content1 {
-  font-size: 400%;
-  height: 100%;
+.pictureAndWordPage .bloom-content2,
+.pictureAndWordPage .bloom-content3 {
+  font-size: 200% ;
 }
-.pictureAndWordPage.bloom-bilingual .bloom-content2 {
-  font-size: 200%;
-  height: 2cm;
-  margin-top: 23px;
-}
-.pictureAndWordPage .bloom-content1 {
-  height: 3.3cm !important;
-}
-.pictureAndWordPage.bloom-trilingual .bloom-content2 {
-  height: 1.5cm;
-}
-.pictureAndWordPage.bloom-trilingual .bloom-content3 {
-  height: 1.5cm;
-}
-DIV.customPage DIV.bloom-imageContainer {
-  width: 99%;
-  height: 98%;
-  /*above so buttons show*/
-  z-index: 1000;
-}
-DIV.customPage.A5Portrait.bloom-monolingual DIV.bloom-translationGroup {
-  height: 99%;
-  width: 99%;
-  /*position: absolute;*/
-  /*left: 0;*/
-  /*bottom: 0;*/
-}
-/*.customPage.bloom-bilingual DIV.bloom-translationGroup*/
-/*{*/
-/*}*/

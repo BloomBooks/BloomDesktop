@@ -1,3 +1,189 @@
+.bloom-frontMatter .pageLabel:after,
+.bloom-backMatter .pageLabel:after {
+  content: ": Factory Front/Back Matter";
+}
+.A4Portrait.frontCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+  height: 272mm;
+}
+.A4Landscape.frontCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+  height: 185mm;
+}
+.A5Portrait.frontCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+  height: 185mm;
+}
+.A5Landscape.frontCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+  height: 123mm;
+}
+.A6Portrait.frontCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+  height: 123mm;
+}
+.A6Landscape.frontCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+  height: 80mm;
+}
+.B5Portrait.frontCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+  height: 225mm;
+}
+.insideFrontCover .bloom-content1 {
+  display: inherit;
+}
+.insideFrontCover .bloom-editable {
+  height: 100%;
+}
+.iso693Code * {
+  display: inline;
+}
+.Title-On-Cover-style {
+  text-align: center;
+}
+.frontCover .marginBox {
+  display: flex;
+  flex-direction: column;
+}
+.frontCover .bookTitle {
+  order: 0;
+  flex: 0 0 auto;
+  height: auto;
+}
+.frontCover .bookTitle.bloom-content1 {
+  display: inherit;
+  font-size: 250%;
+  line-height: 1.4em;
+  margin-bottom: 5px;
+}
+.frontCover .bookTitle.bloom-contentNational1 {
+  display: inherit;
+  font-size: 120%;
+  line-height: 1.7em;
+  margin-bottom: 5px;
+}
+.frontCover .bookTitle.bloom-content3 {
+  display: inherit;
+}
+.frontCover .placeholder,
+.frontCover .bloom-imageContainer {
+  order: 1;
+  flex: 1 1 auto;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+.frontCover .creditsWrapper {
+  order: 2;
+  flex: 0 0 auto;
+}
+.frontCover .creditsWrapper .bloom-editable.smallCoverCredits {
+  display: inherit;
+  text-align: center;
+  line-height: 1.7em;
+  min-height: 20px;
+  height: auto;
+}
+.frontCover .bottomBlock {
+  flex: 0 0 auto;
+  order: 4;
+  height: 2em;
+}
+.frontCover .bottomBlock .coverBottomBookTopic {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 20px;
+  text-align: right;
+  width: 6cm;
+}
+.frontCover .bottomBlock .coverBottomBookTopic .bloom-contentNational1 {
+  display: inline !important;
+  font-size: 110%;
+  height: 25px !important;
+  padding-right: 1px;
+  text-align: right;
+}
+.frontCover .bottomBlock .coverBottomBookTopic .bloom-contentNational2 {
+  color: gray;
+}
+.frontCover .bottomBlock .coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1) {
+  color: gray;
+}
+.frontCover .bottomBlock .publishMode .coverBottomBookTopic .bloom-contentNational2 {
+  display: none;
+}
+.frontCover .bottomBlock .publishMode .coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1) {
+  display: none;
+}
+.frontCover .bottomBlock .coverBottomLangName {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 20px;
+}
+.xfrontCover .bookTitle {
+  margin-bottom: 15px;
+}
+.xfrontCover .bookTitle.bloom-content1 {
+  display: inherit;
+  font-size: 250%;
+  line-height: 1.4em;
+  margin-bottom: 5px;
+}
+.xfrontCover .bookTitle.bloom-contentNational1 {
+  display: inherit;
+  font-size: 120%;
+  line-height: 1.7em;
+  margin-bottom: 5px;
+}
+.xfrontCover .bookTitle.bloom-content3 {
+  display: inherit;
+}
+.xfrontCover .bloom-imageContainer {
+  height: 60%;
+  margin-bottom: 15px;
+}
+.xfrontCover .bloom-editable.smallCoverCredits {
+  display: inherit;
+  text-align: center;
+  line-height: 1.7em;
+  min-height: 20px;
+  height: auto;
+}
+.xfrontCover .coverBottomBookTopic {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 20px;
+  text-align: right;
+  width: 6cm;
+}
+.xfrontCover .coverBottomBookTopic .bloom-contentNational1 {
+  display: inline !important;
+  font-size: 110%;
+  height: 25px !important;
+  padding-right: 1px;
+  text-align: right;
+}
+.xfrontCover .coverBottomBookTopic .bloom-contentNational2 {
+  color: gray;
+}
+.xfrontCover .coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1) {
+  color: gray;
+}
+.xfrontCover .publishMode .coverBottomBookTopic .bloom-contentNational2 {
+  display: none;
+}
+.xfrontCover .publishMode .coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1) {
+  display: none;
+}
+.xfrontCover .coverBottomLangName {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 20px;
+}
 .credits .marginBox,
 .verso .marginBox {
   font-size: 10pt;
@@ -55,381 +241,55 @@
 .verso .licenseUrl {
   display: none;
 }
-/*Cover Page*/
-.A5Portrait.bloom-frontMatter DIV.marginBox {
-  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-  height: 189.4mm;
-  /*[disabled]border:1px solid #000000;*/
-}
-.B5Portrait.bloom-frontMatter DIV.marginBox {
-  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-  height: 220mm;
-  /*[disabled]border:1px solid #000000;*/
-}
-.bloom-frontMatter.A4Landscape DIV.marginBox {
-  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-  height: 188.2mm;
-}
-.A4Portrait DIV.marginBox {
-  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-  height: 269.3mm;
-}
-/*....Title*/
-.Title-On-Cover-style {
-  width: 100%;
+.titlePage {
   text-align: center;
 }
-/*....................National 1*/
-.A5Portrait.cover .bookTitle.bloom-contentNational1 {
-  font-size: 120%;
-  height: 1.3cm;
+.titlePage .Title-On-Title-Page-style {
+  font-size: 14pt;
+}
+.titlePage .Title-On-Title-Page-style.bloom-content1 {
+  font-size: 20pt;
+}
+.titlePage #titlePageTitleBlock {
+  margin-bottom: 3em;
+}
+.titlePage #titlePageTitleBlock .bloom-editable {
+  min-height: 1.4em;
+  line-height: 1.4em;
+}
+.titlePage #titlePageTitleBlock .bloom-content1 {
+  display: inherit;
+  margin-bottom: 0.5em;
+}
+.titlePage #titlePageTitleBlock .bloom-contentNational1 {
+  display: inherit;
+  margin-bottom: 0.5em;
+}
+.titlePage #titlePageTitleBlock .bloom-content3 {
+  display: inherit;
+}
+.titlePage #funding .bloom-contentNational1 {
+  display: inherit;
+  min-height: 3em;
+}
+.titlePage #languageInformation {
   width: 100%;
-  display: block;
-  /*+placement:anchor-top-left 0 130;*/
   position: absolute;
-  left: 0;
-  top: 130;
-}
-.B5Portrait.cover .bookTitle.bloom-contentNational1 {
-  font-size: 120%;
-  height: 1.3cm;
-  width: 100%;
-  display: block;
-  /*+placement:anchor-top-left 0 130;*/
-  position: absolute;
-  left: 0;
-  top: 130;
-}
-.A5Landscape.cover .bookTitle.bloom-contentNational1 {
-  font-size: 120%;
-  height: 0.8cm;
-  width: 100%;
-  /*+placement:anchor-top-left -4px 68px;*/
-  position: absolute;
-  left: -4px;
-  top: 68px;
-  display: block;
-}
-.A4Landscape.cover .bookTitle.bloom-contentNational1 {
-  font-size: 120%;
-  height: 0.8cm;
-  width: 100%;
-  /*+placement:anchor-top-left 0 112px;*/
-  position: absolute;
-  left: 0;
-  top: 112px;
-  display: block;
-}
-.A4Portrait.cover .bookTitle.bloom-contentNational1 {
-  font-size: 120%;
-  height: 0.8cm;
-  width: 100%;
-  /*+placement:anchor-top-left 0 110;*/
-  position: absolute;
-  left: 0;
-  top: 110;
-  display: block;
-}
-/*Note: this vernacular/conent1 must come *after* the National1 block, else when we have English as the only language,
-It will be treated as the 2ndary title, which is small and not at the top, and shell-book makers get confused and don't like it.
-...................Vernacular*/
-.A5Portrait.cover .bookTitle.bloom-content1 {
-  font-size: 250%;
-  height: 3.3cm;
-  width: 100%;
-  display: block;
-  line-height: 1;
-  /*+placement:anchor-top-left 0 0;*/
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-.B5Portrait.cover .bookTitle.bloom-content1 {
-  font-size: 250%;
-  height: 3.3cm;
-  width: 100%;
-  display: block;
-  line-height: 1;
-  /*+placement:anchor-top-left 0 0;*/
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-.A5Landscape.cover .bookTitle.bloom-content1 {
-  font-size: 300%;
-  height: 1.5cm;
-  width: 100%;
-  display: block;
-  /*+placement:anchor-top-left 0 0;*/
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-.A4Landscape.cover .bookTitle.bloom-content1 {
-  font-size: 250%;
-  height: 2.8cm;
-  width: 100%;
-  display: block;
-  line-height: 1.2;
-  /*+placement:anchor-top-left 0 0;*/
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-.A4Portrait.cover .bookTitle.bloom-content1 {
-  font-size: 250%;
-  height: 2.8cm;
-  width: 100%;
-  display: block;
-  line-height: 1.2;
-  /*+placement:anchor-top-left 0 0;*/
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-/*......Image*/
-.A5Portrait.cover DIV.bloom-imageContainer {
-  height: 10cm;
-  width: 100%;
-  /*+placement:anchor-top-left 0 193px;*/
-  position: absolute;
-  left: 0;
-  top: 193px;
-}
-.B5Portrait.cover DIV.bloom-imageContainer {
-  height: 10cm;
-  width: 100%;
-  /*+placement:anchor-top-left 0 193px;*/
-  position: absolute;
-  left: 0;
-  top: 193px;
-}
-.A5Landscape.cover DIV.bloom-imageContainer {
-  height: 60%;
-  width: 100%;
-  /*+placement:anchor-top-left 0 121px;*/
-  position: absolute;
-  left: 0;
-  top: 121px;
-}
-.A4Landscape.cover DIV.bloom-imageContainer {
-  height: 11.3cm;
-  width: 100%;
-  /*+placement:anchor-top-left 0 158px;*/
-  position: absolute;
-  left: 0;
-  top: 158px;
-}
-.A4Portrait.cover DIV.bloom-imageContainer {
-  height: 17.1cm;
-  width: 100%;
-  /*+placement:anchor-top-left 0 158px;*/
-  position: absolute;
-  left: 0;
-  top: 158px;
-}
-/*.....Small cover credits*/
-DIV.bloom-editable.smallCoverCredits {
-  font-size: 100%;
-  text-align: center;
-  /*+placement:anchor-top-left 0 599px;*/
-  position: absolute;
-  left: 0;
-  top: 599px;
-  height: 49px;
-}
-.A4Portrait DIV.bloom-editable.smallCoverCredits {
-  font-size: 100%;
-  text-align: center;
-  /*+placement:anchor-top-left 0 834px;*/
-  position: absolute;
-  left: 0;
-  top: 834px;
-  height: 49px;
-}
-/*.......Topic*/
-DIV.coverBottomBookTopic {
-  /*[disabled]overflow:hidden;*/
-  width: 6cm;
-  /*+placement:anchor-bottom-right 0 0;*/
-  position: absolute;
-  right: 0;
   bottom: 0;
-  min-height: 20;
-  height: 58px;
-  text-align: right;
 }
-DIV.coverBottomBookTopic .bloom-contentNational1 {
-  /*[disabled]overflow:hidden;*/
-  text-align: right;
-  width: 100%;
-  /*[disabled]min-height:20;*/
-  font-size: 110%;
-  display: inline !important;
-  height: 25px !important;
-  padding-right: 1px;
-  /*[disabled]padding-left:15px;*/
+.titlePage #languageInformation .langName.bloom-contentNational1 {
+  display: inherit;
 }
-DIV.coverBottomBookTopic DIV.bloom-contentNational1 {
-  /*NB: we need placement because we want the national1 to be on top, regardless of its order in the parent div*/
-  /*[disabled]+placement:anchor-top-right 0 0;*/
-}
-.coverBottomBookTopic .bloom-contentNational2,
-.coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1) {
-  color: gray;
-  /* review: these may never show anyho; the grey color is in here to help tracing down a problem that may already be fixed, where you would see, e.g.,  "Health  Health" on the front page */
-}
-.publishMode .coverBottomBookTopic .bloom-contentNational2,
-.publishMode .coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1) {
-  display: none;
-  /* review: these may never show anyhow; it's in here to help tracing down a problem that may already be fixed */
-}
-/*.......Language Name*/
-DIV.coverBottomLangName DIV {
-  display: inline;
-  font-size: 110% !important;
-  /*[disabled]vertical-align:bottom;*/
-  /*This placement is to get vertical alignment with the topic*/
-  /*+placement:anchor-top-left 0 4px;*/
-  position: absolute;
-  left: 0;
-  top: 4px;
-}
-DIV.coverBottomLangName {
-  height: 58px;
-  overflow: hidden;
-  text-align: left;
-  width: 50%;
-  /*+placement:anchor-bottom-left 0 0;*/
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  line-height: 1;
-}
-/*Title Page*/
-DIV.titlePage {
-  text-align: center;
-}
-#funding {
-  height: 73px;
-  width: 100%;
-  /*+placement:anchor-top-left 0mm 88.4mm;*/
-  position: absolute;
-  left: 0mm;
-  top: 88.4mm;
-}
-#funding .bloom-contentNational1 {
-  display: block;
-}
-/*Unless otherwise positioned and made visible, hide all the language elements in there*/
-DIV#titlePageTitleBlock DIV.bloom-contentNational2,
-DIV#titePageTitleBlock DIV.bloom-contentNational2 {
-  height: 35px;
-  text-align: center;
-  width: 419px;
-}
-DIV#titlePageTitleBlock DIV.bloom-contentNational1,
-DIV#titePageTitleBlock DIV.bloom-contentNational1 {
-  height: 35px;
-  text-align: center;
-  /*+placement:anchor-top-left 0 119px;*/
-  position: absolute;
-  left: 0;
-  top: 119px;
-  width: 100%;
-  display: block;
-  font-size: 100%;
-}
-/*Note: this vernacular/conent1 must come *after* the National1 rule, else when we have English as the only language,
-It will be treated as the 2ndary title, which is small and not at the top, and shell-book makers get confused and don't like it.*/
-DIV#titlePageTitleBlock DIV.bloom-content1,
-DIV#titePageTitleBlock DIV.bloom-content1 {
-  font-size: 150%;
-  height: 111px;
-  text-align: center;
-  width: 100%;
-  display: block;
-  /*+placement:anchor-top-left 0 0;*/
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-.titlePage .titleN1 {
-  font-size: 140%;
-  text-align: center;
-  /*+placement:anchor-top-left 16px 121px;*/
-  position: absolute;
-  left: 16px;
-  top: 121px;
-  width: 420;
-  height: 45px;
-}
-.titlePage .titleN2 {
-  font-size: 140%;
-  text-align: center;
-  /*+placement:anchor-top-left 16px 168px;*/
-  position: absolute;
-  left: 16px;
-  top: 168px;
-  width: 420;
-  height: 45px;
-}
-DIV.titlePage .credits {
-  display: none;
-  /*+placement:anchor-top-left 0 73px;*/
-  position: absolute;
-  left: 0;
-  top: 73px;
-}
-DIV.titlePage .credits.bloom-contentNational1 {
-  height: 131px;
-  text-align: center;
-  width: 100%;
-  display: block;
-  font-size: 100%;
-  /*+placement:anchor-top-left 0 174px;*/
-  position: absolute;
-  left: 0;
-  top: 174px;
-}
-DIV.titlePage DIV#languageInformation {
-  /*+placement:anchor-bottom-left 0 0;*/
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 57px;
-}
-DIV.titlePage DIV.langName.bloom-contentNational1 {
-  display: block;
-  /*[empty]border:;*/
-}
-DIV.titlePage DIV.langName.bloom-content1,
-DIV.titlePage DIV.langName.bloom-contentNational2 {
-  /*Ideally, we'd show the various ways to render the vernacular lang name only to the extent that they differ from each other (it looks bad to have a repeat)*/
+.titlePage #languageInformation .langName.bloom-content1 {
   display: none;
 }
-DIV.languageLocation {
-  /*+placement:anchor-top-left 6px 50;*/
-  position: absolute;
-  left: 6px;
-  top: 50;
-  width: 407px;
+.titlePage #languageInformation .langName.bloom-contentNational2 {
+  display: none;
 }
-DIV#titlePageTitleBlock,
-DIV#titePageTitleBlock {
-  width: inherit;
-}
-/*Inside Back Cover*/
-.insideBackCover DIV.bloom-editable {
+.insideBackCover .bloom-editable {
   height: 100%;
 }
-/*Outside Back Cover*/
-.outsideBackCover DIV.bloom-editable {
+.outsideBackCover .bloom-editable {
   height: 100%;
   text-align: center;
 }

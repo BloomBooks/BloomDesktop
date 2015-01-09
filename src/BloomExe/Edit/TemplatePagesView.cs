@@ -148,6 +148,10 @@ namespace Bloom.Edit
 				{
 					pageContainer.SetAttribute("class", "pageContainer A5Portrait");
 				}
+				if(pageClasses.ToLower().Contains("a6portrait"))
+				{
+					pageContainer.SetAttribute("class", "pageContainer A6Portrait");
+				}
 				if (pageClasses.ToLower().Contains("a4portrait"))
 				{
 					pageContainer.SetAttribute("class", "pageContainer A4Portrait");
