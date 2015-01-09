@@ -29,10 +29,11 @@ namespace Bloom.Book
 
 		public BookInfo(string folderPath, bool isEditable)
 		{
-			IsSuitableForVernacularLibrary = true; // default
 			FolderPath = folderPath;
-			Id = Guid.NewGuid().ToString();
 
+			//NB: This was coded in an unfornate way such that touching almost any property causes a new metadata to be quitely created.
+			//So It's vital that we not touch properties that could create a blank metadata, before attempting to load the existing one.
+			
 			var jsonPath = MetaDataPath;
 			if (File.Exists(jsonPath))
 			{
@@ -76,6 +77,7 @@ namespace Bloom.Book
 		public bool AllowUploading
 		{
 			get { return MetaData.AllowUploadingToBloomLibrary; }
+			set { MetaData.AllowUploadingToBloomLibrary = value; }
 		}
 
 		//there was a beta version that would introduce the .json files with the incorrect defaults
@@ -380,6 +382,8 @@ namespace Bloom.Book
 			IsExperimental = false;
 			AllowUploadingToBloomLibrary = true;
 			BookletMakingIsAppropriate = true;
+			IsSuitableForVernacularLibrary = true;
+			Id = Guid.NewGuid().ToString();
 		}
 		public static BookMetaData FromString(string input)
 		{
@@ -505,11 +509,11 @@ namespace Bloom.Book
 		public string Summary { get; set; }
 
 		// This is set to true in situations where the materials that are not permissively licensed and the creator doesn't want derivative works being uploaded.
-		[JsonProperty("allowUploadingToBloomLibrary",DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+		[JsonProperty("allowUploadingToBloomLibrary",DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue(true)]
 		public bool AllowUploadingToBloomLibrary { get; set; }
 
-		[JsonProperty("bookletMakingIsAppropriate",DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+		[JsonProperty("bookletMakingIsAppropriate", DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue(true)]
 		public bool BookletMakingIsAppropriate { get; set; }
 
