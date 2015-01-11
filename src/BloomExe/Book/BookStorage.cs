@@ -582,9 +582,6 @@ namespace Bloom.Book
 
 				if (!string.IsNullOrEmpty(ErrorMessages))
 				{
-					//hack so we can package this for palaso reporting
-//                    var ex = new XmlSyntaxException(ErrorMessages);
-//                    Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Bloom did an integrity check of the book named '{0}', and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.", Path.GetFileName(PathToExistingHtml));
 					_dom.RawDom.LoadXml(
 						"<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
 					Logger.WriteEvent(
@@ -606,11 +603,6 @@ namespace Bloom.Book
 						Logger.WriteEvent("BookStorage Loading Dom from {0}", PathToExistingHtml);
 					}
 				}
-
-				//TODO: this would be better just to add to those temporary copies of it. As it is, we have to remove it for the webkit printing
-				//SetBaseForRelativePaths(Dom, folderPath); //needed because the file itself may be off in the temp directory
-
-				//UpdateStyleSheetLinkPaths(fileLocator);
 
 				Dom.UpdatePageDivs();
 

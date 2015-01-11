@@ -108,8 +108,8 @@ namespace Bloom.Collection
 				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
 			}
 
-			_restartReminder.Visible = _restartRequired;
-			_okButton.Text = _restartRequired ? LocalizationManager.GetString("CollectionSettingsDialog.Restart", "Restart", "If you make certain changes in the settings dialog, the OK button changes to this.") : LocalizationManager.GetString("Common.OKButton", "&OK");
+			_restartReminder.Visible = AnyReasonToRestart();
+			_okButton.Text = AnyReasonToRestart() ? LocalizationManager.GetString("CollectionSettingsDialog.Restart", "Restart", "If you make certain changes in the settings dialog, the OK button changes to this.") : LocalizationManager.GetString("Common.OKButton", "&OK");
 		}
 
 		private void _language1ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -124,8 +124,7 @@ namespace Bloom.Collection
 			{
 				_collectionSettings.Language1Iso639Code = l.Code;
 				_collectionSettings.Language1Name = l.DesiredName;
-				_restartRequired = true;
-				UpdateDisplay();
+				ChangeThatRequiresRestart();
 			}
 		}
 		private void _language2ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -134,8 +133,7 @@ namespace Bloom.Collection
 			if (l != null)
 			{
 				_collectionSettings.Language2Iso639Code = l.Code;
-				_restartRequired = true;
-				UpdateDisplay();
+				ChangeThatRequiresRestart();
 			}
 		}
 
@@ -145,15 +143,13 @@ namespace Bloom.Collection
 			if (l != null)
 			{
 				_collectionSettings.Language3Iso639Code = l.Code;
-				_restartRequired = true;
-				UpdateDisplay();
+				ChangeThatRequiresRestart();
 			}
 		}
 		private void _removeSecondNationalLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			_collectionSettings.Language3Iso639Code = null;
-			_restartRequired = true;
-			UpdateDisplay();
+			ChangeThatRequiresRestart();
 		}
 
 		private LanguageInfo ChangeLanguage(string iso639Code, string potentiallyCustomName=null)
@@ -210,17 +206,23 @@ namespace Bloom.Collection
 				//_collectionSettings.PrepareToRenameCollection(_bloomCollectionName.Text.SanitizeFilename('-'));
 			}
 			Logger.WriteEvent("Closing Settings Dialog");
-			if(_xmatterList.SelectedItems.Count > 0 && ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).Key != _collectionSettings.XMatterPackName)
+			if (_xmatterList.SelectedItems.Count > 0 &&
+			    ((XMatterInfo) _xmatterList.SelectedItems[0].Tag).Key != _collectionSettings.XMatterPackName)
 			{
 				_collectionSettings.XMatterPackName = ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).Key;
-				var msg = LocalizationManager.GetString("settings",
-					"You have selected a different Front/Back Matter Pack. It will be used for books you make from here on. To switch an existing book to this front/back matter pack, right click on the book and choose '{0}'.");
-				msg = string.Format(msg, LocalizationManager.GetString("CollectionTab.BookMenu._updateFrontMatterToolStrip", "Update Book"));
-				MessageBox.Show(msg);
+				_restartRequired = true;// now that we've made them match, we won't detect by the normal means, so set this hard flag
 			}
 			_collectionSettings.Save();
 			Close();
-			DialogResult = _restartRequired ? DialogResult.Yes : DialogResult.OK;
+			DialogResult = AnyReasonToRestart() ? DialogResult.Yes : DialogResult.OK;
+		}
+
+		private bool XMatterChangePending
+		{
+			get
+			{
+				return _xmatterList.SelectedItems.Count > 0 && ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).Key != _collectionSettings.XMatterPackName;
+			}
 		}
 
 		private void _useImageServer_CheckedChanged(object sender, EventArgs e)
@@ -251,16 +253,21 @@ namespace Bloom.Collection
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-			RestartRequired();
+			ChangeThatRequiresRestart();
 		}
 
-		private void RestartRequired()
+		private void ChangeThatRequiresRestart()
 		{
 			if (!_loaded)//ignore false events that come while setting upt the dialog
 				return;
 
 			_restartRequired = true;
 			UpdateDisplay();
+		}
+
+		private bool AnyReasonToRestart()
+		{
+			return _restartRequired || XMatterChangePending;
 		}
 
 		private void OnLoad(object sender, EventArgs e)
@@ -379,48 +386,48 @@ namespace Bloom.Collection
 				return;
 
 
-			RestartRequired();
+			ChangeThatRequiresRestart();
 		}
 
 		private void _fontComboLanguage1_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if(_fontComboLanguage1.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage1FontName.ToLower())
-				RestartRequired();
+				ChangeThatRequiresRestart();
 		}
 
 		private void _fontComboLanguage2_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if (_fontComboLanguage2.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage2FontName.ToLower())
-				RestartRequired();
+				ChangeThatRequiresRestart();
 		}
 
 		private void _fontComboLanguage3_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if (_fontComboLanguage3.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage3FontName.ToLower())
-				RestartRequired();
+				ChangeThatRequiresRestart();
 		}
 
 		private void _showSendReceive_CheckedChanged(object sender, EventArgs e)
 		{
 			Settings.Default.ShowSendReceive = _showSendReceive.Checked;
-			RestartRequired();
+			ChangeThatRequiresRestart();
 		}
 
 		private void _showExperimentalTemplates_CheckedChanged(object sender, EventArgs e)
 		{
 			Settings.Default.ShowExperimentalBooks = _showExperimentalTemplates.Checked;
-			RestartRequired();
+			ChangeThatRequiresRestart();
 		}
 
 		private void checkBox1_CheckedChanged(object sender, EventArgs e)
 		{
 			Settings.Default.ShowExperimentalCommands = _showExperimentCommands.Checked;
-			RestartRequired();
+			ChangeThatRequiresRestart();
 		}
 
 		private void _rtlLanguageCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
-			RestartRequired();
+			ChangeThatRequiresRestart();
 		}
 
 		private void _xmatterList_SelectedIndexChanged(object sender, EventArgs e)
@@ -429,6 +436,8 @@ namespace Bloom.Collection
 				_xmatterDescription.Text = "";
 			else
 				_xmatterDescription.Text = ((XMatterInfo)_xmatterList.SelectedItems[0].Tag).GetDescription();
+			
+			UpdateDisplay(); //may show restart required, if we have changed but not changed back to the orginal.
 		}
 
 		private void _tab_SelectedIndexChanged(object sender, EventArgs e)

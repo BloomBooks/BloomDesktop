@@ -520,6 +520,11 @@ namespace Bloom.Book
 
 		public BookType TypeOverrideForUnitTests;
 
+		/// <summary>
+		/// once in our lifetime, we want to do any migrations needed for this version of bloom
+		/// </summary>
+		private bool _haveDoneUpdate = false;
+
 		public BookType Type
 		{
 			get
@@ -565,11 +570,8 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 
-			//shells & templates may be stored without frontmatter. This will add and update the frontmatter to our preivew dom
-			if (Type == BookType.Shell || Type == BookType.Template)
-			{
-				BringBookUpToDate(previewDom, new NullProgress());
-			}
+			BringBookUpToDate(previewDom, new NullProgress());
+
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
 			var primaryLanguage = _collectionSettings.Language1Iso639Code;
 			if (IsShellOrTemplate) //TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
@@ -606,22 +608,24 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// As the bloom format evolves, including structure and classes and other attributes, this
+		/// makes changes to old books. It needs to be very fast, because currently we dont' have
+		/// a real way to detect the need for migration. So we do it all the time.
+		/// 
+		/// Yes, we have format version number, but, for example, one overhaul of the common xmatter
+		/// html introduced a new class, "frontCover". Hardly enough to justify bumping the version number
+		/// and making older Blooms unable to read new books. But because this is run, the xmatter will be
+		/// migrated to the new template.
+		/// </summary>
+		/// <param name="bookDOM"></param>
+		/// <param name="progress"></param>
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
 		{
+			progress.WriteStatus("Updating Front/Back Matter...");
+			BringXmatterHtmlUpToDate(bookDOM);
+
 			progress.WriteStatus("Gathering Data...");
-
-			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
-			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
-
-			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
-			//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
-			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
-			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);
-			XMatterHelper.RemoveExistingXMatter(bookDOM);
-			layout = Layout.FromDom(bookDOM, layout);			//this says, if you can't figure out the page size, use the one we got before we removed the xmatter
-			progress.WriteStatus("Injecting XMatter...");
-
-			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
 
@@ -665,6 +669,20 @@ namespace Bloom.Book
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
 
 			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
+		}
+
+		private void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
+		{
+			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
+			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
+			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
+			//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
+			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
+			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);
+			XMatterHelper.RemoveExistingXMatter(bookDOM);
+			layout = Layout.FromDom(bookDOM, layout);
+				//this says, if you can't figure out the page size, use the one we got before we removed the xmatter
+			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
 		}
 
 
@@ -1722,6 +1740,11 @@ namespace Bloom.Book
 		/// </summary>
 		public void PrepareForEditing()
 		{
+			if (!_haveDoneUpdate)
+			{
+				BringBookUpToDate(OurHtmlDom, new NullProgress());
+				_haveDoneUpdate = true;
+			}
 			//We could re-enable RebuildXMatter() here later, so that we get this nice refresh each time.
 			//But currently this does some really slow image compression:	RebuildXMatter(RawDom);
 			UpdateEditableAreasOfElement(OurHtmlDom);

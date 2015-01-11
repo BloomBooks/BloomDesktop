@@ -1,17 +1,42 @@
 ﻿## 3.0.83 BETA
 - [UserVoice Suggestion] Introduction of A6 Portrait option. **Feedback appreciated**
+
+### Front/Back Matter
+
+#### Cover Page
+- Fields on the Cover can now grow to fit however many lines you neeed, because...
 - The image on the Cover page  will now automatically shrink so that whatever text you need can fit
 - Front cover & title page can now show title in all 3 languages
-- Fields on the Cover can now grow
+
+#### Title Page
 - [UserVoice Suggestion] Title page's funding box can now grow, to use for a cheap Table Of Contents if Needed
+
+#### Credits Page
 - The Credits page now has more room for acknowledgments
 - When selecting a Front/Back Matter pack in the Settings dialog, you can now read a short description of each one
+- When you select a different Front/Back Matter pack, existing books will automatically use it if appropriate
+
+#### Other Front/Back Matter
 - Trial of a Front/Back Matter pack for SIL Cameroon, which is like "Traditional" but includes the ISO 639 code of the language
 - Big Books now use the same Front/Back Matter pack as the rest of the collection. You can now delete the "instructions for teachers" page if you don't want it
+
+### Other
 - Big Books now include the "Custom" page template
 - Removed the "A5 Portrait Bottom Align" option
-- CTRL+R will right-align the text, CTRL+L will left-align, CTRL+SHIFT+E will center (In the future we expect to introduce UI buttons for these things).
+- New shortcut keys (In the future we expect to introduce UI buttons for these things, but we are delayed because we need to do it without making the UI more complex):
+  - CTRL+R: right-align
+  - CTRL+L: left-align
+  - CTRL+SHIFT+E: center text
+  - ALT+CTRL+0: Normal
+  - ALT+CTRL+1: Heading 1
+  - ALT+CTRL+2: Heading 2
 
+
+### Linux Fixes:
+- Can't open book downloaded from Bloom Library
+- List fonts in alphabetical order
+- Prevent crash due to deleted temporary html file.
+- Problem typing in the "Report Problem" dialog box.
 
 ## 3.0.80 BETA
 - Fix: "Open in Firefox" should now work even if you have spaces in the path
@@ -22,8 +47,7 @@
 
 ## 3.0.74 BETA
 
-- A new Front/Backmatter option is available, named "Traditional". This puts the credits page on the back of the title page, rather than the inside of the front cover. This is good in cases where you pay by the page imprint, rather than by pieces of paper. You can select it from Settings:Book Making:Front/Back Matter Pack. Once you have chosen this, you won't see it on any existing books until you do these steps: In the Collection Tab, click on the little triangle, then select "Advanced: Do Updates of All Books".
-
+- A new Front/Backmatter option is available, named "Traditional". This puts the credits page on the back of the title page, rather than the inside of the front cover. This is good in cases where you pay by the page imprint, rather than by pieces of paper. You can select it from Settings:Book Making:Front/Back Matter Pack. <s>Once you have chosen this, you won't see it on any existing books until you do these steps: In the Collection Tab, click on the little triangle, then select "Advanced: Do Updates of All Books".</s>
 ## 3.0.72 BETA
 
 - More French coverage of UI
