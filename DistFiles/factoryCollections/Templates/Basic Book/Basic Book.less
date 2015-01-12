@@ -60,8 +60,11 @@ generic*/
 		position: absolute;
 		left: 0;
 		top: 0;
+		border: none !important; // temporary work-around bug bl-887
 	}
-
+	.bloom-editable {
+		left: 0;
+	}
 	&:not(.layout-style-SideBySide) {
 		.bloom-imageContainer {
 			.SetHeightWithPercentMinusConstant(45%, @StandardMultilingualEditBoxSeparation);
@@ -509,7 +512,7 @@ generic*/
 
 .imageOnBottom {
 	.bloom-imageContainer {
-		SetHeightWithPercentMinusConstant(45%,  @StandardMultilingualEditBoxSeparation)
+		.SetHeightWithPercentMinusConstant(49%,  @StandardMultilingualEditBoxSeparation);
 		width: 100%;
 		position: absolute;
 		left: 0;
@@ -521,6 +524,7 @@ generic*/
 		position: absolute;
 		left: 0;
 		top: 0;
+		border: none !important; // temporary work-around bug bl-887
 	}
 	.bloom-editable {
 		height: 100%;
@@ -528,22 +532,20 @@ generic*/
 	}
 	&.bloom-bilingual {
 		.bloom-translationGroup .bloom-editable {
-		SetHeightWithPercentMinusConstant(50%, @StandardMultilingualEditBoxSeparation)
+		.SetHeightWithPercentMinusConstant(50%, @StandardMultilingualEditBoxSeparation);
 		}
 	}
 	&.bloom-trilingual .bloom-translationGroup .bloom-editable {
-		SetHeightWithPercentMinusConstant(33%, @StandardMultilingualEditBoxSeparation)
+		.SetHeightWithPercentMinusConstant(33%, @StandardMultilingualEditBoxSeparation);
 	}
-	&.A4Landscape.layout-style-SideBySide .bloom-imageContainer
-	{
+	&.A4Landscape.layout-style-SideBySide .bloom-imageContainer	{
 		width: 48%;
 		height: 100%;
 		position: absolute;
 		left: auto; //need to override the "left" of the other layouts
 		right: 0;
 	}
-	&.A4Landscape.layout-style-SideBySide .bloom-translationGroup
-	{
+	&.A4Landscape.layout-style-SideBySide .bloom-translationGroup	{
 		height: 100%;
 		width: 45%;
 		position: absolute;

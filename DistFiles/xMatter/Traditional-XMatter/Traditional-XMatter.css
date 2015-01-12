@@ -112,6 +112,9 @@
   padding-right: 1px;
   text-align: right;
 }
+.frontCover .bottomBlock .coverBottomBookTopic .bloom-editable {
+  margin-top: 0;
+}
 .frontCover .bottomBlock .coverBottomBookTopic .bloom-contentNational2 {
   color: gray;
 }

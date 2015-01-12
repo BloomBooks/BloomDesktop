@@ -50,6 +50,10 @@ generic*/
   position: absolute;
   left: 0;
   top: 0;
+  border: none !important;
+}
+.imageOnTop .bloom-editable {
+  left: 0;
 }
 .imageOnTop:not(.layout-style-SideBySide) .bloom-imageContainer {
   height: calc(45% - 10px);
@@ -371,7 +375,7 @@ generic*/
   height: calc(33% - 10px - 1px) !important;
 }
 .imageOnBottom .bloom-imageContainer {
-  height: calc(45% - 10px);
+  height: calc(49% - 10px);
   width: 100%;
   position: absolute;
   left: 0;
@@ -383,16 +387,17 @@ generic*/
   position: absolute;
   left: 0;
   top: 0;
+  border: none !important;
 }
 .imageOnBottom .bloom-editable {
   height: 100%;
   width: 100%;
 }
 .imageOnBottom.bloom-bilingual .bloom-translationGroup .bloom-editable {
-  height: calc(40%);
+  height: calc(50% - 10px);
 }
 .imageOnBottom.bloom-trilingual .bloom-translationGroup .bloom-editable {
-  height: calc(23%);
+  height: calc(33% - 10px);
 }
 .imageOnBottom.A4Landscape.layout-style-SideBySide .bloom-imageContainer {
   width: 48%;
