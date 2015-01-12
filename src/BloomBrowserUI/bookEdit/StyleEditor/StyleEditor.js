@@ -458,8 +458,10 @@ var StyleEditor = (function () {
 
         // Detecting 'none' is difficult because our edit boxes inherit a faint grey border
         // Currently we use plain rgb for our official borders, and the inherited one uses rgba(0, 0, 0, 0.2).
-        // Rather arbitrarily we will consider a border less than 50% opaque to be 'none'.
-        if (!borderStyle || borderStyle === 'none' || !borderColor || (borderColor.toLowerCase().startsWith("rgba(") && parseFloat(borderColor.split(',')[3]) < 0.5)) {
+        // We have a problem in that the edit mode UI also uses borders. Its borders, however, are all partially
+        // transparent (up to 0.6 at the moment). So we can detect that there isn't an actual style border by looking at the 4th, oppacity member of the rgba.
+        // REVIEW (JH) @JT: Why do we look at the actual style, instead of the style rule we are editing?
+        if (!borderStyle || borderStyle === 'none' || !borderColor || (borderColor.toLowerCase().startsWith("rgba(") && parseFloat(borderColor.split(',')[3]) < 1.0)) {
             borderChoice = 'none';
         } else if (borderColor.toLowerCase() == 'rgb(128, 128, 128)') {
             if (parseInt(borderRadius) == 0) {
@@ -996,22 +998,26 @@ var StyleEditor = (function () {
         } else if ($('#border-black').hasClass('selectedIcon')) {
             rule.style.setProperty("border", "1pt solid black", "important");
             rule.style.setProperty("border-radius", "0px", "important");
-            rule.style.setProperty("padding", "10px", "important");
+
+            //rule.style.setProperty("padding", "10px", "important");
             rule.style.setProperty("box-sizing", "border-box", "important");
         } else if ($('#border-black-round').hasClass('selectedIcon')) {
             rule.style.setProperty("border", "1pt solid black", "important");
             rule.style.setProperty("border-radius", "10px", "important");
-            rule.style.setProperty("padding", "10px", "important");
+
+            //rule.style.setProperty("padding", "10px", "important");
             rule.style.setProperty("box-sizing", "border-box", "important");
         } else if ($('#border-gray').hasClass('selectedIcon')) {
             rule.style.setProperty("border", "1pt solid Grey", "important");
             rule.style.setProperty("border-radius", "0px", "important");
-            rule.style.setProperty("padding", "10px", "important");
+
+            //rule.style.setProperty("padding", "10px", "important");
             rule.style.setProperty("box-sizing", "border-box", "important");
         } else if ($('#border-gray-round').hasClass('selectedIcon')) {
             rule.style.setProperty("border", "1pt solid Grey", "important");
             rule.style.setProperty("border-radius", "10px", "important");
-            rule.style.setProperty("padding", "10px", "important");
+
+            //rule.style.setProperty("padding", "10px", "important");
             rule.style.setProperty("box-sizing", "border-box", "important");
         }
 
