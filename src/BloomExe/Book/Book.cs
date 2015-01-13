@@ -669,6 +669,9 @@ namespace Bloom.Book
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
 
 			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
+
+			//we've removed and possible added pages, so our page cache is invalid
+			_pagesCache = null;
 		}
 
 		private void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
@@ -1269,9 +1272,6 @@ namespace Bloom.Book
 
 		private static string GetPageLabelFromDiv(XmlElement pageNode)
 		{
-//todo: try to get the one with the current UI language
-			//var pageLabelDivs = pageNode.SelectNodes("div[contains(@class,'pageLabel')]");
-
 			var englishDiv = pageNode.SelectSingleNode("div[contains(@class,'pageLabel') and @lang='en']");
 			var caption = (englishDiv == null) ? String.Empty : englishDiv.InnerText;
 			return caption;
@@ -1280,9 +1280,7 @@ namespace Bloom.Book
 		private IPage CreatePageDecriptor(XmlElement pageNode, string caption)//, Action<Image> thumbNailReadyCallback)
 		{
 			return new Page(this, pageNode, caption,
-//				   ((page) => _thumbnailProvider.GetThumbnailAsync(String.Empty, page.id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false, thumbNailReadyCallback)),
-//					//	(page => GetPageThumbNail()),
-						(page => FindPageDiv(page)));
+				(page => FindPageDiv(page)));
 		}
 
 		public Image GetPageThumbNail()
@@ -1293,7 +1291,9 @@ namespace Bloom.Book
 		private XmlElement FindPageDiv(IPage page)
 		{
 			//review: could move to page
-			return OurHtmlDom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv) as XmlElement;
+			var pageElement = OurHtmlDom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv);
+			Require.That(pageElement != null,"Page could not be found: "+page.XPathToDiv);
+			return pageElement as XmlElement;
 		}
 
 		public void InsertPageAfter(IPage pageBefore, IPage templatePage)
