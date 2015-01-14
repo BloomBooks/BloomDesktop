@@ -1219,8 +1219,10 @@ function SetupElements(container) {
                 //add a span with only a zero-width space in it
                 //enhance: a zero-width placeholder would be a bit better, but libsynphony doesn't know this is a space: //$(this).html('<span class="bloom-ui">&#8203;</span>');
                 $(this).html('&nbsp;');
-                //now select it so that the user deletes it with their first typing (enhance: they might do something to change the selection first)
+                //now select it
                 document.execCommand('selectAll', false, null);
+                //now delete it
+                document.execCommand('delete', false, null);
             }
             return;
         }
