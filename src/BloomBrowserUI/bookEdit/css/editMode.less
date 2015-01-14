@@ -238,10 +238,27 @@ TEXTAREA.province
 	width: 151px;
 	height: 33px;
 }
+
 .overflow
 {
-	background-color: #C30606 !important;
+	background-color: rgba(255, 0, 0, .7) !important; //a little transparency is helpful for troublshooting
 }
+.Layout-Problem-Detected{
+	//border: dashed thick green !important;
+
+}
+//we do both in case one is already used and !important
+.Layout-Problem-Detected:before, .Layout-Problem-Detected:after {
+	content: attr(layoutproblem);
+	text-align: left;
+	color: red;
+	position:absolute;
+	bottom: 0;
+	left: 0;
+	font-size: 9pt;
+	line-height: 9pt;
+}
+
 .fieldInfo-qtip .ui-tooltip-content
 {
 	border: 0 solid #A03C50;
@@ -346,6 +363,13 @@ DIV.marginBox
 	left:0;
 	/*The font-size here is weird, but if we don't set it, the growing/shrinking font of the text will actually move the button up/down on the page*/
 	font-size: 10pt;
+	height: 20px;
+	width: 20px;
+	img{
+		position: absolute;
+		bottom: 0;
+		left: 0;
+	}
 }
 #formatButton:Hover
 {

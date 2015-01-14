@@ -87,8 +87,8 @@ TD {
   /*don't show those cute little resize controls in Firefox 4 and greater*/
   overflow: hidden;
   font-size: 143%;
-  line-height: 1.3;
-  min-height: 20px;
+  line-height: 1.5em;
+  min-height: 1.8em;
   width: 100%;
 }
 DIV.bloom-page {
@@ -257,6 +257,9 @@ H2 {
   height: 98%;
   /*above so buttons show*/
   z-index: 1000;
+}
+.customPage .split-pane-component {
+  min-height: 1.5em;
 }
 .customPage.A5Portrait.bloom-monolingual .bloom-translationGroup {
   height: 99%;

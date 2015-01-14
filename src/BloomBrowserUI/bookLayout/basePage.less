@@ -73,8 +73,8 @@ TEXTAREA, .bloom-editable, TD
 	/*don't show those cute little resize controls in Firefox 4 and greater*/
 	overflow: hidden;
 	font-size: 143%;
-	line-height: 1.3;
-	min-height: 20px;
+	line-height: @defaultLineHeight;
+	min-height:  @defaultLineHeight + .3em;
 	width: 100%;
 }
 DIV.bloom-page
@@ -274,6 +274,11 @@ H2 {
 		height: 98%;
 		/*above so buttons show*/
 		z-index: 1000;
+	}
+	.split-pane-component {
+		//Enhance: this doesn't buy us much... it would be more helpful if the minimum was
+		// the min-height of the child
+		min-height: @defaultLineHeight;
 	}
 	&.A5Portrait.bloom-monolingual .bloom-translationGroup {
 		height: 99%;

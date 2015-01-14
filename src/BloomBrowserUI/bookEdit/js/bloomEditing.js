@@ -675,7 +675,7 @@ function ResizeUsingPercentages(e,ui){
 
 // Actual testable determination of overflow or not
 jQuery.fn.IsOverflowing = function () {
-    var element = $(this)[0];
+    var element = this[0];
     // Ignore Topic divs as they are chosen from a list
     if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
         return false;
@@ -723,36 +723,75 @@ jQuery.fn.IsOverflowing = function () {
 
 // Checks for overflow and adds/removes the proper class
 // N.B. This function is specifically designed to be called from within AddOverflowHandler()
-function MarkOverflowInternal(container) {
-    $(container).find("div.bloom-editable, textarea").each(function () {
-        var $this = $(this);
-        if ($this.IsOverflowing())
-            $this.addClass('overflow');
-        else
-            $this.removeClass('overflow'); // If it's not here, this won't hurt anything.
-    });
+function MarkOverflowInternal(box) {
+    //$(container).find("div.bloom-editable, textarea").each(function () {
+    var $this = $(box);
+    if ($this.IsOverflowing())
+        $this.addClass('overflow');
+    else {
+        $this.removeClass('overflow');
+
+        //now, thing is, while the text may fit in our box, our box may not fit our parent. Or grandparent, etc.
+        //It could be that we could just do this on up the hiearchy? For now, here's the case we know is important,
+        // in the Origami pages, where the space allocated could be too small.
+        var splitterParents = $this.parents('.split-pane-component-inner');
+        if (splitterParents.length != 0) {
+            MarkOverflowInternal(splitterParents[0]);
+        }
+    } // If it's not here, this won't hurt anything.
+    //});
 }
 
 // When a div is overfull,
 // we add the overflow class and it gets a red background or something
 function AddOverflowHandler(container) {
-  //NB: for some historical reason in March 2014 the calendar still uses textareas
-    $(container).find("div.bloom-editable, textarea").on("keyup paste", function (e) {
+    var queryElementsThatCanOverflow = ".bloom-editable, .split-pane-component-inner, textarea";
+
+    //first, check to see if the stylesheet is going to give us overflow even for a single character:
+    $(container).find(".bloom-editable").each(function (e) {
+        var lineHeight = parseInt($(this).css("line-height"), 10);
+        var minHeight = parseInt($(this).css("min-height"), 10);
+        if (lineHeight > minHeight) {
+            $(this).addClass('Layout-Problem-Detected');
+            $(this).attr("LayoutProblem", "min-height is less than lineHeight");
+        } else {
+            $(this).removeClass('Layout-Problem-Detected');
+        }
+    });
+
+    //NB: for some historical reason in March 2014 the calendar still uses textareas
+    var editablePageElements = $(container).find("div.bloom-editable, textarea");
+
+    //When they change, test for overflow
+    editablePageElements.on("keyup paste", function (e) {
+        var target = e.target;
         // Give the browser time to get the pasted text into the DOM first, before testing for overflow
         // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
         //        At first I was concerned that this might slow typing, but it doesn't seem to.
         setTimeout(function () {
-            MarkOverflowInternal(container);
+            MarkOverflowInternal(target);
+
+            //REVIEW: why is this here, in the overflow detection? 
 
             // This will make sure that any language tags on this div stay in position with editing.
             // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
-            $("div.bloom-editable, textarea").qtip('reposition');
+            $(queryElementsThatCanOverflow).qtip('reposition');
         }, 100); // 100 milliseconds
         e.stopPropagation();
     });
 
-    // Test initial overflow state on page
-    MarkOverflowInternal(container);
+    // Right now, test to see if any are already overflowing
+    $(container).find(queryElementsThatCanOverflow).each(function () {
+        MarkOverflowInternal(this);
+    });
+
+    // When the user resizes an origami pane, check the overflow again
+    $(container).find(".split-pane-component-inner").bind('_splitpaneparentresize', function () {
+        MarkOverflowInternal(this);
+        $(this).find(queryElementsThatCanOverflow).each(function () {
+            MarkOverflowInternal(this);
+        });
+    });
 }
 
 // Add various editing key handlers
