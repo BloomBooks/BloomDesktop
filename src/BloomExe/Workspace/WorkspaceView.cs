@@ -377,7 +377,7 @@ namespace Bloom.Workspace
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
 		{
 			var path = FileLocator.GetFileDistributedWithApplication("ReleaseNotes.md");
-			using (var dlg = new ShowReleaseNotesDialog(this.FindForm().Icon, path))
+			using (var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.Bloom, path))
 			{
 				dlg.ShowDialog();
 			}
