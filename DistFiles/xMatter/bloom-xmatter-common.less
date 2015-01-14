@@ -78,14 +78,8 @@
             height: auto;
             //a bit confusingly (for me), text-align:center stops working because of the flex layout, so we need this:
             justify-content: center;
-            &.bloom-content1 {
-                //main title
-                order: 0;
-                display: inherit;
-                font-size: 250%;
-                line-height: 1.4em; //1.4em is the minimum to show ทไปทั่วพื้  without clipping. (Which we don't really *have* to support by default; the user could change the line-height.)
-                margin-bottom: @MarginBetweenMinorItems;
-            }
+
+            //NB: THe order here is important. bloom-content1 should be last so that if a box is *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections), we want the  bloom-content1 rule to win.
             &.bloom-contentNational1 {
                 //NB: we show the national language even if this is a monolingual book
                 order: 1;
@@ -102,8 +96,14 @@
                 display: inherit;
                 order: 2;
             }
-            //        margin-top: @MarginBetweenMajorItems;
-            //        margin-bottom: @MarginBetweenMajorItems;
+            &.bloom-content1 {
+                //main title
+                order: 0;
+                display: inherit;
+                font-size: 250%;
+                line-height: 1.4em; //1.4em is the minimum to show ทไปทั่วพื้  without clipping. (Which we don't really *have* to support by default; the user could change the line-height.)
+                margin-bottom: @MarginBetweenMinorItems;
+            }
         }
     }
     .placeholder,.bloom-imageContainer {
@@ -186,13 +186,7 @@
     @MarginBetweenMinorItems: 5px;
     @MarginBetweenMajorItems: 15px;
     .bookTitle {
-        &.bloom-content1 {
-            //main title
-            display: inherit;
-            font-size: 250%;
-            line-height: 1.4em; //1.4em is the minimum to show ทไปทั่วพื้  without clipping. (Which we don't really *have* to support by default; the user could change the line-height.)
-            margin-bottom: @MarginBetweenMinorItems;
-        }
+        //NB: order would be important here, since in source collections, a block can be both content1 and contentNational1
         &.bloom-contentNational1 {
             //NB: we show the national language even if this is a monolingual book
             display: inherit;
@@ -207,6 +201,15 @@
         &.bloom-content3 {
             display: inherit;
         }
+        &.bloom-content1 {
+            //main title
+            display: inherit;
+            font-size: 250%;
+            line-height: 1.4em; //1.4em is the minimum to show ทไปทั่วพื้  without clipping. (Which we don't really *have* to support by default; the user could change the line-height.)
+            margin-bottom: @MarginBetweenMinorItems;
+        }
+
+
         margin-bottom: @MarginBetweenMajorItems;
     }
     .bloom-imageContainer {
@@ -360,6 +363,14 @@
         margin-bottom: @MarginBetweenTitleAndFunding;
     }
 
+    #originalContributions {
+        .bloom-contentNational1 {
+            display: inherit;
+            min-height: 3em; // two lines
+        }
+        margin-bottom: @MarginBetweenMinorItems;
+    }
+
     #funding {
         .bloom-contentNational1 {
             display: inherit;
@@ -372,14 +383,15 @@
         bottom: 0;
         .languagesOfBook {
         }
-        .langName.bloom-contentNational1 {
-            display: inherit;
-        }
+        //NB: order would be important here, since in source collections, a block can be both content1 and contentNational1
         .langName.bloom-content1 {
             display: none;
         }
         .langName.bloom-contentNational2 {
             display: none;
+        }
+        .langName.bloom-contentNational1 {
+            display: inherit;
         }
     }
 }
@@ -394,3 +406,4 @@
     height: 100%;
     text-align: center;
 }
+
