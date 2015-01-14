@@ -78,9 +78,16 @@ namespace Bloom.Workspace
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
-#if !__MonoCS__ && !DEBUG
-			_sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
-#endif
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			{
+				if (!Debugger.IsAttached)
+					_sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
+			}
+			else
+			{
+				_checkForNewVersionMenuItem.Visible = false;
+			}
+
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
 			//we have a number of buttons which don't make sense for the remote (therefore vulnerable) low-end user
@@ -449,9 +456,8 @@ namespace Bloom.Workspace
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
 		{
-#if !__MonoCS__
-			_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
-#endif
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+				_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
 		}
 
 		private static void OpenInfoFile(string fileName)
