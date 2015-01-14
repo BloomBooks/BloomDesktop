@@ -1,4 +1,4 @@
-/*+init {*/
+﻿/*+init {*/
 * {
   position: relative;
   margin: 0;
@@ -174,11 +174,11 @@ preview.css.
   min-height: 148mm;
   max-height: 148mm;
 }
-.bloom-page.A6Portrait {
-  min-width: 105mm;
-  max-width: 105mm;
-  min-height: 148mm;
-  max-height: 148mm;
+.bloom-page.A6Landscape {
+  min-width: 148mm;
+  max-width: 148mm;
+  min-height: 105mm;
+  max-height: 105mm;
 }
 /*Margins*/
 .textWholePage .marginBox {
@@ -265,3 +265,4 @@ H2 {
   height: 99%;
   width: 99%;
 }
+/*# sourceMappingURL=basePage.css.map */

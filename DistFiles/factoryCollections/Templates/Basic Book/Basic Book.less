@@ -20,6 +20,13 @@ STARTLAYOUTS
 		 }
 	  },
 	  {
+		 "A6Landscape":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
 		 "A4Portrait":{
 			"Styles":[
 			   "Default"
@@ -193,271 +200,6 @@ generic*/
 
 
 
-	.ximageOnTop {
-	//we place the edit boxes in different places depending on the multilingual settings,
-	//so we don't want the default margin-top's for the 2nd and 3rd ones.
-	.Common-SeparateMultilingualEditables(0);
-
-
-	.bloom-imageContainer {
-			width: 100%;
-			height: 45% !important;
-			z-index: 1000;
-		}
-
-	&.A4Landscape {
-		DIV {
-			&.bloom-translationGroup {
-				height: 25% !important;
-				position: absolute;
-				left: 0;
-				bottom: 0;
-				width: 100%;
-			}
-		}
-		&.bloom-trilingual {
-			DIV {
-				&.bloom-translationGroup {
-					height: 50% !important;
-					position: absolute;
-					left: 0;
-					bottom: 0;
-					width: 100%;
-				}
-				&.bloom-editable {
-					width: 100%;
-					height: 30%;
-				}
-			}
-		}
-	}
-	&.A5Portrait, &.A6Portrait {
-		&.bloom-monolingual {
-			DIV {
-				&.bloom-translationGroup {
-					height: 48% !important;
-					width: 100%;
-					position: absolute;
-					left: 0;
-					bottom: 0;
-				}
-			}
-		}
-		&.bloom-trilingual {
-			DIV {
-				&.bloom-translationGroup {
-					height: 100%;
-					position: absolute;
-					left: 0;
-					bottom: 0;
-					width: 100%;
-				}
-			}
-		}
-	}
-	&.A4Portrait {
-		&.bloom-monolingual {
-			DIV {
-				&.bloom-translationGroup {
-					height: 48% !important;
-					width: 100%;
-					position: absolute;
-					left: 0;
-					bottom: 0;
-				}
-			}
-		}
-	}
-
-	&.layout-style-BottomAlign {
-		&.bloom-monolingual {
-			.bloom-translationGroup {
-				display: table;
-			}
-			DIV {
-				&.bloom-editable {
-					vertical-align: bottom;
-					display: table-cell;
-				}
-			}
-		}
-	}
-	&.A4Landscape {
-		&.layout-style-SideBySide {
-			DIV {
-				&.bloom-imageContainer {
-					width: 48%;
-					position: absolute;
-					left: 0;
-					top: 0;
-					height: 100% !important;
-				}
-				&.bloom-translationGroup {
-					height: 100% !important;
-					width: 45%;
-					position: absolute !important;
-					left: 549px !important;
-					top: 2px !important;
-				}
-				&.bloom-editable {
-					display: block;
-				}
-			}
-			&.bloom-monolingual {
-				.bloom-editable {
-					height: 17.7cm !important;
-				}
-			}
-			&.bloom-bilingual {
-				.bloom-editable {
-					height: 8cm !important;
-				}
-			}
-		}
-		DIV {
-			&.bloom-imageContainer {
-				width: 100%;
-				position: absolute;
-				left: 0;
-				top: 0;
-				height: 70% !important;
-			}
-		}
-		&.bloom-monolingual {
-			DIV {
-				&.bloom-editable {
-					height: 100%;
-				}
-			}
-		}
-		&.bloom-bilingual {
-			DIV {
-				&.bloom-editable {
-					height: 50%;
-				}
-			}
-		}
-		&.bloom-trilingual {
-			DIV {
-				&.bloom-editable {
-					height: 30%;
-				}
-				&.bloom-imageContainer {
-					width: 100%;
-					position: absolute;
-					left: 0;
-					top: 0;
-					height: 45% !important;
-				}
-			}
-		}
-	}
-	&.layout-style-SplitAcrossPages {
-		DIV {
-			&.bloom-imageContainer {
-				width: 100%;
-				height: 100% !important;
-			}
-		}
-		.bloom-translationGroup {
-			width: 100%;
-			position: relative !important;
-			display: block !important;
-			position: absolute;
-			left: 0;
-			top: 30%;
-		}
-		.bloom-editable {
-			font-size: 300%;
-		}
-	}
-	&.bloom-monolingual {
-		DIV {
-			&.bloom-editable {
-			}
-		}
-	}
-	&.A5Portrait, &.A6Portrait {
-		&.bloom-bilingual {
-			DIV {
-				&.bloom-imageContainer {
-					height: 30% !important;
-					position: absolute;
-					left: 0;
-					top: 228px;
-				}
-				&.bloom-translationGroup {
-					height: 100%;
-					position: absolute;
-					left: 0;
-					bottom: 0;
-					width: 100%;
-				}
-			}
-		}
-		&.bloom-trilingual {
-			DIV {
-				&.bloom-imageContainer {
-					height: 27% !important;
-					position: absolute;
-					left: 1px;
-					top: 196px;
-				}
-				&.bloom-editable {
-					&.bloom-content2 {
-						height: 19%;
-						position: relative;
-						left: 0;
-						top: 33%;
-					}
-					&.bloom-content3 {
-						height: 19%;
-						position: relative;
-						left: 0;
-						top: 33%;
-						margin-top: 12px;
-					}
-				}
-			}
-		}
-	}
-	&.A4Portrait {
-		&.bloom-bilingual {
-			DIV {
-				&.bloom-imageContainer {
-					height: 30% !important;
-					position: absolute;
-					left: 0;
-					top: 35%;
-				}
-				&.bloom-translationGroup {
-					height: 100%;
-					position: absolute;
-					left: 0;
-					bottom: 0;
-					width: 100%;
-				}
-			}
-		}
-	}
-	&.bloom-bilingual {
-		DIV {
-			&.bloom-editable {
-				height: 30%;
-				&.bloom-content2 {
-					position: absolute;
-					left: 0;
-					bottom: 0;
-				}
-			}
-		}
-	}
-	&.bloom-trilingual {
-		.bloom-content1 {
-			height: 26%;
-		}
-	}
-}
 
 .imageInMiddle {
 	//we place the edit boxes in different places depending on the multilingual settings,
@@ -593,6 +335,9 @@ in javascript. Search for 'bloom-centerContentVertically'.
 	}
 	&.A6Portrait {
 		.Setup(62%, 400%);
+	}
+	&.A6Landscape {
+		.Setup(55%, 600%);
 	}
 	&.A5Portrait {
 		.Setup(62%, 400%);
