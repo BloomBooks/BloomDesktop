@@ -32,6 +32,10 @@ namespace Bloom.Publish
 #endif
 			{
 				_pdfViewerControl = new GeckoWebBrowser();
+
+				// BL-752: The zoom drop down list does not display on Linux
+				((GeckoWebBrowser)_pdfViewerControl).DomClick += 
+					(sender, e) => ((GeckoWebBrowser)_pdfViewerControl).WebBrowserFocus.Activate();
 			}
 			SuspendLayout();
 
