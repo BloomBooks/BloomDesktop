@@ -384,6 +384,7 @@ DIV.bloom-editable.Heading2-style {
   /* Arial matches .qtip-content */
   font-style: normal;
   font-weight: normal;
+  line-height: 1;
 }
 .languageTip {
   /* 'top' is added by javascript (StyleEditor.AttachLanguageTip) based on the height of the element */
