@@ -1,4 +1,5 @@
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace Bloom.CollectionTab
 {
@@ -6,5 +7,6 @@ namespace Bloom.CollectionTab
 	{
 		string HelpTopicUrl { get;}
 		Control TopBarControl { get; }
+		Bitmap ToolStripBackground { get; set; }
 	}
 }

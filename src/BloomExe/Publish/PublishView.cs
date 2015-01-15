@@ -15,6 +15,7 @@ using L10NSharp;
 using Palaso.Reporting;
 using Gecko;
 using Palaso.IO;
+using System.Drawing;
 
 namespace Bloom.Publish
 {
@@ -72,18 +73,30 @@ namespace Bloom.Publish
 //			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
 //        	tableLayoutPanel1.Controls.Add(linkLabel);
 //#endif
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+			{
+				BackgroundColorsForLinux();
+			}
 
 			// Adding this renderer prevents a white line from showing up under the components.
-#if !__MonoCS__
-			// TODO Linux - But on Linux, it also prevents the checkmarks from painting. (https://jira.sil.org/browse/BL-509)
-			// Currently, Linux looks awful anyway, and not using this renderer is not a regression.
-			// We must do a similar hack in EditingView, but the problem cannot be fixed in the renderer itself
-			// as simply adding the renderer seems to cause the problem with the checkmarks.
 			_menusToolStrip.Renderer = new EditingView.FixedToolStripRenderer();
-#endif
+
 			GeckoPreferences.Default["pdfjs.disabled"] = false;
 			SetupLocalization();
 			localizationChangedEvent.Subscribe(o=>SetupLocalization());
+		}
+
+		private void BackgroundColorsForLinux() {
+
+			var bmp = new Bitmap(_menusToolStrip.Width, _menusToolStrip.Height);
+			using (var g = Graphics.FromImage(bmp))
+			{
+				using (var b = new SolidBrush(_menusToolStrip.BackColor))
+				{
+					g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
+				}
+			}
+			_menusToolStrip.BackgroundImage = bmp;
 		}
 
 		private void SetAutoCheck(bool autoCheck)
@@ -165,6 +178,8 @@ namespace Bloom.Publish
 		{
 			get { return _topBarPanel; }
 		}
+
+		public Bitmap ToolStripBackground { get; set; }
 
 		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
