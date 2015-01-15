@@ -23,25 +23,32 @@ namespace BloomTests.WebLibraryIntegration
 		private BloomParseClient _parseClient;
 		List<BookInfo> _downloadedBooks = new List<BookInfo>();
 		private HtmlThumbNailer _htmlThumbNailer;
+		private string _thisTestId;
 
 		private class BloomParseClientDouble: BloomParseClient
 		{
-			public BloomParseClientDouble()
+			public BloomParseClientDouble(string testId)
 			{
-				ClassesLanguagePath = "classes/language_" + Guid.NewGuid().ToString().Replace('-', '_');
+				ClassesLanguagePath = "classes/language_" + testId;
 			}
+		}
+
+		[TestFixtureSetUp]
+		public void TestFixtureSetUp()
+		{
+			_thisTestId = Guid.NewGuid().ToString().Replace('-', '_');
 		}
 
 		[SetUp]
 		public void Setup()
 		{
-			_workFolder = new TemporaryFolder("unittest-" + Guid.NewGuid());
+			_workFolder = new TemporaryFolder("unittest-" + _thisTestId);
 			_workFolderPath = _workFolder.FolderPath;
 			Assert.AreEqual(0,Directory.GetDirectories(_workFolderPath).Count(),"Some stuff was left over from a previous test");
 			Assert.AreEqual(0, Directory.GetFiles(_workFolderPath).Count(),"Some stuff was left over from a previous test");
 			// Todo: Make sure the S3 unit test bucket is empty.
 			// Todo: Make sure the parse.com unit test book table is empty
-			_parseClient = new BloomParseClientDouble();
+			_parseClient = new BloomParseClientDouble(_thisTestId);
 			// These substitute keys target the "silbloomlibraryunittests" application so testing won't interfere with the real one.
 			_parseClient.ApiKey = "HuRkXoF5Z3hv8f3qHE4YAIrDjwNk4VID9gFxda1U";
 			_parseClient.ApplicationKey = "r1H3zle1Iopm1IB30S4qEtycvM4xYjZ85kRChjkM";
@@ -63,7 +70,7 @@ namespace BloomTests.WebLibraryIntegration
 			File.WriteAllText(Path.Combine(f.FolderPath, "one.htm"), data);
 			File.WriteAllText(Path.Combine(f.FolderPath, "one.css"), @"test");
 
-			File.WriteAllText(Path.Combine(f.FolderPath, "meta.json"), "{\"bookInstanceId\":\"" + id + "\",\"uploadedBy\":\"" + uploader + "\"}");
+			File.WriteAllText(Path.Combine(f.FolderPath, "meta.json"), "{\"bookInstanceId\":\"" + id + _thisTestId + "\",\"uploadedBy\":\"" + uploader + "\"}");
 
 			return f.FolderPath;
 		}
