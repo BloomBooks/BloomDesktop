@@ -1,4 +1,4 @@
-﻿/*+init {*/
+/*+init {*/
 * {
   position: relative;
   margin: 0;
@@ -150,8 +150,8 @@ preview.css.
   max-height: 148mm;
 }
 .bloom-page.B5Portrait {
-  min-width: 177mm;
-  max-width: 177mm;
+  min-width: 176mm;
+  max-width: 176mm;
   min-height: 250mm;
   max-height: 250mm;
 }
@@ -214,7 +214,7 @@ preview.css.
   height: 75mm;
 }
 .B5Portrait .marginBox {
-  width: 137mm;
+  width: 136mm;
   height: 220mm;
 }
 .bloom-page:nth-of-type(odd) .marginBox {
@@ -265,4 +265,3 @@ H2 {
   height: 99%;
   width: 99%;
 }
-/*# sourceMappingURL=basePage.css.map */
