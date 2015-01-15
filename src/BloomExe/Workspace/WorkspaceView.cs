@@ -160,14 +160,18 @@ namespace Bloom.Workspace
 				SelectPage(_collectionView);
 //			}
 
-#if __MonoCS__
-			// For an unknown reason (my guess is it has something to do with the Messir.Windows.Forms.TabStrip),
-			// the panel is significantly farther right in Mono.
-			// Without this adjustment, we lose some controls on smaller resolutions.
-			var location = _toolSpecificPanel.Location;
-			location.X = location.X - 100;
-			_toolSpecificPanel.Location = location;
-#endif
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+			{
+				// For an unknown reason (my guess is it has something to do with the Messir.Windows.Forms.TabStrip),
+				// the panel is significantly farther right in Mono.
+				// Without this adjustment, we lose some controls on smaller resolutions.
+				var location = _toolSpecificPanel.Location;
+				location.X = location.X - 100;
+				_toolSpecificPanel.Location = location;
+
+				// in mono auto-size causes the height of the tab strip to be too short
+				_tabStrip.AutoSize = false;
+			}
 
 			SetupUILanguageMenu();
 		}

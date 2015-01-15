@@ -122,9 +122,20 @@ namespace Bloom.Workspace
 		protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e)
 		{
 			if (_currentRenderer != null)
+			{
 				_currentRenderer.DrawToolStripBackground(e);
-			else
+				return;
+			}
+
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			{
 				base.OnRenderToolStripBackground(e);
+				return;
+			}
+
+			// there is no handler for this event in mono, so we need to handle it here.
+			var b = new SolidBrush(e.ToolStrip.BackColor);
+			e.Graphics.FillRectangle(b, e.AffectedBounds);
 		}
 
 		protected override void OnRenderButtonBackground(ToolStripItemRenderEventArgs e)
