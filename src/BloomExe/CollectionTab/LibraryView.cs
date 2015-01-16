@@ -3,9 +3,9 @@ using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.SendReceive;
 using Bloom.Workspace;
-using DesktopAnalytics;
 using L10NSharp;
 using Palaso.Reporting;
+using System.Drawing;
 
 namespace Bloom.CollectionTab
 {
@@ -87,6 +87,8 @@ namespace Bloom.CollectionTab
 		{
 			get { return _topBarControl; }
 		}
+
+		public Bitmap ToolStripBackground { get; set; }
 
 		private void LibraryView_Load(object sender, EventArgs e)
 		{

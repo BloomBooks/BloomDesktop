@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Globalization;
 using System.Windows.Forms;
 using Bloom.Collection;
@@ -162,11 +163,9 @@ namespace Bloom.Workspace
 
 			if (Palaso.PlatformUtilities.Platform.IsMono)
 			{
-				// For an unknown reason (my guess is it has something to do with the Messir.Windows.Forms.TabStrip),
-				// the panel is significantly farther right in Mono.
 				// Without this adjustment, we lose some controls on smaller resolutions.
 				var location = _toolSpecificPanel.Location;
-				location.X = location.X - 100;
+				location.X = _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10;
 				_toolSpecificPanel.Location = location;
 
 				// in mono auto-size causes the height of the tab strip to be too short
@@ -313,9 +312,6 @@ namespace Bloom.Workspace
 		private void SelectPage(Control view)
 		{
 			CurrentTabView = view as IBloomTabArea;
-			//SetTabVisibility(_infoTab, false); //we always hide this after it is used
-
-
 
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
@@ -326,6 +322,12 @@ namespace Bloom.Workspace
 			_toolSpecificPanel.Controls.Clear();
 
 			_panelHoldingToolStrip.BackColor = CurrentTabView.TopBarControl.BackColor = _tabStrip.BackColor;
+
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+			{
+				BackgroundColorsForLinux(CurrentTabView);
+			}
+
 			CurrentTabView.TopBarControl.Dock = DockStyle.Left;
 			if(CurrentTabView!=null)//can remove when we get rid of info view
 				_toolSpecificPanel.Controls.Add(CurrentTabView.TopBarControl);
@@ -343,6 +345,24 @@ namespace Bloom.Workspace
 											});
 
 			_previouslySelectedControl = view;
+		}
+
+		private void BackgroundColorsForLinux(IBloomTabArea currentTabView) {
+
+			if (currentTabView.ToolStripBackground == null)
+			{
+				var bmp = new Bitmap(_toolStrip.Width, _toolStrip.Height);
+				using (var g = Graphics.FromImage(bmp))
+				{
+					using (var b = new SolidBrush(_panelHoldingToolStrip.BackColor))
+					{
+						g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
+					}
+				}
+				currentTabView.ToolStripBackground = bmp;
+			}
+
+			_toolStrip.BackgroundImage = currentTabView.ToolStripBackground;
 		}
 
 		protected IBloomTabArea CurrentTabView { get; set; }

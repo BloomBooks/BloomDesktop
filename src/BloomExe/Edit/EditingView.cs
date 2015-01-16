@@ -33,13 +33,11 @@ namespace Bloom.Edit
 		private readonly UndoCommand _undoCommand;
 		private readonly DuplicatePageCommand _duplicatePageCommand;
 		private readonly DeletePageCommand _deletePageCommand;
-		private GeckoElement _previousClickElement;
 		private Action _pendingMessageHandler;
 		private bool _updatingDisplay;
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
 		private Color _disabledToolbarColor = Color.FromArgb(114, 74, 106);
 		private bool _visible;
-		private GeckoHtmlElement _targetElement;
 
 		public delegate EditingView Factory(); //autofac uses this
 
@@ -68,14 +66,14 @@ namespace Bloom.Edit
 
 			_browser1.GeckoReady += new EventHandler(OnGeckoReady);
 
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+			{
+				RepositionButtonsForMono();
+				BackgroundColorsForLinux();
+			}
+
 			// Adding this renderer prevents a white line from showing up under the components.
-#if !__MonoCS__
-			// TODO Linux - But on Linux, it also prevents the checkmarks from painting. (https://jira.sil.org/browse/BL-509)
-			// Currently, Linux looks awful anyway, and not using this renderer is not a regression.
-			// We must do a similar hack in PublishView, but the problem cannot be fixed in the renderer itself
-			// as simply adding the renderer seems to cause the problem with the checkmarks.
 			_menusToolStrip.Renderer = new FixedToolStripRenderer();
-#endif
 
 			//we're giving it to the parent control through the TopBarControls property
 			Controls.Remove(_topBarPanel);
@@ -92,6 +90,33 @@ namespace Bloom.Edit
 		}
 #endif
 
+		private void RepositionButtonsForMono()
+		{
+			// Shift toolstrip controls right to prevent overlapping disable buttons, which causes the
+			// overlapped region to not paint.
+			var shift = _pasteButton.Left + _pasteButton.Width - _cutButton.Left;
+			_cutButton.Left += shift;
+			_copyButton.Left += shift;
+			_undoButton.Left += shift;
+			_duplicatePageButton.Left += shift;
+			_deletePageButton.Left += shift;
+			_menusToolStrip.Left += shift;
+			_topBarPanel.Width = _menusToolStrip.Left + _menusToolStrip.Width + 1;
+		}
+
+		private void BackgroundColorsForLinux() {
+
+			var bmp = new Bitmap(_menusToolStrip.Width, _menusToolStrip.Height);
+			using (var g = Graphics.FromImage(bmp))
+			{
+				using (var b = new SolidBrush(_menusToolStrip.BackColor))
+				{
+					g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
+				}
+			}
+			_menusToolStrip.BackgroundImage = bmp;
+		}
+
 		public Control TopBarControl
 		{
 			get
@@ -104,7 +129,7 @@ namespace Bloom.Edit
 		/// Prevents a white line from appearing below the tool strip
 		/// Be careful if using this on Linux; it can have strange side-effects (https://jira.sil.org/browse/BL-509).
 		/// </summary>
-		public class FixedToolStripRenderer : ToolStripSystemRenderer
+		public class FixedToolStripRenderer : ToolStripProfessionalRenderer
 		{
 			protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
 			{
@@ -138,6 +163,7 @@ namespace Bloom.Edit
 			_browser1.WebBrowser.Select();
 		}
 
+		public Bitmap ToolStripBackground { get; set; }
 
 		private void _handleMessageTimer_Tick(object sender, EventArgs e)
 		{
