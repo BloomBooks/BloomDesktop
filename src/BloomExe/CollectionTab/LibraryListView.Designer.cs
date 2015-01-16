@@ -31,7 +31,6 @@ namespace Bloom.CollectionTab
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this._sourcePaneMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-			this._keepFocusTimer = new System.Windows.Forms.Timer(this.components);
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._vernacularCollectionMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.makeReaderTemplateBloomPackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -643,7 +642,6 @@ namespace Bloom.CollectionTab
 		private System.Windows.Forms.Label pretendLabel;
 		private System.Windows.Forms.Label label9;
 		private System.Windows.Forms.Panel _dividerPanel;
-		private System.Windows.Forms.Timer _keepFocusTimer;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper _settingsProtectionHelper;
 		private System.Windows.Forms.ContextMenuStrip _sourcePaneMenuStrip;

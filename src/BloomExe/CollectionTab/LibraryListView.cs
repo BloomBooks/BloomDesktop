@@ -972,30 +972,6 @@ namespace Bloom.CollectionTab
 			_vernacularCollectionMenuStrip.Show(_menuTriangle, new Point(0, 0));
 		}
 
-		/// <summary>
-		/// Occasionally, when select a book, the Bloom App itself loses focus. I assume this is a gecko-related issue.
-		/// You can see it happen because the title bar of the application changes to the Windows unselected color (lighter).
-		/// And then, if you click on a tab, the click is swallowed selecting the app, and you have to click again.
-		///
-		/// So, this occasionally checks that the Workspace control has focus, and if it doesn't, pulls it back here.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-//		private void _keepFocusTimer_Tick(object sender, EventArgs e)
-//		{
-//			if(Visible)
-//			{
-//				var findForm = FindForm();//visible is worthless, but FindForm() happily does fail when we aren't visible.
-//
-//				if (findForm != null && !findForm.ContainsFocus)
-//				{
-//				//	Focus();
-//
-//					//Debug.WriteLine("Grabbing back focus");
-//				}
-//			}
-//		}
-
 		private class ButtonInfo
 		{
 			public ButtonInfo(Button button, bool thumbnailRefreshNeeded)
