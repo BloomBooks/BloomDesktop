@@ -153,7 +153,7 @@ namespace Bloom
 							// If another instance is running, this one has served its purpose and can exit right away.
 							// Otherwise, carry on with starting up normally.
 							if (UniqueToken.AcquireTokenQuietly(_mutexId))
-								FinishStartup();
+								Run();
 							else
 							{
 								skipReleaseToken = true; // we don't own it, so we better not try to release it
@@ -232,7 +232,7 @@ namespace Bloom
 #endif
 						L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
-						FinishStartup();
+						Run();
 					}
 				}
 			}
@@ -252,7 +252,7 @@ namespace Bloom
 			_debugServerStarter = null;
 		}
 
-		private static void FinishStartup()
+		private static void Run()
 		{
 			_earliestWeShouldCloseTheSplashScreen = DateTime.Now.AddSeconds(3);
 
