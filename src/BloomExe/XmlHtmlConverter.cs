@@ -75,7 +75,7 @@ namespace Bloom
 					var errors = tidy.CleanAndRepair();
 					if (!string.IsNullOrEmpty(errors))
 					{
-						throw new ApplicationException(errors + "\r\n\r\n" + content);
+						throw new ApplicationException(string.Format("{0}{2}{2}{1}", errors, content, Environment.NewLine));
 					}
 					var newContents = tidy.Save();
 					try
@@ -87,7 +87,8 @@ namespace Bloom
 					}
 					catch (Exception e)
 					{
-						var exceptionWithHtmlContents = new Exception(e.Message + "\r\n\r\n" + newContents);
+						var exceptionWithHtmlContents = new Exception(string.Format("{0}{2}{2}{1}",
+							e.Message, newContents, Environment.NewLine));
 						throw exceptionWithHtmlContents;
 					}
 				}

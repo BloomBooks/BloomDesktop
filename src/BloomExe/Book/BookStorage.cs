@@ -220,7 +220,7 @@ namespace Bloom.Book
 			string tempPath = SaveHtml(Dom);
 
 
-			string errors = ValidateBook(tempPath);
+			string errors = ValidateBook(Dom, tempPath);
 			if (!string.IsNullOrEmpty(errors))
 			{
 				Logger.WriteEvent("Errors saving book {0}: {1}", PathToExistingHtml, errors);
@@ -367,7 +367,7 @@ namespace Bloom.Book
 			}
 
 
-			return ValidateBook(PathToExistingHtml);
+			return ValidateBook(_dom, PathToExistingHtml);
 		}
 
 		/// <summary>
@@ -525,12 +525,15 @@ namespace Bloom.Book
 
 		public static string ValidateBook(string path)
 		{
-			Debug.WriteLine(string.Format("ValidateBook({0})", path));
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));//with throw if there are errors
+			return ValidateBook(dom, path);
+		}
+
+		private static string ValidateBook(HtmlDom dom, string path)
+		{
+			Debug.WriteLine(string.Format("ValidateBook({0})", path));
 			var msg= GetMessageIfVersionIsIncompatibleWithThisBloom(dom);
-			if (!string.IsNullOrEmpty(msg))
-				return msg;
-			return dom.ValidateBook(path);
+			return !string.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path);
 		}
 
 

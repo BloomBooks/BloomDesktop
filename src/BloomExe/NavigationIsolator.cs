@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Gecko;
 using Timer = System.Windows.Forms.Timer;
+using Gecko.Events;
 
 namespace Bloom
 {
@@ -230,7 +231,13 @@ namespace Bloom
 			_browser.Navigate(url);
 		}
 
-		private void RaiseNavigated(object sender, EventArgs args)
+		private void RaiseNavigated(object sender, GeckoNavigatedEventArgs args)
+		{
+			if (Navigated != null)
+				Navigated(this, new EventArgs());
+		}
+
+		private void RaiseDocumentCompleted(object sender, GeckoDocumentCompletedEventArgs args)
 		{
 			if (Navigated != null)
 				Navigated(this, new EventArgs());
@@ -247,15 +254,15 @@ namespace Bloom
 		{
 			// Todo: May need changes for Gecko29
 			_browser.Navigated += RaiseNavigated;
-			_browser.DocumentCompleted += RaiseNavigated;
+			_browser.DocumentCompleted += RaiseDocumentCompleted;
 		}
 
 		public void RemoveEventHandlers()
 		{
 			if (_browser.IsDisposed)
 				return; // don't try to do anything to it.
-			_browser.Navigated += RaiseNavigated;
-			_browser.DocumentCompleted += RaiseNavigated;
+			_browser.Navigated -= RaiseNavigated;
+			_browser.DocumentCompleted -= RaiseDocumentCompleted;
 		}
 
 		/// <summary>
