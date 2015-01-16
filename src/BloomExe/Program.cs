@@ -681,9 +681,6 @@ namespace Bloom
 											"SIL/Bloom",
 											Resources.Bloom, "issues@bloomlibrary.org", "Palaso.UI");
 
-				// Linux was just having too many issues with the L10NSharp Dialog
-				LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = Palaso.PlatformUtilities.Platform.IsWindows;
-
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 			}
 			catch (Exception error)
