@@ -1653,6 +1653,13 @@ namespace Bloom.Book
 					continue;
 				var childBook =bookServer.GetBookFromBookInfo(bookInfo);
 
+				//this will set the class bloom-content1 on the correct language
+				//this happens anyhow if the page was ever looked at in the Edti Tab
+				//But if we are testing a collection's folio pdf'ing ability on a newly-generated
+				//SHRP collection, and we don't do this, we see lots of sample text because every
+				//bloom-editable has "bloom-content1", even the "Z" language ones.
+				childBook.UpdateEditableAreasOfElement(childBook.OurHtmlDom);
+				
 				//add links to the template css needed by the children.
 				//NB: at this point this code can't hand the "userModifiedStyles" from children, it'll ignore them (they would conflict with each other)
 				//NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
