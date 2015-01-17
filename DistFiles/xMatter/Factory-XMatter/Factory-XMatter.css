@@ -248,6 +248,11 @@
   display: block !important;
   margin-bottom: 2em;
 }
+.credits .versionAcknowledgments,
+.verso .versionAcknowledgments {
+  display: block !important;
+  height: auto;
+}
 .credits .licenseUrl,
 .verso .licenseUrl {
   display: none;
