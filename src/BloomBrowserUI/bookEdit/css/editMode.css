@@ -207,7 +207,11 @@ TEXTAREA.province {
   height: 33px;
 }
 .overflow {
-  background-color: rgba(255, 0, 0, 0.7) !important;
+  color: red !important;
+  border: solid thin red !important;
+}
+.overflow p:empty:after {
+  content: '¶';
 }
 .Layout-Problem-Detected:before,
 .Layout-Problem-Detected:after {
