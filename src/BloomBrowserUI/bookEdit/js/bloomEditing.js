@@ -1219,10 +1219,8 @@ function SetupElements(container) {
                 //add a span with only a zero-width space in it
                 //enhance: a zero-width placeholder would be a bit better, but libsynphony doesn't know this is a space: //$(this).html('<span class="bloom-ui">&#8203;</span>');
                 $(this).html('&nbsp;');
-                //now select it
-                document.execCommand('selectAll', false, null);
-                //now delete it
-                document.execCommand('delete', false, null);
+                //now we tried deleting it immediatly, or after a pause, but that doesn't help. So now we don't delete it until they type or paste something.
+                $(container).find(".bloom-editable").on('paste keypress', FixUpOnFirstInput);
             }
             return;
         }
@@ -1628,6 +1626,19 @@ function SetupElements(container) {
 function OneTimeSetup() {
     setupOrigami();
 }
+
+
+//Earlier, to work around a FF bug, we made a text box non-empty so that the cursor would should up correctly.
+//Now, they have entered something, so remove it
+function FixUpOnFirstInput() {
+    //don't call this again for this edit box
+    $(this).off("paste keypress", FixUpOnFirstInput);
+
+    //earlier we stuck a &nbps; in to work around a FF bug on empty boxes.
+    //now remove it a soon as they type something
+    $(this).html($(this).html().replace('&nbsp;', ""));
+}
+
 
 // ---------------------------------------------------------------------------------
 // document ready function
