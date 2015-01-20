@@ -650,8 +650,6 @@ class StyleEditor {
                 }
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
-                //alert(offset.left + "," + $(document).width() + "," + $(targetBox).offset().left);
-                toolbar.width($(".bloom-page").width() - offset.left - 50);
                 $('html').off('click.toolbar');
                 $('html').on("click.toolbar", function (event) {
                     if (event.target != toolbar &&
