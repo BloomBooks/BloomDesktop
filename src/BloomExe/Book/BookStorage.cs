@@ -208,6 +208,10 @@ namespace Bloom.Book
 
 		public void Save()
 		{
+			if (!string.IsNullOrEmpty(ErrorMessages))
+			{
+				return; //too dangerous to try and save
+			}
 			Logger.WriteEvent("BookStorage.Saving... (eventual destination: {0})", PathToExistingHtml);
 
 			Dom.UpdateMetaElement("Generator", "Bloom " + ErrorReport.GetVersionForErrorReporting());
@@ -570,7 +574,20 @@ namespace Bloom.Book
 			}
 			else
 			{
-				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml, false);
+				XmlDocument xmlDomFromHtmlFile;
+				try
+				{
+					xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml, false);
+				}
+
+				catch(Exception error)
+				{
+					ErrorReport.NotifyUserOfProblem(error, "Bloom had trouble reading in the book in " + _folderPath);
+					ErrorMessages = error.Message;
+					return;
+				}
+				
+				
 				_dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 
 				//Validating here was taking a 1/3 of the startup time
