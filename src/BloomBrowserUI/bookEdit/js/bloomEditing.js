@@ -1636,7 +1636,9 @@ function FixUpOnFirstInput() {
 
     //earlier we stuck a &nbps; in to work around a FF bug on empty boxes.
     //now remove it a soon as they type something
-    $(this).html($(this).html().replace('&nbsp;', ""));
+    if ($(this).html().indexOf("&nbsp;") > -1) { //if we're wrong, if there isn't on, then we better not do this because it moves the insertion point
+        $(this).html($(this).html().replace('&nbsp;', ""));
+    }
 }
 
 
