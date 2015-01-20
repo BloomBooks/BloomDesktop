@@ -142,7 +142,7 @@ mixin factoryStandard-titlePage
 				.langName('data-library'='dialect')
 			+field-prototypeDeclaredExplicity
 				//- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
-				.langName(data-library='languageLocation')
+				.langName(data-library='languageLocation').bloom-writeOnly
 
 mixin standard-blankInsideFrontCover
 	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover')#BA00DE13-734C-4036-9901-7040275B9000

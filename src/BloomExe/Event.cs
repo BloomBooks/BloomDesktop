@@ -165,6 +165,19 @@ namespace Bloom
 		}
 	}
 
+	/// <summary>
+	/// Anything displaying a book should re-load it the current page
+	/// </summary>
+	public class PageRefreshEvent : Event<object>
+	{
+		public PageRefreshEvent()
+			: base("PageRefreshEvent", LoggingLevel.Minor)
+		{
+
+		}
+	}
+
+
 	public class RelocatePageInfo
 	{
 		public IPage Page;
