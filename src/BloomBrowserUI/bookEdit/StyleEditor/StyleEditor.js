@@ -52,13 +52,13 @@ var StyleEditor = (function () {
     // obsolete?
     StyleEditor.prototype.MakeBigger = function (target) {
         this.ChangeSize(target, 2);
-        $("div.bloom-editable, textarea").qtip('reposition');
+        $("div.bloom-editable, textarea").qtipSecondary('reposition');
     };
 
     // obsolete?
     StyleEditor.prototype.MakeSmaller = function (target) {
         this.ChangeSize(target, -2);
-        $("div.bloom-editable, textarea").qtip('reposition');
+        $("div.bloom-editable, textarea").qtipSecondary('reposition');
     };
 
     StyleEditor.MigratePreStyleBook = function (target) {
@@ -360,7 +360,7 @@ var StyleEditor = (function () {
         if (typeof delay === "undefined") { delay = 3000; }
         if (element.length == 0)
             return;
-        element.qtip({
+        element.qtipSecondary({
             content: toolTip,
             show: {
                 event: 'click mouseenter',
