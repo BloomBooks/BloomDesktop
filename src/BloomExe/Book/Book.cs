@@ -1729,10 +1729,17 @@ namespace Bloom.Book
 		{
 			var template = File.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
-			if (File.Exists(path))
-				File.Delete(path);
-			File.WriteAllText(path, template.Replace("VERNACULAR", _collectionSettings.Language1Iso639Code).Replace("NATIONAL", _collectionSettings.Language2Iso639Code));
 
+			using (var temp = TempFile.WithExtension(".css"))
+			{
+				File.WriteAllText(temp.Path,
+					template.Replace("VERNACULAR", _collectionSettings.Language1Iso639Code)
+						.Replace("NATIONAL", _collectionSettings.Language2Iso639Code));
+
+				//hoping this helps with the occasional report we were getting where the files were in Dropbox and
+				//the previous File.Delete(path) would fail:
+				FileUtils.ReplaceFileWithUserInteractionIfNeeded(temp.Path, path, null);
+			}
 			//ENHANCE: this works for editable books, but for shell collections, it would be nice to show the national language of the user... e.g., when browsing shells,
 			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.
 		}
