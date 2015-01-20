@@ -10,6 +10,7 @@ using System.Windows.Forms.VisualStyles;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.Collection;
+using L10NSharp;
 using Palaso.Code;
 using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
@@ -71,6 +72,7 @@ namespace Bloom.Book
 			GetOrCreateDataDiv();
 			_dataset = GatherDataItemsFromCollectionSettings(_collectionSettings);
 			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
+			MigrateData();
 		}
 
 		/// <summary>
@@ -177,6 +179,25 @@ namespace Bloom.Book
 			UpdateCredits(info);
 		}
 
+		private void MigrateData()
+		{
+			//Until late in Bloom 3, we collected the topic in the National language, which is messy because then we would have to know how to 
+			//translate from all those languages to all other languages. Now, we just save English, and translate from English to whatever.
+			//By far the largest number of books posted to bloomlibrary with this problem were Tok Pisin books, which actually just had
+			//an English word as their value for "topic", so there we just switch it over to English.
+			NamedMutliLingualValue topic;
+			if(_dataset.TextVariables.TryGetValue("topic", out topic))
+			{
+				var topicStrings = topic.TextAlternatives;
+				if (string.IsNullOrEmpty(topicStrings["en"] ) && topicStrings["tpi"] != null)
+				{
+					topicStrings["en"] = topicStrings["tpi"];
+
+					topicStrings.RemoveLanguageForm(topicStrings.Find("tpi"));
+				}
+			}
+		}
+
 		private void UpdateCredits(BookInfo info)
 		{
 			NamedMutliLingualValue creditsData;
@@ -187,6 +208,27 @@ namespace Bloom.Book
 			}
 			if (info != null)
 				info.Credits = credits.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+		}
+
+		private void UpdateTopic(DataSet data)
+		{
+			NamedMutliLingualValue topicData;
+			if(data.TextVariables.TryGetValue("topic", out topicData))
+			{
+				//we use English as the "key" for topics.
+				var englishTopic = topicData.TextAlternatives.GetExactAlternative("en");
+				if (string.IsNullOrEmpty(englishTopic))
+					return;
+				string langOfTopicToShowOnCover = _collectionSettings.Language2Iso639Code;
+				var id = "Topics." + englishTopic;
+
+				string s = "";
+				if (LocalizationManager.GetIsStringAvailableForLangId(id, langOfTopicToShowOnCover))
+				{
+					s = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishTopic, "comment", langOfTopicToShowOnCover);
+				}
+				data.AddLanguageString("topic", s, langOfTopicToShowOnCover, false);
+			}
 		}
 
 		private void UpdateIsbn(BookInfo info)
@@ -371,6 +413,7 @@ namespace Bloom.Book
 			UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
 
 			UpdateTitle();
+
 			return data;
 		}
 
@@ -543,6 +586,7 @@ namespace Bloom.Book
 		/// </summary>
 		private void UpdateDomFromDataSet(DataSet data, string elementName,XmlDocument targetDom, HashSet<Tuple<string, string>> itemsToDelete)
 		{
+			UpdateTopic(data); //reveiw
 			try
 			{
 				string query = String.Format("//{0}[(@data-book or @data-collection or @data-library)]", elementName);

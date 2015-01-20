@@ -562,6 +562,19 @@ namespace BloomTests.Book
 			Assert.That(data.PrettyPrintLanguage("es"), Is.EqualTo("Spanish"));
 		}
 
+		[Test]
+		public void MigrateData_TopicInTokPisinButNotEnglish_ChangesLangeToEnglish()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='topic' lang='tpi'>health</div>
+				</div>
+			 </body></html>");
+
+			var data = new BookData(bookDom, _collectionSettings, null);
+			Assert.AreEqual("health", data.GetVariableOrNull("topic", "en"));
+			Assert.IsNull(data.GetVariableOrNull("topic", "tpi"));
+		}
 		#region Metadata
 		[Test]
 		public void GetLicenseMetadata_HasCustomLicense_RightsStatementContainsCustom()

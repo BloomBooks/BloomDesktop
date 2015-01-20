@@ -355,6 +355,17 @@ namespace Bloom.Book
 			get { return MetaData.ReaderToolsAvailable; }
 			set { MetaData.ReaderToolsAvailable = value; }
 		}
+
+		public static IEnumerable<string> TopicsKeys
+		{
+			get
+			{
+				//If you modify any of these, consider modifying/updating the localization files; the localization ids for these are just the current English (which is fragile)
+				//If you make changes/additions here, also synchronize with the bloomlibrary source in services.js
+
+				return new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Story Book", "Traditional Story" };
+			}
+		}
 	}
 
 	public class ErrorBookInfo : BookInfo

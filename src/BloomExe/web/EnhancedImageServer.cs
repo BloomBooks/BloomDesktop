@@ -1,18 +1,23 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing.Text;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization.Formatters;
+using System.Text;
+using Bloom.Book;
 using Bloom.ImageProcessing;
 using System.IO;
 using L10NSharp;
 using Microsoft.Win32;
+using Palaso.Extensions;
 using Palaso.IO;
 using Bloom.Collection;
-
+using Newtonsoft.Json;
 
 namespace Bloom.web
 {
@@ -139,7 +144,6 @@ namespace Bloom.web
 				if (File.Exists(temp))
 					localPath = temp;
 			}
-
 			switch (localPath)
 			{
 				case "currentPageContent":
@@ -160,6 +164,29 @@ namespace Bloom.web
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
 					return true;
+				case "topics":
+					var keyToLocalizedTopicDictionary = new Dictionary<string, string>();
+					foreach(var topic in BookInfo.TopicsKeys)
+					{
+						var localized = LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic, @"shows in the topics chooser in the edit tab");
+						keyToLocalizedTopicDictionary.Add(topic,localized);
+					}
+					string localizedNoTopic = LocalizationManager.GetDynamicString("Bloom", "Topics.NoTopic", "No Topic", @"shows in the topics chooser in the edit tab");
+					var arrayOfKeyValuePairs = from key in keyToLocalizedTopicDictionary.Keys
+											   orderby keyToLocalizedTopicDictionary[key] 
+											   select new { k = key, v = keyToLocalizedTopicDictionary[key] };
+
+					info.ContentType = "text/json";
+					var data = new { NoTopic = localizedNoTopic, pairs = arrayOfKeyValuePairs };
+					info.WriteCompleteOutput(JsonConvert.SerializeObject(data, new JsonSerializerSettings
+					{
+						TypeNameHandling = TypeNameHandling.None,
+						TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
+
+					}));
+					return true;
+
+
 
 				case "help":
 					var post = info.GetPostData();

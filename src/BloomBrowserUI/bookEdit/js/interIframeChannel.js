@@ -1,4 +1,4 @@
-/// <reference path="../../lib/jquery.d.ts" />
+﻿/// <reference path="../../lib/jquery.d.ts" />
 /**
 * Class to hold information passed between iframes
 * @constructor
@@ -38,6 +38,13 @@ var interIframeChannel = (function () {
         $.ajax(ajaxSettings).done(function (data) {
             callback(data);
         });
+    };
+
+    interIframeChannel.prototype.getValueSynchrously = function (url, parameters) {
+        var ajaxSettings = { type: 'GET', url: url, async: false };
+        if (parameters)
+            ajaxSettings['data'] = parameters;
+        return $.ajax(ajaxSettings).responseText;
     };
 
     /**

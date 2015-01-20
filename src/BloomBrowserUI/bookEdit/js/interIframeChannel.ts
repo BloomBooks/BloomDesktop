@@ -48,6 +48,16 @@ class interIframeChannel {
       });
   }
 
+
+
+getValueSynchrously(url: string, parameters?: any): string {
+
+    var ajaxSettings = { type: 'GET', url: url, async:false };
+    if (parameters) ajaxSettings['data'] =  parameters ;
+    return $.ajax(ajaxSettings).responseText;
+}
+
+
   /**
    * Retrieve data from localhost
    * @param {String} url The URL to request
@@ -102,7 +112,7 @@ class interIframeChannel {
     $.ajax(ajaxSettings)
   }
 
-  getPageWindow(): Window {
+    getPageWindow(): Window {
     return (<HTMLIFrameElement>document.getElementById('page')).contentWindow;
   }
 }

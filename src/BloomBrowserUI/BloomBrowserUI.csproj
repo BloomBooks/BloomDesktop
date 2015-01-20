@@ -269,6 +269,7 @@
     <TypeScriptCompile Include="bookEdit\js\readerTools.ts" />
     <TypeScriptCompile Include="bookEdit\js\readerToolsModel.ts" />
     <TypeScriptCompile Include="bookEdit\js\synphonyApi.ts" />
+    <TypeScriptCompile Include="bookEdit\js\TopicChooser.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />
     <TypeScriptCompile Include="bookEdit\StyleEditor\StyleEditor.ts" />

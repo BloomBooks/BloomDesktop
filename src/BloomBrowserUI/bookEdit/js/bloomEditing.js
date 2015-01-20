@@ -1003,89 +1003,8 @@ function SetBookCopyrightAndLicenseButtonVisibility(container) {
     $(container).find("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
 }
 
-function FindOrCreateTopicDialogDiv() {
-    var dialogContents = $("body").find("div#topicChooser");
-    if (!dialogContents.length) {
-        var noTopic = localizationManager.getText("Topics.NoTopic");
-        dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
 
-        var topics = JSON.parse(GetSettings().topics).sort();
-        // var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment",
-        // "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
 
-        dialogContents.append("<ol id='topics'></ol>");
-        $("ol#topics").append("<li class='ui-widget-content'>(" + noTopic + ")</li>");
-        for (i in topics) {
-            $("ol#topics").append("<li class='ui-widget-content'>" + topics[i] + "</li>");
-        }
-
-        $("#topics").selectable();
-
-        //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following,
-        //when you select an item, nothing visible happens (from stackoverflow)
-        $("#topics").selectable({
-            unselected: function() {
-                $(":not(.ui-selected)", this).each(function() {
-                    $(this).removeClass('ui-state-highlight');
-                });
-            },
-            selected: function() {
-                $(".ui-selected", this).each(function() {
-                    $(this).addClass('ui-state-highlight');
-                });
-            }
-        });
-        $("#topics li").hover(
-            function() {
-                $(this).addClass('ui-state-hover');
-            },
-            function() {
-                $(this).removeClass('ui-state-hover');
-            });
-    }
-    return dialogContents;
-}
-
-//note, the normal way is for the user to click the link on the qtip.
-//But clicking on the exiting topic may be natural too, and this prevents
-//them from editing it by hand.
-function SetupShowingTopicChooserWhenTopicIsClicked(container) {
-    $(container).find("div[data-book='topic']").click(function () {
-        if ($(this).css('cursor') == 'not-allowed')
-            return;
-        ShowTopicChooser();
-    });
-}
-
-// This is called directly from Bloom via RunJavaScript()
-function ShowTopicChooser() {
-    var dialogContents = FindOrCreateTopicDialogDiv();
-    var dlg = $(dialogContents).dialog({
-        autoOpen: "true",
-        modal: "true",
-        //zIndex removed in newer jquery, now we get it in the css
-        buttons: {
-            "OK": function () {
-                var t = $("ol#topics li.ui-selected");
-                if (t.length) {
-                    var topicText = t[0].innerHTML;
-                    if (topicText.startsWith("(")) {
-                        $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text("");
-                    } else {
-                        $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
-                    }
-                }
-                $(this).dialog("close");
-            }
-        }
-    });
-
-    //make a double click on an item close the dialog
-    dlg.find("li").dblclick(function () {
-        var x = dlg.dialog("option", "buttons");
-        x['OK'].apply(dlg);
-    });
-}
 
 function DecodeHtml(encodedString) {
     return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&#169;/g, "©");
@@ -1567,8 +1486,15 @@ function SetupElements(container) {
 
     SetOverlayForImagesWithoutMetadata(container);
 
-    SetupShowingTopicChooserWhenTopicIsClicked(container);
-
+    //note, the normal way is for the user to click the link on the qtip.
+    //But clicking on the exiting topic may be natural too, and this prevents
+    //them from editing it by hand.
+    $(container).find("div[data-book='topic']").click(function () {
+        if ($(this).css('cursor') == 'not-allowed')
+            return;
+        TopicChooser.showTopicChooser();
+    });
+    
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
     $(container).find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function () {
