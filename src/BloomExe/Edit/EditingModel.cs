@@ -56,6 +56,7 @@ namespace Bloom.Edit
 			PageListChangedEvent pageListChangedEvent,
 			RelocatePageEvent relocatePageEvent,
 			BookRefreshEvent bookRefreshEvent,
+			PageRefreshEvent pageRefreshEvent,
 			DuplicatePageCommand duplicatePageCommand,
 			DeletePageCommand deletePageCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
@@ -80,6 +81,7 @@ namespace Bloom.Edit
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
 
 			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
+			pageRefreshEvent.Subscribe((book) => RethinkPageAndReloadIt(null));
 			selectedTabChangedEvent.Subscribe(OnTabChanged);
 			selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
 			duplicatePageCommand.Implementer = OnDuplicatePage;
@@ -586,10 +588,10 @@ namespace Bloom.Edit
 			// listen for events raised by javascript
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
-			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", PreparePageForEditingAfterOrigamiChanges);
+			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 		}
 
-		private void PreparePageForEditingAfterOrigamiChanges(string obj)
+		private void RethinkPageAndReloadIt(string obj)
 		{
 			SaveNow();
 

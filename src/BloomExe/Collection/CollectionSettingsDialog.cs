@@ -20,14 +20,16 @@ namespace Bloom.Collection
 		private readonly CollectionSettings _collectionSettings;
 		private XMatterPackFinder _xmatterPackFinder;
 		private readonly QueueRenameOfCollection _queueRenameOfCollection;
+		private readonly PageRefreshEvent _pageRefreshEvent;
 		private bool _restartRequired;
 		private bool _loaded;
 
-		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection)
+		public CollectionSettingsDialog(CollectionSettings collectionSettings, XMatterPackFinder xmatterPackFinder, QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent)
 		{
 			_collectionSettings = collectionSettings;
 			_xmatterPackFinder = xmatterPackFinder;
 			_queueRenameOfCollection = queueRenameOfCollection;
+			_pageRefreshEvent = pageRefreshEvent;
 			InitializeComponent();
 			if(_collectionSettings.IsSourceCollection)
 			{
@@ -214,6 +216,7 @@ namespace Bloom.Collection
 			}
 			_collectionSettings.Save();
 			Close();
+			_pageRefreshEvent.Raise(null);
 			DialogResult = AnyReasonToRestart() ? DialogResult.Yes : DialogResult.OK;
 		}
 
