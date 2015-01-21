@@ -216,7 +216,10 @@ namespace Bloom.Collection
 			}
 			_collectionSettings.Save();
 			Close();
-			_pageRefreshEvent.Raise(null);
+			if (!AnyReasonToRestart())
+			{
+				_pageRefreshEvent.Raise(null);
+			}
 			DialogResult = AnyReasonToRestart() ? DialogResult.Yes : DialogResult.OK;
 		}
 
