@@ -15,9 +15,6 @@ ENDLAYOUTS
   width: 100%;
   padding-top: 20px;
 }
-DIV.calendarBelowBigPictureText DIV.bloom-content1 {
-  min-height: 14pt;
-}
 /*Bottom with day grid*/
 .month TABLE {
   padding: 1cm;
@@ -88,13 +85,7 @@ DIV.calendarMonthTop DIV.imageHolder {
 .calendarMonthTop.bloom-bilingual .bloom-imageContainer {
   height: 320px;
 }
-DIV.calendarBelowBigPictureText DIV.bloom-content2 {
-  min-height: 12pt;
-}
 /* trilingual */
 .calendarMonthTop.bloom-trilingual .bloom-imageContainer {
   height: 280px;
-}
-DIV.calendarBelowBigPictureText DIV.bloom-content3 {
-  min-height: 12pt;
 }
