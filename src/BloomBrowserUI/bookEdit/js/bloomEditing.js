@@ -1139,7 +1139,7 @@ function SetupElements(container) {
                 //enhance: a zero-width placeholder would be a bit better, but libsynphony doesn't know this is a space: //$(this).html('<span class="bloom-ui">&#8203;</span>');
                 $(this).html('&nbsp;');
                 //now we tried deleting it immediatly, or after a pause, but that doesn't help. So now we don't delete it until they type or paste something.
-                $(container).find(".bloom-editable").on('paste keypress', FixUpOnFirstInput);
+                $(container).find(".bloom-editable").one('paste keypress', FixUpOnFirstInput);
             }
             return;
         }
@@ -1557,12 +1557,14 @@ function OneTimeSetup() {
 //Earlier, to work around a FF bug, we made a text box non-empty so that the cursor would should up correctly.
 //Now, they have entered something, so remove it
 function FixUpOnFirstInput() {
-    //don't call this again for this edit box
-    $(this).off("paste keypress", FixUpOnFirstInput);
-
-    //earlier we stuck a &nbps; in to work around a FF bug on empty boxes.
-    //now remove it a soon as they type something
-    $(this).html($(this).html().replace('&nbsp;', ""));
+    //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason, 
+    //and that gets characters in the wrong place because this messes with the insertion point. So now
+    //we check to see if the space is still there before touching it
+    if ($(this).html().indexOf("&nbsp;") > -1) { 
+        //earlier we stuck a &nbsp; in to work around a FF bug on empty boxes.
+        //now remove it a soon as they type something
+        $(this).html($(this).html().replace('&nbsp;', ""));
+    }
 }
 
 

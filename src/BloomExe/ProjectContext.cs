@@ -84,6 +84,7 @@ namespace Bloom
 					typeof(LibraryClosing),
 					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
 					typeof(BookRefreshEvent),
+					typeof(PageRefreshEvent),
 					typeof(BookDownloadStartingEvent),
 					typeof(BookSelection),
 					typeof(CurrentEditableCollectionSelection),

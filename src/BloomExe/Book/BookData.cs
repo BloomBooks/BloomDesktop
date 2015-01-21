@@ -500,7 +500,7 @@ namespace Bloom.Book
 			string elementName = "*";
 			try
 			{
-				string query = String.Format(".//{0}[(@data-book or @data-library or @data-collection)]", elementName);
+				string query = String.Format(".//{0}[(@data-book or @data-library or @data-collection) and not(contains(@class,'bloom-writeOnly'))]", elementName);
 
 				XmlNodeList nodesOfInterest = sourceElement.SafeSelectNodes(query);
 

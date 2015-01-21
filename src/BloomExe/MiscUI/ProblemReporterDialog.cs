@@ -165,7 +165,7 @@ namespace Bloom.MiscUI
 					_status.Visible = true;
 					var message = LocalizationManager.GetString("ReportProblemDialog.CouldNotSendToServer",
 						"Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.");
-					_status.HTML = string.Format("<span style='color:red'>" + message + "</span>", "<a href='file://" + _emailableReportFilePath + "'>" + Path.GetFileName(_emailableReportFilePath) + "</a>", "<a href='mailto://issues@bloomlibrary.org?subject=Problem Report'>issues@bloomlibrary.org</a>");
+					_status.HTML = string.Format("<span style='color:red'>" + message + "</span>", "<a href='file://" + _emailableReportFilePath + "'>" + Path.GetFileName(_emailableReportFilePath) + "</a>", "<a href='mailto:issues@bloomlibrary.org?subject=Problem Report'>issues@bloomlibrary.org</a>");
 
 					_submitButton.Text = LocalizationManager.GetString("ReportProblemDialog.Retry", "Retry",
 						"Shown if there was an error submitting the report. Lets the user try submitting it again.");

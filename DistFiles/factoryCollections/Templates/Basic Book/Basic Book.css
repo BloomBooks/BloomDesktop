@@ -69,8 +69,11 @@ generic*/
   left: 0;
   top: 0;
 }
+.bloom-monolingual.imageOnTop:not(.layout-style-SideBySide) .bloom-translationGroup {
+  top: 50%;
+  height: 50%;
+}
 .bloom-monolingual.imageOnTop:not(.layout-style-SideBySide) .bloom-editable {
-  height: 49%;
   position: absolute;
   bottom: 0;
 }

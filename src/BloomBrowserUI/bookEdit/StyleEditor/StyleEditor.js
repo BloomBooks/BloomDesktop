@@ -52,13 +52,13 @@ var StyleEditor = (function () {
     // obsolete?
     StyleEditor.prototype.MakeBigger = function (target) {
         this.ChangeSize(target, 2);
-        $("div.bloom-editable, textarea").qtip('reposition');
+        $("div.bloom-editable, textarea").qtipSecondary('reposition');
     };
 
     // obsolete?
     StyleEditor.prototype.MakeSmaller = function (target) {
         this.ChangeSize(target, -2);
-        $("div.bloom-editable, textarea").qtip('reposition');
+        $("div.bloom-editable, textarea").qtipSecondary('reposition');
     };
 
     StyleEditor.MigratePreStyleBook = function (target) {
@@ -360,7 +360,7 @@ var StyleEditor = (function () {
         if (typeof delay === "undefined") { delay = 3000; }
         if (element.length == 0)
             return;
-        element.qtip({
+        element.qtipSecondary({
             content: toolTip,
             show: {
                 event: 'click mouseenter',
@@ -610,9 +610,6 @@ var StyleEditor = (function () {
                 }
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
-
-                //alert(offset.left + "," + $(document).width() + "," + $(targetBox).offset().left);
-                toolbar.width($(".bloom-page").width() - offset.left - 50);
                 $('html').off('click.toolbar');
                 $('html').on("click.toolbar", function (event) {
                     if (event.target != toolbar && toolbar.has(event.target).length === 0 && $(event.target.parent) != toolbar && toolbar.has(event.target).length === 0 && toolbar.is(":visible")) {

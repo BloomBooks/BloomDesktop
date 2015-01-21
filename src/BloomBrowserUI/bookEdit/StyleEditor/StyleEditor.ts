@@ -12,7 +12,7 @@
 var iframeChannel = getIframeChannel();
 
 interface qtipInterface extends JQuery {
-    qtip(options: any): JQuery;
+    qtipSecondary(options: any): JQuery;
 }
 
 interface overflowInterface extends JQuery {
@@ -71,12 +71,12 @@ class StyleEditor {
     // obsolete?
     MakeBigger(target: HTMLElement) {
         this.ChangeSize(target, 2);
-        (<qtipInterface>$("div.bloom-editable, textarea")).qtip('reposition');
+        (<qtipInterface>$("div.bloom-editable, textarea")).qtipSecondary('reposition');
     }
     // obsolete?
     MakeSmaller(target: HTMLElement) {
         this.ChangeSize(target, -2);
-        (<qtipInterface>$("div.bloom-editable, textarea")).qtip('reposition');
+        (<qtipInterface>$("div.bloom-editable, textarea")).qtipSecondary('reposition');
     }
 
     static MigratePreStyleBook(target: HTMLElement): string {
@@ -369,7 +369,7 @@ class StyleEditor {
     AddQtipToElement(element: JQuery, toolTip: string, delay: number = 3000) {
         if (element.length == 0)
             return;
-        (<qtipInterface>element).qtip({
+        (<qtipInterface>element).qtipSecondary({
             content: toolTip,
             show: {
                 event: 'click mouseenter',
@@ -650,8 +650,6 @@ class StyleEditor {
                 }
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
-                //alert(offset.left + "," + $(document).width() + "," + $(targetBox).offset().left);
-                toolbar.width($(".bloom-page").width() - offset.left - 50);
                 $('html').off('click.toolbar');
                 $('html').on("click.toolbar", function (event) {
                     if (event.target != toolbar &&
