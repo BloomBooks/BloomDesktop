@@ -593,6 +593,9 @@ namespace Bloom.Edit
 
 		private void RethinkPageAndReloadIt(string obj)
 		{
+			if (_bookSelection ==null || _bookSelection.CurrentSelection == null)
+				return;
+
 			SaveNow();
 
 			// "Origami" is the javascript system that lets the user introduce new elements to the page.
