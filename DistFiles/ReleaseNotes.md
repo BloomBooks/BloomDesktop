@@ -1,4 +1,4 @@
-﻿## 3.0.83 BETA
+﻿## 3.0.88 BETA
 - [UserVoice Suggestion] Introduction of A6 Portrait option. **Feedback appreciated**
 
 ### Front/Back Matter
@@ -31,12 +31,17 @@
   - ALT+CTRL+1: Heading 1
   - ALT+CTRL+2: Heading 2
 
+### Fixes
+- Be patient if Dropbox is temporarily locking our langaugedisplay.css file
+- Title page now updates immeditatley if you change country/province in Settings Dialog
+- Format dialog tooltips make Source Bubbles disappear
+- Improve error messages when an html file can't be opened
 
-### Linux Fixes:
-- Can't open book downloaded from Bloom Library
-- List fonts in alphabetical order
-- Prevent crash due to deleted temporary html file.
-- Problem typing in the "Report Problem" dialog box.
+### Linux Fixes
+- Can now open book downloaded from Bloom Library
+- Fonts are now listed in alphabetical order
+- Crash due to deleted temporary html file has been fixed.
+- We are working on a problem typing in the "Report Problem" dialog box.
 
 ## 3.0.80 BETA
 - Fix: "Open in Firefox" should now work even if you have spaces in the path
