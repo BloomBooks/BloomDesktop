@@ -80,7 +80,9 @@ var LocalizationManager = (function () {
     };
 
     /**
-    * Gets translated text.
+    * WARNING! This gets the translated text only if it is already loaded. Otherwise it just gives English back and will give translation next time.
+    * Instead, use asyncGetTextInLang().
+    *
     * Additional parameters after the englishText are treated as arguments for SimpleDotNetFormat.
     * @param {String} stringId
     * @param {String} [englishText]
@@ -129,6 +131,80 @@ var LocalizationManager = (function () {
         }
 
         return HtmlDecode(text);
+    };
+
+    /* Returns a promise to get the translation
+    *
+    * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
+    *
+    *  @example
+    * asyncGetTextInLang('topics.health','Health", "UI")
+    *      .done(translation => {
+    *          $(this).text(translation);
+    *      })
+    *      .fail($(this).text("?Health?";
+    * @example
+    * asyncGetTextInLang('topics.health','My name is {0}", "UI", "John")
+    *      .done(translation => {
+    *          $(this).text(translation);
+    *      });
+    
+    */
+    LocalizationManager.prototype.asyncGetTextInLang = function (id, englishText, langId) {
+        //        return getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
+        var args = [];
+        for (var _i = 0; _i < (arguments.length - 3); _i++) {
+            args[_i] = arguments[_i + 3];
+        }
+        // We already get a promise from the async call, and could just return that.
+        // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
+        //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
+        var deferred = new $.Deferred();
+        var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
+
+        //when the async call comes back, we massage the text
+        promise.done(function (text) {
+            // is this a C#-style string.format style request?
+            if (args.length > 0) {
+                text = SimpleDotNetFormat(text, args);
+            }
+            deferred.resolve(HtmlDecode(text));
+        });
+        promise.fail(deferred.fail());
+        return deferred.promise();
+    };
+
+    /* Returns a promise to get the translation in the UI language, or English if it is unavailable
+    *
+    * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
+    *
+    *  @example
+    * asyncGetTextInLang('topics.health','Health")
+    *      .done(translation => {
+    *          $(this).text(translation);
+    *      })
+    *      .fail($(this).text("?Health?";
+    * @example
+    * asyncGetTextInLang('topics.health','My name is {0}", "John")
+    *      .done(translation => {
+    *          $(this).text(translation);
+    *      });
+    
+    */
+    LocalizationManager.prototype.asyncGetText = function (id, englishText, langId) {
+        var args = [];
+        for (var _i = 0; _i < (arguments.length - 3); _i++) {
+            args[_i] = arguments[_i + 3];
+        }
+        var deferred = new $.Deferred();
+        var promise = this.asyncGetTextInLang(id, englishText, "UI", args);
+        promise.done(function (text) {
+            return deferred.resolve(text);
+        });
+        promise.fail(this.asyncGetTextInLang(id, englishText, "en", args).done(function (text) {
+            return deferred.resolve(text);
+        }));
+        return deferred.promise();
     };
 
     /**

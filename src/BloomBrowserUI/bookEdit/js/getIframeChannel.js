@@ -1,4 +1,4 @@
-/// <reference path="interIframeChannel.ts" />
+﻿/// <reference path="interIframeChannel.ts" />
 /**
 * Finds the interIframeChannel on the main document
 */

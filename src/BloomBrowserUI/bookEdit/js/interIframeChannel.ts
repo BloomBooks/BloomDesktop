@@ -48,10 +48,27 @@ class interIframeChannel {
       });
   }
 
+    /**
+    * Gets the data and returns a promise
+    */
+    asyncGet(url: string, dataValue?: any): JQueryPromise{
 
+        // We are calling encodeURIComponent() if dataValue is a string.
+        // NOTE: We are encoding every string, so the caller should NOT encode the string.
+        if (typeof dataValue === 'string')
+            dataValue = encodeURIComponent(dataValue);
 
+        var ajaxSettings = { type: 'GET', url: url };
+        if (dataValue) ajaxSettings['data'] = dataValue ;
+
+        return $.ajax(ajaxSettings).promise();
+    }
+
+/*
+     * This will earn you the following message in the console:
+     *  "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help http://xhr.spec.whatwg.org/"
+     */
 getValueSynchrously(url: string, parameters?: any): string {
-
     var ajaxSettings = { type: 'GET', url: url, async:false };
     if (parameters) ajaxSettings['data'] =  parameters ;
     return $.ajax(ajaxSettings).responseText;

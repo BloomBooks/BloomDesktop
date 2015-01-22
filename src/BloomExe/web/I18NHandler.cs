@@ -58,9 +58,10 @@ namespace Bloom.web
 					string id = parameters["key"];
 					string englishText = parameters["englishText"];
 					string langId = parameters["langId"];
-					langId = langId.Replace("lang1", currentCollectionSettings.Language1Iso639Code);
-					langId = langId.Replace("lang2", currentCollectionSettings.Language2Iso639Code);
-					langId = langId.Replace("lang3", currentCollectionSettings.Language3Iso639Code);
+					langId = langId.Replace("V", currentCollectionSettings.Language1Iso639Code);
+					langId = langId.Replace("N1", currentCollectionSettings.Language2Iso639Code);
+					langId = langId.Replace("N2", currentCollectionSettings.Language3Iso639Code);
+					langId = langId.Replace("UI", LocalizationManager.UILanguageId);
 					if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
 					{
 						info.ContentType = "text/plain";
@@ -69,6 +70,8 @@ namespace Bloom.web
 					}
 					else
 					{
+						//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
+						LocalizationManager.GetDynamicString("Bloom", id, englishText);
 						return false;
 					}
 					break;
