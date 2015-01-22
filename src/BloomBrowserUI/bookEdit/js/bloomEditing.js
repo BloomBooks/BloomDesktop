@@ -358,7 +358,7 @@ function MakeSourceTextDivForGroup(group) {
         var styleClass = GetStyleClassFromElement(this);
         if (styleClass)
             $(this).removeClass(styleClass);
-        $(this).attr('style', 'font-size: 1.2em; line-height: 1.2em;')
+        $(this).addClass("source-text");
     });
 
     var vernacularLang = localizationManager.getVernacularLang();

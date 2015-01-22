@@ -182,6 +182,12 @@ namespace Bloom.Collection
 
 			if (codeOfDesiredLanguage == "fr" && name == "French")
 				return "français";
+			if(codeOfDesiredLanguage == "th" && name == "Thai")
+				return "ภาษา ไทย";
+			if(codeOfDesiredLanguage == "ar" && name == "Arabic")
+				return "العربية";
+			if (codeOfDesiredLanguage == "es" && name == "Spanish")
+				return "español";
 			return name;
 		}
 
