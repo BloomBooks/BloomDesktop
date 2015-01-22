@@ -1,4 +1,7 @@
 ﻿## 3.0.88 BETA
+
+- Users upgrading from Bloom 2 may need to uninstall first, or run the Bloom 3 installer twice. A message with instructions now appears if this is necessary.
+
 - [UserVoice Suggestion] Introduction of A6 Portrait option. **Feedback appreciated**
 
 ### Front/Back Matter
@@ -32,11 +35,11 @@
   - ALT+CTRL+2: Heading 2
 
 ### Fixes
-- Be patient if Dropbox is temporarily locking the langaugedisplay.css file
+- Bloom will now be patient if Dropbox is temporarily locking the langaugedisplay.css file
 - Title page now updates immeditatley if you change country/province in Settings Dialog
-- Format dialog tooltips make Source Bubbles disappear
-- Improve error messages when an html file can't be opened
-- Make Thai script larger in shell book source bubbles
+- Format dialog tooltips no longer make Source Bubbles disappear
+- Improved error messages when an html file can't be opened
+- Thai script is now larger in shell book source bubbles
 
 ### Linux Fixes
 - Can now open book downloaded from Bloom Library
