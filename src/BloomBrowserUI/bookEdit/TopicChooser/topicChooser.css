@@ -1,0 +1,10 @@
+#topicList .ui-widget-content {
+  background: inherit;
+  color: black;
+  border: none;
+  cursor: pointer;
+}
+#topicList li {
+  padding-left: 30px;
+  padding-right: 30px;
+}

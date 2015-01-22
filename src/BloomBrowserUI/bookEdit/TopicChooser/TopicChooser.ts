@@ -15,23 +15,42 @@ var ShowTopicChooser = () => {
 
 class TopicChooser {
     static showTopicChooser() {
+        localizationManager.asyncGetTextInLang("Topics.Health", "--{0}--", "N1", "blah" )
+            .done(s => {
+                alert(s);
+            })
+            .fail(alert('failed'));
         TopicChooser.createTopicDialogDiv();
         var dlg = <any> $("#topicChooser").dialog({
             autoOpen: true,
             modal: true,
+            position: {
+                my: 'top',
+                at: 'top',
+                of: $('.bloom-page')
+            },
             buttons: {
-                "OK": function() {
-                    var t = $("ol#topicList li.ui-selected");
-                    //set or clear the topic variable in our data-div
-                    if (t.length) {
-                        var key = t[0].dataset['key'];
-                        //ignore the visible editable for now, set the key into the English (which may be visible editable, but needn't be)
-                        $("div[data-book='topic']").parent().find("[lang='en']").remove();
-                        $("div[data-book='topic']").parent().append('<div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable" contenteditable="true" lang="en">'+key+'</div>');
-                        var topicInNatLang1 = getIframeChannel().getValueSynchrously("/bloom/i18n/translate", { key: "Topics." + key, englishText: key, langId: "lang2" });
-                        $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(topicInNatLang1);
+                "OK": {
+                    id: "OKButton",
+                    text: "OK",
+                    width: 100,
+                    click: function() {
+                        var t = $("ol#topicList li.ui-selected");
+                        //set or clear the topic variable in our data-div
+                        if (t.length) {
+                            var key = t[0].dataset['key'];
+                            //ignore the visible editable for now, set the key into the English (which may be visible editable, but needn't be)
+                            $("div[data-book='topic']").parent().find("[lang='en']").remove();
+                            $("div[data-book='topic']").parent().append('<div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable" contenteditable="true" lang="en">' + key + '</div>');
+                            //var topicInNatLang1 = localizationManager.getTextInLanguage("Topics." + key, englishText, "lang2");
+                            localizationManager.asyncGetTextInLang("Topics." + key, key, "N1")
+                                .done(topicInNatLang1 => {
+                                    $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(topicInNatLang1);
+                                });
+
+                        }
+                        $(this).dialog("close");
                     }
-                    $(this).dialog("close");
                 }
             }
         });
@@ -51,11 +70,16 @@ class TopicChooser {
                 $("ol#topicList").append("<li class='ui-widget-content' data-key='"+topics.pairs[i].k+"'>" + topics.pairs[i].v + "</li>");
             }
 
-            $("#topicList").selectable();
+            $("#topicList").dblclick(() => {
+                $("#OKButton").click();
+            });
 
             //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following,
             //when you select an item, nothing visible happens (from stackoverflow)
             $("#topicList").selectable({
+
+                cancel: '.ui-selected', //allows double-clicking work
+
                 unselected: function () {
                     $(":not(.ui-selected)", this).each(function () {
                         $(this).removeClass('ui-state-highlight');
@@ -79,7 +103,11 @@ class TopicChooser {
 
     static createTopicDialogDiv() {
         $("#topicChooser").remove();
-        $("<div id='topicChooser' title='Topics'><ol id='topicList'></ol></div>").appendTo($("body"));
+        $("<div id='topicChooser' title='Topics'>"+
+            "<style scoped>" +
+            "           @import '/bloom/bookEdit/TopicChooser/topicChooser.css'" +
+            "   </style>" + 
+            "<ol id='topicList'></ol></div>").appendTo($("body"));
         this.populateTopics();
     }
 }

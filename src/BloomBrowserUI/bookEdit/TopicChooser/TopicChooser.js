@@ -14,6 +14,9 @@ var TopicChooser = (function () {
     function TopicChooser() {
     }
     TopicChooser.showTopicChooser = function () {
+        localizationManager.asyncGetTextInLang("Topics.Health", "--{0}--", "N1", "blah").done(function (s) {
+            alert(s);
+        }).fail(alert('failed'));
         TopicChooser.createTopicDialogDiv();
         var dlg = $("#topicChooser").dialog({
             autoOpen: true,
@@ -94,7 +97,7 @@ var TopicChooser = (function () {
 
     TopicChooser.createTopicDialogDiv = function () {
         $("#topicChooser").remove();
-        $("<div id='topicChooser' title='Topics'>" + "<style scoped>" + "           @import 'topicChooser.css'" + "   </style>" + "<ol id='topicList'></ol></div>").appendTo($("body"));
+        $("<div id='topicChooser' title='Topics'>" + "<style scoped>" + "           @import '/bloom/bookEdit/TopicChooser/topicChooser.css'" + "   </style>" + "<ol id='topicList'></ol></div>").appendTo($("body"));
         this.populateTopics();
     };
     return TopicChooser;

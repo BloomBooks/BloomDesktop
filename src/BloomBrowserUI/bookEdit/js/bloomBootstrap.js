@@ -16,7 +16,7 @@ var scripts = [
     'bookEdit/js/jquery.hotkeys.js',
     'bookEdit/js/BloomAccordion.js',
     'bookEdit/StyleEditor/StyleEditor.js',
-    'bookEdit/js/TopicChooser.js',
+    'bookEdit/TopicChooser/TopicChooser.js',
     'lib/tabpane.js',
     'bookEdit/js/toolbar/jquery.toolbar.js',
     'bookEdit/js/libsynphony/underscore_min_152.js', // start of SynPhony support files
