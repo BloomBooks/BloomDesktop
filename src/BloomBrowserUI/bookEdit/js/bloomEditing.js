@@ -76,9 +76,9 @@ function removeTrailingWhiteSpace(node) {
 }
 
 function TrimTrailingLineBreaksInDivs(node) {
-    while ( isBrOrWhitespace(node.firstChild) ) {
-        node.removeChild(node.firstChild);
-    }
+//    while ( isBrOrWhitespace(node.firstChild) ) {
+//        node.removeChild(node.firstChild);
+//    }
     while ( isBrOrWhitespace(node.lastChild) ) {
         node.removeChild(node.lastChild);
     }
@@ -1180,19 +1180,18 @@ function SetupElements(container) {
         }
         $(this).html(x);
 
-        //REVIEW: shouldn't this (and below) select only the p's in $(this)?
         //If somehow you get leading empty paragraphs, FF won't let you delete them
-        $('p').each(function () {
-            if ($(this).text() === "") {
-                $(this).remove();
-            } else {
-                return false; //break
-            }
-        });
+//        $(this).find('p').each(function () {
+//            if ($(this).text() === "") {
+//                $(this).remove();
+//            } else {
+//                return false; //break
+//            }
+//        });
 
         //for some reason, perhaps FF-related, we end up with a new empty paragraph each time
         //so remove trailing <p></p>s
-        $('p').reverse().each(function () {
+        $(this).find('p').reverse().each(function () {
             if ($(this).text() === "") {
                 $(this).remove();
             } else {
@@ -1646,7 +1645,6 @@ function FixUpOnFirstInput() {
 // document ready function
 // ---------------------------------------------------------------------------------
 $(document).ready(function() {
-
     if($.fn.qtip)
         $.fn.qtip.zindex = 15000;
     //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
@@ -1672,7 +1670,7 @@ $(document).ready(function() {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
-    SetupElements($('body'));
+   SetupElements($('body'));
     OneTimeSetup();
 
 }); // end document ready function

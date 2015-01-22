@@ -32,10 +32,11 @@
   - ALT+CTRL+2: Heading 2
 
 ### Fixes
-- Be patient if Dropbox is temporarily locking our langaugedisplay.css file
+- Be patient if Dropbox is temporarily locking the langaugedisplay.css file
 - Title page now updates immeditatley if you change country/province in Settings Dialog
 - Format dialog tooltips make Source Bubbles disappear
 - Improve error messages when an html file can't be opened
+- Empty leading paragraphs ar no longer stripped out (trailing ones still are)
 
 ### Linux Fixes
 - Can now open book downloaded from Bloom Library
