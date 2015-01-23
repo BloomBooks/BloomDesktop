@@ -315,8 +315,10 @@ TEXTAREA.province
 		line-height: 1.5;
 		color: #000000;
 
-		&:lang(th), &:lang(km){
-			font-size: 13pt;
+		//thai script languages. If using Arial, they need to be 30% bigger or so. With the
+		// popular Angsana New, it would need to be like 100% bigger
+		&:lang(th), &:lang(km),&:lang(kjg), &:lang(prt){
+			font-size: 18pt;
 		}
 	}
 

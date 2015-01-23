@@ -274,8 +274,10 @@ TEXTAREA.province {
   color: #000000;
 }
 .ui-sourceTextsForBubble .source-text:lang(th),
-.ui-sourceTextsForBubble .source-text:lang(km) {
-  font-size: 13pt;
+.ui-sourceTextsForBubble .source-text:lang(km),
+.ui-sourceTextsForBubble .source-text:lang(kjg),
+.ui-sourceTextsForBubble .source-text:lang(prt) {
+  font-size: 18pt;
 }
 .panel-container {
   border: 1px solid #000000;
