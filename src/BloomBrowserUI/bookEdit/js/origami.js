@@ -224,7 +224,7 @@ function createTypeSelectors() {
     return $('<div class="container-selector-links bloom-ui origami-ui"></div>').append(links);
 }
 function createTextBoxIdentifier() {
-    var textBoxId = $('<div class="textBox-identifier bloom-ui origami-ui data-i18n="EditTab.CustomPage.TextBox">Text Box</div>');
+    var textBoxId = $('<div class="textBox-identifier bloom-ui origami-ui" data-i18n="EditTab.CustomPage.TextBox">Text Box</div>');
     return $('<div class="container-textBox-id bloom-ui origami.ui"></div>').append(textBoxId);
 }
 function getTypeSelectors() {
