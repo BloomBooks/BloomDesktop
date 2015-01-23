@@ -30,7 +30,7 @@
         {
             this._continueToLinkButton = new System.Windows.Forms.Button();
             this._cancelButton = new System.Windows.Forms.Button();
-            this._message = new System.Windows.Forms.Label();
+			this._message = new System.Windows.Forms.TextBox();
             this._infoIcon = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this._infoIcon)).BeginInit();
             this.SuspendLayout();
@@ -61,11 +61,15 @@
             // 
             // _message
             // 
-            this._message.Location = new System.Drawing.Point(104, 48);
+			this._message.Location = new System.Drawing.Point(107, 48);
             this._message.Name = "_message";
-            this._message.Size = new System.Drawing.Size(652, 116);
+			this._message.Size = new System.Drawing.Size(649, 116);
             this._message.TabIndex = 2;
             this._message.Text = "Some localizable message here.";
+			this._message.Multiline = true;
+			this._message.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this._message.BackColor = System.Drawing.SystemColors.Control;
+			this._message.ReadOnly = true;
             // 
             // _infoIcon
             // 
@@ -104,7 +108,7 @@
 
         private System.Windows.Forms.Button _continueToLinkButton;
         private System.Windows.Forms.Button _cancelButton;
-        private System.Windows.Forms.Label _message;
+		private System.Windows.Forms.TextBox _message;
         private System.Windows.Forms.PictureBox _infoIcon;
     }
 }
