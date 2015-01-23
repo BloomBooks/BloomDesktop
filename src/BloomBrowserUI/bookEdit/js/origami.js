@@ -18,19 +18,21 @@ function cleanupOrigami() {
     $('.split-pane-resize-shim').remove();
 }
 function isEmpty(el) {
-    var temp = $.trim(el.textContent);
+    var temp = $.trim(el[0].textContent);
     //alert("-" + temp + "- equals empty string: " + (temp == "").toString());
     return temp == "";
 }
 function setupLayoutMode() {
-    $('.split-pane-component-inner').each(function() {
-        if (!$(this).find('.bloom-imageContainer, .bloom-translationGroup:not(.box-header-off)').length) {
-            $(this).append(getTypeSelectors());
-        }
-        var contents = $(this).find('.bloom-translationGroup > .bloom-editable > p')[0];
-        if(contents && isEmpty(contents))
-            $(this).append(getTextBoxIdentifier());
-        $(this).append(getButtons());
+    $('.split-pane-component-inner').each(function () {
+        var $this = $(this);
+        if (!$this.find('.bloom-imageContainer, .bloom-translationGroup:not(.box-header-off)').length)
+            $this.append(getTypeSelectors());
+
+        $this.append(getButtons());
+        var contents = $this.find('.bloom-translationGroup:not(.box-header-off) > .bloom-editable');
+        if(!contents.length || (contents.length && !isEmpty(contents)))
+            return true;
+        $this.append(getTextBoxIdentifier());
     });
     // Text should not be editable in layout mode
     $('.bloom-editable:visible[contentEditable=true]').removeAttr('contentEditable');
