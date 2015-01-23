@@ -6,10 +6,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using L10NSharp;
 using L10NSharp.UI;
+using Palaso.Code;
 
 namespace Bloom.ToPalaso
 {
@@ -63,8 +65,19 @@ namespace Bloom.ToPalaso
 			}
 
 			UpdateAllControlsList(control, value);
-
-			base.SetToolTip(control, value);
+			Guard.AgainstNull(control,"control");
+			Guard.AgainstNull(value,"value");
+			try
+			{
+				base.SetToolTip(control, value);
+			}
+			catch (NullReferenceException)
+			{
+#if DEBUG
+				Debug.Fail("Debug Only: If you just changed the UI language, this is a BL-937 Reproduction");
+#endif
+				//for the user, swallow
+			}
 		}
 
 		private void UpdateAllControlsList(Control control, string value)
