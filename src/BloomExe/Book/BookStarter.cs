@@ -449,6 +449,9 @@ namespace Bloom.Book
 					continue;
 				if (Path.GetFileNameWithoutExtension(filePath).StartsWith(".")) //.guidsForInstaller.xml
 					continue;
+				var ext = Path.GetExtension(filePath).ToLower();
+				if (new String[] {".jade", ".less"}.Any(ex => ex == ext))
+					continue;
 				File.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}
 			foreach (var dirPath in Directory.GetDirectories(sourcePath))
