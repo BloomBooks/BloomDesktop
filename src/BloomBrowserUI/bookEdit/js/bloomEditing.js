@@ -1600,9 +1600,11 @@ function SetupElements(container) {
     //a blank line is shown and the letter pressed shows up after that.
     //This detects that situation when we type the first key after the deletion, and first deletes the <br></br>.
     $(container).find('.bloom-editable').keypress(function (event) {
-         if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
-            event.target.innerHTML = "";
-        }
+        //this is causing a worse problem, (preventing us from typing empty lines to move the start of the text down), so we're going to live with the empty space for now.
+        // TODO: perhaps we can act when the DEL or Backspace occurs and then detect this situation and clean it up.
+//         if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
+//            event.target.innerHTML = "";
+//        }
     });
     //This detects that situation when we do CTRL+A and then type a letter, instead of DEL
     $(container).find('.bloom-editable').keyup(function (event) {
@@ -1633,10 +1635,25 @@ function FixUpOnFirstInput() {
     //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason, 
     //and that gets characters in the wrong place because this messes with the insertion point. So now
     //we check to see if the space is still there before touching it
-    if ($(this).html().indexOf("&nbsp;") > -1) { 
+    if ($(this).html().indexOf("&nbsp;") == 0) { 
         //earlier we stuck a &nbsp; in to work around a FF bug on empty boxes.
         //now remove it a soon as they type something
-        $(this).html($(this).html().replace('&nbsp;', ""));
+
+        
+        // this caused BL-933 by somehow making us lose the on click event link on the formatButton
+    //   $(this).html($(this).html().replace('&nbsp;', ""));
+
+        //so now we do the follow business, where we select the &nbsp; we want to delete, momements before the character is typed or text pasted
+        var selection = window.getSelection();
+
+        //if we're at the start of the text, we're to the left of the character we want to replace
+        if (selection.anchorOffset == 0) {
+            selection.modify("extend", "forward", "character");
+        }
+        //if we're at position 1 in the text, then we're just to the right of the character we want to replace
+        else if (selection.anchorOffset == 1) {
+            selection.modify("extend", "backward", "character");
+        }
     }
 }
 
