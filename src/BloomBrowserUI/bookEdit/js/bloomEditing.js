@@ -1633,10 +1633,25 @@ function FixUpOnFirstInput() {
     //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason, 
     //and that gets characters in the wrong place because this messes with the insertion point. So now
     //we check to see if the space is still there before touching it
-    if ($(this).html().indexOf("&nbsp;") > -1) { 
+    if ($(this).html().indexOf("&nbsp;") == 0) { 
         //earlier we stuck a &nbsp; in to work around a FF bug on empty boxes.
         //now remove it a soon as they type something
-        $(this).html($(this).html().replace('&nbsp;', ""));
+
+        
+        // this caused BL-933 by somehow making us lose the on click event link on the formatButton
+    //   $(this).html($(this).html().replace('&nbsp;', ""));
+
+        //so now we do the follow business, where we select the &nbsp; we want to delete, momements before the character is typed or text pasted
+        var selection = window.getSelection();
+
+        //if we're at the start of the text, we're to the left of the character we want to replace
+        if (selection.anchorOffset == 0) {
+            selection.modify("extend", "forward", "character");
+        }
+        //if we're at position 1 in the text, then we're just to the right of the character we want to replace
+        else if (selection.anchorOffset == 1) {
+            selection.modify("extend", "backward", "character");
+        }
     }
 }
 
