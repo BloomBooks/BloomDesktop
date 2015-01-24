@@ -59,8 +59,8 @@ namespace Bloom.Book
 			set
 			{
 				var t = value.Trim();
-				if (!String.IsNullOrEmpty(t))
-				{
+				//if (!String.IsNullOrEmpty(t))
+				//{
 					var makeSureItsThere = Head;
 					var titleNode = XmlUtils.GetOrCreateElement(_dom, "html/head", "title");
 					//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
@@ -73,7 +73,7 @@ namespace Bloom.Book
 					titleNode.InnerXml = "";
 					//and set the text again!
 					titleNode.InnerText = justTheText;
-				}
+				//}
 			}
 		}
 

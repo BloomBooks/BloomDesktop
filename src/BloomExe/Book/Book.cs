@@ -13,6 +13,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
+using L10NSharp;
 using MarkdownSharp;
 using Palaso.Code;
 using Palaso.Extensions;
@@ -143,25 +144,48 @@ namespace Bloom.Book
 		{
 			get
 			{
-				var list = new List<string>();
-				list.Add(_collectionSettings.Language1Iso639Code);
-				if (_collectionSettings.Language2Iso639Code != null)
-					list.Add(_collectionSettings.Language2Iso639Code);
-				if (_collectionSettings.Language3Iso639Code != null)
-					list.Add(_collectionSettings.Language3Iso639Code);
-				list.Add("en");
-
 				var title = _bookData.GetMultiTextVariableOrEmpty("bookTitle");
-				var t = title.GetBestAlternativeString(list);
-				if(string.IsNullOrEmpty(t))
+				var display = title.GetExactAlternative(_collectionSettings.Language1Iso639Code);
+				
+				if (string.IsNullOrEmpty(display))
 				{
-					return "Title Missing";
+					//if this book is one of the ones we're editing in our collection, it really
+					//needs a title in our main language, it would be confusing to show a title from some other langauge
+					if (IsEditable ||  title.Empty)
+					{
+						display = LocalizationManager.GetString("CollectionTab.TitleMissing", "Title Missing",
+							"Shown as the thumbnail caption when the book doesn't have a title");
+					}
+					//but if this book is just in our list of sources, well then let's look through the names
+					//and try to get one that is likely to be helpful
+					else
+					{
+						var orderedPreferences = new List<string>();
+						orderedPreferences.Add(LocalizationManager.UILanguageId);
+
+						orderedPreferences.Add(_collectionSettings.Language1Iso639Code);
+						if (_collectionSettings.Language2Iso639Code != null)
+							orderedPreferences.Add(_collectionSettings.Language2Iso639Code);
+						if (_collectionSettings.Language3Iso639Code != null)
+							orderedPreferences.Add(_collectionSettings.Language3Iso639Code);
+
+						orderedPreferences.Add("en");
+						orderedPreferences.Add("fr");
+						orderedPreferences.Add("es");
+
+						display = title.GetBestAlternativeString(orderedPreferences);
+						if (string.IsNullOrEmpty(display))
+						{
+							display = title.GetFirstAlternative();
+							Debug.Assert(!string.IsNullOrEmpty(display), "by our logic, this shouldn't possible");
+						}
+					}
 				}
 				// Handle both Windows and Linux line endings in case a file copied between the two
 				// ends up with the wrong one.
-				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("\n", " ").Replace("  "," ");
-				t = RemoveXmlMarkup(t).Trim();
-				return t;
+				display = display.Replace("<br />", " ").Replace("\r\n"," ").Replace("\n", " ").Replace("  "," ");
+				display = RemoveXmlMarkup(display).Trim();
+				return display;
 			}
 		}
 
