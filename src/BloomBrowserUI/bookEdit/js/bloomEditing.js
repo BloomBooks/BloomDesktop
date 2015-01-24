@@ -1600,9 +1600,11 @@ function SetupElements(container) {
     //a blank line is shown and the letter pressed shows up after that.
     //This detects that situation when we type the first key after the deletion, and first deletes the <br></br>.
     $(container).find('.bloom-editable').keypress(function (event) {
-         if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
-            event.target.innerHTML = "";
-        }
+        //this is causing a worse problem, (preventing us from typing empty lines to move the start of the text down), so we're going to live with the empty space for now.
+        // TODO: perhaps we can act when the DEL or Backspace occurs and then detect this situation and clean it up.
+//         if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
+//            event.target.innerHTML = "";
+//        }
     });
     //This detects that situation when we do CTRL+A and then type a letter, instead of DEL
     $(container).find('.bloom-editable').keyup(function (event) {
