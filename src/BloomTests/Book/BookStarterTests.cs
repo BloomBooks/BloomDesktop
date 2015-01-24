@@ -451,8 +451,8 @@ namespace BloomTests.Book
 			string firstPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
 			string secondPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
 
-			Assert.IsTrue(File.Exists(firstPath.CombineForPath("book.htm")));
-			Assert.IsTrue(File.Exists(secondPath.CombineForPath("book1.htm")));
+			Assert.IsTrue(File.Exists(firstPath.CombineForPath("Book.htm")));
+			Assert.IsTrue(File.Exists(secondPath.CombineForPath("Book1.htm")));
 			Assert.IsTrue(Directory.Exists(secondPath),"it clobbered the first one!");
 		}
 
