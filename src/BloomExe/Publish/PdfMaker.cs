@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Edit;
 using Bloom.ToPalaso;
 using Bloom.Workspace;
+using L10NSharp;
 using Palaso.Code;
 using Palaso.CommandLineProcessing;
 using Palaso.IO;
@@ -15,6 +16,7 @@ using Palaso.Progress;
 using PdfDroplet.LayoutMethods;
 using PdfSharp;
 using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 
 namespace Bloom.Publish
 {
@@ -71,11 +73,49 @@ namespace Bloom.Publish
 				}));
 			}
 
-			if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet)
+			try
 			{
-				//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
-				MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod, layoutPagesForRightToLeft);
+				if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet)
+				{
+					//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
+					MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod, layoutPagesForRightToLeft);
+				}
+				else
+				{
+					var pdf = XPdfForm.FromFile(outputPdfPath);
+					PdfDocument outputDocument = new PdfDocument();
+					outputDocument.PageLayout = PdfPageLayout.SinglePage;
+					var page = outputDocument.AddPage();
+					using (XGraphics gfx = XGraphics.FromPdfPage(page))
+					{
+						XRect sourceRect = new XRect(0, 0, pdf.PixelWidth, pdf.PixelHeight);
+						//what's not obvious here is that the targetGraphicsPort has previously been
+						//set up to do a transformation to shift the content down and to the right into its trimbox
+						gfx.DrawImage(pdf, sourceRect);
+					}
+				}
 			}
+			catch (KeyNotFoundException e)
+			{
+				// This is characteristic of BL-932, where Gecko29 fails to make a valid PDF, typically because the user has embedded a really huge image, something like 4000 pixels wide.
+				// We think it could also happen with a very long book or if the user is short of memory.
+				MessageBox.Show(
+					LocalizationManager.GetString("PdfMaker.BadPdf", "Bloom unexpectedly failed to create a valid PDF version of this document. The developers are trying to fix this problem. In the meantime, here are some things to try:")
+						+ Environment.NewLine + "- "
+						+ LocalizationManager.GetString("PdfMaker.TryRestart", "Restart your computer and try this again right away")
+						+ Environment.NewLine + "- "
+						+
+						LocalizationManager.GetString("PdfMaker.TrySmallerImages",
+							"Replace large, high-resolution images in your document with lower-resolution ones")
+						+ Environment.NewLine + "- "
+						+ LocalizationManager.GetString("PdfMaker.TryMoreMemory", "Try doing this on a computer with more memory")
+						+ Environment.NewLine + Environment.NewLine
+						+ LocalizationManager.GetString("PdfMaker.MayNeedHelp", "You may need technical help with some of these steps."),
+					LocalizationManager.GetString("PdfMaker.PDFFailed", "Pdf creation failed"),
+					MessageBoxButtons.OK);
+
+			}
+
 		}
 
 		//About the --zoom parameter. It's a hack to get the pages chopped properly.
