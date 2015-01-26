@@ -82,23 +82,23 @@ namespace Bloom.Publish
 				}
 				else
 				{
-					var pdf = XPdfForm.FromFile(outputPdfPath);
-					PdfDocument outputDocument = new PdfDocument();
-					outputDocument.PageLayout = PdfPageLayout.SinglePage;
-					var page = outputDocument.AddPage();
-					using (XGraphics gfx = XGraphics.FromPdfPage(page))
-					{
-						XRect sourceRect = new XRect(0, 0, pdf.PixelWidth, pdf.PixelHeight);
-						//what's not obvious here is that the targetGraphicsPort has previously been
-						//set up to do a transformation to shift the content down and to the right into its trimbox
-						gfx.DrawImage(pdf, sourceRect);
-					}
+					 // Just check that we got a valid, readable PDF. (MakeBooklet has to read the PDF itself,
+					// so we don't need to do this check if we're calling that.)
+					// If we get a reliable fix to BL-932 we can take this 'else' out altogether.
+					CheckPdf(outputPdfPath);
 				}
 			}
 			catch (KeyNotFoundException e)
 			{
-				// This is characteristic of BL-932, where Gecko29 fails to make a valid PDF, typically because the user has embedded a really huge image, something like 4000 pixels wide.
+				// This is characteristic of BL-932, where Gecko29 fails to make a valid PDF, typically
+				// because the user has embedded a really huge image, something like 4000 pixels wide.
 				// We think it could also happen with a very long book or if the user is short of memory.
+				// The resulting corruption of the PDF file takes the form of a syntax error in an embedded
+				// object so that the parser finds an empty string where it expected a 'generationNumber'
+				// (currently line 106 of Parser.cs). This exception is swallowed but leads to an empty
+				// externalIDs dictionary in PdfImportedObjectTable, and eventually a new exception trying
+				// to look up an object ID at line 121 of that class. We catch that exception here and
+				// suggest possible actions the user can take until we find a better solution.
 				MessageBox.Show(
 					LocalizationManager.GetString("PdfMaker.BadPdf", "Bloom unexpectedly failed to create a valid PDF version of this document. The developers are trying to fix this problem. In the meantime, here are some things to try:")
 						+ Environment.NewLine + "- "
@@ -116,6 +116,25 @@ namespace Bloom.Publish
 
 			}
 
+		}
+
+		// This is a subset of what MakeBooklet normally does, just enough to make it process the PDF to the
+		// point where an exception will be thrown if the file is corrupt as in BL-932.
+		// Possibly one day we will find a faster or more comprehensive way of validating a PDF, but this
+		// at least catches the problem we know about.
+		private static void CheckPdf(string outputPdfPath)
+		{
+			var pdf = XPdfForm.FromFile(outputPdfPath);
+			PdfDocument outputDocument = new PdfDocument();
+			outputDocument.PageLayout = PdfPageLayout.SinglePage;
+			var page = outputDocument.AddPage();
+			using (XGraphics gfx = XGraphics.FromPdfPage(page))
+			{
+				XRect sourceRect = new XRect(0, 0, pdf.PixelWidth, pdf.PixelHeight);
+				// We don't really care about drawing the image of the page here, just forcing the
+				// reader to process the PDF file enough to crash if it is corrupt.
+				gfx.DrawImage(pdf, sourceRect);
+			}
 		}
 
 		//About the --zoom parameter. It's a hack to get the pages chopped properly.
