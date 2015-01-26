@@ -117,6 +117,14 @@ mixin factoryStandard-outsideFrontCover
 mixin factoryStandard-creditsInsideFrontCover
 	// Inside Front Cover CREDITS PAGE
 	+page-cover("Credits Page").credits(data-export='front-matter-credits')#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9
+		+credits-contents
+
+mixin factoryStandard-credits-interiorPage
+	// CREDITS PAGE
+	+page-xmatter("Credits Page").credits(data-export='front-matter-credits')#2CCC8F26-A797-4A5B-9BA7-E29823D2CB24
+		+credits-contents
+
+mixin credits-contents
 		+block-licenseAndCopyright
 		+field-ISBN
 		+field-acknowledgments-originalVersion

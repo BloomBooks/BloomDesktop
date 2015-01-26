@@ -226,23 +226,6 @@
 .verso #versoLicenseAndCopyright .licenseBlock {
   margin-bottom: 2em;
 }
-.credits .ISBNContainer,
-.verso .ISBNContainer {
-  margin-bottom: 2em;
-}
-.credits .ISBNContainer .bloom-editable,
-.verso .ISBNContainer .bloom-editable {
-  text-align: left !important;
-  width: 4.3cm !important;
-  display: inline-block;
-  vertical-align: text-top;
-  max-height: 1.8em;
-  min-height: 1.8em;
-}
-.credits .ISBNContainer .ISBNContainer SPAN,
-.verso .ISBNContainer .ISBNContainer SPAN {
-  vertical-align: top;
-}
 .credits .originalAcknowledgments .bloom-contentNational1,
 .verso .originalAcknowledgments .bloom-contentNational1 {
   display: block !important;
@@ -315,4 +298,18 @@
 .outsideBackCover .bloom-editable {
   height: 100%;
   text-align: center;
+}
+.ISBNContainer {
+  margin-bottom: 2em;
+}
+.ISBNContainer .bloom-editable {
+  text-align: left !important;
+  width: 4.3cm !important;
+  display: inline-block;
+  vertical-align: text-top;
+  max-height: 1.8em;
+  min-height: 1.8em;
+}
+.ISBNContainer .ISBNContainer SPAN {
+  vertical-align: top;
 }
