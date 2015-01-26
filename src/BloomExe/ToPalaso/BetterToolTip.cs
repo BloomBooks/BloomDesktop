@@ -66,7 +66,7 @@ namespace Bloom.ToPalaso
 
 			UpdateAllControlsList(control, value);
 			Guard.AgainstNull(control,"control");
-			Guard.AgainstNull(value,"value");
+			//No: this can be null, it's OK: Guard.AgainstNull(value,"value");
 			try
 			{
 				base.SetToolTip(control, value);
