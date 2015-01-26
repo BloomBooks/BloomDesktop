@@ -99,8 +99,8 @@ namespace Bloom.Publish
 				// externalIDs dictionary in PdfImportedObjectTable, and eventually a new exception trying
 				// to look up an object ID at line 121 of that class. We catch that exception here and
 				// suggest possible actions the user can take until we find a better solution.
-				MessageBox.Show(
-					LocalizationManager.GetString("PdfMaker.BadPdf", "Bloom unexpectedly failed to create a valid PDF version of this document. The developers are trying to fix this problem. In the meantime, here are some things to try:")
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					LocalizationManager.GetString("PdfMaker.BadPdf", "Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:")
 						+ Environment.NewLine + "- "
 						+ LocalizationManager.GetString("PdfMaker.TryRestart", "Restart your computer and try this again right away")
 						+ Environment.NewLine + "- "
@@ -108,11 +108,7 @@ namespace Bloom.Publish
 						LocalizationManager.GetString("PdfMaker.TrySmallerImages",
 							"Replace large, high-resolution images in your document with lower-resolution ones")
 						+ Environment.NewLine + "- "
-						+ LocalizationManager.GetString("PdfMaker.TryMoreMemory", "Try doing this on a computer with more memory")
-						+ Environment.NewLine + Environment.NewLine
-						+ LocalizationManager.GetString("PdfMaker.MayNeedHelp", "You may need technical help with some of these steps."),
-					LocalizationManager.GetString("PdfMaker.PDFFailed", "Pdf creation failed"),
-					MessageBoxButtons.OK);
+						+ LocalizationManager.GetString("PdfMaker.TryMoreMemory", "Try doing this on a computer with more memory"));
 
 			}
 
