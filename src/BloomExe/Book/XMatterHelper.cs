@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using L10NSharp;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress;
@@ -31,6 +32,8 @@ namespace Bloom.Book
 		/// <param name="fileLocator">The locator needs to be able tell use the path to an xmater html file, given its name</param>
 		public XMatterHelper(HtmlDom bookDom, string nameOfXMatterPack, IFileLocator fileLocator)
 		{
+
+			
 			_bookDom = bookDom;
 			_nameOfXMatterPack = nameOfXMatterPack;
 
@@ -42,8 +45,13 @@ namespace Bloom.Book
 			}
 			catch (Exception error)
 			{
+				var errorTemplate = LocalizationManager.GetString("Errors.XMatterNotFound",
+					"This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a BloomPack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.");
+				var msg = string.Format(errorTemplate, nameOfXMatterPack);
+
+				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), msg);
 				//NB: we don't want to put up a dialog for each one; one failure here often means 20 more are coming as the other books are loaded!
-				throw new ApplicationException(String.Format("Could not find xmatter pack directory named " + directoryName), error);
+				throw new ApplicationException(msg);
 			}
 			string htmName = nameOfXMatterPack + "-XMatter.htm";
 			PathToXMatterHtml = directoryPath.CombineForPath(htmName);
