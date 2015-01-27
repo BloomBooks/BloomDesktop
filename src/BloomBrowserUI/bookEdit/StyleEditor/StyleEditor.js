@@ -403,7 +403,10 @@ var StyleEditor = (function () {
     };
 
     StyleEditor.prototype.getPointSizes = function () {
-        return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
+        // perhaps temporary until we allow arbitrary values (BL-948), as a favor to Mike:
+        return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '30', '35', '40', '45', '50', '55', '60', '65', '70', '80', '90', '100'];
+        // Same options as Word 2010, plus 13 since used in heading2
+        //return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
     };
 
     StyleEditor.prototype.getLineSpaceOptions = function () {
