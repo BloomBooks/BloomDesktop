@@ -1,6 +1,5 @@
 // Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
-using System;
 using System.Collections.Specialized;
 using System.Text;
 
@@ -12,6 +11,7 @@ namespace Bloom.web
 		public string ReplyImagePath;
 		//public HttpListenerContext Context; //todo: could we mock a context and then all but do away with this pretend class by subclassing the real one?
 		public long StatusCode;
+		public string StatusDescription;
 
 		public PretendRequestInfo(string url)
 		{
@@ -45,6 +45,12 @@ namespace Bloom.web
 		public void ReplyWithImage(string path)
 		{
 			ReplyImagePath = path;
+		}
+
+		public void WriteError(int errorCode, string errorDescription)
+		{
+			StatusCode = errorCode;
+			StatusDescription = errorDescription;
 		}
 
 		public void WriteError(int errorCode)

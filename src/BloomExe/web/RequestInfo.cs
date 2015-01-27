@@ -125,11 +125,16 @@ namespace Bloom.web
 			//_actualContext.Response.Close();
 		}
 
-		public void WriteError(int errorCode)
+		public void WriteError(int errorCode, string errorDescription)
 		{
 			_actualContext.Response.StatusCode = errorCode;
-			_actualContext.Response.StatusDescription = "File not found";
+			_actualContext.Response.StatusDescription = errorDescription;
 			_actualContext.Response.Close();
+		}
+
+		public void WriteError(int errorCode)
+		{
+			WriteError(errorCode, "File not found");
 		}
 
 		/// <summary>
