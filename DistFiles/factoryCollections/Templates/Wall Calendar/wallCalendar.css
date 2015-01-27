@@ -38,6 +38,9 @@ DIV.calendarMonthTop DIV.imageHolder {
 .month TD {
   text-align: center;
 }
+.calendarMonthBottom TABLE {
+  border-collapse: collapse;
+}
 .calendarMonthBottom TH {
   text-align: center;
   font-weight: bold;

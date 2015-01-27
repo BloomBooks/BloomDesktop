@@ -27,10 +27,6 @@ img[src=""] {
 	opacity: 0.4;
 	cursor: not-allowed;
 }
-P.pagefooter
-{
-	display: block;
-}
 INPUT
 {
 	border: 1px solid transparent;
@@ -40,10 +36,6 @@ TEXTAREA
 	/*we have javascript function which notices this border and makes it read-only
 (which isn't a style, so we can't set it ourselves*/
 	border: 1px solid transparent;
-	/*+placement:anchor-bottom-left 10px -49px;*/
-	position: absolute;
-	left: 10px;
-	bottom: -49px;
 }
 DIV.bloom-page
 {
@@ -95,15 +87,6 @@ INPUT.coverColor
 {
 	background-color: #D8ADAD;
 }
-DIV.bloom-page.cover:after
-{
-	/*+placement:shift 0px 0px;*/
-	position: relative;
-	left: 0px;
-	top: 0px;
-	visibility: hidden;
-	/*if only hidden (and not re-positioned), then the invisible number is out on the right, and it messes with our thumbnails!*/
-}
 /*this could be placed on an element by hand, but it is notably added by jscript when the element has
 a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
 *.bloom-hideWhenPublishing, *.bloom-classSwitchingCombobox
@@ -144,15 +127,7 @@ DIV.numberedPage:nth-of-type(even):after
 	text-align: right;
 	margin-top: -7mm;
 }
-DIV.marginBox
-{
-	/*[disabled]border:1px solid #98A30C;*/
-}
-/*This is a hack until we fix the duplicate display in preview mode.*/
-.titlePage #languageInformation .bloom-contentNational2
-{
-	/*[disabled]visibility:hidden;*/
-}
+
 .bloom-draggableLabel
 {
 	/*This matches the width of the dragHandle, which doesn't get added in preview mode

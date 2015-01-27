@@ -1,4 +1,17 @@
-﻿## 3.0.88 BETA
+﻿## 3.0.93 BETA
+
+### A couple known problems
+- If upgrading from Bloom 2, the Windows installer loses one of Bloom's files. It will now notify you that this happened and ask you do reinstall and choose "repair".
+- We discovered that books with very large illustrations (e.g. 5 mb color files) are breaking the PDF'ing system. Bloom now detects this and gives you pointers on how to work around the problem, until Bloom itself can do so, in the future.
+
+
+### Fixes
+- Fixed text in calendar day boxes
+- Calendar grid lines are now uniformly thin
+- Fixed a occasional crash when switching to a different user-interface language
+- Tweak xmatter stuff to ease creating custom xmatter from installer
+
+## 3.0.88 BETA
 
 - Users upgrading from Bloom 2 may need to uninstall first, or run the Bloom 3 installer twice. A message with instructions now appears if this is necessary.
 
