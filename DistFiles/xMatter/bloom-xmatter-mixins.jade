@@ -132,7 +132,7 @@ mixin credits-contents
 
 mixin factoryStandard-titlePage
 	// TITLE PAGE
-	+page-xmatter('Title Page').titlePage.bloom-frontMatter.bloom-startPageNumbering(data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
+	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
 		+field-prototypeDeclaredExplicity#titlePageTitleBlock
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).Title-On-Title-Page-style(data-book='bookTitle')
