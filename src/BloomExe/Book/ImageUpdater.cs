@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,6 +7,7 @@ using System.Xml;
 using Palaso.CommandLineProcessing;
 using Palaso.Extensions;
 using Palaso.IO;
+using Palaso.Network;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
@@ -87,6 +87,8 @@ namespace Bloom.Book
 				//Debug.Fail(" (Debug only) img has no or empty src attribute");
 				return; // they have bigger problems, which aren't appropriate to deal with here.
 			}
+
+			fileName = HttpUtilityFromMono.UrlDecode(fileName);
 			if (metadata == null)
 			{
 				progress.WriteStatus("Reading metadata from " + fileName);
