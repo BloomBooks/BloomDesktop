@@ -1649,6 +1649,9 @@ function FixUpOnFirstInput() {
         //if we're at the start of the text, we're to the left of the character we want to replace
         if (selection.anchorOffset == 0) {
             selection.modify("extend", "forward", "character");
+            //REVIEW: I actually don't know why this is necessary; the pending keypress should do the same thing
+            //But BL-952 showed that without it, we actually somehow end up selecting the format gear icon as well
+            selection.deleteFromDocument();
         }
         //if we're at position 1 in the text, then we're just to the right of the character we want to replace
         else if (selection.anchorOffset == 1) {
