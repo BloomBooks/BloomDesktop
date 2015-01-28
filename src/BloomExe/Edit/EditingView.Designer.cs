@@ -401,7 +401,7 @@
 			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._contentLanguagesDropdown,
             this._layoutChoices});
-			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Table;
+			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._menusToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
