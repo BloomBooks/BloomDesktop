@@ -5,8 +5,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.ToPalaso;
 using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.Extensions;
@@ -414,6 +416,59 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// Get the reduced Json string that we upload to set the database entry for the book on our website.
+		/// This leaves out some of the metadata that we use while working on the book.
+		/// Note that the full metadata is currently uploaded to S3 as part of the book content;
+		/// this reduced subset is just for the website itself.
+		/// Note that if you add a property to the upload set here, you must manually add a corresponding field to
+		/// the Book table in Parse.com. This is very important. Currently, the field will auto-add to
+		/// the Parse databases used for unit testing and even (I think) the one for sandbox testing,
+		/// but not to the live site; so if you forget to do this uploading will suddenly break.
+		/// It is for this reason that we deliberately don't automatically add new fields to the upload set.
+		/// Note that it is desirable that the name you give each property in the anonymous object which
+		/// get jsonified here matches the JsonProperty name used to deserialize it.
+		/// That allows the WebDataJson to be a valid Json representation of this class with just
+		/// some fields left out. At least one unit test will fail if the names don't match.
+		/// (Though, I don't think anything besides that test currently attempts to create
+		/// a BookMetaData object from a WebDataJson string.)
+		/// It is of course vital that the names in the anonymous object match the fields in parse.com.
+		/// </summary>
+		[JsonIgnore]
+		public string WebDataJson
+		{
+			get
+			{
+				return JsonConvert.SerializeObject(
+					new
+					{
+						bookInstanceId = Id, // our master key; worth uploading though BloomLibrary doesn't use directly.
+						suitableForMakingShells = IsSuitableForMakingShells, // not yet used by BL, potentially useful filter
+						suitableForVernacularLibrary = IsSuitableForVernacularLibrary,  // not yet used by BL, potentially useful filter
+						experimental = IsExperimental,  // not yet used by BL (I think), potentially useful filter
+						title = Title,
+						allTitles = AllTitles, // created for BL to search, though it doesn't yet.
+						baseUrl = BaseUrl, // how web site finds image and download
+						bookOrder = BookOrder, // maybe obsolete? Keep uploading until sure.
+						isbn = Isbn,
+						bookLineage = BookLineage,
+						//downloadSource = DownloadSource, // seems to be obsolete
+						license = License,
+						formatVersion = FormatVersion,
+						licenseNotes = LicenseNotes,
+						copyright = Copyright,
+						credits = Credits,
+						tags = Tags,
+						authors = Authors,
+						summary = Summary,
+						pageCount = PageCount,
+						langPointers = LanguageTableReferences,
+						uploader = Uploader
+						// Other fields are not needed by the web site and we don't expect they will be.
+					});
+			}
+		}
+
 		[JsonProperty("bookInstanceId")]
 		public string Id { get; set; }
 
@@ -509,6 +564,7 @@ namespace Bloom.Book
 		public string Summary { get; set; }
 
 		// This is set to true in situations where the materials that are not permissively licensed and the creator doesn't want derivative works being uploaded.
+		// Currently we don't need this property in Parse.com, so we don't upload it.
 		[JsonProperty("allowUploadingToBloomLibrary",DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue(true)]
 		public bool AllowUploadingToBloomLibrary { get; set; }

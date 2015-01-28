@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using Bloom.Book;
 using NUnit.Framework;
 using Palaso.TestUtilities;
@@ -83,6 +84,65 @@ namespace BloomTests.Book
 			var bi4 = new BookInfo(_folder.Path, true);
 			Assert.That(File.ReadAllText(jsonPath).Contains("allowUploadingToBloomLibrary"), "The file doesn't contain 'allowUploadingToBloomLibrary'");
 			Assert.That(bi4.AllowUploading, "Read after Save() Failed  to get true. Contents: " + File.ReadAllText(jsonPath));
+		}
+
+		[Test]
+		public void WebDataJson_IncludesCorrectFields()
+		{
+			var meta = new BookMetaData()
+			{
+				Id = "myId",
+				IsSuitableForMakingShells = true,
+				IsSuitableForVernacularLibrary = false,
+				IsExperimental = true,
+				Title = "myTitle",
+				AllTitles = "abc,\"def",
+				BaseUrl = "http://some/unlikely/url",
+				Isbn = "123-456-78-9",
+				DownloadSource = "http://some/amazon/url",
+				License = "ccby",
+				FormatVersion = "1.0",
+				Credits = "JohnT",
+				Summary = "A very nice book\\ in a very nice nook",
+				Tags= new []{"Animals"},
+				Authors = new[] { "John", "Steve" },
+				CurrentTool = "mytool",
+				BookletMakingIsAppropriate = false, PageCount=7,
+				LanguageTableReferences = new [] {new ParseDotComObjectPointer() { ClassName = "Language", ObjectId = "23456" }},
+				Uploader = new ParseDotComObjectPointer() { ClassName="User", ObjectId = "12345"},
+				Tools = new List<AccordionTool>(new [] {new AccordionTool() {Name="Decodable"}}),
+				AllowUploadingToBloomLibrary = false
+			};
+			var result = meta.WebDataJson;
+			var meta2 = BookMetaData.FromString(result);
+			Assert.That(meta2.Id, Is.EqualTo("myId"));
+			Assert.That(meta2.IsSuitableForMakingShells, Is.True);
+			Assert.That(meta2.IsSuitableForVernacularLibrary, Is.False);
+			Assert.That(meta2.IsExperimental, Is.True);
+			Assert.That(meta2.Title, Is.EqualTo("myTitle"));
+			Assert.That(meta2.AllTitles, Is.EqualTo("abc,\"def"));
+			Assert.That(meta2.BaseUrl, Is.EqualTo("http://some/unlikely/url"));
+			Assert.That(meta2.Isbn, Is.EqualTo("123-456-78-9"));
+
+			Assert.That(meta2.License, Is.EqualTo("ccby"));
+			Assert.That(meta2.FormatVersion, Is.EqualTo("1.0"));
+			Assert.That(meta2.Credits, Is.EqualTo("JohnT"));
+			Assert.That(meta2.Tags, Has.Length.EqualTo(1));
+			Assert.That(meta2.Authors, Has.Length.EqualTo(2));
+			Assert.That(meta2.Summary, Is.EqualTo("A very nice book\\ in a very nice nook"));
+			Assert.That(meta2.PageCount, Is.EqualTo(7));
+			Assert.That(meta2.LanguageTableReferences, Has.Length.EqualTo(1));
+			Assert.That(meta2.LanguageTableReferences[0].ObjectId, Is.EqualTo("23456"));
+			Assert.That(meta2.Uploader, Is.Not.Null);
+			Assert.That(meta2.Uploader.ObjectId, Is.EqualTo("12345"));
+
+			// These properties (and various others) should not be in the serialization data.
+			// Since AllowUploadingToBloomLibrary defaults true, that should be its value if not set by json
+			Assert.That(meta2.AllowUploadingToBloomLibrary, Is.True, "AllowUploadingtoBloomLibrary was unexpectedly serialized");
+			Assert.That(meta2.DownloadSource, Is.Null);
+			Assert.That(meta2.CurrentTool, Is.Null);
+			Assert.That(meta2.Tools, Is.Null);
+			Assert.That(meta2.BookletMakingIsAppropriate, Is.True); // default value
 		}
 	}
 }

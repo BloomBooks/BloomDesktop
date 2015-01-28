@@ -359,7 +359,7 @@ namespace Bloom.WebLibraryIntegration
 					metadata.BookOrder = _s3Client.BookOrderUrl;
 					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database."));
 					// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
-					var response = _parseClient.SetBookRecord(metadata.Json);
+					var response = _parseClient.SetBookRecord(metadata.WebDataJson);
 					parseId = response.ResponseUri.LocalPath;
 					int index = parseId.LastIndexOf('/');
 					parseId = parseId.Substring(index + 1);
