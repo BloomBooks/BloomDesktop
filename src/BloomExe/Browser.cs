@@ -654,14 +654,6 @@ namespace Bloom
 			}
 		}
 
-
-
-		private void _afterValidatingTimer_Tick(object sender, EventArgs e)
-		{
-			_afterValidatingTimer.Enabled = false;
-			//LoadPageDomFromBrowser();
-			//AutoZoom();
-		}
 		/// <summary>
 		/// What's going on here: the browser is just /editting displaying a copy of one page of the document.
 		/// So we need to copy any changes back to the real DOM.
