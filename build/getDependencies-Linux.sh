@@ -1,7 +1,7 @@
 #!/bin/bash
 # server=build.palaso.org
 # project=Bloom
-# build=Bloom-Default-precise64-Auto (Bloom 3)
+# build=Bloom-Default-precise64-Auto (master)
 # root_dir=..
 # $Id: d32984f53cd52f171a9cba46cd3879538ad23431 $
 
@@ -65,7 +65,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
 rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 
 # *** Results ***
-# build: Bloom-Default-precise64-Auto (Bloom 3) (bt403)
+# build: Bloom-Default-precise64-Auto (master) (bt403)
 # project: Bloom
 # URL: http://build.palaso.org/viewType.html?buildTypeId=bt403
 # VCS: git://github.com/BloomBooks/BloomDesktop.git [master]
