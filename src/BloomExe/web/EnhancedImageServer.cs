@@ -1,24 +1,25 @@
-﻿// Copyright (c) 2014 SIL International
+﻿// Copyright (c) 2014-2015 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
 using System.Diagnostics;
-using System.Drawing.Text;
 using System.Globalization;
-using System.Linq;
-using System.Net;
-using Bloom.ImageProcessing;
 using System.IO;
-using L10NSharp;
+using System.Threading;
 using Microsoft.Win32;
+using L10NSharp;
 using Palaso.IO;
 using Bloom.Collection;
-
+using Bloom.ImageProcessing;
+using Atlassian.Jira.Remote;
 
 namespace Bloom.web
 {
 	/// <summary>
 	/// A local http server that can serve (low-res) images plus other files.
 	/// </summary>
+	/// <remarks>geckofx makes concurrent requests of URLs which this class handles. This means
+	/// that the methods of this class get called on different threads, so it has to be
+	/// thread-safe.</remarks>
 	public class EnhancedImageServer: ImageServer
 	{
 		private FileSystemWatcher _sampleTextsWatcher;
@@ -30,13 +31,22 @@ namespace Bloom.web
 		{
 		}
 
+		// We use two different locks to synchronize access to the methods of this class.
+		// This allows certain methods to run concurrently.
+
+		// used to synchronize access to I18N methods
+		private object I18NLock = new object();
+		// used to synchronize access to various other methods
+		private object SyncObj = new object();
+
 		public string CurrentPageContent { get; set; }
 		public string AccordionContent { get; set; }
 		public bool AuthorMode { get; set; }
 
 		/// <summary>
-		/// There can really only be one of these globally, since ReadersHandler is static. But for now that's true anyway
-		/// because we use a fixed port. See comments on the ReadersHandler property.
+		/// There can really only be one of these globally, since ReadersHandler is static. But for
+		/// now that's true anyway because we use a fixed port. See comments on the ReadersHandler
+		/// property.
 		/// </summary>
 		public Book.Book CurrentBook
 		{
@@ -46,6 +56,8 @@ namespace Bloom.web
 
 		// Every path should return false or send a response.
 		// Otherwise we can get a timeout error as the browser waits for a response.
+		//
+		// NOTE: this method gets called on different threads!
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
 			if (base.ProcessRequest(info))
@@ -54,29 +66,64 @@ namespace Bloom.web
 			var localPath = GetLocalPathWithoutQuery(info);
 
 			// routing
-			if (localPath.StartsWith("readers/"))
+			if (localPath.StartsWith("readers/", StringComparison.InvariantCulture))
 			{
-				if (ReadersHandler.HandleRequest(localPath, info, CurrentCollectionSettings))
+				if (ProcessReaders(localPath, info))
 					return true;
 			}
-			else if (localPath.StartsWith("i18n/"))
+			else if (localPath.StartsWith("i18n/", StringComparison.InvariantCulture))
 			{
-				if (I18NHandler.HandleRequest(localPath, info, CurrentCollectionSettings))
+				if (ProcessI18N(localPath, info))
 					return true;
 			}
-			else if (localPath.StartsWith("directoryWatcher/"))
+			else if (localPath.StartsWith("directoryWatcher/", StringComparison.InvariantCulture))
+				return ProcessDirectoryWatcher(info);
+			else if (localPath.StartsWith("leveledRTInfo/", StringComparison.InvariantCulture))
+				return ProcessLevedRTInfo(info, localPath);
+			else if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
-				var dirName = info.GetPostData()["dir"];
-
-				if (dirName == "Sample Texts")
-				{
-					if (CheckForSampleTextChanges(info))
-						return true;
-				}
-
-				return false;
+				// project on network mapped drive like localhost\C$.
+				// URL was something like /bloom///localhost/C$/, but info.LocalPathWithoutQuery uses Uri.LocalPath
+				// which for some reason drops the needed leading slashes.
+				var temp = "//" + localPath;
+				if (File.Exists(temp))
+					localPath = temp;
 			}
-			else if (localPath.StartsWith("leveledRTInfo/"))
+
+			return ProcessContent(info, localPath);
+		}
+
+		private bool ProcessReaders(string localPath, IRequestInfo info)
+		{
+			lock (SyncObj)
+			{
+				return ReadersHandler.HandleRequest(localPath, info, CurrentCollectionSettings);
+			}
+		}
+
+		private bool ProcessI18N(string localPath, IRequestInfo info)
+		{
+			lock (I18NLock)
+			{
+				return I18NHandler.HandleRequest(localPath, info, CurrentCollectionSettings);
+			}
+		}
+
+		private bool ProcessDirectoryWatcher(IRequestInfo info)
+		{
+			// thread synchronization is done in CheckForSampleTextChanges.
+			var dirName = info.GetPostData()["dir"];
+			if (dirName == "Sample Texts")
+			{
+				if (CheckForSampleTextChanges(info))
+					return true;
+			}
+			return false;
+		}
+
+		private bool ProcessLevedRTInfo(IRequestInfo info, string localPath)
+		{
+			lock (SyncObj)
 			{
 				var queryPart = string.Empty;
 				if (info.RawUrl.Contains("?"))
@@ -126,52 +173,49 @@ namespace Bloom.web
 						// Don't crash Bloom because we can't open an external file.
 					}
 				}
-
 				// If the above failed, either for lack of default browser or exception, try this:
 				Process.Start("\"" + cleanUrl + "\"");
 				return false;
-			} else if (localPath.StartsWith("localhost/"))
-			{
-				// project on network mapped drive like localhost\C$.
-				// URL was something like /bloom///localhost/C$/, but info.LocalPathWithoutQuery uses Uri.LocalPath
-				// which for some reason drops the needed leading slashes.
-				var temp = "//" + localPath;
-				if (File.Exists(temp))
-					localPath = temp;
 			}
+		}
 
+		private bool ProcessContent(IRequestInfo info, string localPath)
+		{
+			// as long as deal with simple string/bool properties or static methods we don't
+			// have to lock
 			switch (localPath)
 			{
 				case "currentPageContent":
 					info.ContentType = "text/html";
 					info.WriteCompleteOutput(CurrentPageContent ?? "");
 					return true;
-
 				case "accordionContent":
 					info.ContentType = "text/html";
 					info.WriteCompleteOutput(AccordionContent ?? "");
 					return true;
-
 				case "availableFontNames":
 					info.WriteCompleteOutput(string.Join(",", Browser.NamesOfFontsThatBrowserCanRender()));
 					return true;
-
 				case "authorMode":
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
 					return true;
-
 				case "help":
 					var post = info.GetPostData();
+					// Help launches a separate process so it doesn't matter that we don't call
+					// it on the UI thread
 					HelpLauncher.Show(null, post["data"]);
 					return true;
-
 				case "getNextBookStyle":
 					info.ContentType = "text/html";
 					info.WriteCompleteOutput(CurrentBook.NextStyleNumber.ToString(CultureInfo.InvariantCulture));
 					return true;
 			}
+			return ProcessAnyFileContent(info, localPath);
+		}
 
+		private static bool ProcessAnyFileContent(IRequestInfo info, string localPath)
+		{
 			string path = null;
 			try
 			{
@@ -185,9 +229,8 @@ namespace Bloom.web
 			{
 				// ignore
 			}
-
-			if (!File.Exists(path)) return false;
-
+			if (!File.Exists(path))
+				return false;
 			info.ContentType = GetContentType(Path.GetExtension(localPath));
 			info.ReplyWithFileContent(path);
 			return true;
@@ -216,36 +259,46 @@ namespace Bloom.web
 
 		private bool CheckForSampleTextChanges(IRequestInfo info)
 		{
-			if (_sampleTextsWatcher == null)
+			lock (SyncObj)
 			{
-				var path = Path.Combine(Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath), "Sample Texts");
-				if (!Directory.Exists(path))
-					Directory.CreateDirectory(path);
+				if (_sampleTextsWatcher == null)
+				{
+					var path = Path.Combine(Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath), "Sample Texts");
+					if (!Directory.Exists(path))
+						Directory.CreateDirectory(path);
 
-				_sampleTextsWatcher = new FileSystemWatcher {Path = path};
-				_sampleTextsWatcher.Created += SampleTextsOnChange;
-				_sampleTextsWatcher.Changed += SampleTextsOnChange;
-				_sampleTextsWatcher.Renamed += SampleTextsOnChange;
-				_sampleTextsWatcher.Deleted += SampleTextsOnChange;
-				_sampleTextsWatcher.EnableRaisingEvents = true;
+					_sampleTextsWatcher = new FileSystemWatcher { Path = path };
+					_sampleTextsWatcher.Created += SampleTextsOnChange;
+					_sampleTextsWatcher.Changed += SampleTextsOnChange;
+					_sampleTextsWatcher.Renamed += SampleTextsOnChange;
+					_sampleTextsWatcher.Deleted += SampleTextsOnChange;
+					_sampleTextsWatcher.EnableRaisingEvents = true;
+				}
 			}
 
-			var hasChanged = _sampleTextsChanged;
+			lock (_sampleTextsWatcher)
+			{
+				var hasChanged = _sampleTextsChanged;
 
-			// Reset the changed flag.
-			// NOTE: we are only resetting the flag if it was "true" when we checked in case the FileSystemWatcher detects a change
-			// after we check the flag but we reset it to false before we check again.
-			if (hasChanged) _sampleTextsChanged = false;
+				// Reset the changed flag.
+				// NOTE: we are only resetting the flag if it was "true" when we checked in case the FileSystemWatcher detects a change
+				// after we check the flag but we reset it to false before we check again.
+				if (hasChanged)
+					_sampleTextsChanged = false;
 
-			info.ContentType = "text/plain";
-			info.WriteCompleteOutput(hasChanged ? "yes" : "no");
+				info.ContentType = "text/plain";
+				info.WriteCompleteOutput(hasChanged ? "yes" : "no");
 
-			return true;
+				return true;
+			}
 		}
 
 		private void SampleTextsOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
 		{
-			_sampleTextsChanged = true;
+			lock (_sampleTextsWatcher)
+			{
+				_sampleTextsChanged = true;
+			}
 		}
 
 		protected override void Dispose(bool fDisposing)
