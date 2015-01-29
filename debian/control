@@ -1,4 +1,4 @@
-Source: bloom-desktop
+Source: bloom-desktop-unstable
 Section: x11
 Priority: extra
 Maintainer: Eberhard Beilharz <eb1@sil.org>
@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
  libicu-dev,
  icu-devtools | libicu-dev (<< 52)
 
-Package: bloom-desktop
+Package: bloom-desktop-unstable
 Architecture: all
 Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
  mono-sil, libgdiplus-sil, geckofx29,
