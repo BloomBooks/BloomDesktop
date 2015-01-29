@@ -1039,6 +1039,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition="'$(OS)'=='Windows_NT'">
+"$(DevEnvDir)..\..\VC\bin\editbin.exe" /largeaddressaware "$(TargetPath)"
 copy /Y "$(SolutionDir)\lib\msvcr100.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\libtidy.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
