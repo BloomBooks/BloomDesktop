@@ -381,7 +381,10 @@ are trying to support, you're better off using non-advertised shortcuts. "-->
 <!-- now handled by the MajorUpgrade task      <RemoveExistingProducts After="InstallInitialize" />  -->
 
 	  <!--We need the condition here so that we only launch the executable when we make an installation but not when we remove the product-->
-		  <Custom Action='LaunchBloom' After="InstallFinalize">NOT Installed</Custom>
+	<!-- We've decide that users are getting confused by having it auto-launch. 
+			A) first so slow they launch a 2nd copy and 
+			B) they then confuse the New Collection Wizard with the installer
+			<Custom Action='LaunchBloom' After="InstallFinalize">NOT Installed</Custom> -->
 		</InstallExecuteSequence>
   </Product>
 </Wix>
