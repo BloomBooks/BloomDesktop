@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Properties;
+using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
 using Palaso.Extensions;
@@ -550,62 +551,17 @@ namespace Bloom.Edit
 					LocalizationManager.GetString("EditTab.CantPasteImageLocked","Sorry, this book is locked down so that images cannot be changed."));
 				return;
 			}
+			Cursor = Cursors.WaitCursor;
+			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
+			if(target.ClassName.Contains("licenseImage"))
+				return;
 
-			Image clipboardImage = null;
-			try
-			{
-				clipboardImage = GetImageFromClipboard();
-				if (clipboardImage == null)
-				{
-					MessageBox.Show(
-						LocalizationManager.GetString("EditTab.NoImageFoundOnClipboard","Before you can paste an image, copy one onto your 'clipboard', from another program."));
-					return;
-				}
-
-				var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
-				if (target.ClassName.Contains("licenseImage"))
-					return;
-
-				var imageElement = GetImageNode(ge);
-				if (imageElement == null)
-					return;
-				Cursor = Cursors.WaitCursor;
-
-				//nb: later, code closer to the the actual book folder will
-				//improve this file name. Taglib# requires an extension that matches the file content type, however.
-				using (var temp = TempFile.WithExtension("png"))
-				{
-					clipboardImage.Save(temp.Path, ImageFormat.Png);
-//                    using (var progressDialog = new ProgressDialogBackground())
-//                    {
-//                        progressDialog.ShowAndDoWork((progress, args) =>
-//                                                         {
-//                                                             ImageUpdater.CompressImage(temp.Path, progress);
-//                                                         });
-//                    }
-					using (var palasoImage = PalasoImage.FromFile(temp.Path))
-					{
-						_model.ChangePicture(imageElement, palasoImage, new NullProgress());
-					}
-				}
-			}
-			catch (Exception error)
-			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "The program had trouble getting an image from the clipboard.");
-			}
-			finally
-			{
-				if (clipboardImage != null)
-					clipboardImage.Dispose();
-			}
+			var imageElement = GetImageNode(ge);
+			if(imageElement == null)
+				return;
+			_model.PasteImage(imageElement);
 			Cursor = Cursors.Default;
 		}
-
-		private static Image GetImageFromClipboard()
-		{
-			return BloomClipboard.GetImageFromClipboard();
-		}
-
 
 		private static GeckoHtmlElement GetImageNode(DomEventArgs ge)
 		{

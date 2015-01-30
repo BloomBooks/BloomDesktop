@@ -60,6 +60,11 @@ namespace Bloom.Edit
 			get { return false; }
 		}
 
+		public bool IsCoverPaper {
+			get { return false; }
+			private set { }
+		}
+
 		public string GetCaptionOrPageNumber(ref int pageNumber)
 		{
 			return Caption;

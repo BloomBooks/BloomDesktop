@@ -175,7 +175,10 @@ namespace Bloom.Book
 		{
 			return pageDiv.SelectSingleNode("self::div[contains(@class, 'bloom-backMatter')]") != null;
 		}
-
+		public static bool IsCoverPaper(XmlElement pageDiv)
+		{
+			return pageDiv.SelectSingleNode("self::div[contains(@class, 'cover')]") != null;
+		}
 
 		/// <summary>
 		///remove any x-matter in the book

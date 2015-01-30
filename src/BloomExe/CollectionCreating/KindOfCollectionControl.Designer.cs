@@ -35,6 +35,8 @@
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
 			this._sourceCollectionDescription = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+			this._exisitingCollectionDescription = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+			this._radioExistingCollection = new System.Windows.Forms.RadioButton();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -49,7 +51,7 @@
 			this._radioSourceCollection.Location = new System.Drawing.Point(0, 71);
 			this._radioSourceCollection.Name = "_radioSourceCollection";
 			this._radioSourceCollection.Size = new System.Drawing.Size(178, 29);
-			this._radioSourceCollection.TabIndex = 7;
+			this._radioSourceCollection.TabIndex = 1;
 			this._radioSourceCollection.Text = "Source Collection";
 			this._radioSourceCollection.UseVisualStyleBackColor = true;
 			this._radioSourceCollection.CheckedChanged += new System.EventHandler(this._radioSourceCollection_CheckedChanged);
@@ -66,7 +68,7 @@
 			this._radioNormalVernacularCollection.Location = new System.Drawing.Point(0, 3);
 			this._radioNormalVernacularCollection.Name = "_radioNormalVernacularCollection";
 			this._radioNormalVernacularCollection.Size = new System.Drawing.Size(351, 29);
-			this._radioNormalVernacularCollection.TabIndex = 6;
+			this._radioNormalVernacularCollection.TabIndex = 0;
 			this._radioNormalVernacularCollection.TabStop = true;
 			this._radioNormalVernacularCollection.Text = "Vernacular/Local Language Collection";
 			this._radioNormalVernacularCollection.UseVisualStyleBackColor = true;
@@ -117,10 +119,50 @@
 			this._sourceCollectionDescription.TabStop = false;
 			this._sourceCollectionDescription.Text = resources.GetString("_sourceCollectionDescription.Text");
 			// 
+			// _exisitingCollectionDescription
+			// 
+			this._exisitingCollectionDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this._exisitingCollectionDescription.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this._exisitingCollectionDescription.Enabled = false;
+			this._exisitingCollectionDescription.Font = new System.Drawing.Font("Segoe UI", 9F);
+			this._exisitingCollectionDescription.ForeColor = System.Drawing.SystemColors.ControlText;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._exisitingCollectionDescription, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._exisitingCollectionDescription, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._exisitingCollectionDescription, L10NSharp.LocalizationPriority.High);
+			this._L10NSharpExtender.SetLocalizingId(this._exisitingCollectionDescription, "NewCollectionWizard.KindOfCollectionPage.existingCollectionDescription");
+			this._exisitingCollectionDescription.Location = new System.Drawing.Point(19, 220);
+			this._exisitingCollectionDescription.Multiline = true;
+			this._exisitingCollectionDescription.Name = "_exisitingCollectionDescription";
+			this._exisitingCollectionDescription.ReadOnly = true;
+			this._exisitingCollectionDescription.Size = new System.Drawing.Size(358, 17);
+			this._exisitingCollectionDescription.TabIndex = 12;
+			this._exisitingCollectionDescription.TabStop = false;
+			this._exisitingCollectionDescription.Text = "Choose this if you already have a collection you want to open.";
+			// 
+			// _radioExistingCollection
+			// 
+			this._radioExistingCollection.AutoSize = true;
+			this._radioExistingCollection.Checked = true;
+			this._radioExistingCollection.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._L10NSharpExtender.SetLocalizableToolTip(this._radioExistingCollection, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._radioExistingCollection, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._radioExistingCollection, L10NSharp.LocalizationPriority.High);
+			this._L10NSharpExtender.SetLocalizingId(this._radioExistingCollection, "NewCollectionWizard.KindOfCollectionPage.existingCollection");
+			this._radioExistingCollection.Location = new System.Drawing.Point(0, 192);
+			this._radioExistingCollection.Name = "_radioExistingCollection";
+			this._radioExistingCollection.Size = new System.Drawing.Size(236, 29);
+			this._radioExistingCollection.TabIndex = 2;
+			this._radioExistingCollection.TabStop = true;
+			this._radioExistingCollection.Text = "Open Existing Collection";
+			this._radioExistingCollection.UseVisualStyleBackColor = true;
+			// 
 			// KindOfCollectionControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this._exisitingCollectionDescription);
+			this.Controls.Add(this._radioExistingCollection);
 			this.Controls.Add(this._sourceCollectionDescription);
 			this.Controls.Add(this.betterLabel1);
 			this.Controls.Add(this._radioSourceCollection);
@@ -129,7 +171,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "KindOfCollectionControl.KindOfCollectionControl");
 			this.Name = "KindOfCollectionControl";
-			this.Size = new System.Drawing.Size(391, 213);
+			this.Size = new System.Drawing.Size(391, 267);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -143,5 +185,7 @@
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _sourceCollectionDescription;
+		private Palaso.UI.WindowsForms.Widgets.BetterLabel _exisitingCollectionDescription;
+		public System.Windows.Forms.RadioButton _radioExistingCollection;
     }
 }

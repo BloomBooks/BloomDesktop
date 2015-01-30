@@ -18,6 +18,7 @@ namespace Bloom.Book
 		bool CanRelocate { get;}
 		Book Book { get; set; }
 		bool IsBackMatter { get; }
+		bool IsCoverPaper { get; }
 		string GetCaptionOrPageNumber(ref int pageNumber);
 	}
 
@@ -104,7 +105,13 @@ namespace Bloom.Book
 				return XMatterHelper.IsBackMatterPage(_getDivNodeForThisPageMethod(this));
 			}
 		}
-
+		public bool IsCoverPaper
+		{
+			get
+			{
+				return XMatterHelper.IsCoverPaper(_getDivNodeForThisPageMethod(this));
+			}
+		}
 		public string GetCaptionOrPageNumber(ref int pageNumber)
 		{
 			string outerXml = _getDivNodeForThisPageMethod(this).OuterXml;
