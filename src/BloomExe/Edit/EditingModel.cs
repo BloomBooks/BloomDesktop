@@ -2,21 +2,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SendReceive;
-using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Bloom.web;
-using Bloom.Workspace;
 using BloomTemp;
 using DesktopAnalytics;
-using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.IO;
 using Palaso.Progress;
@@ -841,79 +836,13 @@ namespace Bloom.Edit
 			}
 		}
 
-		/// <summary>
-		/// When the user clicks on the Past button of an image, they may have a file name on the clipboard, or an actual image.
-		/// We figure that out, get a file into the book folder, and point the img to it.
-		/// </summary>
-		/// <param name="imageElement">The element that would receive the new image path</param>
-		public void PasteImage(GeckoHtmlElement imageElement)
-		{
-			Image clipboardImage = null;
-			try
-			{
-				var imageFileFromPathOnClipboard = BloomClipboard.GetImagePathFromClipboard();
-				if (imageFileFromPathOnClipboard != null)
-				{
-					using (var palasoImage = PalasoImage.FromFile(imageFileFromPathOnClipboard))
-					{
-						ChangePicture(imageElement, palasoImage, new NullProgress());
-					}
-					return;
-				}
-
-				clipboardImage = BloomClipboard.GetImageFromClipboard();
-				if (clipboardImage == null)
-				{
-					MessageBox.Show(
-						LocalizationManager.GetString("EditTab.NoImageFoundOnClipboard",
-							"Before you can paste an image, copy one onto your 'clipboard', from another program."));
-					return;
-				}
-
-				//nb: later, code closer to the the actual book folder will
-				//improve this file name. Taglib# requires an extension that matches the file content type, however.
-				using (var temp = TempFile.WithExtension("png"))
-				{
-					clipboardImage.Save(temp.Path, ImageFormat.Png);
-					using (var progressDialog = new ProgressDialogBackground())
-					{
-						progressDialog.ShowAndDoWork((progress, args) =>
-						{
-							ImageUpdater.CompressImage(temp.Path, progress);
-						});
-					}
-					using (var palasoImage = PalasoImage.FromFile(temp.Path))
-					{
-						ChangePicture(imageElement, palasoImage, new NullProgress());
-					}
-				}
-			}
-			catch (Exception error)
-			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
-					"The program had trouble getting an image from the clipboard.");
-			}
-			finally
-			{
-				if (clipboardImage != null)
-					clipboardImage.Dispose();
-			}
-		}
-
-		/// <summary>
-		/// Given a palasoImage, get a copy of the image file into the book folder and point the img element at it
-		/// </summary>
-		/// <param name="img">The html img element that will point to the new image</param>
-		/// <param name="imageInfo">a PalasoImage, which wrapper around an image file path</param>
-		/// <param name="progress"></param>
 		public void ChangePicture(GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress)
 		{
 			try
 			{
 				Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
 				var editor = new PageEditingModel();
-				var makeTransparent = _pageSelection.CurrentSelection.IsCoverPaper;
-				editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, img, makeTransparent, imageInfo, progress);
+				editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, img, imageInfo, progress);
 
 				//we have to save so that when asked by the thumbnailer, the book will give the proper image
 				SaveNow();
@@ -931,6 +860,14 @@ namespace Bloom.Edit
 				ErrorReport.NotifyUserOfProblem(e, "Could not change the picture");
 			}
 		}
+
+//        private void InvokeUpdatePageList()
+//        {
+//            if (UpdatePageList != null)
+//            {
+//                UpdatePageList(this, null);
+//            }
+//        }
 
 		public void SetView(EditingView view)
 		{

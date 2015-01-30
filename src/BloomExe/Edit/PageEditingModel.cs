@@ -17,9 +17,9 @@ namespace Bloom.Edit
 {
 	public class PageEditingModel
 	{
-		public void ChangePicture(string bookFolderPath, GeckoHtmlElement img, bool makeTransparent, PalasoImage imageInfo, IProgress progress)
+		public void ChangePicture(string bookFolderPath, GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress)
 		{
-			var imageFileName = ProcessAndCopyImage(imageInfo, bookFolderPath, makeTransparent);
+			var imageFileName = ProcessAndCopyImage(imageInfo, bookFolderPath);
 			img.SetAttribute("src", imageFileName);
 			UpdateMetdataAttributesOnImgElement(img, imageInfo);
 		}
@@ -34,7 +34,7 @@ namespace Bloom.Edit
 			var matches = dom.SafeSelectNodes("//img[@id='" + imageId + "']");
 			XmlElement img = matches[0] as XmlElement;
 
-			var imageFileName = ProcessAndCopyImage(imageInfo, bookFolderPath, false);
+			var imageFileName = ProcessAndCopyImage(imageInfo, bookFolderPath);
 			img.SetAttribute("src", imageFileName);
 
 		}
@@ -44,22 +44,21 @@ namespace Bloom.Edit
 		/// Replaces any file with the same name.
 		/// </summary>
 		/// <returns>The name of the file, now in the book's folder.</returns>
-		private string ProcessAndCopyImage(PalasoImage imageInfo, string bookFolderPath,  bool makeTransparent)
+		private string ProcessAndCopyImage(PalasoImage imageInfo, string bookFolderPath)
 		{
+
 			var isJpeg = ShouldSaveAsJpeg(imageInfo);
 			try
 			{
-					using (var image = new Bitmap(imageInfo.Image))
+
+					using (Bitmap image = new Bitmap(imageInfo.Image))
 						//nb: there are cases (undefined) where we get out of memory if we are not operating on a copy
 					{
 						//photographs don't work if you try to make the white transparent
-						if(!isJpeg && image is Bitmap && makeTransparent)
+						if (!isJpeg && image is Bitmap)
 						{
 							((Bitmap) image).MakeTransparent(Color.White);
-							// make white look realistic against background;
-							// Enhance: with many pdf viewers, this leads to ugly light-grey borders around the transparent area
-							// so  we could save a version without this and then instead make a transparent version on the fly
-							// for use in display only?
+								//make white look realistic against background
 						}
 
 						string imageFileName = GetImageFileName(bookFolderPath, imageInfo, isJpeg);
