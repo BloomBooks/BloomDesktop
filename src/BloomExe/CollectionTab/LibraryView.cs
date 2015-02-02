@@ -47,6 +47,11 @@ namespace Bloom.CollectionTab
 			else
 				_sendReceiveButton.Enabled = false;
 
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+			{
+				BackgroundColorsForLinux();
+			}
+
 			selectedTabChangedEvent.Subscribe(c=>
 												{
 													if (c.To == this)
@@ -54,6 +59,22 @@ namespace Bloom.CollectionTab
 														Logger.WriteEvent("Entered Collections Tab");
 													}
 												});
+		}
+
+		private void BackgroundColorsForLinux() {
+
+			// Set the background image for Mono because the background color does not paint,
+			// and if we override the background paint handler, the default styling of the child 
+			// controls is changed.
+			var bmp = new Bitmap(_toolStrip.Width, _toolStrip.Height);
+			using (var g = Graphics.FromImage(bmp))
+			{
+				using (var b = new SolidBrush(_toolStrip.BackColor))
+				{
+					g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
+				}
+			}
+			_toolStrip.BackgroundImage = bmp;
 		}
 
 		public string CollectionTabLabel
