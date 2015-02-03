@@ -66,6 +66,11 @@ namespace Bloom.CollectionTab
 			// Set the background image for Mono because the background color does not paint,
 			// and if we override the background paint handler, the default styling of the child 
 			// controls is changed.
+
+			// We are getting an exception if none of the buttons are visible. The tabstrip is set
+			// to Dock.Top which results in the height being zero if no buttons are visible.
+			if ((_toolStrip.Height == 0) || (_toolStrip.Width == 0)) return;
+
 			var bmp = new Bitmap(_toolStrip.Width, _toolStrip.Height);
 			using (var g = Graphics.FromImage(bmp))
 			{
@@ -110,10 +115,5 @@ namespace Bloom.CollectionTab
 		}
 
 		public Bitmap ToolStripBackground { get; set; }
-
-		private void LibraryView_Load(object sender, EventArgs e)
-		{
-
-		}
 	}
 }
