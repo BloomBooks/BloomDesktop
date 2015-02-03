@@ -97,7 +97,7 @@ namespace GeckofxHtmlToPdf
 			// visible in the imaginary browser window; thus, we've made it big enough for a
 			// 16x11 big-book page at fairly high screen resolution of 120dpi.
 			_browser.Size = new Size(1920, 1320);
-
+			Console.WriteLine ("GeckoFxTHMLToPDF " + _conversionOrder.InputHtmlPath);
 			_browser.Navigate(_conversionOrder.InputHtmlPath);
 		}
 
@@ -184,11 +184,13 @@ namespace GeckofxHtmlToPdf
 
 		private void StartMakingPdf()
 		{
+			Console.WriteLine ("StartMakingPDF");
 			_print = Xpcom.QueryInterface<nsIWebBrowserPrint>(_browser.Window.DomWindow);
 
 			var service = Xpcom.GetService<nsIPrintSettingsService>("@mozilla.org/gfx/printsettings-service;1");
 			var printSettings = service.GetNewPrintSettingsAttribute();
 
+			Console.WriteLine ("Got print settings");
 			printSettings.SetToFileNameAttribute(_pathToTempPdf);
 			printSettings.SetPrintToFileAttribute(true);
 			printSettings.SetPrintSilentAttribute(true); //don't show a printer settings dialog
@@ -238,13 +240,15 @@ namespace GeckofxHtmlToPdf
 			printSettings.SetOutputFormatAttribute(2); // 2 == kOutputFormatPDF
 
 			Status = LocalizationManager.GetString("PublishTab.PdfMakingDialog.ConversionProgress.Making", "Making PDF..");
-
+			Console.WriteLine ("Prepare to print");
 			_print.Print(printSettings, this);
+			Console.WriteLine ("Print Returned");
 			_checkForPdfFinishedTimer.Enabled = true;
 		}
 
 		private void FinishMakingPdf()
 		{
+			Console.WriteLine ("FinishMakingPDF");
 			if (!File.Exists(_pathToTempPdf))
 			{
 				throw new ApplicationException(string.Format(
@@ -299,7 +303,7 @@ namespace GeckofxHtmlToPdf
 		{
 			if (maxTotalProgress == 0)
 				return;
-
+			Console.WriteLine ("Progress Change");
 			// if we use the maxTotalProgress, the problem is that it starts off below 100, the jumps to 100 at the end
 			// so it looks a lot better to just always scale, to 100, the current progress by the max at that point
 			RaiseStatusChanged(new PdfMakingStatus()
