@@ -56,26 +56,26 @@ describe("Bloom Edit Controls tests", function() {
         model.incrementStage();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("stageNumber", "2");
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.incrementStage();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("stageNumber", "3");
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.incrementStage();
         expect(ReaderToolsModel.updateElementContent).not.toHaveBeenCalled();
     });
 
     it("decrements stage to 1 on stage left button", function() {
         model.setStageNumber(3);
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.decrementStage();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("stageNumber", "2");
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.decrementStage();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("stageNumber", "1");
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.decrementStage();
         expect(ReaderToolsModel.updateElementContent).not.toHaveBeenCalled();
     });
@@ -84,26 +84,26 @@ describe("Bloom Edit Controls tests", function() {
         model.incrementLevel();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("levelNumber", "2");
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.incrementLevel();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("levelNumber", "3");
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.incrementLevel();
         expect(ReaderToolsModel.updateElementContent).not.toHaveBeenCalled();
     });
 
     it("decrements level to 1 on level left button", function() {
         model.setLevelNumber(3);
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.decrementLevel();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("levelNumber", "2");
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.decrementLevel();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("levelNumber", "1");
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.decrementLevel();
         expect(ReaderToolsModel.updateElementContent).not.toHaveBeenCalled();
     });
@@ -160,33 +160,33 @@ describe("Bloom Edit Controls tests", function() {
     it("sorts word list correctly when sort buttons clicked", function() {
 
         model.setStageNumber(2);
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
 
         // Default is currently alphabetic
         model.setStageNumber(1);
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div>');
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.sortByLength();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">rate</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word sight-word">rodent</div>');
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.sortByFrequency();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div>');
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.sortAlphabetically();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class="word sight-word">feline</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div>');
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.setStageNumber(2);
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">bob</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word">fob</div><div class="word sight-word">one</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word">sat</div><div class="word sight-word">two</div>');
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.sortByLength(); // same-length ones should be alphabetic
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">bob</div><div class="word">fob</div><div class="word sight-word">one</div><div class="word">sat</div><div class="word sight-word">two</div><div class="word">rate</div><div class="word">catty</div><div class="word sight-word">feline</div><div class="word sight-word">rodent</div>');
 
-        ReaderToolsModel.updateElementContent.reset();
+        ReaderToolsModel.updateElementContent.calls.reset();
         model.sortByFrequency();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">sat</div><div class="word">bob</div><div class="word">catty</div><div class="word">fob</div><div class="word sight-word">feline</div><div class="word sight-word">one</div><div class="word">rate</div><div class="word sight-word">rodent</div><div class="word sight-word">two</div>');
     });
