@@ -47,7 +47,10 @@ function GetUserModifiedStyleSheet() {
         if (document.styleSheets[i].title == "userModifiedStyles")
             return (document.styleSheets[i]);
     }
-    return new CSSStyleSheet();
+
+    // this is not a valid constructor
+    //return new CSSStyleSheet();
+    return {};
 }
 
 function GetFooStyleRuleFontSize() {
@@ -85,6 +88,8 @@ function GetRuleForFooStyle() {
 
 function GetRuleForNormalStyle() {
     var x = GetUserModifiedStyleSheet().cssRules;
+    if (!x)
+        return null;
 
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf('normal-style') > -1) {
@@ -96,7 +101,8 @@ function GetRuleForNormalStyle() {
 
 function GetRuleForCoverTitleStyle() {
     var x = GetUserModifiedStyleSheet().cssRules;
-
+    if (!x)
+        return null;
     for (var i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf('Title-On-Cover-style') > -1) {
             return x[i];
@@ -140,22 +146,22 @@ describe("StyleEditor", function () {
         $('body').html('');
     });
 
-    it("constructor does not make a userModifiedStyles style if one already exists", function () {
-        var editor1 = new StyleEditor("");
-        var editor2 = new StyleEditor("");
-        var count = 0;
-        for (var i = 0; i < document.styleSheets.length; i++) {
-            if (document.styleSheets[i].title == "userModifiedStyles")
-                ++count;
-        }
-        expect(count).toEqual(1);
-    });
-
-    it("constructor adds a stylesheet with title userModifiedStyles", function () {
-        var editor = new StyleEditor("");
-        expect(GetUserModifiedStyleSheet()).not.toBeNull();
-    });
-
+    // the constructor no longer creates the "userModifiedStyles" element
+    //it("constructor does not make a userModifiedStyles style if one already exists", function () {
+    //  var editor1 = new StyleEditor("");
+    //  var editor2 = new StyleEditor("");
+    //  var count = 0;
+    //  for (var i = 0; i < document.styleSheets.length; i++) {
+    //    if (document.styleSheets[i].title == "userModifiedStyles")
+    //      ++count;
+    //  }
+    //  expect(count).toEqual(1);
+    //});
+    // the constructor no longer creates the "userModifiedStyles" element
+    //it("constructor adds a stylesheet with title userModifiedStyles", function () {
+    //  var editor = new StyleEditor("");
+    //  expect(GetUserModifiedStyleSheet()).not.toBeNull();
+    //});
     it("MakeBigger creates a style for the correct class if it is missing", function () {
         $('body').append("<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>");
         MakeBigger();

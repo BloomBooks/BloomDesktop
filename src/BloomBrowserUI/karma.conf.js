@@ -16,6 +16,7 @@ module.exports = function (config) {
             'lib/jquery-ui-1.10.3.custom.min.js',
             'lib/jquery.myimgscale.js',
             'lib/jquery.qtip.js',
+            'lib/jquery.qtipSecondary.js',
             'bookEdit/js/interIframeChannel.js',
             'bookEdit/js/getIframeChannel.js',
             'bookEdit/test/interIframeChannelInitializer.js',

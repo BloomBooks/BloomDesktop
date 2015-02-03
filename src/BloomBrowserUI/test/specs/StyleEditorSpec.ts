@@ -46,12 +46,14 @@ function ChangeSizeAbsolute(target:string, newSize:number) {
   editor.ChangeSizeAbsolute(<HTMLElement><any>jQueryTarget, newSize);
 }
 
-function GetUserModifiedStyleSheet(): CSSStyleSheet {
+function GetUserModifiedStyleSheet(): any {
   for (var i = 0; i < document.styleSheets.length; i++) {
     if (document.styleSheets[i].title == "userModifiedStyles")
        return <CSSStyleSheet>(document.styleSheets[i]);
   }
-  return new CSSStyleSheet();
+  // this is not a valid constructor
+  //return new CSSStyleSheet();
+  return {};
 }
 
 function GetFooStyleRuleFontSize(): number {
@@ -76,7 +78,7 @@ function ParseRuleForFontSize(ruleText: string): number {
 }
 
 function GetRuleForFooStyle(): CSSRule {
-  var x:CSSRuleList = <any>GetUserModifiedStyleSheet().cssRules;
+  var x:CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
   for (var i = 0; i < x.length; i++) {
     if (x[i].cssText.indexOf('foo-style') > -1){
@@ -87,7 +89,8 @@ function GetRuleForFooStyle(): CSSRule {
 }
 
 function GetRuleForNormalStyle(): CSSRule {
-  var x:CSSRuleList = <any>GetUserModifiedStyleSheet().cssRules;
+  var x:CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+  if (!x) return null;
 
   for (var i = 0; i < x.length; i++) {
     if (x[i].cssText.indexOf('normal-style') > -1) {
@@ -98,8 +101,8 @@ function GetRuleForNormalStyle(): CSSRule {
 }
 
 function GetRuleForCoverTitleStyle(): CSSRule {
-  var x:CSSRuleList = <any>GetUserModifiedStyleSheet().cssRules;
-
+  var x:CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+  if (!x) return null;
   for (var i = 0; i < x.length; i++) {
     if (x[i].cssText.indexOf('Title-On-Cover-style') > -1) {
       return x[i];
@@ -115,7 +118,7 @@ function GetCalculatedFontSize(target: string): number {
 }
 
 function GetRuleMatchingSelector(selector: string): CSSRule {
-  var x = GetUserModifiedStyleSheet().cssRules;
+  var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
   var count = 0;
   for (var i = 0; i < x.length; i++) {
     if (x[i].cssText.indexOf(selector) > -1) {
@@ -126,7 +129,7 @@ function GetRuleMatchingSelector(selector: string): CSSRule {
 }
 
 function HasRuleMatchingThisSelector(selector: string): boolean {
-  var x = GetUserModifiedStyleSheet().cssRules;
+  var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
   var count = 0;
   for (var i = 0; i < x.length; i++) {
     if (x[i].cssText.indexOf(selector) > -1) {
@@ -143,21 +146,23 @@ describe("StyleEditor", function () {
     $('body').html('');
   });
 
-  it("constructor does not make a userModifiedStyles style if one already exists", function () {
-    var editor1 = new StyleEditor("");
-    var editor2 = new StyleEditor("");
-    var count = 0;
-    for (var i = 0; i < document.styleSheets.length; i++) {
-      if (document.styleSheets[i].title == "userModifiedStyles")
-        ++count;
-    }
-    expect(count).toEqual(1);
-  });
+  // the constructor no longer creates the "userModifiedStyles" element
+  //it("constructor does not make a userModifiedStyles style if one already exists", function () {
+  //  var editor1 = new StyleEditor("");
+  //  var editor2 = new StyleEditor("");
+  //  var count = 0;
+  //  for (var i = 0; i < document.styleSheets.length; i++) {
+  //    if (document.styleSheets[i].title == "userModifiedStyles")
+  //      ++count;
+  //  }
+  //  expect(count).toEqual(1);
+  //});
 
-  it("constructor adds a stylesheet with title userModifiedStyles", function () {
-    var editor = new StyleEditor("");
-    expect(GetUserModifiedStyleSheet()).not.toBeNull();
-  });
+  // the constructor no longer creates the "userModifiedStyles" element
+  //it("constructor adds a stylesheet with title userModifiedStyles", function () {
+  //  var editor = new StyleEditor("");
+  //  expect(GetUserModifiedStyleSheet()).not.toBeNull();
+  //});
 
   it("MakeBigger creates a style for the correct class if it is missing", function () {
     $('body').append("<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>");
@@ -202,7 +207,7 @@ describe("StyleEditor", function () {
     MakeBigger();
     MakeBigger();
     MakeBigger();
-    var x: CSSRuleList = GetUserModifiedStyleSheet().cssRules;
+    var x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
     var count = 0;
     for (var i = 0; i < x.length; i++) {
@@ -216,7 +221,7 @@ describe("StyleEditor", function () {
   it("When the element has an @lang, MakeBigger adds rules that only affect the given language", function () {
      $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
     MakeBigger2('#testTarget');
-    var x = GetUserModifiedStyleSheet().cssRules;
+    var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
     var count = 0;
     for (var i = 0; i < x.length; i++) {
@@ -238,7 +243,7 @@ describe("StyleEditor", function () {
     $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>");
     $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
     MakeBigger2('#testTarget');
-    var x = GetUserModifiedStyleSheet().cssRules;
+    var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
     var count = 0;
     for (var i = 0; i < x.length; i++) {
@@ -262,7 +267,7 @@ describe("StyleEditor", function () {
     $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>");
     $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
     ChangeSizeAbsolute('#testTarget', 20);
-    var x = GetUserModifiedStyleSheet().cssRules;
+    var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
     var count = 0;
     for (var i = 0; i < x.length; i++) {
@@ -277,7 +282,7 @@ describe("StyleEditor", function () {
   it("When the element has an @lang, but no existing rule, ChangeSizeAbsolute adds rules that only affect the given language", function () {
     $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
     ChangeSizeAbsolute('#testTarget', 20);
-    var x = GetUserModifiedStyleSheet().cssRules;
+    var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
     var count = 0;
     for (var i = 0; i < x.length; i++) {
@@ -315,7 +320,7 @@ describe("StyleEditor", function () {
     $('head').append("<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 0.6em ! important; }</style>");
     $('body').append("<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>");
     MakeSmaller('#testTarget');
-    var x = GetUserModifiedStyleSheet().cssRules;
+    var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
     var count = 0;
     for (var i = 0; i < x.length; i++) {
@@ -334,7 +339,7 @@ describe("StyleEditor", function () {
     var before = GetFontSize('#testTarget');
     MakeSmaller('#testTarget');
 
-    var x = GetUserModifiedStyleSheet().cssRules;
+    var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
     var count = 0;
     for (var i = 0; i < x.length; i++) {
