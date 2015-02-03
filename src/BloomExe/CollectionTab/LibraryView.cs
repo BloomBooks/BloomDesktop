@@ -66,6 +66,8 @@ namespace Bloom.CollectionTab
 			// Set the background image for Mono because the background color does not paint,
 			// and if we override the background paint handler, the default styling of the child 
 			// controls is changed.
+			if (_toolStrip.Width == 0 || _toolStrip.Height == 0)
+				return;
 			var bmp = new Bitmap(_toolStrip.Width, _toolStrip.Height);
 			using (var g = Graphics.FromImage(bmp))
 			{
