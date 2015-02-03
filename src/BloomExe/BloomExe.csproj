@@ -211,6 +211,12 @@
     <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\JpegWarningDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Edit\JpegWarningDialog.Designer.cs">
+      <DependentUpon>JpegWarningDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Edit\WebThumbNailList.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -221,6 +227,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Extensions.cs" />
+    <Compile Include="ImageProcessing\ImageUtils.cs" />
     <Compile Include="JavaScriptErrorHandler.cs" />
     <Compile Include="MiscUI\DontShowThisAgainButton.cs">
       <SubType>Component</SubType>
@@ -566,6 +573,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\HistoryAndNotesDialog.resx">
       <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Edit\JpegWarningDialog.resx">
+      <DependentUpon>JpegWarningDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\WebThumbNailList.resx">
       <DependentUpon>WebThumbNailList.cs</DependentUpon>

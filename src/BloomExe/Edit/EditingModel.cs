@@ -12,6 +12,7 @@ using Bloom.ToPalaso.Experimental;
 using Bloom.web;
 using BloomTemp;
 using DesktopAnalytics;
+using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.IO;
 using Palaso.Progress;
@@ -857,7 +858,8 @@ namespace Bloom.Edit
 			}
 			catch (Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e, "Could not change the picture");
+				var msg = LocalizationManager.GetString("Errors.ProblemImportingPicture","Bloom had a problem importing this picture.");
+				ErrorReport.NotifyUserOfProblem(e, msg+Environment.NewLine+e.Message);
 			}
 		}
 
