@@ -129,7 +129,6 @@
             this._L10NSharpExtender.SetLocalizingId(this, "CollectionTab..LibraryView");
             this.Name = "LibraryView";
             this.Size = new System.Drawing.Size(773, 518);
-            this.Load += new System.EventHandler(this.LibraryView_Load);
             this._topBarControl.ResumeLayout(false);
             this._topBarControl.PerformLayout();
             this._toolStrip.ResumeLayout(false);
