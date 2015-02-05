@@ -13,6 +13,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Publish;
+using L10NSharp;
 using MarkdownSharp;
 using Palaso.Code;
 using Palaso.Extensions;
@@ -423,14 +424,21 @@ namespace Bloom.Book
 
 		public virtual string StoragePageFolder { get { return _storage.FolderPath; } }
 
+		private string GetGenericBrokenBookRecommendationString()
+		{
+			return LocalizationManager.GetString("Errors.BrokenBook",
+				"Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong. Consider using the 'Report a Problem' command under the 'Help' menu.");
+		}
+		
 		private HtmlDom GetPageListingErrorsWithBook(string contents)
 		{
 			var builder = new StringBuilder();
-			builder.Append("<html><body>");
-			builder.AppendLine("<p>This book (" + StoragePageFolder + ") has errors.");
-			builder.AppendLine(
-				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
+			builder.Append("<html><body style='font-family:arial,sans'>");
 
+			builder.AppendLine("<p>" + GetGenericBrokenBookRecommendationString() + "</p>");
+
+			builder.AppendFormat("<p>" + _storage.ErrorMessages + "</p>");
+			
 			foreach (var line in contents.Split(new []{'\n'}))
 			{
 				builder.AppendFormat("<li>{0}</li>\n", WebUtility.HtmlEncode(line));
@@ -442,10 +450,11 @@ namespace Bloom.Book
 		private HtmlDom GetErrorDom()
 		{
 			var builder = new StringBuilder();
-			builder.Append("<html><body>");
-			builder.AppendLine("<p>This book (" + FolderPath + ") has errors.");
-			builder.AppendLine(
-				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
+			builder.Append("<html><body style='font-family:arial,sans'>");
+			
+			builder.AppendLine(GetGenericBrokenBookRecommendationString());
+
+			builder.AppendFormat("<p>" + _storage.ErrorMessages + "</p>");
 
 			builder.Append(((StringBuilderProgress)_log).Text);
 
@@ -982,7 +991,7 @@ namespace Bloom.Book
 
 		public virtual bool HasFatalError
 		{
-			get { return _log.ErrorEncountered; }
+			get { return _log.ErrorEncountered || !string.IsNullOrEmpty(_storage.ErrorMessages); }
 		}
 
 
