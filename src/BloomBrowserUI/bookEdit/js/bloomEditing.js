@@ -512,7 +512,7 @@ function SetupDeletable(containerDiv) {
 function SetupImageContainer(containerDiv) {
     $(containerDiv).mouseenter(function () {
         var buttonModifier = "largeImageButton";
-        if ($(this).height() < 80) {
+        if ($(this).height() < 95) {
             buttonModifier = 'smallImageButton';
         }
         $(this).prepend('<button class="pasteImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
