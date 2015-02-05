@@ -60,6 +60,12 @@
 	<CreateProperty Value="BloomInstaller.$(Version).$(Label).exe">
 	  <Output PropertyName="SquirrelInstallerFileName" TaskParameter="Value"/>
 	</CreateProperty>
+	  <CreateProperty Value="Bloom-$(Version)-full.nupkg">
+		  <Output PropertyName="SquirrelFullPkg" TaskParameter="Value"/>
+	  </CreateProperty>
+	  <CreateProperty Value="Bloom-$(Version)-delta.exe">
+		  <Output PropertyName="SquirrelDeltaPkg" TaskParameter="Value"/>
+	  </CreateProperty>
 	<Message Text="Version: $(Version)" Importance="high"/>
 	<Message Text="FullVersion: $(FullVersion)" Importance="high"/>
   </Target>
@@ -253,6 +259,20 @@
 		<S3BuildPublisher
 		EncryptionContainerName ="$(Key)"
 		SourceFiles="../output/installer/$(SquirrelInstallerFileName)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="squirrel"
+		PublicRead="true" />
+
+		<S3BuildPublisher
+		EncryptionContainerName ="$(Key)"
+		SourceFiles="../output/installer/$(SquirrelDeltaPkg)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="squirrel"
+		PublicRead="true" />
+
+		<S3BuildPublisher
+		EncryptionContainerName ="$(Key)"
+		SourceFiles="../output/installer/$(SquirrelFullPkg)"
 		DestinationBucket="$(Bucket)"
 		DestinationFolder="squirrel"
 		PublicRead="true" />
