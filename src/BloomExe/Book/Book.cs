@@ -163,7 +163,7 @@ namespace Bloom.Book
 						var orderedPreferences = new List<string>();
 						orderedPreferences.Add(LocalizationManager.UILanguageId);
 
-						orderedPreferences.Add(_collectionSettings.Language1Iso639Code);
+						//already checked for this, previsouly. orderedPreferences.Add(_collectionSettings.Language1Iso639Code);
 						if (_collectionSettings.Language2Iso639Code != null)
 							orderedPreferences.Add(_collectionSettings.Language2Iso639Code);
 						if (_collectionSettings.Language3Iso639Code != null)
@@ -172,9 +172,8 @@ namespace Bloom.Book
 						orderedPreferences.Add("en");
 						orderedPreferences.Add("fr");
 						orderedPreferences.Add("es");
-
 						display = title.GetBestAlternativeString(orderedPreferences);
-						if (string.IsNullOrEmpty(display))
+						if (string.IsNullOrWhiteSpace(display))
 						{
 							display = title.GetFirstAlternative();
 							Debug.Assert(!string.IsNullOrEmpty(display), "by our logic, this shouldn't possible");

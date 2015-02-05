@@ -155,8 +155,8 @@ namespace BloomTests.Book
 			Assert.That(spaceFixer.Replace(newStylenode, " "), Is.EqualTo(spaceFixer.Replace(styleNode, " ")));
 		}
 
-		//regression
-		[Test]
+		//For Bloom 3.1, we decided to retire this feature. Now, new books are just called "book"
+		/*[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_InitialFolderNameIsCalledVaccinations()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
@@ -167,7 +167,18 @@ namespace BloomTests.Book
 
 			//NB: although the clas under test here may produce a folder with the right name, the Book class may still mess it up based on variables
 			//But that is a different set of unit tests.
+		}*/
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_InitialFolderNameIsJustBook()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
+																			"Vaccinations");
+
+			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			Assert.AreEqual("Book", Path.GetFileName(path));
 		}
+
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasDataDivIntact()
@@ -227,7 +238,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_OriginalIsTemplate_CopyHasNotTitle()
+		public void CreateBookOnDiskFromTemplate_OriginalIsTemplate_CopyHasNoTitle()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
 																			"Basic Book");
