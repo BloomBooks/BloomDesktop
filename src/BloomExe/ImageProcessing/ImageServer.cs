@@ -82,7 +82,6 @@ namespace Bloom.ImageProcessing
 			var r = GetLocalPathWithoutQuery(info);
 			if (r.EndsWith(".png") || r.EndsWith(".jpg"))
 			{
-				info.ContentType = r.EndsWith(".png") ? "image/png" : "image/jpeg";
 				r = r.Replace("thumbnail", "");
 				//if (r.Contains("thumb"))
 				{
