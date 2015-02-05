@@ -18,6 +18,7 @@ using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.UniqueToken;
 using System.Linq;
+using Squirrel;
 
 namespace Bloom
 {
@@ -52,13 +53,30 @@ namespace Bloom
 
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
-		static void Main(string[] args)
+		static void Main(string[] args1)
 		{
 			bool skipReleaseToken = false;
 			try
 			{
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
+
+				var args = args1;
+
+				// If this is the automatic launch of bloom done by Squirrel as part of setup, just quit...we don't want
+				// to launch at the end of setup. (This could be a place to display a message saying the install succeeded.)
+				if (args.Length > 0 && args[0] == "--squirrel-firstrun")
+					// Todo: localize this or do something nicer (maybe in Setup.exe) and remove this.
+					MessageBox.Show(
+						"Bloom has been installed successfully! You can run it from the desktop icon or the Start menu item.");
+					return;
+
+
+				if (args.Length > 0 && args[0].StartsWith("--squirrel"))
+				{
+					HandleSquirrelInstallEvent(args);
+					return; // possibly unreachable?
+				}
 
 				if (Palaso.PlatformUtilities.Platform.IsWindows)
 				{
@@ -240,6 +258,33 @@ namespace Bloom
 			{
 				if (!skipReleaseToken)
 					UniqueToken.ReleaseToken();
+			}
+		}
+
+		public const string SquirrelUpdateUrl = @"http://bloomlibrary.org.s3.amazonaws.com/squirrel";
+
+		private static void HandleSquirrelInstallEvent(string[] args)
+		{
+			bool firstTime = false;
+			switch (args[0])
+			{
+				// args[1] is version number
+				case "--squirrel-install": // (first?) installed
+				case "--squirrel-updated": // updated to specified version
+				case "--squirrel-obsolete": // this version is no longer newest
+				case "--squirrel-uninstall": // being uninstalled
+					using (var mgr = new UpdateManager(SquirrelUpdateUrl, "Bloom", FrameworkVersion.Net45))
+					{
+						// Note, in most of these scenarios, the app exits after this method
+						// completes!
+						SquirrelAwareApp.HandleEvents(
+						  onInitialInstall: v => mgr.CreateShortcutForThisExe(),
+						  onAppUpdate: v => mgr.CreateShortcutForThisExe(),
+						  onAppUninstall: v => mgr.RemoveShortcutForThisExe(),
+						  onFirstRun: () => firstTime = true,
+						  arguments: args);
+					}
+					break;
 			}
 		}
 

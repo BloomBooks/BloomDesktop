@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
@@ -16,11 +17,11 @@ using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
 using Messir.Windows.Forms;
-using NetSparkle;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ReleaseNotes;
 using Palaso.UI.WindowsForms.SettingProtection;
+using Squirrel;
 
 namespace Bloom.Workspace
 {
@@ -40,7 +41,6 @@ namespace Bloom.Workspace
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
-		private Sparkle _sparkleApplicationUpdater;
 		private readonly LocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
 
@@ -61,7 +61,6 @@ namespace Bloom.Workspace
 							 FeedbackDialog.Factory feedbackDialogFactory,
 							ProblemReporterDialog.Factory problemReportDialogFactory,
 							ChorusSystem chorusSystem,
-							Sparkle sparkleApplicationUpdater,
 							LocalizationManager localizationManager
 
 			)
@@ -74,7 +73,6 @@ namespace Bloom.Workspace
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_problemReportDialogFactory = problemReportDialogFactory;
 			_chorusSystem = chorusSystem;
-			_sparkleApplicationUpdater = sparkleApplicationUpdater;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
@@ -82,11 +80,13 @@ namespace Bloom.Workspace
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
 			{
 				if (!Debugger.IsAttached)
-					_sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
+				{
+					Application.Idle += CheckForUpdatesOnFirstIdle;
+				}
 			}
 			else
 			{
-				_checkForNewVersionMenuItem.Visible = false;
+			_checkForNewVersionMenuItem.Visible = false;
 			}
 
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
@@ -173,6 +173,12 @@ namespace Bloom.Workspace
 			}
 
 			SetupUILanguageMenu();
+		}
+
+		private void CheckForUpdatesOnFirstIdle(object sender, EventArgs eventArgs)
+		{
+			Application.Idle -= CheckForUpdatesOnFirstIdle;
+			InitiateSquirrelUpdateCheck();
 		}
 
 		private void OnSendReceive(object obj)
@@ -475,8 +481,18 @@ namespace Bloom.Workspace
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
 		{
+			InitiateSquirrelUpdateCheck();
+		}
+
+		private static async void InitiateSquirrelUpdateCheck()
+		{
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
-				_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
+			{
+				using (var mgr = new UpdateManager(Program.SquirrelUpdateUrl, "Bloom", FrameworkVersion.Net45))
+				{
+					await mgr.UpdateApp();
+				}
+			}
 		}
 
 		private static void OpenInfoFile(string fileName)

@@ -7,7 +7,6 @@ using Bloom.ToPalaso;
 using System.Linq;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
-using NetSparkle;
 using Palaso.Reporting;
 using System.Windows.Forms;
 
@@ -33,31 +32,6 @@ namespace Bloom
 
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
-
-				builder.Register<Sparkle>(c =>
-				{
-					string url = string.Empty;
-					// On Linux we use the OS package management for updating to new versions,
-					// so we save a few milliseconds by not retrieving the version table.
-					if (Palaso.PlatformUtilities.Platform.IsWindows)
-					{
-					try
-					{
-						var updateTable = new UpdateVersionTable();
-						url = updateTable.GetAppcastUrl();
-					}
-					catch (Exception)
-					{
-						url = "";
-						Logger.WriteEvent("Could not retrieve UpdateVersionTable from the internet");
-					}
-					}
-					var s =new Sparkle(url,Resources.Bloom);
-					s.CustomInstallerArguments = "/qb";
-					s.DoLaunchAfterUpdate = false;
-					return s;
-				}).InstancePerLifetimeScope();
-
 
 				builder.Register(c => LocalizationManager).SingleInstance();
 
@@ -87,11 +61,6 @@ namespace Bloom
 			public OpenAndCreateCollectionDialog OpenAndCreateCollectionDialog()
 			{
 				return _container.Resolve<OpenAndCreateCollectionDialog>();
-			}
-
-			public Sparkle ApplicationUpdator
-			{
-				get { return _container.Resolve<Sparkle>(); }
 			}
 
 			public LocalizationManager LocalizationManager;
