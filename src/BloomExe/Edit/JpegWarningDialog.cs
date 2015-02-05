@@ -38,7 +38,8 @@ Please select from one of the following, then click “OK”:").Replace("\r\n","
 			var bmp = image as Bitmap;
 			if (bmp == null)
 				return false;
-			return HasLotsOfWhiteSpace(bmp) && (IsGreyScale(bmp) || !HasLotsOfColor(bmp));
+			//Note: currently I can't justify why initially I was testing for greyscale.... maybe the logic will return...
+			return HasLotsOfWhiteSpace(bmp) && (/*IsGreyScale(bmp) || */!HasLotsOfColor(bmp));
 		}
 		private static bool IsGreyScale(Bitmap bmp)
 		{
@@ -67,6 +68,9 @@ Please select from one of the following, then click “OK”:").Replace("\r\n","
 		}
 		private static int GetNumberOfColors(Bitmap bmp, int lineNumber)
 		{
+			if(lineNumber >= bmp.Height)
+				return 0; //guard against math errors by the caller
+
 			var colors = new HashSet<int>();
 			for(var x = 0; x < bmp.Width; x++)
 			{
@@ -82,6 +86,8 @@ Please select from one of the following, then click “OK”:").Replace("\r\n","
 		private static bool GetIsGrey(Bitmap bmp, int lineNumber)
 		{
 			const int thresholdForGrey = 20;
+			if (lineNumber >= bmp.Height)
+				return false; //guard against math errors by the caller
 			for(int x = 0; x < bmp.Width; x++)
 			{
 				var pixelColor = bmp.GetPixel(x, lineNumber);
@@ -93,6 +99,9 @@ Please select from one of the following, then click “OK”:").Replace("\r\n","
 		}
 		private static double GetPercentWhiteOfLine(Bitmap bmp, int lineNumber)
 		{
+			if(lineNumber >= bmp.Height)
+				return 0; //guard against math errors by the caller
+
 			const int maxCombinedRgbValueToBeConsideredWhite = 3 * 253; // true white is 255. We'll count off-white as well
 			int whiteCount=0;
 			for (int x = 0; x < bmp.Width; x++)

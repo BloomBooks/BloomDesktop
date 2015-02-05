@@ -53,19 +53,9 @@ namespace Bloom.ImageProcessing
 			var isJpeg = AppearsToBeJpeg(imageInfo);
 			try
 			{
+				//nb: there are cases (undefined) where we get out of memory if we are not operating on a copy
 				using (var image = new Bitmap(imageInfo.Image))
-					//nb: there are cases (undefined) where we get out of memory if we are not operating on a copy
 				{
-					//photographs don't work if you try to make the white transparent
-					if (!isJpeg && image is Bitmap)
-					{
-						//I (Hatton) have decided to stop storing images with transparency. It caused visual problems
-						//with many pdf readers. We can bring the benefits of this back, without the costs, by having
-						// our server deliver a transparent version on-the-fly when making a thumbnail, preview, or edit page.
-
-						/*((Bitmap)image).MakeTransparent(Color.White);//make white look realistic against background*/
-					}
-
 					var imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isJpeg);
 					var destinationPath = Path.Combine(bookFolderPath, imageFileName);
 					using (var tmp = new TempFile())
@@ -108,7 +98,7 @@ namespace Bloom.ImageProcessing
 						var msg = string.Format("Bloom was not able to prepare that picture for including in the book. \r\nThis is a rather large image to be adding to a book --{0} Megs--.", megs);
 						if(isJpeg)
 						{
-							msg += "\r\nNote, this file is a jpeg, which is normally used for photographs, not line-drawings (png, tiff, bmp). Bloom can handle smallish jpegs, large ones are difficult to handle, especialy if memory is limitted.";
+							msg += "\r\nNote, this file is a jpeg, which is normally used for photographs, not line-drawings (png, tiff, bmp). Bloom can handle smallish jpegs, large ones are difficult to handle, especialy if memory is limited.";
 						}
 						throw new ApplicationException(msg, error);
 					}
