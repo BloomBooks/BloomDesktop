@@ -3,10 +3,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using Atlassian.Jira;
+using TechTalk.JiraRestClient;
 using Bloom.Book;
 using L10NSharp;
 using Palaso.Extensions;
@@ -31,11 +30,18 @@ namespace Bloom.MiscUI
 		private Bitmap _screenshot;
 		protected State _state;
 		private string _emailableReportFilePath;
+		private readonly string JiraUrl;
 		protected string _jiraProjectKey = "BL";
+		private JiraClient _jiraClient;
 		private Issue _jiraIssue;
 
 		public ProblemReporterDialog(Control targetOfScreenshot, BookSelection bookSelection)
 		{
+			// BL-821: Using https throws an exception on Linux. There is hope that a future
+			// mono version will have that fixed since the TLS code is getting reworked. Until
+			// then we use the unsecured URL.
+			JiraUrl = string.Format("{0}://jira.sil.org",
+				Palaso.PlatformUtilities.Platform.IsLinux ? "http" : "https");
 			_bookSelection = bookSelection;
 
 			InitializeComponent();
@@ -180,7 +186,7 @@ namespace Bloom.MiscUI
 						"We received your report, thanks for taking the time to help make Bloom better!");
 					this.AcceptButton = _submitButton;
 					_submitButton.Focus();
-					_status.HTML = string.Format("<span style='color:blue'>" + message + "</span><br/><a href='{0}'>{1}</a>", _jiraIssue.Jira.Url + "browse/" + _jiraIssue.Key.Value, _jiraIssue.Key.Value);
+					_status.HTML = string.Format("<span style='color:blue'>" + message + "</span><br/><a href='{0}'>{1}</a>", JiraUrl + "/browse/" + _jiraIssue.key, _jiraIssue.key);
 
 					Cursor = Cursors.Default;
 					break;
@@ -217,34 +223,42 @@ namespace Bloom.MiscUI
 			}
 		}
 
+		private void AddAttachment(string file)
+		{
+			using (var stream = new FileStream(file, FileMode.Open))
+			{
+				_jiraClient.CreateAttachment(_jiraIssue, stream, Path.GetFileName(file));
+			}
+		}
+
 		/// <summary>
-		/// Using the Atlassian SDK here. That SDK doesn't permit looking up users, so we can't submit
+		/// Using the JiraRestClient here. That SDK doesn't permit looking up users, so we can't submit
 		/// the report as if it were from this person, even if they have an account (well, not without
 		/// asking them for credentials, which is just not gonna happen). So we submit with an
 		/// account we created just for this purpose, "auto_report_creator".
 		/// </summary>
-		/// <returns></returns>
+		/// <remarks>Originally we used the Atlassian SDK assembly but that had problems with
+		/// serialization on Mono, so we switched to TechTalk.JiraRestClient.</remarks>
 		private bool SubmitToJira()
 		{
 			try
 			{
 				ChangeState(State.Submitting);
 
-				var jira = new Jira("https://jira.sil.org", "auto_report_creator", "thisIsInOpenSourceCode");
-				_jiraIssue = jira.CreateIssue(_jiraProjectKey);
-				_jiraIssue.Type = "Awaiting Classification";
-				_jiraIssue.Summary = "User Problem Report " + _email.Text;
-				_jiraIssue.Description = GetFullDescriptionContents(false);
+				_jiraClient = new JiraClient(JiraUrl, "auto_report_creator", "thisIsInOpenSourceCode");
+				_jiraIssue = _jiraClient.CreateIssue(_jiraProjectKey, "Awaiting Classification",
+					new IssueFields { summary = "User Problem Report " + _email.Text,
+						description = GetFullDescriptionContents(false) });
+				var issueKey = new IssueRef { key = _jiraIssue.key };
 
-				_jiraIssue.SaveChanges();
-
-				//this could all be done in one go, but I'm doing it in stages so as to increase the chance of success in bad internet situations
+				// this could all be done in one go, but I'm doing it in stages so as to increase the
+				// chance of success in bad internet situations
 				if (_includeScreenshot.Checked)
 				{
 					using (var file = TempFile.WithFilenameInTempFolder("screenshot.png"))
 					{
 						_screenshot.Save(file.Path, ImageFormat.Png);
-						_jiraIssue.AddAttachment(file.Path);
+						AddAttachment(file.Path);
 					}
 				}
 
@@ -256,7 +270,7 @@ namespace Bloom.MiscUI
 						var zip = new BloomZipFile(bookZip.Path);
 						zip.AddDirectory(_bookSelection.CurrentSelection.FolderPath);
 						zip.Save();
-						_jiraIssue.AddAttachment(bookZip.Path);
+						AddAttachment(bookZip.Path);
 					}
 				}
 
@@ -266,17 +280,17 @@ namespace Bloom.MiscUI
 					{
 						using (var logFile = GetLogFile())
 						{
-							_jiraIssue.AddAttachment(logFile.Path);
+							AddAttachment(logFile.Path);
 						}
 					}
 					catch (Exception e)
 					{
-						_jiraIssue.Description += Environment.NewLine + "Got exception trying to attach log file: " + e.Message;
+						_jiraIssue.fields.description += Environment.NewLine + "Got exception trying to attach log file: " + e.Message;
 					}
 				}
 
 				ChangeState(State.Submitting);
-				_jiraIssue.SaveChanges();
+				_jiraClient.UpdateIssue(_jiraIssue);
 				ChangeState(State.Success);
 				return true;
 			}
