@@ -1,11 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Net;
-using System.Threading;
-using System.Windows.Forms;
 using Bloom.web;
-using Palaso.Code;
-using Palaso.IO;
 using Palaso.Reporting;
 using Bloom.Properties;
 
@@ -84,13 +79,10 @@ namespace Bloom.ImageProcessing
 			{
 				info.ContentType = r.EndsWith(".png") ? "image/png" : "image/jpeg";
 				r = r.Replace("thumbnail", "");
-				//if (r.Contains("thumb"))
+				if (File.Exists(r))
 				{
-					if (File.Exists(r))
-					{
-						info.ReplyWithImage(_cache.GetPathToResizedImage(r));
-						return true;
-					}
+					info.ReplyWithImage(_cache.GetPathToResizedImage(r));
+					return true;
 				}
 			}
 			return false;

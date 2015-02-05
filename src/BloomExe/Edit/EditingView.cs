@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.web;
 using L10NSharp;
@@ -551,7 +552,7 @@ namespace Bloom.Edit
 				return;
 			}
 
-			Image clipboardImage = null;
+			PalasoImage clipboardImage = null;
 			try
 			{
 				clipboardImage = GetImageFromClipboard();
@@ -562,6 +563,7 @@ namespace Bloom.Edit
 					return;
 				}
 
+
 				var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
 				if (target.ClassName.Contains("licenseImage"))
 					return;
@@ -571,21 +573,46 @@ namespace Bloom.Edit
 					return;
 				Cursor = Cursors.WaitCursor;
 
-				//nb: later, code closer to the the actual book folder will
-				//improve this file name. Taglib# requires an extension that matches the file content type, however.
-				using (var temp = TempFile.WithExtension("png"))
+				//nb: Taglib# requires an extension that matches the file content type.
+				if (ImageUtils.AppearsToBeJpeg(clipboardImage))
 				{
-					clipboardImage.Save(temp.Path, ImageFormat.Png);
-//                    using (var progressDialog = new ProgressDialogBackground())
-//                    {
-//                        progressDialog.ShowAndDoWork((progress, args) =>
-//                                                         {
-//                                                             ImageUpdater.CompressImage(temp.Path, progress);
-//                                                         });
-//                    }
-					using (var palasoImage = PalasoImage.FromFile(temp.Path))
+					if(ShouldBailOutBecauseUserAgreedNotToUseJpeg(clipboardImage))
+						return;
+					Logger.WriteMinorEvent("[Paste Image] Pasting jpeg image {0}", clipboardImage.OriginalFilePath);
+					_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+				}
+				else
+				{
+					//At this point, it could be a bmp, tiff, or PNG. We want it to be a PNG.
+					if(clipboardImage.OriginalFilePath == null) //they pasted an image, not a path
 					{
-						_model.ChangePicture(imageElement, palasoImage, new NullProgress());
+						Logger.WriteMinorEvent("[Paste Image] Pasting image directly from clipboard (e.g. screenshot)");
+						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+					}
+					//they pasted a path to a png
+					else if(Path.GetExtension(clipboardImage.OriginalFilePath).ToLower() == ".png")
+					{
+						Logger.WriteMinorEvent("[Paste Image] Pasting png file {0}", clipboardImage.OriginalFilePath);
+						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+					}
+					else // they pasted a path to some other bitmap format
+					{
+						var pathToPngVersion = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(clipboardImage.FileName) + ".png");
+						Logger.WriteMinorEvent("[Paste Image] Saving {0} ({1}) as {2} and converting to PNG", clipboardImage.FileName,
+							clipboardImage.OriginalFilePath, pathToPngVersion);
+						if (File.Exists(pathToPngVersion))
+						{
+							File.Delete(pathToPngVersion);
+						}
+						using(var temp = TempFile.TrackExisting(pathToPngVersion))
+						{
+							clipboardImage.Image.Save(pathToPngVersion, ImageFormat.Png);
+
+							using (var palasoImage = PalasoImage.FromFile(temp.Path))
+							{
+								_model.ChangePicture(imageElement, palasoImage, new NullProgress());
+							}
+						}
 					}
 				}
 			}
@@ -601,7 +628,7 @@ namespace Bloom.Edit
 			Cursor = Cursors.Default;
 		}
 
-		private static Image GetImageFromClipboard()
+		private static PalasoImage GetImageFromClipboard()
 		{
 			return BloomClipboard.GetImageFromClipboard();
 		}
@@ -685,9 +712,12 @@ namespace Bloom.Edit
 			{
 				if (DialogResult.OK == dlg.ShowDialog())
 				{
+
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					try
 					{
+						if(ShouldBailOutBecauseUserAgreedNotToUseJpeg(dlg.ImageInfo))
+							return;
 						_model.ChangePicture(imageElement, dlg.ImageInfo, new NullProgress());
 					}
 					catch (System.IO.IOException error)
@@ -706,6 +736,21 @@ namespace Bloom.Edit
 			}
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
+		}
+
+		private bool ShouldBailOutBecauseUserAgreedNotToUseJpeg(PalasoImage imageInfo)
+		{
+			if(ImageUtils.AppearsToBeJpeg(imageInfo) && JpegWarningDialog.ShouldWarnAboutJpeg(imageInfo.Image))
+			{
+				using(var jpegDialog = new JpegWarningDialog())
+				{
+					return jpegDialog.ShowDialog() == DialogResult.Cancel;
+				}
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		public void UpdateThumbnailAsync(IPage page)

@@ -1,4 +1,14 @@
-﻿## 3.0.93 BETA
+﻿## 3.1
+
+### Fixes
+
+- Fixed a problem where many PDF viewer programs showed ugly lines around parts images. This fix will only help with images imported from now on, not retractively.
+- Pasted images are now named "image1",2,3, etc.
+- Pasted images are no longer added with a temporary gibberish name; the original names are maintained.
+- Stopped compressing pngs (could return someday, but for now it's hard on people with slower machines, and sometimes increases the size)
+- Bloom now tries to detect when you are importing a jpeg that really should be tiff/bmp/png, and puts up an informative dialog that lets you repent or plow forward.
+
+## 3.0.93 BETA
 
 ### A couple known problems
 - If upgrading from Bloom 2, the Windows installer loses one of Bloom's files. It will now notify you that this happened and ask you do reinstall and choose "repair".

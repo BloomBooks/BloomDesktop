@@ -590,9 +590,9 @@ function UpdateOverlay(container, img) {
 // TODO: internationalize
 function SetAlternateTextOnImages(element) {
     if ($(element).attr('src').length > 0) { //don't show this on the empty license image when we don't know the license yet
-        $(element).attr('alt', 'This picture, ' + $(element).attr('src') + ', is missing or was loading too slowly.');
-    }
-    else {
+        var nameWithoutQueryString = $(element).attr('src').split("?")[0];
+        $(element).attr('alt', 'This picture, ' + nameWithoutQueryString + ', is missing or was loading too slowly.');
+    } else {
         $(element).attr('alt', '');//don't be tempted to show something like a '?' unless you fix the result when you have a custom book license on top of that '?'
     }
 }
