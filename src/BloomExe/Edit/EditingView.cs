@@ -574,7 +574,7 @@ namespace Bloom.Edit
 				Cursor = Cursors.WaitCursor;
 
 				//nb: Taglib# requires an extension that matches the file content type.
-				if (ImageUtils.ShouldSaveAsJpeg(clipboardImage))
+				if (ImageUtils.AppearsToBeJpeg(clipboardImage))
 				{
 					if(ShouldBailOutBecauseUserAgreedNotToUseJpeg(clipboardImage))
 						return;
@@ -740,7 +740,7 @@ namespace Bloom.Edit
 
 		private bool ShouldBailOutBecauseUserAgreedNotToUseJpeg(PalasoImage imageInfo)
 		{
-			if(ImageUtils.ShouldSaveAsJpeg(imageInfo) && JpegWarningDialog.ShouldWarnAboutJpeg(imageInfo.Image))
+			if(ImageUtils.AppearsToBeJpeg(imageInfo) && JpegWarningDialog.ShouldWarnAboutJpeg(imageInfo.Image))
 			{
 				using(var jpegDialog = new JpegWarningDialog())
 				{

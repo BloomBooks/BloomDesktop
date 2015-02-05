@@ -13,7 +13,7 @@ namespace Bloom.ImageProcessing
 {
 	class ImageUtils
 	{
-		public static bool ShouldSaveAsJpeg(PalasoImage imageInfo)
+		public static bool AppearsToBeJpeg(PalasoImage imageInfo)
 		{
 			/*
 			 * Note, each guid is VERY SIMILAR. The difference is only in the last 2 digits of the 1st group.
@@ -50,7 +50,7 @@ namespace Bloom.ImageProcessing
 		{
 			LogMemoryUsage();
 
-			var isJpeg = ShouldSaveAsJpeg(imageInfo);
+			var isJpeg = AppearsToBeJpeg(imageInfo);
 			try
 			{
 				using (var image = new Bitmap(imageInfo.Image))
