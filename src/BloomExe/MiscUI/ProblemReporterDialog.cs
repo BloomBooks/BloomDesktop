@@ -25,14 +25,13 @@ namespace Bloom.MiscUI
 	{
 		public delegate ProblemReporterDialog Factory(Control targetOfScreenshot);//autofac uses this
 
-		private enum State { WaitingForSubmission, ZippingUpBook, Submitting, CouldNotAutomaticallySubmit, Success }
+		protected enum State { WaitingForSubmission, ZippingUpBook, Submitting, CouldNotAutomaticallySubmit, Success }
 
 		private readonly BookSelection _bookSelection;
 		private Bitmap _screenshot;
-		private State _state;
+		protected State _state;
 		private string _emailableReportFilePath;
-		private string _jiraProjectKey = "BL";
-		private bool _closeAfterSubmittingForUnitTest;
+		protected string _jiraProjectKey = "BL";
 		private Issue _jiraIssue;
 
 		public ProblemReporterDialog(Control targetOfScreenshot, BookSelection bookSelection)
@@ -111,7 +110,7 @@ namespace Bloom.MiscUI
 			}
 		}
 
-		private void ChangeState(State state)
+		protected virtual void ChangeState(State state)
 		{
 			_state = state;
 			UpdateDisplay();
@@ -127,7 +126,7 @@ namespace Bloom.MiscUI
 #endif
 		}
 
-		private void UpdateDisplay()
+		protected virtual void UpdateDisplay()
 		{
 			_submitButton.Enabled = !string.IsNullOrWhiteSpace(_name.Text.Trim()) && !string.IsNullOrWhiteSpace(_email.Text.Trim()) &&
 								   !string.IsNullOrWhiteSpace(_description.Text.Trim());
@@ -184,10 +183,6 @@ namespace Bloom.MiscUI
 					_status.HTML = string.Format("<span style='color:blue'>" + message + "</span><br/><a href='{0}'>{1}</a>", _jiraIssue.Jira.Url + "browse/" + _jiraIssue.Key.Value, _jiraIssue.Key.Value);
 
 					Cursor = Cursors.Default;
-					if (_closeAfterSubmittingForUnitTest)
-					{
-						_okButton_Click(this, null);
-					}
 					break;
 
 				default:
@@ -195,7 +190,7 @@ namespace Bloom.MiscUI
 			}
 		}
 
-		private void _okButton_Click(object sender, EventArgs e)
+		protected void _okButton_Click(object sender, EventArgs e)
 		{
 			if (_state == State.Success)
 			{
@@ -410,17 +405,6 @@ namespace Bloom.MiscUI
 		private void _cancelButton_Click(object sender, EventArgs e)
 		{
 			Close();
-		}
-
-		public void SetupForUnitTest(string jiraProjectKey)
-		{
-			this.Load += (sender, e) =>
-			{
-				_jiraProjectKey = jiraProjectKey;
-				_description.Text = "created by unit test of " + Assembly.GetAssembly(this.GetType()).FullName;
-				_closeAfterSubmittingForUnitTest = true;
-				_okButton_Click(sender, e);
-			};
 		}
 
 		private void _seeDetails_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
