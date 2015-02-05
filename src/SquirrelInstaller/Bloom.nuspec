@@ -12,7 +12,7 @@
     <copyright>Copyright SIL International 2015</copyright>
   </metadata>
 	<files>
-		<file src="..\..\output\debug\**\*.*" exclude="*.xml;Bloom.vshost.exe;*.pdb;remoteDebugging" target="lib\net45\"/>
+		<file src="..\..\output\release\**\*.*" exclude="*.xml;Bloom.vshost.exe;*.pdb;remoteDebugging" target="lib\net45\"/>
 		<file src="..\..\lib\xulrunner\**\*.*" target="\lib\net45\xulrunner"/>
 		<file src="..\..\distfiles\**\*.*"  target="lib\net45\"/>
 		<file src="..\..\Mercurial\**\*.*" target="\lib\net45\Mercurial"/>
