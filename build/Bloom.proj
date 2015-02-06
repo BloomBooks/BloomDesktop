@@ -68,7 +68,7 @@
 	  </CreateProperty>
 	  <!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
 	  it should be possible to set your preferred release folder from the command line /p:SquirrelReleaseFolder=wherever-->
-	  <CreateProperty Value="Z:\BloomSquirrelReleases" Condition="$(SquirrelReleaseFolder)=''">
+	  <CreateProperty Value="Z:\BloomSquirrelReleases" Condition="$(SquirrelReleaseFolder)==''">
 		  <Output PropertyName="SquirrelReleaseFolder" TaskParameter="Value"/>
 	  </CreateProperty>
 	<Message Text="Version: $(Version)" Importance="high"/>
