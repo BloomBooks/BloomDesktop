@@ -58,5 +58,20 @@ namespace BloomTests
 			}
 			Assert.AreEqual(1, found);
 		}
+
+		/// <summary>
+		/// We don't particularly want it to convert newlines to spaces, as this test demonstrates that it does.
+		/// However, that is harmless and unlikely to occur (we're not counting on newlines for formatting)
+		/// so I haven't tried to prevent it.
+		/// I do want to test that an existing newline is not simply removed, leaving no white space.
+		/// </summary>
+		[Test]
+		public void GetXmlDomFromHtml_HasBandItags_NoExtraNewlinesBefore()
+		{
+			const string html = @"<!DOCTYPE html><html><head></head><body><div>one<b>two</b>three<i>four</i>five
+<b>six</b>seven <i>eight</i>nine</div></body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
+			Assert.That(dom.InnerXml, Is.StringContaining(@"one<b>two</b>three<i>four</i>five <b>six</b>seven <i>eight</i>nine"));
+		}
 	}
 }
