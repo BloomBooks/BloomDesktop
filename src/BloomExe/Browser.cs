@@ -202,11 +202,7 @@ namespace Bloom
 					_browser.Undo();
 				}
 			};
-			//none of these worked
-/*            _browser.DomKeyPress+=new GeckoDomKeyEventHandler((sender, args) => UpdateEditButtons());
-			_browser.DomClick += new GeckoDomEventHandler((sender, args) => UpdateEditButtons());
-			_browser.DomFocus += new GeckoDomEventHandler((sender, args) => UpdateEditButtons());
-  */      }
+		}
 
 		public void SaveHTML(string path)
 		{
@@ -218,7 +214,7 @@ namespace Bloom
 			_browser.SaveDocument(path, "text/html");
 		}
 
-		private void UpdateEditButtons()
+		public void UpdateEditButtons()
 		{
 			if (_copyCommand == null)
 				return;
@@ -283,21 +279,24 @@ namespace Bloom
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing)
 		{
-			if (_jsCallHook != null)
+			if (disposing)
 			{
-				_jsCallHook.JavaScriptError -= _jsCallHook_JavaScriptError;
-				_jsCallHook = null;
-			}
-			_jsErrorHandler = null;
+				if (_jsCallHook != null)
+				{
+					_jsCallHook.JavaScriptError -= _jsCallHook_JavaScriptError;
+					_jsCallHook = null;
+				}
+				_jsErrorHandler = null;
 
-			if (_tempHtmlFile != null)
-			{
-				_tempHtmlFile.Dispose();
-				_tempHtmlFile = null;
-			}
-			if (disposing && (components != null))
-			{
-				components.Dispose();
+				if (_tempHtmlFile != null)
+				{
+					_tempHtmlFile.Dispose();
+					_tempHtmlFile = null;
+				}
+				if (components != null)
+				{
+					components.Dispose();
+				}
 			}
 			base.Dispose(disposing);
 			_disposed = true;
@@ -339,14 +338,12 @@ namespace Bloom
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
 			_browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
 
-			_updateCommandsTimer.Enabled = true;//hack
-
 			GeckoPreferences.User["mousewheel.withcontrolkey.action"] = 3;
 			GeckoPreferences.User["browser.zoom.full"] = true;
 
-			//in firefox 14, at least, there was a bug such that if you have more than one lang on the page, all are check with English
-			//until we get past that, it's just annoying
-
+			// in firefox 14, at least, there was a bug such that if you have more than one lang on
+			// the page, all are check with English
+			// until we get past that, it's just annoying
 			GeckoPreferences.User["layout.spellcheckDefault"] = 0;
 
 			RaiseGeckoReady();
@@ -386,9 +383,12 @@ namespace Bloom
 			Debug.Assert(!InvokeRequired);
 			//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
 			var originalText = BloomClipboard.GetText(TextDataFormat.UnicodeText);
-			//setting clears everything else:
-			BloomClipboard.SetText(originalText, TextDataFormat.UnicodeText);
-			_browser.Paste();
+			if (!string.IsNullOrEmpty(originalText))
+			{
+				//setting clears everything else:
+				BloomClipboard.SetText(originalText, TextDataFormat.UnicodeText);
+				_browser.Paste();
+			}
 		}
 
 		/// <summary>

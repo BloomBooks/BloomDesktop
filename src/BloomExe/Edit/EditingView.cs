@@ -162,6 +162,8 @@ namespace Bloom.Edit
 			_splitContainer1.Select();
 			//_browser1.Select();
 			_browser1.WebBrowser.Select();
+
+			_editButtonsUpdateTimer.Enabled = Parent != null;
 		}
 
 		public Bitmap ToolStripBackground { get; set; }
@@ -869,6 +871,7 @@ namespace Bloom.Edit
 
 		public void UpdateEditButtons()
 		{
+			_browser1.UpdateEditButtons();
 			UpdateButtonEnabled(_cutButton, _cutCommand);
 			UpdateButtonEnabled(_copyButton, _copyCommand);
 			UpdateButtonEnabled(_pasteButton, _pasteCommand);
@@ -886,6 +889,7 @@ namespace Bloom.Edit
 
 		private void CycleEditButtons()
 		{
+			_browser1.UpdateEditButtons();
 			CycleOneButton(_cutButton, _cutCommand);
 			CycleOneButton(_copyButton, _copyCommand);
 			CycleOneButton(_pasteButton, _pasteCommand);
@@ -907,6 +911,12 @@ namespace Bloom.Edit
 			//doesn't work because the forecolor is ignored when disabled...
 			button.ForeColor = button.Enabled ? _enabledToolbarColor : _disabledToolbarColor; //.DimGray;
 			button.Invalidate();
+		}
+
+		protected override void OnParentChanged(EventArgs e)
+		{
+			base.OnParentChanged(e);
+			_editButtonsUpdateTimer.Enabled = Parent != null;
 		}
 
 		private void _editButtonsUpdateTimer_Tick(object sender, EventArgs e)
@@ -943,14 +953,19 @@ namespace Bloom.Edit
 			_duplicatePageCommand.Execute();
 		}
 
-		private void EditingView_Load(object sender, EventArgs e)
+		protected override void OnLoad(EventArgs e)
 		{
+			base.OnLoad(e);
+
 			//Why the check for null? In bl-283, user had been in settings dialog, which caused a closing down, but something
 			//then did a callback to this view, such that ParentForm was null, and this died
 			Debug.Assert(ParentForm != null);
 			if (ParentForm != null)
 			{
 				ParentForm.Activated += new EventHandler(ParentForm_Activated);
+				ParentForm.Deactivate += (sender, e1) => {
+					_editButtonsUpdateTimer.Enabled = false;
+				};
 			}
 		}
 
