@@ -35,6 +35,7 @@
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
 			this._sourceCollectionDescription = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+			this._exisitingCollectionDescription = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -117,10 +118,32 @@
 			this._sourceCollectionDescription.TabStop = false;
 			this._sourceCollectionDescription.Text = resources.GetString("_sourceCollectionDescription.Text");
 			// 
+			// _exisitingCollectionDescription
+			// 
+			this._exisitingCollectionDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this._exisitingCollectionDescription.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this._exisitingCollectionDescription.Enabled = false;
+			this._exisitingCollectionDescription.Font = new System.Drawing.Font("Segoe UI", 9F);
+			this._exisitingCollectionDescription.ForeColor = System.Drawing.SystemColors.ControlText;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._exisitingCollectionDescription, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._exisitingCollectionDescription, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._exisitingCollectionDescription, L10NSharp.LocalizationPriority.MediumLow);
+			this._L10NSharpExtender.SetLocalizingId(this._exisitingCollectionDescription, "NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions");
+			this._exisitingCollectionDescription.Location = new System.Drawing.Point(19, 275);
+			this._exisitingCollectionDescription.Multiline = true;
+			this._exisitingCollectionDescription.Name = "_exisitingCollectionDescription";
+			this._exisitingCollectionDescription.ReadOnly = true;
+			this._exisitingCollectionDescription.Size = new System.Drawing.Size(358, 33);
+			this._exisitingCollectionDescription.TabIndex = 12;
+			this._exisitingCollectionDescription.TabStop = false;
+			this._exisitingCollectionDescription.Text = "If you already have a collection you want to open, click  the \'Cancel\' button.";
+			// 
 			// KindOfCollectionControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this._exisitingCollectionDescription);
 			this.Controls.Add(this._sourceCollectionDescription);
 			this.Controls.Add(this.betterLabel1);
 			this.Controls.Add(this._radioSourceCollection);
@@ -129,7 +152,7 @@
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "KindOfCollectionControl.KindOfCollectionControl");
 			this.Name = "KindOfCollectionControl";
-			this.Size = new System.Drawing.Size(391, 213);
+			this.Size = new System.Drawing.Size(391, 329);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -143,5 +166,6 @@
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel _sourceCollectionDescription;
+		private Palaso.UI.WindowsForms.Widgets.BetterLabel _exisitingCollectionDescription;
     }
 }
