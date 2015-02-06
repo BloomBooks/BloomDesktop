@@ -13,9 +13,24 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
+			if (disposing)
+			{
+				if (_editButtonsUpdateTimer != null)
+				{
+					_editButtonsUpdateTimer.Stop();
+					_editButtonsUpdateTimer.Dispose();
+					_editButtonsUpdateTimer = null;
+				}
+
+				if (_handleMessageTimer != null)
+				{
+					_handleMessageTimer.Stop();
+					_handleMessageTimer.Dispose();
+					_handleMessageTimer = null;
+				}
+
+				if (components != null)
+					components.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -70,7 +85,6 @@
 			// 
 			// _editButtonsUpdateTimer
 			// 
-			this._editButtonsUpdateTimer.Enabled = true;
 			this._editButtonsUpdateTimer.Tick += new System.EventHandler(this._editButtonsUpdateTimer_Tick);
 			// 
 			// _handleMessageTimer
@@ -496,7 +510,6 @@
 			this.Margin = new System.Windows.Forms.Padding(4);
 			this.Name = "EditingView";
 			this.Size = new System.Drawing.Size(1200, 561);
-			this.Load += new System.EventHandler(this.EditingView_Load);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this._splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).EndInit();
