@@ -45,12 +45,13 @@ namespace Bloom
 			content = content.Replace("></span>", ">REMOVEME</span>");
 			content = content.Replace("></i>", ">REMOVEME</i>");
 
-			// It also likes to insert newlines before <b> and <i>, and convert any existing whitespace
+			// It also likes to insert newlines before <b>, <u>, and <i>, and convert any existing whitespace
 			// there to a space.
 			// It probably does the same to embedded <span> elements, too, so we might need a similar fix
 			// for those if we start using them in persistent data.
 			content = content.Replace(@"<b>", "REMOVEWHITESPACE<b>");
 			content = content.Replace(@"<i>", "REMOVEWHITESPACE<i>");
+			content = content.Replace(@"<u>", "REMOVEWHITESPACE<u>");
 
 			// fix for <br></br> tag doubling
 			content = content.Replace("<br></br>", "<br />");
@@ -94,7 +95,7 @@ namespace Bloom
 
 						// The regex here is mainly for the \s as a convenient way to remove whatever whitespace TIDY
 						// has inserted. It's a fringe benefit that we can use the[bi] to deal with both elements in one replace.
-						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*\<([bi])\>", "<$1>");
+						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*\<([biu])\>", "<$1>");
 						dom.LoadXml(newContents);
 					}
 					catch (Exception e)
