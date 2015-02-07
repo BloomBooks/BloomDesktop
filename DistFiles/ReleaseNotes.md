@@ -1,12 +1,21 @@
 ﻿## 3.1
-
-### Fixes
-
-- Fixed a problem where many PDF viewer programs showed ugly lines around parts images. This fix will only help with images imported from now on, not retractively.
 - Pasted images are now named "image1",2,3, etc.
 - Pasted images are no longer added with a temporary gibberish name; the original names are maintained.
-- Stopped compressing pngs (could return someday, but for now it's hard on people with slower machines, and sometimes increases the size)
 - Bloom now tries to detect when you are importing a jpeg that really should be tiff/bmp/png, and puts up an informative dialog that lets you repent or plow forward.
+
+### Fixes
+- Fixed a problem where many PDF viewer programs showed ugly lines around parts images. This fix will only help with images imported from now on, not retroactively. We'll see about doing something retroactively soon.
+
+## 3.0.97 Beta
+- When importing, Bloom no longer
+  - makes images transparent when importing. 
+  - compresses images transparent when importing. 
+  - saves copyright/license back to the original files
+
+### Fixes
+- Spaces are no longer inserted between bold or underlined parts of a word and the normal parts
+- Fixed a problem that prevent renaming a collection
+- Fixed Vaccination shell Creative Commons logo
 
 ## 3.0.93 BETA
 

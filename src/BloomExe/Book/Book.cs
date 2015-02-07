@@ -623,7 +623,7 @@ namespace Bloom.Book
 			{
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
 				UpdatePageFromFactoryTemplates(OurHtmlDom, progress);
-				ImageUpdater.CompressImages(FolderPath, progress);
+				//ImageUpdater.CompressImages(FolderPath, progress);
 				Save();
 			}
 
