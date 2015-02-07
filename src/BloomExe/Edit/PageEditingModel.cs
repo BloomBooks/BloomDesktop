@@ -57,7 +57,7 @@ namespace Bloom.Edit
 						//photographs don't work if you try to make the white transparent
 						if (!isJpeg && image is Bitmap)
 						{
-							((Bitmap) image).MakeTransparent(Color.White);
+							//((Bitmap) image).MakeTransparent(Color.White);
 								//make white look realistic against background
 						}
 
@@ -78,10 +78,10 @@ namespace Bloom.Edit
 						image.Save(dest, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
 						if (!isJpeg)
 						{
-							using (var dlg = new ProgressDialogBackground())
-							{
-								dlg.ShowAndDoWork((progress, args) => ImageUpdater.CompressImage(dest, progress));
-							}
+//							using (var dlg = new ProgressDialogBackground())
+//							{
+//								dlg.ShowAndDoWork((progress, args) => ImageUpdater.CompressImage(dest, progress));
+//							}
 						}
 						imageInfo.Metadata.Write(dest);
 

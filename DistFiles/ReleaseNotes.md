@@ -1,4 +1,15 @@
-﻿## 3.0.93 BETA
+﻿## 3.0.97 Beta
+- When importing, Bloom no longer
+  - makes images transparent when importing. 
+  - compresses images transparent when importing. 
+  - saves copyright/license back to the original files
+
+### Fixes
+- Spaces are no longer inserted between bold or underlined parts of a word and the normal parts
+- Fixed a problem that prevent renaming a collection
+- Fixed Vaccination shell Creative Commons logo
+
+## 3.0.93 BETA
 
 ### A couple known problems
 - If upgrading from Bloom 2, the Windows installer loses one of Bloom's files. It will now notify you that this happened and ask you do reinstall and choose "repair".
