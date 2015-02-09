@@ -27,7 +27,7 @@ namespace Bloom.web
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
-		public EnhancedImageServer(LowResImageCache cache): base(cache)
+		public EnhancedImageServer(RuntimeImageProcessor cache): base(cache)
 		{
 		}
 

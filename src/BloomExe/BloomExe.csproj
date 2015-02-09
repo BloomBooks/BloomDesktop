@@ -342,7 +342,7 @@
     <Compile Include="HtmlLabel.Designer.cs">
       <DependentUpon>HtmlLabel.cs</DependentUpon>
     </Compile>
-    <Compile Include="ImageProcessing\LowResImageCache.cs" />
+    <Compile Include="ImageProcessing\RuntimeImageProcessor.cs" />
     <Compile Include="CollectionTab\IBloomTabArea.cs" />
     <Compile Include="CollectionTab\ListHeader.cs">
       <SubType>UserControl</SubType>

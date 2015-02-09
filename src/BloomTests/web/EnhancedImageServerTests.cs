@@ -86,7 +86,7 @@ namespace BloomTests.web
 
 		private static EnhancedImageServer CreateImageServer()
 		{
-			return new EnhancedImageServer(new LowResImageCache(new BookRenamedEvent()));
+			return new EnhancedImageServer(new RuntimeImageProcessor(new BookRenamedEvent()));
 		}
 
 		private TempFile MakeTempImage()
