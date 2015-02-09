@@ -69,8 +69,6 @@ namespace Bloom.web
 			}
 			else if (r.EndsWith(".png") && r.Contains("thumbnail"))
 			{
-				info.ContentType = "image/png";
-
 				r = r.Replace("thumbnail", "");
 				//if (r.Contains("thumb"))
 				{
