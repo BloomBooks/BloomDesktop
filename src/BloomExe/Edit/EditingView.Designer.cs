@@ -420,9 +420,9 @@
 			this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
-			this._menusToolStrip.Location = new System.Drawing.Point(294, 12);
+			this._menusToolStrip.Location = new System.Drawing.Point(294, 10);
 			this._menusToolStrip.Name = "_menusToolStrip";
-			this._menusToolStrip.Size = new System.Drawing.Size(165, 54);
+			this._menusToolStrip.Size = new System.Drawing.Size(165, 56);
 			this._menusToolStrip.TabIndex = 2;
 			this._menusToolStrip.Text = "toolStrip1";
 			// 
