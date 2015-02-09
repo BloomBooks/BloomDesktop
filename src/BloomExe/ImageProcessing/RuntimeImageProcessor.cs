@@ -17,11 +17,11 @@ namespace Bloom.ImageProcessing
 	/// or even gives up on displaying the image altogether (worse on slow machines).
 	/// This cache takes requests for images and returns lo-res versions of them.
 	/// </summary>
-	public class RuntimeImageProcessor :IDisposable
+	public class RuntimeImageProcessor : IDisposable
 	{
 		private readonly BookRenamedEvent _bookRenamedEvent;
-		public int TargetDimension=500;
-		private Dictionary<string,string> _paths;
+		public int TargetDimension = 500;
+		private Dictionary<string, string> _paths;
 		private string _cacheFolder;
 
 		private ImageAttributes _transparentImageAttributes;
@@ -46,7 +46,7 @@ namespace Bloom.ImageProcessing
 
 		public void Dispose()
 		{
-			if (_paths == null)
+			if(_paths == null)
 				return;
 
 			TryToDeleteCachedImages();
@@ -60,21 +60,21 @@ namespace Bloom.ImageProcessing
 
 		private void TryToDeleteCachedImages()
 		{
-//operate on a copy to avoid "Collection was modified; enumeration operation may not execute"
+			//operate on a copy to avoid "Collection was modified; enumeration operation may not execute"
 			//if someone is still using use while we're being disposed
 			var pathsToDelete = new List<string>();
 			pathsToDelete.AddRange(_paths.Values);
-			foreach (var path in pathsToDelete)
+			foreach(var path in pathsToDelete)
 			{
 				try
 				{
-					if (File.Exists(path))
+					if(File.Exists(path))
 					{
 						File.Delete(path);
 						Debug.WriteLine("RuntimeImageProcessor Successfully deleted: " + path);
 					}
 				}
-				catch (Exception e)
+				catch(Exception e)
 				{
 					Debug.WriteLine("RuntimeImageProcessor Dispose(): " + e.Message);
 				}
@@ -91,41 +91,41 @@ namespace Bloom.ImageProcessing
 		public string GetPathToResizedImage(string originalPath)
 		{
 			//don't mess with Bloom UI images
-			if (new[] {"/img/","placeHolder", "Button"}.Any(s => originalPath.Contains(s)))
+			if(new[] { "/img/", "placeHolder", "Button" }.Any(s => originalPath.Contains(s)))
 				return originalPath;
 
 			string resizedPath;
-//			if(_paths.TryGetValue(originalPath, out resizedPath))
-//			{
-//				if (File.Exists(resizedPath) && new FileInfo(originalPath).LastWriteTimeUtc <= new FileInfo(resizedPath).LastWriteTimeUtc)
-//				{
-//						return resizedPath;
-//				}
-//				else
-//				{
-//					_paths.Remove(originalPath);
-//				}
-//			}
-			using (var originalImage = PalasoImage.FromFile(originalPath))
+			//			if(_paths.TryGetValue(originalPath, out resizedPath))
+			//			{
+			//				if (File.Exists(resizedPath) && new FileInfo(originalPath).LastWriteTimeUtc <= new FileInfo(resizedPath).LastWriteTimeUtc)
+			//				{
+			//						return resizedPath;
+			//				}
+			//				else
+			//				{
+			//					_paths.Remove(originalPath);
+			//				}
+			//			}
+			using(var originalImage = PalasoImage.FromFile(originalPath))
 			{
-				if (ImageUtils.AppearsToBeJpeg(originalImage))
+				if(ImageUtils.AppearsToBeJpeg(originalImage))
 				{
 					return originalImage.OriginalFilePath;
 				}
 				double shrinkFactor = 1.0;
 				//if its a small image, like a creative commons logo, we don't try and resize it
-				if (originalImage.Image.Width > TargetDimension || originalImage.Image.Height > TargetDimension)
+				if(originalImage.Image.Width > TargetDimension || originalImage.Image.Height > TargetDimension)
 				{
 					var maxDimension = Math.Max(originalImage.Image.Width, originalImage.Image.Height);
 					//enhance: if we had a way of knowing what the target dimension actually was, we'd use that, of course
-					shrinkFactor = (TargetDimension/(double) maxDimension);
+					shrinkFactor = (TargetDimension / (double)maxDimension);
 				}
 
-				var destWidth = (int) (shrinkFactor*originalImage.Image.Width);
-				var destHeight = (int) (shrinkFactor*originalImage.Image.Height);
-				using (var b = new Bitmap(destWidth, destHeight))
+				var destWidth = (int)(shrinkFactor * originalImage.Image.Width);
+				var destHeight = (int)(shrinkFactor * originalImage.Image.Height);
+				using(var b = new Bitmap(destWidth, destHeight))
 				{
-					using (Graphics g = Graphics.FromImage((Image) b))
+					using(Graphics g = Graphics.FromImage((Image)b))
 					{
 						//in version 1.0, we used .NearestNeighbor. But if there is a border line down the right size (as is common for thumbnails that,
 						//are, for example, re-inserted into Teacher's Guides), then the line gets cut off. So I switched it to HighQualityBicubic
@@ -149,20 +149,20 @@ namespace Bloom.ImageProcessing
 					//but then some startup thread cleared and deleted it? (we are now running on a thread responding to the http request)
 
 					Exception error = null;
-					for (int i = 0; i < 5; i++) //try up to five times, a second apart
+					for(int i = 0; i < 5; i++) //try up to five times, a second apart
 					{
 						try
 						{
 							error = null;
 
-							if (!Directory.Exists(Path.GetDirectoryName(temp)))
+							if(!Directory.Exists(Path.GetDirectoryName(temp)))
 							{
 								Directory.CreateDirectory(Path.GetDirectoryName(temp));
 							}
 							b.Save(temp, originalImage.Image.RawFormat);
 							break;
 						}
-						catch (Exception e)
+						catch(Exception e)
 						{
 							Logger.WriteEvent("Error in LowResImage while trying to write image.");
 							Logger.WriteEvent(e.Message);
@@ -170,7 +170,7 @@ namespace Bloom.ImageProcessing
 							Thread.Sleep(1000); //wait a second before trying again
 						}
 					}
-					if (error != null)
+					if(error != null)
 					{
 						//NB: this will be on a non-UI thread, so it probably won't work well!
 						ErrorReport.NotifyUserOfProblem(error,
@@ -179,15 +179,15 @@ namespace Bloom.ImageProcessing
 						return originalPath;
 					}
 
-//					try
-//					{
-//						_paths.Add(originalPath, temp); //remember it so we can reuse if they show it again, and later delete
-//					}
-//					catch (ArgumentException)
-//					{
-//						// it happens sometimes that though it wasn't in the _paths when we entered, it is now
-//						// I haven't tracked it down... possibly we get a new request for the image while we're busy compressing it?
-//					}
+					//					try
+					//					{
+					//						_paths.Add(originalPath, temp); //remember it so we can reuse if they show it again, and later delete
+					//					}
+					//					catch (ArgumentException)
+					//					{
+					//						// it happens sometimes that though it wasn't in the _paths when we entered, it is now
+					//						// I haven't tracked it down... possibly we get a new request for the image while we're busy compressing it?
+					//					}
 
 					return temp;
 				}
