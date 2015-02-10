@@ -422,6 +422,11 @@ namespace Bloom.Edit
 
 		}
 
+		public IEnumerable<string> LicenseDescriptionLanguagePriorities
+		{
+			get { return _collectionSettings.LicenseDescriptionLanguagePriorities; }
+		}
+
 		public class ContentLanguage
 		{
 			public readonly string Iso639Code;
@@ -594,7 +599,7 @@ namespace Bloom.Edit
 
 		private void RethinkPageAndReloadIt(string obj)
 		{
-			if (_bookSelection ==null || _bookSelection.CurrentSelection == null)
+			if(_bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null || _currentlyDisplayedBook == null)
 				return;
 
 			SaveNow();
