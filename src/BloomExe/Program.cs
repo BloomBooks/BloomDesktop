@@ -11,7 +11,6 @@ using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Bloom.Registration;
 using Bloom.WebLibraryIntegration;
-using DesktopAnalytics;
 using Gecko;
 using L10NSharp;
 using Palaso.IO;
@@ -686,7 +685,7 @@ namespace Bloom
 			catch (Exception error)
 			{
 				//handle http://jira.palaso.org/issues/browse/BL-213
-				if(Process.GetProcesses().Count(p=>p.ProcessName.ToLower().Contains("bloom"))>1)
+				if (GetRunningBloomProcessCount() > 1)
 				{
 					ErrorReport.NotifyUserOfProblem("Whoops. There is another copy of Bloom already running while Bloom was trying to set up L10NSharp.");
 					Environment.FailFast("Bloom couldn't set up localization");
@@ -859,6 +858,31 @@ namespace Bloom
 
 			Debug.Print("Executing update-desktop-database");
 			proc.Start();
+		}
+
+		/// <summary>
+		/// Getting the count of running Bloom instances takes extra steps on Linux.
+		/// </summary>
+		/// <returns>The number of running Bloom instances</returns>
+		public static int GetRunningBloomProcessCount()
+		{
+			var bloomProcessCount = Process.GetProcesses().Count(p => p.ProcessName.ToLower().Contains("bloom"));
+
+			// This is your count on Windows.
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+				return bloomProcessCount;
+
+			// On Linux, the process name is usually "mono-sgen" or something similar, but not all processes 
+			// with this name are instances of Bloom.
+			var processes = Process.GetProcesses().Where(p => p.ProcessName.ToLower().StartsWith("mono"));
+
+			// DO NOT change this foreach loop into a LINQ expression. It takes longer to complete if you do.
+			foreach (var p in processes)
+			{
+				bloomProcessCount += p.Modules.Cast<ProcessModule>().Any(m => m.ModuleName == "Bloom.exe") ? 1 : 0;
+			}
+
+			return bloomProcessCount;
 		}
 	}
 }
