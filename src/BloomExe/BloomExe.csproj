@@ -63,9 +63,6 @@
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Atlassian.Jira">
-      <HintPath>..\..\packages\Atlassian.SDK.2.4.0\lib\Atlassian.Jira.dll</HintPath>
-    </Reference>
     <Reference Include="Autofac">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.dll</HintPath>
     </Reference>
@@ -156,6 +153,9 @@
     <Reference Include="DesktopAnalytics">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\DesktopAnalytics.1.1.3\lib\net40\DesktopAnalytics.dll</HintPath>
+    </Reference>
+    <Reference Include="TechTalk.JiraRestClient">
+      <HintPath>..\..\packages\TechTalk.JiraRestClient.RestSharp105.2.3.0.1\lib\net40-Client\TechTalk.JiraRestClient.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

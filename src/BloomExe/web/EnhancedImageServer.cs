@@ -10,7 +10,6 @@ using L10NSharp;
 using Palaso.IO;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
-using Atlassian.Jira.Remote;
 
 namespace Bloom.web
 {
