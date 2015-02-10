@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
 using L10NSharp;
@@ -624,6 +625,7 @@ namespace Bloom.Book
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
 				UpdatePageFromFactoryTemplates(OurHtmlDom, progress);
 				//ImageUpdater.CompressImages(FolderPath, progress);
+				ImageUtils.RemoveTransparencyOfImagesInFolder(FolderPath, progress);
 				Save();
 			}
 
