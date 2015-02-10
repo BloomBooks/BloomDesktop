@@ -422,6 +422,11 @@ namespace Bloom.Edit
 
 		}
 
+		public IEnumerable<string> LicenseDescriptionLanguagePriorities
+		{
+			get { return _collectionSettings.LicenseDescriptionLanguagePriorities; }
+		}
+
 		public class ContentLanguage
 		{
 			public readonly string Iso639Code;
