@@ -175,7 +175,7 @@ namespace Bloom.ToPalaso
 
 		private void PutOnBetterTooltipTransparentOverlay(Control control)
 		{
-			var transparentOverlay = new BetterTooltipTransparentOverlay();
+			var transparentOverlay = new BetterTooltipTransparentOverlay(control);
 			transparentOverlay.Location = control.Location;
 			if (_sizeOfToolTipWhenDisabledDictionary.ContainsKey(control))
 			{
