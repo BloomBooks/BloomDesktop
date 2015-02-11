@@ -207,42 +207,7 @@ namespace Bloom.Edit
 					dlg.ShowCreator = false;
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
-						string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
-						if (File.Exists(imagePath))
-							File.Delete(imagePath);
-						Image licenseImage = dlg.Metadata.License.GetImage();
-						if (licenseImage != null)
-						{
-							licenseImage.Save(imagePath);
-						}
-						else if (File.Exists(imagePath))
-						{
-							File.Delete(imagePath);
-						}
-
-						// Both LicenseNotes and Copyright By could have user-entered html characters that need escaping.
-						var copyright = dlg.Metadata.CopyrightNotice;
-						dlg.Metadata.CopyrightNotice = copyright;
-						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
-						var rights = dlg.Metadata.License.RightsStatement;
-						dlg.Metadata.License.RightsStatement = rights;
-						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
-						string licenseImageName = licenseImage == null ? string.Empty : "license.png";
-						string result =
-							string.Format(
-								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
-								MakeJavaScriptContent(dlg.Metadata.CopyrightNotice),
-								licenseImageName,
-								dlg.Metadata.License.Url, MakeJavaScriptContent(rights), description);
-						_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.setCopyrightAndLicense(" + result + "); }");
-
-						//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
-						//back to the data div in the actual html file even when the page is read and saved, because individual pages don't
-						//have the data div.
-						_model.CurrentBook.UpdateLicenseMetdata(dlg.Metadata);
-						_model.SaveNow();
-						_model.RefreshDisplayOfCurrentPage();//the cleanup() that is part of Save removes qtips, so let' redraw everything
+						ChangeBookMetadata(dlg.Metadata);
 					}
 				}
 				Logger.WriteMinorEvent("Emerged from Metadata Editor Dialog");
@@ -254,6 +219,48 @@ namespace Bloom.Edit
 #endif
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
 			}
+		}
+
+		private void ChangeBookMetadata(Metadata metadata)
+		{
+			string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
+			if (File.Exists(imagePath))
+				File.Delete(imagePath);
+			Image licenseImage = metadata.License.GetImage();
+			if (licenseImage != null)
+			{
+				licenseImage.Save(imagePath);
+			}
+			else if (File.Exists(imagePath))
+			{
+				File.Delete(imagePath);
+			}
+
+			// Both LicenseNotes and Copyright By could have user-entered html characters that need escaping.
+			var copyright = metadata.CopyrightNotice;
+			metadata.CopyrightNotice = copyright;
+			//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
+			//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
+			var rights = metadata.License.RightsStatement;
+			metadata.License.RightsStatement = rights;
+			string idOfLanguageUsed;
+
+			string description = metadata.License.GetDescription(_model.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed).Replace("'", "\\'");
+			string licenseImageName = licenseImage == null ? string.Empty : "license.png";
+			string result =
+				string.Format(
+					"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
+					MakeJavaScriptContent(metadata.CopyrightNotice),
+					licenseImageName,
+					metadata.License.Url, MakeJavaScriptContent(rights), description);
+			_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.setCopyrightAndLicense(" + result + "); }");
+
+			//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
+			//back to the data div in the actual html file even when the page is read and saved, because individual pages don't
+			//have the data div.
+			_model.CurrentBook.UpdateLicenseMetdata(metadata);
+			_model.SaveNow();
+			_model.RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let' redraw everything
 		}
 
 		// Make a string which, when compiled as a JavaScript literal embedded in single quotes, will produce the original.

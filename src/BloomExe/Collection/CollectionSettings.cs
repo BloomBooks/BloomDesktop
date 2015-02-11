@@ -500,5 +500,13 @@ namespace Bloom.Collection
 			}
 			return result;
 		}
+
+		/// <summary>
+		/// Given a choice, what language should we use to describe the license on the page (not in the UI, which is controlled by the UI Language)
+		/// </summary>
+		public IEnumerable<string> LicenseDescriptionLanguagePriorities
+		{
+			get { return new[] { Language1Iso639Code, Language2Iso639Code, Language3Iso639Code, "en" }; }
+		}
 	}
 }

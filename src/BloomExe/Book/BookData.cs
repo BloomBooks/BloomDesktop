@@ -727,7 +727,8 @@ namespace Bloom.Book
 			string copyright = WebUtility.HtmlEncode(metadata.CopyrightNotice);
 			data.UpdateLanguageString("copyright", copyright, "*", false);
 
-			string description = metadata.License.GetDescription("en");
+			string idOfLanguageUsed;
+			string description = metadata.License.GetDescription(_collectionSettings.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed);
 			data.UpdateLanguageString("licenseDescription", description, "en", false);
 
 			string licenseUrl = metadata.License.Url;
