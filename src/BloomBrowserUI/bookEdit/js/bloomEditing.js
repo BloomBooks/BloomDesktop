@@ -1343,10 +1343,6 @@ function SetupElements(container) {
         }
     });
 
-    // Add overflow event handlers so that when a div is overfull,
-    // we add the overflow class and it gets a red background or something
-    AddOverflowHandler(container);
-
     AddEditKeyHandlers(container);
 
     //--------------------------------
@@ -1580,19 +1576,24 @@ function SetupElements(container) {
         SetupImage(this);
     });
 
-        var editor = GetEditor();
+    // Add overflow event handlers so that when a div is overfull,
+    // we add the overflow class and it gets a red background or something
+    // Moved overflowhandler after SetupImage because some pages with lots of placeholders
+    // were prematurely overflowing before the images were set to the right size.
+    AddOverflowHandler(container);
 
-        $(container).find("div.bloom-editable:visible").each(function () {
-            // If the .bloom-editable or any of its ancestors (including <body>) has the class "bloom-userCannotModifyStyles",
-            // then the controls that allow the user to adjust the styles will not be shown.This does not prevent the user
-            // from doing character styling, e.g. CTRL+b for bold.
-            if ($(this).closest('.bloom-userCannotModifyStyles').length == 0) {
-                $(this).focus(function() {
-                    editor.AttachToBox(this);
-                });
-            }
-        });
-    
+    var editor = GetEditor();
+
+    $(container).find("div.bloom-editable:visible").each(function () {
+        // If the .bloom-editable or any of its ancestors (including <body>) has the class "bloom-userCannotModifyStyles",
+        // then the controls that allow the user to adjust the styles will not be shown.This does not prevent the user
+        // from doing character styling, e.g. CTRL+b for bold.
+        if ($(this).closest('.bloom-userCannotModifyStyles').length == 0) {
+            $(this).focus(function() {
+                editor.AttachToBox(this);
+            });
+        }
+    });
 
     $(container).find('.bloom-editable').longPress();
 
