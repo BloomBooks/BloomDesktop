@@ -20,9 +20,6 @@ namespace Bloom.ToPalaso
 	/// BetterToolTip supports the ToolTipWhenDisabled and SizeOfToolTipWhenDisabled
 	/// extender properties that can be used to show tooltip messages when the associated
 	/// control is disabled.
-	///
-	/// There is a problem with this class on Linux.  The transparent overlay seems to
-	/// prevent buttons from getting repainted. (https://jira.sil.org/browse/BL-348)
 	/// </summary>
 	[ProvideProperty("ToolTipWhenDisabled", typeof(Control))]
 	[ProvideProperty("SizeOfToolTipWhenDisabled", typeof(Control))]

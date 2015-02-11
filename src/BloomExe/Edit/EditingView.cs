@@ -349,13 +349,6 @@ namespace Bloom.Edit
 				Application.Idle += new EventHandler(VisibleNowAddSlowContents);
 				Cursor = Cursors.WaitCursor;
 				Logger.WriteEvent("Entered Edit Tab");
-
-				if (Palaso.PlatformUtilities.Platform.IsLinux)
-				{
-					// This hack fixes a problem related to the better tooltip preventing the buttons from repainting.
-					// We do not have this problem in Windows, so no reason for extra overhead.
-					CycleEditButtons();
-				}
 			}
 			else
 			{
