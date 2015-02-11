@@ -594,7 +594,7 @@ namespace Bloom.Edit
 
 		private void RethinkPageAndReloadIt(string obj)
 		{
-			if(_bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null || _currentlyDisplayedBook==null)
+			if(_bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null || _currentlyDisplayedBook == null)
 				return;
 
 			SaveNow();
