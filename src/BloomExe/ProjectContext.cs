@@ -210,7 +210,7 @@ namespace Bloom
 //				}
 //				else
 //				{
-					_httpServer = new EnhancedImageServer(new LowResImageCache(bookRenameEvent));
+					_httpServer = new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent));
 //				}
 					builder.Register((c => _httpServer)).AsSelf().SingleInstance();
 

@@ -27,7 +27,7 @@ namespace Bloom.web
 
 		public BloomServer(CollectionSettings collectionSettings, BookCollection booksInProjectLibrary,
 						   SourceCollectionsList sourceCollectionsesList, HtmlThumbNailer thumbNailer)
-			:base(new LowResImageCache(new BookRenamedEvent()))
+			:base(new RuntimeImageProcessor(new BookRenamedEvent()))
 		{
 			_collectionSettings = collectionSettings;
 			_booksInProjectLibrary = booksInProjectLibrary;

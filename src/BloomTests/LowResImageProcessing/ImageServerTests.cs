@@ -8,7 +8,7 @@ using NUnit.Framework;
 using Palaso.IO;
 using Palaso.TestUtilities;
 
-namespace BloomTests.LowResImageProcessing
+namespace BloomTests.RuntimeImageProcessing
 {
 	[TestFixture]
 	public class ImageServerTests
@@ -53,7 +53,7 @@ namespace BloomTests.LowResImageProcessing
 
 		private ImageServer CreateImageServer()
 		{
-			return new ImageServer(new LowResImageCache(new BookRenamedEvent()));
+			return new ImageServer(new RuntimeImageProcessor(new BookRenamedEvent()));
 		}
 		private TempFile MakeTempImage()
 		{

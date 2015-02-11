@@ -24,10 +24,10 @@ namespace Bloom.ImageProcessing
 	/// </summary>
 	public class ImageServer : ServerBase
 	{
-		private LowResImageCache _cache;
+		private RuntimeImageProcessor _cache;
 		private bool _useCache;
 
-		public ImageServer(LowResImageCache cache)
+		public ImageServer(RuntimeImageProcessor cache)
 		{
 			_cache = cache;
 			_useCache = Settings.Default.ImageHandler != "off";
