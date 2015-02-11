@@ -13,6 +13,7 @@ namespace BloomTests.RuntimeImageProcessing
 	[TestFixture]
 	public class RuntimeImageProcessingTests
 	{
+		#if ShrinkLargeImages
 		[Test]
 		public void GetWideImage_ReturnsShrunkImageWithCorrectProportions()
 		{
@@ -27,8 +28,8 @@ namespace BloomTests.RuntimeImageProcessing
 			}
 		}
 
-		/* we're not shrinking at the moment
-		 [Test]
+
+		[Test]
 		public void GetJPG_ReturnsShrunkJPG()
 		{
 			using (var cache = new RuntimeImageProcessor(new BookRenamedEvent()) { TargetDimension = 100 })
@@ -46,7 +47,8 @@ namespace BloomTests.RuntimeImageProcessing
 					Assert.AreEqual(40, img.Height);
 				}
 			}
-		}*/
+		}
+#endif
 
 		[Test]
 		public void GetTinyImage_DoesNotChangeSize()
