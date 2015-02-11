@@ -13,9 +13,9 @@ using Palaso.UI.WindowsForms.ImageToolbox;
 namespace Bloom.ImageProcessing
 {
 	/// <summary>
-	/// Gecko struggles with hi-res images intented for printing. Gecko chews up memory, makes for slow drawing,
-	/// or even gives up on displaying the image altogether (worse on slow machines).
-	/// This cache takes requests for images and returns lo-res versions of them.
+	/// Currently the only processing we're doing it to make PNGs with lots of whitespace look good against our colored background pages
+	/// Previously, we also shrunk images to improve performance when we were handing out file paths. Now that we are giving images
+	/// over http, gecko may do well enough without the shrinking.
 	/// </summary>
 	public class RuntimeImageProcessor : IDisposable
 	{
@@ -24,7 +24,7 @@ namespace Bloom.ImageProcessing
 		private Dictionary<string, string> _originalPathToProcessedVersionPath;
 		private string _cacheFolder;
 
-		private ImageAttributes _transparentImageAttributes;
+		private readonly ImageAttributes _convertWhiteToTransparent;
 
 		public RuntimeImageProcessor(BookRenamedEvent bookRenamedEvent)
 		{
@@ -32,8 +32,8 @@ namespace Bloom.ImageProcessing
 			_originalPathToProcessedVersionPath = new Dictionary<string, string>();
 			_cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom");
 			_bookRenamedEvent.Subscribe(OnBookRenamed);
-			_transparentImageAttributes = new ImageAttributes();
-			_transparentImageAttributes.SetColorKey(Color.FromArgb(253, 253, 253), Color.White);
+			_convertWhiteToTransparent = new ImageAttributes();
+			_convertWhiteToTransparent.SetColorKey(Color.FromArgb(253, 253, 253), Color.White);
 		}
 
 		private void OnBookRenamed(KeyValuePair<string, string> fromPathAndToPath)
@@ -110,7 +110,7 @@ namespace Bloom.ImageProcessing
 					//are scary in .net. Just send the original back and wash our hands of it.
 					if (ImageUtils.AppearsToBeJpeg(originalImage))
 					{
-						return originalImage.OriginalFilePath;
+						return originalPath;
 					}
 
 					double shrinkFactor = 1.0;
@@ -132,14 +132,16 @@ namespace Bloom.ImageProcessing
 					{
 						using (Graphics g = Graphics.FromImage((Image) processedBitmap))
 						{
+#if ShrinkLargeImages 
 							//in version 1.0, we used .NearestNeighbor. But if there is a border line down the right size (as is common for thumbnails that,
 							//are, for example, re-inserted into Teacher's Guides), then the line gets cut off. So I switched it to HighQualityBicubic
 							g.InterpolationMode = InterpolationMode.HighQualityBicubic; //.NearestNeighbor;//or smooth it: HighQualityBicubic
+#endif
 							var destRect = new Rectangle(0, 0, destWidth, destHeight);
-							lock (_transparentImageAttributes)
+							lock (_convertWhiteToTransparent)
 							{
 								g.DrawImage(originalImage.Image, destRect, 0, 0, originalImage.Image.Width, originalImage.Image.Height,
-									GraphicsUnit.Pixel, _transparentImageAttributes);
+									GraphicsUnit.Pixel, _convertWhiteToTransparent);
 							}
 						}
 
