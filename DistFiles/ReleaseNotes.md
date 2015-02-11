@@ -3,6 +3,9 @@
   - makes images transparent when importing. 
   - compresses images transparent when importing. 
   - saves copyright/license back to the original files
+- Fix crash after closing settings dialog when no book is selected
+- Fix insertion of unwanted space before bolded, underlined, and italicized portions of words
+- Fix creative commons license on Vaccinations sample shell
 
 ### Fixes
 - Spaces are no longer inserted between bold or underlined parts of a word and the normal parts
