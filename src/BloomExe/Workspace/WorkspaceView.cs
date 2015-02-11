@@ -112,7 +112,7 @@ namespace Bloom.Workspace
 
 
 			_uiLanguageMenu.Visible = true;
-		   _settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
+			_settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
 
 			editBookCommand.Subscribe(OnEditBook);
 			sendReceiveCommand.Subscribe(OnSendReceive);
