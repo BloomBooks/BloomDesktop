@@ -1,4 +1,5 @@
 ﻿## 3.0.97 Beta
+- Update French UI Translation (thanks David Rowe)
 - When importing, Bloom no longer
   - makes images transparent when importing. 
   - compresses images transparent when importing. 
