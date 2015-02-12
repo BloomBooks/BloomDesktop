@@ -281,6 +281,7 @@
 			this._undoButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._undoButton.TextDropShadow = false;
 			this._betterToolTip1.SetToolTip(this._undoButton, "Undo (Ctrl+z)");
+			this._betterToolTip1.SetToolTipWhenDisabled(this._undoButton, "There is nothing to undo");
 			this._undoButton.UseVisualStyleBackColor = false;
 			this._undoButton.Click += new System.EventHandler(this._undoButton_Click);
 			// 
@@ -402,6 +403,8 @@
 			this._copyButton.Text = "Copy";
 			this._copyButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._copyButton.TextDropShadow = false;
+			this._betterToolTip1.SetToolTip(this._copyButton, "Copy (Ctrl-c)");
+			this._betterToolTip1.SetToolTipWhenDisabled(this._copyButton, "You need to select some text before you can copy it");
 			this._copyButton.UseVisualStyleBackColor = false;
 			this._copyButton.Click += new System.EventHandler(this._copyButton_Click);
 			// 
