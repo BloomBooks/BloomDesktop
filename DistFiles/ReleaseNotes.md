@@ -2,6 +2,7 @@
 - Pasted images are now named "image1",2,3, etc.
 - Pasted images are no longer added with a temporary gibberish name; the original names are maintained.
 - Bloom now tries to detect when you are importing a jpeg that really should be tiff/bmp/png, and puts up an informative dialog that lets you repent or plow forward.
+- On custom pages and other places where there maybe multiple text boxes layout out horizontally, text bubbles will now not show until you click in the box, so that they don't clutter up the page and interfere with seeing/doing what you need.
 
 ### Fixes
 - Fixed a problem where many PDF viewer programs showed ugly lines around parts images. This fix will only help with images imported from now on, not retroactively. We'll see about doing something retroactively soon.
