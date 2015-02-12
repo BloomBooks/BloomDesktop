@@ -320,6 +320,40 @@
     }
 }
 
+BODY[editmode="original"] {
+    .titlePage {
+        #originalContributions {
+            .bloom-content1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
+        #funding {
+            .bloom-content1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
+    }
+}
+
+BODY[editmode="translation"] {
+    .titlePage {
+        #originalContributions {
+            .bloom-contentNational1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
+        #funding {
+            .bloom-contentNational1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
+    }
+}
+
 .titlePage {
     @MarginBetweenMinorItems: .5em;
     @MarginBetweenTitleAndFunding: 3em;
@@ -357,19 +391,9 @@
     }
 
     #originalContributions {
-        .bloom-contentNational1 {
-            display: inherit;
-            min-height: 3em; // two lines
-        }
         margin-bottom: @MarginBetweenMinorItems;
     }
 
-    #funding {
-        .bloom-contentNational1 {
-            display: inherit;
-            min-height: 3em; // two lines
-        }
-    }
     #languageInformation {
         width: 100%;
         position: absolute;
