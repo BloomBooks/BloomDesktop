@@ -179,26 +179,30 @@ namespace Bloom.Book
 
 		private void UpdateCredits(BookInfo info)
 		{
+			if (info == null)
+				return;
+
 			NamedMutliLingualValue creditsData;
 			string credits = "";
 			if (_dataset.TextVariables.TryGetValue("originalAcknowledgments", out creditsData))
 			{
 				credits = creditsData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 			}
-			if (info != null)
-				info.Credits = credits.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+			info.Credits = credits.Replace("<br />", ""); // Clean out breaks inserted at newlines.
 		}
 
 		private void UpdateIsbn(BookInfo info)
 		{
+			if (info == null)
+				return;
+
 			NamedMutliLingualValue isbnData;
 			string isbn = null;
 			if (_dataset.TextVariables.TryGetValue("ISBN", out isbnData))
 			{
 				isbn = isbnData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry); // Review: not really multilingual data, do we need this?
 			}
-			if (info != null)
-				info.Isbn = isbn ?? "";
+			info.Isbn = isbn ?? "";
 		}
 
 		// For now, when there is no UI for multiple tags, we make Tags a single item, the book topic.
@@ -207,6 +211,9 @@ namespace Bloom.Book
 		// Should we still remove the old one?
 		private void UpdateTags(BookInfo info)
 		{
+			if (info == null)
+				return;
+
 			NamedMutliLingualValue tagData;
 			string tag = null;
 			if (_dataset.TextVariables.TryGetValue("topic", out tagData))
@@ -214,19 +221,19 @@ namespace Bloom.Book
 				tag = tagData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 			}
 
-			if (info != null && tag != null)
+			if (tag == null)
+				return;
+
+			// In case we're running localized, for now we'd like to record in the metadata the original English tag.
+			// This allows the book to be found by this tag in the current, non-localized version of bloom library.
+			// Eventually it will make it easier, we think, to implement localization of bloom library.
+			string originalTag;
+			if (RuntimeInformationInjector.TopicReversal == null ||
+				!RuntimeInformationInjector.TopicReversal.TryGetValue(tag, out originalTag))
 			{
-				// In case we're running localized, for now we'd like to record in the metadata the original English tag.
-				// This allows the book to be found by this tag in the current, non-localized version of bloom library.
-				// Eventually it will make it easier, we think, to implement localization of bloom library.
-				string originalTag;
-				if (RuntimeInformationInjector.TopicReversal == null ||
-					!RuntimeInformationInjector.TopicReversal.TryGetValue(tag, out originalTag))
-				{
-					originalTag = tag; // just use it unmodified if we don't have anything
-				}
-				info.TagsList = originalTag;
+				originalTag = tag; // just use it unmodified if we don't have anything
 			}
+			info.TagsList = originalTag;
 		}
 
 
