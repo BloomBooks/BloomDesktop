@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom.Collection;
+using L10NSharp;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
@@ -49,10 +51,8 @@ namespace Bloom.Book
 		{
 			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceBookFolder, parentCollectionPath);
 
-			//TODO: is this meta value at odds with with data-book="bookTitle" somewhere in the book?
-			//need to figure out the pro's cons of each approach. Right now, I can't think of why we need the special
-			// defaultNameForDerivedBooks, but maybe there is a reason. Maybe it should be for templates, not for shells?
-
+			// We use the "initial name" to make the intial copy, and it gives us something
+			//to name the folder and file until such time as the user enters a title in for the book.
 			string initialBookName = GetInitialName(sourceBookFolder, parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
 			CopyFolder(sourceBookFolder, newBookFolder);
@@ -107,6 +107,8 @@ namespace Bloom.Book
 		private string SetupNewDocumentContents(string sourceFolderPath, string initialPath)
 		{
 			var storage = _bookStorageFactory(initialPath);
+			bool usingTemplate = storage.MetaData.IsSuitableForMakingShells;
+
 			var bookData = new BookData(storage.Dom, _collectionSettings, null);
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
 
@@ -139,7 +141,7 @@ namespace Bloom.Book
 
 			SetLineageAndId(storage, sourceFolderPath);
 
-			SetBookTitle(storage, bookData);
+			SetBookTitle(storage, bookData, usingTemplate);
 
 
 
@@ -242,41 +244,39 @@ namespace Bloom.Book
 			}
 		}
 
-		private static void SetBookTitle(BookStorage storage, BookData bookData)
+		private static void SetBookTitle(BookStorage storage, BookData bookData, bool usingTemplate)
 		{
-//NB: no multi-lingual name suggestion ability yet
+			//This is what we were trying to do: there was a defaultNameForDerivedBooks meta tag in the html
+			//which had no language code. It worked fine for English, e.g., naming new English books
+			//"My Book" or "My Dicionary" or whatever.
+			//But in other cases, it actually hurt becuase that English name would be hidden down in the new
+			//book, where the author wouldn't see it. But some consumer, using English, would see it, and
+			//"My Book" is a pretty dumb name for tha carefully prepared book to be listed under.
+			//
+			//Now, if we are making this book from a shell book, we can keep whatever (title,language) pairs it has.
+			//Those will be just fine, for example, if we have English as one of our national langauges and so get
+			// "vaccinations" for free wihtout having to type that in again.
+			//
+			//But if we are making this from a *template*, then we *don't* want to keep the various ways to say the
+			//name of the template. Seeing "Basic Book" as the name of a resulting shell is not helpful.
 
-			//otherwise, the case where there is no defaultNameForDerivedBooks, we just want to use the names
-			//that the shell used, e.g. "Vaccinations".
-			//We don't have to do anything special to get that.
-			string kdefaultName = null;
-			var nameSuggestion = storage.Dom.GetMetaValue("defaultNameForDerivedBooks", kdefaultName);
-//	        var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
-
-			if (nameSuggestion != null)
-			{
-				bookData.Set("bookTitle", nameSuggestion, "en");
-				storage.MetaData.Title = nameSuggestion;
-			}
+			//We just don't have a use for this at all anymore: nice idea, doesn't really work:
 			storage.Dom.RemoveMetaElement("defaultNameForDerivedBooks");
 
-//	        //var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
-//	        if (nameSuggestion.Count > 0)
-//	        {
-//	            var metaTag = (XmlElement) nameSuggestion[0];
-//	            var name = metaTag.GetAttribute("content");
-//	            bookData.SetDataDivBookVariable("bookTitle", name, "en");
-//	            metaTag.ParentNode.RemoveChild(metaTag);
-//	        }
-//	        else
-//	        {
-//
-//	        }
+			// Clear these out let other code set again when there is a real title.
+			storage.MetaData.Title = "";
+			storage.Dom.Title = "";
+
+			//If we're making a book from a template, remove all the titles in all languages
+			if(usingTemplate)
+			{
+				bookData.RemoveAllForms("bookTitle");
+			}
 		}
 
 		private void InjectXMatter(string initialPath, BookStorage storage, Layout sizeAndOrientation)
 		{
-//now add in the xmatter from the currently selected xmatter pack
+			//now add in the xmatter from the currently selected xmatter pack
 			if (!TestingSoSkipAddingXMatter)
 			{
 				var data = new DataSet();
@@ -419,21 +419,24 @@ namespace Bloom.Book
 			}
 		}
 
-
-
-
-
 		private string GetInitialName(string sourcePath, string parentCollectionPath)
 		{
 			var storage = _bookStorageFactory(sourcePath);
-			var name = storage.Dom.GetMetaValue("defaultNameForDerivedBooks",  Path.GetFileName(sourcePath));
+			/* we're experimenting with doing away with defaultNameForDerivedBooks
+				var name = storage.Dom.GetMetaValue("defaultNameForDerivedBooks",  "Book");
+				if (name == "My Book") //some older stuff has this
+					name = "Book";
+			*/
+			var name = LocalizationManager.GetString("EditTab.NewBookName", "Book",
+					"Default file and folder name when you make a new book, but haven't give it a title yet.");
+
 			int i = 0;
 			string suffix = "";
 
 			while (Directory.Exists(Path.Combine(parentCollectionPath, name+suffix)))
 			{
 				++i;
-				suffix = i.ToString();
+				suffix = i.ToString(CultureInfo.InvariantCulture);
 			}
 			return name+suffix;
 		}
@@ -448,6 +451,9 @@ namespace Bloom.Book
 				if (Path.GetFileNameWithoutExtension(filePath).ToLower() == "thumbnail")
 					continue;
 				if (Path.GetFileNameWithoutExtension(filePath).StartsWith(".")) //.guidsForInstaller.xml
+					continue;
+				var ext = Path.GetExtension(filePath).ToLower();
+				if (new String[] {".jade", ".less"}.Any(ex => ex == ext))
 					continue;
 				File.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}

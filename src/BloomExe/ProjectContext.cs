@@ -62,54 +62,59 @@ namespace Bloom
 		protected void BuildSubContainerForThisProject(string projectSettingsPath, IContainer parentContainer)
 		{
 			var editableCollectionDirectory = Path.GetDirectoryName(projectSettingsPath);
-			_scope = parentContainer.BeginLifetimeScope(builder =>
+			try
 			{
-				//BloomEvents are by nature, singletons (InstancePerLifetimeScope)
-				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-					.InstancePerLifetimeScope()
-					// Didn't work .Where(t => t.GetInterfaces().Contains(typeof(Bloom.Event<>)));
-					.Where(t => t is IEvent);
-
-				//Other classes which are also  singletons
-				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
-					.InstancePerLifetimeScope()
-					.Where(t => new[]{
-					typeof(TemplateInsertionCommand),
-					typeof(DuplicatePageCommand),
-					typeof(DeletePageCommand),
-					typeof(EditBookCommand),
-					typeof(SendReceiveCommand),
-					typeof(SelectedTabAboutToChangeEvent),
-					typeof(SelectedTabChangedEvent),
-					typeof(LibraryClosing),
-					typeof(PageListChangedEvent),  // REMOVE+++++++++++++++++++++++++++
-					typeof(BookRefreshEvent),
-					typeof(PageRefreshEvent),
-					typeof(BookDownloadStartingEvent),
-					typeof(BookSelection),
-					typeof(CurrentEditableCollectionSelection),
-					typeof(RelocatePageEvent),
-					typeof(QueueRenameOfCollection),
-					typeof(PageSelection),
-					 typeof(LocalizationChangedEvent),
-					typeof(EditingModel)}.Contains(t));
-
-				var bookRenameEvent = new BookRenamedEvent();
-				builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
-
-				try
+				_scope = parentContainer.BeginLifetimeScope(builder =>
 				{
-					//nb: we split out the ChorusSystem.Init() so that this won't ever fail, so we have something registered even if we aren't
-					//going to be able to do HG for some reason.
-					var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
-					builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
-					builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem,()=>ProjectWindow)).InstancePerLifetimeScope();
+					//BloomEvents are by nature, singletons (InstancePerLifetimeScope)
+					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+						.InstancePerLifetimeScope()
+						// Didn't work .Where(t => t.GetInterfaces().Contains(typeof(Bloom.Event<>)));
+						.Where(t => t is IEvent);
+
+					//Other classes which are also  singletons
+					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+						.InstancePerLifetimeScope()
+						.Where(t => new[]
+						{
+							typeof (TemplateInsertionCommand),
+							typeof (DuplicatePageCommand),
+							typeof (DeletePageCommand),
+							typeof (EditBookCommand),
+							typeof (SendReceiveCommand),
+							typeof (SelectedTabAboutToChangeEvent),
+							typeof (SelectedTabChangedEvent),
+							typeof (LibraryClosing),
+							typeof (PageListChangedEvent), // REMOVE+++++++++++++++++++++++++++
+							typeof (BookRefreshEvent),
+							typeof (PageRefreshEvent),
+							typeof (BookDownloadStartingEvent),
+							typeof (BookSelection),
+							typeof (CurrentEditableCollectionSelection),
+							typeof (RelocatePageEvent),
+							typeof (QueueRenameOfCollection),
+							typeof (PageSelection),
+							typeof (LocalizationChangedEvent),
+							typeof (EditingModel)
+						}.Contains(t));
+
+					var bookRenameEvent = new BookRenamedEvent();
+					builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
+
+					try
+					{
+						//nb: we split out the ChorusSystem.Init() so that this won't ever fail, so we have something registered even if we aren't
+						//going to be able to do HG for some reason.
+						var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
+						builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
+						builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem, () => ProjectWindow))
+							.InstancePerLifetimeScope();
 #if USING_CHORUS
 					chorusSystem.Init(string.Empty/*user name*/);
 #endif
-				}
-				catch (Exception error)
-				{
+					}
+					catch (Exception error)
+					{
 #if USING_CHORUS
 #if !DEBUG
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
@@ -118,74 +123,83 @@ namespace Bloom
 					//swallow for develoeprs, because this happens if you don't have the Mercurial and "Mercurial Extensions" folders in the root, and our
 					//getdependencies doesn't yet do that.
 #endif
-				}
+					}
 
 
-				//This deserves some explanation:
-				//*every* collection has a "*.BloomCollection" settings file. But the one we make the most use of is the one editable collection
-				//That's why we're registering it... it gets used all over. At the moment (May 2012), we don't ever read the
-				//settings file of the collections we're using for sources.
-				try
-				{
-					builder.Register<CollectionSettings>(c => new CollectionSettings(projectSettingsPath)).InstancePerLifetimeScope();
-				}
-				catch(Exception)
-				{
-					return;
-				}
+					//This deserves some explanation:
+					//*every* collection has a "*.BloomCollection" settings file. But the one we make the most use of is the one editable collection
+					//That's why we're registering it... it gets used all over. At the moment (May 2012), we don't ever read the
+					//settings file of the collections we're using for sources.
+					try
+					{
+						builder.Register<CollectionSettings>(c => new CollectionSettings(projectSettingsPath)).InstancePerLifetimeScope();
+					}
+					catch (Exception)
+					{
+						return;
+					}
 
 
-				builder.Register<LibraryModel>(c => new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(), c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(), c.Resolve<EditBookCommand>(),c.Resolve<CreateFromSourceBookCommand>(),c.Resolve<BookServer>(), c.Resolve<CurrentEditableCollectionSelection>())).InstancePerLifetimeScope();
+					builder.Register<LibraryModel>(
+						c =>
+							new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(),
+								c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(),
+								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
+								c.Resolve<CurrentEditableCollectionSelection>())).InstancePerLifetimeScope();
 
-				builder.Register<IChangeableFileLocator>(c => new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),GetFoundFileLocations(), GetAfterXMatterFileLocations())).InstancePerLifetimeScope();
+					builder.Register<IChangeableFileLocator>(
+						c =>
+							new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),
+								GetFoundFileLocations(), GetAfterXMatterFileLocations())).InstancePerLifetimeScope();
 
-				builder.Register<LanguageSettings>(c =>
-													{
-														var librarySettings = c.Resolve<CollectionSettings>();
-														var preferredSourceLanguagesInOrder = new List<string>();
-														preferredSourceLanguagesInOrder.Add(librarySettings.Language2Iso639Code);
-														if (!string.IsNullOrEmpty(librarySettings.Language3Iso639Code)
-															&& librarySettings.Language3Iso639Code != librarySettings.Language2Iso639Code)
-															preferredSourceLanguagesInOrder.Add(librarySettings.Language3Iso639Code);
+					builder.Register<LanguageSettings>(c =>
+					{
+						var librarySettings = c.Resolve<CollectionSettings>();
+						var preferredSourceLanguagesInOrder = new List<string>();
+						preferredSourceLanguagesInOrder.Add(librarySettings.Language2Iso639Code);
+						if (!string.IsNullOrEmpty(librarySettings.Language3Iso639Code)
+						    && librarySettings.Language3Iso639Code != librarySettings.Language2Iso639Code)
+							preferredSourceLanguagesInOrder.Add(librarySettings.Language3Iso639Code);
 
-														return new LanguageSettings(librarySettings.Language1Iso639Code, preferredSourceLanguagesInOrder);
-													});
-				builder.Register<XMatterPackFinder>(c =>
-														{
-															var locations = new List<string>();
-															locations.Add(FileLocator.GetDirectoryDistributedWithApplication("xMatter"));
-															locations.Add(XMatterAppDataFolder);
-															locations.Add(XMatterCommonDataFolder);
-															return new XMatterPackFinder(locations);
-														});
+						return new LanguageSettings(librarySettings.Language1Iso639Code, preferredSourceLanguagesInOrder);
+					});
+					builder.Register<XMatterPackFinder>(c =>
+					{
+						var locations = new List<string>();
+						locations.Add(FileLocator.GetDirectoryDistributedWithApplication("xMatter"));
+						locations.Add(XMatterAppDataFolder);
+						locations.Add(XMatterCommonDataFolder);
+						return new XMatterPackFinder(locations);
+					});
 
-				builder.Register<SourceCollectionsList>(c =>
-					 {
-						 var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(), c.Resolve<BookCollection.Factory>(), editableCollectionDirectory);
-						 l.RepositoryFolders = new string[] { FactoryCollectionsDirectory, GetInstalledCollectionsDirectory() };
-						 return l;
-					 }).InstancePerLifetimeScope();
+					builder.Register<SourceCollectionsList>(c =>
+					{
+						var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(),
+							c.Resolve<BookCollection.Factory>(), editableCollectionDirectory);
+						l.RepositoryFolders = new string[] {FactoryCollectionsDirectory, GetInstalledCollectionsDirectory()};
+						return l;
+					}).InstancePerLifetimeScope();
 
-				builder.Register<ITemplateFinder>(c =>
-					 {
-						 return c.Resolve<SourceCollectionsList>();
-					 }).InstancePerLifetimeScope();
+					builder.Register<ITemplateFinder>(c =>
+					{
+						return c.Resolve<SourceCollectionsList>();
+					}).InstancePerLifetimeScope();
 
-				builder.RegisterType<BloomParseClient>().AsSelf().SingleInstance();
+					builder.RegisterType<BloomParseClient>().AsSelf().SingleInstance();
 
-				// Enhance: may need some way to test a release build in the sandbox.
-				builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
-				builder.RegisterType<BookTransfer>().AsSelf().SingleInstance();
-				builder.RegisterType<LoginDialog>().AsSelf();
+					// Enhance: may need some way to test a release build in the sandbox.
+					builder.Register(c => CreateBloomS3Client()).AsSelf().SingleInstance();
+					builder.RegisterType<BookTransfer>().AsSelf().SingleInstance();
+					builder.RegisterType<LoginDialog>().AsSelf();
 
-				//TODO: this gave a stackoverflow exception
+					//TODO: this gave a stackoverflow exception
 //				builder.Register<WorkspaceModel>(c => c.Resolve<WorkspaceModel.Factory>()(rootDirectoryPath)).InstancePerLifetimeScope();
-				//so we're doing this
-				builder.Register(c=>editableCollectionDirectory).InstancePerLifetimeScope();
+					//so we're doing this
+					builder.Register(c => editableCollectionDirectory).InstancePerLifetimeScope();
 
-				builder.RegisterType<CreateFromSourceBookCommand>().InstancePerLifetimeScope();
+					builder.RegisterType<CreateFromSourceBookCommand>().InstancePerLifetimeScope();
 
-				// See related comment below for BL-688
+					// See related comment below for BL-688
 //				string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);
 //				if (Path.GetFileNameWithoutExtension(projectSettingsPath).ToLower().Contains("web"))
 //				{
@@ -196,27 +210,33 @@ namespace Bloom
 //				}
 //				else
 //				{
-				_httpServer = new EnhancedImageServer(new LowResImageCache(bookRenameEvent));
+					_httpServer = new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent));
 //				}
-				builder.Register((c => _httpServer)).AsSelf().SingleInstance();
+					builder.Register((c => _httpServer)).AsSelf().SingleInstance();
 
-				builder.Register<Func<WorkspaceView>>(c => ()=>
-				{
-					var factory = c.Resolve<WorkspaceView.Factory>();
+					builder.Register<Func<WorkspaceView>>(c => () =>
+					{
+						var factory = c.Resolve<WorkspaceView.Factory>();
 
-					// Removing this check because finding "web" anywhere in the path is problematic.
-					// This was discovered by a user whose username included "web" (https://jira.sil.org/browse/BL-688)
-					// It appears this code block was for some experimental development but no longer works anyway.
+						// Removing this check because finding "web" anywhere in the path is problematic.
+						// This was discovered by a user whose username included "web" (https://jira.sil.org/browse/BL-688)
+						// It appears this code block was for some experimental development but no longer works anyway.
 //					if (projectSettingsPath.ToLower().Contains("web"))
 //					{
 //						return factory(c.Resolve<WebLibraryView>());
 //					}
 //					else
 //					{
-					return factory(c.Resolve<LibraryView>());
+						return factory(c.Resolve<LibraryView>());
 //					}
+					});
 				});
-			});
+			}
+			catch (FileNotFoundException error)
+			{
+				MessageBox.Show("Bloom was not able to find all its bits. This sometimes happens when upgrading to a newer version. To fix it, please run the installer again and choose 'Repair', or uninstall and reinstall. We truly value your time and apologize for wasting it. The error was:"+Environment.NewLine+Environment.NewLine+error.Message,"Bloom Installation Problem",MessageBoxButtons.OK,MessageBoxIcon.Error);
+				Application.Exit();
+			}
 
 		}
 

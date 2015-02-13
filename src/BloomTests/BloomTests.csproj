@@ -78,6 +78,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Moq, Version=4.2.1409.1722, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Moq.4.2.1409.1722\lib\net40\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\RestSharp.105.0.1\lib\net4\RestSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -107,9 +115,6 @@
     <Reference Include="PalasoUIWindowsForms">
       <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp">
-      <HintPath>..\..\packages\RestSharp.104.4.0\lib\net4\RestSharp.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -126,9 +131,6 @@
     </Reference>
     <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Geckofx-Winforms.dll</HintPath>
-    </Reference>
-    <Reference Include="Moq">
-      <HintPath>..\..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -149,7 +151,7 @@
     <Compile Include="Chorus\MergingTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
     <Compile Include="FluentAssertXml.cs" />
-    <Compile Include="LowResImageProcessing\LowResImageCacheTests.cs" />
+    <Compile Include="LowResImageProcessing\RuntimeImageProcessingTests.cs" />
     <Compile Include="NavigationIsolatorTests.cs" />
     <Compile Include="NewCollectionWizardTests.cs" />
     <Compile Include="PageEditingModelTests.cs" />

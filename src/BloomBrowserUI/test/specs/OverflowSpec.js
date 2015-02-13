@@ -29,6 +29,7 @@ var RunTest = function(index, value) {
         var padding = cs.getPropertyValue('padding');
         console.warn('     Computed Style: line-height ' + lineH + ' font-size ' + fontS + ' padding ' + padding);
         console.warn('     Overflow: ' + overflowing + ' font: ' + font);
+        console.warn('     Expecting: ' + testExpectation); // added this because the failure message is not always immediately after the test output
     }
     expect(overflowing).toBe(testExpectation);
 };
@@ -36,6 +37,12 @@ var RunTest = function(index, value) {
 // Uses jasmine-query-1.3.1.js
 describe("Overflow Tests", function () {
     jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
+
+    // these tests are only reliable when tested with Firefox
+    if (navigator.userAgent.indexOf('Firefox') === -1) {
+        console.log('Overflow tests are only run on Firefox.');
+        return;
+    }
 
     it("Check test page for overflows", function() {
         loadFixtures('OverflowTestPage.htm');

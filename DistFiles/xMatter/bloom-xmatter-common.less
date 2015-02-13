@@ -1,6 +1,7 @@
-@import "../../src/BloomBrowserUI/bookLayout/common-mixins.less";
+@import "../less/common-mixins.less";
 
 @XMatterPackName: "unknown";
+@MarginBetweenBlocks: 2em;
 
 .bloom-frontMatter, .bloom-backMatter {
     .pageLabel:after {
@@ -276,7 +277,6 @@
 //put the credits page anywhere. If you remove ".verso", old books will be messed up until they get
 //an "update book" operation
 .credits, .verso {
-    @MarginBetweenBlocks: 2em;
     //also called the "credits" page.
     .marginBox {
         // these extra levels are to increase our specificity score :-)
@@ -302,22 +302,11 @@
         .licenseBlock{
             margin-bottom: @MarginBetweenBlocks;
         }
+        img{
+            height: 31px;
+        }
     }
 
-    .ISBNContainer {
-        .bloom-editable {
-            text-align: left !important;//even if everything else is centered (including the ISBN Block) this needs to be tight against the label
-            width: 4.3cm !important;
-            display: inline-block;
-            vertical-align: text-top;
-            max-height: 1.8em;
-            min-height: 1.8em;
-        }
-        .ISBNContainer SPAN {
-            vertical-align: top;
-        }
-        margin-bottom: @MarginBetweenBlocks;
-    }
     .originalAcknowledgments .bloom-contentNational1 {
         display: block !important;
         margin-bottom: @MarginBetweenBlocks;
@@ -328,6 +317,40 @@
     }
     .licenseUrl {
         display: none;
+    }
+}
+
+BODY[editmode="original"] {
+    .titlePage {
+        #originalContributions {
+            .bloom-content1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
+        #funding {
+            .bloom-content1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
+    }
+}
+
+BODY[editmode="translation"] {
+    .titlePage {
+        #originalContributions {
+            .bloom-contentNational1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
+        #funding {
+            .bloom-contentNational1 {
+                display: inherit;
+                min-height: 3em; // two lines
+            }
+        }
     }
 }
 
@@ -368,19 +391,9 @@
     }
 
     #originalContributions {
-        .bloom-contentNational1 {
-            display: inherit;
-            min-height: 3em; // two lines
-        }
         margin-bottom: @MarginBetweenMinorItems;
     }
 
-    #funding {
-        .bloom-contentNational1 {
-            display: inherit;
-            min-height: 3em; // two lines
-        }
-    }
     #languageInformation {
         width: 100%;
         position: absolute;
@@ -411,3 +424,18 @@
     text-align: center;
 }
 
+//don't put this under any particular page, you don't know where some xmatter pack will want it
+.ISBNContainer {
+    .bloom-editable {
+        text-align: left !important; //even if everything else is centered (including the ISBN Block) this needs to be tight against the label
+        width: 4.3cm !important;
+        display: inline-block;
+        vertical-align: text-top;
+        max-height: 1.8em;
+        min-height: 1.8em;
+    }
+    .ISBNContainer SPAN {
+        vertical-align: top;
+    }
+    margin-bottom: @MarginBetweenBlocks;
+}

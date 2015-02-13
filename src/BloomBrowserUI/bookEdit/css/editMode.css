@@ -207,7 +207,11 @@ TEXTAREA.province {
   height: 33px;
 }
 .overflow {
-  background-color: rgba(255, 0, 0, 0.7) !important;
+  color: red !important;
+  border: solid thin red !important;
+}
+.overflow p:empty:after {
+  content: '¶';
 }
 .Layout-Problem-Detected:before,
 .Layout-Problem-Detected:after {
@@ -267,6 +271,17 @@ TEXTAREA.province {
 }
 .ui-sourceTextsForBubble UL LI A.active {
   font-weight: bold;
+}
+.ui-sourceTextsForBubble .source-text {
+  font-size: 10pt;
+  line-height: 1.5;
+  color: #000000;
+}
+.ui-sourceTextsForBubble .source-text:lang(th),
+.ui-sourceTextsForBubble .source-text:lang(km),
+.ui-sourceTextsForBubble .source-text:lang(kjg),
+.ui-sourceTextsForBubble .source-text:lang(prt) {
+  font-size: 18pt;
 }
 .panel-container {
   border: 1px solid #000000;

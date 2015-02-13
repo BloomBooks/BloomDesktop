@@ -85,7 +85,7 @@ TEXTAREA,
 TD {
   resize: none;
   /*don't show those cute little resize controls in Firefox 4 and greater*/
-  overflow: hidden;
+  overflow: visible;
   font-size: 143%;
   line-height: 1.5em;
   min-height: 1.8em;

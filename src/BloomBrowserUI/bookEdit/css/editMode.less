@@ -241,7 +241,12 @@ TEXTAREA.province
 
 .overflow
 {
-	background-color: rgba(255, 0, 0, .7) !important; //a little transparency is helpful for troublshooting
+	//background-color: rgba(255, 0, 0, .7) !important; //a little transparency is helpful for troublshooting
+	color:red !important;
+	border: solid thin red !important; //NB: can't afford to go "thick" because it throws off the calculation
+	 p:empty:after{ //br:after would be great but it doesn't work
+		content:'¶';
+	}
 }
 .Layout-Problem-Detected{
 	//border: dashed thick green !important;
@@ -310,6 +315,18 @@ TEXTAREA.province
 	UL LI A.active {
 		font-weight: bold;
 	}
+	.source-text{
+		font-size: 10pt;
+		line-height: 1.5;
+		color: #000000;
+
+		//thai script languages. If using Arial, they need to be 30% bigger or so. With the
+		// popular Angsana New, it would need to be like 100% bigger
+		&:lang(th), &:lang(km),&:lang(kjg), &:lang(prt){
+			font-size: 18pt;
+		}
+	}
+
 }
 .panel-container
 {

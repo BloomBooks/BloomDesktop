@@ -1,12 +1,12 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.IO;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 using Palaso.Reporting;
 using Palaso.Code;
-using System.Net.Sockets;
 
 namespace Bloom.web
 {
@@ -254,7 +254,15 @@ namespace Bloom.web
 
 		protected virtual bool ProcessRequest(IRequestInfo info)
 		{
-			if (info.LocalPathWithoutQuery.EndsWith("testconnection"))
+			// process request for directory index
+			var requestedPath = info.LocalPathWithoutQuery.Substring(7);
+			if (info.RawUrl.EndsWith("/") && (Directory.Exists(requestedPath)))
+			{
+				info.WriteError(403, "Directory listing denied");
+				return true;
+			}
+
+			if (requestedPath.EndsWith("testconnection"))
 			{
 				info.WriteCompleteOutput("OK");
 				return true;
@@ -267,7 +275,7 @@ namespace Bloom.web
 			get { return "http://localhost:8089/bloom/"; }
 		}
 
-		protected static string GetContentType(string extension)
+		public static string GetContentType(string extension)
 		{
 			switch (extension)
 			{

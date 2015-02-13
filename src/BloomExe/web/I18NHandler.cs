@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Bloom.Collection;
 using L10NSharp;
@@ -38,8 +40,19 @@ namespace Bloom.web
 						{
 							foreach (string key in post.Keys)
 							{
-								var translation = LocalizationManager.GetDynamicString("Bloom", key, post[key]);
-								if (!d.ContainsKey(key)) d.Add(key, translation);
+								try
+								{
+									if (!d.ContainsKey(key))
+									{
+										var translation = LocalizationManager.GetDynamicString("Bloom", key, post[key]);
+										d.Add(key, translation);
+									}
+								}
+								catch (Exception error)
+								{
+									Debug.Fail("Debug Only:" +error.Message+Environment.NewLine+"A bug reported at this location is BL-923");
+									//Until BL-923 is fixed (hard... it's a race condition, it's better to swallow this for users
+								}
 							}
 						}
 

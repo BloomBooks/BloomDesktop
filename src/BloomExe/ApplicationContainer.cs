@@ -36,7 +36,11 @@ namespace Bloom
 
 				builder.Register<Sparkle>(c =>
 				{
-					string url;
+					string url = string.Empty;
+					// On Linux we use the OS package management for updating to new versions,
+					// so we save a few milliseconds by not retrieving the version table.
+					if (Palaso.PlatformUtilities.Platform.IsWindows)
+					{
 					try
 					{
 						var updateTable = new UpdateVersionTable();
@@ -46,6 +50,7 @@ namespace Bloom
 					{
 						url = "";
 						Logger.WriteEvent("Could not retrieve UpdateVersionTable from the internet");
+					}
 					}
 					var s =new Sparkle(url,Resources.Bloom);
 					s.CustomInstallerArguments = "/qb";

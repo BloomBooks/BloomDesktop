@@ -8,15 +8,16 @@ using Palaso.IO;
 
 using Bloom.ImageProcessing;
 
-namespace BloomTests.LowResImageProcessing
+namespace BloomTests.RuntimeImageProcessing
 {
 	[TestFixture]
-	public class LowResImageCacheTests
+	public class RuntimeImageProcessingTests
 	{
+		#if ShrinkLargeImages
 		[Test]
 		public void GetWideImage_ReturnsShrunkImageWithCorrectProportions()
 		{
-			using (var cache = new LowResImageCache(new BookRenamedEvent()) { TargetDimension = 100 })
+			using (var cache = new RuntimeImageProcessor(new BookRenamedEvent()) { TargetDimension = 100 })
 			using (var file = MakeTempPNGImage(200,80))
 			{
 				using(var img = Image.FromFile(cache.GetPathToResizedImage(file.Path)))
@@ -27,10 +28,11 @@ namespace BloomTests.LowResImageProcessing
 			}
 		}
 
+
 		[Test]
 		public void GetJPG_ReturnsShrunkJPG()
 		{
-			using (var cache = new LowResImageCache(new BookRenamedEvent()) { TargetDimension = 100 })
+			using (var cache = new RuntimeImageProcessor(new BookRenamedEvent()) { TargetDimension = 100 })
 			using (var file = MakeTempJPGImage(200, 80))
 			{
 				var pathToResizedImage = cache.GetPathToResizedImage(file.Path);
@@ -46,11 +48,12 @@ namespace BloomTests.LowResImageProcessing
 				}
 			}
 		}
+#endif
 
 		[Test]
 		public void GetTinyImage_DoesNotChangeSize()
 		{
-			using (var cache = new LowResImageCache(new BookRenamedEvent()) { TargetDimension = 100 })
+			using (var cache = new RuntimeImageProcessor(new BookRenamedEvent()) { TargetDimension = 100 })
 			using (var file = MakeTempPNGImage(10,10))
 			{
 				using (var img = Image.FromFile(cache.GetPathToResizedImage(file.Path)))

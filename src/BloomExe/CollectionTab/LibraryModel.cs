@@ -304,6 +304,7 @@ namespace Bloom.CollectionTab
 				var entryName = fileName.Substring(dirNameOffest);  // Makes the name in zip based on the folder
 				entryName = ZipEntry.CleanName(entryName);          // Removes drive from name and fixes slash direction
 				ZipEntry newEntry = new ZipEntry(entryName) { DateTime = fi.LastWriteTime };
+				newEntry.IsUnicodeText = true; // encode filename and comment in UTF8
 				byte[] bookContent = {};
 
 				// if this is a ReaderTools book, call GetBookReplacedWithTemplate() to get the contents

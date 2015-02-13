@@ -7,12 +7,12 @@
 export MONO_PREFIX = /opt/mono-sil
 export BUILD = Release
 
-PACKAGE = bloom-desktop
+PACKAGE = bloom-desktop-unstable
 DESTDIR = debian/$(PACKAGE)
 LIB     = usr/lib/$(PACKAGE)
 SHARE   = usr/share/$(PACKAGE)
 
-FULL_BUILD_NUMBER ?= 0.0.1
+FULL_BUILD_NUMBER ?= 0.0.1.0
 
 %:
 	dh $@ --with=cli --parallel

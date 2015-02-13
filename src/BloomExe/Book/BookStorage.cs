@@ -33,6 +33,7 @@ namespace Bloom.Book
 		bool TryGetPremadeThumbnail(string fileName, out Image image);
 		//bool DeleteBook();
 		bool RemoveBookThumbnail(string fileName);
+		string ErrorMessages { get; }
 
 		// REQUIRE INTIALIZATION (AVOID UNLESS USER IS WORKING WITH THIS BOOK SPECIFICALLY)
 		bool GetLooksOk();
@@ -73,7 +74,6 @@ namespace Bloom.Book
 		private IChangeableFileLocator _fileLocator;
 		private BookRenamedEvent _bookRenamedEvent;
 		private readonly CollectionSettings _collectionSettings;
-		private string ErrorMessages;
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
 		private HtmlDom _dom; //never remove the readonly: this is shared by others
 		private BookInfo _metaData;
@@ -146,6 +146,8 @@ namespace Bloom.Book
 			}
 			return true;
 		}
+
+		public string ErrorMessages { get; private set; }
 
 		/// <summary>
 		/// this is a method because it wasn't clear if we will eventually generate it on the fly (book paths do change as they are renamed)
@@ -656,9 +658,16 @@ namespace Bloom.Book
 
 			//by default, this comes from the collection, but the book can select one, inlucing "null" to select the factory-supplied empty xmatter
 			var nameOfXMatterPack = _dom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
-			var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
-			UpdateIfNewer(Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation), helper.PathToStyleSheetForPaperAndOrientation);
 
+			try
+			{
+				var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
+				UpdateIfNewer(Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation), helper.PathToStyleSheetForPaperAndOrientation);
+			}
+			catch (Exception error)
+			{
+				ErrorMessages = error.Message;
+			}
 		}
 
 		private bool IsPathReadonly(string path)

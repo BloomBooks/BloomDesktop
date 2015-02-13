@@ -1113,9 +1113,41 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.LayoutMode.ChangeLayout">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change Layout</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.ChangeLayout">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Layout</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Or">
+      <prop type="x-dynamic">true</prop>
+      <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
+      <tuv xml:lang="en">
+        <seg>or</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.TextBox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text Box</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.NoImageFoundOnClipboard">

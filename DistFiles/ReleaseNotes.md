@@ -1,4 +1,43 @@
-﻿## 3.0.88 BETA
+﻿## 3.1
+- Pasted images are now named "image1",2,3, etc.
+- Pasted images are no longer added with a temporary gibberish name; the original names are maintained.
+- Bloom now tries to detect when you are importing a jpeg that really should be tiff/bmp/png, and puts up an informative dialog that lets you repent or plow forward.
+
+### Fixes
+- Fixed a problem where many PDF viewer programs showed ugly lines around parts images. This fix will only help with images imported from now on, not retroactively. We'll see about doing something retroactively soon.
+
+## 3.0.97 Beta
+- Update French UI Translation (thanks David Rowe)
+- When importing, Bloom no longer
+  - makes images transparent when importing. 
+  - compresses images transparent when importing. 
+  - saves copyright/license back to the original files
+- Fix crash after closing settings dialog when no book is selected
+- Fix insertion of unwanted space before bolded, underlined, and italicized portions of words
+- Fix creative commons license on Vaccinations sample shell
+
+### Fixes
+- Spaces are no longer inserted between bold or underlined parts of a word and the normal parts
+- Fixed a problem that prevent renaming a collection
+- Fixed Vaccination shell Creative Commons logo
+
+## 3.0.93 BETA
+
+### A couple known problems
+- If upgrading from Bloom 2, the Windows installer loses one of Bloom's files. It will now notify you that this happened and ask you do reinstall and choose "repair".
+- We discovered that books with very large illustrations (e.g. 5 mb color files) are breaking the PDF'ing system. Bloom now detects this and gives you pointers on how to work around the problem, until Bloom itself can do so, in the future.
+
+
+### Fixes
+- Fixed text in calendar day boxes
+- Calendar grid lines are now uniformly thin
+- Fixed a occasional crash when switching to a different user-interface language
+- Tweak xmatter stuff to ease creating custom xmatter from installer
+
+## 3.0.88 BETA
+
+- Users upgrading from Bloom 2 may need to uninstall first, or run the Bloom 3 installer twice. A message with instructions now appears if this is necessary.
+
 - [UserVoice Suggestion] Introduction of A6 Portrait option. **Feedback appreciated**
 
 ### Front/Back Matter
@@ -32,10 +71,11 @@
   - ALT+CTRL+2: Heading 2
 
 ### Fixes
-- Be patient if Dropbox is temporarily locking our langaugedisplay.css file
+- Bloom will now be patient if Dropbox is temporarily locking the langaugedisplay.css file
 - Title page now updates immeditatley if you change country/province in Settings Dialog
-- Format dialog tooltips make Source Bubbles disappear
-- Improve error messages when an html file can't be opened
+- Format dialog tooltips no longer make Source Bubbles disappear
+- Improved error messages when an html file can't be opened
+- Thai script is now larger in shell book source bubbles
 
 ### Linux Fixes
 - Can now open book downloaded from Bloom Library

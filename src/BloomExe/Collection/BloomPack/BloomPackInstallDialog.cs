@@ -202,6 +202,12 @@ namespace Bloom.Collection.BloomPack
 			if(e.Error!=null)
 			{
 				_message.Text =  L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.ErrorInstallingBloomPack","Bloom was not able to install that Bloom Pack");
+				if (e.Error is ArgumentException && e.Error.StackTrace.Contains("CheckIllegalCharacters"))
+				{
+					_message.Text += Environment.NewLine + Environment.NewLine
+						+ L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BadCharsInFileName",
+						"Possibly this is an old BloomPack created before BloomPacks could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.");
+				}
 				_errorImage.Visible = true;
 				_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton","&Cancel");
 				DesktopAnalytics.Analytics.ReportException(e.Error);
@@ -211,7 +217,7 @@ namespace Bloom.Collection.BloomPack
 			var allDone = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BloomPackInstalled",
 				"The {0} Collection is now ready to use on this computer.");
 			_message.Text = string.Format(allDone, _folderName);
-			if (Process.GetProcesses().Count(p => p.ProcessName.Contains("Bloom")) > 1)
+			if (Program.GetRunningBloomProcessCount() > 1)
 			{
 				_message.Text += Environment.NewLine + Environment.NewLine +
 					L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.MustRestartToSee",

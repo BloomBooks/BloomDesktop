@@ -240,7 +240,10 @@ namespace Bloom.CollectionTab
 																				"Sources For New Shells");
 			string bookSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.bookSourceHeading",
 																			   "Sources For New Books");
-				bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
+			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
+			// Don't truncate the heading: see https://jira.sil.org/browse/BL-250.
+			if (bookSourcesHeader.Width < bookSourcesHeader.Label.Width)
+				bookSourcesHeader.Width = bookSourcesHeader.Label.Width;
 			invisibleHackPartner = new Label() {Text = "", Width = 0};
 			_sourceBooksFlow.Controls.Add(invisibleHackPartner);
 			_sourceBooksFlow.Controls.Add(bookSourcesHeader);

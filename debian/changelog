@@ -1,3 +1,9 @@
+bloom-desktop-unstable (3.1.0) stable; urgency=medium
+
+  * Update version number of unstable version to 3.1
+
+ -- Eberhard Beilharz <eb1@sil.org>  Thu, 29 Jan 2015 12:11:35 +0100
+
 bloom-desktop (3.0.0) stable; urgency=low
 
   * Initial release

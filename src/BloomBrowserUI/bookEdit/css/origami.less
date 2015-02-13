@@ -1,4 +1,4 @@
-@import url("../../lib/split-pane/split-pane.css");
+@import (inline) "../../lib/split-pane/split-pane.css";
 
 @inactiveColor: rgb(80%,80%,80%);
 @activeColor:  #E48C84;
@@ -62,6 +62,9 @@
   line-height: 1em;
   color: @inactiveColor;
   font-family: @font;
+}
+.origami-toggle > :first-of-type {
+	display: inline;
 }
 .origami-layout-mode ~ .origami-toggle {
   color: black;
@@ -157,8 +160,8 @@
 /*the commented line below would also add it to an empty bloom-content1 for re-entry to layout mode*/
 /*but that would be problematic/confusing in a multilingual context*/
 /*.origami-layout-mode .split-pane-component-inner .bloom-editable.bloom-content1:empty:before,*/
-.origami-layout-mode .split-pane-component-inner .bloom-translationGroup:before {
-  content: "Text Box";
+.origami-layout-mode .split-pane-component-inner .textBox-identifier {
+  /*content: "Text Box";*/
   color: @inactiveColor;
   white-space: nowrap;
   font-size: 32px;
@@ -168,7 +171,12 @@
   top: 45%;
   z-index: 50000;
 }
-
+.container-selector-links {
+	display: none;
+}
+.container-textBox-id {
+	display: none;
+}
 .selector-links {
   top: 45%;
   text-align: center;
@@ -176,4 +184,7 @@
 }
 .selector-links, .selector-links a {
   color: @activeColor;
+}
+.selector-links DIV {
+	display: inline;
 }

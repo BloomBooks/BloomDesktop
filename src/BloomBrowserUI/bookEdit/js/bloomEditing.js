@@ -76,9 +76,9 @@ function removeTrailingWhiteSpace(node) {
 }
 
 function TrimTrailingLineBreaksInDivs(node) {
-    while ( isBrOrWhitespace(node.firstChild) ) {
-        node.removeChild(node.firstChild);
-    }
+//    while ( isBrOrWhitespace(node.firstChild) ) {
+//        node.removeChild(node.firstChild);
+//    }
     while ( isBrOrWhitespace(node.lastChild) ) {
         node.removeChild(node.lastChild);
     }
@@ -358,7 +358,7 @@ function MakeSourceTextDivForGroup(group) {
         var styleClass = GetStyleClassFromElement(this);
         if (styleClass)
             $(this).removeClass(styleClass);
-        $(this).attr('style', 'font-size: 1.2em; line-height: 1.2em;')
+        $(this).addClass("source-text");
     });
 
     var vernacularLang = localizationManager.getVernacularLang();
@@ -512,7 +512,7 @@ function SetupDeletable(containerDiv) {
 function SetupImageContainer(containerDiv) {
     $(containerDiv).mouseenter(function () {
         var buttonModifier = "largeImageButton";
-        if ($(this).height() < 80) {
+        if ($(this).height() < 95) {
             buttonModifier = 'smallImageButton';
         }
         $(this).prepend('<button class="pasteImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
@@ -590,9 +590,9 @@ function UpdateOverlay(container, img) {
 // TODO: internationalize
 function SetAlternateTextOnImages(element) {
     if ($(element).attr('src').length > 0) { //don't show this on the empty license image when we don't know the license yet
-        $(element).attr('alt', 'This picture, ' + $(element).attr('src') + ', is missing or was loading too slowly.');
-    }
-    else {
+        var nameWithoutQueryString = $(element).attr('src').split("?")[0];
+        $(element).attr('alt', 'This picture, ' + nameWithoutQueryString + ', is missing or was loading too slowly.');
+    } else {
         $(element).attr('alt', '');//don't be tempted to show something like a '?' unless you fix the result when you have a custom book license on top of that '?'
     }
 }
@@ -716,8 +716,9 @@ jQuery.fn.IsOverflowing = function () {
 
     //console.log('s='+element.scrollHeight+' c='+element.clientHeight);
 
+    // 
     return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
-            element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor ||
+            element.scrollWidth > element.clientWidth  ||
         elemBottom > parentBottom + focusedBorderFudgeFactor;
 };
 
@@ -1099,19 +1100,18 @@ function SetupElements(container) {
         }
         $(this).html(x);
 
-        //REVIEW: shouldn't this (and below) select only the p's in $(this)?
         //If somehow you get leading empty paragraphs, FF won't let you delete them
-        $('p').each(function () {
-            if ($(this).text() === "") {
-                $(this).remove();
-            } else {
-                return false; //break
-            }
-        });
+//        $(this).find('p').each(function () {
+//            if ($(this).text() === "") {
+//                $(this).remove();
+//            } else {
+//                return false; //break
+//            }
+//        });
 
         //for some reason, perhaps FF-related, we end up with a new empty paragraph each time
         //so remove trailing <p></p>s
-        $('p').reverse().each(function () {
+        $(this).find('p').reverse().each(function () {
             if ($(this).text() === "") {
                 $(this).remove();
             } else {
@@ -1262,10 +1262,6 @@ function SetupElements(container) {
             //NB: this would undo, but it doesn't work document.execCommand("paste", false, x);
         }
     });
-
-    // Add overflow event handlers so that when a div is overfull,
-    // we add the overflow class and it gets a red background or something
-    AddOverflowHandler(container);
 
     AddEditKeyHandlers(container);
 
@@ -1507,19 +1503,24 @@ function SetupElements(container) {
         SetupImage(this);
     });
 
-        var editor = GetEditor();
+    // Add overflow event handlers so that when a div is overfull,
+    // we add the overflow class and it gets a red background or something
+    // Moved overflowhandler after SetupImage because some pages with lots of placeholders
+    // were prematurely overflowing before the images were set to the right size.
+    AddOverflowHandler(container);
 
-        $(container).find("div.bloom-editable:visible").each(function () {
-            // If the .bloom-editable or any of its ancestors (including <body>) has the class "bloom-userCannotModifyStyles",
-            // then the controls that allow the user to adjust the styles will not be shown.This does not prevent the user
-            // from doing character styling, e.g. CTRL+b for bold.
-            if ($(this).closest('.bloom-userCannotModifyStyles').length == 0) {
-                $(this).focus(function() {
-                    editor.AttachToBox(this);
-                });
-            }
-        });
-    
+    var editor = GetEditor();
+
+    $(container).find("div.bloom-editable:visible").each(function () {
+        // If the .bloom-editable or any of its ancestors (including <body>) has the class "bloom-userCannotModifyStyles",
+        // then the controls that allow the user to adjust the styles will not be shown.This does not prevent the user
+        // from doing character styling, e.g. CTRL+b for bold.
+        if ($(this).closest('.bloom-userCannotModifyStyles').length == 0) {
+            $(this).focus(function() {
+                editor.AttachToBox(this);
+            });
+        }
+    });
 
     $(container).find('.bloom-editable').longPress();
 
@@ -1527,9 +1528,11 @@ function SetupElements(container) {
     //a blank line is shown and the letter pressed shows up after that.
     //This detects that situation when we type the first key after the deletion, and first deletes the <br></br>.
     $(container).find('.bloom-editable').keypress(function (event) {
-         if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
-            event.target.innerHTML = "";
-        }
+        //this is causing a worse problem, (preventing us from typing empty lines to move the start of the text down), so we're going to live with the empty space for now.
+        // TODO: perhaps we can act when the DEL or Backspace occurs and then detect this situation and clean it up.
+//         if ($(event.target).text() == "") { //NB: the browser inspector shows <br></br>, but innerHTML just says "<br>"
+//            event.target.innerHTML = "";
+//        }
     });
     //This detects that situation when we do CTRL+A and then type a letter, instead of DEL
     $(container).find('.bloom-editable').keyup(function (event) {
@@ -1560,10 +1563,28 @@ function FixUpOnFirstInput() {
     //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason, 
     //and that gets characters in the wrong place because this messes with the insertion point. So now
     //we check to see if the space is still there before touching it
-    if ($(this).html().indexOf("&nbsp;") > -1) { 
+    if ($(this).html().indexOf("&nbsp;") == 0) { 
         //earlier we stuck a &nbsp; in to work around a FF bug on empty boxes.
         //now remove it a soon as they type something
-        $(this).html($(this).html().replace('&nbsp;', ""));
+
+        
+        // this caused BL-933 by somehow making us lose the on click event link on the formatButton
+    //   $(this).html($(this).html().replace('&nbsp;', ""));
+
+        //so now we do the follow business, where we select the &nbsp; we want to delete, momements before the character is typed or text pasted
+        var selection = window.getSelection();
+
+        //if we're at the start of the text, we're to the left of the character we want to replace
+        if (selection.anchorOffset == 0) {
+            selection.modify("extend", "forward", "character");
+            //REVIEW: I actually don't know why this is necessary; the pending keypress should do the same thing
+            //But BL-952 showed that without it, we actually somehow end up selecting the format gear icon as well
+            selection.deleteFromDocument();
+        }
+        //if we're at position 1 in the text, then we're just to the right of the character we want to replace
+        else if (selection.anchorOffset == 1) {
+            selection.modify("extend", "backward", "character");
+        }
     }
 }
 
@@ -1572,7 +1593,6 @@ function FixUpOnFirstInput() {
 // document ready function
 // ---------------------------------------------------------------------------------
 $(document).ready(function() {
-
     if($.fn.qtip)
         $.fn.qtip.zindex = 15000;
     //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
@@ -1598,7 +1618,7 @@ $(document).ready(function() {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
-    SetupElements($('body'));
+   SetupElements($('body'));
     OneTimeSetup();
 
 }); // end document ready function

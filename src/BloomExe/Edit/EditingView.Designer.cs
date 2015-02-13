@@ -13,9 +13,24 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
+			if (disposing)
+			{
+				if (_editButtonsUpdateTimer != null)
+				{
+					_editButtonsUpdateTimer.Stop();
+					_editButtonsUpdateTimer.Dispose();
+					_editButtonsUpdateTimer = null;
+				}
+
+				if (_handleMessageTimer != null)
+				{
+					_handleMessageTimer.Stop();
+					_handleMessageTimer.Dispose();
+					_handleMessageTimer = null;
+				}
+
+				if (components != null)
+					components.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -70,7 +85,6 @@
 			// 
 			// _editButtonsUpdateTimer
 			// 
-			this._editButtonsUpdateTimer.Enabled = true;
 			this._editButtonsUpdateTimer.Tick += new System.EventHandler(this._editButtonsUpdateTimer_Tick);
 			// 
 			// _handleMessageTimer
@@ -267,6 +281,7 @@
 			this._undoButton.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
 			this._undoButton.TextDropShadow = false;
 			this._betterToolTip1.SetToolTip(this._undoButton, "Undo (Ctrl+z)");
+			this._betterToolTip1.SetToolTipWhenDisabled(this._undoButton, "There is nothing to undo");
 			this._undoButton.UseVisualStyleBackColor = false;
 			this._undoButton.Click += new System.EventHandler(this._undoButton_Click);
 			// 
@@ -388,6 +403,8 @@
 			this._copyButton.Text = "Copy";
 			this._copyButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._copyButton.TextDropShadow = false;
+			this._betterToolTip1.SetToolTip(this._copyButton, "Copy (Ctrl-c)");
+			this._betterToolTip1.SetToolTipWhenDisabled(this._copyButton, "You need to select some text before you can copy it");
 			this._copyButton.UseVisualStyleBackColor = false;
 			this._copyButton.Click += new System.EventHandler(this._copyButton_Click);
 			// 
@@ -401,14 +418,14 @@
 			this._menusToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._contentLanguagesDropdown,
             this._layoutChoices});
-			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
+			this._menusToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Table;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._menusToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._menusToolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._menusToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._menusToolStrip, "EditTab._menusToolStrip");
-			this._menusToolStrip.Location = new System.Drawing.Point(294, 20);
+			this._menusToolStrip.Location = new System.Drawing.Point(294, 10);
 			this._menusToolStrip.Name = "_menusToolStrip";
-			this._menusToolStrip.Size = new System.Drawing.Size(165, 42);
+			this._menusToolStrip.Size = new System.Drawing.Size(165, 56);
 			this._menusToolStrip.TabIndex = 2;
 			this._menusToolStrip.Text = "toolStrip1";
 			// 
@@ -496,7 +513,6 @@
 			this.Margin = new System.Windows.Forms.Padding(4);
 			this.Name = "EditingView";
 			this.Size = new System.Drawing.Size(1200, 561);
-			this.Load += new System.EventHandler(this.EditingView_Load);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).EndInit();
 			this._splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this._splitContainer1)).EndInit();

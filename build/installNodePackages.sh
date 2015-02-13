@@ -11,6 +11,8 @@ npm install -g karma-chrome-launcher
 npm install -g karma-cli
 npm install -g karma-firefox-launcher
 npm install -g karma-jasmine
+npm install -g phantomjs
+npm install -g karma-phantomjs-launcher
 
 # install the modules found in package.json
 npm install

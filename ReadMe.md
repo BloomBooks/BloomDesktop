@@ -1,4 +1,6 @@
-Bloom Desktop is a hybrid c#/javascript/html/css Windows application that dramatically "lowers the bar" for language communities who want books in their own languages. Bloom delivers a low-training, high-output system where mother tongue speakers and their advocates work together to foster both community authorship and access to external material in the vernacular.
+[![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Wrapper-Trigger-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Wrapper-Trigger-debug/)
+
+Bloom Desktop is a hybrid c#/javascript/html/css application for Windows and Linux that dramatically "lowers the bar" for language communities who want books in their own languages. Bloom delivers a low-training, high-output system where mother tongue speakers and their advocates work together to foster both community authorship and access to external material in the vernacular.
 
 # Development Process
 
@@ -14,6 +16,12 @@ Reports can be entered in [jira](https://jira.sil.org/browse/BL). They can be en
 ## Continuous Build System
 
 Each time code is checked in, an automatic build begins on our [TeamCity build server](http://build.palaso.org/project.html?projectId=project16&amp;tab=projectOverview), running all the unit tests. Similarly, when there is a new version of some Bloom dependency (e.g. Palaso, PdfDroplet, our fork of GeckoFX), that server automatically rebuilds Bloom. This automatic build doesn't publish a new installer, however. That kind of build is launched manually, by pressing a button on the TeamCity page. This "publish" process builds Bloom, makes and installer, rsyncs it to the distribution server, and writes out a little bit of html which the [Bloom download page](http://bloomlibrary.org/#/installers) then displays to the user.
+
+|            | Windows | Linux |
+| :--------: | :-----: | :---: |
+| Build      | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Win32-default-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Win32-default-debug/)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-default-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-default-debug/) |
+| Unit tests | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Win32-default-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Win32-default-debug-Tests/)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-default-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-default-debug-Tests/)|
+| JS tests   | | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master--JSTests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master--JSTests/)|
 
 ## Source Code
 
