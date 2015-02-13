@@ -173,7 +173,7 @@ class LocalizationManager {
             }
             deferred.resolve(HtmlDecode(text));
         });
-        promise.fail(deferred.fail());
+        promise.fail(() => deferred.fail());
         return deferred.promise();
     }
      

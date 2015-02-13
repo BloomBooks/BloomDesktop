@@ -1,4 +1,4 @@
-/// <reference path="jquery.d.ts" />
+﻿/// <reference path="jquery.d.ts" />
 /// <reference path="misc-types.d.ts" />
 /**
 * L10NSharp LocalizationManager for javascript.
@@ -170,7 +170,9 @@ var LocalizationManager = (function () {
             }
             deferred.resolve(HtmlDecode(text));
         });
-        promise.fail(deferred.fail());
+        promise.fail(function () {
+            return deferred.fail();
+        });
         return deferred.promise();
     };
 

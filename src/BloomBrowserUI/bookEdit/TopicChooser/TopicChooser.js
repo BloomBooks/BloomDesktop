@@ -14,10 +14,9 @@ var TopicChooser = (function () {
     function TopicChooser() {
     }
     TopicChooser.showTopicChooser = function () {
-        localizationManager.asyncGetTextInLang("Topics.Health", "--{0}--", "N1", "blah").done(function (s) {
-            alert(s);
-        }).fail(alert('failed'));
-        TopicChooser.createTopicDialogDiv();
+        var currentTopicKey = $("div[data-book='topic']").parent().find("[lang='en']").text();
+
+        TopicChooser.createTopicDialogDiv(currentTopicKey);
         var dlg = $("#topicChooser").dialog({
             autoOpen: true,
             modal: true,
@@ -37,14 +36,12 @@ var TopicChooser = (function () {
                         //set or clear the topic variable in our data-div
                         if (t.length) {
                             var key = t[0].dataset['key'];
+                            $("div[data-book='topic']").parent().find("[lang='en']").text(key);
 
-                            //ignore the visible editable for now, set the key into the English (which may be visible editable, but needn't be)
-                            $("div[data-book='topic']").parent().find("[lang='en']").remove();
-                            $("div[data-book='topic']").parent().append('<div data-book="topic" class="bloom-readOnlyInTranslationMode bloom-editable" contenteditable="true" lang="en">' + key + '</div>');
-
-                            //var topicInNatLang1 = localizationManager.getTextInLanguage("Topics." + key, englishText, "lang2");
+                            //NB: when the nationalLanguage1 is also English, this won't do anything, but that's ok because we set the element to the key which is the same as its
+                            //English, at least today. If that changes in the future, we'd need to put the "key" somewhere other than in the text of the English element
                             localizationManager.asyncGetTextInLang("Topics." + key, key, "N1").done(function (topicInNatLang1) {
-                                $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(topicInNatLang1);
+                                $("div[data-book='topic']").filter(".bloom-contentNational1").text(topicInNatLang1);
                             });
                         }
                         $(this).dialog("close");
@@ -59,13 +56,29 @@ var TopicChooser = (function () {
             x['OK'].apply(dlg);
         });
     };
-    TopicChooser.populateTopics = function () {
+
+    TopicChooser.createTopicDialogDiv = function (currentTopicKey) {
+        // if it's already there, remove it
+        $("#topicChooser").remove();
+
+        //Make us a div with an empty list of topics. The caller will have to turn this into an actual dialog box.
+        $("<div id='topicChooser' title='Topics'>" + "<style scoped>" + "           @import '/bloom/bookEdit/TopicChooser/topicChooser.css'" + "   </style>" + "<ol id='topicList'></ol></div>").appendTo($("body"));
+
+        //now fill in the topic
+        this.populateTopics(currentTopicKey);
+    };
+
+    TopicChooser.populateTopics = function (currentTopicKey) {
         var iframeChannel = getIframeChannel();
 
         iframeChannel.simpleAjaxGet('/bloom/topics', function (topics) {
-            $("ol#topicList").append("<li class='ui-widget-content' data-key=''>(" + topics.NoTopic + ")</li>");
+            // add a "No Topics" choice, and select it if the currentTopic is empty
+            var extraClassForNoTopic = (currentTopicKey === "") ? " ui-selected " : "";
+            $("ol#topicList").append("<li class='ui-widget-content " + extraClassForNoTopic + " ' data-key=''>(" + topics.NoTopic + ")</li>");
+
             for (var i in topics.pairs) {
-                $("ol#topicList").append("<li class='ui-widget-content' data-key='" + topics.pairs[i].k + "'>" + topics.pairs[i].v + "</li>");
+                var extraClass = (topics.pairs[i].k === currentTopicKey) ? " ui-selected " : "";
+                $("ol#topicList").append("<li class='ui-widget-content " + extraClass + " ' data-key='" + topics.pairs[i].k + "'>" + topics.pairs[i].v + "</li>");
             }
 
             $("#topicList").dblclick(function () {
@@ -93,12 +106,6 @@ var TopicChooser = (function () {
                 $(this).removeClass('ui-state-hover');
             });
         });
-    };
-
-    TopicChooser.createTopicDialogDiv = function () {
-        $("#topicChooser").remove();
-        $("<div id='topicChooser' title='Topics'>" + "<style scoped>" + "           @import '/bloom/bookEdit/TopicChooser/topicChooser.css'" + "   </style>" + "<ol id='topicList'></ol></div>").appendTo($("body"));
-        this.populateTopics();
     };
     return TopicChooser;
 })();
