@@ -333,6 +333,10 @@ var ReaderToolsModel = (function () {
         if (stages.length === 0)
             return;
 
+        if (this.stageNumber > 0) {
+            this.stageGraphemes = this.getKnownGraphemes(this.stageNumber); //BL-838
+        }
+
         // Letters up through current stage
         var letters = this.stageGraphemes;
 
