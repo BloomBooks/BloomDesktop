@@ -197,29 +197,57 @@ preview.css.
   width: 170mm;
   height: 267mm;
 }
+.A4Portrait .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 170mm;
+}
 .A4Landscape .marginBox {
   width: 257mm;
   height: 180mm;
+}
+.A4Landscape .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 257mm;
 }
 .A5Portrait .marginBox {
   width: 108mm;
   height: 180mm;
 }
+.A5Portrait .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 108mm;
+}
 .A5Landscape .marginBox {
   width: 170mm;
   height: 118mm;
+}
+.A5Landscape .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 170mm;
 }
 .A6Portrait .marginBox {
   width: 65mm;
   height: 118mm;
 }
+.A6Portrait .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 65mm;
+}
 .A6Landscape .marginBox {
   width: 108mm;
   height: 75mm;
 }
+.A6Landscape .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 108mm;
+}
 .B5Portrait .marginBox {
   width: 136mm;
   height: 220mm;
+}
+.B5Portrait .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 136mm;
 }
 .bloom-page:nth-of-type(odd) .marginBox {
   left: 15mm;

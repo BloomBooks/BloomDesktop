@@ -537,6 +537,12 @@ namespace Bloom.Edit
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
 		{
 			var result = new List<IPage>();
+			var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
+			if (firstRealPage == null)
+			{
+				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
+				return result;
+			}
 			var frame = BloomFileLocator.GetFileDistributedWithApplication("BloomBrowserUI", "bookEdit", "BookPagesThumbnailList", "BookPagesThumbnailList.htm");
 			var backColor = ColorToHtmlCode(BackColor);
 			var htmlText = System.IO.File.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
@@ -544,12 +550,6 @@ namespace Bloom.Edit
 			if (!RoomForTwoColumns)
 				htmlText = htmlText.Replace("columns: 4", "columns: 2").Replace("<div class=\"gridItem placeholder\" id=\"placeholder\"></div>", "");
 			var dom = new HtmlDom(htmlText);
-			var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
-			if (firstRealPage == null)
-			{
-				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
-				return result;
-			}
 			dom = firstRealPage.Book.GetHtmlDomReadyToAddPages(dom);
 			var pageDoc = dom.RawDom;
 			var body = pageDoc.GetElementsByTagName("body")[0];
