@@ -38,11 +38,9 @@
 			this._shortVersionLabel = new System.Windows.Forms.Label();
 			this.label1 = new System.Windows.Forms.Label();
 			this.pictureBox2 = new System.Windows.Forms.PictureBox();
-			this.pictureBox3 = new System.Windows.Forms.PictureBox();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.flowLayoutPanel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// pictureBox1
@@ -98,7 +96,7 @@
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(162, 15);
 			this.label2.TabIndex = 19;
-			this.label2.Text = "© 2011-2014 SIL International";
+			this.label2.Text = "© 2011-2015 SIL International";
 			// 
 			// flowLayoutPanel1
 			// 
@@ -147,17 +145,6 @@
 			this.pictureBox2.TabIndex = 0;
 			this.pictureBox2.TabStop = false;
 			// 
-			// pictureBox3
-			// 
-			this.pictureBox3.BackColor = System.Drawing.Color.Transparent;
-			this.pictureBox3.Image = global::Bloom.Properties.Resources.betatag2;
-			this.pictureBox3.Location = new System.Drawing.Point(5, 6);
-			this.pictureBox3.Name = "pictureBox3";
-			this.pictureBox3.Size = new System.Drawing.Size(92, 67);
-			this.pictureBox3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-			this.pictureBox3.TabIndex = 24;
-			this.pictureBox3.TabStop = false;
-			// 
 			// SplashScreen
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -172,7 +159,6 @@
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this._feedbackStatusLabel);
 			this.Controls.Add(this._longVersionInfo);
-			this.Controls.Add(this.pictureBox3);
 			this.Cursor = System.Windows.Forms.Cursors.AppStarting;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 			this.MinimizeBox = false;
@@ -185,7 +171,6 @@
 			this.flowLayoutPanel1.ResumeLayout(false);
 			this.flowLayoutPanel1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -202,6 +187,5 @@
 		private System.Windows.Forms.Label _shortVersionLabel;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.PictureBox pictureBox2;
-		private System.Windows.Forms.PictureBox pictureBox3;
     }
 }
