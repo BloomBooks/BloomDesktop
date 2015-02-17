@@ -7,8 +7,6 @@
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-
-
         #region Component Designer generated code
 
         /// <summary> 
@@ -18,13 +16,7 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			this._updateCommandsTimer = new System.Windows.Forms.Timer(this.components);
 			this.SuspendLayout();
-			// 
-			// _updateCommandsTimer
-			// 
-			this._updateCommandsTimer.Enabled = true;
-			this._updateCommandsTimer.Tick += new System.EventHandler(this.OnUpdateDisplayTick);
 			// 
 			// Browser
 			// 
@@ -38,6 +30,5 @@
 
         #endregion
 
-		private System.Windows.Forms.Timer _updateCommandsTimer;
     }
 }

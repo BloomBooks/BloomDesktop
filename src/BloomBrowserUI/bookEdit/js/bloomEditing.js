@@ -590,9 +590,9 @@ function UpdateOverlay(container, img) {
 // TODO: internationalize
 function SetAlternateTextOnImages(element) {
     if ($(element).attr('src').length > 0) { //don't show this on the empty license image when we don't know the license yet
-        $(element).attr('alt', 'This picture, ' + $(element).attr('src') + ', is missing or was loading too slowly.');
-    }
-    else {
+        var nameWithoutQueryString = $(element).attr('src').split("?")[0];
+        $(element).attr('alt', 'This picture, ' + nameWithoutQueryString + ', is missing or was loading too slowly.');
+    } else {
         $(element).attr('alt', '');//don't be tempted to show something like a '?' unless you fix the result when you have a custom book license on top of that '?'
     }
 }
@@ -716,8 +716,9 @@ jQuery.fn.IsOverflowing = function () {
 
     //console.log('s='+element.scrollHeight+' c='+element.clientHeight);
 
+    //
     return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
-            element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor ||
+            element.scrollWidth > element.clientWidth  ||
         elemBottom > parentBottom + focusedBorderFudgeFactor;
 };
 
@@ -1343,10 +1344,6 @@ function SetupElements(container) {
         }
     });
 
-    // Add overflow event handlers so that when a div is overfull,
-    // we add the overflow class and it gets a red background or something
-    AddOverflowHandler(container);
-
     AddEditKeyHandlers(container);
 
     //--------------------------------
@@ -1580,19 +1577,24 @@ function SetupElements(container) {
         SetupImage(this);
     });
 
-        var editor = GetEditor();
+    // Add overflow event handlers so that when a div is overfull,
+    // we add the overflow class and it gets a red background or something
+    // Moved overflowhandler after SetupImage because some pages with lots of placeholders
+    // were prematurely overflowing before the images were set to the right size.
+    AddOverflowHandler(container);
 
-        $(container).find("div.bloom-editable:visible").each(function () {
-            // If the .bloom-editable or any of its ancestors (including <body>) has the class "bloom-userCannotModifyStyles",
-            // then the controls that allow the user to adjust the styles will not be shown.This does not prevent the user
-            // from doing character styling, e.g. CTRL+b for bold.
-            if ($(this).closest('.bloom-userCannotModifyStyles').length == 0) {
-                $(this).focus(function() {
-                    editor.AttachToBox(this);
-                });
-            }
-        });
-    
+    var editor = GetEditor();
+
+    $(container).find("div.bloom-editable:visible").each(function () {
+        // If the .bloom-editable or any of its ancestors (including <body>) has the class "bloom-userCannotModifyStyles",
+        // then the controls that allow the user to adjust the styles will not be shown.This does not prevent the user
+        // from doing character styling, e.g. CTRL+b for bold.
+        if ($(this).closest('.bloom-userCannotModifyStyles').length == 0) {
+            $(this).focus(function() {
+                editor.AttachToBox(this);
+            });
+        }
+    });
 
     $(container).find('.bloom-editable').longPress();
 

@@ -275,7 +275,7 @@ namespace Bloom.web
 			get { return "http://localhost:8089/bloom/"; }
 		}
 
-		protected static string GetContentType(string extension)
+		public static string GetContentType(string extension)
 		{
 			switch (extension)
 			{

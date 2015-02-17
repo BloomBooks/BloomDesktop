@@ -283,7 +283,7 @@
 
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.TextBox _description;
+		protected System.Windows.Forms.TextBox _description;
 		private System.Windows.Forms.TextBox _name;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.TextBox _email;

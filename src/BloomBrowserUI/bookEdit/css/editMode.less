@@ -241,7 +241,12 @@ TEXTAREA.province
 
 .overflow
 {
-	background-color: rgba(255, 0, 0, .7) !important; //a little transparency is helpful for troublshooting
+	//background-color: rgba(255, 0, 0, .7) !important; //a little transparency is helpful for troublshooting
+	color:red !important;
+	border: solid thin red !important; //NB: can't afford to go "thick" because it throws off the calculation
+	 p:empty:after{ //br:after would be great but it doesn't work
+		content:'¶';
+	}
 }
 .Layout-Problem-Detected{
 	//border: dashed thick green !important;

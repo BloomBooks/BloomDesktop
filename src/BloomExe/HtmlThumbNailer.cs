@@ -62,7 +62,7 @@ namespace Bloom
 
 			_syncControl = new Control();
 			_syncControl.CreateControl();
-						}
+		}
 
 		public void RemoveFromCache(string key)
 		{

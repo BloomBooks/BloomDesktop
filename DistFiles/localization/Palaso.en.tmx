@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.000.0</prop>
+  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.5519.15474" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.1.000.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
+    <tu tuid="AboutDialog.AboutDialogWindowTitle">
+      <tuv xml:lang="en">
+        <seg>About</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog.NoUpdates">
+      <tuv xml:lang="en">
+        <seg>No Updates</seg>
+      </tuv>
+    </tu>
     <tu tuid="AboutDialog._checkForUpdates">
       <tuv xml:lang="en">
         <seg>Check For Updates</seg>
@@ -15,14 +25,37 @@
         <seg>Release Notes</seg>
       </tuv>
     </tu>
-    <tu tuid="AboutDialog.AboutDialogWindowTitle">
+    <tu tuid="Application.AlreadyRunning.General">
       <tuv xml:lang="en">
-        <seg>About</seg>
+        <seg>Another copy of the application is already running. If you cannot find it, restart your computer.</seg>
       </tuv>
     </tu>
-    <tu tuid="AboutDialog.NoUpdates">
+    <tu tuid="Application.AlreadyRunning.Specific">
+      <note>{0} is the application name</note>
       <tuv xml:lang="en">
-        <seg>No Updates</seg>
+        <seg>Another copy of {0} is already running. If you cannot find that {0}, restart your computer.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Application.ProblemStarting.General">
+      <tuv xml:lang="en">
+        <seg>There was a problem starting the application which might require that you restart your computer.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Application.ProblemStarting.Specific">
+      <note>{0} is the application name</note>
+      <tuv xml:lang="en">
+        <seg>There was a problem starting {0} which might require that you restart your computer.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Application.WaitingFinish.General">
+      <tuv xml:lang="en">
+        <seg>Waiting for other application to finish...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Application.WaitingFinish.Specific">
+      <note>{0} is the application name</note>
+      <tuv xml:lang="en">
+        <seg>Waiting for other {0} to finish...</seg>
       </tuv>
     </tu>
     <tu tuid="Common.CancelButton">
@@ -45,16 +78,6 @@
         <seg>Yes</seg>
       </tuv>
     </tu>
-    <tu tuid="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
-      <tuv xml:lang="en">
-        <seg>&amp;Cancel</seg>
-      </tuv>
-    </tu>
-    <tu tuid="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
-      <tuv xml:lang="en">
-        <seg>&amp;Delete</seg>
-      </tuv>
-    </tu>
     <tu tuid="DialogBoxes.ConfirmRecycleDialog.MessageForMultipleItems">
       <note>Param 0 is a description of the things being deleted (e.g., "The selected files"</note>
       <tuv xml:lang="en">
@@ -70,6 +93,16 @@
     <tu tuid="DialogBoxes.ConfirmRecycleDialog.WindowTitle">
       <tuv xml:lang="en">
         <seg>Confirm Delete</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DialogBoxes.ConfirmRecycleDialog.cancelBtn">
+      <tuv xml:lang="en">
+        <seg>&amp;Cancel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DialogBoxes.ConfirmRecycleDialog.deleteBtn">
+      <tuv xml:lang="en">
+        <seg>&amp;Delete</seg>
       </tuv>
     </tu>
     <tu tuid="ImageToolbox.ArtOfReading">
@@ -164,14 +197,20 @@
         <seg>Set up metadata...</seg>
       </tuv>
     </tu>
-    <tu tuid="LanguageLookup._cannotFindLanguageLink">
+    <tu tuid="LanguageLookup.AlternateNamesHeader">
+      <tuv xml:lang="en">
+        <seg>Other Names</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LanguageLookup.CannotFindLanguageLink">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Can't find your language?</seg>
       </tuv>
     </tu>
-    <tu tuid="LanguageLookup.AlternateNamesHeader">
+    <tu tuid="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
       <tuv xml:lang="en">
-        <seg>Other Names</seg>
+        <seg>This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</seg>
       </tuv>
     </tu>
     <tu tuid="LanguageLookup.CannotFindMyLanguage.LinkToEthnologue">
@@ -190,9 +229,21 @@
         <seg>About The ISO Language Registry</seg>
       </tuv>
     </tu>
+    <tu tuid="LanguageLookup.CodeColumnHeader">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Code</seg>
+      </tuv>
+    </tu>
     <tu tuid="LanguageLookup.CodeHeader">
       <tuv xml:lang="en">
         <seg>Code</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LanguageLookup.CountryCount">
+      <note>Shown when there are multiple countries and it is just confusing to list them all.</note>
+      <tuv xml:lang="en">
+        <seg>{0} Countries</seg>
       </tuv>
     </tu>
     <tu tuid="LanguageLookup.CountryHeader">
@@ -215,6 +266,12 @@
         <seg>?</seg>
       </tuv>
     </tu>
+    <tu tuid="LanguageLookup.NameColumnHeader">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Name</seg>
+      </tuv>
+    </tu>
     <tu tuid="LanguageLookup.PrimaryNameHeader">
       <tuv xml:lang="en">
         <seg>Name</seg>
@@ -223,6 +280,11 @@
     <tu tuid="LanguageLookup.UnlistedLanguage">
       <tuv xml:lang="en">
         <seg>Unlisted Language</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LanguageLookup._cannotFindLanguageLink">
+      <tuv xml:lang="en">
+        <seg>Can't find your language?</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataDisplay.Creator">
@@ -235,15 +297,58 @@
         <seg>License Info</seg>
       </tuv>
     </tu>
+    <tu tuid="MetadataDisplay.Licenses.CreativeCommons.AttributionRequired">
+      <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You must keep the copyright and credits for authors, illustrators, etc.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed">
+      <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You are free to make commercial use of this work.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataDisplay.Licenses.CreativeCommons.Derivatives">
+      <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You may adapt and add to this work.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike">
+      <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives">
+      <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You may not make changes or build upon this work without permission.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataDisplay.Licenses.CreativeCommons.NonCommercial">
+      <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You may not use this work for commercial purposes.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataDisplay.Licenses.NullLicense">
+      <note>This is used when all we have is a copyright, no other license.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>For permission to reuse, contact the copyright holder.</seg>
+      </tuv>
+    </tu>
     <tu tuid="MetadataDisplay.NoLicense">
       <tuv xml:lang="en">
         <seg>No license specified</seg>
-      </tuv>
-    </tu>
-    <tu tuid="MetadataEditor.additionalRequestsLabel">
-      <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
-      <tuv xml:lang="en">
-        <seg>Additional Requests</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataEditor.AllowCommercialUse">
@@ -256,15 +361,15 @@
         <seg>Allow modifications of your work?</seg>
       </tuv>
     </tu>
-    <tu tuid="MetadataEditor.betterLinkLabel1">
-      <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.</note>
-      <tuv xml:lang="en">
-        <seg>more info</seg>
-      </tuv>
-    </tu>
     <tu tuid="MetadataEditor.CopyrightHolder">
       <tuv xml:lang="en">
         <seg>Copyright Holder</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataEditor.CopyrightYear">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Copyright Year</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataEditor.CreativeCommons">
@@ -282,9 +387,10 @@
         <seg>Custom</seg>
       </tuv>
     </tu>
-    <tu tuid="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
+    <tu tuid="MetadataEditor.License">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
-        <seg>Not Enforceable</seg>
+        <seg>License</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataEditor.TitleNoCredit">
@@ -305,6 +411,24 @@
     <tu tuid="MetadataEditor.YesShareAlike">
       <tuv xml:lang="en">
         <seg>Yes, as long as others share alike</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataEditor.additionalRequestsLabel">
+      <note>When you choose a Creative Commons License, this label shows over the text box at the bottom.</note>
+      <tuv xml:lang="en">
+        <seg>Additional Requests</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataEditor.betterLinkLabel1">
+      <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.</note>
+      <tuv xml:lang="en">
+        <seg>more info</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataEditor.linkToWarningAboutRefiningCreativeCommons">
+      <note>While this screen allows it, legally you can't enforce any additions to a creative commons license. This link takes you to the clause that says that. This link is visible only if you choose Creative Commons but then type in  the "Additional Request" box.</note>
+      <tuv xml:lang="en">
+        <seg>Not Enforceable</seg>
       </tuv>
     </tu>
     <tu tuid="SettingsProtection.AlsoHideOthersNotice">
@@ -363,19 +487,25 @@
         <seg>Settings Protection</seg>
       </tuv>
     </tu>
+    <tu tuid="Use {0}">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>ImageToolbox.CopyExemplarMetadata</seg>
+      </tuv>
+    </tu>
     <tu tuid="WSKeyboardControl.KeyboardNotListed">
       <tuv xml:lang="en">
         <seg>If the keyboard you need is not listed, click the appropriate link below to set it up</seg>
       </tuv>
     </tu>
-    <tu tuid="WSKeyboardControl.KeyboardsAvailable">
-      <tuv xml:lang="en">
-        <seg>Available keyboards</seg>
-      </tuv>
-    </tu>
     <tu tuid="WSKeyboardControl.KeyboardSettingsLink">
       <tuv xml:lang="en">
         <seg>Windows keyboard settings</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WSKeyboardControl.KeyboardsAvailable">
+      <tuv xml:lang="en">
+        <seg>Available keyboards</seg>
       </tuv>
     </tu>
     <tu tuid="WSKeyboardControl.KeyboardsPreviouslyUsed">

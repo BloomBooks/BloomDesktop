@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom;
@@ -154,8 +155,8 @@ namespace BloomTests.Book
 			Assert.That(spaceFixer.Replace(newStylenode, " "), Is.EqualTo(spaceFixer.Replace(styleNode, " ")));
 		}
 
-		//regression
-		[Test]
+		//For Bloom 3.1, we decided to retire this feature. Now, new books are just called "book"
+		/*[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_InitialFolderNameIsCalledVaccinations()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
@@ -166,7 +167,18 @@ namespace BloomTests.Book
 
 			//NB: although the clas under test here may produce a folder with the right name, the Book class may still mess it up based on variables
 			//But that is a different set of unit tests.
+		}*/
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_InitialFolderNameIsJustBook()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
+																			"Vaccinations");
+
+			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			Assert.AreEqual("Book", Path.GetFileName(path));
 		}
+
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasDataDivIntact()
@@ -225,6 +237,19 @@ namespace BloomTests.Book
 			Assert.That(newMetaData.IsSuitableForMakingShells, Is.False);
 		}
 
+		[Test]
+		public void CreateBookOnDiskFromTemplate_OriginalIsTemplate_CopyHasNoTitle()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
+																			"Basic Book");
+			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+
+			var server = CreateBookServer();
+			var book = server.GetBookFromBookInfo(new BookInfo(path, true));
+			Assert.AreEqual("Title Missing",book.TitleBestForUserDisplay);
+			Assert.That(book.GetDataItem("Title").Empty);
+
+		}
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_CreatesWithCoverAndTitle()
 		{
@@ -424,10 +449,10 @@ namespace BloomTests.Book
 
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_ShellHasNoNameDirective_FileNameSameAsShell()
+		public void CreateBookOnDiskFromTemplate_ShellHasNoNameDirective_FileNameJust_Book_()
 		{
 			string folderPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
-			Assert.AreEqual("guitar", Path.GetFileName(folderPath));
+			Assert.AreEqual("Book", Path.GetFileName(folderPath));
 		}
 
 
@@ -437,8 +462,8 @@ namespace BloomTests.Book
 			string firstPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
 			string secondPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
 
-			Assert.IsTrue(File.Exists(firstPath.CombineForPath("guitar.htm")));
-			Assert.IsTrue(File.Exists(secondPath.CombineForPath("guitar1.htm")));
+			Assert.IsTrue(File.Exists(firstPath.CombineForPath("Book.htm")));
+			Assert.IsTrue(File.Exists(secondPath.CombineForPath("Book1.htm")));
 			Assert.IsTrue(Directory.Exists(secondPath),"it clobbered the first one!");
 		}
 
@@ -450,25 +475,25 @@ namespace BloomTests.Book
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			var path = GetPathToHtml(bookFolderPath);
 
-			Assert.AreEqual("My Book.htm", Path.GetFileName(path));
+			Assert.AreEqual("Book.htm", Path.GetFileName(path));
 			Assert.IsTrue(Directory.Exists(bookFolderPath));
 			Assert.IsTrue(File.Exists(path));
 		}
 
-		[Test]
-		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedEnglishTitleInDataDivAndJson()
-		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","Basic Book");
-
-			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
-			var path = GetPathToHtml(bookFolderPath);
-
-			//see  <meta name="defaultNameForDerivedBooks" content="My Book" />
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and text()='My Book']",1);
-
-			var metadata = new BookInfo(bookFolderPath, false);
-			Assert.That(metadata.Title, Is.EqualTo("My Book"));
-		}
+//		[Test]
+//		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedEnglishTitleInDataDivAndJson()
+//		{
+//			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","Basic Book");
+//
+//			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+//			var path = GetPathToHtml(bookFolderPath);
+//
+//			//see  <meta name="defaultNameForDerivedBooks" content="My Book" />
+//			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and text()='My Book']",1);
+//
+//			var metadata = new BookInfo(bookFolderPath, false);
+//			Assert.That(metadata.Title, Is.EqualTo("My Book"));
+//		}
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsNoDefaultNameMetaElement()
@@ -571,18 +596,18 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_SameNameAlreadyUsed_FindsUsableNumberSuffix()
 		{
-			Directory.CreateDirectory(_projectFolder.Combine("My Book"));
-			Directory.CreateDirectory(_projectFolder.Combine("My Book1"));
-			Directory.CreateDirectory(_projectFolder.Combine("My Book3"));
+			Directory.CreateDirectory(_projectFolder.Combine("Book"));
+			Directory.CreateDirectory(_projectFolder.Combine("Book1"));
+			Directory.CreateDirectory(_projectFolder.Combine("Book3"));
 
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
 																			"Basic Book");
 
 			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
-			Assert.AreEqual("My Book2", Path.GetFileName(path));
+			Assert.AreEqual("Book2", Path.GetFileName(path));
 			Assert.IsTrue(Directory.Exists(path));
-			Assert.IsTrue(File.Exists(Path.Combine(path, "My Book2.htm")));
+			Assert.IsTrue(File.Exists(Path.Combine(path, "Book2.htm")));
 		}
 
 		[Test]

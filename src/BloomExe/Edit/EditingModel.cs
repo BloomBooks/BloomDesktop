@@ -12,6 +12,7 @@ using Bloom.ToPalaso.Experimental;
 using Bloom.web;
 using BloomTemp;
 using DesktopAnalytics;
+using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.IO;
 using Palaso.Progress;
@@ -421,6 +422,11 @@ namespace Bloom.Edit
 
 		}
 
+		public IEnumerable<string> LicenseDescriptionLanguagePriorities
+		{
+			get { return _collectionSettings.LicenseDescriptionLanguagePriorities; }
+		}
+
 		public class ContentLanguage
 		{
 			public readonly string Iso639Code;
@@ -593,7 +599,7 @@ namespace Bloom.Edit
 
 		private void RethinkPageAndReloadIt(string obj)
 		{
-			if (_bookSelection ==null || _bookSelection.CurrentSelection == null)
+			if(_bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null || _currentlyDisplayedBook == null)
 				return;
 
 			SaveNow();
@@ -857,7 +863,8 @@ namespace Bloom.Edit
 			}
 			catch (Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e, "Could not change the picture");
+				var msg = LocalizationManager.GetString("Errors.ProblemImportingPicture","Bloom had a problem importing this picture.");
+				ErrorReport.NotifyUserOfProblem(e, msg+Environment.NewLine+e.Message);
 			}
 		}
 

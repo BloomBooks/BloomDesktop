@@ -217,7 +217,7 @@ namespace Bloom.Collection.BloomPack
 			var allDone = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BloomPackInstalled",
 				"The {0} Collection is now ready to use on this computer.");
 			_message.Text = string.Format(allDone, _folderName);
-			if (Process.GetProcesses().Count(p => p.ProcessName.Contains("Bloom")) > 1)
+			if (Program.GetRunningBloomProcessCount() > 1)
 			{
 				_message.Text += Environment.NewLine + Environment.NewLine +
 					L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.MustRestartToSee",

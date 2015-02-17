@@ -1,4 +1,27 @@
-﻿## 3.0.93 BETA
+﻿## 3.1
+- Pasted images are now named "image1",2,3, etc.
+- Pasted images are no longer added with a temporary gibberish name; the original names are maintained.
+- Bloom now tries to detect when you are importing a jpeg that really should be tiff/bmp/png, and puts up an informative dialog that lets you repent or plow forward.
+
+### Fixes
+- Fixed a problem where many PDF viewer programs showed ugly lines around parts images. This fix will only help with images imported from now on, not retroactively. We'll see about doing something retroactively soon.
+
+## 3.0.97 Beta
+- Update French UI Translation (thanks David Rowe)
+- When importing, Bloom no longer
+  - makes images transparent when importing.
+  - compresses images transparent when importing.
+  - saves copyright/license back to the original files
+- Fix crash after closing settings dialog when no book is selected
+- Fix insertion of unwanted space before bolded, underlined, and italicized portions of words
+- Fix creative commons license on Vaccinations sample shell
+
+### Fixes
+- Spaces are no longer inserted between bold or underlined parts of a word and the normal parts
+- Fixed a problem that prevent renaming a collection
+- Fixed Vaccination shell Creative Commons logo
+
+## 3.0.93 BETA
 
 ### A couple known problems
 - If upgrading from Bloom 2, the Windows installer loses one of Bloom's files. It will now notify you that this happened and ask you do reinstall and choose "repair".

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.web;
 using L10NSharp;
@@ -161,6 +162,8 @@ namespace Bloom.Edit
 			_splitContainer1.Select();
 			//_browser1.Select();
 			_browser1.WebBrowser.Select();
+
+			_editButtonsUpdateTimer.Enabled = Parent != null;
 		}
 
 		public Bitmap ToolStripBackground { get; set; }
@@ -204,42 +207,7 @@ namespace Bloom.Edit
 					dlg.ShowCreator = false;
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
-						string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
-						if (File.Exists(imagePath))
-							File.Delete(imagePath);
-						Image licenseImage = dlg.Metadata.License.GetImage();
-						if (licenseImage != null)
-						{
-							licenseImage.Save(imagePath);
-						}
-						else if (File.Exists(imagePath))
-						{
-							File.Delete(imagePath);
-						}
-
-						// Both LicenseNotes and Copyright By could have user-entered html characters that need escaping.
-						var copyright = dlg.Metadata.CopyrightNotice;
-						dlg.Metadata.CopyrightNotice = copyright;
-						//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-						//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
-						var rights = dlg.Metadata.License.RightsStatement;
-						dlg.Metadata.License.RightsStatement = rights;
-						string description = dlg.Metadata.License.GetDescription("en") == null ? string.Empty : dlg.Metadata.License.GetDescription("en").Replace("'", "\\'");
-						string licenseImageName = licenseImage == null ? string.Empty : "license.png";
-						string result =
-							string.Format(
-								"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
-								MakeJavaScriptContent(dlg.Metadata.CopyrightNotice),
-								licenseImageName,
-								dlg.Metadata.License.Url, MakeJavaScriptContent(rights), description);
-						_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.setCopyrightAndLicense(" + result + "); }");
-
-						//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
-						//back to the data div in the actual html file even when the page is read and saved, because individual pages don't
-						//have the data div.
-						_model.CurrentBook.UpdateLicenseMetdata(dlg.Metadata);
-						_model.SaveNow();
-						_model.RefreshDisplayOfCurrentPage();//the cleanup() that is part of Save removes qtips, so let' redraw everything
+						ChangeBookMetadata(dlg.Metadata);
 					}
 				}
 				Logger.WriteMinorEvent("Emerged from Metadata Editor Dialog");
@@ -251,6 +219,48 @@ namespace Bloom.Edit
 #endif
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
 			}
+		}
+
+		private void ChangeBookMetadata(Metadata metadata)
+		{
+			string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
+			if (File.Exists(imagePath))
+				File.Delete(imagePath);
+			Image licenseImage = metadata.License.GetImage();
+			if (licenseImage != null)
+			{
+				licenseImage.Save(imagePath);
+			}
+			else if (File.Exists(imagePath))
+			{
+				File.Delete(imagePath);
+			}
+
+			// Both LicenseNotes and Copyright By could have user-entered html characters that need escaping.
+			var copyright = metadata.CopyrightNotice;
+			metadata.CopyrightNotice = copyright;
+			//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
+			//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
+			var rights = metadata.License.RightsStatement;
+			metadata.License.RightsStatement = rights;
+			string idOfLanguageUsed;
+
+			string description = metadata.License.GetDescription(_model.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed).Replace("'", "\\'");
+			string licenseImageName = licenseImage == null ? string.Empty : "license.png";
+			string result =
+				string.Format(
+					"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
+					MakeJavaScriptContent(metadata.CopyrightNotice),
+					licenseImageName,
+					metadata.License.Url, MakeJavaScriptContent(rights), description);
+			_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.setCopyrightAndLicense(" + result + "); }");
+
+			//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
+			//back to the data div in the actual html file even when the page is read and saved, because individual pages don't
+			//have the data div.
+			_model.CurrentBook.UpdateLicenseMetdata(metadata);
+			_model.SaveNow();
+			_model.RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let' redraw everything
 		}
 
 		// Make a string which, when compiled as a JavaScript literal embedded in single quotes, will produce the original.
@@ -339,13 +349,6 @@ namespace Bloom.Edit
 				Application.Idle += new EventHandler(VisibleNowAddSlowContents);
 				Cursor = Cursors.WaitCursor;
 				Logger.WriteEvent("Entered Edit Tab");
-
-				if (Palaso.PlatformUtilities.Platform.IsLinux)
-				{
-					// This hack fixes a problem related to the better tooltip preventing the buttons from repainting.
-					// We do not have this problem in Windows, so no reason for extra overhead.
-					CycleEditButtons();
-				}
 			}
 			else
 			{
@@ -551,7 +554,7 @@ namespace Bloom.Edit
 				return;
 			}
 
-			Image clipboardImage = null;
+			PalasoImage clipboardImage = null;
 			try
 			{
 				clipboardImage = GetImageFromClipboard();
@@ -562,6 +565,7 @@ namespace Bloom.Edit
 					return;
 				}
 
+
 				var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
 				if (target.ClassName.Contains("licenseImage"))
 					return;
@@ -571,21 +575,46 @@ namespace Bloom.Edit
 					return;
 				Cursor = Cursors.WaitCursor;
 
-				//nb: later, code closer to the the actual book folder will
-				//improve this file name. Taglib# requires an extension that matches the file content type, however.
-				using (var temp = TempFile.WithExtension("png"))
+				//nb: Taglib# requires an extension that matches the file content type.
+				if (ImageUtils.AppearsToBeJpeg(clipboardImage))
 				{
-					clipboardImage.Save(temp.Path, ImageFormat.Png);
-//                    using (var progressDialog = new ProgressDialogBackground())
-//                    {
-//                        progressDialog.ShowAndDoWork((progress, args) =>
-//                                                         {
-//                                                             ImageUpdater.CompressImage(temp.Path, progress);
-//                                                         });
-//                    }
-					using (var palasoImage = PalasoImage.FromFile(temp.Path))
+					if(ShouldBailOutBecauseUserAgreedNotToUseJpeg(clipboardImage))
+						return;
+					Logger.WriteMinorEvent("[Paste Image] Pasting jpeg image {0}", clipboardImage.OriginalFilePath);
+					_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+				}
+				else
+				{
+					//At this point, it could be a bmp, tiff, or PNG. We want it to be a PNG.
+					if(clipboardImage.OriginalFilePath == null) //they pasted an image, not a path
 					{
-						_model.ChangePicture(imageElement, palasoImage, new NullProgress());
+						Logger.WriteMinorEvent("[Paste Image] Pasting image directly from clipboard (e.g. screenshot)");
+						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+					}
+					//they pasted a path to a png
+					else if(Path.GetExtension(clipboardImage.OriginalFilePath).ToLower() == ".png")
+					{
+						Logger.WriteMinorEvent("[Paste Image] Pasting png file {0}", clipboardImage.OriginalFilePath);
+						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+					}
+					else // they pasted a path to some other bitmap format
+					{
+						var pathToPngVersion = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(clipboardImage.FileName) + ".png");
+						Logger.WriteMinorEvent("[Paste Image] Saving {0} ({1}) as {2} and converting to PNG", clipboardImage.FileName,
+							clipboardImage.OriginalFilePath, pathToPngVersion);
+						if (File.Exists(pathToPngVersion))
+						{
+							File.Delete(pathToPngVersion);
+						}
+						using(var temp = TempFile.TrackExisting(pathToPngVersion))
+						{
+							clipboardImage.Image.Save(pathToPngVersion, ImageFormat.Png);
+
+							using (var palasoImage = PalasoImage.FromFile(temp.Path))
+							{
+								_model.ChangePicture(imageElement, palasoImage, new NullProgress());
+							}
+						}
 					}
 				}
 			}
@@ -601,7 +630,7 @@ namespace Bloom.Edit
 			Cursor = Cursors.Default;
 		}
 
-		private static Image GetImageFromClipboard()
+		private static PalasoImage GetImageFromClipboard()
 		{
 			return BloomClipboard.GetImageFromClipboard();
 		}
@@ -685,9 +714,12 @@ namespace Bloom.Edit
 			{
 				if (DialogResult.OK == dlg.ShowDialog())
 				{
+
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					try
 					{
+						if(ShouldBailOutBecauseUserAgreedNotToUseJpeg(dlg.ImageInfo))
+							return;
 						_model.ChangePicture(imageElement, dlg.ImageInfo, new NullProgress());
 					}
 					catch (System.IO.IOException error)
@@ -706,6 +738,21 @@ namespace Bloom.Edit
 			}
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
+		}
+
+		private bool ShouldBailOutBecauseUserAgreedNotToUseJpeg(PalasoImage imageInfo)
+		{
+			if(ImageUtils.AppearsToBeJpeg(imageInfo) && JpegWarningDialog.ShouldWarnAboutJpeg(imageInfo.Image))
+			{
+				using(var jpegDialog = new JpegWarningDialog())
+				{
+					return jpegDialog.ShowDialog() == DialogResult.Cancel;
+				}
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		public void UpdateThumbnailAsync(IPage page)
@@ -824,6 +871,7 @@ namespace Bloom.Edit
 
 		public void UpdateEditButtons()
 		{
+			_browser1.UpdateEditButtons();
 			UpdateButtonEnabled(_cutButton, _cutCommand);
 			UpdateButtonEnabled(_copyButton, _copyCommand);
 			UpdateButtonEnabled(_pasteButton, _pasteCommand);
@@ -841,6 +889,7 @@ namespace Bloom.Edit
 
 		private void CycleEditButtons()
 		{
+			_browser1.UpdateEditButtons();
 			CycleOneButton(_cutButton, _cutCommand);
 			CycleOneButton(_copyButton, _copyCommand);
 			CycleOneButton(_pasteButton, _pasteCommand);
@@ -862,6 +911,12 @@ namespace Bloom.Edit
 			//doesn't work because the forecolor is ignored when disabled...
 			button.ForeColor = button.Enabled ? _enabledToolbarColor : _disabledToolbarColor; //.DimGray;
 			button.Invalidate();
+		}
+
+		protected override void OnParentChanged(EventArgs e)
+		{
+			base.OnParentChanged(e);
+			_editButtonsUpdateTimer.Enabled = Parent != null;
 		}
 
 		private void _editButtonsUpdateTimer_Tick(object sender, EventArgs e)
@@ -898,14 +953,19 @@ namespace Bloom.Edit
 			_duplicatePageCommand.Execute();
 		}
 
-		private void EditingView_Load(object sender, EventArgs e)
+		protected override void OnLoad(EventArgs e)
 		{
+			base.OnLoad(e);
+
 			//Why the check for null? In bl-283, user had been in settings dialog, which caused a closing down, but something
 			//then did a callback to this view, such that ParentForm was null, and this died
 			Debug.Assert(ParentForm != null);
 			if (ParentForm != null)
 			{
 				ParentForm.Activated += new EventHandler(ParentForm_Activated);
+				ParentForm.Deactivate += (sender, e1) => {
+					_editButtonsUpdateTimer.Enabled = false;
+				};
 			}
 		}
 

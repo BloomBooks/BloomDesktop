@@ -10,7 +10,6 @@ using L10NSharp;
 using Palaso.IO;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
-using Atlassian.Jira.Remote;
 
 namespace Bloom.web
 {
@@ -27,7 +26,7 @@ namespace Bloom.web
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
-		public EnhancedImageServer(LowResImageCache cache): base(cache)
+		public EnhancedImageServer(RuntimeImageProcessor cache): base(cache)
 		{
 		}
 

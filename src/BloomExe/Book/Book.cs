@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
 using L10NSharp;
@@ -144,25 +145,47 @@ namespace Bloom.Book
 		{
 			get
 			{
-				var list = new List<string>();
-				list.Add(_collectionSettings.Language1Iso639Code);
-				if (_collectionSettings.Language2Iso639Code != null)
-					list.Add(_collectionSettings.Language2Iso639Code);
-				if (_collectionSettings.Language3Iso639Code != null)
-					list.Add(_collectionSettings.Language3Iso639Code);
-				list.Add("en");
-
 				var title = _bookData.GetMultiTextVariableOrEmpty("bookTitle");
-				var t = title.GetBestAlternativeString(list);
-				if(string.IsNullOrEmpty(t))
+				var display = title.GetExactAlternative(_collectionSettings.Language1Iso639Code);
+
+				if (string.IsNullOrEmpty(display))
 				{
-					return "Title Missing";
+					//if this book is one of the ones we're editing in our collection, it really
+					//needs a title in our main language, it would be confusing to show a title from some other langauge
+					if (IsEditable ||  title.Empty)
+					{
+						display = LocalizationManager.GetString("CollectionTab.TitleMissing", "Title Missing",
+							"Shown as the thumbnail caption when the book doesn't have a title");
+					}
+					//but if this book is just in our list of sources, well then let's look through the names
+					//and try to get one that is likely to be helpful
+					else
+					{
+						var orderedPreferences = new List<string>();
+						orderedPreferences.Add(LocalizationManager.UILanguageId);
+
+						//already checked for this, previsouly. orderedPreferences.Add(_collectionSettings.Language1Iso639Code);
+						if (_collectionSettings.Language2Iso639Code != null)
+							orderedPreferences.Add(_collectionSettings.Language2Iso639Code);
+						if (_collectionSettings.Language3Iso639Code != null)
+							orderedPreferences.Add(_collectionSettings.Language3Iso639Code);
+
+						orderedPreferences.Add("en");
+						orderedPreferences.Add("fr");
+						orderedPreferences.Add("es");
+						display = title.GetBestAlternativeString(orderedPreferences);
+						if (string.IsNullOrWhiteSpace(display))
+						{
+							display = title.GetFirstAlternative();
+							Debug.Assert(!string.IsNullOrEmpty(display), "by our logic, this shouldn't possible");
+						}
+					}
 				}
 				// Handle both Windows and Linux line endings in case a file copied between the two
 				// ends up with the wrong one.
-				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("\n", " ").Replace("  "," ");
-				t = RemoveXmlMarkup(t).Trim();
-				return t;
+				display = display.Replace("<br />", " ").Replace("\r\n"," ").Replace("\n", " ").Replace("  "," ");
+				display = RemoveXmlMarkup(display).Trim();
+				return display;
 			}
 		}
 
@@ -601,7 +624,8 @@ namespace Bloom.Book
 			{
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
 				UpdatePageFromFactoryTemplates(OurHtmlDom, progress);
-				ImageUpdater.CompressImages(FolderPath, progress);
+				//ImageUpdater.CompressImages(FolderPath, progress);
+				ImageUtils.RemoveTransparencyOfImagesInFolder(FolderPath, progress);
 				Save();
 			}
 
@@ -1420,41 +1444,10 @@ namespace Bloom.Book
 				XmlElement divElement = editedPageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
 				string pageDivId = divElement.GetAttribute("id");
 				var page = GetPageFromStorage(pageDivId);
-				/*
-				 * there are too many non-semantic variations that are introduced by various processes (e.g. self closing of empy divs, handling of non-ascii)
-				 * var selfClosingVersion = divElement.InnerXml.Replace("\"></div>", "\"/>");
-					if (page.InnerXml == selfClosingVersion)
-					{
-						return;
-					}
-				 */
 
-				page.InnerXml = divElement.InnerXml;
+				HtmlDom.ProcessPageAfterEditing(page, divElement);
 
-				//Enhance: maybe we should just copy over all attributes?
-				page.SetAttribute("class", divElement.GetAttribute("class"));
-				//The SIL LEAD SHRP templates rely on "lang" on some ancestor to trigger the correct rules in labels.css.
-				//Those get set by putting data-metalanguage on Page, which then leads to a lang='xyz'. Let's save that
-				//back to the html in keeping with our goal of having the page look right if you were to just open the 
-				//html file in Firefox.
-				page.SetAttribute("lang", divElement.GetAttribute("lang"));
-
-				// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
-				// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
-				// The idea is to match class attriutes which have class bloom-ui, but may have other classes. We don't want to match
-				// classes where bloom-ui is a substring, though, if there should be any. So we wrap spaces around the class attribute
-				// and then see whether it contains bloom-ui surrounded by spaces.
-				foreach (var node in page.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
-					node.ParentNode.RemoveChild(node);
-
-				// Upon save, make sure we are not in layout mode.  Otherwise we show the sliders.
-				foreach (var node in page.SafeSelectNodes(".//*[contains(concat(' ', @class, ' '), ' origami-layout-mode ')]").Cast<XmlNode>().ToArray())
-				{
-					string currentValue = node.Attributes["class"].Value;
-					node.Attributes["class"].Value = currentValue.Replace("origami-layout-mode", "");
-				}
-
-				 _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
+				_bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
 				 var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
 				if (userModifiedStyles != null)

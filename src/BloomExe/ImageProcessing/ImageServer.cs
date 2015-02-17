@@ -1,11 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Net;
-using System.Threading;
-using System.Windows.Forms;
 using Bloom.web;
-using Palaso.Code;
-using Palaso.IO;
 using Palaso.Reporting;
 using Bloom.Properties;
 
@@ -29,10 +24,10 @@ namespace Bloom.ImageProcessing
 	/// </summary>
 	public class ImageServer : ServerBase
 	{
-		private LowResImageCache _cache;
+		private RuntimeImageProcessor _cache;
 		private bool _useCache;
 
-		public ImageServer(LowResImageCache cache)
+		public ImageServer(RuntimeImageProcessor cache)
 		{
 			_cache = cache;
 			_useCache = Settings.Default.ImageHandler != "off";
@@ -82,15 +77,11 @@ namespace Bloom.ImageProcessing
 			var r = GetLocalPathWithoutQuery(info);
 			if (r.EndsWith(".png") || r.EndsWith(".jpg"))
 			{
-				info.ContentType = r.EndsWith(".png") ? "image/png" : "image/jpeg";
 				r = r.Replace("thumbnail", "");
-				//if (r.Contains("thumb"))
+				if (File.Exists(r))
 				{
-					if (File.Exists(r))
-					{
-						info.ReplyWithImage(_cache.GetPathToResizedImage(r));
-						return true;
-					}
+					info.ReplyWithImage(_cache.GetPathToResizedImage(r));
+					return true;
 				}
 			}
 			return false;

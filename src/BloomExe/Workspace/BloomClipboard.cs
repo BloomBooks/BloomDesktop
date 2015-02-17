@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.IO;
+using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace Bloom.Workspace
 {
@@ -72,19 +73,25 @@ namespace Bloom.Workspace
 #endif
 		}
 
-		public static Image GetImageFromClipboard()
+		public static PalasoImage GetImageFromClipboard()
 		{
 #if __MonoCS__
 			if (GtkUtils.GtkClipboard.ContainsImage())
-				return GtkUtils.GtkClipboard.GetImage();
+				return PalasoImage.FromImage(GtkUtils.GtkClipboard.GetImage());
 
 			if (GtkUtils.GtkClipboard.ContainsText())
-				return GtkUtils.GtkClipboard.GetImageFromText();
+			{
+				//REVIEW: I can find no documentation on GtkClipboard. If ContainsText means we have a file
+				//	path, then it would be better to do PalasoImage.FromFile(); on the file path
+				return PalasoImage.FromImage(GtkUtils.GtkClipboard.GetImageFromText());
+			}
 
 			return null;
 #else
 			if (Clipboard.ContainsImage())
-				return Clipboard.GetImage();
+			{
+				return PalasoImage.FromImage(Clipboard.GetImage());
+			}
 
 			var dataObject = Clipboard.GetDataObject();
 			if (dataObject == null)
@@ -97,7 +104,7 @@ namespace Bloom.Workspace
 				var o = dataObject.GetData("PNG") as Stream;
 				try
 				{
-					return Image.FromStream(o);
+					return PalasoImage.FromImage(Image.FromStream(o));
 				}
 				catch (Exception)
 				{}
@@ -114,7 +121,7 @@ namespace Bloom.Workspace
 				{
 					try
 					{
-						return Image.FromFile(file);
+						return PalasoImage.FromFile(file);
 					}
 					catch (Exception)
 					{}
@@ -127,7 +134,7 @@ namespace Bloom.Workspace
 
 			try
 			{
-				return Image.FromStream(new FileStream(Clipboard.GetText(), FileMode.Open));
+				return PalasoImage.FromImage( Image.FromStream(new FileStream(Clipboard.GetText(), FileMode.Open)));
 			}
 			catch (Exception)
 			{}

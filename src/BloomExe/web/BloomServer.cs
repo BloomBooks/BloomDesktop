@@ -27,7 +27,7 @@ namespace Bloom.web
 
 		public BloomServer(CollectionSettings collectionSettings, BookCollection booksInProjectLibrary,
 						   SourceCollectionsList sourceCollectionsesList, HtmlThumbNailer thumbNailer)
-			:base(new LowResImageCache(new BookRenamedEvent()))
+			:base(new RuntimeImageProcessor(new BookRenamedEvent()))
 		{
 			_collectionSettings = collectionSettings;
 			_booksInProjectLibrary = booksInProjectLibrary;
@@ -69,8 +69,6 @@ namespace Bloom.web
 			}
 			else if (r.EndsWith(".png") && r.Contains("thumbnail"))
 			{
-				info.ContentType = "image/png";
-
 				r = r.Replace("thumbnail", "");
 				//if (r.Contains("thumb"))
 				{

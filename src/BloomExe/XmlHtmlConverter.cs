@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Xsl;
 using Bloom.Book;
@@ -43,6 +44,14 @@ namespace Bloom
 			// and also (sometimes...apparently only the first child in a parent) <i some-important-attributes></i>
 			content = content.Replace("></span>", ">REMOVEME</span>");
 			content = content.Replace("></i>", ">REMOVEME</i>");
+
+			// It also likes to insert newlines before <b>, <u>, and <i>, and convert any existing whitespace
+			// there to a space.
+			// It probably does the same to embedded <span> elements, too, so we might need a similar fix
+			// for those if we start using them in persistent data.
+			content = content.Replace(@"<b>", "REMOVEWHITESPACE<b>");
+			content = content.Replace(@"<i>", "REMOVEWHITESPACE<i>");
+			content = content.Replace(@"<u>", "REMOVEWHITESPACE<u>");
 
 			// fix for <br></br> tag doubling
 			content = content.Replace("<br></br>", "<br />");
@@ -83,6 +92,10 @@ namespace Bloom
 						newContents = newContents.Replace("&nbsp;", "&#160;");
 							//REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
 						newContents = newContents.Replace("REMOVEME", "").Replace("\0", "");
+
+						// The regex here is mainly for the \s as a convenient way to remove whatever whitespace TIDY
+						// has inserted. It's a fringe benefit that we can use the[bi] to deal with both elements in one replace.
+						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*\<([biu])\>", "<$1>");
 						dom.LoadXml(newContents);
 					}
 					catch (Exception e)

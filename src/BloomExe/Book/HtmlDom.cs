@@ -59,8 +59,8 @@ namespace Bloom.Book
 			set
 			{
 				var t = value.Trim();
-				if (!String.IsNullOrEmpty(t))
-				{
+				//if (!String.IsNullOrEmpty(t))
+				//{
 					var makeSureItsThere = Head;
 					var titleNode = XmlUtils.GetOrCreateElement(_dom, "html/head", "title");
 					//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
@@ -73,7 +73,7 @@ namespace Bloom.Book
 					titleNode.InnerXml = "";
 					//and set the text again!
 					titleNode.InnerText = justTheText;
-				}
+				//}
 			}
 		}
 
@@ -577,6 +577,59 @@ namespace Bloom.Book
 		internal void RemoveStyleSheetIfFound(string path)
 		{
 			XmlDomExtensions.RemoveStyleSheetIfFound(RawDom, path);
+		}
+
+		/* The following, to use normal url query parameters to say if we wanted transparency,
+		 * was a nice idea, but turned out to not be necessary. I'm leave the code here in
+		 * case in the future we do find a need to add query parameters.
+		public  void SetImagesForMode(bool editMode)
+		{
+			SetImagesForMode((XmlNode)RawDom, editMode);
+		}
+
+		public static void SetImagesForMode(XmlNode pageNode, bool editMode)
+		{
+			foreach(XmlElement imgNode in pageNode.SafeSelectNodes(".//img"))
+			{
+				var src = imgNode.GetAttribute("src");
+				const string kTransparent = "?makeWhiteTransparent=true";
+				src = src.Replace(kTransparent, "");
+				if (editMode)
+					src = src + kTransparent;
+				imgNode.SetAttribute("src",src);
+			}
+		}
+		*/
+
+		public static void ProcessPageAfterEditing(XmlElement page, XmlElement divElement)
+		{
+			page.InnerXml = divElement.InnerXml;
+
+			//Enhance: maybe we should just copy over all attributes?
+			page.SetAttribute("class", divElement.GetAttribute("class"));
+			//The SIL LEAD SHRP templates rely on "lang" on some ancestor to trigger the correct rules in labels.css.
+			//Those get set by putting data-metalanguage on Page, which then leads to a lang='xyz'. Let's save that
+			//back to the html in keeping with our goal of having the page look right if you were to just open the
+			//html file in Firefox.
+			page.SetAttribute("lang", divElement.GetAttribute("lang"));
+
+			// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
+			// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
+			// The idea is to match class attriutes which have class bloom-ui, but may have other classes. We don't want to match
+			// classes where bloom-ui is a substring, though, if there should be any. So we wrap spaces around the class attribute
+			// and then see whether it contains bloom-ui surrounded by spaces.
+			foreach(
+				var node in page.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
+				node.ParentNode.RemoveChild(node);
+
+			// Upon save, make sure we are not in layout mode.  Otherwise we show the sliders.
+			foreach(
+				var node in
+					page.SafeSelectNodes(".//*[contains(concat(' ', @class, ' '), ' origami-layout-mode ')]").Cast<XmlNode>().ToArray())
+			{
+				string currentValue = node.Attributes["class"].Value;
+				node.Attributes["class"].Value = currentValue.Replace("origami-layout-mode", "");
+			}
 		}
 	}
 }

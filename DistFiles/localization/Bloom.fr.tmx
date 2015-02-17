@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.21.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.71.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.25.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.0.96.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -823,6 +823,14 @@
         <seg>Créer un livre à partir de cette source</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
+      <tuv xml:lang="en">
+        <seg>Create a book in my language using this source book</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Créer un livre dans ma langue à partir de ce livre source</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.Open/CreateCollectionButton">
       <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
       <tuv xml:lang="en">
@@ -830,6 +838,15 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Autre collection</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Open/CreateCollectionButton_ToolTip_">
+      <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+      <tuv xml:lang="en">
+        <seg>Open/Create/Get Collection</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ouvrir/Créer/Obtenir une collection</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Sample Shells">
@@ -995,7 +1012,7 @@
     </tu>
     <tu tuid="CollectionTab.openCreateCollectionToolStripMenuItem">
       <tuv xml:lang="en">
-        <seg>Open/Create Collection</seg>
+        <seg>Open or Create Another Collection</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Ouvrir/créer une collection</seg>
@@ -1309,6 +1326,52 @@
         <seg>Cette page sera définitivement supprimée.</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.CustomPage.ChangeLayout">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Layout</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Modifier la mise en page</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Or">
+      <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>or</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>ou</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Image</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Texte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.TextBox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text Box</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Zone de texte</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.Edit">
       <tuv xml:lang="en">
         <seg>Edit</seg>
@@ -1534,6 +1597,7 @@
     </tu>
     <tu tuid="EditTab.FormatDialogTip">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Adjust formatting for style</seg>
       </tuv>
@@ -1669,6 +1733,7 @@
     </tu>
     <tu tuid="EditTab.LayoutMode.ChangeLayout">
       <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Change Layout</seg>
       </tuv>
@@ -2049,6 +2114,14 @@
         <seg>Configuration multilingue</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab._contentLanguagesDropdown_ToolTip_">
+      <tuv xml:lang="en">
+        <seg>Choose language to make this a bilingual or trilingual book</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Choisir une langue pour en faire un livre bilingue ou trilingue</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab._copyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
@@ -2275,6 +2348,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Aide</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.Help Menu_ToolTip_">
+      <tuv xml:lang="en">
+        <seg>Get Help</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Obtenir de l'aide</seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
