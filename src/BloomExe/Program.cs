@@ -65,10 +65,12 @@ namespace Bloom
 				// If this is the automatic launch of bloom done by Squirrel as part of setup, just quit...we don't want
 				// to launch at the end of setup. (This could be a place to display a message saying the install succeeded.)
 				if (args.Length > 0 && args[0] == "--squirrel-firstrun")
+				{
 					// Todo: localize this or do something nicer (maybe in Setup.exe) and remove this.
 					MessageBox.Show(
 						"Bloom has been installed successfully! You can run it from the desktop icon or the Start menu item.");
 					return;
+				}
 
 
 				if (args.Length > 0 && args[0].StartsWith("--squirrel"))
