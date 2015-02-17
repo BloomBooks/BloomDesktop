@@ -262,7 +262,8 @@ namespace Bloom
 			}
 		}
 
-		public const string SquirrelUpdateUrl = @"http://bloomlibrary.org.s3.amazonaws.com/squirrel";
+		// May work eventually, when we configure some redirection: @"http://bloomlibrary.org.s3.amazonaws.com/squirrel";
+		public const string SquirrelUpdateUrl = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
 
 		private static void HandleSquirrelInstallEvent(string[] args)
 		{

@@ -279,6 +279,13 @@
 		DestinationFolder="squirrel"
 		PublicRead="true" />
 
+		<S3BuildPublisher
+		EncryptionContainerName ="$(Key)"
+		SourceFiles="$(SquirrelReleaseFolder)/RELEASES"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="squirrel"
+		PublicRead="true" />
+
 		<!--<CallTarget Targets ='MakeDownloadPointers'/> Todo: this or a variant, when we want BloomLibrary to offer Squirrel installers.-->
 	</Target>
 
