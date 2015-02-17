@@ -239,7 +239,7 @@
 		squirrel needs to find its RELEASES file here, and probably at least the previous release and deltas. This could only be true
 		on at most one build agent, and I don't think it can be relied on even there...TC could decide it is short of space and
 		delete the working directory, expecting to re-create it when needed. -->
-		<Exec Command="$(RootDir)\packages\squirrel.windows.0.8.3.1\tools\Squirrel --releasify Bloom.$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) -Version $(Version)"/>
+		<Exec Command="$(RootDir)\packages\squirrel.windows.0.8.5\tools\Squirrel --releasify Bloom.$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) -Version $(Version) -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico"/>
 
 		<Copy SourceFiles="$(SquirrelReleaseFolder)\Setup.exe"
 			  DestinationFiles="$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"
