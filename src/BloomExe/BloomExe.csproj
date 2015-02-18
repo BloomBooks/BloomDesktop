@@ -330,6 +330,12 @@
     <Compile Include="Publish\SHRP_TeachersGuideExtension.cs" />
     <Compile Include="Publish\SHRP_PupilBookExtension.cs" />
     <Compile Include="ReaderTools\ReaderToolsSettings.cs" />
+    <Compile Include="Registration\LicenseDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Registration\LicenseDialog.Designer.cs">
+      <DependentUpon>LicenseDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Registration\RegistrationDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -640,6 +646,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\PdfViewer.resx">
       <DependentUpon>PdfViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Registration\LicenseDialog.resx">
+      <DependentUpon>LicenseDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Registration\RegistrationDialog.resx">
       <DependentUpon>RegistrationDialog.cs</DependentUpon>
@@ -1074,6 +1083,7 @@
     <None Include="Resources\duplicatePage32x32.png" />
     <None Include="Resources\duplicatePageDisabled32x32.png" />
     <None Include="Resources\greyTriangleButton.png" />
+    <None Include="Resources\installerBackground.jpg" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />

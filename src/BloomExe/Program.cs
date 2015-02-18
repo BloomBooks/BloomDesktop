@@ -66,17 +66,7 @@ namespace Bloom
 				// to launch at the end of setup. (This could be a place to display a message saying the install succeeded.)
 				if (args.Length > 0 && args[0] == "--squirrel-firstrun")
 				{
-					// Todo: localize this or do something nicer (maybe in Setup.exe) and remove this.
-					MessageBox.Show(
-						"Bloom has been installed successfully! You can run it from the desktop icon or the Start menu item.");
 					return;
-				}
-
-
-				if (args.Length > 0 && args[0].StartsWith("--squirrel"))
-				{
-					HandleSquirrelInstallEvent(args);
-					return; // possibly unreachable?
 				}
 
 				if (Palaso.PlatformUtilities.Platform.IsWindows)
@@ -95,6 +85,23 @@ namespace Bloom
 					
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
+
+				if (!Settings.Default.LicenseAccepted)
+				{
+					Browser.SetUpXulRunner();
+					using (var dlg = new LicenseDialog())
+						if (dlg.ShowDialog() != DialogResult.OK)
+							return;
+					Settings.Default.LicenseAccepted = true;
+					Settings.Default.Save();
+				}
+
+				if (args.Length > 0 && args[0].StartsWith("--squirrel"))
+				{
+					HandleSquirrelInstallEvent(args);
+					return; // possibly unreachable?
+				}
+
 #if !USING_CHORUS
 				Settings.Default.ShowSendReceive = false; // in case someone turned it on before we disabled
 #endif

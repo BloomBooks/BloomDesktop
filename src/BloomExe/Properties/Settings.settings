@@ -53,5 +53,8 @@
     <Setting Name="WindowSizeAndLocation" Type="Palaso.UI.WindowsForms.PortableSettingsProvider.FormSettings" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="LicenseAccepted" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
