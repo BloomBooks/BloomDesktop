@@ -206,13 +206,13 @@ namespace GeckofxHtmlToPdf
 				//printSettings.SetPaperNameAttribute(_conversionOrder.PageSizeName);
 
 				var size = GetPaperSize(_conversionOrder.PageSizeName);
-				const double inchesPerMillimeter = 0.0393701;
+				const double inchesPerMillimeter = 0.0393701;	// (or more precisely, 0.0393700787402)
 				printSettings.SetPaperHeightAttribute(size.HeightInMillimeters*inchesPerMillimeter);
 				printSettings.SetPaperWidthAttribute(size.WidthInMillimeters*inchesPerMillimeter);
 
 			}
 			//this seems to be in inches, and doesn't have a unit-setter (unlike the paper size ones)
-			const double kMillimetersPerInch = 25; //TODO what is it, exactly?
+			const double kMillimetersPerInch = 25.4; // (or more precisely, 25.3999999999726)
 			printSettings.SetMarginTopAttribute(_conversionOrder.TopMarginInMillimeters/kMillimetersPerInch);
 			printSettings.SetMarginBottomAttribute(_conversionOrder.BottomMarginInMillimeters/kMillimetersPerInch);
 			printSettings.SetMarginLeftAttribute(_conversionOrder.LeftMarginInMillimeters/kMillimetersPerInch);
