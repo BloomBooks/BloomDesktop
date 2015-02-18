@@ -513,7 +513,12 @@ namespace Bloom.Edit
 			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			_server.CurrentPageContent = TempFileUtils.CreateHtml5StringFromXml(_domForCurrentPage.RawDom);
-			_server.AccordionContent = MakeAccordionContent();
+
+			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
+				_server.AccordionContent = MakeAccordionContent();
+			else
+				_server.AccordionContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
+
 			_server.CurrentBook = _currentlyDisplayedBook;
 			_server.AuthorMode = ShowTemplatePanel;
 		}

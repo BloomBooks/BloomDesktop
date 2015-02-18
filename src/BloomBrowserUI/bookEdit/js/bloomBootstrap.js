@@ -18,17 +18,6 @@ var scripts = [
     'bookEdit/StyleEditor/StyleEditor.js',
     'lib/tabpane.js',
     'bookEdit/js/toolbar/jquery.toolbar.js',
-    'bookEdit/js/libsynphony/underscore_min_152.js', // start of SynPhony support files
-    'bookEdit/js/libsynphony/xregexp-all-min.js',
-    'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
-    'bookEdit/js/libsynphony/jquery.text-markup.js',
-    'bookEdit/js/jquery.div-columns.js',
-    'bookEdit/js/libsynphony/synphony_lib.js',
-    'bookEdit/js/libsynphony/bloom_lib.js',
-    'bookEdit/js/readerSettings.js',
-    'bookEdit/js/synphonyApi.js',
-    'bookEdit/js/readerToolsModel.js',
-    'bookEdit/js/readerTools.js', // end of SynPhony support files
     'bookEdit/js/bloomEditing.js',
     'lib/split-pane/split-pane.js',
     'bookEdit/js/origami.js',
