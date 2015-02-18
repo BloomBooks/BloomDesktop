@@ -206,6 +206,48 @@
 	  PublicRead="true" />
   </Target>
 
+	<Target Name="MakeSquirrelDownloadPointers" DependsOnTargets="VersionNumbers"
+		Condition="'$(OS)'=='Windows_NT'">
+		<!-- USES THESE PROPERTIES: Label, Version, BuildConfigurationID -->
+
+
+		<!-- we customize and upload a version of DownloadPointers, named after our Label (RELEASE or BETA), and upload it.
+			That file is then iframe'd in to a download page somewhere.	-->
+
+		<!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
+		<Copy SourceFiles ="$(RootDir)\src\SquirrelInstaller\DownloadPointers.htm"
+			   DestinationFolder ="$(RootDir)\output\installer"/>
+
+		<!-- replace some parts of the file with the version number & date -->
+
+		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+				   DatePlaceholder='RELEASE_DATE'
+				  Regex='CHANNEL_LABEL'
+				   ReplacementText ="$(Label)" />
+
+		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+					DatePlaceholder='RELEASE_DATE'
+				   Regex='VERSION_NUMBER'
+					ReplacementText ="$(Version)" />
+
+		<!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
+
+		<Message Text="Attempting rsync of DownloadPointers_$(Label).htm" Importance="high"/>
+
+		<!-- Note, this copy appends the "Label" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
+		It is up to the target web site to include or not include the beta. E.g., after you release, there is normally a period of time before the next beta.
+		We have to make this copy because the S3BuildPublisher task does not support renaming.
+		Note that, again, we need to change the DestinationFolder or the web site when we want to go live.
+		-->
+		<Copy SourceFiles="../output/installer/DownloadPointers.htm"  DestinationFiles="../output/installer/DownloadPointers_$(Label).htm"/>
+		<S3BuildPublisher
+		  EncryptionContainerName ="$(Key)"
+		  SourceFiles="../output/installer/DownloadPointers_$(Label).htm"
+		  DestinationBucket="$(Bucket)"
+		  DestinationFolder="channelsSq"
+		  PublicRead="true" />
+	</Target>
+
 
 
   <Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
@@ -261,13 +303,19 @@
 		<!--Kludge, but S3BuildPublisher needs this file in the build folder-->
 		<Copy SourceFiles="../output/$(Configuration)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
 
+		<!-- The way the web site generates the list of old installers requires that they be the only files in the
+		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.
+		When we're ready to go live with squirrel we can change this target folder or the web site.-->
 		<S3BuildPublisher
 		EncryptionContainerName ="$(Key)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelInstallerFileName)"
 		DestinationBucket="$(Bucket)"
-		DestinationFolder="squirrel"
+		DestinationFolder="installersSq"
 		PublicRead="true" />
 
+		<!-- The delta, full, and RELEASES files must all be in the same directory, the one indicated by Program.SquirrelUpdateUrl.
+		This MUST NOT CHANGE once we start shipping squirrel installers, because it's where all the old versions will look for
+		newer ones.-->
 		<S3BuildPublisher
 		EncryptionContainerName ="$(Key)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelDeltaPkg)"
@@ -289,7 +337,7 @@
 		DestinationFolder="squirrel"
 		PublicRead="true" />
 
-		<!--<CallTarget Targets ='MakeDownloadPointers'/> Todo: this or a variant, when we want BloomLibrary to offer Squirrel installers.-->
+		<CallTarget Targets ='MakeSquirrelDownloadPointers'/>
 	</Target>
 
 

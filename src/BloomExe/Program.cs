@@ -62,13 +62,6 @@ namespace Bloom
 
 				var args = args1;
 
-				// If this is the automatic launch of bloom done by Squirrel as part of setup, just quit...we don't want
-				// to launch at the end of setup. (This could be a place to display a message saying the install succeeded.)
-				if (args.Length > 0 && args[0] == "--squirrel-firstrun")
-				{
-					return;
-				}
-
 				if (Palaso.PlatformUtilities.Platform.IsWindows)
 				{
 					OldVersionCheck();
@@ -88,8 +81,7 @@ namespace Bloom
 
 				if (args.Length > 0 && args[0].StartsWith("--squirrel"))
 				{
-					HandleSquirrelInstallEvent(args);
-					return; // possibly unreachable?
+					HandleSquirrelInstallEvent(args); // may exit program
 				}
 
 				// Needs to be AFTER HandleSquirrelInstallEvent, because that can happen when the program is launched by Update rather than
@@ -272,6 +264,9 @@ namespace Bloom
 		}
 
 		// May work eventually, when we configure some redirection: @"http://bloomlibrary.org.s3.amazonaws.com/squirrel";
+		// This MUST NOT CHANGE once we start shipping squirrel installers, because it's where all the old versions will look for
+		// newer ones to upgrade to. (A possible workaround is to put one last version in the old location which is coded
+		// to look for upgrades in the new location.)
 		public const string SquirrelUpdateUrl = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
 
 		private static void HandleSquirrelInstallEvent(string[] args)
