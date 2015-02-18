@@ -1035,13 +1035,13 @@ namespace BloomTests.Book
 				</head>
 				<body>
 					<div class='bloom-page' id='guid3'>
-						<textarea lang='en' data-book='topic'>original</textarea>
+						<div lang='en' data-book='topic'>original</div>
 					</div>
 				</body></html>");
 
 			var book = CreateBook();
-
-			var topicElt = _bookDom.SelectSingleNode("//textarea");
+			
+			var topicElt = _bookDom.SelectSingleNode("//div/div[@data-book='topic' and @lang='en']");
 			topicElt.InnerText = "Animal stories";
 			book.Save();
 			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));

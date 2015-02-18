@@ -212,7 +212,12 @@ namespace Bloom.Book
 			info.Credits = credits.Replace("<br />", ""); // Clean out breaks inserted at newlines.
 		}
 
-		private void UpdateTopic(DataSet data)
+		/// <summary>
+		/// grabs the english (which serves as the 'key') from the datadiv and then adds or updates
+		/// the equivalent for the current cover language
+		/// </summary>
+		/// <param name="data"></param>
+		private void UpdateTopicInLanguageOfCover(DataSet data)
 		{
 			NamedMutliLingualValue topicData;
 			if(data.TextVariables.TryGetValue("topic", out topicData))
@@ -225,11 +230,12 @@ namespace Bloom.Book
 				var id = "Topics." + englishTopic;
 
 				string s = "";
-				if (LocalizationManager.GetIsStringAvailableForLangId(id, langOfTopicToShowOnCover))
-				{
-					s = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishTopic, "comment", langOfTopicToShowOnCover);
-				}
-				data.AddLanguageString("topic", s, langOfTopicToShowOnCover, false);
+				
+				var bestTranslation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishTopic, "this is a book topic", langOfTopicToShowOnCover);;
+				//NB: in a unit test environment, GetDynamicStringOrEnglish is going to give us the id back, which is annoying.
+				if (bestTranslation == id)
+					bestTranslation = englishTopic;
+				data.AddLanguageString("topic", bestTranslation, langOfTopicToShowOnCover, false);
 			}
 		}
 
@@ -593,7 +599,7 @@ namespace Bloom.Book
 		/// </summary>
 		private void UpdateDomFromDataSet(DataSet data, string elementName,XmlDocument targetDom, HashSet<Tuple<string, string>> itemsToDelete)
 		{
-			UpdateTopic(data); //reveiw
+			UpdateTopicInLanguageOfCover(data); //reveiw
 			try
 			{
 				string query = String.Format("//{0}[(@data-book or @data-collection or @data-library)]", elementName);
