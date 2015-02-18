@@ -6,6 +6,8 @@
 ### Fixes
 - Fixed a problem where many PDF viewer programs showed ugly lines around parts images. This fix will only help with images imported from now on, not retroactively. We'll see about doing something retroactively soon.
 
+## 3.0.100 Version Stable Release
+
 ## 3.0.97 Beta
 - Update French UI Translation (thanks David Rowe)
 - When importing, Bloom no longer
