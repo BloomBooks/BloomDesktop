@@ -320,6 +320,9 @@ var ReaderToolsModel = (function () {
                 longestWord = w.Name;
         }
 
+        var div = $('div.wordList');
+        div.css('font-family', model.fontName);
+
         ReaderToolsModel.updateElementContent("wordList", result);
 
         $.divsToColumnsBasedOnLongestWord('word', longestWord);
@@ -353,6 +356,8 @@ var ReaderToolsModel = (function () {
             var letter = letters[i];
             result += '<div class="letter">' + letter + '</div>';
         }
+        var div = $('div.letterList');
+        div.css('font-family', model.fontName);
 
         ReaderToolsModel.updateElementContent("letterList", result);
 
