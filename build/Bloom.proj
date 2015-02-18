@@ -230,6 +230,9 @@
 
 		<FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;version&gt;.*&lt;"
 					ReplacementText ="&lt;version&gt;$(Version)&lt;" />
+		<!-- insert the version number in the description also (for Windows uninstaller UI, ultimately)-->
+		<FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;description&gt;.*&lt;"
+					ReplacementText ="&lt;description&gt;Bloom $(Version)&lt;" />
 
 		<Message Text="Making Nuget package: $(Version)" Importance="high"  />
 
