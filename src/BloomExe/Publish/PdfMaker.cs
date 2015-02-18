@@ -53,9 +53,10 @@ namespace Bloom.Publish
 			// but as it was an intermittent problem and we're not sure that was the cause, this might help.
 			for (int i = 0; i < 4; i++)
 			{
+				Console.WriteLine ("Calling MakePdfUsingGeckofxHtmlToPdfComponent");
 				new MakePdfUsingGeckofxHtmlToPdfComponent().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape,
 					owner, worker, doWorkEventArgs);
-
+				Console.WriteLine ("Returned");
 				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
 					return;
 				if (File.Exists(outputPdfPath))
@@ -63,6 +64,7 @@ namespace Bloom.Publish
 			}
 			if (!File.Exists(outputPdfPath) && owner != null)
 			{
+				Console.WriteLine ("MakePdf error");
 				// Should never happen, but...
 				owner.Invoke((Action) (() =>
 				{
@@ -77,6 +79,7 @@ namespace Bloom.Publish
 			{
 				if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet)
 				{
+					Console.WriteLine("MakePdf PublishModel");
 					//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
 					MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod, layoutPagesForRightToLeft);
 				}
@@ -85,6 +88,7 @@ namespace Bloom.Publish
 					 // Just check that we got a valid, readable PDF. (MakeBooklet has to read the PDF itself,
 					// so we don't need to do this check if we're calling that.)
 					// If we get a reliable fix to BL-932 we can take this 'else' out altogether.
+					Console.WriteLine("MakePdf CheckPdf");
 					CheckPdf(outputPdfPath);
 				}
 			}

@@ -16,7 +16,7 @@ namespace BloomTests
 	[TestFixture]
 #if __MonoCS__
 	[RequiresSTA]
-	[Platform(Exclude="Linux", Reason="Currently crashing on Linux when run together with the other tests (BL-831)")]
+	//	[Platform(Exclude="Linux", Reason="Currently crashing on Linux when run together with the other tests (BL-831)")]
 #endif
 	[NUnit.Framework.Category("RequiresUI")]
 	public class PdfMakerTests
@@ -72,6 +72,7 @@ namespace BloomTests
 		/// This tests for a regretion on BL-81, BL-96, BL-76; wkhtmltopdf itself couldn't handle file names anything up out of ascii-land
 		/// </summary>
 		[Test]
+		[Platform(Exclude="Linux", Reason="Currently crashing on Linux when run together with the other tests (BL-831)")]
 		public void MakePdf_BookNameIsChinese_OutputsPdf()
 		{
 			var maker = new PdfMaker();
@@ -88,6 +89,7 @@ namespace BloomTests
 		}
 
 		[Test]
+		[Platform(Exclude="Linux", Reason="Currently crashing on Linux when run together with the other tests (BL-831)")]
 		public void MakePdf_BookNameIsNonAscii_OutputsPdf()
 		{
 			var maker = new PdfMaker();
