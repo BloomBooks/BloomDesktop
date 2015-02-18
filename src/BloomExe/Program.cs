@@ -86,6 +86,14 @@ namespace Bloom
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
 
+				if (args.Length > 0 && args[0].StartsWith("--squirrel"))
+				{
+					HandleSquirrelInstallEvent(args);
+					return; // possibly unreachable?
+				}
+
+				// Needs to be AFTER HandleSquirrelInstallEvent, because that can happen when the program is launched by Update rather than
+				// by the user.
 				if (!Settings.Default.LicenseAccepted)
 				{
 					Browser.SetUpXulRunner();
@@ -94,12 +102,6 @@ namespace Bloom
 							return;
 					Settings.Default.LicenseAccepted = true;
 					Settings.Default.Save();
-				}
-
-				if (args.Length > 0 && args[0].StartsWith("--squirrel"))
-				{
-					HandleSquirrelInstallEvent(args);
-					return; // possibly unreachable?
 				}
 
 #if !USING_CHORUS
