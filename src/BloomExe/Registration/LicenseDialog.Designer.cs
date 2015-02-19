@@ -28,14 +28,26 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LicenseDialog));
+			this.l10NSharpExtender1 = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._acceptButton = new System.Windows.Forms.Button();
+			((System.ComponentModel.ISupportInitialize)(this.l10NSharpExtender1)).BeginInit();
 			this.SuspendLayout();
+			// 
+			// l10NSharpExtender1
+			// 
+			this.l10NSharpExtender1.LocalizationManagerId = null;
+			this.l10NSharpExtender1.PrefixForNewItems = null;
 			// 
 			// _acceptButton
 			// 
 			this._acceptButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._acceptButton.DialogResult = System.Windows.Forms.DialogResult.OK;
+			this.l10NSharpExtender1.SetLocalizableToolTip(this._acceptButton, null);
+			this.l10NSharpExtender1.SetLocalizationComment(this._acceptButton, null);
+			this.l10NSharpExtender1.SetLocalizationPriority(this._acceptButton, L10NSharp.LocalizationPriority.High);
+			this.l10NSharpExtender1.SetLocalizingId(this._acceptButton, "LicenseDialog._acceptButton");
 			this._acceptButton.Location = new System.Drawing.Point(253, 267);
 			this._acceptButton.Name = "_acceptButton";
 			this._acceptButton.Size = new System.Drawing.Size(250, 23);
@@ -54,10 +66,14 @@
 			this.ClientSize = new System.Drawing.Size(515, 302);
 			this.Controls.Add(this._acceptButton);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.l10NSharpExtender1.SetLocalizableToolTip(this, null);
+			this.l10NSharpExtender1.SetLocalizationComment(this, null);
+			this.l10NSharpExtender1.SetLocalizingId(this, "LicenseDialog.WindowTitle");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "LicenseDialog";
 			this.Text = "Bloom {0}";
+			((System.ComponentModel.ISupportInitialize)(this.l10NSharpExtender1)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -65,5 +81,6 @@
 		#endregion
 
 		private System.Windows.Forms.Button _acceptButton;
+		private L10NSharp.UI.L10NSharpExtender l10NSharpExtender1;
 	}
 }

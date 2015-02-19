@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -31,7 +32,23 @@ namespace Bloom.Registration
 			Controls.Add(_licenseBrowser);
 			var options = new MarkdownOptions() { LinkEmails = true, AutoHyperlink = true };
 			var m = new Markdown(options);
-			var contents = m.Transform(File.ReadAllText(BloomFileLocator.GetFileDistributedWithApplication("license.md"), Encoding.UTF8));
+			var locale = CultureInfo.CurrentUICulture.Name;
+			string licenseFilePath = BloomFileLocator.GetFileDistributedWithApplication("license.md");
+			var localizedLicenseFilePath = licenseFilePath.Substring(0, licenseFilePath.Length - 3) + "-" + locale + ".md";
+			if (File.Exists(localizedLicenseFilePath))
+				licenseFilePath = localizedLicenseFilePath;
+			else
+			{
+				var index = locale.IndexOf('-');
+				if (index > 0)
+				{
+					locale = locale.Substring(0, index);
+					localizedLicenseFilePath = licenseFilePath.Substring(0, licenseFilePath.Length - 3) + "-" + locale + ".md";
+					if (File.Exists(localizedLicenseFilePath))
+						licenseFilePath = localizedLicenseFilePath;
+				}
+			}
+			var contents = m.Transform(File.ReadAllText(licenseFilePath, Encoding.UTF8));
 			var html = string.Format("<html><head><head/><body>{0}</body></html>", contents);
 			_licenseBrowser.NavigateRawHtml(html);
 			_licenseBrowser.Visible = true;
