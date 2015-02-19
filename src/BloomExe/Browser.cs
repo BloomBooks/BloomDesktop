@@ -31,7 +31,10 @@ namespace Bloom
 		private string _url;
 		private XmlDocument _rootDom; // root DOM we navigate the browser to; typically a shell with other doms in iframes
 		private XmlDocument _pageEditDom; // DOM, dypically in an iframe of _rootDom, which we are editing.
-		private IDisposable _dependent; // Something we keep track of to dispose when the browser is disposed. Currently may be TempFile or SimulatedPageFile
+		// A temporary object needed just as long as it is the content of this browser.
+		// Currently may be a TempFile (a real filesystem file) or a SimulatedPageFile (just a dictionary entry).
+		// It gets disposed when the Browser goes away.
+		private IDisposable _dependentContent;
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
 		private  UndoCommand _undoCommand;
@@ -290,10 +293,10 @@ namespace Bloom
 				}
 				_jsErrorHandler = null;
 
-				if (_dependent != null)
+				if (_dependentContent != null)
 				{
-					_dependent.Dispose();
-					_dependent = null;
+					_dependentContent.Dispose();
+					_dependentContent = null;
 				}
 				if (components != null)
 				{
@@ -629,11 +632,11 @@ namespace Bloom
 
 		private void SetNewDependent(IDisposable dependent)
 		{
-			if(_dependent!=null)
+			if(_dependentContent!=null)
 			{
 				try
 				{
-					_dependent.Dispose();
+					_dependentContent.Dispose();
 				}
 				catch(Exception)
 				{
@@ -644,7 +647,7 @@ namespace Bloom
 				}
 
 			}
-			_dependent = dependent;
+			_dependentContent = dependent;
 		}
 
 
