@@ -725,12 +725,13 @@ jQuery.fn.IsOverflowing = function () {
 // Checks for overflow and adds/removes the proper class
 // N.B. This function is specifically designed to be called from within AddOverflowHandler()
 function MarkOverflowInternal(box) {
-    //$(container).find("div.bloom-editable, textarea").each(function () {
     var $this = $(box);
-    if ($this.IsOverflowing())
+    if ($this.IsOverflowing()) {
         $this.addClass('overflow');
-    else {
+        $this.closest('.bloom-page').addClass('pageOverflows');
+    } else {
         $this.removeClass('overflow');
+        RemovePageOverflowIfAppropriate($this.closest('.bloom-page'));
 
         //now, thing is, while the text may fit in our box, our box may not fit our parent. Or grandparent, etc.
         //It could be that we could just do this on up the hiearchy? For now, here's the case we know is important,
@@ -740,7 +741,14 @@ function MarkOverflowInternal(box) {
             MarkOverflowInternal(splitterParents[0]);
         }
     } // If it's not here, this won't hurt anything.
-    //});
+}
+
+// Make sure there are no boxes with class 'overflow' on the page before removing
+// the page-level overflow marker 'pageOverflows'
+function RemovePageOverflowIfAppropriate(page) {
+    var $page = $(page);
+    if (!$page.find('.overflow').length)
+        $page.removeClass('pageOverflows');
 }
 
 // When a div is overfull,
