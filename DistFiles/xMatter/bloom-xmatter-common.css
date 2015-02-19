@@ -102,7 +102,7 @@
 }
 .frontCover .bottomBlock .coverBottomBookTopic {
   position: absolute;
-  bottom: 0;
+  bottom: 8px;
   right: 0;
   height: 20px;
   text-align: right;
@@ -110,8 +110,7 @@
 }
 .frontCover .bottomBlock .coverBottomBookTopic .bloom-contentNational1 {
   display: inline !important;
-  font-size: 110%;
-  height: 25px !important;
+  bottom: -4px;
   padding-right: 1px;
   text-align: right;
 }
@@ -132,9 +131,8 @@
 }
 .frontCover .bottomBlock .coverBottomLangName {
   position: absolute;
-  bottom: 0;
   left: 0;
-  height: 20px;
+  line-height: 1.6em !important;
 }
 .xfrontCover .bookTitle {
   margin-bottom: 15px;
