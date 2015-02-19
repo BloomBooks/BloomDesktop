@@ -12,6 +12,8 @@ using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Book;
+using Bloom.web;
 using Gecko;
 using Gecko.DOM;
 using Gecko.Events;
@@ -29,7 +31,10 @@ namespace Bloom
 		private string _url;
 		private XmlDocument _rootDom; // root DOM we navigate the browser to; typically a shell with other doms in iframes
 		private XmlDocument _pageEditDom; // DOM, dypically in an iframe of _rootDom, which we are editing.
-		private TempFile _tempHtmlFile;
+		// A temporary object needed just as long as it is the content of this browser.
+		// Currently may be a TempFile (a real filesystem file) or a SimulatedPageFile (just a dictionary entry).
+		// It gets disposed when the Browser goes away.
+		private IDisposable _dependentContent;
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
 		private  UndoCommand _undoCommand;
@@ -288,10 +293,10 @@ namespace Bloom
 				}
 				_jsErrorHandler = null;
 
-				if (_tempHtmlFile != null)
+				if (_dependentContent != null)
 				{
-					_tempHtmlFile.Dispose();
-					_tempHtmlFile = null;
+					_dependentContent.Dispose();
+					_dependentContent = null;
 				}
 				if (components != null)
 				{
@@ -451,14 +456,14 @@ namespace Bloom
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-			var  temp = Palaso.IO.TempFile.WithExtension(".htm");
-			var src = _url.FromLocalhost();
-			File.Copy(src, temp.Path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
-
+			// An earlier version of this method made a new temp file in hopes that it would go on working
+			// in the browser even after Bloom closed. This has gotten steadily less feasible as we depend
+			// more on the http server. With the <base> element now removed, an independent page file will
+			// have even more missing links. I don't think it's worth making a separate temp file any more.
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
-				Process.Start("Firefox.exe", '"' + temp.Path.ToLocalhost() + '"');
+				Process.Start("Firefox.exe", '"' + _url + '"');
 			else
-				Process.Start("xdg-open", temp.Path.ToLocalhost()); ;
+				Process.Start("xdg-open", _url);
 		}
 
 		public void OnOpenPageInStylizer(object sender, EventArgs e)
@@ -558,7 +563,7 @@ namespace Bloom
 			_url = url; //TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
 			if(cleanupFileAfterNavigating && !_url.EndsWith(".pdf"))
 			{
-				SetNewTempFile(TempFile.TrackExisting(url));
+				SetNewDependent(TempFile.TrackExisting(url));
 			}
 			UpdateDisplay();
 		}
@@ -566,15 +571,20 @@ namespace Bloom
 		[DefaultValue(true)]
 		public bool ScaleToFullWidthOfPage { get; set; }
 
-		//NB: make sure the <base> is set correctly, 'cause you don't know where this method will
-		//save the file before navigating to it.
-		public void Navigate(XmlDocument dom, XmlDocument editDom = null)
+		// NB: make sure you called HtmlDom.SetBaseForRelativePaths() if the temporary document might contain
+		// references to files in the directory of the original HTML file it is derived from,
+		// 'cause that provides the information needed
+		// to fake out the browser about where the 'file' is so internal references work.
+		public void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null)
 		{
 			if (InvokeRequired)
 			{
-				Invoke(new Action<XmlDocument, XmlDocument>(Navigate), dom, editDom);
+				Invoke(new Action<HtmlDom, HtmlDom>(Navigate), htmlDom, htmlEditDom);
 				return;
 			}
+
+			XmlDocument dom = htmlDom.RawDom;
+			XmlDocument editDom = htmlEditDom == null ? null : htmlEditDom.RawDom;
 
 			_rootDom = dom;//.CloneNode(true); //clone because we want to modify it a bit
 			_pageEditDom = editDom ?? dom;
@@ -592,8 +602,9 @@ namespace Bloom
 				}
 			}
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			SetNewTempFile(TempFileUtils.CreateHtm5FromXml(dom));
-			_url = _tempHtmlFile.Path.ToLocalhost();
+			var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(htmlDom);
+			SetNewDependent(fakeTempFile);
+			_url = fakeTempFile.Key;
 			UpdateDisplay();
 		}
 
@@ -607,8 +618,8 @@ namespace Bloom
 
 			var tf = TempFile.WithExtension("htm"); // For some reason Gecko won't recognize a utf-8 file as html unless it has the right extension
 			File.WriteAllText(tf.Path,html, Encoding.UTF8);
-			SetNewTempFile(tf);
-			_url = _tempHtmlFile.Path;
+			SetNewDependent(tf);
+			_url = tf.Path;
 			UpdateDisplay();
 		}
 
@@ -619,13 +630,13 @@ namespace Bloom
 			return string.Format("-moz-transform: scale({0}); -moz-transform-origin: 0 0", scale.ToString(CultureInfo.InvariantCulture));
 		}
 
-		private void SetNewTempFile(TempFile tempFile)
+		private void SetNewDependent(IDisposable dependent)
 		{
-			if(_tempHtmlFile!=null)
+			if(_dependentContent!=null)
 			{
 				try
 				{
-					_tempHtmlFile.Dispose();
+					_dependentContent.Dispose();
 				}
 				catch(Exception)
 				{
@@ -636,7 +647,7 @@ namespace Bloom
 				}
 
 			}
-			_tempHtmlFile = tempFile;
+			_dependentContent = dependent;
 		}
 
 

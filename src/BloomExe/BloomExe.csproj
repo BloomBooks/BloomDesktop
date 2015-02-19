@@ -427,6 +427,7 @@
     <Compile Include="ImageProcessing\ImageServer.cs" />
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
+    <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NHandler.cs" />
     <Compile Include="web\ReadersHandler.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
@@ -1097,7 +1098,7 @@
     <PostBuildEvent Condition="'$(OS)'=='Windows_NT'">
 "$(DevEnvDir)..\..\VC\bin\editbin.exe" /largeaddressaware "$(TargetPath)"
 copy /Y "$(SolutionDir)\lib\msvcr100.dll" $(OutDir)
-copy /Y "$(SolutionDir)\lib\libtidy.dll" $(OutDir)
+copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
 </PostBuildEvent>

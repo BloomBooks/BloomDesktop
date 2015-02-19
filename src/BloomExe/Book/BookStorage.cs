@@ -262,7 +262,7 @@ namespace Bloom.Book
 			AssertIsAlreadyInitialized();
 			string tempPath = Path.GetTempFileName();
 			MakeCssLinksAppropriateForStoredFile(dom);
-			SetBaseForRelativePaths(dom, string.Empty, false);// remove any dependency on this computer, and where files are on it.
+			SetBaseForRelativePaths(dom, string.Empty);// remove any dependency on this computer, and where files are on it.
 			//CopyXMatterStylesheetsIntoFolder
 			return XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, tempPath);
 		}
@@ -278,7 +278,7 @@ namespace Bloom.Book
 
 			HtmlDom relocatableDom = Dom.Clone();
 
-			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
+			SetBaseForRelativePaths(relocatableDom, _folderPath);
 			EnsureHasLinksToStylesheets(relocatableDom);
 			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
 
@@ -295,7 +295,7 @@ namespace Bloom.Book
 		{
 			var relocatableDom = dom.Clone();
 
-			SetBaseForRelativePaths(relocatableDom, _folderPath, true);
+			SetBaseForRelativePaths(relocatableDom, _folderPath);
 			EnsureHasLinksToStylesheets(relocatableDom);
 			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
 
@@ -504,28 +504,23 @@ namespace Bloom.Book
 			return string.Empty;
 		}
 
-		public static void SetBaseForRelativePaths(HtmlDom dom, string folderPath, bool pointAtEmbeddedServer)
+		public static void SetBaseForRelativePaths(HtmlDom dom, string folderPath)
 		{
 			string path = "";
 			if (!string.IsNullOrEmpty(folderPath))
 			{
-				if (pointAtEmbeddedServer && Settings.Default.ImageHandler == "http" && ImageServer.IsAbleToUsePort)
-				{
-					//this is only used by relative paths, and only img src's are left relative.
-					//we are redirecting through our build-in httplistener in order to shrink
-					//big images before giving them to gecko which has trouble with really hi-res ones
-					var uri = folderPath + Path.DirectorySeparatorChar;
-					uri = uri.Replace(":", "%3A");
-					uri = uri.Replace('\\', '/');
-					uri = ImageServer.PathEndingInSlash + uri;
-					path = uri;
-				}
-				else
-				{
-					path = "file://" + folderPath + Path.DirectorySeparatorChar;
-				}
+				//this is only used by relative paths, and only img src's are left relative.
+				//we are redirecting through our build-in httplistener in order to make white backgrounds transparent
+				// and possibly shrink
+				//big images before giving them to gecko which has trouble with really hi-res ones
+				//Some clients don't want low-res images and can suppress this by setting HtmlDom.UseOriginalImages.
+				var uri = folderPath + Path.DirectorySeparatorChar;
+				uri = uri.Replace(":", "%3A");
+				uri = uri.Replace('\\', '/');
+				uri = ImageServer.PathEndingInSlash + uri;
+				path = uri;
 			}
-			dom.SetBaseForRelativePaths(path);
+			dom.BaseForRelativePaths = path;
 		}
 
 

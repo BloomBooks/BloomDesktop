@@ -207,7 +207,7 @@ namespace Bloom
 							Browser.SetUpXulRunner();
 								Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-								_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
+								_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
 							transfer.UploadFolder(args[1], _applicationContainer);
 							return;
 						}

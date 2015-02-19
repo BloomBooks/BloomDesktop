@@ -22,6 +22,7 @@ namespace Bloom.Book
 	/// </summary>
 	public class HtmlDom
 	{
+		public const string RelativePathAttrName = "data-base";
 		private XmlDocument _dom;
 
 		public HtmlDom()
@@ -107,35 +108,27 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// This property records the folder in which the browser needs to find files referred to using
+		/// non-absolute locations.
+		/// This method is designed to be used in conjunction with EnhancedImageServer.MakeSimulatedPageFileInBookFolder().
+		/// which generates URLs that give the browser the content of this DOM, and also handles derived urls
+		/// relative to that one.
+		/// </summary>
+		/// <remarks>Originally, this method created a 'base' element in the DOM, and a real
+		/// temporary file would typically be created. The base element caused the browser to
+		/// redirect things in much the way described above. However, this strategy fails
+		/// for internal links within the document: a url like #mybookmark is translated
+		/// into localhost://c:/users/someone/bloom/mycollection/mybookfolder#mybookmark, with no
+		/// document specified at all, and passed to the server, which fails to find anything.</remarks>
+		/// <param name="path"></param>
+		public string BaseForRelativePaths { get; set; }
 
-
-
-		public void SetBaseForRelativePaths(string path)
-		{
-			var head = _dom.SelectSingleNodeHonoringDefaultNS("//head");
-			if (head == null)
-			{
-				var folder = "";
-				if (path.Length > 0) // not unit tests
-					folder = Path.GetDirectoryName(path);
-				Guard.AgainstNull(head,
-					"Expected the DOM to already have a head element in file: " + path +
-					". If possible, please send the entire folder '" + folder +
-					"' to the developers. You may need to move this folder to another location or delete it in order to keep working.");
-			}
-			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
-			{
-				head.RemoveChild(baseNode);
-			}
-
-			if (path.Trim() != "") //jim (BL-323) reported a problem with  <base href="">
-			{
-				var baseElement = _dom.CreateElement("base");
-
-				baseElement.SetAttribute("href", path);
-				head.AppendChild(baseElement);
-			}
-		}
+		/// <summary>
+		/// Set this for DOMs that should not get the on-screen enhancements (transparency, possibly compression)
+		/// of images. Typically for generating print-quality PDFs.
+		/// </summary>
+		internal bool UseOriginalImages { get; set; }
 
 
 		public void AddStyleSheet(string locateFile)
