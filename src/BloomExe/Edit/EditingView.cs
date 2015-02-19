@@ -372,7 +372,7 @@ namespace Bloom.Edit
 				HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
 				var dom = _model.GetXmlDocumentForEditScreenWebPage();
 				_browser1.Focus();
-				_browser1.Navigate(dom.RawDom, domForCurrentPage.RawDom);
+				_browser1.Navigate(dom, domForCurrentPage);
 				_pageListView.Focus();
 				_browser1.Focus();
 				// So far, the most reliable way I've found to detect that the page is fully loaded and we can call

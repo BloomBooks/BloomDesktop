@@ -18,7 +18,8 @@ html
 			$(document).ready(function () {
 				// The iframe communication channel needs to be initialized before the child documents are loaded.
 				interIframeChannel = new interIframeChannel();
-				document.getElementById('page').src = '/bloom/currentPageContent';
+				// {simulatedPageFileInBookFolder} is replaced by EditingModel.GetXmlDocumentForEditScreenWebPage().
+				document.getElementById('page').src = '{simulatedPageFileInBookFolder}';
 				document.getElementById('accordion').src = '/bloom/accordionContent';
 			});
 		style(type='text/css')

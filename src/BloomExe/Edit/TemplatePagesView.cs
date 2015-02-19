@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.web;
 using Gecko;
 using L10NSharp;
 using Palaso.Xml;
@@ -171,7 +172,7 @@ namespace Bloom.Edit
 			}
 			//_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 			//_verticalScrollDistance = _browser.VerticalScrollDistance;
-			_browser.Navigate(pageDoc, null);
+			_browser.Navigate(dom, null);
 		}
 
 		private static string ItemId(IPage page)
