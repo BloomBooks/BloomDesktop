@@ -37,7 +37,7 @@ mixin page-cover(label)
 mixin chooser-topic
 	//- TODO: Somehow the data-functionOnHintClick doesn't interact well with the new label.bubble method.
 	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode(data-functionOnHintClick="ShowTopicChooser()", data-hint="Click to choose topic")
-		.bloom-readOnlyInTranslationMode.bloom-editable(data-book="topic")
+		.bloom-readOnlyInTranslationMode.bloom-editable.Cover-Default-style(data-book="topic")
 
 mixin field-ISBN
 	.ISBNContainer(data-hint="International Standard Book Number. Leave blank if you don't have one of these.")
@@ -108,10 +108,10 @@ mixin factoryStandard-outsideFrontCover
 
 		.creditsWrapper
 			//- 'V' means this field is only available in the vernacular
-			+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.Credits-On-Cover-style
+			+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.Cover-Default-style
 				label.bubble *You may use this space for author/illustrator, or anything else.
 		.bottomBlock
-			.coverBottomLangName(data-book='languagesOfBook')
+			.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
 			+chooser-topic.coverBottomBookTopic
 
 mixin factoryStandard-creditsInsideFrontCover
