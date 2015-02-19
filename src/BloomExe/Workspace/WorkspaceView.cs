@@ -43,6 +43,7 @@ namespace Bloom.Workspace
 		public event EventHandler ReopenCurrentProject;
 		private readonly LocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
+		private static bool _squirrelUpdateRunning;
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
@@ -481,6 +482,13 @@ namespace Bloom.Workspace
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
 		{
+			if (_squirrelUpdateRunning)
+			{
+				MessageBox.Show(this,
+					LocalizationManager.GetString("CollectionTab.UpdateCheckInProgress",
+						"Bloom is already working on checking for updates (perhaps automatically)"));
+				return;
+			}
 			InitiateSquirrelUpdateCheck();
 		}
 
@@ -488,10 +496,14 @@ namespace Bloom.Workspace
 		{
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
 			{
+				_squirrelUpdateRunning = true;
 				using (var mgr = new UpdateManager(Program.SquirrelUpdateUrl, "Bloom", FrameworkVersion.Net45))
 				{
+					// At this point the method returns(!) and no longer blocks anything.
 					await mgr.UpdateApp();
 				}
+				// Since this is in the async method _after_ the await we know the UpdateApp has finished.
+				_squirrelUpdateRunning = false;
 			}
 		}
 
