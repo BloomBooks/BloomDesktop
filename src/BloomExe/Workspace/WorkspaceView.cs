@@ -80,7 +80,7 @@ namespace Bloom.Workspace
 
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
 			{
-				if (!Debugger.IsAttached)
+				if (Settings.Default.AutoUpdate && !Debugger.IsAttached)
 				{
 					Application.Idle += CheckForUpdatesOnFirstIdle;
 				}

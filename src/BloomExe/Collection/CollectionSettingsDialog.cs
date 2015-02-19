@@ -41,6 +41,7 @@ namespace Bloom.Collection
 			_showSendReceive.Checked = Settings.Default.ShowSendReceive;
 			_showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
 			_showExperimentCommands.Checked = Settings.Default.ShowExperimentalCommands;
+			_automaticallyUpdate.Checked = Settings.Default.AutoUpdate;
 
 //		    _showSendReceive.CheckStateChanged += (sender, args) =>
 //		                                              {
@@ -450,6 +451,11 @@ namespace Bloom.Collection
 		{
 			if(_tab.SelectedIndex == 1)
 				SetupXMatterList();
+		}
+
+		private void _automaticallyUpdate_CheckedChanged(object sender, EventArgs e)
+		{
+			Settings.Default.AutoUpdate = _automaticallyUpdate.Checked;
 		}
 
 	}
