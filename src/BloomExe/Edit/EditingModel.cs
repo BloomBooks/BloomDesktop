@@ -518,7 +518,7 @@ namespace Bloom.Edit
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			if (_currentPage != null)
 				_currentPage.Dispose();
-			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage);
+			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 
 			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
 				_server.AccordionContent = MakeAccordionContent();
