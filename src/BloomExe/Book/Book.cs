@@ -301,6 +301,9 @@ namespace Bloom.Book
 		{
 			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
 			dom.AddJavascriptFile("bookEdit/js/bloomBootstrap.js".ToLocalhost());
+
+			if (BookInfo.ReaderToolsAvailable)
+				dom.AddJavascriptFile("bookEdit/js/readerToolsBootstrap.js".ToLocalhost());
 		}
 
 
