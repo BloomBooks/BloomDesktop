@@ -1,4 +1,4 @@
-/// <reference path="jquery.d.ts" />
+/// <reference path="../jquery.d.ts" />
 /// <reference path="misc-types.d.ts" />
 
 /**
@@ -143,7 +143,7 @@ class LocalizationManager {
     /* Returns a promise to get the translation
      * 
      * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
-     * 
+     * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
      *  @example
      * asyncGetTextInLang('topics.health','Health", "UI")
      *      .done(translation => {
@@ -158,8 +158,6 @@ class LocalizationManager {
 
     */
     asyncGetTextInLang(id: string, englishText: string, langId: string, ...args): JQueryPromise {
-//        return getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
-
         // We already get a promise from the async call, and could just return that.
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.

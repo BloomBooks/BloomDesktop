@@ -276,6 +276,8 @@
     <TypeScriptCompile Include="lib\jquery.alphanum.d.ts" />
     <TypeScriptCompile Include="lib\jquery.i18n.custom.ts" />
     <TypeScriptCompile Include="lib\localizationManager.ts" />
+    <TypeScriptCompile Include="lib\localizationManager\localizationManager.ts" />
+    <TypeScriptCompile Include="lib\localizationManager\localizationManagerSpec.ts" />
     <TypeScriptCompile Include="test\specs\StyleEditorSpec.ts" />
     <Content Include="bookLayout\basePage.css" />
   </ItemGroup>

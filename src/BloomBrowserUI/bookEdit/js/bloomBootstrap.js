@@ -6,7 +6,7 @@ var scripts = [
     'lib/jquery.qtip.js',
     'lib/jquery.qtipSecondary.js',
     'bookEdit/js/getIframeChannel.js',
-    'lib/localizationManager.js',
+    'lib/localizationManager/localizationManager.js',
     'lib/jquery.i18n.custom.js',
     'lib/jquery.sizes.js',
     'lib/jquery.watermark.js',

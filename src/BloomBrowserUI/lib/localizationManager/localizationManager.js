@@ -1,4 +1,4 @@
-﻿/// <reference path="jquery.d.ts" />
+﻿/// <reference path="../jquery.d.ts" />
 /// <reference path="misc-types.d.ts" />
 /**
 * L10NSharp LocalizationManager for javascript.
@@ -136,7 +136,7 @@ var LocalizationManager = (function () {
     /* Returns a promise to get the translation
     *
     * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
-    *
+    * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
     *  @example
     * asyncGetTextInLang('topics.health','Health", "UI")
     *      .done(translation => {
@@ -151,7 +151,6 @@ var LocalizationManager = (function () {
     
     */
     LocalizationManager.prototype.asyncGetTextInLang = function (id, englishText, langId) {
-        //        return getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
         var args = [];
         for (var _i = 0; _i < (arguments.length - 3); _i++) {
             args[_i] = arguments[_i + 3];
