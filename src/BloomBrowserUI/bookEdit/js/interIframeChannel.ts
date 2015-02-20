@@ -64,14 +64,14 @@ class interIframeChannel {
         return $.ajax(ajaxSettings).promise();
     }
 
-/*
+    /*
      * This will earn you the following message in the console:
      *  "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help http://xhr.spec.whatwg.org/"
      */
-getValueSynchrously(url: string, parameters?: any): string {
-    var ajaxSettings = { type: 'GET', url: url, async:false };
-    if (parameters) ajaxSettings['data'] =  parameters ;
-    return $.ajax(ajaxSettings).responseText;
+    getValueSynchronously(url: string, parameters?: any): string {
+        var ajaxSettings = { type: 'GET', url: url, async:false };
+        if (parameters) ajaxSettings['data'] =  parameters ;
+        return $.ajax(ajaxSettings).responseText;
 }
 
 

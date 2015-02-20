@@ -72,13 +72,10 @@ var TopicChooser = (function () {
         var iframeChannel = getIframeChannel();
 
         iframeChannel.simpleAjaxGet('/bloom/topics', function (topics) {
-            // add a "No Topics" choice, and select it if the currentTopic is empty
-            var extraClassForNoTopic = (currentTopicKey === "") ? " ui-selected " : "";
-            $("ol#topicList").append("<li class='ui-widget-content " + extraClassForNoTopic + " ' data-key=''>(" + topics.NoTopic + ")</li>");
-
-            for (var i in topics.pairs) {
-                var extraClass = (topics.pairs[i].k === currentTopicKey) ? " ui-selected " : "";
-                $("ol#topicList").append("<li class='ui-widget-content " + extraClass + " ' data-key='" + topics.pairs[i].k + "'>" + topics.pairs[i].v + "</li>");
+            for (var i in Object.keys(topics)) {
+                var key = Object.keys(topics)[i];
+                var extraClass = (key === currentTopicKey) ? " ui-selected " : "";
+                $("ol#topicList").append("<li class='ui-widget-content " + extraClass + " ' data-key='" + key + "'>" + topics[key] + "</li>");
             }
 
             $("#topicList").dblclick(function () {

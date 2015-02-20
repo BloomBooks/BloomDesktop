@@ -76,16 +76,16 @@ class TopicChooser {
     static populateTopics(currentTopicKey: string) {
         var iframeChannel = getIframeChannel();
 
-        iframeChannel.simpleAjaxGet('/bloom/topics', topics => {
 
-            // add a "No Topics" choice, and select it if the currentTopic is empty
-            var extraClassForNoTopic = (currentTopicKey === "") ? " ui-selected " : "";
-            $("ol#topicList").append("<li class='ui-widget-content " + extraClassForNoTopic + " ' data-key=''>(" + topics.NoTopic + ")</li>");
+        iframeChannel.simpleAjaxGet('/bloom/topics', topics => {
+            // Here, topics will be an object with a property for each known topic. Each property is a key:value pair
+            // where the key is the English, and the value is the topic in the UI Language
 
             // add all the other topics, selecting the one that matches the currentTopic, if any
-            for (var i in topics.pairs) {
-                var extraClass = (topics.pairs[i].k === currentTopicKey) ? " ui-selected " : "";
-                $("ol#topicList").append("<li class='ui-widget-content " + extraClass + " ' data-key='" + topics.pairs[i].k + "'>" + topics.pairs[i].v + "</li>");
+            for (var i in Object.keys(topics)) {
+                var key = Object.keys(topics)[i];
+                var extraClass = (key === currentTopicKey) ? " ui-selected " : "";
+                $("ol#topicList").append("<li class='ui-widget-content " + extraClass + " ' data-key='" + key + "'>" + topics[key] + "</li>");
             }
 
             $("#topicList").dblclick(() => {

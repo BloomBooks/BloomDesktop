@@ -3,12 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing.Text;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Runtime.Serialization.Formatters;
-using System.Text;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using System.IO;
@@ -18,7 +15,6 @@ using Palaso.Extensions;
 using Palaso.IO;
 using Bloom.Collection;
 using Newtonsoft.Json;
-using Bloom.ImageProcessing;
 
 namespace Bloom.web
 {
@@ -209,28 +205,7 @@ namespace Bloom.web
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
 					return true;
 				case "topics":
-					var keyToLocalizedTopicDictionary = new Dictionary<string, string>();
-					foreach(var topic in BookInfo.TopicsKeys)
-					{
-						var localized = LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic, @"shows in the topics chooser in the edit tab");
-						keyToLocalizedTopicDictionary.Add(topic,localized);
-					}
-					string localizedNoTopic = LocalizationManager.GetDynamicString("Bloom", "Topics.NoTopic", "No Topic", @"shows in the topics chooser in the edit tab");
-					var arrayOfKeyValuePairs = from key in keyToLocalizedTopicDictionary.Keys
-											   orderby keyToLocalizedTopicDictionary[key] 
-											   select new { k = key, v = keyToLocalizedTopicDictionary[key] };
-
-					info.ContentType = "text/json";
-					var data = new { NoTopic = localizedNoTopic, pairs = arrayOfKeyValuePairs };
-					info.WriteCompleteOutput(JsonConvert.SerializeObject(data, new JsonSerializerSettings
-					{
-						TypeNameHandling = TypeNameHandling.None,
-						TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
-
-					}));
-					return true;
-
-
+					return GetTopicList(info);
 				case "help":
 					var post = info.GetPostData();
 					// Help launches a separate process so it doesn't matter that we don't call
@@ -243,6 +218,39 @@ namespace Bloom.web
 					return true;
 			}
 			return ProcessAnyFileContent(info, localPath);
+		}
+
+		private static bool GetTopicList(IRequestInfo info)
+		{
+			var keyToLocalizedTopicDictionary = new Dictionary<string, string>();
+			foreach (var topic in BookInfo.TopicsKeys)
+			{
+				var localized = LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic,
+					@"shows in the topics chooser in the edit tab");
+				keyToLocalizedTopicDictionary.Add(topic, localized);
+			}
+			string localizedNoTopic = LocalizationManager.GetDynamicString("Bloom", "Topics.NoTopic", "No Topic",
+				@"shows in the topics chooser in the edit tab");
+			var arrayOfKeyValuePairs = from key in keyToLocalizedTopicDictionary.Keys
+				orderby keyToLocalizedTopicDictionary[key]
+				select string.Format("\"{0}\": \"{1}\"",key,keyToLocalizedTopicDictionary[key]);
+			var pairs = arrayOfKeyValuePairs.Concat(",");
+			info.ContentType = "text/json";
+			var data = string.Format("{{\"NoTopic\": \"{0}\", {1} }}", localizedNoTopic, pairs);
+
+			info.WriteCompleteOutput(data);
+			/*			var data = new {NoTopic = localizedNoTopic, pairs = arrayOfKeyValuePairs};
+			 * var serializeObject = JsonConvert.SerializeObject(data, new JsonSerializerSettings
+						{
+							TypeNameHandling = TypeNameHandling.None,
+							TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
+						});
+						*/
+			//info.WriteCompleteOutput(serializeObject);
+
+
+
+			return true;
 		}
 
 		private static bool ProcessAnyFileContent(IRequestInfo info, string localPath)
