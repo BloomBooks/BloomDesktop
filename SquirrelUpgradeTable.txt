@@ -1,0 +1,8 @@
+# The "live" version of this file lives at http://bloomlibrary.org/channels/SquirrelUpgradeTable.txt.
+# Changes must be manually uploaded by the Bloom team
+# This is a kind of dispatch table that allows us to control which version we recommend to people, based on what they are running now.
+# the format is min,max,url.
+# The url is for a folder which should contain Squirrel delta files and a RELEASES file which describes how to update to the most recent.
+# This was first used by version 3.1, so earlier versions do not use it.
+# For now everything uses the 3.1 folder
+0.0.0,3.1.99999,https://s3.amazonaws.com/bloomlibrary.org/squirrel

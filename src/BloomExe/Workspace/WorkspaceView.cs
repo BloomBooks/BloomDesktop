@@ -496,8 +496,11 @@ namespace Bloom.Workspace
 		{
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
 			{
+				var updateUrl = Program.SquirrelUpdateUrl;
+				if (updateUrl == null)
+					return;
 				_squirrelUpdateRunning = true;
-				using (var mgr = new UpdateManager(Program.SquirrelUpdateUrl, "Bloom", FrameworkVersion.Net45))
+				using (var mgr = new UpdateManager(updateUrl, "Bloom", FrameworkVersion.Net45))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
 					await mgr.UpdateApp();

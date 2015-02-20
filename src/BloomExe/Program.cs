@@ -35,6 +35,7 @@ namespace Bloom
 		private static ApplicationContainer _applicationContainer;
 		public static bool ApplicationExiting;
 		public static bool StartUpWithFirstOrNewVersionBehavior;
+		private static string _squirrelUpdateUrl;
 
 		private static GeckoWebBrowser _debugServerStarter;
 
@@ -263,15 +264,40 @@ namespace Bloom
 			}
 		}
 
-		// May work eventually, when we configure some redirection: @"http://bloomlibrary.org.s3.amazonaws.com/squirrel";
-		// This MUST NOT CHANGE once we start shipping squirrel installers, because it's where all the old versions will look for
-		// newer ones to upgrade to. (A possible workaround is to put one last version in the old location which is coded
-		// to look for upgrades in the new location.)
-		public const string SquirrelUpdateUrl = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
+		// The folder where we tell squirrel to look for upgrades.
+		// As of 2-20-15 this is  = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
+		// Controlled by the file at "http://bloomlibrary.org/channels/SquirrelUpgradeTable.txt".
+		// This allows us to have different sets of deltas and upgrade targets for betas and stable releases,
+		// or indeed to do something special for any particular version(s) of Bloom,
+		// or even to switch to a different upgrade path after releasing a version.
+		public static string SquirrelUpdateUrl
+		{
+			get
+			{
+				if (_squirrelUpdateUrl == null)
+				{
+					try
+					{
+						_squirrelUpdateUrl = new UpdateVersionTable().GetAppcastUrl();
+					}
+					catch (WebException)
+					{
+					}
+				}
+				return _squirrelUpdateUrl;
+			}
+		}
 
 		private static void HandleSquirrelInstallEvent(string[] args)
 		{
 			bool firstTime = false;
+			var updateUrl = SquirrelUpdateUrl;
+			// Should only be null if we're not online. Not sure how squirrel will handle that,
+			// but at least one of these operations is responsible for setting up shortcuts to the program,
+			// which we'd LIKE to work offline. Passing it a plausible url, even though it will presumably fail,
+			// seems less likely to cause problems than passing null.
+			if (updateUrl == null)
+				updateUrl = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
 			switch (args[0])
 			{
 				// args[1] is version number
@@ -279,7 +305,7 @@ namespace Bloom
 				case "--squirrel-updated": // updated to specified version
 				case "--squirrel-obsolete": // this version is no longer newest
 				case "--squirrel-uninstall": // being uninstalled
-					using (var mgr = new UpdateManager(SquirrelUpdateUrl, "Bloom", FrameworkVersion.Net45))
+					using (var mgr = new UpdateManager(updateUrl, "Bloom", FrameworkVersion.Net45))
 					{
 						// Note, in most of these scenarios, the app exits after this method
 						// completes!
