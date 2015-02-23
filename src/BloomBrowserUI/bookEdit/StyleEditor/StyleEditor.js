@@ -764,7 +764,12 @@ var StyleEditor = (function () {
         if (this.shouldSetDefaultRule()) {
             return localizationManager.getText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName);
         }
-        var lang = $(this.boxBeingEdited).attr('lang');
+
+        //BL-982 Use language name that appears on text windows
+        var iso = $(this.boxBeingEdited).attr('lang');
+        var lang = localizationManager.getLanguageName(iso);
+        if (!lang)
+            lang = iso;
         return localizationManager.getText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName);
     };
 
