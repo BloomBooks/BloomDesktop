@@ -80,7 +80,7 @@ namespace Bloom.ImageProcessing
 				r = r.Replace("thumbnail", "");
 				if (File.Exists(r))
 				{
-					info.ReplyWithImage(_cache.GetPathToResizedImage(r));
+						info.ReplyWithImage(_cache.GetPathToResizedImage(r));
 					return true;
 				}
 			}

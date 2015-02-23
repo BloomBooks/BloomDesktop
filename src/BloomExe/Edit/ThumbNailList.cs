@@ -140,7 +140,7 @@ namespace Bloom.Edit
 
 		public void UpdateThumbnailAsync(IPage page)
 		{
-			XmlDocument pageDom = page.Book.GetPreviewXmlDocumentForPage(page).RawDom;
+			var pageDom = page.Book.GetPreviewXmlDocumentForPage(page);
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
 			{
 				BackgroundColor = Palette.TextAgainstDarkBackground,

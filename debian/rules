@@ -74,4 +74,4 @@ override_dh_shlibdeps:
 
 # Include mono-sil in cli dirs searched
 override_dh_clideps:
-	dh_clideps -l$(MONO_PREFIX)/lib --exclude-moduleref=Crypt32.dll --exclude-moduleref=libdconf.dll --exclude-moduleref=connections.dll --exclude-moduleref=icuuc52.dll --exclude-moduleref=icuin52.dll --exclude-moduleref=icuuc48.dll --exclude-moduleref=icuin48.dll
+	dh_clideps -l$(MONO_PREFIX)/lib --exclude-moduleref=Crypt32.dll --exclude-moduleref=libdconf.dll --exclude-moduleref=connections.dll --exclude-moduleref=icuuc52.dll --exclude-moduleref=icuin52.dll --exclude-moduleref=icuuc48.dll --exclude-moduleref=icuin48.dll --exclude-moduleref=libtidy.dll

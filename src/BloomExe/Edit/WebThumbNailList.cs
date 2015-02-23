@@ -12,6 +12,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
+using Bloom.web;
 using Gecko;
 using Palaso.Xml;
 #if !__MonoCS__
@@ -597,7 +598,7 @@ namespace Bloom.Edit
 			}
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 			_verticalScrollDistance = _browser.VerticalScrollDistance;
-			_browser.Navigate(pageDoc, null);
+			_browser.Navigate(dom, null);
 			return result;
 		}
 

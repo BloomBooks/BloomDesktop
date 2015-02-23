@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.web;
 using DesktopAnalytics;
 using Gecko;
 using Gecko.Events;
@@ -29,7 +30,6 @@ namespace Bloom
 		// instances of Gecko which are used in various classes.
 		private readonly NavigationIsolator _isolator;
 		private Color _backgroundColorOfResult;
-		private Queue<ThumbnailOrder> _orders = new Queue<ThumbnailOrder>();
 		private static HtmlThumbNailer _theOnlyOneAllowed;
 
 		/// <summary>
@@ -104,7 +104,7 @@ namespace Bloom
 		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
 		/// <param name="drawBorderDashed"></param>
 		/// <returns></returns>
-		public void GetThumbnailAsync(string folderForThumbNailCache, string key, XmlDocument document,
+		public void GetThumbnailAsync(string folderForThumbNailCache, string key, HtmlDom document,
 			ThumbnailOptions options, Action<Image> callback, Action<Exception> errorCallback)
 		{
 			//review: old code had it using "key" in one place(checking for existing), thumbNailFilePath in another (adding new)
@@ -139,16 +139,21 @@ namespace Bloom
 				}
 			}
 
-			ThreadPool.QueueUserWorkItem(new WaitCallback(ProcessOrder),
-				new ThumbnailOrder() {
-								ThumbNailFilePath = thumbNailFilePath,
-								Options = options,
-								Callback = callback,
-								ErrorCallback = errorCallback,
-								Document = document,
-								FolderForThumbNailCache = folderForThumbNailCache,
-								Key = key
-							});
+			var order = new ThumbnailOrder() {
+				ThumbNailFilePath = thumbNailFilePath,
+				Options = options,
+				Callback = callback,
+				ErrorCallback = errorCallback,
+				Document = document,
+				FolderForThumbNailCache = folderForThumbNailCache,
+				Key = key
+			};
+			QueueOrder(order);
+		}
+
+		private void QueueOrder(ThumbnailOrder order)
+		{
+			ThreadPool.QueueUserWorkItem(new WaitCallback(ProcessOrder), order);
 		}
 
 #if DEBUG
@@ -250,11 +255,11 @@ namespace Bloom
 		{
 			// runs on threadpool thread
 			thumbnail = null;
-			using (var temp = TempFileUtils.CreateHtm5FromXml(order.Document))
+			using (var temp = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(order.Document))
 			{
 				order.Done = false;
 				browser.Tag = order;
-				if (!OpenTempFileInBrowser(browser, temp.Path))
+				if (!OpenTempFileInBrowser(browser, temp.Key))
 					return false;
 
 				var browserSize = SetWidthAndHeight(browser);
@@ -271,9 +276,8 @@ namespace Bloom
 					//the placeholder thumbnail.
 					if (browserSize.Width == 0 || browserSize.Height == 0)
 					{
-						var paperSizeName = GetPaperSizeName(order.Document);
-						throw new ApplicationException("Problem getting thumbnail browser for document with Paper Size: " +
-													   paperSizeName);
+						var paperSizeName = GetPaperSizeName(order.Document.RawDom);
+						throw new ApplicationException("Problem getting thumbnail browser for document with Paper Size: " + paperSizeName);
 					}
 					using (Image fullsizeImage = CreateImage(browser))
 					{
@@ -327,9 +331,9 @@ namespace Bloom
 					Thread.CurrentThread.ManagedThreadId);
 
 				_backgroundColorOfResult = order.Options.BackgroundColor;
-				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document);
+				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document.RawDom);
 
-				var browser = GetBrowserForPaperSize(order.Document);
+				var browser = GetBrowserForPaperSize(order.Document.RawDom);
 				if (browser == null)
 					return;
 
@@ -338,7 +342,7 @@ namespace Bloom
 					// For some reason...possibly another navigation was in progress...we can't do this just now.
 					// Try it again later.
 					// Enhance: should we have some limit after which we give up?
-					_orders.Enqueue(order);
+					QueueOrder(order);
 				}
 				if (pendingThumbnail == null)
 				{
@@ -579,7 +583,6 @@ namespace Bloom
 		public void Dispose()
 		{
 			_disposed = true;
-			_orders.Clear();
 			foreach (var browser in _browserCacheForDifferentPaperSizes)
 			{
 				if (browser.Value.InvokeRequired)
@@ -608,11 +611,7 @@ namespace Bloom
 		/// </summary>
 		internal void Advance(Control invokeTarget)
 		{
-			if (_orders.Count == 0)
-				return;
-			// Should not be needed anymore with the new approach
-//            if (invokeTarget != null)
-//                invokeTarget.Invoke((Action)(() => Application_Idle(this, new EventArgs())));
+			// apparently obsolete
 		}
 	}
 
@@ -621,7 +620,7 @@ namespace Bloom
 		public Image ResultingThumbnail;
 		public Action<Image> Callback;
 		public Action<Exception> ErrorCallback;
-		public XmlDocument Document;
+		public HtmlDom Document;
 		public string FolderForThumbNailCache;
 		public string Key;
 		public bool Done;

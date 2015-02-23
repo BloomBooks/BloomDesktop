@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.SendReceive;
+using Bloom.web;
 using Gecko;
 
 namespace Bloom.CollectionTab
@@ -106,7 +107,7 @@ namespace Bloom.CollectionTab
 				_readmeBrowser.Visible = false;
 				//_previewBrowser.Visible = true;
 				_splitContainerForPreviewAndAboutBrowsers.Visible = true;
-				_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook().RawDom);
+				_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
 				_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = true;
 				if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
 				{

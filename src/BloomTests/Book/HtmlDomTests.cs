@@ -36,32 +36,6 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void SetBaseForRelativePaths_NoHead_Throw()
-		{
-			var dom = new HtmlDom(
-						  @"<html></html>");
-			Assert.Throws<ArgumentNullException>(() => dom.SetBaseForRelativePaths("theBase"));
-		}
-		[Test]
-		public void SetBaseForRelativePaths_NoExistingBase_Adds()
-		{
-			var dom = new HtmlDom(
-						  @"<html><head/></html>");
-			dom.SetBaseForRelativePaths("theBase");
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='theBase']", 1);
-		}
-		[Test]
-		public void SetBaseForRelativePaths_HasExistingBase_Replaces()
-		{
-			var dom = new HtmlDom(
-						  @"<html><head><base href='original'/></head></html>");
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='original']", 1);
-			dom.SetBaseForRelativePaths("new");
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='original']", 0);
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='new']", 1);
-		}
-
-		[Test]
 		public void RemoveMetaValue_IsThere_RemovesIt()
 		{
 			var dom = new HtmlDom(

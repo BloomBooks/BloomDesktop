@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.web;
 using DesktopAnalytics;
 using Palaso.IO;
 
@@ -59,7 +60,8 @@ namespace Bloom.Publish
 		private readonly HtmlThumbNailer _htmlThumbNailer;
 		private string _lastDirectory;
 
-		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings, BookServer bookServer, HtmlThumbNailer htmlThumbNailer)
+		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings,
+			BookServer bookServer, HtmlThumbNailer htmlThumbNailer)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
@@ -107,8 +109,9 @@ namespace Bloom.Publish
 					else
 						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
 
-					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape, LayoutPagesForRightToLeft,
-									  layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
+					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
+						PageLayout.SizeAndOrientation.IsLandScape, LayoutPagesForRightToLeft,
+						layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 				}
 			}
 			catch (Exception e)
@@ -127,21 +130,22 @@ namespace Bloom.Publish
 
 		}
 
-		private TempFile MakeFinalHtmlForPdfMaker()
+		private SimulatedPageFile MakeFinalHtmlForPdfMaker()
 		{
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
-			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
+			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
-			HtmlDom.AddPublishClassToBody(dom);
-			HtmlDom.AddHidePlaceHoldersClassToBody(dom);
+			HtmlDom.AddPublishClassToBody(dom.RawDom);
+			HtmlDom.AddHidePlaceHoldersClassToBody(dom.RawDom);
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
-			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
-			PageLayout.UpdatePageSplitMode(dom);
+			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom.RawDom, PageLayout);
+			PageLayout.UpdatePageSplitMode(dom.RawDom);
 
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			return BloomTemp.TempFileUtils.CreateHtm5FromXml(dom);
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
+			dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
+			return EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom);
 		}
 
 		private string GetPdfPath(string fname)
@@ -334,7 +338,7 @@ namespace Bloom.Publish
 
 //			System.Diagnostics.Process.Start(tempHtml.Path);
 
-			var htmlFilePath = MakeFinalHtmlForPdfMaker().Path;
+			var htmlFilePath = MakeFinalHtmlForPdfMaker().Key;
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
 				Process.Start("Firefox.exe", '"' + htmlFilePath + '"');
 			else
@@ -371,8 +375,7 @@ namespace Bloom.Publish
 						//yield return book.GetPreviewXmlDocumentForPage(page);
 
 						var previewXmlDocumentForPage = book.GetPreviewXmlDocumentForPage(page);
-						//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
-						BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, book.FolderPath, false);
+						BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, book.FolderPath);
 						HtmlDom.AddPublishClassToBody(previewXmlDocumentForPage.RawDom);
 						HtmlDom.AddHidePlaceHoldersClassToBody(previewXmlDocumentForPage.RawDom);
 
@@ -393,7 +396,7 @@ namespace Bloom.Publish
 				{
 					var previewXmlDocumentForPage = BookSelection.CurrentSelection.GetPreviewXmlDocumentForPage(page);
 					//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
-					BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, BookSelection.CurrentSelection.FolderPath, false);
+					BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, BookSelection.CurrentSelection.FolderPath);
 					HtmlDom.AddPublishClassToBody(previewXmlDocumentForPage.RawDom);
 					HtmlDom.AddHidePlaceHoldersClassToBody(previewXmlDocumentForPage.RawDom);
 					yield return previewXmlDocumentForPage;
@@ -402,7 +405,7 @@ namespace Bloom.Publish
 		}
 
 
-		public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError )
+		public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError)
 		{
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
 			{
@@ -411,9 +414,10 @@ namespace Bloom.Publish
 				CenterImageUsingTransparentPadding = false,
 				//210x147 is about what the TG's expect, but we're going to tripple that in case it makes for better printing
 				Height = 630,
-				Width = 441
+				Width = 441,
 			};
-			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom,thumbnailOptions,onReady, onError);
+			dom.UseOriginalImages = true; // apparently these thumbnails can be big...anyway we want printable images.
+			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions,onReady, onError);
 		}
 
 		public IEnumerable<ToolStripItem> GetExtensionMenuItems()
@@ -431,6 +435,7 @@ namespace Bloom.Publish
 				container.ComposeExportedValue<string>("Language1Iso639Code", _collectionSettings.Language1Iso639Code);
 				container.ComposeExportedValue<Func<IEnumerable<HtmlDom>>>(GetPageDoms);
 			  //  container.ComposeExportedValue<Func<string>>("pathToPublishedHtmlFile",GetFileForPrinting);
+				//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
 				container.ComposeExportedValue<Action<int, int, HtmlDom, Action<Image>, Action<Exception>>>(GetThumbnailAsync);
 				container.SatisfyImportsOnce(this);
 				return _getExtensionMenuItems == null ? new List<ToolStripItem>() : _getExtensionMenuItems();
