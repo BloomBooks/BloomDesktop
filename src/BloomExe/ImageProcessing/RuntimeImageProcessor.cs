@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -25,6 +24,10 @@ namespace Bloom.ImageProcessing
 		private string _cacheFolder;
 
 		private readonly ImageAttributes _convertWhiteToTransparent;
+
+		// BL-970: Used to check for image objects with no color space on Linux
+		private const int CheckPngFlags = (int)(ImageFlags.ColorSpaceCmyk | ImageFlags.ColorSpaceGray
+			| ImageFlags.ColorSpaceRgb | ImageFlags.ColorSpaceYcbcr | ImageFlags.ColorSpaceYcck);
 
 		public RuntimeImageProcessor(BookRenamedEvent bookRenamedEvent)
 		{
@@ -106,6 +109,16 @@ namespace Bloom.ImageProcessing
 
 				using (var originalImage = PalasoImage.FromFile(originalPath))
 				{
+					// BL-970: Some indexed png files are not loaded correctly on Linux, probably because libgdiplus
+					// does not correctly identify the color space, so do not attempt to save them using Image.Save.
+					if (Palaso.PlatformUtilities.Platform.IsLinux
+						&& originalPath.EndsWith(".png")
+						&& ((originalImage.Image.Flags & CheckPngFlags) == 0))
+					{
+						_originalPathToProcessedVersionPath.Add(originalPath, originalPath);
+						return originalPath;
+					}
+
 					//if it's a jpeg, we don't resize, we don't mess with transparency, nothing. These things
 					//are scary in .net. Just send the original back and wash our hands of it.
 					if (ImageUtils.AppearsToBeJpeg(originalImage))
