@@ -716,7 +716,7 @@ jQuery.fn.IsOverflowing = function () {
 
     //console.log('s='+element.scrollHeight+' c='+element.clientHeight);
 
-    // 
+    //
     return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
             element.scrollWidth > element.clientWidth  ||
         elemBottom > parentBottom + focusedBorderFudgeFactor;
@@ -1693,6 +1693,12 @@ $(document).ready(function() {
     Cleanup();
 
    SetupElements($('body'));
-    OneTimeSetup();
+   OneTimeSetup();
 
+    //this is some sample code for working on CommandAvailabilityPublisher websocket messages
+//   var client = new WebSocket("ws://127.0.0.1:8189");
+//   client.onmessage = function(event) {
+//        var commandStatus = JSON.parse(event.data);
+//        alert("DeleteCurrentPage Command "+ (commandStatus.deleteCurrentPage.enabled == true ? "Enabled" : "Disabled")) ;
+//    }
 }); // end document ready function

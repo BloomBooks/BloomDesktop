@@ -32,6 +32,7 @@ namespace Bloom
 		private ILifetimeScope _scope;
 
 		private EnhancedImageServer _httpServer;
+		private CommandAvailabilityPublisher _commandAvailabilityPublisher;
 		public Form ProjectWindow { get; private set; }
 
 		public string SettingsPath { get; private set; }
@@ -231,6 +232,18 @@ namespace Bloom
 //					}
 					});
 				});
+
+				//TODO: why doesn't this work? It gives 0 commands
+				//_commandAvailabilityPublisher = new CommandAvailabilityPublisher(_scope.Resolve<IEnumerable<ICommand>>());
+
+				//TODO: why doesn't this work either? It gives 0 commands
+				//_commandAvailabilityPublisher = new CommandAvailabilityPublisher(_scope.Resolve<IEnumerable<Command>>());
+
+				//TODO: why does this return *3* DeletePageCommands?
+				// _scope.Resolve<IEnumerable<DeletePageCommand>>()
+
+				//so with all the above problems, for now we can get just enough to test out the websocket stuff on one command
+				_commandAvailabilityPublisher = new CommandAvailabilityPublisher(_scope.Resolve<IEnumerable<DeletePageCommand>>());
 			}
 			catch (FileNotFoundException error)
 			{
@@ -457,6 +470,10 @@ namespace Bloom
 			if (_httpServer != null)
 				_httpServer.Dispose();
 			_httpServer = null;
+
+			if(_commandAvailabilityPublisher != null)
+				_commandAvailabilityPublisher.Dispose();
+			_commandAvailabilityPublisher = null;
 
 			GC.SuppressFinalize(this);
 		}
