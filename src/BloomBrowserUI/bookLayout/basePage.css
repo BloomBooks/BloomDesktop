@@ -67,6 +67,10 @@ So if you change this, change it there. Note, this might not be the best long-te
 To handling the mis-match.*/
   font-size: 10pt;
 }
+/* gridItem means this is a page thumbnail */
+.gridItem .pageOverflows {
+  background-color: red !important;
+}
 DIV.ui-tooltip-content {
   overflow: visible !important;
   font-size: 10pt;
