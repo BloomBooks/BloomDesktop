@@ -12,6 +12,7 @@ using Bloom.ToPalaso.Experimental;
 using Bloom.web;
 using BloomTemp;
 using DesktopAnalytics;
+using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.IO;
 using Palaso.Progress;
@@ -821,7 +822,40 @@ namespace Bloom.Edit
 					_inProcessOfSaving = true;
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
-					_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+
+					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
+					//this old code:
+					//	_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+					//would some times ask book X to save a page from book Y.
+					//We could never reproduce it at will, so this is to help with that...
+					if(this._pageSelection.CurrentSelection.Book != _currentlyDisplayedBook)
+					{
+						Debug.Fail("This is the BL-1064 Situation");
+						Logger.WriteEvent("Warning: SaveNow() with a page that is not the current book. That should be ok, but it is the BL-1064 situation (though we now work around it).");
+					}
+					//but meanwhile, the page knows its book, so we can see if it looks like a valid book and give a helpful
+					//error if, for example, it was deleted:
+					try
+					{
+						if (!_pageSelection.CurrentSelection.Book.CanUpdate)
+						{
+							Logger.WriteEvent("Error: SaveNow() found that this book had CanUpdate=='false'");
+							Logger.WriteEvent("Book path was {0}",_pageSelection.CurrentSelection.Book.FolderPath);
+							throw new ApplicationException("Bloom tried to save a page to a book that was not in a position to be updated.");
+						}
+					}
+					catch (ObjectDisposedException err) // in case even calling CanUpdate gave an error
+					{
+						Logger.WriteEvent("Error: SaveNow() found that this book was disposed.");
+						throw err;
+					}
+					catch(Exception err) // in case even calling CanUpdate gave an error
+					{
+						Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
+						throw err;
+					}
+					//OK, looks safe, time to save.
+					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage);
 				}
 				finally
 				{
