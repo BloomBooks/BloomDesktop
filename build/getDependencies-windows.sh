@@ -90,7 +90,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 #     revision: bloom-3.0.tcbuildtag
 #     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
 #     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
-# [3] build: chorus-win32-master NoStrongName (bt437)
+# [3] build: chorus-win32-master-nostrongname Continuous (bt437)
 #     project: Chorus
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt437
 #     clean: false
@@ -103,7 +103,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 #     clean: false
 #     revision: bloom-3.0.tcbuildtag
 #     paths: {"xulrunner-29.0.1.en-US.win32.zip!**"=>"lib"}
-# [5] build: palaso-win32-master Continuous nostrongname (bt436)
+# [5] build: palaso-win32-master-nostrongname Continuous (bt436)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt436
 #     clean: false
@@ -123,7 +123,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 #     clean: false
 #     revision: bloom-3.0.tcbuildtag
 #     paths: {"*.*"=>"lib/dotnet"}
-#     VCS: https://github.com/hatton/TidyManaged.git [master]
+#     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
 
 # make sure output directories exist
 mkdir -p ../.
@@ -160,6 +160,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/ChorusHubApp.exe ../lib/dotnet/ChorusHubApp.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/ChorusMerge.exe ../lib/dotnet/ChorusMerge.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/debug/Chorus.exe ../lib/dotnet/Chorus.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/debug/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/debug/ChorusMerge.exe ../lib/dotnet/ChorusMerge.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/Autofac.dll ../lib/dotnet/Autofac.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/LibChorus.dll ../lib/dotnet/LibChorus.dll
@@ -167,6 +170,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/Palaso.dll ../lib/dotnet/Palaso.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/PalasoUIWindowsForms.dll ../lib/dotnet/PalasoUIWindowsForms.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/Vulcan.Uczniowie.HelpProvider.dll ../lib/dotnet/Vulcan.Uczniowie.HelpProvider.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/debug/Autofac.dll ../lib/dotnet/Autofac.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/debug/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/debug/LibChorus.dll ../lib/dotnet/LibChorus.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/icu.net.dll ../lib/dotnet/icu.net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/icudt40.dll ../lib/dotnet/icudt40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/bloom-3.0.tcbuildtag/icuin40.dll ../lib/dotnet/icuin40.dll
