@@ -1,4 +1,10 @@
-﻿## 3.0.100 Version Stable Release
+﻿## 3.0.101 Version Stable Release
+- Adds Thai User Interface localization
+- Adds Lao User Interface localization
+- Fix rare error when a page is being saved
+
+
+## 3.0.100 Version Stable Release
 
 ## 3.0.97 Beta
 - Update French UI Translation (thanks David Rowe)
