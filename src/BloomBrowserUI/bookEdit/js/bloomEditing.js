@@ -717,9 +717,9 @@ jQuery.fn.IsOverflowing = function () {
     //console.log('s='+element.scrollHeight+' c='+element.clientHeight);
 
     // 
-    return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
-            element.scrollWidth > element.clientWidth  ||
-        elemBottom > parentBottom + focusedBorderFudgeFactor;
+    return  element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
+            element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor ||
+            elemBottom > parentBottom + focusedBorderFudgeFactor;
 };
 
 // Checks for overflow and adds/removes the proper class
