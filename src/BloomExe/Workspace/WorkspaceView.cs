@@ -581,7 +581,7 @@ namespace Bloom.Workspace
 			try
 			{
 				updateInfo = await manager.CheckForUpdate(ignoreDeltaUpdates, x => progress(x / 3));
-				if (updateInfo == null)
+				if (NoUpdatesAvailable(updateInfo))
 					return null; // none available.
 
 				await manager.DownloadReleases(updateInfo.ReleasesToApply, x => progress(x / 3 + 33));
@@ -626,7 +626,7 @@ namespace Bloom.Workspace
 				}
 				// Since this is in the async method _after_ the await we know the CheckForUpdate has finished.
 				_squirrelUpdateRunning = false;
-				if (info == null)
+				if (NoUpdatesAvailable(info))
 					return; // none available.
 				var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available");
 				var action = LocalizationManager.GetString("CollectionTab.UpdateNow", "Update Now");
@@ -637,6 +637,11 @@ namespace Bloom.Workspace
 				notifier.ToastClicked += (sender, args) => InitiateSquirrelUpdate();
 				notifier.Show(msg, action, 10);
 			}
+		}
+
+		private static bool NoUpdatesAvailable(UpdateInfo info)
+		{
+			return info == null || info.ReleasesToApply.Count == 0;
 		}
 
 		private static void OpenInfoFile(string fileName)
