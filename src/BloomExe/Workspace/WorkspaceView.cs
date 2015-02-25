@@ -526,7 +526,15 @@ namespace Bloom.Workspace
 					updateUrl = Program.SquirrelUpdateUrl;
 				}
 				if (updateUrl == null)
-					return; // For some reason we couldn't get one...possibly not online so can't get to UpdateVersionTable
+				{
+					// For some reason we couldn't get one...possibly not online so can't get to UpdateVersionTable
+					var failNotifier = new ToastNotifier();
+					failNotifier.Image.Image = Resources.Bloom.ToBitmap();
+					var failMsg = LocalizationManager.GetString("CollectionTab.UnableToCheck", "Unable to check for update");
+					failNotifier.Show(failMsg, "", 5);
+					return;
+				}
+
 				string newInstallDir;
 				_squirrelUpdateRunning = true;
 				using (var mgr = new UpdateManager(updateUrl, "Bloom", FrameworkVersion.Net45, rootDirectory))
@@ -537,10 +545,17 @@ namespace Bloom.Workspace
 				// Since this is in the async method _after_ the await we know the UpdateApp has finished.
 				_squirrelUpdateRunning = false;
 				if (newInstallDir == null)
+				{
+					// No updates to install
+					var noneNotifier = new ToastNotifier();
+					noneNotifier.Image.Image = Resources.Bloom.ToBitmap();
+					var failMsg = LocalizationManager.GetString("CollectionTab.NoUpdates", "No updates are available");
+					noneNotifier.Show(failMsg, "", 5);
 					return;
+				}
 				string version = Path.GetFileName(newInstallDir).Substring("app-".Length); // version folders always start with this
-				var msg = string.Format(LocalizationManager.GetString("CollectionTab.UpdateInstalled", "Bloom version {0} is ready"), version);
-				var action = string.Format(LocalizationManager.GetString("CollectionTab.RestartNow", "Restart Bloom to Update"));
+				var msg = string.Format(LocalizationManager.GetString("CollectionTab.UpdateInstalled", "Update for {0} is ready"), version);
+				var action = string.Format(LocalizationManager.GetString("CollectionTab.RestartNow", "Restart to Update"));
 				// Unfortunately, there's no good time to dispose of this object...according to its own comments
 				// it's not even safe to close it. It moves itself out of sight eventually if ignored.
 				var notifier = new ToastNotifier();
@@ -583,6 +598,13 @@ namespace Bloom.Workspace
 				updateInfo = await manager.CheckForUpdate(ignoreDeltaUpdates, x => progress(x / 3));
 				if (NoUpdatesAvailable(updateInfo))
 					return null; // none available.
+
+				var updatingNotifier = new ToastNotifier();
+				updatingNotifier.Image.Image = Resources.Bloom.ToBitmap();
+				var version = updateInfo.FutureReleaseEntry.Version;
+				var size = updateInfo.ReleasesToApply.Sum(x => x.Filesize)/1024;
+				var updatingMsg = string.Format(LocalizationManager.GetString("CollectionTab.Updating", "Downloading Update to {0} ({1}K)"), version, size);
+				updatingNotifier.Show(updatingMsg, "", 5);
 
 				await manager.DownloadReleases(updateInfo.ReleasesToApply, x => progress(x / 3 + 33));
 
