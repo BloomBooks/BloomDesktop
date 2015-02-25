@@ -46,7 +46,7 @@ namespace Bloom.Workspace
 		public event EventHandler ReopenCurrentProject;
 		private readonly LocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
-		private static bool _squirrelUpdateRunning;
+		private static UpdateManager _squirrelManager;
 
 		public delegate WorkspaceView Factory(Control libraryView);
 
@@ -488,7 +488,7 @@ namespace Bloom.Workspace
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
 		{
-			if (_squirrelUpdateRunning)
+			if (_squirrelManager != null)
 			{
 				MessageBox.Show(this,
 					LocalizationManager.GetString("CollectionTab.UpdateCheckInProgress",
@@ -536,14 +536,14 @@ namespace Bloom.Workspace
 				}
 
 				string newInstallDir;
-				_squirrelUpdateRunning = true;
-				using (var mgr = new UpdateManager(updateUrl, "Bloom", FrameworkVersion.Net45, rootDirectory))
+				ArrangeToDisposeSquirrelManagerOnExit();
+				using (_squirrelManager = new UpdateManager(updateUrl, "Bloom", FrameworkVersion.Net45, rootDirectory))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
-					newInstallDir = await UpdateApp(mgr, null);
+					newInstallDir = await UpdateApp(_squirrelManager, null);
 				}
 				// Since this is in the async method _after_ the await we know the UpdateApp has finished.
-				_squirrelUpdateRunning = false;
+				_squirrelManager = null;
 				if (newInstallDir == null)
 				{
 					// No updates to install
@@ -563,6 +563,19 @@ namespace Bloom.Workspace
 				notifier.ToastClicked += (sender, args) => RestartBloom(newInstallDir);
 				notifier.Show(msg, action, 8);
 			}
+		}
+
+		private void ArrangeToDisposeSquirrelManagerOnExit()
+		{
+			Application.ApplicationExit += (sender, args) =>
+			{
+				if (_squirrelManager != null)
+				{
+					var temp = _squirrelManager;
+					_squirrelManager = null; // in case more than one notification comes
+					temp.Dispose(); // otherwise squirrel throws a nasty exception.
+				}
+			};
 		}
 
 		private void RestartBloom(string newInstallDir)
@@ -639,15 +652,15 @@ namespace Bloom.Workspace
 				var updateUrl = Program.SquirrelUpdateUrl;
 				if (updateUrl == null)
 					return;
-				_squirrelUpdateRunning = true;
 				UpdateInfo info;
-				using (var mgr = new UpdateManager(updateUrl, "Bloom", FrameworkVersion.Net45))
+				ArrangeToDisposeSquirrelManagerOnExit();
+				using (_squirrelManager = new UpdateManager(updateUrl, "Bloom", FrameworkVersion.Net45))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
-					info = await mgr.CheckForUpdate();
+					info = await _squirrelManager.CheckForUpdate();
 				}
 				// Since this is in the async method _after_ the await we know the CheckForUpdate has finished.
-				_squirrelUpdateRunning = false;
+				_squirrelManager = null;
 				if (NoUpdatesAvailable(info))
 					return; // none available.
 				var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available");
