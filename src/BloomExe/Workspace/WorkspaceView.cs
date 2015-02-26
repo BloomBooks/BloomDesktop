@@ -530,7 +530,7 @@ namespace Bloom.Workspace
 					// For some reason we couldn't get one...possibly not online so can't get to UpdateVersionTable
 					var failNotifier = new ToastNotifier();
 					failNotifier.Image.Image = Resources.Bloom.ToBitmap();
-					var failMsg = LocalizationManager.GetString("CollectionTab.UnableToCheck", "Unable to check for update");
+					var failMsg = LocalizationManager.GetString("CollectionTab.UnableToCheck", "Unable to check for update.", "Shown when Bloom tries to check for an update but can't, for example becuase it can't connect to the internet, or a problems with our server, etc.");
 					failNotifier.Show(failMsg, "", 5);
 					return;
 				}
@@ -549,13 +549,13 @@ namespace Bloom.Workspace
 					// No updates to install
 					var noneNotifier = new ToastNotifier();
 					noneNotifier.Image.Image = Resources.Bloom.ToBitmap();
-					var failMsg = LocalizationManager.GetString("CollectionTab.NoUpdates", "No updates are available");
+					var failMsg = LocalizationManager.GetString("CollectionTab.UpToDate", "Your Bloom is up to date.");
 					noneNotifier.Show(failMsg, "", 5);
 					return;
 				}
 				string version = Path.GetFileName(newInstallDir).Substring("app-".Length); // version folders always start with this
-				var msg = string.Format(LocalizationManager.GetString("CollectionTab.UpdateInstalled", "Update for {0} is ready"), version);
-				var action = string.Format(LocalizationManager.GetString("CollectionTab.RestartNow", "Restart to Update"));
+				var msg = string.Format(LocalizationManager.GetString("CollectionTab.UpdateInstalled", "Update for {0} is ready", "Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom."), version);
+				var action = string.Format(LocalizationManager.GetString("CollectionTab.RestartToUpdate", "Restart to Update"));
 				// Unfortunately, there's no good time to dispose of this object...according to its own comments
 				// it's not even safe to close it. It moves itself out of sight eventually if ignored.
 				var notifier = new ToastNotifier();
@@ -616,7 +616,7 @@ namespace Bloom.Workspace
 				updatingNotifier.Image.Image = Resources.Bloom.ToBitmap();
 				var version = updateInfo.FutureReleaseEntry.Version;
 				var size = updateInfo.ReleasesToApply.Sum(x => x.Filesize)/1024;
-				var updatingMsg = string.Format(LocalizationManager.GetString("CollectionTab.Updating", "Downloading Update to {0} ({1}K)"), version, size);
+				var updatingMsg = string.Format(LocalizationManager.GetString("CollectionTab.Updating", "Downloading update to {0} ({1}K)"), version, size);
 				updatingNotifier.Show(updatingMsg, "", 5);
 
 				await manager.DownloadReleases(updateInfo.ReleasesToApply, x => progress(x / 3 + 33));
@@ -663,7 +663,7 @@ namespace Bloom.Workspace
 				_squirrelManager = null;
 				if (NoUpdatesAvailable(info))
 					return; // none available.
-				var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available");
+				var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available.");
 				var action = LocalizationManager.GetString("CollectionTab.UpdateNow", "Update Now");
 				// Unfortunately, there's no good time to dispose of this object...according to its own comments
 				// it's not even safe to close it. It moves itself out of sight eventually if ignored.
