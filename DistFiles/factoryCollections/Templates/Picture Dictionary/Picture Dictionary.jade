@@ -14,7 +14,7 @@ doctype html
 
 html
 	head
-		+metadata-standard()
+		+metadata-standard
 		meta(name="SuitableForMakingShells", content="yes")
 		meta(name='defaultNameForDerivedBooks', content='Picture Dictionary')
 		meta(name='bloomBookId', content='7E5B8274-C7BD-4471-B54D-50CF09E4DA17')
@@ -22,12 +22,9 @@ html
 		meta(name='defaultMultilingualLevel', content='2')
 		meta(name='experimental', content='true')
 		title Picture Dictionary Template
-		+stylesheet('previewMode.css')
-		+stylesheet('editPaneGlobal.css')
-		+stylesheet('basePage.css')
-		+stylesheet('PictureDictionary.css')
+		+stylesheets('PictureDictionary.css')
 	body
-		#bloomDataDiv
+		+dataDiv
 			+bookVariable-title('en', 'Picture Dictionary')
 			+bookVariable-title('tpi', 'Piksa Diksionari')
 			+bookVariable-title('id', 'Kamus Bergambar')

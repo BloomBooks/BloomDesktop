@@ -1,8 +1,7 @@
-doctype html
 include ../../../jade/bloom-foundation-mixins
 
-mixin topic(langCode, topic)
-	div(data-book='topic', lang=langCode)=topic
+mixin bookVariable-topic(langCode, title)
+	div(data-book='topic', lang=langCode)=title
 
 //- generates a translationGroup with any classes on the internal div
 mixin field-classOnChild(internalClass)
@@ -20,31 +19,30 @@ mixin image-largePage
 -var cca='Creative Commons Attribution'
 -var ccaLink='http://creativecommons.org/licenses/by/3.0/'
 
+doctype html
 html
 	head
-		meta(charset='UTF-8')
-		title Calendar
-		+stylesheet('wallCalendar.css')
+		+metadata-standard
 		meta(name='bloomBookId', content='056B6F11-4A6C-4942-B2BC-8861E62B03B3')
 		meta(name='canChangeOriginalAcknowledgments', content='false')
-		meta(name='Generator', content='Bloom Version 0.8.49 (apparent build date: 8/18/2012)  (Debug version)')
 		meta(name='defaultBookletLayout', content='Calendar')
+		meta(name='pageTemplateSource', content='Wall Calendar')
 		meta(name='experimental', content='true')
+		title Calendar
+		+stylesheets('wallCalendar.css')
 		+script('jquery-1.6.4.js')
 		+script('mootools-core-1.4.1-full-nocompat.js')
 		+script('mootools-more-1.4.0.1.js')
 		+script('configure.js')
-		+stylesheet('languageDisplay.css')
-		+stylesheet('previewMode.css')
-		+stylesheet('editPaneGlobal.css')
-		+stylesheet('basePage.css')
 	body
-		#bloomDataDiv
-			div(data-book='coverImage') placeHolder.png
+		+dataDiv
 			+bookVariable-title('en', 'Wall Calendar')
 			+bookVariable-title('tpi', 'Kalenda')
 			+bookVariable-title('id', 'Kalender')
-			+topic('en', 'Calendar')
+			+bookVariable-topic('en', 'Calendar')
+			+bookVariable-topic('fr', 'Calendrier')
+			+bookVariable-topic('tpi', 'Kalenda')
+			+bookVariable-topic('id', 'Kalender')
 		.bloom-page.calendarMonthTop.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#3e049bff-797f-4a17-9c06-064955ae73cc(data-page='required')
 			.marginBox
 				+image-largePage
