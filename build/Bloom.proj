@@ -93,7 +93,7 @@
 
 	<Target Name="RunNUnit" Condition="'$(teamcity_version)' == ''">
 		<NUnit Assemblies="@(TestAssemblies)"
-			ToolPath="$(RootDir)/packages/NUnit.Runners.Net4.2.6.3/tools"
+			ToolPath="$(RootDir)/packages/NUnit.Runners.Net4.2.6.4/tools"
 			TestInNewThread="false"
 			ExcludeCategory="$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
