@@ -463,7 +463,7 @@ namespace Bloom
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
 				Process.Start("Firefox.exe", '"' + _url + '"');
 			else
-				Process.Start("xdg-open", _url);
+				Process.Start("xdg-open", Uri.EscapeUriString(_url));
 		}
 
 		public void OnOpenPageInStylizer(object sender, EventArgs e)
