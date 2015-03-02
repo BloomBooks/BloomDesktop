@@ -490,9 +490,10 @@ namespace Bloom.Workspace
 		{
 			if (_squirrelManager != null)
 			{
+				//enhance: ideally, what this would do is show a toast of whatever it is squirrel is doing: checking, downloading, waiting for a restart.
 				MessageBox.Show(this,
 					LocalizationManager.GetString("CollectionTab.UpdateCheckInProgress",
-						"Bloom is already working on checking for updates (perhaps automatically)"));
+						"Bloom is already working on checking for updates."));
 				return;
 			}
 			InitiateSquirrelUpdate();
