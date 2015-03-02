@@ -283,7 +283,8 @@ namespace Bloom
 			var installDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
 			// This is what I (JohnT) think should make Bloom display the right icon for .BloomCollection files.
-			EnsureRegistryValue(@".BloomCollection\DefaultIcon", Path.Combine(installDir, "BloomCollectionIcon.ico")); // review: do we have to use 8.3 names?f
+			EnsureRegistryValue(@".BloomCollection\DefaultIcon", Path.Combine(installDir, "BloomCollectionIcon.ico"));
+			EnsureRegistryValue(@".BloomPack\DefaultIcon", Path.Combine(installDir, "BloomPack.ico"));
 
 			// These may also be connected with making BloomCollection files display the correct icon.
 			// Based on things found in (or done by) the old wix installer.
@@ -296,8 +297,8 @@ namespace Bloom
 			EnsureRegistryValue(".BloomPack", "Bloom.BloomPackFile");
 			EnsureRegistryValue("Bloom.BloomPackFile", "Bloom Book Collection");
 			EnsureRegistryValue(".BloomPackFile", "Bloom Book Collection");
-			EnsureRegistryValue(@"Bloom.BloomPackFile\DefaultIcon", Path.Combine(installDir, "BloomPackIcon.ico, 0"));
-			EnsureRegistryValue(@".BloomPackFile\DefaultIcon", Path.Combine(installDir, "BloomPackIcon.ico, 0"));
+			EnsureRegistryValue(@"Bloom.BloomPackFile\DefaultIcon", Path.Combine(installDir, "BloomPack.ico, 0"));
+			EnsureRegistryValue(@".BloomPackFile\DefaultIcon", Path.Combine(installDir, "BloomPack.ico, 0"));
 			EnsureRegistryValue(@"SOFTWARE\Classes\Bloom.BloomPack", "Bloom Book Pack", "FriendlyTypeName");
 
 			// This might be part of registering as the executable for various file types?
