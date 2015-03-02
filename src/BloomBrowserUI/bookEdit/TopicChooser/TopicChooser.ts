@@ -36,13 +36,28 @@ class TopicChooser {
                         //set or clear the topic variable in our data-div
                         if (t.length) {
                             var key = t[0].dataset['key'];
-                            $("div[data-book='topic']").parent().find("[lang='en']").text(key);
-                            //NB: when the nationalLanguage1 is also English, this won't do anything, but that's ok because we set the element to the key which is the same as its
-                            //English, at least today. If that changes in the future, we'd need to put the "key" somewhere other than in the text of the English element
-                            localizationManager.asyncGetTextInLang("Topics." + key, key, "N1")
-                                .done(topicInNatLang1 => {
-                                    $("div[data-book='topic']").filter(".bloom-contentNational1").text(topicInNatLang1);
-                                });
+                            var translationGroup = $("div[data-book='topic']").parent();
+                            var englishDiv = translationGroup.find("[lang='en']")[0];
+                            if (!englishDiv) {
+                                englishDiv = translationGroup.find("div[data-book='topic']").first().clone();
+                                $(englishDiv).attr("lang", "en");
+                                $(englishDiv).appendTo($(translationGroup));
+                            }
+
+                            //for translation convenience, we use "NoTopic" as the key during UI. But when storing, it's cleaner to just save empty string if we don't have a topic
+                            if (key == "NoTopic") {
+                                 //this will clear all of them, for everylanguage
+                                 $("div[data-book='topic']").text("");
+                            } else {
+                                $(englishDiv).text(key);
+
+                                //NB: when the nationalLanguage1 is also English, this won't do anything, but that's ok because we set the element to the key which is the same as its
+                                //English, at least today. If that changes in the future, we'd need to put the "key" somewhere other than in the text of the English element
+                                localizationManager.asyncGetTextInLang("Topics." + key, key, "N1")
+                                    .done(topicInNatLang1 => {
+                                        $("div[data-book='topic']").filter(".bloom-contentNational1").text(topicInNatLang1);
+                                    });
+                            }
                         }
                         $(this).dialog("close");
                     }

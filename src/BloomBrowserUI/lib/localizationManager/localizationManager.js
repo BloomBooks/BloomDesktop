@@ -1,4 +1,4 @@
-﻿/// <reference path="../jquery.d.ts" />
+/// <reference path="../jquery.d.ts" />
 /// <reference path="misc-types.d.ts" />
 /**
 * L10NSharp LocalizationManager for javascript.
@@ -124,13 +124,15 @@ var LocalizationManager = (function () {
             text = englishText;
         }
 
+        text = HtmlDecode(text);
+
         // is this a string.format style request?
         if (args.length > 0) {
             // Do the formatting.
             text = SimpleDotNetFormat(text, args);
         }
 
-        return HtmlDecode(text);
+        return text;
     };
 
     /* Returns a promise to get the translation
@@ -163,11 +165,13 @@ var LocalizationManager = (function () {
 
         //when the async call comes back, we massage the text
         promise.done(function (text) {
+            text = HtmlDecode(text);
+
             // is this a C#-style string.format style request?
             if (args.length > 0) {
                 text = SimpleDotNetFormat(text, args);
             }
-            deferred.resolve(HtmlDecode(text));
+            deferred.resolve(text);
         });
         promise.fail(function () {
             return deferred.fail();

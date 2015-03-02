@@ -96,49 +96,50 @@ class LocalizationManager {
    * @param [args]
    * @returns {String}
    */
-  getText(stringId: string, englishText?: string, ...args): string {
+    getText(stringId: string, englishText?: string, ...args): string {
 
-    if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
-      if (Object.keys(this.dictionary).length == 0) {
-        this.inlineDictionaryLoaded = true;
-        $.extend(localizationManager.dictionary, GetInlineDictionary());
-      }
+        if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
+            if (Object.keys(this.dictionary).length == 0) {
+                this.inlineDictionaryLoaded = true;
+                $.extend(localizationManager.dictionary, GetInlineDictionary());
+            }
+        }
+
+        // check if englishText is missing
+        englishText = englishText || stringId;
+
+        // get the translation
+        var text = this.dictionary[stringId];
+        if (!text) {
+            text = this.dictionary[stringId.replace('&', '&amp;')];
+        }
+
+        // try to get from L10NSharp
+        if (!text) {
+
+            var ajaxSettings = { type: 'POST', url: '/bloom/i18n/loadStrings' };
+            var pair = {};
+            pair[stringId] = englishText;
+            ajaxSettings['data'] = pair;
+
+            $.ajax(ajaxSettings)
+                .done(data => {
+                    localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
+                });
+
+            text = englishText;
+        }
+
+        text = HtmlDecode(text);
+        // is this a string.format style request?
+        if (args.length > 0) {
+
+            // Do the formatting.
+            text = SimpleDotNetFormat(text, args);
+        }
+
+        return text;
     }
-
-    // check if englishText is missing
-    englishText = englishText || stringId;
-
-    // get the translation
-    var text = this.dictionary[stringId];
-    if (!text) {
-      text = this.dictionary[stringId.replace('&','&amp;')];
-    }
-
-    // try to get from L10NSharp
-    if (!text) {
-
-      var ajaxSettings = {type: 'POST', url: '/bloom/i18n/loadStrings'};
-      var pair = {};
-      pair[stringId] = englishText;
-      ajaxSettings['data'] = pair;
-
-      $.ajax(ajaxSettings)
-        .done(data => {
-          localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
-      });
-
-      text = englishText;
-    }
-
-    // is this a string.format style request?
-    if (args.length > 0) {
-
-      // Do the formatting.
-      text = SimpleDotNetFormat(text, args);
-    }
-
-    return HtmlDecode(text);
-  }
 
     /* Returns a promise to get the translation
      * 
@@ -165,11 +166,12 @@ class LocalizationManager {
         var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
         //when the async call comes back, we massage the text
         promise.done(text => {
+            text = HtmlDecode(text);
             // is this a C#-style string.format style request?
             if (args.length > 0) {
                 text = SimpleDotNetFormat(text, args);
             }
-            deferred.resolve(HtmlDecode(text));
+            deferred.resolve(text);
         });
         promise.fail(() => deferred.fail());
         return deferred.promise();
