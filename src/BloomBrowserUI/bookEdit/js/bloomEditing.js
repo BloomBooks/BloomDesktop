@@ -148,7 +148,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
 
     // determine onFocusOnly
     var onFocusOnly = whatToSay.startsWith('*');
-    onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus');
+    onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || checkMightCauseHorizontallyOverlappingBubbles(targetElement);
 
     // get the localized string
     if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
@@ -440,22 +440,23 @@ function MakeSourceTextDivForGroup(group) {
   else {
     $(divForBubble).remove();//no tabs, so hide the bubble
     return;
-  }
+    }
+
+    var showEvents = false;
+    var hideEvents = false;
+    var shouldShowAlways = true;
+
+  
+    if(checkMightCauseHorizontallyOverlappingBubbles(group)) {
+        showEvents = 'focusin';
+        hideEvents = 'focusout';
+        shouldShowAlways = false;
+    }
 
     // turn that tab thing into a bubble, and attach it to the original div ("group")
-  $(group).each(function () {
+    $(group).each(function () {
       // var targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
 
-      showEvents = false;
-      hideEvents = false;
-      shouldShowAlways = true;
-
-        //todo: really, this should detect some made-up style, so that we can control this behavior via the stylesheet
-        if($(this).hasClass('wordsDiv')) {
-            showEvents = 'focusin';
-            hideEvents = 'focusout';
-            shouldShowAlways = false;
-        }
       $(this).qtip({
           position: {
                 my: 'left top',
@@ -487,6 +488,16 @@ function MakeSourceTextDivForGroup(group) {
           hide: hideEvents
       });
   });
+}
+
+function checkMightCauseHorizontallyOverlappingBubbles(element) {
+    //we can't actually know for sure if overlapping would happen, but
+    //we can be very conservative and say that if the text
+    //box isn't taking up the whole width, it *might* cause
+    //an overlap
+    var availableWidth = $(element).closest(".marginBox").width();
+    var kTolerancePixels = 10; //if the box is just a tiny bit smaller, there's not going to be anything to overlap
+    return $(element).width() < (availableWidth - kTolerancePixels);
 }
 
 //add a delete button which shows up when you hover
