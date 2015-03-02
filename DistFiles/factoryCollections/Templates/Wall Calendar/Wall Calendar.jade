@@ -1,3 +1,4 @@
+doctype html
 include ../../../jade/bloom-foundation-mixins
 
 mixin bookVariable-topic(langCode, title)
@@ -16,10 +17,6 @@ mixin image-largePage
 		img(src="placeHolder.png", width=attributes.initialImageWidth, alt='Could not load the picture')
 		block
 
--var cca='Creative Commons Attribution'
--var ccaLink='http://creativecommons.org/licenses/by/3.0/'
-
-doctype html
 html
 	head
 		+metadata-standard
@@ -30,9 +27,7 @@ html
 		meta(name='experimental', content='true')
 		title Calendar
 		+stylesheets('wallCalendar.css')
-		+script('jquery-1.6.4.js')
-		+script('mootools-core-1.4.1-full-nocompat.js')
-		+script('mootools-more-1.4.0.1.js')
+		+script('jquery-1.10.1.js')
 		+script('configure.js')
 	body
 		+dataDiv

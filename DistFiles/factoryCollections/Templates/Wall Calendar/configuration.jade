@@ -1,0 +1,72 @@
+doctype html
+// configuration form for Bloom Wall Calendar template
+html
+	head
+		title Set Up Calendar
+		link(rel="stylesheet" href="configuration.css" type="text/css")
+		script(type="text/javascript" src="jquery-1.10.1.js")
+	body
+		form#form
+			label.year Year
+			input.year(name="calendar.year" type="number" value="2015")
+			#dayNames
+				h1 Day Names
+				label Sunday
+				input(name="library.calendar.dayAbbreviations[0]" value="Sun")
+				br
+				label Monday
+				input(name="library.calendar.dayAbbreviations[1]" value="Mon")
+				br
+				label Tuesday
+				input(name="library.calendar.dayAbbreviations[2]" value="Tues")
+				br
+				label Wednesday
+				input(name="library.calendar.dayAbbreviations[3]" value="Wed")
+				br
+				label Thursday
+				input(name="library.calendar.dayAbbreviations[4]" value="Thur")
+				br
+				label Friday
+				input(name="library.calendar.dayAbbreviations[5]" value="Fri")
+				br
+				label Saturday
+				input(name="library.calendar.dayAbbreviations[6]" value="Sat")
+				br
+			#monthNames
+				h1 Month Names
+				label 1
+				input(name="library.calendar.monthNames[0]" value="January")
+				br
+				label 2
+				input(name="library.calendar.monthNames[1]" value="February")
+				br
+				label 3
+				input(name="library.calendar.monthNames[2]" value="March")
+				br
+				label 4
+				input(name="library.calendar.monthNames[3]" value="April")
+				br
+				label 5
+				input(name="library.calendar.monthNames[4]" value="May")
+				br
+				label 6
+				input(name="library.calendar.monthNames[5]" value="June")
+				br
+				label 7
+				input(name="library.calendar.monthNames[6]" value="July")
+				br
+				label 8
+				input(name="library.calendar.monthNames[7]" value="August")
+				br
+				label 9
+				input(name="library.calendar.monthNames[8]" value="September")
+				br
+				label 10
+				input(name="library.calendar.monthNames[9]" value="October")
+				br
+				label 11
+				input(name="library.calendar.monthNames[10]" value="November")
+				br
+				label 12
+				input(name="library.calendar.monthNames[11]" value="December")
+				br
