@@ -6,6 +6,11 @@
 ### Fixes
 - Fixed a problem where many PDF viewer programs showed ugly lines around parts images. This fix will only help with images imported from now on, not retroactively. We'll see about doing something retroactively soon.
 
+## 3.0.101 Version Stable Release
+- Adds Thai User Interface localization
+- Adds Lao User Interface localization
+- Fix rare error when a page is being saved
+
 ## 3.0.100 Version Stable Release
 
 ## 3.0.97 Beta
