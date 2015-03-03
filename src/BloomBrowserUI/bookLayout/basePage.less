@@ -51,6 +51,17 @@ So if you change this, change it there. Note, this might not be the best long-te
 To handling the mis-match.*/
 	font-size: 10pt;
 }
+
+/* gridItem means this is a page thumbnail */
+.gridItem {
+	.pageOverflows {
+		background-image: url("../images/Attention.svg"); /* red triangle with exclamation point */
+        background-position: bottom;
+        background-repeat: no-repeat;
+        background-size: 70%;
+	}
+}
+
 DIV.ui-tooltip-content
 {
 	overflow: visible !important;
@@ -196,7 +207,10 @@ preview.css.
 	}
 	.SetMarginBoxWidth(@PageWidth) {
 		width: @PageWidth - ( @MarginOuter + @MarginInner );
-	}
+        IMG { /* BL-1022 Keeps XMatter thumb images from going too wide */
+                max-width: @PageWidth - ( @MarginOuter + @MarginInner );
+        }
+    }
 	.A4Portrait & {
 		.SetMarginBoxWidth(@A4Portrait-Width);
 		.SetMarginBoxHeight(@A4Portrait-Height);
