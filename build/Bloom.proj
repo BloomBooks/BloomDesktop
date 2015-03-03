@@ -74,13 +74,13 @@
 	<CreateProperty Value="BloomInstaller.$(Version).$(channel).msi">
 	  <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
 	</CreateProperty>
-	<CreateProperty Value="BloomInstaller.$(Version).$(channel).exe">
+	<CreateProperty Value="Bloom$(channel)Installer.$(Version).$(channel).exe">
 	  <Output PropertyName="SquirrelInstallerFileName" TaskParameter="Value"/>
 	</CreateProperty>
 	  <CreateProperty Value="Bloom-$(Version)-full.nupkg">
 		  <Output PropertyName="SquirrelFullPkg" TaskParameter="Value"/>
 	  </CreateProperty>
-	  <CreateProperty Value="Bloom-$(Version)-delta.nupkg">
+	  <CreateProperty Value="Bloom$(channel)-$(Version)-delta.nupkg">
 		  <Output PropertyName="SquirrelDeltaPkg" TaskParameter="Value"/>
 	  </CreateProperty>
 	  <!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
