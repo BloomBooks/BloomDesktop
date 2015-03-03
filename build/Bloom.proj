@@ -74,7 +74,7 @@
 	<CreateProperty Value="BloomInstaller.$(Version).$(channel).msi">
 	  <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
 	</CreateProperty>
-	<CreateProperty Value="Bloom$Installer.$(Version).$(channel).exe">
+	<CreateProperty Value="BloomInstaller.$(Version).$(channel).exe">
 	  <Output PropertyName="SquirrelInstallerFileName" TaskParameter="Value"/>
 	</CreateProperty>
 	  <CreateProperty Value="Bloom$(channel)-$(Version)-full.nupkg">
