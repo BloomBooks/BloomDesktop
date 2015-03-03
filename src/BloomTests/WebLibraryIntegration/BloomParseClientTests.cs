@@ -24,7 +24,11 @@ namespace BloomTests.WebLibraryIntegration
 		}
 
 
-		[Test]
+		/// <summary>
+		/// When we restore this, we should also fix it so it deletes the book it creates. The inaccuracies were partly
+		/// caused by accumulating over 1000 books (actually, over 17,000) from repeatedly running this and other tests.
+		/// </summary>
+		[Test, Ignore("parse.com has gotten into a state where count is not accurate in the unit test database")]
 		public void GetBookCount_AfterAddingABook_Increases()
 		{
 			var initialCount = _client.GetBookCount();
