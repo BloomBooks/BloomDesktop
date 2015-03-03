@@ -3,9 +3,36 @@
 - Pasted images are no longer added with a temporary gibberish name; the original names are maintained.
 - Bloom now tries to detect when you are importing a jpeg that really should be tiff/bmp/png, and puts up an informative dialog that lets you repent or plow forward.
 - On custom pages and other places where there maybe multiple text boxes layout out horizontally, text bubbles will now not show until you click in the box, so that they don't clutter up the page and interfere with seeing/doing what you need.
+- Page thumbnails now show an "attention" icon if some text on the page is overflow its box
+- Improve situations where Bloom ran out of memory while making a PDF making 
+- BloomLibrary.org takes a fraction of the time/bytes to display
 
 ### Fixes
 - Fixed a problem where many PDF viewer programs showed ugly lines around parts images. This fix will only help with images imported from now on, not retroactively. We'll see about doing something retroactively soon.
+- Overflow detector misfires on right to left text.
+- On the front cover, all the text below the image is now the same size
+- Reinstated Chinese UI translation.
+- Bloom no longer saves metadata you enter back to the original image. Too dangerous.
+- Can choose TIFF images again.
+- Bolding or underlined parts of words would introduce unwanted spaces.
+- Stopped "Source Bubbles" from overlapping with other stuff by saying that unless the field takes up the full width of the page, only show the bubble when the cursor is in the field.
+- Fixed problem with changing the collection name.
+- Pasted images are now named "image 1", "image 2", etc., instead of having random names.
+- Creative Commons summary now shows in French if that is the national language of the book
+- Vaccninations book had lost its Creative Commons license image.
+- Fixed problem with saving meta data into certain jpeg images.
+- [Decodable Reader] If you change the letters of a stage then close the dialog by clicking "OK", the accordion tool doesn't update to show the new letters
+- [Decodable Reader] If a letter is in a letter combination in current the stage, DR should not automatically allow its consituent letters
+- Bloom's feature of making white transparent makes pdfs look awful in some previewers.
+- Calendar Title Page font-changing widget in "Funding" box is non-functional
+- [Linux] Right-click on Main Tabs & other Menu Bar Selections causes focus shift
+- [Linux] Edit page (sometimes) needs multiple refreshes
+- [Linux] "Report A Problem" can't report directly, has to go through email.
+- [Linux] Art Of Reading instructions truncated
+- [Linux] Problem typing in Art Of Reading search box
+- [Linux] Some interfaces languages are listed multiple times.
+- [Linux] Double clicking on a BloomPack didn't run Bloom
+
 
 ## 3.0.101 Version Stable Release
 - Adds Thai User Interface localization
