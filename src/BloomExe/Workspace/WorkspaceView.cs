@@ -538,7 +538,7 @@ namespace Bloom.Workspace
 
 				string newInstallDir;
 				ArrangeToDisposeSquirrelManagerOnExit();
-				using (_squirrelManager = new UpdateManager(updateUrl, "Bloom", FrameworkVersion.Net45, rootDirectory))
+				using (_squirrelManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45, rootDirectory))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
 					newInstallDir = await UpdateApp(_squirrelManager, null);
@@ -587,7 +587,7 @@ namespace Bloom.Workspace
 			if (ancestor == null)
 				return;
 			var shell = (Shell) ancestor;
-			var pathToNewExe = Path.Combine(newInstallDir, "Bloom.exe");
+			var pathToNewExe = Path.Combine(newInstallDir, Path.ChangeExtension(Application.ProductName, ".exe"));
 			if (!File.Exists(pathToNewExe))
 				return; // aargh!
 			shell.QuitForVersionUpdate = true;
@@ -655,7 +655,7 @@ namespace Bloom.Workspace
 					return;
 				UpdateInfo info;
 				ArrangeToDisposeSquirrelManagerOnExit();
-				using (_squirrelManager = new UpdateManager(updateUrl, "Bloom", FrameworkVersion.Net45))
+				using (_squirrelManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
 					info = await _squirrelManager.CheckForUpdate();

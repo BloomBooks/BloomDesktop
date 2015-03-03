@@ -4,5 +4,5 @@
 # the format is min,max,url.
 # The url is for a folder which should contain Squirrel delta files and a RELEASES file which describes how to update to the most recent.
 # This was first used by version 3.1, so earlier versions do not use it.
-# For now everything uses the 3.1 folder
-0.0.0,3.1.99999,https://s3.amazonaws.com/bloomlibrary.org/squirrel
+# For now everything uses the deltasAlpha folder
+0.0.0,3.1.99999,https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha

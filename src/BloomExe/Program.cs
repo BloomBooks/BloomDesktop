@@ -422,7 +422,7 @@ namespace Bloom
 				case "--squirrel-updated": // updated to specified version
 				case "--squirrel-obsolete": // this version is no longer newest
 				case "--squirrel-uninstall": // being uninstalled
-					using (var mgr = new UpdateManager(updateUrl, "Bloom", FrameworkVersion.Net45))
+					using (var mgr = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45))
 					{
 						// Note, in most of these scenarios, the app exits after this method
 						// completes!
