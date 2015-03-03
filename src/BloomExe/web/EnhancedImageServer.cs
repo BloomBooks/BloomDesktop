@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Xml;
+using System.Linq;
 using Bloom.Book;
 using System.IO;
 using Bloom.ImageProcessing;
@@ -14,7 +14,7 @@ using Microsoft.Win32;
 using Palaso.IO;
 using Bloom.Collection;
 using Palaso.Xml;
-using RestSharp.Contrib;
+using Palaso.Extensions;
 
 namespace Bloom.web
 {
@@ -54,6 +54,7 @@ namespace Bloom.web
 		// used to synchronize access to various other methods
 		private object SyncObj = new object();
 
+		public string CurrentPageContent { get; set; }
 		public string AccordionContent { get; set; }
 		public bool AuthorMode { get; set; }
 
@@ -297,9 +298,13 @@ namespace Bloom.web
 		private bool ProcessContent(IRequestInfo info, string localPath)
 		{
 			// as long as deal with simple string/bool properties or static methods we don't
-			// have to lock
+
 			switch (localPath)
 			{
+				case "currentPageContent":
+					info.ContentType = "text/html";
+					info.WriteCompleteOutput(CurrentPageContent ?? "");
+					return true;
 				case "accordionContent":
 					info.ContentType = "text/html";
 					info.WriteCompleteOutput(AccordionContent ?? "");
@@ -311,6 +316,8 @@ namespace Bloom.web
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
 					return true;
+				case "topics":
+					return GetTopicList(info);
 				case "help":
 					var post = info.GetPostData();
 					// Help launches a separate process so it doesn't matter that we don't call
@@ -323,6 +330,39 @@ namespace Bloom.web
 					return true;
 			}
 			return ProcessAnyFileContent(info, localPath);
+		}
+
+		private static bool GetTopicList(IRequestInfo info)
+		{
+			var keyToLocalizedTopicDictionary = new Dictionary<string, string>();
+			foreach (var topic in BookInfo.TopicsKeys)
+			{
+				var localized = LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic,
+					@"shows in the topics chooser in the edit tab");
+				keyToLocalizedTopicDictionary.Add(topic, localized);
+			}
+			string localizedNoTopic = LocalizationManager.GetDynamicString("Bloom", "Topics.NoTopic", "No Topic",
+				@"shows in the topics chooser in the edit tab");
+			var arrayOfKeyValuePairs = from key in keyToLocalizedTopicDictionary.Keys
+				orderby keyToLocalizedTopicDictionary[key]
+				select string.Format("\"{0}\": \"{1}\"",key,keyToLocalizedTopicDictionary[key]);
+			var pairs = arrayOfKeyValuePairs.Concat(",");
+			info.ContentType = "text/json";
+			var data = string.Format("{{\"NoTopic\": \"{0}\", {1} }}", localizedNoTopic, pairs);
+
+			info.WriteCompleteOutput(data);
+			/*			var data = new {NoTopic = localizedNoTopic, pairs = arrayOfKeyValuePairs};
+			 * var serializeObject = JsonConvert.SerializeObject(data, new JsonSerializerSettings
+						{
+							TypeNameHandling = TypeNameHandling.None,
+							TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
+						});
+						*/
+			//info.WriteCompleteOutput(serializeObject);
+
+
+
+			return true;
 		}
 
 		private static bool ProcessAnyFileContent(IRequestInfo info, string localPath)

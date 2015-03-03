@@ -64,7 +64,30 @@ namespace Bloom.web
 					{
 						_localizing = false;
 					}
+					break;
 
+				case "translate":
+					var parameters = info.GetQueryString();
+					string id = parameters["key"];
+					string englishText = parameters["englishText"];
+					string langId = parameters["langId"];
+					langId = langId.Replace("V", currentCollectionSettings.Language1Iso639Code);
+					langId = langId.Replace("N1", currentCollectionSettings.Language2Iso639Code);
+					langId = langId.Replace("N2", currentCollectionSettings.Language3Iso639Code);
+					langId = langId.Replace("UI", LocalizationManager.UILanguageId);
+					if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
+					{
+						info.ContentType = "text/plain";
+						info.WriteCompleteOutput(LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishText, null, langId));
+						return true;
+					}
+					else
+					{
+						//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
+						LocalizationManager.GetDynamicString("Bloom", id, englishText);
+						return false;
+					}
+					break;
 			}
 
 			return false;
