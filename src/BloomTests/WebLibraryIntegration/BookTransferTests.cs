@@ -29,7 +29,8 @@ namespace BloomTests.WebLibraryIntegration
 		{
 			public BloomParseClientDouble(string testId)
 			{
-				ClassesLanguagePath = "classes/language_" + testId;
+				// Do NOT do this...it results in creating a garbage class in Parse.com which is hard to delete (manual only).
+				//ClassesLanguagePath = "classes/language_" + testId;
 			}
 		}
 
@@ -276,7 +277,12 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
 		}
 
-		[Test]
+		/// <summary>
+		/// This test has a possible race condition which we attempted to fix by setting ClassesLanguagePath to something unique
+		/// in the BloomParseClientDouble constructor. This had a disastrous side effect documented there. Disable until we find
+		/// a better way.
+		/// </summary>
+		[Test, Ignore("This test in its current form can fail when multiple clients are running tests")]
 		public void GetLanguagePointers_CreatesLanguagesButDoesNotDuplicate()
 		{
 			Login();
