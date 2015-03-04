@@ -111,11 +111,11 @@ namespace BloomTests.WebLibraryIntegration
 			var progress = new Palaso.Progress.StringBuilderProgress();
 			var s3Id = _transfer.UploadBook(originalBookFolder,progress);
 
-			var uploadMessages = progress.Text.Split(new string[] {"Uploading"}, StringSplitOptions.RemoveEmptyEntries);
+			var uploadMessages = progress.Text.Split(new string[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
 
 			Assert.That(uploadMessages.Length, Is.EqualTo(fileCount + 2)); // should get one per file, plus one for metadata, plus one for book order
-			Assert.That(progress.Text.Contains("Uploading book metadata"));
-			Assert.That(progress.Text.Contains("Uploading " + Path.GetFileName(Directory.GetFiles(originalBookFolder).First())));
+			Assert.That(progress.Text.Contains("book metadata"));
+			Assert.That(progress.Text.Contains(Path.GetFileName(Directory.GetFiles(originalBookFolder).First())));
 
 			_transfer.WaitUntilS3DataIsOnServer(originalBookFolder);
 			var dest = _workFolderPath.CombineForPath("output");
