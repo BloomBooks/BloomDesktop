@@ -139,6 +139,18 @@ namespace BloomTests.Book
 			Assert.AreEqual("aa", textarea2.InnerText);
 		}
 
+		[Test]
+		public void UpdateFieldsAndVariables_HasBookTitleTemplateWithVernacularPlaceholder_CreatesTitleForVernacular()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitleTemplate' lang='{V}'>the title</div>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			data.UpdateVariablesAndDataDivThroughDOM();
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='"+_collectionSettings.Language1Iso639Code+"' and text()='the title']",1);
+		}
 
 		[Test]
 		public void UpdateFieldsAndVariables_VernacularTitleChanged_TitleCopiedToParagraphAnotherPage()

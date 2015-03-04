@@ -543,6 +543,13 @@ namespace Bloom.Book
 					string lang = node.GetOptionalStringAttribute("lang", "*");
 					if (lang == "") //the above doesn't stop a "" from getting through
 						lang = "*";
+					if (lang == "{V}")
+						lang = _collectionSettings.Language1Iso639Code;
+					if(lang == "{N1}")
+						lang = _collectionSettings.Language2Iso639Code;
+					if(lang == "{N2}")
+						lang = _collectionSettings.Language3Iso639Code;
+
 					if (string.IsNullOrEmpty(value))
 					{
 						// This is a value we may want to delete
@@ -905,19 +912,24 @@ namespace Bloom.Book
 			NamedMutliLingualValue title;
 			if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
-				var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
+				//NB: In seleting from an ordered shopping list of priority entries, this is only 
+				//handling a scenario where a single (title,writingsystem) pair is of interest.
+				//That's all we've needed thusfar. But we could imagine needing to work through each one.
+
+				var form = title.TextAlternatives.GetBestAlternative(WritingSystemIdsToTry);
 
 				//allow the title to be a template that pulls in data variables, e.g. "P1 Primer Term{book.term} Week {book.week}"
 				foreach (var dataItem in _dataset.TextVariables)
 				{
-					t = t.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry));
+					form.Form = form.Form.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry));
 				}
 
-				_dom.Title = t;
+				_dom.Title = form.Form;
 				if (info != null)
-					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
-				//review: notice we're only changing the value in this dataset
-				this.Set("bookTitle", t,"en");
+					info.Title =form.Form.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+
+				this.Set("bookTitle", form.Form, form.WritingSystemId);
+				
 			}
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
 			{
