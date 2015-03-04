@@ -510,6 +510,8 @@ var StyleEditor = (function () {
         }
         this._previousBox = targetBox;
 
+        $('#format-toolbar').remove(); // in case there's still one somewhere else
+
         // put the format button in the editable text box itself, so that it's always in the right place.
         // unfortunately it will be subject to deletion because this is an editable box. But we can mark it as uneditable, so that
         // the user won't see resize and drag controls when they click on it
