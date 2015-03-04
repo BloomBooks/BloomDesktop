@@ -7,6 +7,7 @@ using Bloom;
 using Bloom.Book;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
+using L10NSharp;
 using NUnit.Framework;
 using Palaso.Extensions;
 using Palaso.Progress;
@@ -114,7 +115,9 @@ namespace BloomTests.WebLibraryIntegration
 			var uploadMessages = progress.Text.Split(new string[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
 
 			Assert.That(uploadMessages.Length, Is.EqualTo(fileCount + 2)); // should get one per file, plus one for metadata, plus one for book order
-			Assert.That(progress.Text, Is.StringContaining("book metadata"));
+			Assert.That(progress.Text, Is.StringContaining(
+				LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata",
+				"In this step, Bloom is uploading things like title, languages, & topic tags to the bloomlibrary.org database.")));
 			Assert.That(progress.Text, Is.StringContaining(Path.GetFileName(Directory.GetFiles(originalBookFolder).First())));
 
 			_transfer.WaitUntilS3DataIsOnServer(originalBookFolder);
