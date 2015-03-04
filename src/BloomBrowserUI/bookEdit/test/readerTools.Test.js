@@ -4,7 +4,6 @@ describe("Bloom Edit Controls tests", function() {
     var classValues;
 
     beforeEach(function() {
-
         //noinspection JSUndeclaredVariable
         lang_data = null;
         model = new ReaderToolsModel();
@@ -53,6 +52,7 @@ describe("Bloom Edit Controls tests", function() {
     });
 
     it("increments stage to limit on stage right button", function() {
+        expect(false)
         model.incrementStage();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("stageNumber", "2");
 

@@ -1,4 +1,4 @@
-/// <reference path="../../lib/jquery.d.ts" />
+﻿/// <reference path="../../lib/jquery.d.ts" />
 /**
 * Class to hold information passed between iframes
 * @constructor
@@ -38,6 +38,33 @@ var interIframeChannel = (function () {
         $.ajax(ajaxSettings).done(function (data) {
             callback(data);
         });
+    };
+
+    /**
+    * Gets the data and returns a promise
+    */
+    interIframeChannel.prototype.asyncGet = function (url, dataValue) {
+        // We are calling encodeURIComponent() if dataValue is a string.
+        // NOTE: We are encoding every string, so the caller should NOT encode the string.
+        if (typeof dataValue === 'string')
+            dataValue = encodeURIComponent(dataValue);
+
+        var ajaxSettings = { type: 'GET', url: url };
+        if (dataValue)
+            ajaxSettings['data'] = dataValue;
+
+        return $.ajax(ajaxSettings).promise();
+    };
+
+    /*
+    * This will earn you the following message in the console:
+    *  "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help http://xhr.spec.whatwg.org/"
+    */
+    interIframeChannel.prototype.getValueSynchronously = function (url, parameters) {
+        var ajaxSettings = { type: 'GET', url: url, async: false };
+        if (parameters)
+            ajaxSettings['data'] = parameters;
+        return $.ajax(ajaxSettings).responseText;
     };
 
     /**

@@ -28,7 +28,9 @@ namespace Bloom.WebLibraryIntegration
 		// REST key. Unit tests update these.
 		public string ApiKey = KeyManager.ParseApiKey;
 		public string ApplicationKey = KeyManager.ParseApplicationKey;
-		protected string ClassesLanguagePath = "classes/language";
+		// Don't even THINK of making this mutable so each unit test uses a different class.
+		// Those classes hang around, can only be deleted manually, and eventually use up a fixed quota of classes.
+		protected const string ClassesLanguagePath = "classes/language";
 
 		public string UserId {get { return _userId; }}
 

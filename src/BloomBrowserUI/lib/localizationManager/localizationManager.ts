@@ -1,4 +1,4 @@
-/// <reference path="jquery.d.ts" />
+/// <reference path="../jquery.d.ts" />
 /// <reference path="misc-types.d.ts" />
 
 /**
@@ -87,58 +87,122 @@ class LocalizationManager {
   }
 
   /**
-   * Gets translated text.
+   * WARNING! This gets the translated text only if it is already loaded. Otherwise it just gives English back and will give translation next time.
+   * Instead, use asyncGetTextInLang().
+   * 
    * Additional parameters after the englishText are treated as arguments for SimpleDotNetFormat.
    * @param {String} stringId
    * @param {String} [englishText]
    * @param [args]
    * @returns {String}
    */
-  getText(stringId: string, englishText?: string, ...args): string {
+    getText(stringId: string, englishText?: string, ...args): string {
 
-    if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
-      if (Object.keys(this.dictionary).length == 0) {
-        this.inlineDictionaryLoaded = true;
-        $.extend(localizationManager.dictionary, GetInlineDictionary());
-      }
+        if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
+            if (Object.keys(this.dictionary).length == 0) {
+                this.inlineDictionaryLoaded = true;
+                $.extend(localizationManager.dictionary, GetInlineDictionary());
+            }
+        }
+
+        // check if englishText is missing
+        englishText = englishText || stringId;
+
+        // get the translation
+        var text = this.dictionary[stringId];
+        if (!text) {
+            text = this.dictionary[stringId.replace('&', '&amp;')];
+        }
+
+        // try to get from L10NSharp
+        if (!text) {
+
+            var ajaxSettings = { type: 'POST', url: '/bloom/i18n/loadStrings' };
+            var pair = {};
+            pair[stringId] = englishText;
+            ajaxSettings['data'] = pair;
+
+            $.ajax(ajaxSettings)
+                .done(data => {
+                    localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
+                });
+
+            text = englishText;
+        }
+
+        text = HtmlDecode(text);
+        // is this a string.format style request?
+        if (args.length > 0) {
+
+            // Do the formatting.
+            text = SimpleDotNetFormat(text, args);
+        }
+
+        return text;
     }
 
-    // check if englishText is missing
-    englishText = englishText || stringId;
+    /* Returns a promise to get the translation
+     * 
+     * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
+     * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
+     *  @example
+     * asyncGetTextInLang('topics.health','Health", "UI")
+     *      .done(translation => {
+     *          $(this).text(translation);
+     *      })
+     *      .fail($(this).text("?Health?";
+     * @example
+     * asyncGetTextInLang('topics.health','My name is {0}", "UI", "John")
+     *      .done(translation => {
+     *          $(this).text(translation);
+     *      });
 
-    // get the translation
-    var text = this.dictionary[stringId];
-    if (!text) {
-      text = this.dictionary[stringId.replace('&','&amp;')];
-    }
-
-    // try to get from L10NSharp
-    if (!text) {
-
-      var ajaxSettings = {type: 'POST', url: '/bloom/i18n/loadStrings'};
-      var pair = {};
-      pair[stringId] = englishText;
-      ajaxSettings['data'] = pair;
-
-      $.ajax(ajaxSettings)
-        .done(function (data) {
-          localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
+    */
+    asyncGetTextInLang(id: string, englishText: string, langId: string, ...args): JQueryPromise {
+        // We already get a promise from the async call, and could just return that.
+        // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
+        //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
+        var deferred = new $.Deferred();
+        var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
+        //when the async call comes back, we massage the text
+        promise.done(text => {
+            text = HtmlDecode(text);
+            // is this a C#-style string.format style request?
+            if (args.length > 0) {
+                text = SimpleDotNetFormat(text, args);
+            }
+            deferred.resolve(text);
         });
+        promise.fail(() => deferred.fail());
+        return deferred.promise();
+    }
+     
+    /* Returns a promise to get the translation in the UI language, or English if it is unavailable
+     * 
+     * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
+     * 
+     *  @example
+     * asyncGetTextInLang('topics.health','Health")
+     *      .done(translation => {
+     *          $(this).text(translation);
+     *      })
+     *      .fail($(this).text("?Health?";
+     * @example
+     * asyncGetTextInLang('topics.health','My name is {0}", "John")
+     *      .done(translation => {
+     *          $(this).text(translation);
+     *      });
 
-      text = englishText;
+    */
+    asyncGetText(id: string, englishText: string, langId: string, ...args): JQueryPromise {
+        var deferred = new $.Deferred();
+        var promise = this.asyncGetTextInLang(id, englishText, "UI", args);
+        promise.done(text => deferred.resolve(text));
+        promise.fail(this.asyncGetTextInLang(id, englishText, "en", args).done(text => deferred.resolve(text)));
+        return deferred.promise();
     }
 
-    // is this a string.format style request?
-    if (args.length > 0) {
-
-      // Do the formatting.
-      text = SimpleDotNetFormat(text, args);
-    }
-
-    return HtmlDecode(text);
-  }
-
-  /**
+/**
    * Sets the translated text of element.
    * @param element
    */

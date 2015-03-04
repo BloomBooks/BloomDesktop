@@ -10,6 +10,7 @@ using System.Windows.Forms.VisualStyles;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.Collection;
+using L10NSharp;
 using Palaso.Code;
 using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
@@ -71,6 +72,7 @@ namespace Bloom.Book
 			GetOrCreateDataDiv();
 			_dataset = GatherDataItemsFromCollectionSettings(_collectionSettings);
 			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
+			MigrateData();
 		}
 
 		/// <summary>
@@ -177,6 +179,25 @@ namespace Bloom.Book
 			UpdateCredits(info);
 		}
 
+		private void MigrateData()
+		{
+			//Until late in Bloom 3, we collected the topic in the National language, which is messy because then we would have to know how to 
+			//translate from all those languages to all other languages. Now, we just save English, and translate from English to whatever.
+			//By far the largest number of books posted to bloomlibrary with this problem were Tok Pisin books, which actually just had
+			//an English word as their value for "topic", so there we just switch it over to English.
+			NamedMutliLingualValue topic;
+			if(_dataset.TextVariables.TryGetValue("topic", out topic))
+			{
+				var topicStrings = topic.TextAlternatives;
+				if (string.IsNullOrEmpty(topicStrings["en"] ) && topicStrings["tpi"] != null)
+				{
+					topicStrings["en"] = topicStrings["tpi"];
+
+					topicStrings.RemoveLanguageForm(topicStrings.Find("tpi"));
+				}
+			}
+		}
+
 		private void UpdateCredits(BookInfo info)
 		{
 			if (info == null)
@@ -189,6 +210,33 @@ namespace Bloom.Book
 				credits = creditsData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 			}
 			info.Credits = credits.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+		}
+
+		/// <summary>
+		/// grabs the english (which serves as the 'key') from the datadiv and then adds or updates
+		/// the equivalent for the current cover language
+		/// </summary>
+		/// <param name="data"></param>
+		private void UpdateTopicInLanguageOfCover(DataSet data)
+		{
+			NamedMutliLingualValue topicData;
+			if(data.TextVariables.TryGetValue("topic", out topicData))
+			{
+				//we use English as the "key" for topics.
+				var englishTopic = topicData.TextAlternatives.GetExactAlternative("en");
+				if (string.IsNullOrEmpty(englishTopic))
+					return;
+				string langOfTopicToShowOnCover = _collectionSettings.Language2Iso639Code;
+				var id = "Topics." + englishTopic;
+
+				string s = "";
+				
+				var bestTranslation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishTopic, "this is a book topic", langOfTopicToShowOnCover);;
+				//NB: in a unit test environment, GetDynamicStringOrEnglish is going to give us the id back, which is annoying.
+				if (bestTranslation == id)
+					bestTranslation = englishTopic;
+				data.AddLanguageString("topic", bestTranslation, langOfTopicToShowOnCover, false);
+			}
 		}
 
 		private void UpdateIsbn(BookInfo info)
@@ -378,6 +426,7 @@ namespace Bloom.Book
 			UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
 
 			UpdateTitle();
+
 			return data;
 		}
 
@@ -494,6 +543,13 @@ namespace Bloom.Book
 					string lang = node.GetOptionalStringAttribute("lang", "*");
 					if (lang == "") //the above doesn't stop a "" from getting through
 						lang = "*";
+					if (lang == "{V}")
+						lang = _collectionSettings.Language1Iso639Code;
+					if(lang == "{N1}")
+						lang = _collectionSettings.Language2Iso639Code;
+					if(lang == "{N2}")
+						lang = _collectionSettings.Language3Iso639Code;
+
 					if (string.IsNullOrEmpty(value))
 					{
 						// This is a value we may want to delete
@@ -550,6 +606,7 @@ namespace Bloom.Book
 		/// </summary>
 		private void UpdateDomFromDataSet(DataSet data, string elementName,XmlDocument targetDom, HashSet<Tuple<string, string>> itemsToDelete)
 		{
+			UpdateTopicInLanguageOfCover(data); //reveiw
 			try
 			{
 				string query = String.Format("//{0}[(@data-book or @data-collection or @data-library)]", elementName);
@@ -855,19 +912,24 @@ namespace Bloom.Book
 			NamedMutliLingualValue title;
 			if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
-				var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
+				//NB: In seleting from an ordered shopping list of priority entries, this is only 
+				//handling a scenario where a single (title,writingsystem) pair is of interest.
+				//That's all we've needed thusfar. But we could imagine needing to work through each one.
+
+				var form = title.TextAlternatives.GetBestAlternative(WritingSystemIdsToTry);
 
 				//allow the title to be a template that pulls in data variables, e.g. "P1 Primer Term{book.term} Week {book.week}"
 				foreach (var dataItem in _dataset.TextVariables)
 				{
-					t = t.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry));
+					form.Form = form.Form.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry));
 				}
 
-				_dom.Title = t;
+				_dom.Title = form.Form;
 				if (info != null)
-					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
-				//review: notice we're only changing the value in this dataset
-				this.Set("bookTitle", t,"en");
+					info.Title =form.Form.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+
+				this.Set("bookTitle", form.Form, form.WritingSystemId);
+				
 			}
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
 			{
