@@ -43,6 +43,7 @@
 			this._seeDetails = new System.Windows.Forms.LinkLabel();
 			this._cancelButton = new System.Windows.Forms.Button();
 			this._status = new Bloom.HtmlLabel();
+			this._submitMsg = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._screenshotHolder)).BeginInit();
 			this.SuspendLayout();
@@ -241,6 +242,22 @@
 			this._status.Size = new System.Drawing.Size(337, 84);
 			this._status.TabIndex = 28;
 			// 
+			// _submitMsg
+			// 
+			this._submitMsg.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+				| System.Windows.Forms.AnchorStyles.Right)));
+			this._submitMsg.BackColor = System.Drawing.SystemColors.Control;
+			this._submitMsg.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._submitMsg.Text = "";
+			this._L10NSharpExtender.SetLocalizableToolTip(this._submitMsg, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._submitMsg, null);
+			this._L10NSharpExtender.SetLocalizingId(this._submitMsg, "ReportProblemDialog.SubmitLabel");
+			this._submitMsg.Location = new System.Drawing.Point(21, 406);
+			this._submitMsg.Name = "_submitMsg";
+			this._submitMsg.Size = new System.Drawing.Size(337, 84);
+			this._submitMsg.TabIndex = 29;
+			this._submitMsg.Visible = false;
+			// 
 			// ProblemReporterDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -260,6 +277,7 @@
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this._cancelButton);
 			this.Controls.Add(this._status);
+			this.Controls.Add(this._submitMsg);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "ReportProblemDialog.WindowTitle");
@@ -295,5 +313,6 @@
 		private System.Windows.Forms.LinkLabel _seeDetails;
 		private HtmlLabel _status;
 		private System.Windows.Forms.Button _cancelButton;
+		private System.Windows.Forms.Label _submitMsg;
 	}
 }
