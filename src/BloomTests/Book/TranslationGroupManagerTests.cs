@@ -230,7 +230,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void UpdateContentLanguageClasses_PrototypeElementHasImageContainer_ImageContainerCopiedToNewSybling()
+		public void UpdateContentLanguageClasses_PrototypeElementHasImageContainer_ImageContainerCopiedToNewSibling()
 		{
 			const string contents = @"<div class='bloom-page'>
 										<div class='bloom-translationGroup'>
@@ -253,6 +253,7 @@ namespace BloomTests.Book
 
 			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _collectionSettings.Object);
 
+			//the added french should have all the structure including a copy of the image container div, but none of the text except from the bloom-cloneToOtherLanguages paragraph
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']/div/img[@src='foo.png']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']/div/div[@contentEditable='true']", 1);
 			//should clear out the caption text (using a raw contentEditable for the caption just becuase bloom-editables inside of bloom-editables is beyond my ambitions at the moment.

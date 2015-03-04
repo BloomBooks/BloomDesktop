@@ -198,10 +198,7 @@ namespace Bloom.Book
 		/// </summary>
 		private static void MakeElementWithLanguageForOneGroup(XmlElement groupElement, string isoCode)
 		{
-			//<label>s are annotations on the translation, group, we don't want to mess with them here.
-			//the caller at the moment is using '*' for element, so it takes this xpath to filter them out...
 			XmlNodeList editableChildrenOfTheGroup =
-				//groupElement.SafeSelectNodes(elementTag + "[not(self::label)]");
 				groupElement.SafeSelectNodes("*[self::textarea or contains(@class,'bloom-editable')]");
 
 			var elementsAlreadyInThisLanguage = from XmlElement x in editableChildrenOfTheGroup
