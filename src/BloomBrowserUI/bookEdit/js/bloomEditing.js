@@ -409,17 +409,19 @@ function MakeSourceTextDivForGroup(group) {
         var shellEditingMode = false;
         items.each(function() {
             var iso = $(this).attr('lang');
-            var languageName = localizationManager.getLanguageName(iso);
-            if (!languageName)
-                languageName = iso;
-            var shouldShowOnPage = (iso === vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
+            if (iso) {
+                var languageName = localizationManager.getLanguageName(iso);
+                if (!languageName)
+                    languageName = iso;
+                var shouldShowOnPage = (iso === vernacularLang) /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
-            // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
-            if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
+                // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
+                if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
 
-                $(list).append('<li id="'+iso+'"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
-                if (iso === GetSettings().defaultSourceLanguage) {
-                    selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
+                    $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
+                    if (iso === GetSettings().defaultSourceLanguage) {
+                        selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
+                    }
                 }
             }
         });
@@ -1071,6 +1073,53 @@ $.fn.hasAttr = function (name) {
     return (typeof attr !== 'undefined' && attr !== false);
 };
 
+// Some custom templates have image containers embedded in bloom-editable divs, so that the text can wrap
+// around the picture. The problems is that the user can do (ctrl+a, del) to start over on the text, and 
+// inadvertantly remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
+// tries to safeguard element bearing that class.
+function PreventRemovalOfSomeElements(container) {
+
+    /* this approach showed promise, but only the first time you do ctrl+all, DEL. After the undo, the bindings were not redone. 
+    $(container).find(".bloom-preventRemoval").bind("DOMNodeRemoved", function (e) {
+        alert("Removed: " + e.target.nodeName);
+        //this threw a NS_ERROR but I don't know why
+        //document.execCommand('undo', false, null);
+    });
+
+    the problem with this one is the event was raised when we weren't actually deleting it
+    $(container).bind("DOMNodeRemoved", function (e) {
+        if ($(e.target).hasClass('bloom-preventRemoval')) {
+            alert("Removed: " + e.target.nodeName);
+            document.execCommand('undo', false, null);
+        }
+        //this threw a NS_ERROR but I don't know why
+        //document.execCommand('undo', false, null);
+    });
+    */
+
+    
+    $(container).find(".bloom-preventRemoval").closest(".bloom-editable").each(function () {
+        var numberThatShouldBeThere = $(this).find(".bloom-preventRemoval").length;
+        //Note, the input event is *not* fired on the element itself in the (ctrl+a, del) scenario, hence
+        //the need to go up to the parent editable and attach the event their.
+        $(this).on("input", function (e) {
+            if ($(this).find(".bloom-preventRemoval").length < numberThatShouldBeThere) {
+                document.execCommand('undo');
+            }
+        });
+    });
+
+//OK, now what if the above fails in some scenario? This adds a last-resort way of getting 
+    //bloom-editable back to the state it was in when the page was first created, by having
+    //the user type in RESETRESET and then clicking out of the field.
+    $(container).find(".bloom-editable").blur(function (e) {
+        if ($(this).html().indexOf('RESETRESET') > -1) {
+            $(this).remove();
+            alert("Now go to another book, then back to this book and page.");
+        }
+    });
+}
+
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
@@ -1085,6 +1134,7 @@ function SetupElements(container) {
         }
     });
 
+    PreventRemovalOfSomeElements(container);
     AddToolbox(container);
 
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
@@ -1107,17 +1157,18 @@ function SetupElements(container) {
         var x = $(this).html();
 
         //the first time we see a field editing in Firefox, it won't have a p opener
-        if (!x.startsWith('<p>')) {
-            x = "<p>" + x;
+        if (!x.trim().startsWith('<p')
+            && !x.trim().startsWith('<div')) { // in cases where we are embedding images inside of bloom-editables, the paragraphs actually have to go at the end, for reason of wrapping. See SHRP C1P4 Pupils Book
+            x = "<p>" +x;
         }
 
         x = x.split("<br>").join("</p><p>");
 
         //the first time we see a field editing in Firefox, it won't have a p closer
-        if (!x.endsWith('</p>')) {
+        if (!x.trim().endsWith('</p>')) {
             x = x + "</p>";
         }
-        $(this).html(x);
+        $(this).html(x.trim());
 
         //If somehow you get leading empty paragraphs, FF won't let you delete them
 //        $(this).find('p').each(function () {
@@ -1163,10 +1214,9 @@ function SetupElements(container) {
             return;
         }
 
-        if ($(this).text() == '') {
+        if ($(this).text() == '' && $(this).find("p").length == 0) {
             //stick in a paragraph, which makes FF do paragraphs instead of BRs.
             $(this).html('<p>&nbsp;</p>'); // &zwnj; (zero width non-joiner) would be better but it makes the cursor invisible
-
             //now select that space, so we delete it when we start typing
 
             var el = $(this).find('p')[0].childNodes[0];
@@ -1512,11 +1562,13 @@ function SetupElements(container) {
     
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-    $(container).find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function () {
-        if ($(this).find("textarea, div").length > 1) {
-            MakeSourceTextDivForGroup(this);
-        }
-    });
+    if ($(container).find(".bloom-preventSourceBubbles").length == 0) {
+        $(container).find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function() {
+            if ($(this).find("textarea, div").length > 1) {
+                MakeSourceTextDivForGroup(this);
+            }
+        });
+    }
 
     $(container).find(".bloom-imageContainer img").each(function() {
         SetupImage(this);

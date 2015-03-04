@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml;
 using Bloom.Collection;
+using Palaso.Linq;
 using Palaso.Xml;
 
 namespace Bloom.Book
@@ -16,12 +17,12 @@ namespace Bloom.Book
 	/// Individual string divs are marked with either bloom-content1, bloom-content2, bloom-content3, or none
 	/// Also, page <div/>s are marked with one of these classes: bloom-monolingual, bloom-bilingual, and bloom-trilingual
 	///
-	/*        <div class="bloom-translationGroup">
-			<div class="bloom-editable" contenteditable="true" lang="en">The Mother said...</div>
-			<div class="bloom-editable" contenteditable="true" lang="tpi">Mama i tok:</div>
-			<div class="bloom-editable bloom-content1" contenteditable="true" lang="xyz">abada fakwan</div>
-		  </div>
-  */
+	///	<div class="bloom-translationGroup">
+	///		<div class="bloom-editable" contenteditable="true" lang="en">The Mother said...</div>
+	///		<div class="bloom-editable" contenteditable="true" lang="tpi">Mama i tok:</div>
+	///		<div class="bloom-editable bloom-content1" contenteditable="true" lang="xyz">abada fakwan</div>
+	///	</div>
+
 	/// </summary>
 	public class TranslationGroupManager
 	{
@@ -31,7 +32,8 @@ namespace Bloom.Book
 		/// Also enable/disable editting as warranted (e.g. in shell mode or not)
 		/// </summary>
 		/// <param name="node"></param>
-		public static void PrepareElementsInPageOrDocument(XmlNode node, CollectionSettings collectionSettings)//, bool inShellMode)
+		public static void PrepareElementsInPageOrDocument(XmlNode node, CollectionSettings collectionSettings)
+			//, bool inShellMode)
 		{
 			PrepareElementsOnPageOneLanguage(node, collectionSettings.Language1Iso639Code);
 
@@ -49,7 +51,8 @@ namespace Bloom.Book
 		/// This is used when a book is first created from a source; without it, if the shell maker left the book as trilingual when working on it,
 		/// then everytime someone created a new book based on it, it too would be trilingual.
 		/// </summary>
-		public static void SetInitialMultilingualSetting(BookData bookData, int oneTwoOrThreeContentLanguages, CollectionSettings collectionSettings)
+		public static void SetInitialMultilingualSetting(BookData bookData, int oneTwoOrThreeContentLanguages,
+			CollectionSettings collectionSettings)
 		{
 			//var multilingualClass =  new string[]{"bloom-monolingual", "bloom-bilingual","bloom-trilingual"}[oneTwoOrThreeContentLanguages-1];
 
@@ -76,7 +79,8 @@ namespace Bloom.Book
 		/// <summary>
 		/// We stick 'contentLanguage2' and 'contentLanguage3' classes on editable things in bilingual and trilingual books
 		/// </summary>
-		public static void UpdateContentLanguageClasses(XmlNode elementOrDom, CollectionSettings settings, string vernacularIso, string contentLanguageIso2, string contentLanguageIso3)
+		public static void UpdateContentLanguageClasses(XmlNode elementOrDom, CollectionSettings settings,
+			string vernacularIso, string contentLanguageIso2, string contentLanguageIso3)
 		{
 			var national1Iso = settings.Language2Iso639Code;
 			var national2Iso = settings.Language3Iso639Code;
@@ -89,7 +93,8 @@ namespace Bloom.Book
 				multilingualClass = "bloom-bilingual";
 				contentLanguages.Add(contentLanguageIso2, "bloom-content2");
 			}
-			if (!String.IsNullOrEmpty(contentLanguageIso3) && vernacularIso != contentLanguageIso3 && contentLanguageIso2 != contentLanguageIso3)
+			if (!String.IsNullOrEmpty(contentLanguageIso3) && vernacularIso != contentLanguageIso3 &&
+			    contentLanguageIso2 != contentLanguageIso3)
 			{
 				multilingualClass = "bloom-trilingual";
 				Debug.Assert(!String.IsNullOrEmpty(contentLanguageIso2), "shouldn't have a content3 lang with no content2 lang");
@@ -97,22 +102,31 @@ namespace Bloom.Book
 			}
 
 			//Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
-			foreach (XmlElement pageDiv in elementOrDom.SafeSelectNodes("descendant-or-self::div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
+			foreach (
+				XmlElement pageDiv in
+					elementOrDom.SafeSelectNodes(
+						"descendant-or-self::div[contains(@class,'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]")
+				)
 			{
-			   HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
-			   HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
-			   HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-trilingual");
-			   HtmlDom.AddClassIfMissing(pageDiv, multilingualClass);
+				HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-monolingual");
+				HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-bilingual");
+				HtmlDom.RemoveClassesBeginingWith(pageDiv, "bloom-trilingual");
+				HtmlDom.AddClassIfMissing(pageDiv, multilingualClass);
 			}
 
 			foreach (XmlElement group in elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-translationGroup')]"))
 			{
-				var isXMatter = @group.SafeSelectNodes("ancestor::div[contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter')]").Count > 0;
-				foreach (XmlElement e in @group.SafeSelectNodes(".//textarea | .//div")) //nb: we don't necessarily care that a div is editable or not
+				var isXMatter =
+					@group.SafeSelectNodes("ancestor::div[contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter')]")
+						.Count > 0;
+				foreach (XmlElement e in @group.SafeSelectNodes(".//textarea | .//div"))
+					//nb: we don't necessarily care that a div is editable or not
 				{
 					var lang = e.GetAttribute("lang");
-					HtmlDom.RemoveClassesBeginingWith(e, "bloom-content"); // they might have been a given content lang before, but not now
-					HtmlDom.RemoveRtlDir(e); // in case this language has been changed from a Right to Left language to a Left to Right language
+					HtmlDom.RemoveClassesBeginingWith(e, "bloom-content");
+					// they might have been a given content lang before, but not now
+					HtmlDom.RemoveRtlDir(e);
+					// in case this language has been changed from a Right to Left language to a Left to Right language
 					if (isXMatter && lang == national1Iso)
 					{
 						HtmlDom.AddClass(e, "bloom-contentNational1");
@@ -127,8 +141,8 @@ namespace Bloom.Book
 						{
 							HtmlDom.AddClass(e, language.Value);
 							if ((lang == vernacularIso && settings.IsLanguage1Rtl) ||
-								(lang == national1Iso && settings.IsLanguage2Rtl) ||
-								(!String.IsNullOrEmpty(national2Iso) && lang == national2Iso && settings.IsLanguage3Rtl))
+							    (lang == national1Iso && settings.IsLanguage2Rtl) ||
+							    (!String.IsNullOrEmpty(national2Iso) && lang == national2Iso && settings.IsLanguage3Rtl))
 							{
 								HtmlDom.AddRtlDir(e);
 							}
@@ -141,12 +155,16 @@ namespace Bloom.Book
 
 		private static void PrepareElementsOnPageOneLanguage(XmlNode pageDiv, string isoCode)
 		{
-			foreach (XmlElement groupElement in pageDiv.SafeSelectNodes("descendant-or-self::*[contains(@class,'bloom-translationGroup')]"))
+			foreach (
+				XmlElement groupElement in
+					pageDiv.SafeSelectNodes("descendant-or-self::*[contains(@class,'bloom-translationGroup')]"))
 			{
-				MakeElementWithLanguageForOneGroup(groupElement, isoCode, "*");
+				MakeElementWithLanguageForOneGroup(groupElement, isoCode);
 				//remove any elements in the translationgroup which don't have a lang (but ignore any label elements, which we're using for annotating groups)
-				foreach (XmlElement elementWithoutLanguage in groupElement.SafeSelectNodes("textarea[not(@lang)] | div[not(@lang) and not(self::label)]"))
-					{
+				foreach (
+					XmlElement elementWithoutLanguage in
+						groupElement.SafeSelectNodes("textarea[not(@lang)] | div[not(@lang) and not(self::label)]"))
+				{
 					elementWithoutLanguage.ParentNode.RemoveChild(elementWithoutLanguage);
 				}
 			}
@@ -155,7 +173,7 @@ namespace Bloom.Book
 			//any editable areas which still don't have a language, set them to the vernacular (this is used for simple templates (non-shell pages))
 			foreach (
 				XmlElement element in
-					pageDiv.SafeSelectNodes(//NB: the jscript will take items with bloom-editable and set the contentEdtable to true.
+					pageDiv.SafeSelectNodes( //NB: the jscript will take items with bloom-editable and set the contentEdtable to true.
 						"descendant-or-self::textarea[not(@lang)] | descendant-or-self::*[(contains(@class, 'bloom-editable') or @contentEditable='true'  or @contenteditable='true') and not(@lang)]")
 				)
 			{
@@ -178,28 +196,24 @@ namespace Bloom.Book
 		/// For each group (meaning they have a common parent) of editable items, we
 		/// need to make sure there are the correct set of copies, with appropriate @lang attributes
 		/// </summary>
-		private static void MakeElementWithLanguageForOneGroup(XmlElement groupElement, string isoCode, string elementTag)
+		private static void MakeElementWithLanguageForOneGroup(XmlElement groupElement, string isoCode)
 		{
-			//<label>s are annotations on the translation, group, we don't want to mess with them here.
-			//the caller at the moment is using '*' for element, so it takes this xpath to filter them out...
-			XmlNodeList editableElementsWithinTheIndicatedElement = groupElement.SafeSelectNodes(elementTag+"[not(self::label)]");
+			XmlNodeList editableChildrenOfTheGroup =
+				groupElement.SafeSelectNodes("*[self::textarea or contains(@class,'bloom-editable')]");
 
-
-			//true, this is a weird situation...			if (editableElementsWithinTheIndicatedParagraph.Count == 0)
-			//				return;
-
-			var elementsAlreadyInThisLanguage = from XmlElement x in editableElementsWithinTheIndicatedElement
-												where x.GetAttribute("lang") == isoCode
-												select x;
-			if (elementsAlreadyInThisLanguage.Count() > 0)//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
+			var elementsAlreadyInThisLanguage = from XmlElement x in editableChildrenOfTheGroup
+				where x.GetAttribute("lang") == isoCode
+				select x;
+			if (elementsAlreadyInThisLanguage.Any())
+				//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
 				return;
 
 			if (groupElement.SafeSelectNodes("ancestor-or-self::*[contains(@class,'bloom-translationGroup')]").Count == 0)
 				return;
 
-			XmlElement prototype = editableElementsWithinTheIndicatedElement[0] as XmlElement;
+			var prototype = editableChildrenOfTheGroup[0] as XmlElement;
 			XmlElement newElementInThisLanguage;
-			if (prototype == null)// note that we currently (version 1.0) get this when the prototype was the recommended lang='x'. Which is unfortunate, because it means the prototype is deleted by other code before we can copy it.
+			if (prototype == null) //this was an empty translation-group (unusual, but we can cope)
 			{
 				newElementInThisLanguage = groupElement.OwnerDocument.CreateElement("div");
 				newElementInThisLanguage.SetAttribute("class", "bloom-editable");
@@ -210,14 +224,37 @@ namespace Bloom.Book
 				}
 				groupElement.AppendChild(newElementInThisLanguage);
 			}
-			else  //this is the normal situation, where we're just copying the first element
+			else //this is the normal situation, where we're just copying the first element
 			{
-				newElementInThisLanguage = (XmlElement)prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
+				//what we want to do is copy everything in the element, except that which is specific to a language. 
+				//so classes on the element, non-text children (like images), etc. should be copied
+				newElementInThisLanguage = (XmlElement) prototype.ParentNode.InsertAfter(prototype.Clone(), prototype);
+				//if there is an id, get rid of it, because we don't want 2 elements with the same id
+				newElementInThisLanguage.RemoveAttribute("id");
+				//OK, now any text in there will belong to the prototype language, so remove it, while retaining everything else
+				StripOutText(newElementInThisLanguage);
 			}
-			newElementInThisLanguage.SetAttribute("lang", isoCode);
-			//if there is an id, get rid of it, because we don't want 2 elements with the same id
-			newElementInThisLanguage.RemoveAttribute("id");
-			newElementInThisLanguage.InnerText = string.Empty;
+			newElementInThisLanguage.SetAttribute("lang", isoCode);		
+		}
+
+		/// <summary>
+		/// Remove nodes that are either pure text or exist only to contain text, including BR and P
+		/// Elements with a "bloom-cloneToOtherLanguages" class are preserved
+		/// </summary>
+		/// <param name="element"></param>
+		private static void StripOutText(XmlNode element)
+		{
+			
+
+			foreach(XmlNode node in element.SelectNodes(".//*[(self::p or self::br) and not(contains(@class,'bloom-cloneToOtherLanguages'))]"))
+			{
+				node.ParentNode.RemoveChild(node);
+			}
+			// clean up any remaining texts that weren't enclosed
+			foreach(XmlNode node in element.SelectNodes(".//*[not(contains(@class,'bloom-cloneToOtherLanguages'))]//text()"))
+			{
+				node.ParentNode.RemoveChild(node);
+			}
 		}
 	}
 }
