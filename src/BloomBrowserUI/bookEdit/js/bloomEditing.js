@@ -446,7 +446,7 @@ function MakeSourceTextDivForGroup(group) {
     var hideEvents = false;
     var shouldShowAlways = true;
 
-  
+
     if(checkMightCauseHorizontallyOverlappingBubbles(group)) {
         showEvents = 'focusin';
         hideEvents = 'focusout';
@@ -727,7 +727,7 @@ jQuery.fn.IsOverflowing = function () {
 
     //console.log('s='+element.scrollHeight+' c='+element.clientHeight);
 
-    // 
+    //
     return  element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
             element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor ||
             elemBottom > parentBottom + focusedBorderFudgeFactor;
@@ -791,7 +791,7 @@ function AddOverflowHandler(container) {
         setTimeout(function () {
             MarkOverflowInternal(target);
 
-            //REVIEW: why is this here, in the overflow detection? 
+            //REVIEW: why is this here, in the overflow detection?
 
             // This will make sure that any language tags on this div stay in position with editing.
             // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
@@ -1148,7 +1148,7 @@ function SetupElements(container) {
 
         if (!requireParagraphs) {
             // Work around a bug in geckofx. The effect was that if you clicked in a completely empty text box
-            // the cursor is oddly positioned and typing does nothing. There is evidence that what is going on is that the focus 
+            // the cursor is oddly positioned and typing does nothing. There is evidence that what is going on is that the focus
             // is on the English qtip (in the FF inspector, the qtip block highlights when you type). https://jira.sil.org/browse/BL-786
             // This bug mentions the cursor being in the wrong place: https://bugzilla.mozilla.org/show_bug.cgi?id=904846
             // so the solution is just to insert a span that you can't see, here during the focus event.
@@ -1509,7 +1509,7 @@ function SetupElements(container) {
             return;
         TopicChooser.showTopicChooser();
     });
-    
+
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
     $(container).find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function () {
@@ -1541,9 +1541,12 @@ function SetupElements(container) {
         }
     });
 
-    $(container).find('.bloom-editable').longPress();
+    getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
+        if (response === 'Yes')
+            $(container).find('.bloom-editable').longPress();
+    });
 
-    //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed, 
+    //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed,
     //a blank line is shown and the letter pressed shows up after that.
     //This detects that situation when we type the first key after the deletion, and first deletes the <br></br>.
     $(container).find('.bloom-editable').keypress(function (event) {
@@ -1579,14 +1582,14 @@ function OneTimeSetup() {
 //Earlier, to work around a FF bug, we made a text box non-empty so that the cursor would should up correctly.
 //Now, they have entered something, so remove it
 function FixUpOnFirstInput() {
-    //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason, 
+    //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason,
     //and that gets characters in the wrong place because this messes with the insertion point. So now
     //we check to see if the space is still there before touching it
-    if ($(this).html().indexOf("&nbsp;") == 0) { 
+    if ($(this).html().indexOf("&nbsp;") == 0) {
         //earlier we stuck a &nbsp; in to work around a FF bug on empty boxes.
         //now remove it a soon as they type something
 
-        
+
         // this caused BL-933 by somehow making us lose the on click event link on the formatButton
     //   $(this).html($(this).html().replace('&nbsp;', ""));
 
@@ -1637,7 +1640,7 @@ $(document).ready(function() {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
-   SetupElements($('body'));
+    SetupElements($('body'));
     OneTimeSetup();
 
 }); // end document ready function
