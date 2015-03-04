@@ -46,6 +46,14 @@ namespace Bloom.MiscUI
 
 			InitializeComponent();
 
+			// The GeckoFx-based _status control refuses to display the "Submitting to server..." message
+			// on Linux, although it displays just fine on Windows.  Even moving the actual process of
+			// submitting the information to another thread doesn't help -- the message still doesn't
+			// display.  Substituting a normal Label control for that particular messages works just fine.
+			// See https://jira.sil.org/browse/BL-1004 for details.
+			_submitMsg.Text = LocalizationManager.GetString ("ReportProblemDialog.Submitting", "Submitting to server...",
+				"This is shown while Bloom is sending the problem report to our server.");
+
 			if (targetOfScreenshot != null)
 			{
 				//important to do this early, before this dialog obstructs the application
@@ -143,12 +151,14 @@ namespace Bloom.MiscUI
 			{
 				case State.WaitingForSubmission:
 					_status.Visible = false;
+					_submitMsg.Visible = false;
 					_seeDetails.Visible = true;
 					Cursor = Cursors.Default;
 					break;
 
 				case State.ZippingUpBook:
 					_seeDetails.Visible = false;
+					_submitMsg.Visible = false;
 					_status.Visible = true;
 					_status.HTML = LocalizationManager.GetString("ReportProblemDialog.Zipping", "Zipping up book...",
 						"This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.");
@@ -158,15 +168,15 @@ namespace Bloom.MiscUI
 
 				case State.Submitting:
 					_seeDetails.Visible = false;
-					_status.Visible = true;
-					_status.HTML = LocalizationManager.GetString("ReportProblemDialog.Submitting", "Submitting to server...",
-						"This is shown while Bloom is sending the problem report to our server.");
+					_status.Visible = false;
+					_submitMsg.Visible = true;
 					_submitButton.Enabled = false;
 					Cursor = Cursors.WaitCursor;
 					break;
 
 				case State.CouldNotAutomaticallySubmit:
 					_seeDetails.Visible = false;
+					_submitMsg.Visible = false;
 					_status.Visible = true;
 					var message = LocalizationManager.GetString("ReportProblemDialog.CouldNotSendToServer",
 						"Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.");
@@ -179,6 +189,7 @@ namespace Bloom.MiscUI
 
 				case State.Success:
 					_seeDetails.Visible = false;
+					_submitMsg.Visible = false;
 					_status.Visible = true;
 					_submitButton.Enabled = true;
 					_submitButton.Text = LocalizationManager.GetString("ReportProblemDialog.Close", "Close", "Shown in the button that closes the dialog after a successful report submission.");
