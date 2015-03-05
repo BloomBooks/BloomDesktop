@@ -44,6 +44,7 @@ namespace BloomTests.Edit
 												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Wall Calendar"),
 												FileLocator.GetDirectoryDistributedWithApplication( "BloomBrowserUI"),
 												FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookLayout"),
+												FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css"),
 												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
 											});
 
