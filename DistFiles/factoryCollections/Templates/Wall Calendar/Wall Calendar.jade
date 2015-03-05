@@ -1,9 +1,6 @@
 doctype html
 include ../../../jade/bloom-foundation-mixins
 
-mixin bookVariable-topic(langCode, title)
-	div(data-book='topic', lang=langCode)=title
-
 //- generates a translationGroup with any classes on the internal div
 mixin field-classOnChild(internalClass)
 	- requireOneArgument('field-classOnChild', arguments)
@@ -34,10 +31,6 @@ html
 			+bookVariable-title('en', 'Wall Calendar')
 			+bookVariable-title('tpi', 'Kalenda')
 			+bookVariable-title('id', 'Kalender')
-			+bookVariable-topic('en', 'Calendar')
-			+bookVariable-topic('fr', 'Calendrier')
-			+bookVariable-topic('tpi', 'Kalenda')
-			+bookVariable-topic('id', 'Kalender')
 		.bloom-page.calendarMonthTop.templateOnly.bloom-monolingual.bloom-content1.A5Landscape#3e049bff-797f-4a17-9c06-064955ae73cc(data-page='required')
 			.marginBox
 				+image-largePage
