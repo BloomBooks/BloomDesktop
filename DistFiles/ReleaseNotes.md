@@ -1,7 +1,12 @@
-﻿## 3.0.101 Version Stable Release
+﻿## 3.0.102 Version Stable Release
+- Update French and Spanish User Interface localizations
+- Add explanatory texts to decodable and levelled reader templates
+- Fixed an error in the "Key Concepts" document
+
+## 3.0.101 Version Stable Release
 - Adds Thai User Interface localization
 - Adds Lao User Interface localization
-- Fix rare error when a page is being saved
+- Fixed rare error when a page is being saved
 
 
 ## 3.0.100 Version Stable Release
