@@ -552,6 +552,15 @@ namespace Bloom.Edit
 			var dom = new HtmlDom(htmlText);
 			dom = firstRealPage.Book.GetHtmlDomReadyToAddPages(dom);
 			var pageDoc = dom.RawDom;
+
+			// BL-987: Add styles to optimize performance on Linux
+			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			{
+				var style = pageDoc.CreateElement("style");
+				style.InnerXml = "img { image-rendering: optimizeSpeed; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }";
+				pageDoc.GetElementsByTagName("head")[0].AppendChild(style);
+			}
+
 			var body = pageDoc.GetElementsByTagName("body")[0];
 			var gridlyParent = body.FirstChild; // too simplistic?
 			int pageNumber = 0;
