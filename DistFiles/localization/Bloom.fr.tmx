@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.25.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.96.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.28.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.0.101.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -183,6 +183,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Pour mettre plus d'information sur ce livre, vous pouvez utiliser cette page, qui est la quatrième de couverture.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.BadCharsInFileName">
+      <tuv xml:lang="en">
+        <seg>Possibly this is an old BloomPack created before BloomPacks could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Il s'agit peut-être d'un vieux BloomPack créé quand BloomPacks ne supportait pas des caractères spéciaux dans les noms de fichier. Peut-être vous pouvez demander à l'auteur de le recréer avec la version actuelle. Si ce n'est pas possible, peut-être un expert technique peut le réparer.</seg>
       </tuv>
     </tu>
     <tu tuid="BloomPackInstallDialog.BloomPackInstallation">
@@ -2240,6 +2248,14 @@
         <seg>Trois langues</seg>
       </tuv>
     </tu>
+    <tu tuid="Errors.CouldNotSavePage">
+      <tuv xml:lang="en">
+        <seg>Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom avait de la difficulté à enregistrer une page. Veuillez cliquer sur Détails ci-dessous et nous le signaler. Puis quitter Bloom, le relancer et vérifier si la page que vous venez d'éditer manque quelque chose. Désolé !</seg>
+      </tuv>
+    </tu>
     <tu tuid="FirstTabLabel">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
@@ -3121,6 +3137,38 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Déplacement non valide</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PdfMaker.BadPdf">
+      <tuv xml:lang="en">
+        <seg>Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom avait un problème en faisant un PDF de ce livre. Peut-être vous devez contacter les développeurs pour l'aide technique, mais voici ce que vous pouvez essayer :</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PdfMaker.TryMoreMemory">
+      <tuv xml:lang="en">
+        <seg>Try doing this on a computer with more memory</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Essayer de faire ceci sur un ordinateur avec plus de mémoire</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PdfMaker.TryRestart">
+      <tuv xml:lang="en">
+        <seg>Restart your computer and try this again right away</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Redémarrer votre ordinateur et le réessayer tout de suite</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PdfMaker.TrySmallerImages">
+      <tuv xml:lang="en">
+        <seg>Replace large, high-resolution images in your document with lower-resolution ones</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Remplacer des grandes images à haute résolution dans votre document avec celles à basse résolution</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
