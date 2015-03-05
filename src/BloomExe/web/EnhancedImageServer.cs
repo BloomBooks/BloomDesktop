@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Windows.Forms;
 using Bloom.Book;
 using System.IO;
 using Bloom.ImageProcessing;
@@ -191,6 +192,25 @@ namespace Bloom.web
 			{
 				if (ProcessI18N(localPath, info))
 					return true;
+			}
+			else if (localPath.StartsWith("windows/useLongpress"))
+			{
+				var usingIP = false;
+
+				if (Palaso.PlatformUtilities.Platform.IsWindows)
+				{
+					// In order to detect an input processor, we need to execute this on the main UI thread.
+					var frm = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+					if (frm != null)
+					{
+						usingIP = Palaso.UI.WindowsForms.Keyboarding.KeyboardController.IsFormUsingInputProcessor(frm);
+					}
+				}
+
+				// Send to browser
+				info.ContentType = "text/plain";
+				info.WriteCompleteOutput(usingIP ? "No" : "Yes");
+				return true;
 			}
 			else if (localPath.StartsWith("directoryWatcher/", StringComparison.InvariantCulture))
 				return ProcessDirectoryWatcher(info);
