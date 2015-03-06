@@ -773,6 +773,11 @@ function AddOverflowHandler(container) {
     $(container).find(".bloom-editable").each(function (e) {
         var lineHeight = parseInt($(this).css("line-height"), 10);
         var minHeight = parseInt($(this).css("min-height"), 10);
+        var overflowy = $(this).css("overflow-y");
+        if (overflowy == 'hidden') {
+            // why don't we do this all the time!?
+            $(this).css("min-height", lineHeight); // BL-1034 premature scroll bars
+        }
         if (lineHeight > minHeight) {
             $(this).addClass('Layout-Problem-Detected');
             $(this).attr("LayoutProblem", "min-height is less than lineHeight");
