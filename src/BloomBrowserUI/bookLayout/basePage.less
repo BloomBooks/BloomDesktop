@@ -286,8 +286,10 @@ H2 {
 	.bloom-imageContainer {
 		width: 99%;
 		height: 98%;
-		/*above so buttons show*/
+		// above so buttons show
 		z-index: 1000;
+		// Solves BL-1033 small picture frames cycling red overflow
+        overflow: hidden;
 	}
 	.split-pane-component {
 		//Enhance: this doesn't buy us much... it would be more helpful if the minimum was
