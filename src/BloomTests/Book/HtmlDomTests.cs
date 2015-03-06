@@ -36,12 +36,22 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void BaseForRelativePaths_NoHead_Throw()
+		public void BaseForRelativePaths_NoHead_NoLongerThrows()
 		{
 			var dom = new HtmlDom(
 						  @"<html></html>");
-			Assert.Throws<ArgumentNullException>(() => dom.BaseForRelativePaths = "theBase");
-			Assert.IsNull(dom.BaseForRelativePaths);
+			dom.BaseForRelativePaths = "theBase";
+			Assert.AreEqual("theBase", dom.BaseForRelativePaths);
+		}
+
+		[Test]
+		public void BaseForRelativePaths_NullPath_SetsToEmpty()
+		{
+			var dom = new HtmlDom(
+						  @"<html><head><base href='original'/></head></html>");
+			dom.BaseForRelativePaths = null;
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base", 0);
+			Assert.AreEqual(string.Empty, dom.BaseForRelativePaths);
 		}
 		[Test]
 		public void BaseForRelativePaths_HasExistingBase_Removes()

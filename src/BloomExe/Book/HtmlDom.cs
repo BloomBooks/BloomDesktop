@@ -131,18 +131,10 @@ namespace Bloom.Book
 			set
 			{
 				var path = value;
+				_baseForRelativePaths = path ?? string.Empty;
 				var head = _dom.SelectSingleNodeHonoringDefaultNS("//head");
 				if (head == null)
-				{
-					var folder = "";
-					if (path.Length > 0) // not unit tests
-						folder = Path.GetDirectoryName(path);
-					Guard.AgainstNull(head,
-						"Expected the DOM to already have a head element in file: " + path +
-						". If possible, please send the entire folder '" + folder +
-						"' to the developers. You may need to move this folder to another location or delete it in order to keep working.");
-				}
-				_baseForRelativePaths = path;
+					return;
 				foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
 				{
 					head.RemoveChild(baseNode);
