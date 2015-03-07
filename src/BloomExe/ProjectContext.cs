@@ -62,6 +62,16 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		protected void BuildSubContainerForThisProject(string projectSettingsPath, IContainer parentContainer)
 		{
+			var commandTypes = new[]
+							{
+								typeof (DuplicatePageCommand),
+								typeof (DeletePageCommand),
+								typeof(CutCommand),
+								typeof(CopyCommand),
+								typeof(PasteCommand),
+								typeof(UndoCommand)
+							};
+
 			var editableCollectionDirectory = Path.GetDirectoryName(projectSettingsPath);
 			try
 			{
@@ -79,8 +89,6 @@ namespace Bloom
 						.Where(t => new[]
 						{
 							typeof (TemplateInsertionCommand),
-							typeof (DuplicatePageCommand),
-							typeof (DeletePageCommand),
 							typeof (EditBookCommand),
 							typeof (SendReceiveCommand),
 							typeof (SelectedTabAboutToChangeEvent),
@@ -98,6 +106,10 @@ namespace Bloom
 							typeof (LocalizationChangedEvent),
 							typeof (EditingModel)
 						}.Contains(t));
+
+					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+						.InstancePerLifetimeScope()
+						.Where(commandTypes.Contains).As<ICommand>();
 
 					var bookRenameEvent = new BookRenamedEvent();
 					builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
@@ -233,17 +245,8 @@ namespace Bloom
 					});
 				});
 
-				//TODO: why doesn't this work? It gives 0 commands
-				//_commandAvailabilityPublisher = new CommandAvailabilityPublisher(_scope.Resolve<IEnumerable<ICommand>>());
-
-				//TODO: why doesn't this work either? It gives 0 commands
-				//_commandAvailabilityPublisher = new CommandAvailabilityPublisher(_scope.Resolve<IEnumerable<Command>>());
-
-				//TODO: why does this return *3* DeletePageCommands?
-				// _scope.Resolve<IEnumerable<DeletePageCommand>>()
-
-				//so with all the above problems, for now we can get just enough to test out the websocket stuff on one command
-				_commandAvailabilityPublisher = new CommandAvailabilityPublisher(_scope.Resolve<IEnumerable<DeletePageCommand>>());
+				var allCommands = from c in commandTypes select _scope.Resolve(c) as ICommand;
+				_commandAvailabilityPublisher = new CommandAvailabilityPublisher(allCommands);
 			}
 			catch (FileNotFoundException error)
 			{

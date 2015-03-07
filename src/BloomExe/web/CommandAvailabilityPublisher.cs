@@ -18,7 +18,6 @@ namespace Bloom.web
 
 		public CommandAvailabilityPublisher(IEnumerable<ICommand> commands )
 		{
-			
 			foreach (var command in commands)
 			{
 				command.EnabledChanged += command_EnabledChanged;
