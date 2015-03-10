@@ -347,6 +347,8 @@ jQuery.expr[':'].hasNoText = function (obj) {
  //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
 function MakeSourceTextDivForGroup(group) {
 
+    //someFunctionThatIsntThere();
+
     var divForBubble = $(group).clone();
     $(divForBubble).removeAttr('style');
 
