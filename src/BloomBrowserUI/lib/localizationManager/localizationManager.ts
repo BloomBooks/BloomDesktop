@@ -1,5 +1,6 @@
 /// <reference path="../jquery.d.ts" />
-/// <reference path="misc-types.d.ts" />
+/// <reference path="../misc-types.d.ts" />
+/// <reference path="../../bookEdit/js/getIframeChannel.ts" />
 
 /**
  * L10NSharp LocalizationManager for javascript.
@@ -89,7 +90,7 @@ class LocalizationManager {
   /**
    * WARNING! This gets the translated text only if it is already loaded. Otherwise it just gives English back and will give translation next time.
    * Instead, use asyncGetTextInLang().
-   * 
+   *
    * Additional parameters after the englishText are treated as arguments for SimpleDotNetFormat.
    * @param {String} stringId
    * @param {String} [englishText]
@@ -142,7 +143,7 @@ class LocalizationManager {
     }
 
     /* Returns a promise to get the translation
-     * 
+     *
      * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
      * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
      *  @example
@@ -174,31 +175,6 @@ class LocalizationManager {
             deferred.resolve(text);
         });
         promise.fail(() => deferred.fail());
-        return deferred.promise();
-    }
-     
-    /* Returns a promise to get the translation in the UI language, or English if it is unavailable
-     * 
-     * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
-     * 
-     *  @example
-     * asyncGetTextInLang('topics.health','Health")
-     *      .done(translation => {
-     *          $(this).text(translation);
-     *      })
-     *      .fail($(this).text("?Health?";
-     * @example
-     * asyncGetTextInLang('topics.health','My name is {0}", "John")
-     *      .done(translation => {
-     *          $(this).text(translation);
-     *      });
-
-    */
-    asyncGetText(id: string, englishText: string, langId: string, ...args): JQueryPromise {
-        var deferred = new $.Deferred();
-        var promise = this.asyncGetTextInLang(id, englishText, "UI", args);
-        promise.done(text => deferred.resolve(text));
-        promise.fail(this.asyncGetTextInLang(id, englishText, "en", args).done(text => deferred.resolve(text)));
         return deferred.promise();
     }
 

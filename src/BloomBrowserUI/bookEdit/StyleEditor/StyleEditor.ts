@@ -1,6 +1,6 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
-/// <reference path="../../lib/localizationManager.ts" />
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
 /// <reference path="../../lib/jquery.alphanum.d.ts"/>
@@ -315,7 +315,7 @@ class StyleEditor {
             }
         }
         (<CSSStyleSheet>styleSheet).insertRule('.' + styleAndLang + "{ }", ruleList.length);
-       
+
         return <CSSStyleRule> ruleList[ruleList.length - 1]; //new guy is last
     }
 
@@ -412,10 +412,10 @@ class StyleEditor {
 
     getPointSizes() {
         // perhaps temporary until we allow arbitrary values (BL-948), as a favor to Mike:
-        return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '30', '35', '40', '45', '50', '55', '60', '65', '70', '80','90','100']; 
+        return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '30', '35', '40', '45', '50', '55', '60', '65', '70', '80','90','100'];
 
         // Same options as Word 2010, plus 13 since used in heading2
-        //return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72']; 
+        //return ['7', '8', '9', '10', '11', '12', '13', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72'];
     }
 
     getLineSpaceOptions() {
@@ -535,7 +535,7 @@ class StyleEditor {
         });
 
         var formatButton = $('#formatButton');
-        /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened 
+        /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened
         var txt = localizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
         */
