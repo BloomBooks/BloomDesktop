@@ -775,7 +775,6 @@ function AddOverflowHandler(container) {
         var minHeight = parseInt($(this).css("min-height"), 10);
         var overflowy = $(this).css("overflow-y");
         if (overflowy == 'hidden') {
-            // why don't we do this all the time!?
             $(this).css("min-height", lineHeight); // BL-1034 premature scroll bars
         }
         if (lineHeight > minHeight) {
