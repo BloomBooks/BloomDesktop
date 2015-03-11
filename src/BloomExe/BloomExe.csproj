@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -170,9 +170,11 @@
     </Reference>
     <Reference Include="Geckofx-Core, Version=29.0.8.0, Culture=neutral" Condition="'$(OS)'!='Windows_NT'">
       <SpecificVersion>False</SpecificVersion>
+      <Package>Geckofx-Core</Package>
     </Reference>
     <Reference Include="Geckofx-Winforms, Version=29.0.8.0, Culture=neutral" Condition="'$(OS)'!='Windows_NT'">
       <SpecificVersion>False</SpecificVersion>
+      <Package>Geckofx-Winforms</Package>
     </Reference>
     <Reference Include="Geckofx-Core" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Geckofx-Core.dll</HintPath>
@@ -317,20 +319,7 @@
     <Compile Include="Publish\BulkUploadProgressDlg.Designer.cs">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\ConversionOrder.cs" />
-    <Compile Include="Publish\ConversionProgress.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Publish\ConversionProgress.Designer.cs">
-      <DependentUpon>ConversionProgress.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\GeckofxHtmlToPDFComponent.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Publish\GeckofxHtmlToPDFComponent.Designer.cs">
-      <DependentUpon>GeckofxHtmlToPDFComponent.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\MakePdfUsingGeckofxHtmlToPdfComponent.cs" />
+    <Compile Include="Publish\MakePdfUsingGeckofxHtmlToPdfProgram.cs" />
     <Compile Include="Publish\PdfViewer.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -653,12 +642,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\BulkUploadProgressDlg.resx">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\ConversionProgress.resx">
-      <DependentUpon>ConversionProgress.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\GeckofxHtmlToPDFComponent.resx">
-      <DependentUpon>GeckofxHtmlToPDFComponent.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\PdfViewer.resx">
       <DependentUpon>PdfViewer.cs</DependentUpon>
@@ -1143,11 +1126,16 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   <ItemGroup>
     <GeckoBrowserAdapter Include="..\..\lib\dotnet\PalasoUIWindowsForms.GeckoBrowserAdapter.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <GeckofxHtmlToPdf Include="..\..\lib\dotnet\GeckofxHtmlToPdf.exe"/>
+    <GeckofxHtmlToPdf Include="..\..\lib\dotnet\Args.dll"/>
+  </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(GeckoBrowserAdapter)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
+    <Copy SourceFiles="@(GeckofxHtmlToPdf)" DestinationFolder="$(OutDir)" />
   </Target>
 </Project>
