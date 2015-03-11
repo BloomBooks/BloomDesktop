@@ -4,6 +4,7 @@ var thisDir = path.split('/').slice(0, -1).join('/') + '/';  // remove last file
 var lib = thisDir + "../../lib/";
 document.write('<script type="text/javascript" src="' + lib + 'jquery-1.10.1.js"></script>');//nb: we just rename whatever version of jquery we have to this.
 document.write('<script type="text/javascript" src="' + lib + 'jquery.myimgscale.js"></script>');
+document.write('<script type="text/javascript" src="' + lib + 'errorHandler.js"></script>');
 document.write('<script type="text/javascript" src="' + thisDir + 'bloomPreview.js"></script>');
 
 document.write('<script type="text/javascript" src="' + lib + 'localizationManager/localizationManager.js"></script>');
