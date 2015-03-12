@@ -128,8 +128,9 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
         adjust: { method: 'none' }
         };
 
-    if (target.hasClass('coverBottomBookTopic'))
-        pos.adjust = { y: -20 };
+    // Anybody know why this was here!? BL-1125 complains about this very thing.
+    //if (target.hasClass('coverBottomBookTopic'))
+    //    pos.adjust = { y: -20 };
 
     //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.
     //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
