@@ -123,6 +123,12 @@
 .frontCover .bottomBlock .coverBottomBookTopic .bloom-content1:not(.bloom-contentNational1) {
   color: gray;
 }
+.frontCover .bottomBlock .coverBottomBookTopic .bloom-editable:not(:empty) ~ #topicButton {
+  display: none;
+}
+.frontCover .bottomBlock .coverBottomBookTopic #topicButton {
+  display: inline;
+}
 .frontCover .bottomBlock .publishMode .coverBottomBookTopic .bloom-contentNational2 {
   display: none;
 }
@@ -261,6 +267,9 @@ BODY[editmode="translation"] .titlePage #originalContributions .bloom-contentNat
 BODY[editmode="translation"] .titlePage #funding .bloom-contentNational1 {
   display: inherit;
   min-height: 3em;
+}
+BODY[editmode="translation"] .frontCover .bottomBlock .coverBottomBookTopic #topicButton {
+  display: none;
 }
 .titlePage {
   text-align: center;

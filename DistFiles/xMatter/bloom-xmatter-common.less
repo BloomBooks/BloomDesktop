@@ -159,6 +159,14 @@
                     color: gray;
                 }
             }
+            .bloom-editable:not(:empty) {
+                ~ #topicButton {
+                    display: none;
+                }
+            }
+            #topicButton {
+                display: inline;
+            }
         }
 
         .publishMode {
@@ -348,6 +356,15 @@ BODY[editmode="translation"] {
             .bloom-contentNational1 {
                 display: inherit;
                 min-height: 3em; // two lines
+            }
+        }
+    }
+    .frontCover {
+        .bottomBlock {
+            .coverBottomBookTopic {
+                #topicButton {
+                    display: none;
+                }
             }
         }
     }
