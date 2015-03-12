@@ -96,6 +96,10 @@ namespace Bloom
 						// The regex here is mainly for the \s as a convenient way to remove whatever whitespace TIDY
 						// has inserted. It's a fringe benefit that we can use the[bi] to deal with both elements in one replace.
 						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*\<([biu])\>", "<$1>");
+
+						// remove blank lines at the end of style blocks
+						newContents = Regex.Replace(newContents, @"\s+\<\/style\>", "</style>");
+
 						dom.LoadXml(newContents);
 					}
 					catch (Exception e)

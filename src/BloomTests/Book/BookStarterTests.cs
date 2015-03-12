@@ -152,7 +152,7 @@ namespace BloomTests.Book
 			var reloadedBook = server.GetBookFromBookInfo(new BookInfo(Path.GetDirectoryName(path), true));
 			var newStylenode = reloadedBook.OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]")[0].Value;
 			var spaceFixer = new Regex("\\s+");
-			Assert.That(spaceFixer.Replace(newStylenode, " "), Is.EqualTo(spaceFixer.Replace(styleNode, " ")));
+			Assert.That(spaceFixer.Replace(newStylenode, " ").Trim(), Is.EqualTo(spaceFixer.Replace(styleNode, " ").Trim()));
 		}
 
 		//For Bloom 3.1, we decided to retire this feature. Now, new books are just called "book"
