@@ -108,6 +108,8 @@ namespace Bloom.Book
 			}
 		}
 
+		private string _baseForRelativePaths = null;
+
 		/// <summary>
 		/// This property records the folder in which the browser needs to find files referred to using
 		/// non-absolute locations.
@@ -120,9 +122,25 @@ namespace Bloom.Book
 		/// redirect things in much the way described above. However, this strategy fails
 		/// for internal links within the document: a url like #mybookmark is translated
 		/// into localhost://c:/users/someone/bloom/mycollection/mybookfolder#mybookmark, with no
-		/// document specified at all, and passed to the server, which fails to find anything.</remarks>
-		/// <param name="path"></param>
-		public string BaseForRelativePaths { get; set; }
+		/// document specified at all, and passed to the server, which fails to find anything.
+		/// Later it was discovered that Configurator (for Wall Calendar) put in a 'base' element,
+		/// so we still need the parts that remove any 'base' element.</remarks>
+		public string BaseForRelativePaths
+		{
+			get { return _baseForRelativePaths; }
+			set
+			{
+				var path = value;
+				_baseForRelativePaths = path ?? string.Empty;
+				var head = _dom.SelectSingleNodeHonoringDefaultNS("//head");
+				if (head == null)
+					return;
+				foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
+				{
+					head.RemoveChild(baseNode);
+				}
+			}
+		}
 
 		/// <summary>
 		/// Set this for DOMs that should not get the on-screen enhancements (transparency, possibly compression)

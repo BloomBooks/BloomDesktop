@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="es" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.7.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">2.0.1070.0</prop>
+  <header srclang="es" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.28.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.0.101.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -11,6 +11,81 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>Acerca de</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog.NoUpdates">
+      <tuv xml:lang="en">
+        <seg>No Updates</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>No hay actualizaciones</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog._checkForUpdates">
+      <tuv xml:lang="en">
+        <seg>Check For Updates</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Buscar actualizaciones</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog._releaseNotesLabel">
+      <tuv xml:lang="en">
+        <seg>Release Notes</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Notas de la versión</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Application.AlreadyRunning.General">
+      <tuv xml:lang="en">
+        <seg>Another copy of the application is already running. If you cannot find it, restart your computer.</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Otra copia del programa ya se está ejecutando. Si no lo encuentra, reinicie el equipo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Application.AlreadyRunning.Specific">
+      <note>{0} is the application name</note>
+      <tuv xml:lang="en">
+        <seg>Another copy of {0} is already running. If you cannot find that {0}, restart your computer.</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Otra copia de {0} ya se está ejecutando. Si no lo encuentra, reinicie el equipo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Application.ProblemStarting.General">
+      <tuv xml:lang="en">
+        <seg>There was a problem starting the application which might require that you restart your computer.</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Hubo un problema al iniciar el programa que puede que tenga que reiniciar el equipo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Application.ProblemStarting.Specific">
+      <note>{0} is the application name</note>
+      <tuv xml:lang="en">
+        <seg>There was a problem starting {0} which might require that you restart your computer.</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Hubo un problema al iniciar{0} que puede que tenga que reiniciar el equipo.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Application.WaitingFinish.General">
+      <tuv xml:lang="en">
+        <seg>Waiting for other application to finish...</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Esperando a otra aplicación para finalizar...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Application.WaitingFinish.Specific">
+      <note>{0} is the application name</note>
+      <tuv xml:lang="en">
+        <seg>Waiting for other {0} to finish...</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Esperando a otra {0} para finalizar</seg>
       </tuv>
     </tu>
     <tu tuid="Common.CancelButton">
@@ -92,7 +167,7 @@
         <seg>Art Of Reading</seg>
       </tuv>
       <tuv xml:lang="es">
-        <seg>Art Of Reading</seg>
+        <seg>Art Of Reading (Arte de la lectura)</seg>
       </tuv>
     </tu>
     <tu tuid="ImageToolbox.Camera">
@@ -109,7 +184,7 @@
         <seg>Use {0}</seg>
       </tuv>
       <tuv xml:lang="es">
-        <seg>Uso {0}</seg>
+        <seg>Usar {0}</seg>
       </tuv>
     </tu>
     <tu tuid="ImageToolbox.Crop">
@@ -126,6 +201,14 @@
       </tuv>
       <tuv xml:lang="es">
         <seg>Editar...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ImageToolbox.EnterSearchTerms">
+      <tuv xml:lang="en">
+        <seg>This is the 'Art Of Reading' gallery. In the box above, type what you are searching for, then press ENTER. You can type words in English and Indonesian.</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Esta es la galería de "Art of Reading" (Arte de la lectura). En el cuadro anterior, escriba lo que está buscando, a continuación, pulse ENTER. Puede escribir palabras en inglés e indonesio.</seg>
       </tuv>
     </tu>
     <tu tuid="ImageToolbox.FileButton">
@@ -274,6 +357,15 @@
         <seg>Código</seg>
       </tuv>
     </tu>
+    <tu tuid="LanguageLookup.CountryCount">
+      <note>Shown when there are multiple countries and it is just confusing to list them all.</note>
+      <tuv xml:lang="en">
+        <seg>{0} Countries</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>{0} Países</seg>
+      </tuv>
+    </tu>
     <tu tuid="LanguageLookup.CountryHeader">
       <tuv xml:lang="en">
         <seg>Country</seg>
@@ -299,7 +391,9 @@
       </tuv>
     </tu>
     <tu tuid="LanguageLookup.LookupISOControl._searchText">
-      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>?</seg>
+      </tuv>
       <tuv xml:lang="es">
         <seg>?</seg>
       </tuv>
@@ -494,7 +588,7 @@
     </tu>
     <tu tuid="SettingsProtection.LauncherButtonLabel">
       <tuv xml:lang="en">
-        <seg>Settings Protection...</seg>
+        <seg>Settings...</seg>
       </tuv>
       <tuv xml:lang="es">
         <seg>Protección de configuración...</seg>

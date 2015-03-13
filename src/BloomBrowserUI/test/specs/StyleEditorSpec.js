@@ -166,7 +166,6 @@ describe("StyleEditor", function () {
         $('body').append("<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>");
         MakeBigger();
         expect(GetRuleForFooStyle()).not.toBeNull();
-
     });
 
     it("MakeBigger makes the text of the target style bigger", function () {

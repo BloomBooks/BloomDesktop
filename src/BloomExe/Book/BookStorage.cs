@@ -520,7 +520,7 @@ namespace Bloom.Book
 				uri = ImageServer.PathEndingInSlash + uri;
 				path = uri;
 			}
-			dom.BaseForRelativePaths = path;
+			dom.BaseForRelativePaths = path; // We actually don't WANT any base elements in the DOM
 		}
 
 

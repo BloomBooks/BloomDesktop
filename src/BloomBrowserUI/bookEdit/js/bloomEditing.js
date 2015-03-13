@@ -128,8 +128,9 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
         adjust: { method: 'none' }
         };
 
-    if (target.hasClass('coverBottomBookTopic'))
-        pos.adjust = { y: -20 };
+    // Anybody know why this was here!? BL-1125 complains about this very thing.
+    //if (target.hasClass('coverBottomBookTopic'))
+    //    pos.adjust = { y: -20 };
 
     //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.
     //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
@@ -773,6 +774,10 @@ function AddOverflowHandler(container) {
     $(container).find(".bloom-editable").each(function (e) {
         var lineHeight = parseInt($(this).css("line-height"), 10);
         var minHeight = parseInt($(this).css("min-height"), 10);
+        var overflowy = $(this).css("overflow-y");
+        if (overflowy == 'hidden') {
+            $(this).css("min-height", lineHeight); // BL-1034 premature scroll bars
+        }
         if (lineHeight > minHeight) {
             $(this).addClass('Layout-Problem-Detected');
             $(this).attr("LayoutProblem", "min-height is less than lineHeight");
@@ -793,7 +798,7 @@ function AddOverflowHandler(container) {
         setTimeout(function () {
             MarkOverflowInternal(target);
 
-            //REVIEW: why is this here, in the overflow detection? 
+            //REVIEW: why is this here, in the overflow detection?
 
             // This will make sure that any language tags on this div stay in position with editing.
             // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
@@ -1074,12 +1079,12 @@ $.fn.hasAttr = function (name) {
 };
 
 // Some custom templates have image containers embedded in bloom-editable divs, so that the text can wrap
-// around the picture. The problems is that the user can do (ctrl+a, del) to start over on the text, and 
+// around the picture. The problems is that the user can do (ctrl+a, del) to start over on the text, and
 // inadvertantly remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
 // tries to safeguard element bearing that class.
 function PreventRemovalOfSomeElements(container) {
 
-    /* this approach showed promise, but only the first time you do ctrl+all, DEL. After the undo, the bindings were not redone. 
+    /* this approach showed promise, but only the first time you do ctrl+all, DEL. After the undo, the bindings were not redone.
     $(container).find(".bloom-preventRemoval").bind("DOMNodeRemoved", function (e) {
         alert("Removed: " + e.target.nodeName);
         //this threw a NS_ERROR but I don't know why
@@ -1097,7 +1102,7 @@ function PreventRemovalOfSomeElements(container) {
     });
     */
 
-    
+
     $(container).find(".bloom-preventRemoval").closest(".bloom-editable").each(function () {
         var numberThatShouldBeThere = $(this).find(".bloom-preventRemoval").length;
         //Note, the input event is *not* fired on the element itself in the (ctrl+a, del) scenario, hence
@@ -1109,7 +1114,7 @@ function PreventRemovalOfSomeElements(container) {
         });
     });
 
-//OK, now what if the above fails in some scenario? This adds a last-resort way of getting 
+//OK, now what if the above fails in some scenario? This adds a last-resort way of getting
     //bloom-editable back to the state it was in when the page was first created, by having
     //the user type in RESETRESET and then clicking out of the field.
     $(container).find(".bloom-editable").blur(function (e) {
@@ -1199,7 +1204,7 @@ function SetupElements(container) {
 
         if (!requireParagraphs) {
             // Work around a bug in geckofx. The effect was that if you clicked in a completely empty text box
-            // the cursor is oddly positioned and typing does nothing. There is evidence that what is going on is that the focus 
+            // the cursor is oddly positioned and typing does nothing. There is evidence that what is going on is that the focus
             // is on the English qtip (in the FF inspector, the qtip block highlights when you type). https://jira.sil.org/browse/BL-786
             // This bug mentions the cursor being in the wrong place: https://bugzilla.mozilla.org/show_bug.cgi?id=904846
             // so the solution is just to insert a span that you can't see, here during the focus event.
@@ -1551,15 +1556,21 @@ function SetupElements(container) {
 
     SetOverlayForImagesWithoutMetadata(container);
 
-    //note, the normal way is for the user to click the link on the qtip.
-    //But clicking on the exiting topic may be natural too, and this prevents
-    //them from editing it by hand.
-    $(container).find("div[data-book='topic']").click(function () {
-        if ($(this).css('cursor') == 'not-allowed')
-            return;
-        TopicChooser.showTopicChooser();
-    });
-    
+    if(IsFrontCover(container)) {
+        //note, the normal way is for the user to click the link on the qtip.
+        //But clicking on the exiting topic may be natural too, and this prevents
+        //them from editing it by hand.
+        $(container).find("div[data-book='topic']").click(function () {
+            if ($(this).css('cursor') == 'not-allowed')
+                return;
+            ChooseTopic();
+        });
+
+        if(!HasTopic(container)) {
+            AddTopicButton();
+        }
+    }
+
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
     if ($(container).find(".bloom-preventSourceBubbles").length == 0) {
@@ -1593,9 +1604,12 @@ function SetupElements(container) {
         }
     });
 
-    $(container).find('.bloom-editable').longPress();
+    getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
+        if (response === 'Yes')
+            $(container).find('.bloom-editable').longPress();
+    });
 
-    //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed, 
+    //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed,
     //a blank line is shown and the letter pressed shows up after that.
     //This detects that situation when we type the first key after the deletion, and first deletes the <br></br>.
     $(container).find('.bloom-editable').keypress(function (event) {
@@ -1613,7 +1627,8 @@ function SetupElements(container) {
             //they have also deleted the formatButton, so put it back in
             // console.log('attaching'); REVIEW: this shows that we're doing the attaching on the first character entered, even though it appears the editor was already attached.
             //so we actually attach twice. That's ok, the editor handles that, but I don't know why we're passing the if, and it could be improved.
-            editor.AttachToBox(this);
+            if ($(this).closest('.bloom-userCannotModifyStyles').length == 0)
+                editor.AttachToBox(this);
         }
     });
 
@@ -1631,14 +1646,14 @@ function OneTimeSetup() {
 //Earlier, to work around a FF bug, we made a text box non-empty so that the cursor would should up correctly.
 //Now, they have entered something, so remove it
 function FixUpOnFirstInput() {
-    //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason, 
+    //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason,
     //and that gets characters in the wrong place because this messes with the insertion point. So now
     //we check to see if the space is still there before touching it
-    if ($(this).html().indexOf("&nbsp;") == 0) { 
+    if ($(this).html().indexOf("&nbsp;") == 0) {
         //earlier we stuck a &nbsp; in to work around a FF bug on empty boxes.
         //now remove it a soon as they type something
 
-        
+
         // this caused BL-933 by somehow making us lose the on click event link on the formatButton
     //   $(this).html($(this).html().replace('&nbsp;', ""));
 
@@ -1657,6 +1672,38 @@ function FixUpOnFirstInput() {
             selection.modify("extend", "backward", "character");
         }
     }
+}
+
+function HasTopic(container) {
+    var result = false;
+    $(container).find('.bloom-editable[data-book="topic"]').each(function () {
+        if($(this).text().trim().length > 0) {
+            result = true;
+        }
+    });
+    return result;
+}
+
+function IsFrontCover(container) {
+    return $(container).find('.frontCover').length != 0;
+}
+
+function AddTopicButton() {
+    var topicDiv = $('.coverBottomBookTopic')[0];
+    var button = document.createElement('button');
+    $(button).attr('id', "topicButton");
+    $(button).attr('type', 'button');
+    $(button).addClass('bloom-ui');
+    $(button).attr('onClick', 'ChooseTopic()');
+    $(button).text("Choose Topic...");
+    $(topicDiv).append(button);
+    localizationManager.asyncGetTextInLang("EditTab.TopicButton", "Choose Topic...", "UI").done(function(translation) {
+        $("#topicButton").text(translation);
+    });
+}
+
+function ChooseTopic() {
+    TopicChooser.showTopicChooser();
 }
 
 
@@ -1689,7 +1736,7 @@ $(document).ready(function() {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
-   SetupElements($('body'));
+    SetupElements($('body'));
     OneTimeSetup();
 
 }); // end document ready function

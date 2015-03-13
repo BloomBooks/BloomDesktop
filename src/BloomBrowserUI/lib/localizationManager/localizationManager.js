@@ -1,5 +1,6 @@
 /// <reference path="../jquery.d.ts" />
-/// <reference path="misc-types.d.ts" />
+/// <reference path="../misc-types.d.ts" />
+/// <reference path="../../bookEdit/js/getIframeChannel.ts" />
 /**
 * L10NSharp LocalizationManager for javascript.
 *
@@ -176,39 +177,6 @@ var LocalizationManager = (function () {
         promise.fail(function () {
             return deferred.fail();
         });
-        return deferred.promise();
-    };
-
-    /* Returns a promise to get the translation in the UI language, or English if it is unavailable
-    *
-    * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
-    *
-    *  @example
-    * asyncGetTextInLang('topics.health','Health")
-    *      .done(translation => {
-    *          $(this).text(translation);
-    *      })
-    *      .fail($(this).text("?Health?";
-    * @example
-    * asyncGetTextInLang('topics.health','My name is {0}", "John")
-    *      .done(translation => {
-    *          $(this).text(translation);
-    *      });
-    
-    */
-    LocalizationManager.prototype.asyncGetText = function (id, englishText, langId) {
-        var args = [];
-        for (var _i = 0; _i < (arguments.length - 3); _i++) {
-            args[_i] = arguments[_i + 3];
-        }
-        var deferred = new $.Deferred();
-        var promise = this.asyncGetTextInLang(id, englishText, "UI", args);
-        promise.done(function (text) {
-            return deferred.resolve(text);
-        });
-        promise.fail(this.asyncGetTextInLang(id, englishText, "en", args).done(function (text) {
-            return deferred.resolve(text);
-        }));
         return deferred.promise();
     };
 

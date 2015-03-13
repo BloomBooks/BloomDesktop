@@ -1,4 +1,4 @@
-﻿/// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../lib/jquery.d.ts" />
 /**
 * Class to hold information passed between iframes
 * @constructor

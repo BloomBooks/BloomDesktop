@@ -1,4 +1,4 @@
-/// <reference path="localizationManager.ts" />
+/// <reference path="localizationManager/localizationManager.ts" />
 /// <reference path="jquery.d.ts" />
 /**
 * jquery.i18n.custom.js
