@@ -1074,12 +1074,12 @@ $.fn.hasAttr = function (name) {
 };
 
 // Some custom templates have image containers embedded in bloom-editable divs, so that the text can wrap
-// around the picture. The problems is that the user can do (ctrl+a, del) to start over on the text, and 
+// around the picture. The problems is that the user can do (ctrl+a, del) to start over on the text, and
 // inadvertantly remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
 // tries to safeguard element bearing that class.
 function PreventRemovalOfSomeElements(container) {
 
-    /* this approach showed promise, but only the first time you do ctrl+all, DEL. After the undo, the bindings were not redone. 
+    /* this approach showed promise, but only the first time you do ctrl+all, DEL. After the undo, the bindings were not redone.
     $(container).find(".bloom-preventRemoval").bind("DOMNodeRemoved", function (e) {
         alert("Removed: " + e.target.nodeName);
         //this threw a NS_ERROR but I don't know why
@@ -1097,7 +1097,7 @@ function PreventRemovalOfSomeElements(container) {
     });
     */
 
-    
+
     $(container).find(".bloom-preventRemoval").closest(".bloom-editable").each(function () {
         var numberThatShouldBeThere = $(this).find(".bloom-preventRemoval").length;
         //Note, the input event is *not* fired on the element itself in the (ctrl+a, del) scenario, hence
@@ -1109,7 +1109,7 @@ function PreventRemovalOfSomeElements(container) {
         });
     });
 
-//OK, now what if the above fails in some scenario? This adds a last-resort way of getting 
+//OK, now what if the above fails in some scenario? This adds a last-resort way of getting
     //bloom-editable back to the state it was in when the page was first created, by having
     //the user type in RESETRESET and then clicking out of the field.
     $(container).find(".bloom-editable").blur(function (e) {

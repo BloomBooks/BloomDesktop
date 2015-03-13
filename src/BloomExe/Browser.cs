@@ -196,7 +196,7 @@ namespace Bloom
 			{
 				// Note: this is only used for the Undo button in the toolbar;
 				// ctrl-z is handled in JavaScript directly.
-				var result = RunJavaScript("calledByCSharp ? 'y' : 'f'");
+				var result = RunJavaScript("(typeof calledByCSharp === 'undefined') ? 'f' : 'y'");
 				if (result == "y")
 				{
 					if (RunJavaScript("calledByCSharp.handleUndo()") == "fail")
@@ -259,7 +259,7 @@ namespace Bloom
 			{
 				if (_browser == null)
 					return false;
-				var result = RunJavaScript("calledByCSharp ? 'y' : 'f'");
+				var result = RunJavaScript("(typeof calledByCSharp === 'undefined') ? 'f' : 'y'");
 				if (result == "y")
 				{
 					result = RunJavaScript("calledByCSharp.canUndo()");
