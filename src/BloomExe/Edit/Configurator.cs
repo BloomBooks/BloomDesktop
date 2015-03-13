@@ -98,7 +98,7 @@ namespace Bloom.Edit
 
 			//Now we call the method which takes that confuration data and adds/removes/updates pages.
 			//We have the data as json string, so first we turn it into object for the updateDom's convenience.
-			RunJavaScript(b, "updateDom(jQuery.parseJSON('" + GetAllData() + "'))");
+			RunJavaScript(b, "runUpdate(" + GetAllData() + ")");
 
 			//Ok, so we should have a modified DOM now, which we can save back over the top.
 

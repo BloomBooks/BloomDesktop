@@ -571,8 +571,8 @@ namespace Bloom
 		[DefaultValue(true)]
 		public bool ScaleToFullWidthOfPage { get; set; }
 
-		// NB: make sure you called HtmlDom.SetBaseForRelativePaths() if the temporary document might contain
-		// references to files in the directory of the original HTML file it is derived from,
+		// NB: make sure you assigned HtmlDom.BaseForRelativePaths if the temporary document might
+		// contain references to files in the directory of the original HTML file it is derived from,
 		// 'cause that provides the information needed
 		// to fake out the browser about where the 'file' is so internal references work.
 		public void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null)

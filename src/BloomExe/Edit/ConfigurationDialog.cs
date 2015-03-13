@@ -47,7 +47,7 @@ namespace Bloom.Edit
 
 		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
 		{
-			_browser.AddScriptSource("jquery-1.6.4.js");
+			_browser.AddScriptSource("jquery-1.10.1.js");
 			_browser.AddScriptSource("form2object.js");
 			_browser.AddScriptSource("js2form.js");
 			_browser.AddScriptSource("underscore.js");

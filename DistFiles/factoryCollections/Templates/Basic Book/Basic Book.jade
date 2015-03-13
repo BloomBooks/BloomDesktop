@@ -12,7 +12,7 @@ mixin field-trailing
 doctype html
 html
 	head
-		+metadata-standard()
+		+metadata-standard
 		//- This "Book" name is used for saving the file, until the user enters a title
 		meta(name='defaultNameForDerivedBooks', content='Book')
 		meta(name='bloomBookId', content='056B6F11-4A6C-4942-B2BC-8861E62B03B3')
@@ -21,7 +21,6 @@ html
 		meta(name='pageTemplateSource', content='Basic Book')
 		title 'Basic Book'
 		+stylesheets('Basic Book.css')
-		//link(rel='stylesheet' href='split-pane.css' type='text/css')//TODO: REMOVE
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Basic Book')

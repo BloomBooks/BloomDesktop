@@ -1616,7 +1616,8 @@ function SetupElements(container) {
             //they have also deleted the formatButton, so put it back in
             // console.log('attaching'); REVIEW: this shows that we're doing the attaching on the first character entered, even though it appears the editor was already attached.
             //so we actually attach twice. That's ok, the editor handles that, but I don't know why we're passing the if, and it could be improved.
-            editor.AttachToBox(this);
+            if ($(this).closest('.bloom-userCannotModifyStyles').length == 0)
+                editor.AttachToBox(this);
         }
     });
 
