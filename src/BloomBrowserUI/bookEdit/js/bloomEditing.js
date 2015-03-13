@@ -1556,20 +1556,14 @@ function SetupElements(container) {
 
     SetOverlayForImagesWithoutMetadata(container);
 
-    if(IsFrontCover(container)) {
-        //note, the normal way is for the user to click the link on the qtip.
-        //But clicking on the exiting topic may be natural too, and this prevents
-        //them from editing it by hand.
-        $(container).find("div[data-book='topic']").click(function () {
-            if ($(this).css('cursor') == 'not-allowed')
-                return;
-            ChooseTopic();
-        });
-
-        if(!HasTopic(container)) {
-            AddTopicButton();
-        }
-    }
+    //note, the normal way is for the user to click the link on the qtip.
+    //But clicking on the exiting topic may be natural too, and this prevents
+    //them from editing it by hand.
+    $(container).find("div[data-book='topic']").click(function () {
+        if ($(this).css('cursor') == 'not-allowed')
+            return;
+        TopicChooser.showTopicChooser();
+    });
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
@@ -1672,38 +1666,6 @@ function FixUpOnFirstInput() {
             selection.modify("extend", "backward", "character");
         }
     }
-}
-
-function HasTopic(container) {
-    var result = false;
-    $(container).find('.bloom-editable[data-book="topic"]').each(function () {
-        if($(this).text().trim().length > 0) {
-            result = true;
-        }
-    });
-    return result;
-}
-
-function IsFrontCover(container) {
-    return $(container).find('.frontCover').length != 0;
-}
-
-function AddTopicButton() {
-    var topicDiv = $('.coverBottomBookTopic')[0];
-    var button = document.createElement('button');
-    $(button).attr('id', "topicButton");
-    $(button).attr('type', 'button');
-    $(button).addClass('bloom-ui');
-    $(button).attr('onClick', 'ChooseTopic()');
-    $(button).text("Choose Topic...");
-    $(topicDiv).append(button);
-    localizationManager.asyncGetTextInLang("EditTab.TopicButton", "Choose Topic...", "UI").done(function(translation) {
-        $("#topicButton").text(translation);
-    });
-}
-
-function ChooseTopic() {
-    TopicChooser.showTopicChooser();
 }
 
 
