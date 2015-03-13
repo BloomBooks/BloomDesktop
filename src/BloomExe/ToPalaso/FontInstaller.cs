@@ -16,7 +16,7 @@ namespace Bloom.ToPalaso
 	/// Helper class for installing fonts.
 	/// To use this: the sourceFolder passed to InstallFont must be one that GetDirectoryDistributedWithApplication can find.
 	/// It must contain the fonts you want to be sure are installed.
-	/// It MUST also contain the installer program, "InstallSilLiteracyFonts.exe", a renamed version of FontReg.exe (see below).
+	/// It MUST also contain the installer program, "Install Bloom Literacy Fonts.exe", a renamed version of FontReg.exe (see below).
 	/// The user will typically see a UAC dialog asking whether it is OK to run this program (if the fonts are not already
 	/// installed).
 	/// </summary>
@@ -34,7 +34,7 @@ namespace Bloom.ToPalaso
 					// Renamed to make the UAC dialog less mysterious.
 					// Originally it is FontReg.exe (http://code.kliu.org/misc/fontreg/).
 					// Eventually we will probably have to get our version signed.
-					FileName = "InstallSilLiteracyFonts.exe",
+					FileName = "Install Bloom Literacy Fonts.exe",
 					Arguments = "/copy",
 					WorkingDirectory = sourcePath,
 					UseShellExecute = true, // required for runas to achieve privilege elevation
