@@ -39,7 +39,7 @@ class interIframeChannel {
     if (typeof dataValue === 'string')
       dataValue = encodeURIComponent(dataValue);
 
-    var ajaxSettings = {type: 'GET', url: url};
+    var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{type: 'GET', url: url};
     if (dataValue) ajaxSettings['data'] = {data: dataValue};
 
     $.ajax(ajaxSettings)
@@ -58,7 +58,7 @@ class interIframeChannel {
         if (typeof dataValue === 'string')
             dataValue = encodeURIComponent(dataValue);
 
-        var ajaxSettings = { type: 'GET', url: url };
+        var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'GET', url: url };
         if (dataValue) ajaxSettings['data'] = dataValue ;
 
         return $.ajax(ajaxSettings).promise();
@@ -69,7 +69,7 @@ class interIframeChannel {
      *  "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help http://xhr.spec.whatwg.org/"
      */
     getValueSynchronously(url: string, parameters?: any): string {
-        var ajaxSettings = { type: 'GET', url: url, async:false };
+        var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'GET', url: url, async:false };
         if (parameters) ajaxSettings['data'] =  parameters ;
         return $.ajax(ajaxSettings).responseText;
 }
@@ -90,7 +90,7 @@ class interIframeChannel {
     if (typeof dataValue === 'string')
       dataValue = encodeURIComponent(dataValue);
 
-    var ajaxSettings = {type: 'GET', url: url};
+    var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{type: 'GET', url: url};
     if (dataValue) ajaxSettings['data'] = {data: dataValue};
 
     $.ajax(ajaxSettings)
@@ -107,7 +107,7 @@ class interIframeChannel {
    */
   simpleAjaxPost(url: string, callback: any, dataValue?: string): void {
 
-    var ajaxSettings = {type: 'POST', url: url};
+    var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{type: 'POST', url: url};
     if (dataValue) ajaxSettings['data'] = {data: dataValue};
 
     $.ajax(ajaxSettings)
@@ -123,7 +123,7 @@ class interIframeChannel {
    */
   simpleAjaxNoCallback(url: string, dataValue?: string): void {
 
-    var ajaxSettings = {type: 'POST', url: url};
+    var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{type: 'POST', url: url};
     if (dataValue) ajaxSettings['data'] = {data: dataValue};
 
     $.ajax(ajaxSettings)
