@@ -122,7 +122,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
     var theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
 
     var pos = {
-            at: 'right center',
+        at: 'right center',
         my: 'left center',
         viewport: $(window),
         adjust: { method: 'none' }
@@ -149,7 +149,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
 
     // determine onFocusOnly
     var onFocusOnly = whatToSay.startsWith('*');
-    onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || checkMightCauseHorizontallyOverlappingBubbles(targetElement);
+    onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || mightCauseHorizontallyOverlappingBubbles(targetElement);
 
     // get the localized string
     if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
@@ -450,7 +450,7 @@ function MakeSourceTextDivForGroup(group) {
     var shouldShowAlways = true;
 
 
-    if(checkMightCauseHorizontallyOverlappingBubbles(group)) {
+    if(mightCauseHorizontallyOverlappingBubbles(group)) {
         showEvents = 'focusin';
         hideEvents = 'focusout';
         shouldShowAlways = false;
@@ -493,11 +493,14 @@ function MakeSourceTextDivForGroup(group) {
   });
 }
 
-function checkMightCauseHorizontallyOverlappingBubbles(element) {
+function mightCauseHorizontallyOverlappingBubbles(element) {
     //we can't actually know for sure if overlapping would happen, but
     //we can be very conservative and say that if the text
     //box isn't taking up the whole width, it *might* cause
     //an overlap
+    if(element.hasClass('bloom-alwaysShowBubble')) {
+        return false;
+    }
     var availableWidth = $(element).closest(".marginBox").width();
     var kTolerancePixels = 10; //if the box is just a tiny bit smaller, there's not going to be anything to overlap
     return $(element).width() < (availableWidth - kTolerancePixels);
@@ -1556,20 +1559,14 @@ function SetupElements(container) {
 
     SetOverlayForImagesWithoutMetadata(container);
 
-    if(IsFrontCover(container)) {
-        //note, the normal way is for the user to click the link on the qtip.
-        //But clicking on the exiting topic may be natural too, and this prevents
-        //them from editing it by hand.
-        $(container).find("div[data-book='topic']").click(function () {
-            if ($(this).css('cursor') == 'not-allowed')
-                return;
-            ChooseTopic();
-        });
-
-        if(!HasTopic(container)) {
-            AddTopicButton();
-        }
-    }
+    //note, the normal way is for the user to click the link on the qtip.
+    //But clicking on the existing topic may be natural too, and this prevents
+    //them from editing it by hand.
+    $(container).find("div[data-book='topic']").click(function () {
+        if ($(this).css('cursor') == 'not-allowed')
+            return;
+        TopicChooser.showTopicChooser();
+    });
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
@@ -1672,38 +1669,6 @@ function FixUpOnFirstInput() {
             selection.modify("extend", "backward", "character");
         }
     }
-}
-
-function HasTopic(container) {
-    var result = false;
-    $(container).find('.bloom-editable[data-book="topic"]').each(function () {
-        if($(this).text().trim().length > 0) {
-            result = true;
-        }
-    });
-    return result;
-}
-
-function IsFrontCover(container) {
-    return $(container).find('.frontCover').length != 0;
-}
-
-function AddTopicButton() {
-    var topicDiv = $('.coverBottomBookTopic')[0];
-    var button = document.createElement('button');
-    $(button).attr('id', "topicButton");
-    $(button).attr('type', 'button');
-    $(button).addClass('bloom-ui');
-    $(button).attr('onClick', 'ChooseTopic()');
-    $(button).text("Choose Topic...");
-    $(topicDiv).append(button);
-    localizationManager.asyncGetTextInLang("EditTab.TopicButton", "Choose Topic...", "UI").done(function(translation) {
-        $("#topicButton").text(translation);
-    });
-}
-
-function ChooseTopic() {
-    TopicChooser.showTopicChooser();
 }
 
 

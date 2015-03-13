@@ -1112,12 +1112,6 @@
         <seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.TopicButton">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Choose Topic...</seg>
-      </tuv>
-    </tu>
     <tu tuid="EditTab.LayoutMode.ChangeLayout">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
