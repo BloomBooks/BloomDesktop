@@ -128,8 +128,9 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
         adjust: { method: 'none' }
         };
 
-    if (target.hasClass('coverBottomBookTopic'))
-        pos.adjust = { y: -20 };
+    // Anybody know why this was here!? BL-1125 complains about this very thing.
+    //if (target.hasClass('coverBottomBookTopic'))
+    //    pos.adjust = { y: -20 };
 
     //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.
     //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
@@ -1555,14 +1556,20 @@ function SetupElements(container) {
 
     SetOverlayForImagesWithoutMetadata(container);
 
-    //note, the normal way is for the user to click the link on the qtip.
-    //But clicking on the exiting topic may be natural too, and this prevents
-    //them from editing it by hand.
-    $(container).find("div[data-book='topic']").click(function () {
-        if ($(this).css('cursor') == 'not-allowed')
-            return;
-        TopicChooser.showTopicChooser();
-    });
+    if(IsFrontCover(container)) {
+        //note, the normal way is for the user to click the link on the qtip.
+        //But clicking on the exiting topic may be natural too, and this prevents
+        //them from editing it by hand.
+        $(container).find("div[data-book='topic']").click(function () {
+            if ($(this).css('cursor') == 'not-allowed')
+                return;
+            ChooseTopic();
+        });
+
+        if(!HasTopic(container)) {
+            AddTopicButton();
+        }
+    }
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
@@ -1665,6 +1672,38 @@ function FixUpOnFirstInput() {
             selection.modify("extend", "backward", "character");
         }
     }
+}
+
+function HasTopic(container) {
+    var result = false;
+    $(container).find('.bloom-editable[data-book="topic"]').each(function () {
+        if($(this).text().trim().length > 0) {
+            result = true;
+        }
+    });
+    return result;
+}
+
+function IsFrontCover(container) {
+    return $(container).find('.frontCover').length != 0;
+}
+
+function AddTopicButton() {
+    var topicDiv = $('.coverBottomBookTopic')[0];
+    var button = document.createElement('button');
+    $(button).attr('id', "topicButton");
+    $(button).attr('type', 'button');
+    $(button).addClass('bloom-ui');
+    $(button).attr('onClick', 'ChooseTopic()');
+    $(button).text("Choose Topic...");
+    $(topicDiv).append(button);
+    localizationManager.asyncGetTextInLang("EditTab.TopicButton", "Choose Topic...", "UI").done(function(translation) {
+        $("#topicButton").text(translation);
+    });
+}
+
+function ChooseTopic() {
+    TopicChooser.showTopicChooser();
 }
 
 
