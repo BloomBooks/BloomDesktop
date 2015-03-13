@@ -10,6 +10,7 @@ using Bloom.Collection.BloomPack;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Bloom.Registration;
+using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
 using Gecko;
 using L10NSharp;
@@ -254,6 +255,7 @@ namespace Bloom
 #endif
 						L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
+						FontInstaller.InstallFont("Andika");
 						Run();
 					}
 				}
