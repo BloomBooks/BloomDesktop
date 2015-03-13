@@ -291,8 +291,11 @@ H2 {
 .customPage .bloom-imageContainer {
   width: 99%;
   height: 98%;
-  /*above so buttons show*/
   z-index: 1000;
+  overflow: hidden;
+}
+.customPage .bloom-editable {
+  overflow-y: hidden;
 }
 .customPage .split-pane-component {
   min-height: 1.5em;
