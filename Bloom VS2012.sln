@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomExe", "src\BloomExe\BloomExe.csproj", "{304D5612-167C-4725-AF27-B9F2BB788B57}"
 EndProject
@@ -21,6 +21,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomBookDownloader", "src\BloomBookDownloader\BloomBookDownloader.csproj", "{A6411357-8A5F-4EEC-BE3C-85C9E65D3C5B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloomBrowserUI", "src\BloomBrowserUI\BloomBrowserUI.csproj", "{9BB95BA2-BBFF-4F56-9F55-C9215AC665CB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{50907EDE-2961-46DE-8549-E13473496460}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

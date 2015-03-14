@@ -312,7 +312,6 @@
     <Content Include="web.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="packages.config" />
     <Content Include="bookEdit\EditViewFrame.jade" />
     <Content Include="bookEdit\LibSynphonyTests.jstd" />
     <Content Include="bookEdit\ReaderToolsTests.jstd" />

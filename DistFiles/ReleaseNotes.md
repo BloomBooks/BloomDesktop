@@ -4,7 +4,7 @@
 - Bloom now tries to detect when you are importing a jpeg that really should be tiff/bmp/png, and puts up an informative dialog that lets you repent or plow forward.
 - On custom pages and other places where there maybe multiple text boxes layout out horizontally, text bubbles will now not show until you click in the box, so that they don't clutter up the page and interfere with seeing/doing what you need.
 - Page thumbnails now show an "attention" icon if some text on the page is overflow its box
-- Improve situations where Bloom ran out of memory while making a PDF making 
+- Improve situations where Bloom ran out of memory while making a PDF making
 - BloomLibrary.org takes a fraction of the time/bytes to display
 
 ### Fixes
@@ -48,8 +48,8 @@
 ## 3.0.97 Beta
 - Update French UI Translation (thanks David Rowe)
 - When importing, Bloom no longer
-  - makes images transparent when importing. 
-  - compresses images transparent when importing. 
+  - makes images transparent when importing.
+  - compresses images transparent when importing.
   - saves copyright/license back to the original files
 - Fix crash after closing settings dialog when no book is selected
 - Fix insertion of unwanted space before bolded, underlined, and italicized portions of words

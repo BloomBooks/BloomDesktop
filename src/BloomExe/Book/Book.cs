@@ -147,7 +147,7 @@ namespace Bloom.Book
 			{
 				var title = _bookData.GetMultiTextVariableOrEmpty("bookTitle");
 				var display = title.GetExactAlternative(_collectionSettings.Language1Iso639Code);
-				
+
 				if (string.IsNullOrEmpty(display))
 				{
 					//the SIL-LEAD project, SHRP (around 2012-2016) had books that just had an English name, before we changed Bloom
@@ -1455,7 +1455,7 @@ namespace Bloom.Book
 				string pageDivId = divElement.GetAttribute("id");
 				var page = GetPageFromStorage(pageDivId);
 
-				HtmlDom.ProcessPageAfterEditing(page, divElement);	
+				HtmlDom.ProcessPageAfterEditing(page, divElement);
 
 				_bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.

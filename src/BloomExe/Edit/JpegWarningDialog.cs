@@ -30,7 +30,7 @@ Please select from one of the following, then click “OK”:").Replace("\r\n","
 		}
 
 		/// <summary>
-		/// Tells whether the supplied image looks suspiciously like a file that 
+		/// Tells whether the supplied image looks suspiciously like a file that
 		/// would be better off as a PNG. Not particularly smart, but fast.
 		/// </summary>
 		public static Boolean ShouldWarnAboutJpeg(Image image)
@@ -49,12 +49,12 @@ Please select from one of the following, then click “OK”:").Replace("\r\n","
 		}
 		private static bool HasLotsOfColor(Bitmap bmp)
 		{
-			//what's a good threshold? 
+			//what's a good threshold?
 			//Higher than one would think, as we want to detect pictures that don't have color just because they were
 			//mistakenly made into a jpeg.
 			//A  drawing with just 4 colors had 62 once ran through jpeg.
 			// Just turning the bloom placeholder flower into jpeg gives us 10 "colors" (different shades of grey)
-			const int threshold = 100; 
+			const int threshold = 100;
 			var sampleLinePercentages = new[] { 20, 50, 70 };
 			return
 				sampleLinePercentages.Any(sampleLine => GetNumberOfColors(bmp, (int)(bmp.Height * (sampleLine/100.0))) > threshold);
@@ -107,7 +107,7 @@ Please select from one of the following, then click “OK”:").Replace("\r\n","
 			for (int x = 0; x < bmp.Width; x++)
 			{
 				var pixelColor = bmp.GetPixel(x, lineNumber);
-				//we'll add up the R, G, and B 
+				//we'll add up the R, G, and B
 				if ((pixelColor.R + pixelColor.G + pixelColor.B) > maxCombinedRgbValueToBeConsideredWhite)
 					++whiteCount;
 			}

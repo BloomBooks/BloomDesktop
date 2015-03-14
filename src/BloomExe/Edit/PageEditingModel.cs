@@ -32,9 +32,9 @@ namespace Bloom.Edit
 
 		}
 
-	
 
-		
+
+
 		public void UpdateMetdataAttributesOnImgElement(GeckoHtmlElement img, PalasoImage imageInfo)
 		{
 			UpdateMetadataAttributesOnImage(img, imageInfo);

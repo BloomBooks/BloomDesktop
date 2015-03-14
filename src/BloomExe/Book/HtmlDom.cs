@@ -591,7 +591,7 @@ namespace Bloom.Book
 		}
 
 		/* The following, to use normal url query parameters to say if we wanted transparency,
-		 * was a nice idea, but turned out to not be necessary. I'm leave the code here in 
+		 * was a nice idea, but turned out to not be necessary. I'm leave the code here in
 		 * case in the future we do find a need to add query parameters.
 		public  void SetImagesForMode(bool editMode)
 		{
@@ -620,7 +620,7 @@ namespace Bloom.Book
 			page.SetAttribute("class", divElement.GetAttribute("class"));
 			//The SIL LEAD SHRP templates rely on "lang" on some ancestor to trigger the correct rules in labels.css.
 			//Those get set by putting data-metalanguage on Page, which then leads to a lang='xyz'. Let's save that
-			//back to the html in keeping with our goal of having the page look right if you were to just open the 
+			//back to the html in keeping with our goal of having the page look right if you were to just open the
 			//html file in Firefox.
 			page.SetAttribute("lang", divElement.GetAttribute("lang"));
 

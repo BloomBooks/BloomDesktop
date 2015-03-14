@@ -616,8 +616,8 @@ namespace Bloom
 				return;
 			}
 
-			var tf = TempFile.CreateAndGetPathButDontMakeTheFile();
-			File.WriteAllText(tf.Path,html);
+			var tf = TempFile.WithExtension("htm"); // For some reason Gecko won't recognize a utf-8 file as html unless it has the right extension
+			File.WriteAllText(tf.Path,html, Encoding.UTF8);
 			SetNewDependent(tf);
 			_url = tf.Path;
 			UpdateDisplay();

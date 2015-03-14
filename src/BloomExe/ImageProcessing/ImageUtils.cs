@@ -59,8 +59,8 @@ namespace Bloom.ImageProcessing
 				imageInfo.Save(destinationPath);
 				return imageFileName;
 
-				/* I (Hatton) have decided to stop compressing images until we have a suite of 
-				tests based on a number of image exemplars. Compression can be great, but it 
+				/* I (Hatton) have decided to stop compressing images until we have a suite of
+				tests based on a number of image exemplars. Compression can be great, but it
 				can also lead to very long waits; this is a "first, do no harm" decision.
 
 				//nb: there are cases (undefined) where we get out of memory if we are not operating on a copy

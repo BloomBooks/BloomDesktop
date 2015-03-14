@@ -94,7 +94,7 @@ namespace Bloom.ImageProcessing
 				if (_originalPathToProcessedVersionPath.TryGetValue(originalPath, out pathToProcessedVersion))
 				{
 					if (File.Exists(pathToProcessedVersion) &&
-					    new FileInfo(originalPath).LastWriteTimeUtc <= new FileInfo(pathToProcessedVersion).LastWriteTimeUtc)
+						new FileInfo(originalPath).LastWriteTimeUtc <= new FileInfo(pathToProcessedVersion).LastWriteTimeUtc)
 					{
 						return pathToProcessedVersion;
 					}
@@ -132,7 +132,7 @@ namespace Bloom.ImageProcessing
 					{
 						using (Graphics g = Graphics.FromImage((Image) processedBitmap))
 						{
-#if ShrinkLargeImages 
+#if ShrinkLargeImages
 							//in version 1.0, we used .NearestNeighbor. But if there is a border line down the right size (as is common for thumbnails that,
 							//are, for example, re-inserted into Teacher's Guides), then the line gets cut off. So I switched it to HighQualityBicubic
 							g.InterpolationMode = InterpolationMode.HighQualityBicubic; //.NearestNeighbor;//or smooth it: HighQualityBicubic
