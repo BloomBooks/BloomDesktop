@@ -228,5 +228,41 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//label[@class='bloom-bubble']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//label[@class='bloom-bubble' and text()='something helpful']", 1);
 		}
+
+		[Test]
+		public void UpdateContentLanguageClasses_PrototypeElementHasImageContainer_ImageContainerCopiedToNewSibling()
+		{
+			const string contents = @"<div class='bloom-page'>
+										<div class='bloom-translationGroup'>
+											<div class='bloom-editable' lang='123'>
+												Do not copy me.
+												<br>Do not copy me.</br>
+												<p>Do not copy me.</p>
+												<div class='bloom-imageContainer'>
+													<img src='foo.png'></img>
+													<div contentEditable='true' class='caption'>Do not copy me</div>
+												</div>
+												Do not copy me.
+												<p>Do not copy me.</p>
+												<p class='foo bloom-cloneToOtherLanguages bar'>Do copy me.</p>
+											</div>
+										</div>
+									</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+
+			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _collectionSettings.Object);
+
+			//the added french should have all the structure including a copy of the image container div, but none of the text except from the bloom-cloneToOtherLanguages paragraph
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']/div/img[@src='foo.png']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']/div/div[@contentEditable='true']", 1);
+			//should clear out the caption text (using a raw contentEditable for the caption just becuase bloom-editables inside of bloom-editables is beyond my ambitions at the moment.
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']/div/div[contains(@class,'caption') and @contentEditable='true' and not(text())]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']/*[contains(text(),'Do not')]", 0);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']//br", 0);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']//p[not(contains(@class,'bloom-cloneToOtherLanguages'))]", 0); // get rid of all paragraphs, except for...
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']//p[contains(@class,'bloom-cloneToOtherLanguages')]", 1); // the one with "bloom-cloneToOtherLanguages"
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']/*[contains(text(),'Do copy me')]", 1);
+		}
 	}
 }

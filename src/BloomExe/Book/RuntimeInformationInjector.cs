@@ -244,24 +244,7 @@ namespace Bloom.Book
 
 			d.Add("bloomBrowserUIFolder", FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI").ToLocalhost());
 
-			//If you modify any of these, consider modifying/updating the localization files; the localization ids for these are just the current English (which is fragile)
-			//If you make changes/additions here, also synchronize with the bloomlibrary source in services.js
-			var topics = new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Story Book", "Traditional Story" };
-			var builder = new StringBuilder();
-			builder.Append("[");
-			TopicReversal = new Dictionary<string, string>();
-			var topicComment = @"shows in the topics chooser in the edit tab";
-			foreach (var topic in topics)
-			{
-				var localized = _collectDynamicStrings
-					? LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic, topicComment)
-					: LocalizationManager.GetString("Topics." + topic, topic, topicComment);
-				TopicReversal[localized] = topic;
-				builder.Append("\""+localized+"\", ");
-			}
-			builder.Append("]");
-			d.Add("topics", builder.ToString().Replace(", ]","]"));
-
+	
 			element.InnerText = String.Format("function GetSettings() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
 			var head = pageDom.RawDom.SelectSingleNode("//head");

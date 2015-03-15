@@ -17,7 +17,7 @@
             });
             fireCSharpEvent("gridReordered", ids);
         };
-        jQuery(document).ready(function () {
+        jQuery().ready(function () {
             $('.gridly').gridly({
                 base: 35, // px
                 gutter: 10, // px
@@ -38,78 +38,60 @@
     </script>
     <title></title>
     <style>
-        body {
-            background-color: DarkGray;
-        }
-        div.bloom-page {
-            /* bizarrely, the translate moves it to the top left instead of the middle of the original space.
-                If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
-            transform: scale(0.075) translate(617%,-617%); /* Default scaling is A5 Portrait */
-            position: absolute;
-            right: 0px;
-        }
-        div.bloom-page.A4Portrait { transform: scale(0.05) translate(950%,-950%); }
-        div.bloom-page.B5Portrait { transform: scale(0.06) translate(783%,-783%); }
+        body { background-color: DarkGray; }
 
-        .gridly {
-            position: relative;
+        /* http://stackoverflow.com/questions/17824060/ios-safari-runs-out-of-memory-with-webkit-transform */
+        .pageContainer { transform-style: preserve-3d; }
+        .pageContainer div.bloom-page { backface-visibility: hidden; }
+
+        .pageContainer {
+            padding: 3px;
+            box-sizing: border-box;
+            overflow: hidden;
+            display: inline-block;
+            height: 65px; width: 47px; /* default = A5Portrait */
         }
+
+        .gridSelected .pageContainer { padding: 1px; border: 2px solid rgb(255, 255, 163); }
+
+        .pageContainer.A5Landscape { height: 51px; width: 69px; }
+        .pageContainer.A4Portrait { height: 62px; width: 46px; }
+        .pageContainer.A4Landscape { height: 54px; width: 74px; }
+        .pageContainer.B5Portrait { height: 63px; width: 46px; }
+
+        div.bloom-page { transform-origin: left top; }
+        .pageContainer div.bloom-page { transform: scale(0.074); } /* default = A5Portrait */
+        .pageContainer.A5Landscape div.bloom-page { transform: scale(0.08); }
+        .pageContainer.A4Portrait div.bloom-page { transform: scale(0.05); }
+        .pageContainer.A4Landscape div.bloom-page { transform: scale(0.061); }
+        .pageContainer.B5Portrait div.bloom-page { transform: scale(0.06); }
+
+        .gridly { position: relative; }
+
         div.gridItem {
             width: 80px;
             height: 100px;
             opacity: 1;
             overflow:hidden;
         }
-        div.gridItem:nth-child(even) div.bloom-page {
-            transform: scale(0.075) translate(-617%,-617%); /* Default scaling is A5 Portrait */
-            right: auto;
-            left: 0;
-        }
-        div.gridItem:nth-child(even) div.bloom-page.A4Portrait { transform: scale(0.05) translate(-950%,-950%); }
-        div.gridItem:nth-child(even) div.bloom-page.B5Portrait { transform: scale(0.06) translate(-783%,-783%); }
 
-        .div.gridItem.dragging {
-            opacity: .8;
-        }
+        /* div.gridItem.dragging { opacity: .8; } */
         div.thumbnailCaption {
             position: absolute;
-            top: 60px;
+            top: 61px;
             color: white;
             overflow: hidden;
             text-align:right;
             width: 80px;
         }
-        div.gridItem:nth-child(even) div.thumbnailCaption {
-            text-align: left;
-        }
-        div.placeholder {
-            pointer-events: none;
-        }
-
-        .gridSelected .pageContainer { /* Default scaling is A5 Portrait */
-            border: 3px solid rgb(255, 255, 163);/*matches the current tooltip yellow*/
-            height: 60px;
-            width: 42px;
-        }
-        div.gridItem:nth-child(odd) .pageContainer {
-            float: right; /*towards the center*/
-        }
-
-         /* The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
-             the browser's normal ability to assign a width to the parent div. So our parent
-             here, .pageContainer, doesn't grow with the size of its child. Sigh. So for the
-             moment, we assign appropriate sizes, by hand. We rely on c# code to add these
-             classes, since we can't write a rule in css3 that peeks into a child attribute.
-         */
-        .gridSelected .pageContainer.A4Portrait { height: 56px; width: 40px; }
-        .gridSelected .pageContainer.A4Landscape { height: 59px; width: 74px; }
-        .gridSelected .pageContainer.B5Portrait { height: 57px; width: 40px; }
-        .gridSelected .pageContainer.A5Landscape { height: 42px; width: 60px; }
+        div.gridItem:nth-child(even) div.thumbnailCaption { text-align: left; }
+        div.gridItem:nth-child(odd) div.pageContainer { float: right; }
+        div.placeholder { pointer-events: none; }
     </style>
 </head>
 <body id="body">
-    <div class="gridly">
-        <div class="gridItem placeholder" id="placeholder"></div>
-    </div>
+<div class="gridly">
+    <div class="gridItem placeholder" id="placeholder"></div>
+</div>
 </body>
 </html>

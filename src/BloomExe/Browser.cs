@@ -196,7 +196,7 @@ namespace Bloom
 			{
 				// Note: this is only used for the Undo button in the toolbar;
 				// ctrl-z is handled in JavaScript directly.
-				var result = RunJavaScript("calledByCSharp ? 'y' : 'f'");
+				var result = RunJavaScript("(typeof calledByCSharp === 'undefined') ? 'f' : 'y'");
 				if (result == "y")
 				{
 					if (RunJavaScript("calledByCSharp.handleUndo()") == "fail")
@@ -259,7 +259,7 @@ namespace Bloom
 			{
 				if (_browser == null)
 					return false;
-				var result = RunJavaScript("calledByCSharp ? 'y' : 'f'");
+				var result = RunJavaScript("(typeof calledByCSharp === 'undefined') ? 'f' : 'y'");
 				if (result == "y")
 				{
 					result = RunJavaScript("calledByCSharp.canUndo()");
@@ -463,7 +463,7 @@ namespace Bloom
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
 				Process.Start("Firefox.exe", '"' + _url + '"');
 			else
-				Process.Start("xdg-open", _url);
+				Process.Start("xdg-open", Uri.EscapeUriString(_url));
 		}
 
 		public void OnOpenPageInStylizer(object sender, EventArgs e)
@@ -571,8 +571,8 @@ namespace Bloom
 		[DefaultValue(true)]
 		public bool ScaleToFullWidthOfPage { get; set; }
 
-		// NB: make sure you called HtmlDom.SetBaseForRelativePaths() if the temporary document might contain
-		// references to files in the directory of the original HTML file it is derived from,
+		// NB: make sure you assigned HtmlDom.BaseForRelativePaths if the temporary document might
+		// contain references to files in the directory of the original HTML file it is derived from,
 		// 'cause that provides the information needed
 		// to fake out the browser about where the 'file' is so internal references work.
 		public void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null)

@@ -150,9 +150,16 @@ namespace Bloom.Book
 				
 				if (string.IsNullOrEmpty(display))
 				{
+					//the SIL-LEAD project, SHRP (around 2012-2016) had books that just had an English name, before we changed Bloom
+					//to not show English names. But the order was also critical. So we want those old books to go ahead and use their
+					//English names.
+					var englishTitle = title.GetExactAlternative("en").ToLower();
+					var SHRPMatches = new string[] {"p1", "p2", "p3", "p4", "SHRP"};
+					var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(m => englishTitle.Contains(m.ToLower()));
+
 					//if this book is one of the ones we're editing in our collection, it really
 					//needs a title in our main language, it would be confusing to show a title from some other langauge
-					if (IsEditable ||  title.Empty)
+					if(!couldBeOldStyleUgandaSHRPBook && (IsEditable || title.Empty))
 					{
 						display = LocalizationManager.GetString("CollectionTab.TitleMissing", "Title Missing",
 							"Shown as the thumbnail caption when the book doesn't have a title");
@@ -1478,7 +1485,8 @@ namespace Bloom.Book
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
+				var msg = LocalizationManager.GetString("Errors.CouldNotSavePage", "Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, msg);
 			}
 		}
 

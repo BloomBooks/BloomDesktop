@@ -122,14 +122,15 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
     var theClasses = 'ui-tooltip-shadow ui-tooltip-plain';
 
     var pos = {
-            at: 'right center',
+        at: 'right center',
         my: 'left center',
         viewport: $(window),
         adjust: { method: 'none' }
         };
 
-    if (target.hasClass('coverBottomBookTopic'))
-        pos.adjust = { y: -20 };
+    // Anybody know why this was here!? BL-1125 complains about this very thing.
+    //if (target.hasClass('coverBottomBookTopic'))
+    //    pos.adjust = { y: -20 };
 
     //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.
     //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
@@ -148,7 +149,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
 
     // determine onFocusOnly
     var onFocusOnly = whatToSay.startsWith('*');
-    onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus');
+    onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || mightCauseHorizontallyOverlappingBubbles(targetElement);
 
     // get the localized string
     if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
@@ -409,17 +410,19 @@ function MakeSourceTextDivForGroup(group) {
         var shellEditingMode = false;
         items.each(function() {
             var iso = $(this).attr('lang');
-            var languageName = localizationManager.getLanguageName(iso);
-            if (!languageName)
-                languageName = iso;
-            var shouldShowOnPage = (iso === vernacularLang)  /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
+            if (iso) {
+                var languageName = localizationManager.getLanguageName(iso);
+                if (!languageName)
+                    languageName = iso;
+                var shouldShowOnPage = (iso === vernacularLang) /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
-            // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
-            if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
+                // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
+                if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
 
-                $(list).append('<li id="'+iso+'"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
-                if (iso === GetSettings().defaultSourceLanguage) {
-                    selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
+                    $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
+                    if (iso === GetSettings().defaultSourceLanguage) {
+                        selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
+                    }
                 }
             }
         });
@@ -440,22 +443,23 @@ function MakeSourceTextDivForGroup(group) {
   else {
     $(divForBubble).remove();//no tabs, so hide the bubble
     return;
-  }
+    }
+
+    var showEvents = false;
+    var hideEvents = false;
+    var shouldShowAlways = true;
+
+
+    if(mightCauseHorizontallyOverlappingBubbles(group)) {
+        showEvents = 'focusin';
+        hideEvents = 'focusout';
+        shouldShowAlways = false;
+    }
 
     // turn that tab thing into a bubble, and attach it to the original div ("group")
-  $(group).each(function () {
+    $(group).each(function () {
       // var targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
 
-      showEvents = false;
-      hideEvents = false;
-      shouldShowAlways = true;
-
-        //todo: really, this should detect some made-up style, so that we can control this behavior via the stylesheet
-        if($(this).hasClass('wordsDiv')) {
-            showEvents = 'focusin';
-            hideEvents = 'focusout';
-            shouldShowAlways = false;
-        }
       $(this).qtip({
           position: {
                 my: 'left top',
@@ -487,6 +491,19 @@ function MakeSourceTextDivForGroup(group) {
           hide: hideEvents
       });
   });
+}
+
+function mightCauseHorizontallyOverlappingBubbles(element) {
+    //we can't actually know for sure if overlapping would happen, but
+    //we can be very conservative and say that if the text
+    //box isn't taking up the whole width, it *might* cause
+    //an overlap
+    if(element.hasClass('bloom-alwaysShowBubble')) {
+        return false;
+    }
+    var availableWidth = $(element).closest(".marginBox").width();
+    var kTolerancePixels = 10; //if the box is just a tiny bit smaller, there's not going to be anything to overlap
+    return $(element).width() < (availableWidth - kTolerancePixels);
 }
 
 //add a delete button which shows up when you hover
@@ -717,20 +734,21 @@ jQuery.fn.IsOverflowing = function () {
     //console.log('s='+element.scrollHeight+' c='+element.clientHeight);
 
     //
-    return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
-            element.scrollWidth > element.clientWidth  ||
-        elemBottom > parentBottom + focusedBorderFudgeFactor;
+    return  element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
+            element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor ||
+            elemBottom > parentBottom + focusedBorderFudgeFactor;
 };
 
 // Checks for overflow and adds/removes the proper class
 // N.B. This function is specifically designed to be called from within AddOverflowHandler()
 function MarkOverflowInternal(box) {
-    //$(container).find("div.bloom-editable, textarea").each(function () {
     var $this = $(box);
-    if ($this.IsOverflowing())
+    if ($this.IsOverflowing()) {
         $this.addClass('overflow');
-    else {
+        $this.closest('.bloom-page').addClass('pageOverflows');
+    } else {
         $this.removeClass('overflow');
+        RemovePageOverflowIfAppropriate($this.closest('.bloom-page'));
 
         //now, thing is, while the text may fit in our box, our box may not fit our parent. Or grandparent, etc.
         //It could be that we could just do this on up the hiearchy? For now, here's the case we know is important,
@@ -740,7 +758,14 @@ function MarkOverflowInternal(box) {
             MarkOverflowInternal(splitterParents[0]);
         }
     } // If it's not here, this won't hurt anything.
-    //});
+}
+
+// Make sure there are no boxes with class 'overflow' on the page before removing
+// the page-level overflow marker 'pageOverflows'
+function RemovePageOverflowIfAppropriate(page) {
+    var $page = $(page);
+    if (!$page.find('.overflow').length)
+        $page.removeClass('pageOverflows');
 }
 
 // When a div is overfull,
@@ -752,6 +777,10 @@ function AddOverflowHandler(container) {
     $(container).find(".bloom-editable").each(function (e) {
         var lineHeight = parseInt($(this).css("line-height"), 10);
         var minHeight = parseInt($(this).css("min-height"), 10);
+        var overflowy = $(this).css("overflow-y");
+        if (overflowy == 'hidden') {
+            $(this).css("min-height", lineHeight); // BL-1034 premature scroll bars
+        }
         if (lineHeight > minHeight) {
             $(this).addClass('Layout-Problem-Detected');
             $(this).attr("LayoutProblem", "min-height is less than lineHeight");
@@ -772,7 +801,7 @@ function AddOverflowHandler(container) {
         setTimeout(function () {
             MarkOverflowInternal(target);
 
-            //REVIEW: why is this here, in the overflow detection? 
+            //REVIEW: why is this here, in the overflow detection?
 
             // This will make sure that any language tags on this div stay in position with editing.
             // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
@@ -1004,89 +1033,8 @@ function SetBookCopyrightAndLicenseButtonVisibility(container) {
     $(container).find("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
 }
 
-function FindOrCreateTopicDialogDiv() {
-    var dialogContents = $("body").find("div#topicChooser");
-    if (!dialogContents.length) {
-        var noTopic = localizationManager.getText("Topics.NoTopic");
-        dialogContents = $("<div id='topicChooser' title='Topics'/>").appendTo($("body"));
 
-        var topics = JSON.parse(GetSettings().topics).sort();
-        // var topics = ["Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment",
-        // "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Tradition"];
 
-        dialogContents.append("<ol id='topics'></ol>");
-        $("ol#topics").append("<li class='ui-widget-content'>(" + noTopic + ")</li>");
-        for (i in topics) {
-            $("ol#topics").append("<li class='ui-widget-content'>" + topics[i] + "</li>");
-        }
-
-        $("#topics").selectable();
-
-        //This weird stuff is to make up for the jquery uI not automatically theme-ing... without the following,
-        //when you select an item, nothing visible happens (from stackoverflow)
-        $("#topics").selectable({
-            unselected: function() {
-                $(":not(.ui-selected)", this).each(function() {
-                    $(this).removeClass('ui-state-highlight');
-                });
-            },
-            selected: function() {
-                $(".ui-selected", this).each(function() {
-                    $(this).addClass('ui-state-highlight');
-                });
-            }
-        });
-        $("#topics li").hover(
-            function() {
-                $(this).addClass('ui-state-hover');
-            },
-            function() {
-                $(this).removeClass('ui-state-hover');
-            });
-    }
-    return dialogContents;
-}
-
-//note, the normal way is for the user to click the link on the qtip.
-//But clicking on the exiting topic may be natural too, and this prevents
-//them from editing it by hand.
-function SetupShowingTopicChooserWhenTopicIsClicked(container) {
-    $(container).find("div[data-book='topic']").click(function () {
-        if ($(this).css('cursor') == 'not-allowed')
-            return;
-        ShowTopicChooser();
-    });
-}
-
-// This is called directly from Bloom via RunJavaScript()
-function ShowTopicChooser() {
-    var dialogContents = FindOrCreateTopicDialogDiv();
-    var dlg = $(dialogContents).dialog({
-        autoOpen: "true",
-        modal: "true",
-        //zIndex removed in newer jquery, now we get it in the css
-        buttons: {
-            "OK": function () {
-                var t = $("ol#topics li.ui-selected");
-                if (t.length) {
-                    var topicText = t[0].innerHTML;
-                    if (topicText.startsWith("(")) {
-                        $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text("");
-                    } else {
-                        $("div[data-book='topic']").filter("[class~='bloom-contentNational1']").text(t[0].innerHTML);
-                    }
-                }
-                $(this).dialog("close");
-            }
-        }
-    });
-
-    //make a double click on an item close the dialog
-    dlg.find("li").dblclick(function () {
-        var x = dlg.dialog("option", "buttons");
-        x['OK'].apply(dlg);
-    });
-}
 
 function DecodeHtml(encodedString) {
     return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&#169;/g, "©");
@@ -1133,6 +1081,53 @@ $.fn.hasAttr = function (name) {
     return (typeof attr !== 'undefined' && attr !== false);
 };
 
+// Some custom templates have image containers embedded in bloom-editable divs, so that the text can wrap
+// around the picture. The problems is that the user can do (ctrl+a, del) to start over on the text, and
+// inadvertantly remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
+// tries to safeguard element bearing that class.
+function PreventRemovalOfSomeElements(container) {
+
+    /* this approach showed promise, but only the first time you do ctrl+all, DEL. After the undo, the bindings were not redone.
+    $(container).find(".bloom-preventRemoval").bind("DOMNodeRemoved", function (e) {
+        alert("Removed: " + e.target.nodeName);
+        //this threw a NS_ERROR but I don't know why
+        //document.execCommand('undo', false, null);
+    });
+
+    the problem with this one is the event was raised when we weren't actually deleting it
+    $(container).bind("DOMNodeRemoved", function (e) {
+        if ($(e.target).hasClass('bloom-preventRemoval')) {
+            alert("Removed: " + e.target.nodeName);
+            document.execCommand('undo', false, null);
+        }
+        //this threw a NS_ERROR but I don't know why
+        //document.execCommand('undo', false, null);
+    });
+    */
+
+
+    $(container).find(".bloom-preventRemoval").closest(".bloom-editable").each(function () {
+        var numberThatShouldBeThere = $(this).find(".bloom-preventRemoval").length;
+        //Note, the input event is *not* fired on the element itself in the (ctrl+a, del) scenario, hence
+        //the need to go up to the parent editable and attach the event their.
+        $(this).on("input", function (e) {
+            if ($(this).find(".bloom-preventRemoval").length < numberThatShouldBeThere) {
+                document.execCommand('undo');
+            }
+        });
+    });
+
+//OK, now what if the above fails in some scenario? This adds a last-resort way of getting
+    //bloom-editable back to the state it was in when the page was first created, by having
+    //the user type in RESETRESET and then clicking out of the field.
+    $(container).find(".bloom-editable").blur(function (e) {
+        if ($(this).html().indexOf('RESETRESET') > -1) {
+            $(this).remove();
+            alert("Now go to another book, then back to this book and page.");
+        }
+    });
+}
+
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
@@ -1147,6 +1142,7 @@ function SetupElements(container) {
         }
     });
 
+    PreventRemovalOfSomeElements(container);
     AddToolbox(container);
 
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
@@ -1169,17 +1165,18 @@ function SetupElements(container) {
         var x = $(this).html();
 
         //the first time we see a field editing in Firefox, it won't have a p opener
-        if (!x.startsWith('<p>')) {
-            x = "<p>" + x;
+        if (!x.trim().startsWith('<p')
+            && !x.trim().startsWith('<div')) { // in cases where we are embedding images inside of bloom-editables, the paragraphs actually have to go at the end, for reason of wrapping. See SHRP C1P4 Pupils Book
+            x = "<p>" +x;
         }
 
         x = x.split("<br>").join("</p><p>");
 
         //the first time we see a field editing in Firefox, it won't have a p closer
-        if (!x.endsWith('</p>')) {
+        if (!x.trim().endsWith('</p>')) {
             x = x + "</p>";
         }
-        $(this).html(x);
+        $(this).html(x.trim());
 
         //If somehow you get leading empty paragraphs, FF won't let you delete them
 //        $(this).find('p').each(function () {
@@ -1210,7 +1207,7 @@ function SetupElements(container) {
 
         if (!requireParagraphs) {
             // Work around a bug in geckofx. The effect was that if you clicked in a completely empty text box
-            // the cursor is oddly positioned and typing does nothing. There is evidence that what is going on is that the focus 
+            // the cursor is oddly positioned and typing does nothing. There is evidence that what is going on is that the focus
             // is on the English qtip (in the FF inspector, the qtip block highlights when you type). https://jira.sil.org/browse/BL-786
             // This bug mentions the cursor being in the wrong place: https://bugzilla.mozilla.org/show_bug.cgi?id=904846
             // so the solution is just to insert a span that you can't see, here during the focus event.
@@ -1225,10 +1222,9 @@ function SetupElements(container) {
             return;
         }
 
-        if ($(this).text() == '') {
+        if ($(this).text() == '' && $(this).find("p").length == 0) {
             //stick in a paragraph, which makes FF do paragraphs instead of BRs.
             $(this).html('<p>&nbsp;</p>'); // &zwnj; (zero width non-joiner) would be better but it makes the cursor invisible
-
             //now select that space, so we delete it when we start typing
 
             var el = $(this).find('p')[0].childNodes[0];
@@ -1563,15 +1559,24 @@ function SetupElements(container) {
 
     SetOverlayForImagesWithoutMetadata(container);
 
-    SetupShowingTopicChooserWhenTopicIsClicked(container);
+    //note, the normal way is for the user to click the link on the qtip.
+    //But clicking on the existing topic may be natural too, and this prevents
+    //them from editing it by hand.
+    $(container).find("div[data-book='topic']").click(function () {
+        if ($(this).css('cursor') == 'not-allowed')
+            return;
+        TopicChooser.showTopicChooser();
+    });
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them
     // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-    $(container).find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function () {
-        if ($(this).find("textarea, div").length > 1) {
-            MakeSourceTextDivForGroup(this);
-        }
-    });
+    if ($(container).find(".bloom-preventSourceBubbles").length == 0) {
+        $(container).find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function() {
+            if ($(this).find("textarea, div").length > 1) {
+                MakeSourceTextDivForGroup(this);
+            }
+        });
+    }
 
     $(container).find(".bloom-imageContainer img").each(function() {
         SetupImage(this);
@@ -1596,9 +1601,12 @@ function SetupElements(container) {
         }
     });
 
-    $(container).find('.bloom-editable').longPress();
+    getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
+        if (response === 'Yes')
+            $(container).find('.bloom-editable').longPress();
+    });
 
-    //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed, 
+    //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed,
     //a blank line is shown and the letter pressed shows up after that.
     //This detects that situation when we type the first key after the deletion, and first deletes the <br></br>.
     $(container).find('.bloom-editable').keypress(function (event) {
@@ -1616,7 +1624,8 @@ function SetupElements(container) {
             //they have also deleted the formatButton, so put it back in
             // console.log('attaching'); REVIEW: this shows that we're doing the attaching on the first character entered, even though it appears the editor was already attached.
             //so we actually attach twice. That's ok, the editor handles that, but I don't know why we're passing the if, and it could be improved.
-            editor.AttachToBox(this);
+            if ($(this).closest('.bloom-userCannotModifyStyles').length == 0)
+                editor.AttachToBox(this);
         }
     });
 
@@ -1634,14 +1643,14 @@ function OneTimeSetup() {
 //Earlier, to work around a FF bug, we made a text box non-empty so that the cursor would should up correctly.
 //Now, they have entered something, so remove it
 function FixUpOnFirstInput() {
-    //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason, 
+    //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason,
     //and that gets characters in the wrong place because this messes with the insertion point. So now
     //we check to see if the space is still there before touching it
-    if ($(this).html().indexOf("&nbsp;") == 0) { 
+    if ($(this).html().indexOf("&nbsp;") == 0) {
         //earlier we stuck a &nbsp; in to work around a FF bug on empty boxes.
         //now remove it a soon as they type something
 
-        
+
         // this caused BL-933 by somehow making us lose the on click event link on the formatButton
     //   $(this).html($(this).html().replace('&nbsp;', ""));
 

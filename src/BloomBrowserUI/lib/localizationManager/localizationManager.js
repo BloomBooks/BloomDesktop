@@ -1,5 +1,6 @@
-/// <reference path="jquery.d.ts" />
-/// <reference path="misc-types.d.ts" />
+/// <reference path="../jquery.d.ts" />
+/// <reference path="../misc-types.d.ts" />
+/// <reference path="../../bookEdit/js/getIframeChannel.ts" />
 /**
 * L10NSharp LocalizationManager for javascript.
 *
@@ -80,7 +81,9 @@ var LocalizationManager = (function () {
     };
 
     /**
-    * Gets translated text.
+    * WARNING! This gets the translated text only if it is already loaded. Otherwise it just gives English back and will give translation next time.
+    * Instead, use asyncGetTextInLang().
+    *
     * Additional parameters after the englishText are treated as arguments for SimpleDotNetFormat.
     * @param {String} stringId
     * @param {String} [englishText]
@@ -122,13 +125,59 @@ var LocalizationManager = (function () {
             text = englishText;
         }
 
+        text = HtmlDecode(text);
+
         // is this a string.format style request?
         if (args.length > 0) {
             // Do the formatting.
             text = SimpleDotNetFormat(text, args);
         }
 
-        return HtmlDecode(text);
+        return text;
+    };
+
+    /* Returns a promise to get the translation
+    *
+    * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
+    * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
+    *  @example
+    * asyncGetTextInLang('topics.health','Health", "UI")
+    *      .done(translation => {
+    *          $(this).text(translation);
+    *      })
+    *      .fail($(this).text("?Health?";
+    * @example
+    * asyncGetTextInLang('topics.health','My name is {0}", "UI", "John")
+    *      .done(translation => {
+    *          $(this).text(translation);
+    *      });
+    
+    */
+    LocalizationManager.prototype.asyncGetTextInLang = function (id, englishText, langId) {
+        var args = [];
+        for (var _i = 0; _i < (arguments.length - 3); _i++) {
+            args[_i] = arguments[_i + 3];
+        }
+        // We already get a promise from the async call, and could just return that.
+        // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
+        //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
+        var deferred = new $.Deferred();
+        var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
+
+        //when the async call comes back, we massage the text
+        promise.done(function (text) {
+            text = HtmlDecode(text);
+
+            // is this a C#-style string.format style request?
+            if (args.length > 0) {
+                text = SimpleDotNetFormat(text, args);
+            }
+            deferred.resolve(text);
+        });
+        promise.fail(function () {
+            return deferred.fail();
+        });
+        return deferred.promise();
     };
 
     /**

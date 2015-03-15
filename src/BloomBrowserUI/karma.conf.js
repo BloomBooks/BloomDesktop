@@ -20,7 +20,7 @@ module.exports = function (config) {
             'bookEdit/js/interIframeChannel.js',
             'bookEdit/js/getIframeChannel.js',
             'bookEdit/test/interIframeChannelInitializer.js',
-            'lib/localizationManager.js',
+            'lib/localizationManager/localizationManager.js',
             'lib/jquery.i18n.custom.js',
             'lib/split-pane/split-pane.js',
             'lib/long-press/jquery.mousewheel.js',
@@ -40,6 +40,8 @@ module.exports = function (config) {
             '**/StyleEditor/StyleEditor.js',
             // as long as the test filename is in the test/specs folder, it will be included in the test run
             'test/specs/**/*.js',
+
+            'lib/**/*Spec.js',
 
             // synphony files
             'bookEdit/js/libsynphony/underscore_min_152.js',

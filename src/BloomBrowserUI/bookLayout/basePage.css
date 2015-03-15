@@ -67,6 +67,14 @@ So if you change this, change it there. Note, this might not be the best long-te
 To handling the mis-match.*/
   font-size: 10pt;
 }
+/* gridItem means this is a page thumbnail */
+.gridItem .pageOverflows {
+  background-image: url("../images/Attention.svg");
+  /* red triangle with exclamation point */
+  background-position: bottom;
+  background-repeat: no-repeat;
+  background-size: 70%;
+}
 DIV.ui-tooltip-content {
   overflow: visible !important;
   font-size: 10pt;
@@ -193,29 +201,57 @@ preview.css.
   width: 170mm;
   height: 267mm;
 }
+.A4Portrait .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 170mm;
+}
 .A4Landscape .marginBox {
   width: 257mm;
   height: 180mm;
+}
+.A4Landscape .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 257mm;
 }
 .A5Portrait .marginBox {
   width: 108mm;
   height: 180mm;
 }
+.A5Portrait .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 108mm;
+}
 .A5Landscape .marginBox {
   width: 170mm;
   height: 118mm;
+}
+.A5Landscape .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 170mm;
 }
 .A6Portrait .marginBox {
   width: 65mm;
   height: 118mm;
 }
+.A6Portrait .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 65mm;
+}
 .A6Landscape .marginBox {
   width: 108mm;
   height: 75mm;
 }
+.A6Landscape .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 108mm;
+}
 .B5Portrait .marginBox {
   width: 136mm;
   height: 220mm;
+}
+.B5Portrait .marginBox IMG {
+  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  max-width: 136mm;
 }
 .bloom-page:nth-of-type(odd) .marginBox {
   left: 15mm;
@@ -255,8 +291,11 @@ H2 {
 .customPage .bloom-imageContainer {
   width: 99%;
   height: 98%;
-  /*above so buttons show*/
   z-index: 1000;
+  overflow: hidden;
+}
+.customPage .bloom-editable {
+  overflow-y: hidden;
 }
 .customPage .split-pane-component {
   min-height: 1.5em;

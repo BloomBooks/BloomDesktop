@@ -1,6 +1,6 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
-/// <reference path="../../lib/localizationManager.ts" />
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
 /// <reference path="../../lib/jquery.alphanum.d.ts"/>
@@ -510,6 +510,8 @@ var StyleEditor = (function () {
         }
         this._previousBox = targetBox;
 
+        $('#format-toolbar').remove(); // in case there's still one somewhere else
+
         // put the format button in the editable text box itself, so that it's always in the right place.
         // unfortunately it will be subject to deletion because this is an editable box. But we can mark it as uneditable, so that
         // the user won't see resize and drag controls when they click on it
@@ -764,7 +766,12 @@ var StyleEditor = (function () {
         if (this.shouldSetDefaultRule()) {
             return localizationManager.getText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName);
         }
-        var lang = $(this.boxBeingEdited).attr('lang');
+
+        //BL-982 Use language name that appears on text windows
+        var iso = $(this.boxBeingEdited).attr('lang');
+        var lang = localizationManager.getLanguageName(iso);
+        if (!lang)
+            lang = iso;
         return localizationManager.getText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName);
     };
 
