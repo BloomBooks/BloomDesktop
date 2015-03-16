@@ -1,23 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Drawing;
-using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
-using Bloom.Properties;
-using Bloom.web;
 using Gecko;
 using Palaso.Xml;
-#if !__MonoCS__
-using IWshRuntimeLibrary;
-#endif
 using L10NSharp;
 
 namespace Bloom.Edit
@@ -572,6 +565,23 @@ namespace Bloom.Edit
 					continue; // or crash? How can this happen?
 				result.Add(page);
 				var pageThumbnail = pageDoc.ImportNode(node, true);
+
+				// BL-1112: Reduce size of images in page thumbnails.
+				// We are setting the src to empty so that we can use JavaScript to request the thumbnails
+				// in a controlled manner that should reduce the likelihood of not receiving the image quickly
+				// enough and displaying the alt text rather than the image.
+				var imgNodes = pageThumbnail.SelectNodes(".//img");
+				if (imgNodes != null)
+				{
+					foreach (XmlNode imgNode in imgNodes)
+					{
+						var attr = pageDoc.CreateAttribute("thumb-src");
+						attr.Value = imgNode.Attributes["src"].Value;
+						imgNode.Attributes.Append(attr);
+						imgNode.Attributes["src"].Value = "";
+					}
+				}
+
 				var cellDiv = pageDoc.CreateElement("div");
 				cellDiv.SetAttribute("class", ClassForGridItem);
 				var gridId = GridId(page);
