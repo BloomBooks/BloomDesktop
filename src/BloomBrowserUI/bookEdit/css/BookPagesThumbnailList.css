@@ -11,32 +11,32 @@ BODY {
   /* default = A5Portrait */
   transform-style: preserve-3d;
 }
-.pageContainer .A5Landscape {
+.pageContainer.A5Landscape {
   height: 51px;
   width: 69px;
 }
-.pageContainer .A5Landscape .bloom-page {
+.pageContainer.A5Landscape .bloom-page {
   transform: scale(0.08);
 }
-.pageContainer .A4Landscape {
+.pageContainer.A4Landscape {
   height: 54px;
   width: 74px;
 }
-.pageContainer .A4Landscape .bloom-page {
+.pageContainer.A4Landscape .bloom-page {
   transform: scale(0.061);
 }
-.pageContainer .A4Portrait {
+.pageContainer.A4Portrait {
   height: 62px;
   width: 46px;
 }
-.pageContainer .A4Portrait .bloom-page {
+.pageContainer.A4Portrait .bloom-page {
   transform: scale(0.05);
 }
-.pageContainer .B5Portrait {
+.pageContainer.B5Portrait {
   height: 63px;
   width: 46px;
 }
-.pageContainer .B5Portrait .bloom-page {
+.pageContainer.B5Portrait .bloom-page {
   transform: scale(0.06);
 }
 .pageContainer .bloom-page {
