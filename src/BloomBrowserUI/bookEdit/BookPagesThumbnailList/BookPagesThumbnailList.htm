@@ -31,11 +31,29 @@
             jQuery('.gridItem').click(function () {
                 fireCSharpEvent("gridClick", $(this).attr('id'));
             });
+
+            setTimeout(loadNextThumbnail, 100);
         });
         function fireCSharpEvent(eventName, eventData) {
 
             var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
             document.dispatchEvent(event);
+        }
+
+        function loadNextThumbnail() {
+
+            var nextImg = jQuery('body').find('img[thumb-src]').first();
+
+            // stop processing if there are no more images
+            if ((!nextImg) || (nextImg.length === 0)) return;
+
+            var img = nextImg[0];
+
+            var src = img.getAttribute('thumb-src') + '?thumbnail=1';
+            img.removeAttribute('thumb-src');
+            img.src = src;
+
+            setTimeout(loadNextThumbnail, 100);
         }
     </script>
     <title></title>
