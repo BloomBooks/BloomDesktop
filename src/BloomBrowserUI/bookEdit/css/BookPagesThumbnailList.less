@@ -1,0 +1,83 @@
+// C# used to replace this with the desired background color,
+// but the switch to a separate less/css file defeated that mechanism.
+@DarkGray:#404040;
+BODY {
+    background-color: @DarkGray;
+}
+.pageContainer {
+    padding: 3px;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: inline-block;
+    height: 65px; width: 47px; /* default = A5Portrait */
+
+    .A5Landscape {
+        height: 51px;
+        width: 69px;
+        .bloom-page {
+            transform: scale(0.08);
+        }
+    }
+    .A4Landscape {
+        height: 54px;
+        width: 74px;
+        .bloom-page {
+            transform: scale(0.061);
+        }
+    }
+    .A4Portrait {
+        height: 62px;
+        width: 46px;
+        .bloom-page {
+            transform: scale(0.05);
+        }
+    }
+    .B5Portrait {
+        height: 63px;
+        width: 46px;
+        .bloom-page {
+            transform: scale(0.06);
+        }
+    }
+
+    //http://stackoverflow.com/questions/17824060/ios-safari-runs-out-of-memory-with-webkit-transform
+    transform-style: preserve-3d;
+    .bloom-page {
+        backface-visibility: hidden;
+        transform: scale(0.074); // default = A5Portrait
+        transform-origin: left top;
+    }
+}
+
+.gridSelected .pageContainer { padding: 1px; border: 2px solid rgb(255, 255, 163); }
+
+.gridItem {
+    width: 80px;
+    height: 105px; // BL-336 small increase
+    opacity: 1;
+    //overflow:hidden;
+    &:nth-child(even) {
+        .thumbnailCaption {
+            text-align: left;
+        }
+    }
+    &:nth-child(odd) {
+        .pageContainer {
+            float: right;
+        }
+    }
+}
+
+/* div.gridItem.dragging { opacity: .8; } */
+.thumbnailCaption {
+    position: absolute;
+    top: 63px;
+    color: white;
+    overflow: hidden;
+    text-align:right;
+    width: 80px;
+    // BL336 leave space for 3 lines of caption
+    font-size: 9pt;
+    line-height: 1.3em;
+}
+.placeholder { pointer-events: none; }

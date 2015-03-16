@@ -1,0 +1,75 @@
+BODY {
+  background-color: #404040;
+}
+.pageContainer {
+  padding: 3px;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: inline-block;
+  height: 65px;
+  width: 47px;
+  /* default = A5Portrait */
+  transform-style: preserve-3d;
+}
+.pageContainer .A5Landscape {
+  height: 51px;
+  width: 69px;
+}
+.pageContainer .A5Landscape .bloom-page {
+  transform: scale(0.08);
+}
+.pageContainer .A4Landscape {
+  height: 54px;
+  width: 74px;
+}
+.pageContainer .A4Landscape .bloom-page {
+  transform: scale(0.061);
+}
+.pageContainer .A4Portrait {
+  height: 62px;
+  width: 46px;
+}
+.pageContainer .A4Portrait .bloom-page {
+  transform: scale(0.05);
+}
+.pageContainer .B5Portrait {
+  height: 63px;
+  width: 46px;
+}
+.pageContainer .B5Portrait .bloom-page {
+  transform: scale(0.06);
+}
+.pageContainer .bloom-page {
+  backface-visibility: hidden;
+  transform: scale(0.074);
+  transform-origin: left top;
+}
+.gridSelected .pageContainer {
+  padding: 1px;
+  border: 2px solid #ffffa3;
+}
+.gridItem {
+  width: 80px;
+  height: 105px;
+  opacity: 1;
+}
+.gridItem:nth-child(even) .thumbnailCaption {
+  text-align: left;
+}
+.gridItem:nth-child(odd) .pageContainer {
+  float: right;
+}
+/* div.gridItem.dragging { opacity: .8; } */
+.thumbnailCaption {
+  position: absolute;
+  top: 63px;
+  color: white;
+  overflow: hidden;
+  text-align: right;
+  width: 80px;
+  font-size: 9pt;
+  line-height: 1.3em;
+}
+.placeholder {
+  pointer-events: none;
+}
