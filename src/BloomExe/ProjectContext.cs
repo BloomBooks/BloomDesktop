@@ -32,6 +32,7 @@ namespace Bloom
 		private ILifetimeScope _scope;
 
 		private EnhancedImageServer _httpServer;
+		private CommandAvailabilityPublisher _commandAvailabilityPublisher;
 		public Form ProjectWindow { get; private set; }
 
 		public string SettingsPath { get; private set; }
@@ -61,6 +62,16 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		protected void BuildSubContainerForThisProject(string projectSettingsPath, IContainer parentContainer)
 		{
+			var commandTypes = new[]
+							{
+								typeof (DuplicatePageCommand),
+								typeof (DeletePageCommand),
+								typeof(CutCommand),
+								typeof(CopyCommand),
+								typeof(PasteCommand),
+								typeof(UndoCommand)
+							};
+
 			var editableCollectionDirectory = Path.GetDirectoryName(projectSettingsPath);
 			try
 			{
@@ -78,8 +89,6 @@ namespace Bloom
 						.Where(t => new[]
 						{
 							typeof (TemplateInsertionCommand),
-							typeof (DuplicatePageCommand),
-							typeof (DeletePageCommand),
 							typeof (EditBookCommand),
 							typeof (SendReceiveCommand),
 							typeof (SelectedTabAboutToChangeEvent),
@@ -97,6 +106,10 @@ namespace Bloom
 							typeof (LocalizationChangedEvent),
 							typeof (EditingModel)
 						}.Contains(t));
+
+					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
+						.InstancePerLifetimeScope()
+						.Where(commandTypes.Contains).As<ICommand>();
 
 					var bookRenameEvent = new BookRenamedEvent();
 					builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
@@ -231,6 +244,9 @@ namespace Bloom
 //					}
 					});
 				});
+
+				var allCommands = from c in commandTypes select _scope.Resolve(c) as ICommand;
+				_commandAvailabilityPublisher = new CommandAvailabilityPublisher(allCommands);
 			}
 			catch (FileNotFoundException error)
 			{
@@ -457,6 +473,10 @@ namespace Bloom
 			if (_httpServer != null)
 				_httpServer.Dispose();
 			_httpServer = null;
+
+			if(_commandAvailabilityPublisher != null)
+				_commandAvailabilityPublisher.Dispose();
+			_commandAvailabilityPublisher = null;
 
 			GC.SuppressFinalize(this);
 		}

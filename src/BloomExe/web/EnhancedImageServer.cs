@@ -14,6 +14,7 @@ using L10NSharp;
 using Microsoft.Win32;
 using Palaso.IO;
 using Bloom.Collection;
+using Palaso.Reporting;
 using Palaso.Xml;
 using Palaso.Extensions;
 
@@ -188,6 +189,11 @@ namespace Bloom.web
 				if (ProcessReaders(localPath, info))
 					return true;
 			}
+			if (localPath.StartsWith("error", StringComparison.InvariantCulture))
+			{
+				ProcessError(info);
+				return true;
+			}
 			else if (localPath.StartsWith("i18n/", StringComparison.InvariantCulture))
 			{
 				if (ProcessI18N(localPath, info))
@@ -235,6 +241,24 @@ namespace Bloom.web
 			{
 				return ReadersHandler.HandleRequest(localPath, info, CurrentCollectionSettings);
 			}
+		}
+
+		private static void ProcessError(IRequestInfo info)
+		{
+			// pop-up the error messages if a debugger is attached or an environment variable is set
+			var popUpErrors = Debugger.IsAttached || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DEBUG_BLOOM"));
+
+			var post = info.GetPostData();
+
+			// log the error message
+			var errorMsg = post["message"] + Environment.NewLine + "File: " + post["url"].FromLocalhost()
+				+ Environment.NewLine + "Line: " + post["line"] + " Column: " + post["column"] + Environment.NewLine;
+
+			Logger.WriteMinorEvent(errorMsg);
+			Console.Out.WriteLine(errorMsg);
+
+			if (popUpErrors)
+				ErrorReport.NotifyUserOfProblem(errorMsg);
 		}
 
 		private bool ProcessI18N(string localPath, IRequestInfo info)

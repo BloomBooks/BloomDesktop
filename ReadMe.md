@@ -19,8 +19,8 @@ Each time code is checked in, an automatic build begins on our [TeamCity build s
 
 |            | Windows | Linux |
 | :--------: | :-----: | :---: |
-| Build      | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Win32-default-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Win32-default-debug/)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-default-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-default-debug/) |
-| Unit tests | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Win32-default-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Win32-default-debug-Tests/)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-default-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-default-debug-Tests/)|
+| Build      | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Win32-master-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Win32-master-debug/)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug/) |
+| Unit tests | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Win32-master-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Win32-master-debug-Tests/)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug-Tests/)|
 | JS tests   | | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master--JSTests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master--JSTests/)|
 
 ## Source Code

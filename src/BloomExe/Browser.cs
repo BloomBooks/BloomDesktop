@@ -19,7 +19,6 @@ using Gecko.DOM;
 using Gecko.Events;
 using Palaso.IO;
 using Palaso.Reporting;
-using BloomTemp;
 using Bloom.Workspace;
 
 namespace Bloom
@@ -42,9 +41,6 @@ namespace Bloom
 		private bool _disposed;
 		public event EventHandler OnBrowserClick;
 		public static event EventHandler XulRunnerShutdown;
-
-		private static JavaScriptErrorHandler _jsErrorHandler;
-		private static JavaScriptCallHook _jsCallHook;
 
 		private static int XulRunnerVersion
 		{
@@ -120,20 +116,6 @@ namespace Bloom
 				"is being assigned a //# sourceMappingURL, but already has one"
 			};
 
-			// Do this so we can get the call stack of a JavaScript error
-			_jsErrorHandler = new JavaScriptErrorHandler(errorsToHide);
-			_jsCallHook = new JavaScriptCallHook(_jsErrorHandler);
-			_jsCallHook.JavaScriptError += _jsCallHook_JavaScriptError;
-			using (var jsd = Xpcom.GetService2<jsdIDebuggerService>(Contracts.DebuggerService))
-			{
-				jsd.Instance.SetErrorHookAttribute(_jsErrorHandler);
-				jsd.Instance.SetDebugHookAttribute(_jsCallHook);
-				using (var runtime = Xpcom.GetService2<nsIJSRuntimeService>(Contracts.RuntimeService))
-				{
-					jsd.Instance.ActivateDebugger(runtime.Instance.GetRuntimeAttribute());
-				}
-			}
-
 			// BL-535: 404 error if system proxy settings not configured to bypass proxy for localhost
 			// See: https://developer.mozilla.org/en-US/docs/Mozilla/Preferences/Mozilla_networking_preferences
 			GeckoPreferences.User["network.proxy.http"] = string.Empty;
@@ -141,22 +123,6 @@ namespace Bloom
 			GeckoPreferences.User["network.proxy.type"] = 1; // 0 = direct (uses system settings on Windows), 1 = manual configuration
 
 			Application.ApplicationExit += OnApplicationExit;
-		}
-
-		private static void _jsCallHook_JavaScriptError(object sender, JavaScriptErrorArgs e)
-		{
-			// pop-up the error messages if a debugger is attached or an environment variable is set
-			var popUpErrors = Debugger.IsAttached || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DEBUG_BLOOM"));
-
-			// log the error message
-			var errorMsg = e.Message + Environment.NewLine + "Call stack:" + Environment.NewLine
-						+ e.CallStack + Environment.NewLine;
-
-			Logger.WriteMinorEvent(errorMsg);
-			Console.Out.WriteLine(errorMsg);
-
-			if (popUpErrors)
-				ErrorReport.NotifyUserOfProblem(errorMsg);
 		}
 
 		private static void OnApplicationExit(object sender, EventArgs e)
@@ -286,13 +252,6 @@ namespace Bloom
 		{
 			if (disposing)
 			{
-				if (_jsCallHook != null)
-				{
-					_jsCallHook.JavaScriptError -= _jsCallHook_JavaScriptError;
-					_jsCallHook = null;
-				}
-				_jsErrorHandler = null;
-
 				if (_dependentContent != null)
 				{
 					_dependentContent.Dispose();

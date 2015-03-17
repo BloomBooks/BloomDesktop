@@ -36,7 +36,7 @@ mixin page-cover(label)
 
 mixin chooser-topic
 	//- TODO: Somehow the data-functionOnHintClick doesn't interact well with the new label.bubble method.
-	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode(data-functionOnHintClick="ShowTopicChooser()", data-hint="Click to choose topic")
+	.bloom-translationGroup.coverBottomBookTopic.bloom-readOnlyInTranslationMode.bloom-alwaysShowBubble(data-functionOnHintClick="ShowTopicChooser()", data-hint="Click to choose topic")
 		.bloom-readOnlyInTranslationMode.bloom-editable.Cover-Default-style(data-book="topic")
 
 mixin field-ISBN
