@@ -101,6 +101,46 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
 		}
 
+		/// <summary>
+		/// This is the normal shell book case. PrepareElementsOnPage should create 3 empty divs, one for
+		/// each of the languages in the test settings. The 2 existing divs should still contain their text,
+		/// but the new ones should remain empty.
+		/// </summary>
+		[Test]
+		public void PrepareElementsOnPage_FromShell_MakesVernacularAndNationalEmpty()
+		{
+			var contents = @"<div class='bloom-page numberedPage A5Portrait bloom-monolingual'
+							id='f4a22289-1755-4b79-afc1-5d20eaa892fe'>
+<div class='marginBox'>
+  <div class='bloom-imageContainer'>
+	<img alt='' src='test.png' height='20' width='20'/>
+  </div>
+  <div class='bloom-translationGroup normal-style'>
+	<div style='' class='bloom-editable bloom-content1' contenteditable='true'
+		lang='en'>The Mother said, Nurse!
+			The Nurse answered.</div>
+	<div style='' class='bloom-editable' contenteditable='true'
+		lang='tpi'>Mama i tok: Sista.
+			Sista i tok: Bai mi stori long yu.</div>
+  </div>
+</div></div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+
+			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _collectionSettings.Object);
+
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable') and @contenteditable='true' ]", 5);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(., 'The Mother')]", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='tpi' and contains(., 'Mama i tok')]", 1);
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='xyz' and contains(., 'The Mother')]");
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='xyz' and contains(., 'Mama i tok')]");
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='fr' and contains(., 'The Mother')]");
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='fr' and contains(., 'Mama i tok')]");
+		}
+
 		[Test]
 		public void UpdateContentLanguageClasses_NewPage_AddsContentLanguageClasses()
 		{

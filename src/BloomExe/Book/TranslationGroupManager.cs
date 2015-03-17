@@ -244,14 +244,12 @@ namespace Bloom.Book
 		/// <param name="element"></param>
 		private static void StripOutText(XmlNode element)
 		{
-			
-
-			foreach(XmlNode node in element.SelectNodes(".//*[(self::p or self::br) and not(contains(@class,'bloom-cloneToOtherLanguages'))]"))
+			foreach (XmlNode node in element.SelectNodes("descendant-or-self::*[(self::p or self::br) and not(contains(@class,'bloom-cloneToOtherLanguages'))]"))
 			{
 				node.ParentNode.RemoveChild(node);
 			}
 			// clean up any remaining texts that weren't enclosed
-			foreach(XmlNode node in element.SelectNodes(".//*[not(contains(@class,'bloom-cloneToOtherLanguages'))]//text()"))
+			foreach (XmlNode node in element.SelectNodes("descendant-or-self::*[not(contains(@class,'bloom-cloneToOtherLanguages'))]/text()"))
 			{
 				node.ParentNode.RemoveChild(node);
 			}
