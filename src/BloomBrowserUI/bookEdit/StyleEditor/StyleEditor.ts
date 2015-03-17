@@ -28,6 +28,7 @@ class StyleEditor {
     private ignoreControlChanges: boolean;
     private styles: string[];
     private authorMode: boolean; // true if authoring (rather than translating)
+    private xmatterMode: boolean; // true if we are in xmatter (and shouldn't change fixed style names)
 
     constructor(supportFilesRoot: string) {
         this._supportFilesRoot = supportFilesRoot;
@@ -501,6 +502,11 @@ class StyleEditor {
             ptSize: ptSize, fontName: fontName, lineHeight: lineHeight, wordSpacing: wordSpacing, borderChoice: borderChoice, backColor:backColor, bold:bold, italic:italic, underline:underline, center:center};
     }
 
+    IsPageXMatter(targetBox: HTMLElement):boolean {
+        var $target = $(targetBox);
+        return typeof ($target.closest('.bloom-frontMatter')[0]) !== 'undefined' || typeof ($target.closest('.bloom-backMatter')[0]) !== 'undefined';
+    }
+
     AttachToBox(targetBox: HTMLElement) {
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName)
@@ -511,8 +517,9 @@ class StyleEditor {
         // More dangerous is using it in getCharTabDescription. But as that is launched by a later
         // async request, I think it should be OK.
         iframeChannel.simpleAjaxGet('/bloom/authorMode', function (result) {
-            editor.authorMode = result == "true";
+            editor.authorMode = result == 'true';
         });
+        editor.xmatterMode = this.IsPageXMatter(targetBox);
 
         if (this._previousBox != null) {
             StyleEditor.CleanupElement(this._previousBox);
@@ -563,24 +570,26 @@ class StyleEditor {
                 var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">'
                     + '<div data-i18n="EditTab.FormatDialog.Format" class="bloomDialogTitleBar">Format</div>';
                 if (editor.authorMode) {
-                    html += '<div class="tab-pane" id="tabRoot">'
-                        + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.StyleNameTab">Style Name</h2>'
-                        + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style')
-                        + editor.makeDiv("style-group", "state-initial", null, null,
-                            editor.makeSelect(editor.styles, styleName, 'styleSelect')
-                            + editor.makeDiv('dont-see', null, null, null,
-                                '<span data-i18n="EditTab.FormatDialog.DontSeeNeed">'+"Don't see what you need?"+'</span>'
-                                + ' <a id="show-createStyle" href="" data-i18n="EditTab.FormatDialog.CreateStyle">Create a new style</a>')
-                            + editor.makeDiv('createStyle', null, null, null,
-                                editor.makeDiv(null, null, null, 'EditTab.FormatDialog.NewStyle', 'New style')
-                                + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.FormatDialog.Create" disabled>Create</button>')
-                                + editor.makeDiv("please-use-alpha", null, 'color: red;',
-                                    'EditTab.FormatDialog.PleaseUseAlpha',
-                                    'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".')
-                                + editor.makeDiv("already-exists", null, 'color: red;', 'EditTab.FormatDialog.AlreadyExists',
-                                    'That style already exists. Please choose another name.')))
-                        + "</div>" // end of Style Name tab-page div
-                        + '<div class="tab-page" id="formatPage"><h2 class="tab" data-i18n="EditTab.FormatDialog.CharactersTab">Characters</h2>'
+                    html += '<div class="tab-pane" id="tabRoot">';
+                    if (!editor.xmatterMode) {
+                        html += '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.StyleNameTab">Style Name</h2>'
+                            + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style')
+                            + editor.makeDiv("style-group", "state-initial", null, null,
+                                editor.makeSelect(editor.styles, styleName, 'styleSelect')
+                                + editor.makeDiv('dont-see', null, null, null,
+                                    '<span data-i18n="EditTab.FormatDialog.DontSeeNeed">' + "Don't see what you need?" + '</span>'
+                                    + ' <a id="show-createStyle" href="" data-i18n="EditTab.FormatDialog.CreateStyle">Create a new style</a>')
+                                + editor.makeDiv('createStyle', null, null, null,
+                                    editor.makeDiv(null, null, null, 'EditTab.FormatDialog.NewStyle', 'New style')
+                                    + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.FormatDialog.Create" disabled>Create</button>')
+                                    + editor.makeDiv("please-use-alpha", null, 'color: red;',
+                                        'EditTab.FormatDialog.PleaseUseAlpha',
+                                        'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".')
+                                    + editor.makeDiv("already-exists", null, 'color: red;', 'EditTab.FormatDialog.AlreadyExists',
+                                        'That style already exists. Please choose another name.')))
+                            + "</div>"; // end of Style Name tab-page div
+                    }
+                    html += '<div class="tab-page" id="formatPage"><h2 class="tab" data-i18n="EditTab.FormatDialog.CharactersTab">Characters</h2>'
                         + editor.makeCharactersContent(fonts, current)
                         + '</div>' // end of tab-page div for format
                         + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.MoreTab">More</h2>'
@@ -635,16 +644,18 @@ class StyleEditor {
                 $('#word-space-select').change(function () { editor.changeWordSpace(); });
                 editor.AddQtipToElement($('#word-space-select').parent(), localizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
                 if (editor.authorMode) {
-                    $('#styleSelect').change(function() { editor.selectStyle(); });
-                    (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
-                    $('#style-select-input').on('input', function() { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
-                    $('#style-select-input').get(0).trimNotification = function() { editor.styleStateChange('invalid-characters'); }
-                    $('#show-createStyle').click(function(event) {
-                        event.preventDefault();
-                        editor.showCreateStyle();
-                        return false;
-                    });
-                    $('#create-button').click(function() { editor.createStyle(); });
+                    if (!editor.xmatterMode) {
+                        $('#styleSelect').change(function() { editor.selectStyle(); });
+                        (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
+                        $('#style-select-input').on('input', function() { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
+                        $('#style-select-input').get(0).trimNotification = function() { editor.styleStateChange('invalid-characters'); }
+                        $('#show-createStyle').click(function(event) {
+                            event.preventDefault();
+                            editor.showCreateStyle();
+                            return false;
+                        });
+                        $('#create-button').click(function() { editor.createStyle(); });
+                    }
                     var buttonIds = editor.getButtonIds();
                     for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
                         var button = $('#' + buttonIds[idIndex]);
