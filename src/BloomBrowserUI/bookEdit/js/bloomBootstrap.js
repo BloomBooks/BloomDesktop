@@ -19,6 +19,7 @@ var scripts = [
     'bookEdit/TopicChooser/TopicChooser.js',
     'lib/tabpane.js',
     'bookEdit/js/toolbar/jquery.toolbar.js',
+    'bookEdit/bloomField/bloomField.js',
     'bookEdit/js/bloomEditing.js',
     'lib/split-pane/split-pane.js',
     'bookEdit/js/origami.js',

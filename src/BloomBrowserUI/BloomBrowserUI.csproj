@@ -34,6 +34,8 @@
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.htm" />
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.js" />
     <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.htm" />
+    <Content Include="bookEdit\bloomField\test.htm" />
+    <Content Include="bookEdit\bloomField\bloomField.ts" />
     <Content Include="bookEdit\css\origami.css" />
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
@@ -97,6 +99,7 @@
     <Content Include="bookEdit\test\readerTools.Test.js" />
     <Content Include="bookEdit\test\readerTools_libSynphony.Test.js" />
     <Content Include="bookEdit\test\SynphonyApi.Test.js" />
+    <Content Include="bookField\bloomEditable\test.htm" />
     <Content Include="bookLayout\.guidsForInstaller.xml" />
     <Content Include="bookLayout\collection styles override template.css" />
     <Content Include="bookLayout\languageDisplayTemplate.css" />
@@ -273,6 +276,7 @@
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />
     <TypeScriptCompile Include="bookEdit\StyleEditor\StyleEditor.ts" />
+    <Content Include="bookField\bloomEditable\bloomField.ts" />
     <TypeScriptCompile Include="lib\jquery.alphanum.d.ts" />
     <TypeScriptCompile Include="lib\jquery.i18n.custom.ts" />
     <TypeScriptCompile Include="lib\localizationManager.ts" />
