@@ -46,8 +46,8 @@ namespace Bloom.Workspace
 		public event EventHandler ReopenCurrentProject;
 		private readonly LocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
-		private static UpdateManager _squirrelManager;
-
+		private static UpdateManager _bloomUpdateManager;
+		public enum BloomUpdateMessageVerbosity { Quiet, Verbose }
 		public delegate WorkspaceView Factory(Control libraryView);
 
 //autofac uses this
@@ -182,7 +182,7 @@ namespace Bloom.Workspace
 			if (!Debugger.IsAttached)
 			{
 				if (Settings.Default.AutoUpdate)
-					InitiateSquirrelUpdate();
+					InitiateSquirrelUpdate(BloomUpdateMessageVerbosity.Quiet);
 				else
 					InitiateSquirrelNotifyUpdatesAvailable();
 			}
@@ -488,7 +488,7 @@ namespace Bloom.Workspace
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
 		{
-			if (_squirrelManager != null)
+			if (_bloomUpdateManager != null)
 			{
 				//enhance: ideally, what this would do is show a toast of whatever it is squirrel is doing: checking, downloading, waiting for a restart.
 				MessageBox.Show(this,
@@ -496,14 +496,14 @@ namespace Bloom.Workspace
 						"Bloom is already working on checking for updates."));
 				return;
 			}
-			InitiateSquirrelUpdate();
+			InitiateSquirrelUpdate(BloomUpdateMessageVerbosity.Verbose);
 		}
 
 		/// <summary>
 		/// See if any updates are available and if so do them. Once they are done a notification
 		/// pops up and the user can restart Bloom to run the new version.
 		/// </summary>
-		private async void InitiateSquirrelUpdate()
+		private async void InitiateSquirrelUpdate(BloomUpdateMessageVerbosity verbosity)
 		{
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
 			{
@@ -538,22 +538,28 @@ namespace Bloom.Workspace
 
 				string newInstallDir;
 				ArrangeToDisposeSquirrelManagerOnExit();
-				using (_squirrelManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45, rootDirectory))
+				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45, rootDirectory))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
-					newInstallDir = await UpdateApp(_squirrelManager, null);
+					newInstallDir = await UpdateApp(_bloomUpdateManager, null);
 				}
 				// Since this is in the async method _after_ the await we know the UpdateApp has finished.
-				_squirrelManager = null;
+				_bloomUpdateManager = null;
+				
 				if (newInstallDir == null)
 				{
 					// No updates to install
-					var noneNotifier = new ToastNotifier();
-					noneNotifier.Image.Image = Resources.Bloom.ToBitmap();
-					var failMsg = LocalizationManager.GetString("CollectionTab.UpToDate", "Your Bloom is up to date.");
-					noneNotifier.Show(failMsg, "", 5);
+					if (verbosity == BloomUpdateMessageVerbosity.Verbose)
+					{
+						// Enhance: bring this in quiet mode, but only show it after an update.
+						var noneNotifier = new ToastNotifier();
+						noneNotifier.Image.Image = Resources.Bloom.ToBitmap();
+						var failMsg = LocalizationManager.GetString("CollectionTab.UpToDate", "Your Bloom is up to date.");
+						noneNotifier.Show(failMsg, "", 5);
+					}
 					return;
 				}
+				
 				string version = Path.GetFileName(newInstallDir).Substring("app-".Length); // version folders always start with this
 				var msg = string.Format(LocalizationManager.GetString("CollectionTab.UpdateInstalled", "Update for {0} is ready", "Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom."), version);
 				var action = string.Format(LocalizationManager.GetString("CollectionTab.RestartToUpdate", "Restart to Update"));
@@ -570,10 +576,10 @@ namespace Bloom.Workspace
 		{
 			Application.ApplicationExit += (sender, args) =>
 			{
-				if (_squirrelManager != null)
+				if (_bloomUpdateManager != null)
 				{
-					var temp = _squirrelManager;
-					_squirrelManager = null; // in case more than one notification comes
+					var temp = _bloomUpdateManager;
+					_bloomUpdateManager = null; // in case more than one notification comes
 					temp.Dispose(); // otherwise squirrel throws a nasty exception.
 				}
 			};
@@ -655,13 +661,13 @@ namespace Bloom.Workspace
 					return;
 				UpdateInfo info;
 				ArrangeToDisposeSquirrelManagerOnExit();
-				using (_squirrelManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45))
+				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
-					info = await _squirrelManager.CheckForUpdate();
+					info = await _bloomUpdateManager.CheckForUpdate();
 				}
 				// Since this is in the async method _after_ the await we know the CheckForUpdate has finished.
-				_squirrelManager = null;
+				_bloomUpdateManager = null;
 				if (NoUpdatesAvailable(info))
 					return; // none available.
 				var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available.");
@@ -670,7 +676,7 @@ namespace Bloom.Workspace
 				// it's not even safe to close it. It moves itself out of sight eventually if ignored.
 				var notifier = new ToastNotifier();
 				notifier.Image.Image = Resources.Bloom.ToBitmap();
-				notifier.ToastClicked += (sender, args) => InitiateSquirrelUpdate();
+				notifier.ToastClicked += (sender, args) => InitiateSquirrelUpdate(BloomUpdateMessageVerbosity.Quiet);
 				notifier.Show(msg, action, 10);
 			}
 		}
