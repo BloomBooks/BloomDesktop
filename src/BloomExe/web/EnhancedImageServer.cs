@@ -58,7 +58,6 @@ namespace Bloom.web
 		public string CurrentPageContent { get; set; }
 		public string AccordionContent { get; set; }
 		public bool AuthorMode { get; set; }
-		public bool XmatterMode { get; set; }
 
 		/// <summary>
 		/// There can really only be one of these globally, since ReadersHandler is static. But for
@@ -336,10 +335,6 @@ namespace Bloom.web
 				case "authorMode":
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
-					return true;
-				case "xmatterMode":
-					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(XmatterMode ? "true" : "false");
 					return true;
 				case "topics":
 					return GetTopicList(info);

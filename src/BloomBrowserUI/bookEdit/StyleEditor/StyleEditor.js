@@ -491,6 +491,11 @@ var StyleEditor = (function () {
         return { ptSize: ptSize, fontName: fontName, lineHeight: lineHeight, wordSpacing: wordSpacing, borderChoice: borderChoice, backColor: backColor, bold: bold, italic: italic, underline: underline, center: center };
     };
 
+    StyleEditor.prototype.IsPageXMatter = function (targetBox) {
+        var $target = $(targetBox);
+        return typeof ($target.closest('.bloom-frontMatter')[0]) !== 'undefined' || typeof ($target.closest('.bloom-backMatter')[0]) !== 'undefined';
+    };
+
     StyleEditor.prototype.AttachToBox = function (targetBox) {
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName)
@@ -504,9 +509,7 @@ var StyleEditor = (function () {
         iframeChannel.simpleAjaxGet('/bloom/authorMode', function (result) {
             editor.authorMode = result == 'true';
         });
-        iframeChannel.simpleAjaxGet('/bloom/xmatterMode', function (result) {
-            editor.xmatterMode = result == 'true';
-        });
+        editor.xmatterMode = this.IsPageXMatter(targetBox);
 
         if (this._previousBox != null) {
             StyleEditor.CleanupElement(this._previousBox);

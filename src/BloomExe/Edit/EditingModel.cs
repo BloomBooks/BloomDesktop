@@ -527,22 +527,6 @@ namespace Bloom.Edit
 
 			_server.CurrentBook = _currentlyDisplayedBook;
 			_server.AuthorMode = ShowTemplatePanel;
-			_server.XmatterMode = IsCurrentPageXmatter;
-		}
-
-		private bool IsCurrentPageXmatter
-		{
-			get
-			{
-				var bloomPage = _domForCurrentPage.SelectSingleNode("//body/div");
-				if (bloomPage == null)
-				{
-					Debug.Fail("No bloomPage in IsCurrentPageXmatter!");
-					return true; // If something major is wrong, use the more restrictive StyleEditor
-				}
-				var classList = bloomPage.GetAttribute("class");
-				return classList.Contains("bloom-frontMatter") || classList.Contains("bloom-backMatter");
-			}
 		}
 
 		/// <summary>
