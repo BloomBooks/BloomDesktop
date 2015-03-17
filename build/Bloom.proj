@@ -138,97 +138,7 @@
 			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"/>
 	</Target>
 
-  <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
-		Condition="'$(OS)'=='Windows_NT'">
-	<!-- USES THESE PROPERTIES: channel, Version, BuildConfigurationID -->
-
-
-	<!-- 1) we customize and upload a version of DownloadPointers, named after our channel (RELEASE or BETA), and upload it.
-			That file is then iframe'd in to a download page somewhere.
-
-		 2) we customize and just save a version of appcast.xml, which is used by our crude in-app downloader/updater
-	-->
-
-	<!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
-	<Copy SourceFiles ="$(RootDir)\src\Installer\DownloadPointers.htm"
-		   DestinationFolder ="$(RootDir)\output\installer"/>
-
-	<!-- replace some parts of the file with the version number & date -->
-
-	  <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-				 DatePlaceholder='RELEASE_DATE'
-				Regex='CHANNEL_LABEL'
-				 ReplacementText ="$(channel)" />
-
-	 <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-				 DatePlaceholder='RELEASE_DATE'
-				Regex='VERSION_NUMBER'
-				 ReplacementText ="$(Version)" />
-
-
-	<!--- also copy this appcast.xml file, which is used by the in-app update downloader -->
-	<Copy SourceFiles ="$(RootDir)\src\Installer\appcast.xml"
-		   DestinationFolder ="$(RootDir)\output\installer"/>
-
-	<!-- In TeamCity, this appcast.xml file needs to be listed in the General Settings:Artifact paths, so that it can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt___/.lastSuccessful/appcast.xml   (note the bt___ part is fragile, it's dependent on the actual project in TeamCity,
-		but I haven't seen how to get at that value programmatically. TC docs just tell you to look at the URL in the browser :-/  Our new VersionUpgradeTable approach (see below) lets us get arround this if we need to change to a new configuration id).
-	-->
-
-	<!-- Note: The issue of channels is worked out yet. For one thing, this current approach doesn't have some common appcast.xml that multiple TeamCity configurations can be updating.
-			Instead, each configuration is maintaining its own appcast.xml, and the installers that came from a config only know to check that one config. So RELEASE versions only
-			find out about new RELEASE versions from the same configuration, not about betas, not about new Releases from some new configuration.
-
-		For another, a strict "Channel" approach is overly simplistic; you don't actually want to be stuck with a beta if a release just came out. What we'd want is more of a "tolerance"
-		approach where you take the latest beta unless there's a newer release on the same version track, (but not on some previous version).
-
-		Update: Bloom now has a way of us controlling the "channel": At runtime, Bloom tries to retrieves "VersionUpgradeTable.txt"
-		from a fixed URL. It looks up its current version and the table tells it which appcast to download.
-
-		In this way, we can control the upgrade path for users of old versions. We can, for example, move beta users to
-		a release version. For more information, see the class UpdateVersionTable. If you don't find it in Bloom, it may
-		have been moved to github.com/hatton/NetSparkle so that other apps can use it.
-
-		-->
-
-	<FileUpdate Condition=" '$(channel)' == '' "
-		File="$(RootDir)\output\installer\appcast.xml"
-		Regex='VERSION_NUMBER_WITH_LABEL'
-		ReplacementText ="$(Version)" />
-	<FileUpdate Condition=" '$(channel)' != '' "
-		File="$(RootDir)\output\installer\appcast.xml"
-		Regex='VERSION_NUMBER_WITH_LABEL'
-		ReplacementText ="$(Version).$(channel)" />
-	<FileUpdate
-		File="$(RootDir)\output\installer\appcast.xml"
-		Regex='VERSION_NUMBER'
-		ReplacementText ="$(Version)" />
-	<FileUpdate
-		File="$(RootDir)\output\installer\appcast.xml"
-		Regex='TEAMCITY_CONFIGURATION'
-		ReplacementText ="$(BuildConfigurationID)" />
-	<!--<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-		DatePlaceholder='DEV_RELEASE_DATE'
-		Regex='DEV_VERSION_NUMBER'
-		ReplacementText ="$(Version)" />-->
-
-	<!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
-
-	<Message Text="Attempting rsync of DownloadPointers_$(channel).htm" Importance="high"/>
-
-	<!-- Note, this copy appends the "channel" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
-		It is up to the target web site to include or not include the beta. E.g., after you release, there is normally a period of time before the next beta.
-	We have to make this copy because the S3BuildPublisher task does not support renaming.
-	-->
-	<Copy SourceFiles="../output/installer/DownloadPointers.htm"  DestinationFiles="../output/installer/DownloadPointers_$(channel).htm"/>
-	<S3BuildPublisher
-	  EncryptionContainerName ="$(Key)"
-	  SourceFiles="../output/installer/DownloadPointers_$(channel).htm"
-	  DestinationBucket="$(Bucket)"
-	  DestinationFolder="channels"
-	  PublicRead="true" />
-  </Target>
-
-	<Target Name="MakeSquirrelDownloadPointers" DependsOnTargets="VersionNumbers"
+	<Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
 		Condition="'$(OS)'=='Windows_NT'">
 		<!-- USES THESE PROPERTIES: channel, Version, BuildConfigurationID -->
 
@@ -266,29 +176,11 @@
 		  EncryptionContainerName ="$(Key)"
 		  SourceFiles="../output/installer/DownloadPointers_$(channel).htm"
 		  DestinationBucket="$(Bucket)"
-		  DestinationFolder="channelsSq"
+		  DestinationFolder="channels"
 		  PublicRead="true" />
 	</Target>
 
-
-
-  <Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
-	<Message Text="Attempting rsync of $(InstallerFileName)" Importance="high"/>
-
-	<!--Kludge, but S3BuildPublisher needs this file in the build folder-->
-	<Copy SourceFiles="../output/$(Configuration)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
-
-	<S3BuildPublisher
-	EncryptionContainerName ="$(Key)"
-	SourceFiles="../output/installer/$(InstallerFileName)"
-	DestinationBucket="$(Bucket)"
-	DestinationFolder="installers"
-	PublicRead="true" />
-
-	<CallTarget Targets ='MakeDownloadPointers'/>
-  </Target>
-
-	<Target Name="Squirrel" DependsOnTargets="VersionNumbers; Build ">
+	<Target Name="Installer" DependsOnTargets="VersionNumbers; Build ">
 		<!-- set the version number in the script that configures squirrel.  Perhaps there's a way to just send in the variables rather than this brute-force
 		changing of the script, but I haven't figured that out. -->
 		<FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;version&gt;[^&lt;]*&lt;"
@@ -318,14 +210,14 @@
 
 	</Target>
 
-	<!-- This target is designed to be an additional step on TeamCity after running target Squirrel. Review: squirrel itself
+	<!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: squirrel itself
 	can sign things if passed the right command line arguments. Is that a better thing to do? -->
-	<Target Name="SignSquirrel" DependsOnTargets="VersionNumbers; Squirrel">
+	<Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
 		<Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"'></Exec>
 		<Message Text="Signed squirrel installer at $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
 	</Target>
 
-	<Target Name="UploadSquirrel" DependsOnTargets="VersionNumbers; SignSquirrel" >
+	<Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
 		<Message Text="Attempting rsync of $(SquirrelInstallerFileName)" Importance="high"/>
 
 		<!--Kludge, but S3BuildPublisher needs this file in the build folder-->
@@ -365,76 +257,12 @@
 		DestinationFolder="deltas$(channel)"
 		PublicRead="true" />
 
-		<CallTarget Targets ='MakeSquirrelDownloadPointers'/>
+		<CallTarget Targets ='MakeDownloadPointers'/>
 	</Target>
 
-
-	<Target Name="Installer" DependsOnTargets="VersionNumbers; MakeWixForDistFiles; MakeWixForXulRunner; Build ">
-
-
-	<!-- set the version number in the installer configuration program.  Perhaps there's a way to just send in the variables rather than this brute-force
-		changing of the script, but I haven't figured that out. -->
-
-	<FileUpdate File="$(RootDir)\src\Installer\Installer.wxs" Regex='Property_ProductVersion = ".*"'
-				ReplacementText ="Property_ProductVersion = &quot;$(Version)&quot;" />
-
-
-	<Message Text="Making Installer Version: $(Version)" Importance="high"  />
-
-	<MSBuild Projects="$(RootDir)\src\Installer\Installer.wixproj"/>
-
-	<!-- remove an existing one with the same name, if necessary -->
-	<Delete Files="$(RootDir)\output\installer\$(InstallerFileName)" TreatErrorsAsWarnings="false" />
-
-	<Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
-		  DestinationFiles="$(RootDir)\output\installer\$(InstallerFileName)"
-		  />
-	<Message Text="Copied installer to $(RootDir)\output\installer\$(InstallerFileName)" Importance="high"/>
-
-	<!-- remove the installer which has no version number (wouldn't need this if the copy above was a move, instead) -->
-	<Delete Files="$(RootDir)\output\installer\BloomInstaller.msi" TreatErrorsAsWarnings="false" />
-
+	<Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer">
+		<Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"' ContinueOnError="true"></Exec>
 	</Target>
-
-	<!-- These targets are designed to be additional steps on TeamCity after running target Installer. Pick the appropriate one
-	depending on whether your project's output MUST be signed or it's only nice if it is. For example, a continuous build
-	might use SignIfPossible, while a Publication build must use SignInstaller.-->
-	<Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
-		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"'></Exec>
-		<Message Text="Signed installer at $(RootDir)\output\installer\$(InstallerFileName)" Importance="high"/>
-	</Target>
-
-	<Target Name="SignIfPossible" DependsOnTargets="VersionNumbers">
-		<Exec Command='sign "$(RootDir)\output\installer\$(InstallerFileName)"' ContinueOnError="true"></Exec>
-	</Target>
-
-
-  <Target Name="MakeWixForDistFiles" DependsOnTargets="DownloadDistFiles">
-	<MakeDir Directories ="$(RootDir)\output\installer" ContinueOnError ="true"/>
-
-	<MakeWixForDirTree
-				DirectoryReferenceId="ProgramDir"
-					ComponentGroupId="DistFiles"
-						RootDirectory="$(RootDir)\DistFiles"
-				OutputFilePath="$(RootDir)\output\installer\GeneratedDistFiles.wxs"
-				MatchRegExPattern=".*"
-				>
-	  <!--what does this do?-->
-	  <Output TaskParameter="OutputFilePath" ItemName="Compile" />
-	</MakeWixForDirTree>
-
-	<!--Gather up all the javascript, css, png, etc. files under src/BrowserUI -->
-	<MakeWixForDirTree
-			   DirectoryReferenceId="BrowserUIDir"
-			   ComponentGroupId="BrowserUIFiles"
-			   RootDirectory="$(RootDir)\src\BloomBrowserUI"
-			   OutputFilePath="$(RootDir)\output\installer\GeneratedBrowserUIFiles.wxs"
-			   IgnoreRegExPattern=".*csproj.*|obj|Properties|.*test.*|_Chutzpah.*"
-			   MatchRegExPattern=".*"
-				>
-	</MakeWixForDirTree>
-
-  </Target>
 
 	<Target Name="DownloadDistFiles">
 		<Message Text="Downloading Bloom.chm help file" Importance="high"  />
@@ -449,17 +277,4 @@
 		-->
 		<WebDownload FileUri="https://www.dropbox.com/s/4mgbc5xhmhndia2/Bloom3.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
 	</Target>
-
-  <Target Name="MakeWixForXulRunner" >
-	<MakeWixForDirTree
-				DirectoryReferenceId="XulRunnerDir"
-					ComponentGroupId="XulRunner"
-						RootDirectory="..\lib\xulrunner"
-				OutputFilePath="..\output\installer\GeneratedXulRunner.wxs"
-				MatchRegExPattern=".*"
-				>
-	  <!--what does this do?-->
-	  <Output TaskParameter="OutputFilePath" ItemName="Compile" />
-	</MakeWixForDirTree>
-  </Target>
 </Project>
