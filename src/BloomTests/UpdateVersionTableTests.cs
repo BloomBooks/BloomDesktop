@@ -87,9 +87,9 @@ namespace BloomTests
 			var t = new UpdateVersionTable();
 			t.RunningVersion = Version.Parse("2.0.2000");
 			//the full result will be something like
-			//"http://build.palaso.org/guestAuth/repository/download/bt392/.lastSuccessful/appcast.xml"
-			//this just checks the part that is less likely to break
-			Assert.That(t.GetAppcastUrl().StartsWith("http://build.palaso.org/guestAuth/repository/download/"));
+			//"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
+			//this just checks the part that is less likely to break (independent of channel)
+			Assert.That(t.GetAppcastUrl().StartsWith("https://s3.amazonaws.com/bloomlibrary.org/deltas"));
 		}
 
 	}
