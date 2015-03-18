@@ -218,6 +218,14 @@
 	</Target>
 
 	<Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
+		<CallTarget Targets="UploadCore"/>
+	</Target>
+	<!--Same as upload, except that if it is run on an agent that can't sign things, it just quietly
+	doesn't sign the installer. Intended for continuous builds whose output will not be made public.-->
+	<Target Name="UploadSignIfPossible" DependsOnTargets="VersionNumbers; SignIfPossible" >
+		<CallTarget Targets="UploadCore"/>
+	</Target>
+	<Target Name="UploadCore">
 		<Message Text="Attempting rsync of $(SquirrelInstallerFileName)" Importance="high"/>
 
 		<!--Kludge, but S3BuildPublisher needs this file in the build folder-->
