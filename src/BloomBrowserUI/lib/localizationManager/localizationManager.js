@@ -1,4 +1,4 @@
-/// <reference path="../jquery.d.ts" />
+﻿/// <reference path="../jquery.d.ts" />
 /// <reference path="../misc-types.d.ts" />
 /// <reference path="../../bookEdit/js/getIframeChannel.ts" />
 /**
@@ -136,16 +136,16 @@ var LocalizationManager = (function () {
         return text;
     };
 
-    /* Returns a promise to get the translation
+    /* Returns a promise to get the translation.  If the translation isn't present in the specified language,
+    * it returns the english formatted text in the same way getText does.
     *
     * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
     * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
     *  @example
-    * asyncGetTextInLang('topics.health','Health", "UI")
+    * asyncGetTextInLang('topics.health','Health', "UI")
     *      .done(translation => {
     *          $(this).text(translation);
-    *      })
-    *      .fail($(this).text("?Health?";
+    *      });
     * @example
     * asyncGetTextInLang('topics.health','My name is {0}", "UI", "John")
     *      .done(translation => {
@@ -158,6 +158,33 @@ var LocalizationManager = (function () {
         for (var _i = 0; _i < (arguments.length - 3); _i++) {
             args[_i] = arguments[_i + 3];
         }
+        return this.asyncGetTextInLangCommon(id, englishText, langId, args);
+    };
+
+    /* Returns a promise to get the translation in the current UI language.  If the translation isn't present in the
+    * UI language, it returns the english formatted text in the same way getText does.
+    *
+    * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
+    *  @example
+    * asyncGetText('topics.health','Health')
+    *      .done(translation => {
+    *          $(this).text(translation);
+    *      });
+    * @example
+    * asyncGetTextInLang('topics.health','My name is {0}", "John")
+    *      .done(translation => {
+    *          $(this).text(translation);
+    *      });
+    */
+    LocalizationManager.prototype.asyncGetText = function (id, englishText) {
+        var args = [];
+        for (var _i = 0; _i < (arguments.length - 2); _i++) {
+            args[_i] = arguments[_i + 2];
+        }
+        return this.asyncGetTextInLangCommon(id, englishText, "UI", args);
+    };
+
+    LocalizationManager.prototype.asyncGetTextInLangCommon = function (id, englishText, langId, args) {
         // We already get a promise from the async call, and could just return that.
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
@@ -174,8 +201,12 @@ var LocalizationManager = (function () {
             }
             deferred.resolve(text);
         });
-        promise.fail(function () {
-            return deferred.fail();
+        promise.fail(function (text) {
+            text = HtmlDecode(englishText);
+            if (args.length > 0) {
+                text = SimpleDotNetFormat(text, args);
+            }
+            deferred.resolve(text);
         });
         return deferred.promise();
     };

@@ -564,7 +564,7 @@ var StyleEditor = (function () {
                     if (!editor.xmatterMode) {
                         html += '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.StyleNameTab">Style Name</h2>' + editor.makeDiv(null, null, null, 'EditTab.FormatDialog.Style', 'Style') + editor.makeDiv("style-group", "state-initial", null, null, editor.makeSelect(editor.styles, styleName, 'styleSelect') + editor.makeDiv('dont-see', null, null, null, '<span data-i18n="EditTab.FormatDialog.DontSeeNeed">' + "Don't see what you need?" + '</span>' + ' <a id="show-createStyle" href="" data-i18n="EditTab.FormatDialog.CreateStyle">Create a new style</a>') + editor.makeDiv('createStyle', null, null, null, editor.makeDiv(null, null, null, 'EditTab.FormatDialog.NewStyle', 'New style') + editor.makeDiv(null, null, null, null, '<input type="text" id="style-select-input"/> <button id="create-button" data-i18n="EditTab.FormatDialog.Create" disabled>Create</button>') + editor.makeDiv("please-use-alpha", null, 'color: red;', 'EditTab.FormatDialog.PleaseUseAlpha', 'Please use only alphabetical characters. Numbers at the end are ok, as in "part2".') + editor.makeDiv("already-exists", null, 'color: red;', 'EditTab.FormatDialog.AlreadyExists', 'That style already exists. Please choose another name.'))) + "</div>"; // end of Style Name tab-page div
                     }
-                    html += '<div class="tab-page" id="formatPage"><h2 class="tab" data-i18n="EditTab.FormatDialog.CharactersTab">Characters</h2>' + editor.makeCharactersContent(fonts, current) + '</div>' + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.MoreTab">More</h2>' + editor.makeDiv(null, null, null, null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis') + editor.makeDiv(null, null, null, null, editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', null, 'B') + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', null, 'I') + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', null, 'U'))) + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Position', 'Position') + editor.makeDiv(null, null, null, null, editor.makeDiv('position-leading', 'icon16x16', null, null, editor.makeImage('text_align_left.png')) + editor.makeDiv('position-center', 'icon16x16', null, null, editor.makeImage('text_align_center.png'))))) + editor.makeDiv(null, null, 'margin-top:10px', null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Borders', 'Borders') + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('border-none', 'icon16x16', null, null, editor.makeImage('grayX.png')) + editor.makeDiv('border-black', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: black', null, '')) + editor.makeDiv('border-black-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: black', null, ''))) + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', null, editor.makeDiv('border-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: gray', null, '')) + editor.makeDiv('border-gray-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: gray', null, '')))) + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Background', 'Background') + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('background-none', 'icon16x16', null, null, editor.makeImage('grayX.png')) + editor.makeDiv('background-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), null, ''))))) + '<div class="format-toolbar-description" id="formatMoreDesc">' + editor.getMoreTabDescription() + '</div>' + '</div>' + '</div>'; // end of tab-pane div
+                    html += '<div class="tab-page" id="formatPage"><h2 class="tab" data-i18n="EditTab.FormatDialog.CharactersTab">Characters</h2>' + editor.makeCharactersContent(fonts, current) + '</div>' + '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.MoreTab">More</h2>' + editor.makeDiv(null, null, null, null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Emphasis', 'Emphasis') + editor.makeDiv(null, null, null, null, editor.makeDiv('bold', 'iconLetter', 'font-weight:bold', null, 'B') + editor.makeDiv('italic', 'iconLetter', 'font-style: italic', null, 'I') + editor.makeDiv('underline', 'iconLetter', 'text-decoration: underline', null, 'U'))) + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Position', 'Position') + editor.makeDiv(null, null, null, null, editor.makeDiv('position-leading', 'icon16x16', null, null, editor.makeImage('text_align_left.png')) + editor.makeDiv('position-center', 'icon16x16', null, null, editor.makeImage('text_align_center.png'))))) + editor.makeDiv(null, null, 'margin-top:10px', null, editor.makeDiv(null, 'mainBlock leftBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Borders', 'Borders') + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('border-none', 'icon16x16', null, null, editor.makeImage('grayX.png')) + editor.makeDiv('border-black', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: black', null, '')) + editor.makeDiv('border-black-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: black', null, ''))) + editor.makeDiv(null, null, 'margin-left:24px;margin-top:-13px', null, editor.makeDiv('border-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox', 'border-color: gray', null, '')) + editor.makeDiv('border-gray-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: gray', null, '')))) + editor.makeDiv(null, 'mainBlock', null, null, editor.makeDiv(null, null, null, 'EditTab.Background', 'Background') + editor.makeDiv(null, null, 'margin-top:-11px', null, editor.makeDiv('background-none', 'icon16x16', null, null, editor.makeImage('grayX.png')) + editor.makeDiv('background-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), null, ''))))) + '<div class="format-toolbar-description" id="formatMoreDesc"></div>' + '</div>' + '</div>'; // end of tab-pane div
                 } else {
                     // not in authorMode...much simpler dialog, no tabs, just the body of the characters tab.
                     html += '<div class="bloomDialogMainPage">' + editor.makeCharactersContent(fonts, current) + '</div>';
@@ -576,6 +576,8 @@ var StyleEditor = (function () {
                 toolbar.find('*[data-i18n]').localize();
                 toolbar.draggable();
                 toolbar.css('opacity', 1.0);
+                editor.getCharTabDescription();
+                editor.getMoreTabDescription();
 
                 $('#font-select').change(function () {
                     editor.changeFont();
@@ -657,7 +659,7 @@ var StyleEditor = (function () {
     };
 
     StyleEditor.prototype.makeCharactersContent = function (fonts, current) {
-        return this.makeDiv(null, null, null, null, this.makeDiv(null, null, null, 'EditTab.Font', 'Font') + this.makeDiv(null, "control-section", null, null, this.makeSelect(fonts, current.fontName, 'font-select', 15) + ' ' + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select')) + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing') + this.makeDiv(null, null, null, null, '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="position:relative;top:6px">' + this.makeSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select') + ' ' + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">' + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select') + '</span>')) + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, this.getCharTabDescription());
+        return this.makeDiv(null, null, null, null, this.makeDiv(null, null, null, 'EditTab.Font', 'Font') + this.makeDiv(null, "control-section", null, null, this.makeSelect(fonts, current.fontName, 'font-select', 15) + ' ' + this.makeSelect(this.getPointSizes(), current.ptSize, 'size-select')) + this.makeDiv(null, "spacing-fudge", null, 'EditTab.Spacing', 'Spacing') + this.makeDiv(null, null, null, null, '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/LineSpacing.png" style="position:relative;top:6px">' + this.makeSelect(this.getLineSpaceOptions(), current.lineHeight, 'line-height-select') + ' ' + '</span>' + ' ' + '<span style="white-space: nowrap">' + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">' + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select') + '</span>')) + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, null);
     };
 
     // Generic State Machine changes a class on the specified id from class 'state-X' to 'state-newState'
@@ -776,7 +778,10 @@ var StyleEditor = (function () {
                 styleName = styleName.substring(0, index);
         }
         if (this.shouldSetDefaultRule()) {
-            return localizationManager.getText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName);
+            localizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName).done(function (translation) {
+                $('#formatCharDesc').html(translation);
+            });
+            return;
         }
 
         //BL-982 Use language name that appears on text windows
@@ -784,7 +789,9 @@ var StyleEditor = (function () {
         var lang = localizationManager.getLanguageName(iso);
         if (!lang)
             lang = iso;
-        return localizationManager.getText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName);
+        localizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName).done(function (translation) {
+            $('#formatCharDesc').html(translation);
+        });
     };
 
     // The More tab settings are never language-dependent
@@ -795,7 +802,9 @@ var StyleEditor = (function () {
             if (index > 0)
                 styleName = styleName.substring(0, index);
         }
-        return localizationManager.getText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName);
+        localizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName).done(function (translation) {
+            $('#formatMoreDesc').html(translation);
+        });
     };
 
     // did the user type the name of an existing style?
@@ -1123,8 +1132,8 @@ var StyleEditor = (function () {
             $(target).addClass('overflow');
         else
             $(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
-        $('#formatCharDesc').html(this.getCharTabDescription());
-        $('#formatMoreDesc').html(this.getMoreTabDescription());
+        this.getCharTabDescription();
+        this.getMoreTabDescription();
     };
 
     // Remove any additions we made to the element for the purpose of UI alone

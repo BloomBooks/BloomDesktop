@@ -618,7 +618,7 @@ class StyleEditor {
                                     + editor.makeDiv(null, null, 'margin-top:-11px', null,
                                     editor.makeDiv('background-none', 'icon16x16', null, null, editor.makeImage('grayX.png'))
                                     + editor.makeDiv('background-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), null, '')))))
-                        + '<div class="format-toolbar-description" id="formatMoreDesc">' + editor.getMoreTabDescription() + '</div>'
+                        + '<div class="format-toolbar-description" id="formatMoreDesc"></div>'
                         + '</div>' // end of tab-page div for 'more' tab
                         + '</div>'; // end of tab-pane div
                 } else {
@@ -634,6 +634,8 @@ class StyleEditor {
                 toolbar.find('*[data-i18n]').localize();
                 toolbar.draggable();
                 toolbar.css('opacity', 1.0);
+                editor.getCharTabDescription();
+                editor.getMoreTabDescription();
 
                 $('#font-select').change(function () { editor.changeFont(); });
                 editor.AddQtipToElement($('#font-select'), localizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
@@ -716,7 +718,7 @@ class StyleEditor {
                     + '<img src="' + this._supportFilesRoot + '/img/WordSpacing.png" style="margin-left:8px;position:relative;top:6px">'
                     + this.makeSelect(this.getWordSpaceOptions(), current.wordSpacing, 'word-space-select')
                     + '</span>'))
-            + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, this.getCharTabDescription());
+            + this.makeDiv('formatCharDesc', 'format-toolbar-description', null, null, null);
     }
 
     // Generic State Machine changes a class on the specified id from class 'state-X' to 'state-newState'
@@ -821,14 +823,21 @@ class StyleEditor {
             if (index > 0) styleName = styleName.substring(0, index);
         }
         if (this.shouldSetDefaultRule()) {
-            return localizationManager.getText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName);
+            localizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName)
+                .done(translation => {
+                    $('#formatCharDesc').html(translation);
+                });
+            return;
         }
         //BL-982 Use language name that appears on text windows
         var iso = $(this.boxBeingEdited).attr('lang');
         var lang = localizationManager.getLanguageName(iso);
         if (!lang)
             lang = iso;
-        return localizationManager.getText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName);
+        localizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName)
+            .done(translation => {
+                $('#formatCharDesc').html(translation);
+            });
     }
 
     // The More tab settings are never language-dependent
@@ -838,7 +847,10 @@ class StyleEditor {
             var index = styleName.indexOf("-style");
             if (index > 0) styleName = styleName.substring(0, index);
         }
-        return localizationManager.getText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName);
+        localizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName)
+            .done(translation => {
+                $('#formatMoreDesc').html(translation);
+            });
     }
 
      // did the user type the name of an existing style?
@@ -1142,8 +1154,8 @@ class StyleEditor {
             $(target).addClass('overflow');
         else
             $(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
-        $('#formatCharDesc').html(this.getCharTabDescription());
-        $('#formatMoreDesc').html(this.getMoreTabDescription());
+        this.getCharTabDescription();
+        this.getMoreTabDescription();
     }
 
     // Remove any additions we made to the element for the purpose of UI alone
