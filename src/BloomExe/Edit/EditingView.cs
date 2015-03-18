@@ -516,11 +516,11 @@ namespace Bloom.Edit
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
 						imageInfo.Metadata = dlg.Metadata;
-						imageInfo.SaveUpdatedMetadataIfItMakesSense();
 						imageInfo.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
-						//update so any overlays on the image are brough up to data
+						//update so any overlays on the image are brought up to data
 						var editor = new PageEditingModel();
 						editor.UpdateMetdataAttributesOnImgElement(imageElement, imageInfo);
+						SaveChangedImage(imageElement, imageInfo, "Bloom had a problem updating the image metadata");
 
 						var answer = MessageBox.Show(LocalizationManager.GetString("EditTab.copyImageIPMetdataQuestion","Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"), LocalizationManager.GetString("EditTab.titleOfCopyIPToWholeBooksDialog","Picture Intellectual Property Information"),  MessageBoxButtons.YesNo, MessageBoxIcon.Question,MessageBoxDefaultButton.Button2);
 						if (answer == DialogResult.Yes)
@@ -720,28 +720,33 @@ namespace Bloom.Edit
 				{
 
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
-					try
-					{
-						if(ShouldBailOutBecauseUserAgreedNotToUseJpeg(dlg.ImageInfo))
-							return;
-						_model.ChangePicture(imageElement, dlg.ImageInfo, new NullProgress());
-					}
-					catch (System.IO.IOException error)
-					{
-						ErrorReport.NotifyUserOfProblem(error, error.Message);
-					}
-					catch (ApplicationException error)
-					{
-						ErrorReport.NotifyUserOfProblem(error, error.Message);
-					}
-					catch (Exception error)
-					{
-						ErrorReport.NotifyUserOfProblem(error, "Bloom had a problem including that image");
-					}
+					SaveChangedImage(imageElement, dlg.ImageInfo, "Bloom had a problem including that image");
 				}
 			}
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
+		}
+
+		void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
+		{
+			try
+			{
+				if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
+					return;
+				_model.ChangePicture(imageElement, imageInfo, new NullProgress());
+			}
+			catch (System.IO.IOException error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, error.Message);
+			}
+			catch (ApplicationException error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, error.Message);
+			}
+			catch (Exception error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, exceptionMsg);
+			}
 		}
 
 		private bool ShouldBailOutBecauseUserAgreedNotToUseJpeg(PalasoImage imageInfo)
