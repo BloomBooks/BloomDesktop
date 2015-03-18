@@ -261,15 +261,8 @@ namespace Bloom.Book
 		{
 			foreach (var node in removalList)
 			{
-				try
-				{
+				if(node.ParentNode != null)
 					node.ParentNode.RemoveChild(node);
-				}
-				catch (ArgumentException)
-				{
-					// Means we already deleted an intermediate node containing this one
-					// Hopefully we avoid this by using the ParentNode.RemoveChild() trick.
-				}
 			}
 		}
 	}
