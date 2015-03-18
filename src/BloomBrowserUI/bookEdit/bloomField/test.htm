@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>Test Page for bloomEditable functions</title>
+  <script src="jquery-2.0.3.js"></script>
+  <script src="bloomField.js"></script>
+  <style type="text/css">
+    .bloom-editable{color: red;} /* show text that isn't in a p in red */
+    P:after{content: '¶'; color: #808080}
+    P{
+      text-indent: 15px;
+      color: blue;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+    .bloom-editable{
+      height: 300px;
+      width: 300px;
+      border: solid thin #0000ff;
+    }
+    .caption{
+      width: 60px;
+      border: solid thin yellowgreen;
+    }
+    .imagePusherDowner{
+      float: left;
+      display: block;
+      clear: both;
+      height: 70px;
+      /* width is 0 because we want the space to go to text that we're going to wrap around the image-container */
+      width: 0;
+      /* make room for the caption. Why is that?*/
+      padding-bottom: 20px;
+    }
+    .bloom-imageContainer{
+      width: 100px;
+      height:100px;
+      float: left;
+      display: block;
+      clear: both;
+    }
+  </style>
+
+  <script type='text/javascript'>
+    $(document).ready(function () {
+      $(".bloom-editable").each(function(){
+        BloomField.ManageField(this)
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="bloom-page">
+    <H4>Fields with bloom-requiresParagraphs</H4>
+
+    <div>On this test page, text inside a &lt;br&gt; should show in red (we don't ever want to see that). Text inside of &lt;p&gt; should be
+      blue, with an indent and a trailing ¶
+    </div>
+    <div class="bloom-requiresParagraphs">
+      <H4>Simple field</H4>
+      <div id='simple' class="bloom-content1 bloom-editable" contenteditable="true"></div>
+      <H4>Field with embedded image-pusher-downer, image-container, and caption, all with bloom-preventRemoval</H4>
+      <UL>
+        <LI>You should be able to type text that flows around the beaker.</LI>
+        <LI>You should not be able to delete the image, or caption box.</LI>
+        <LI>You should not be able to make the image move either up or down.</LI>
+      </UL>
+      <div id='hasEmbeddedImage' lang="z" contenteditable="true" class="bloom-content1 bloom-editable">
+        <div class="imagePusherDowner bloom-preventRemoval"></div>
+
+        <div contenteditable="false" class="bloom-imageContainer bloom-preventRemoval">
+          <img src="../../images/experiment.png" contenteditable="true" alt="Could not load the picture" lang="teo"></img>
+
+          <div contenteditable="true" class="caption" lang="teo">
+            Caption
+          </div>
+        </div>
+        <p class="bloom-cloneToOtherLanguages bloom-preventRemoval"></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
