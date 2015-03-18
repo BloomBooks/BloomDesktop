@@ -42,7 +42,7 @@ override_dh_auto_install:
 	cd $(DESTDIR)/$(LIB) && rm AxInterop* BloomTests* Interop* Moq* nunit*
 	# Install data files
 	cp -r DistFiles $(DESTDIR)/$(LIB)/
-	rm -rf $(DESTDIR)/$(LIB)/Andika
+	rm -rf $(DESTDIR)/$(LIB)/DistFiles/Andika
 	chmod -R a+rX,og-w $(DESTDIR)/$(LIB)/DistFiles
 	# Install browser support files
 	cp -r src/BloomBrowserUI $(DESTDIR)/$(LIB)/
@@ -75,4 +75,8 @@ override_dh_shlibdeps:
 
 # Include mono-sil in cli dirs searched
 override_dh_clideps:
-	dh_clideps -l$(MONO_PREFIX)/lib --exclude-moduleref=Crypt32.dll --exclude-moduleref=libdconf.dll --exclude-moduleref=connections.dll --exclude-moduleref=icuuc52.dll --exclude-moduleref=icuin52.dll --exclude-moduleref=icuuc48.dll --exclude-moduleref=icuin48.dll --exclude-moduleref=libtidy.dll
+	dh_clideps -l$(MONO_PREFIX)/lib --exclude-moduleref=Crypt32.dll --exclude-moduleref=libdconf.dll \
+		--exclude-moduleref=connections.dll --exclude-moduleref=icuuc52.dll --exclude-moduleref=icuin52.dll \
+		--exclude-moduleref=icuuc48.dll --exclude-moduleref=icuin48.dll --exclude-moduleref=libtidy.dll \
+		--exclude-moduleref=msdelta.dll --exclude-moduleref=mspatcha.dll --exclude-moduleref=mspatchc.dll \
+		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll
