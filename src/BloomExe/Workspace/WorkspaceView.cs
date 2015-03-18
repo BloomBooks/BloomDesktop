@@ -505,7 +505,7 @@ namespace Bloom.Workspace
 		/// </summary>
 		private async void InitiateSquirrelUpdate(BloomUpdateMessageVerbosity verbosity)
 		{
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			if (OkToInitiateUpdateManager)
 			{
 				string updateUrl;
 				string rootDirectory = null; // null default causes squirrel to figure out the version actually running.
@@ -654,7 +654,7 @@ namespace Bloom.Workspace
 
 		private async void InitiateSquirrelNotifyUpdatesAvailable()
 		{
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			if (OkToInitiateUpdateManager)
 			{
 				var updateUrl = Program.SquirrelUpdateUrl;
 				if (updateUrl == null)
@@ -679,6 +679,16 @@ namespace Bloom.Workspace
 				notifier.ToastClicked += (sender, args) => InitiateSquirrelUpdate(BloomUpdateMessageVerbosity.Quiet);
 				notifier.Show(msg, action, 10);
 			}
+		}
+
+		/// <summary>
+		/// True if it is currently possible to start checking for or getting updates.
+		/// This approach is only relevant for Windows.
+		/// If some bloom update activity is already in progress we must not start another one...that crashes.
+		/// </summary>
+		private static bool OkToInitiateUpdateManager
+		{
+			get { return Palaso.PlatformUtilities.Platform.IsWindows && _bloomUpdateManager == null; }
 		}
 
 		private static bool NoUpdatesAvailable(UpdateInfo info)
