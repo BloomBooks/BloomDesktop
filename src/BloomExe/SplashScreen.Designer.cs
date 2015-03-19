@@ -38,11 +38,10 @@
 			this._shortVersionLabel = new System.Windows.Forms.Label();
 			this.label1 = new System.Windows.Forms.Label();
 			this.pictureBox2 = new System.Windows.Forms.PictureBox();
-			this.pictureBox3 = new System.Windows.Forms.PictureBox();
+			this._channelLabel = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.flowLayoutPanel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// pictureBox1
@@ -147,16 +146,19 @@
 			this.pictureBox2.TabIndex = 0;
 			this.pictureBox2.TabStop = false;
 			// 
-			// pictureBox3
+			// _channelLabel
 			// 
-			this.pictureBox3.BackColor = System.Drawing.Color.Transparent;
-			this.pictureBox3.Image = global::Bloom.Properties.Resources.betatag2;
-			this.pictureBox3.Location = new System.Drawing.Point(5, 6);
-			this.pictureBox3.Name = "pictureBox3";
-			this.pictureBox3.Size = new System.Drawing.Size(92, 67);
-			this.pictureBox3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-			this.pictureBox3.TabIndex = 24;
-			this.pictureBox3.TabStop = false;
+			this._channelLabel.AutoSize = true;
+			this._channelLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 22F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._channelLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(214)))), ((int)(((byte)(86)))), ((int)(((byte)(73)))));
+			this._channelLabel.Location = new System.Drawing.Point(48, 164);
+			this._channelLabel.Margin = new System.Windows.Forms.Padding(0);
+			this._channelLabel.Name = "_channelLabel";
+			this._channelLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
+			this._channelLabel.Size = new System.Drawing.Size(120, 36);
+			this._channelLabel.TabIndex = 25;
+			this._channelLabel.Text = "channel";
+			this._channelLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// SplashScreen
 			// 
@@ -165,6 +167,7 @@
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(229)))), ((int)(((byte)(229)))));
 			this.ClientSize = new System.Drawing.Size(412, 309);
 			this.ControlBox = false;
+			this.Controls.Add(this._channelLabel);
 			this.Controls.Add(this.pictureBox2);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.flowLayoutPanel1);
@@ -172,7 +175,6 @@
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this._feedbackStatusLabel);
 			this.Controls.Add(this._longVersionInfo);
-			this.Controls.Add(this.pictureBox3);
 			this.Cursor = System.Windows.Forms.Cursors.AppStarting;
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 			this.MinimizeBox = false;
@@ -185,7 +187,6 @@
 			this.flowLayoutPanel1.ResumeLayout(false);
 			this.flowLayoutPanel1.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -202,6 +203,6 @@
 		private System.Windows.Forms.Label _shortVersionLabel;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.PictureBox pictureBox2;
-		private System.Windows.Forms.PictureBox pictureBox3;
+		private System.Windows.Forms.Label _channelLabel;
     }
 }

@@ -68,6 +68,7 @@ namespace Bloom.Collection
 			this._districtLabel = new System.Windows.Forms.Label();
 			this._provinceLabel = new System.Windows.Forms.Label();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
+			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
 			this._showExperimentCommands = new System.Windows.Forms.CheckBox();
 			this._showExperimentalTemplates = new System.Windows.Forms.CheckBox();
 			this._showSendReceive = new System.Windows.Forms.CheckBox();
@@ -578,6 +579,7 @@ namespace Bloom.Collection
 			// 
 			// tabPage4
 			// 
+			this.tabPage4.Controls.Add(this._automaticallyUpdate);
 			this.tabPage4.Controls.Add(this._showExperimentCommands);
 			this.tabPage4.Controls.Add(this._showExperimentalTemplates);
 			this.tabPage4.Controls.Add(this._showSendReceive);
@@ -592,6 +594,21 @@ namespace Bloom.Collection
 			this.tabPage4.TabIndex = 3;
 			this.tabPage4.Text = "Advanced Program Settings";
 			this.tabPage4.UseVisualStyleBackColor = true;
+			// 
+			// _automaticallyUpdate
+			// 
+			this._automaticallyUpdate.AutoSize = true;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._automaticallyUpdate, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._automaticallyUpdate, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._automaticallyUpdate, L10NSharp.LocalizationPriority.Low);
+			this._L10NSharpExtender.SetLocalizingId(this._automaticallyUpdate, "CollectionSettingsDialog.AdvancedTab.AutoUpdate");
+			this._automaticallyUpdate.Location = new System.Drawing.Point(50, 207);
+			this._automaticallyUpdate.Name = "_automaticallyUpdate";
+			this._automaticallyUpdate.Size = new System.Drawing.Size(201, 23);
+			this._automaticallyUpdate.TabIndex = 5;
+			this._automaticallyUpdate.Text = "Automatically update Bloom";
+			this._automaticallyUpdate.UseVisualStyleBackColor = true;
+			this._automaticallyUpdate.CheckedChanged += new System.EventHandler(this._automaticallyUpdate_CheckedChanged);
 			// 
 			// _showExperimentCommands
 			// 
@@ -819,5 +836,6 @@ namespace Bloom.Collection
 		private TextBox _xmatterDescription;
 		private ListView _xmatterList;
 		private ColumnHeader columnHeader1;
+		private CheckBox _automaticallyUpdate;
 	}
 }

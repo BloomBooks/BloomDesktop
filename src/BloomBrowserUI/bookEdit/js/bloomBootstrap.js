@@ -12,6 +12,7 @@ var scripts = [
     'lib/jquery.watermark.js',
     'lib/jquery.myimgscale.js',
     'lib/jquery.resize.js',
+    'lib/errorHandler.js',
     'bookEdit/js/editableDivUtils.js',
     'bookEdit/js/jquery.hotkeys.js',
     'bookEdit/js/BloomAccordion.js',

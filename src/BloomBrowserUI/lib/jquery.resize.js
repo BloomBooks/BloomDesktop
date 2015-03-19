@@ -81,7 +81,7 @@ function ResetRememberedSize(element) {
     jq_resize[ str_delay ] = 500;
   else
     jq_resize[ str_delay ] = 250;
-    
+
   // Property: jQuery.resize.throttleWindow
   //
   // Throttle the native window object resize event to fire no more than once

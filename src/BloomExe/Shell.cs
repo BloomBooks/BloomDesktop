@@ -13,7 +13,6 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Workspace;
-using NetSparkle;
 using Palaso.Reporting;
 using Palaso.Extensions;
 using Palaso.UI.WindowsForms.PortableSettingsProvider;
@@ -30,8 +29,7 @@ namespace Bloom
 												CollectionSettings collectionSettings,
 												BookDownloadStartingEvent bookDownloadStartingEvent,
 												LibraryClosing libraryClosingEvent,
-												QueueRenameOfCollection queueRenameOfCollection,
-												Sparkle _sparkle)
+												QueueRenameOfCollection queueRenameOfCollection)
 		{
 			queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 			_collectionSettings = collectionSettings;
@@ -68,13 +66,6 @@ namespace Bloom
 														UserWantsToOpenADifferentProject = true;
 														Close();
 													});
-
-			_sparkle.AboutToExitForInstallerRun += ((x, cancellable) =>
-			{
-				cancellable.Cancel = false;
-				QuitForVersionUpdate = true;
-				Close();
-			});
 
 			_workspaceView.ReopenCurrentProject += ((x, y) =>
 			{

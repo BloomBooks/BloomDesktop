@@ -149,7 +149,7 @@ function MakeHelpBubble(targetElement, elementWithBubbleAttributes) {
 
     // determine onFocusOnly
     var onFocusOnly = whatToSay.startsWith('*');
-    onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || mightCauseHorizontallyOverlappingBubbles(targetElement);
+    onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || mightCauseHorizontallyOverlappingBubbles(target);
 
     // get the localized string
     if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
@@ -498,7 +498,7 @@ function mightCauseHorizontallyOverlappingBubbles(element) {
     //we can be very conservative and say that if the text
     //box isn't taking up the whole width, it *might* cause
     //an overlap
-    if(element.hasClass('bloom-alwaysShowBubble')) {
+    if($(element).hasClass('bloom-alwaysShowBubble')) {
         return false;
     }
     var availableWidth = $(element).closest(".marginBox").width();
@@ -1529,7 +1529,13 @@ $(document).ready(function() {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
-    SetupElements($('body'));
-    OneTimeSetup();
+   SetupElements($('body'));
+   OneTimeSetup();
 
+    //this is some sample code for working on CommandAvailabilityPublisher websocket messages
+//   var client = new WebSocket("ws://127.0.0.1:8189");
+//   client.onmessage = function(event) {
+//        var commandStatus = JSON.parse(event.data);
+//        alert("DeleteCurrentPage Command "+ (commandStatus.deleteCurrentPage.enabled == true ? "Enabled" : "Disabled")) ;
+//    }
 }); // end document ready function

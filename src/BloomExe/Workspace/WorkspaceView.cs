@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Globalization;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
@@ -16,11 +20,11 @@ using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
 using Messir.Windows.Forms;
-using NetSparkle;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ReleaseNotes;
 using Palaso.UI.WindowsForms.SettingProtection;
+using Squirrel;
 
 namespace Bloom.Workspace
 {
@@ -40,10 +44,10 @@ namespace Bloom.Workspace
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
-		private Sparkle _sparkleApplicationUpdater;
 		private readonly LocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
-
+		private static UpdateManager _bloomUpdateManager;
+		public enum BloomUpdateMessageVerbosity { Quiet, Verbose }
 		public delegate WorkspaceView Factory(Control libraryView);
 
 //autofac uses this
@@ -61,7 +65,6 @@ namespace Bloom.Workspace
 							 FeedbackDialog.Factory feedbackDialogFactory,
 							ProblemReporterDialog.Factory problemReportDialogFactory,
 							ChorusSystem chorusSystem,
-							Sparkle sparkleApplicationUpdater,
 							LocalizationManager localizationManager
 
 			)
@@ -74,19 +77,17 @@ namespace Bloom.Workspace
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_problemReportDialogFactory = problemReportDialogFactory;
 			_chorusSystem = chorusSystem;
-			_sparkleApplicationUpdater = sparkleApplicationUpdater;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
 			{
-				if (!Debugger.IsAttached)
-					_sparkleApplicationUpdater.CheckOnFirstApplicationIdle();
+				Application.Idle += CheckForUpdatesOnFirstIdle;
 			}
 			else
 			{
-				_checkForNewVersionMenuItem.Visible = false;
+			_checkForNewVersionMenuItem.Visible = false;
 			}
 
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
@@ -173,6 +174,18 @@ namespace Bloom.Workspace
 			}
 
 			SetupUILanguageMenu();
+		}
+
+		private void CheckForUpdatesOnFirstIdle(object sender, EventArgs eventArgs)
+		{
+			Application.Idle -= CheckForUpdatesOnFirstIdle;
+			if (!Debugger.IsAttached)
+			{
+				if (Settings.Default.AutoUpdate)
+					InitiateSquirrelUpdate(BloomUpdateMessageVerbosity.Quiet);
+				else
+					InitiateSquirrelNotifyUpdatesAvailable();
+			}
 		}
 
 		private void OnSendReceive(object obj)
@@ -475,8 +488,202 @@ namespace Bloom.Workspace
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
 		{
+			if (_bloomUpdateManager != null)
+			{
+				//enhance: ideally, what this would do is show a toast of whatever it is squirrel is doing: checking, downloading, waiting for a restart.
+				MessageBox.Show(this,
+					LocalizationManager.GetString("CollectionTab.UpdateCheckInProgress",
+						"Bloom is already working on checking for updates."));
+				return;
+			}
+			InitiateSquirrelUpdate(BloomUpdateMessageVerbosity.Verbose);
+		}
+
+		/// <summary>
+		/// See if any updates are available and if so do them. Once they are done a notification
+		/// pops up and the user can restart Bloom to run the new version.
+		/// </summary>
+		private async void InitiateSquirrelUpdate(BloomUpdateMessageVerbosity verbosity)
+		{
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
-				_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
+			{
+				string updateUrl;
+				string rootDirectory = null; // null default causes squirrel to figure out the version actually running.
+				if (Debugger.IsAttached)
+				{
+					// update'Url' can actually also just be a path to where the deltas and RELEASES file are found.
+					// When debugging this function we want this to be the directory where we build installers.
+					var location = Assembly.GetExecutingAssembly().Location; // typically in output\debug
+					var output = Path.GetDirectoryName(Path.GetDirectoryName(location));
+					updateUrl = Path.Combine(output, "installer");
+
+					// For testing we will force it to look in the standard local data folder, even though we are not running there.
+					// Tester should ensure that the version we want to pretent to upgrade is installed there (under Bloom)...the critical thing
+					// seems to be the version of Bloom/packages/RELEASES in this folder which indicates what is already installed.
+					rootDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+				}
+				else
+				{
+					updateUrl = Program.SquirrelUpdateUrl;
+				}
+				if (updateUrl == null)
+				{
+					// For some reason we couldn't get one...possibly not online so can't get to UpdateVersionTable
+					var failNotifier = new ToastNotifier();
+					failNotifier.Image.Image = Resources.Bloom.ToBitmap();
+					var failMsg = LocalizationManager.GetString("CollectionTab.UnableToCheck", "Unable to check for update.", "Shown when Bloom tries to check for an update but can't, for example becuase it can't connect to the internet, or a problems with our server, etc.");
+					failNotifier.Show(failMsg, "", 5);
+					return;
+				}
+
+				string newInstallDir;
+				ArrangeToDisposeSquirrelManagerOnExit();
+				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45, rootDirectory))
+				{
+					// At this point the method returns(!) and no longer blocks anything.
+					newInstallDir = await UpdateApp(_bloomUpdateManager, null);
+				}
+				// Since this is in the async method _after_ the await we know the UpdateApp has finished.
+				_bloomUpdateManager = null;
+				
+				if (newInstallDir == null)
+				{
+					// No updates to install
+					if (verbosity == BloomUpdateMessageVerbosity.Verbose)
+					{
+						// Enhance: bring this in quiet mode, but only show it after an update.
+						var noneNotifier = new ToastNotifier();
+						noneNotifier.Image.Image = Resources.Bloom.ToBitmap();
+						var failMsg = LocalizationManager.GetString("CollectionTab.UpToDate", "Your Bloom is up to date.");
+						noneNotifier.Show(failMsg, "", 5);
+					}
+					return;
+				}
+				
+				string version = Path.GetFileName(newInstallDir).Substring("app-".Length); // version folders always start with this
+				var msg = string.Format(LocalizationManager.GetString("CollectionTab.UpdateInstalled", "Update for {0} is ready", "Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom."), version);
+				var action = string.Format(LocalizationManager.GetString("CollectionTab.RestartToUpdate", "Restart to Update"));
+				// Unfortunately, there's no good time to dispose of this object...according to its own comments
+				// it's not even safe to close it. It moves itself out of sight eventually if ignored.
+				var notifier = new ToastNotifier();
+				notifier.Image.Image = Resources.Bloom.ToBitmap();
+				notifier.ToastClicked += (sender, args) => RestartBloom(newInstallDir);
+				notifier.Show(msg, action, 8);
+			}
+		}
+
+		private void ArrangeToDisposeSquirrelManagerOnExit()
+		{
+			Application.ApplicationExit += (sender, args) =>
+			{
+				if (_bloomUpdateManager != null)
+				{
+					var temp = _bloomUpdateManager;
+					_bloomUpdateManager = null; // in case more than one notification comes
+					temp.Dispose(); // otherwise squirrel throws a nasty exception.
+				}
+			};
+		}
+
+		private void RestartBloom(string newInstallDir)
+		{
+			Control ancestor = Parent;
+			while (ancestor != null && !(ancestor is Shell))
+				ancestor = ancestor.Parent;
+			if (ancestor == null)
+				return;
+			var shell = (Shell) ancestor;
+			var pathToNewExe = Path.Combine(newInstallDir, Path.ChangeExtension(Application.ProductName, ".exe"));
+			if (!File.Exists(pathToNewExe))
+				return; // aargh!
+			shell.QuitForVersionUpdate = true;
+			Process.Start(pathToNewExe);
+			Thread.Sleep(2000);
+			shell.Close();
+		}
+
+		// Adapted from Squirrel's EasyModeMixin.UpdateApp, but this version yields the new directory.
+		public static async Task<string> UpdateApp(IUpdateManager manager, Action<int> progress = null)
+		{
+			progress = progress ?? (_ => { });
+
+			bool ignoreDeltaUpdates = false;
+
+		retry:
+			var updateInfo = default(UpdateInfo);
+			string newInstallDirectory = null;
+
+			try
+			{
+				updateInfo = await manager.CheckForUpdate(ignoreDeltaUpdates, x => progress(x / 3));
+				if (NoUpdatesAvailable(updateInfo))
+					return null; // none available.
+
+				var updatingNotifier = new ToastNotifier();
+				updatingNotifier.Image.Image = Resources.Bloom.ToBitmap();
+				var version = updateInfo.FutureReleaseEntry.Version;
+				var size = updateInfo.ReleasesToApply.Sum(x => x.Filesize)/1024;
+				var updatingMsg = string.Format(LocalizationManager.GetString("CollectionTab.Updating", "Downloading update to {0} ({1}K)"), version, size);
+				updatingNotifier.Show(updatingMsg, "", 5);
+
+				await manager.DownloadReleases(updateInfo.ReleasesToApply, x => progress(x / 3 + 33));
+
+				newInstallDirectory = await manager.ApplyReleases(updateInfo, x => progress(x / 3 + 66));
+
+				await manager.CreateUninstallerRegistryEntry();
+			}
+			catch (Exception ex)
+			{
+				if (ignoreDeltaUpdates == false)
+				{
+					// I think the idea here is that if something goes wrong applying deltas we
+					// just download and install whatever the update url says is the latest version,
+					// as a complete package.
+					// Thus we can even recover if the executing program and the package that created
+					// it are not part of the sequence on the web site at all, or even if there's
+					// some sort of discontinuity in the sequence of deltas.
+					ignoreDeltaUpdates = true;
+					goto retry;
+				}
+
+				throw;
+			}
+
+			return newInstallDirectory;
+		}
+
+		private async void InitiateSquirrelNotifyUpdatesAvailable()
+		{
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			{
+				var updateUrl = Program.SquirrelUpdateUrl;
+				if (updateUrl == null)
+					return;
+				UpdateInfo info;
+				ArrangeToDisposeSquirrelManagerOnExit();
+				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45))
+				{
+					// At this point the method returns(!) and no longer blocks anything.
+					info = await _bloomUpdateManager.CheckForUpdate();
+				}
+				// Since this is in the async method _after_ the await we know the CheckForUpdate has finished.
+				_bloomUpdateManager = null;
+				if (NoUpdatesAvailable(info))
+					return; // none available.
+				var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available.");
+				var action = LocalizationManager.GetString("CollectionTab.UpdateNow", "Update Now");
+				// Unfortunately, there's no good time to dispose of this object...according to its own comments
+				// it's not even safe to close it. It moves itself out of sight eventually if ignored.
+				var notifier = new ToastNotifier();
+				notifier.Image.Image = Resources.Bloom.ToBitmap();
+				notifier.ToastClicked += (sender, args) => InitiateSquirrelUpdate(BloomUpdateMessageVerbosity.Quiet);
+				notifier.Show(msg, action, 10);
+			}
+		}
+
+		private static bool NoUpdatesAvailable(UpdateInfo info)
+		{
+			return info == null || info.ReleasesToApply.Count == 0;
 		}
 
 		private static void OpenInfoFile(string fileName)
