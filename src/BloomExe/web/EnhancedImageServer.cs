@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
+using System.Xml;
 using Bloom.Book;
 using System.IO;
 using Bloom.ImageProcessing;
@@ -143,8 +145,69 @@ namespace Bloom.web
 			return new SimulatedPageFile() {Key = url};
 		}
 
+		/// <summary>
+		/// Producing PDF with gecko doesn't work on Windows for some reason when referencing
+		/// the localhost server.  So we need to use actual files, and refer to actual files in
+		/// the links to the css files.
+		/// </summary>
+		/// <remarks>
+		/// See http://jira.sil.org/browse/BL-932 for details on the bug.
+		/// </remarks>
+		public static SimulatedPageFile MakeRealPublishModeFileInBookFolder(HtmlDom dom)
+		{
+			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".tmp");
+			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
+			if (dom.BaseForRelativePaths != null)
+				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths, simulatedPageFileName).Replace('\\', '/');
+			pathToSimulatedPageFile = RemoveLocalhostReferenceFromPath(pathToSimulatedPageFile);
+			FixStyleLinkReferences(dom);
+			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
+			using (var writer = File.CreateText(pathToSimulatedPageFile))
+			{
+				writer.Write(html5String);
+				writer.Close();
+			}
+			var uri = new Uri(pathToSimulatedPageFile);
+			return new SimulatedPageFile() { Key = uri.AbsoluteUri };
+		}
+
+		private static string RemoveLocalhostReferenceFromPath(string path)
+		{
+			if (String.IsNullOrEmpty(path) || !path.StartsWith(PathEndingInSlash))
+				return path;
+			path = path.Substring(PathEndingInSlash.Length - 1);
+			path = Regex.Replace(path, "^/([A-Z])%3A/", "$1:/");
+			if (path.StartsWith("//"))
+				path = path.Substring(1);
+			return path;
+		}
+
+		private static void FixStyleLinkReferences(HtmlDom dom)
+		{
+			var links = dom.RawDom.SelectNodes("//links");
+			if (links != null)
+			{
+				foreach (XmlNode xn in links)
+				{
+					var attrs = xn.Attributes;
+					if (attrs == null)
+						continue;
+					var href = attrs["href"];
+					if (href == null)
+						continue;
+					href.Value = RemoveLocalhostReferenceFromPath(href.Value);
+				}
+			}
+		}
+
 		internal static void RemoveSimulatedPageFile(string key)
 		{
+			if (key.StartsWith("file://"))
+			{
+				var uri = new Uri(key);
+				File.Delete(uri.LocalPath);
+				return;
+			}
 			lock (_urlToSimulatedPageContent)
 			{
 				_urlToSimulatedPageContent.Remove(key.FromLocalhost());

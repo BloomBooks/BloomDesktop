@@ -45,15 +45,12 @@ namespace Bloom.Publish
 		/// <param name="owner">A control which can be used to invoke parts of the work which must be done on the ui thread.</param>
 		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, bool layoutPagesForRightToLeft, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner)
 		{
-			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
-						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
-
 			// Try up to 4 times. This is a last-resort attempt to handle BL-361.
 			// Most likely that was caused by a race condition in MakePdfUsingGeckofxHtmlToPdfComponent.MakePdf,
 			// but as it was an intermittent problem and we're not sure that was the cause, this might help.
 			for (int i = 0; i < 4; i++)
 			{
-				new MakePdfUsingGeckofxHtmlToPdfComponent().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape,
+				new MakePdfUsingGeckofxHtmlToPdfProgram().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape,
 					owner, worker, doWorkEventArgs);
 
 				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
