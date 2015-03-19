@@ -1096,8 +1096,8 @@ function SetupElements(container) {
             $(this).wrapInner("<div class='marginBox'></div>");
         }
     });
+    $(container).find(".bloom-editable").each(function () { BloomField.ManageField(this); });
 
-    SetupEditableElements(container);
     AddToolbox(container);
 
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)

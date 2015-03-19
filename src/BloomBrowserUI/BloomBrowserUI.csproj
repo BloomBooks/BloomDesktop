@@ -74,6 +74,7 @@
     <Content Include="bookEdit\js\toolbar\jquery.d.ts" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
+    <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
     <TypeScriptCompile Include="bookEdit\js\BloomAccordion.ts" />
     <TypeScriptCompile Include="bookEdit\js\calledByCSharp.ts" />
     <TypeScriptCompile Include="bookEdit\js\directoryWatcher.ts" />
