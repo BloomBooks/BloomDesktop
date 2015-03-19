@@ -24,39 +24,38 @@ namespace Bloom.ToPalaso
 	{
 		public static void InstallFont(string sourceFolder)
 		{
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
-			{
-				var sourcePath = FileLocator.GetDirectoryDistributedWithApplication(sourceFolder);
-				if (AllFontsExist(sourcePath))
-					return; // already installed (Enhance: maybe one day we want to check version?)
-				var info = new ProcessStartInfo()
-				{
-					// Renamed to make the UAC dialog less mysterious.
-					// Originally it is FontReg.exe (http://code.kliu.org/misc/fontreg/).
-					// Eventually we will probably have to get our version signed.
-					FileName = "Install Bloom Literacy Fonts.exe",
-					Arguments = "/copy",
-					WorkingDirectory = sourcePath,
-					UseShellExecute = true, // required for runas to achieve privilege elevation
-					WindowStyle = ProcessWindowStyle.Hidden,
-					Verb = "runas" // that is, run as admin (required to install fonts)
-				};
+			// This is not needed on Linux - fonts should be installed by adding a package
+			// dependency, in this case fonts-sil-andika, or by installing that particular
+			// package.
+			if (!Palaso.PlatformUtilities.Platform.IsWindows)
+				return;
 
-				try
-				{
-					Process.Start(info);
-				}
-					// I hate catching 'Exception' but the one that is likely to happen, the user refused the privilege escalation
-					// or is not authorized to do it, comes out as Win32Exception, which is not much more helpful.
-					// We probably want to ignore anything else that can go wrong with trying to install the fonts.
-				catch (Exception)
-				{
-				}
+			var sourcePath = FileLocator.GetDirectoryDistributedWithApplication(sourceFolder);
+			if (AllFontsExist(sourcePath))
+				return; // already installed (Enhance: maybe one day we want to check version?)
+			var info = new ProcessStartInfo()
+			{
+				// Renamed to make the UAC dialog less mysterious.
+				// Originally it is FontReg.exe (http://code.kliu.org/misc/fontreg/).
+				// Eventually we will probably have to get our version signed.
+				FileName = "Install Bloom Literacy Fonts.exe",
+				Arguments = "/copy",
+				WorkingDirectory = sourcePath,
+				UseShellExecute = true, // required for runas to achieve privilege elevation
+				WindowStyle = ProcessWindowStyle.Hidden,
+				Verb = "runas" // that is, run as admin (required to install fonts)
+			};
+
+			try
+			{
+				Process.Start(info);
 			}
-			// Todo Linux: any way we can install fonts on Linux??
-			// The code for checking that they are already installed MIGHT work...
-			// very unlikely running a Windows EXE will actually do the installation, though.
-			// However, possibly on Linux we don't have to worry about privilege escalation?
+			// I hate catching 'Exception' but the one that is likely to happen, the user refused the privilege escalation
+			// or is not authorized to do it, comes out as Win32Exception, which is not much more helpful.
+			// We probably want to ignore anything else that can go wrong with trying to install the fonts.
+			catch (Exception)
+			{
+			}
 		}
 
 		private static bool AllFontsExist(string sourcePath)
