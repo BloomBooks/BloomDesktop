@@ -37,7 +37,6 @@ namespace Bloom
 		private static ApplicationContainer _applicationContainer;
 		public static bool ApplicationExiting;
 		public static bool StartUpWithFirstOrNewVersionBehavior;
-		private static string _squirrelUpdateUrl;
 
 		private static GeckoWebBrowser _debugServerStarter;
 
@@ -84,7 +83,7 @@ namespace Bloom
 
 				if (args.Length > 0 && args[0].StartsWith("--squirrel"))
 				{
-					HandleSquirrelInstallEvent(args); // may exit program
+					InstallerSupport.HandleSquirrelInstallEvent(args); // may exit program
 				}
 
 				// Needs to be AFTER HandleSquirrelInstallEvent, because that can happen when the program is launched by Update rather than
@@ -165,7 +164,7 @@ namespace Bloom
 						{
 							SetUpLocalization();
 							Logger.Init();
-							MakeBloomRegistryEntries();
+							InstallerSupport.MakeBloomRegistryEntries();
 							Browser.SetUpXulRunner();
 							Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 							L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
@@ -215,7 +214,7 @@ namespace Bloom
 							return;
 						}
 
-						MakeBloomRegistryEntries();
+						InstallerSupport.MakeBloomRegistryEntries();
 
 						SetUpLocalization();
 						Logger.Init();
@@ -267,51 +266,6 @@ namespace Bloom
 			}
 		}
 
-		/// <summary>
-		/// Make the registry entries Bloom requires.
-		/// We do this every time a version of Bloom runs, so that if more than one is installed the latest wins.
-		/// </summary>
-		private static void MakeBloomRegistryEntries()
-		{
-			if (Assembly.GetEntryAssembly() == null)
-				return; // unit testing.
-			// creating this sets some things up so we can download, including relevant registry entries.
-			new BookDownloadSupport();
-			if (Palaso.PlatformUtilities.Platform.IsLinux)
-			{
-				// This will be done by the package installer.
-				return;
-			}
-			var installDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-			// This is what I (JohnT) think should make Bloom display the right icon for .BloomCollection files.
-			EnsureRegistryValue(@".BloomCollection\DefaultIcon", Path.Combine(installDir, "BloomCollectionIcon.ico"));
-			EnsureRegistryValue(@".BloomPack\DefaultIcon", Path.Combine(installDir, "BloomPack.ico"));
-
-			// These may also be connected with making BloomCollection files display the correct icon.
-			// Based on things found in (or done by) the old wix installer.
-			EnsureRegistryValue(".BloomCollection", "Bloom.BloomCollectionFile");
-			EnsureRegistryValue(".BloomCollectionFile", "Bloom.BloomCollectionFile");
-			EnsureRegistryValue("Bloom.BloomCollectionFile", "Bloom Book Collection");
-			EnsureRegistryValue(@"Bloom.BloomCollectionFile\DefaultIcon", Path.Combine(installDir, "BloomCollectionIcon.ico, 0")); // review: do we have to use 8.3 names?
-
-			// I think these help BloomPack files display the correct icon.
-			EnsureRegistryValue(".BloomPack", "Bloom.BloomPackFile");
-			EnsureRegistryValue("Bloom.BloomPackFile", "Bloom Book Collection");
-			EnsureRegistryValue(".BloomPackFile", "Bloom Book Collection");
-			EnsureRegistryValue(@"Bloom.BloomPackFile\DefaultIcon", Path.Combine(installDir, "BloomPack.ico, 0"));
-			EnsureRegistryValue(@".BloomPackFile\DefaultIcon", Path.Combine(installDir, "BloomPack.ico, 0"));
-			EnsureRegistryValue(@"SOFTWARE\Classes\Bloom.BloomPack", "Bloom Book Pack", "FriendlyTypeName");
-
-			// This might be part of registering as the executable for various file types?
-			// I don't know what does it in wix but it's one of the things the old wix installer created.
-			var exe = Assembly.GetExecutingAssembly().Location;
-			EnsureRegistryValue(@"bloom\shell\open\command", "\"" + exe + "\" \"%1\"");
-
-			BeTheExecutableFor(".BloomCollection", "BloomCollection file");
-			BeTheExecutableFor(".BloomPack", "BloomPack file");
-		}
-
 		// I think this does something like the Wix element
 		// <ProgId Id='Bloom.BloomCollectionFile' Description='BloomPack file' >
 		//   <Extension Id='BloomCollectionFile' ContentType='application/bloom'>
@@ -320,64 +274,6 @@ namespace Bloom
 		//   </Extension>
 		// </ProgId>
 		// (But I'm not completely sure all these come from that)
-		private static void BeTheExecutableFor(string extension, string description)
-		{
-			// e.g.: HKLM\SOFTWARE\Classes\.BloomCollectionFile\Content Type: "application/bloom"
-			var fileKey = extension + "File";
-			EnsureRegistryValue(fileKey, "application/bloom", "Content Type");
-			// e.g.: HKLM\SOFTWARE\Classes\Bloom.BloomCollectionFile\shell\open\: "Open"
-			var bloomFileKey = "Bloom" + fileKey;
-			EnsureRegistryValue(bloomFileKey + @"\shell\open", "Open");
-			// e.g.: HKLM\SOFTWARE\Classes\Bloom.BloomCollectionFile\shell\open\command\: ""C:\Program Files (x86)\Bloom\Bloom.exe" "%1""
-			var exe = Assembly.GetExecutingAssembly().Location;
-			EnsureRegistryValue(bloomFileKey + @"\shell\open\command", "\"" + exe + "\" \"%1\"");
-
-		}
-
-		private static void EnsureRegistryValue(string keyName, string value, string name="")
-		{
-			var root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
-			var key = root.CreateSubKey(keyName); // may also open an existing key with write permission
-			try
-			{
-				if (key != null)
-				{
-					var current = (key.GetValue(name) as string);
-					if (current != null && current.ToLowerInvariant() == value)
-						return; // already set as wanted
-				}
-				key.SetValue(name, value);
-
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				// If for some reason we aren't allowed to do it, just don't.
-				Logger.WriteEvent("Unable to set registry entry {0}:{1} to {2}: {3}", keyName, name, value, ex.Message);
-			}
-		}
-
-		private static void RemoveBloomRegistryEntries()
-		{
-			RemoveRegistryKey(null, ".BloomPack");
-			RemoveRegistryKey(null, ".BloomPackFile");
-			RemoveRegistryKey(null, ".BloomCollection");
-			RemoveRegistryKey(null, ".BloomCollectionFile");
-			RemoveRegistryKey(null, "Bloom.BloomPack");
-			RemoveRegistryKey(null, "Bloom.BloomPackFile");
-			RemoveRegistryKey(null, "Bloom.BloomCollection");
-			RemoveRegistryKey(null, "Bloom.BloomCollectionFile");
-			RemoveRegistryKey(null, "bloom");
-		}
-
-		private static void RemoveRegistryKey(string parentName, string keyName)
-		{
-			var root = Registry.CurrentUser.CreateSubKey(@"Software\Classes");
-			var key = string.IsNullOrEmpty(parentName) ? root : root.OpenSubKey(parentName);
-			if (key != null)
-			{
-				key.DeleteSubKeyTree(keyName, false);
-			}
-		}
 
 		// The folder where we tell squirrel to look for upgrades.
 		// As of 2-20-15 this is  = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
@@ -385,59 +281,6 @@ namespace Bloom
 		// This allows us to have different sets of deltas and upgrade targets for betas and stable releases,
 		// or indeed to do something special for any particular version(s) of Bloom,
 		// or even to switch to a different upgrade path after releasing a version.
-		public static string SquirrelUpdateUrl
-		{
-			get
-			{
-				if (_squirrelUpdateUrl == null)
-				{
-					try
-					{
-						_squirrelUpdateUrl = new UpdateVersionTable().GetAppcastUrl();
-					}
-					catch (WebException)
-					{
-					}
-				}
-				return _squirrelUpdateUrl;
-			}
-		}
-
-		private static void HandleSquirrelInstallEvent(string[] args)
-		{
-			bool firstTime = false;
-			var updateUrl = SquirrelUpdateUrl;
-			// Should only be null if we're not online. Not sure how squirrel will handle that,
-			// but at least one of these operations is responsible for setting up shortcuts to the program,
-			// which we'd LIKE to work offline. Passing it a plausible url, even though it will presumably fail,
-			// seems less likely to cause problems than passing null.
-			if (updateUrl == null)
-				updateUrl = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
-			if (args[0] == "--squirrel-uninstall")
-			{
-				RemoveBloomRegistryEntries();
-			}
-			switch (args[0])
-			{
-				// args[1] is version number
-				case "--squirrel-install": // (first?) installed
-				case "--squirrel-updated": // updated to specified version
-				case "--squirrel-obsolete": // this version is no longer newest
-				case "--squirrel-uninstall": // being uninstalled
-					using (var mgr = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45))
-					{
-						// Note, in most of these scenarios, the app exits after this method
-						// completes!
-						SquirrelAwareApp.HandleEvents(
-						  onInitialInstall: v => mgr.CreateShortcutForThisExe(),
-						  onAppUpdate: v => mgr.CreateShortcutForThisExe(),
-						  onAppUninstall: v => mgr.RemoveShortcutForThisExe(),
-						  onFirstRun: () => firstTime = true,
-						  arguments: args);
-					}
-					break;
-			}
-		}
 
 		private static void OnXulRunnerShutdown(object sender, EventArgs e)
 		{
