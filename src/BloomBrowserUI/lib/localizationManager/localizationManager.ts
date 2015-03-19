@@ -142,8 +142,7 @@ class LocalizationManager {
         return text;
     }
 
-    /* Returns a promise to get the translation.  If the translation isn't present in the specified language,
-     * it returns the english formatted text in the same way getText does.
+    /* Returns a promise to get the translation.
      *
      * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
      * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
@@ -151,16 +150,34 @@ class LocalizationManager {
      * asyncGetTextInLang('topics.health','Health', "UI")
      *      .done(translation => {
      *          $(this).text(translation);
-     *      });
+     *      })
+     *      .fail($(this).text("?Health?"));
      * @example
      * asyncGetTextInLang('topics.health','My name is {0}", "UI", "John")
      *      .done(translation => {
      *          $(this).text(translation);
      *      });
-
     */
     asyncGetTextInLang(id: string, englishText: string, langId: string, ...args): JQueryPromise {
-        return this.asyncGetTextInLangCommon(id, englishText, langId, args)
+        return this.asyncGetTextInLangCommon(id, englishText, langId, false, args);
+    }
+    /* Returns a promise to get the translation.
+     *
+     * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
+     *  @example
+     * asyncGetText('topics.health','Health')
+     *      .done(translation => {
+     *          $(this).text(translation);
+     *      })
+     *      .fail($(this).text("?Health?"));
+     * @example
+     * asyncGetText('topics.health','My name is {0}", "John")
+     *      .done(translation => {
+     *          $(this).text(translation);
+     *      });
+    */
+    asyncGetText(id: string, englishText: string, ...args): JQueryPromise {
+        return this.asyncGetTextInLangCommon(id, englishText, "UI", false, args);
     }
 
     /* Returns a promise to get the translation in the current UI language.  If the translation isn't present in the
@@ -168,21 +185,21 @@ class LocalizationManager {
      *
      * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
      *  @example
-     * asyncGetText('topics.health','Health')
+     * asyncGetTextWithDefault('topics.health','Health')
      *      .done(translation => {
      *          $(this).text(translation);
      *      });
      * @example
-     * asyncGetTextInLang('topics.health','My name is {0}", "John")
+     * asyncGetTextWithDefault('topics.health','My name is {0}", "John")
      *      .done(translation => {
      *          $(this).text(translation);
      *      });
     */
-    asyncGetText(id: string, englishText: string, ...args): JQueryPromise {
-        return this.asyncGetTextInLangCommon(id, englishText, "UI", args);
+    asyncGetTextWithDefault(id: string, englishText: string, ...args): JQueryPromise {
+       return this.asyncGetTextInLangCommon(id, englishText, "UI", true, args);
     }
 
-    asyncGetTextInLangCommon(id: string, englishText: string, langId: string, args): JQueryPromise {
+    asyncGetTextInLangCommon(id: string, englishText: string, langId: string, englishDefault: boolean, args): JQueryPromise {
         // We already get a promise from the async call, and could just return that.
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
@@ -198,11 +215,15 @@ class LocalizationManager {
             deferred.resolve(text);
         });
         promise.fail(text => {
-            text = HtmlDecode(englishText);
-            if (args.length > 0) {
-                text = SimpleDotNetFormat(text, args);
+            if (englishDefault) {
+                text = HtmlDecode(englishText);
+                if (args.length > 0) {
+                    text = SimpleDotNetFormat(text, args);
+                }
+                deferred.resolve(text);
+            } else {
+                deferred.fail();
             }
-            deferred.resolve(text);
         });
         return deferred.promise();
     }

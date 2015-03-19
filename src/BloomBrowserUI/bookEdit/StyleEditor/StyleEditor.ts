@@ -823,7 +823,7 @@ class StyleEditor {
             if (index > 0) styleName = styleName.substring(0, index);
         }
         if (this.shouldSetDefaultRule()) {
-            localizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName)
+            localizationManager.asyncGetTextWithDefault('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName)
                 .done(translation => {
                     $('#formatCharDesc').html(translation);
                 });
@@ -834,7 +834,7 @@ class StyleEditor {
         var lang = localizationManager.getLanguageName(iso);
         if (!lang)
             lang = iso;
-        localizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName)
+        localizationManager.asyncGetTextWithDefault('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName)
             .done(translation => {
                 $('#formatCharDesc').html(translation);
             });
@@ -847,7 +847,7 @@ class StyleEditor {
             var index = styleName.indexOf("-style");
             if (index > 0) styleName = styleName.substring(0, index);
         }
-        localizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName)
+        localizationManager.asyncGetTextWithDefault('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName)
             .done(translation => {
                 $('#formatMoreDesc').html(translation);
             });
