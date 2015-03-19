@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.17.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.000.0</prop>
+  <header srclang="en" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.30.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.1.000.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -139,6 +139,11 @@
         <seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
       </tuv>
     </tu>
+    <tu tuid="BloomPackInstallDialog.BadCharsInFileName">
+      <tuv xml:lang="en">
+        <seg>Possibly this is an old BloomPack created before BloomPacks could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</seg>
+      </tuv>
+    </tu>
     <tu tuid="BloomPackInstallDialog.BloomPackInstallation">
       <tuv xml:lang="en">
         <seg>Bloom Pack Installation</seg>
@@ -207,6 +212,12 @@
         <seg>Book title in {lang}</seg>
       </tuv>
     </tu>
+    <tu tuid="BookEditor.DefaultForText">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This formatting is the default for all text boxes with '{0}' style</seg>
+      </tuv>
+    </tu>
     <tu tuid="BookEditor.FontSizeTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -222,7 +233,7 @@
     <tu tuid="BookEditor.ForTextInLang">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>This formatting is for all {0} text in boxes with '{1}' style</seg>
+        <seg>This formatting is for all {0} text boxes with '{1}' style</seg>
       </tuv>
     </tu>
     <tu tuid="Click to choose topic">
@@ -549,10 +560,21 @@
         <seg>Make a book using this source</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.MakeBookUsingThisTemplate_ToolTip_">
+      <tuv xml:lang="en">
+        <seg>Create a book in my language using this source book</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.Open/CreateCollectionButton">
       <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
       <tuv xml:lang="en">
         <seg>Other Collection</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Open/CreateCollectionButton_ToolTip_">
+      <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+      <tuv xml:lang="en">
+        <seg>Open/Create/Get Collection</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.PNG Animal Stories - Copy">
@@ -593,6 +615,24 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Templates</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.ThreeLanguageSet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>ThreeLanguageSet</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.TitleMissing">
+      <note>Shown as the thumbnail caption when the book doesn't have a title</note>
+      <tuv xml:lang="en">
+        <seg>Title Missing</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Turkishtest Books">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Turkishtest Books</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Vernacular Collection Heading">
@@ -671,6 +711,11 @@
     <tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
       <tuv xml:lang="en">
         <seg>More...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.openCreateCollectionToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Open or Create Another Collection</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.sourcesForNewShellsHeading">
@@ -873,6 +918,37 @@
         <seg>This page will be permanently removed.</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.CustomPage.ChangeLayout">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Layout</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Or">
+      <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>or</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.TextBox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text Box</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.Edit">
       <tuv xml:lang="en">
         <seg>Edit</seg>
@@ -1023,7 +1099,6 @@
     </tu>
     <tu tuid="EditTab.FormatDialogTip">
       <prop type="x-dynamic">true</prop>
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Adjust formatting for style</seg>
       </tuv>
@@ -1112,42 +1187,31 @@
         <seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.JpegWarningDialog.DoNotUse">
+      <tuv xml:lang="en">
+        <seg>Cancel this import</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.JpegWarningDialog.Photograph">
+      <tuv xml:lang="en">
+        <seg>Use the JPEG file</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.JpegWarningDialog.WarningText">
+      <tuv xml:lang="en">
+        <seg>The file you’ve chosen is a “jpeg” file. JPEGs are perfect for photographs and color artwork. However, JPEGs are a big problem for black and white line art. Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDFs.\n\nNote: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or bmp actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.LayoutMode.ChangeLayout">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change Layout</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.CustomPage.ChangeLayout">
-      <prop type="x-dynamic">true</prop>
+    <tu tuid="EditTab.NewBookName">
+      <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
       <tuv xml:lang="en">
-        <seg>Change Layout</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.CustomPage.Picture">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Picture</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.CustomPage.Text">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Text</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.CustomPage.Or">
-      <prop type="x-dynamic">true</prop>
-      <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
-      <tuv xml:lang="en">
-        <seg>or</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.CustomPage.TextBox">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Text Box</seg>
+        <seg>Book</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.NoImageFoundOnClipboard">
@@ -1177,6 +1241,60 @@
         <seg>Spacing</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.StyleEditor.BorderToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the border and background</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontFaceToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font face</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontSizeToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font size</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.LineSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between lines of text</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingExtraWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Extra Wide</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingNormal">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between words</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wide</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditorTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Adjust formatting for style</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.TemplatePagesList.Heading">
       <tuv xml:lang="en">
         <seg>Template Pages</seg>
@@ -1188,10 +1306,82 @@
         <seg>1</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.10">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>10</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.11">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>11</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.12">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>12</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.13">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>13</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.14">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>14</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.15">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>15</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.16">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>16</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.17">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>17</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.18">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>18</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.19">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>19</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.ThumbnailCaptions.2">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.20">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>20</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.21">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>21</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.3">
@@ -1371,7 +1561,7 @@
     <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Picture On Bottom</seg>
+        <seg>Image en bas</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
@@ -1397,9 +1587,24 @@
         <seg>Multilingual Settings</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab._contentLanguagesDropdown_ToolTip_">
+      <tuv xml:lang="en">
+        <seg>Choose language to make this a bilingual or trilingual book</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab._copyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._copyButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Copy (Ctrl-c)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._copyButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>You need to select some text before you can copy it</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab._cutButton">
@@ -1407,14 +1612,50 @@
         <seg>Cut</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab._cutButton.ToolTip">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Cut (Ctrl-x)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._cutButton.ToolTipWhenDisabled">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>You need to select some text before you can cut it</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab._deletePageButton">
       <tuv xml:lang="en">
         <seg>Remove\n  Page</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab._deletePageButton.ToolTip">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Remove this page from the book</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._deletePageButton.ToolTipWhenDisabled">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>This page cannot be removed</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab._duplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n   Page</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._duplicatePageButton.ToolTip">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Insert a new page which is a duplicate of this one</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._duplicatePageButton.ToolTipWhenDisabled">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>This page cannot be duplicated</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab._menusToolStrip">
@@ -1428,9 +1669,32 @@
         <seg>Paste</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab._pasteButton.ToolTip">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Paste (Ctrl+v)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._pasteButton.ToolTipWhenDisabled">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>There is nothing on the Clipboard that you can paste here.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab._undoButton">
       <tuv xml:lang="en">
         <seg>Undo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._undoButton.ToolTip">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Undo (Ctrl+z)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._undoButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>There is nothing to undo</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.bilingual">
@@ -1471,6 +1735,27 @@
       <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
       <tuv xml:lang="en">
         <seg>Three Languages</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.BrokenBook">
+      <tuv xml:lang="en">
+        <seg>Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong. Consider using the 'Report a Problem' command under the 'Help' menu.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.CouldNotSavePage">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.ProblemImportingPicture">
+      <tuv xml:lang="en">
+        <seg>Bloom had a problem importing this picture.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.XMatterNotFound">
+      <tuv xml:lang="en">
+        <seg>This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a BloomPack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</seg>
       </tuv>
     </tu>
     <tu tuid="FirstTabLabel">
@@ -1543,13 +1828,20 @@
       </tuv>
     </tu>
     <tu tuid="HelpMenu.Help Menu">
+      <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Help</seg>
       </tuv>
     </tu>
+    <tu tuid="HelpMenu.Help Menu_ToolTip_">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Get Help</seg>
+      </tuv>
+    </tu>
     <tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
       <tuv xml:lang="en">
-        <seg>Using Reader Templates</seg>
+        <seg>Using Reader Templates </seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu._makeASuggestionMenuItem">
@@ -1576,6 +1868,12 @@
     <tu tuid="HelpMenu.creditsMenuItem">
       <tuv xml:lang="en">
         <seg>About Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.deepBloomPaperToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Deep Bloom Paper</seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu.documentationMenuItem">
@@ -1637,6 +1935,11 @@
         <seg>Don't Show This Again</seg>
       </tuv>
     </tu>
+    <tu tuid="JpegWarningDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>JPEG Warning</seg>
+      </tuv>
+    </tu>
     <tu tuid="LayoutChoices.A4Landscape">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1677,6 +1980,18 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>A5Portrait BottomAlign</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A6Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A6Landscape</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A6Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A6Portrait</seg>
       </tuv>
     </tu>
     <tu tuid="LayoutChoices.B5Portrait">
@@ -1863,7 +2178,6 @@
       </tuv>
     </tu>
     <tu tuid="LoginDialog.label3">
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>label3</seg>
       </tuv>
@@ -1911,6 +2225,11 @@
     <tu tuid="NewCollectionWizard.KindOfCollectionPage">
       <tuv xml:lang="en">
         <seg>Choose the Collection Type</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
+      <tuv xml:lang="en">
+        <seg>If you already have a collection you want to open, click  the 'Cancel' button.</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
@@ -2066,6 +2385,26 @@
         <seg>Invalid Move</seg>
       </tuv>
     </tu>
+    <tu tuid="PdfMaker.BadPdf">
+      <tuv xml:lang="en">
+        <seg>Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PdfMaker.TryMoreMemory">
+      <tuv xml:lang="en">
+        <seg>Try doing this on a computer with more memory</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PdfMaker.TryRestart">
+      <tuv xml:lang="en">
+        <seg>Restart your computer and try this again right away</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PdfMaker.TrySmallerImages">
+      <tuv xml:lang="en">
+        <seg>Replace large, high-resolution images in your document with lower-resolution ones</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
       <tuv xml:lang="en">
         <seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
@@ -2089,8 +2428,7 @@
     <tu tuid="PublishTab.BodyOnlyRadio-tooltip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Make a booklet from the inside pages of the book.
- Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
+        <seg>Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.ButtonThatShowsUploadForm">
@@ -2137,6 +2475,16 @@
     <tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
       <tuv xml:lang="en">
         <seg>Open the PDF in the default system pdf viewer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMakingDialog.ConversionProgress._statusLabel">
+      <tuv xml:lang="en">
+        <seg>Loading...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMakingDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Making PDF...</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.PrintButton">
@@ -2481,7 +2829,6 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.AddTexts">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Please add texts to the Sample Texts folder.</seg>
@@ -2506,21 +2853,18 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.CombinationHelp1">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Separate by spaces</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.CombinationHelp2">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>E.g. "ai oo sh ng th ing"</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Combinations">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Letter Combinations (Graphemes)</seg>
@@ -2557,28 +2901,24 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Language">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Language</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.LetterHelp1">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>List letters and word-forming characters in alphabetic order.</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.LetterHelp2">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Separate by spaces</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.LetterHelp3">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>E.g. "a b c d"</seg>
@@ -2657,14 +2997,12 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.MoreWords">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More Words</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.OpenSampleTexts">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Open the sample texts folder for this language.</seg>
@@ -2719,7 +3057,6 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SampleTexts">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Word Lists and Sample Texts</seg>
@@ -2768,7 +3105,6 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SightWordHelp">
-      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>What are sight words?</seg>
@@ -3209,6 +3545,11 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Use Image Server to reduce memory usage with large images.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="columnHeader1">
+      <tuv xml:lang="en">
+        <seg>ColumnHeader</seg>
       </tuv>
     </tu>
     <tu tuid="tabPage4.tabPage4">
