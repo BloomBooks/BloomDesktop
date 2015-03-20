@@ -115,6 +115,8 @@ function closeClickHandler() {
     var myComponent = $(this).closest('.split-pane-component');
     var sibling = myComponent.siblings('.split-pane-component').first('div');
     var toReplace = myComponent.parent().parent();
+    var parentHeight = toReplace.height();
+    var parentWidth = toReplace.width();
     var positionClass = toReplace.attr('class');
     toReplace.replaceWith(sibling);
 
@@ -124,6 +126,8 @@ function closeClickHandler() {
         return (css.match (/(^|\s)position-\S+/g) || []).join(' ');
     });
     sibling.addClass(positionClass);
+    sibling.height(parentHeight);
+    sibling.width(parentWidth);
 }
 
 function getSplitPaneHtml(verticalOrHorizontal) {
