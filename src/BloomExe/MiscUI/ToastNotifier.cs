@@ -38,8 +38,11 @@ namespace Bloom.MiscUI
 		public ToastNotifier()
 		{
 			InitializeComponent();
-			// We want our window to be the top most
-			TopMost = true;
+			// We do NOT want our window to be the top most; that disables the effect of ShowWithoutActivation
+			// and means that the toast steals focus from our main window. Once brought up in front of our
+			// window (but not activated) it seems to stay there pretty nicely even while we interact with
+			// the window. See BL-1126.
+			//TopMost = true;
 			// Pop doesn't need to be shown in task bar
 			ShowInTaskbar = false;
 			// Create and run timer for animation
@@ -52,6 +55,14 @@ namespace Bloom.MiscUI
 			_pauseTimer = new Timer();
 			_pauseTimer.Interval = 15000;
 			_pauseTimer.Tick += PauseTimerTick;
+		}
+
+		/// <summary>
+		/// Stops it stealing focus from the main window even though it will be in front of that window.
+		/// </summary>
+		protected override bool ShowWithoutActivation
+		{
+			get { return true; }
 		}
 
 		private void PauseTimerTick(object sender, EventArgs e)
