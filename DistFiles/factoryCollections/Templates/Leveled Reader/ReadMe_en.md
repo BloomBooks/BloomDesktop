@@ -6,7 +6,7 @@ You can also make a Bloom Pack of *templates* that others can use to quickly cre
 
 To learn about using Leveled Readers in Bloom, you can:
 
-- Watch [this video](http://tiny.cc/8vbwux) (password "bloomcast").
+- Watch [these instructional videos](http://tiny.cc/8vbwux).
 - Go to the Help menu, choose 'Documentation, and look in the index under "Leveled Readers".
 - Go to the Help menu and choose: "Building Reader Templates".
 

@@ -1085,6 +1085,7 @@
     <None Include="Resources\duplicatePageDisabled32x32.png" />
     <None Include="Resources\greyTriangleButton.png" />
     <None Include="Resources\installerBackground.jpg" />
+    <None Include="Resources\videos.png" />
     <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.7.2.min.js" />
