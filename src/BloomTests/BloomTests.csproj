@@ -83,7 +83,7 @@
   <ItemGroup>
     <Reference Include="L10NSharp, Version=2.0.30.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\libpalaso\lib\Debug\L10NSharp.dll</HintPath>
+      <HintPath>..\..\lib\dotnet\L10NSharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Moq, Version=4.2.1409.1722, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
