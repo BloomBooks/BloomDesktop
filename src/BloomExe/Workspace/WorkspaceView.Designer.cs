@@ -39,6 +39,7 @@
 			this._openCreateCollectionButton = new System.Windows.Forms.ToolStripButton();
 			this._helpMenu = new System.Windows.Forms.ToolStripDropDownButton();
 			this._documentationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this._trainingVideosMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this._releaseNotesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._keyBloomConceptsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,6 +47,7 @@
 			this.buildingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.usingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._divider2 = new System.Windows.Forms.ToolStripSeparator();
+			this._reportAProblemMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._makeASuggestionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._webSiteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._divider3 = new System.Windows.Forms.ToolStripSeparator();
@@ -60,7 +62,6 @@
 			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
-			this._reportAProblemMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._panelHoldingToolStrip.SuspendLayout();
 			this._toolStrip.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -114,7 +115,7 @@
 			this._toolStrip.Location = new System.Drawing.Point(0, 0);
 			this._toolStrip.Name = "_toolStrip";
 			this._toolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this._toolStrip.Size = new System.Drawing.Size(272, 65);
+			this._toolStrip.Size = new System.Drawing.Size(272, 46);
 			this._toolStrip.TabIndex = 28;
 			this._toolStrip.Text = "_toolStrip";
 			// 
@@ -153,6 +154,7 @@
 			// 
 			this._helpMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._documentationMenuItem,
+            this._trainingVideosMenuItem,
             this.toolStripSeparator1,
             this._releaseNotesMenuItem,
             this._keyBloomConceptsMenuItem,
@@ -189,8 +191,19 @@
 			this._L10NSharpExtender.SetLocalizingId(this._documentationMenuItem, "HelpMenu.documentationMenuItem");
 			this._documentationMenuItem.Name = "_documentationMenuItem";
 			this._documentationMenuItem.Size = new System.Drawing.Size(215, 22);
-			this._documentationMenuItem.Text = "Documentation";
+			this._documentationMenuItem.Text = "Great Help. No, Really!";
 			this._documentationMenuItem.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
+			// 
+			// _trainingVideosMenuItem
+			// 
+			this._trainingVideosMenuItem.Image = global::Bloom.Properties.Resources.videos;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._trainingVideosMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._trainingVideosMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this._trainingVideosMenuItem, "HelpMenu.trainingVideos");
+			this._trainingVideosMenuItem.Name = "_trainingVideosMenuItem";
+			this._trainingVideosMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._trainingVideosMenuItem.Text = "Training Videos";
+			this._trainingVideosMenuItem.Click += new System.EventHandler(this._trainingVideosMenuItem_Click);
 			// 
 			// toolStripSeparator1
 			// 
@@ -252,6 +265,16 @@
 			// 
 			this._divider2.Name = "_divider2";
 			this._divider2.Size = new System.Drawing.Size(212, 6);
+			// 
+			// _reportAProblemMenuItem
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._reportAProblemMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._reportAProblemMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this._reportAProblemMenuItem, "HelpMenu.reportAProblemToolStripMenuItem");
+			this._reportAProblemMenuItem.Name = "_reportAProblemMenuItem";
+			this._reportAProblemMenuItem.Size = new System.Drawing.Size(215, 22);
+			this._reportAProblemMenuItem.Text = "Report a Problem...";
+			this._reportAProblemMenuItem.Click += new System.EventHandler(this._reportAProblemMenuItem_Click);
 			// 
 			// _makeASuggestionMenuItem
 			// 
@@ -434,16 +457,6 @@
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
-			// _reportAProblemMenuItem
-			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this._reportAProblemMenuItem, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._reportAProblemMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._reportAProblemMenuItem, "HelpMenu.reportAProblemToolStripMenuItem");
-			this._reportAProblemMenuItem.Name = "_reportAProblemMenuItem";
-			this._reportAProblemMenuItem.Size = new System.Drawing.Size(215, 22);
-			this._reportAProblemMenuItem.Text = "Report a Problem...";
-			this._reportAProblemMenuItem.Click += new System.EventHandler(this._reportAProblemMenuItem_Click);
-			// 
 			// WorkspaceView
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -505,6 +518,7 @@
 		private System.Windows.Forms.ToolStripMenuItem usingReaderTemplatesMenuItem;
 		private System.Windows.Forms.ToolStripSeparator _divider1;
 		private System.Windows.Forms.ToolStripMenuItem _reportAProblemMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _trainingVideosMenuItem;
 
 
     }

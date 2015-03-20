@@ -6,6 +6,6 @@ You can also make a Bloom Pack of *templates* that others can use to quickly cre
 
 To learn about using Decodable Readers in Bloom, you can:
 
-- watch [this video](http://tiny.cc/8vbwux) (password "bloomcast")
-- go to the Help menu, choose 'Documentation, and look in the index under "Decodable Readers".
-- go to the Help menu and choose: "Building Reader Templates".
+- Watch [these instructional videos](http://tiny.cc/8vbwux).
+- Go to the Help menu, choose 'Documentation, and look in the index under "Decodable Readers".
+- Go to the Help menu and choose: "Building Reader Templates".
