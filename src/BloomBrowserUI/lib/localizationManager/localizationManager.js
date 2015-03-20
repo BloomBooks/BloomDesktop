@@ -160,15 +160,15 @@ var LocalizationManager = (function () {
         return this.asyncGetTextInLangCommon(id, englishText, langId, false, args);
     };
 
-    /* Returns a promise to get the translation.
+    /* Returns a promise to get the translation in the current UI language.  If the translation isn't present in the
+    * UI language, it returns the english formatted text in the same way getText does.
     *
     * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
     *  @example
     * asyncGetText('topics.health','Health')
     *      .done(translation => {
     *          $(this).text(translation);
-    *      })
-    *      .fail($(this).text("?Health?"));
+    *      });
     * @example
     * asyncGetText('topics.health','My name is {0}", "John")
     *      .done(translation => {
@@ -176,29 +176,6 @@ var LocalizationManager = (function () {
     *      });
     */
     LocalizationManager.prototype.asyncGetText = function (id, englishText) {
-        var args = [];
-        for (var _i = 0; _i < (arguments.length - 2); _i++) {
-            args[_i] = arguments[_i + 2];
-        }
-        return this.asyncGetTextInLangCommon(id, englishText, "UI", false, args);
-    };
-
-    /* Returns a promise to get the translation in the current UI language.  If the translation isn't present in the
-    * UI language, it returns the english formatted text in the same way getText does.
-    *
-    * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
-    *  @example
-    * asyncGetTextWithDefault('topics.health','Health')
-    *      .done(translation => {
-    *          $(this).text(translation);
-    *      });
-    * @example
-    * asyncGetTextWithDefault('topics.health','My name is {0}", "John")
-    *      .done(translation => {
-    *          $(this).text(translation);
-    *      });
-    */
-    LocalizationManager.prototype.asyncGetTextWithDefault = function (id, englishText) {
         var args = [];
         for (var _i = 0; _i < (arguments.length - 2); _i++) {
             args[_i] = arguments[_i + 2];
