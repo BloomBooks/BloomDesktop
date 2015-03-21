@@ -216,7 +216,19 @@ namespace Bloom.Publish
 						method = new NullLayoutMethod();
 						break;
 					case PublishModel.BookletLayoutMethod.SideFold:
-						method = new SideFoldBookletLayouter();
+						// To keep the GUI simple, we assume that A6 page size for booklets
+						// implies 4up printing on A4 paper.  This feature was requested by
+						// https://jira.sil.org/browse/BL-1059 "A6 booklets should print 4
+						// to an A4 sheet".
+						if (incomingPaperSize == "A6")
+						{
+							method = new SideFold4UpBookletLayouter();
+							pageSize = PageSize.A4;
+						}
+						else
+						{
+							method = new SideFoldBookletLayouter();
+						}
 						break;
 					case PublishModel.BookletLayoutMethod.CutAndStack:
 						method = new CutLandscapeLayout();
