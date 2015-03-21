@@ -1,14 +1,33 @@
 ﻿## 3.1
+- New faster installer with automatic incremental upgrades
+- BloomLibrary.org takes a fraction of the time/bytes to display
+- Page thumbnails now show an "attention" icon if some text on the page is overflow its box
+- Added description texts to Leveled and Decodable Reader templates
+- Added links to training videos in the Help menu
+- Updated French & Spanish localizations
+- Higher quality creative commons logos
+- Bloom now tries to detect when you are importing a jpeg that really should be tiff/bmp/png, and puts up an informative dialog that lets you repent or plow forward.
 - Pasted images are now named "image1",2,3, etc.
 - Pasted images are no longer added with a temporary gibberish name; the original names are maintained.
-- Bloom now tries to detect when you are importing a jpeg that really should be tiff/bmp/png, and puts up an informative dialog that lets you repent or plow forward.
 - On custom pages and other places where there maybe multiple text boxes layout out horizontally, text bubbles will now not show until you click in the box, so that they don't clutter up the page and interfere with seeing/doing what you need.
-- Page thumbnails now show an "attention" icon if some text on the page is overflow its box
-- Improve situations where Bloom ran out of memory while making a PDF making
-- BloomLibrary.org takes a fraction of the time/bytes to display
+- Improved support for Paragraph-oriented fields (indention, numbers, prefixes) in hand-made templates.
+- Support for text wrapping around images and captions in hand-made templates.
+
 
 ### Fixes
+- (in progress) Fixed Booklet production of A6 Books
+- Make Format dialog more localizable
+- Fixed problem when deleting a box in a custom page.
+- Fixed problem when deleting a resized split on a custom page.
+- Fixed a problem with pdf-ing a book with large image files multiple times.
+- Fixed Image License changes made directly in Bloom are lost
+- Fixed Text size is different on title page: "Language" is smaller than "Topic"
 - Fixed a problem where many PDF viewer programs showed ugly lines around parts images. This fix will only help with images imported from now on, not retroactively. We'll see about doing something retroactively soon.
+- Fixed Vertical Scroll Bars showing prematurely on small boxes in custom page
+- Fixed "red cycling" on small boxes in custom page
+- Fixed insufficient space for French labels on thumbnails
+- Fixed Font size of "second language" Book Title is lost after re-opening
+- Many fixes related to book topic and different languages
 - Overflow detector misfires on right to left text.
 - On the front cover, all the text below the image is now the same size
 - Reinstated Chinese UI translation.
