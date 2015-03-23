@@ -90,13 +90,29 @@ namespace Bloom.Publish
 				((AdobeReaderControl)_pdfViewerControl).Print();
 				return;
 			}
-#endif
+
 			var browser = ((GeckoWebBrowser)_pdfViewerControl);
 			using (AutoJSContext context = new AutoJSContext(browser.Window.JSContext))
 			{
 				string result;
 				context.EvaluateScript(@"window.print()", (nsISupports)browser.Document.DomObject, out result);
 			}
+#else
+			var browser = ((GeckoWebBrowser)_pdfViewerControl);
+			using (AutoJSContext context = new AutoJSContext(browser.Window.JSContext))
+			{
+				// BL-788 Print dialog appears behind Bloom on Linux
+				// Finally went to minimizing Bloom to allow the print window to be 
+				// displayed and then restore to the original size after the 
+				// Print or Cancel button is pushed on the print dialog.
+				var savedState = this.ParentForm.WindowState;
+				this.ParentForm.WindowState = FormWindowState.Minimized;
+				Application.DoEvents();
+				string result;
+				context.EvaluateScript(@"window.print()", (nsISupports)browser.Document.DomObject, out result);
+				this.ParentForm.WindowState = savedState;
+			}
+#endif
 		}
 	}
 }
