@@ -14,14 +14,14 @@ namespace Bloom
 	///
 	/// This could maybe eventually go to https://github.com/hatton/NetSparkle. My hesitation is that it's kind of specific to our way of using TeamCity and our build scripts
 	///
-	/// We have a way to learn of updates by downloading an appcast.xml from a url. But for different versions of the app, we may want to recommend different
-	/// version. So with this class we download a simple table on from a fixed ftp site, read it, and determine URL we should be getting
-	/// the appcast.xml from (each comes from a different Team City configuration).
+	/// There are two levels of indirection here to give us maximum forward compatibility and control over what upgrades happen in what channels.
+	/// First, we go use a url based on our channel ("http://bloomlibrary.org/channels/UpgradeTable{channel}.txt) to download a file.
+	/// Then, in that file, we search for a row that matches our version number to decide which upgrades folder to use.
 	/// </summary>
 	public class UpdateVersionTable
 	{
 		//unit tests can change this
-		public  string  URLOfTable = "http://bloomlibrary.org/channels/SquirrelUpgradeTable.txt";
+		public  string  URLOfTable = "http://bloomlibrary.org/channels/UpgradeTable{0}.txt";
 		//unit tests can pre-set this
 		public  string TextContentsOfTable { get; set; }
 
@@ -39,7 +39,7 @@ namespace Bloom
 			{
 				var client = new WebClient();
 				{
-					TextContentsOfTable =  client.DownloadString(URLOfTable);
+					TextContentsOfTable =  client.DownloadString(GetUrlOfTable());
 				}
 			}
 			if (RunningVersion == default(Version))
@@ -62,6 +62,16 @@ namespace Bloom
 					return parts[2].Trim();
 			}
 			return string.Empty;
+		}
+
+		private string GetUrlOfTable()
+		{
+			// assemblyName is usually something like "BloomAlpha. In a developer debug build (or main stable release)
+			// it will be simply "Bloom." This allows each channel to have its own update table.
+			var assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+			if (assemblyName.StartsWith("Bloom"))
+				assemblyName = assemblyName.Substring("Bloom".Length);
+			return String.Format(URLOfTable, assemblyName);
 		}
 	}
 }
