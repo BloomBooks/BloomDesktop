@@ -122,6 +122,13 @@ namespace Bloom
 			};
 		}
 
+		public static string ChannelName
+		{
+			get
+			{
+				return Assembly.GetEntryAssembly().ManifestModule.Name.Replace("Bloom", "").Replace(".exe", "").Trim();
+			}
+		}
 		internal static async void InitiateSquirrelNotifyUpdatesAvailable(Action<string> restartBloom)
 		{
 			if (OkToInitiateUpdateManager)

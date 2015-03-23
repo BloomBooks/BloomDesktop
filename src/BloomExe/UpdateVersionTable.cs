@@ -60,12 +60,7 @@ namespace Bloom
 
 		private string GetUrlOfTable()
 		{
-			// assemblyName is usually something like "BloomAlpha. In a developer debug build (or main stable release)
-			// it will be simply "Bloom." This allows each channel to have its own update table.
-			var assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-			if (assemblyName.StartsWith("Bloom"))
-				assemblyName = assemblyName.Substring("Bloom".Length);
-			return String.Format(URLOfTable, assemblyName);
+			return String.Format(URLOfTable, ApplicationUpdateSupport.ChannelName);
 		}
 	}
 }

@@ -57,7 +57,7 @@ namespace Bloom
 			//try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
 			TopMost = true;
 			Focus();
-			var channel = Assembly.GetEntryAssembly().ManifestModule.Name.Replace("Bloom", "").Replace(".exe", "").Trim();
+			var channel = ApplicationUpdateSupport.ChannelName;
 			_channelLabel.Visible = channel.ToLower() != "release";
 			_channelLabel.Text = LocalizationManager.GetDynamicString("Bloom", "SplashScreen." + channel, channel);
 			BringToFront();
