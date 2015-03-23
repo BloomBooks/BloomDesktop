@@ -26,7 +26,8 @@ namespace Bloom.web
 
 		protected ServerBase()
 		{
-			_workers = new Thread[4];
+			// limit the number of worker threads to the number of processor cores
+			_workers = new Thread[Environment.ProcessorCount];
 			_queue = new Queue<HttpListenerContext>();
 			_stop = new ManualResetEvent(false);
 			_ready = new ManualResetEvent(false);
@@ -87,7 +88,7 @@ namespace Bloom.web
 
 			for (var i = 0; i < _workers.Length; i++)
 			{
-				_workers[i] = new Thread(Worker);
+				_workers[i] = new Thread(WaitForRequests);
 				_workers[i].Start();
 			}
 
@@ -107,21 +108,27 @@ namespace Bloom.web
 
 		private void ContextReady(IAsyncResult ar)
 		{
-			try
+			// this can happen when shutting down
+			if (!_listenerThread.IsAlive) return;
+
+			lock (_queue)
 			{
-				lock (_queue)
-				{
-					_queue.Enqueue(_listener.EndGetContext(ar));
-					_ready.Set();
-				}
+				_queue.Enqueue(_listener.EndGetContext(ar));
+				_ready.Set();
 			}
-			catch { }
 		}
 
-		private void Worker()
+		/// <summary>
+		/// The worker threads run this function
+		/// </summary>
+		private void WaitForRequests()
 		{
+			// _ready: indicates that there are requests in the queue that should be processed.
+			// _stop:  indicates that the class is being disposed and the thread should terminate.
 			WaitHandle[] wait = { _ready, _stop };
-			while (0 == WaitHandle.WaitAny(wait))
+
+			// WaitHandle.WaitAny(wait) returns the array index of the handle that satisfied the wait. 
+			while (WaitHandle.WaitAny(wait) == 0)
 			{
 				HttpListenerContext context;
 				lock (_queue)
@@ -134,9 +141,6 @@ namespace Bloom.web
 						continue;
 					}
 				}
-
-				if (_isDisposing || _listener == null || !_listener.IsListening)
-					return; //strangely, this callback is fired when we close down the listener
 
 				var rawurl = "unknown";
 				try
@@ -245,18 +249,14 @@ namespace Bloom.web
 				string.Format("We need to do one more thing before Bloom is ready. Bloom needs temporary administrator privileges to set up part of its communication with the embedded web browser.{0}{0}After you click 'OK', you may be asked to authorize this step.", Environment.NewLine),
 					@"Almost there!", MessageBoxButtons.OK);
 
-			var startInfo = new ProcessStartInfo { UseShellExecute = true, Verb = "runas" };
+			var startInfo = new ProcessStartInfo
+			{
+				UseShellExecute = true,
+				Verb = "runas",
+				FileName = "netsh",
+				Arguments = string.Format("http add urlacl url={0} user=everyone", PathEndingInSlash.TrimEnd('/'))
+			};
 
-			if (Environment.OSVersion.Version.Major == 5 /*win xp*/)
-			{
-				startInfo.FileName = "httpcfg";
-				startInfo.Arguments = string.Format("set urlacl -u {0} /a \"D:(A;;GX;;;WD)\"", PathEndingInSlash);
-			}
-			else
-			{
-				startInfo.FileName = "netsh";
-				startInfo.Arguments = string.Format("http add urlacl url={0} user=everyone", PathEndingInSlash.TrimEnd('/'));
-			}
 			Process.Start(startInfo);
 		}
 
@@ -331,5 +331,4 @@ namespace Bloom.web
 
 		#endregion
 	}
-
 }
