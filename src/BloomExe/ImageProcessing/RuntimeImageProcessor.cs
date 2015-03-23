@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -20,7 +21,13 @@ namespace Bloom.ImageProcessing
 	{
 		private readonly BookRenamedEvent _bookRenamedEvent;
 		public int TargetDimension = 500;
-		private Dictionary<string, string> _originalPathToProcessedVersionPath;
+
+		// the ConcurrentDictionary is thread-safe
+		private ConcurrentDictionary<string, string> _originalPathToProcessedVersionPath;
+
+		// using a ConcurrentDictionary because there isn't a thread-safe List in .Net 4.0
+		private ConcurrentDictionary<string, bool> _imageFilesToReturnUnprocessed;
+
 		private string _cacheFolder;
 
 		private readonly ImageAttributes _convertWhiteToTransparent;
@@ -28,7 +35,8 @@ namespace Bloom.ImageProcessing
 		public RuntimeImageProcessor(BookRenamedEvent bookRenamedEvent)
 		{
 			_bookRenamedEvent = bookRenamedEvent;
-			_originalPathToProcessedVersionPath = new Dictionary<string, string>();
+			_originalPathToProcessedVersionPath = new ConcurrentDictionary<string, string>();
+			_imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
 			_cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom");
 			_bookRenamedEvent.Subscribe(OnBookRenamed);
 			_convertWhiteToTransparent = new ImageAttributes();
@@ -40,7 +48,8 @@ namespace Bloom.ImageProcessing
 			//Note, we don't pay attention to what the change was, we just purge the whole cache
 
 			TryToDeleteCachedImages();
-			_originalPathToProcessedVersionPath = new Dictionary<string, string>();
+			_originalPathToProcessedVersionPath = new ConcurrentDictionary<string, string>();
+			_imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
 		}
 
 		public void Dispose()
@@ -87,6 +96,10 @@ namespace Bloom.ImageProcessing
 			if (new[] {"/img/", "placeHolder", "Button"}.Any(s => originalPath.Contains(s)))
 				return originalPath;
 
+			// check if this image is in the do-not-process list
+			bool test;
+			if (_imageFilesToReturnUnprocessed.TryGetValue(originalPath, out test)) return originalPath;
+
 			lock (this)
 			{
 				var cacheFileName = originalPath;
@@ -107,7 +120,8 @@ namespace Bloom.ImageProcessing
 					}
 
 					// the file has changed, remove from cache
-					_originalPathToProcessedVersionPath.Remove(cacheFileName);
+					string valueRemoved;
+					_originalPathToProcessedVersionPath.TryRemove(cacheFileName, out valueRemoved);
 				}
 
 				// there is not a cached version, try to make one
@@ -117,7 +131,7 @@ namespace Bloom.ImageProcessing
 					Directory.CreateDirectory(Path.GetDirectoryName(pathToProcessedImage));
 
 				// BL-1112: images not loading in page thumbnails
-				var success = false;
+				bool success;
 				if (getThumbnail)
 				{
 					// The HTML div that contains the thumbnails is 80 pixels wide, so make the thumbnails 80 pixels wide
@@ -125,53 +139,44 @@ namespace Bloom.ImageProcessing
 				}
 				else
 				{
-					success = MakeTransparentImage(originalPath, pathToProcessedImage);
+					success = MakePngBackgroundTransparent(originalPath, pathToProcessedImage);
 				}
 
-				if (!success) return originalPath;
+				if (!success)
+				{
+					// add this image to the do-not-process list so we don't waste time doing this again
+					_imageFilesToReturnUnprocessed.TryAdd(originalPath, true);
+					return originalPath;
+				}
 
-				try
-				{
-					_originalPathToProcessedVersionPath.Add(cacheFileName, pathToProcessedImage); //remember it so we can reuse if they show it again, and later delete
-				}
-				catch (ArgumentException)
-				{
-					// it happens sometimes that though it wasn't in the _originalPathToProcessedVersionPath when we entered, it is now
-					// I haven't tracked it down... possibly we get a new request for the image while we're busy compressing it?
-				}
+				_originalPathToProcessedVersionPath.TryAdd(cacheFileName, pathToProcessedImage); //remember it so we can reuse if they show it again, and later delete
 
 				return pathToProcessedImage;
 			}
 		}
 
-		private bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth)
+		private static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth)
 		{
-			try
+			using (var originalImage = PalasoImage.FromFile(originalPath))
 			{
-				using (var originalImage = PalasoImage.FromFile(originalPath))
-				{
-					// calculate dimensions
-					var newW = (originalImage.Image.Width > newWidth) ? newWidth : originalImage.Image.Width;
-					var newH = newW * originalImage.Image.Height / originalImage.Image.Width;
+				// check if it needs resized
+				if (originalImage.Image.Width <= newWidth) return false;
 
-					using (var newImg = originalImage.Image.GetThumbnailImage(newW, newH, () => false, IntPtr.Zero))
-					{
-						newImg.Save(pathToProcessedImage);
-					}
+				// calculate dimensions
+				var newW = (originalImage.Image.Width > newWidth) ? newWidth : originalImage.Image.Width;
+				var newH = newW * originalImage.Image.Height / originalImage.Image.Width;
+
+				using (var newImg = originalImage.Image.GetThumbnailImage(newW, newH, () => false, IntPtr.Zero))
+				{
+					newImg.Save(pathToProcessedImage);
 				}
-			}
-			catch (OutOfMemoryException)
-			{
-				// ignore this one
-				GC.Collect();
-				return false;
 			}
 
 			return true;
 		}
 
 
-		private bool MakeTransparentImage(string originalPath, string pathToProcessedImage)
+		private bool MakePngBackgroundTransparent(string originalPath, string pathToProcessedImage)
 		{
 			using (var originalImage = PalasoImage.FromFile(originalPath))
 			{

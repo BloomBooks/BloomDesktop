@@ -83,8 +83,10 @@ namespace Bloom.ImageProcessing
 					// thumbnail requests have the thumbnail parameter set in the query string
 					var thumb = info.GetQueryString()["thumbnail"] != null;
 					var pathToFile = _cache.GetPathToResizedImage(r, thumb);
-					if (!string.IsNullOrEmpty(pathToFile))
-						info.ReplyWithImage(pathToFile);
+
+					if (string.IsNullOrEmpty(pathToFile)) return false;
+
+					info.ReplyWithImage(pathToFile);
 					return true;
 				}
 			}
