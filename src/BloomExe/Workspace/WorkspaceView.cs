@@ -489,7 +489,15 @@ namespace Bloom.Workspace
 						"Bloom is already working on checking for updates."));
 				return;
 			}
-			ApplicationUpdateSupport.InitiateSquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Verbose, newInstallDir => RestartBloom(newInstallDir));
+			if (Debugger.IsAttached)
+			{
+				MessageBox.Show(this, "Sorry, you cannot check for updates from the debugger.");
+			}
+			else
+			{
+				ApplicationUpdateSupport.InitiateSquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Verbose,
+					newInstallDir => RestartBloom(newInstallDir));
+			}
 		}
 
 		private void RestartBloom(string newInstallDir)

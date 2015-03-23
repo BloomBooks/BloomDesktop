@@ -135,7 +135,14 @@ namespace Bloom.MiscUI
 		{
 			_message.Text = message;
 			_callToAction.Text = callToAction;
-			_pauseTimer.Interval = 1000 * seconds;
+			if (seconds < 0)
+			{
+				_pauseTimer.Enabled = false; //just leave it up permanently
+			}
+			else
+			{
+				_pauseTimer.Interval = 1000 * seconds;
+			}
 			Show();
 		}
 
