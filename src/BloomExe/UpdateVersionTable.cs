@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Text;
-using Amazon.DataPipeline.Model;
-using Amazon.ElasticMapReduce.Model;
-using Bloom.ImageProcessing;
 
 namespace Bloom
 {

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Bloom;
 using NUnit.Framework;
 
@@ -82,9 +79,10 @@ namespace BloomTests
 		}
 
 		[Test]
-		public void CanReadActualFileFromServer()
+		public void CanReadTableForAlphaFromServer()
 		{
 			var t = new UpdateVersionTable();
+			t.URLOfTable = "http://bloomlibrary.org/channels/UpgradeTableAlpha.txt";
 			t.RunningVersion = Version.Parse("2.0.2000");
 			//the full result will be something like
 			//"https://s3.amazonaws.com/bloomlibrary.org/deltasAlpha"
