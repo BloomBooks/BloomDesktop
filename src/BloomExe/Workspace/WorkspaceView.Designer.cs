@@ -58,6 +58,7 @@
 			this._aboutBloomMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
+			this._applicationUpdateCheckTimer = new System.Windows.Forms.Timer(this.components);
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
 			this._collectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
@@ -367,6 +368,12 @@
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = "HelpMenu";
 			// 
+			// _applicationUpdateCheckTimer
+			// 
+			this._applicationUpdateCheckTimer.Enabled = true;
+			this._applicationUpdateCheckTimer.Interval = 60000;
+			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
+			// 
 			// _tabStrip
 			// 
 			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
@@ -519,6 +526,7 @@
 		private System.Windows.Forms.ToolStripSeparator _divider1;
 		private System.Windows.Forms.ToolStripMenuItem _reportAProblemMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _trainingVideosMenuItem;
+		private System.Windows.Forms.Timer _applicationUpdateCheckTimer;
 
 
     }

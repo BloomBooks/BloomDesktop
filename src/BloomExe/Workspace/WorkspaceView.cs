@@ -80,14 +80,7 @@ namespace Bloom.Workspace
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
-			{
-				Application.Idle += CheckForUpdatesOnFirstIdle;
-			}
-			else
-			{
-			_checkForNewVersionMenuItem.Visible = false;
-			}
+			_checkForNewVersionMenuItem.Visible = Palaso.PlatformUtilities.Platform.IsWindows;
 
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
@@ -175,15 +168,16 @@ namespace Bloom.Workspace
 			SetupUILanguageMenu();
 		}
 
-		private void CheckForUpdatesOnFirstIdle(object sender, EventArgs eventArgs)
+
+		private void _applicationUpdateCheckTimer_Tick(object sender, EventArgs e)
 		{
-			Application.Idle -= CheckForUpdatesOnFirstIdle;
-			if (!Debugger.IsAttached)
+			_applicationUpdateCheckTimer.Enabled = false;
+			//if (!Debugger.IsAttached)
 			{
 				if (Settings.Default.AutoUpdate)
-					UpdateSupport.InitiateSquirrelUpdate(UpdateSupport.BloomUpdateMessageVerbosity.Quiet, newInstallDir => RestartBloom(newInstallDir));
+					ApplicationUpdateSupport.InitiateSquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet, newInstallDir => RestartBloom(newInstallDir));
 				else
-					UpdateSupport.InitiateSquirrelNotifyUpdatesAvailable(newInstallDir => RestartBloom(newInstallDir));
+					ApplicationUpdateSupport.InitiateSquirrelNotifyUpdatesAvailable(newInstallDir => RestartBloom(newInstallDir));
 			}
 		}
 
@@ -487,7 +481,7 @@ namespace Bloom.Workspace
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
 		{
-			if (UpdateSupport.BloomUpdateInProgress)
+			if (ApplicationUpdateSupport.BloomUpdateInProgress)
 			{
 				//enhance: ideally, what this would do is show a toast of whatever it is squirrel is doing: checking, downloading, waiting for a restart.
 				MessageBox.Show(this,
@@ -495,7 +489,7 @@ namespace Bloom.Workspace
 						"Bloom is already working on checking for updates."));
 				return;
 			}
-			UpdateSupport.InitiateSquirrelUpdate(UpdateSupport.BloomUpdateMessageVerbosity.Verbose, newInstallDir => RestartBloom(newInstallDir));
+			ApplicationUpdateSupport.InitiateSquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Verbose, newInstallDir => RestartBloom(newInstallDir));
 		}
 
 		private void RestartBloom(string newInstallDir)
