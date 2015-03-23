@@ -80,7 +80,7 @@ namespace Bloom
 			// but at least one of these operations is responsible for setting up shortcuts to the program,
 			// which we'd LIKE to work offline. Passing it a plausible url, even though it will presumably fail,
 			// seems less likely to cause problems than passing null.
-			if (updateUrl == null)
+			if (string.IsNullOrEmpty(updateUrl))
 				updateUrl = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
 			if (args[0] == "--squirrel-uninstall")
 			{

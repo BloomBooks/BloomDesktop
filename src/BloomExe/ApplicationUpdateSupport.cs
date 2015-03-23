@@ -62,9 +62,10 @@ namespace Bloom
 				{
 					updateUrl = InstallerSupport.SquirrelUpdateUrl;
 				}
-				if (updateUrl == null)
+				if (string.IsNullOrEmpty(updateUrl))
 				{
-					// For some reason we couldn't get one...possibly not online so can't get to UpdateVersionTable
+					// For some reason we couldn't get one...possibly not online so can't get to UpdateVersionTable.
+					// Or we may not have created one for the current channel...for example, running a debug build not in the debugger.
 					var failNotifier = new ToastNotifier();
 					failNotifier.Image.Image = Resources.Bloom.ToBitmap();
 					var failMsg = LocalizationManager.GetString("CollectionTab.UnableToCheck", "Unable to check for update.", "Shown when Bloom tries to check for an update but can't, for example becuase it can't connect to the internet, or a problems with our server, etc.");
@@ -126,7 +127,7 @@ namespace Bloom
 			if (OkToInitiateUpdateManager)
 			{
 				var updateUrl = InstallerSupport.SquirrelUpdateUrl;
-				if (updateUrl == null)
+				if (string.IsNullOrEmpty(updateUrl))
 					return;
 				UpdateInfo info;
 				ArrangeToDisposeSquirrelManagerOnExit();
