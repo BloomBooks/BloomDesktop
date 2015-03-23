@@ -54,28 +54,31 @@ namespace Bloom
 			}
 		}
 
-		internal static string SquirrelUpdateUrl
+		/// <summary>
+		/// Note: this actually has to go out over the web to get the answer, and may fail
+		/// </summary>
+		/// <returns></returns>
+		internal static string GetSquirrelUpdateUrl()
 		{
-			get
+			if (_squirrelUpdateUrl == null)
 			{
-				if (_squirrelUpdateUrl == null)
+				try
 				{
-					try
-					{
-						_squirrelUpdateUrl = new UpdateVersionTable().GetAppcastUrl();
-					}
-					catch (WebException)
-					{
-					}
+					_squirrelUpdateUrl = new UpdateVersionTable().GetAppcastUrl();
 				}
-				return _squirrelUpdateUrl;
+				catch (WebException e)
+				{
+					//enhance: we could do some translation by looking at e.Status, which is one of WebExceptionStatus, e.g. WebExceptionStatus.ConnectFailure
+					Palaso.Reporting.Logger.WriteEvent("**Error in SquirrelUpdateUrl: " + e.Message);
+				}
 			}
+			return _squirrelUpdateUrl;
 		}
 
 		internal static void HandleSquirrelInstallEvent(string[] args)
 		{
 			bool firstTime = false;
-			var updateUrl = SquirrelUpdateUrl;
+			var updateUrl = GetSquirrelUpdateUrl();
 			// Should only be null if we're not online. Not sure how squirrel will handle that,
 			// but at least one of these operations is responsible for setting up shortcuts to the program,
 			// which we'd LIKE to work offline. Passing it a plausible url, even though it will presumably fail,

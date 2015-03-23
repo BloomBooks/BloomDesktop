@@ -60,7 +60,7 @@ namespace Bloom
 				}
 				else
 				{
-					updateUrl = InstallerSupport.SquirrelUpdateUrl;
+					updateUrl = InstallerSupport.GetSquirrelUpdateUrl();
 				}
 				if (string.IsNullOrEmpty(updateUrl))
 				{
@@ -133,7 +133,7 @@ namespace Bloom
 		{
 			if (OkToInitiateUpdateManager)
 			{
-				var updateUrl = InstallerSupport.SquirrelUpdateUrl;
+				var updateUrl = InstallerSupport.GetSquirrelUpdateUrl();
 				if (string.IsNullOrEmpty(updateUrl))
 					return;
 				UpdateInfo info;
