@@ -15,7 +15,7 @@ If you are connected to the internet now, you can watch videos in your web brows
 - [Changing the format of text](https://vimeo.com/117820891)
 - [Using the Custom Page template](https://vimeo.com/116868148)
 - [Inserting special characters](https://vimeo.com/117927599)
-- [Making Decodable and Leveled Readers (11 videos)](http://tiny.cc/8vbwux)
+- [Making Decodable and Leveled Readers (several videos)](http://tiny.cc/8vbwux)
 
 ### Offline Viewing
 

@@ -57,7 +57,7 @@
 
 ## 3.0.102 Version Stable Release
 - Update French and Spanish User Interface localizations.
-- Add explanatory texts to decodable and levelled reader templates.
+- Add explanatory texts to decodable and leveled reader templates.
 - Fixed an error in the "Key Concepts" document.
 - Decodable reader will now complain about words with letter combinations.(like "ch") if they are defined but haven't been taught at the current level, but only the consituents (like "c" and "h") have.
 - Fix display of a page number count in leveled reader tool.
