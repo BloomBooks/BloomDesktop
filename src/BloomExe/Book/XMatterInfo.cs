@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using L10NSharp;
 
@@ -74,7 +75,9 @@ namespace Bloom.Book
 				return 0;
 			try
 			{
-				return Convert.ToInt32(fullDescription.Substring(2, endIndex - 2));
+				int result;
+				return Int32.TryParse(fullDescription.Substring(2, endIndex - 2),
+					NumberStyles.Integer, CultureInfo.InvariantCulture, out result) ? result : 0;
 			}
 			// Catch both known exceptions, since humans will create these version strings.
 			catch (FormatException)
@@ -91,7 +94,10 @@ namespace Bloom.Book
 		{
 			if (!fullDescription.StartsWith("[V"))
 				return fullDescription;
-			return fullDescription.Substring(fullDescription.IndexOf("]", StringComparison.InvariantCulture) + 1);
+			var closeBracketIndex = fullDescription.IndexOf("]", StringComparison.InvariantCulture);
+			return (closeBracketIndex > 2 && fullDescription.Length > 4)
+				? fullDescription.Substring(closeBracketIndex + 1)
+				: fullDescription;
 		}
 	}
 }
