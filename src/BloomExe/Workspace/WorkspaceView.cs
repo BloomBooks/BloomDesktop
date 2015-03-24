@@ -172,12 +172,9 @@ namespace Bloom.Workspace
 		private void _applicationUpdateCheckTimer_Tick(object sender, EventArgs e)
 		{
 			_applicationUpdateCheckTimer.Enabled = false;
-			//if (!Debugger.IsAttached)
+			if (!Debugger.IsAttached)
 			{
-				if (Settings.Default.AutoUpdate)
-					ApplicationUpdateSupport.InitiateSquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet, newInstallDir => RestartBloom(newInstallDir));
-				else
-					ApplicationUpdateSupport.InitiateSquirrelNotifyUpdatesAvailable(newInstallDir => RestartBloom(newInstallDir));
+				ApplicationUpdateSupport.CheckForASquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet, newInstallDir => RestartBloom(newInstallDir), Settings.Default.AutoUpdate);
 			}
 		}
 
@@ -495,8 +492,8 @@ namespace Bloom.Workspace
 			}
 			else
 			{
-				ApplicationUpdateSupport.InitiateSquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Verbose,
-					newInstallDir => RestartBloom(newInstallDir));
+				ApplicationUpdateSupport.CheckForASquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Verbose,
+					newInstallDir => RestartBloom(newInstallDir), Settings.Default.AutoUpdate);
 			}
 		}
 
