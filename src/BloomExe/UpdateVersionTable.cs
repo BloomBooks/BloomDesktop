@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Reflection;
+using Palaso.Reporting;
 
 namespace Bloom
 {
@@ -22,18 +23,57 @@ namespace Bloom
 		//unit tests can pre-set this
 		public  Version RunningVersion { get; set; }
 
+		public class UpdateTableLookupResult
+		{
+			public string URL;
+			public WebException Error;
+
+			public bool IsConnectivityError
+			{
+				get
+				{
+					return Error != null &&
+					       Error.Status == WebExceptionStatus.Timeout || Error.Status == WebExceptionStatus.NameResolutionFailure;
+				}
+			}
+		}
 
 		/// <summary>
 		/// Note! This will propogate network exceptions, so client can catch them and warn or not warn the user.
 		/// </summary>
 		/// <returns></returns>
-		public  string GetAppcastUrl()
+		public UpdateTableLookupResult LookupURLOfUpdate()
 		{
-			if (string.IsNullOrEmpty(TextContentsOfTable))
+			if (String.IsNullOrEmpty(TextContentsOfTable))
 			{
+				Logger.WriteEvent("Enter LookupURLOfUpdate()");
 				var client = new WebClient();
 				{
-					TextContentsOfTable =  client.DownloadString(GetUrlOfTable());
+					try
+					{
+						Logger.WriteMinorEvent("Channel is '" + ApplicationUpdateSupport.ChannelName + "'");
+						Logger.WriteMinorEvent("UpdateVersionTable looking for UpdateVersionTable URL: " + GetUrlOfTable());
+						TextContentsOfTable = client.DownloadString(GetUrlOfTable());
+						Logger.WriteMinorEvent("UpdateVersionTable contents are " + Environment.NewLine + TextContentsOfTable);
+					}
+					catch (WebException e)
+					{
+						Logger.WriteEvent("***Error in LookupURLOfUpdate: " + e.Message);
+						if (e.Status == WebExceptionStatus.ProtocolError)
+						{
+							var resp = e.Response as HttpWebResponse;
+							if (resp != null && resp.StatusCode == HttpStatusCode.NotFound)
+							{
+								Logger.WriteEvent(String.Format("***Error: UpdateVersionTable failed to find a file at {0} (channel='{1}'",
+									GetUrlOfTable(), ApplicationUpdateSupport.ChannelName));
+							}
+						}
+						else if (IsConnectionError(e))
+						{
+							Logger.WriteEvent("***Error: UpdateVersionTable could not connect to the server");
+						}
+						return new UpdateVersionTable.UpdateTableLookupResult() {Error = e};
+					}
 				}
 			}
 			if (RunningVersion == default(Version))
@@ -53,19 +93,24 @@ namespace Bloom
 				var lower = Version.Parse(parts[0]);
 				var upper = Version.Parse(parts[1]);
 				if (lower <= RunningVersion && upper >= RunningVersion)
-					return parts[2].Trim();
+					return new UpdateVersionTable.UpdateTableLookupResult() {URL = parts[2].Trim()};
 			}
-			return string.Empty;
+			return  new UpdateVersionTable.UpdateTableLookupResult() {URL = String.Empty};
 		}
 
 		private string GetUrlOfTable()
 		{
-			// assemblyName is usually something like "BloomAlpha. In a developer debug build (or main stable release)
-			// it will be simply "Bloom." This allows each channel to have its own update table.
-			var assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-			if (assemblyName.StartsWith("Bloom"))
-				assemblyName = assemblyName.Substring("Bloom".Length);
-			return String.Format(URLOfTable, assemblyName);
+			return String.Format(URLOfTable, ApplicationUpdateSupport.ChannelName);
+		}
+
+		private bool IsConnectionError(WebException ex)
+		{
+			return
+				ex.Status == WebExceptionStatus.Timeout ||
+				ex.Status == WebExceptionStatus.NameResolutionFailure;
+				//I'm not sure if you'd ever get one of these?
+//				ex.Status == WebExceptionStatus.ReceiveFailure ||
+	//			ex.Status == WebExceptionStatus.ConnectFailure;
 		}
 	}
 }

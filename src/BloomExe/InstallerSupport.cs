@@ -29,7 +29,7 @@ namespace Bloom
 	/// </summary>
 	static class InstallerSupport
 	{
-		internal static string _squirrelUpdateUrl;
+		internal static UpdateVersionTable.UpdateTableLookupResult _updateTableLookupResult;
 
 		internal static void RemoveBloomRegistryEntries()
 		{
@@ -54,34 +54,29 @@ namespace Bloom
 			}
 		}
 
-		internal static string SquirrelUpdateUrl
+
+		/// <summary>
+		/// Note: this actually has to go out over the web to get the answer, and so it may fail
+		/// </summary>
+		internal static UpdateVersionTable.UpdateTableLookupResult LookupUrlOfSquirrelUpdate()
 		{
-			get
+			if (_updateTableLookupResult == null)
 			{
-				if (_squirrelUpdateUrl == null)
-				{
-					try
-					{
-						_squirrelUpdateUrl = new UpdateVersionTable().GetAppcastUrl();
-					}
-					catch (WebException)
-					{
-					}
-				}
-				return _squirrelUpdateUrl;
+				_updateTableLookupResult = new UpdateVersionTable().LookupURLOfUpdate();
 			}
+			return _updateTableLookupResult;
 		}
 
 		internal static void HandleSquirrelInstallEvent(string[] args)
 		{
 			bool firstTime = false;
-			var updateUrl = SquirrelUpdateUrl;
+			var updateUrlResult = LookupUrlOfSquirrelUpdate();
 			// Should only be null if we're not online. Not sure how squirrel will handle that,
 			// but at least one of these operations is responsible for setting up shortcuts to the program,
 			// which we'd LIKE to work offline. Passing it a plausible url, even though it will presumably fail,
 			// seems less likely to cause problems than passing null.
-			if (string.IsNullOrEmpty(updateUrl))
-				updateUrl = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
+			if(string.IsNullOrEmpty(updateUrlResult.URL))
+				updateUrlResult.URL = @"https://s3.amazonaws.com/bloomlibrary.org/squirrel";
 			if (args[0] == "--squirrel-uninstall")
 			{
 				RemoveBloomRegistryEntries();
@@ -93,7 +88,7 @@ namespace Bloom
 				case "--squirrel-updated": // updated to specified version
 				case "--squirrel-obsolete": // this version is no longer newest
 				case "--squirrel-uninstall": // being uninstalled
-					using (var mgr = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45))
+					using (var mgr = new UpdateManager(updateUrlResult.URL, Application.ProductName, FrameworkVersion.Net45))
 					{
 						// Note, in most of these scenarios, the app exits after this method
 						// completes!
