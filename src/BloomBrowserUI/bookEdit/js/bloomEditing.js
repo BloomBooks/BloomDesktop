@@ -775,18 +775,31 @@ function AddOverflowHandler(container) {
 
     //first, check to see if the stylesheet is going to give us overflow even for a single character:
     $(container).find(".bloom-editable").each(function (e) {
-        var lineHeight = parseInt($(this).css("line-height"), 10);
-        var minHeight = parseInt($(this).css("min-height"), 10);
-        var overflowy = $(this).css("overflow-y");
-        if (overflowy == 'hidden') {
-            $(this).css("min-height", lineHeight); // BL-1034 premature scroll bars
+        var lineHeight = parseFloat($(this).css("line-height"), 10);
+        var minHeight = parseFloat($(this).css("min-height"), 10);
+        // This problem can now be caused not just by template designers, but by end users
+        // setting line-spacing or font-size bigger than the template designer expected.
+        // So rather than making an ugly warning we just make sure every box is big enough to
+        // show at least one line of text.
+        // Note: we must use floats here; it's easy to get a situation where lineHeight works out
+        // to say 50.05px, if we then set lineHeight to 50, the div's scrollHeight is 51 and
+        // it's clientHeight (from min-height) is 50, and it is considered overflowing.
+        // (There's a fudgeFactor in the overflow code that might prevent this, but using
+        // floats seems safer.)
+        // Todo: we would like to remove this override if it is present and no longer needed.
+        // Enhance: the previous behavior of displaying a warning might be more useful for
+        // template designers.
+        if (minHeight < lineHeight ) {
+            $(this).css("min-height", lineHeight + 0.01); // BL-1034 premature scroll bars
         }
-        if (lineHeight > minHeight) {
-            $(this).addClass('Layout-Problem-Detected');
-            $(this).attr("LayoutProblem", "min-height is less than lineHeight");
-        } else {
-            $(this).removeClass('Layout-Problem-Detected');
-        }
+        // Remove any left-over warning about min-height is less than lineHeight (from earlier version of Bloom)
+        $(this).removeClass('Layout-Problem-Detected');
+        //if (lineHeight > minHeight) {
+        //    $(this).addClass('Layout-Problem-Detected');
+        //    $(this).attr("LayoutProblem", "min-height is less than lineHeight");
+        //} else {
+        //    $(this).removeClass('Layout-Problem-Detected');
+        //}
     });
 
     //NB: for some historical reason in March 2014 the calendar still uses textareas
