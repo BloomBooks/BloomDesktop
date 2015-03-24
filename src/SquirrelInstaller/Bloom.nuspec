@@ -19,5 +19,6 @@
 		<file src="..\..\Mercurial\**\*.*" target="\lib\net45\Mercurial"/>
 		<file src="..\..\MercurialExtensions\**\*.*" target="\lib\net45\MercurialExtensions"/>
 		<file src="..\..\src\BloomBrowserUI\**\*.*" target="\lib\net45\BloomBrowserUI"/>
+		<file src="..\..\artwork\Bloom*.ico" target="\lib\net45\"/>
 	</files>
 </package>
