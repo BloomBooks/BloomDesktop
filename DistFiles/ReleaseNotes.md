@@ -15,6 +15,7 @@
 
 
 ### Fixes
+- Can now type with KeyMan 9 if (and only if) it was turned on before displaying the current page. In a future release we'll remove that requirement.
 - (in progress) Fixed Booklet production of A6 Books
 - Make Format dialog more localizable
 - Fixed problem when deleting a box in a custom page.
