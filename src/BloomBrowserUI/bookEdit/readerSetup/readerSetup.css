@@ -91,7 +91,7 @@ div.rs-letters-s { width: 32px; }
 div.rs-letters-l { width: 35px; }
 div.rs-letter-container-s { max-width: 218px; overflow-y: hidden; border-top: 1px solid #333; border-left: 1px solid #333; }
 div.rs-letter-container-l { max-width: 223px; overflow-y: auto; height: 180px; border: 1px solid #333; }
-div.word { width: 100%; margin: 2px; }
+div.word { width: 100%; margin: 0 2px 2px; }
 div.rs-word-container {
 	border: thin solid #666;
 	overflow-y: auto;
