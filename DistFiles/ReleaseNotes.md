@@ -1,4 +1,18 @@
-﻿## 3.0.103 Version Stable Release
+﻿## Important Notices
+
+### Problems with Andika Bold
+- When you create a PDF using Andika, styles such as bold, italic etc. will be lost. This is problem outside of our control at this time. SIL expects to release a new version of Andika in late March which will fix this problem for most languages.
+
+### Keyman 9 And Bloom 3.0
+- Bloom 3.0 is not compatible with Keyman 9. Keyman 8 is fine. If you must use Keyman 9, please use Bloom 3.1 or higher. There may be problems with other keyboard systems that use a similar approach to Keyman 9, of which we're not aware.
+
+### Bloom 3.0 is the last version for Windows XP
+- Starting with Bloom 3.1, Bloom will require Windows Vista, 7, 8, 10, etc.
+
+### Problems with high quality color images
+- If you copy a color image that was originally a jpeg from OpenOffice/LibreOffice and paste it in Bloom, LibreOffice does not tell BLoom that the image is a jpeg, and as a result the file size may skyrocket. This will lead to Bloom using more memory than you might have on your computer. Instead, please save the images out to the disk as jpegs and then add them to Bloom from there. Bloom 3.1 will have a number of features to help with using large high quality color images, but for Bloom 3.0, you do have to be quite careful.
+
+## 3.0.103 Version Stable Release
 - Added links to training videos in the Help Menu.
 
 ## 3.0.103 Version Stable Release
@@ -650,13 +664,3 @@ A5 Wall Calendar now usable, with vernacular days and months. Could use a graphi
 ## 0.3: 24 Nov 2011
 In the image toolbox, you can now reuse metadata (license, copyright, illustrator) from the last image you edited.
 
-### Limitations
-This version has the following limitations (and probably many others). Feel free to suggest your priorities, especially if you're contributing to the Bloom project in some way :-)
-
-* The font is always Andika (if you have it).
-* All books are A5 size.
-* You can't control the cover color.
-* Diglots are not supported.
-* Right-To-Left languages are not supported (but I haven't seen what works and what doesn't)
-* If you have a pdf reader other than Adobe Acrobat set up to display PDFs in Firefox, that will also show up in the Publish tab of Bloom, and it might or might not work. PDF-XChange, for exmample, can make the screen quite complicated with toolbars, and doesn't auto-shrink to fit in the page.
-* You can't tweak the picture size, the text location, etc.
