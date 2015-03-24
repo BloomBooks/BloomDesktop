@@ -775,30 +775,40 @@ function AddOverflowHandler(container) {
 
     //first, check to see if the stylesheet is going to give us overflow even for a single character:
     $(container).find(".bloom-editable").each(function (e) {
-        // We want a min-height that is at least enough to display one line; otherwise we
-        // get confusing overflow indications when just a single character is typed.
-        // This problem can now be caused not just by template designers, but by end users
-        // setting line-spacing or font-size bigger than the template designer expected.
-        // So rather than making an ugly warning we just make sure every box is big enough to
-        // show at least one line of text.
-        // Note: we must use floats here; it's easy to get a situation where lineHeight works out
-        // to say 50.05px, if we then set lineHeight to 50, the div's scrollHeight is 51 and
-        // it's clientHeight (from min-height) is 50, and it is considered overflowing.
-        // (There's a fudgeFactor in the overflow code that might prevent this, but using
-        // floats seems safer.)
-        // First get rid of any min-height fudge added locally in the past; if we don't do
-        // this we can never reduce min-height even if the user reduces line-spacing or font size.
-        // Enhance: the previous behavior of displaying a warning might be more useful for
-        // template designers.
-        // Enhance: it would be nice to redo this and overflow marking when the user changes
-        // box format.
-        $(this).css('min-height', '');
-        var lineHeight = parseFloat($(this).css("line-height"), 10);
-        var minHeight = parseFloat($(this).css("min-height"), 10);
-        // We do this comparison so that if the template designer has set a larger min-height,
-        // we don't mess with it.
-        if (minHeight < lineHeight ) {
-            $(this).css("min-height", lineHeight + 0.01); // BL-1034 premature scroll bars
+        var overflowy = $(this).css("overflow-y");
+        if (overflowy == 'hidden') {
+            // On custom pages we hide overflow in the y direction. This sometimes shows a scroll bar.
+            // It can show prematurely when there is only one line of text unless we force min-height
+            // to be exactly line-height. I don't know why. See BL-1034 premature scroll bars
+            // (Note: although line-height can have other units than min-height, the css function
+            // (at least in FF) always returns px, so we can just copy it).
+            $(this).css("min-height", $(this).css("line-height"));
+        } else {
+            // We want a min-height that is at least enough to display one line; otherwise we
+            // get confusing overflow indications when just a single character is typed.
+            // This problem can now be caused not just by template designers, but by end users
+            // setting line-spacing or font-size bigger than the template designer expected.
+            // So rather than making an ugly warning we just make sure every box is big enough to
+            // show at least one line of text.
+            // Note: we must use floats here; it's easy to get a situation where lineHeight works out
+            // to say 50.05px, if we then set lineHeight to 50, the div's scrollHeight is 51 and
+            // it's clientHeight (from min-height) is 50, and it is considered overflowing.
+            // (There's a fudgeFactor in the overflow code that might prevent this, but using
+            // floats seems safer.)
+            // First get rid of any min-height fudge added locally in the past; if we don't do
+            // this we can never reduce min-height even if the user reduces line-spacing or font size.
+            // Enhance: the previous behavior of displaying a warning might be more useful for
+            // template designers.
+            // Enhance: it would be nice to redo this and overflow marking when the user changes
+            // box format.
+            $(this).css('min-height', '');
+            var lineHeight = parseFloat($(this).css("line-height"), 10);
+            var minHeight = parseFloat($(this).css("min-height"), 10);
+            // We do this comparison so that if the template designer has set a larger min-height,
+            // we don't mess with it.
+            if (minHeight < lineHeight) {
+                $(this).css("min-height", lineHeight + 0.01);
+            }
         }
         // Remove any left-over warning about min-height is less than lineHeight (from earlier version of Bloom)
         $(this).removeClass('Layout-Problem-Detected');
