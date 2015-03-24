@@ -775,8 +775,8 @@ function AddOverflowHandler(container) {
 
     //first, check to see if the stylesheet is going to give us overflow even for a single character:
     $(container).find(".bloom-editable").each(function (e) {
-        var lineHeight = parseFloat($(this).css("line-height"), 10);
-        var minHeight = parseFloat($(this).css("min-height"), 10);
+        // We want a min-height that is at least enough to display one line; otherwise we
+        // get confusing overflow indications when just a single character is typed.
         // This problem can now be caused not just by template designers, but by end users
         // setting line-spacing or font-size bigger than the template designer expected.
         // So rather than making an ugly warning we just make sure every box is big enough to
@@ -786,9 +786,17 @@ function AddOverflowHandler(container) {
         // it's clientHeight (from min-height) is 50, and it is considered overflowing.
         // (There's a fudgeFactor in the overflow code that might prevent this, but using
         // floats seems safer.)
-        // Todo: we would like to remove this override if it is present and no longer needed.
+        // First get rid of any min-height fudge added locally in the past; if we don't do
+        // this we can never reduce min-height even if the user reduces line-spacing or font size.
         // Enhance: the previous behavior of displaying a warning might be more useful for
         // template designers.
+        // Enhance: it would be nice to redo this and overflow marking when the user changes
+        // box format.
+        $(this).css('min-height', '');
+        var lineHeight = parseFloat($(this).css("line-height"), 10);
+        var minHeight = parseFloat($(this).css("min-height"), 10);
+        // We do this comparison so that if the template designer has set a larger min-height,
+        // we don't mess with it.
         if (minHeight < lineHeight ) {
             $(this).css("min-height", lineHeight + 0.01); // BL-1034 premature scroll bars
         }
