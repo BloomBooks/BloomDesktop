@@ -28,7 +28,9 @@ namespace BloomTests
 		public void ServerAddressIsBogus_ErrorIsCorrect()
 		{
 			var t = new UpdateVersionTable {URLOfTable = "http://notthere7blah/foo.txt"};
-			Assert.AreEqual(WebExceptionStatus.NameResolutionFailure, t.LookupURLOfUpdate().Error.Status);
+			//the jenkins server gets a ProtocolError, while my desktop gets a NameResolutionFailure
+			var e = t.LookupURLOfUpdate().Error.Status;
+			Assert.IsTrue(e  == WebExceptionStatus.NameResolutionFailure || e == WebExceptionStatus.ProtocolError );
 		}
 		[Test]
 		public void FileForThisChannelIsMissing_ErrorIsCorrect()
