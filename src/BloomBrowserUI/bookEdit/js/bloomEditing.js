@@ -782,7 +782,7 @@ function AddOverflowHandler(container) {
             // to be exactly line-height. I don't know why. See BL-1034 premature scroll bars
             // (Note: although line-height can have other units than min-height, the css function
             // (at least in FF) always returns px, so we can just copy it).
-            $(this).css("min-height", $(this).css("line-height"), 10);
+            $(this).css("min-height", $(this).css("line-height"));
         } else {
             // We want a min-height that is at least enough to display one line; otherwise we
             // get confusing overflow indications when just a single character is typed.
@@ -807,7 +807,7 @@ function AddOverflowHandler(container) {
             // We do this comparison so that if the template designer has set a larger min-height,
             // we don't mess with it.
             if (minHeight < lineHeight) {
-                $(this).css("min-height", lineHeight + 0.01); // BL-1034 premature scroll bars
+                $(this).css("min-height", lineHeight + 0.01);
             }
         }
         // Remove any left-over warning about min-height is less than lineHeight (from earlier version of Bloom)
