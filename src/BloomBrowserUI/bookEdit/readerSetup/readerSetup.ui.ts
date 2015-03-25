@@ -27,28 +27,28 @@ function process_UI_Message(event: MessageEvent): void {
 
         var files: string[] = s.split('\r');
         var extensions: string[] = getIframeChannel().readableFileExtensions;
-                var needsTxtExtension: string = document.getElementById('needs_txt_extension').innerHTML;
+        var needsTxtExtension: string = document.getElementById('needs_txt_extension').innerHTML;
         var notSupported: string = document.getElementById('format_not_supported').innerHTML;
         var foundNotSupported: boolean = false;
         files.forEach(function(element, index, array) {
-                    var filenameComponents: string[] = element.split('.');
-                    if (filenameComponents.length < 2) {
-                        array[index] = element + ' ' + '<span class="format-not-supported">' + needsTxtExtension + '</span>';
+          var filenameComponents: string[] = element.split('.');
+          if (filenameComponents.length < 2) {
+            array[index] = element + ' ' + '<span class="format-not-supported">' + needsTxtExtension + '</span>';
             foundNotSupported = true;
-                    } else {
-                        var ext:string = filenameComponents.pop();
-                        if (extensions.indexOf(ext) === -1) {
-                            array[index] = element + ' ' + '<span class="format-not-supported">' + notSupported + '</span>';
-                            foundNotSupported = true;
-                        }
+          } else {
+            var ext:string = filenameComponents.pop();
+            if (extensions.indexOf(ext) === -1) {
+              array[index] = element + ' ' + '<span class="format-not-supported">' + notSupported + '</span>';
+              foundNotSupported = true;
+            }
           }
         });
         s = files.join('\r');
 
         if (foundNotSupported)
           document.getElementById('how_to_export').style.display = '';
-                else
-                    document.getElementById('how_to_export').style.display = 'none';
+        else
+          document.getElementById('how_to_export').style.display = 'none';
       }
 
       var fileList: string = s || document.getElementById('please-add-texts').innerHTML;
@@ -489,7 +489,7 @@ function handleThingsToRemember(jqueryEvent: JQueryEventObject): void {
  * @param ta Text area
  */
 function updateSightWords(ta: HTMLInputElement): void {
-  var words: string = ta.value.trim().replace(/ ( )+/g, ' '); // remove consecutive spaces
+  var words: string = cleanSightWordList(ta.value);
   $('#stages-table').find('tbody tr.selected td:nth-child(3)').html(words);
 }
 
