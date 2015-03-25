@@ -710,10 +710,15 @@ namespace Bloom.Edit
 			// Deep in the ImageToolboxDialog, when the user asks to see images from the ArtOfReading,
 			// We need to use the Gecko version of the thumbnail viewer, since the original ListView
 			// one has a sticky scroll bar in applications that are using Gecko.  On Linux, we also
-			// need to use the Gecko version of the text box.
+			// need to use the Gecko version of the text box.  Except that the Gecko version of the
+			// text box totally freezes the system if the user is using LinuxMint/cinnamon (ie, Wasta).
+			// See https://jira.sil.org/browse/BL-1147.
 			ThumbnailViewer.UseWebViewer = true;
-			if (Environment.OSVersion.Platform == PlatformID.Unix)
+			if (Palaso.PlatformUtilities.Platform.IsUnix &&
+				!(Palaso.PlatformUtilities.Platform.IsWasta || Palaso.PlatformUtilities.Platform.IsCinnamon))
+			{
 				TextInputBox.UseWebTextBox = true;
+			}
 			using (var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
 				if (DialogResult.OK == dlg.ShowDialog())
