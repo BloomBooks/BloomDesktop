@@ -415,14 +415,37 @@ namespace Bloom
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-			// An earlier version of this method made a new temp file in hopes that it would go on working
-			// in the browser even after Bloom closed. This has gotten steadily less feasible as we depend
-			// more on the http server. With the <base> element now removed, an independent page file will
-			// have even more missing links. I don't think it's worth making a separate temp file any more.
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
-				Process.Start("Firefox.exe", '"' + _url + '"');
-			else
-				Process.Start("xdg-open", Uri.EscapeUriString(_url));
+			bool isWindows = Palaso.PlatformUtilities.Platform.IsWindows;
+			string genericError = "Something went wrong trying to open this page in ";
+			try
+			{
+				// An earlier version of this method made a new temp file in hopes that it would go on working
+				// in the browser even after Bloom closed. This has gotten steadily less feasible as we depend
+				// more on the http server. With the <base> element now removed, an independent page file will
+				// have even more missing links. I don't think it's worth making a separate temp file any more.
+				if (isWindows)
+					Process.Start("Firefox.exe", '"' + _url + '"');
+				else
+					Process.Start("xdg-open", Uri.EscapeUriString(_url));
+			}
+			catch (Win32Exception)
+			{
+				if (isWindows)
+				{
+					MessageBox.Show(genericError + "Firefox. Do you have Firefox in your PATH variable?");
+				}
+				else
+				{
+					// See comment in OnGetTroubleShootingInformation() about why BeginInvoke is needed.
+					// Also, in Linux, xdg-open calls the System Browser, which isn't necessarily Firefox.
+					// It isn't necessarily in Windows, either, but there we're specifying Firefox.
+					BeginInvoke((Action)delegate()
+					{
+						MessageBox.Show(genericError + "the System Browser.");
+					});
+
+				}
+			}
 		}
 
 		public void OnOpenPageInStylizer(object sender, EventArgs e)
