@@ -39,8 +39,8 @@ td.disabledLimit { visibility: hidden; }
 
 div.wordList, div.letterList { margin: 4px; }
 div.wordList { column-count: 3; }
-div.letter { margin: 2px; float: left; min-width: 20px; }
-div.word { margin: 2px; width: auto; }
+div.letter { margin: 0 2px 2px; float: left; min-width: 20px; }
+div.word { margin: 0 2px 2px; width: auto; }
 div.sight-word {
 	-moz-text-decoration-style: wavy;
 	-moz-text-decoration-line: underline;
