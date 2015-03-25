@@ -94,24 +94,30 @@ namespace Bloom
 				}
 
 				string newInstallDir;
+				UpdateOutcome outcome;
 				ArrangeToDisposeSquirrelManagerOnExit();
 				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45, rootDirectory))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
-					newInstallDir = await UpdateApp(_bloomUpdateManager, null);
+					var result = await UpdateApp(_bloomUpdateManager, null);
+					newInstallDir = result.NewInstallDirectory;
+					outcome = result.Outcome;
 				}
 				// Since this is in the async method _after_ the await we know the UpdateApp has finished.
 				_bloomUpdateManager = null;
 
-				if (newInstallDir == null)
+				if (outcome != UpdateOutcome.GotNewVersion)
 				{
-					// No updates to install
 					if (verbosity == BloomUpdateMessageVerbosity.Verbose)
 					{
 						// Enhance: bring this in quiet mode, but only show it after an update.
 						var noneNotifier = new ToastNotifier();
 						noneNotifier.Image.Image = Resources.Bloom.ToBitmap();
-						var message = LocalizationManager.GetString("CollectionTab.UpToDate", "Your Bloom is up to date.");
+						string message;
+						if (outcome == UpdateOutcome.AlreadyUpToDate)
+							message = LocalizationManager.GetString("CollectionTab.UpToDate", "Your Bloom is up to date.");
+						else
+							message = LocalizationManager.GetString("CollectionTab.UpdateFailed", "A new version appears to be available, but Bloom could not install it.");
 						noneNotifier.Show(message, "", 5);
 					}
 					return;
@@ -209,8 +215,22 @@ namespace Bloom
 			return info == null || info.ReleasesToApply.Count == 0;
 		}
 
+		internal enum UpdateOutcome
+		{
+			GotNewVersion,
+			AlreadyUpToDate,
+			InstallFailed
+		}
+
+		internal class UpdateResult
+		{
+			public string NewInstallDirectory;
+			public UpdateOutcome Outcome;
+
+		}
+
 		// Adapted from Squirrel's EasyModeMixin.UpdateApp, but this version yields the new directory.
-		internal static async Task<string> UpdateApp(IUpdateManager manager, Action<int> progress = null)
+		internal static async Task<UpdateResult> UpdateApp(IUpdateManager manager, Action<int> progress = null)
 		{
 			progress = progress ?? (_ => { });
 
@@ -224,7 +244,7 @@ namespace Bloom
 			{
 				updateInfo = await manager.CheckForUpdate(ignoreDeltaUpdates, x => progress(x / 3));
 				if (NoUpdatesAvailable(updateInfo))
-					return null; // none available.
+					return new UpdateResult() { NewInstallDirectory = null, Outcome = UpdateOutcome.AlreadyUpToDate }; // none available.
 
 				var updatingNotifier = new ToastNotifier();
 				updatingNotifier.Image.Image = Resources.Bloom.ToBitmap();
@@ -254,10 +274,20 @@ namespace Bloom
 					goto retry;
 				}
 
-				throw;
+				// OK, the update failed. We've had cases where somehow Squirrel thinks there should be
+				// a new release available and it isn't there yet. Possibly somehow a new version of
+				// RELEASES is getting uploaded before the delta and nupkg files (due to subtask overlap
+				// in MsBuild? Due to 'eventual consistency' not yet being attained by S3?).
+				// In any case we don't need to crash the program over a failed update. Just log it.
+				Palaso.Reporting.Logger.WriteEvent("Squirrel update failed: " + ex.Message + ex.StackTrace);
+				return new UpdateResult() {NewInstallDirectory = null, Outcome = UpdateOutcome.InstallFailed};
 			}
 
-			return newInstallDirectory;
+			return new UpdateResult()
+			{
+				NewInstallDirectory = newInstallDirectory,
+				Outcome = newInstallDirectory == null ? UpdateOutcome.AlreadyUpToDate : UpdateOutcome.GotNewVersion
+			};
 		}
 	}
 }
