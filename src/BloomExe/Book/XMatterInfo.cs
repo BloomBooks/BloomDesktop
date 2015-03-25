@@ -73,21 +73,9 @@ namespace Bloom.Book
 			var endIndex = fullDescription.IndexOf("]", StringComparison.InvariantCulture);
 			if (endIndex < 2)
 				return 0;
-			try
-			{
-				int result;
-				return Int32.TryParse(fullDescription.Substring(2, endIndex - 2),
-					NumberStyles.Integer, CultureInfo.InvariantCulture, out result) ? result : 0;
-			}
-			// Catch both known exceptions, since humans will create these version strings.
-			catch (FormatException)
-			{
-				return 0;
-			}
-			catch (OverflowException)
-			{
-				return 0;
-			}
+			int result;
+			return Int32.TryParse(fullDescription.Substring(2, endIndex - 2),
+				NumberStyles.Integer, CultureInfo.InvariantCulture, out result) ? result : 0;
 		}
 
 		private static string StripVersionOff(string fullDescription)
