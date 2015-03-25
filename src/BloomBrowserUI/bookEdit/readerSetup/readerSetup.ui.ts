@@ -489,7 +489,7 @@ function handleThingsToRemember(jqueryEvent: JQueryEventObject): void {
  * @param ta Text area
  */
 function updateSightWords(ta: HTMLInputElement): void {
-  var words: string = ta.value.trim().replace(/ ( )+/g, ' '); // remove consecutive spaces
+  var words: string = cleanSightWordList(ta.value);
   $('#stages-table').find('tbody tr.selected td:nth-child(3)').html(words);
 }
 

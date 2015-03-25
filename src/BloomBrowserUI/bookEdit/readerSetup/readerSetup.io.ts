@@ -143,7 +143,7 @@ function getChangedSettings(): any {
     var stage: ReaderStage = new ReaderStage((i + 1).toString());
     var row: HTMLTableRowElement = <HTMLTableRowElement>stages[i];
     stage.letters = (<HTMLTableCellElement>row.cells[1]).innerHTML;
-    stage.sightWords = (<HTMLTableCellElement>row.cells[2]).innerHTML;
+    stage.sightWords = cleanSightWordList((<HTMLTableCellElement>row.cells[2]).innerHTML);
 
     // do not save stage with no data
     if (stage.letters || stage.sightWords)
@@ -170,4 +170,17 @@ function getLevelValue(innerHTML: string): number {
   innerHTML = innerHTML.trim();
   if (innerHTML === '-') return 0;
   return parseInt(innerHTML);
+}
+
+/**
+ * if the user enters a comma-separated list, remove the commas before saving (this is a space-delimited list)
+ * @param original
+ * @returns {string}
+ */
+function cleanSightWordList(original: string): string {
+
+  var cleaned: string = original.replace(/,/g, ' '); // replace commas
+  cleaned = cleaned.trim().replace(/ ( )+/g, ' ');   // remove consecutive spaces
+
+  return cleaned;
 }

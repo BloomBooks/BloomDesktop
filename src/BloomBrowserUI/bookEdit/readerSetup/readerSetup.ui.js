@@ -482,7 +482,7 @@ function handleThingsToRemember(jqueryEvent) {
 * @param ta Text area
 */
 function updateSightWords(ta) {
-    var words = ta.value.trim().replace(/ ( )+/g, ' ');
+    var words = cleanSightWordList(ta.value);
     $('#stages-table').find('tbody tr.selected td:nth-child(3)').html(words);
 }
 
