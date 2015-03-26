@@ -12,31 +12,56 @@
 // editing, and make sure all is ok when you leave.
 //
 // Next, our field templates need to have embedded images that text can flow around. To allow that, we have to keep the p elements *after* the image elements, even
-// if visually the text is before and after the text (because that's how the image-pusher-downer technique works (zero-width, float-left 
+// if visually the text is before and after the text (because that's how the image-pusher-downer technique works (zero-width, float-left
 // div of the height you want to push the image down to). We do this by noticing a 'bloom-keepFirstInField' class on some div encapsulating the image.
 //
-// Next, we have to keep you from accidentally losing the image placeholder when you do ctrl+a DEL. We prevent this deletion 
+// Next, we have to keep you from accidentally losing the image placeholder when you do ctrl+a DEL. We prevent this deletion
 // for any element marked with a 'bloom-preventRemoval' class.
 var BloomField = (function () {
     function BloomField() {
     }
     BloomField.ManageField = function (bloomEditableDiv) {
         BloomField.PreventRemovalOfSomeElements(bloomEditableDiv);
+
         if (BloomField.RequiresParagraphs(bloomEditableDiv)) {
             BloomField.ModifyForParagraphMode(bloomEditableDiv);
             BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
             BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
+            $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
             $(bloomEditableDiv).blur(function () {
                 BloomField.ModifyForParagraphMode(this);
             });
             $(bloomEditableDiv).focusin(function () {
                 BloomField.HandleFieldFocus(this);
             });
-        }
-        else {
+        } else {
             BloomField.PrepareNonParagraphField(bloomEditableDiv);
         }
     };
+
+    BloomField.ProcessIncomingPaste = function (e) {
+        // note: currently, the c# code also intercepts the past event and
+        // makes sure that we just get plain 'ol text on the clipboard.
+        // That's a bit heavy handed, but the mess you get from pasting
+        // html from word is formidable.
+        var txt = e.originalEvent.clipboardData.getData('text/plain');
+
+        //some typists in SHRP indent in MS Word by hitting newline and pressing a bunch of spaces.
+        // We replace any newline followed by 3 or more spaces with just one space. It could
+        // conceivalby hit some false positive, but it would be easy for the user to fix.
+        var html = txt.replace(/\n\s{3,}/g, ' ');
+
+        //convert remaining newlines to paragraphs. We're already inside a  <p>, so each
+        //newline finishes that off and starts a new one
+        html = html.replace(/\n/g, '</p><p>');
+
+        document.execCommand("insertHTML", false, html);
+
+        //don't do the normal paste
+        e.stopPropagation();
+        e.preventDefault();
+    };
+
     // Without this, ctrl+a followed by a left-arrow or right-arrow gets you out of all paragraphs,
     // so you can start messing things up.
     BloomField.PreventArrowingOutIntoField = function (field) {
@@ -52,12 +77,14 @@ var BloomField = (function () {
             }
         });
     };
+
     BloomField.EnsureStartsWithParagraphElement = function (field) {
         if ($(field).children().length > 0 && ($(field).children().first().prop("tagName").toLowerCase() === 'p')) {
             return;
         }
         $(field).prepend('<p></p>');
     };
+
     BloomField.EnsureEndsWithParagraphElement = function (field) {
         //Enhance: move any errant paragraphs to after the imageContainer
         if ($(field).children().length > 0 && ($(field).children().last().prop("tagName").toLowerCase() === 'p')) {
@@ -65,6 +92,7 @@ var BloomField = (function () {
         }
         $(field).append('<p></p>');
     };
+
     BloomField.ConvertTopLevelTextNodesToParagraphs = function (field) {
         //enhance: this will leave <span>'s that are direct children alone; ideally we would incorporate those into paragraphs
         var nodes = field.childNodes;
@@ -80,6 +108,7 @@ var BloomField = (function () {
             }
         }
     };
+
     // We expect that once we're in paragraph mode, there will not be any cleanup needed. However, there
     // are three cases where we have some conversion to do:
     // 1) when a field is totally empty, we need to actually put in a <p> into the empty field (else their first
@@ -89,29 +118,31 @@ var BloomField = (function () {
     BloomField.ModifyForParagraphMode = function (field) {
         BloomField.ConvertTopLevelTextNodesToParagraphs(field);
         $(field).find('br').remove();
+
         // in cases where we are embedding images inside of bloom-editables, the paragraphs actually have to go at the
         // end, for reason of wrapping. See SHRP C1P4 Pupils Book
         //if(x.startsWith('<div')){
         if ($(field).find('.bloom-keepFirstInField').length > 0) {
             BloomField.EnsureEndsWithParagraphElement(field);
             return;
-        }
-        else {
+        } else {
             BloomField.EnsureStartsWithParagraphElement(field);
         }
     };
+
     BloomField.RequiresParagraphs = function (field) {
         return $(field).closest('.bloom-requiresParagraphs').length > 0 || ($(field).css('border-top-style') === 'dashed');
     };
+
     BloomField.HandleFieldFocus = function (field) {
         BloomField.MoveCursorToEdgeOfField(field, 0 /* start */);
     };
+
     BloomField.MoveCursorToEdgeOfField = function (field, position) {
         var range = document.createRange();
         if (position === 0 /* start */) {
             range.selectNodeContents($(field).find('p').first()[0]);
-        }
-        else {
+        } else {
             range.selectNodeContents($(field).find('p').last()[0]);
         }
         range.collapse(position === 0 /* start */); //true puts it at the start
@@ -119,18 +150,21 @@ var BloomField = (function () {
         sel.removeAllRanges();
         sel.addRange(range);
     };
+
     BloomField.ManageWhatHappensIfTheyDeleteEverything = function (field) {
         // if the user types (ctrl+a, del) then we get an empty element or '<br></br>', and need to get a <p> in there.
         // if the user types (ctrl+a, 'blah'), then we get blah outside of any paragraph
         $(field).on("input", function (e) {
             if ($(this).find('p').length === 0) {
                 BloomField.ModifyForParagraphMode(this);
+
                 // Now put the cursor in the paragraph, *after* the character they may have just typed or the
                 // text they just pasted.
                 BloomField.MoveCursorToEdgeOfField(field, 1 /* end */);
             }
         });
     };
+
     // Some custom templates have image containers embedded in bloom-editable divs, so that the text can wrap
     // around the picture. The problem is that the user can do (ctrl+a, del) to start over on the text, and
     // inadvertently remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
@@ -145,11 +179,12 @@ var BloomField = (function () {
                 }
             });
         }
+
         //OK, now what if the above fails in some scenario? This adds a last-resort way of getting
         //bloom-editable back to the state it was in when the page was first created, by having
         //the user type in RESETRESET and then clicking out of the field.
-        // Since the elements that should not be deleted are part of a parallel field in a 
-        // template language, initial page setup will copy it into a new version of the messed 
+        // Since the elements that should not be deleted are part of a parallel field in a
+        // template language, initial page setup will copy it into a new version of the messed
         // up one if the relevant language version is missing altogether
         $(field).blur(function (e) {
             if ($(this).html().indexOf('RESETRESET') > -1) {
@@ -158,6 +193,7 @@ var BloomField = (function () {
             }
         });
     };
+
     // Work around a bug in geckofx. The effect was that if you clicked in a completely empty text box
     // the cursor is oddly positioned and typing does nothing. There is evidence that what is going on is that the focus
     // is on the English qtip (in the FF inspector, the qtip block highlights when you type). https://jira.sil.org/browse/BL-786
@@ -169,15 +205,18 @@ var BloomField = (function () {
             //add a span with only a zero-width space in it
             //enhance: a zero-width placeholder would be a bit better, but libsynphony doesn't know this is a space: //$(this).html('<span class="bloom-ui">&#8203;</span>');
             $(field).html('&nbsp;');
+
             //now we tried deleting it immediately, or after a pause, but that doesn't help. So now we don't delete it until they type or paste something.
             // REMOVE: why was this doing it for all of the elements? $(container).find(".bloom-editable").one('paste keypress', FixUpOnFirstInput);
             $(field).one('paste keypress', this.FixUpOnFirstInput);
         }
     };
+
     //In PrepareNonParagraphField(), to work around a FF bug, we made a text box non-empty so that the cursor would show up correctly.
     //Now, they have entered something, so remove it
     BloomField.FixUpOnFirstInput = function (event) {
         var field = event.target;
+
         //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason,
         //and that gets characters in the wrong place because this messes with the insertion point. So now
         //we check to see if the space is still there before touching it
@@ -188,14 +227,15 @@ var BloomField = (function () {
             //   $(this).html($(this).html().replace('&nbsp;', ""));
             //so now we do the following business, where we select the &nbsp; we want to delete, momements before the character is typed or text pasted
             var selection = window.getSelection();
+
             //if we're at the start of the text, we're to the left of the character we want to replace
             if (selection.anchorOffset === 0) {
                 selection.modify("extend", "forward", "character");
+
                 //REVIEW: I actually don't know why this is necessary; the pending keypress should do the same thing
                 //But BL-952 showed that without it, we actually somehow end up selecting the format gear icon as well
                 selection.deleteFromDocument();
-            }
-            else if (selection.anchorOffset === 1) {
+            } else if (selection.anchorOffset === 1) {
                 selection.modify("extend", "backward", "character");
             }
         }
