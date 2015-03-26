@@ -9,13 +9,14 @@ If you are connected to the internet now, you can watch videos in your web brows
 - [Bloom: Who is it for](https://vimeo.com/114043219)
 - [Understanding Templates and Shell Books](https://vimeo.com/114024308)
 - [Using the Basic Book template](https://vimeo.com/112825489)
+- [Using Decodable and Leveled Reader Templates (several videos)](http://tiny.cc/usingBloomReaderTemplates)
 
 ### Advanced Topics
 
 - [Changing the format of text](https://vimeo.com/117820891)
 - [Using the Custom Page template](https://vimeo.com/116868148)
 - [Inserting special characters](https://vimeo.com/117927599)
-- [Making Decodable and Leveled Readers (several videos)](http://tiny.cc/8vbwux)
+- [Making a set of Decodable and Leveled Reader Templates (several videos)](http://tiny.cc/8vbwux)
 
 ### Offline Viewing
 
