@@ -129,7 +129,7 @@ function saveChangedSettings(callback) {
 
 function getChangedSettings() {
     var s = new ReaderSettings();
-    s.letters = document.getElementById('dls_letters').value.trim();
+    s.letters = cleanSpaceDelimitedList(document.getElementById('dls_letters').value);
 
     // remove duplicates from the more words list
     var moreWords = _.uniq((document.getElementById('dls_more_words').value).split("\n"));
@@ -146,7 +146,7 @@ function getChangedSettings() {
         var stage = new ReaderStage((i + 1).toString());
         var row = stages[i];
         stage.letters = row.cells[1].innerHTML;
-        stage.sightWords = cleanSightWordList(row.cells[2].innerHTML);
+        stage.sightWords = cleanSpaceDelimitedList(row.cells[2].innerHTML);
 
         // do not save stage with no data
         if (stage.letters || stage.sightWords)
@@ -180,7 +180,7 @@ function getLevelValue(innerHTML) {
 * @param original
 * @returns {string}
 */
-function cleanSightWordList(original) {
+function cleanSpaceDelimitedList(original) {
     var cleaned = original.replace(/,/g, ' ');
     cleaned = cleaned.trim().replace(/ ( )+/g, ' '); // remove consecutive spaces
 

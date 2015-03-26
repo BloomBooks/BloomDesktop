@@ -125,7 +125,7 @@ function process_UI_Message(event: MessageEvent): void {
  */
 function displayLetters(): void {
 
-  var letters: string[] = ((<HTMLInputElement>document.getElementById('dls_letters')).value.trim()).split(' ');
+  var letters: string[] = cleanSpaceDelimitedList((<HTMLInputElement>document.getElementById('dls_letters')).value.trim()).split(' ');
   letters = letters.filter(function(n){ return n !== ''; });
 
   // If there are no letters, skip updating the contents of #setup-selected-letters. This leaves it showing the
@@ -160,10 +160,15 @@ function displayLetters(): void {
   });
 }
 
-function setLevelValue(value: string): string {
+function setLevelValue(value: any): string {
 
-  if ((value === '') || (parseInt(value) === 0)) return '-';
-  return value;
+  if (!value) return '-';
+
+  var testVal: number = (typeof value === 'number') ? value : parseInt(value);
+
+  if (testVal === 0) return '-';
+
+  return testVal.toString();
 }
 
 /**
@@ -400,7 +405,7 @@ function tabBeforeActivate(ui): void {
 
   if (panelId === 'dlstabs-2') { // Decodable Stages tab
 
-    var allLetters: string[] = ((<HTMLInputElement>document.getElementById('dls_letters')).value.trim()).split(' ');
+    var allLetters: string[] = cleanSpaceDelimitedList((<HTMLInputElement>document.getElementById('dls_letters')).value.trim()).split(' ');
     var tbody: JQuery = $('#stages-table').find('tbody');
 
     // update letters grid
@@ -489,7 +494,7 @@ function handleThingsToRemember(jqueryEvent: JQueryEventObject): void {
  * @param ta Text area
  */
 function updateSightWords(ta: HTMLInputElement): void {
-  var words: string = cleanSightWordList(ta.value);
+  var words: string = cleanSpaceDelimitedList(ta.value);
   $('#stages-table').find('tbody tr.selected td:nth-child(3)').html(words);
 }
 

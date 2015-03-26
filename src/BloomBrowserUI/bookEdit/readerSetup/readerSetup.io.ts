@@ -128,7 +128,7 @@ function saveChangedSettings(callback?: Function): void {
 function getChangedSettings(): any {
 
   var s: ReaderSettings = new ReaderSettings();
-  s.letters = (<HTMLInputElement>document.getElementById('dls_letters')).value.trim();
+  s.letters = cleanSpaceDelimitedList((<HTMLInputElement>document.getElementById('dls_letters')).value);
 
   // remove duplicates from the more words list
   var moreWords: string[] = _.uniq(((<HTMLInputElement>document.getElementById('dls_more_words')).value).split("\n"));
@@ -143,7 +143,7 @@ function getChangedSettings(): any {
     var stage: ReaderStage = new ReaderStage((i + 1).toString());
     var row: HTMLTableRowElement = <HTMLTableRowElement>stages[i];
     stage.letters = (<HTMLTableCellElement>row.cells[1]).innerHTML;
-    stage.sightWords = cleanSightWordList((<HTMLTableCellElement>row.cells[2]).innerHTML);
+    stage.sightWords = cleanSpaceDelimitedList((<HTMLTableCellElement>row.cells[2]).innerHTML);
 
     // do not save stage with no data
     if (stage.letters || stage.sightWords)
@@ -177,7 +177,7 @@ function getLevelValue(innerHTML: string): number {
  * @param original
  * @returns {string}
  */
-function cleanSightWordList(original: string): string {
+function cleanSpaceDelimitedList(original: string): string {
 
   var cleaned: string = original.replace(/,/g, ' '); // replace commas
   cleaned = cleaned.trim().replace(/ ( )+/g, ' ');   // remove consecutive spaces
