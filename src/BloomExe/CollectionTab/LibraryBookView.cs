@@ -18,6 +18,7 @@ namespace Bloom.CollectionTab
 		private readonly SendReceiver _sendReceiver;
 		private readonly CreateFromSourceBookCommand _createFromSourceBookCommand;
 		private readonly EditBookCommand _editBookCommand;
+		private Shell _shell;
 		private bool _reshowPending = false;
 		private bool _visible;
 
@@ -56,11 +57,24 @@ namespace Bloom.CollectionTab
 			LoadBook();
 		}
 
+		private void UpdateTitleBar()
+		{
+			if (this.ParentForm != null)
+			{
+				_shell = (Shell)this.ParentForm;
+			}
+			if (_shell != null)
+			{
+				_shell.SetWindowText((_bookSelection.CurrentSelection == null) ? null : _bookSelection.CurrentSelection.TitleBestForUserDisplay);
+			}
+		}
+
 		void OnBookSelectionChanged(object sender, EventArgs e)
 		{
 			try
 			{
 				LoadBook();
+				UpdateTitleBar();
 			}
 			catch (Exception error)
 			{
@@ -86,6 +100,7 @@ namespace Bloom.CollectionTab
 			{
 				_reshowPending = true;
 			}
+			UpdateTitleBar();
 		}
 
 		private void ShowBook()

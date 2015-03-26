@@ -79,7 +79,7 @@ namespace Bloom
 
 			this.Controls.Add(this._workspaceView);
 
-			SetWindowText();
+			SetWindowText(null);
 		}
 
 		protected override void OnHandleCreated(EventArgs e)
@@ -125,13 +125,18 @@ namespace Bloom
 			base.OnClosing(e);
 		}
 
-		private void SetWindowText()
+		public void SetWindowText(string bookName)
 		{
-			Text = string.Format("{0} - Bloom {1} Built on {2}", _workspaceView.Text, GetShortVersionInfo(), GetBuiltOnDate());
+			string formattedText = string.Format("{0} - Bloom {1} Built on {2}", _workspaceView.Text, GetShortVersionInfo(), GetBuiltOnDate());
+			if (bookName != null)
+			{
+				formattedText = string.Format("{0} - {1}", bookName, formattedText);
+			}
 			if(_collectionSettings.IsSourceCollection)
 			{
-				Text += "SOURCE COLLECTION";
+				formattedText += " SOURCE COLLECTION";
 			}
+			Text = formattedText;
 		}
 
 		public static string GetBuiltOnDate()
