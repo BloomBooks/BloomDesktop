@@ -344,8 +344,12 @@ namespace Bloom.WebLibraryIntegration
 			if (!GetBookExists(storageKeyOfBookFolder))
 				throw new DirectoryNotFoundException("The book we tried to download is no longer in the BloomLibrary");
 
-			using (var tempDestination =
-					new TemporaryFolder("BloomDownloadStaging_" + storageKeyOfBookFolder + "_" + Guid.NewGuid()))
+			// Amazon.S3 appears to truncate titles at 50 characters when building directory and filenames.  This means
+			// that relative paths can be as long as 117 characters (2 * 50 + 2 for slashes + 15 for .BloomBookOrder).
+			// So our temporary folder must be no more than 140 characters (allow some margin) since paths can be a
+			// maximum of 260 characters in Windows.  (More margin than that may be needed because there's no guarantee
+			// that image filenames are no longer than 65 characters.)  See https://jira.sil.org/browse/BL-1160.
+			using (var tempDestination = new TemporaryFolder("BDS_" + Guid.NewGuid()))
 			{
 				var request = new TransferUtilityDownloadDirectoryRequest()
 				{
