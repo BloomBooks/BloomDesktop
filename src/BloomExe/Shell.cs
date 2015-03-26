@@ -134,7 +134,7 @@ namespace Bloom
 			}
 			if(_collectionSettings.IsSourceCollection)
 			{
-				formattedText += "SOURCE COLLECTION";
+				formattedText += " SOURCE COLLECTION";
 			}
 			Text = formattedText;
 		}
