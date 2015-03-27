@@ -822,18 +822,18 @@ class StyleEditor {
             var index = styleName.indexOf("-style");
             if (index > 0) styleName = styleName.substring(0, index);
         }
-        if (this.shouldSetDefaultRule()) {
-            localizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName)
-                .done(translation => {
-                    $('#formatCharDesc').html(translation);
-                });
-            return;
-        }
         //BL-982 Use language name that appears on text windows
         var iso = $(this.boxBeingEdited).attr('lang');
         var lang = localizationManager.getLanguageName(iso);
         if (!lang)
             lang = iso;
+        if (this.shouldSetDefaultRule()) {
+            localizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', lang, styleName)
+                .done(translation => {
+                    $('#formatCharDesc').html(translation);
+                });
+            return;
+        }
         localizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName)
             .done(translation => {
                 $('#formatCharDesc').html(translation);
@@ -847,7 +847,11 @@ class StyleEditor {
             var index = styleName.indexOf("-style");
             if (index > 0) styleName = styleName.substring(0, index);
         }
-        localizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName)
+        var iso = $(this.boxBeingEdited).attr('lang');
+        var lang = localizationManager.getLanguageName(iso);
+        if (!lang)
+            lang = iso;
+        localizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', lang, styleName)
             .done(translation => {
                 $('#formatMoreDesc').html(translation);
             });
