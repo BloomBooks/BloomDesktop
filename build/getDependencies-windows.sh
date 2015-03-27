@@ -139,6 +139,7 @@ mkdir -p ../DistFiles
 mkdir -p ../DistFiles/pdf
 mkdir -p ../Downloads
 mkdir -p ../MercurialExtensions
+mkdir -p ../MercurialExtensions/allownumberbranch
 mkdir -p ../MercurialExtensions/fixutf8
 mkdir -p ../build
 mkdir -p ../build/
@@ -168,6 +169,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/ChorusHubApp.exe ../lib/dotnet/ChorusHubApp.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/ChorusMerge.exe ../lib/dotnet/ChorusMerge.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/Chorus.exe ../lib/dotnet/Chorus.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/ChorusMerge.exe ../lib/dotnet/ChorusMerge.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/Autofac.dll ../lib/dotnet/Autofac.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/LibChorus.dll ../lib/dotnet/LibChorus.dll
@@ -175,6 +179,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/Palaso.dll ../lib/dotnet/Palaso.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/PalasoUIWindowsForms.dll ../lib/dotnet/PalasoUIWindowsForms.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/Vulcan.Uczniowie.HelpProvider.dll ../lib/dotnet/Vulcan.Uczniowie.HelpProvider.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/Autofac.dll ../lib/dotnet/Autofac.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/LibChorus.dll ../lib/dotnet/LibChorus.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu.net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/icudt40.dll ../lib/dotnet/icudt40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/icuin40.dll ../lib/dotnet/icuin40.dll
@@ -182,6 +189,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/Mercurial.zip ../Downloads/Mercurial.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/MercurialExtensions/.guidsForInstaller.xml ../MercurialExtensions/.guidsForInstaller.xml
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/MercurialExtensions/Dummy.txt ../MercurialExtensions/Dummy.txt
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/MercurialExtensions/allownumberbranch/.guidsForInstaller.xml ../MercurialExtensions/allownumberbranch/.guidsForInstaller.xml
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/MercurialExtensions/allownumberbranch/allownumberbranch.py ../MercurialExtensions/allownumberbranch/allownumberbranch.py
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/MercurialExtensions/allownumberbranch/allownumberbranch.pyc ../MercurialExtensions/allownumberbranch/allownumberbranch.pyc
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/MercurialExtensions/fixutf8/.gitignore ../MercurialExtensions/fixutf8/.gitignore
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/MercurialExtensions/fixutf8/.guidsForInstaller.xml ../MercurialExtensions/fixutf8/.guidsForInstaller.xml
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/MercurialExtensions/fixutf8/.hg_archival.txt ../MercurialExtensions/fixutf8/.hg_archival.txt
@@ -208,6 +218,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/TidyManaged.dll.config ../lib/dotnet/TidyManaged.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/libtidy.dll ../lib/dotnet/libtidy.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/Palaso.BuildTasks.dll ../build/Palaso.BuildTasks.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/Commons.Xml.Relaxng.dll ../lib/dotnet/Commons.Xml.Relaxng.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/Enchant.Net.dll ../lib/dotnet/Enchant.Net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/Interop.WIA.dll ../lib/dotnet/Interop.WIA.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/Ionic.Zip.dll ../lib/dotnet/Ionic.Zip.dll
@@ -228,6 +239,7 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/SIL.ScriptureControls.dll ../lib/dotnet/SIL.ScriptureControls.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/SIL.ScriptureUtils.Tests.dll ../lib/dotnet/SIL.ScriptureUtils.Tests.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/SIL.ScriptureUtils.dll ../lib/dotnet/SIL.ScriptureUtils.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/debug/Commons.Xml.Relaxng.dll ../lib/dotnet/Commons.Xml.Relaxng.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/debug/Interop.WIA.dll ../lib/dotnet/Interop.WIA.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/debug/Ionic.Zip.dll ../lib/dotnet/Ionic.Zip.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/debug/Keyman7Interop.dll ../lib/dotnet/Keyman7Interop.dll
@@ -249,11 +261,13 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/debug/icudt40.dll ../lib/dotnet/icudt40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/debug/icuin40.dll ../lib/dotnet/icuin40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/debug/icuuc40.dll ../lib/dotnet/icuuc40.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/debug/irrKlang.NET4.dll ../lib/dotnet/irrKlang.NET4.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/debug/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu.net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/icudt40.dll ../lib/dotnet/icudt40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/icuin40.dll ../lib/dotnet/icuin40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/icuuc40.dll ../lib/dotnet/icuuc40.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/irrKlang.NET4.dll ../lib/dotnet/irrKlang.NET4.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/geckofx.zip -d ../lib/dotnet
