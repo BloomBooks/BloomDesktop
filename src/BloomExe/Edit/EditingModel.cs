@@ -489,6 +489,7 @@ namespace Bloom.Edit
 		{
 			Logger.WriteMinorEvent("changing page selection");
 			Analytics.Track("Select Page");//not "edit page" because at the moment we don't have the capability of detecting that.
+			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "switched page in edit", true);
 
 			if (_view != null)
 			{
