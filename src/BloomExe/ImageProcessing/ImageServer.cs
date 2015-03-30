@@ -80,7 +80,13 @@ namespace Bloom.ImageProcessing
 				r = r.Replace("thumbnail", "");
 				if (File.Exists(r))
 				{
-						info.ReplyWithImage(_cache.GetPathToResizedImage(r));
+					// thumbnail requests have the thumbnail parameter set in the query string
+					var thumb = info.GetQueryString()["thumbnail"] != null;
+					var pathToFile = _cache.GetPathToResizedImage(r, thumb);
+
+					if (string.IsNullOrEmpty(pathToFile)) return false;
+
+					info.ReplyWithImage(pathToFile);
 					return true;
 				}
 			}

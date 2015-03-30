@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -21,7 +21,13 @@ namespace Bloom.ImageProcessing
 	{
 		private readonly BookRenamedEvent _bookRenamedEvent;
 		public int TargetDimension = 500;
-		private Dictionary<string, string> _originalPathToProcessedVersionPath;
+
+		// the ConcurrentDictionary is thread-safe
+		private ConcurrentDictionary<string, string> _originalPathToProcessedVersionPath;
+
+		// using a ConcurrentDictionary because there isn't a thread-safe List in .Net 4.0
+		private ConcurrentDictionary<string, bool> _imageFilesToReturnUnprocessed;
+
 		private string _cacheFolder;
 
 		private readonly ImageAttributes _convertWhiteToTransparent;
@@ -29,7 +35,8 @@ namespace Bloom.ImageProcessing
 		public RuntimeImageProcessor(BookRenamedEvent bookRenamedEvent)
 		{
 			_bookRenamedEvent = bookRenamedEvent;
-			_originalPathToProcessedVersionPath = new Dictionary<string, string>();
+			_originalPathToProcessedVersionPath = new ConcurrentDictionary<string, string>();
+			_imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
 			_cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom");
 			_bookRenamedEvent.Subscribe(OnBookRenamed);
 			_convertWhiteToTransparent = new ImageAttributes();
@@ -41,7 +48,8 @@ namespace Bloom.ImageProcessing
 			//Note, we don't pay attention to what the change was, we just purge the whole cache
 
 			TryToDeleteCachedImages();
-			_originalPathToProcessedVersionPath = new Dictionary<string, string>();
+			_originalPathToProcessedVersionPath = new ConcurrentDictionary<string, string>();
+			_imageFilesToReturnUnprocessed = new ConcurrentDictionary<string, bool>();
 		}
 
 		public void Dispose()
@@ -82,122 +90,152 @@ namespace Bloom.ImageProcessing
 			}
 		}
 
-		public string GetPathToResizedImage(string originalPath)
+		public string GetPathToResizedImage(string originalPath, bool getThumbnail = false)
 		{
 			//don't mess with Bloom UI images
 			if (new[] {"/img/", "placeHolder", "Button"}.Any(s => originalPath.Contains(s)))
 				return originalPath;
 
+			var cacheFileName = originalPath;
+
+			if (getThumbnail)
+			{
+				cacheFileName = "thumbnail_" + cacheFileName;
+			}
+
+			// check if this image is in the do-not-process list
+			bool test;
+			if (_imageFilesToReturnUnprocessed.TryGetValue(cacheFileName, out test)) return originalPath;
+
 			lock (this)
 			{
+				// if there is a cached version, return it
 				string pathToProcessedVersion;
-				if (_originalPathToProcessedVersionPath.TryGetValue(originalPath, out pathToProcessedVersion))
+				if (_originalPathToProcessedVersionPath.TryGetValue(cacheFileName, out pathToProcessedVersion))
 				{
 					if (File.Exists(pathToProcessedVersion) &&
 						new FileInfo(originalPath).LastWriteTimeUtc <= new FileInfo(pathToProcessedVersion).LastWriteTimeUtc)
 					{
 						return pathToProcessedVersion;
 					}
-					else
-					{
-						_originalPathToProcessedVersionPath.Remove(originalPath);
-					}
+
+					// the file has changed, remove from cache
+					string valueRemoved;
+					_originalPathToProcessedVersionPath.TryRemove(cacheFileName, out valueRemoved);
 				}
 
-				using (var originalImage = PalasoImage.FromFile(originalPath))
+				// there is not a cached version, try to make one
+				var pathToProcessedImage = Path.Combine(_cacheFolder, Path.GetRandomFileName() + Path.GetExtension(originalPath));
+
+				if (!Directory.Exists(Path.GetDirectoryName(pathToProcessedImage)))
+					Directory.CreateDirectory(Path.GetDirectoryName(pathToProcessedImage));
+
+				// BL-1112: images not loading in page thumbnails
+				bool success;
+				if (getThumbnail)
 				{
-					//if it's a jpeg, we don't resize, we don't mess with transparency, nothing. These things
-					//are scary in .net. Just send the original back and wash our hands of it.
-					if (ImageUtils.AppearsToBeJpeg(originalImage))
+					// The HTML div that contains the thumbnails is 80 pixels wide, so make the thumbnails 80 pixels wide
+					success = GenerateThumbnail(originalPath, pathToProcessedImage, 80);
+				}
+				else
+				{
+					success = MakePngBackgroundTransparent(originalPath, pathToProcessedImage);
+				}
+
+				if (!success)
+				{
+					// add this image to the do-not-process list so we don't waste time doing this again
+					_imageFilesToReturnUnprocessed.TryAdd(cacheFileName, true);
+					return originalPath;
+				}
+
+				_originalPathToProcessedVersionPath.TryAdd(cacheFileName, pathToProcessedImage); //remember it so we can reuse if they show it again, and later delete
+
+				return pathToProcessedImage;
+			}
+		}
+
+		private static bool GenerateThumbnail(string originalPath, string pathToProcessedImage, int newWidth)
+		{
+			using (var originalImage = PalasoImage.FromFile(originalPath))
+			{
+				// check if it needs resized
+				if (originalImage.Image.Width <= newWidth) return false;
+
+				// calculate dimensions
+				var newW = (originalImage.Image.Width > newWidth) ? newWidth : originalImage.Image.Width;
+				var newH = newW * originalImage.Image.Height / originalImage.Image.Width;
+
+				using (var newImg = originalImage.Image.GetThumbnailImage(newW, newH, () => false, IntPtr.Zero))
+				{
+					newImg.Save(pathToProcessedImage);
+				}
+			}
+
+			return true;
+		}
+
+
+		private bool MakePngBackgroundTransparent(string originalPath, string pathToProcessedImage)
+		{
+			using (var originalImage = PalasoImage.FromFile(originalPath))
+			{
+				//if it's a jpeg, we don't resize, we don't mess with transparency, nothing. These things
+				//are scary in .net. Just send the original back and wash our hands of it.
+				if (ImageUtils.AppearsToBeJpeg(originalImage))
+				{
+					return false;
+				}
+
+				using (var processedBitmap = new Bitmap(originalImage.Image.Width, originalImage.Image.Height))
+				{
+					using (var g = Graphics.FromImage(processedBitmap))
 					{
-						return originalPath;
+						var destRect = new Rectangle(0, 0, originalImage.Image.Width, originalImage.Image.Height);
+						lock (_convertWhiteToTransparent)
+						{
+							g.DrawImage(originalImage.Image, destRect, 0, 0, originalImage.Image.Width, originalImage.Image.Height,
+								GraphicsUnit.Pixel, _convertWhiteToTransparent);
+						}
 					}
 
-					double shrinkFactor = 1.0;
+					//Hatton July 2012:
+					//Once or twice I saw a GDI+ error on the Save below, when the app 1st launched.
+					//I verified that if there is an IO error, that's what you get (a GDI+ error).
+					//I looked once, and the %temp%/Bloom directory wasn't there, so that's what I think caused the error.
+					//It's not clear why the temp/bloom directory isn't there... possibly it was there a moment ago
+					//but then some startup thread cleared and deleted it? (we are now running on a thread responding to the http request)
 
-#if ShrinkLargeImages // at the moment, we're suspecting that it may be better to let the browser do the shrinking
-
-					//if its a small image, like a creative commons logo, we don't try and resize it
-					if (originalImage.Image.Width > TargetDimension || originalImage.Image.Height > TargetDimension)
+					Exception error = null;
+					for (var i = 0; i < 5; i++) //try up to five times, a second apart
 					{
-						var maxDimension = Math.Max(originalImage.Image.Width, originalImage.Image.Height);
-						//enhance: if we had a way of knowing what the target dimension actually was, we'd use that, of course
-						shrinkFactor = (TargetDimension/(double) maxDimension);
-					}
-#endif
-					var destWidth = (int) (shrinkFactor*originalImage.Image.Width);
-					var destHeight = (int) (shrinkFactor*originalImage.Image.Height);
-
-					using (var processedBitmap = new Bitmap(destWidth, destHeight))
-					{
-						using (Graphics g = Graphics.FromImage((Image) processedBitmap))
-						{
-#if ShrinkLargeImages
-							//in version 1.0, we used .NearestNeighbor. But if there is a border line down the right size (as is common for thumbnails that,
-							//are, for example, re-inserted into Teacher's Guides), then the line gets cut off. So I switched it to HighQualityBicubic
-							g.InterpolationMode = InterpolationMode.HighQualityBicubic; //.NearestNeighbor;//or smooth it: HighQualityBicubic
-#endif
-							var destRect = new Rectangle(0, 0, destWidth, destHeight);
-							lock (_convertWhiteToTransparent)
-							{
-								g.DrawImage(originalImage.Image, destRect, 0, 0, originalImage.Image.Width, originalImage.Image.Height,
-									GraphicsUnit.Pixel, _convertWhiteToTransparent);
-							}
-						}
-
-						var pathToProcessedImage = Path.Combine(_cacheFolder, Path.GetRandomFileName() + Path.GetExtension(originalPath));
-
-						//Hatton July 2012:
-						//Once or twice I saw a GDI+ error on the Save below, when the app 1st launched.
-						//I verified that if there is an IO error, that's what you get (a GDI+ error).
-						//I looked once, and the %temp%/Bloom directory wasn't there, so that's what I think caused the error.
-						//It's not clear why the temp/bloom directory isn't there... possibly it was there a moment ago
-						//but then some startup thread cleared and deleted it? (we are now running on a thread responding to the http request)
-
-						Exception error = null;
-						for (int i = 0; i < 5; i++) //try up to five times, a second apart
-						{
-							try
-							{
-								error = null;
-
-								if (!Directory.Exists(Path.GetDirectoryName(pathToProcessedImage)))
-								{
-									Directory.CreateDirectory(Path.GetDirectoryName(pathToProcessedImage));
-								}
-								processedBitmap.Save(pathToProcessedImage, originalImage.Image.RawFormat);
-								break;
-							}
-							catch (Exception e)
-							{
-								Logger.WriteEvent("Error in RuntimeImageProcessor while trying to write image.");
-								Logger.WriteEvent(e.Message);
-								error = e;
-								Thread.Sleep(1000); //wait a second before trying again
-							}
-						}
-						if (error != null)
-						{
-							//NB: I tested that even though we're in a non-UI thread, this shows up fine (libpalaso marshalls it to the UI thread)
-							ErrorReport.NotifyUserOfProblem(error,
-								"Bloom is having problem saving a processed version to your temp directory, at " + pathToProcessedImage +
-								"\r\n\r\nYou might want to quit and restart Bloom. In the meantime, Bloom will use unprocessed image.");
-							return originalPath;
-						}
-
 						try
 						{
-							_originalPathToProcessedVersionPath.Add(originalPath, pathToProcessedImage); //remember it so we can reuse if they show it again, and later delete
+							error = null;
+							processedBitmap.Save(pathToProcessedImage, originalImage.Image.RawFormat);
+							break;
 						}
-						catch (ArgumentException)
+						catch (Exception e)
 						{
-							// it happens sometimes that though it wasn't in the _originalPathToProcessedVersionPath when we entered, it is now
-							// I haven't tracked it down... possibly we get a new request for the image while we're busy compressing it?
+							Logger.WriteEvent("Error in RuntimeImageProcessor while trying to write image.");
+							Logger.WriteEvent(e.Message);
+							error = e;
+							Thread.Sleep(1000); //wait a second before trying again
 						}
-						return pathToProcessedImage;
+					}
+
+					if (error != null)
+					{
+						//NB: I tested that even though we're in a non-UI thread, this shows up fine (libpalaso marshalls it to the UI thread)
+						ErrorReport.NotifyUserOfProblem(error,
+							"Bloom is having problem saving a processed version to your temp directory, at " + pathToProcessedImage +
+							"\r\n\r\nYou might want to quit and restart Bloom. In the meantime, Bloom will use unprocessed image.");
+						return false;
 					}
 				}
 			}
+
+			return true;
 		}
 	}
 }
