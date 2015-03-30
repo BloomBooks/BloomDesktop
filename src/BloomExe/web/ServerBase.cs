@@ -17,12 +17,36 @@ namespace Bloom.web
 {
 	public abstract class ServerBase : IDisposable
 	{
+		/// <summary>
+		/// Listens for requests on "http://localhost:8089/bloom/"
+		/// </summary>
 		private readonly HttpListener _listener;
-		private readonly Thread _listenerThread;
-		private readonly Thread[] _workers;
-		private readonly ManualResetEvent _stop, _ready;
+
+		/// <summary>
+		/// Requests that come into the _listener are placed in the _queue so they can be processed
+		/// </summary>
 		private readonly Queue<HttpListenerContext> _queue;
-		private bool _isDisposing;
+
+		/// <summary>
+		/// Gets requests from _listener and puts them in the _queue to be processed
+		/// </summary>
+		private readonly Thread _listenerThread;
+
+		/// <summary>
+		/// Pool of threads that pull a request from the _queue and processes it
+		/// </summary>
+		private readonly Thread[] _workers;
+
+		/// <summary>
+		/// Notifies threads that they should stop because the ServerBase object is being disposed
+		/// </summary>
+		private readonly ManualResetEvent _stop;
+
+		/// <summary>
+		/// Notifies threads in the _workers pool that there is a request in the _queue
+		/// </summary>
+		private readonly ManualResetEvent _ready;
+		
 
 		protected ServerBase()
 		{
@@ -42,6 +66,8 @@ namespace Bloom.web
 			Dispose(false);
 		}
 #endif
+
+		#region Startuup
 
 		public void StartWithSetupIfNeeded()
 		{
@@ -88,25 +114,35 @@ namespace Bloom.web
 
 			for (var i = 0; i < _workers.Length; i++)
 			{
-				_workers[i] = new Thread(WaitForRequests);
+				_workers[i] = new Thread(RequestProcessorLoop);
 				_workers[i].Start();
 			}
 
 			return GetIsAbleToUsePort();
 		}
 
+		#endregion
+
+		/// <summary>
+		/// The _listenerThread runs this method, and exits when the _stop event is raised
+		/// </summary>
 		private void HandleRequests()
 		{
 			while (_listener.IsListening)
 			{
-				var context = _listener.BeginGetContext(ContextReady, null);
+				var context = _listener.BeginGetContext(QueueRequest, null);
 
 				if (0 == WaitHandle.WaitAny(new[] { _stop, context.AsyncWaitHandle }))
 					return;
 			}
 		}
 
-		private void ContextReady(IAsyncResult ar)
+		/// <summary>
+		/// This method is called in the _listenerThread when we obtain an HTTP request from
+		/// the _listener, and queues it for processing by a worker.
+		/// </summary>
+		/// <param name="ar"></param>
+		private void QueueRequest(IAsyncResult ar)
 		{
 			// this can happen when shutting down
 			if (!_listenerThread.IsAlive) return;
@@ -121,20 +157,23 @@ namespace Bloom.web
 		/// <summary>
 		/// The worker threads run this function
 		/// </summary>
-		private void WaitForRequests()
+		private void RequestProcessorLoop()
 		{
 			// _ready: indicates that there are requests in the queue that should be processed.
 			// _stop:  indicates that the class is being disposed and the thread should terminate.
 			WaitHandle[] wait = { _ready, _stop };
 
-			// WaitHandle.WaitAny(wait) returns the array index of the handle that satisfied the wait. 
+			// Wait until a request is ready or the thread is being stopped. The WaitAny will return 0 (the index of
+			// _ready in the wait array) if a request is ready, and 1 when _stop is signaled, breaking us out of the loop.
 			while (WaitHandle.WaitAny(wait) == 0)
 			{
 				HttpListenerContext context;
 				lock (_queue)
 				{
 					if (_queue.Count > 0)
+					{
 						context = _queue.Dequeue();
+					}
 					else
 					{
 						_ready.Reset();
@@ -167,6 +206,11 @@ namespace Bloom.web
 			}
 		}
 
+		/// <summary>
+		/// This method is overridden in classes inheriting from this class to handle specific request types
+		/// </summary>
+		/// <param name="info"></param>
+		/// <returns></returns>
 		protected virtual bool ProcessRequest(IRequestInfo info)
 		{
 			// process request for directory index
@@ -292,8 +336,6 @@ namespace Bloom.web
 				// dispose managed and unmanaged objects
 				try
 				{
-					_isDisposing = true;
-
 					if (_listener != null)
 					{
 						//prompted by the mysterious BL 273, Crash while closing down the imageserver
@@ -301,16 +343,20 @@ namespace Bloom.web
 						//prompted by the mysterious BL 273, Crash while closing down the imageserver
 						Guard.AgainstNull(_stop, "_stop");
 
+						// tell _listenerThread and the worker threads they should stop
 						_stop.Set();
 
+						// wait for _listenerThread to stop
 						if (_listenerThread.ThreadState != ThreadState.Unstarted)
 							_listenerThread.Join();
 
+						// wait for each worker thread to stop
 						foreach (var worker in _workers.Where(worker => (worker != null) && (worker.ThreadState != ThreadState.Unstarted)))
 						{
 							worker.Join();
 						}
 
+						// stop listening for incoming http requests
 						_listener.Stop();
 						_listener.Close();
 					}
