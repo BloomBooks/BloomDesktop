@@ -32,6 +32,7 @@
                 fireCSharpEvent("gridClick", $(this).attr('id'));
             });
 
+			// The 100 ms value is based on experimentation. It may need to be re-evaluated in the future.
             setTimeout(loadNextThumbnail, 100);
         });
         function fireCSharpEvent(eventName, eventData) {
@@ -58,7 +59,8 @@
             img.src = src;
 
             // This delay is needed because the processing of larger images was causing out-of-memory errors if several
-            // images were requested before the server had finished processing previous images requests.
+            // images were requested before the server had finished processing previous images requests. We are also
+			// attempting to prevent the browser from timing out and showing the alt text instead of the image.
             setTimeout(loadNextThumbnail, 100);
         }
     </script>

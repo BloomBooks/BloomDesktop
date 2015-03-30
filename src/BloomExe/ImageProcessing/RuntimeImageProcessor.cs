@@ -96,19 +96,19 @@ namespace Bloom.ImageProcessing
 			if (new[] {"/img/", "placeHolder", "Button"}.Any(s => originalPath.Contains(s)))
 				return originalPath;
 
+			var cacheFileName = originalPath;
+
+			if (getThumbnail)
+			{
+				cacheFileName = "thumbnail_" + cacheFileName;
+			}
+
 			// check if this image is in the do-not-process list
 			bool test;
-			if (_imageFilesToReturnUnprocessed.TryGetValue(originalPath, out test)) return originalPath;
+			if (_imageFilesToReturnUnprocessed.TryGetValue(cacheFileName, out test)) return originalPath;
 
 			lock (this)
 			{
-				var cacheFileName = originalPath;
-
-				if (getThumbnail)
-				{
-					cacheFileName = "thumbnail_" + cacheFileName;
-				}
-
 				// if there is a cached version, return it
 				string pathToProcessedVersion;
 				if (_originalPathToProcessedVersionPath.TryGetValue(cacheFileName, out pathToProcessedVersion))
@@ -145,7 +145,7 @@ namespace Bloom.ImageProcessing
 				if (!success)
 				{
 					// add this image to the do-not-process list so we don't waste time doing this again
-					_imageFilesToReturnUnprocessed.TryAdd(originalPath, true);
+					_imageFilesToReturnUnprocessed.TryAdd(cacheFileName, true);
 					return originalPath;
 				}
 
