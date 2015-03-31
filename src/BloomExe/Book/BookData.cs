@@ -763,7 +763,12 @@ namespace Bloom.Book
 			string s = "";
 
 			if ((languageCodeOfTargetField == _collectionSettings.Language2Iso639Code || //is it a national language?
-				 languageCodeOfTargetField == _collectionSettings.Language3Iso639Code))
+				 languageCodeOfTargetField == _collectionSettings.Language3Iso639Code) ||
+				//this one is a kludge as we clearly have this case of a vernacular field that people have used
+				//to hold stuff that should be copied to every shell. So we can either remove the restriction of the
+				//first two clauses in this if statement, or add another bloom-___ class in order to make execptions.
+				//Today, I'm not seing the issue clearly enough, so I'm just going to path this one exisint hole.
+				 classes.Contains("smallCoverCredits"))
 			{
 				formToCopyFromSinceOursIsMissing =
 					data.TextVariables[key].TextAlternatives.GetBestAlternative(new[] {languageCodeOfTargetField, "*", "en", "fr", "es", "pt"});

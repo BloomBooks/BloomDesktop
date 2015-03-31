@@ -106,10 +106,11 @@ mixin factoryStandard-outsideFrontCover
 		.bloom-imageContainer
 			img(src="placeHolder.png", data-book='coverImage')
 
-		.creditsWrapper
+			//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
+			// because it is never empty
+		.creditsWrapper(data-hint='label.bubble *You may use this space for author/illustrator, or anything else.')
 			//- 'V' means this field is only available in the vernacular
-			+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.Cover-Default-style
-				label.bubble *You may use this space for author/illustrator, or anything else.
+			+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.bloom-copyFromOtherLanguageIfNecessary.Cover-Default-style
 		.bottomBlock
 			.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
 			+chooser-topic.coverBottomBookTopic
@@ -138,10 +139,10 @@ mixin factoryStandard-titlePage
 			+editable(kLanguageForPrototypeOnly).Title-On-Title-Page-style(data-book='bookTitle')
 		+field-prototypeDeclaredExplicity#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
-			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.Original-Contributors-On-Title-Page-style(data-book='originalContributions')
+			+editable(kLanguageForPrototypeOnly).credits.bloom-readOnlyInTranslationMode.bloom-copyFromOtherLanguageIfNecessary.Original-Contributors-On-Title-Page-style(data-book='originalContributions')
 		+field-prototypeDeclaredExplicity#funding
 			label.bubble Use this to acknowledge any funding agencies.
-			+editable(kLanguageForPrototypeOnly).funding.Funding-On-Title-Page-style(data-book='funding')
+			+editable(kLanguageForPrototypeOnly).funding.Funding-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
 		#languageInformation
 			.languagesOfBook(data-book='languagesOfBook')
 			//- review: can we get rid of these "langName" classes?

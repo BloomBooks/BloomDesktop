@@ -20,10 +20,12 @@
           <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable bloom-nodefaultstylerule Title-On-Cover-style" data-book="bookTitle">
           </div>
         </div>
-        <div class="bloom-imageContainer"><img src="placeHolder.png" data-book="coverImage"/></div>
-        <div class="creditsWrapper">
-          <div lang="V" contenteditable="true" class="bloom-content1 bloom-editable smallCoverCredits Cover-Default-style" data-book="smallCoverCredits" data-metalanguage="V">
-            <label class="bubble">*You may use this space for author/illustrator, or anything else.</label>
+        <div class="bloom-imageContainer"><img src="placeHolder.png" data-book="coverImage"/>
+          <!--NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,-->
+          <!-- because it is never empty-->
+        </div>
+        <div data-hint="label.bubble *You may use this space for author/illustrator, or anything else." class="creditsWrapper">
+          <div lang="V" contenteditable="true" class="bloom-content1 bloom-editable smallCoverCredits bloom-copyFromOtherLanguageIfNecessary Cover-Default-style" data-book="smallCoverCredits" data-metalanguage="V">
           </div>
         </div>
         <div class="bottomBlock">
@@ -53,12 +55,12 @@
         </div>
         <div class="bloom-translationGroup" id="originalContributions">
           <label class="bubble">The contributions made by writers, illustrators, editors, etc., in {lang}</label>
-          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable credits bloom-readOnlyInTranslationMode Original-Contributors-On-Title-Page-style" data-book="originalContributions">
+          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable credits bloom-readOnlyInTranslationMode bloom-copyFromOtherLanguageIfNecessary Original-Contributors-On-Title-Page-style" data-book="originalContributions">
           </div>
         </div>
         <div class="bloom-translationGroup" id="funding">
           <label class="bubble">Use this to acknowledge any funding agencies.</label>
-          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable funding Funding-On-Title-Page-style" data-book="funding">
+          <div lang="z" contenteditable="true" class="bloom-content1 bloom-editable funding Funding-On-Title-Page-style bloom-copyFromOtherLanguageIfNecessary" data-book="funding">
           </div>
         </div>
         <div id="languageInformation">
