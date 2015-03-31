@@ -169,9 +169,9 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/ChorusHubApp.exe ../lib/dotnet/ChorusHubApp.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/ChorusMerge.exe ../lib/dotnet/ChorusMerge.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/Chorus.exe ../lib/dotnet/Chorus.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/ChorusHub.exe ../lib/dotnet/ChorusHub.exe
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/ChorusMerge.exe ../lib/dotnet/ChorusMerge.exe
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/Chorus.pdb ../lib/dotnet/Chorus.pdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/ChorusHub.pdb ../lib/dotnet/ChorusHub.pdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/ChorusMerge.pdb ../lib/dotnet/ChorusMerge.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/Autofac.dll ../lib/dotnet/Autofac.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/LibChorus.dll ../lib/dotnet/LibChorus.dll
@@ -179,9 +179,8 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/Palaso.dll ../lib/dotnet/Palaso.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/PalasoUIWindowsForms.dll ../lib/dotnet/PalasoUIWindowsForms.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/Vulcan.Uczniowie.HelpProvider.dll ../lib/dotnet/Vulcan.Uczniowie.HelpProvider.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/Autofac.dll ../lib/dotnet/Autofac.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/LibChorus.TestUtilities.dll ../lib/dotnet/LibChorus.TestUtilities.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/debug/LibChorus.dll ../lib/dotnet/LibChorus.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/LibChorus.TestUtilities.pdb ../lib/dotnet/LibChorus.TestUtilities.pdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/LibChorus.pdb ../lib/dotnet/LibChorus.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/icu.net.dll ../lib/dotnet/icu.net.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/icudt40.dll ../lib/dotnet/icudt40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/icuin40.dll ../lib/dotnet/icuin40.dll
