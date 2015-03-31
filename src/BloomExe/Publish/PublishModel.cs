@@ -32,7 +32,9 @@ namespace Bloom.Publish
 			WaitForUserToChooseSomething,
 			Working,
 			ShowPdf,
-			Upload
+			Upload,
+			Printing,
+			ResumeAfterPrint
 		}
 
 		public enum BookletPortions

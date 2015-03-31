@@ -45,6 +45,7 @@ namespace Bloom.Publish
 			_model.View = this;
 
 			_makePdfBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(_makePdfBackgroundWorker_RunWorkerCompleted);
+			_pdfViewer.PrintProgress += new System.EventHandler<PdfPrintProgressEventArgs>(OnPrintProgress);
 
 			// BL-625: With mono, if a RadioButton group has its AutoCheck properties set to true, the default RadioButton.OnEnter
 			//         event checks to make sure one of the RadioButtons is checked. If none are checked, the one the mouse pointer
@@ -317,6 +318,23 @@ namespace Bloom.Publish
 						_printButton.Enabled = _pdfViewer.ShowPdf(_model.PdfFilePath);
 					}
 					break;
+				case PublishModel.DisplayModes.Printing:
+					_simpleAllPagesRadio.Enabled = false;
+					_bookletCoverRadio.Enabled = false;
+					_bookletBodyRadio.Enabled = false;
+					_printButton.Enabled = _saveButton.Enabled = false;
+					_workingIndicator.Cursor = Cursors.WaitCursor;
+					Cursor = Cursors.WaitCursor;
+					_workingIndicator.Visible = true;
+					break;
+				case PublishModel.DisplayModes.ResumeAfterPrint:
+					_simpleAllPagesRadio.Enabled = true;
+					_pdfViewer.Visible = true;
+					_workingIndicator.Visible = false;
+					Cursor = Cursors.Default;
+					_saveButton.Enabled = true;
+					_printButton.Enabled = true;
+					break;
 				case PublishModel.DisplayModes.Upload:
 				{
 					_workingIndicator.Visible = false; // If we haven't finished creating the PDF, we will indicate that in the progress window.
@@ -466,7 +484,21 @@ namespace Bloom.Publish
 			Logger.WriteEvent("Calling Print on PDF Viewer");
 			Analytics.Track("Print PDF");
 		}
+		private void OnPrintProgress(object sender, PdfPrintProgressEventArgs e)
+		{
+			// BL-788 Only called in Linux version.  Protects against button
+			// pushes while print is in progress.
+			if (e.PrintInProgress)
+			{
+				SetDisplayMode(PublishModel.DisplayModes.Printing);
+			}
+			else
+			{
+				SetDisplayMode(PublishModel.DisplayModes.ResumeAfterPrint);
+				UpdateDisplay ();
+			}
 
+		}
 		private void _makePdfBackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			e.Result = _model.BookletPortion; //record what our parameters were, so that if the user changes the request and we cancel, we can detect that we need to re-run
