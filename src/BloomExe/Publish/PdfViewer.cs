@@ -156,9 +156,11 @@ namespace Bloom.Publish
 					}
 					//NS_ERROR_ABORT means user cancelled the printing, not really an error.
 					if (e.ErrorCode != GeckoError.NS_ERROR_ABORT)
-						Console.WriteLine ("ComError");
+						throw;
 				}
-				Marshal.ReleaseComObject (print);
+				finally {
+					Marshal.ReleaseComObject (print);
+				}
 			}
 		}
 
