@@ -315,7 +315,7 @@ class StyleEditor {
                 return <CSSStyleRule> ruleList[i];
             }
         }
-        (<CSSStyleSheet>styleSheet).insertRule('.' + styleAndLang + "{ }", ruleList.length);
+        (<CSSStyleSheet>styleSheet).insertRule('.' + styleAndLang + " { }", ruleList.length);
 
         return <CSSStyleRule> ruleList[ruleList.length - 1]; //new guy is last
     }
@@ -470,7 +470,7 @@ class StyleEditor {
         // Detecting 'none' is difficult because our edit boxes inherit a faint grey border
         // Currently we use plain rgb for our official borders, and the inherited one uses rgba(0, 0, 0, 0.2).
         // We have a problem in that the edit mode UI also uses borders. Its borders, however, are all partially
-        // transparent (up to 0.6 at the moment). So we can detect that there isn't an actual style border by looking at the 4th, oppacity member of the rgba.
+        // transparent (up to 0.6 at the moment). So we can detect that there isn't an actual style border by looking at the 4th, opacity member of the rgba.
         // REVIEW (JH) @JT: Why do we look at the actual style, instead of the style rule we are editing?
         if (!borderStyle || borderStyle === 'none' || !borderColor || (borderColor.toLowerCase().startsWith("rgba(") && parseFloat(borderColor.split(',')[3]) < 1.0)) {
             borderChoice = 'none';
