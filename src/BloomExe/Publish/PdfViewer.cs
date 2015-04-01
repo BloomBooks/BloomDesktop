@@ -31,17 +31,26 @@ namespace Bloom.Publish
 			InitializeComponent();
 
 #if !__MonoCS__
-			if (Settings.Default.UseAdobePdfViewer)
-			{
-				_pdfViewerControl = new AdobeReaderControl();
-			}
-			else
+			// In Windows we would prefer to use Acrobat to display and print PDFs. It avoids various bugs in
+			// PDFjs, such as BL-1177 (Andika sometimes lost when printing directly from Bloom),
+			// BL-1170 Printing stops after certain point
+			// BL-1037 PDFjs sometimes fails to display if use certain jpg images
+			// If Acrobat is not installed, it will fall back to PDFjs, and we hope for the best.
+			// Todo: we need a better solution in Linux, also. Ghostscript might provide something but
+			// has a GPL license.
+			_pdfViewerControl = new AdobeReaderControl();
+#else
+			_pdfViewerControl = new GeckoWebBrowser();
 #endif
-			{
-				_pdfViewerControl = new GeckoWebBrowser();
+			SetupViewerControl();
+		}
 
+		private void SetupViewerControl()
+		{
+			if (_pdfViewerControl is GeckoWebBrowser)
+			{
 				// BL-752: The zoom drop down list does not display on Linux
-				((GeckoWebBrowser)_pdfViewerControl).DomClick += 
+				((GeckoWebBrowser)_pdfViewerControl).DomClick +=
 					(sender, e) => ((GeckoWebBrowser)_pdfViewerControl).WebBrowserFocus.Activate();
 			}
 			SuspendLayout();
@@ -57,11 +66,29 @@ namespace Bloom.Publish
 			ResumeLayout(false);
 		}
 
+#if(!__MonoCS__)
+		private void UpdatePdfViewer(Control viewerControl)
+		{
+			Controls.Remove(_pdfViewerControl);
+			_pdfViewerControl.Dispose();
+			_pdfViewerControl = viewerControl;
+			SetupViewerControl();
+			_pdfViewerControl.Size = this.Size; // not sure why dock doesn't do this
+		}
+#endif
+
 		public bool ShowPdf(string pdfFile)
 		{
 #if !__MonoCS__
-			if (Settings.Default.UseAdobePdfViewer)
-				return ((AdobeReaderControl)_pdfViewerControl).ShowPdf(pdfFile);
+			var arc = _pdfViewerControl as AdobeReaderControl;
+			if (arc != null) // We haven't yet had a problem displaying with Acrobat...
+			{
+				if (arc.ShowPdf(pdfFile))
+					return true; // success using acrobat
+				// Acrobat not working (probably not installed). Switch to using Gecko to display PDF.
+				UpdatePdfViewer(new GeckoWebBrowser());
+				// and continue to show it using that.
+			}
 #endif
 
 			var url = string.Format("{0}{1}?file=/bloom/{2}", Bloom.web.ServerBase.PathEndingInSlash,
@@ -92,7 +119,8 @@ namespace Bloom.Publish
 		public void Print()
 		{
 #if !__MonoCS__
-			if (Settings.Default.UseAdobePdfViewer)
+			var arc = _pdfViewerControl as AdobeReaderControl;
+			if (arc != null)
 			{
 				((AdobeReaderControl)_pdfViewerControl).Print();
 				return;
