@@ -12,6 +12,12 @@
 ### Problems with high quality color images
 - If you copy a color image that was originally a jpeg from OpenOffice/LibreOffice and paste it in Bloom, LibreOffice does not tell BLoom that the image is a jpeg, and as a result the file size may skyrocket. This will lead to Bloom using more memory than you might have on your computer. Instead, please save the images out to the disk as jpegs and then add them to Bloom from there. Bloom 3.1 will have a number of features to help with using large high quality color images, but for Bloom 3.0, you do have to be quite careful.
 
+
+## 3.0.106 Version Stable Release
+- Fix problem with downloading Kande's story
+- Allow letters and sight words in Decodable Reader tool to be entered separated by commas
+- For tall scripts like Devanagari, automatically increase the minimum height of fields to the line height
+
 ## 3.0.103 Version Stable Release
 - Added links to training videos in the Help Menu.
 
