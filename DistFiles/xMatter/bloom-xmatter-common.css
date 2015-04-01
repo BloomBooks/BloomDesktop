@@ -226,6 +226,12 @@
 .verso #versoLicenseAndCopyright .licenseBlock {
   margin-bottom: 2em;
 }
+.credits .licenseAndCopyrightBlock img,
+.verso .licenseAndCopyrightBlock img,
+.credits #versoLicenseAndCopyright img,
+.verso #versoLicenseAndCopyright img {
+  height: 31px;
+}
 .credits .originalAcknowledgments .bloom-contentNational1,
 .verso .originalAcknowledgments .bloom-contentNational1 {
   display: block !important;
