@@ -192,7 +192,7 @@
 			this._L10NSharpExtender.SetLocalizingId(this._documentationMenuItem, "HelpMenu.documentationMenuItem");
 			this._documentationMenuItem.Name = "_documentationMenuItem";
 			this._documentationMenuItem.Size = new System.Drawing.Size(215, 22);
-			this._documentationMenuItem.Text = "Great Help. No, Really!";
+			this._documentationMenuItem.Text = "Help. Lots of help!";
 			this._documentationMenuItem.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
 			// 
 			// _trainingVideosMenuItem

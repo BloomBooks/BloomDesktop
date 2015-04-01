@@ -121,7 +121,7 @@ function process_UI_Message(event) {
 * Creates the grid of available graphemes
 */
 function displayLetters() {
-    var letters = (document.getElementById('dls_letters').value.trim()).split(' ');
+    var letters = cleanSpaceDelimitedList(document.getElementById('dls_letters').value.trim()).split(' ');
     letters = letters.filter(function (n) {
         return n !== '';
     });
@@ -161,9 +161,15 @@ function displayLetters() {
 }
 
 function setLevelValue(value) {
-    if ((value === '') || (parseInt(value) === 0))
+    if (!value)
         return '-';
-    return value;
+
+    var testVal = (typeof value === 'number') ? value : parseInt(value);
+
+    if (testVal === 0)
+        return '-';
+
+    return testVal.toString();
 }
 
 /**
@@ -392,7 +398,7 @@ function tabBeforeActivate(ui) {
     var panelId = ui['newPanel'][0].id;
 
     if (panelId === 'dlstabs-2') {
-        var allLetters = (document.getElementById('dls_letters').value.trim()).split(' ');
+        var allLetters = cleanSpaceDelimitedList(document.getElementById('dls_letters').value.trim()).split(' ');
         var tbody = $('#stages-table').find('tbody');
 
         // update letters grid
@@ -482,7 +488,7 @@ function handleThingsToRemember(jqueryEvent) {
 * @param ta Text area
 */
 function updateSightWords(ta) {
-    var words = ta.value.trim().replace(/ ( )+/g, ' ');
+    var words = cleanSpaceDelimitedList(ta.value);
     $('#stages-table').find('tbody tr.selected td:nth-child(3)').html(words);
 }
 

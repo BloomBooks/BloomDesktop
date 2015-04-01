@@ -1,36 +1,26 @@
-﻿## 3.1
-- New faster installer with automatic incremental upgrades
-- BloomLibrary.org takes a fraction of the time/bytes to display
+﻿- New faster installer with automatic incremental upgrades
 - Page thumbnails now show an "attention" icon if some text on the page is overflow its box
 - Added description texts to Leveled and Decodable Reader templates
 - Added links to training videos in the Help menu
 - Updated French & Spanish localizations
 - Higher quality creative commons logos
-- Bloom now tries to detect when you are importing a jpeg that really should be tiff/bmp/png, and puts up an informative dialog that lets you repent or plow forward.
 - Pasted images are now named "image1",2,3, etc.
-- Pasted images are no longer added with a temporary gibberish name; the original names are maintained.
-- On custom pages and other places where there maybe multiple text boxes layout out horizontally, text bubbles will now not show until you click in the box, so that they don't clutter up the page and interfere with seeing/doing what you need.
 - Improved support for Paragraph-oriented fields (indention, numbers, prefixes) in hand-made templates.
 - Support for text wrapping around images and captions in hand-made templates.
-
-
+### Bloom 3.0 is the last version for Windows XP
+- Starting with Bloom 3.1, Bloom will require Windows Vista, 7, 8, 10, etc.
 ### Fixes
 - Can now type with KeyMan 9 if (and only if) it was turned on before displaying the current page. In a future release we'll remove that requirement.
 - (in progress) Fixed Booklet production of A6 Books
 - Make Format dialog more localizable
 - Fixed problem when deleting a box in a custom page.
-- Fixed problem when deleting a resized split on a custom page.
-- Fixed a problem with pdf-ing a book with large image files multiple times.
 - Fixed Image License changes made directly in Bloom are lost
 - Fixed Text size is different on title page: "Language" is smaller than "Topic"
-- Fixed a problem where many PDF viewer programs showed ugly lines around parts images. This fix will only help with images imported from now on, not retroactively. We'll see about doing something retroactively soon.
 - Fixed Vertical Scroll Bars showing prematurely on small boxes in custom page
-- Fixed "red cycling" on small boxes in custom page
 - Fixed insufficient space for French labels on thumbnails
 - Fixed Font size of "second language" Book Title is lost after re-opening
 - Many fixes related to book topic and different languages
 - Overflow detector misfires on right to left text.
-- On the front cover, all the text below the image is now the same size
 - Reinstated Chinese UI translation.
 - Bloom no longer saves metadata you enter back to the original image. Too dangerous.
 - Can choose TIFF images again.
@@ -38,7 +28,6 @@
 - Stopped "Source Bubbles" from overlapping with other stuff by saying that unless the field takes up the full width of the page, only show the bubble when the cursor is in the field.
 - Fixed problem with changing the collection name.
 - Pasted images are now named "image 1", "image 2", etc., instead of having random names.
-- Creative Commons summary now shows in French if that is the national language of the book
 - Vaccninations book had lost its Creative Commons license image.
 - Fixed problem with saving meta data into certain jpeg images.
 - [Decodable Reader] If you change the letters of a stage then close the dialog by clicking "OK", the accordion tool doesn't update to show the new letters
@@ -704,13 +693,3 @@ A5 Wall Calendar now usable, with vernacular days and months. Could use a graphi
 ## 0.3: 24 Nov 2011
 In the image toolbox, you can now reuse metadata (license, copyright, illustrator) from the last image you edited.
 
-### Limitations
-This version has the following limitations (and probably many others). Feel free to suggest your priorities, especially if you're contributing to the Bloom project in some way :-)
-
-* The font is always Andika (if you have it).
-* All books are A5 size.
-* You can't control the cover color.
-* Diglots are not supported.
-* Right-To-Left languages are not supported (but I haven't seen what works and what doesn't)
-* If you have a pdf reader other than Adobe Acrobat set up to display PDFs in Firefox, that will also show up in the Publish tab of Bloom, and it might or might not work. PDF-XChange, for exmample, can make the screen quite complicated with toolbars, and doesn't auto-shrink to fit in the page.
-* You can't tweak the picture size, the text location, etc.

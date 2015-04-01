@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
   <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.28.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.101.0</prop>
+    <prop type="x-appversion">3.0.105.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -2434,7 +2434,7 @@
     </tu>
     <tu tuid="HelpMenu.documentationMenuItem">
       <tuv xml:lang="en">
-        <seg>Documentation</seg>
+        <seg>Great Help. No, Really!</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Documentation</seg>
@@ -2496,6 +2496,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Manuel de formation</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.trainingVideos">
+      <tuv xml:lang="en">
+        <seg>Training Videos</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Vidéos de formation</seg>
       </tuv>
     </tu>
     <tu tuid="InDesignXmlInformationDialog.WindowTitle">
