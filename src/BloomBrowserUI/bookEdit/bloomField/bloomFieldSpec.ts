@@ -1,7 +1,5 @@
 /// <reference path="bloomField.ts" />
-/// <reference path="../../lib/jquery.d.ts" />
-/// <reference path="../../test/lib/jasmine.d.ts"/>
-/*/// <reference path="../../test/lib/jasmine-jquery.d.ts"/>*/
+/// <reference path="../../lib/jasmine/jasmine.d.ts"/>
 
 function WireUp()  {
     $(".bloom-editable").each(function () {

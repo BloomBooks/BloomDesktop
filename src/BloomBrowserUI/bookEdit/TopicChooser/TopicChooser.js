@@ -1,9 +1,7 @@
 ﻿/// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
-/// <reference path="../../lib/localizationManager.ts" />
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
-/// <reference path="../js/getIframeChannel.ts"/>
-/// <reference path="../js/interIframeChannel.ts"/>
 // This must not be renamed. It s called directly from Bloom via RunJavaScript()
 // ReSharper disable once InconsistentNaming
 var ShowTopicChooser = function () {
@@ -39,8 +37,8 @@ var TopicChooser = (function () {
                             var translationGroup = $("div[data-book='topic']").parent();
                             var englishDiv = translationGroup.find("[lang='en']")[0];
                             if (!englishDiv) {
-                                englishDiv = translationGroup.find("div[data-book='topic']").first().clone();
-                                $(englishDiv).attr("lang", "en");
+                                englishDiv = translationGroup.find("div[data-book='topic']")[0];
+                                $(englishDiv).clone().attr("lang", "en");
                                 $(englishDiv).appendTo($(translationGroup));
                             }
 
