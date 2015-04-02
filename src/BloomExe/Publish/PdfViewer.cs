@@ -4,8 +4,10 @@ using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 using Bloom.Properties;
 using Gecko;
+using Gecko.Interop;
 using Palaso.IO;
 
 namespace Bloom.Publish
@@ -15,10 +17,15 @@ namespace Bloom.Publish
 	/// pdf.js, or the Adobe Reader control. Which one is used depends on the operating system
 	/// (Linux always uses pdf.js) and the UseAdobePdfViewer setting in the config file.
 	/// </summary>
-	public partial class PdfViewer : UserControl
+	public partial class PdfViewer : UserControl, nsIWebProgressListener, nsISupportsWeakReference
 	{
 		private Control _pdfViewerControl;
-
+		private Timer _pauseTimer;
+		private FormWindowState _savedState;
+		private const ulong STATE_STOP = 0x00000010;
+		private bool _printing;
+		public event EventHandler<PdfPrintProgressEventArgs> PrintProgress;
+		//private PdfPrintProgressListener _listener;
 		public PdfViewer()
 		{
 			InitializeComponent();
@@ -98,21 +105,108 @@ namespace Bloom.Publish
 				context.EvaluateScript(@"window.print()", (nsISupports)browser.Document.DomObject, out result);
 			}
 #else
-			var browser = ((GeckoWebBrowser)_pdfViewerControl);
-			using (AutoJSContext context = new AutoJSContext(browser.Window.JSContext))
-			{
-				// BL-788 Print dialog appears behind Bloom on Linux
-				// Finally went to minimizing Bloom to allow the print window to be 
-				// displayed and then restore to the original size after the 
-				// Print or Cancel button is pushed on the print dialog.
-				var savedState = this.ParentForm.WindowState;
-				this.ParentForm.WindowState = FormWindowState.Minimized;
-				Application.DoEvents();
-				string result;
-				context.EvaluateScript(@"window.print()", (nsISupports)browser.Document.DomObject, out result);
-				this.ParentForm.WindowState = savedState;
-			}
+			// BL-788 Print dialog appears behind Bloom on Linux
+			// Finally went to minimizing Bloom to allow the print window to be
+			// displayed and then restore to the original size after the
+			// Print or Cancel button is pushed on the print dialog.
+			_pauseTimer = new Timer();
+			_pauseTimer.Interval = 250;
+			_pauseTimer.Tick += PrintAfterPause;
+
+			_savedState = this.ParentForm.WindowState;
+			this.ParentForm.WindowState = FormWindowState.Minimized;
+			_pauseTimer.Start();
+
 #endif
+		}
+		private void PrintAfterPause(object sender, EventArgs e)
+		{
+			_pauseTimer.Stop ();
+			BrowserPrint ();
+			_pauseTimer = new Timer();
+			_pauseTimer.Interval = 250;
+			_pauseTimer.Tick += RestoreAfterPrint;
+			_pauseTimer.Start();
+		}
+		private void RestoreAfterPrint(object sender, EventArgs e)
+		{
+			_pauseTimer.Stop ();
+			this.ParentForm.WindowState = _savedState;
+		}
+
+		public void BrowserPrint()
+		{
+			var browser = ((GeckoWebBrowser)_pdfViewerControl);
+			using (AutoJSContext context = new AutoJSContext (browser.Window.JSContext)) {
+				nsIDOMWindow domWindow = browser.Window.DomWindow;
+				nsIWebBrowserPrint print = Xpcom.QueryInterface<nsIWebBrowserPrint> (domWindow);
+
+				try {
+					if (PrintProgress != null)
+					{
+						// Send event to disable print, simple, outside cover and inside buttons
+						// while printing
+						PrintProgress.Invoke (this, new PdfPrintProgressEventArgs(true));
+					}
+					_printing = true;
+					print.Print (null, this);
+				} catch (COMException e) {
+					if (PrintProgress != null) {
+						PrintProgress.Invoke (this, new PdfPrintProgressEventArgs(false));
+					}
+					//NS_ERROR_ABORT means user cancelled the printing, not really an error.
+					if (e.ErrorCode != GeckoError.NS_ERROR_ABORT)
+						throw;
+				}
+				finally {
+					Marshal.ReleaseComObject (print);
+				}
+			}
+		}
+
+		#region nsISupportsWeakReference Members
+		public nsIWeakReference GetWeakReference()
+		{
+			return new nsWeakReference( this );
+		}
+		#endregion
+
+		#region nsIWebProgressListener Members
+		public void OnStateChange(nsIWebProgress aWebProgress, nsIRequest aRequest, uint aStateFlags, int aStatus)
+		{
+			if (_printing && ((aStateFlags & STATE_STOP) != 0)) {
+				_printing = false;
+				if (PrintProgress != null) {
+					PrintProgress.Invoke (this, new PdfPrintProgressEventArgs(false));
+				}
+			}
+		}
+
+		public void OnProgressChange(nsIWebProgress aWebProgress, nsIRequest aRequest, int aCurSelfProgress, int aMaxSelfProgress, int aCurTotalProgress, int aMaxTotalProgress)
+		{
+		}
+
+		public void OnLocationChange(nsIWebProgress aWebProgress, nsIRequest aRequest, nsIURI aLocation, uint flags)
+		{
+		}
+
+		public void OnStatusChange(nsIWebProgress aWebProgress, nsIRequest aRequest, int aStatus, string aMessage)
+		{
+		}
+
+		public void OnSecurityChange(nsIWebProgress aWebProgress, nsIRequest aRequest, uint aState)
+		{
+		}
+		#endregion
+	}
+
+	public class PdfPrintProgressEventArgs
+		: EventArgs
+	{
+		public readonly bool PrintInProgress;
+		public PdfPrintProgressEventArgs(bool printInProgress)
+		{
+			PrintInProgress = printInProgress;
 		}
 	}
 }
