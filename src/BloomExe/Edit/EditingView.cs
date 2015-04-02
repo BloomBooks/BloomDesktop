@@ -244,9 +244,15 @@ namespace Bloom.Edit
 			//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
 			var rights = metadata.License.RightsStatement;
 			metadata.License.RightsStatement = rights;
-			string idOfLanguageUsed;
 
-			string description = metadata.License.GetDescription(_model.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed).Replace("'", "\\'");
+			// BL-1179: For a Custom license, GetDescription just returns the RightsStatement in language "und"; don't duplicate it.
+			string description = string.Empty;
+			if (!(metadata.License is CustomLicense))
+			{
+				string idOfLanguageUsed;
+				description = metadata.License.GetDescription(_model.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed).Replace("'", "\\'");
+			}
+
 			string licenseImageName = licenseImage == null ? string.Empty : "license.png";
 			string result =
 				string.Format(
