@@ -687,9 +687,6 @@ namespace Bloom.Book
 									{
 										s = ""; //don't show it in N2, since it's the same as N1
 									}
-									// Handle any email address someone has managed to mark with bare <> characters.
-									// (See https://jira.sil.org/browse/BL-1117.)
-									s = FixBadlyMarkedEmailAddresses(s);
 									node.InnerXml = s;
 									//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
 								}
@@ -715,25 +712,6 @@ namespace Bloom.Book
 					"Error in UpdateDomFromDataSet(," + elementName + "). RawDom was:\r\n" +
 					targetDom.OuterXml, error);
 			}
-		}
-
-		/// <summary>
-		/// Fix for invalid HTML markers that look like they're actually email addresses.
-		/// </summary>
-		/// <returns>input string modified as necessary</returns>
-		private static string FixBadlyMarkedEmailAddresses(string s)
-		{
-			// The text we've gathered can contain valid HTML markup, but it can also contain
-			// something like <some_one@somewhere.com> which dies horribly.  How our program
-			// has allowed the latter to occur is beyond me, but let's try to cope with this
-			// situation by encoding the < and > characters.
-			var matches = Regex.Matches(s, @"(<)([-+.\w]+@[-+.\w]+)(>)");
-			for (int i = matches.Count - 1; i >= 0; --i)
-			{
-				var match = matches[i];
-				s = s.Replace(match.Groups[0].Value, "&lt;" + match.Groups[2].Value + "&gt;");
-			}
-			return s;
 		}
 
 		/// <summary>
@@ -821,7 +799,7 @@ namespace Bloom.Book
 
 			string idOfLanguageUsed;
 			string description = metadata.License.GetDescription(_collectionSettings.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed);
-			data.UpdateLanguageString("licenseDescription", description, "en", false);
+			data.UpdateLanguageString("licenseDescription", WebUtility.HtmlEncode(description), "en", false);
 
 			string licenseUrl = metadata.License.Url;
 			data.UpdateLanguageString("licenseUrl", licenseUrl, "*", false);
