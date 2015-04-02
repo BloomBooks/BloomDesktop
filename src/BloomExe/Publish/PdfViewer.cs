@@ -1,13 +1,17 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using Bloom.Properties;
 using Gecko;
 using Gecko.Interop;
+using IWshRuntimeLibrary;
+using Microsoft.Win32;
 using Palaso.IO;
 
 namespace Bloom.Publish
@@ -26,6 +30,8 @@ namespace Bloom.Publish
 		private bool _printing;
 		public event EventHandler<PdfPrintProgressEventArgs> PrintProgress;
 		//private PdfPrintProgressListener _listener;
+		private string _pdfPath;
+
 		public PdfViewer()
 		{
 			InitializeComponent();
@@ -79,6 +85,7 @@ namespace Bloom.Publish
 
 		public bool ShowPdf(string pdfFile)
 		{
+			_pdfPath = pdfFile;
 #if !__MonoCS__
 			var arc = _pdfViewerControl as AdobeReaderControl;
 			if (arc != null) // We haven't yet had a problem displaying with Acrobat...
@@ -122,9 +129,15 @@ namespace Bloom.Publish
 			var arc = _pdfViewerControl as AdobeReaderControl;
 			if (arc != null)
 			{
-				((AdobeReaderControl)_pdfViewerControl).Print();
+				// The print button is only enabled after we have generated a PDF and tried to display it,
+				// so if we still have an ARC by this point, it displayed successfully, and presumably can also print.
+				arc.Print();
 				return;
 			}
+
+			// PDFjs printing has proved unreliable, so GhostScript is preferable even on Windows.
+			if (TryGhostcriptPrint())
+				return;
 
 			var browser = ((GeckoWebBrowser)_pdfViewerControl);
 			using (AutoJSContext context = new AutoJSContext(browser.Window.JSContext))
@@ -133,6 +146,11 @@ namespace Bloom.Publish
 				context.EvaluateScript(@"window.print()", (nsISupports)browser.Document.DomObject, out result);
 			}
 #else
+			// on Linux the isntaller will have a dependency on GhostScript so it should always be available.
+			// We've had many problems with PDFJs so hopefully this solves them.
+			if (TryGhostcriptPrint())
+				return;
+
 			// BL-788 Print dialog appears behind Bloom on Linux
 			// Finally went to minimizing Bloom to allow the print window to be
 			// displayed and then restore to the original size after the
@@ -140,13 +158,74 @@ namespace Bloom.Publish
 			_pauseTimer = new Timer();
 			_pauseTimer.Interval = 250;
 			_pauseTimer.Tick += PrintAfterPause;
-
 			_savedState = this.ParentForm.WindowState;
 			this.ParentForm.WindowState = FormWindowState.Minimized;
 			_pauseTimer.Start();
 
 #endif
 		}
+
+		private bool TryGhostcriptPrint()
+		{
+#if __MonoCS__
+	// todo Linux: I don't think this is quite right.
+	// Also -sDEVICE#mswinpr2 almost certainly needs to be changed.
+	// We want some sort of default device that causes it to display the print dialog.
+	// Todo Linux: set up a dependency so that our package requires GhostScript.
+			var exePath = "/etc/gs"
+#else
+			var gsKey = Registry.LocalMachine.OpenSubKey(@"Software\GPL Ghostscript");
+			if (gsKey == null)
+				gsKey = Registry.LocalMachine.OpenSubKey(@"Software\AGPL Ghostscript");
+			// Just possibly the paid version is present?
+			if (gsKey == null)
+			{
+				var hklm64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+				// maybe the 64-bit version is installed?
+				gsKey = hklm64.OpenSubKey(@"Software\GPL Ghostscript");
+				if (gsKey == null)
+					gsKey = hklm64.OpenSubKey(@"Software\AGPL Ghostscript");
+			}
+			if (gsKey == null)
+				return false; // not able to print this way, GhostScript not present
+			string exePath = null;
+			foreach (var version in gsKey.GetSubKeyNames())
+			{
+				var gsVersKey = gsKey.OpenSubKey(version);
+				var dllPath = gsVersKey.GetValue("GS_DLL") as String;
+				if (dllPath == null)
+					continue;
+				if (!System.IO.File.Exists(dllPath))
+					continue; // some junk there??
+				exePath = Path.Combine(Path.GetDirectoryName(dllPath), "gswin32c.exe");
+				if (System.IO.File.Exists(exePath))
+					break;
+				exePath = Path.Combine(Path.GetDirectoryName(dllPath), "gswin64c.exe");
+				if (System.IO.File.Exists(exePath))
+					break;
+				// some old install in a bad state? Try another subkey
+			}
+#endif
+			if (exePath == null || !System.IO.File.Exists(exePath))
+				return false; // Can't use ghostscript approach
+			var proc = new Process
+			{
+				StartInfo =
+				{
+					FileName = exePath,
+					// -sDEVICE#mswinpr2 makes it display a print dialog so the user can choose printer.
+					// -dBATCH -dNOPAUSE -dQUIET make it go ahead without waiting for user input on each page or after last
+					// -dQUIET was an attempt to prevent it display per-page messages. Didn't work. Not sure it does any good.
+					// -dNORANGEPAGESIZE makes it automatically select the right page orientation.
+					Arguments = "-sDEVICE#mswinpr2 -dBATCH -dNOPAUSE -dQUIET -dNORANGEPAGESIZE \"" + _pdfPath + "\"",
+					UseShellExecute = false, // enables CreateNoWindow
+					CreateNoWindow = true // don't need a DOS box (does not suppress print dialog)
+				}
+			};
+			proc.Start();
+			return true; // we at least think we printed it (unless the user cancels...anyway, don't try again some other way).
+		}
+
 		private void PrintAfterPause(object sender, EventArgs e)
 		{
 			_pauseTimer.Stop ();
