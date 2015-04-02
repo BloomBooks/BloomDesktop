@@ -1,19 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Workspace;
-using Palaso.Reporting;
 using Palaso.Extensions;
 using Palaso.UI.WindowsForms.PortableSettingsProvider;
 
@@ -24,6 +20,10 @@ namespace Bloom
 		private readonly CollectionSettings _collectionSettings;
 		private readonly LibraryClosing _libraryClosingEvent;
 		private readonly WorkspaceView _workspaceView;
+
+		// This is needed because on Linux the ResizeEnd event is firing before the Load event handler is
+		// finished, overwriting the saved RestoreBounds before they are applied.
+		private bool _finishedLoading;
 
 		public Shell(Func<WorkspaceView> projectViewFactory,
 												CollectionSettings collectionSettings,
@@ -213,6 +213,8 @@ namespace Bloom
 			Focus();
 			BringToFront();
 			TopMost = false;
+
+			_finishedLoading = true;
 		}
 
 		private void Shell_Load(object sender, EventArgs e)
@@ -222,6 +224,8 @@ namespace Bloom
 			//must be done by hand (no user UI is provided).
 			try
 			{
+				SuspendLayout();
+
 				if(Settings.Default.WindowSizeAndLocation == null)
 				{
 					StartPosition = FormStartPosition.WindowsDefaultLocation;
@@ -230,21 +234,67 @@ namespace Bloom
 					Settings.Default.Save();
 				}
 
-				//This feature is not yet a normal part of Bloom, since we think just maximizing is more rice-farmer-friendly.
-				//However, we added the ability to remember this stuff at the request of the person making videos, who needs Bloom to open in the same place / size each time.
+				// This feature is not yet a normal part of Bloom, since we think just maximizing is more rice-farmer-friendly.
+				// However, we added the ability to remember this stuff at the request of the person making videos, who needs
+				// Bloom to open in the same place / size each time.
 				if (Settings.Default.MaximizeWindow == false)
 				{
 					Settings.Default.WindowSizeAndLocation.InitializeForm(this);
+				}
+				else
+				{
+					// BL-1036: save and restore un-maximized settings
+					var savedBounds = Settings.Default.RestoreBounds;
+					if ((savedBounds.Width > 200) && (savedBounds.Height > 200) && (IsOnScreen(savedBounds)))
+					{
+						StartPosition = FormStartPosition.Manual;
+						WindowState = FormWindowState.Normal;
+						Bounds = savedBounds;
+					}
+					else
+					{
+						StartPosition = FormStartPosition.CenterScreen;
+					}
+
+					WindowState = FormWindowState.Maximized;
 				}
 			}
 			catch (Exception error)
 			{
 				Debug.Fail(error.Message);
+				
+// ReSharper disable HeuristicUnreachableCode
 				//Not worth bothering the user. Just reset the values to something reasonable.
 				StartPosition = FormStartPosition.WindowsDefaultLocation;
 				WindowState = FormWindowState.Maximized;
+// ReSharper restore HeuristicUnreachableCode
+			}
+			finally
+			{
+				ResumeLayout();
 			}
 		}
 
+		private void Shell_ResizeEnd(object sender, EventArgs e)
+		{
+			// BL-1036: save and restore un-maximized settings
+			if (!_finishedLoading) return;
+			if (WindowState != FormWindowState.Normal) return;
+
+			Settings.Default.RestoreBounds = new Rectangle(Left, Top, Width, Height);
+			Settings.Default.Save();
+		}
+
+		/// <summary>
+		/// Is a significant (100 x 100) portion of the form on-screen?
+		/// </summary>
+		/// <returns></returns>
+		private static bool IsOnScreen(Rectangle rect)
+		{
+			var screens = Screen.AllScreens;
+			var formTopLeft = new Rectangle(rect.Left, rect.Top, 100, 100);
+
+			return screens.Any(screen => screen.WorkingArea.Contains(formTopLeft));
+		}
 	}
 }

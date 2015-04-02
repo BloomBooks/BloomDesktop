@@ -802,14 +802,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="web\EnhancedImageServer.cs" />
-    <None Include="..\..\lib\dotnet\NDesk.DBus.dll" Condition="'$(OS)'=='Unix'">
-      <Link>NDesk.DBus.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\lib\dotnet\NDesk.DBus.dll.config" Condition="'$(OS)'=='Unix'">
-      <Link>NDesk.DBus.dll.config</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <Compile Include="Workspace\BloomClipboard.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
   </ItemGroup>
@@ -1086,9 +1078,6 @@
     <None Include="Resources\greyTriangleButton.png" />
     <None Include="Resources\installerBackground.jpg" />
     <None Include="Resources\videos.png" />
-    <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
-    <Content Include="Scripts\jquery-1.7.2.js" />
-    <Content Include="Scripts\jquery-1.7.2.min.js" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
