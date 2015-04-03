@@ -870,8 +870,6 @@ function SetupElements(container) {
     });
     $(container).find(".bloom-editable").each(function () { BloomField.ManageField(this); });
 
-    AddToolbox(container);
-
     //make textarea edits go back into the dom (they were designed to be POST'ed via forms)
     $(container).find("textarea").blur(function () {
         this.innerHTML = this.value;
