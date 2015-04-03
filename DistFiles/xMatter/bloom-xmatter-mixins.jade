@@ -108,7 +108,7 @@ mixin factoryStandard-outsideFrontCover
 
 			//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
 			// because it is never empty
-		.creditsWrapper(data-hint='label.bubble *You may use this space for author/illustrator, or anything else.')
+		.creditsWrapper(data-hint='You may use this space for author/illustrator, or anything else.')
 			//- 'V' means this field is only available in the vernacular
 			+field-mono-meta('V', "smallCoverCredits").smallCoverCredits.bloom-copyFromOtherLanguageIfNecessary.Cover-Default-style
 		.bottomBlock
