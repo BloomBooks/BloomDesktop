@@ -50,13 +50,21 @@ namespace Bloom.ImageProcessing
 		public static string ProcessAndSaveImageIntoFolder(PalasoImage imageInfo, string bookFolderPath)
 		{
 			LogMemoryUsage();
-			bool isJpeg = false;
+			bool isEncodedAsJpeg = false;
 			try
 			{
-				isJpeg = AppearsToBeJpeg(imageInfo);
-				var imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isJpeg);
+				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
+				var shouldConvertToJpeg = !isEncodedAsJpeg && ShouldChangeFormatToJpeg(imageInfo.Image);
+				var imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg || shouldConvertToJpeg);
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
-				imageInfo.Save(destinationPath);
+				if (shouldConvertToJpeg)
+				{
+					SaveAsTopQualityJpeg(imageInfo.Image, destinationPath);
+				}
+				else
+				{
+					imageInfo.Save(destinationPath);
+				}
 				return imageFileName;
 
 				/* I (Hatton) have decided to stop compressing images until we have a suite of
@@ -100,7 +108,7 @@ namespace Bloom.ImageProcessing
 							string.Format(
 								"Bloom was not able to prepare that picture for including in the book. \r\nThis is a rather large image to be adding to a book --{0} Megs--.",
 								megs);
-						if (isJpeg)
+						if (isEncodedAsJpeg)
 						{
 							msg +=
 								"\r\nNote, this file is a jpeg, which is normally used for photographs, not line-drawings (png, tiff, bmp). Bloom can handle smallish jpegs, large ones are difficult to handle, especialy if memory is limited.";
@@ -197,6 +205,57 @@ namespace Bloom.ImageProcessing
 				}
 				original.Dispose();
 				b.Save(path, ImageFormat.Png);
+			}
+		}
+
+		/// <summary>
+		/// When images are copied from LibreOffice, images that were jpegs there are converted to bitmaps for the clipboard.
+		/// So when we just saved them as bitmpas (pngs), we dramatically inflated the size of user's image files (and
+		/// this then led to memory problems).
+		/// So the idea here is just to try and detect that we should would be better off saving the image as a jpeg.
+		/// Note that even at 100%, we're still going to lose some quality. So this method is only going to recommend
+		/// doing that if the size would be at least 50% less.
+		/// </summary>
+		public static Boolean ShouldChangeFormatToJpeg(Image image)
+		{
+			using (var safetyImage = new Bitmap(image)) //nb: there are cases (notibly http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
+			{
+				using (var jpegFile = new TempFile())
+				using (var pngFile = new TempFile())
+				{
+					image.Save(pngFile.Path, ImageFormat.Png);
+					SaveAsTopQualityJpeg(safetyImage, jpegFile.Path);
+					var jpegInfo = new FileInfo(jpegFile.Path);
+					var pngInfo = new FileInfo(pngFile.Path);
+					// this is just our heurstic. 
+					const double fractionOfTheOriginalThatWouldWarrantChangingToJpeg = .5;
+					return jpegInfo.Length < ( pngInfo.Length  * (1.0-fractionOfTheOriginalThatWouldWarrantChangingToJpeg));
+				}
+			}
+		}
+
+		/// <summary>
+		/// Save the image (of any format) to a jpeg file with 100 quality
+		/// Note that this is still going to introduce some errors if the input is a bitmap.
+		/// </summary>
+		/// <remarks>Will throw if the destination is locked and the user tells us to give up. </remarks>
+		public static void SaveAsTopQualityJpeg(Image image, string destinationPath)
+		{
+			var jpgEncoder = ImageCodecInfo.GetImageDecoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
+			var encoder = Encoder.Quality;
+
+			//nb: there are cases (notibly http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
+
+			using(var tempPath = new TempFile())
+			using(var safetyImage = new Bitmap(image))
+			{
+				using(var parameters = new EncoderParameters(1))
+				{
+					//0 = max compression, 100 = least
+					parameters.Param[0] = new EncoderParameter(encoder, 100L);
+					safetyImage.Save(tempPath.Path, jpgEncoder, parameters);
+				}
+				Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath.Path, destinationPath, null);
 			}
 		}
 	}
