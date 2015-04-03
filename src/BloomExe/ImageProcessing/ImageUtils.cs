@@ -103,7 +103,7 @@ namespace Bloom.ImageProcessing
 						if (isJpeg)
 						{
 							msg +=
-								"\r\nNote, this file is a jpeg, which is normally used for photographs, not line-drawings (png, tiff, bmp). Bloom can handle smallish jpegs, large ones are difficult to handle, especialy if memory is limited.";
+								"\r\nNote, this file is a jpeg, which is normally used for photographs, and complex color artwork. Bloom can handle smallish jpegs, large ones are difficult to handle, especialy if memory is limited.";
 						}
 						throw new ApplicationException(msg, error);
 					}
