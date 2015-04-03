@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
@@ -14,11 +16,13 @@ using Bloom.ImageProcessing;
 using BloomTemp;
 using L10NSharp;
 using Microsoft.Win32;
+using Palaso.Code;
 using Palaso.IO;
 using Bloom.Collection;
 using Palaso.Reporting;
 using Palaso.Xml;
 using Palaso.Extensions;
+using RestSharp.Contrib;
 
 namespace Bloom.web
 {
@@ -252,6 +256,10 @@ namespace Bloom.web
 				if (ProcessReaders(localPath, info))
 					return true;
 			}
+			if(localPath.StartsWith("imageInfo", StringComparison.InvariantCulture))
+			{
+				return ReturnImageInfo(info, localPath);
+			}
 			if (localPath.StartsWith("error", StringComparison.InvariantCulture))
 			{
 				ProcessError(info);
@@ -296,6 +304,44 @@ namespace Bloom.web
 			}
 
 			return ProcessContent(info, localPath);
+		}
+
+		/// <summary>
+		/// Get a json of stats about the image. It is used to populate a tooltip when you hover over an image container
+		/// </summary>
+		private bool ReturnImageInfo(IRequestInfo info, string localPath)
+		{
+			lock (SyncObj)
+			{
+				try
+				{
+					info.ContentType = "text/json";
+					var query = info.RawUrl.Split('?')[1];
+					var args = HttpUtility.ParseQueryString(query);
+					Guard.AssertThat(args.Get("image") != null, "problem with image parameter");
+					var fileName = args["image"];
+					Guard.AgainstNull(CurrentBook, "CurrentBook");
+					var path = Path.Combine(CurrentBook.FolderPath, fileName);
+					RequireThat.File(path).Exists();
+					var fileInfo = new FileInfo(path);
+					dynamic result = new ExpandoObject();
+					result.name = fileName;
+					result.bytes = fileInfo.Length;
+					using (var img = Image.FromFile(path))
+					{
+						result.width = img.Width;
+						result.height = img.Height;
+					}
+					info.WriteCompleteOutput(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+					return true;
+				}
+				catch (Exception e)
+				{
+					Logger.WriteEvent("Error in server imageInfo/: url was " + localPath);
+					Logger.WriteEvent("Error in server imageInfo/: exception is " + e.Message);
+				}
+				return false;
+			}
 		}
 
 		private bool ProcessReaders(string localPath, IRequestInfo info)

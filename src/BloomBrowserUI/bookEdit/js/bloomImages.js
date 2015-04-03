@@ -58,6 +58,8 @@ function SetupImage(image) {
 //the img to fit the available space
 function SetupImageContainer(containerDiv) {
     $(containerDiv).mouseenter(function () {
+        var img = $(this).find('img');
+
         var buttonModifier = "largeImageButton";
         if ($(this).height() < 95) {
             buttonModifier = 'smallImageButton';
@@ -65,7 +67,8 @@ function SetupImageContainer(containerDiv) {
         $(this).prepend('<button class="pasteImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
         $(this).prepend('<button class="changeImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.ChangeImage") + '"></button>');
 
-        var img = $(this).find('img');
+        SetImageTooltip(containerDiv, img);
+
         if (CreditsAreRelevantForImage(img)) {
             $(this).prepend('<button class="editMetadataButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.EditMetadata") + '"></button>');
         }
@@ -80,6 +83,9 @@ function SetupImageContainer(containerDiv) {
         $(this).find(".pasteImageButton").each(function () {
             $(this).remove()
         });
+        $(this).find(".imageInfoLink").each(function () {
+            $(this).remove()
+        });
         $(this).find(".editMetadataButton").each(function () {
             if (!$(this).hasClass('imgMetadataProblem')) {
                 $(this).remove()
@@ -87,6 +93,25 @@ function SetupImageContainer(containerDiv) {
         });
     });
 }
+
+function SetImageTooltip(container, img) {
+    getIframeChannel().simpleAjaxGet('/bloom/imageInfo?image=' + $(img).attr('src'), function (response) {
+        var info = response.name + "\n"
+                + getFileLengthString(response.bytes) + "\n"
+                + response.width + " x " + response.height;
+        container.title = info;
+        });
+}
+
+function getFileLengthString(bytes) {
+    var units = ['KB', 'MB'];
+    for (var i = units.length+1; i-- > 0;) {
+        var unit = Math.pow(1024, i);
+        if (bytes >= unit)
+            return parseFloat(Math.round(bytes / unit * 100) / 100).toFixed(2) + ' ' + units[i - 1];
+    }
+}
+
 
 function CreditsAreRelevantForImage(img) {
     return $(img).attr('src').toLowerCase().indexOf('placeholder') == -1; //don't offer to edit placeholder credits
