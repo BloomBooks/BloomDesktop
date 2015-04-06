@@ -462,7 +462,7 @@ var StyleEditor = (function () {
         // Detecting 'none' is difficult because our edit boxes inherit a faint grey border
         // Currently we use plain rgb for our official borders, and the inherited one uses rgba(0, 0, 0, 0.2).
         // We have a problem in that the edit mode UI also uses borders. Its borders, however, are all partially
-        // transparent (up to 0.6 at the moment). So we can detect that there isn't an actual style border by looking at the 4th, oppacity member of the rgba.
+        // transparent (up to 0.6 at the moment). So we can detect that there isn't an actual style border by looking at the 4th, opacity member of the rgba.
         // REVIEW (JH) @JT: Why do we look at the actual style, instead of the style rule we are editing?
         if (!borderStyle || borderStyle === 'none' || !borderColor || (borderColor.toLowerCase().startsWith("rgba(") && parseFloat(borderColor.split(',')[3]) < 1.0)) {
             borderChoice = 'none';
@@ -629,6 +629,8 @@ var StyleEditor = (function () {
                 }
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
+                StyleEditor.positionInViewport(toolbar);
+
                 $('html').off('click.toolbar');
                 $('html').on("click.toolbar", function (event) {
                     if (event.target != toolbar && toolbar.has(event.target).length === 0 && $(event.target.parent) != toolbar && toolbar.has(event.target).length === 0 && toolbar.is(":visible")) {
@@ -643,6 +645,32 @@ var StyleEditor = (function () {
                 });
             });
         });
+    };
+
+    /**
+    * Positions the Style Editor toolbar so that it is completely visible, so that it does not extend below the
+    * current viewport.
+    * @param el
+    */
+    StyleEditor.positionInViewport = function (toolbar) {
+        // get the current size and position of the toolbar
+        var elem = toolbar[0];
+        var top = elem.offsetTop;
+        var height = elem.offsetHeight;
+
+        while (elem.offsetParent) {
+            elem = elem.offsetParent;
+            top += elem.offsetTop;
+        }
+
+        // diff is the portion of the toolbar that is below the viewport
+        var diff = (top + height) - (window.pageYOffset + window.innerHeight);
+        if (diff > 0) {
+            var offset = toolbar.offset();
+
+            // the extra 30 pixels is for padding
+            toolbar.offset({ left: offset.left, top: offset.top - diff - 30 });
+        }
     };
 
     StyleEditor.prototype.getButtonIds = function () {
