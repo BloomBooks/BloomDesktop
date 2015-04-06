@@ -83,9 +83,6 @@ function SetupImageContainer(containerDiv) {
         $(this).find(".pasteImageButton").each(function () {
             $(this).remove()
         });
-        $(this).find(".imageInfoLink").each(function () {
-            $(this).remove()
-        });
         $(this).find(".editMetadataButton").each(function () {
             if (!$(this).hasClass('imgMetadataProblem')) {
                 $(this).remove()

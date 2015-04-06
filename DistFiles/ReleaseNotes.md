@@ -1,13 +1,13 @@
 ﻿## Important Notices
 
-### Problems with Andika Bold
-- When you create a PDF using Andika, styles such as bold, italic etc. will be lost. This is problem outside of our control at this time. SIL expects to release a new version of Andika in April which will fix this problem for most languages.
+### Problems with Andika And other fonts
+- When you create a PDF using Andika, styles such as bold, italic etc. will be lost. This will happen with any font that doesn't have an have a real bold/italic/etc face. This is problem outside of our control at this time (we've reported it to Mozilla). SIL expects to release a new version of Andika in April which will fix this problem for most languages when using that font.
 
 ### Keyman 9
 - If you enable Keyman 9 while on a page, you'll need to switch to another page and back before you can type.
 
 ### Printing Quality
-- To get good printing reliability on Windows, install the Free Adobe Reader software. Bloom will automatically use it. On Linux, Bloom will use GhostScript.
+- To get good printing reliability on Windows, install the [Free Adobe Reader](http://get.adobe.com/reader/enterprise/) software. Bloom will automatically use it. If download size is at a premium, you can install [Ghostscript](http://www.softpedia.com/get/System/System-Miscellaneous/GPL-Ghostscript.shtml) instead (13 MB vs. 77 MB). On Linux, we are switching to the system's default way of printing (which is normally GhostScript).
 
 ## 3.1
 
@@ -22,7 +22,7 @@
 - Support for text wrapping around images and captions in hand-made templates.
 - When pasting large color images from Libre Office, automatically switch to jpeg if that will keep the file size small
 - Hover over an image to see its file name, size, and dimensions
-- We've reinstated integrations with Adobe Reader after the open source alternative we used in 3.0 proved unreliable. It is still available as a fall-back in situations where Acrobat is unavailable. On Linux, we're now integrating with GhostScript.
+- We've reinstated integrations with the [Free Adobe Reader](http://get.adobe.com/reader/enterprise/) after the open source alternative we used in 3.0 proved unreliable. It is still available as a fall-back in situations where Adobe Reader is unavailable. On Linux, we are switching to the system's default way of printing (which is normally GhostScript).
 
 ### Bloom 3.0 is the last version for Windows XP
 - Starting with Bloom 3.1, Bloom will require Windows Vista, 7, 8, 10, etc.

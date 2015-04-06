@@ -328,7 +328,12 @@ namespace Bloom.web
 					dynamic result = new ExpandoObject();
 					result.name = fileName;
 					result.bytes = fileInfo.Length;
-					using (var img = Image.FromFile(path))
+
+					// Using a stream this way, according to one source,
+					// http://stackoverflow.com/questions/552467/how-do-i-reliably-get-an-image-dimensions-in-net-without-loading-the-image,
+					// supposedly avoids loading the image into memory when we only want its dimensions
+					using(var stream = File.OpenRead(path))
+					using(var img = Image.FromStream(stream, false,false))
 					{
 						result.width = img.Width;
 						result.height = img.Height;
