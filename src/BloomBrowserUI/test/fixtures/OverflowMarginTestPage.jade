@@ -1,0 +1,52 @@
+doctype html
+
+// Tests of overflow feature in Bloom that puts a red background in a field if there's too much content
+//- Turns out the thing that made Story Primer always overflow was "overflow: visible" in the css
+//- It always seemed to have scrollHeight = clientHeight + 2
+//- NB: Could this have been the thin gray border of a focused entry box?
+//- As a consequence, the overflow test will be "var overflow = scrollHeight > clientHeight + 2;
+mixin testTarget
+	.myTest(attributes)
+		block
+
+mixin standardTestField
+	+testTarget.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+		block
+
+mixin standardTranslationGroup
+	.bloom-translationGroup
+		.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+			block
+
+head
+body
+	// Test#0
+	-var margins="width:25em;height:45px";
+	-var styles="font-family:Andika;font-size:20pt";
+	.marginBox(style=margins)
+		.bloom-translationGroup
+			+standardTestField(name="Test that expanding vertically past margins overflows", style=styles).expectToOverflow Too much test text to put on one line at 20pt font.
+
+	// Test#1
+	.marginBox(style=margins)
+		.bloom-translationGroup
+			+standardTestField(name="Test that not expanding vertically past margins does not overflow", style=styles) Just enough text.
+
+	// Test#2
+	-margins = "width:25em;height:90px";
+	.marginBox(style=margins)
+		+standardTranslationGroup(style=styles) Just enough text.
+		.bloom-translationGroup
+			+standardTestField(name="Test that multiple translation groups don't necessarily overflow", style=styles) Just enough text.
+
+	// Test#3
+	.marginBox(style=margins)
+		+standardTranslationGroup(style=styles) Just enough text.
+		.bloom-translationGroup
+			+standardTestField(name="Test that multiple translation groups expanding vertically past margins overflows", style=styles).expectToOverflow Too much test text to put on one line at 20pt font.
+
+	// Test#4
+	.marginBox(style=margins)
+		+standardTranslationGroup(style=styles) Too much test text to put on one line at 20pt font.
+		.bloom-translationGroup
+			+standardTestField(name="Test that earlier translation group makes this one expand vertically past margins", style=styles).expectToOverflow Just enough text.
