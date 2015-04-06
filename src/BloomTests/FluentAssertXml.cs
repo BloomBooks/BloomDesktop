@@ -110,6 +110,19 @@ namespace BloomTests
 	{
 		protected abstract XmlNode NodeOrDom { get; }
 
+		public XmlNameTable NameTable
+		{
+			get
+			{
+				var doc = NodeOrDom as XmlDocument;
+				if (doc != null)
+					return doc.NameTable;
+				else
+					// review: may or may not work; I've only tried cases where it IS a document.
+					return NodeOrDom.OwnerDocument.NameTable;
+			}
+		}
+
 		public void HasAtLeastOneMatchForXpath(string xpath, XmlNamespaceManager nameSpaceManager)
 		{
 			XmlNode node = GetNode(xpath, nameSpaceManager);

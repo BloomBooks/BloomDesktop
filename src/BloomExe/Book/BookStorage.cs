@@ -41,7 +41,7 @@ namespace Bloom.Book
 		HtmlDom Dom { get; }
 		void Save();
 		HtmlDom GetRelocatableCopyOfDom(IProgress log);
-		HtmlDom MakeDomRelocatable(HtmlDom dom, IProgress log);
+		HtmlDom MakeDomRelocatable(HtmlDom dom, IProgress log = null);
 		string SaveHtml(HtmlDom bookDom);
 		void SetBookName(string name);
 		string GetValidateErrors();
@@ -286,7 +286,7 @@ namespace Bloom.Book
 		/// <param name="dom"></param>
 		/// <param name="log"></param>
 		/// <returns></returns>
-		public HtmlDom MakeDomRelocatable(HtmlDom dom, IProgress log)
+		public HtmlDom MakeDomRelocatable(HtmlDom dom, IProgress log = null)
 		{
 			var relocatableDom = dom.Clone();
 
