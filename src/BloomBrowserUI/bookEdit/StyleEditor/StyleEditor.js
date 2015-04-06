@@ -304,7 +304,7 @@ var StyleEditor = (function () {
                 return ruleList[i];
             }
         }
-        styleSheet.insertRule('.' + styleAndLang + "{ }", ruleList.length);
+        styleSheet.insertRule('.' + styleAndLang + " { }", ruleList.length);
 
         return ruleList[ruleList.length - 1];
     };

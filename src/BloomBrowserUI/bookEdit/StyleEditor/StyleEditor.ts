@@ -315,7 +315,7 @@ class StyleEditor {
                 return <CSSStyleRule> ruleList[i];
             }
         }
-        (<CSSStyleSheet>styleSheet).insertRule('.' + styleAndLang + "{ }", ruleList.length);
+        (<CSSStyleSheet>styleSheet).insertRule('.' + styleAndLang + " { }", ruleList.length);
 
         return <CSSStyleRule> ruleList[ruleList.length - 1]; //new guy is last
     }
