@@ -241,7 +241,7 @@ namespace Bloom.ImageProcessing
 		/// <remarks>Will throw if the destination is locked and the user tells us to give up. </remarks>
 		public static void SaveAsTopQualityJpeg(Image image, string destinationPath)
 		{
-			var jpgEncoder = ImageCodecInfo.GetImageDecoders().FirstOrDefault(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
+			var jpgEncoder = ImageCodecInfo.GetImageDecoders().First(codec => codec.FormatID == ImageFormat.Jpeg.Guid);
 			var encoder = Encoder.Quality;
 
 			//nb: there are cases (notibly http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy

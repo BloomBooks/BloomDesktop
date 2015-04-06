@@ -258,7 +258,7 @@ namespace Bloom.web
 			}
 			if(localPath.StartsWith("imageInfo", StringComparison.InvariantCulture))
 			{
-				return ReturnImageInfo(info, localPath);
+				return ReplyWithImageInfo(info, localPath);
 			}
 			if (localPath.StartsWith("error", StringComparison.InvariantCulture))
 			{
@@ -309,13 +309,14 @@ namespace Bloom.web
 		/// <summary>
 		/// Get a json of stats about the image. It is used to populate a tooltip when you hover over an image container
 		/// </summary>
-		private bool ReturnImageInfo(IRequestInfo info, string localPath)
+		private bool ReplyWithImageInfo(IRequestInfo info, string localPath)
 		{
 			lock (SyncObj)
 			{
 				try
 				{
 					info.ContentType = "text/json";
+					Require.That(info.RawUrl.Contains("?"));
 					var query = info.RawUrl.Split('?')[1];
 					var args = HttpUtility.ParseQueryString(query);
 					Guard.AssertThat(args.Get("image") != null, "problem with image parameter");

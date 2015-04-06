@@ -104,11 +104,11 @@ function SetImageTooltip(container, img) {
 }
 
 function getFileLengthString(bytes) {
-    var units = ['KB', 'MB'];
-    for (var i = units.length+1; i-- > 0;) {
+    var units = ['Bytes', 'KB', 'MB'];
+    for (var i = units.length; i-- > 0;) {
         var unit = Math.pow(1024, i);
         if (bytes >= unit)
-            return parseFloat(Math.round(bytes / unit * 100) / 100).toFixed(2) + ' ' + units[i - 1];
+            return parseFloat(Math.round(bytes / unit * 100) / 100).toFixed(2) + ' ' + units[i];
     }
 }
 

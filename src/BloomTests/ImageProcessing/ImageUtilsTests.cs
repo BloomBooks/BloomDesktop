@@ -52,16 +52,19 @@ namespace BloomTests.ImageProcessing
 
 		private static void ProcessAndSaveImageIntoFolder_AndTestResults(string testImageName, ImageFormat expectedOutputFormat)
 		{
-			var path = Palaso.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, testImageName);
-			var image = PalasoImage.FromFile(path);
+			var inputPath = Palaso.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, testImageName);
+			var image = PalasoImage.FromFile(inputPath);
 			using(var folder = new TemporaryFolder())
 			{
 				var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path);
 				Assert.AreEqual(expectedOutputFormat == ImageFormat.Jpeg ? ".jpg" : ".png", Path.GetExtension(fileName));
-				using(var img = Image.FromFile(folder.Combine(fileName)))
+				var outputPath = folder.Combine(fileName);
+				using(var img = Image.FromFile(outputPath))
 				{
 					Assert.AreEqual(expectedOutputFormat, img.RawFormat);
 				}
+				var alternativeThatShouldNotBeThere = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath) + (expectedOutputFormat.Equals(ImageFormat.Jpeg) ? ".png" : ".jpg"));
+				Assert.IsFalse(File.Exists(alternativeThatShouldNotBeThere),"Did not expect to have the file "+alternativeThatShouldNotBeThere);
 			}
 		}
 	}
