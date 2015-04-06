@@ -117,7 +117,7 @@ namespace BloomTests.Book
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 		}
 
-		private Bloom.Book.Book CreateBook()
+		protected Bloom.Book.Book CreateBook()
 		{
 			return CreateBook(CreateDefaultCollectionsSettings());
 		}
@@ -1385,7 +1385,7 @@ namespace BloomTests.Book
 			return dom;
 		}
 
-		private void SetDom(string bodyContents)
+		protected void SetDom(string bodyContents)
 		{
 			_bookDom = new HtmlDom(@"<html ><head></head><body>" + bodyContents + "</body></html>");
 		}

@@ -291,11 +291,18 @@ namespace Bloom.Book
 		/// </summary>
 		public void RemoveFileProtocolFromStyleSheetLinks()
 		{
-			List<XmlElement> links = new List<XmlElement>();
 			foreach (XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
-				var linke = link.GetAttribute("href");
-				link.SetAttribute("href", linke.Replace("file:///", "").Replace("file://", ""));
+				var href = link.GetAttribute("href");
+				link.SetAttribute("href", href.Replace("file:///", "").Replace("file://", ""));
+			}
+		}
+		public void RemoveDirectorySpecificationFromStyleSheetLinks()
+		{
+			foreach(XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var href = link.GetAttribute("href");
+				link.SetAttribute("href", Path.GetFileName(href));
 			}
 		}
 
