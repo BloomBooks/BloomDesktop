@@ -983,7 +983,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// THe bloomBookId meta value
 		/// </summary>
-		public string ID { get { return _storage.Dom.GetMetaValue("bloomBookId", ""); } }
+		public string ID { get { return _storage.MetaData.Id; } }
 
 		private void UpdateImageMetadataAttributes(XmlElement imgNode)
 		{
@@ -1454,7 +1454,7 @@ namespace Bloom.Book
 		/// Make stuff readonly, which isn't doable via css, surprisingly
 		/// </summary>
 		/// <param name="dom"></param>
-		private void AddPreviewJScript(HtmlDom dom)
+		internal void AddPreviewJScript(HtmlDom dom)
 		{
 //			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
 //			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.js"));
@@ -1809,7 +1809,7 @@ namespace Bloom.Book
 			return true;
 		}
 
-		private XmlNodeList GetPageElements()
+		internal XmlNodeList GetPageElements()
 		{
 			return OurHtmlDom.SafeSelectNodes("/html/body//div[contains(@class,'bloom-page')]");
 		}
@@ -1824,7 +1824,7 @@ namespace Bloom.Book
 				&& indexOfItemAfterRelocation < upperBounds;
 		}
 
-		private int GetIndexLastFrontkMatterPage()
+		internal int GetIndexLastFrontkMatterPage()
 		{
 			XmlElement lastFrontMatterPage =
 				OurHtmlDom.RawDom.SelectSingleNode("(/html/body/div[contains(@class,'bloom-frontMatter')])[last()]") as XmlElement;
@@ -2217,5 +2217,7 @@ namespace Bloom.Book
 		{
 			return _bookData.GetMultiTextVariableOrEmpty(name);
 		}
+
+		internal IBookStorage Storage {get { return _storage; }}
 	}
 }

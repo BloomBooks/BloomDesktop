@@ -304,6 +304,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/ckeditor/skins/icy_orange");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/epub");
 		}
 
 		/// <summary>
