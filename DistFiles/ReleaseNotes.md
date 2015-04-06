@@ -1,4 +1,17 @@
-﻿- New faster installer with automatic incremental upgrades
+﻿## Important Notices
+
+### Problems with Andika And other fonts
+- When you create a PDF using Andika, styles such as bold, italic etc. will be lost. This will happen with any font that doesn't have an have a real bold/italic/etc face. This is problem outside of our control at this time (we've reported it to Mozilla). SIL expects to release a new version of Andika in April which will fix this problem for most languages when using that font.
+
+### Keyman 9
+- If you enable Keyman 9 while on a page, you'll need to switch to another page and back before you can type.
+
+### Printing Quality
+- To get good printing reliability on Windows, install the [Free Adobe Reader](http://get.adobe.com/reader/enterprise/) software. Bloom will automatically use it. If download size is at a premium, you can install [Ghostscript](http://www.softpedia.com/get/System/System-Miscellaneous/GPL-Ghostscript.shtml) instead (13 MB vs. 77 MB). On Linux, we are switching to the system's default way of printing (which is normally GhostScript).
+
+## 3.1
+
+- New faster installer with automatic incremental upgrades
 - Page thumbnails now show an "attention" icon if some text on the page is overflow its box
 - Added description texts to Leveled and Decodable Reader templates
 - Added links to training videos in the Help menu
@@ -7,6 +20,10 @@
 - Pasted images are now named "image1",2,3, etc.
 - Improved support for Paragraph-oriented fields (indention, numbers, prefixes) in hand-made templates.
 - Support for text wrapping around images and captions in hand-made templates.
+- When pasting large color images from Libre Office, automatically switch to jpeg if that will keep the file size small
+- Hover over an image to see its file name, size, and dimensions
+- We've reinstated integrations with the [Free Adobe Reader](http://get.adobe.com/reader/enterprise/) after the open source alternative we used in 3.0 proved unreliable. It is still available as a fall-back in situations where Adobe Reader is unavailable. On Linux, we are switching to the system's default way of printing (which is normally GhostScript).
+
 ### Bloom 3.0 is the last version for Windows XP
 - Starting with Bloom 3.1, Bloom will require Windows Vista, 7, 8, 10, etc.
 ### Fixes
@@ -34,6 +51,7 @@
 - [Decodable Reader] If a letter is in a letter combination in current the stage, DR should not automatically allow its consituent letters
 - Bloom's feature of making white transparent makes pdfs look awful in some previewers.
 - Calendar Title Page font-changing widget in "Funding" box is non-functional
+- Fixed bold items not using the same font as its surroundings when styles are customized.
 - [Linux] Right-click on Main Tabs & other Menu Bar Selections causes focus shift
 - [Linux] Edit page (sometimes) needs multiple refreshes
 - [Linux] "Report A Problem" can't report directly, has to go through email.
@@ -41,6 +59,11 @@
 - [Linux] Problem typing in Art Of Reading search box
 - [Linux] Some interfaces languages are listed multiple times.
 - [Linux] Double clicking on a BloomPack didn't run Bloom
+
+## 3.0.106 Version Stable Release
+- Fix problem with downloading Kande's story
+- Allow letters and sight words in Decodable Reader tool to be entered separated by commas
+- For tall scripts like Devanagari, automatically increase the minimum height of fields to the line height
 
 ## 3.0.103 Version Stable Release
 - Added links to training videos in the Help Menu.

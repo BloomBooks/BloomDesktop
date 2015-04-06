@@ -44,6 +44,8 @@
     <Content Include="bookEdit\img\FontSizeLetter.svg" />
     <Content Include="bookEdit\img\LineSpacing.png" />
     <Content Include="bookEdit\img\WordSpacing.png" />
+    <Content Include="bookEdit\js\bloomImages.js" />
+    <Content Include="bookEdit\js\BloomToolbox.js" />
     <Content Include="bookEdit\js\editViewFrame.js" />
     <Content Include="bookEdit\js\jquery.hotkeys.js" />
     <Content Include="bookEdit\js\libsynphony\bloom_lib.js" />
