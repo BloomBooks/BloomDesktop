@@ -10,7 +10,9 @@ using System.Runtime.InteropServices;
 using Bloom.Properties;
 using Gecko;
 using Gecko.Interop;
+#if !__MonoCS__
 using IWshRuntimeLibrary;
+#endif
 using Microsoft.Win32;
 using Palaso.IO;
 
@@ -167,12 +169,14 @@ namespace Bloom.Publish
 
 		private bool TryGhostcriptPrint()
 		{
+			string systemSpecificArgs = String.Empty;
 #if __MonoCS__
-	// todo Linux: I don't think this is quite right.
-	// Also -sDEVICE#mswinpr2 almost certainly needs to be changed.
-	// We want some sort of default device that causes it to display the print dialog.
-	// Todo Linux: set up a dependency so that our package requires GhostScript.
-			var exePath = "/etc/gs"
+			// Ghostscript is built into the CUPS printer service, which is the standard
+			// setup in Ubuntu.  It handles PDF automatically.  gtklp is a graphical
+			// front end to the printer service that allows the user to specify the
+			// printer, paper size, and other parameters that may need to be tweaked.
+			var exePath = "/usr/bin/gtklp";
+			systemSpecificArgs = "";
 #else
 			var gsKey = Registry.LocalMachine.OpenSubKey(@"Software\GPL Ghostscript");
 			if (gsKey == null)
@@ -205,6 +209,11 @@ namespace Bloom.Publish
 					break;
 				// some old install in a bad state? Try another subkey
 			}
+			// -sDEVICE#mswinpr2 makes it display a print dialog so the user can choose printer.
+			// -dBATCH -dNOPAUSE -dQUIET make it go ahead without waiting for user input on each page or after last
+			// -dQUIET was an attempt to prevent it display per-page messages. Didn't work. Not sure it does any good.
+			// -dNORANGEPAGESIZE makes it automatically select the right page orientation.
+			systemSpecificArgs = "-sDEVICE#mswinpr2 -dBATCH -dNOPAUSE -dQUIET -dNORANGEPAGESIZE ";
 #endif
 			if (exePath == null || !System.IO.File.Exists(exePath))
 				return false; // Can't use ghostscript approach
@@ -213,11 +222,7 @@ namespace Bloom.Publish
 				StartInfo =
 				{
 					FileName = exePath,
-					// -sDEVICE#mswinpr2 makes it display a print dialog so the user can choose printer.
-					// -dBATCH -dNOPAUSE -dQUIET make it go ahead without waiting for user input on each page or after last
-					// -dQUIET was an attempt to prevent it display per-page messages. Didn't work. Not sure it does any good.
-					// -dNORANGEPAGESIZE makes it automatically select the right page orientation.
-					Arguments = "-sDEVICE#mswinpr2 -dBATCH -dNOPAUSE -dQUIET -dNORANGEPAGESIZE \"" + _pdfPath + "\"",
+					Arguments = systemSpecificArgs + "\"" + _pdfPath + "\"",
 					UseShellExecute = false, // enables CreateNoWindow
 					CreateNoWindow = true // don't need a DOS box (does not suppress print dialog)
 				}

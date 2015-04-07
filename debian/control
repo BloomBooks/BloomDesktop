@@ -17,7 +17,7 @@ Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
 Package: bloom-desktop-unstable
 Architecture: all
 Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
- mono-sil, libgdiplus-sil, geckofx29,
+ mono-sil, libgdiplus-sil, geckofx29, gtklp,
  chmsee, libtidy5,
  fonts-sil-andika,
  optipng,
