@@ -97,6 +97,7 @@
 			this.Activated += new System.EventHandler(this.Shell_Activated);
 			this.Deactivate += new System.EventHandler(this.Shell_Deactivate);
 			this.Load += new System.EventHandler(this.Shell_Load);
+			this.ResizeEnd += new System.EventHandler(this.Shell_ResizeEnd);
 			this._contextMenu.ResumeLayout(false);
 			this.ResumeLayout(false);
 
