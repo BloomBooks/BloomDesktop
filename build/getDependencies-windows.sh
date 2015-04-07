@@ -268,6 +268,8 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/icuuc40.dll ../lib/dotnet/icuuc40.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/irrKlang.NET4.dll ../lib/dotnet/irrKlang.NET4.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/taglib-sharp.dll ../lib/dotnet/taglib-sharp.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/squirrel.dll ../lib/dotnet/squirrel.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/ICSharpCode.SharpZipLib.dll ../lib/dotnetICSharpCode.SharpZipLib.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/geckofx.zip -d ../lib/dotnet
 unzip -uqo ../Downloads/Andika.zip -d ../Downloads
