@@ -342,12 +342,14 @@ namespace Bloom.CollectionTab
 			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
 			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay, button))
 			{
-			var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay, button);
-			if (titleBestForUserDisplay != button.Text)
-			{
+				var bestTitle = book.TitleBestForUserDisplay;
+				var titleBestForUserDisplay = ShortenTitleIfNeeded(bestTitle, button);
+				if (titleBestForUserDisplay != button.Text)
+				{
 					Debug.WriteLine(button.Text + " --> " + titleBestForUserDisplay);
-				button.Text = titleBestForUserDisplay;
-			}
+					button.Text = titleBestForUserDisplay;
+					toolTip1.SetToolTip(button, bestTitle);
+				}
 			}
 			if (buttonInfo.ThumbnailRefreshNeeded)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
 				ScheduleRefreshOfOneThumbnail(book);
@@ -507,6 +509,7 @@ namespace Bloom.CollectionTab
 
 			button.Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont;
 			button.Text = ShortenTitleIfNeeded(title, button);
+			toolTip1.SetToolTip(button, title);
 			button.TextImageRelation = TextImageRelation.ImageAboveText;
 			button.ImageAlign = ContentAlignment.TopCenter;
 			button.TextAlign = ContentAlignment.BottomCenter;
@@ -518,11 +521,7 @@ namespace Bloom.CollectionTab
 			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
 
-			// Setting the AutoEllipsis property is strange but makes it behave the same on
-			// Windows and Linux. Despite its name it won't show an ellipsis but wrap the line
-			// at a word boundary if the text is too long (at least if the height is large
-			// enough - didn't try what happens if the text doesn't fit in multiple lines)
-			button.AutoEllipsis = true;
+			//not needed: button.AutoEllipsis = true;	// causes unwanted truncated tooltip on Windows
 			button.AutoSize = false;
 
 			button.Tag=bookInfo;
@@ -747,8 +746,9 @@ namespace Bloom.CollectionTab
 				Book.Book book = SelectedBook;
 				if (book != null && SelectedButton != null)
 				{
-					SelectedButton.Text = ShortenTitleIfNeeded(book.TitleBestForUserDisplay, SelectedButton);
-
+					var bestTitle = book.TitleBestForUserDisplay;
+					SelectedButton.Text = ShortenTitleIfNeeded(bestTitle, SelectedButton);
+					toolTip1.SetToolTip(SelectedButton, bestTitle);
 					if (_thumbnailRefreshPending)
 					{
 						_thumbnailRefreshPending = false;
