@@ -122,18 +122,10 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-//TODO
-//            foreach (ListViewItem item in _listView.Items)
-//            {
-//                if(item.Tag == _bookSelection.CurrentSelection)
-//                {
-//                    item.Selected = true;
-//                    break;
-//                }
-//            }
+			var selection = (BookSelection) sender;
+			HighlightBookButton(selection.CurrentSelection.BookInfo);
 		}
 
 		public int PreferredWidth
@@ -529,23 +521,14 @@ namespace Bloom.CollectionTab
 				Tag = bookInfo
 			};
 
-			button.Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont;
-			button.Text = ShortenTitleIfNeeded(title, button);
-			toolTip1.SetToolTip(button, title);
-			button.TextImageRelation = TextImageRelation.ImageAboveText;
-			button.ImageAlign = ContentAlignment.TopCenter;
-			button.TextAlign = ContentAlignment.BottomCenter;
-			button.FlatStyle = FlatStyle.Flat;
-			button.ForeColor = Palette.TextAgainstDarkBackground ;
-			button.FlatAppearance.BorderSize = 0;
-			button.UseMnemonic = false; //otherwise, it tries to interpret '&' as a shortcut
-			button.ContextMenuStrip = _bookContextMenu;
 			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
 			
 			button.Text = ShortenTitleIfNeeded(title, button);
 			button.FlatAppearance.BorderSize = 1;
 			button.FlatAppearance.BorderColor = BackColor;
+
+			toolTip1.SetToolTip(button, title);
 
 			Image thumbnail = Resources.PagePlaceHolder;
 			_bookThumbnails.Images.Add(bookInfo.Id, thumbnail);
@@ -660,8 +643,6 @@ namespace Bloom.CollectionTab
 
 		private void OnClickBook(object sender, EventArgs e)
 		{
-			HighlightBookButton((Button)sender);
-
 			BookInfo bookInfo = ((Button)sender).Tag as BookInfo;
 			if (bookInfo == null)
 				return;
@@ -693,13 +674,14 @@ namespace Bloom.CollectionTab
 			SelectBook(bookInfo);
 		}
 
-		private void HighlightBookButton(Button selectedBtn)
+		private void HighlightBookButton(BookInfo bookInfo)
 		{
-			selectedBtn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
-
-			foreach (var btn in _primaryCollectionFlow.Controls.OfType<Button>().Where(btn => btn.Tag != selectedBtn.Tag))
+			foreach (var btn in _primaryCollectionFlow.Controls.OfType<Button>())
 			{
-				btn.FlatAppearance.BorderColor = BackColor;
+				if (btn.Tag == bookInfo)
+					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
+				else
+					btn.FlatAppearance.BorderColor = BackColor;
 			}
 		}
 
