@@ -8,6 +8,7 @@
 /// <reference path="../js/getIframeChannel.ts"/>
 /// <reference path="../js/interIframeChannel.ts"/>
 /// <reference path="../js/collectionSettings.d.ts"/>
+/// <reference path="../OverflowChecker/OverflowChecker.ts"/>
 var iframeChannel = getIframeChannel();
 var StyleEditor = (function () {
     function StyleEditor(supportFilesRoot) {
@@ -113,7 +114,7 @@ var StyleEditor = (function () {
         if (parseInt(sizeString) < this.MIN_FONT_SIZE)
             return; // too small, quietly don't do it!
         rule.style.setProperty("font-size", sizeString + units, "important");
-        MarkOverflowInternal(target);
+        OverflowChecker.MarkOverflowInternal(target);
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip
         var toolTip = this.GetToolTip(target, styleName);
@@ -1061,7 +1062,7 @@ var StyleEditor = (function () {
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName)
             return; // bizarre, since we put up the dialog
-        MarkOverflowInternal(target);
+        OverflowChecker.MarkOverflowInternal(target);
         this.getCharTabDescription();
         this.getMoreTabDescription();
     };

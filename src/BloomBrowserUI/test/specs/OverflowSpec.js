@@ -6,7 +6,6 @@ jQuery.fn.RunTests = function() {
     $.each(this, RunTest);
 };
 
-
 jQuery.fn.RunMarginTests = function() {
     $.each(this, RunMarginTest);
 };
@@ -18,7 +17,7 @@ var RunTest = function(index, value) {
         nameAttr = '***** This test needs a name! *****';
     if(consoleDef)
         console.log('\nBeginning test # '+ index + ' ' + nameAttr);
-    var overflowingSelf = testHtml.IsOverflowingSelf();
+    var overflowingSelf = OverflowChecker.IsOverflowingSelf(testHtml[0]);
     var testExpectation = testHtml.hasClass('expectToOverflow');
     if(consoleDef) {
         console.log('  scrollH: ' + testHtml[0].scrollHeight + ' clientH: ' + testHtml[0].clientHeight);
@@ -46,7 +45,7 @@ var RunMarginTest = function(index, value) {
         nameAttr = '***** This test needs a name! *****';
     if(consoleDef)
         console.log('\nBeginning test # '+ index + ' ' + nameAttr);
-    var overflowingMargins = testHtml.IsOverflowingMargins();
+    var overflowingMargins = OverflowChecker.IsOverflowingMargins(testHtml[0]);
     var testExpectation = testHtml.hasClass('expectToOverflow');
     if(consoleDef) {
         console.log('  scrollH: ' + testHtml[0].scrollHeight + ' clientH: ' + testHtml[0].clientHeight);

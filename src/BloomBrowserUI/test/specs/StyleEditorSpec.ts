@@ -19,31 +19,31 @@
 function MakeBigger() {
   var target = $(document).find('#testTarget');
   var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
-  editor.MakeBigger(<HTMLElement><any>target);
+  editor.MakeBigger(<HTMLElement>target[0]);
 }
 
 function MakeBigger2(target:string) {
   var jQueryTarget = $(document).find(target);
   var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
-  editor.MakeBigger(<HTMLElement><any>jQueryTarget);
+  editor.MakeBigger(<HTMLElement>jQueryTarget[0]);
 }
 
 function MakeSmaller(target:string) {
   var jQueryTarget = $(document).find(target);
   var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
-  editor.MakeSmaller(<HTMLElement><any>jQueryTarget);
+  editor.MakeSmaller(<HTMLElement>jQueryTarget[0]);
 }
 
 function GetFontSize(target:string): number {
   var jQueryTarget = $(document).find(target);
   var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
-  return editor.GetCalculatedFontSizeInPoints(<HTMLElement><any>jQueryTarget);
+  return editor.GetCalculatedFontSizeInPoints(<HTMLElement>jQueryTarget[0]);
 }
 
 function ChangeSizeAbsolute(target:string, newSize:number) {
   var jQueryTarget = $(document).find(target);
   var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
-  editor.ChangeSizeAbsolute(<HTMLElement><any>jQueryTarget, newSize);
+  editor.ChangeSizeAbsolute(<HTMLElement>jQueryTarget[0], newSize);
 }
 
 function GetUserModifiedStyleSheet(): any {
@@ -114,7 +114,7 @@ function GetRuleForCoverTitleStyle(): CSSRule {
 function GetCalculatedFontSize(target: string): number {
   var jQueryTarget = $(document).find(target);
   var editor = new StyleEditor('file://' + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit");
-  return editor.GetCalculatedFontSizeInPoints(<HTMLElement><any>jQueryTarget);
+  return editor.GetCalculatedFontSizeInPoints(<HTMLElement>jQueryTarget[0]);
 }
 
 function GetRuleMatchingSelector(selector: string): CSSRule {
