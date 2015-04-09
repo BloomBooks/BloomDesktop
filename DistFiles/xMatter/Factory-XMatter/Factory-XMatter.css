@@ -275,16 +275,13 @@ BODY[editmode="translation"] .titlePage #funding .bloom-contentNational1 {
   margin-bottom: 3em;
 }
 .titlePage #titlePageTitleBlock .bloom-editable {
-  min-height: 1.4em;
   line-height: 1.4em;
 }
 .titlePage #titlePageTitleBlock .bloom-content1 {
   display: inherit;
-  margin-bottom: 0.5em;
 }
 .titlePage #titlePageTitleBlock .bloom-contentNational1 {
   display: inherit;
-  margin-bottom: 0.5em;
 }
 .titlePage #titlePageTitleBlock .bloom-content3 {
   display: inherit;
