@@ -143,6 +143,10 @@ namespace Bloom.Workspace
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
 
+			_collectionTab.TextChanged += HandleTabTextChanged;
+			_editTab.TextChanged += HandleTabTextChanged;
+			_publishTab.TextChanged += HandleTabTextChanged;
+
 //			if (Program.StartUpWithFirstOrNewVersionBehavior)
 //			{
 //				_tabStrip.SelectedTab = _infoTab;
@@ -157,15 +161,38 @@ namespace Bloom.Workspace
 			if (Palaso.PlatformUtilities.Platform.IsMono)
 			{
 				// Without this adjustment, we lose some controls on smaller resolutions.
-				var location = _toolSpecificPanel.Location;
-				location.X = _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10;
-				_toolSpecificPanel.Location = location;
-
+				AdjustToolPanelLocation(true);
 				// in mono auto-size causes the height of the tab strip to be too short
 				_tabStrip.AutoSize = false;
 			}
 
 			SetupUILanguageMenu();
+		}
+
+		/// <summary>
+		/// Adjusts the tool panel location to allow more (or optionally less) space
+		/// for the tab buttons.
+		/// </summary>
+		void AdjustToolPanelLocation(bool allowNarrowing)
+		{
+			var widthOfTabButtons = _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10;
+			var location = _toolSpecificPanel.Location;
+			if (widthOfTabButtons > location.X || allowNarrowing)
+			{
+				location.X = widthOfTabButtons;
+				_toolSpecificPanel.Location = location;
+			}
+		}
+
+		/// <summary>
+		/// Adjust the tool panel location when the chosen localization changes.
+		/// See https://jira.sil.org/browse/BL-1212 for what can happen if we
+		/// don't adjust.  At the moment, we only widen, we never narrow the
+		/// area allotted to the tab buttons.
+		/// </summary>
+		void HandleTabTextChanged(object sender, EventArgs e)
+		{
+			AdjustToolPanelLocation(false);
 		}
 
 
