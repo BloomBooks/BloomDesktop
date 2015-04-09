@@ -21,7 +21,8 @@ namespace Bloom.CollectionTab
 {
 	public partial class LibraryListView : UserControl
 	{
-		private const int ButtonHeight = 110;
+		private const int ButtonHeight = 112;
+		private const int ButtonWidth = 92;
 
 		public delegate LibraryListView Factory();//autofac uses this
 
@@ -121,18 +122,10 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-//TODO
-//            foreach (ListViewItem item in _listView.Items)
-//            {
-//                if(item.Tag == _bookSelection.CurrentSelection)
-//                {
-//                    item.Selected = true;
-//                    break;
-//                }
-//            }
+			var selection = (BookSelection) sender;
+			HighlightBookButton(selection.CurrentSelection.BookInfo);
 		}
 
 		public int PreferredWidth
@@ -500,40 +493,50 @@ namespace Bloom.CollectionTab
 			get { return Parent.Parent.Parent.Parent != null; }
 		}
 
-		private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, bool localizeTitle)
+		private void AddOneBook(BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, bool localizeTitle)
 		{
-			var button = new Button(){Size=new Size(90, ButtonHeight)};
 			string title = bookInfo.QuickTitleUserDisplay;
 			if (localizeTitle)
-				title = LocalizationManager.GetDynamicString("Bloom", "Template."+title,title);
+				title = LocalizationManager.GetDynamicString("Bloom", "Template." + title, title);
 
-			button.Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont;
-			button.Text = ShortenTitleIfNeeded(title, button);
-			toolTip1.SetToolTip(button, title);
-			button.TextImageRelation = TextImageRelation.ImageAboveText;
-			button.ImageAlign = ContentAlignment.TopCenter;
-			button.TextAlign = ContentAlignment.BottomCenter;
-			button.FlatStyle = FlatStyle.Flat;
-			button.ForeColor = Palette.TextAgainstDarkBackground ;
-			button.FlatAppearance.BorderSize = 0;
-			button.UseMnemonic = false; //otherwise, it tries to interpret '&' as a shortcut
-			button.ContextMenuStrip = _bookContextMenu;
+			var button = new Button
+			{
+				Size = new Size(ButtonWidth, ButtonHeight),
+				Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
+				TextImageRelation = TextImageRelation.ImageAboveText,
+				ImageAlign = ContentAlignment.TopCenter,
+				TextAlign = ContentAlignment.BottomCenter,
+				FlatStyle = FlatStyle.Flat,
+				ForeColor = Palette.TextAgainstDarkBackground,
+				UseMnemonic = false, //otherwise, it tries to interpret '&' as a shortcut
+				ContextMenuStrip = _bookContextMenu,
+
+				// Setting the AutoEllipsis property is strange but makes it behave the same on
+				// Windows and Linux. Despite its name it won't show an ellipsis but wrap the line
+				// at a word boundary if the text is too long (at least if the height is large
+				// enough - didn't try what happens if the text doesn't fit in multiple lines)
+				AutoEllipsis = true,
+				AutoSize = false,
+
+				Tag = bookInfo
+			};
+
 			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
+			
+			button.Text = ShortenTitleIfNeeded(title, button);
+			button.FlatAppearance.BorderSize = 1;
+			button.FlatAppearance.BorderColor = BackColor;
 
-			//not needed: button.AutoEllipsis = true;	// causes unwanted truncated tooltip on Windows
-			button.AutoSize = false;
+			toolTip1.SetToolTip(button, title);
 
-			button.Tag=bookInfo;
-
-
-			Image thumbnail = Resources.PagePlaceHolder;;
+			Image thumbnail = Resources.PagePlaceHolder;
 			_bookThumbnails.Images.Add(bookInfo.Id, thumbnail);
 			button.ImageIndex = _bookThumbnails.Images.Count - 1;
 			flowLayoutPanel.Controls.Add(button);
 
 			Image img;
-			bool refreshThumbnail = false;
+			var refreshThumbnail = false;
 			//review: we could do this at idle time, too:
 			if (bookInfo.TryGetPremadeThumbnail(out img))
 			{
@@ -546,19 +549,15 @@ namespace Bloom.CollectionTab
 				refreshThumbnail = true;
 			}
 			_buttonsNeedingSlowUpdate.Enqueue(new ButtonInfo(button, refreshThumbnail));
-
-//			bookInfo.GetThumbNailOfBookCoverAsync(bookInfo.Type != Book.Book.BookType.Publication,
-//				                                  image => RefreshOneThumbnail(bookInfo, image),
-//												  error=> RefreshOneThumbnail(bookInfo, Resources.Error70x70));
-
 		}
 
 		private string ShortenTitleIfNeeded(string title, Button button)
 		{
-			var maxHeight = ButtonHeight - HtmlThumbNailer.ThumbnailOptions.DefaultHeight;
-			// -2 was determined experimentally. Any less and some titles go to three lines.
-			// "Pame's Family Battles Maleria" is especially close.
-			int width = button.Width - button.Margin.Horizontal - 2;
+			var maxHeight = ButtonHeight - HtmlThumbNailer.ThumbnailOptions.DefaultHeight - (button.FlatAppearance.BorderSize * 2);
+
+			// -2 because the text will wrap if there is not at least one pixel between the text and the border
+			var width = button.Width - button.Margin.Horizontal - (button.FlatAppearance.BorderSize * 2) - 2;
+
 			var targetSize = new Size(width, int.MaxValue);
 			// WordBreak is necessary for sensible measurment of line widths...otherwise it ignores the width
 			// constraint and puts all the text on one line.
@@ -673,6 +672,17 @@ namespace Bloom.CollectionTab
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
 			}
 			SelectBook(bookInfo);
+		}
+
+		private void HighlightBookButton(BookInfo bookInfo)
+		{
+			foreach (var btn in _primaryCollectionFlow.Controls.OfType<Button>())
+			{
+				if (btn.Tag == bookInfo)
+					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
+				else
+					btn.FlatAppearance.BorderColor = BackColor;
+			}
 		}
 
 		private void SelectBook(BookInfo bookInfo)
