@@ -515,10 +515,7 @@ namespace Bloom.Book
 				//big images before giving them to gecko which has trouble with really hi-res ones
 				//Some clients don't want low-res images and can suppress this by setting HtmlDom.UseOriginalImages.
 				var uri = folderPath + Path.DirectorySeparatorChar;
-				uri = uri.Replace(":", "%3A");
-				uri = uri.Replace('\\', '/');
-				uri = ImageServer.PathEndingInSlash + uri;
-				path = uri;
+				path = uri.ToLocalhost();
 			}
 			dom.BaseForRelativePaths = path; // We actually don't WANT any base elements in the DOM
 		}

@@ -162,8 +162,7 @@ namespace Bloom.web
 			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".tmp");
 			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
 			if (dom.BaseForRelativePaths != null)
-				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths, simulatedPageFileName).Replace('\\', '/');
-			pathToSimulatedPageFile = RemoveLocalhostReferenceFromPath(pathToSimulatedPageFile);
+				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths.FromLocalhost(), simulatedPageFileName);
 			FixStyleLinkReferences(dom);
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
 			using (var writer = File.CreateText(pathToSimulatedPageFile))
@@ -173,17 +172,6 @@ namespace Bloom.web
 			}
 			var uri = new Uri(pathToSimulatedPageFile);
 			return new SimulatedPageFile() { Key = uri.AbsoluteUri };
-		}
-
-		private static string RemoveLocalhostReferenceFromPath(string path)
-		{
-			if (String.IsNullOrEmpty(path) || !path.StartsWith(PathEndingInSlash))
-				return path;
-			path = path.Substring(PathEndingInSlash.Length - 1);
-			path = Regex.Replace(path, "^/([A-Z])%3A/", "$1:/");
-			if (path.StartsWith("//"))
-				path = path.Substring(1);
-			return path;
 		}
 
 		private static void FixStyleLinkReferences(HtmlDom dom)
@@ -199,7 +187,7 @@ namespace Bloom.web
 					var href = attrs["href"];
 					if (href == null)
 						continue;
-					href.Value = RemoveLocalhostReferenceFromPath(href.Value);
+					href.Value = href.Value.FromLocalhost();
 				}
 			}
 		}
