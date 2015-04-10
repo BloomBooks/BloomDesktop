@@ -16,7 +16,7 @@ namespace Bloom.web
 		public PretendRequestInfo(string url)
 		{
 			RawUrl = url;
-			LocalPathWithoutQuery = url.Replace("http://localhost:8089", "");
+			LocalPathWithoutQuery = url.Replace("http://localhost:8089", "").UnescapeCharsForHttp();
 		}
 
 		public string LocalPathWithoutQuery { get; set; }
