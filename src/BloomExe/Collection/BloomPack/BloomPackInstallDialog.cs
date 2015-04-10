@@ -47,38 +47,34 @@ namespace Bloom.Collection.BloomPack
 				ErrorReport.NotifyUserOfProblem(msg, _path);
 				return;
 			}
-			using (var zip = new ZipFile(_path))
+			_folderName = GetRootFolderName();
+			if (_folderName == null)
+				return;
+			string destinationFolder = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
+			if (Directory.Exists(destinationFolder))
 			{
-				_folderName = GetRootFolderName(zip);
-				if (_folderName == null)
-					return;
-				string destinationFolder = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
-				if (Directory.Exists(destinationFolder))
+				Logger.WriteEvent("Bloom Pack already exists, asking...");
+				string title = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BloomPackInstaller",
+						"Bloom Pack Installer", "Displayed as the message box title");
+				string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.Replace",
+					"This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?");
+				msg = string.Format(msg, _folderName);
+				if (DialogResult.OK != MessageBox.Show(msg, title, MessageBoxButtons.OKCancel))
 				{
-					Logger.WriteEvent("Bloom Pack already exists, asking...");
-					string title = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BloomPackInstaller",
-							"Bloom Pack Installer", "Displayed as the message box title");
-					string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.Replace",
-						"This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?");
-					msg = string.Format(msg, _folderName);
-					if (DialogResult.OK != MessageBox.Show(msg, title, MessageBoxButtons.OKCancel))
-					{
-						_message.Text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.NotInstalled", "The Bloom collection will not be installed.");
-						_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton", "&Cancel");
-						return;
-					}
-					try
-					{
-						Logger.WriteEvent("Deleting existing Bloom Pack at " + destinationFolder);
-						DeleteExistingDirectory(destinationFolder);
-					}
-					catch (Exception error)
-					{
-						string text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.UnableToReplace", "Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running & try again. Otherwise, try again after restarting your computer.");
-						throw new ApplicationException(string.Format(text, destinationFolder), error);
-					}
+					_message.Text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.NotInstalled", "The Bloom collection will not be installed.");
+					_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton", "&Cancel");
+					return;
 				}
-				zip.Close();
+				try
+				{
+					Logger.WriteEvent("Deleting existing Bloom Pack at " + destinationFolder);
+					DeleteExistingDirectory(destinationFolder);
+				}
+				catch (Exception error)
+				{
+					string text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.UnableToReplace", "Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running & try again. Otherwise, try again after restarting your computer.");
+					throw new ApplicationException(string.Format(text, destinationFolder), error);
+				}
 			}
 			Logger.WriteEvent("Installing Bloom Pack " + _path);
 			_okButton.Enabled = false;
@@ -107,39 +103,75 @@ namespace Bloom.Collection.BloomPack
 			Directory.Delete(destinationFolder, true);
 		}
 
-		private string GetRootFolderName(ZipFile zip)
+		private string GetRootFolderName()
 		{
-			string fileName = null;
-			foreach (ZipEntry zipEntry in zip)
+			string rootDirectory = null;
+			ZipFile zip = null;
+			try
 			{
-				var parts = zipEntry.Name.Split(new[] { '/', '\\' });
-				if (fileName != null && fileName != parts[0])
+				zip = new ZipFile(_path);
+				foreach (ZipEntry zipEntry in zip)
 				{
-					string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.SingleCollectionFolder",
-						"Bloom Packs should have only a single collection folder at the top level of the zip file.");
-					_message.Text = msg;
-					pictureBox1.Image = _errorImage.Image;
-					_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton", "&Cancel");
-					return null;
+					var parts = zipEntry.Name.Split(new[] { '/', '\\' });
+					if (rootDirectory != null && rootDirectory != parts[0])
+					{
+						string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.SingleCollectionFolder",
+							"Bloom Packs should have only a single collection folder at the top level of the zip file.");
+						_message.Text = msg;
+						pictureBox1.Image = _errorImage.Image;
+						_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton", "&Cancel");
+						return null;
+					}
+					rootDirectory = parts[0];
 				}
-				fileName = parts[0];
 			}
-			return fileName;
+			finally
+			{
+				if (zip != null)
+					zip.Close();
+			}
+			return rootDirectory;
 		}
 
 		private void _backgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			//nb: we want exceptions to be uncaught, to be transferred up to the worker completed event
-
-			using (var zip = new ZipFile(_path))
+			_folderName = GetRootFolderName();
+			if (_folderName == null)
+				return;
+			// ZipFile internally converts all \ separators to / (at least on Linux). So using
+			// ZipFile instead of FastZip fixes https://jira.sil.org/browse/BL-1213.
+			ZipFile zip = null;
+			try
 			{
-				_folderName = GetRootFolderName(zip);
-				if (_folderName == null)
-					return;
-				zip.Close();
+				zip = new ZipFile(_path);
+				byte[] buffer = new byte[4096];     // 4K is optimum
+				foreach (ZipEntry entry in zip)
+				{
+					var fullOutputPath = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), entry.Name);
+					if (entry.IsDirectory)
+					{
+						Directory.CreateDirectory(fullOutputPath);
+						// In the SharpZipLib code, IsFile and IsDirectory are not defined exactly as inverse: a third
+						// (or fourth) type of entry might be possible.  In practice in BloomPacks, this should not be
+						// an issue.
+						continue;
+					}
+					var directoryName = Path.GetDirectoryName(fullOutputPath);
+					if (!String.IsNullOrEmpty(directoryName))
+						Directory.CreateDirectory(directoryName);
+					using (var instream = zip.GetInputStream(entry))
+					using (var writer = File.Create(fullOutputPath))
+					{
+						ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
+					}
+				}
 			}
-			var fastZip = new FastZip { CreateEmptyDirectories = true };
-			fastZip.ExtractZip(_path, ProjectContext.GetInstalledCollectionsDirectory(), null);
+			finally
+			{
+				if (zip != null)
+					zip.Close();
+			}
 
 			var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
 			CopyXMatterFoldersToWhereTheyBelong(newlyAddedFolderOfThePack);
