@@ -50,7 +50,6 @@ namespace Bloom.Book
 		event EventHandler FolderPathChanged;
 
 		BookInfo MetaData { get; set; }
-		void UpdateStyleSheetLinkPaths(HtmlDom printingDom);
 	}
 
 	public class BookStorage : IBookStorage
@@ -280,7 +279,6 @@ namespace Bloom.Book
 
 			SetBaseForRelativePaths(relocatableDom, _folderPath);
 			EnsureHasLinksToStylesheets(relocatableDom);
-			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
 
 			return relocatableDom;
 		}
@@ -297,7 +295,6 @@ namespace Bloom.Book
 
 			SetBaseForRelativePaths(relocatableDom, _folderPath);
 			EnsureHasLinksToStylesheets(relocatableDom);
-			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
 
 			return relocatableDom;
 		}
@@ -841,16 +838,6 @@ namespace Bloom.Book
 //
 //			return relativePath.Replace('/', Path.DirectorySeparatorChar);
 //		}
-
-		//TODO: Clean up this patch that is being done in emergency mode for a customer with a deadline
-		private  void UpdateStyleSheetLinkPaths(HtmlDom dom, IFileLocator fileLocator, IProgress log)
-		{
-			dom.UpdateStyleSheetLinkPaths(_fileLocator, _folderPath, log);
-		}
-		public void UpdateStyleSheetLinkPaths(HtmlDom printingDom)
-		{
-			printingDom.UpdateStyleSheetLinkPaths(_fileLocator, _folderPath, new NullProgress());
-		}
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.

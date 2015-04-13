@@ -453,7 +453,10 @@ namespace Bloom.web
 
 		private bool ProcessContent(IRequestInfo info, string localPath)
 		{
-			// as long as deal with simple string/bool properties or static methods we don't
+			if (localPath.EndsWith(".css"))
+			{
+				return ProcessCssFile(info, localPath);
+			}
 
 			switch (localPath)
 			{
@@ -546,6 +549,26 @@ namespace Bloom.web
 			if (!File.Exists(path))
 				return false;
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
+			info.ReplyWithFileContent(path);
+			return true;
+		}
+
+		private bool ProcessCssFile(IRequestInfo info, string localPath)
+		{
+			if  (CurrentBook == null) return false;
+
+			var path = localPath;
+			var pos = path.LastIndexOfAny(new[] { '\\', '/' });
+			if (pos > -1) path = path.Substring(pos + 1);
+
+			// try to find the css file
+			path = CurrentBook.GetFileLocator().LocateFile(path);
+			if (string.IsNullOrEmpty(path))
+				path = CurrentBook.GetFileLocator().LocateFile(localPath);
+
+			if (string.IsNullOrEmpty(path)) return false;
+
+			info.ContentType = "text/css";
 			info.ReplyWithFileContent(path);
 			return true;
 		}
