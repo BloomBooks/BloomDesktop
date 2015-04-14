@@ -124,8 +124,13 @@ namespace Bloom.CollectionTab
 
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-			var selection = (BookSelection) sender;
-			HighlightBookButton(selection.CurrentSelection.BookInfo);
+			if (sender == null) return;
+
+			var selection = (BookSelection)sender;
+			if ((selection.CurrentSelection != null) && (selection.CurrentSelection.BookInfo != null))
+			{
+				HighlightBookButton(selection.CurrentSelection.BookInfo);					
+			}
 		}
 
 		public int PreferredWidth
