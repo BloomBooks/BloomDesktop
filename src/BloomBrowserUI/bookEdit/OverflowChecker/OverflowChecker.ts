@@ -52,7 +52,7 @@ class OverflowChecker {
     }
 
     // Actual testable determination of Type I overflow or not
-    // 'public' for testing
+    // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
     public static IsOverflowingSelf(element: HTMLElement):boolean {
         // Ignore Topic divs as they are chosen from a list
         if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
@@ -87,7 +87,7 @@ class OverflowChecker {
     }
 
     // Actual testable determination of Type II overflow or not
-    // 'public' for testing
+    // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
     public static IsOverflowingMargins(element: HTMLElement) : boolean {
         // Ignore Topic divs as they are chosen from a list
         if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
@@ -125,15 +125,8 @@ class OverflowChecker {
         // Type 1 Overflow
         var $box = $(box);
         $box.removeClass('overflow');
-        if (OverflowChecker.IsOverflowingSelf(box)) {
+        if (OverflowChecker.IsOverflowingSelf(box) || OverflowChecker.HasImmediateSplitParentThatOverflows($box)) {
             $box.addClass('overflow');
-        } else {
-            //now, thing is, while the text may fit in our box, our box may not fit our parent. Or grandparent, etc.
-            //It could be that we could just do this on up the hierarchy? For now, here's the case we know is important,
-            // in the Origami pages, where the space allocated could be too small.
-            if (OverflowChecker.HasSplitParentThatOverflows($box)) {
-                $box.addClass('overflow');
-            }
         }
 
         var container = $box.closest('.marginBox');
@@ -149,7 +142,7 @@ class OverflowChecker {
                 $this.addClass('overflow'); // but it's this one that is actually overflowing
             }
             else {
-                if (!OverflowChecker.IsOverflowingSelf($this[0]) && !OverflowChecker.HasSplitParentThatOverflows($this)) {
+                if (!OverflowChecker.IsOverflowingSelf($this[0]) && !OverflowChecker.HasImmediateSplitParentThatOverflows($this)) {
                     $this.removeClass('overflow'); // might be a remnant from earlier overflow
                 }
             }
@@ -157,7 +150,10 @@ class OverflowChecker {
         OverflowChecker.UpdatePageOverflow(container.closest('.bloom-page'));
     } // end MarkOverflowInternal
 
-    static HasSplitParentThatOverflows(jQueryBox : JQuery) : boolean {
+    static HasImmediateSplitParentThatOverflows(jQueryBox : JQuery) : boolean {
+        //now, thing is, while the text may fit in our box, our box may not fit our parent. Or grandparent, etc.
+        //It could be that we could just do this on up the hierarchy? For now, here's the case we know is important,
+        // in the Origami pages, where the space allocated could be too small.
         var splitterParents = jQueryBox.parents('.split-pane-component-inner');
         if (splitterParents.length == 0) { return false; }
         return OverflowChecker.IsOverflowingSelf(splitterParents[0]);

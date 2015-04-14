@@ -41,7 +41,7 @@ var OverflowChecker = (function () {
         });
     };
     // Actual testable determination of Type I overflow or not
-    // 'public' for testing
+    // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
     OverflowChecker.IsOverflowingSelf = function (element) {
         // Ignore Topic divs as they are chosen from a list
         if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
@@ -71,7 +71,7 @@ var OverflowChecker = (function () {
         return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor || element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor;
     };
     // Actual testable determination of Type II overflow or not
-    // 'public' for testing
+    // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
     OverflowChecker.IsOverflowingMargins = function (element) {
         // Ignore Topic divs as they are chosen from a list
         if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
@@ -106,16 +106,8 @@ var OverflowChecker = (function () {
         // Type 1 Overflow
         var $box = $(box);
         $box.removeClass('overflow');
-        if (OverflowChecker.IsOverflowingSelf(box)) {
+        if (OverflowChecker.IsOverflowingSelf(box) || OverflowChecker.HasImmediateSplitParentThatOverflows($box)) {
             $box.addClass('overflow');
-        }
-        else {
-            //now, thing is, while the text may fit in our box, our box may not fit our parent. Or grandparent, etc.
-            //It could be that we could just do this on up the hierarchy? For now, here's the case we know is important,
-            // in the Origami pages, where the space allocated could be too small.
-            if (OverflowChecker.HasSplitParentThatOverflows($box)) {
-                $box.addClass('overflow');
-            }
         }
         var container = $box.closest('.marginBox');
         //NB: for some historical reason in March 2014 the calendar still uses textareas
@@ -129,14 +121,17 @@ var OverflowChecker = (function () {
                 $this.addClass('overflow'); // but it's this one that is actually overflowing
             }
             else {
-                if (!OverflowChecker.IsOverflowingSelf($this[0]) && !OverflowChecker.HasSplitParentThatOverflows($this)) {
+                if (!OverflowChecker.IsOverflowingSelf($this[0]) && !OverflowChecker.HasImmediateSplitParentThatOverflows($this)) {
                     $this.removeClass('overflow'); // might be a remnant from earlier overflow
                 }
             }
         });
         OverflowChecker.UpdatePageOverflow(container.closest('.bloom-page'));
     }; // end MarkOverflowInternal
-    OverflowChecker.HasSplitParentThatOverflows = function (jQueryBox) {
+    OverflowChecker.HasImmediateSplitParentThatOverflows = function (jQueryBox) {
+        //now, thing is, while the text may fit in our box, our box may not fit our parent. Or grandparent, etc.
+        //It could be that we could just do this on up the hierarchy? For now, here's the case we know is important,
+        // in the Origami pages, where the space allocated could be too small.
         var splitterParents = jQueryBox.parents('.split-pane-component-inner');
         if (splitterParents.length == 0) {
             return false;
