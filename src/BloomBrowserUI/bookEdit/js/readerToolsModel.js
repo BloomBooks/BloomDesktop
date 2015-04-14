@@ -1,4 +1,4 @@
-/// <reference path="interIframeChannel.ts" />
+﻿/// <reference path="interIframeChannel.ts" />
 /// <reference path="getIframeChannel.ts" />
 /// <reference path="synphonyApi.ts" />
 /// <reference path="libsynphony/bloom_lib.d.ts" />
@@ -724,7 +724,7 @@ var ReaderToolsModel = (function () {
 
     ReaderToolsModel.updateWholeBookCounts = function (pageSource) {
         model.bookPageWords = JSON.parse(pageSource);
-        model.displayBookTotals();
+        model.doMarkup();
     };
 
     ReaderToolsModel.prototype.displayBookTotals = function () {
