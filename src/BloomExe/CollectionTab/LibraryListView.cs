@@ -681,7 +681,7 @@ namespace Bloom.CollectionTab
 
 		private void HighlightBookButton(BookInfo bookInfo)
 		{
-			foreach (var btn in _primaryCollectionFlow.Controls.OfType<Button>())
+			foreach (var btn in AllBookButtons())
 			{
 				if (btn.Tag == bookInfo)
 					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
