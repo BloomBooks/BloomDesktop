@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Remoting.Contexts;
 using System.Text;
 using Bloom;
 using Bloom.Book;
@@ -122,6 +123,16 @@ namespace BloomTests.web
 			b.SetupGet(x => x.QuickTitleUserDisplay).Returns(title);
 			b.SetupGet(x => x.FolderPath).Returns(Path.GetTempPath);//TODO. this works at the moment, cause we just need some folder which exists
 			_bookInfoList.Add(b.Object);
+		}
+
+		[Test]
+		public void GetLocalPathWithoutQuery_HandlesNetworkDriveCorrectly()
+		{
+			var path = @"//someserver/somefolder/somebook.htm";
+			var url = path.ToLocalhost();
+			var request = new PretendRequestInfo(url);
+			var result = ServerBase.GetLocalPathWithoutQuery(request);
+			Assert.That(result, Is.EqualTo(path));
 		}
 	}
 
