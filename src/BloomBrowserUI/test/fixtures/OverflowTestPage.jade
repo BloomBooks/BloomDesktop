@@ -42,29 +42,3 @@ body
 	// Test#5
 	-var styles="font-family:Andika;padding: 2px;";
 	+standardTestField(name="Andika bloom-editable with only some padding should not overflow", style=styles) Test text
-
-	// Test#6
-	-var margins="width:25em;height:45px";
-	-var styles="font-family:Andika;font-size:20pt";
-	.marginBox(style=margins)
-		.bloom-translationGroup
-			+standardTestField(name="Test that expanding vertically past margins overflows", style=styles).expectToOverflow Too much test text to put on one line at 20pt font.
-
-	// Test#7
-	.marginBox(style=margins)
-		.bloom-translationGroup
-			+standardTestField(name="Test that not expanding vertically past margins does not overflow", style=styles) Just enough text.
-
-	// Test#8
-	-margins = "width:25em;height:90px";
-	.marginBox(style=margins)
-		+standardTranslationGroup(style=styles) Just enough text.
-		.bloom-translationGroup
-			+standardTestField(name="Test that multiple translation groups don't necessarily overflow", style=styles) Just enough text.
-
-	// Test#9
-	.marginBox(style=margins)
-		+standardTranslationGroup(style=styles) Just enough text.
-		.bloom-translationGroup
-			+standardTestField(name="Test that multiple translation groups expanding vertically past margins overflows", style=styles).expectToOverflow Too much test text to put on one line at 20pt font.
-

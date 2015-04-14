@@ -291,6 +291,7 @@ function MakeSourceTextDivForGroup(group) {
     $(divForBubble).removeClass(); //remove them all
     $(divForBubble).addClass("ui-sourceTextsForBubble");
     //don't want empty items in the bubble
+    //N.B. :hasNoText is defined above
     $(divForBubble).find("textarea:empty, div:hasNoText").each(function() {
         $(this).remove();
     });
@@ -399,11 +400,6 @@ function MakeSourceTextDivForGroup(group) {
               event: showEvents,
               ready: shouldShowAlways
           },
-          //events: {
-          //    render: function (event, api) {
-          //        api.elements.content.height(targetHeight);
-          //    }
-          //},
           style: {
                 tip: {
                     corner: true,
@@ -446,171 +442,6 @@ function SetupDeletable(containerDiv) {
         });
 
     return $(containerDiv);
-}
-
-// Actual testable determination of overflow or not
-jQuery.fn.IsOverflowing = function () {
-    var element = this[0];
-    // Ignore Topic divs as they are chosen from a list
-    if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
-        return false;
-    }
-    // We want to prevent an inner div from expanding past the borders set by any containing marginBox class.
-    var marginBoxParent = $(element).parents('.marginBox');
-    var parentBottom;
-    if(marginBoxParent && marginBoxParent.length > 0)
-        parentBottom = $(marginBoxParent[0]).offset().top + $(marginBoxParent[0]).outerHeight(true);
-    else
-        parentBottom = 999999;
-    var elemTop = parseInt($(element).offset().top);
-    var elemBottom = elemTop + $(element).outerHeight(false);
-    // console.log("Offset top: " + elemTop + " Outer Height: " + $(element).outerHeight(false));
-    // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
-    // This is because of the thin grey border on a focused input box.
-    // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
-    // so we'll apply the same 'fudge' factor to both comparisons.
-    var focusedBorderFudgeFactor = 2;
-
-    //The "basic book" template has a "Just Text" page which does some weird things to get vertically-centered
-    //text. I don't know why, but this makes the clientHeight 2 pixels larger than the scrollHeight once it
-    //is beyond its minimum height. We can detect that we're using this because it has this "firefoxHeight" data
-    //element. This problem also shows up (and is detectable the same way) in Big Book. Except it turns out the
-    //number of pixels to fudge is related to the point size. I think at base it's a preferred line spacing issue.
-    var growFromCenterVerticalFudgeFactor =0;
-    if($(element).data('firefoxheight')){
-        var fontSizeRemnant = GetEditor().GetCalculatedFontSizeInPoints($(element)) - 22;
-        if (fontSizeRemnant > 0) {
-            growFromCenterVerticalFudgeFactor = (fontSizeRemnant / 5) + 1;
-        }
-    }
-
-    //in the Picture Dictionary template, all words have a scrollheight that is 3 greater than the client height.
-    //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
-    // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
-    var shortBoxFudgeFactor = 4;
-
-    //console.log('s='+element.scrollHeight+' c='+element.clientHeight);
-
-    //
-    return  element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor ||
-            element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor ||
-            elemBottom > parentBottom + focusedBorderFudgeFactor;
-};
-
-// Checks for overflow and adds/removes the proper class
-// N.B. This function is specifically designed to be called from within AddOverflowHandler()
-function MarkOverflowInternal(box) {
-    var $this = $(box);
-    if ($this.IsOverflowing()) {
-        $this.addClass('overflow');
-        $this.closest('.bloom-page').addClass('pageOverflows');
-    } else {
-        $this.removeClass('overflow');
-        RemovePageOverflowIfAppropriate($this.closest('.bloom-page'));
-
-        //now, thing is, while the text may fit in our box, our box may not fit our parent. Or grandparent, etc.
-        //It could be that we could just do this on up the hiearchy? For now, here's the case we know is important,
-        // in the Origami pages, where the space allocated could be too small.
-        var splitterParents = $this.parents('.split-pane-component-inner');
-        if (splitterParents.length != 0) {
-            MarkOverflowInternal(splitterParents[0]);
-        }
-    } // If it's not here, this won't hurt anything.
-}
-
-// Make sure there are no boxes with class 'overflow' on the page before removing
-// the page-level overflow marker 'pageOverflows'
-function RemovePageOverflowIfAppropriate(page) {
-    var $page = $(page);
-    if (!$page.find('.overflow').length)
-        $page.removeClass('pageOverflows');
-}
-
-// When a div is overfull,
-// we add the overflow class and it gets a red background or something
-function AddOverflowHandler(container) {
-    var queryElementsThatCanOverflow = ".bloom-editable, .split-pane-component-inner, textarea";
-
-    //first, check to see if the stylesheet is going to give us overflow even for a single character:
-    $(container).find(".bloom-editable").each(function (e) {
-        var overflowy = $(this).css("overflow-y");
-        if (overflowy == 'hidden') {
-            // On custom pages we hide overflow in the y direction. This sometimes shows a scroll bar.
-            // It can show prematurely when there is only one line of text unless we force min-height
-            // to be exactly line-height. I don't know why. See BL-1034 premature scroll bars
-            // (Note: although line-height can have other units than min-height, the css function
-            // (at least in FF) always returns px, so we can just copy it).
-            $(this).css("min-height", $(this).css("line-height"));
-        } else {
-            // We want a min-height that is at least enough to display one line; otherwise we
-            // get confusing overflow indications when just a single character is typed.
-            // This problem can now be caused not just by template designers, but by end users
-            // setting line-spacing or font-size bigger than the template designer expected.
-            // So rather than making an ugly warning we just make sure every box is big enough to
-            // show at least one line of text.
-            // Note: we must use floats here; it's easy to get a situation where lineHeight works out
-            // to say 50.05px, if we then set lineHeight to 50, the div's scrollHeight is 51 and
-            // it's clientHeight (from min-height) is 50, and it is considered overflowing.
-            // (There's a fudgeFactor in the overflow code that might prevent this, but using
-            // floats seems safer.)
-            // First get rid of any min-height fudge added locally in the past; if we don't do
-            // this we can never reduce min-height even if the user reduces line-spacing or font size.
-            // Enhance: the previous behavior of displaying a warning might be more useful for
-            // template designers.
-            // Enhance: it would be nice to redo this and overflow marking when the user changes
-            // box format.
-            $(this).css('min-height', '');
-            var lineHeight = parseFloat($(this).css("line-height"), 10);
-            var minHeight = parseFloat($(this).css("min-height"), 10);
-            // We do this comparison so that if the template designer has set a larger min-height,
-            // we don't mess with it.
-            if (minHeight < lineHeight) {
-                $(this).css("min-height", lineHeight + 0.01);
-            }
-        }
-        // Remove any left-over warning about min-height is less than lineHeight (from earlier version of Bloom)
-        $(this).removeClass('Layout-Problem-Detected');
-        //if (lineHeight > minHeight) {
-        //    $(this).addClass('Layout-Problem-Detected');
-        //    $(this).attr("LayoutProblem", "min-height is less than lineHeight");
-        //} else {
-        //    $(this).removeClass('Layout-Problem-Detected');
-        //}
-    });
-
-    //NB: for some historical reason in March 2014 the calendar still uses textareas
-    var editablePageElements = $(container).find("div.bloom-editable, textarea");
-
-    //When they change, test for overflow
-    editablePageElements.on("keyup paste", function (e) {
-        var target = e.target;
-        // Give the browser time to get the pasted text into the DOM first, before testing for overflow
-        // GJM -- One place I read suggested that 0ms would work, it just needs to delay one 'cycle'.
-        //        At first I was concerned that this might slow typing, but it doesn't seem to.
-        setTimeout(function () {
-            MarkOverflowInternal(target);
-
-            //REVIEW: why is this here, in the overflow detection?
-
-            // This will make sure that any language tags on this div stay in position with editing.
-            // Reposition all language tips, not just the tip for this item because sometimes the edit moves other controls.
-            $(queryElementsThatCanOverflow).qtip('reposition');
-        }, 100); // 100 milliseconds
-        e.stopPropagation();
-    });
-
-    // Right now, test to see if any are already overflowing
-    $(container).find(queryElementsThatCanOverflow).each(function () {
-        MarkOverflowInternal(this);
-    });
-
-    // When the user resizes an origami pane, check the overflow again
-    $(container).find(".split-pane-component-inner").bind('_splitpaneparentresize', function () {
-        MarkOverflowInternal(this);
-        $(this).find(queryElementsThatCanOverflow).each(function () {
-            MarkOverflowInternal(this);
-        });
-    });
 }
 
 // Add various editing key handlers
@@ -822,9 +653,6 @@ function SetBookCopyrightAndLicenseButtonVisibility(container) {
     $(container).find("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
 }
 
-
-
-
 function DecodeHtml(encodedString) {
     return encodedString.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&#169;/g, "©");
 }
@@ -833,6 +661,9 @@ function GetEditor() {
     return new StyleEditor("/bloom/bookEdit");
 }
 
+function GetOverflowChecker() {
+    return new OverflowChecker();
+}
 
 function IsInTranslationMode() {
     var body = $("body");
@@ -1185,13 +1016,11 @@ function SetupElements(container) {
         });
     }
 
-
-
     // Add overflow event handlers so that when a div is overfull,
     // we add the overflow class and it gets a red background or something
-    // Moved overflowhandler after SetupImage because some pages with lots of placeholders
+    // Moved AddOverflowHandlers() after SetupImage() because some pages with lots of placeholders
     // were prematurely overflowing before the images were set to the right size.
-    AddOverflowHandler(container);
+    GetOverflowChecker().AddOverflowHandlers(container);
 
     var editor = GetEditor();
 
