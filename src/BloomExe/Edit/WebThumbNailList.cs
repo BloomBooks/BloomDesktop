@@ -709,8 +709,8 @@ namespace Bloom.Edit
 						"Invalid Move");
 					if (_pages[i].Book.LockedDown)
 					{
-						msg = LocalizationManager.GetString("PageList.CantMoveVernacular",
-							"Pages can't be re-ordered when you are translating a book");
+						msg = LocalizationManager.GetString("PageList.CantMoveWhenTranslating",
+							"Pages can not be re-ordered when you are translating a book");
 					}
 					MessageBox.Show(msg, caption);
 					UpdateItems(_pages); // reset to old state
