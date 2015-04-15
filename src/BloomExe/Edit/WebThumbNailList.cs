@@ -707,6 +707,11 @@ namespace Bloom.Edit
 						"That change is not allowed. Front matter and back matter pages must remain where they are");
 					var caption = LocalizationManager.GetString("PageList.CantMoveXMatterCaption",
 						"Invalid Move");
+					if (_pages[i].Book.LockedDown)
+					{
+						msg = LocalizationManager.GetString("PageList.CantMoveWhenTranslating",
+							"Pages can not be re-ordered when you are translating a book");
+					}
 					MessageBox.Show(msg, caption);
 					UpdateItems(_pages); // reset to old state
 					return;

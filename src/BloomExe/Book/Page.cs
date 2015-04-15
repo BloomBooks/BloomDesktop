@@ -91,8 +91,17 @@ namespace Bloom.Book
 
 		public bool CanRelocate
 		{
-			//review: for now, we're conflating "required" with "can't move"
-			get { return !Required; }
+			get
+			{
+				if(Required)
+					//review: for now, we're conflating "required" with "can't move"
+					return false; // front and back matter and similar can't move
+				// For now, can't move pages while translating a book.
+				// Enhance: possibly we may want to allow moving pages ADDED to the original book?
+				if (Book.LockedDown)
+					return false;
+				return true;
+			}
 		}
 
 		public Book Book { get; set; }
