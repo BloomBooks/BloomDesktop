@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="km" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.31.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="km" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.28.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
     <prop type="x-appversion">3.0.000.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
@@ -343,7 +343,6 @@
       </tuv>
     </tu>
     <tu tuid="Common.OK">
-      <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>OK</seg>
       </tuv>
@@ -605,6 +604,15 @@
       </tuv>
       <tuv xml:lang="km">
         <seg>ទំព័រ ក្រេឌីត</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Custom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Custom</seg>
+      </tuv>
+      <tuv xml:lang="km">
+        <seg>បង្កើត</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Front Cover">
