@@ -239,6 +239,20 @@ namespace Bloom.Publish
 			}
 			info.Uploader = _bookTransferrer.UserId;
 
+			if (_book.BookInfo.IsSuitableForMakingShells)
+			{
+				// Hopefully this message is never seen...there is supposed to be no way for an end user to create a template...so I think we can afford
+				// not to burden localizers with it.
+				if (MessageBox.Show(Form.ActiveForm,
+					@"This book is marked as suitable for making shells, that is, a new template like Basic Book containing blank pages for authoring a new book. "
+					+ @"Such books are normally only created and uploaded by HTML specialists. "
+					+ @"If this book is intended as a shell to translate, something is wrong, and you should get expert help before uploading this book."
+					+ "\n\n"
+					+ @"Do you want to go ahead?",
+					"Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+					return;
+			}
+
 			_progressBox.WriteMessage("Checking bloom version eligibility...");
 			if (!_bookTransferrer.IsThisVersionAllowedToUpload())
 			{
