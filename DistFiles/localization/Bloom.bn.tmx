@@ -1,0 +1,1350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tmx version="1.4">
+  <header srclang="bn" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.31.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.0.000.0</prop>
+    <prop type="x-hardlinebreakreplacement">\n</prop>
+  </header>
+  <body>
+    <tu tuid="Accordion.DecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ডিকোডযোগ্য পাঠক টুল</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.LeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>স্তরকৃত পাঠক টুল</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.More">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>More...</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>আরও…</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Book title in {lang}">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>বইয়ের শিরোনাম {lang} ভাষায়</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+      <tuv xml:lang="en">
+        <seg>Advanced Program Settings</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>উন্নত প্রোগ্রাম সেটিং</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+      <tuv xml:lang="en">
+        <seg>Book Making</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>বই তৈরি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+      <note>{0} is a language name.</note>
+      <tuv xml:lang="en">
+        <seg>Default Font for {0}</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>{0} -এর জন্য ডিফল্ট ফন্ট</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <tuv xml:lang="en">
+        <seg>Right to Left Writing System</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ডানদিক থেকে বাঁদিক লেখার ব্যবস্থা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+      <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      <tuv xml:lang="en">
+        <seg>Language 1</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ভাষা 1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+      <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <tuv xml:lang="en">
+        <seg>Language 2</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ভাষা 2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+      <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <tuv xml:lang="en">
+        <seg>Language 3</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ভাষা 3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+      <tuv xml:lang="en">
+        <seg>Languages</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ভাষাগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
+      <tuv xml:lang="en">
+        <seg>Vernacular Language</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>অ-ইংরেজি ভাষা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
+      <tuv xml:lang="en">
+        <seg>Remove</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>মুছুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+      <tuv xml:lang="en">
+        <seg>Bloom Collection Name</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>Bloom সংগ্রহের নাম</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.Country">
+      <tuv xml:lang="en">
+        <seg>Country</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>দেশ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.District">
+      <tuv xml:lang="en">
+        <seg>District</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>জেলা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+      <tuv xml:lang="en">
+        <seg>Project Information</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>প্রোজেক্ট তথ্য</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.Province">
+      <tuv xml:lang="en">
+        <seg>Province</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>প্রদেশ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.Restart">
+      <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
+      <tuv xml:lang="en">
+        <seg>Restart</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>আবার শুরু করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.deleteBook">
+      <tuv xml:lang="en">
+        <seg>Delete Book</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>বই মুছুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionTabLabel">
+      <tuv xml:lang="en">
+        <seg>Collections</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>সংগ্রহগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Collections">
+      <tuv xml:lang="en">
+        <seg>Collections</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>সংগ্রহগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.MakeBookUsingThisTemplate">
+      <tuv xml:lang="en">
+        <seg>Make a book using this source</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>এই উৎস ব্যবহার করে একটি বই তৈরি করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Open/CreateCollectionButton">
+      <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+      <tuv xml:lang="en">
+        <seg>Other Collection</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>অন্যান্য সংগ্রহ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Sample Shells">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Shells</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>নমুনা শেলগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SettingsButton">
+      <tuv xml:lang="en">
+        <seg>Settings</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>সেটিংগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Source Collection">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>উৎস সংগ্রহ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+      <tuv xml:lang="en">
+        <seg>Open Additional Collections Folder</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>অতিরিক্ত সংগ্রহ ফোল্ডার</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Templates">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Templates</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>টেমপ্লেটগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab._editBookButton">
+      <tuv xml:lang="en">
+        <seg>Edit this book</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>এই বই সম্পাদনা করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template Bloom Pack...</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>একটি পাঠক টেমপ্লেট Bloom প্যাক তৈরি করুন…</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
+      <note>get this clicking on BloomLibrary.org link in source collection</note>
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>উৎস সংগ্রহ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.bookSourceHeading">
+      <tuv xml:lang="en">
+        <seg>Sources For New Books</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>নতুন বইয়ের উৎস</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+      <tuv xml:lang="en">
+        <seg>More...</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>আরও…</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Cancel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Cancel</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>বাতিল করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.CancelButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Cancel</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>&amp;বাতিল করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.HelpButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Help</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>&amp;সাহায্য</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Next">
+      <note>Used for the Next button in wizards, like that used for making a New Collection</note>
+      <tuv xml:lang="en">
+        <seg>&amp;Next</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>&amp;পরবর্তী</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.NextButton">
+      <note>In a wizard, this button takes you to the next step.</note>
+      <tuv xml:lang="en">
+        <seg>Next</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পরবর্তী</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.OK">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>OK</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ঠিক আছে</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.OKButton">
+      <tuv xml:lang="en">
+        <seg>&amp;OK</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>&amp;ঠিক আছে</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.LettersInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters in this stage</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>এই স্তরে অক্ষরগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.MakeLetterWordList">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Open a Letter and Word List File</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>একটি অক্ষর এবং শব্দ তালিকা ফাইল খুলুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.SetUpStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Stages</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ধাপ সেট করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.Stage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ধাপ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.WordsInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Words in this stage</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>এই স্তরে অক্ষরগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ConfirmRemovePageDialog._messageLabel">
+      <tuv xml:lang="en">
+        <seg>This page will be permanently removed.</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>এই পৃষ্ঠাটি পাকাপাকিভাবে মুছে ফেলা হবে</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>টেক্সট</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.TextBox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text Box</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>টেক্সট বাক্স</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Edit">
+      <tuv xml:lang="en">
+        <seg>Edit</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>সম্পাদনা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Font">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ফন্ট</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.CharactersTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Characters</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>চরিত্রগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Create">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Create</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>তৈরি করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.MoreTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>More</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>আরও</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Style">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Style</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>শৈলী</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.StyleNameTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Style Name</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>শৈলীর নাম</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingExtraWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Extra Wide</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>বৃহৎ চওড়া</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingNormal">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>স্বাভাবিক</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wide</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>চওড়া</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>বইয়ের শিরোনাম {lang} ভাষায়</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.ChangeImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Image</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ছবি পরিবর্তন করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.PasteImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Paste Image</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>চিত্র প্রতিলেপন করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PageList.Heading">
+      <tuv xml:lang="en">
+        <seg>Pages</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পৃষ্ঠাগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Spacing">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Spacing</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ফাঁকা স্থান</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TemplatePagesList.Heading">
+      <tuv xml:lang="en">
+        <seg>Template Pages</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>টেমপ্লেট পৃষ্ঠা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Alphabet</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>বর্ণমালা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Text &amp; Image</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>প্রাথমিক টেক্সট ও ছবি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Text &amp; Picture</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>প্রাথমিক টেক্সট ও ছবি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Credits Page">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Credits Page</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>স্বীকৃতি পৃষ্ঠা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Custom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Custom</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>নিজস্ব</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Front Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Front Cover</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>সামনের কভার</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Image On Bottom</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>নিচের চিত্র</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Image in Middle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Image in Middle</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>মাঝের চিত্র</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Inside Back Cover</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পিছনের কভারের ভিতর দিক</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Just Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just Text</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>শুধুমাত্র টেক্সট</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Just a Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just a Picture</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>শুধুমাত্র একটি চিত্র</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Outside Back Cover</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পিছনের কভারের বাইরের দিক</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture On Bottom</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>নিচের ছবি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture in Middle</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>মাঝের ছবি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Title Page">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Title Page</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>শিরোনাম পৃষ্ঠা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._copyButton">
+      <tuv xml:lang="en">
+        <seg>Copy</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>অনুলিপি করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._cutButton">
+      <tuv xml:lang="en">
+        <seg>Cut</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>কাটা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._deletePageButton">
+      <tuv xml:lang="en">
+        <seg>Remove\n  Page</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পৃষ্ঠা মুছুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._duplicatePageButton">
+      <tuv xml:lang="en">
+        <seg>Duplicate\n   Page</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ডুপ্লিকেট\n পৃষ্ঠা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._pasteButton">
+      <tuv xml:lang="en">
+        <seg>Paste</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>প্রতিলেপন করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._undoButton">
+      <tuv xml:lang="en">
+        <seg>Undo</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পূর্বাবস্থা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.bilingual">
+      <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
+      <tuv xml:lang="en">
+        <seg>Two Languages</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>দুটি ভাষা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.monolingual">
+      <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+      <tuv xml:lang="en">
+        <seg>One Language</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>একটি ভাষা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.trilingual">
+      <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+      <tuv xml:lang="en">
+        <seg>Three Languages</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>তিনটি ভাষা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.BuildingReaderTemplatesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Building Reader Templates</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পাঠক টেমপ্লেট তৈরি করা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.Help Menu">
+      <tuv xml:lang="en">
+        <seg>Help</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>সাহায্য</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Using Reader Templates </seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পাঠক টেমপ্লেট ব্যবহার করা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Check For New Version</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>নতুন সংস্করণের জন্য দেখে নিন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.creditsMenuItem">
+      <tuv xml:lang="en">
+        <seg>About Bloom</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>Bloom সম্বন্ধে</seg>
+      </tuv>
+    </tu>
+    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+      <tuv xml:lang="en">
+        <seg>Don't Show This Again</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>আবার এটি দেখাবেন না</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Actual">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Actual</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>আসল</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.FoThisLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>For this Level</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>এই স্তরের জন্য</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.KeepInMind">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Keep in mind</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>মনে রাখবেন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Level">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level </seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>স্তর</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Max">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Max</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>সর্বোঃ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per page</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>প্রতি পৃষ্ঠা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per sentence</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>প্রতি বাক্য</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Predictability">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Predictability</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ভবিষ্যতবাচ্যতা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.SetUpLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Levels</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>স্তর সেট করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisBook">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Book</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>এই বইটি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Page</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>এই পৃষ্ঠাটি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Total">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>total</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>মোট</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Unique">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>unique</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>অদ্বিতীয়</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Vocabulary">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Vocabulary</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>শব্দ ভাণ্ডার</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.WordCounts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Word counts</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>শব্দ সংখ্যা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>উৎস সংগ্রহ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+      <tuv xml:lang="en">
+        <seg>Vernacular/Local Language Collection</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>অ-ইংরেজি সংগ্রহ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.Country">
+      <tuv xml:lang="en">
+        <seg>Country</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>দেশ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.District">
+      <tuv xml:lang="en">
+        <seg>District</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>জেলা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.Province">
+      <tuv xml:lang="en">
+        <seg>Province</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>প্রদেশ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.ProjectName">
+      <tuv xml:lang="en">
+        <seg>Project Name</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>প্রোজেক্ট নাম</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage">
+      <tuv xml:lang="en">
+        <seg>Welcome To Bloom!</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>Bloom -এ আপনাদের স্বাগত</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CreateNewCollection">
+      <tuv xml:lang="en">
+        <seg>Create New Collection</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>নতুন সংগ্রহ তৈরি করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Publish">
+      <tuv xml:lang="en">
+        <seg>Publish</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>প্রকাশ করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Languages">
+      <tuv xml:lang="en">
+        <seg>Languages</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ভাষাগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PleaseAgreeTerms">
+      <tuv xml:lang="en">
+        <seg>Please agree to terms of use</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>অনুগ্রহ করে ব্যবহারের শর্তাবলী স্বীকার করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Title">
+      <tuv xml:lang="en">
+        <seg>Title</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>শিরোনাম</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Level</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>স্তর যোগ করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Stage</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ধাপ যোগ করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.BookHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>বই</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.DecodableStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Stages</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ডিকোডযোগ্য ধাপ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>অক্ষরগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.Header">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters and Letter Combinations</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>অক্ষরগুলি ও অক্ষরের সমন্বয়</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LevelHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>স্তর</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LevelLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level </seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>স্তর</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Levels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reader Levels</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পাঠক স্তরগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Page</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পৃষ্ঠা</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReaderLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reader Levels</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পাঠক স্তরগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.RemoveLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Remove Level {0}</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>{0} স্তর মুছুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.RemoveStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Remove Stage {0}</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>{0} ধাপ মুছুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SelectedLetters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Previous and New Letters</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>পূর্ববর্তী ও পরবর্তী অক্ষরগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentenceHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sentence</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>বাক্য</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetupAlphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>set up the alphabet for this language.</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>এই ভাষার জন্য বর্ণমালা সেট করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>New Sight Words</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>নতুন দৃশ্য শব্দ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordsHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sight Words</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>দৃশ্য শব্দ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.StageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ধাপ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.StageLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage </seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ধাপ</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Stages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stages</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ধাপগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ToRemember">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Things to remember for this level:</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>এই স্তরের জন্য যা মনে রাখতে হবে</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.UniqueHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Unique</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>অদ্বিতীয়</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.SampleTextFolder">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Texts Folder</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>নমুনা টেক্সট ফোল্ডার</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.lettersHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>অক্ষরগুলি</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+      <tuv xml:lang="en">
+        <seg>Save Bloom Pack</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>Bloom প্যাক সংরক্ষণ করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template Bloom Pack</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>একটি পাঠক টেমপ্লেট Bloom প্যাক তৈরি করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Close">
+      <note>Shown in the button that closes the dialog after a successful report submission.</note>
+      <tuv xml:lang="en">
+        <seg>Close</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>বন্ধ করুন</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Basic Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Book</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>প্রাথমিক বই</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Big Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Big Book</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>বড় বই</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Decodable Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>ডিকোডযোগ্য পাঠক</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Leveled Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader</seg>
+      </tuv>
+      <tuv xml:lang="bn">
+        <seg>স্তরকৃত পাঠক</seg>
+      </tuv>
+    </tu>
+  </body>
+</tmx>
