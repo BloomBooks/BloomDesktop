@@ -993,8 +993,6 @@ function SetupElements(container) {
         SetupResizableElement(this);
     });
 
-
-
     SetOverlayForImagesWithoutMetadata(container);
 
     //note, the normal way is for the user to click the link on the qtip.
@@ -1063,8 +1061,12 @@ function SetupElements(container) {
         }
     });
 
-    //focus on the first editable field
-    $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
+    // focus on the first editable field
+    // HACK for BL-1139: except for some reason when the Reader tools are active this causes
+    // quick typing on a newly loaded page to get the cursor messed up. So for the Reader tools, the
+    // user will need to actually click in the div to start typing.
+    if (!model)
+        $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 }
 
 // Only put setup code here which is guaranteed to only be run once per page load.
@@ -1072,7 +1074,6 @@ function SetupElements(container) {
 function OneTimeSetup() {
     setupOrigami();
 }
-
 
 
 // ---------------------------------------------------------------------------------
