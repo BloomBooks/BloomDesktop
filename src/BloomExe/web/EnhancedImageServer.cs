@@ -40,6 +40,8 @@ namespace Bloom.web
 		private FileSystemWatcher _sampleTextsWatcher;
 		private bool _sampleTextsChanged = true;
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
+		private BloomFileLocator _fileLocator;
+		private string[] _bloomBrowserUiCssFiles;
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -50,8 +52,7 @@ namespace Bloom.web
 		{ }
 
 		public EnhancedImageServer(RuntimeImageProcessor cache): base(cache)
-		{
-		}
+		{ }
 
 		// We use two different locks to synchronize access to the methods of this class.
 		// This allows certain methods to run concurrently.
@@ -554,35 +555,42 @@ namespace Bloom.web
 
 		private bool ProcessCssFile(IRequestInfo info, string localPath)
 		{
-			if  (CurrentBook == null) return false;
+			// If this request is the full path to a real file, return the file contents now
+			// This will also handle languageDisplay.css, settingsCollectionStyles.css, and customCollectionStyles.css
+			if (File.Exists(localPath) && Path.IsPathRooted(localPath))
+			{
+				info.ContentType = "text/css";
+				info.ReplyWithFileContent(localPath);
+				return true;
+			}
 
+			// the _fileLocator will search the factory xmatter and templates in the correct order
+			if (_fileLocator == null)
+				_fileLocator = Program.OptimizedFileLocator;				
+
+			// if not a full path, try to find the correct file
 			var fileName = localPath;
 			var pos = fileName.LastIndexOfAny(new[] { '\\', '/' });
-			if (pos > -1) fileName = fileName.Substring(pos + 1);
+			if (pos > -1)
+				fileName = fileName.Substring(pos + 1);
 
-			// try to find the css file
-			var path = CurrentBook.GetFileLocator().LocateFile(fileName);
+			// try to find the css file in the xmatter and templates
+			var path = _fileLocator.LocateFile(fileName);
 
-			// we want these stylesheets to come from the book folder
-			if (path.Contains("languageDisplay.css"))
-			{
-				// look in the same directory as the book
-				var local = Path.Combine(CurrentBook.FolderPath, fileName);
-				if (File.Exists(local))
-					path = local;
-			}
-			// we want these stylesheets to come from the user's collection folder, not ones found in the templates directories
-			else if (path.Contains("CollectionStyles.css")) // settingsCollectionStyles & custonCollectionStyles
-			{
-				//look in the parent directory of the book
-				var pathInCollection = Path.Combine(Path.GetDirectoryName(CurrentBook.FolderPath), fileName);
-				if (File.Exists(pathInCollection))
-					path = pathInCollection;
-			}
-
+			// try to find the css file in the BloomBrowserUI directory
 			if (string.IsNullOrEmpty(path))
-				path = CurrentBook.GetFileLocator().LocateFile(localPath);
+			{
+				// collect the css files in the BloomBrowserUI directory
+				if (_bloomBrowserUiCssFiles == null)
+				{
+					var sourceDir = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
+					_bloomBrowserUiCssFiles = Directory.EnumerateFiles(sourceDir, "*.css", SearchOption.AllDirectories).ToArray();
+				}
 
+				path = _bloomBrowserUiCssFiles.FirstOrDefault(f => Path.GetFileName(f) == fileName);
+			}
+
+			// return false if the file was not found
 			if (string.IsNullOrEmpty(path)) return false;
 
 			info.ContentType = "text/css";

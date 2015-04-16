@@ -94,7 +94,7 @@ namespace Bloom.ImageProcessing
 				r = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
 			}
 
-			if (!string.IsNullOrEmpty(r) && File.Exists(r))
+			if (!string.IsNullOrEmpty(r))
 			{
 				// thumbnail requests have the thumbnail parameter set in the query string
 				var thumb = info.GetQueryString()["thumbnail"] != null;
