@@ -96,6 +96,10 @@ namespace Bloom.ImageProcessing
 			if (new[] {"/img/", "placeHolder", "Button"}.Any(s => originalPath.Contains(s)))
 				return originalPath;
 
+			// don't try to resize .svg files
+			if (originalPath.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+				return originalPath;
+
 			var cacheFileName = originalPath;
 
 			if (getThumbnail)

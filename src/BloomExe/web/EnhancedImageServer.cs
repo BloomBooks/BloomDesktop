@@ -8,7 +8,6 @@ using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
-using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Book;
 using System.IO;
@@ -557,12 +556,30 @@ namespace Bloom.web
 		{
 			if  (CurrentBook == null) return false;
 
-			var path = localPath;
-			var pos = path.LastIndexOfAny(new[] { '\\', '/' });
-			if (pos > -1) path = path.Substring(pos + 1);
+			var fileName = localPath;
+			var pos = fileName.LastIndexOfAny(new[] { '\\', '/' });
+			if (pos > -1) fileName = fileName.Substring(pos + 1);
 
 			// try to find the css file
-			path = CurrentBook.GetFileLocator().LocateFile(path);
+			var path = CurrentBook.GetFileLocator().LocateFile(fileName);
+
+			// we want these stylesheets to come from the book folder
+			if (path.Contains("languageDisplay.css"))
+			{
+				// look in the same directory as the book
+				var local = Path.Combine(CurrentBook.FolderPath, fileName);
+				if (File.Exists(local))
+					path = local;
+			}
+			// we want these stylesheets to come from the user's collection folder, not ones found in the templates directories
+			else if (path.Contains("CollectionStyles.css")) // settingsCollectionStyles & custonCollectionStyles
+			{
+				//look in the parent directory of the book
+				var pathInCollection = Path.Combine(Path.GetDirectoryName(CurrentBook.FolderPath), fileName);
+				if (File.Exists(pathInCollection))
+					path = pathInCollection;
+			}
+
 			if (string.IsNullOrEmpty(path))
 				path = CurrentBook.GetFileLocator().LocateFile(localPath);
 
