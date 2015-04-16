@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.MiscUI;
@@ -249,14 +250,30 @@ namespace Bloom
 				var updatingNotifier = new ToastNotifier();
 				updatingNotifier.Image.Image = Resources.Bloom.ToBitmap();
 				var version = updateInfo.FutureReleaseEntry.Version;
-				var size = updateInfo.ReleasesToApply.Sum(x => x.Filesize)/1024;
+				var releasesToDownload = updateInfo.ReleasesToApply;
+				var size = releasesToDownload.Sum(x => x.Filesize)/1024;
 				var updatingMsg = String.Format(LocalizationManager.GetString("CollectionTab.Updating", "Downloading update to {0} ({1}K)"), version, size);
 				Palaso.Reporting.Logger.WriteEvent("Squirrel: "+updatingMsg);
 				updatingNotifier.Show(updatingMsg, "", 5);
 
-				await manager.DownloadReleases(updateInfo.ReleasesToApply, x => progress(x / 3 + 33));
+				var sb = new StringBuilder("Squirrel update downloading " + releasesToDownload.Count + " release files starting at" + DateTime.Now + ":");
+				foreach (var release in releasesToDownload)
+				{
+					sb.Append(" ");
+					sb.Append(release.Filename);
+					sb.Append("(");
+					sb.Append(release.Filesize);
+					sb.Append(")");
+				}
+				Palaso.Reporting.Logger.WriteEvent(sb.ToString());
+
+				await manager.DownloadReleases(releasesToDownload, x => progress(x / 3 + 33));
+
+				Palaso.Reporting.Logger.WriteEvent("Squirrel update download succeeded at " + DateTime.Now);
 
 				newInstallDirectory = await manager.ApplyReleases(updateInfo, x => progress(x / 3 + 66));
+
+				Palaso.Reporting.Logger.WriteEvent("Squirrel update finished applying updates at " + DateTime.Now);
 
 				await manager.CreateUninstallerRegistryEntry();
 			}
@@ -271,6 +288,7 @@ namespace Bloom
 					// it are not part of the sequence on the web site at all, or even if there's
 					// some sort of discontinuity in the sequence of deltas.
 					ignoreDeltaUpdates = true;
+					Palaso.Reporting.Logger.WriteEvent("Squirrel update incremental download failed; trying whole package");
 					goto retry;
 				}
 
