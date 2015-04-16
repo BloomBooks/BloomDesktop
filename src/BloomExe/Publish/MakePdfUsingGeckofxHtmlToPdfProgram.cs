@@ -38,7 +38,8 @@ namespace Bloom.Publish
 			var runner = new CommandLineRunner();
 			string exePath;
 			var bldr = new StringBuilder();
-			var loc = Assembly.GetExecutingAssembly().Location;
+			// Codebase is reliable even when Resharper copies the EXE somewhere else for testing.
+			var loc = Assembly.GetExecutingAssembly().CodeBase.Substring("file:///".Length);
 			var execDir = Path.GetDirectoryName(loc);
 			var fromDirectory = String.Empty;
 			if (Environment.OSVersion.Platform == PlatformID.Unix)

@@ -18,6 +18,12 @@ namespace Bloom.web
 	public abstract class ServerBase : IDisposable
 	{
 		/// <summary>
+		/// Prefix we add to http://localhost:8089 in all our urls. I'm not sure why...possibly to guard against
+		/// some other program trying to use this port?
+		/// </summary>
+		internal const string BloomUrlPrefix = "/bloom/";
+
+		/// <summary>
 		/// Listens for requests on "http://localhost:8089/bloom/"
 		/// </summary>
 		private readonly HttpListener _listener;
@@ -214,7 +220,7 @@ namespace Bloom.web
 		protected virtual bool ProcessRequest(IRequestInfo info)
 		{
 			// process request for directory index
-			var requestedPath = info.LocalPathWithoutQuery.Substring(7);
+			var requestedPath = CorrectedLocalPath(info).Substring(7);
 			if (info.RawUrl.EndsWith("/") && (Directory.Exists(requestedPath)))
 			{
 				info.WriteError(403, "Directory listing denied");
@@ -247,19 +253,30 @@ namespace Bloom.web
 			info.WriteError(404);
 		}
 
-		protected static string GetLocalPathWithoutQuery(IRequestInfo info)
+		protected internal static string CorrectedLocalPath(IRequestInfo info)
+		{
+			var result = info.LocalPathWithoutQuery;
+			if (info.RawUrl.StartsWith(BloomUrlPrefix + "//"))
+			{
+				// for some reason Url.LocalPath strips out two of the three slashes that we get
+				// with network drive paths when we stick /bloom/ in front of a path like //mydrive/myfolder/...
+				result = EnhancedImageServer.BloomUrlPrefix + "//" + result.Substring(EnhancedImageServer.BloomUrlPrefix.Length);
+			}
+			return result;
+		}
+
+		protected internal static string GetLocalPathWithoutQuery(IRequestInfo info)
 		{
 			// Note that LocalPathWithoutQuery removes all % escaping from the URL.
-			var r = info.LocalPathWithoutQuery;
-			const string slashBloomSlash = "/bloom/";
-			if (r.StartsWith(slashBloomSlash))
-				r = r.Substring(slashBloomSlash.Length);
+			var r = CorrectedLocalPath(info);
+			if (r.StartsWith(BloomUrlPrefix))
+				r = r.Substring(BloomUrlPrefix.Length);
 			return r;
 		}
 
 		public static string PathEndingInSlash
 		{
-			get { return "http://localhost:8089/bloom/"; }
+			get { return "http://localhost:8089" + BloomUrlPrefix; }
 		}
 
 		public static string GetContentType(string extension)

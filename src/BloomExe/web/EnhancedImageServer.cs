@@ -171,7 +171,16 @@ namespace Bloom.web
 				writer.Close();
 			}
 			var uri = new Uri(pathToSimulatedPageFile);
-			return new SimulatedPageFile() { Key = uri.AbsoluteUri };
+
+			var absoluteUri = uri.AbsoluteUri;
+			if (pathToSimulatedPageFile.StartsWith("//"))
+			{
+				// Path is something like //someserver/somefolder/book.
+				// For some reason absoluteUri generates file://someserver...
+				// But firefox needs three more slashes: file://///someserver...
+				absoluteUri = "file:///" + absoluteUri.Substring("file:".Length);
+			}
+			return new SimulatedPageFile() { Key = absoluteUri };
 		}
 
 		private static void FixStyleLinkReferences(HtmlDom dom)

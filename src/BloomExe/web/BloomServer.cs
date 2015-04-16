@@ -40,7 +40,7 @@ namespace Bloom.web
 			if (base.ProcessRequest(info))
 				return true;
 
-			var r = info.LocalPathWithoutQuery;
+			var r = CorrectedLocalPath(info);
 			const string slashBloomSlash = "/bloom/";
 			if (r.StartsWith(slashBloomSlash))
 				r = r.Substring(slashBloomSlash.Length);
