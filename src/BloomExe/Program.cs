@@ -565,20 +565,24 @@ namespace Bloom
 
 			while (true)
 			{
-				//If it looks like the 1st time, put up the create collection with the welcome.
-				//The user can cancel that if they want to go looking for a collection on disk.
-				if(Settings.Default.MruProjects.Latest == null)
-				{
-					var path = NewCollectionWizard.CreateNewCollection();
-					if (!string.IsNullOrEmpty(path) && File.Exists(path))
-					{
-						OpenCollection(path);
-						return;
-					}
-				}
+				// We decided to stop doing this (BL-1229) since the wizard can feel like part
+				// of installation that might be irrevocable.
+				////If it looks like the 1st time, put up the create collection with the welcome.
+				////The user can cancel that if they want to go looking for a collection on disk.
+				//if(Settings.Default.MruProjects.Latest == null)
+				//{
+				//	var path = NewCollectionWizard.CreateNewCollection();
+				//	if (!string.IsNullOrEmpty(path) && File.Exists(path))
+				//	{
+				//		OpenCollection(path);
+				//		return;
+				//	}
+				//}
 
 				using (var dlg = _applicationContainer.OpenAndCreateCollectionDialog())
 				{
+					dlg.StartPosition = FormStartPosition.Manual; // try not to have it under the splash screen
+					dlg.SetDesktopLocation(50,50);
 					if (dlg.ShowDialog() != DialogResult.OK)
 					{
 						Application.Exit();
