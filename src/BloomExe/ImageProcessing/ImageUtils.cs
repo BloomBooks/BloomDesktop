@@ -39,7 +39,7 @@ namespace Bloom.ImageProcessing
 			if(string.IsNullOrEmpty(imageInfo.FileName))
 				return false;
 
-			return new[] { ".jpg", ".jpeg" }.Contains(Path.GetExtension(imageInfo.FileName).ToLower());
+			return new[] { ".jpg", ".jpeg" }.Contains(Path.GetExtension(imageInfo.FileName).ToLowerInvariant());
 		}
 
 		/// <summary>
@@ -175,7 +175,7 @@ namespace Bloom.ImageProcessing
 			foreach(string path in imageFiles)
 			{
 
-				if(Path.GetFileName(path).ToLower() == "placeholder.png")
+				if (Path.GetFileName(path).ToLowerInvariant() == "placeholder.png")
 					return;
 
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);

@@ -492,7 +492,7 @@ namespace Bloom.Book
 
 			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
 			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm"));
-			candidates.RemoveAll((name) => name.ToLower().Contains("configuration"));
+			candidates.RemoveAll((name) => name.ToLowerInvariant().Contains("configuration"));
 			if (candidates.Count == 1)
 				return candidates[0];
 
@@ -671,7 +671,7 @@ namespace Bloom.Book
 		{
 			if (!IsUserFolder)
 			{
-				if (fileName.ToLower().Contains("xmatter") && ! fileName.ToLower().StartsWith("factory-xmatter"))
+				if (fileName.ToLowerInvariant().Contains("xmatter") && !fileName.ToLower().StartsWith("factory-xmatter"))
 				{
 					return; //we don't want to copy custom xmatters around to the program files directory, template directories, the Bloom src code folders, etc.
 				}
@@ -744,7 +744,7 @@ namespace Bloom.Book
 			catch (Exception e)
 			{
 				if(documentPath.Contains(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles))
-					|| documentPath.ToLower().Contains("program"))//english only
+					|| documentPath.ToLowerInvariant().Contains("program"))//english only
 				{
 					Logger.WriteEvent("Could not update file {0} because it was in the program directory.", documentPath);
 					return;

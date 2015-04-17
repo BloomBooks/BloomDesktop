@@ -48,7 +48,7 @@ namespace Bloom.SendReceive
 			//_formWithContextForInvokingErrorDialogs = formWithContextForInvokingErrorDialogs;
 
 			//we don't do chorus on our source tree
-			SendReceiveDisabled = !Settings.Default.ShowSendReceive || !chorusSystem.DidLoadUpCorrectly || chorusSystem.ProjectFolderConfiguration.FolderPath.ToLower().Contains("distfiles");
+			SendReceiveDisabled = !Settings.Default.ShowSendReceive || !chorusSystem.DidLoadUpCorrectly || chorusSystem.ProjectFolderConfiguration.FolderPath.ToLowerInvariant().Contains("distfiles");
 
 			if (!SendReceiveDisabled)
 			{

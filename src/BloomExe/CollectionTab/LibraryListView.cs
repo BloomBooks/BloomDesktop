@@ -398,7 +398,7 @@ namespace Bloom.CollectionTab
 						if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
 						{
 							loadedAtLeastOneBook = true;
-							AddOneBook(bookInfo, flowLayoutPanel, collection.Name.ToLower() == "templates");
+							AddOneBook(bookInfo, flowLayoutPanel, collection.Name.ToLowerInvariant() == "templates");
 						}
 					}
 				}

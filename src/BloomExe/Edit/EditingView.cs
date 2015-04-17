@@ -462,7 +462,7 @@ namespace Bloom.Edit
 					return;
 				}
 
-				if (anchor.Href.ToLower().StartsWith("http")) //will cover https also
+				if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
 				{
 					// do not open in external browser if localhost...except for some links in the accordion
 					if (anchor.Href.ToLowerInvariant().StartsWith(ServerBase.PathEndingInSlash))
@@ -475,7 +475,7 @@ namespace Bloom.Edit
 					ge.Handled = true;
 					return;
 				}
-				if (anchor.Href.ToLower().StartsWith("file")) //source bubble tabs
+				if (anchor.Href.ToLowerInvariant().StartsWith("file")) //source bubble tabs
 				{
 					ge.Handled = false; //let gecko handle it
 					return;
@@ -599,7 +599,7 @@ namespace Bloom.Edit
 						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
 					}
 					//they pasted a path to a png
-					else if(Path.GetExtension(clipboardImage.OriginalFilePath).ToLower() == ".png")
+					else if (Path.GetExtension(clipboardImage.OriginalFilePath).ToLowerInvariant() == ".png")
 					{
 						Logger.WriteMinorEvent("[Paste Image] Pasting png file {0}", clipboardImage.OriginalFilePath);
 						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
@@ -650,7 +650,7 @@ namespace Bloom.Edit
 			foreach (var n in target.Parent.ChildNodes)
 			{
 				imageElement = n as GeckoHtmlElement;
-				if (imageElement != null && imageElement.TagName.ToLower() == "img")
+				if (imageElement != null && imageElement.TagName.ToLowerInvariant() == "img")
 				{
 					return imageElement;
 				}
@@ -701,7 +701,7 @@ namespace Bloom.Edit
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
 
 			//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
-			if (!currentPath.ToLower().Contains("placeholder") && File.Exists(existingImagePath))
+			if (!currentPath.ToLowerInvariant().Contains("placeholder") && File.Exists(existingImagePath))
 			{
 				try
 				{

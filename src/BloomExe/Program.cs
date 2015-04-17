@@ -116,7 +116,8 @@ namespace Bloom
 				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
 				//default is to allow tracking
-				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLower() == "yes" || feedbackSetting.ToLower() == "true";
+				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
+					|| feedbackSetting.ToLowerInvariant() == "true";
 
 				using (new DesktopAnalytics.Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), allowTracking))
 
@@ -126,7 +127,7 @@ namespace Bloom
 					// do not show the registration dialog if bloom was started for a special purpose
 					if (args.Length > 0) _supressRegistrationDialog = true;
 
-					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
+					if (args.Length == 1 && args[0].ToLowerInvariant().EndsWith(".bloompack"))
 					{
 						SetUpErrorHandling();
 						using (_applicationContainer = new ApplicationContainer())
@@ -222,7 +223,7 @@ namespace Bloom
 
 						if (args.Length == 1)
 						{
-							Debug.Assert(args[0].ToLower().EndsWith(".bloomcollection")); // Anything else handled above.
+							Debug.Assert(args[0].ToLowerInvariant().EndsWith(".bloomcollection")); // Anything else handled above.
 							Settings.Default.MruProjects.AddNewPath(args[0]);
 						}
 
@@ -332,7 +333,7 @@ namespace Bloom
 
 		private static bool IsBloomBookOrder(string[] args)
 		{
-			return args.Length == 1 && !args[0].ToLower().EndsWith(".bloomcollection");
+			return args.Length == 1 && !args[0].ToLowerInvariant().EndsWith(".bloomcollection");
 		}
 
 		private static void Startup(object sender, EventArgs e)
@@ -906,7 +907,7 @@ namespace Bloom
 		/// <returns>The number of running Bloom instances</returns>
 		public static int GetRunningBloomProcessCount()
 		{
-			var bloomProcessCount = Process.GetProcesses().Count(p => p.ProcessName.ToLower().Contains("bloom"));
+			var bloomProcessCount = Process.GetProcesses().Count(p => p.ProcessName.ToLowerInvariant().Contains("bloom"));
 
 			// This is your count on Windows.
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
@@ -914,7 +915,7 @@ namespace Bloom
 
 			// On Linux, the process name is usually "mono-sgen" or something similar, but not all processes
 			// with this name are instances of Bloom.
-			var processes = Process.GetProcesses().Where(p => p.ProcessName.ToLower().StartsWith("mono"));
+			var processes = Process.GetProcesses().Where(p => p.ProcessName.ToLowerInvariant().StartsWith("mono"));
 
 			// DO NOT change this foreach loop into a LINQ expression. It takes longer to complete if you do.
 			foreach (var p in processes)

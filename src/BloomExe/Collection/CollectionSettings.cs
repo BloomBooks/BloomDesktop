@@ -449,10 +449,10 @@ namespace Bloom.Collection
 		{
 			foreach (var candidate in new[] { "Andika", "Gentium", "Charis", "Paduak"/*Myanmar*/})
 			{
-				string lower = candidate.ToLower();
+				string lower = candidate.ToLowerInvariant();
 				if (FontFamily.Families.FirstOrDefault(f =>
 														   {
-															   return f.Name.ToLower() == lower;
+															   return f.Name.ToLowerInvariant() == lower;
 														   }) != null)
 				{
 					return candidate;

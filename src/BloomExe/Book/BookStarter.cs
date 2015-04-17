@@ -81,7 +81,7 @@ namespace Bloom.Book
 		private string GetPathToHtmlFile(string folder)
 		{
 			var candidates = from x in Directory.GetFiles(folder, "*.htm")
-							 where !(x.ToLower().EndsWith("configuration.htm"))
+							 where !(x.ToLowerInvariant().EndsWith("configuration.htm"))
 							 select x;
 			if (candidates.Count() == 1)
 				return candidates.First();
@@ -448,11 +448,11 @@ namespace Bloom.Book
 			foreach (var filePath in Directory.GetFiles(sourcePath))
 			{
 				//better to not just copy the old thumbnail, as the on in the library may well need to look different
-				if (Path.GetFileNameWithoutExtension(filePath).ToLower() == "thumbnail")
+				if (Path.GetFileNameWithoutExtension(filePath).ToLowerInvariant() == "thumbnail")
 					continue;
 				if (Path.GetFileNameWithoutExtension(filePath).StartsWith(".")) //.guidsForInstaller.xml
 					continue;
-				var ext = Path.GetExtension(filePath).ToLower();
+				var ext = Path.GetExtension(filePath).ToLowerInvariant();
 				if (new String[] {".jade", ".less"}.Any(ex => ex == ext))
 					continue;
 				File.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));

@@ -604,7 +604,7 @@ namespace Bloom.Edit
 					classes, since we can't write a rule in css3 that peeks into a child attribute.
 				*/
 				var pageClasses = pageThumbnail.GetStringAttribute("class").Split(new[] {' '});
-				var cssClass = pageClasses.FirstOrDefault(c => c.ToLower().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
+				var cssClass = pageClasses.FirstOrDefault(c => c.ToLowerInvariant().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
 				if (!string.IsNullOrEmpty(cssClass))
 					pageContainer.SetAttribute("class", "pageContainer " + cssClass);
 
