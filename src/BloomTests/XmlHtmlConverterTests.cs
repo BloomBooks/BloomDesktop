@@ -45,6 +45,28 @@ namespace BloomTests
 			}
 		}
 
+		/// <summary>
+		/// I put this test in because (while working on BL-1222) I came across some alleged HTML that contained
+		/// u elements closed in the XML way (closing slash, instead of separate close tag) which is not allowed
+		/// in HTML 5. However, I didn't have to change the code to make it pass; both kinds of empty u/i/b element
+		/// are removed entirely. Still, just in case that changes, this makes sure it doesn't change to something
+		/// invalid.
+		/// </summary>
+		[Test]
+		public void SaveAsHTML_EmptyUbi_DoesNotContract()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><div data-book='test'/>Text with <u /> and <b /> and <i></i> works</body></html>");
+			using (var temp = new TempFile())
+			{
+				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+				var text = File.ReadAllText(temp.Path);
+				Assert.That(text, Is.Not.StringContaining("<u />"));
+				Assert.That(text, Is.Not.StringContaining("<b />"));
+				Assert.That(text, Is.Not.StringContaining("<i />"));
+			}
+		}
+
 		[Test]
 		public void GetXmlDomFromHtml_HasBrTags_TagsNotDoubled()
 		{
