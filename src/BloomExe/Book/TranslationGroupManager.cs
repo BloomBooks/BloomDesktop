@@ -245,7 +245,7 @@ namespace Bloom.Book
 		private static void StripOutText(XmlNode element)
 		{
 			var listToRemove = new List<XmlNode>();
-			foreach (XmlNode node in element.SelectNodes("descendant-or-self::*[(self::p or self::br) and not(contains(@class,'bloom-cloneToOtherLanguages'))]"))
+			foreach (XmlNode node in element.SelectNodes("descendant-or-self::*[(self::p or self::br or self::u or self::b or self::i) and not(contains(@class,'bloom-cloneToOtherLanguages'))]"))
 			{
 				listToRemove.Add(node);
 			}

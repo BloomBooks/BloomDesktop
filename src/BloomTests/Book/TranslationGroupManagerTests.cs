@@ -270,6 +270,31 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void UpdateContentLanguageClasses_PrototypeHasUnderlinedText_CopyHasNone()
+		{
+			var contents = @"<div class='bloom-page numberedPage A5Portrait bloom-monolingual'
+							id='f4a22289-1755-4b79-afc1-5d20eaa892fe'>
+<div class='marginBox'>
+  <div class='bloom-translationGroup normal-style'>
+	<div style='' class='bloom-editable bloom-content1' contenteditable='true'
+		lang='en'>The <i>Mother</i> said, <u>Nurse!</u>
+			The Nurse <b>answered</b>.</div>
+</div></div></div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+
+			TranslationGroupManager.PrepareElementsInPageOrDocument((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _collectionSettings.Object);
+
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='xyz']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and contains(., 'The Mother')]", 1);
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='fr']/u");
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='fr']/b");
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@lang='fr']/i");
+		}
+
+		[Test]
 		public void UpdateContentLanguageClasses_PrototypeElementHasImageContainer_ImageContainerCopiedToNewSibling()
 		{
 			const string contents = @"<div class='bloom-page'>
