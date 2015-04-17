@@ -99,9 +99,11 @@ namespace Bloom.Publish
 				// and continue to show it using that.
 			}
 #endif
-
+			// Escaping characters like # and % twice is needed to ensure getting the pdf file
+			// pathname through to our local server.  See https://jira.sil.org/browse/BL-951.
+			var doubleEscaped = pdfFile.EscapeCharsForHttp().EscapeCharsForHttp();
 			var url = string.Format("{0}{1}?file=/bloom/{2}", Bloom.web.ServerBase.PathEndingInSlash,
-				FileLocator.GetFileDistributedWithApplication("pdf/web/viewer.html"), pdfFile);
+				FileLocator.GetFileDistributedWithApplication("pdf/web/viewer.html"), doubleEscaped);
 
 			var browser = ((GeckoWebBrowser)_pdfViewerControl);
 			browser.Navigate(url);
