@@ -417,6 +417,7 @@
 			this._collectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._collectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._collectionTab.Size = new System.Drawing.Size(103, 71);
+			this._collectionTab.TextChanged += HandleTabTextChanged;
 			this._collectionTab.Text = "Collections";
 			this._collectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
@@ -438,6 +439,7 @@
 			this._editTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._editTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._editTab.Size = new System.Drawing.Size(69, 71);
+			this._editTab.TextChanged += HandleTabTextChanged;
 			this._editTab.Text = "Edit";
 			this._editTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
@@ -461,6 +463,7 @@
 			this._publishTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._publishTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._publishTab.Size = new System.Drawing.Size(83, 71);
+			this._publishTab.TextChanged += HandleTabTextChanged;
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			// 
