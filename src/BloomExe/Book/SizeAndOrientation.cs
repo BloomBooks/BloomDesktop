@@ -93,7 +93,7 @@ namespace Bloom.Book
 
 		public static SizeAndOrientation FromString(string name)
 		{
-			var nameLower = name.ToLower();
+			var nameLower = name.ToLowerInvariant();
 			var startOfOrientationName = Math.Max(nameLower.IndexOf("landscape"), nameLower.IndexOf("portrait"));
 			if(startOfOrientationName == -1)
 			{
@@ -129,8 +129,8 @@ namespace Bloom.Book
 			foreach (XmlElement link in dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
 				var fileName = link.GetStringAttribute("href");
-				if (fileName.ToLower().Contains("mode") || fileName.ToLower().Contains("page") ||
-					fileName.ToLower().Contains("matter") || fileName.ToLower().Contains("languagedisplay"))
+				if (fileName.ToLowerInvariant().Contains("mode") || fileName.ToLowerInvariant().Contains("page") ||
+					fileName.ToLowerInvariant().Contains("matter") || fileName.ToLowerInvariant().Contains("languagedisplay"))
 					continue;
 
 				fileName = fileName.Replace("file://", "").Replace("%5C", "/").Replace("%20", " ");
@@ -180,7 +180,7 @@ namespace Bloom.Book
 			string sao = defaultIfMissing;
 			foreach (var part in firstPage.GetStringAttribute("class").SplitTrimmed(' '))
 			{
-				if (part.ToLower().Contains("portrait") || part.ToLower().Contains("landscape"))
+				if (part.ToLowerInvariant().Contains("portrait") || part.ToLowerInvariant().Contains("landscape"))
 				{
 					sao = part;
 					break;
@@ -220,7 +220,7 @@ namespace Bloom.Book
 			classes = "";
 			foreach (var part in parts)
 			{
-				if (!part.ToLower().Contains(substring.ToLower()))
+				if (!part.ToLowerInvariant().Contains(substring.ToLower()))
 					classes += part + " ";
 			}
 			xmlElement.SetAttribute("class", classes.Trim());

@@ -59,7 +59,8 @@ namespace Bloom.Book
 		{
 			foreach (var path in Directory.EnumerateFiles(folderPath).Where(s => s.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)))
 			{
-				if ((path.ToLower() == "placeholder.png") || path.ToLower() == ("license.png") || path.ToLower() == ("thumbnail.png"))
+				if ((path.ToLowerInvariant() == "placeholder.png") || path.ToLowerInvariant() == ("license.png")
+					|| path.ToLowerInvariant() == ("thumbnail.png"))
 					continue;
 				yield return path;
 			}
@@ -145,7 +146,7 @@ namespace Bloom.Book
 			foreach (string path in imageFiles)
 			{
 
-				if (Path.GetFileName(path).ToLower() == "placeholder.png")
+				if (Path.GetFileName(path).ToLowerInvariant() == "placeholder.png")
 					return;
 
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);

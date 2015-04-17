@@ -301,7 +301,7 @@ namespace Bloom.Collection
 			ListViewItem itemForFactoryDefault = null;
 			foreach(var pack in _xmatterPackFinder.All)
 			{
-				if (packsToSkip.Any(s => pack.Key.ToLower().Contains(s.ToLower())))
+				if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
 					continue;
 
 				var item = _xmatterList.Items.Add(pack.Key);
@@ -398,19 +398,19 @@ namespace Bloom.Collection
 
 		private void _fontComboLanguage1_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if(_fontComboLanguage1.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage1FontName.ToLower())
+			if (_fontComboLanguage1.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.DefaultLanguage1FontName.ToLower())
 				ChangeThatRequiresRestart();
 		}
 
 		private void _fontComboLanguage2_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (_fontComboLanguage2.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage2FontName.ToLower())
+			if (_fontComboLanguage2.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.DefaultLanguage2FontName.ToLower())
 				ChangeThatRequiresRestart();
 		}
 
 		private void _fontComboLanguage3_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (_fontComboLanguage3.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage3FontName.ToLower())
+			if (_fontComboLanguage3.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.DefaultLanguage3FontName.ToLower())
 				ChangeThatRequiresRestart();
 		}
 

@@ -476,7 +476,7 @@ namespace Bloom
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-			string url = e.Uri.OriginalString.ToLower();
+			string url = e.Uri.OriginalString.ToLowerInvariant();
 
 			if ((!url.StartsWith(Bloom.web.ServerBase.PathEndingInSlash)) && (url.StartsWith("http")))
 			{
@@ -984,13 +984,13 @@ namespace Bloom
 		public void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
 		{
 			Debug.Assert(!InvokeRequired);
-			if (anchor.Href.ToLower().StartsWith("http")) //will cover https also
+			if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
 			{
 				Process.Start(anchor.Href);
 				eventArgs.Handled = true;
 				return;
 			}
-			if (anchor.Href.ToLower().StartsWith("file"))
+			if (anchor.Href.ToLowerInvariant().StartsWith("file"))
 			//links to files are handled externally if we can tell they aren't html/javascript related
 			{
 				// TODO: at this point spaces in the file name will cause the link to fail.
@@ -999,7 +999,7 @@ namespace Bloom
 
 				var path = href.Replace("file:///", "");
 
-				if (new List<string>(new[] { ".pdf", ".odt",".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLower()))
+				if (new List<string>(new[] { ".pdf", ".odt", ".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLowerInvariant()))
 				{
 					eventArgs.Handled = true;
 					Process.Start(new ProcessStartInfo()
@@ -1012,7 +1012,7 @@ namespace Bloom
 				eventArgs.Handled = false; //let gecko handle it
 				return;
 			}
-			else if (anchor.Href.ToLower().StartsWith("mailto"))
+			else if (anchor.Href.ToLowerInvariant().StartsWith("mailto"))
 			{
 				eventArgs.Handled = true;
 				Process.Start(anchor.Href); //let the system open the email program

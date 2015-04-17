@@ -221,7 +221,7 @@ namespace Bloom.WebLibraryIntegration
 				DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
 			}
 				// If we are passed a bloom book order, download the corresponding book and open it.
-			else if (_downloadRequest.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) &&
+			else if (_downloadRequest.ToLowerInvariant().EndsWith(BookTransfer.BookOrderExtension.ToLowerInvariant()) &&
 					 File.Exists(_downloadRequest))
 			{
 				HandleBookOrder(_downloadRequest);
@@ -235,7 +235,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private static bool IsUrlOrder(string argument)
 		{
-			return argument.ToLower().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
+			return argument.ToLowerInvariant().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
 		}
 
 		private void HandleBookOrder(string bookOrderPath)

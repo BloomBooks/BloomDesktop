@@ -128,7 +128,7 @@ namespace Bloom.Collection
 			{
 				if (Path.GetFileName(folder.FullName).StartsWith("."))//as in ".hg"
 					continue;
-				if (Path.GetFileName(folder.FullName).ToLower().Contains("xmatter"))
+				if (Path.GetFileName(folder.FullName).ToLowerInvariant().Contains("xmatter"))
 					continue;
 				if(File.Exists(Path.Combine(folder.FullName, ".bloom-ignore")))
 					continue;

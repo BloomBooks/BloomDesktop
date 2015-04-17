@@ -364,7 +364,7 @@ namespace Bloom.Book
 
 		public string GetMetaValue(string name, string defaultValue)
 		{
-			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "' or @name='" + name.ToLower() + "']");
+			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "' or @name='" + name.ToLowerInvariant() + "']");
 			if (node.Count > 0)
 			{
 				return ((XmlElement) node[0]).GetAttribute("content");
@@ -578,7 +578,7 @@ namespace Bloom.Book
 			foreach(XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
 			{
 				var href = linkNode.GetAttribute("href");
-				if(Path.GetFileName(href).ToLower().EndsWith("xmatter.css"))
+				if (Path.GetFileName(href).ToLowerInvariant().EndsWith("xmatter.css"))
 				{
 					linkNode.ParentNode.RemoveChild(linkNode);
 				}

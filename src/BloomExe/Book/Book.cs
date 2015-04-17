@@ -153,9 +153,9 @@ namespace Bloom.Book
 					//the SIL-LEAD project, SHRP (around 2012-2016) had books that just had an English name, before we changed Bloom
 					//to not show English names. But the order was also critical. So we want those old books to go ahead and use their
 					//English names.
-					var englishTitle = title.GetExactAlternative("en").ToLower();
+					var englishTitle = title.GetExactAlternative("en").ToLowerInvariant();
 					var SHRPMatches = new string[] {"p1", "p2", "p3", "p4", "SHRP"};
-					var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(m => englishTitle.Contains(m.ToLower()));
+					var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(m => englishTitle.Contains(m.ToLowerInvariant()));
 
 					//if this book is one of the ones we're editing in our collection, it really
 					//needs a title in our main language, it would be confusing to show a title from some other langauge
@@ -542,7 +542,7 @@ namespace Bloom.Book
 				Book book=null;
 				if (!String.IsNullOrEmpty(templateKey))
 				{
-					if (templateKey.ToLower() == "basicbook")//catch this pre-beta spelling with no space
+					if (templateKey.ToLowerInvariant() == "basicbook")//catch this pre-beta spelling with no space
 						templateKey = "Basic Book";
 					book = _templateFinder.FindTemplateBook(templateKey);
 					if(book==null)
@@ -1636,10 +1636,10 @@ namespace Bloom.Book
 				case PublishModel.BookletPortions.AllPagesNoBooklet:
 					break;
 				case PublishModel.BookletPortions.BookletCover:
-					DeletePages(printingDom.RawDom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
+					DeletePages(printingDom.RawDom, p => !p.GetAttribute("class").ToLowerInvariant().Contains("cover"));
 					break;
 				 case PublishModel.BookletPortions.BookletPages:
-					DeletePages(printingDom.RawDom, p => p.GetAttribute("class").ToLower().Contains("cover"));
+					DeletePages(printingDom.RawDom, p => p.GetAttribute("class").ToLowerInvariant().Contains("cover"));
 					break;
 				 default:
 					throw new ArgumentOutOfRangeException("bookletPortion");
