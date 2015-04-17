@@ -10,6 +10,7 @@ using Bloom.ToPalaso;
 using Palaso.CommandLineProcessing;
 using Palaso.IO;
 using Palaso.Progress;
+using Palaso.PlatformUtilities;
 using System.Text;
 
 namespace Bloom.Publish
@@ -39,10 +40,10 @@ namespace Bloom.Publish
 			string exePath;
 			var bldr = new StringBuilder();
 			// Codebase is reliable even when Resharper copies the EXE somewhere else for testing.
-			var loc = Assembly.GetExecutingAssembly().CodeBase.Substring("file:///".Length);
+			var loc = Assembly.GetExecutingAssembly().CodeBase.Substring((Platform.IsUnix ? "file://" : "file:///").Length);
 			var execDir = Path.GetDirectoryName(loc);
 			var fromDirectory = String.Empty;
-			if (Environment.OSVersion.Platform == PlatformID.Unix)
+			if (Platform.IsMono)
 			{
 				exePath = "mono";
 				bldr.AppendFormat("--debug \"{0}\" ", Path.Combine(execDir, "GeckofxHtmlToPdf.exe"));
