@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -157,7 +158,7 @@ namespace Bloom
 
 			_cutCommand.Implementer = () => _browser.CutSelection();
 			_copyCommand.Implementer = () => _browser.CopySelection();
-			_pasteCommand.Implementer = PasteFilteredText;
+			_pasteCommand.Implementer = () => PasteFilteredText(false);
 			_undoCommand.Implementer = () =>
 			{
 				// Note: this is only used for the Undo button in the toolbar;
@@ -337,20 +338,26 @@ namespace Bloom
 				else if(_browser.CanPaste && BloomClipboard.ContainsText())
 				{
 					e.PreventDefault(); //we'll take it from here, thank you very much
-					PasteFilteredText();
+					PasteFilteredText(false);
 				}
 			}
 		}
 
-		private void PasteFilteredText()
+		private void PasteFilteredText(bool removeSingleLineBreaks)
 		{
 			Debug.Assert(!InvokeRequired);
+
 			//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
-			var originalText = BloomClipboard.GetText(TextDataFormat.UnicodeText);
-			if (!string.IsNullOrEmpty(originalText))
+			var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
+
+			if (!string.IsNullOrEmpty(text))
 			{
-				//setting clears everything else:
-				BloomClipboard.SetText(originalText, TextDataFormat.UnicodeText);
+				if (removeSingleLineBreaks)
+				{
+					text = text.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+				}
+				//setting clears other formats that might be on the clipboard, such as html
+				BloomClipboard.SetText(text, TextDataFormat.UnicodeText);
 				_browser.Paste();
 			}
 		}
@@ -463,6 +470,15 @@ namespace Bloom
 
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
+			var mouseEvent = e as Gecko.DomMouseEventArgs;
+			var specialPasteClick = ModifierKeys.HasFlag(Keys.Control) || (mouseEvent!=null && mouseEvent.Button== GeckoMouseButton.Middle);
+			if(_browser.CanPaste && BloomClipboard.ContainsText() && specialPasteClick)
+			{
+				e.PreventDefault();
+				PasteFilteredText(true);
+				return;
+			}
+
 			Debug.Assert(!InvokeRequired);
 		  //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
 			//it loses its focus.
@@ -471,6 +487,8 @@ namespace Bloom
 			EventHandler handler = OnBrowserClick;
 			if (handler != null)
 				handler(this, e);
+
+
 		}
 
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)

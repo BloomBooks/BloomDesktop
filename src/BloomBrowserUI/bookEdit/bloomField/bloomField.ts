@@ -29,6 +29,7 @@ class BloomField {
             BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
             BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
             $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
+            $(bloomEditableDiv).click(function() { this.ProcessClick; });
             $(bloomEditableDiv).blur(function () {
                 BloomField.ModifyForParagraphMode(this);
             });
@@ -41,19 +42,57 @@ class BloomField {
         }
     }
 
-    private static ProcessIncomingPaste(e: any) {
+    private static ProcessClick(e: any) {
+
         // note: currently, the c# code also intercepts the past event and
         // makes sure that we just get plain 'ol text on the clipboard.
         // That's a bit heavy handed, but the mess you get from pasting
         // html from word is formidable.
 
         var txt = e.originalEvent.clipboardData.getData('text/plain');
-        
-        //some typists in SHRP indent in MS Word by hitting newline and pressing a bunch of spaces.
-        // We replace any newline followed by 3 or more spaces with just one space. It could
-        // conceivalby hit some false positive, but it would be easy for the user to fix.
-        var html = txt.replace(/\n\s{3,}/g, ' ');
 
+        var html: string;
+        alert("click");
+        if (e.ctrlKey) {
+            html = txt.replace(/\n\n/g, 'twonewlines');
+            html = html.replace(/\n/g, ' ');
+            html = html.replace(/\s+/g, ' ');
+            html = html.replace(/twonewlines/g, '\n');
+
+            //convert remaining newlines to paragraphs. We're already inside a  <p>, so each 
+            //newline finishes that off and starts a new one
+            html = html.replace(/\n/g, '</p><p>');
+
+            document.execCommand("insertHTML", false, html);
+
+            //don't do the normal paste
+            e.stopPropagation();
+            e.preventDefault();
+        }
+    }
+
+    private static ProcessIncomingPaste(e: any) {
+
+        // note: currently, the c# code also intercepts the past event and
+        // makes sure that we just get plain 'ol text on the clipboard.
+        // That's a bit heavy handed, but the mess you get from pasting
+        // html from word is formidable.
+
+        var txt = e.originalEvent.clipboardData.getData('text/plain');
+
+        var html: string;
+
+        if (e.ctrlKey) {
+            html = txt.replace(/\n\n/g, 'twonewlines');
+            html = html.replace(/\n/g, ' ');
+            html = html.replace(/\s+/g, ' ');
+            html = html.replace(/twonewlines/g, '\n');
+        } else {
+            //some typists in SHRP indent in MS Word by hitting newline and pressing a bunch of spaces.
+            // We replace any newline followed by 3 or more spaces with just one space. It could
+            // conceivalby hit some false positive, but it would be easy for the user to fix.
+            html = txt.replace(/\n\s{3,}/g, ' ');
+        }
         //convert remaining newlines to paragraphs. We're already inside a  <p>, so each 
         //newline finishes that off and starts a new one
         html = html.replace(/\n/g, '</p><p>');
