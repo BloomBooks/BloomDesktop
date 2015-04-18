@@ -23,6 +23,7 @@
 - When pasting large color images from Libre Office, automatically switch to jpeg if that will keep the file size small
 - Hover over an image to see its file name, size, and dimensions
 - We've reinstated integrations with the [Free Adobe Reader](http://get.adobe.com/reader/enterprise/) after the open source alternative we used in 3.0 proved unreliable. It is still available as a fall-back in situations where Adobe Reader is unavailable. On Linux, we are switching to the system's default way of printing (which is normally GhostScript).
+- In a field with the "RequireParagraphs" flag, pressing tab inserts an emspace instead of moving to the next tab.
 
 ### Bloom 3.0 is the last version for Windows XP
 - Starting with Bloom 3.1, Bloom will require Windows Vista, 7, 8, 10, etc.
