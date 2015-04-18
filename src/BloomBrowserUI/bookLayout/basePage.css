@@ -1,4 +1,4 @@
-/*+init {*/
+﻿/*+init {*/
 * {
   position: relative;
   margin: 0;
@@ -87,6 +87,9 @@ DIV.ui-tooltip-content {
 .bloom-imageContainer {
   min-height: 50px;
   z-index: 100;
+}
+p {
+  min-height: 1em;
 }
 TEXTAREA,
 .bloom-editable,
@@ -303,3 +306,4 @@ H2 {
   height: 99%;
   width: 99%;
 }
+/*# sourceMappingURL=basePage.css.map */
