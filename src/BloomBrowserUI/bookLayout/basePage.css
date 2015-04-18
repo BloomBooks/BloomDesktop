@@ -102,6 +102,10 @@ TD {
 p {
   min-height: 1em;
 }
+span.bloom-linebreak {
+  display: block;
+  text-indent: 0;
+}
 DIV.bloom-page {
   display: block;
   page-break-after: auto;

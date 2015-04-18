@@ -28,6 +28,7 @@ class BloomField {
             BloomField.ModifyForParagraphMode(bloomEditableDiv);
             BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
             BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
+            BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
             $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
             $(bloomEditableDiv).blur(function () {
                 BloomField.ModifyForParagraphMode(this);
@@ -39,6 +40,33 @@ class BloomField {
         else{
             BloomField.PrepareNonParagraphField(bloomEditableDiv);
         }
+    }
+
+    private static MakeShiftEnterInsertLineBreak(field: HTMLElement) {
+        $(field).keypress(e => {
+            if (e.which == 13) { //enter key
+                if (e.shiftKey) {
+                    //we put in a specially marked span which stylesheets can use to give us "soft return" in the midst of paragraphs
+                    //which have either indents or prefixes (like "step 1", "step 2").
+                    //The difficult part is that the browser will leave our cursor inside of the new span, which isn't really
+                    //what we want. So we also add a zero-width-non-joiner (&#xfeff;) there so that we can get outside of the span.
+                    document.execCommand("insertHTML", false, "<span class='bloom-linebreak'></span>&#xfeff;");
+                } else {
+                    // If the enter didn't come with a shift key, just insert a paragraph.
+                    // Now, why are we doing this if firefox would do it anyway? Because if we previously pressed shift - enter
+                    // and got that <span class='bloom-linebreak'></span>, firefox will actually insert that span again, in the
+                    // new paragraphs (which would be reasonable if we had turned on a normal text-formating style, like a text color.
+                    // So we do the paragraph creation ourselves, so that we don't get any unwanted <span>s in it.
+                    // Note that this is going to remove that "make new spans automatically" feature entirely. 
+                    // If we need it someday, we'll have to make this smarter and only override the normal behavior if we can detect
+                    // that the span it would create would be one of those bloom-linbreak ones.
+                    document.execCommand("insertHTML", false, "<p></p>");
+                }
+                e.stopPropagation();
+                e.preventDefault();
+
+            }
+        });
     }
 
     private static ProcessIncomingPaste(e: any) {
