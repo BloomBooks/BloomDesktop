@@ -60,7 +60,12 @@ class BloomField {
                     // Note that this is going to remove that "make new spans automatically" feature entirely. 
                     // If we need it someday, we'll have to make this smarter and only override the normal behavior if we can detect
                     // that the span it would create would be one of those bloom-linbreak ones.
-                    document.execCommand("insertHTML", false, "<p></p>");
+
+                    //The other thing going on is that Firefox doesn't like to see multiple empty <p></p>'s. It won't let us insert
+                    //two or more of these in a row. So we stick in a zero-width-non-joiner element to pacify it.
+                    //This has the downside that it takes to presses of "DEL" to remove the line; a future enhancement could fix
+                    //that.
+                    document.execCommand("insertHTML", false, "<p>&zwnj;</p>");
                 }
                 e.stopPropagation();
                 e.preventDefault();
