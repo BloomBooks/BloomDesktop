@@ -1,4 +1,4 @@
-/*+init {*/
+﻿/*+init {*/
 * {
   position: relative;
   margin: 0;
@@ -98,6 +98,9 @@ TD {
   line-height: 1.5em;
   min-height: 1.8em;
   width: 100%;
+}
+p {
+  min-height: 1em;
 }
 DIV.bloom-page {
   display: block;
@@ -303,3 +306,4 @@ H2 {
   height: 99%;
   width: 99%;
 }
+/*# sourceMappingURL=basePage.css.map */

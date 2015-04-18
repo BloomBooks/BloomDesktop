@@ -88,6 +88,9 @@ TEXTAREA, .bloom-editable, TD
 	min-height:  @defaultLineHeight + .3em;
 	width: 100%;
 }
+p{
+  min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
+}
 DIV.bloom-page
 {
 	display: block;
