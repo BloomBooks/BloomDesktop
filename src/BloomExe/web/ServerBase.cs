@@ -220,7 +220,7 @@ namespace Bloom.web
 		protected virtual bool ProcessRequest(IRequestInfo info)
 		{
 			// process request for directory index
-			var requestedPath = GetLocalPathWithoutQuery(info);
+			var requestedPath = CorrectedLocalPath(info).Substring(7);
 			if (info.RawUrl.EndsWith("/") && (Directory.Exists(requestedPath)))
 			{
 				info.WriteError(403, "Directory listing denied");
@@ -255,30 +255,23 @@ namespace Bloom.web
 
 		protected internal static string CorrectedLocalPath(IRequestInfo info)
 		{
-			// Note that info.LocalPathWithoutQuery removes too much if the local filename
-			// contains a # (reasonable) or ? (unreasonable but possible on Linux).  So we
-			// have to start out with RawUrl instead.  See https://jira.sil.org/browse/BL-951.
-			// Also, for some reason Url.LocalPath strips out two of the three slashes that we get
-			// with network drive paths when we stick /bloom/ in front of a path like //mydrive/myfolder/...
-			var result = info.RawUrl.UnescapeCharsForHttp();
-			if (result.StartsWith(PathEndingInSlash))
-				result = result.Substring(PathEndingInSlash.Length - BloomUrlPrefix.Length);
+			var result = info.LocalPathWithoutQuery;
+			if (info.RawUrl.StartsWith(BloomUrlPrefix + "//"))
+			{
+				// for some reason Url.LocalPath strips out two of the three slashes that we get
+				// with network drive paths when we stick /bloom/ in front of a path like //mydrive/myfolder/...
+				result = EnhancedImageServer.BloomUrlPrefix + "//" + result.Substring(EnhancedImageServer.BloomUrlPrefix.Length);
+			}
 			return result;
 		}
 
 		protected internal static string GetLocalPathWithoutQuery(IRequestInfo info)
 		{
-			var localPath = CorrectedLocalPath(info);
-			if (localPath.StartsWith(BloomUrlPrefix))
-				localPath = localPath.Substring(BloomUrlPrefix.Length);
-			if (!File.Exists(localPath) && localPath.Contains("?"))
-			{
-				var idx = localPath.LastIndexOf("?", StringComparison.Ordinal);
-				var temp = localPath.Substring(0, idx);
-				if (localPath.EndsWith("?thumbnail=1") || File.Exists(temp))
-					return temp;
-			}
-			return localPath;
+			// Note that LocalPathWithoutQuery removes all % escaping from the URL.
+			var r = CorrectedLocalPath(info);
+			if (r.StartsWith(BloomUrlPrefix))
+				r = r.Substring(BloomUrlPrefix.Length);
+			return r;
 		}
 
 		public static string PathEndingInSlash
