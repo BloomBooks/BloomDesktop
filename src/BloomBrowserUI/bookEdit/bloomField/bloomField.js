@@ -27,6 +27,7 @@ var BloomField = (function () {
             BloomField.ModifyForParagraphMode(bloomEditableDiv);
             BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
             BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
+            BloomField.MakeTabEnterTabElement(bloomEditableDiv);
             $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
             $(bloomEditableDiv).blur(function () {
                 BloomField.ModifyForParagraphMode(this);
@@ -37,6 +38,22 @@ var BloomField = (function () {
         } else {
             BloomField.PrepareNonParagraphField(bloomEditableDiv);
         }
+    };
+
+    BloomField.MakeTabEnterTabElement = function (field) {
+        $(field).keydown(function (e) {
+            if (e.which === 9) {
+                //note: some people introduce a new element, <tab>. That has the advantage
+                //of having a stylesheet-controllable width. However, Firefox leave the
+                //cursor in side of the <tab></tab>, and though we could manage
+                //to get out of that, what if someone moved back into it? Etc. etc.
+                //So I'm going with the conservative choice for now, which is the em space,
+                //which is about as wide as 4 spaces.
+                document.execCommand("insertHTML", false, "&emsp;");
+                e.stopPropagation();
+                e.preventDefault();
+            }
+        });
     };
 
     BloomField.ProcessIncomingPaste = function (e) {
