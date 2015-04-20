@@ -10,7 +10,7 @@
 - To get good printing reliability on Windows, install the [Free Adobe Reader](http://get.adobe.com/reader/enterprise/) software. Bloom will automatically use it. If download size is at a premium, you can install [Ghostscript](http://www.softpedia.com/get/System/System-Miscellaneous/GPL-Ghostscript.shtml) instead (13 MB vs. 77 MB). On Linux, we are switching to the system's default way of printing (which is normally GhostScript).
 
 ## 3.1
-
+- CTRL+Click does a paste, and the pasted material is cleaned up, removing the extraneous line breaks that you get when copying out of a PDF.
 - New faster installer with automatic incremental upgrades
 - Page thumbnails now show an "attention" icon if some text on the page is overflow its box
 - Added description texts to Leveled and Decodable Reader templates
