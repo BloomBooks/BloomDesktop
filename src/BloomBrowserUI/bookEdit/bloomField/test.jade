@@ -8,12 +8,18 @@ html
     meta(charset='UTF-8')
     title Test Page for bloomEditable functions
     script(src='../../lib/jquery-1.10.1.js')
+    script(src='../js/jquery.hotkeys.js')
     script(src='bloomField.js')
     style(type='text/css').
       .bloom-editable {
         color: red;
       }
 
+      span.bloom-linebreak{
+        display: block;
+        text-indent: 0;
+        background-color: lightgreen;
+      }
       /* show text that isn't in a p in red */
       P:after {
         /*content: '¶';*/
@@ -120,4 +126,9 @@ html
             p There was a p at the beginning of this line
         +field#numberedParagraphs.numberedParagraphs
           P apples
+            span.bloom-linebreak
+            | This should be on a line by itself with no number
           P oranges
+          BR.bloom-linefeed are good
+          P outer
+            BR.bloom-linefeed inner
