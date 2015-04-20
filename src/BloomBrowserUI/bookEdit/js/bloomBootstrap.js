@@ -16,6 +16,7 @@ var scripts = [
     'bookEdit/js/editableDivUtils.js',
     'bookEdit/js/jquery.hotkeys.js',
     'bookEdit/js/BloomAccordion.js',
+    'bookEdit/js/Bubbles.js',
     'bookEdit/StyleEditor/StyleEditor.js',
     'bookEdit/OverflowChecker/OverflowChecker.js',
     'bookEdit/TopicChooser/TopicChooser.js',
