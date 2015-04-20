@@ -555,13 +555,18 @@ namespace Bloom.web
 
 		private bool ProcessCssFile(IRequestInfo info, string localPath)
 		{
-			// If this request is the full path to a real file, return the file contents now
-			// This will also handle languageDisplay.css, settingsCollectionStyles.css, and customCollectionStyles.css
+			// is this request the full path to a real file?
 			if (File.Exists(localPath) && Path.IsPathRooted(localPath))
 			{
-				info.ContentType = "text/css";
-				info.ReplyWithFileContent(localPath);
-				return true;
+
+				// currently this only applies to languageDisplay.css, settingsCollectionStyles.css, and customCollectionStyles.css
+				var cssFile = Path.GetFileName(localPath);
+				if ((cssFile == "languageDisplay.css") || (cssFile == "settingsCollectionStyles.css") || (cssFile == "customCollectionStyles.css"))
+				{
+					info.ContentType = "text/css";
+					info.ReplyWithFileContent(localPath);
+					return true;
+				}
 			}
 
 			// the _fileLocator will search the factory xmatter and templates in the correct order
