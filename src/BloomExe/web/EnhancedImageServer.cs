@@ -54,6 +54,14 @@ namespace Bloom.web
 		public EnhancedImageServer(RuntimeImageProcessor cache): base(cache)
 		{ }
 
+		/// <summary>
+		/// This constructor is used for unit testing
+		/// </summary>
+		public EnhancedImageServer(RuntimeImageProcessor cache, BloomFileLocator fileLocator) : base(cache)
+		{
+			_fileLocator = fileLocator;
+		}
+
 		// We use two different locks to synchronize access to the methods of this class.
 		// This allows certain methods to run concurrently.
 
@@ -569,10 +577,6 @@ namespace Bloom.web
 				}
 			}
 
-			// the _fileLocator will search the factory xmatter and templates in the correct order
-			if (_fileLocator == null)
-				_fileLocator = Program.OptimizedFileLocator;				
-
 			// if not a full path, try to find the correct file
 			var fileName = localPath;
 			var pos = fileName.LastIndexOfAny(new[] { '\\', '/' });
@@ -580,7 +584,7 @@ namespace Bloom.web
 				fileName = fileName.Substring(pos + 1);
 
 			// try to find the css file in the xmatter and templates
-			var path = _fileLocator.LocateFile(fileName);
+			var path = (_fileLocator == null) ? string.Empty : _fileLocator.LocateFile(fileName);
 
 			// try to find the css file in the BloomBrowserUI directory
 			if (string.IsNullOrEmpty(path))
@@ -594,6 +598,9 @@ namespace Bloom.web
 
 				path = _bloomBrowserUiCssFiles.FirstOrDefault(f => Path.GetFileName(f) == fileName);
 			}
+
+			// if still not found, and localPath is an actual file path, use it
+			if (string.IsNullOrEmpty(path) && File.Exists(localPath)) path = localPath;
 
 			// return false if the file was not found
 			if (string.IsNullOrEmpty(path)) return false;
