@@ -6,7 +6,7 @@ window.addEventListener('message', processExternalMessage, false);
  * @param {Event} event
  */
 function processExternalMessage(event) {
-    processAccordionRequest(event);
+    bloomHintBubbles.processAccordionRequest(event);
 }
 
 /**
@@ -68,7 +68,7 @@ function Cleanup() {
         $(this).remove();
     });
 
-    CleanupBubbles();
+    bloomQtipUtils.cleanupBubbles(); // all 3 kinds!
 
     $("*.editTimeOnly").remove();
     $("*.dragHandle").remove();
@@ -440,8 +440,6 @@ $.fn.hasAttr = function (name) {
     return (typeof attr !== 'undefined' && attr !== false);
 };
 
-
-
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
@@ -470,8 +468,11 @@ function SetupElements(container) {
     // accordion will be undefined during unit testing
     if (accordion) model = accordion.contentWindow['model'];
 
+    var readerToolsActive;
+
     // model will be undefined if the reader tools are not loaded
     if (model) {
+        readerToolsActive = 'true';
 
         // invoke function when a bloom-editable element loses focus.
         $(container).find('.bloom-editable').focusout(function () {
@@ -568,7 +569,7 @@ function SetupElements(container) {
         $(this).CenterVerticallyInParent();
     });
 
-    AddHintBubbles(container);
+    bloomHintBubbles.addHintBubbles(container);
 
     //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
     //So one of our foundational stylesheets looks for @data-placeholder and simulates the
@@ -618,33 +619,7 @@ function SetupElements(container) {
     AddLanguageTags(container);
 
     // If the user moves over something they can't edit, show a tooltip explaining why not
-    $(container).find('*[data-hint]').each(function () {
-
-        if ($(this).css('cursor') == 'not-allowed') {
-            var whyDisabled = "You cannot change these because this is not the original copy.";
-            if ($(this).hasClass('bloom-readOnlyInEditMode')) {
-                whyDisabled = "You cannot put anything in there while making an original book.";
-            }
-
-            var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
-
-            whatToSay = localizationManager.getLocalizedHint(whatToSay, $(this)) + " <br/>" + whyDisabled;
-            var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
-            var pos = { at: 'right center',
-                my: 'left center'
-            };
-            $(this).qtip({
-                content: whatToSay,
-                position: pos,
-                show: {
-                    event: 'focusin mouseenter'
-                },
-                style: {
-                    classes: theClasses
-                }
-            });
-        }
-    });
+    bloomNotices.addEditingNotAllowedMessages(container);
 
     //Same thing for divs which are potentially editable, but via the contentEditable attribute instead of TextArea's ReadOnly attribute
     // editTranslationMode.css/editOriginalMode.css can't get at the contentEditable (css can't do that), so
@@ -694,18 +669,7 @@ function SetupElements(container) {
         });
     });
 
-    // add drag and resize ability where elements call for it
-    //   $(".bloom-draggable").draggable({containment: "parent"});
-    $(container).find(".bloom-draggable").draggable({ containment: "parent",
-        handle: '.bloom-imageContainer',
-        stop: function (event, ui) {
-            $(this).find('.wordsDiv').find('div').each(function () {
-                $(this).qtip('reposition');
-            })
-        } //yes, this repositions *all* qtips on the page. Yuck.
-    }); //without this "handle" restriction, clicks on the text boxes don't work. NB: ".moveButton" is really what we wanted, but didn't work, probably because the button is only created on the mouseEnter event, and maybe that's too late.
-    //later note: using a real button just absorbs the click event. Other things work better
-    //http://stackoverflow.com/questions/10317128/how-to-make-a-div-contenteditable-and-draggable
+    bloomQtipUtils.repositionPictureDictionaryTooltips(container);
 
     /* Support in page combo boxes that set a class on the parent, thus making some change in the layout of the pge.
     Example:
@@ -743,9 +707,7 @@ function SetupElements(container) {
         SetupDeletable(this);
     });
 
-    $(container).find(".pictureDictionaryPage").each(function () {
-        AddExperimentalNotice(this);
-    });
+    bloomNotices.addExperimentalNotice(container); // adds notice to Picture Dictionary pages
 
     $(container).find(".bloom-resizable").each(function () {
         SetupResizableElement(this);
@@ -823,7 +785,7 @@ function SetupElements(container) {
     // HACK for BL-1139: except for some reason when the Reader tools are active this causes
     // quick typing on a newly loaded page to get the cursor messed up. So for the Reader tools, the
     // user will need to actually click in the div to start typing.
-    if (!model)
+    if (!readerToolsActive)
         $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 }
 
@@ -838,9 +800,7 @@ function OneTimeSetup() {
 // document ready function
 // ---------------------------------------------------------------------------------
 $(document).ready(function() {
-    if($.fn.qtip)
-        $.fn.qtip.zindex = 15000;
-    //gives an error $.fn.qtip.plugins.modal.zindex = 1000000 - 20;
+    bloomQtipUtils.setQtipZindex();
 
     $.fn.reverse = function () {
         return this.pushStack(this.get().reverse(), arguments);
@@ -863,8 +823,8 @@ $(document).ready(function() {
     //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
     Cleanup();
 
-   SetupElements($('body'));
-   OneTimeSetup();
+    SetupElements($('body'));
+    OneTimeSetup();
 
     //this is some sample code for working on CommandAvailabilityPublisher websocket messages
 //   var client = new WebSocket("ws://127.0.0.1:8189");

@@ -1,6 +1,7 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="collectionSettings.d.ts" />
+/// <reference path="bloomQtipUtils.ts" />
 
 // Attempting to factor all qtip-related code out of bloomEditing.js
 
@@ -16,8 +17,11 @@ interface textMarkup extends JQueryStatic {
     cssPossibleWord(): JQuery;
 }
 
-class Bubbles {
-
+class bloomHintBubbles {
+    /**
+     * Respond to messages from other iframes
+     * @param {MessageEvent} event
+     */
     public static processAccordionRequest(event: MessageEvent): void {
 
         var params = event.data.split("\n");
@@ -25,31 +29,42 @@ class Bubbles {
         switch(params[0]) {
 
             case 'Qtips': // request from accordion to add qtips to marked-up spans
-                // q-tips; first 3 are for decodable, last for leveled; could make separate messages.
-                var editableElements = $(".bloom-content1");
-                editableElements.find('span.' + (<textMarkup>$).cssSightWord()).each(function() {
-                    (<qtipInterface>$(this)).qtip({ content: 'Sight word' });
-                });
+                // We could make separate messages for these...
+                bloomHintBubbles.markDecodableStatus();
+                bloomHintBubbles.markLeveledStatus();
 
-                editableElements.find('span.' + (<textMarkup>$).cssWordNotFound()).each(function() {
-                    (<qtipInterface>$(this)).qtip({ content: 'This word is not decodable in this stage.' });
-                });
-
-                // we're considering dropping this entirely
-                // We are disabling the "Possible Word" feature at this time.
-                //editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-                //    (<qtipInterface>$(this)).qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
-                //});
-
-                editableElements.find('span.' + (<textMarkup>$).cssSentenceTooLong()).each(function() {
-                    (<qtipInterface>$(this)).qtip({ content: 'This sentence is too long for this level.' });
-                });
                 return;
         }
     }
 
+    private static markDecodableStatus(): void {
+        // q-tips; mark sight words and non-decodable words
+        var editableElements = $(".bloom-content1");
+        editableElements.find('span.' + (<textMarkup>$).cssSightWord()).each(function() {
+            (<qtipInterface>$(this)).qtip({ content: 'Sight word' });
+        });
+
+        editableElements.find('span.' + (<textMarkup>$).cssWordNotFound()).each(function() {
+            (<qtipInterface>$(this)).qtip({ content: 'This word is not decodable in this stage.' });
+        });
+
+        // we're considering dropping this entirely
+        // We are disabling the "Possible Word" feature at this time.
+        //editableElements.find('span.' + $.cssPossibleWord()).each(function() {
+        //    (<qtipInterface>$(this)).qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
+        //});
+    }
+
+    private static markLeveledStatus(): void {
+        // q-tips; mark sentences that are too long
+        var editableElements = $(".bloom-content1");
+        editableElements.find('span.' + (<textMarkup>$).cssSentenceTooLong()).each(function() {
+            (<qtipInterface>$(this)).qtip({ content: 'This sentence is too long for this level.' });
+        });
+    }
+
     // Add (yellow) hint bubbles from (usually) label.bubble elements
-    public static AddHintBubbles(container: HTMLElement): void {
+    public static addHintBubbles(container: HTMLElement): void {
         //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
         //bloom-translationGroup (those should have a single <label> for the whole group).
         //Notice that the <label> inside an editable div is in a precarious position, it could get
@@ -67,7 +82,7 @@ class Bubbles {
             labelElement.remove();
 
             //attach the bubble, this editable only, then remove it
-            Bubbles.MakeHelpBubble($(enclosingEditableDiv), labelElement);
+            bloomHintBubbles.MakeHelpBubble($(enclosingEditableDiv), labelElement);
         });
 
         // Having a <label class='bubble'> inside a div.bloom-translationGroup gives a hint bubble outside each of
@@ -83,7 +98,7 @@ class Bubbles {
 
             //attach the bubble, separately, to every visible field inside the group
             labelElement.parent().find("div.bloom-editable:visible").each(function () {
-                Bubbles.MakeHelpBubble($(this), labelElement);
+                bloomHintBubbles.MakeHelpBubble($(this), labelElement);
             });
         });
 
@@ -94,7 +109,7 @@ class Bubbles {
             if (!whatToSay)
                 return;
 
-            Bubbles.MakeHelpBubble(imageContainer, labelElement);
+            bloomHintBubbles.MakeHelpBubble(imageContainer, labelElement);
         });
 
         //This is the "low-level" way to get a hint bubble, cramming it all into a data-hint attribute.
@@ -115,7 +130,7 @@ class Bubbles {
             if (whatToSay.length == 0 || $(this).css('display') == 'none')
                 return;
 
-            Bubbles.MakeHelpBubble($(this), $(this));
+            bloomHintBubbles.MakeHelpBubble($(this), $(this));
         });
     }
 
@@ -160,7 +175,7 @@ class Bubbles {
 
         // determine onFocusOnly
         var onFocusOnly = whatToSay.startsWith('*');
-        onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || Bubbles.mightCauseHorizontallyOverlappingBubbles(target);
+        onFocusOnly = onFocusOnly || source.hasClass('bloom-showOnlyWhenTargetHasFocus') || bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(target);
 
         // get the localized string
         if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
@@ -168,7 +183,7 @@ class Bubbles {
 
         var functionCall = source.data("functiononhintclick");
         if (functionCall) {
-            if (functionCall === 'bookMetadataEditor' && !Bubbles.CanChangeBookLicense())
+            if (functionCall === 'bookMetadataEditor' && !bloomHintBubbles.canChangeBookLicense())
                 return;
             shouldShowAlways = true;
 
@@ -199,20 +214,8 @@ class Bubbles {
             }
         });
     }
-    public static mightCauseHorizontallyOverlappingBubbles(element: JQuery): boolean {
-        //We can't actually know for sure if overlapping would happen, but
-        //we can be very conservative and say that if the text
-        //box isn't taking up the whole width, it *might* cause
-        //an overlap
-        if($(element).hasClass('bloom-alwaysShowBubble')) {
-            return false;
-        }
-        var availableWidth = $(element).closest(".marginBox").width();
-        var kTolerancePixels = 10; //if the box is just a tiny bit smaller, there's not going to be anything to overlap
-        return $(element).width() < (availableWidth - kTolerancePixels);
-    }
 
-    private static CanChangeBookLicense(): boolean {
+    private static canChangeBookLicense(): boolean {
         // First, need to look in .bloomCollection file for <IsSourceCollection> value
         // if 'true', return true.
         if (GetSettings().isSourceCollection)
@@ -229,34 +232,5 @@ class Bubbles {
 
         // Otherwise return true
         return true;
-    }
-
-    public static CleanupBubbles(): void {
-        // remove the div's which qtip makes for the tips themselves
-        $("div.qtip").each(function() {
-            $(this).remove();
-        });
-
-        // remove the attributes qtips adds to the things being annotated
-        $("*[aria-describedby]").each(function() {
-            $(this).removeAttr("aria-describedby");
-        });
-        $("*[ariasecondary-describedby]").each(function() {
-            $(this).removeAttr("ariasecondary-describedby");
-        });
-    }
-
-    public static AddExperimentalNotice(element) {
-        (<qtipInterface>$(element)).qtipSecondary({
-            content: "<div id='experimentNotice'><img src='/bloom/images/experiment.png'/>This page is an experimental prototype which may have many problems, for which we apologize.<div/>"
-            , show: { ready: true }
-            , hide: false
-            , position: { at: 'right top',
-                my: 'left top'
-            },
-            style: { classes: 'ui-tooltip-red',
-                tip: { corner: false }
-            }
-        });
     }
 }
