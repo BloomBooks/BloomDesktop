@@ -189,10 +189,15 @@ namespace Bloom.Book
 			Body.AppendChild(MakeJavascriptElement(pathToJavascript));
 		}
 
-		public void AddEditMode(string mode)
+		/// <summary>
+		/// The Creation Type is either "translation" or "original". This is used to protect fields that should
+		/// normally not be editable in one or the other.
+		/// This is a bad name, and we know it!
+		/// </summary>
+		public void AddCreationType(string mode)
 		{
 			// RemoveModeStyleSheets() should have already removed any editMode attribute on the body element
-			Body.SetAttribute("editMode", mode);
+			Body.SetAttribute("bookcreationtype", mode);
 		}
 
 		public void RemoveModeStyleSheets()
