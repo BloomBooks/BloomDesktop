@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Amazon.CloudFront.Model;
 using Bloom.Book;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
@@ -114,6 +116,76 @@ namespace Bloom.Collection
 		public virtual bool IsLanguage1Rtl { get; set; }
 		public virtual bool IsLanguage2Rtl { get; set; }
 		public virtual bool IsLanguage3Rtl { get; set; }
+
+		public bool GetLanguageRtl(int langNum)
+		{
+			switch (langNum)
+			{
+				case 1:
+					return IsLanguage1Rtl;
+				case 2:
+					return IsLanguage2Rtl;
+				case 3:
+					return IsLanguage3Rtl;
+				default:
+					throw new InvalidArgumentException("The language number is not valid.");
+			}
+		}
+
+		public void SetLanguageRtl(int langNum, bool isRtl)
+		{
+			switch (langNum)
+			{
+				case 1:
+					IsLanguage1Rtl = isRtl;
+					break;
+				case 2:
+					IsLanguage2Rtl = isRtl;
+					break;
+				case 3:
+					IsLanguage3Rtl = isRtl;
+					break;
+				default:
+					throw new InvalidArgumentException("The language number is not valid.");
+			}
+		}
+
+		public virtual decimal Language1LineHeight { get; set; }
+		public virtual decimal Language2LineHeight { get; set; }
+		public virtual decimal Language3LineHeight { get; set; }
+
+		public decimal GetLanguageLineHeight(int langNum)
+		{
+			switch (langNum)
+			{
+				case 1:
+					return Language1LineHeight;
+				case 2:
+					return Language2LineHeight;
+				case 3:
+					return Language3LineHeight;
+				default:
+					throw new InvalidArgumentException("The language number is not valid.");
+			}
+		}
+
+		public void SetLanguageLineHeight(int langNum, decimal lineHeight)
+		{
+			switch (langNum)
+			{
+				case 1:
+					Language1LineHeight = lineHeight;
+					break;
+				case 2:
+					Language2LineHeight = lineHeight;
+					break;
+				case 3:
+					Language3LineHeight = lineHeight;
+					break;
+				default:
+					throw new InvalidArgumentException("The language number is not valid.");
+			}
+		}
 
 		/// <summary>
 		/// Intended for making shell books and templates, not vernacular
@@ -224,6 +296,9 @@ namespace Bloom.Collection
 			library.Add(new XElement("IsLanguage1Rtl", IsLanguage1Rtl));
 			library.Add(new XElement("IsLanguage2Rtl", IsLanguage2Rtl));
 			library.Add(new XElement("IsLanguage3Rtl", IsLanguage3Rtl));
+			library.Add(new XElement("Language1LineHeight", Language1LineHeight));
+			library.Add(new XElement("Language2LineHeight", Language2LineHeight));
+			library.Add(new XElement("Language3LineHeight", Language3LineHeight));
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("Country", Country));
@@ -244,12 +319,12 @@ namespace Bloom.Collection
 				var sb = new StringBuilder();
 				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
-				AddFontCssRule(sb, "BODY", GetDefaultFontName());
-				AddFontCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName);
-				AddFontCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName);
+				AddFontCssRule(sb, "BODY", GetDefaultFontName(), 0);
+				AddFontCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, Language1LineHeight);
+				AddFontCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, Language2LineHeight);
 				if (!string.IsNullOrEmpty(Language3Iso639Code))
 				{
-					AddFontCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName);
+					AddFontCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, Language3LineHeight);
 				}
 				File.WriteAllText(path, sb.ToString());
 			}
@@ -259,12 +334,16 @@ namespace Bloom.Collection
 			}
 		}
 
-		private void AddFontCssRule(StringBuilder sb, string selector, string fontName)
+		private void AddFontCssRule(StringBuilder sb, string selector, string fontName, decimal lineHeight)
 		{
 			sb.AppendLine();
 			sb.AppendLine(selector);
 			sb.AppendLine("{");
 			sb.AppendLine(" font-family: '" + fontName + "';");
+
+			if (lineHeight > 0)
+				sb.AppendLine(" line-height: " + lineHeight + ";");
+
 			sb.AppendLine("}");
 		}
 
@@ -285,6 +364,9 @@ namespace Bloom.Collection
 				IsLanguage1Rtl = GetBoolValue(library, "IsLanguage1Rtl", false);
 				IsLanguage2Rtl = GetBoolValue(library, "IsLanguage2Rtl", false);
 				IsLanguage3Rtl = GetBoolValue(library, "IsLanguage3Rtl", false);
+				Language1LineHeight = GetDecimalValue(library, "Language1LineHeight", 0);
+				Language2LineHeight = GetDecimalValue(library, "Language2LineHeight", 0);
+				Language3LineHeight = GetDecimalValue(library, "Language3LineHeight", 0);
 
 				Country = GetValue(library, "Country", "");
 				Province = GetValue(library, "Province", "");
@@ -322,6 +404,14 @@ namespace Bloom.Collection
 			bool b;
 			bool.TryParse(s, out b);
 			return b;
+		}
+
+		private decimal GetDecimalValue(XElement library, string id, decimal defaultValue)
+		{
+			var s = GetValue(library, id, defaultValue.ToString(CultureInfo.InvariantCulture));
+			decimal d;
+			decimal.TryParse(s, out d);
+			return d;
 		}
 
 		private string GetValue(XElement document, string id, string defaultValue)

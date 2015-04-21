@@ -241,6 +241,12 @@
     </Compile>
     <Compile Include="Collection\NaturalSortComparer.cs" />
     <Compile Include="BloomZipFile.cs" />
+    <Compile Include="Collection\ScriptSettingsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Collection\ScriptSettingsDialog.Designer.cs">
+      <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Edit\ConfirmRemovePageDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -609,6 +615,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\MakeReaderTemplateBloomPackDlg.resx">
       <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Collection\ScriptSettingsDialog.resx">
+      <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\ConfirmRemovePageDialog.resx">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
