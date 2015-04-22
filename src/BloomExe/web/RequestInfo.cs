@@ -6,6 +6,8 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Web;
+
 
 namespace Bloom.web
 {
@@ -20,7 +22,15 @@ namespace Bloom.web
 
 		public string LocalPathWithoutQuery
 		{
-			get { return _actualContext.Request.Url.LocalPath; }
+			get
+			{
+				// The problem with LocalPath alone is that it stops when it encounters even an
+				// encoded #.  Since Bloom doesn't worry about internal addresses, and does allow
+				// book titles (and thus file names) to have a # character, we need to piece together
+				// the original information.  Note that LocalPath removes all Http escaping, but
+				// Fragment does not.  See https://jira.sil.org/browse/BL-951 for details.
+				return _actualContext.Request.Url.LocalPath + HttpUtility.UrlDecode(_actualContext.Request.Url.Fragment);
+			}
 		}
 
 		public string ContentType

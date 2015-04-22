@@ -22,10 +22,7 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Escapes a number of characters that need it for url/http processing.  A much larger
-		/// number could be handled, but the general case (escape all non-ASCII chars as well
-		/// as several more ASCII chars) is much more complicated, and the following appears
-		/// to suffice for our needs in communicating to our own localhost processor.
+		/// Escapes a number of characters that need it for our url/http processing.
 		/// </summary>
 		/// <remarks>
 		/// Note that calls to EscapeCharsForHttp() must be matched by an equal number of
@@ -42,10 +39,8 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Remove the escaping of characters that need it for url/http processing to restore
-		/// a valid file pathname.  As noted above, a general treatment of unescaping would
-		/// be much more complicated, having to deal with surrogate pairs represented in UTF-8
-		/// and not just a handful of escaped ASCII characters.
+		/// Remove the escaping of characters that need it for our url/http processing to restore
+		/// a valid file pathname.
 		/// </summary>
 		/// <remarks>
 		/// Note that calls to UnescapeCharsForHttp() must be matched by an equal number of
