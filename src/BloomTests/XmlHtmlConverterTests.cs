@@ -67,6 +67,20 @@ namespace BloomTests
 			}
 		}
 
+		//relates to BL-1242
+		[Test]
+		public void SaveAsHTML_EmptySpan_DoesNotRemove()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><p>first line <span class='bloom-linebreak'></span>second line</p></body></html>");
+			using(var temp = new TempFile())
+			{
+				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+				var text = File.ReadAllText(temp.Path);
+				Assert.That(text, Is.StringContaining("<span class=\"bloom-linebreak\"></span>"));
+			}
+		}
+
 		[Test]
 		public void GetXmlDomFromHtml_HasBrTags_TagsNotDoubled()
 		{
