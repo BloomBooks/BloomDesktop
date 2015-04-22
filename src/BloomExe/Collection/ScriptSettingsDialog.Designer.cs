@@ -30,13 +30,13 @@
 		{
 			this.components = new System.ComponentModel.Container();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			this._languageNameLabel = new System.Windows.Forms.Label();
-			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this._rtlLanguageCheckBox = new System.Windows.Forms.CheckBox();
 			this._tallerLinesCheckBox = new System.Windows.Forms.CheckBox();
 			this._lineSpacingCombo = new System.Windows.Forms.ComboBox();
 			this._okButton = new System.Windows.Forms.Button();
+			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.flowLayoutPanel1.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
@@ -46,19 +46,6 @@
 			// 
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
-			// 
-			// flowLayoutPanel1
-			// 
-			this.flowLayoutPanel1.AutoSize = true;
-			this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.flowLayoutPanel1.Controls.Add(this._languageNameLabel);
-			this.flowLayoutPanel1.Controls.Add(this.tableLayoutPanel1);
-			this.flowLayoutPanel1.Controls.Add(this._okButton);
-			this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-			this.flowLayoutPanel1.Location = new System.Drawing.Point(30, 20);
-			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-			this.flowLayoutPanel1.Size = new System.Drawing.Size(219, 175);
-			this.flowLayoutPanel1.TabIndex = 0;
 			// 
 			// _languageNameLabel
 			// 
@@ -75,30 +62,11 @@
 			this._languageNameLabel.TabIndex = 1;
 			this._languageNameLabel.Text = "Language Name";
 			// 
-			// tableLayoutPanel1
-			// 
-			this.tableLayoutPanel1.AutoSize = true;
-			this.tableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.tableLayoutPanel1.ColumnCount = 1;
-			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-			this.tableLayoutPanel1.Controls.Add(this._rtlLanguageCheckBox, 0, 0);
-			this.tableLayoutPanel1.Controls.Add(this._tallerLinesCheckBox, 0, 1);
-			this.tableLayoutPanel1.Controls.Add(this._lineSpacingCombo, 0, 2);
-			this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 32);
-			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 3;
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(213, 105);
-			this.tableLayoutPanel1.TabIndex = 2;
-			// 
 			// _rtlLanguageCheckBox
 			// 
 			this._rtlLanguageCheckBox.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._rtlLanguageCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._rtlLanguageCheckBox, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._rtlLanguageCheckBox, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._rtlLanguageCheckBox, "ScriptSettingsDialog.RightToLeftScriptCheckBox");
 			this._rtlLanguageCheckBox.Location = new System.Drawing.Point(3, 3);
 			this._rtlLanguageCheckBox.Margin = new System.Windows.Forms.Padding(3, 3, 3, 6);
@@ -113,7 +81,6 @@
 			this._tallerLinesCheckBox.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._tallerLinesCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._tallerLinesCheckBox, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._tallerLinesCheckBox, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._tallerLinesCheckBox, "ScriptSettingsDialog.TallerLinesCheckBox");
 			this._tallerLinesCheckBox.Location = new System.Drawing.Point(3, 35);
 			this._tallerLinesCheckBox.Name = "_tallerLinesCheckBox";
@@ -121,6 +88,7 @@
 			this._tallerLinesCheckBox.TabIndex = 26;
 			this._tallerLinesCheckBox.Text = "This script requires taller lines";
 			this._tallerLinesCheckBox.UseVisualStyleBackColor = true;
+			this._tallerLinesCheckBox.CheckedChanged += new System.EventHandler(this._tallerLinesCheckBox_CheckedChanged);
 			// 
 			// _lineSpacingCombo
 			// 
@@ -145,7 +113,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._okButton, null);
 			this._L10NSharpExtender.SetLocalizingId(this._okButton, "Common.OKButton");
-			this._okButton.Location = new System.Drawing.Point(126, 143);
+			this._okButton.Location = new System.Drawing.Point(126, 147);
 			this._okButton.MinimumSize = new System.Drawing.Size(90, 29);
 			this._okButton.Name = "_okButton";
 			this._okButton.Padding = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -153,6 +121,37 @@
 			this._okButton.TabIndex = 3;
 			this._okButton.Text = "&OK";
 			this._okButton.UseVisualStyleBackColor = true;
+			// 
+			// flowLayoutPanel1
+			// 
+			this.flowLayoutPanel1.AutoSize = true;
+			this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.flowLayoutPanel1.Controls.Add(this._languageNameLabel);
+			this.flowLayoutPanel1.Controls.Add(this.tableLayoutPanel1);
+			this.flowLayoutPanel1.Controls.Add(this._okButton);
+			this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+			this.flowLayoutPanel1.Location = new System.Drawing.Point(30, 20);
+			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+			this.flowLayoutPanel1.Size = new System.Drawing.Size(219, 179);
+			this.flowLayoutPanel1.TabIndex = 0;
+			// 
+			// tableLayoutPanel1
+			// 
+			this.tableLayoutPanel1.AutoSize = true;
+			this.tableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.tableLayoutPanel1.ColumnCount = 1;
+			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.tableLayoutPanel1.Controls.Add(this._rtlLanguageCheckBox, 0, 0);
+			this.tableLayoutPanel1.Controls.Add(this._tallerLinesCheckBox, 0, 1);
+			this.tableLayoutPanel1.Controls.Add(this._lineSpacingCombo, 0, 2);
+			this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 32);
+			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+			this.tableLayoutPanel1.RowCount = 3;
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(213, 109);
+			this.tableLayoutPanel1.TabIndex = 2;
 			// 
 			// ScriptSettingsDialog
 			// 

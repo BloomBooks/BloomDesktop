@@ -295,7 +295,7 @@ namespace Bloom.Collection
 			this._fontSettings3Link.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._fontSettings3Link, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._fontSettings3Link, null);
-			this._L10NSharpExtender.SetLocalizingId(this._fontSettings3Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
+			this._L10NSharpExtender.SetLocalizingId(this._fontSettings3Link, "CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink");
 			this._fontSettings3Link.Location = new System.Drawing.Point(28, 248);
 			this._fontSettings3Link.Name = "_fontSettings3Link";
 			this._fontSettings3Link.Size = new System.Drawing.Size(141, 19);
@@ -309,7 +309,7 @@ namespace Bloom.Collection
 			this._fontSettings2Link.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._fontSettings2Link, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._fontSettings2Link, null);
-			this._L10NSharpExtender.SetLocalizingId(this._fontSettings2Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
+			this._L10NSharpExtender.SetLocalizingId(this._fontSettings2Link, "CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink");
 			this._fontSettings2Link.Location = new System.Drawing.Point(28, 161);
 			this._fontSettings2Link.Name = "_fontSettings2Link";
 			this._fontSettings2Link.Size = new System.Drawing.Size(141, 19);
@@ -323,7 +323,7 @@ namespace Bloom.Collection
 			this._fontSettings1Link.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._fontSettings1Link, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._fontSettings1Link, null);
-			this._L10NSharpExtender.SetLocalizingId(this._fontSettings1Link, "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink");
+			this._L10NSharpExtender.SetLocalizingId(this._fontSettings1Link, "CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink");
 			this._fontSettings1Link.Location = new System.Drawing.Point(28, 74);
 			this._fontSettings1Link.Name = "_fontSettings1Link";
 			this._fontSettings1Link.Size = new System.Drawing.Size(141, 19);

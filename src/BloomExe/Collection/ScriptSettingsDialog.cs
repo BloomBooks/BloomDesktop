@@ -54,6 +54,7 @@ namespace Bloom.Collection
 		{
 			get
 			{
+				if (!_lineSpacingCombo.Enabled) return 0;
 				return _lineSpacingCombo.SelectedIndex < 1 ? 0 : Convert.ToDecimal(_lineSpacingCombo.Text);
 			}
 			set
@@ -74,7 +75,14 @@ namespace Bloom.Collection
 						}
 					}
 				}
+
+				_lineSpacingCombo.Enabled = _tallerLinesCheckBox.Checked;
 			}
+		}
+
+		private void _tallerLinesCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			_lineSpacingCombo.Enabled = _tallerLinesCheckBox.Checked;
 		}
 	}
 }
