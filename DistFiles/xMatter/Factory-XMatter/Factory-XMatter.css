@@ -246,19 +246,19 @@
 .verso .licenseUrl {
   display: none;
 }
-BODY[editmode="original"] .titlePage #originalContributions .bloom-content1 {
+BODY[bookcreationtype="original"] .titlePage #originalContributions .bloom-content1 {
   display: inherit;
   min-height: 3em;
 }
-BODY[editmode="original"] .titlePage #funding .bloom-content1 {
+BODY[bookcreationtype="original"] .titlePage #funding .bloom-content1 {
   display: inherit;
   min-height: 3em;
 }
-BODY[editmode="translation"] .titlePage #originalContributions .bloom-contentNational1 {
+BODY[bookcreationtype="translation"] .titlePage #originalContributions .bloom-contentNational1 {
   display: inherit;
   min-height: 3em;
 }
-BODY[editmode="translation"] .titlePage #funding .bloom-contentNational1 {
+BODY[bookcreationtype="translation"] .titlePage #funding .bloom-contentNational1 {
   display: inherit;
   min-height: 3em;
 }

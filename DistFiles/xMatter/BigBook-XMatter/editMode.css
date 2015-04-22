@@ -29,7 +29,6 @@ DIV.bloom-imageContainer
 {
 	border: thin solid rgba(1, 1, 1, 0.2);
 }
-/*There are 2 sub-modes of editing, each with their own stylesheets: originalEditMode and translationEditMode.*/
 BODY
 {
 	background-color: #363333;

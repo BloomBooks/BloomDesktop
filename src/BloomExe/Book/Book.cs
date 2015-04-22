@@ -288,13 +288,14 @@ namespace Bloom.Book
 			if(LockedDown)
 			{
 				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css").ToLocalhost());
-				pageDom.AddEditMode("translation");
 			}
 			else
 			{
 				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css").ToLocalhost());
-				pageDom.AddEditMode("original");
 			}
+
+			AddCreationTypeAttribute(pageDom);
+
 			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css").ToLocalhost());
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
@@ -605,6 +606,7 @@ namespace Bloom.Book
 				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
 			}
 			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "origami.css");
+			AddCreationTypeAttribute(previewDom);
 
 			//We may have just run into an error for the first time
 			if (HasFatalError)
@@ -624,6 +626,11 @@ namespace Bloom.Book
 			AddPreviewJScript(previewDom);
 			previewDom.AddPublishClassToBody();
 			return previewDom;
+		}
+
+		private void AddCreationTypeAttribute(HtmlDom htmlDom)
+		{
+			htmlDom.AddCreationType(LockedDown ? "translation" : "original");
 		}
 
 		public void BringBookUpToDate(IProgress progress)
@@ -1615,7 +1622,7 @@ namespace Bloom.Book
 		public HtmlDom GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer)
 		{
 			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
-			//dom.LoadXml(OurHtmlDom.OuterXml);
+			AddCreationTypeAttribute(printingDom);
 
 			if (IsFolio)
 			{
