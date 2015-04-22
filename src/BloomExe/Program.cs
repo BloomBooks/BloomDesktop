@@ -480,8 +480,9 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		private static void StartUpShellBasedOnMostRecentUsedIfPossible()
 		{
-			if (Settings.Default.MruProjects.Latest == null  ||
-				!OpenProjectWindow(Settings.Default.MruProjects.Latest))
+			var path = Settings.Default.MruProjects.Latest;
+			Bloom.CollectionChoosing.OpenCreateCloneControl.CheckForBeingInDropboxFolder(path);
+			if (path == null || !OpenProjectWindow(path))
 			{
 				//since the message pump hasn't started yet, show the UI for choosing when it is //review june 2013... is it still not going, with the current splash screen?
 				Application.Idle += ChooseAnotherProject;
