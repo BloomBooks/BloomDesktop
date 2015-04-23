@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
-using System.Xml.Xsl;
-using Bloom.Book;
-using BloomTemp;
 using Palaso.Xml;
 using TidyManaged;
 using Palaso.IO;
@@ -40,15 +34,10 @@ namespace Bloom
 		public static XmlDocument GetXmlDomFromHtml(string content, bool includeXmlDeclaration = false)
 		{
 			var dom = new XmlDocument();
-			//hack. tidy deletes <span data-libray='somethingImportant'></span>
-			// and also (sometimes...apparently only the first child in a parent) <i some-important-attributes></i>
-			content = content.Replace("></span>", ">REMOVEME</span>");
-			content = content.Replace("></i>", ">REMOVEME</i>");
+			content = AddFillerToKeepTidyFromRemovingEmptyElements(content);
 
 			// It also likes to insert newlines before <b>, <u>, and <i>, and convert any existing whitespace
 			// there to a space.
-			// It probably does the same to embedded <span> elements, too, so we might need a similar fix
-			// for those if we start using them in persistent data.
 			content = content.Replace(@"<b>", "REMOVEWHITESPACE<b>");
 			content = content.Replace(@"<i>", "REMOVEWHITESPACE<i>");
 			content = content.Replace(@"<u>", "REMOVEWHITESPACE<u>");
@@ -89,9 +78,10 @@ namespace Bloom
 					var newContents = tidy.Save();
 					try
 					{
+						newContents = RemoveFillerInEmptyElements(newContents);
+
 						newContents = newContents.Replace("&nbsp;", "&#160;");
-							//REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
-						newContents = newContents.Replace("REMOVEME", "").Replace("\0", "");
+						//REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
 
 						// The regex here is mainly for the \s as a convenient way to remove whatever whitespace TIDY
 						// has inserted. It's a fringe benefit that we can use the[bi] to deal with both elements in one replace.
@@ -131,6 +121,29 @@ namespace Bloom
 
 			return dom;
 		}
+
+		/// <summary>
+		/// Tity is over-zealous. This is work-around. After running Tidy, then call RemoveFillerInEmptyElements() on the same text
+		/// </summary>
+		/// <returns></returns>
+		private static string AddFillerToKeepTidyFromRemovingEmptyElements(string content)
+		{
+			//hack. tidy deletes <span data-libray='somethingImportant'></span>
+			// and also (sometimes...apparently only the first child in a parent) <i some-important-attributes></i>
+			content = content.Replace("></span>", ">REMOVEME</span>");
+			content = content.Replace("></i>", ">REMOVEME</i>");
+			return content;
+		}
+
+		/// <summary>
+		/// This is to be run after running tity
+		/// </summary>
+		private static string RemoveFillerInEmptyElements(string contents)
+		{
+			return contents.Replace("REMOVEME", "").Replace("\0", "");
+		}
+
+
 
 
 		/// <summary>
@@ -219,43 +232,52 @@ namespace Bloom
 		/// <summary>
 		/// Convert the DOM (which is expected to be XHTML5) to HTML5
 		/// </summary>
-		public static string SaveDOMAsHtml5(XmlDocument dom, string tempPath)
+		public static string SaveDOMAsHtml5(XmlDocument dom, string targetPath)
 		{
-			var initialOutputPath = Path.GetTempFileName();
-
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.Indent = true;
-			settings.CheckCharacters = true;
-			settings.OmitXmlDeclaration = true;
-
-			using (var writer = XmlWriter.Create(initialOutputPath, settings))
+			using (var xmlFile = new TempFile())
 			{
-				dom.WriteContentTo(writer);
-				writer.Close();
+				// First we write the DOM out to string
+
+				var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true, OmitXmlDeclaration = true};
+				var xmlStringBuilder = new StringBuilder();
+				using (var writer = XmlWriter.Create(xmlStringBuilder, settings))
+				{
+					dom.WriteContentTo(writer);
+					writer.Close();
+				}
+
+				// HTML Tidy will mess that xml up, so we have this work around to make it "safe from libtidy"
+				var xml = xmlStringBuilder.ToString();
+				xml = AddFillerToKeepTidyFromRemovingEmptyElements(xml);
+
+				// Now re-write as html, indented nicely
+				using (var tidy = TidyManaged.Document.FromString(xml))
+				{
+					tidy.ShowWarnings = false;
+					tidy.Quiet = true;
+					tidy.AddTidyMetaElement = false;
+					tidy.OutputXml = false;
+					tidy.OutputHtml = true;
+					tidy.DocType = DocTypeMode.Html5;
+					tidy.MergeDivs = AutoBool.No;
+					tidy.MergeSpans = AutoBool.No;
+					tidy.PreserveEntities = true;
+					tidy.JoinStyles = false;
+					tidy.IndentBlockElements = AutoBool.Auto; //instructions say avoid 'yes'
+					tidy.WrapAt = 9999;
+					tidy.IndentSpaces = 4;
+					tidy.CharacterEncoding = EncodingType.Utf8;
+					tidy.CleanAndRepair();
+					tidy.Save(targetPath);
+				}
+
+				// Now revert the stuff we did to make it "safe from libtidy"
+				var html = File.ReadAllText(targetPath);
+				html = RemoveFillerInEmptyElements(html);
+				File.WriteAllText(targetPath, html, Encoding.UTF8);
 			}
 
-			//now re-write, indented nicely
-			using (var tidy = TidyManaged.Document.FromFile(initialOutputPath))
-			{
-				tidy.ShowWarnings = false;
-				tidy.Quiet = true;
-				tidy.AddTidyMetaElement = false;
-				tidy.OutputXml = false;
-				tidy.OutputHtml = true;
-				tidy.DocType = DocTypeMode.Html5;
-				tidy.MergeDivs = AutoBool.No;
-				tidy.MergeSpans = AutoBool.No;
-				tidy.PreserveEntities = true;
-				tidy.JoinStyles = false;
-				tidy.IndentBlockElements = AutoBool.Auto; //instructions say avoid 'yes'
-				tidy.WrapAt = 9999;
-				tidy.IndentSpaces = 4;
-				tidy.CharacterEncoding = EncodingType.Utf8;
-				tidy.CleanAndRepair();
-				tidy.Save(tempPath);
-			}
-			File.Delete(initialOutputPath);
-			return tempPath;
+			return targetPath;
 		}
 
 		public static void RemoveAllContentTypesMetas(XmlDocument dom)
