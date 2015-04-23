@@ -99,9 +99,25 @@ namespace Bloom.Publish
 				// and continue to show it using that.
 			}
 #endif
-
-			var url = string.Format("{0}{1}?file=/bloom/{2}", Bloom.web.ServerBase.PathEndingInSlash,
-				FileLocator.GetFileDistributedWithApplication("pdf/web/viewer.html"), pdfFile);
+			// Escaping the filename twice for characters like # is needed in order to get the
+			// pdf filename through Geckofx/xulrunner to our local server on Linux.  This is to
+			// prevent the filename from being cut short at the # character.  As far as I can
+			// tell, Linux xulrunner strips one level of escaping on input, then before passing
+			// the query on to the localhost server it truncates the query portion at the first
+			// # it sees.  The localhost processor expects one level of encoding, and we deal
+			// with having a # in the query (file path) there without any problem.  You may
+			// regard this double escaping as a hack to get around the Linux xulrunner which
+			// behaves differently than the Windows xulrunner.  It is an exception to the rule
+			// of matching EscapeCharsForHttp() with UnescapeCharsForHttp().  See a comment in
+			// https://jira.sil.org/browse/BL-951 for a description of the buggy program
+			// behavior without this hack.
+			var file = pdfFile;
+			if (Palaso.PlatformUtilities.Platform.IsUnix)
+				file = file.EscapeCharsForHttp().EscapeCharsForHttp();
+			var url = string.Format("{0}{1}?file=/bloom/{2}",
+				Bloom.web.ServerBase.PathEndingInSlash,
+				FileLocator.GetFileDistributedWithApplication("pdf/web/viewer.html"),
+				file);
 
 			var browser = ((GeckoWebBrowser)_pdfViewerControl);
 			browser.Navigate(url);
