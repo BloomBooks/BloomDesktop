@@ -39,7 +39,7 @@ namespace Bloom.Book
 			var jsonPath = MetaDataPath;
 			if (File.Exists(jsonPath))
 			{
-				_metadata = BookMetaData.FromString(File.ReadAllText(jsonPath)); // Enhance: error handling?
+				_metadata = BookMetaData.FromString(BloomFile.ReadAllText(jsonPath)); // Enhance: error handling?
 			}
 			else
 			{
@@ -243,7 +243,7 @@ namespace Bloom.Book
 			{
 				try
 				{
-					File.WriteAllText(MetaDataPath, MetaData.Json);
+					BloomFile.WriteAllText(MetaDataPath, MetaData.Json);
 					return;
 				}
 				catch (IOException e)
@@ -394,7 +394,7 @@ namespace Bloom.Book
 
 		public static BookMetaData FromFolder(string bookFolderPath)
 		{
-			return FromString(File.ReadAllText(MetaDataPath(bookFolderPath)));
+			return FromString(BloomFile.ReadAllText(MetaDataPath(bookFolderPath)));
 		}
 
 		public static string MetaDataPath(string bookFolderPath)
@@ -404,7 +404,7 @@ namespace Bloom.Book
 
 		public void WriteToFolder(string bookFolderPath)
 		{
-			File.WriteAllText(MetaDataPath(bookFolderPath), Json);
+			BloomFile.WriteAllText(MetaDataPath(bookFolderPath), Json);
 		}
 
 		[JsonIgnore]

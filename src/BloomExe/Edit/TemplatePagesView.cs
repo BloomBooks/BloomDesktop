@@ -105,7 +105,7 @@ namespace Bloom.Edit
 			var frame = BloomFileLocator.GetFileDistributedWithApplication("BloomBrowserUI", "bookEdit", "BookPagesThumbnailList",
 				"TemplatePagesThumbnailList.htm");
 			var backColor = ColorToHtmlCode(BackColor);
-			var htmlText = System.IO.File.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
+			var htmlText = BloomFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
 			var dom = new HtmlDom(htmlText);
 			dom = _bookSelection.CurrentSelection.GetHtmlDomReadyToAddPages(dom);
 			var pageDoc = dom.RawDom;

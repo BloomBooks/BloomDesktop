@@ -415,7 +415,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private static string MetaDataText(string bookFolder)
 		{
-			return File.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
+			return BloomFile.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
 		}
 
 		private string S3BookId(BookMetaData metadata)
@@ -465,14 +465,14 @@ namespace Bloom.WebLibraryIntegration
 
 		public void HandleBookOrder(string bookOrderPath, string projectPath)
 		{
-			var metadata = BookMetaData.FromString(File.ReadAllText(bookOrderPath));
+			var metadata = BookMetaData.FromString(BloomFile.ReadAllText(bookOrderPath));
 			var s3BookId = metadata.DownloadSource;
 			_s3Client.DownloadBook(s3BookId, Path.GetDirectoryName(projectPath));
 		}
 
 		public bool IsBookOnServer(string bookPath)
 		{
-			var metadata = BookMetaData.FromString(File.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
+			var metadata = BookMetaData.FromString(BloomFile.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
 			return _parseClient.GetSingleBookRecord(metadata.Id) != null;
 		}
 

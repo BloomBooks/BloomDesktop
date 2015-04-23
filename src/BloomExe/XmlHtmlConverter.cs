@@ -27,7 +27,7 @@ namespace Bloom
 		/// <returns></returns>
 		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration = false)
 		{
-			return GetXmlDomFromHtml(File.ReadAllText(path), includeXmlDeclaration);
+			return GetXmlDomFromHtml(BloomFile.ReadAllText(path), includeXmlDeclaration);
 		}
 
 		/// <summary>
@@ -59,7 +59,7 @@ namespace Bloom
 			//using (var temp = new TempFile())
 			var temp = new TempFile();
 			{
-				File.WriteAllText(temp.Path, content, Encoding.UTF8);
+				BloomFile.WriteAllText(temp.Path, content, Encoding.UTF8);
 				using (var tidy = TidyManaged.Document.FromFile(temp.Path))
 				{
 					tidy.ShowWarnings = false;

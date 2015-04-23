@@ -606,7 +606,7 @@ namespace Bloom
 			}
 
 			var tf = TempFile.CreateAndGetPathButDontMakeTheFile();
-			File.WriteAllText(tf.Path,html);
+			BloomFile.WriteAllText(tf.Path,html);
 			SetNewTempFile(tf);
 			_url = _tempHtmlFile.Path;
 			UpdateDisplay();

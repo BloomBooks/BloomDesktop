@@ -36,7 +36,7 @@ namespace Bloom.Book
 				var path = Path.Combine(PathToFolder, "description-en.txt");
 				if(File.Exists(path))
 				{
-					return File.ReadAllText(path);
+					return BloomFile.ReadAllText(path);
 				}
 				return "";
 			}

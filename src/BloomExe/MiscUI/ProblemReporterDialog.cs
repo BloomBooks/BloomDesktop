@@ -397,12 +397,12 @@ namespace Bloom.MiscUI
 			var file = TempFile.WithFilenameInTempFolder(UsageReporter.AppNameToUseInReporting + ".log");
 			try
 			{
-				File.WriteAllText(file.Path, Logger.LogText);
+				BloomFile.WriteAllText(file.Path, Logger.LogText);
 			}
 			catch (Exception err)
 			{
 				//We have more than one report of dieing while logging an exception.
-				File.WriteAllText(file.Path, "****Could not read from log: " + err.Message);
+				BloomFile.WriteAllText(file.Path, "****Could not read from log: " + err.Message);
 			}
 			return file;
 		}
@@ -426,7 +426,7 @@ namespace Bloom.MiscUI
 		private void _seeDetails_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			var temp = TempFile.WithExtension(".txt");
-			File.WriteAllText(temp.Path, GetFullDescriptionContents(true));
+			BloomFile.WriteAllText(temp.Path, GetFullDescriptionContents(true));
 			Process.Start(temp.Path);
 			//yes, we're leaking this temp file
 		}
