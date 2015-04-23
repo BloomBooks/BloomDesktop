@@ -125,14 +125,14 @@ namespace Bloom.WebLibraryIntegration
 				catch (Exception)
 				{
 				}
-				var message = LocalizationManager.GetString("PublishTab.Upload.DownloadProblem",
+				var message = LocalizationManager.GetString("Download.ProblemNotice",
 					"There was a problem downloading your book. You may need to restart Bloom or get technical help.");
 				if (e is TimeoutException) // BL-1233, we've seen what appear to be timeout exceptions, can't confirm the actual Exception subclass though.
-					message = LocalizationManager.GetString("PublishTab.Upload.TimeoutDownloadProblem",
-					"There was a problem downloading your book: something took too long. Possibly there is a problem with your network connection. It may work if you try again a bit later.");
+					message = LocalizationManager.GetString("Download.TimeoutProblemNotice",
+					"There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
 				if (e is AmazonServiceException || e is WebException) // Network problems, not an internal error, less alarming message called for
-					message = LocalizationManager.GetString("Download.GenericDownloadProblemNotice",
-						"There was a problem downloading your book.  It may work if you try again a bit later.");
+					message = LocalizationManager.GetString("Download.GenericNetworkProblemNotice",
+						"There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
 				DisplayProblem(e, message);
 				return "";
 			}
