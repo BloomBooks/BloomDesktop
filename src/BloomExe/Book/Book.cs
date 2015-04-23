@@ -715,7 +715,7 @@ namespace Bloom.Book
 
 		internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 		{
-			var oldTags = File.ReadAllText(oldTagsPath);
+			var oldTags = BloomFile.ReadAllText(oldTagsPath);
 			bookMetaData.IsSuitableForMakingShells = oldTags.Contains("suitableForMakingShells");
 			bookMetaData.IsFolio = oldTags.Contains("folio");
 			bookMetaData.IsExperimental = oldTags.Contains("experimental");
@@ -1130,7 +1130,7 @@ namespace Bloom.Book
 			{
 				var options = new MarkdownOptions() {LinkEmails = true, AutoHyperlink=true};
 				var m = new Markdown(options);
-				var contents = m.Transform(File.ReadAllText(AboutBookMarkdownPath));
+				var contents = m.Transform(BloomFile.ReadAllText(AboutBookMarkdownPath));
 				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unneccessary.... do they scan .md files?
 
 				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
@@ -1729,12 +1729,12 @@ namespace Bloom.Book
 		/// </summary>
 		private void WriteLanguageDisplayStyleSheet( )
 		{
-			var template = File.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
+			var template = BloomFile.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
 
 			using (var temp = TempFile.WithExtension(".css"))
 			{
-				File.WriteAllText(temp.Path,
+				BloomFile.WriteAllText(temp.Path,
 					template.Replace("VERNACULAR", _collectionSettings.Language1Iso639Code)
 						.Replace("NATIONAL", _collectionSettings.Language2Iso639Code));
 

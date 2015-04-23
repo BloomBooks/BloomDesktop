@@ -139,7 +139,7 @@ namespace Bloom.Book
 				{
 					throw new ApplicationException("Could not locate "+fileName);
 				}
-				var contents = File.ReadAllText(path);
+				var contents = BloomFile.ReadAllText(path);
 				var start = contents.IndexOf("STARTLAYOUTS");
 				if (start < 0)
 					 continue; //yield break; // continue;//move on to the next stylesheet

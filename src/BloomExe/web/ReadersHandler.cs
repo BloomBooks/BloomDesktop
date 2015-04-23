@@ -48,7 +48,7 @@ namespace Bloom.web
 				case "saveReaderToolSettings":
 					var path = currentCollectionSettings.DecodableLevelPathName;
 					var content = info.GetPostData()["data"];
-					File.WriteAllText(path, content, Encoding.UTF8);
+					BloomFile.WriteAllText(path, content, Encoding.UTF8);
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput("OK");
 					return true;
@@ -187,11 +187,11 @@ namespace Bloom.web
 			path = Path.Combine(path, fileName);
 
 			// first try utf-8/ascii encoding (the .Net default)
-			var text = File.ReadAllText(path);
+			var text = BloomFile.ReadAllText(path);
 
 			// If the "unknown" character (65533) is present, C# did not sucessfully decode the file. Try the system default encoding and codepage.
 			if (text.Contains((char)65533))
-				text = File.ReadAllText(path, Encoding.Default);
+				text = BloomFile.ReadAllText(path, Encoding.Default);
 
 			return text;
 		}
@@ -202,12 +202,12 @@ namespace Bloom.web
 
 			// if file exists, return current settings
 			if (File.Exists(settingsPath))
-				return File.ReadAllText(settingsPath, Encoding.UTF8);
+				return BloomFile.ReadAllText(settingsPath, Encoding.UTF8);
 
 			// file does not exist, so make a new one
 			var settings = new ReaderToolsSettings(true);
 			var settingsString = settings.Json;
-			File.WriteAllText(settingsPath, settingsString);
+			BloomFile.WriteAllText(settingsPath, settingsString);
 
 			return settingsString;
 		}
@@ -277,7 +277,7 @@ namespace Bloom.web
 				var fileName = string.Format(ProjectContext.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 				fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
-				File.WriteAllText(fileName, jsonString, Encoding.UTF8);
+				BloomFile.WriteAllText(fileName, jsonString, Encoding.UTF8);
 			}
 			finally
 			{

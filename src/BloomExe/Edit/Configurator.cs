@@ -116,7 +116,7 @@ namespace Bloom.Edit
 			//when it is done with the previous navigation.
 			if (sanityCheckDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count < 24) //should be 24 pages
 			{
-				Logger.WriteMinorEvent(File.ReadAllText(bookPath)); //this will come to us if they report it
+				Logger.WriteMinorEvent(BloomFile.ReadAllText(bookPath)); //this will come to us if they report it
 				throw new ApplicationException("Malformed Calendar (code assumes only calendar uses the Configurator, and they have at least 24 pages)");
 			}
 
@@ -203,7 +203,7 @@ namespace Bloom.Edit
 					libraryData = MergeJsonData(DynamicJson.Parse(existingDataString).library.ToString(), libraryData.ToString());
 			}
 
-			File.WriteAllText(PathToLibraryJson, libraryData.ToString());
+			BloomFile.WriteAllText(PathToLibraryJson, libraryData.ToString());
 
 
 		}
@@ -281,7 +281,7 @@ namespace Bloom.Edit
 			if (!File.Exists(PathToLibraryJson))
 				return "{}";//return "{\"dummy\": \"x\"}";//TODO
 
-			var s= File.ReadAllText(PathToLibraryJson);
+			var s= BloomFile.ReadAllText(PathToLibraryJson);
 			if(string.IsNullOrEmpty(s))
 				return string.Empty;
 

@@ -359,7 +359,7 @@ namespace Bloom.CollectionTab
 		/// <returns>A UTF8-encoded byte array filled with the contents of the bookFile</returns>
 		private static byte[] GetBookReplacedWithTemplate(string bookFile)
 		{
-			var text = File.ReadAllText(bookFile, Encoding.UTF8);
+			var text = BloomFile.ReadAllText(bookFile, Encoding.UTF8);
 			// Note that we're getting rid of preceding newline but not following one. Hopefully we cleanly remove a whole line.
 			// I'm not sure the </meta> ever occurs in html files, but just in case we'll match if present.
 			var regex = new Regex("\\s*<meta\\s+name=(['\\\"])lockedDownAsShell\\1 content=(['\\\"])true\\2>(</meta>)? *");
@@ -405,7 +405,7 @@ namespace Bloom.CollectionTab
 				{
 					MessageBox.Show("Bloom will now open a list of problems it found.");
 					var path = Path.GetTempFileName() + ".txt";
-					File.WriteAllText(path, dlg.ProgressString.Text);
+					BloomFile.WriteAllText(path, dlg.ProgressString.Text);
 					PathUtilities.OpenFileInApplication(path);
 				}
 				else
@@ -430,7 +430,7 @@ namespace Bloom.CollectionTab
 				}
 
 				var path = Path.GetTempFileName() + ".txt";
-				File.WriteAllText(path, dlg.ProgressString.Text);
+				BloomFile.WriteAllText(path, dlg.ProgressString.Text);
 				PathUtilities.OpenFileInApplication(path);
 			}
 
