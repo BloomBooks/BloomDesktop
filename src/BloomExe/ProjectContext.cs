@@ -434,6 +434,11 @@ namespace Bloom
 			get { return _scope.Resolve<SendReceiver>(); }
 		}
 
+		internal BloomFileLocator OptimizedFileLocator
+		{
+			get { return _scope.Resolve<BloomFileLocator>(); }
+		}
+
 		internal BookServer BookServer
 		{
 			get { return _scope.Resolve<BookServer>(); }
