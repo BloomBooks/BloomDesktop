@@ -202,6 +202,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationContainer.cs" />
+    <Compile Include="BloomFile.cs" />
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="Book\BookInfo.cs" />
     <Compile Include="Book\BookServer.cs" />

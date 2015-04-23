@@ -376,7 +376,7 @@ namespace Bloom.Collection
 			}
 			catch (Exception e)
 			{
-				ApplicationException a = new ApplicationException(File.ReadAllText(SettingsFilePath), e);
+				ApplicationException a = new ApplicationException(BloomFile.ReadAllText(SettingsFilePath), e);
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
 																 "There was an error reading the library settings file.  Please report this error to the developers. To get access to your books, you should make a new library, then copy your book folders from this broken library into the new one, then run Bloom again.");
 				throw;
