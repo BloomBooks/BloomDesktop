@@ -27,7 +27,7 @@ namespace Bloom
 		/// <returns></returns>
 		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration = false)
 		{
-			return GetXmlDomFromHtml(File.ReadAllText(path), includeXmlDeclaration);
+			return GetXmlDomFromHtml(BloomFile.ReadAllText(path), includeXmlDeclaration);
 		}
 
 		/// <summary>
