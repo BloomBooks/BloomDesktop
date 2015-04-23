@@ -1,7 +1,6 @@
 // Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System.Collections.Specialized;
-using System.IO;
 using System.Text;
 
 namespace Bloom.web
@@ -43,7 +42,6 @@ namespace Bloom.web
 		public void ReplyWithFileContent(string path)
 		{
 			ReplyImagePath = path;
-			WriteCompleteOutput(File.ReadAllText(path));
 		}
 
 		public void ReplyWithImage(string path)

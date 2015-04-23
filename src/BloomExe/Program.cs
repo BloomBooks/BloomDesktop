@@ -930,10 +930,5 @@ namespace Bloom
 
 			return bloomProcessCount;
 		}
-
-		public static BloomFileLocator OptimizedFileLocator
-		{
-			get { return _projectContext.OptimizedFileLocator; }
-		}
 	}
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using Bloom.web;
-using Palaso.IO;
 using Palaso.Reporting;
 using Bloom.Properties;
 
@@ -77,33 +75,20 @@ namespace Bloom.ImageProcessing
 				return false;
 
 			var r = GetLocalPathWithoutQuery(info);
-
-			// only process these image types
-			if (!r.EndsWith(".png") && !r.EndsWith(".jpg") && !r.EndsWith(".svg")) return false;
-
-			r = r.Replace("thumbnail", "");
-
-			// This happens with the new way we are serving css files
-			if (!File.Exists(r))
+			if (r.EndsWith(".png") || r.EndsWith(".jpg"))
 			{
-				var fileName = r;
-				var pos = fileName.LastIndexOfAny(new[] { '\\', '/' });
-				if (pos > -1) fileName = fileName.Substring(pos + 1);
+				r = r.Replace("thumbnail", "");
+				if (File.Exists(r))
+				{
+					// thumbnail requests have the thumbnail parameter set in the query string
+					var thumb = info.GetQueryString()["thumbnail"] != null;
+					var pathToFile = _cache.GetPathToResizedImage(r, thumb);
 
-				var sourceDir = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
-				r = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
-			}
+					if (string.IsNullOrEmpty(pathToFile)) return false;
 
-			if (!string.IsNullOrEmpty(r))
-			{
-				// thumbnail requests have the thumbnail parameter set in the query string
-				var thumb = info.GetQueryString()["thumbnail"] != null;
-				var pathToFile = _cache.GetPathToResizedImage(r, thumb);
-
-				if (string.IsNullOrEmpty(pathToFile)) return false;
-
-				info.ReplyWithImage(pathToFile);
-				return true;
+					info.ReplyWithImage(pathToFile);
+					return true;
+				}
 			}
 			return false;
 		}
