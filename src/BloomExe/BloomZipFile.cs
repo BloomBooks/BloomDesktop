@@ -34,7 +34,7 @@ namespace Bloom
 		private void AddFile(string path, string entryName)
 		{
 			var fi = new FileInfo(path);
-			var newEntry = new ZipEntry(entryName) {DateTime = fi.LastWriteTime, Size = fi.Length};
+			var newEntry = new ZipEntry(entryName) {DateTime = fi.LastWriteTime, Size = fi.Length, IsUnicodeText = true};
 
 			_zipStream.PutNextEntry(newEntry);
 
