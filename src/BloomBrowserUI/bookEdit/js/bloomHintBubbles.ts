@@ -3,65 +3,12 @@
 /// <reference path="collectionSettings.d.ts" />
 /// <reference path="bloomQtipUtils.ts" />
 
-// Attempting to factor all qtip-related code out of bloomEditing.js
-
 interface qtipInterface extends JQuery {
     qtip(options: any): JQuery;
     qtipSecondary(options: any): JQuery;
 }
 
-interface textMarkup extends JQueryStatic {
-    cssSentenceTooLong(): JQuery;
-    cssSightWord(): JQuery;
-    cssWordNotFound(): JQuery;
-    cssPossibleWord(): JQuery;
-}
-
 class bloomHintBubbles {
-    /**
-     * Respond to messages from other iframes
-     * @param {MessageEvent} event
-     */
-    public static processAccordionRequest(event: MessageEvent): void {
-
-        var params = event.data.split("\n");
-
-        switch(params[0]) {
-
-            case 'Qtips': // request from accordion to add qtips to marked-up spans
-                // We could make separate messages for these...
-                bloomHintBubbles.markDecodableStatus();
-                bloomHintBubbles.markLeveledStatus();
-
-                return;
-        }
-    }
-
-    private static markDecodableStatus(): void {
-        // q-tips; mark sight words and non-decodable words
-        var editableElements = $(".bloom-content1");
-        editableElements.find('span.' + (<textMarkup>$).cssSightWord()).each(function() {
-            (<qtipInterface>$(this)).qtip({ content: 'Sight word' });
-        });
-
-        editableElements.find('span.' + (<textMarkup>$).cssWordNotFound()).each(function() {
-            (<qtipInterface>$(this)).qtip({ content: 'This word is not decodable in this stage.' });
-        });
-
-        // we're considering dropping this entirely
-        // We are disabling the "Possible Word" feature at this time.
-        //editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-        //    (<qtipInterface>$(this)).qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
-        //});
-    }
-
-    private static markLeveledStatus(): void {
-        // q-tips; mark sentences that are too long
-        var editableElements = $(".bloom-content1");
-        editableElements.find('span.' + (<textMarkup>$).cssSentenceTooLong()).each(function() {
-            (<qtipInterface>$(this)).qtip({ content: 'This sentence is too long for this level.' });
-        });
-    }
 
     // Add (yellow) hint bubbles from (usually) label.bubble elements
     public static addHintBubbles(container: HTMLElement): void {
@@ -119,9 +66,6 @@ class bloomHintBubbles {
             var whatToSay = $(this).attr("data-hint");//don't use .data(), as that will trip over any } in the hint and try to interpret it as json
             if (!whatToSay)
                 return;
-
-            //make hints that start with a * only show when the field has focus
-            var showOnFocusOnly = whatToSay.startsWith("*");
 
             if (whatToSay.startsWith("*")) {
                 whatToSay = whatToSay.substring(1, 1000);

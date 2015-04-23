@@ -1,6 +1,17 @@
 /// <reference path="readerToolsModel.ts" />
 /// <reference path="directoryWatcher.ts" />
 
+interface qtipInterface extends JQuery {
+  qtip(options: any): JQuery;
+}
+
+interface textMarkup extends JQueryStatic {
+  cssSentenceTooLong(): JQuery;
+  cssSightWord(): JQuery;
+  cssWordNotFound(): JQuery;
+  cssPossibleWord(): JQuery;
+}
+
 // listen for messages sent to this page
 window.addEventListener('message', processDLRMessage, false);
 
@@ -42,8 +53,41 @@ function processDLRMessage(event: MessageEvent): void {
       model.setMarkupType(parseInt(params[1]));
       return;
 
+    case 'Qtips': // request from accordion to add qtips to marked-up spans
+      // We could make separate messages for these...
+      markDecodableStatus();
+      markLeveledStatus();
+
+      return;
+
     default:
   }
+}
+
+function markDecodableStatus(): void {
+  // q-tips; mark sight words and non-decodable words
+  var editableElements = $(".bloom-content1");
+  editableElements.find('span.' + (<textMarkup>$).cssSightWord()).each(function() {
+    (<qtipInterface>$(this)).qtip({ content: 'Sight word' });
+  });
+
+  editableElements.find('span.' + (<textMarkup>$).cssWordNotFound()).each(function() {
+    (<qtipInterface>$(this)).qtip({ content: 'This word is not decodable in this stage.' });
+  });
+
+// we're considering dropping this entirely
+// We are disabling the "Possible Word" feature at this time.
+//editableElements.find('span.' + $.cssPossibleWord()).each(function() {
+//    (<qtipInterface>$(this)).qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
+//});
+}
+
+function markLeveledStatus(): void {
+  // q-tips; mark sentences that are too long
+  var editableElements = $(".bloom-content1");
+  editableElements.find('span.' + (<textMarkup>$).cssSentenceTooLong()).each(function() {
+    (<qtipInterface>$(this)).qtip({ content: 'This sentence is too long for this level.' });
+  });
 }
 
 function initializeDecodableRT(): void {

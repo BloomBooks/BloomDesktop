@@ -5,42 +5,6 @@
 var bloomHintBubbles = (function () {
     function bloomHintBubbles() {
     }
-    /**
-     * Respond to messages from other iframes
-     * @param {MessageEvent} event
-     */
-    bloomHintBubbles.processAccordionRequest = function (event) {
-        var params = event.data.split("\n");
-        switch (params[0]) {
-            case 'Qtips':
-                // We could make separate messages for these...
-                bloomHintBubbles.markDecodableStatus();
-                bloomHintBubbles.markLeveledStatus();
-                return;
-        }
-    };
-    bloomHintBubbles.markDecodableStatus = function () {
-        // q-tips; mark sight words and non-decodable words
-        var editableElements = $(".bloom-content1");
-        editableElements.find('span.' + $.cssSightWord()).each(function () {
-            $(this).qtip({ content: 'Sight word' });
-        });
-        editableElements.find('span.' + $.cssWordNotFound()).each(function () {
-            $(this).qtip({ content: 'This word is not decodable in this stage.' });
-        });
-        // we're considering dropping this entirely
-        // We are disabling the "Possible Word" feature at this time.
-        //editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-        //    (<qtipInterface>$(this)).qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
-        //});
-    };
-    bloomHintBubbles.markLeveledStatus = function () {
-        // q-tips; mark sentences that are too long
-        var editableElements = $(".bloom-content1");
-        editableElements.find('span.' + $.cssSentenceTooLong()).each(function () {
-            $(this).qtip({ content: 'This sentence is too long for this level.' });
-        });
-    };
     // Add (yellow) hint bubbles from (usually) label.bubble elements
     bloomHintBubbles.addHintBubbles = function (container) {
         //Handle <label>-defined hint bubbles on mono fields, that is divs that aren't in the context of a
@@ -90,8 +54,6 @@ var bloomHintBubbles = (function () {
             var whatToSay = $(this).attr("data-hint"); //don't use .data(), as that will trip over any } in the hint and try to interpret it as json
             if (!whatToSay)
                 return;
-            //make hints that start with a * only show when the field has focus
-            var showOnFocusOnly = whatToSay.startsWith("*");
             if (whatToSay.startsWith("*")) {
                 whatToSay = whatToSay.substring(1, 1000);
             }
