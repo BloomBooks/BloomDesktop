@@ -82,7 +82,6 @@ namespace Bloom
 
 						newContents = newContents.Replace("&nbsp;", "&#160;");
 						//REVIEW: 1) are there others? &amp; and such are fine.  2) shoul we to convert back to &nbsp; on save?
-						newContents = newContents.Replace("REMOVEME", "").Replace("\0", "");
 
 						// The regex here is mainly for the \s as a convenient way to remove whatever whitespace TIDY
 						// has inserted. It's a fringe benefit that we can use the[bi] to deal with both elements in one replace.
