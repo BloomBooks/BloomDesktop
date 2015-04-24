@@ -53,8 +53,10 @@ namespace Bloom.ToPalaso
 			// I hate catching 'Exception' but the one that is likely to happen, the user refused the privilege escalation
 			// or is not authorized to do it, comes out as Win32Exception, which is not much more helpful.
 			// We probably want to ignore anything else that can go wrong with trying to install the fonts.
-			catch (Exception)
+			catch (Exception e)
 			{
+				Palaso.Reporting.Logger.WriteEvent("**** Error trying to install font: "+e.Message);
+				Debug.Fail(e.Message);
 			}
 		}
 

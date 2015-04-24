@@ -537,7 +537,7 @@ namespace Bloom.Collection
 
 		private string GetDefaultFontName()
 		{
-			foreach (var candidate in new[] { "Andika", "Gentium", "Charis", "Paduak"/*Myanmar*/})
+			foreach(var candidate in new[] { "Andika New Basic", "Andika", "Gentium", "Charis", "Paduak"/*Myanmar*/})
 			{
 				string lower = candidate.ToLowerInvariant();
 				if (FontFamily.Families.FirstOrDefault(f =>
