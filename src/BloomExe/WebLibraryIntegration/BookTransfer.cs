@@ -109,32 +109,31 @@ namespace Bloom.WebLibraryIntegration
 				LastBookDownloadedPath = destinationPath;
 
 				Analytics.Track("DownloadedBook-Success",
-					new Dictionary<string, string>() {{"url", url}, {"title",title}});
+					new Dictionary<string, string>() {{"url", url}, {"title", title}});
 				return destinationPath;
-			}
-			catch (WebException e)
-			{
-				DisplayNetworkDownloadProblem(e);
-				Analytics.Track("DownloadedBook-Failure",
-					new Dictionary<string, string>() { { "url", url }, { "title", title } });
-				Analytics.ReportException(e);
-				return "";
-			}
-			catch (AmazonServiceException e)
-			{
-				DisplayNetworkDownloadProblem(e);
-				Analytics.Track("DownloadedBook-Failure",
-					new Dictionary<string, string>() { { "url", url }, { "title", title } });
-				Analytics.ReportException(e);
-				return "";
 			}
 			catch (Exception e)
 			{
-				DisplayProblem(e, LocalizationManager.GetString("PublishTab.Upload.DownloadProblem",
-					"There was a problem downloading your book. You may need to restart Bloom or get technical help."));
-				Analytics.Track("DownloadedBook-Failure",
-					new Dictionary<string, string>() { { "url", url }, { "title", title } });
-				Analytics.ReportException(e);
+				try
+				{
+					// We want to try this before we give a report that may terminate the program. But if something
+					// more goes wrong, ignore it.
+					Analytics.Track("DownloadedBook-Failure",
+						new Dictionary<string, string>() { { "url", url }, { "title", title } });
+					Analytics.ReportException(e);
+				}
+				catch (Exception)
+				{
+				}
+				var message = LocalizationManager.GetString("Download.ProblemNotice",
+					"There was a problem downloading your book. You may need to restart Bloom or get technical help.");
+				if (e is TimeoutException) // BL-1233, we've seen what appear to be timeout exceptions, can't confirm the actual Exception subclass though.
+					message = LocalizationManager.GetString("Download.TimeoutProblemNotice",
+					"There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
+				if (e is AmazonServiceException || e is WebException) // Network problems, not an internal error, less alarming message called for
+					message = LocalizationManager.GetString("Download.GenericNetworkProblemNotice",
+						"There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
+				DisplayProblem(e, message);
 				return "";
 			}
 		}
@@ -147,12 +146,6 @@ namespace Bloom.WebLibraryIntegration
 					shellWindow.Invoke(action);
 				else
 					action.Invoke();
-		}
-
-		private static void DisplayNetworkDownloadProblem(Exception e)
-		{
-			DisplayProblem(e, LocalizationManager.GetString("Download.GenericDownloadProblemNotice",
-				"There was a problem downloading your book."));
 		}
 
 		private static void DisplayNetworkUploadProblem(Exception e, IProgress progress)
@@ -203,11 +196,11 @@ namespace Bloom.WebLibraryIntegration
 				if (_progressDialog.ProgressStateResult != null &&
 					_progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
 				{
-					Palaso.Reporting.ErrorReport.ReportFatalException(
-						_progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
+						Palaso.Reporting.ErrorReport.ReportFatalException(
+							_progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
+					}
 				}
 			}
-		}
 
 		/// <summary>
 		/// this runs in a worker thread
