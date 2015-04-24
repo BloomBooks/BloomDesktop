@@ -278,11 +278,11 @@ namespace Bloom.CollectionChoosing
 			}
 			catch (Exception e)
 			{
-				// once we fix BL-1246, we should enable this:
-//				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-//					"For some reason Bloom could not check your Dropbox settings. This should not cause you any problems, but please report it so we can fix it.");
+				// To help fix BL-1246, we enable this:
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					"For some reason Bloom could not check your Dropbox settings. This should not cause you any problems, but please report it so we can fix it.");
+				Palaso.Reporting.Logger.WriteEvent("*** In CheckForBeingInDropboxFolder(), got "+e.Message+Environment.NewLine+e.StackTrace);
 				Debug.Fail(e.Message);
-				Palaso.Reporting.Logger.WriteEvent("*** In CheckForBeingInDropboxFolder(), got "+e.Message);
 			}
 			return false;
 		}
