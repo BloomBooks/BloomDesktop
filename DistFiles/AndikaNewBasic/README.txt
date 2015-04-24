@@ -1,15 +1,17 @@
 README
-Andika 
+Andika New Basic
 =========================================
 
 Thank you for your interest in Andika ("Write!" in Swahili), a
 Unicode-compliant sans serif font designed by SIL International
 primarily for literacy use.
 
-Andika supports a wide range of Latin and Cyrillic characters. 
-Documentation for the font is available on Andika website
+Andika New Basic is a small subset of our Andika font which supports 
+a wide range of Latin and Cyrillic characters. 
+Documentation for Andika is available on the Andika website
 (http://scripts.sil.org/andika), including details on what ranges are
-supported. 
+supported. Documentation for Andika New Basic is available on the
+Andika New Basic website (http://scripts.sil.org/Andika_New_Basic).
 
 Andika is released under the SIL Open Font License.
 	
@@ -20,7 +22,6 @@ Andika FAQ (http://scripts.sil.org/Andika_FAQ-KI) for frequently
 asked questions and their answers.
 See the SIL Unicode Roman FAQ (http://scripts.sil.org/ComplexRomanFontFAQ)
 for frequently asked questions and their answers regarding SIL's Roman fonts.
-
 
 TIPS
 ====

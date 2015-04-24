@@ -255,7 +255,7 @@ namespace Bloom
 #endif
 						L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
-						FontInstaller.InstallFont("Andika");
+						FontInstaller.InstallFont("AndikaNewBasic");
 						Run();
 					}
 				}
