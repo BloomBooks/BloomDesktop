@@ -3,6 +3,8 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="readerSettings.ts" />
 
+declare function fireCSharpAccordionEvent(eventName: string, eventData: any);
+
 class SynphonyApi {
 
   stages: ReaderStage[] = [];
@@ -60,10 +62,7 @@ class SynphonyApi {
   }
 
   static fireCSharpEvent(eventName: string, eventData: any) {
-
-    //noinspection TaskProblemsInspection
-    var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
-    document.dispatchEvent(event);
+    fireCSharpAccordionEvent(eventName, eventData);
   }
 
   // This is at least useful for testing; maybe for real use.
