@@ -81,6 +81,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="L10NSharp, Version=2.0.30.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\L10NSharp.dll</HintPath>
@@ -147,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BloomFileLocatorTests.cs" />
+    <Compile Include="BloomZipFileTests.cs" />
     <Compile Include="Book\BookCollectionTests.cs" />
     <Compile Include="Book\BookInfoTests.cs" />
     <Compile Include="Book\HtmlDomTests.cs" />
