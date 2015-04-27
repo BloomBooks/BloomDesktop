@@ -283,20 +283,20 @@ namespace Bloom.Book
 
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css").ToLocalhost());
-			if(LockedDown)
+			pageDom.AddStyleSheet("basePage.css");
+			pageDom.AddStyleSheet("editMode.css");
+			if (LockedDown)
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css").ToLocalhost());
+				pageDom.AddStyleSheet("editTranslationMode.css");
 			}
 			else
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css").ToLocalhost());
+				pageDom.AddStyleSheet("editOriginalMode.css");
 			}
 
 			AddCreationTypeAttribute(pageDom);
 
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css").ToLocalhost());
+			pageDom.AddStyleSheet("editPaneGlobal.css");
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _collectionSettings);
@@ -446,10 +446,9 @@ namespace Bloom.Book
 		{
 			var dom = _storage.GetRelocatableCopyOfDom(_log);
 			dom.RemoveModeStyleSheets();
-			var fileLocator = _storage.GetFileLocator();
 			foreach (var cssFileName in cssFileNames)
 			{
-				dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName).ToLocalhost());
+				dom.AddStyleSheet(cssFileName);
 			}
 			dom.SortStyleSheetLinks();
 
@@ -1627,7 +1626,6 @@ namespace Bloom.Book
 			if (IsFolio)
 			{
 				AddChildBookContentsToFolio(printingDom, currentBookCollection, bookServer);
-				_storage.UpdateStyleSheetLinkPaths(printingDom);
 				printingDom.SortStyleSheetLinks();
 			}
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
@@ -11,7 +10,6 @@ using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
-using Bloom.Library;
 using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
@@ -432,6 +430,11 @@ namespace Bloom
 		public SendReceiver SendReceiver
 		{
 			get { return _scope.Resolve<SendReceiver>(); }
+		}
+
+		internal BloomFileLocator OptimizedFileLocator
+		{
+			get { return _scope.Resolve<BloomFileLocator>(); }
 		}
 
 		internal BookServer BookServer

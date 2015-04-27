@@ -8,7 +8,6 @@ using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
-using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Book;
 using System.IO;
@@ -41,6 +40,8 @@ namespace Bloom.web
 		private FileSystemWatcher _sampleTextsWatcher;
 		private bool _sampleTextsChanged = true;
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
+		private BloomFileLocator _fileLocator;
+		private string[] _bloomBrowserUiCssFiles;
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -51,7 +52,15 @@ namespace Bloom.web
 		{ }
 
 		public EnhancedImageServer(RuntimeImageProcessor cache): base(cache)
+		{ }
+
+		/// <summary>
+		/// This constructor is used for unit testing
+		/// </summary>
+		public EnhancedImageServer(RuntimeImageProcessor cache, BloomFileLocator fileLocator)
+			: base(cache)
 		{
+			_fileLocator = fileLocator;
 		}
 
 		// We use two different locks to synchronize access to the methods of this class.
@@ -453,7 +462,10 @@ namespace Bloom.web
 
 		private bool ProcessContent(IRequestInfo info, string localPath)
 		{
-			// as long as deal with simple string/bool properties or static methods we don't
+			if (localPath.EndsWith(".css"))
+			{
+				return ProcessCssFile(info, localPath);
+			}
 
 			switch (localPath)
 			{
@@ -546,6 +558,55 @@ namespace Bloom.web
 			if (!File.Exists(path))
 				return false;
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
+			info.ReplyWithFileContent(path);
+			return true;
+		}
+
+		private bool ProcessCssFile(IRequestInfo info, string localPath)
+		{
+			// is this request the full path to a real file?
+			if (File.Exists(localPath) && Path.IsPathRooted(localPath))
+			{
+
+				// currently this only applies to languageDisplay.css, settingsCollectionStyles.css, and customCollectionStyles.css
+				var cssFile = Path.GetFileName(localPath);
+				if ((cssFile == "languageDisplay.css") || (cssFile == "settingsCollectionStyles.css") || (cssFile == "customCollectionStyles.css"))
+				{
+					info.ContentType = "text/css";
+					info.ReplyWithFileContent(localPath);
+					return true;
+				}
+			}
+
+			// if not a full path, try to find the correct file
+			var fileName = localPath;
+			var pos = fileName.LastIndexOfAny(new[] { '\\', '/' });
+			if (pos > -1)
+				fileName = fileName.Substring(pos + 1);
+
+			// try to find the css file in the xmatter and templates
+			var path = (_fileLocator == null) ? string.Empty : _fileLocator.LocateFile(fileName);
+
+			// try to find the css file in the BloomBrowserUI directory
+			if (string.IsNullOrEmpty(path))
+			{
+				// collect the css files in the BloomBrowserUI directory
+				if (_bloomBrowserUiCssFiles == null)
+				{
+					var sourceDir = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
+					_bloomBrowserUiCssFiles = Directory.EnumerateFiles(sourceDir, "*.css", SearchOption.AllDirectories).ToArray();
+				}
+
+				path = _bloomBrowserUiCssFiles.FirstOrDefault(f => Path.GetFileName(f) == fileName);
+			}
+
+			// if still not found, and localPath is an actual file path, use it
+			if (string.IsNullOrEmpty(path) && File.Exists(localPath)) path = localPath;
+
+			// return false if the file was not found
+			if (string.IsNullOrEmpty(path)) return false;
+
+			info.ContentType = "text/css";
 			info.ReplyWithFileContent(path);
 			return true;
 		}
