@@ -28,6 +28,7 @@ class BloomField {
             BloomField.ModifyForParagraphMode(bloomEditableDiv);
             BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
             BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
+            BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(bloomEditableDiv);
             BloomField.MakeTabEnterTabElement(bloomEditableDiv);
             BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
             $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
@@ -154,10 +155,30 @@ class BloomField {
         e.preventDefault();
     }
 
+    // Since embedded images come before the first editable text, going to the beginning of the field and pressing Backspace moves the current paragraph into the caption. Sigh.
+    private static PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(field: HTMLElement) {
+        $(field).keydown(e => {
+            if (e.which == 8 /* backspace*/) {
+                var sel = window.getSelection();
+                //Are we at the start of a paragraph?
+                if (sel.anchorOffset == 0
+                    //Are we in the first paragraph? 
+                    //Embedded image divs come before the first editable paragraph, so we look at the previous element and
+                    //see if it is one those. Anything marked with bloom-preventRemoval is probably not something we want to
+                    //be merging with.
+                    && $(sel.anchorNode).closest('P').prev().hasClass('bloom-preventRemoval')) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        console.log("Prevented Backspace");
+                }
+            }
+        });
+    }
+
     // Without this, ctrl+a followed by a left-arrow or right-arrow gets you out of all paragraphs,
     // so you can start messing things up.
     private static PreventArrowingOutIntoField(field:HTMLElement) {
-        $(field).keydown(function (e) {
+        $(field).keydown(function(e) {
             var leftArrowPressed = e.which === 37;
             var rightArrowPressed = e.which === 39;
             if (leftArrowPressed || rightArrowPressed) {
@@ -167,7 +188,7 @@ class BloomField {
                     BloomField.MoveCursorToEdgeOfField(this, leftArrowPressed ? CursorPosition.start : CursorPosition.end);
                 }
             }
-        })
+        });
     }
 
     private static EnsureStartsWithParagraphElement(field:HTMLElement) {
