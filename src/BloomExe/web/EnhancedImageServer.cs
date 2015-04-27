@@ -8,7 +8,6 @@ using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
-using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Book;
 using System.IO;
@@ -20,7 +19,6 @@ using Palaso.Code;
 using Palaso.IO;
 using Bloom.Collection;
 using Palaso.Reporting;
-using Palaso.Xml;
 using Palaso.Extensions;
 using RestSharp.Contrib;
 
@@ -34,9 +32,6 @@ namespace Bloom.web
 	/// thread-safe.</remarks>
 	public class EnhancedImageServer: ImageServer
 	{
-		// A string unlikely to occur in a book name which we can substitute for a single quote
-		// when making a book path name to insert into JavaScript.
-		private const string QuoteSubstitute = "&apos;";
 		private const string OriginalImageMarker = "OriginalImages"; // Inserted into simulated page urls to suppress image processing
 		private FileSystemWatcher _sampleTextsWatcher;
 		private bool _sampleTextsChanged = true;
@@ -106,8 +101,8 @@ namespace Bloom.web
 		/// </summary>
 		/// <param name="dom"></param>
 		/// <param name="forSrcAttr">If this is true, the url will be inserted by JavaScript into
-		/// a src attr for an IFrame. We need to account for this because the page request will have
-		/// XML magic characters escaped.</param>
+		/// a src attr for an IFrame. We need to account for this because un-escaped quotation marks in the
+		/// URL can cause errors in JavaScript strings.</param>
 		/// <returns></returns>
 		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool forSrcAttr = false)
 		{
@@ -126,20 +121,8 @@ namespace Bloom.web
 			var key = pathToSimulatedPageFile.Replace('\\', '/');
 			if (forSrcAttr)
 			{
-				// It doesn't seem to matter if we make a url with most non-standard characters, but in one case we
-				// insert the URL into JavaScript which then sets it as the src of an iframe. We need to handle
-				// four special cases here in two ways:
-				// Single quote will terminate the url string in the JavaScript prematurely, so it must be fixed
-				// in both the url and the 'key', which is what we try to match in the urls we are asked to
-				// retrieve.
-				// JavaScript will convert &<> when inserting our url into an HTML attribute, so we need to expect
-				// the key that way. It would make sense for double-quote to be converted, too, but experimentally
-				// it seems it is not.
-				// We do NOT convert &<> in the url, however: if we do that, JS will convert the resulting &'s again.
-				// Since our quote substiture contains an &, that will get converted, so the key must contain the
-				// converted version of the quote substitute.
-				key = XmlUtils.MakeSafeXml(key.Replace("'", QuoteSubstitute));
-				url = url.Replace("'", QuoteSubstitute);
+				// We need to UrlEncode the single and double quote characters so they will play nicely with JavaScript. 
+				url = EscapeUrlQuotes(url);
 			}
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
 			lock (_urlToSimulatedPageContent)
@@ -147,6 +130,16 @@ namespace Bloom.web
 				_urlToSimulatedPageContent[key] = html5String;
 			}
 			return new SimulatedPageFile() {Key = url};
+		}
+
+		private static string EscapeUrlQuotes(string originalUrl)
+		{
+			return originalUrl.Replace("'", "%27").Replace("\"", "%22");
+		}
+
+		private static string UnescapeUrlQuotes(string escapedUrl)
+		{
+			return escapedUrl.Replace("%27", "'").Replace("%22", "\"");
 		}
 
 		/// <summary>
@@ -526,9 +519,8 @@ namespace Bloom.web
 			string modPath = localPath;
 			string path = null;
 			// When JavaScript inserts our path into the html it replaces the three magic html characters with these substitutes.
-			// We need to convert back in order to match our key. Then, reverse the change we made to deal with single quote.
-			// QuoteSubstitute currently contains an &, so we must do that replace last.
-			string tempPath = modPath.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&amp;", "&").Replace(QuoteSubstitute, "'");
+			// We need to convert back in order to match our key. Then, reverse the change we made to deal with quotation marks.
+			string tempPath = UnescapeUrlQuotes(modPath.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&amp;", "&"));
 			if (File.Exists(tempPath))
 				modPath = tempPath;
 			try
