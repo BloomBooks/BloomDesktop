@@ -17,6 +17,7 @@ using L10NSharp;
 using Microsoft.Win32;
 using Palaso.IO;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.Registration;
 using Palaso.UI.WindowsForms.UniqueToken;
 using System.Linq;
 using Squirrel;
@@ -109,6 +110,9 @@ namespace Bloom
 				}
 #endif
 
+				// Ensures that registration settings for all channels of Bloom are stored in a common place,
+				// so the user is not asked to register each independently.
+				RegistrationSettingsProvider.SetProductName("Bloom");
 #if DEBUG
 				using (new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
 
