@@ -567,6 +567,8 @@ namespace Bloom.web
 			// is this request the full path to a real file?
 			if (File.Exists(localPath) && Path.IsPathRooted(localPath))
 			{
+				// Typically this will be files in the book or collection directory, since the browser
+				// is supplying the path.
 
 				// currently this only applies to languageDisplay.css, settingsCollectionStyles.css, and customCollectionStyles.css
 				var cssFile = Path.GetFileName(localPath);

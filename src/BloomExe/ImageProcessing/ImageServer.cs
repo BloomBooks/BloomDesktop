@@ -86,10 +86,7 @@ namespace Bloom.ImageProcessing
 			// This happens with the new way we are serving css files
 			if (!File.Exists(r))
 			{
-				var fileName = r;
-				var pos = fileName.LastIndexOfAny(new[] { '\\', '/' });
-				if (pos > -1) fileName = fileName.Substring(pos + 1);
-
+				var fileName = Path.GetFileName(r);
 				var sourceDir = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 				r = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
 			}
