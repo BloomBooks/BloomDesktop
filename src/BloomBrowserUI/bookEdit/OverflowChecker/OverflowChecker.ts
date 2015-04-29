@@ -58,6 +58,10 @@ class OverflowChecker {
         if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
             return false;
         }
+
+        if ($(element).css('display') === 'none' || $(element).css('display') === 'inline')
+            return false; //display:inline always returns zero width, so there's no way to know if it's overflowing
+
         // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
         // This is because of the thin grey border on a focused input box.
         // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
