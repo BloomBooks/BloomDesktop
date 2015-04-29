@@ -92,14 +92,35 @@ var BloomField = (function () {
     };
 
     BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption = function (field) {
+        if ($(field).find('.bloom-keepFirstInField.bloom-preventRemoval').length == 0) {
+            return;
+        }
+
+        var divToProtect = $(field).find('.bloom-keepFirstInField.bloom-preventRemoval')[0];
+
+        $(divToProtect).children().filter(function () {
+            return this.localName.toLowerCase() != 'div';
+        }).each(function () {
+            divToProtect.removeChild(this);
+        });
+
+        $(divToProtect).contents().filter(function () {
+            return this.nodeType == Node.TEXT_NODE;
+        }).each(function () {
+            divToProtect.removeChild(this);
+        });
+
         $(field).keydown(function (e) {
             if (e.which == 8) {
                 var sel = window.getSelection();
 
-                if (sel.anchorOffset == 0 && $(sel.anchorNode).closest('P').prev().hasClass('bloom-preventRemoval')) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    console.log("Prevented Backspace");
+                if (sel.anchorOffset == 0) {
+                    var previousElement = $(sel.anchorNode).closest('P').prev();
+                    if (previousElement.length > 0 && previousElement[0] == divToProtect) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        console.log("Prevented Backspace");
+                    }
                 }
             }
         });
