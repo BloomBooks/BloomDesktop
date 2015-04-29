@@ -106,6 +106,7 @@ var OverflowChecker = (function () {
         // Type 1 Overflow
         var $box = $(box);
         $box.removeClass('overflow');
+        $box.removeClass('marginOverflow');
         if (OverflowChecker.IsOverflowingSelf(box) || OverflowChecker.HasImmediateSplitParentThatOverflows($box)) {
             $box.addClass('overflow');
         }
@@ -117,12 +118,15 @@ var OverflowChecker = (function () {
         editablePageElements.each(function () {
             var $this = $(this);
             if (OverflowChecker.IsOverflowingMargins($this[0])) {
-                $box.addClass('overflow'); // probably typing in the focused element caused this
-                $this.addClass('overflow'); // but it's this one that is actually overflowing
+                // BL-1261: don't want the typed-in box to be marked overflow just because it made another box
+                // go past the margins
+                // $box.addClass('overflow'); // probably typing in the focused element caused this
+                $this.addClass('marginOverflow'); // but it's this one that is actually overflowing
             }
             else {
                 if (!OverflowChecker.IsOverflowingSelf($this[0]) && !OverflowChecker.HasImmediateSplitParentThatOverflows($this)) {
                     $this.removeClass('overflow'); // might be a remnant from earlier overflow
+                    $this.removeClass('marginOverflow');
                 }
             }
         });
@@ -138,11 +142,11 @@ var OverflowChecker = (function () {
         }
         return OverflowChecker.IsOverflowingSelf(splitterParents[0]);
     };
-    // Make sure there are no boxes with class 'overflow' on the page before removing
+    // Make sure there are no boxes with class 'overflow' or 'marginOverflow' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
     OverflowChecker.UpdatePageOverflow = function (page) {
         var $page = $(page);
-        if (!$page.find('.overflow').length)
+        if (!($page.find('.overflow').length) && !($page.find('.marginOverflow').length))
             $page.removeClass('pageOverflows');
         else
             $page.addClass('pageOverflows');
