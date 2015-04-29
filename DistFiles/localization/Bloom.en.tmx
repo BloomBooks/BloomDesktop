@@ -964,6 +964,12 @@
         <seg>Edit</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.EditNotAllowed">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You cannot change these because this is not the original copy.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.EditTabLabel">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
@@ -1249,6 +1255,12 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Position</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ReadOnlyInEditMode">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You cannot put anything in there while making an original book.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Spacing">
@@ -1772,6 +1784,12 @@
     <tu tuid="Errors.XMatterNotFound">
       <tuv xml:lang="en">
         <seg>This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a BloomPack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ExperimentalNotice">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This page is an experimental prototype which may have many problems, for which we apologize.</seg>
       </tuv>
     </tu>
     <tu tuid="FirstTabLabel">
