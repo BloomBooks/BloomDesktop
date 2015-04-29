@@ -1,5 +1,6 @@
 /// <reference path="readerToolsModel.ts" />
 /// <reference path="directoryWatcher.ts" />
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
 
 interface qtipInterface extends JQuery {
   qtip(options: any): JQuery;
@@ -66,13 +67,15 @@ function processDLRMessage(event: MessageEvent): void {
 
 function markDecodableStatus(): void {
   // q-tips; mark sight words and non-decodable words
+  var sightWord = localizationManager.getText('EditTab.DecodableReaderTool.SightWord', 'Sight Word');
+  var notDecodable = localizationManager.getText('EditTab.DecodableReaderTool.WordNotDecodable', 'This word is not decodable in this stage.');
   var editableElements = $(".bloom-content1");
   editableElements.find('span.' + (<textMarkup>$).cssSightWord()).each(function() {
-    (<qtipInterface>$(this)).qtip({ content: 'Sight word' });
+    (<qtipInterface>$(this)).qtip({ content: sightWord });
   });
 
   editableElements.find('span.' + (<textMarkup>$).cssWordNotFound()).each(function() {
-    (<qtipInterface>$(this)).qtip({ content: 'This word is not decodable in this stage.' });
+    (<qtipInterface>$(this)).qtip({ content: notDecodable });
   });
 
 // we're considering dropping this entirely
@@ -84,9 +87,11 @@ function markDecodableStatus(): void {
 
 function markLeveledStatus(): void {
   // q-tips; mark sentences that are too long
+  var tooLong = localizationManager.getText('EditTab.LeveledReaderTool.SentenceTooLong',
+      'This sentence is too long for this level.');
   var editableElements = $(".bloom-content1");
   editableElements.find('span.' + (<textMarkup>$).cssSentenceTooLong()).each(function() {
-    (<qtipInterface>$(this)).qtip({ content: 'This sentence is too long for this level.' });
+    (<qtipInterface>$(this)).qtip({ content: tooLong });
   });
 }
 

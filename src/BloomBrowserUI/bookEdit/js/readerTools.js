@@ -1,5 +1,6 @@
 /// <reference path="readerToolsModel.ts" />
 /// <reference path="directoryWatcher.ts" />
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
 // listen for messages sent to this page
 window.addEventListener('message', processDLRMessage, false);
 function getSetupDialogWindow() {
@@ -42,12 +43,14 @@ function processDLRMessage(event) {
 }
 function markDecodableStatus() {
     // q-tips; mark sight words and non-decodable words
+    var sightWord = localizationManager.getText('EditTab.DecodableReaderTool.SightWord', 'Sight Word');
+    var notDecodable = localizationManager.getText('EditTab.DecodableReaderTool.WordNotDecodable', 'This word is not decodable in this stage.');
     var editableElements = $(".bloom-content1");
     editableElements.find('span.' + $.cssSightWord()).each(function () {
-        $(this).qtip({ content: 'Sight word' });
+        $(this).qtip({ content: sightWord });
     });
     editableElements.find('span.' + $.cssWordNotFound()).each(function () {
-        $(this).qtip({ content: 'This word is not decodable in this stage.' });
+        $(this).qtip({ content: notDecodable });
     });
     // we're considering dropping this entirely
     // We are disabling the "Possible Word" feature at this time.
@@ -57,9 +60,10 @@ function markDecodableStatus() {
 }
 function markLeveledStatus() {
     // q-tips; mark sentences that are too long
+    var tooLong = localizationManager.getText('EditTab.LeveledReaderTool.SentenceTooLong', 'This sentence is too long for this level.');
     var editableElements = $(".bloom-content1");
     editableElements.find('span.' + $.cssSentenceTooLong()).each(function () {
-        $(this).qtip({ content: 'This sentence is too long for this level.' });
+        $(this).qtip({ content: tooLong });
     });
 }
 function getReaderToolsModel() {

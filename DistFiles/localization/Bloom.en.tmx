@@ -949,6 +949,16 @@
         <seg>Text Box</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.DecodableReaderTool.SightWord">
+      <tuv xml:lang="en">
+        <seg>Sight Word</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DecodableReaderTool.WordNotDecodable">
+      <tuv xml:lang="en">
+        <seg>This word is not decodable in this stage.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.Edit">
       <tuv xml:lang="en">
         <seg>Edit</seg>
@@ -1206,6 +1216,12 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change Layout</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.LeveledReaderTool.SentenceTooLong">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This sentence is too long for this level.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.NewBookName">
