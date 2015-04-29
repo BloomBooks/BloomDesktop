@@ -7,19 +7,16 @@ using System.Runtime.ExceptionServices;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
-using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Bloom.Registration;
 using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
 using Gecko;
 using L10NSharp;
-using Microsoft.Win32;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.UniqueToken;
 using System.Linq;
-using Squirrel;
 
 namespace Bloom
 {
@@ -929,6 +926,11 @@ namespace Bloom
 			}
 
 			return bloomProcessCount;
+		}
+
+		public static BloomFileLocator OptimizedFileLocator
+		{
+			get { return _projectContext.OptimizedFileLocator; }
 		}
 	}
 }

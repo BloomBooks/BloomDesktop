@@ -51,6 +51,26 @@ namespace BloomTests.RuntimeImageProcessing
 			}
 		}
 
+		[Test]
+		public void GetFileName_FileNotExist_ReturnsCorrectName()
+		{
+			var test = "c:/asdfg/test1.css";
+			var fileName = Path.GetFileName(test);
+			Assert.AreEqual("test1.css", fileName);
+
+			test = "/one/two/test2.css";
+			fileName = Path.GetFileName(test);
+			Assert.AreEqual("test2.css", fileName);
+
+			test = "test3.css";
+			fileName = Path.GetFileName(test);
+			Assert.AreEqual("test3.css", fileName);
+
+			test = "test4";
+			fileName = Path.GetFileName(test);
+			Assert.AreEqual("test4", fileName);
+		}
+
 		private ImageServer CreateImageServer()
 		{
 			return new ImageServer(new RuntimeImageProcessor(new BookRenamedEvent()));
