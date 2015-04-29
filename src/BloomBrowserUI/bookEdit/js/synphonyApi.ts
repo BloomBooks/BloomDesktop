@@ -61,10 +61,6 @@ class SynphonyApi {
     }
   }
 
-  static fireCSharpEvent(eventName: string, eventData: any) {
-    fireCSharpAccordionEvent(eventName, eventData);
-  }
-
   // This is at least useful for testing; maybe for real use.
   AddStage(stage: ReaderStage): void {
     this.stages.push(stage);

@@ -47,9 +47,6 @@ var SynphonyApi = (function () {
             this.source.letters = sorted.join(' ');
         }
     };
-    SynphonyApi.fireCSharpEvent = function (eventName, eventData) {
-        fireCSharpAccordionEvent(eventName, eventData);
-    };
     // This is at least useful for testing; maybe for real use.
     SynphonyApi.prototype.AddStage = function (stage) {
         this.stages.push(stage);
