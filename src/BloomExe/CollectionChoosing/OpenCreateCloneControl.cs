@@ -2,17 +2,14 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using Amazon.Runtime.Internal.Util;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Chorus.UI.Clone;
 using Palaso.UI.WindowsForms.Extensions;
 using Palaso.i18n;
-using Palaso.Extensions;
 using System.Collections.Generic;
 
 namespace Bloom.CollectionChoosing
@@ -198,10 +195,10 @@ namespace Bloom.CollectionChoosing
 
 		public void SelectCollectionAndClose(string path)
 		{
-			CheckForBeingInDropboxFolder(path);
 			SelectedPath = path;
 			if (!string.IsNullOrEmpty(path))
 			{
+				CheckForBeingInDropboxFolder(path);
 				_mruList.AddNewPath(path);
 				Invoke(DoneChoosingOrCreatingLibrary);
 			}
@@ -213,16 +210,14 @@ namespace Bloom.CollectionChoosing
 		private static List<string> _dropboxFolders;
 
 		/// <summary>
-		/// This method checks 'path' for being in a Dropbox folder.  If so, it displays a warning
-		/// message and returns true.
+		/// This method checks 'path' for being in a Dropbox folder.  If so, it displays a warning message.
 		/// </summary>
-		/// <returns>true if 'path' is in a Dropbox folder</returns>
-		public static bool CheckForBeingInDropboxFolder(string path)
+		public static void CheckForBeingInDropboxFolder(string path)
 		{
+			if (string.IsNullOrEmpty(path)) return;
+
 			try
 			{
-
-
 				if (_dropboxFolders == null)
 				{
 					_dropboxFolders = new List<string>();
@@ -245,8 +240,10 @@ namespace Bloom.CollectionChoosing
 						dropboxInfoFile = Path.Combine(baseFolder, @"Dropbox\info.json");
 					else
 						dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
+
 					if (!File.Exists(dropboxInfoFile))
-						return false; // User must not have Dropbox installed
+						return; // User appears to not have Dropbox installed
+
 					var info = File.ReadAllText(dropboxInfoFile);
 					var matches = Regex.Matches(info, @"{""path"": ""([^""]+)"",");
 					foreach (Match match in matches)
@@ -260,10 +257,13 @@ namespace Bloom.CollectionChoosing
 						_dropboxFolders.Add(folder + Path.DirectorySeparatorChar);
 					}
 				}
+
 				if (_dropboxFolders.Count == 0)
-					return false; // User must not have Dropbox installed.
+					return; // User appears to not have Dropbox installed
+
 				if (Palaso.PlatformUtilities.Platform.IsWindows)
 					path = path.ToLowerInvariant(); // We do a case-insensitive compare on Windows.
+
 				foreach (var folder in _dropboxFolders)
 				{
 					if (path.StartsWith(folder))
@@ -272,7 +272,7 @@ namespace Bloom.CollectionChoosing
 							"Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.",
 							"");
 						MessageBox.Show(msg);
-						return true;
+						return;
 					}
 				}
 			}
@@ -284,7 +284,6 @@ namespace Bloom.CollectionChoosing
 				Palaso.Reporting.Logger.WriteEvent("*** In CheckForBeingInDropboxFolder(), got "+e.Message+Environment.NewLine+e.StackTrace);
 				Debug.Fail(e.Message);
 			}
-			return false;
 		}
 
 		private void _readMoreLabel_Click(object sender, LinkLabelLinkClickedEventArgs e)
