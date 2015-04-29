@@ -1,139 +1,314 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) 2014 SIL International
+// This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Runtime.Remoting.Contexts;
-using System.Text;
-using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Edit;
-using Bloom.web;
-using Moq;
+using BloomTemp;
+using L10NSharp;
 using NUnit.Framework;
 using Palaso.IO;
-using Palaso.TestUtilities;
+using Bloom;
+using Bloom.ImageProcessing;
+using Bloom.web;
+using Palaso.Reporting;
+using TemporaryFolder = Palaso.TestUtilities.TemporaryFolder;
 
 namespace BloomTests.web
 {
-	[TestFixture, Ignore]
+	[TestFixture]
 	public class BloomServerTests
 	{
 		private TemporaryFolder _folder;
-		private FileLocator _fileLocator;
-		private Mock<BookCollection> _vernacularLibraryCollection;
-		private List<Bloom.Book.BookInfo> _bookInfoList;
-		private Mock<SourceCollectionsList> _storeCollectionList;
-		private Mock<CollectionSettings> _librarySettings;
+		private BloomFileLocator _fileLocator;
+		private string _collectionPath;
 
 		[SetUp]
 		public void Setup()
 		{
-			_folder = new TemporaryFolder("BookCollectionTests");
-			//			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[]{}), new string[] { FileLocator.GetDirectoryDistributedWithApplication("root"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
-			_fileLocator = new FileLocator(new string[] { FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI"), FileLocator.GetDirectoryDistributedWithApplication("browserui/bookCSS"), FileLocator.GetDirectoryDistributedWithApplication("factoryCollections") });
+			Logger.Init();
+			_folder = new TemporaryFolder("ImageServerTests");
+			var localizationDirectory = FileLocator.GetDirectoryDistributedWithApplication("localization");
+			LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom", null, "", new string[] { });
 
-//			_vernacularLibraryCollection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
-//				BookStorageFactory, null, null, new CreateFromSourceBookCommand(), new EditBookCommand());
 
-			_vernacularLibraryCollection = new Moq.Mock<BookCollection>();
-			_bookInfoList = new List<Bloom.Book.BookInfo>();
-			_vernacularLibraryCollection.Setup(x => x.GetBookInfos()).Returns(_bookInfoList);
-			_storeCollectionList = new Mock<SourceCollectionsList>();
-			_storeCollectionList.Setup(x => x.GetSourceCollections()).Returns(() => GetStoreCollections());
-			_librarySettings = new Mock<CollectionSettings>();
-			_librarySettings.Setup(x => x.CollectionName).Returns(() => "Foo");
-
+			ErrorReport.IsOkToInteractWithUser = false;
+			_collectionPath = Path.Combine(_folder.Path, "TestCollection");
+			var cs = new CollectionSettings(Path.Combine(_folder.Path, "TestCollection.bloomCollection"));
+			_fileLocator = new BloomFileLocator(cs, new XMatterPackFinder(new string[] { }), ProjectContext.GetFactoryFileLocations(),
+				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 		}
 
-		public virtual IEnumerable<BookCollection> GetStoreCollections()
+		[TearDown]
+		public void TearDown()
 		{
-			Mock<BookCollection> c = new Mock<BookCollection>();
-			c.Setup(x => x.Name).Returns("alpha");
-			c.Setup(x => x.GetBookInfos()).Returns(_bookInfoList);
-			yield return c.Object;
-			Mock<BookCollection> b = new Mock<BookCollection>();
-			b.Setup(x => x.Name).Returns("beta");
-			b.Setup(x => x.GetBookInfos()).Returns(_bookInfoList);
-			yield return b.Object;
-		}
-
-		Bloom.Book.Book BookFactory(BookStorage storage, bool editable)
-		{
-			return new Bloom.Book.Book(new BookInfo(storage.FolderPath, true),  storage, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"), Language1Iso639Code = "xyz" }), null,
-													 new PageSelection(),
-													 new PageListChangedEvent(), new BookRefreshEvent());
-		}
-
-		BookStorage BookStorageFactory(string folderPath)
-		{
-			return new BookStorage(folderPath, _fileLocator, new BookRenamedEvent(), new CollectionSettings());
+			_folder.Dispose();
+			Logger.ShutDown();
 		}
 
 		[Test]
-		public void GetLibaryPage_ReturnsLibraryPage()
+		public void CanGetImage()
 		{
-			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "library/library.htm");
-			b.MakeReply(transaction);
-			Assert.IsTrue(transaction.ReplyContents.Contains("library.css"));
-		}
+			// Setup
+			using (var server = CreateImageServer())
+			using (var file = MakeTempImage())
+			{
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path);
 
-		private BloomServer CreateBloomServer()
-		{
-			return new BloomServer(_librarySettings.Object, _vernacularLibraryCollection.Object, _storeCollectionList.Object,null);
+				// Execute
+				server.MakeReply(transaction);
+
+				// Verify
+				Assert.IsTrue(transaction.ReplyImagePath.Contains(".png"));
+			}
 		}
 
 		[Test]
-		public void GetVernacularBookList_ThereAreNone_ReturnsNoListItems()
+		public void CanGetPdf()
 		{
-			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents");
-			_bookInfoList.Clear();
-			b.MakeReply(transaction);
-			AssertThatXmlIn.String(transaction.ReplyContentsAsXml).HasNoMatchForXpath("//li");
-		}
-		[Test]
-		public void GetVernacularBookList_ThereAre2_Returns2ListItems()
-		{
-			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents");
-			AddBook("1","one");
-			AddBook("2", "two");
-			b.MakeReply(transaction);
-			AssertThatXmlIn.String(transaction.ReplyContentsAsXml).HasSpecifiedNumberOfMatchesForXpath("//li", 2);
+			// Setup
+			using (var server = CreateImageServer())
+			using (var file = TempFile.WithExtension(".pdf"))
+			{
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path);
+
+				// Execute
+				server.MakeReply(transaction);
+
+				// Verify
+				Assert.IsTrue(transaction.ReplyImagePath.Contains(".pdf"));
+			}
 		}
 
-		/* can't tell if this storeCollectionList ever existed		[Test]
-				public void GetStoreBooks_ThereAre2_Returns2CollectionItems()
+		[Test]
+		public void ReportsMissingFile()
+		{
+			// Setup
+			using (var server = CreateImageServer())
+			{
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "/non-existing-file.pdf");
+
+				// Execute
+				server.MakeReply(transaction);
+
+				// Verify
+				Assert.That(transaction.StatusCode, Is.EqualTo(404));
+				Assert.That(Logger.LogText, Contains.Substring("**BloomServer: File Missing: /non-existing-file.pdf"));
+			}
+		}
+
+
+		[Test]
+		public void Topics_ReturnsFrenchFor_NoTopic_()
+		{
+			Assert.AreEqual("Sans thème", QueryServerForJson("topics").NoTopic.ToString());
+		}
+
+		[Test]
+		public void Topics_ReturnsFrenchFor_Dictionary_()
+		{
+			Assert.AreEqual("Dictionnaire", QueryServerForJson("topics").Dictionary.ToString());
+		}
+
+		private dynamic QueryServerForJson(string query)
+		{
+			using (var server = CreateImageServer())
+			{
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + query);
+				server.MakeReply(transaction);
+				Debug.WriteLine(transaction.ReplyContents);
+				return Newtonsoft.Json.JsonConvert.DeserializeObject(transaction.ReplyContents);
+			}
+		}
+
+		private BloomServer CreateImageServer()
+		{
+			return new BloomServer(new RuntimeImageProcessor(new BookRenamedEvent()), _fileLocator);
+		}
+
+		private TempFile MakeTempImage()
+		{
+			var file = TempFile.WithExtension(".png");
+			File.Delete(file.Path);
+			using(var x = new Bitmap(100,100))
+			{
+				x.Save(file.Path, ImageFormat.Png);
+			}
+			return file;
+		}
+
+		[Test]
+		public void CanRetrieveContentOfFakeTempFile_ButOnlyUntilDisposed()
+		{
+			using (var server = CreateImageServer())
+			{
+				var html = @"<html ><head></head><body>here it is</body></html>";
+				var dom = new HtmlDom(html);
+				dom.BaseForRelativePaths =_folder.Path.ToLocalhost();
+				string url;
+				using (var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(dom))
 				{
-					var b = CreateBloomServer();
-					var transaction = new PretendRequestInfo("http://localhost:8089/bloom/storeCollectionList");
-					b.MakeReply(transaction);
-					AssertThatXmlIn.String(transaction.ReplyContentsAsXml).HasSpecifiedNumberOfMatchesForXpath("//li//h2[text()='alpha']", 1);
-					AssertThatXmlIn.String(transaction.ReplyContentsAsXml).HasSpecifiedNumberOfMatchesForXpath("//li//h2[text()='beta']", 1);
-					AssertThatXmlIn.String(transaction.ReplyContentsAsXml).HasSpecifiedNumberOfMatchesForXpath("//li/ul", 2);
+					url = fakeTempFile.Key;
+					var transaction = new PretendRequestInfo(url);
+
+					// Execute
+					server.MakeReply(transaction);
+
+					// Verify
+					// Whitespace inserted by CreateHtml5StringFromXml seems to vary across versions and platforms.
+					// I would rather verify the actual output, but don't want this test to be fragile, and the
+					// main point is that we get a file with the DOM content.
+					Assert.That(transaction.ReplyContents,
+						Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
 				}
-		 */
-		private void AddBook(string id, string title)
+				var transactionFail = new PretendRequestInfo(url);
+
+				// Execute
+				server.MakeReply(transactionFail);
+
+				// Verify
+				Assert.That(transactionFail.StatusCode, Is.EqualTo(404));
+			}
+		}
+
+		private void SetupCssTests()
 		{
-			var b = new Moq.Mock<Bloom.Book.BookInfo>();
-			b.SetupGet(x => x.Id).Returns(id);
-			b.SetupGet(x => x.QuickTitleUserDisplay).Returns(title);
-			b.SetupGet(x => x.FolderPath).Returns(Path.GetTempPath);//TODO. this works at the moment, cause we just need some folder which exists
-			_bookInfoList.Add(b.Object);
+			// create collection directory
+			Directory.CreateDirectory(_collectionPath);
+
+			// settingsCollectionStyles.css
+			var cssFile = Path.Combine(_collectionPath, "settingsCollectionStyles.css");
+			File.WriteAllText(cssFile, @".settingsCollectionStylesCssTest{}");
+
+			// create book directory
+			var bookPath = Path.Combine(_collectionPath, "TestBook");
+			Directory.CreateDirectory(bookPath);
+
+			// languageDisplay.css
+			cssFile = Path.Combine(bookPath, "languageDisplay.css");
+			File.WriteAllText(cssFile, @".languageDisplayCssTest{}");
+
+			// Factory-XMatter.css
+			cssFile = Path.Combine(bookPath, "Factory-XMatter.css");
+			File.WriteAllText(cssFile, @".factoryXmatterCssTest{}");
+
+			// miscStyles.css - a file name not distributed with or created by Bloom
+			cssFile = Path.Combine(bookPath, "miscStyles.css");
+			File.WriteAllText(cssFile, @".miscStylesCssTest{}");
 		}
 
 		[Test]
-		public void GetLocalPathWithoutQuery_HandlesNetworkDriveCorrectly()
+		public void GetCorrect_LanguageDisplayCss()
 		{
-			var path = @"//someserver/somefolder/somebook.htm";
-			var url = path.ToLocalhost();
-			var request = new PretendRequestInfo(url);
-			var result = ServerBase.GetLocalPathWithoutQuery(request);
-			Assert.That(result, Is.EqualTo(path));
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "languageDisplay.css");
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".languageDisplayCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void GetCorrect_SettingsCollectionStylesCss()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "settingsCollectionStyles.css");
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".settingsCollectionStylesCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void GetCorrect_XmatterStylesCss()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "Factory-XMatter.css");
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url);
+
+				server.MakeReply(transaction);
+
+				Assert.AreNotEqual(transaction.ReplyContents, ".factoryXmatterCssTest{}");
+			}
+		}
+
+		[Test]
+		public void GetCorrect_MiscStylesCss()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "miscStyles.css");
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".miscStylesCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void GetMissingImage_ReturnsError()
+		{
+			using (var server = CreateImageServer())
+			using (var file = MakeTempImage())
+			{
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "abc.png");
+				server.MakeReply(transaction);
+				Assert.AreEqual(404, transaction.StatusCode);
+			}
+		}
+
+		[Test]
+		public void GetSmallImage_ReturnsSameSizeImage()
+		{
+			using (var server = CreateImageServer())
+			using (var file = MakeTempImage())
+			{
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path);
+				server.MakeReply(transaction);
+				Assert.IsTrue(transaction.ReplyImagePath.Contains(".png"));
+			}
+		}
+
+		[Test]
+		public void GetFileName_FileNotExist_ReturnsCorrectName()
+		{
+			var test = "c:/asdfg/test1.css";
+			var fileName = Path.GetFileName(test);
+			Assert.AreEqual("test1.css", fileName);
+
+			test = "/one/two/test2.css";
+			fileName = Path.GetFileName(test);
+			Assert.AreEqual("test2.css", fileName);
+
+			test = "test3.css";
+			fileName = Path.GetFileName(test);
+			Assert.AreEqual("test3.css", fileName);
+
+			test = "test4";
+			fileName = Path.GetFileName(test);
+			Assert.AreEqual("test4", fileName);
 		}
 	}
-
 }

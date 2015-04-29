@@ -45,7 +45,7 @@ namespace Bloom.Edit
 		private IPage _previouslySelectedPage;
 		private bool _inProcessOfDeleting;
 		private string _accordionFolder;
-		private EnhancedImageServer _server;
+		private BloomServer _server;
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
@@ -70,7 +70,7 @@ namespace Bloom.Edit
 			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
 			SendReceiver sendReceiver,
-			EnhancedImageServer server)
+			BloomServer server)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
@@ -520,7 +520,7 @@ namespace Bloom.Edit
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			if (_currentPage != null)
 				_currentPage.Dispose();
-			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
+			_currentPage = BloomServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 
 			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
 				_server.AccordionContent = MakeAccordionContent();

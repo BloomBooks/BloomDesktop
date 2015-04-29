@@ -29,7 +29,7 @@ namespace Bloom
 		/// </summary>
 		private ILifetimeScope _scope;
 
-		private EnhancedImageServer _httpServer;
+		private BloomServer _httpServer;
 		private CommandAvailabilityPublisher _commandAvailabilityPublisher;
 		public Form ProjectWindow { get; private set; }
 
@@ -221,7 +221,7 @@ namespace Bloom
 //				}
 //				else
 //				{
-					_httpServer = new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent));
+					_httpServer = new BloomServer(new RuntimeImageProcessor(bookRenameEvent));
 //				}
 					builder.Register((c => _httpServer)).AsSelf().SingleInstance();
 

@@ -186,11 +186,10 @@
     <Compile Include="WebLibraryIntegration\BloomParseClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
-    <Compile Include="web\BloomServerTests.cs" />
-    <Compile Include="ImageProcessing\ImageServerTests.cs" />
+    <Compile Include="web\CollectionServerExperimentTests.cs" />
     <Compile Include="web\RequestInfoTests.cs" />
     <Compile Include="XmlHtmlConverterTests.cs" />
-    <Compile Include="web\EnhancedImageServerTests.cs" />
+    <Compile Include="web\BloomServerTests.cs" />
     <Compile Include="PretendRequestInfo.cs" />
     <Compile Include="Collection\ShortcutMakerTests.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManagerTests.cs" />

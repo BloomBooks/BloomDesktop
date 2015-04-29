@@ -602,7 +602,7 @@ namespace Bloom
 				}
 			}
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(htmlDom);
+			var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(htmlDom);
 			SetNewDependent(fakeTempFile);
 			_url = fakeTempFile.Key;
 			UpdateDisplay();
