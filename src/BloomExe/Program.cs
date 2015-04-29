@@ -250,9 +250,17 @@ namespace Bloom
 #if DEBUG
 						StartDebugServer();
 #endif
-						L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
-						FontInstaller.InstallFont("AndikaNewBasic");
+						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
+						if (FontInstaller.InstallFont("AndikaNewBasic"))
+						{
+							var restartMsg = LocalizationManager.GetDynamicString("Bloom", "Startup.FontInstalled",
+								"New fonts have been installed. Bloom will shut down now, and when you restart it the fonts will be available.");
+							MessageBox.Show(restartMsg);
+							return;
+						}
+
 						Run();
 					}
 				}
