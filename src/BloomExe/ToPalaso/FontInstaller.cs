@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Windows.Forms;
+using L10NSharp;
 using Palaso.IO;
 
 namespace Bloom.ToPalaso
@@ -43,6 +45,7 @@ namespace Bloom.ToPalaso
 			try
 			{
 				Process.Start(info);
+				Program.RestartBloom();
 				return true;
 			}
 			// I hate catching 'Exception' but the one that is likely to happen, the user refused the privilege escalation

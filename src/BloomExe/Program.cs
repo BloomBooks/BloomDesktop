@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
@@ -13,6 +14,7 @@ using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
 using Gecko;
 using L10NSharp;
+using Mono.Cecil;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.UniqueToken;
@@ -253,13 +255,8 @@ namespace Bloom
 						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
 						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
-						if (FontInstaller.InstallFont("AndikaNewBasic"))
-						{
-							var restartMsg = LocalizationManager.GetDynamicString("Bloom", "Startup.FontInstalled",
-								"New fonts have been installed. Bloom will shut down now, and when you restart it the fonts will be available.");
-							MessageBox.Show(restartMsg);
+						if (FontInstaller.InstallFont("AndikaNewBasic")) 
 							return;
-						}
 
 						Run();
 					}
@@ -269,6 +266,24 @@ namespace Bloom
 			{
 				if (!skipReleaseToken)
 					UniqueToken.ReleaseToken();
+			}
+		}
+
+		public static void RestartBloom()
+		{
+			try
+			{
+				Process.Start(Application.ExecutablePath);
+
+				//give some time for that process.start to finish staring the new instance, which will see
+				//we have a mutex and wait for us to die.
+
+				Thread.Sleep(2000);
+				Environment.Exit(-1); //Force termination of the current process.
+			}
+			catch (Exception e)
+			{
+				ErrorReport.NotifyUserOfProblem(e, "Bloom encounterd a problem while restarting.");
 			}
 		}
 
