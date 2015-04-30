@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
@@ -36,6 +37,38 @@ namespace Bloom.Publish
 		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName,
 			bool landscape, Control owner, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
+#if !__MonoCS__
+			// Mono doesn't current provide System.Printing.  Leave the 'if' here to emphasize the
+			// system specific nature of the following check.
+			if (Platform.IsWindows)
+			{
+				// Check whether we have a default printer set (or for that matter, any printers).
+				// Gecko on Windows requires a default printer for any print operation, even one
+				// to a file.  See https://jira.sil.org/browse/BL-1237.
+				var printServer = new System.Printing.LocalPrintServer();
+				var printQueues = printServer.GetPrintQueues();
+				bool fOkay = printQueues.Any();
+				if (fOkay)
+				{
+					var defaultPrinter = System.Printing.LocalPrintServer.GetDefaultPrintQueue();
+					fOkay = defaultPrinter != null && !String.IsNullOrEmpty(defaultPrinter.FullName);
+				}
+				if (!fOkay)
+				{
+					var msg = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.NoPrinter",
+						"Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you do not have a printer selected.  Please go to Devices and Printers and add a printer.",
+						@"Error message displayed in a message dialog box");
+					var except = new ApplicationException(msg);
+					// Note that if we're being run by a BackgroundWorker, it will catch the exception.
+					// If not, but the caller provides a DoWorkEventArgs, pass the exception through
+					// that object rather than throwing it.
+					if (worker != null || doWorkEventArgs == null)
+						throw except;
+					doWorkEventArgs.Result = except;
+					return;
+				}
+			}
+#endif
 			var runner = new CommandLineRunner();
 			string exePath;
 			var bldr = new StringBuilder();
@@ -62,10 +95,10 @@ namespace Bloom.Publish
 				Console.WriteLine(@"PDF generation failed: res.StandardOutput =");
 				Console.WriteLine(res.StandardOutput);
 #endif
-				var except = new ApplicationException(string.Format(
-					"Bloom was not able to create the PDF file ({0}).{1}{1}" +
-					"Details: GeckofxHtmlToPdf (command line) did not produce the expected document.",
-					outputPdfPath, Environment.NewLine));
+				var msg = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.Failed",
+					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: GeckofxHtmlToPdf (command line) did not produce the expected document.",
+					@"Error message displayed in a message dialog box");
+				var except = new ApplicationException(String.Format(msg, outputPdfPath, Environment.NewLine));
 				// Note that if we're being run by a BackgroundWorker, it will catch the exception.
 				// If not, but the caller provides a DoWorkEventArgs, pass the exception through
 				// that object rather than throwing it.
