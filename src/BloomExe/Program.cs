@@ -81,7 +81,7 @@ namespace Bloom
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
 
-				if (args.Length > 0 && args[0].StartsWith("--squirrel"))
+				if (IsInstallerLaunch(args))
 				{
 					InstallerSupport.HandleSquirrelInstallEvent(args); // may exit program
 				}
@@ -224,7 +224,7 @@ namespace Bloom
 						Logger.Init();
 
 
-						if (args.Length == 1)
+						if (args.Length == 1 && !IsInstallerLaunch(args))
 						{
 							Debug.Assert(args[0].ToLowerInvariant().EndsWith(".bloomcollection")); // Anything else handled above.
 							Settings.Default.MruProjects.AddNewPath(args[0]);
@@ -289,6 +289,11 @@ namespace Bloom
 			{
 				ErrorReport.NotifyUserOfProblem(e, "Bloom encounterd a problem while restarting.");
 			}
+		}
+
+		private static bool IsInstallerLaunch(string[] args)
+		{
+			return args.Length > 0 &&  args[0].ToLowerInvariant().StartsWith("--squirrel");
 		}
 
 		// I think this does something like the Wix element
@@ -357,7 +362,7 @@ namespace Bloom
 
 		private static bool IsBloomBookOrder(string[] args)
 		{
-			return args.Length == 1 && !args[0].ToLowerInvariant().EndsWith(".bloomcollection");
+			return args.Length == 1 && !args[0].ToLowerInvariant().EndsWith(".bloomcollection") && !IsInstallerLaunch(args);
 		}
 
 		private static void Startup(object sender, EventArgs e)
