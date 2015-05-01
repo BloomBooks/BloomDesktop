@@ -16,7 +16,9 @@ using BloomTemp;
 using L10NSharp;
 using Palaso.Code;
 using Palaso.Progress;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.Progress;
+using Palaso.UI.WindowsForms.Reporting;
 using RestSharp.Contrib;
 using Palaso.IO;
 using System.Net;
@@ -478,9 +480,10 @@ namespace Bloom.WebLibraryIntegration
 				if (!done)
 				{
 					var msg = LocalizationManager.GetString("Download.CopyFailed",
-						"Bloom downloaded your book but had problems copying it to the bloom library. Possibly you already have a version of this book and some program is using it. You may need to restart your computer and download it again.");
-					var caption = LocalizationManager.GetString("Download.Incomplete", "Download incomplete");
-					MessageBox.Show(null, msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+						"Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers");
+					// The exception doesn't add much useful information but it triggers a version of the dialog with a Details button
+					// that leads to the yellow box and an easy way to send the report.
+					ErrorReport.NotifyUserOfProblem(new ApplicationException("File Copy problem"), msg);
 				}
 				return destinationPath;
 			}
