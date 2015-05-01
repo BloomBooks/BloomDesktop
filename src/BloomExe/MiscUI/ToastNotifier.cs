@@ -148,6 +148,11 @@ namespace Bloom.MiscUI
 			Show();
 		}
 
+		public void UpdateMessage(string newMessage)
+		{
+			_message.Text = newMessage;
+		}
+
 		private void callToAction_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			this.ToastNotifier_Click(null, null);
