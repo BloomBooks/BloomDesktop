@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.ToPalaso;
+using L10NSharp;
 using Palaso.CommandLineProcessing;
 using Palaso.IO;
 using Palaso.Progress;
@@ -51,6 +52,12 @@ namespace Bloom.Publish
 			else
 			{
 				exePath = Path.Combine(execDir, "GeckofxHtmlToPdf.exe");
+			}
+			if (!File.Exists(exePath))
+			{
+				var msg = LocalizationManager.GetString("InstallProblem.GeckofxHtmlToPdf",
+					"A component of Bloom, GeckofxHtmlToPdf.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.");
+				throw new FileNotFoundException(msg, "GeckofxHtmlToPdf.exe"); // must be this class to trigger the right reporting mechanism.
 			}
 			SetArguments(bldr, inputHtmlPath, outputPdfPath, paperSizeName, landscape);
 			var arguments = bldr.ToString();
