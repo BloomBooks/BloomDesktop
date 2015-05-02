@@ -15,6 +15,14 @@ using ThreadState = System.Threading.ThreadState;
 
 namespace Bloom.web
 {
+	/// <summary>
+	///Hints
+	/// To check what's in the url access control list on Vista and up: netsh http show urlacl
+	/// on XP: httpcfg query urlacl
+	///
+	/// nb: had trouble with 8080. Remember to enable this with (windows 7 up): netsh http add urlacl url=http://localhost:8089/bloom user=everyone
+	/// on Windows XP, use httpcfg. I haven't tested this, but I think it may be: HTTPCFG set urlacl -u http://+:8089/bloom/ /a D:(A;;GX;;;WD)
+	/// </summary>
 	public abstract class ServerBase : IDisposable
 	{
 		/// <summary>

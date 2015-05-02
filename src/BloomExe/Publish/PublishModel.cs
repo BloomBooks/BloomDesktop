@@ -147,7 +147,7 @@ namespace Bloom.Publish
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
 			dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
-			return EnhancedImageServer.MakeRealPublishModeFileInBookFolder(dom);
+			return BloomServer.MakeRealPublishModeFileInBookFolder(dom);
 		}
 
 		private string GetPdfPath(string fname)

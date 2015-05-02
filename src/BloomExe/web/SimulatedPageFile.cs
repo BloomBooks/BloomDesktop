@@ -20,7 +20,7 @@ namespace Bloom.web
 	{
 		public void Dispose()
 		{
-			EnhancedImageServer.RemoveSimulatedPageFile(Key);
+			BloomServer.RemoveSimulatedPageFile(Key);
 		}
 
 		/// <summary>

@@ -432,7 +432,6 @@
     <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ImageProcessing\ImageServer.cs" />
     <Compile Include="ApplicationUpdateSupport.cs" />
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
@@ -473,7 +472,7 @@
     <Compile Include="Workspace\FeedbackDialog.Designer.cs">
       <DependentUpon>FeedbackDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="web\BloomServer.cs" />
+    <Compile Include="web\CollectionServerExperiment.cs" />
     <Compile Include="web\WebLibraryView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -811,7 +810,7 @@
     <Compile Include="web\WebClientWithTimeout.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="web\EnhancedImageServer.cs" />
+    <Compile Include="web\BloomServer.cs" />
     <Compile Include="Workspace\BloomClipboard.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
   </ItemGroup>
