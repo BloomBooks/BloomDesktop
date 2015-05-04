@@ -47,11 +47,13 @@ namespace Bloom.ImageProcessing
 			base.Dispose(fDisposing);
 		}
 
-		protected override bool StartWithSetupIfNeeded(out Exception error)
+		protected override void StartWithSetupIfNeeded()
 		{
-			var didStart = base.StartWithSetupIfNeeded(out error);
-
-			if(!didStart)
+			try
+			{
+				base.StartWithSetupIfNeeded();
+			}
+			catch (Exception error)
 			{
 				var e = new ApplicationException("Could not start ImageServer", error);//passing this in will enable the details button
 				ErrorReport.NotifyUserOfProblem(e, "What Happened{0}" +
@@ -64,8 +66,6 @@ namespace Bloom.ImageProcessing
 					"If the problem keeps happening, click 'Details' and report the problem to the developers.", Environment.NewLine,
 					Palaso.PlatformUtilities.Platform.IsWindows ? "Windows" : "Linux");
 			}
-
-			return didStart;
 		}
 
 		protected override bool ProcessRequest(IRequestInfo info)
