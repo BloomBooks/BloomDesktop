@@ -84,12 +84,12 @@ var OverflowChecker = (function () {
         }
         // We want to prevent an inner div from expanding past the borders set by any fixed containing element.
         var parents = $(element).parents();
-        if (!parents || parents.length == 0) {
+        if (!parents) {
             return null;
         }
         for (var i = 0; i < parents.length; i++) {
-            var $this = $(parents[i]);
-            var parentBottom = $this.offset().top + $this.outerHeight(true);
+            var currentAncestor = $(parents[i]);
+            var parentBottom = currentAncestor.offset().top + currentAncestor.outerHeight(true);
             var elemTop = $(element).offset().top;
             var elemBottom = elemTop + $(element).outerHeight(false);
             // console.log("Offset top: " + elemTop + " Outer Height: " + $(element).outerHeight(false));
@@ -99,9 +99,9 @@ var OverflowChecker = (function () {
             // so we'll apply the same 'fudge' factor to both comparisons.
             var focusedBorderFudgeFactor = 2;
             if (elemBottom > parentBottom + focusedBorderFudgeFactor) {
-                return $this[0];
+                return currentAncestor[0];
             }
-            if ($this.hasClass('marginBox')) {
+            if (currentAncestor.hasClass('marginBox')) {
                 break;
             }
         }
