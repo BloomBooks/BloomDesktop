@@ -123,7 +123,7 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Tity is over-zealous. This is work-around. After running Tidy, then call RemoveFillerInEmptyElements() on the same text
+		/// Tidy is over-zealous. This is a work-around. After running Tidy, then call RemoveFillerInEmptyElements() on the same text
 		/// </summary>
 		/// <returns></returns>
 		private static string AddFillerToKeepTidyFromRemovingEmptyElements(string content)
@@ -132,6 +132,10 @@ namespace Bloom
 			// and also (sometimes...apparently only the first child in a parent) <i some-important-attributes></i>
 			content = content.Replace("></span>", ">REMOVEME</span>");
 			content = content.Replace("></i>", ">REMOVEME</i>");
+			content = content.Replace("></b>", ">REMOVEME</b>");
+			content = content.Replace("></u>", ">REMOVEME</u>");
+			// This handles empty elements in the form of XML contractions like <i />
+			content = new Regex(@"<([ubi]|span)\s*/>").Replace(content, "<$1>REMOVEME</$1>");
 			return content;
 		}
 

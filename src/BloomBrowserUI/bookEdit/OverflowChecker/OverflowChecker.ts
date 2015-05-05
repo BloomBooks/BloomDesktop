@@ -6,13 +6,15 @@ interface qtipInterface extends JQuery {
 }
 
 class OverflowChecker {
-
     // When a div is overfull, these handlers will add the overflow class so it gets a red background or something
     // But this function should just do some basic checks and ADD the HANDLERS!
     public AddOverflowHandlers(container:HTMLElement) {
         //NB: for some historical reason in March 2014 the calendar still uses textareas
         var queryElementsThatCanOverflow = ".bloom-editable:visible, textarea:visible";
         var editablePageElements = $(container).find(queryElementsThatCanOverflow);
+
+        // BL-1260: disable overflow checking for pages with too many elements
+        if (editablePageElements.length > 30) return;
 
         //first, check to see if the stylesheet is going to give us overflow even for a single character:
         editablePageElements.each(function () {
@@ -63,6 +65,10 @@ class OverflowChecker {
         if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
             return false;
         }
+
+        if ($(element).css('display') === 'none' || $(element).css('display') === 'inline')
+            return false; //display:inline always returns zero width, so there's no way to know if it's overflowing
+
         // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
         // This is because of the thin grey border on a focused input box.
         // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
