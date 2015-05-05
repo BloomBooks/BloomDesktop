@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
+using L10NSharp;
 using Palaso.Code;
 using Palaso.Reporting;
 using ThreadState = System.Threading.ThreadState;
@@ -26,7 +27,7 @@ namespace Bloom.web
 		/// <summary>
 		/// Listens for requests on "http://localhost:8089/bloom/"
 		/// </summary>
-		private readonly HttpListener _listener;
+		private HttpListener _listener;
 
 		/// <summary>
 		/// Requests that come into the _listener are placed in the _queue so they can be processed
@@ -61,7 +62,6 @@ namespace Bloom.web
 			_queue = new Queue<HttpListenerContext>();
 			_stop = new ManualResetEvent(false);
 			_ready = new ManualResetEvent(false);
-			_listener = new HttpListener();
 			_listenerThread = new Thread(HandleRequests);
 		}
 
@@ -75,44 +75,29 @@ namespace Bloom.web
 
 		#region Startuup
 
-		public void StartWithSetupIfNeeded()
+		public void StartListening()
 		{
-			Exception error;
-			StartWithSetupIfNeeded(out error);
+			StartWithSetupIfNeeded();
 		}
 
-		protected virtual bool StartWithSetupIfNeeded(out Exception error)
+		protected virtual void StartWithSetupIfNeeded()
 		{
-			var didStart = StartWithExceptionHandling(out error);
-			if (didStart)
-				return true;
-
-			// REVIEW Linux: do we need something similar on Linux?
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
-			{
-				AddUrlAccessControlEntry();
-				didStart = StartWithExceptionHandling(out error);
-			}
-			return didStart;
-		}
-
-		private bool StartWithExceptionHandling(out Exception error)
-		{
-			error = null;
 			try
 			{
-				return TryStart();
+				TryStart();
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				error = e;
-				return false;
+				if (!Palaso.PlatformUtilities.Platform.IsWindows) throw;
+
+				AddUrlAccessControlEntry();
+				TryStart();
 			}
 		}
 
-		private bool TryStart()
+		private void TryStart()
 		{
-			_listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
+			_listener = new HttpListener {AuthenticationSchemes = AuthenticationSchemes.Anonymous};
 			_listener.Prefixes.Add(PathEndingInSlash);
 			_listener.Start();
 
@@ -124,7 +109,7 @@ namespace Bloom.web
 				_workers[i].Start();
 			}
 
-			return GetIsAbleToUsePort();
+			GetIsAbleToUsePort();
 		}
 
 		#endregion
@@ -326,16 +311,13 @@ namespace Bloom.web
 			Process.Start(startInfo);
 		}
 
-		private static bool GetIsAbleToUsePort()
+		private static void GetIsAbleToUsePort()
 		{
-			try
+			var x = new WebClientWithTimeout { Timeout = 3000 };
+			if ("OK" != x.DownloadString(PathEndingInSlash + "testconnection"))
 			{
-				var x = new WebClientWithTimeout { Timeout = 3000 };
-				return ("OK" == x.DownloadString(PathEndingInSlash + "testconnection"));
-			}
-			catch (Exception e)
-			{
-				return false;
+				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.CannotConnectToBloomServer", "Bloom could not connect to the local server.");
+				throw new ApplicationException(msg);
 			}
 		}
 
