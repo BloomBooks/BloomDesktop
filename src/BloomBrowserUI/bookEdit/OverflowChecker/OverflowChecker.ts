@@ -13,6 +13,9 @@ class OverflowChecker {
         var queryElementsThatCanOverflow = ".bloom-editable, textarea";
         var editablePageElements = $(container).find(queryElementsThatCanOverflow);
 
+        // BL-1260: disable overflow checking for pages with too many elements
+        if (editablePageElements.length > 30) return;
+
         //first, check to see if the stylesheet is going to give us overflow even for a single character:
         editablePageElements.each(function () {
             OverflowChecker.CheckOnMinHeight(this);
