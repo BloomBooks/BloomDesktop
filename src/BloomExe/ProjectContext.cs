@@ -54,7 +54,7 @@ namespace Bloom
 				AddShortCutInComputersBloomCollections(collectionDirectory);
 			}
 
-			_httpServer.StartWithSetupIfNeeded();
+			_httpServer.StartListening();
 		}
 
 		/// ------------------------------------------------------------------------------------

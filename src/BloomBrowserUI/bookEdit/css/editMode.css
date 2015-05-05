@@ -213,7 +213,7 @@ TEXTAREA.province {
 .overflow p:empty:after {
   content: '¶';
 }
-.marginOverflow {
+.childOverflowingThis {
   border-bottom: solid thick red !important;
   color: red !important;
 }

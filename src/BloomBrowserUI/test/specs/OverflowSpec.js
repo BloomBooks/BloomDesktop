@@ -6,8 +6,8 @@ jQuery.fn.RunTests = function() {
     $.each(this, RunTest);
 };
 
-jQuery.fn.RunMarginTests = function() {
-    $.each(this, RunMarginTest);
+jQuery.fn.RunAncestorMarginTests = function() {
+    $.each(this, RunAncestorMarginTest);
 };
 
 var RunTest = function(index, value) {
@@ -38,14 +38,15 @@ var RunTest = function(index, value) {
     expect(overflowingSelf).toBe(testExpectation);
 };
 
-var RunMarginTest = function(index, value) {
+var RunAncestorMarginTest = function(index, value) {
     var testHtml = $(value);
     var nameAttr = testHtml.attr("name");
     if(typeof nameAttr === 'undefined')
         nameAttr = '***** This test needs a name! *****';
     if(consoleDef)
         console.log('\nBeginning test # '+ index + ' ' + nameAttr);
-    var overflowingMargins = OverflowChecker.IsOverflowingMargins(testHtml[0]);
+    var overflowingAncestor = OverflowChecker.overflowingAncestor(testHtml[0]);
+    var overflowingMargins = overflowingAncestor != null;
     var testExpectation = testHtml.hasClass('expectToOverflow');
     if(consoleDef) {
         console.log('  scrollH: ' + testHtml[0].scrollHeight + ' clientH: ' + testHtml[0].clientHeight);
@@ -86,7 +87,6 @@ describe("Overflow Tests", function () {
         $(".myTest").RunTests();
     });
 
-
     it("Check test page for Margin overflows", function() {
         loadFixtures('OverflowMarginTestPage.htm');
         expect($('#jasmine-fixtures')).toBeTruthy();
@@ -94,7 +94,16 @@ describe("Overflow Tests", function () {
             consoleDef = true;
             console.log('Commencing Margin Overflow tests...');
         }
-        $(".myTest").RunMarginTests();
+        $(".myTest").RunAncestorMarginTests();
     });
 
+    it("Check test page for Fixed Ancestor overflows", function() {
+        loadFixtures('OverflowAncestorTestPage.htm');
+        expect($('#jasmine-fixtures')).toBeTruthy();
+        if(window.console && window.console.log) {
+            consoleDef = true;
+            console.log('Commencing Fixed Ancestor Overflow tests...');
+        }
+        $(".myTest").RunAncestorMarginTests();
+    });
 });

@@ -12,6 +12,7 @@ using Bloom.Properties;
 using Bloom.Registration;
 using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
+using BloomTemp;
 using Gecko;
 using L10NSharp;
 using Mono.Cecil;
@@ -729,7 +730,24 @@ namespace Bloom
 
 		public static void SetUpLocalization()
 		{
-			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication("localization");
+			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication(true,"localization");
+			if (installedStringFileFolder == null)
+			{
+				// nb do NOT try to localize this...it's a shame, but the problem we're reporting is that the localization data is missing!
+				var msg =
+					@"Bloom seems to be missing some of the files it needs to run. Please uninstall Bloom, then install it again. If that's doesn't fix things, please contact us by clicking the ""Details"" button below, and we'd be glad to help.";
+				ErrorReport.NotifyUserOfProblem(new ApplicationException("Missing localization directory"), msg);
+				// If the user insists on continuing after that, start up using the built-in English.
+				// We need an LM, and it needs some folder of tmx files, though it can be empty. So make a fake one.
+				// Ideally we would dispose this at some point, but I don't know when we safely can. Normally this should never happen,
+				// so I'm not very worried.
+				var fakeLocalDir = new TemporaryFolder("Bloom fake localization").FolderPath;
+				_applicationContainer.LocalizationManager = LocalizationManager.Create("en", "Bloom", "Bloom", Application.ProductVersion, fakeLocalDir, "SIL/Bloom",
+										   Resources.Bloom, "issues@bloomlibrary.org",
+											//the parameters that follow are namespace beginnings:
+										   "Bloom");
+				return;
+			}
 
 			try
 			{

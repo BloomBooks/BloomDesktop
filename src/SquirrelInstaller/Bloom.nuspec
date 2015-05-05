@@ -13,7 +13,7 @@
 	<iconUrl>https://s3.amazonaws.com/bloomlibrary.org/squirrel/BloomSetup.ico</iconUrl>
   </metadata>
 	<files>
-		<file src="..\..\output\release\**\*.*" exclude="*.xml;Bloom.vshost.exe;*.pdb;remoteDebugging" target="lib\net45\"/>
+		<file src="..\..\output\release\**\*.*" exclude="*.xml;Bloom.vshost.exe;AWSSDK.pdb;remoteDebugging" target="lib\net45\"/>
 		<file src="..\..\lib\xulrunner\**\*.*" target="\lib\net45\xulrunner"/>
 		<file src="..\..\distfiles\**\*.*"  target="lib\net45\"/>
 		<file src="..\..\Mercurial\**\*.*" target="\lib\net45\Mercurial"/>

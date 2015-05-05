@@ -198,26 +198,20 @@ namespace Bloom.Publish
 						//installed, or they had the PDF open in Word, or something like that.
 						ErrorReport.NotifyUserOfProblem(error.Message);
 					}
+					else if (error is FileNotFoundException && ((FileNotFoundException) error).FileName == "GeckofxHtmlToPdf.exe")
+					{
+						ErrorReport.NotifyUserOfProblem(error, error.Message);
+					}
 					else // for others, just give a generic message and include the original exception in the message
 					{
 						ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
 					}
-					// We CAN upload even without a preview.
-					_model.DisplayMode = (_uploadRadio.Checked
-						? PublishModel.DisplayModes.Upload
-						: PublishModel.DisplayModes.WaitForUserToChooseSomething);
-					UpdateDisplay();
+					UpdateDisplayMode();
 					return;
 				}
 				_model.PdfGenerationSucceeded = true;
 					// should be the only place this is set, when we generated successfully.
-				if (IsHandleCreated) // May not be when bulk uploading
-				{
-					_model.DisplayMode = (_uploadRadio.Checked
-						? PublishModel.DisplayModes.Upload
-						: PublishModel.DisplayModes.ShowPdf);
-					Invoke((Action) (UpdateDisplay));
-				}
+				UpdateDisplayMode();
 			}
 			if(e.Cancelled || _model.BookletPortion != (PublishModel.BookletPortions) e.Result )
 			{
@@ -225,6 +219,19 @@ namespace Bloom.Publish
 			}
 		}
 
+		private void UpdateDisplayMode()
+		{
+			if (IsHandleCreated) // May not be when bulk uploading
+			{
+				if (_uploadRadio.Checked)
+					_model.DisplayMode = PublishModel.DisplayModes.Upload; 	// We CAN upload even without a preview.
+				else if (_model.PdfGenerationSucceeded)
+					_model.DisplayMode = PublishModel.DisplayModes.ShowPdf;
+				else
+					_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
+				Invoke((Action) (UpdateDisplay));
+			}
+		}
 
 
 		protected override void OnLoad(EventArgs e)
