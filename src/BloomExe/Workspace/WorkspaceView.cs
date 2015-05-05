@@ -379,7 +379,8 @@ namespace Bloom.Workspace
 		private void SelectPage(Control view)
 		{
 			CurrentTabView = view as IBloomTabArea;
-			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "switched page in workspace", true);
+			// Warn the user if we're starting to use too much memory.
+			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "switched page in workspace", true);
 
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);

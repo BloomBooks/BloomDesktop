@@ -269,6 +269,8 @@ namespace Bloom
 			}
 			finally
 			{
+				// Check memory one final time for the benefit of developers.  The user won't see anything.
+				Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
 				if (!skipReleaseToken)
 					UniqueToken.ReleaseToken();
 			}
