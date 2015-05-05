@@ -122,6 +122,19 @@ namespace Bloom
 			GeckoPreferences.User["network.proxy.http"] = string.Empty;
 			GeckoPreferences.User["network.proxy.http_port"] = 80;
 			GeckoPreferences.User["network.proxy.type"] = 1; // 0 = direct (uses system settings on Windows), 1 = manual configuration
+			// Try some settings to reduce memory consumption by the mozilla browser engine.
+			// Testing on Linux showed eventual substantial savings after several cycles of viewing
+			// all the pages and then going to the publish tab and producing PDF files for several
+			// books with embedded jpeg files.  (physical memory 1,153,864K, managed heap 37,789K
+			// instead of physical memory 1,952,380K, managed heap 37,723K for stepping through the
+			// same operations on the same books in the same order.  I don't know why managed heap
+			// changed although it didn't change much.)
+			// See http://kb.mozillazine.org/About:config_entries, http://www.davidtan.org/tips-reduce-firefox-memory-cache-usage
+			// and http://forums.macrumors.com/showthread.php?t=1838393.
+			GeckoPreferences.User["memory.free_dirty_pages"] = true;
+			GeckoPreferences.User["browser.sessionhistory.max_entries"] = 1;
+			GeckoPreferences.User["browser.sessionhistory.max_total_viewers"] = 0;
+			GeckoPreferences.User["browser.cache.memory.enable"] = false;
 
 			Application.ApplicationExit += OnApplicationExit;
 		}
