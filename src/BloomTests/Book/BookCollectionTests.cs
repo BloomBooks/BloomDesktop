@@ -31,17 +31,24 @@ namespace BloomTests.Book
 			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, new BookSelection());
 		}
 
-		 Bloom.Book.Book BookFactory(BookInfo bookInfo, IBookStorage storage, bool editable)
-		 {
-			 return new Bloom.Book.Book(bookInfo,  storage, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"),  Language1Iso639Code = "xyz" }), null,
-													  new PageSelection(),
-													  new PageListChangedEvent(), new BookRefreshEvent());
-		 }
+		Bloom.Book.Book BookFactory(BookInfo bookInfo, IBookStorage storage, bool editable)
+		{
+			return new Bloom.Book.Book(bookInfo,  storage, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"),  Language1Iso639Code = "xyz" }), null,
+													new PageSelection(),
+													new PageListChangedEvent(), new BookRefreshEvent());
+		}
 
-		 BookStorage BookStorageFactory(string folderPath)
-		 {
-			 return new BookStorage(folderPath,_fileLocator, new BookRenamedEvent(), new CollectionSettings());
-		 }
+		BookStorage BookStorageFactory(string folderPath)
+		{
+			return new BookStorage(folderPath,_fileLocator, new BookRenamedEvent(), new CollectionSettings());
+		}
+
+		private void AddBook()
+		{
+			string path = _folder.Combine("alpha");
+			Directory.CreateDirectory(path);
+			File.WriteAllText(Path.Combine(path, "alpha.htm"), @"<html></html>");
+		}
 
 		[Test]
 		public void DeleteBook_FirstBookInEditableCollection_RemovedFromCollection()
@@ -55,8 +62,6 @@ namespace BloomTests.Book
 			Assert.IsFalse(Directory.Exists(bookFolder));
 		}
 
-
-
 		[Test]
 		public void DeleteBook_FirstBookInEditableCollection_RaisesCollectionChangedEvent()
 		{
@@ -65,13 +70,6 @@ namespace BloomTests.Book
 			_collection.CollectionChanged+= (x,y)=>triggered=true;
 			_collection.DeleteBook(_collection.GetBookInfos().First());
 			Assert.IsTrue(triggered);
-		}
-
-		private void AddBook()
-		{
-			string path = _folder.Combine("alpha");
-			Directory.CreateDirectory(path);
-			File.WriteAllText(Path.Combine(path,"alpha.htm"), @"<html></html>");
 		}
 
 		[Test]

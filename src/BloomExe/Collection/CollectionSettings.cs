@@ -6,10 +6,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Amazon.CloudFront.Model;
 using Bloom.Book;
+using L10NSharp;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
 using Palaso.WritingSystems;
@@ -293,6 +295,7 @@ namespace Bloom.Collection
 			library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName));
 			library.Add(new XElement("DefaultLanguage2FontName", DefaultLanguage2FontName));
 			library.Add(new XElement("DefaultLanguage3FontName", DefaultLanguage3FontName));
+			library.Add(new XElement("OneTimeCheckVersionNumber", OneTimeCheckVersionNumber));
 			library.Add(new XElement("IsLanguage1Rtl", IsLanguage1Rtl));
 			library.Add(new XElement("IsLanguage2Rtl", IsLanguage2Rtl));
 			library.Add(new XElement("IsLanguage3Rtl", IsLanguage3Rtl));
@@ -361,6 +364,7 @@ namespace Bloom.Collection
 				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
 				DefaultLanguage2FontName = GetValue(library, "DefaultLanguage2FontName", GetDefaultFontName());
 				DefaultLanguage3FontName = GetValue(library, "DefaultLanguage3FontName", GetDefaultFontName());
+				OneTimeCheckVersionNumber = GetIntegerValue(library, "OneTimeCheckVersionNumber", 0);
 				IsLanguage1Rtl = GetBoolValue(library, "IsLanguage1Rtl", false);
 				IsLanguage2Rtl = GetBoolValue(library, "IsLanguage2Rtl", false);
 				IsLanguage3Rtl = GetBoolValue(library, "IsLanguage3Rtl", false);
@@ -396,6 +400,74 @@ namespace Bloom.Collection
 			{
 				//ah well, we tried, no big deal, only a couple of beta testers used this old name
 			}
+
+			// Check if we need to do a one time check (perhaps migrate to a new Settings value)
+			if (OneTimeCheckVersionNumber < _currentOneTimeCheckVersionNumber)
+			{
+				DoOneTimeCheck();
+			}
+		}
+
+		private void DoOneTimeCheck()
+		{
+			// If we ever have to do another one of these besides our minimal Andika New Basic migration
+			// we should refactor this so it calls a method based on the OneTimeCheckVersionNumber
+			do
+			{
+				if(!MigrateSettingsToAndikaNewBasicFont())
+					break; // in case of failed migration
+				OneTimeCheckVersionNumber++;
+
+			} while (OneTimeCheckVersionNumber < _currentOneTimeCheckVersionNumber);
+			Save(); // save updated settings
+		}
+
+		private bool MigrateSettingsToAndikaNewBasicFont()
+		{
+			const string newFont = "Andika New Basic";
+			if (GetDefaultFontName() != newFont) // sanity check to make sure Andika New Basic is installed
+				return false;
+
+			const string id = "CollectionSettingsDialog.AndikaNewBasicUpdate";
+			var basicMessage = LocalizationManager.GetDynamicString("Bloom", id + "1",
+				"Bloom is switching the default font for \"{0}\" to the new \"Andika New Basic\".");
+			var secondaryMessage = LocalizationManager.GetDynamicString("Bloom", id + "2",
+				"This will improve the printed output for most languages. If your language is one of the few that need \"Andika\", you can switch it back in Settings:Book Making.");
+			const string oldFont = "Andika";
+			var safeLanguages = new[] {"en", "es", "fr", "id", "tpi"};
+			string msg = string.Empty;
+			if(DefaultLanguage1FontName == oldFont)
+			{
+				DefaultLanguage1FontName = newFont;
+				if (!safeLanguages.Contains(Language1Iso639Code))
+				{
+					msg += String.Format(basicMessage, Language1Iso639Code) + Environment.NewLine;
+				}
+			}
+			if (DefaultLanguage2FontName == oldFont)
+			{
+				DefaultLanguage2FontName = newFont;
+				if (!safeLanguages.Contains(Language2Iso639Code))
+				{
+					msg += String.Format(basicMessage, Language2Iso639Code) + Environment.NewLine;
+				}
+			}
+			if (DefaultLanguage3FontName == oldFont)
+			{
+				DefaultLanguage3FontName = newFont;
+				if (!safeLanguages.Contains(Language3Iso639Code))
+				{
+					msg += String.Format(basicMessage, Language3Iso639Code) + Environment.NewLine;
+				}
+			}
+			// Only notify the user if the change involves a language that is not known to be okay with
+			// the new font.
+			if (!String.IsNullOrEmpty(msg) && ErrorReport.IsOkToInteractWithUser)
+			{
+				msg += Environment.NewLine + secondaryMessage;
+				MessageBox.Show(msg, String.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
+			return true;
 		}
 
 		private bool GetBoolValue(XElement library, string id, bool defaultValue)
@@ -404,6 +476,14 @@ namespace Bloom.Collection
 			bool b;
 			bool.TryParse(s, out b);
 			return b;
+		}
+
+		private int GetIntegerValue(XElement library, string id, int defaultValue)
+		{
+			var s = GetValue(library, id, defaultValue.ToString(CultureInfo.InvariantCulture));
+			int i;
+			int.TryParse(s, out i);
+			return i;
 		}
 
 		private decimal GetDecimalValue(XElement library, string id, decimal defaultValue)
@@ -476,6 +556,10 @@ namespace Bloom.Collection
 		public string DefaultLanguage2FontName { get; set; }
 
 		public string DefaultLanguage3FontName { get; set; }
+
+		public int OneTimeCheckVersionNumber { get; set; }
+
+		private const int _currentOneTimeCheckVersionNumber = 1; // bumping this will trigger a new one time check
 
 		public bool AllowNewBooks { get; set; }
 

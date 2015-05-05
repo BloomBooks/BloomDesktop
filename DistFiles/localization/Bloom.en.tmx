@@ -274,6 +274,18 @@
         <seg>(Experimental) Show Send/Receive Controls</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionSettingsDialog.AndikaNewBasicUpdate1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Bloom is switching the default font for "{0}" to the new "Andika New Basic".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AndikaNewBasicUpdate2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
       <tuv xml:lang="en">
         <seg>Book Making</seg>
