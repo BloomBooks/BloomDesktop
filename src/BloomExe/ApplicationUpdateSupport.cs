@@ -293,7 +293,7 @@ namespace Bloom
 					// it are not part of the sequence on the web site at all, or even if there's
 					// some sort of discontinuity in the sequence of deltas.
 					ignoreDeltaUpdates = true;
-					Palaso.Reporting.Logger.WriteEvent("Squirrel update incremental download failed; trying whole package");
+					Palaso.Reporting.Logger.WriteEvent("Squirrel update incremental download failed; trying whole package. Exception: " + ex.Message);
 					goto retry;
 				}
 

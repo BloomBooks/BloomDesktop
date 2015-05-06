@@ -28,6 +28,7 @@ class BloomField {
             BloomField.ModifyForParagraphMode(bloomEditableDiv);
             BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
             BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
+            BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(bloomEditableDiv);
             BloomField.MakeTabEnterTabElement(bloomEditableDiv);
             BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
             $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
@@ -154,10 +155,65 @@ class BloomField {
         e.preventDefault();
     }
 
+    // Since embedded images come before the first editable text, going to the beginning of the field and pressing Backspace moves the current paragraph into the caption. Sigh.
+    private static PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(field: HTMLElement) {
+
+        if ($(field).find('.bloom-keepFirstInField.bloom-preventRemoval').length == 0) {
+            return;
+        }
+
+        var divToProtect = $(field).find('.bloom-keepFirstInField.bloom-preventRemoval')[0];
+
+        //We have this to fix up cases existing before we introduced this prevention, and also
+        // as a backup plan, in case there is some way we haven't discovered to bypass the
+        //prevention algorithm below.
+
+        //The following checks the top level elemenents and only allows divs; the two items
+        //that we expect in there are the div for the "imagePusherDowner" and the div for 
+        //the image - container(which in turn contains the caption).
+        $(divToProtect).children().filter(function() {
+            return this.localName.toLowerCase() != 'div';
+        }).each(function() {
+            divToProtect.removeChild(this);
+        });
+        //also remove any raw text nodes, which you can only get at with "contents"
+        //note this is still only one level deep, so it doesn't endanger the caption
+        $(divToProtect).contents().filter(function () {
+            return this.nodeType == Node.TEXT_NODE;
+        }).each(function () {
+                divToProtect.removeChild(this);
+        });
+
+        //Enhance: Currently, this will prevent backspacing sometimes when it should be OK. Specifically,
+        //If we are in the first paragraph and the cursor is to the left of the first character of another
+        //element  (<b>, <i>, <span>, etc.), then we'll have a false positive because sel.anchorOffset will
+        //be 0. To really solve this, we would need to be able to determine if we are in the first text node
+        //of the paragraph, because that's the case where FF will try and remove the  P and move it into the
+        //preceding div.
+        $(field).keydown(e => {
+            if (e.which == 8 /* backspace*/) {
+                var sel = window.getSelection();
+                //Are we at the start of a paragraph with nothing selected?
+                if (sel.anchorOffset == 0 && sel.isCollapsed) {
+                    //Are we in the first paragraph? 
+                    //Embedded image divs come before the first editable paragraph, so we look at the previous element and
+                    //see if it is one those. Anything marked with bloom-preventRemoval is probably not something we want to
+                    //be merging with.
+                    var previousElement = $(sel.anchorNode).closest('P').prev();
+                    if(previousElement.length>0 && previousElement[0] == divToProtect) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        console.log("Prevented Backspace");
+                    }
+                }
+            }
+        });
+    }
+
     // Without this, ctrl+a followed by a left-arrow or right-arrow gets you out of all paragraphs,
     // so you can start messing things up.
     private static PreventArrowingOutIntoField(field:HTMLElement) {
-        $(field).keydown(function (e) {
+        $(field).keydown(function(e) {
             var leftArrowPressed = e.which === 37;
             var rightArrowPressed = e.which === 39;
             if (leftArrowPressed || rightArrowPressed) {
@@ -167,7 +223,7 @@ class BloomField {
                     BloomField.MoveCursorToEdgeOfField(this, leftArrowPressed ? CursorPosition.start : CursorPosition.end);
                 }
             }
-        })
+        });
     }
 
     private static EnsureStartsWithParagraphElement(field:HTMLElement) {

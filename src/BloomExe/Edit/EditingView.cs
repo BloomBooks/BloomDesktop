@@ -713,6 +713,8 @@ namespace Bloom.Edit
 				}
 			}
 			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
+			// Check memory for the benefit of developers.  The user won't see anything.
+			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "about to choose picture", false);
 			// Deep in the ImageToolboxDialog, when the user asks to see images from the ArtOfReading,
 			// We need to use the Gecko version of the thumbnail viewer, since the original ListView
 			// one has a sticky scroll bar in applications that are using Gecko.  On Linux, we also
@@ -727,15 +729,20 @@ namespace Bloom.Edit
 			}
 			using (var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
-				if (DialogResult.OK == dlg.ShowDialog())
+				var result = dlg.ShowDialog();
+				// Check memory for the benefit of developers.  The user won't see anything.
+				Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen or canceled", false);
+				if (DialogResult.OK == result)
 				{
-
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					SaveChangedImage(imageElement, dlg.ImageInfo, "Bloom had a problem including that image");
+					// Warn the user if we're starting to use too much memory.
+					Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen and saved", true);
 				}
 			}
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
+			imageInfo.Dispose();	// ensure memory doesn't leak
 		}
 
 		void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
