@@ -158,6 +158,7 @@ namespace Bloom
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
 								c.Resolve<CurrentEditableCollectionSelection>())).InstancePerLifetimeScope();
 
+					// Keep in sync with OptimizedFileLocator: it wants to return the object created here.
 					builder.Register<IChangeableFileLocator>(
 						c =>
 							new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),
@@ -434,7 +435,7 @@ namespace Bloom
 
 		internal BloomFileLocator OptimizedFileLocator
 		{
-			get { return _scope.Resolve<BloomFileLocator>(); }
+			get { return (BloomFileLocator)_scope.Resolve<IChangeableFileLocator>(); }
 		}
 
 		internal BookServer BookServer
