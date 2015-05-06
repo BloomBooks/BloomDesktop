@@ -31,11 +31,12 @@ namespace Bloom.Collection
 	/// </summary>
 	public class CollectionSettings
 	{
+		private const int kCurrentOneTimeCheckVersionNumber = 1; // bumping this will trigger a new one time check
+
 		public const string ReaderToolsSettingsPrefix = "ReaderToolsSettings-";
 		private string _language1Iso639Code;
 		private LookupIsoCodeModel _lookupIsoCode = new LookupIsoCodeModel();
 		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
-
 
 		/// <summary>
 		/// for moq in unit tests only
@@ -402,7 +403,7 @@ namespace Bloom.Collection
 			}
 
 			// Check if we need to do a one time check (perhaps migrate to a new Settings value)
-			if (OneTimeCheckVersionNumber < _currentOneTimeCheckVersionNumber)
+			if (OneTimeCheckVersionNumber < kCurrentOneTimeCheckVersionNumber)
 			{
 				DoOneTimeCheck();
 			}
@@ -418,7 +419,7 @@ namespace Bloom.Collection
 					break; // in case of failed migration
 				OneTimeCheckVersionNumber++;
 
-			} while (OneTimeCheckVersionNumber < _currentOneTimeCheckVersionNumber);
+			} while (OneTimeCheckVersionNumber < kCurrentOneTimeCheckVersionNumber);
 			Save(); // save updated settings
 		}
 
@@ -558,8 +559,6 @@ namespace Bloom.Collection
 		public string DefaultLanguage3FontName { get; set; }
 
 		public int OneTimeCheckVersionNumber { get; set; }
-
-		private const int _currentOneTimeCheckVersionNumber = 1; // bumping this will trigger a new one time check
 
 		public bool AllowNewBooks { get; set; }
 
