@@ -114,7 +114,7 @@ var BloomField = (function () {
             if (e.which == 8) {
                 var sel = window.getSelection();
 
-                if (sel.anchorOffset == 0) {
+                if (sel.anchorOffset == 0 && sel.isCollapsed) {
                     var previousElement = $(sel.anchorNode).closest('P').prev();
                     if (previousElement.length > 0 && previousElement[0] == divToProtect) {
                         e.stopPropagation();

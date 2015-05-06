@@ -193,8 +193,8 @@ class BloomField {
         $(field).keydown(e => {
             if (e.which == 8 /* backspace*/) {
                 var sel = window.getSelection();
-                //Are we at the start of a paragraph?
-                if (sel.anchorOffset == 0) {
+                //Are we at the start of a paragraph with nothing selected?
+                if (sel.anchorOffset == 0 && sel.isCollapsed) {
                     //Are we in the first paragraph? 
                     //Embedded image divs come before the first editable paragraph, so we look at the previous element and
                     //see if it is one those. Anything marked with bloom-preventRemoval is probably not something we want to
