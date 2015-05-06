@@ -77,20 +77,21 @@ namespace Bloom.Publish
 			var loc = Assembly.GetExecutingAssembly().CodeBase.Substring((Platform.IsUnix ? "file://" : "file:///").Length);
 			var execDir = Path.GetDirectoryName(loc);
 			var fromDirectory = String.Empty;
-			if (Platform.IsMono)
-			{
-				exePath = "mono";
-				bldr.AppendFormat("--debug \"{0}\" ", Path.Combine(execDir, "GeckofxHtmlToPdf.exe"));
-			}
-			else
-			{
-				exePath = Path.Combine(execDir, "GeckofxHtmlToPdf.exe");
-			}
-			if (!File.Exists(exePath))
+			var filePath = Path.Combine(execDir, "GeckofxHtmlToPdf.exe");
+			if (!File.Exists(filePath))
 			{
 				var msg = LocalizationManager.GetString("InstallProblem.GeckofxHtmlToPdf",
 					"A component of Bloom, GeckofxHtmlToPdf.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.");
 				throw new FileNotFoundException(msg, "GeckofxHtmlToPdf.exe"); // must be this class to trigger the right reporting mechanism.
+			}
+			if (Platform.IsMono)
+			{
+				exePath = "mono";
+				bldr.AppendFormat("--debug \"{0}\" ", filePath);
+			}
+			else
+			{
+				exePath = filePath;
 			}
 			SetArguments(bldr, inputHtmlPath, outputPdfPath, paperSizeName, landscape);
 			var arguments = bldr.ToString();
