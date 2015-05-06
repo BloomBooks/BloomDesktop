@@ -574,13 +574,14 @@ namespace Bloom.web
 			}
 
 			// if not a full path, try to find the correct file
-			var fileName = localPath;
-			var pos = fileName.LastIndexOfAny(new[] { '\\', '/' });
-			if (pos > -1)
-				fileName = fileName.Substring(pos + 1);
+			var fileName = Path.GetFileName(localPath);
 
 			// try to find the css file in the xmatter and templates
-			var path = (_fileLocator == null) ? string.Empty : _fileLocator.LocateFile(fileName);
+			if (_fileLocator == null)
+			{
+				_fileLocator = Program.OptimizedFileLocator;
+			}
+			var path = _fileLocator.LocateFile(fileName);
 
 			// try to find the css file in the BloomBrowserUI directory
 			if (string.IsNullOrEmpty(path))
