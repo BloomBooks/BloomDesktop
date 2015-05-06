@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -590,9 +591,27 @@ namespace BloomTests.Book
 			Assert.IsNull(data.GetVariableOrNull("topic", "tpi"));
 		}
 
+		private bool AndikaNewBasicIsInstalled()
+		{
+			const string fontToCheck = "andika new basic";
+			return FontFamily.Families.FirstOrDefault(f => f.Name.ToLowerInvariant() == fontToCheck) != null;
+		}
+
+		[Test]
+		[Category("SkipOnTeamCity")]
+		public void AndikaNewBasic_MustBeInstalled()
+		{
+			Assert.That(AndikaNewBasicIsInstalled());
+		}
+
 		[Test]
 		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_DoIt()
 		{
+			// This test needs Andika New Basic installed to work
+			// dump out and pass if the font isn't installed
+			if (!AndikaNewBasicIsInstalled())
+				return; // quietly pass the test if the font isn't installed
+
 			var filepath = _collectionSettings.SettingsFilePath;
 			var cssFilePath = Path.GetDirectoryName(filepath).CombineForPath("settingsCollectionStyles.css");
 			File.Delete(cssFilePath);
