@@ -442,23 +442,23 @@ namespace Bloom.Collection
 				DefaultLanguage1FontName = newFont;
 				if (!safeLanguages.Contains(Language1Iso639Code))
 				{
-					msg += String.Format(basicMessage, Language1Iso639Code) + Environment.NewLine;
+					msg += String.Format(basicMessage, Language1Name) + Environment.NewLine;
 				}
 			}
 			if (DefaultLanguage2FontName == oldFont)
 			{
 				DefaultLanguage2FontName = newFont;
-				if (!safeLanguages.Contains(Language2Iso639Code))
+				if (!String.IsNullOrEmpty(Language2Iso639Code) && !safeLanguages.Contains(Language2Iso639Code))
 				{
-					msg += String.Format(basicMessage, Language2Iso639Code) + Environment.NewLine;
+					msg += String.Format(basicMessage, GetLanguage2Name(Language2Iso639Code)) + Environment.NewLine;
 				}
 			}
 			if (DefaultLanguage3FontName == oldFont)
 			{
 				DefaultLanguage3FontName = newFont;
-				if (!safeLanguages.Contains(Language3Iso639Code))
+				if (!String.IsNullOrEmpty(Language3Iso639Code) && !safeLanguages.Contains(Language3Iso639Code))
 				{
-					msg += String.Format(basicMessage, Language3Iso639Code) + Environment.NewLine;
+					msg += String.Format(basicMessage, GetLanguage3Name(Language3Iso639Code)) + Environment.NewLine;
 				}
 			}
 			// Only notify the user if the change involves a language that is not known to be okay with
