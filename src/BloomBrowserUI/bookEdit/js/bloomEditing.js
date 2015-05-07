@@ -385,30 +385,82 @@ function MakeSourceTextDivForGroup(group) {
     $(group).each(function () {
       // var targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
 
-      $(this).qtip({
+      var $this = $(this);
+
+      $this.qtip({
           position: {
-                my: 'left top',
-                at: 'right top',
-              adjust: {
-                  x: 10,
-                  y: 0
-              }
+            my: 'left top',
+            at: 'right top',
+            adjust: {
+              x: 10,
+              y: 0
+            }
           },
           content: $(divForBubble),
 
           show: {
-              event: showEvents,
-              ready: shouldShowAlways
+            event: showEvents,
+            ready: shouldShowAlways
           },
           style: {
-                tip: {
-                    corner: true,
-                    width: 10,
-                    height: 10
-                },
-              classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
+            tip: {
+              corner: true,
+              width: 10,
+              height: 10
+            },
+            classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
           },
-          hide: hideEvents
+          hide: hideEvents,
+
+          events: {
+            show: function(event, api) {
+
+              // don't need to do this if there is only one editable area
+              var $body = $('body');
+              if ($body.find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").length < 2) return;
+
+              // BL-878: set the tool tips to not be larger than the text area so they don't overlap each other
+              var $tip = api.elements.tooltip;
+              var $div = $body.find('[aria-describedby="' + $tip.attr('id') + '"]');
+              var maxHeight = $div.height();
+              if ($tip.height() > maxHeight) {
+
+                // make sure to show a minimum size
+                if (maxHeight < 50) maxHeight = 50;
+
+                $tip.css('max-height', maxHeight);
+                $tip.addClass('passive-bubble');
+                $tip.attr('data-max-height', maxHeight)
+              }
+            }
+          }
+      });
+
+      // BL-878: show the full-size tool tip when the text area has focus
+      $this.find('.bloom-editable').focus(function(event) {
+
+        // reset tool tips that may be expanded
+        var $body = $('body');
+        $body.find('.qtip[data-max-height]').each(function(idx, obj) {
+          var $thisTip = $(obj);
+          $thisTip.css('max-height', parseInt($thisTip.attr('data-max-height')));
+          $thisTip.css('z-index', 15001);
+          $thisTip.addClass('passive-bubble');
+        });
+
+        // show the full tip, if needed
+        var tipId = event.target.parentNode.getAttribute('aria-describedby');
+        var $tip = $body.find('#' + tipId);
+        var maxHeight = $tip.attr('data-max-height');
+
+        if (maxHeight) {
+          $tip.css('max-height', '');
+          $tip.css('z-index', 15002);
+          $tip.removeClass('passive-bubble');
+        }
+
+        event.stopPropagation();
+        event.preventDefault();
       });
   });
 }
@@ -835,7 +887,7 @@ function SetupElements(container) {
         });
     });
 
-  
+
 
     $(container).find('div.bloom-editable').each(function () {
         $(this).attr('contentEditable', 'true');
