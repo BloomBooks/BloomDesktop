@@ -713,7 +713,6 @@ namespace Bloom.Book
 			//    bookDOM.Title = Title;
 			// Bit of a kludge, but there's no way to tell whether a boolean is already set in the JSON, so we fake that it is not,
 			// thus ensuring that if something is in the metadata we use it.
-			bookDOM.RemoveMetaElement("SuitableForMakingShells", () => null, val => BookInfo.IsSuitableForMakingShells = val == "yes" || val == "definitely");
 			// If there is nothing there the default of true will survive.
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
 
@@ -764,7 +763,6 @@ namespace Bloom.Book
 		internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 		{
 			var oldTags = File.ReadAllText(oldTagsPath);
-			bookMetaData.IsSuitableForMakingShells = oldTags.Contains("suitableForMakingShells");
 			bookMetaData.IsFolio = oldTags.Contains("folio");
 			bookMetaData.IsExperimental = oldTags.Contains("experimental");
 		}
