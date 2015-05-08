@@ -632,16 +632,16 @@ namespace Bloom.Book
 			}
 			else
 			{
-				UpdateIfNewer("placeHolder.png");
-				UpdateIfNewer("basePage.css");
-				UpdateIfNewer("previewMode.css");
-				UpdateIfNewer("origami.css");
+				Update("placeHolder.png");
+				Update("basePage.css");
+				Update("previewMode.css");
+				Update("origami.css");
 
 				foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 				{
 					var file = Path.GetFileName(path);
 					//if (file.ToLower().Contains("portrait") || file.ToLower().Contains("landscape"))
-					UpdateIfNewer(file);
+					Update(file);
 				}
 			}
 
@@ -651,7 +651,7 @@ namespace Bloom.Book
 			try
 			{
 				var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
-				UpdateIfNewer(Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation), helper.PathToStyleSheetForPaperAndOrientation);
+				Update(Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation), helper.PathToStyleSheetForPaperAndOrientation);
 			}
 			catch (Exception error)
 			{
@@ -664,7 +664,7 @@ namespace Bloom.Book
 			return (File.GetAttributes(path) & FileAttributes.ReadOnly) != 0;
 		}
 
-		private void UpdateIfNewer(string fileName, string factoryPath = "")
+		private void Update(string fileName, string factoryPath = "")
 		{
 			if (!IsUserFolder)
 			{
@@ -713,30 +713,30 @@ namespace Bloom.Book
 				if(string.IsNullOrEmpty(factoryPath))//happens during unit testing
 					return;
 
-				var factoryTime = File.GetLastWriteTimeUtc(factoryPath);
 				documentPath = Path.Combine(_folderPath, fileName);
 				if(!File.Exists(documentPath))
 				{
-					Logger.WriteEvent("BookStorage.UpdateIfNewer() Copying missing file {0} to {1}", factoryPath, documentPath);
+					Logger.WriteEvent("BookStorage.Update() Copying missing file {0} to {1}", factoryPath, documentPath);
 					File.Copy(factoryPath, documentPath);
 					return;
 				}
-				var documentTime = File.GetLastWriteTimeUtc(documentPath);
-				if(factoryTime> documentTime)
+				// due to BL-2166, we no longer compare times since downloaded books often have
+				// more recent times than the DistFiles versions we want to use
+				// var documentTime = File.GetLastWriteTimeUtc(documentPath);
+				if (factoryPath == documentPath)
+					return; // no point in trying to update self!
+				if (IsPathReadonly(documentPath))
 				{
-					if (IsPathReadonly(documentPath))
-					{
-						var msg = string.Format("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
-						Logger.WriteEvent(msg);
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
-						return;
-					}
-					Logger.WriteEvent("BookStorage.UpdateIfNewer() Updating file {0} to {1}", factoryPath, documentPath);
-
-					File.Copy(factoryPath, documentPath,true);
-					//if the source was locked, don't copy the lock over
-					File.SetAttributes(documentPath,FileAttributes.Normal);
+					var msg = string.Format("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
+					Logger.WriteEvent(msg);
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
+					return;
 				}
+				Logger.WriteEvent("BookStorage.Update() Updating file {0} to {1}", factoryPath, documentPath);
+
+				File.Copy(factoryPath, documentPath, true);
+				//if the source was locked, don't copy the lock over
+				File.SetAttributes(documentPath, FileAttributes.Normal);
 			}
 			catch (Exception e)
 			{
