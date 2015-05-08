@@ -879,8 +879,8 @@ namespace BloomTests.Book
 
 			book = CreateBook();
 			book.BringBookUpToDate(new NullProgress());
-
-			Assert.That(_metadata.IsSuitableForMakingShells, Is.True);
+			// BL-2163, we are no longer migrating suitableForMakingShells
+			Assert.That(_metadata.IsSuitableForMakingShells, Is.False);
 			Assert.That(_metadata.IsSuitableForVernacularLibrary, Is.False);
 		}
 

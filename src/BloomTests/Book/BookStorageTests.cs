@@ -241,7 +241,8 @@ namespace BloomTests.Book
 				book.BringBookUpToDate(new NullProgress());
 
 				Assert.That(!File.Exists(tagsPath), "The tags.txt file should have been removed");
-				Assert.That(storage.MetaData.IsSuitableForMakingShells, Is.True);
+				// BL-2163, we are no longer migrating suitableForMakingShells
+				Assert.That(storage.MetaData.IsSuitableForMakingShells, Is.False);
 				Assert.That(storage.MetaData.IsFolio, Is.True);
 				Assert.That(storage.MetaData.IsExperimental, Is.True);
 				Assert.That(storage.MetaData.BookletMakingIsAppropriate, Is.True);
