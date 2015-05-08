@@ -152,58 +152,6 @@ namespace Bloom.web
 			return escapedUrl.Replace("%27", "'").Replace("%22", "\"");
 		}
 
-		/// <summary>
-		/// Producing PDF with gecko doesn't work on Windows for some reason when referencing
-		/// the localhost server.  So we need to use actual files, and refer to actual files in
-		/// the links to the css files.
-		/// </summary>
-		/// <remarks>
-		/// See http://jira.sil.org/browse/BL-932 for details on the bug.
-		/// </remarks>
-		public static SimulatedPageFile MakeRealPublishModeFileInBookFolder(HtmlDom dom)
-		{
-			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".tmp");
-			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
-			if (dom.BaseForRelativePaths != null)
-				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths.FromLocalhost(), simulatedPageFileName);
-			FixStyleLinkReferences(dom);
-			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
-			using (var writer = File.CreateText(pathToSimulatedPageFile))
-			{
-				writer.Write(html5String);
-				writer.Close();
-			}
-			var uri = new Uri(pathToSimulatedPageFile);
-
-			var absoluteUri = uri.AbsoluteUri;
-			if (pathToSimulatedPageFile.StartsWith("//"))
-			{
-				// Path is something like //someserver/somefolder/book.
-				// For some reason absoluteUri generates file://someserver...
-				// But firefox needs three more slashes: file://///someserver...
-				absoluteUri = "file:///" + absoluteUri.Substring("file:".Length);
-			}
-			return new SimulatedPageFile() { Key = absoluteUri };
-		}
-
-		private static void FixStyleLinkReferences(HtmlDom dom)
-		{
-			var links = dom.RawDom.SelectNodes("//links");
-			if (links != null)
-			{
-				foreach (XmlNode xn in links)
-				{
-					var attrs = xn.Attributes;
-					if (attrs == null)
-						continue;
-					var href = attrs["href"];
-					if (href == null)
-						continue;
-					href.Value = href.Value.FromLocalhost();
-				}
-			}
-		}
-
 		internal static void RemoveSimulatedPageFile(string key)
 		{
 			if (key.StartsWith("file://"))
