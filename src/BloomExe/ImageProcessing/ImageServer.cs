@@ -78,8 +78,9 @@ namespace Bloom.ImageProcessing
 
 			var r = GetLocalPathWithoutQuery(info);
 
-			// only process these image types
-			if (!r.EndsWith(".png") && !r.EndsWith(".jpg") && !r.EndsWith(".svg")) return false;
+			// only process images
+			if(!IsImageTypeThatCanBeDegraded(r))
+				return false;
 
 			r = r.Replace("thumbnail", "");
 
@@ -103,6 +104,15 @@ namespace Bloom.ImageProcessing
 				return true;
 			}
 			return false;
+		}
+
+		protected static bool IsImageTypeThatCanBeDegraded(string path)
+		{
+			var extension = Path.GetExtension(path);
+			if(!string.IsNullOrEmpty(extension))
+				extension = extension.ToLower();
+			//note, we're omitting SVG
+			return (new[] { ".png", ".jpg", ".jpeg"}.Contains(extension));
 		}
 	}
 }

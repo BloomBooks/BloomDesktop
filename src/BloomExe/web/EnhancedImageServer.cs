@@ -190,7 +190,7 @@ namespace Bloom.web
 				return true;
 			}
 
-			if (localPath.StartsWith(OriginalImageMarker))
+			if (localPath.StartsWith(OriginalImageMarker) && IsImageTypeThatCanBeDegraded(localPath))
 			{
 				// Path relative to simulated page file, and we want the file contents without modification.
 				// (Note that the simulated page file's own URL starts with this, so it's important to check
