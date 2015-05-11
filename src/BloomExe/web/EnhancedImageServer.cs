@@ -8,7 +8,6 @@ using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Book;
 using System.IO;
 using Bloom.ImageProcessing;
@@ -37,7 +36,6 @@ namespace Bloom.web
 		private bool _sampleTextsChanged = true;
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
 		private BloomFileLocator _fileLocator;
-		private string[] _bloomBrowserUiCssFiles;
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -530,19 +528,6 @@ namespace Bloom.web
 				_fileLocator = Program.OptimizedFileLocator;
 			}
 			var path = _fileLocator.LocateFile(fileName);
-
-			// try to find the css file in the BloomBrowserUI directory
-			if (string.IsNullOrEmpty(path))
-			{
-				// collect the css files in the BloomBrowserUI directory
-				if (_bloomBrowserUiCssFiles == null)
-				{
-					var sourceDir = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
-					_bloomBrowserUiCssFiles = Directory.EnumerateFiles(sourceDir, "*.css", SearchOption.AllDirectories).ToArray();
-				}
-
-				path = _bloomBrowserUiCssFiles.FirstOrDefault(f => Path.GetFileName(f) == fileName);
-			}
 
 			// if still not found, and localPath is an actual file path, use it
 			if (string.IsNullOrEmpty(path) && File.Exists(localPath)) path = localPath;
