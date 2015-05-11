@@ -1685,7 +1685,7 @@ namespace Bloom.Book
 					if (!userModifiedStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
 					{
 						userModifiedStyleSheets.Add(sheetName);
-						printingDom.AddStyleSheetIfMissing("file://"+Path.Combine(childBook.FolderPath,sheetName));
+						printingDom.AddStyleSheetIfMissing(sheetName);
 					}
 				}
 				printingDom.SortStyleSheetLinks();
