@@ -101,13 +101,11 @@ var BloomField = (function () {
         $(divToProtect).children().filter(function () {
             return this.localName.toLowerCase() != 'div';
         }).each(function () {
-            divToProtect.removeChild(this);
         });
 
         $(divToProtect).contents().filter(function () {
-            return this.nodeType == Node.TEXT_NODE;
+            return this.nodeType == Node.TEXT_NODE && this.textContent.trim().length > 0;
         }).each(function () {
-            divToProtect.removeChild(this);
         });
 
         $(field).keydown(function (e) {

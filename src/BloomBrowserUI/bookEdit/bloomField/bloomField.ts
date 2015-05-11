@@ -173,15 +173,15 @@ class BloomField {
         //the image - container(which in turn contains the caption).
         $(divToProtect).children().filter(function() {
             return this.localName.toLowerCase() != 'div';
-        }).each(function() {
-            divToProtect.removeChild(this);
+        }).each(function () {
+            //divToProtect.removeChild(this);
         });
         //also remove any raw text nodes, which you can only get at with "contents"
         //note this is still only one level deep, so it doesn't endanger the caption
         $(divToProtect).contents().filter(function () {
-            return this.nodeType == Node.TEXT_NODE;
+            return this.nodeType == Node.TEXT_NODE && this.textContent.trim().length > 0;
         }).each(function () {
-                divToProtect.removeChild(this);
+            // divToProtect.removeChild(this);
         });
 
         //Enhance: Currently, this will prevent backspacing sometimes when it should be OK. Specifically,
