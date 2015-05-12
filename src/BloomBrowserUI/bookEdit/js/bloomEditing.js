@@ -47,13 +47,26 @@ function fireCSharpEditEvent(eventName, eventData) {
 
 $.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {
-        var ah = $(this).height();
-        var ph = $(this).parent().height();
-        var mh = Math.ceil((ph - ah) / 2);
+        var $this = $(this);
+        $this.css('margin-top', 0); // reset before calculating in case of previously messed up page
+        var diff = GetDifferenceBetweenHeightAndParentHeight($this);
+        if (diff < 0) {
+            // we're too big, do nothing to margin-top
+            // but the formatButton may need adjusting, in StyleEditor
+            return;
+        }
+        var mh = Math.ceil(diff / 2);
         $(this).css('margin-top', mh);
     });
 };
 
+function GetDifferenceBetweenHeightAndParentHeight(jqueryNode) {
+    // function also declared and used in StyleEditor
+    if (!jqueryNode) {
+        return 0;
+    }
+    return jqueryNode.parent().height() - jqueryNode.height();
+}
 
 function isBrOrWhitespace(node) {
     return node && ( (node.nodeType == 1 && node.nodeName.toLowerCase() == "br") ||
@@ -1050,6 +1063,10 @@ function SetupElements(container) {
             //so we actually attach twice. That's ok, the editor handles that, but I don't know why we're passing the if, and it could be improved.
             if ($(this).closest('.bloom-userCannotModifyStyles').length == 0)
                 editor.AttachToBox(this);
+        }
+        else {
+            // already have a format cog, better make sure it's in the right place
+            editor.AdjustFormatButton($(this));
         }
     });
 
