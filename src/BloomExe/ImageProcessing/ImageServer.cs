@@ -79,7 +79,8 @@ namespace Bloom.ImageProcessing
 			var r = GetLocalPathWithoutQuery(info);
 
 			// only process images
-			if(!IsImageTypeThatCanBeDegraded(r))
+			var isSvg = r.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);
+			if (!IsImageTypeThatCanBeDegraded(r) && !isSvg)
 				return false;
 
 			r = r.Replace("thumbnail", "");
@@ -94,6 +95,12 @@ namespace Bloom.ImageProcessing
 
 			if (!string.IsNullOrEmpty(r))
 			{
+				if (isSvg)
+				{
+					info.ReplyWithImage(r);
+					return true;
+				}
+
 				// thumbnail requests have the thumbnail parameter set in the query string
 				var thumb = info.GetQueryString()["thumbnail"] != null;
 				var pathToFile = _cache.GetPathToResizedImage(r, thumb);
