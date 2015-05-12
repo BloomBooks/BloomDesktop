@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -1696,7 +1697,13 @@ namespace Bloom.Book
 					currentLastContentPage.ParentNode.InsertAfter(importedPage, currentLastContentPage);
 					currentLastContentPage = importedPage;
 
-					ImageUpdater.MakeImagePathsOfImportedPagePointToOriginalLocations(importedPage, bookInfo.FolderPath);
+					foreach(XmlElement img in importedPage.SafeSelectNodes("descendant::img"))
+					{
+						var bookFolderName = Path.GetFileName(bookInfo.FolderPath);
+						var pathRelativeToFolioFolder = ".../" + bookFolderName + "/" + img.GetAttribute("src");
+						var fullPathInLinkFormat = HttpUtility.UrlEncode(pathRelativeToFolioFolder);
+						img.SetAttribute("src", fullPathInLinkFormat);
+					}
 				}
 			}
 		}

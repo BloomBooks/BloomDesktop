@@ -486,11 +486,24 @@ namespace Bloom.web
 				modPath = tempPath;
 			try
 			{
-				// Surprisingly, this method will return localPath unmodified if it is a fully rooted path
-				// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
-				// can return contents of any file that exists if the URL gives its full path...even ones that
-				// are generated temp files most certainly NOT distributed with the application.
-				path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", modPath);
+				// Is this request the full path to an image file? For most images, we just have the filename. However, in at
+				// least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when 
+				// we are looking at a "folio", a book that gathers up other books into one big PDF. In that case, we want
+				// to find the image in the correct book folder.  See AddChildBookContentsToFolio();
+				var possibleFullImagePath = HttpUtility.UrlDecode(localPath);
+				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
+				{
+					path = possibleFullImagePath;
+				}
+				else
+				{
+
+					// Surprisingly, this method will return localPath unmodified if it is a fully rooted path
+					// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
+					// can return contents of any file that exists if the URL gives its full path...even ones that
+					// are generated temp files most certainly NOT distributed with the application.
+					path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", modPath);
+				}
 			}
 			catch (ApplicationException)
 			{
