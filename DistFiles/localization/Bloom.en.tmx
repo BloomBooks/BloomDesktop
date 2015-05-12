@@ -629,22 +629,10 @@
         <seg>Templates</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.ThreeLanguageSet">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>ThreeLanguageSet</seg>
-      </tuv>
-    </tu>
     <tu tuid="CollectionTab.TitleMissing">
       <note>Shown as the thumbnail caption when the book doesn't have a title</note>
       <tuv xml:lang="en">
         <seg>Title Missing</seg>
-      </tuv>
-    </tu>
-    <tu tuid="CollectionTab.Turkishtest Books">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Turkishtest Books</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Vernacular Collection Heading">
