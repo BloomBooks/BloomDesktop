@@ -61,23 +61,11 @@ var OverflowChecker = (function () {
         // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
         // so we'll apply the same 'fudge' factor to both comparisons.
         var focusedBorderFudgeFactor = 2;
-        //The "basic book" template has a "Just Text" page which does some weird things to get vertically-centered
-        //text. I don't know why, but this makes the clientHeight 2 pixels larger than the scrollHeight once it
-        //is beyond its minimum height. We can detect that we're using this because it has this "firefoxHeight" data
-        //element. This problem also shows up (and is detectable the same way) in Big Book. Except it turns out the
-        //number of pixels to fudge is related to the point size. I think at base it's a preferred line spacing issue.
-        var growFromCenterVerticalFudgeFactor = 0;
-        if ($(element).data('firefoxheight')) {
-            var fontSizeRemnant = new StyleEditor("/bloom/bookEdit").GetCalculatedFontSizeInPoints(element) - 22;
-            if (fontSizeRemnant > 0) {
-                growFromCenterVerticalFudgeFactor = (fontSizeRemnant / 5) + 1;
-            }
-        }
         //In the Picture Dictionary template, all words have a scrollHeight that is 3 greater than the client height.
         //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
         // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
         var shortBoxFudgeFactor = 4;
-        return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor || element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor;
+        return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + shortBoxFudgeFactor || element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor;
     };
     // Actual testable determination of Type II overflow or not
     // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
