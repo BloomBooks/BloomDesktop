@@ -1701,7 +1701,9 @@ namespace Bloom.Book
 					{
 						var bookFolderName = Path.GetFileName(bookInfo.FolderPath);
 						var pathRelativeToFolioFolder = ".../" + bookFolderName + "/" + img.GetAttribute("src");
-						var fullPathInLinkFormat = HttpUtility.UrlEncode(pathRelativeToFolioFolder);
+						//NB: URLEncode would replace spaces with '+', which is ok in the parameter section, but not the URL
+						//So we are using UrlPathEncode
+						var fullPathInLinkFormat = HttpUtility.UrlPathEncode(pathRelativeToFolioFolder);
 						img.SetAttribute("src", fullPathInLinkFormat);
 					}
 				}

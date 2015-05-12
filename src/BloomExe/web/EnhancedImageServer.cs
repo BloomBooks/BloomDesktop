@@ -490,7 +490,7 @@ namespace Bloom.web
 				// least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when 
 				// we are looking at a "folio", a book that gathers up other books into one big PDF. In that case, we want
 				// to find the image in the correct book folder.  See AddChildBookContentsToFolio();
-				var possibleFullImagePath = HttpUtility.UrlDecode(localPath);
+				var possibleFullImagePath = localPath;
 				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{
 					path = possibleFullImagePath;
