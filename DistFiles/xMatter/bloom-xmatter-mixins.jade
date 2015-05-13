@@ -90,7 +90,7 @@ mixin block-licenseAndCopyright
 
 mixin factoryStandard-outsideFrontCover
 	// FRONT COVER
-	+page-cover('Front Cover')(data-export='front-matter-cover').frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
+	+page-cover('Front Cover')(attributes, data-export='front-matter-cover').frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
 
 		//- enchance: could we 1) adjust stylesheet and 2) preserve bookTitle value to simplify this to
 		//- 	+field-matter('bookTitle').Title-On-Cover-style
@@ -117,12 +117,12 @@ mixin factoryStandard-outsideFrontCover
 
 mixin factoryStandard-creditsInsideFrontCover
 	// Inside Front Cover CREDITS PAGE
-	+page-cover("Credits Page").credits(data-export='front-matter-credits')#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9
+	+page-cover("Credits Page").credits(attributes, data-export='front-matter-credits')#B7DB9AC7-5DCC-4D55-86B5-6DD2A5303AA9
 		+credits-contents
 
 mixin factoryStandard-credits-interiorPage
 	// CREDITS PAGE
-	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits')#2CCC8F26-A797-4A5B-9BA7-E29823D2CB24
+	+page-xmatter("Credits Page").bloom-frontMatter.credits(attributes, data-export='front-matter-credits')#2CCC8F26-A797-4A5B-9BA7-E29823D2CB24
 		+credits-contents
 
 mixin credits-contents
@@ -133,7 +133,7 @@ mixin credits-contents
 
 mixin factoryStandard-titlePage
 	// TITLE PAGE
-	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
+	+page-xmatter('Title Page').titlePage.bloom-frontMatter(attributes, data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
 		+field-prototypeDeclaredExplicity#titlePageTitleBlock
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).Title-On-Title-Page-style(data-book='bookTitle')
