@@ -24,7 +24,7 @@ class DirectoryWatcher {
       this.refreshInterval = Math.ceil(refreshIntervalSeconds);
   }
 
-  start(): void {
+  public start(): void {
     this.run = true;
     this.checkNow(this);
   }
@@ -98,7 +98,7 @@ class DirectoryWatcher {
    * @param listenerNameAndContext Name and context that identifies this handler.
    * @param handler Function to call
    */
-  onChanged(listenerNameAndContext: string, handler: () => any): void {
+  public onChanged(listenerNameAndContext: string, handler: () => any): void {
     this.changeEventHandlers[listenerNameAndContext] = handler;
   }
 
