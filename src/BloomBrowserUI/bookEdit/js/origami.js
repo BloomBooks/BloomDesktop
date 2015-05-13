@@ -112,12 +112,12 @@ function closeClickHandler() {
         return;
     }
 
-    var myComponent = $(this).closest('.split-pane-component');
-    var sibling = myComponent.siblings('.split-pane-component').first('div');
-    var toReplace = myComponent.parent().parent();
-    var parentHeight = toReplace.height();
-    var parentWidth = toReplace.width();
+    var myComponent = $(this).closest('.split-pane-component');                // the div/cell being removed
+    var sibling = myComponent.siblings('.split-pane-component').first('div');  // the other div/cell in the same pane
+    var toReplace = myComponent.parent().parent();                             // the div/cell containing the pane that contains the siblings above
     var positionClass = toReplace.attr('class');
+    var positionStyle = toReplace.attr('style');
+
     toReplace.replaceWith(sibling);
 
     // The idea here is we need the position-* class from the parent to replace the sibling's position-* class.
@@ -126,8 +126,7 @@ function closeClickHandler() {
         return (css.match (/(^|\s)position-\S+/g) || []).join(' ');
     });
     sibling.addClass(positionClass);
-    sibling.height(parentHeight);
-    sibling.width(parentWidth);
+    sibling.attr('style', positionStyle);
 }
 
 function getSplitPaneHtml(verticalOrHorizontal) {
