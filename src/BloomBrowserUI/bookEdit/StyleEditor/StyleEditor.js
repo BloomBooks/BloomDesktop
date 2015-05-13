@@ -455,6 +455,15 @@ var StyleEditor = (function () {
         var $target = $(targetBox);
         return typeof ($target.closest('.bloom-frontMatter')[0]) !== 'undefined' || typeof ($target.closest('.bloom-backMatter')[0]) !== 'undefined';
     };
+    StyleEditor.prototype.AdjustFormatButton = function (jqueryNode) {
+        var newBottom = -1 * GetDifferenceBetweenHeightAndParentHeight(jqueryNode.parent());
+        if (newBottom < 0) {
+            newBottom = 0;
+        }
+        $("#formatButton").css({
+            bottom: newBottom
+        });
+    };
     StyleEditor.prototype.AttachToBox = function (targetBox) {
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName)
@@ -478,12 +487,9 @@ var StyleEditor = (function () {
         // the user won't see resize and drag controls when they click on it
         $(targetBox).append('<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
         //make the button stay at the bottom if we overflow and thus scroll
-        $(targetBox).on("scroll", function () {
-            var newBottom = -1 * $(this).scrollTop();
-            $("#formatButton").css({
-                bottom: newBottom
-            });
-        });
+        $(targetBox).on("scroll", this.AdjustFormatButton);
+        // And in case we are starting out on a centerVertically page we might need to adjust it now
+        this.AdjustFormatButton($(targetBox));
         var formatButton = $('#formatButton');
         /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened
         var txt = localizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
