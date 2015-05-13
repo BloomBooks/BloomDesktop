@@ -15,7 +15,6 @@ using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using Gecko;
 using L10NSharp;
-using Mono.Cecil;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.Registration;
@@ -172,11 +171,12 @@ namespace Bloom
 							InstallerSupport.MakeBloomRegistryEntries();
 							Browser.SetUpXulRunner();
 							Browser.XulRunnerShutdown += OnXulRunnerShutdown;
-							L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+							LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
 								_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
 							transfer.HandleBloomBookOrder(args[0]);
 							PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
+
 							// If another instance is running, this one has served its purpose and can exit right away.
 							// Otherwise, carry on with starting up normally.
 							if (UniqueToken.AcquireTokenQuietly(_mutexId))
@@ -184,12 +184,17 @@ namespace Bloom
 							else
 							{
 								skipReleaseToken = true; // we don't own it, so we better not try to release it
-								string caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
-								string message = LocalizationManager.GetString("Download.Completed",
-									@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. "
-									+ "If you don't seem to be in the middle of doing something, Bloom will select it for you.");
-								message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
-								MessageBox.Show(message, caption);
+
+								// BL-2143: Don't show download complete message if download was not successful
+								if (!string.IsNullOrEmpty(PathToBookDownloadedAtStartup))
+								{
+									var caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
+									var message = LocalizationManager.GetString("Download.Completed",
+										@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. "
+										+ "If you don't seem to be in the middle of doing something, Bloom will select it for you.");
+									message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
+									MessageBox.Show(message, caption);
+								}
 							}
 							return;
 						}
