@@ -276,10 +276,16 @@ namespace Bloom
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js/toolbar");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html/font-awesome/css");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/accordion");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/readerSetup");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/split-pane/lib");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/StyleEditor");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/TopicChooser");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/js");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/css");
@@ -289,10 +295,16 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/collection");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/editor/gridly version");
 
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/themes/bloom-jqueryui-theme");
+
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/localizationManager");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/long-press");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/split-pane");
+
 			//yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
-
 		}
 
 		/// <summary>
