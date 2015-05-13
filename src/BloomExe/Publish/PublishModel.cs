@@ -111,9 +111,13 @@ namespace Bloom.Publish
 					else
 						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
 
+					// Check memory for the benefit of developers.  The user won't see anything.
+					Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
 					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
 						PageLayout.SizeAndOrientation.IsLandScape, LayoutPagesForRightToLeft,
 						layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
+					// Warn the user if we're starting to use too much memory.
+					Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
 				}
 			}
 			catch (Exception e)
@@ -147,7 +151,7 @@ namespace Bloom.Publish
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
 			dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
-			return EnhancedImageServer.MakeRealPublishModeFileInBookFolder(dom);
+			return EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom);
 		}
 
 		private string GetPdfPath(string fname)

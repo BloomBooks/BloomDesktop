@@ -33,6 +33,7 @@ namespace BloomTests.web
 			var localizationDirectory = FileLocator.GetDirectoryDistributedWithApplication("localization");
 			LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom", null, "", new string[] { });
 
+
 			ErrorReport.IsOkToInteractWithUser = false;
 			_collectionPath = Path.Combine(_folder.Path, "TestCollection");
 			var cs = new CollectionSettings(Path.Combine(_folder.Path, "TestCollection.bloomCollection"));
@@ -97,6 +98,7 @@ namespace BloomTests.web
 				Assert.That(Logger.LogText, Contains.Substring("**EnhancedImageServer: File Missing: /non-existing-file.pdf"));
 			}
 		}
+
 
 		[Test]
 		public void Topics_ReturnsFrenchFor_NoTopic_()

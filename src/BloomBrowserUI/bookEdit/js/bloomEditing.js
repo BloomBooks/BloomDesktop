@@ -11,21 +11,26 @@ function fireCSharpEditEvent(eventName, eventData) {
 
 $.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {
-        var ah = $(this).height();
-        var ph = $(this).parent().height();
-        var mh = Math.ceil((ph - ah) / 2);
+        var $this = $(this);
+        $this.css('margin-top', 0); // reset before calculating in case of previously messed up page
+        var diff = GetDifferenceBetweenHeightAndParentHeight($this);
+        if (diff < 0) {
+            // we're too big, do nothing to margin-top
+            // but the formatButton may need adjusting, in StyleEditor
+            return;
+        }
+        var mh = Math.ceil(diff / 2);
         $(this).css('margin-top', mh);
-
-        ///There is a bug in wkhtmltopdf where it determines the height of these incorrectly, causing, in a multlingual situation, the 1st text box to hog up all the room and
-        //push the other guys off the page. So the hack solution of the moment is to remember the correct height here, in gecko-land, and use it over there to set the max-height.
-        //See bloomPreview.SetMaxHeightForHtmlToPDFBug()
-        $(this).children().each(function(){
-            var h= $(this).height();
-            $(this).attr('data-firefoxHeight', h);
-        });
     });
 };
 
+function GetDifferenceBetweenHeightAndParentHeight(jqueryNode) {
+    // function also declared and used in StyleEditor
+    if (!jqueryNode) {
+        return 0;
+    }
+    return jqueryNode.parent().height() - jqueryNode.height();
+}
 function isBrOrWhitespace(node) {
     return node && ( (node.nodeType == 1 && node.nodeName.toLowerCase() == "br") ||
            (node.nodeType == 3 && /^\s*$/.test(node.nodeValue) ) );
@@ -583,6 +588,10 @@ function SetupElements(container) {
             //so we actually attach twice. That's ok, the editor handles that, but I don't know why we're passing the if, and it could be improved.
             if ($(this).closest('.bloom-userCannotModifyStyles').length == 0)
                 editor.AttachToBox(this);
+        }
+        else {
+            // already have a format cog, better make sure it's in the right place
+            editor.AdjustFormatButton($(this));
         }
     });
 

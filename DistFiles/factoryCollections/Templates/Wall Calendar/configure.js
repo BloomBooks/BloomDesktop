@@ -14,7 +14,7 @@
 //       One with classes 'calendarMonthTop'
 //       One with classes 'calendarMonthBottom'
 //
-// <reference path="jquery.d.ts" />
+/// <reference path="jquery.d.ts" />
 //
 // This is the main public entry point called by Configurator.ConfigureBookInternal()
 // in a context where the current dom is the book.
@@ -23,7 +23,6 @@ function runUpdate(jsonConfig) {
     var configurator = new CalendarConfigurator(jsonConfig);
     configurator.updateDom();
 }
-
 //
 // Used to create a calendar in a Wall Calendar book
 //
@@ -42,22 +41,18 @@ var CalendarConfigurator = (function () {
         var originalMonthsPicturePage = $('.calendarMonthTop')[0];
         var pageToInsertAfter = originalMonthsPicturePage;
         for (var month = 0; month < 12; month++) {
-            var monthsPicturePage = $(originalMonthsPicturePage).clone();
+            var monthsPicturePage = $(originalMonthsPicturePage).clone()[0];
             $(monthsPicturePage).removeClass('templateOnly').removeAttr('id'); // don't want to copy a Guid!
-
             $(pageToInsertAfter).after(monthsPicturePage);
-
             var monthDaysPage = this.generateMonth(year, month, this.configObject.monthNames[month], this.configObject.dayAbbreviations);
             $(monthsPicturePage).after(monthDaysPage);
             pageToInsertAfter = monthDaysPage;
         }
         $('.templateOnly').remove(); // removes 2 template pages (calendarMonthTop and calendarMonthBottom)
     };
-
     CalendarConfigurator.prototype.generateMonth = function (year, month, monthName, dayAbbreviations) {
         var marginBox = document.createElement('div');
         $(marginBox).addClass('marginBox');
-
         var monthPage = document.createElement('div');
         $(monthPage).addClass('bloom-page bloom-required A5Landscape calendarMonthBottom');
         $(monthPage).attr('data-page', 'required');
@@ -65,7 +60,6 @@ var CalendarConfigurator = (function () {
         monthPage.appendChild(marginBox);
         return monthPage;
     };
-
     CalendarConfigurator.prototype.buildCalendarBottomPage = function (bottomPageContainer, year, month, monthName, dayAbbreviations) {
         var header = document.createElement('p');
         $(header).addClass('calendarBottomPageHeader');
@@ -76,7 +70,6 @@ var CalendarConfigurator = (function () {
         this.buildCalendarBody(table, year, month);
         $(bottomPageContainer).append(table);
     };
-
     CalendarConfigurator.prototype.buildCalendarHeader = function (containingTable, dayAbbreviations) {
         var thead = document.createElement('thead');
         var row = document.createElement('tr');
@@ -88,17 +81,15 @@ var CalendarConfigurator = (function () {
         $(thead).append(row);
         $(containingTable).append(thead);
     };
-
     CalendarConfigurator.prototype.buildCalendarBody = function (containingTable, year, month) {
         var body = document.createElement('tbody');
         var start = new Date(parseInt(year), month, 1);
         start.setDate(1 - start.getDay());
         do {
             start = this.buildWeek(body, start, month);
-        } while(start.getMonth() == month);
+        } while (start.getMonth() == month);
         $(containingTable).append(body);
     };
-
     CalendarConfigurator.prototype.buildWeek = function (body, date, month) {
         var row = document.createElement('tr');
         for (var i = 0; i < 7; i++) {
@@ -118,7 +109,6 @@ var CalendarConfigurator = (function () {
     };
     return CalendarConfigurator;
 })();
-
 var CalendarConfigObject = (function () {
     function CalendarConfigObject(jsonConfig) {
         this.defaultConfig = '{"calendar": { "year": "2015" },' + '"library":  {"calendar": {' + '"monthNames": ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"],' + '"dayAbbreviations": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]}}}';
@@ -131,7 +121,6 @@ var CalendarConfigObject = (function () {
     }
     return CalendarConfigObject;
 })();
-
 // Test class for manual debugging
 // Just load DistFiles\factoryCollections\Templates\Wall Calendar\Wall Calendar.htm into Firefox
 // and type "TestCalendar()" in Firefox's Console tab to debug

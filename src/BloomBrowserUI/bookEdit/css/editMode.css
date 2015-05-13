@@ -213,6 +213,10 @@ TEXTAREA.province {
 .overflow p:empty:after {
   content: '¶';
 }
+.childOverflowingThis {
+  border-bottom: solid thick red !important;
+  color: red !important;
+}
 .Layout-Problem-Detected:before,
 .Layout-Problem-Detected:after {
   content: attr(layoutproblem);

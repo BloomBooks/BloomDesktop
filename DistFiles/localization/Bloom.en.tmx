@@ -274,6 +274,18 @@
         <seg>(Experimental) Show Send/Receive Controls</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionSettingsDialog.AndikaNewBasicUpdate1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Bloom is switching the default font for "{0}" to the new "Andika New Basic".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AndikaNewBasicUpdate2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
       <tuv xml:lang="en">
         <seg>Book Making</seg>
@@ -617,22 +629,10 @@
         <seg>Templates</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.ThreeLanguageSet">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>ThreeLanguageSet</seg>
-      </tuv>
-    </tu>
     <tu tuid="CollectionTab.TitleMissing">
       <note>Shown as the thumbnail caption when the book doesn't have a title</note>
       <tuv xml:lang="en">
         <seg>Title Missing</seg>
-      </tuv>
-    </tu>
-    <tu tuid="CollectionTab.Turkishtest Books">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Turkishtest Books</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Vernacular Collection Heading">
@@ -853,7 +853,7 @@
         <seg>Downloading book</seg>
       </tuv>
     </tu>
-    <tu tuid="Download.GenericDownloadProblemNotice">
+    <tu tuid="Download.GenericNetworkProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book.</seg>
       </tuv>
@@ -2571,7 +2571,7 @@
         <seg>credits</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.DownloadProblem">
+    <tu tuid="Download.ProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
       </tuv>

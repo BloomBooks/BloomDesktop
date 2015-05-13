@@ -5,10 +5,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
 using System.Linq;
-using Palaso.Code;
 using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.Xml;
 

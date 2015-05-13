@@ -100,7 +100,7 @@ namespace Bloom
 				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45, rootDirectory))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
-					var result = await UpdateApp(_bloomUpdateManager, null);
+					var result = await UpdateApp(_bloomUpdateManager);
 					newInstallDir = result.NewInstallDirectory;
 					outcome = result.Outcome;
 				}
@@ -231,10 +231,8 @@ namespace Bloom
 		}
 
 		// Adapted from Squirrel's EasyModeMixin.UpdateApp, but this version yields the new directory.
-		internal static async Task<UpdateResult> UpdateApp(IUpdateManager manager, Action<int> progress = null)
+		internal static async Task<UpdateResult> UpdateApp(IUpdateManager manager)
 		{
-			progress = progress ?? (_ => { });
-
 			bool ignoreDeltaUpdates = false;
 
 			retry:
@@ -243,7 +241,7 @@ namespace Bloom
 
 			try
 			{
-				updateInfo = await manager.CheckForUpdate(ignoreDeltaUpdates, x => progress(x / 3));
+				updateInfo = await manager.CheckForUpdate(ignoreDeltaUpdates, x => { });
 				if (NoUpdatesAvailable(updateInfo))
 					return new UpdateResult() { NewInstallDirectory = null, Outcome = UpdateOutcome.AlreadyUpToDate }; // none available.
 
@@ -254,7 +252,7 @@ namespace Bloom
 				var size = releasesToDownload.Sum(x => x.Filesize)/1024;
 				var updatingMsg = String.Format(LocalizationManager.GetString("CollectionTab.Updating", "Downloading update to {0} ({1}K)"), version, size);
 				Palaso.Reporting.Logger.WriteEvent("Squirrel: "+updatingMsg);
-				updatingNotifier.Show(updatingMsg, "", 5);
+				updatingNotifier.Show(updatingMsg, "", -1);
 
 				var sb = new StringBuilder("Squirrel update downloading " + releasesToDownload.Count + " release files starting at" + DateTime.Now + ":");
 				foreach (var release in releasesToDownload)
@@ -267,15 +265,22 @@ namespace Bloom
 				}
 				Palaso.Reporting.Logger.WriteEvent(sb.ToString());
 
-				await manager.DownloadReleases(releasesToDownload, x => progress(x / 3 + 33));
+				var progressMsg = LocalizationManager.GetString("CollectionTab.Progress", "({0}% complete)");
+
+				await manager.DownloadReleases(releasesToDownload, x => updatingNotifier.UpdateMessage(updatingMsg + " " + string.Format(progressMsg, x/2)));
 
 				Palaso.Reporting.Logger.WriteEvent("Squirrel update download succeeded at " + DateTime.Now);
 
-				newInstallDirectory = await manager.ApplyReleases(updateInfo, x => progress(x / 3 + 66));
+				// Technically we are not downloading now, but applying the releases. But I don't think the distinction is worth another
+				// message to translate, and would probably only confuse the rice farmer anyway.
+				// (It's a very rough approximation that downloading takes half the time. Sometimes applying updates takes a long longer. If it has to
+				// download the whole package applying will be negligible and downloading all of it. It's the best we can easily do.)
+				newInstallDirectory = await manager.ApplyReleases(updateInfo, x => updatingNotifier.UpdateMessage(updatingMsg + " " + string.Format(progressMsg, x/2+50)));
 
 				Palaso.Reporting.Logger.WriteEvent("Squirrel update finished applying updates at " + DateTime.Now);
 
 				await manager.CreateUninstallerRegistryEntry();
+				updatingNotifier.Hide();
 			}
 			catch (Exception ex)
 			{
@@ -288,7 +293,7 @@ namespace Bloom
 					// it are not part of the sequence on the web site at all, or even if there's
 					// some sort of discontinuity in the sequence of deltas.
 					ignoreDeltaUpdates = true;
-					Palaso.Reporting.Logger.WriteEvent("Squirrel update incremental download failed; trying whole package");
+					Palaso.Reporting.Logger.WriteEvent("Squirrel update incremental download failed; trying whole package. Exception: " + ex.Message);
 					goto retry;
 				}
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
@@ -11,7 +10,6 @@ using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
-using Bloom.Library;
 using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
@@ -56,7 +54,7 @@ namespace Bloom
 				AddShortCutInComputersBloomCollections(collectionDirectory);
 			}
 
-			_httpServer.StartWithSetupIfNeeded();
+			_httpServer.StartListening();
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -160,6 +158,7 @@ namespace Bloom
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
 								c.Resolve<CurrentEditableCollectionSelection>())).InstancePerLifetimeScope();
 
+					// Keep in sync with OptimizedFileLocator: it wants to return the object created here.
 					builder.Register<IChangeableFileLocator>(
 						c =>
 							new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),
@@ -436,7 +435,7 @@ namespace Bloom
 
 		internal BloomFileLocator OptimizedFileLocator
 		{
-			get { return _scope.Resolve<BloomFileLocator>(); }
+			get { return (BloomFileLocator)_scope.Resolve<IChangeableFileLocator>(); }
 		}
 
 		internal BookServer BookServer

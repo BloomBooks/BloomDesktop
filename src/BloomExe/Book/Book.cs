@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -285,7 +286,7 @@ namespace Bloom.Book
 			pageDom.RemoveModeStyleSheets();
 			pageDom.AddStyleSheet("basePage.css");
 			pageDom.AddStyleSheet("editMode.css");
-			if(LockedDown)
+			if (LockedDown)
 			{
 				pageDom.AddStyleSheet("editTranslationMode.css");
 			}
@@ -713,7 +714,6 @@ namespace Bloom.Book
 			//    bookDOM.Title = Title;
 			// Bit of a kludge, but there's no way to tell whether a boolean is already set in the JSON, so we fake that it is not,
 			// thus ensuring that if something is in the metadata we use it.
-			bookDOM.RemoveMetaElement("SuitableForMakingShells", () => null, val => BookInfo.IsSuitableForMakingShells = val == "yes" || val == "definitely");
 			// If there is nothing there the default of true will survive.
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
 
@@ -764,7 +764,6 @@ namespace Bloom.Book
 		internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 		{
 			var oldTags = File.ReadAllText(oldTagsPath);
-			bookMetaData.IsSuitableForMakingShells = oldTags.Contains("suitableForMakingShells");
 			bookMetaData.IsFolio = oldTags.Contains("folio");
 			bookMetaData.IsExperimental = oldTags.Contains("experimental");
 		}
@@ -1687,7 +1686,7 @@ namespace Bloom.Book
 					if (!userModifiedStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
 					{
 						userModifiedStyleSheets.Add(sheetName);
-						printingDom.AddStyleSheetIfMissing("file://"+Path.Combine(childBook.FolderPath,sheetName));
+						printingDom.AddStyleSheetIfMissing(sheetName);
 					}
 				}
 				printingDom.SortStyleSheetLinks();
@@ -1698,7 +1697,15 @@ namespace Bloom.Book
 					currentLastContentPage.ParentNode.InsertAfter(importedPage, currentLastContentPage);
 					currentLastContentPage = importedPage;
 
-					ImageUpdater.MakeImagePathsOfImportedPagePointToOriginalLocations(importedPage, bookInfo.FolderPath);
+					foreach(XmlElement img in importedPage.SafeSelectNodes("descendant::img"))
+					{
+						var bookFolderName = Path.GetFileName(bookInfo.FolderPath);
+						var pathRelativeToFolioFolder = ".../" + bookFolderName + "/" + img.GetAttribute("src");
+						//NB: URLEncode would replace spaces with '+', which is ok in the parameter section, but not the URL
+						//So we are using UrlPathEncode
+						var fullPathInLinkFormat = HttpUtility.UrlPathEncode(pathRelativeToFolioFolder);
+						img.SetAttribute("src", fullPathInLinkFormat);
+					}
 				}
 			}
 		}

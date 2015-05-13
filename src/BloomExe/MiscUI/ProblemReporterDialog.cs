@@ -5,12 +5,13 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
-using TechTalk.JiraRestClient;
 using Bloom.Book;
 using L10NSharp;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
+using YouTrackSharp.Infrastructure;
+using YouTrackSharp.Issues;
 
 namespace Bloom.MiscUI
 {
@@ -30,18 +31,19 @@ namespace Bloom.MiscUI
 		private Bitmap _screenshot;
 		protected State _state;
 		private string _emailableReportFilePath;
-		private readonly string JiraUrl;
-		protected string _jiraProjectKey = "BL";
-		private JiraClient _jiraClient;
-		private Issue _jiraIssue;
+		private readonly string YouTrackUrl;
+		protected string _youTrackProjectKey = "BL";
+		Connection _youTrackConnection = new Connection("issues.bloomlibrary.org", 80, false, "youtrack");
+		IssueManagement _issueManagement;
+		private string _youTrackIssueId;
+		private dynamic _youTrackIssue;
 
 		public ProblemReporterDialog(Control targetOfScreenshot, BookSelection bookSelection)
 		{
-			// BL-821: Using https throws an exception on Linux. There is hope that a future
-			// mono version will have that fixed since the TLS code is getting reworked. Until
+			// Haven't tried https here, as we're not using it for live YouTrack. Someday we may want to.
+			// If so, check Linux, as we had problems there with the old Jira reporting. Until
 			// then we use the unsecured URL.
-			JiraUrl = string.Format("{0}://jira.sil.org",
-				Palaso.PlatformUtilities.Platform.IsLinux ? "http" : "https");
+			YouTrackUrl = "http://issues.bloomlibrary.org";
 			_bookSelection = bookSelection;
 
 			InitializeComponent();
@@ -197,7 +199,7 @@ namespace Bloom.MiscUI
 						"We received your report, thanks for taking the time to help make Bloom better!");
 					this.AcceptButton = _submitButton;
 					_submitButton.Focus();
-					_status.HTML = string.Format("<span style='color:blue'>" + message + "</span><br/><a href='{0}'>{1}</a>", JiraUrl + "/browse/" + _jiraIssue.key, _jiraIssue.key);
+					_status.HTML = string.Format("<span style='color:blue'>" + message + "</span><br/><a href='{0}'>{1}</a>", YouTrackUrl + "/youtrack/issue/" + _youTrackIssueId, _youTrackIssueId);
 
 					Cursor = Cursors.Default;
 					break;
@@ -215,7 +217,7 @@ namespace Bloom.MiscUI
 				return;
 			}
 
-			if (SubmitToJira())
+			if (SubmitToYouTrack())
 			{
 				ChangeState(State.Success);
 			}
@@ -236,31 +238,29 @@ namespace Bloom.MiscUI
 
 		private void AddAttachment(string file)
 		{
-			using (var stream = new FileStream(file, FileMode.Open))
-			{
-				_jiraClient.CreateAttachment(_jiraIssue, stream, Path.GetFileName(file));
-			}
+			_issueManagement.AttachFileToIssue(_youTrackIssueId, file);
 		}
 
 		/// <summary>
-		/// Using the JiraRestClient here. That SDK doesn't permit looking up users, so we can't submit
+		/// Using YouTrackSharp here. We can't submit
 		/// the report as if it were from this person, even if they have an account (well, not without
 		/// asking them for credentials, which is just not gonna happen). So we submit with an
 		/// account we created just for this purpose, "auto_report_creator".
 		/// </summary>
-		/// <remarks>Originally we used the Atlassian SDK assembly but that had problems with
-		/// serialization on Mono, so we switched to TechTalk.JiraRestClient.</remarks>
-		private bool SubmitToJira()
+		private bool SubmitToYouTrack()
 		{
 			try
 			{
 				ChangeState(State.Submitting);
 
-				_jiraClient = new JiraClient(JiraUrl, "auto_report_creator", "thisIsInOpenSourceCode");
-				_jiraIssue = _jiraClient.CreateIssue(_jiraProjectKey, "Awaiting Classification",
-					new IssueFields { summary = "User Problem Report " + _email.Text,
-						description = GetFullDescriptionContents(false) });
-				var issueKey = new IssueRef { key = _jiraIssue.key };
+				_youTrackConnection.Authenticate("auto_report_creator", "thisIsInOpenSourceCode");
+				_issueManagement = new IssueManagement(_youTrackConnection);
+				_youTrackIssue = new Issue();
+				_youTrackIssue.ProjectShortName = _youTrackProjectKey;
+				_youTrackIssue.Type = "Awaiting Classification";
+				_youTrackIssue.Summary = "User Problem Report " + _email.Text;
+				_youTrackIssue.Description = GetFullDescriptionContents(false);
+				_youTrackIssueId = _issueManagement.CreateIssue(_youTrackIssue);
 
 				// this could all be done in one go, but I'm doing it in stages so as to increase the
 				// chance of success in bad internet situations
@@ -296,12 +296,10 @@ namespace Bloom.MiscUI
 					}
 					catch (Exception e)
 					{
-						_jiraIssue.fields.description += Environment.NewLine + "Got exception trying to attach log file: " + e.Message;
+						_issueManagement.UpdateIssue(_youTrackIssueId, _youTrackIssue.Summary, _youTrackIssue.Description + "Got exception trying to attach log file: " + e.Message);
 					}
 				}
 
-				ChangeState(State.Submitting);
-				_jiraClient.UpdateIssue(_jiraIssue);
 				ChangeState(State.Success);
 				return true;
 			}
@@ -313,7 +311,7 @@ namespace Bloom.MiscUI
 		}
 
 		/// <summary>
-		/// If we are able to directly submit to JIRA, we do that. But otherwise,
+		/// If we are able to directly submit to YouTrack, we do that. But otherwise,
 		/// this makes a zip file of everything we want to submit, in order to
 		/// give the user a single thing they need to attach and send.
 		/// </summary>
@@ -375,7 +373,7 @@ namespace Bloom.MiscUI
 		{
 			var bldr = new StringBuilder();
 			bldr.AppendLine("Error Report from " + _name.Text + " (" + _email.Text + ") on " + DateTime.UtcNow.ToUniversalTime());
-			bldr.AppendLine("--Problem Description--");
+			bldr.AppendLine("=Problem Description=");
 			bldr.AppendLine(_description.Text);
 			bldr.AppendLine();
 			GetStandardErrorReportingProperties(bldr, appendLog);
@@ -386,7 +384,7 @@ namespace Bloom.MiscUI
 		private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
 		{
 			bldr.AppendLine();
-			bldr.AppendLine("--Error Reporting Properties--");
+			bldr.AppendLine("=Error Reporting Properties=");
 			foreach (string label in ErrorReport.Properties.Keys)
 			{
 				bldr.Append(label);
@@ -397,7 +395,7 @@ namespace Bloom.MiscUI
 			if (appendLog || Logger.Singleton == null)
 			{
 				bldr.AppendLine();
-				bldr.AppendLine("--Log--");
+				bldr.AppendLine("=Log=");
 				try
 				{
 					bldr.Append(Logger.LogText);

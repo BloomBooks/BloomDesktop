@@ -47,11 +47,13 @@ namespace Bloom.ImageProcessing
 			base.Dispose(fDisposing);
 		}
 
-		protected override bool StartWithSetupIfNeeded(out Exception error)
+		protected override void StartWithSetupIfNeeded()
 		{
-			var didStart = base.StartWithSetupIfNeeded(out error);
-
-			if(!didStart)
+			try
+			{
+				base.StartWithSetupIfNeeded();
+			}
+			catch (Exception error)
 			{
 				var e = new ApplicationException("Could not start ImageServer", error);//passing this in will enable the details button
 				ErrorReport.NotifyUserOfProblem(e, "What Happened{0}" +
@@ -64,8 +66,6 @@ namespace Bloom.ImageProcessing
 					"If the problem keeps happening, click 'Details' and report the problem to the developers.", Environment.NewLine,
 					Palaso.PlatformUtilities.Platform.IsWindows ? "Windows" : "Linux");
 			}
-
-			return didStart;
 		}
 
 		protected override bool ProcessRequest(IRequestInfo info)
@@ -78,24 +78,29 @@ namespace Bloom.ImageProcessing
 
 			var r = GetLocalPathWithoutQuery(info);
 
-			// only process these image types
-			if (!r.EndsWith(".png") && !r.EndsWith(".jpg") && !r.EndsWith(".svg")) return false;
+			// only process images
+			var isSvg = r.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);
+			if (!IsImageTypeThatCanBeDegraded(r) && !isSvg)
+				return false;
 
 			r = r.Replace("thumbnail", "");
 
 			// This happens with the new way we are serving css files
 			if (!File.Exists(r))
 			{
-				var fileName = r;
-				var pos = fileName.LastIndexOfAny(new[] { '\\', '/' });
-				if (pos > -1) fileName = fileName.Substring(pos + 1);
-
+				var fileName = Path.GetFileName(r);
 				var sourceDir = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 				r = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
 			}
 
 			if (!string.IsNullOrEmpty(r))
 			{
+				if (isSvg)
+				{
+					info.ReplyWithImage(r);
+					return true;
+				}
+
 				// thumbnail requests have the thumbnail parameter set in the query string
 				var thumb = info.GetQueryString()["thumbnail"] != null;
 				var pathToFile = _cache.GetPathToResizedImage(r, thumb);
@@ -106,6 +111,15 @@ namespace Bloom.ImageProcessing
 				return true;
 			}
 			return false;
+		}
+
+		protected static bool IsImageTypeThatCanBeDegraded(string path)
+		{
+			var extension = Path.GetExtension(path);
+			if(!string.IsNullOrEmpty(extension))
+				extension = extension.ToLower();
+			//note, we're omitting SVG
+			return (new[] { ".png", ".jpg", ".jpeg"}.Contains(extension));
 		}
 	}
 }

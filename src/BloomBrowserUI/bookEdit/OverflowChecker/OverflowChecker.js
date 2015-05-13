@@ -7,8 +7,11 @@ var OverflowChecker = (function () {
     // But this function should just do some basic checks and ADD the HANDLERS!
     OverflowChecker.prototype.AddOverflowHandlers = function (container) {
         //NB: for some historical reason in March 2014 the calendar still uses textareas
-        var queryElementsThatCanOverflow = ".bloom-editable, textarea";
+        var queryElementsThatCanOverflow = ".bloom-editable:visible, textarea:visible";
         var editablePageElements = $(container).find(queryElementsThatCanOverflow);
+        // BL-1260: disable overflow checking for pages with too many elements
+        if (editablePageElements.length > 30)
+            return;
         //first, check to see if the stylesheet is going to give us overflow even for a single character:
         editablePageElements.each(function () {
             OverflowChecker.CheckOnMinHeight(this);
@@ -35,6 +38,10 @@ var OverflowChecker = (function () {
                 OverflowChecker.MarkOverflowInternal(this);
             });
         });
+        // Turn off any overflow indicators that might have been leftover from before
+        $(container).find(".overflow, .thisOverflowingParent, .childOverflowingThis").each(function () {
+            $(this).removeClass('overflow thisOverflowingParent childOverflowingThis');
+        });
         // Right now, test to see if any are already overflowing
         editablePageElements.each(function () {
             OverflowChecker.MarkOverflowInternal(this);
@@ -47,52 +54,51 @@ var OverflowChecker = (function () {
         if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
             return false;
         }
+        if ($(element).css('display') === 'none' || $(element).css('display') === 'inline')
+            return false; //display:inline always returns zero width, so there's no way to know if it's overflowing
         // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
         // This is because of the thin grey border on a focused input box.
         // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
         // so we'll apply the same 'fudge' factor to both comparisons.
         var focusedBorderFudgeFactor = 2;
-        //The "basic book" template has a "Just Text" page which does some weird things to get vertically-centered
-        //text. I don't know why, but this makes the clientHeight 2 pixels larger than the scrollHeight once it
-        //is beyond its minimum height. We can detect that we're using this because it has this "firefoxHeight" data
-        //element. This problem also shows up (and is detectable the same way) in Big Book. Except it turns out the
-        //number of pixels to fudge is related to the point size. I think at base it's a preferred line spacing issue.
-        var growFromCenterVerticalFudgeFactor = 0;
-        if ($(element).data('firefoxheight')) {
-            var fontSizeRemnant = new StyleEditor("/bloom/bookEdit").GetCalculatedFontSizeInPoints(element) - 22;
-            if (fontSizeRemnant > 0) {
-                growFromCenterVerticalFudgeFactor = (fontSizeRemnant / 5) + 1;
-            }
-        }
         //In the Picture Dictionary template, all words have a scrollHeight that is 3 greater than the client height.
         //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
         // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
         var shortBoxFudgeFactor = 4;
-        return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + growFromCenterVerticalFudgeFactor + shortBoxFudgeFactor || element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor;
+        return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + shortBoxFudgeFactor || element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor;
     };
     // Actual testable determination of Type II overflow or not
     // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
-    OverflowChecker.IsOverflowingMargins = function (element) {
+    // returns nearest ancestor that this element overflows
+    OverflowChecker.overflowingAncestor = function (element) {
         // Ignore Topic divs as they are chosen from a list
         if (element.hasAttribute('data-book') && element.getAttribute('data-book') == "topic") {
-            return false;
+            return null;
         }
-        // We want to prevent an inner div from expanding past the borders set by any containing marginBox class.
-        var marginBoxParent = $(element).parents('.marginBox');
-        var parentBottom;
-        if (marginBoxParent && marginBoxParent.length > 0)
-            parentBottom = $(marginBoxParent[0]).offset().top + $(marginBoxParent[0]).outerHeight(true);
-        else
-            parentBottom = 999999;
-        var elemTop = $(element).offset().top;
-        var elemBottom = elemTop + $(element).outerHeight(false);
-        // console.log("Offset top: " + elemTop + " Outer Height: " + $(element).outerHeight(false));
-        // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
-        // This is because of the thin grey border on a focused input box.
-        // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
-        // so we'll apply the same 'fudge' factor to both comparisons.
-        var focusedBorderFudgeFactor = 2;
-        return elemBottom > parentBottom + focusedBorderFudgeFactor;
+        // We want to prevent an inner div from expanding past the borders set by any fixed containing element.
+        var parents = $(element).parents();
+        if (!parents) {
+            return null;
+        }
+        for (var i = 0; i < parents.length; i++) {
+            var currentAncestor = $(parents[i]);
+            var parentBottom = currentAncestor.offset().top + currentAncestor.outerHeight(true);
+            var elemTop = $(element).offset().top;
+            var elemBottom = elemTop + $(element).outerHeight(false);
+            // console.log("Offset top: " + elemTop + " Outer Height: " + $(element).outerHeight(false));
+            // If css has "overflow: visible;", scrollHeight is always 2 greater than clientHeight.
+            // This is because of the thin grey border on a focused input box.
+            // In fact, the focused grey border causes the same problem in detecting the bottom of a marginBox
+            // so we'll apply the same 'fudge' factor to both comparisons.
+            var focusedBorderFudgeFactor = 2;
+            if (elemBottom > parentBottom + focusedBorderFudgeFactor) {
+                return currentAncestor[0];
+            }
+            if (currentAncestor.hasClass('marginBox')) {
+                break;
+            }
+        }
+        return null;
     };
     // Checks for overflow on a bloom-page and adds/removes the proper class
     // N.B. This function is specifically designed to be called from within AddOverflowHandler()
@@ -106,43 +112,40 @@ var OverflowChecker = (function () {
         // Type 1 Overflow
         var $box = $(box);
         $box.removeClass('overflow');
-        if (OverflowChecker.IsOverflowingSelf(box) || OverflowChecker.HasImmediateSplitParentThatOverflows($box)) {
+        $box.removeClass('thisOverflowingParent');
+        $box.parents().removeClass('childOverflowingThis');
+        if (OverflowChecker.IsOverflowingSelf(box)) {
             $box.addClass('overflow');
         }
         var container = $box.closest('.marginBox');
         //NB: for some historical reason in March 2014 the calendar still uses textareas
-        var queryElementsThatCanOverflow = ".bloom-editable, textarea";
+        var queryElementsThatCanOverflow = ".bloom-editable:visible, textarea:visible";
         var editablePageElements = $(container).find(queryElementsThatCanOverflow);
-        // Type 2 Overflow - We'll check ALL of these for overflow past marginBox
+        // Type 2 Overflow - We'll check ALL of these for overflow past any ancestor
         editablePageElements.each(function () {
             var $this = $(this);
-            if (OverflowChecker.IsOverflowingMargins($this[0])) {
-                $box.addClass('overflow'); // probably typing in the focused element caused this
-                $this.addClass('overflow'); // but it's this one that is actually overflowing
+            var overflowingAncestor = OverflowChecker.overflowingAncestor($this[0]);
+            if (overflowingAncestor == null) {
+                if (!OverflowChecker.IsOverflowingSelf($this[0])) {
+                    $this.removeClass('overflow'); // might be a remnant from earlier overflow
+                    $this.removeClass('thisOverflowingParent');
+                }
             }
             else {
-                if (!OverflowChecker.IsOverflowingSelf($this[0]) && !OverflowChecker.HasImmediateSplitParentThatOverflows($this)) {
-                    $this.removeClass('overflow'); // might be a remnant from earlier overflow
-                }
+                // BL-1261: don't want the typed-in box to be marked overflow just because it made another box
+                // go past the margins
+                // $box.addClass('overflow'); // probably typing in the focused element caused this
+                $this.addClass('thisOverflowingParent'); // but it's this one that is actually overflowing
+                $(overflowingAncestor).addClass('childOverflowingThis');
             }
         });
         OverflowChecker.UpdatePageOverflow(container.closest('.bloom-page'));
     }; // end MarkOverflowInternal
-    OverflowChecker.HasImmediateSplitParentThatOverflows = function (jQueryBox) {
-        //now, thing is, while the text may fit in our box, our box may not fit our parent. Or grandparent, etc.
-        //It could be that we could just do this on up the hierarchy? For now, here's the case we know is important,
-        // in the Origami pages, where the space allocated could be too small.
-        var splitterParents = jQueryBox.parents('.split-pane-component-inner');
-        if (splitterParents.length == 0) {
-            return false;
-        }
-        return OverflowChecker.IsOverflowingSelf(splitterParents[0]);
-    };
-    // Make sure there are no boxes with class 'overflow' on the page before removing
+    // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
     OverflowChecker.UpdatePageOverflow = function (page) {
         var $page = $(page);
-        if (!$page.find('.overflow').length)
+        if (!($page.find('.overflow').length) && !($page.find('.thisOverflowingParent').length))
             $page.removeClass('pageOverflows');
         else
             $page.addClass('pageOverflows');

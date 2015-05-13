@@ -69,7 +69,7 @@ function showSetupDialog(showWhat) {
         },
         close: function() {
             $(this).remove();
-            document.getElementById('accordion').contentWindow.SynphonyApi.fireCSharpEvent('setModalStateEvent', 'false');
+           fireCSharpEvent('setModalStateEvent', 'false');
         },
         open: function () {
             $('#synphonyConfig').css('overflow', 'hidden');
@@ -79,9 +79,37 @@ function showSetupDialog(showWhat) {
         width: w
     });
 
-    accordion.SynphonyApi.fireCSharpEvent('setModalStateEvent', 'true');
+    fireCSharpEvent('setModalStateEvent', 'true');
     });
 
+}
+
+/**
+ * Fires an event for C# to handle
+ * @param {String} eventName
+ * @param {String} eventData
+ */
+function fireCSharpEvent(eventName, eventData) {
+
+    var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
+    document.dispatchEvent(event);
+    // For when we someday change this file to TypeScript... since the above ctor is not declared anywhere.
+    // Possible solutions:
+
+    // Solution I
+    //var event = new MessageEvent();
+    //event.initEvent(eventName, true, true);
+    //event.data = eventData;
+
+    // Solution II
+    //declare var MessageEventWithConstructor: {
+    //    new (typeArg: string, args): MessageEvent;
+    //}
+    // and then
+    //var event = new MessageEventWithConstructor(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
+
+    // Solution III
+    //var event = new (<any>MessageEvent)(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
 }
 
 function getSettingsDialogLocalizedStrings() {

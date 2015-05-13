@@ -16,7 +16,7 @@ namespace BloomTests
 			public ProblemReporterDialogDouble(): base(null, null)
 			{
 				Success = true;
-				_jiraProjectKey = "AUT";
+				_youTrackProjectKey = "AUT";
 
 				this.Load += (sender, e) =>
 				{

@@ -53,10 +53,10 @@ namespace BloomTests
 		/// invalid.
 		/// </summary>
 		[Test]
-		public void SaveAsHTML_EmptyUbi_DoesNotContract()
+		public void SaveAsHTML_EmptyUbi_DoesNotContractOrRemove()
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml("<html><body><div data-book='test'/>Text with <u /> and <b /> and <i></i> works</body></html>");
+			dom.LoadXml("<html><body><div data-book='test'/>Text with <u></u> and <b></b> and <i></i> works</body></html>");
 			using (var temp = new TempFile())
 			{
 				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -64,6 +64,29 @@ namespace BloomTests
 				Assert.That(text, Is.Not.StringContaining("<u />"));
 				Assert.That(text, Is.Not.StringContaining("<b />"));
 				Assert.That(text, Is.Not.StringContaining("<i />"));
+				Assert.That(text, Is.StringContaining("<b></b>"));
+				Assert.That(text, Is.StringContaining("<u></u>"));
+				Assert.That(text, Is.StringContaining("<i></i>"));
+			}
+		}
+
+		[Test]
+		public void SaveAsHTML_MinimalUbiSpan_DoesNotContractOrRemove()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><div data-book='test'/>Text with <u /> and <b/><span /> and <i /> works</body></html>");
+			using (var temp = new TempFile())
+			{
+				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+				var text = File.ReadAllText(temp.Path);
+				Assert.That(text, Is.Not.StringContaining("<u />"));
+				Assert.That(text, Is.Not.StringContaining("<b />"));
+				Assert.That(text, Is.Not.StringContaining("<i />"));
+				Assert.That(text, Is.Not.StringContaining("<span />"));
+				Assert.That(text, Is.StringContaining("<b></b>"));
+				Assert.That(text, Is.StringContaining("<u></u>"));
+				Assert.That(text, Is.StringContaining("<i></i>"));
+				Assert.That(text, Is.StringContaining("<span></span>"));
 			}
 		}
 
