@@ -283,6 +283,15 @@ $.fn.hasAttr = function (name) {
     return (typeof attr !== 'undefined' && attr !== false);
 };
 
+function getReaderToolsModel() {
+    // I (GJM) tried to define this is readerTools.ts, but it wasn't loaded if no reader tools were active!
+    var accordion = parent.window.document.getElementById("accordion");
+
+    // accordion will be undefined during unit testing
+    if (accordion)
+        return accordion.contentWindow['model'];
+}
+
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.

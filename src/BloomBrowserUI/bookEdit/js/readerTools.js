@@ -66,12 +66,6 @@ function markLeveledStatus() {
         $(this).qtip({ content: tooLong });
     });
 }
-function getReaderToolsModel() {
-    var accordion = parent.window.document.getElementById("accordion");
-    // accordion will be undefined during unit testing
-    if (accordion)
-        return accordion.contentWindow['model'];
-}
 function setupReaderKeyAndFocusHandlers(container, model) {
     // invoke function when a bloom-editable element loses focus.
     $(container).find('.bloom-editable').focusout(function () {

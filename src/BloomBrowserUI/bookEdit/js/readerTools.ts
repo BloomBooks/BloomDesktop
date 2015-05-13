@@ -95,14 +95,6 @@ function markLeveledStatus(): void {
   });
 }
 
-function getReaderToolsModel(): ReaderToolsModel {
-  var accordion = parent.window.document.getElementById("accordion");
-
-  // accordion will be undefined during unit testing
-  if (accordion)
-    return (<HTMLIFrameElement>accordion).contentWindow['model'];
-}
-
 function setupReaderKeyAndFocusHandlers(container: HTMLElement, model: ReaderToolsModel): void {
   // invoke function when a bloom-editable element loses focus.
   $(container).find('.bloom-editable').focusout(function () {
