@@ -63,7 +63,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		public string DownloadFromOrderUrl(string orderUrl, string destPath)
+		public string DownloadFromOrderUrl(string orderUrl, string destPath, string title = "unknown")
 		{
 			var decoded = HttpUtilityFromMono.UrlDecode(orderUrl);
 			var bucketStart = decoded.IndexOf(_s3Client.BucketName,StringComparison.InvariantCulture);
@@ -96,16 +96,13 @@ namespace Bloom.WebLibraryIntegration
 
 			var s3orderKey = decoded.Substring(bucketStart  + _s3Client.BucketName.Length + 1);
 			string url = "unknown";
-			string title = "unknown";
 			try
 			{
-				var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
-				url = metadata.DownloadSource;
-				title = metadata.Title;
+				GetUrlAndTitle(s3orderKey, ref url, ref title);
 				if (_progressDialog != null)
 					_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; }));
 				// downloading the metadata is considered step 1.
-				var destinationPath = DownloadBook(metadata.DownloadSource, destPath);
+				var destinationPath = DownloadBook(url, destPath);
 				LastBookDownloadedPath = destinationPath;
 
 				Analytics.Track("DownloadedBook-Success",
@@ -135,6 +132,22 @@ namespace Bloom.WebLibraryIntegration
 						"There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
 				DisplayProblem(e, message);
 				return "";
+			}
+		}
+
+		private void GetUrlAndTitle(string s3orderKey, ref string url, ref string title)
+		{
+			int index = s3orderKey.IndexOf('/');
+			if (index > 0)
+				index = s3orderKey.IndexOf('/', index + 1); // second slash
+			if (index > 0)
+				url = s3orderKey.Substring(0,index);
+			if (url == "unknown" || string.IsNullOrWhiteSpace(title) || title == "unknown")
+			{
+				// not getting the info we want in the expected way. This old algorithm may work.
+				var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
+				url = metadata.DownloadSource;
+				title = metadata.Title;
 			}
 		}
 
@@ -211,7 +224,7 @@ namespace Bloom.WebLibraryIntegration
 			if (IsUrlOrder(_downloadRequest))
 			{
 				var link = new BloomLinkArgs(_downloadRequest);
-				DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
+				DownloadFromOrderUrl(link.OrderUrl, DownloadFolder, link.Title);
 			}
 				// If we are passed a bloom book order, download the corresponding book and open it.
 			else if (_downloadRequest.ToLowerInvariant().EndsWith(BookTransfer.BookOrderExtension.ToLowerInvariant()) &&
