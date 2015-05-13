@@ -300,7 +300,6 @@ namespace Bloom.MiscUI
 					}
 				}
 
-				ChangeState(State.Submitting);
 				ChangeState(State.Success);
 				return true;
 			}
