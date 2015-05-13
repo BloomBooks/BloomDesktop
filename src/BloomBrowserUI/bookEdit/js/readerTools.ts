@@ -1,5 +1,17 @@
 /// <reference path="readerToolsModel.ts" />
 /// <reference path="directoryWatcher.ts" />
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
+
+interface qtipInterface extends JQuery {
+  qtip(options: any): JQuery;
+}
+
+interface textMarkup extends JQueryStatic {
+  cssSentenceTooLong(): JQuery;
+  cssSightWord(): JQuery;
+  cssWordNotFound(): JQuery;
+  cssPossibleWord(): JQuery;
+}
 
 // listen for messages sent to this page
 window.addEventListener('message', processDLRMessage, false);
@@ -42,8 +54,84 @@ function processDLRMessage(event: MessageEvent): void {
       model.setMarkupType(parseInt(params[1]));
       return;
 
+    case 'Qtips': // request from accordion to add qtips to marked-up spans
+      // We could make separate messages for these...
+      markDecodableStatus();
+      markLeveledStatus();
+
+      return;
+
     default:
   }
+}
+
+function markDecodableStatus(): void {
+  // q-tips; mark sight words and non-decodable words
+  var sightWord = localizationManager.getText('EditTab.DecodableReaderTool.SightWord', 'Sight Word');
+  var notDecodable = localizationManager.getText('EditTab.DecodableReaderTool.WordNotDecodable', 'This word is not decodable in this stage.');
+  var editableElements = $(".bloom-content1");
+  editableElements.find('span.' + (<textMarkup>$).cssSightWord()).each(function() {
+    (<qtipInterface>$(this)).qtip({ content: sightWord });
+  });
+
+  editableElements.find('span.' + (<textMarkup>$).cssWordNotFound()).each(function() {
+    (<qtipInterface>$(this)).qtip({ content: notDecodable });
+  });
+
+// we're considering dropping this entirely
+// We are disabling the "Possible Word" feature at this time.
+//editableElements.find('span.' + $.cssPossibleWord()).each(function() {
+//    (<qtipInterface>$(this)).qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
+//});
+}
+
+function markLeveledStatus(): void {
+  // q-tips; mark sentences that are too long
+  var tooLong = localizationManager.getText('EditTab.LeveledReaderTool.SentenceTooLong',
+      'This sentence is too long for this level.');
+  var editableElements = $(".bloom-content1");
+  editableElements.find('span.' + (<textMarkup>$).cssSentenceTooLong()).each(function() {
+    (<qtipInterface>$(this)).qtip({ content: tooLong });
+  });
+}
+
+function getReaderToolsModel(): ReaderToolsModel {
+  var accordion = parent.window.document.getElementById("accordion");
+
+  // accordion will be undefined during unit testing
+  if (accordion)
+    return (<HTMLIFrameElement>accordion).contentWindow['model'];
+}
+
+function setupReaderKeyAndFocusHandlers(container: HTMLElement, model: ReaderToolsModel): void {
+  // invoke function when a bloom-editable element loses focus.
+  $(container).find('.bloom-editable').focusout(function () {
+    model.doMarkup();
+  });
+
+  $(container).find('.bloom-editable').focusin(function () {
+    model.noteFocus(this); // 'This' is the element that just got focus.
+  });
+
+  // and a slightly different one for keypresses
+  $(container).find('.bloom-editable').keypress(function () {
+    model.doKeypressMarkup();
+  });
+
+  $(container).find('.bloom-editable').keydown(function (e) {
+    if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrl-z or ctrl-Y
+      if (model.currentMarkupType !== MarkupType.None) {
+        e.preventDefault();
+        if (e.shiftKey || e.keyCode == 89) { // ctrl-shift-z or ctrl-y
+          model.redo();
+        }
+        else {
+          model.undo();
+        }
+        return false;
+      }
+    }
+  });
 }
 
 function initializeDecodableRT(): void {
