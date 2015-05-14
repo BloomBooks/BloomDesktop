@@ -267,15 +267,17 @@ namespace Bloom
 
 				var progressMsg = LocalizationManager.GetString("CollectionTab.Progress", "({0}% complete)");
 
-				await manager.DownloadReleases(releasesToDownload, x => updatingNotifier.UpdateMessage(updatingMsg + " " + string.Format(progressMsg, x/2)));
+				await manager.DownloadReleases(releasesToDownload, x => UpdateProgress(updatingNotifier, updatingMsg, progressMsg, x));
 
 				Palaso.Reporting.Logger.WriteEvent("Squirrel update download succeeded at " + DateTime.Now);
 
-				// Technically we are not downloading now, but applying the releases. But I don't think the distinction is worth another
-				// message to translate, and would probably only confuse the rice farmer anyway.
-				// (It's a very rough approximation that downloading takes half the time. Sometimes applying updates takes a long longer. If it has to
-				// download the whole package applying will be negligible and downloading all of it. It's the best we can easily do.)
-				newInstallDirectory = await manager.ApplyReleases(updateInfo, x => updatingNotifier.UpdateMessage(updatingMsg + " " + string.Format(progressMsg, x/2+50)));
+				// There's no telling what fraction of the total download and update will be. With a bad connection downloading can take a long time.
+				// With a lot of updates applying can take a long time.  If it has to
+				// download the whole package applying will be negligible and downloading all of it.
+				// Rather than have it suddenly slow down or speed up half way I decided to actually describe the two stages.
+				updatingMsg = LocalizationManager.GetString("CollectionTab.Applying", "Applying updates");
+				UpdateProgress(updatingNotifier, updatingMsg, progressMsg, 0);
+				newInstallDirectory = await manager.ApplyReleases(updateInfo, x => UpdateProgress(updatingNotifier, updatingMsg, progressMsg, x));
 
 				Palaso.Reporting.Logger.WriteEvent("Squirrel update finished applying updates at " + DateTime.Now);
 
@@ -311,6 +313,14 @@ namespace Bloom
 				NewInstallDirectory = newInstallDirectory,
 				Outcome = newInstallDirectory == null ? UpdateOutcome.AlreadyUpToDate : UpdateOutcome.GotNewVersion
 			};
+		}
+
+		private static void UpdateProgress(ToastNotifier updatingNotifier, string updatingMsg, string progressMsg, int x)
+		{
+			updatingNotifier.Invoke((Action)(() =>
+			{
+				updatingNotifier.UpdateMessage(updatingMsg + " " + string.Format(progressMsg, x));
+			}));
 		}
 	}
 }
