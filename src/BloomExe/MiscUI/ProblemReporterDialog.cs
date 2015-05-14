@@ -10,8 +10,12 @@ using L10NSharp;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
+#if !__MonoCS__
+// This isn't fully satisfactory, as we need this functionality in Linux/Mono,
+// but Bloom doesn't even run with this code in it on Linux/Mono.
 using YouTrackSharp.Infrastructure;
 using YouTrackSharp.Issues;
+#endif
 
 namespace Bloom.MiscUI
 {
@@ -33,9 +37,11 @@ namespace Bloom.MiscUI
 		private string _emailableReportFilePath;
 		private readonly string YouTrackUrl;
 		protected string _youTrackProjectKey = "BL";
+#if !__MonoCS__
 		Connection _youTrackConnection = new Connection("issues.bloomlibrary.org", 80, false, "youtrack");
 		IssueManagement _issueManagement;
-		private string _youTrackIssueId;
+#endif
+		private string _youTrackIssueId = "unknown";
 		private dynamic _youTrackIssue;
 
 		public ProblemReporterDialog(Control targetOfScreenshot, BookSelection bookSelection)
@@ -236,10 +242,12 @@ namespace Bloom.MiscUI
 			}
 		}
 
+#if !__MonoCS__
 		private void AddAttachment(string file)
 		{
 			_issueManagement.AttachFileToIssue(_youTrackIssueId, file);
 		}
+#endif
 
 		/// <summary>
 		/// Using YouTrackSharp here. We can't submit
@@ -249,6 +257,9 @@ namespace Bloom.MiscUI
 		/// </summary>
 		private bool SubmitToYouTrack()
 		{
+#if __MonoCS__
+			return false;
+#else
 			try
 			{
 				ChangeState(State.Submitting);
@@ -308,6 +319,7 @@ namespace Bloom.MiscUI
 				Debug.Fail(error.Message);
 				return false;
 			}
+#endif
 		}
 
 		/// <summary>
