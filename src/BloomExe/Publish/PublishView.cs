@@ -196,7 +196,12 @@ namespace Bloom.Publish
 						//note, we don't want to include the original, as it leads to people sending in reports we don't
 						//actually want to see. E.g., we don't want a bug report just because they didn't have Acrobat
 						//installed, or they had the PDF open in Word, or something like that.
-						ErrorReport.NotifyUserOfProblem(error.Message);
+						var msg = L10NSharp.LocalizationManager.GetString(@"Errors.MakePDF.Failed",
+							"Bloom was not able to create the PDF file.") + Environment.NewLine + Environment.NewLine;
+						msg += LocalizationManager.GetString(@"Errors.MakePDF.Failed",
+							"Click 'Details' to get help for this problem.", "Shown at the end of some error messages, where there is a button for seeing more information and sending a report to the developers.");
+						
+						ErrorReport.NotifyUserOfProblem(error, msg);
 					}
 					else if (error is FileNotFoundException && ((FileNotFoundException) error).FileName == "GeckofxHtmlToPdf.exe")
 					{

@@ -56,9 +56,8 @@ namespace Bloom.Publish
 				}
 				if (!fOkay)
 				{
-					var msg = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.NoPrinter",
-						"Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you do not have a printer selected.  Please go to Devices and Printers and add a printer.",
-						@"Error message displayed in a message dialog box");
+					var msg = L10NSharp.LocalizationManager.GetString(@"Errors.MakePDF.NoPrinter",
+						"Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you do not have a printer selected.  Please go to Devices and Printers and add a printer.");
 					var except = new ApplicationException(msg);
 					// Note that if we're being run by a BackgroundWorker, it will catch the exception.
 					// If not, but the caller provides a DoWorkEventArgs, pass the exception through
@@ -80,8 +79,8 @@ namespace Bloom.Publish
 			var filePath = Path.Combine(execDir, "GeckofxHtmlToPdf.exe");
 			if (!File.Exists(filePath))
 			{
-				var msg = LocalizationManager.GetString("InstallProblem.GeckofxHtmlToPdf",
-					"A component of Bloom, GeckofxHtmlToPdf.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.");
+				var msg = LocalizationManager.GetString("Errors.MakePDF.MissingGenenerator",
+					"A component of Bloom, GeckofxHtmlToPdf.exe, seems to be missing. This prevents previews and printing. Check your antivirus quarantine to see if it got put there. You may need technical help to repair the Bloom installation and protect this file from being deleted again.");
 				throw new FileNotFoundException(msg, "GeckofxHtmlToPdf.exe"); // must be this class to trigger the right reporting mechanism.
 			}
 			if (Platform.IsMono)
@@ -97,23 +96,23 @@ namespace Bloom.Publish
 			var arguments = bldr.ToString();
 			var progress = new NullProgress();
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, null);
-			if (res.DidTimeOut || !File.Exists (outputPdfPath))
+			
+			if (res.DidTimeOut || !File.Exists(outputPdfPath))
 			{
-#if DEBUG
-				Console.WriteLine(@"PDF generation failed: res.StandardOutput =");
-				Console.WriteLine(res.StandardOutput);
-#endif
-				var msg = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.Failed",
-					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: GeckofxHtmlToPdf (command line) did not produce the expected document.",
-					@"Error message displayed in a message dialog box");
-				var except = new ApplicationException(String.Format(msg, outputPdfPath, Environment.NewLine));
+				//We're leaving it to the higher levels to give the localized "uh oh" message. Here, we're constructing the 
+				//details that will end up in the report if they send it.
+				
+				var msg = res.DidTimeOut ? "Timed Out" : "GeckofxHtmlToPdf did not produce the expected document at "+outputPdfPath;
+				msg += "\r\n\r\nGeckofxHtmlToPdf Output:\r\n"+res.StandardOutput;
+
+				var error = new ApplicationException(msg);
 				// Note that if we're being run by a BackgroundWorker, it will catch the exception.
 				// If not, but the caller provides a DoWorkEventArgs, pass the exception through
 				// that object rather than throwing it.
 				if (worker != null || doWorkEventArgs == null)
-					throw except;
+					throw error;
 				else
-					doWorkEventArgs.Result = except;
+					doWorkEventArgs.Result = error;
 			}
 		}
 
