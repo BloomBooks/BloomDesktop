@@ -39,6 +39,7 @@ var styleSheets = [
     'themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css',
     'themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css',
     'lib/jquery.qtip.css',
+    'bookEdit/css/qtipOverrides.css',
     'bookEdit/js/toolbar/jquery.toolbars.css',
     'bookEdit/css/origami.css',
     'bookEdit/css/tab.winclassic.css',
