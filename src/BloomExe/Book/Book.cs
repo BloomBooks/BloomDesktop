@@ -812,11 +812,11 @@ namespace Bloom.Book
 			foreach (XmlElement templatePageDiv in templateDom.SafeSelectNodes("//body/div"))
 			{
 				if (templatePageDiv.GetOptionalStringAttribute("class", "").Contains("customPage"))
-					return; // we sure don't want to revert this page to its blank custom state
+					continue; // we sure don't want to revert this page to its blank custom state
 
 				var templateId = templatePageDiv.GetStringAttribute("id");
 				if (string.IsNullOrEmpty(templateId))
-					return;
+					continue;
 
 				var templatePageClasses = templatePageDiv.GetAttribute("class");
 				//note, lineage is a series of guids separated by a semicolon
