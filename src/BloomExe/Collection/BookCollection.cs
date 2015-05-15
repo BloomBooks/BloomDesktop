@@ -79,7 +79,6 @@ namespace Bloom.Collection
 				return;
 
 			Logger.WriteEvent("After BookStorage.DeleteBook({0})", bookInfo.FolderPath);
-			//ListOfBooksIsOutOfDate();
 			Debug.Assert(_bookInfos.Contains(bookInfo));
 			_bookInfos.Remove(bookInfo);
 
