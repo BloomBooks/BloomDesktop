@@ -79,7 +79,6 @@ namespace Bloom.Collection
 				return;
 
 			Logger.WriteEvent("After BookStorage.DeleteBook({0})", bookInfo.FolderPath);
-			//ListOfBooksIsOutOfDate();
 			Debug.Assert(_bookInfos.Contains(bookInfo));
 			_bookInfos.Remove(bookInfo);
 
@@ -102,17 +101,13 @@ namespace Bloom.Collection
 
 		}
 
-
-		private void ListOfBooksIsOutOfDate()
-		{
-			_bookInfos = null;
-		}
-
 		public virtual IEnumerable<Book.BookInfo> GetBookInfos()
 		{
 			if (_bookInfos == null)
 			{
+				_watcherIsDisabled = true;
 				LoadBooks();
+				_watcherIsDisabled = false;
 			}
 
 			return _bookInfos;
@@ -227,12 +222,15 @@ namespace Bloom.Collection
 		}
 
 		public event EventHandler<ProjectChangedEventArgs> FolderContentChanged;
+		private bool _watcherIsDisabled = false;
 
 		private void WatcherOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
 		{
+			if (_watcherIsDisabled)
+				return;
 			_bookInfos = null; // Possibly obsolete; next request will update it.
 			if (FolderContentChanged != null)
-				FolderContentChanged(this, new ProjectChangedEventArgs() {Path = fileSystemEventArgs.FullPath});
+				FolderContentChanged(this, new ProjectChangedEventArgs() { Path = fileSystemEventArgs.FullPath });
 		}
 	}
 
