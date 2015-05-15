@@ -166,6 +166,19 @@ namespace Bloom
 				{
 					return ChannelNameForUnitTests;
 				}
+				if (Palaso.PlatformUtilities.Platform.IsUnix)
+				{
+					// The package name and the specific directories where the program is
+					// installed reflect the status ("channel") of the program on Linux.
+					var path = Assembly.GetEntryAssembly().ManifestModule.FullyQualifiedName;
+					if (path.Contains("-testing/") || path.Contains("-alpha/"))
+						return "Alpha";
+					if (path.Contains("-unstable/") || path.Contains ("-beta/"))
+						return "Beta";
+					if (path.EndsWith("/output/Debug/Bloom.exe"))
+						return "Debug";		// verifies this code is working on developer machines.
+					return "Release";
+				}
 				var s = Assembly.GetEntryAssembly().ManifestModule.Name.Replace("bloom", "").Replace("Bloom", "").Replace(".exe", "").Trim();
 				return (s == "") ? "Release" : s;
 			}
