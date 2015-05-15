@@ -935,6 +935,19 @@ namespace Bloom.Edit
 		private void UpdateButtonEnabled(Button button, Command command)
 		{
 			button.Enabled = command != null && command.Enabled;
+			// DuplicatePage and DeletePage are a bit tricky to get right.
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2183.
+			if (button.Enabled && command.Implementer != null)
+			{
+				var target = command.Implementer.Target as EditingModel;
+				if (target != null)
+				{
+					if (command is DuplicatePageCommand)
+						button.Enabled = target.CanDuplicatePage;
+					else if (command is DeletePageCommand)
+						button.Enabled = target.CanDeletePage;
+				}
+			}
 			//doesn't work because the forecolor is ignored when disabled...
 			button.ForeColor = button.Enabled ? _enabledToolbarColor : _disabledToolbarColor; //.DimGray;
 			button.Invalidate();
