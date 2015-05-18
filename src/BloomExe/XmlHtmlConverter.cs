@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using System.Xml;
 using Palaso.Xml;
 using TidyManaged;
@@ -255,6 +256,7 @@ namespace Bloom
 				xml = AddFillerToKeepTidyFromRemovingEmptyElements(xml);
 
 				// Now re-write as html, indented nicely
+				string html;
 				using (var tidy = TidyManaged.Document.FromString(xml))
 				{
 					tidy.ShowWarnings = false;
@@ -272,11 +274,17 @@ namespace Bloom
 					tidy.IndentSpaces = 4;
 					tidy.CharacterEncoding = EncodingType.Utf8;
 					tidy.CleanAndRepair();
-					tidy.Save(targetPath);
+					using (var stream = new MemoryStream())
+					{
+						tidy.Save(stream);
+						stream.Flush();
+						stream.Seek(0L, SeekOrigin.Begin);
+						using (var sr = new StreamReader(stream, Encoding.UTF8))
+							html = sr.ReadToEnd();
+					}
 				}
 
 				// Now revert the stuff we did to make it "safe from libtidy"
-				var html = File.ReadAllText(targetPath);
 				html = RemoveFillerInEmptyElements(html);
 				File.WriteAllText(targetPath, html, Encoding.UTF8);
 			}
