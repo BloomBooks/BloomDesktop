@@ -799,6 +799,10 @@ namespace Bloom.Book
 
 			string idOfLanguageUsed;
 			string description = metadata.License.GetDescription(_collectionSettings.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed);
+			// Don't really have a description for custom license, it returns the RightsStatement for the sake of having something.
+			// However, we're already showing that in licenseNotes; if we use it for description too we get duplicate (BL-2198).
+			if (metadata.License is CustomLicense)
+				description = "";
 			data.UpdateLanguageString("licenseDescription", WebUtility.HtmlEncode(description), "en", false);
 
 			string licenseUrl = metadata.License.Url;
