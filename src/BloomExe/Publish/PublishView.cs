@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using L10NSharp;
@@ -27,6 +28,7 @@ namespace Bloom.Publish
 		private BloomLibraryPublishControl _publishControl;
 		private BookTransfer _bookTransferrer;
 		private LoginDialog _loginDialog;
+		private PictureBox _previewBox;
 
 		public delegate PublishView Factory();//autofac uses this
 
@@ -485,12 +487,69 @@ namespace Bloom.Publish
 			_makePdfBackgroundWorker.RunWorkerAsync();
 		}
 
+		private bool isBooklet()
+		{
+			return _model.BookletPortion == PublishModel.BookletPortions.BookletCover
+					|| _model.BookletPortion == PublishModel.BookletPortions.BookletPages
+					|| _model.BookletPortion == PublishModel.BookletPortions.InnerContent; // Not sure this last is used, but play safe...
+		}
+
 		private void OnPrint_Click(object sender, EventArgs e)
 		{
+			var printSettingsPreviewFolder = FileLocator.GetDirectoryDistributedWithApplication("printer settings images");
+			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
+				_model.PageLayout.SizeAndOrientation + "-" + (isBooklet() ? "Booklet-" : ""));
+			var printSettingsSampleName = printSettingsSamplePrefix + LocalizationManager.UILanguageId + ".png";
+			if (!File.Exists(printSettingsSampleName))
+				printSettingsSampleName = printSettingsSamplePrefix + "en" + ".png";
+			if (File.Exists(printSettingsSampleName))
+			{
+				var form = FindForm();
+				// We will add a control to the main form to show sample print settings. We need to get rid of it
+				// when the print dialog goes away. The only way I've found to know when that is is that the main
+				// Bloom form gets activated again.
+				form.Activated += FormActivatedAfterPrintDialog;
+				_previewBox = new PictureBox {Image = Image.FromFile(printSettingsSampleName)};
+				_previewBox.Bounds =
+					new Rectangle(
+						new Point(form.ClientRectangle.Width - _previewBox.Image.Width,
+							form.ClientRectangle.Height - _previewBox.Image.Height),
+						_previewBox.Image.Size);
+				form.Controls.Add(_previewBox);
+				_previewBox.BringToFront();
+				if (!Settings.Default.DontShowPrintNotification)
+				{
+					using (var dlg = new SamplePrintNotification())
+					{
+						form.Activated -= FormActivatedAfterPrintDialog; // not wanted when we close the dialog.
+						dlg.ShowDialog(this);
+						form.Activated += FormActivatedAfterPrintDialog;
+						if (dlg.StopShowing)
+						{
+							Settings.Default.DontShowPrintNotification = true;
+							Settings.Default.Save();
+						}
+					}
+				}
+			}
 			_pdfViewer.Print();
 			Logger.WriteEvent("Calling Print on PDF Viewer");
 			Analytics.Track("Print PDF");
 		}
+
+		private void FormActivatedAfterPrintDialog(object sender, EventArgs eventArgs)
+		{
+			var form = FindForm();
+			form.Activated -= FormActivatedAfterPrintDialog;
+			if (_previewBox == null)
+				return; // somehow obsolete?
+			if (_previewBox.Image != null)
+				_previewBox.Image.Dispose();
+			form.Controls.Remove(_previewBox);
+			_previewBox.Dispose();
+			_previewBox = null;
+		}
+
 		private void OnPrintProgress(object sender, PdfPrintProgressEventArgs e)
 		{
 			// BL-788 Only called in Linux version.  Protects against button
