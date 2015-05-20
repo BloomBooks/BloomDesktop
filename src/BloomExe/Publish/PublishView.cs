@@ -545,8 +545,10 @@ namespace Bloom.Publish
 				return; // somehow obsolete?
 			if (_previewBox.Image != null)
 				_previewBox.Image.Dispose();
-			form.Controls.Remove(_previewBox);
-			_previewBox.Dispose();
+			if (form.Controls.Contains(_previewBox))
+				form.Controls.Remove(_previewBox);
+			if (!_previewBox.IsDisposed)
+				_previewBox.Dispose();
 			_previewBox = null;
 		}
 
