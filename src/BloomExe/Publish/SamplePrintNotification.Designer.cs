@@ -1,4 +1,8 @@
-﻿namespace Bloom.Publish
+﻿using System.Drawing;
+using System.Windows.Forms;
+using Palaso.UI.WindowsForms.Widgets;
+
+namespace Bloom.Publish
 {
 	partial class SamplePrintNotification
 	{
@@ -29,7 +33,8 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			this.label1 = new System.Windows.Forms.Label();
+			this.Font = SystemFonts.MessageBoxFont;
+			this.label1 = new BetterLabel();
 			this._stopShowingCheckBox = new System.Windows.Forms.CheckBox();
 			this.okButton = new System.Windows.Forms.Button();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
@@ -104,7 +109,7 @@
 
 		#endregion
 
-		private System.Windows.Forms.Label label1;
+		private BetterLabel label1;
 		private System.Windows.Forms.CheckBox _stopShowingCheckBox;
 		private System.Windows.Forms.Button okButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
