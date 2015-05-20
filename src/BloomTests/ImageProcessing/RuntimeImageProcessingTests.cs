@@ -20,7 +20,7 @@ namespace BloomTests.RuntimeImageProcessing
 			using (var cache = new RuntimeImageProcessor(new BookRenamedEvent()) { TargetDimension = 100 })
 			using (var file = MakeTempPNGImage(200,80))
 			{
-				using(var img = Image.FromFile(cache.GetPathToResizedImage(file.Path)))
+				using(var img = ImageUtils.GetImageFromFile(cache.GetPathToResizedImage(file.Path)))
 				{
 					Assert.AreEqual(100, img.Width);
 					Assert.AreEqual(40, img.Height);
@@ -36,7 +36,7 @@ namespace BloomTests.RuntimeImageProcessing
 			using (var file = MakeTempJPGImage(200, 80))
 			{
 				var pathToResizedImage = cache.GetPathToResizedImage(file.Path);
-				using (var img = Image.FromFile(pathToResizedImage))
+				using (var img = ImageUtils.GetImageFromFile(pathToResizedImage))
 				{
 					Assert.AreEqual(".jpg", Path.GetExtension(pathToResizedImage));
 
@@ -56,7 +56,7 @@ namespace BloomTests.RuntimeImageProcessing
 			using (var cache = new RuntimeImageProcessor(new BookRenamedEvent()) { TargetDimension = 100 })
 			using (var file = MakeTempPNGImage(10,10))
 			{
-				using (var img = Image.FromFile(cache.GetPathToResizedImage(file.Path)))
+				using (var img = ImageUtils.GetImageFromFile(cache.GetPathToResizedImage(file.Path)))
 				{
 					Assert.AreEqual(10, img.Width);
 				}

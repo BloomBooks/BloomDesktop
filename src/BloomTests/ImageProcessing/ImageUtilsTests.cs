@@ -22,14 +22,14 @@ namespace BloomTests.ImageProcessing
 		public void ShouldChangeFormatToJpeg_Photo_True()
 		{
 			var path = Palaso.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "man.jpg");
-			Assert.IsTrue(ImageUtils.ShouldChangeFormatToJpeg(Image.FromFile(path)));
+			Assert.IsTrue(ImageUtils.ShouldChangeFormatToJpeg(ImageUtils.GetImageFromFile(path)));
 		}
 
 		[Test]
 		public void ShouldChangeFormatToJpeg_OneColor_False()
 		{
 			var path = Palaso.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
-			Assert.IsFalse(ImageUtils.ShouldChangeFormatToJpeg(Image.FromFile(path)));
+			Assert.IsFalse(ImageUtils.ShouldChangeFormatToJpeg(ImageUtils.GetImageFromFile(path)));
 		}
 
 		[Test]
@@ -59,7 +59,7 @@ namespace BloomTests.ImageProcessing
 				var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path);
 				Assert.AreEqual(expectedOutputFormat == ImageFormat.Jpeg ? ".jpg" : ".png", Path.GetExtension(fileName));
 				var outputPath = folder.Combine(fileName);
-				using(var img = Image.FromFile(outputPath))
+				using (var img = ImageUtils.GetImageFromFile(outputPath))
 				{
 					Assert.AreEqual(expectedOutputFormat, img.RawFormat);
 				}

@@ -78,7 +78,9 @@ namespace Bloom.CollectionTab
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Problem selecting book");
+				var msg = L10NSharp.LocalizationManager.GetString("Bloom", "Errors.ErrorSelecting",
+					"There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, msg);
 			}
 		}
 

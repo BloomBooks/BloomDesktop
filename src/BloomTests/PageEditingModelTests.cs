@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using NUnit.Framework;
 using Palaso.TestUtilities;
 using Palaso.UI.WindowsForms.ImageToolbox;
@@ -60,7 +61,7 @@ namespace BloomTests
 					var destDogImagePath = dest.Combine("dog.png");
 					File.WriteAllText(destDogImagePath, "old dog");
 					model.ChangePicture(dest.Path, dom, "two", original);
-					Assert.IsTrue(Image.FromFile(destDogImagePath).Width == kSampleImageDimension);
+					Assert.IsTrue(ImageUtils.GetImageFromFile(destDogImagePath).Width == kSampleImageDimension);
 				}
 			}
 		}
@@ -105,7 +106,7 @@ namespace BloomTests
 				model.ChangePicture(dest.Path, dom, "two", original);
 				Assert.IsTrue(File.Exists(dest.Combine("new.png")));
 				AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.png']", 1);
-				using (var converted = Image.FromFile(dest.Combine("new.png")))
+				using (var converted = ImageUtils.GetImageFromFile(dest.Combine("new.png")))
 				{
 					Assert.AreEqual(ImageFormat.Png.Guid, converted.RawFormat.Guid);
 				}
@@ -125,7 +126,7 @@ namespace BloomTests
 				model.ChangePicture(dest.Path, dom, "two", original);
 				Assert.IsTrue(File.Exists(dest.Combine("new.jpg")));
 				AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.jpg']", 1);
-				using (var converted = Image.FromFile(dest.Combine("new.jpg")))
+				using (var converted = ImageUtils.GetImageFromFile(dest.Combine("new.jpg")))
 				{
 					Assert.AreEqual(ImageFormat.Jpeg.Guid, converted.RawFormat.Guid);
 				}

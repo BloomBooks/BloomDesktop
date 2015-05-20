@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.ImageProcessing;
 using Bloom.ToPalaso;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -223,11 +224,7 @@ namespace Bloom.Book
 			string path = Path.Combine(FolderPath, "thumbnail.png");
 			if (File.Exists(path))
 			{
-				//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
-				using (var tempImage = Image.FromFile(path))
-				{
-					image = new Bitmap(tempImage);
-				}
+				image = ImageUtils.GetImageFromFile(path);
 				return true;
 			}
 			image = null;
