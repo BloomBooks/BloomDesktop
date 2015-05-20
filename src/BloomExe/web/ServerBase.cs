@@ -136,7 +136,12 @@ namespace Bloom.web
 		private void QueueRequest(IAsyncResult ar)
 		{
 			// this can happen when shutting down
-			if (!_listenerThread.IsAlive) return;
+			// BL-2207 indicates it may be possible for the thread to be alive and the listener closed,
+			// although the only way I know it gets closed happens after joining with that thread.
+			// Still, one more check seems worthwhile...if we're far enough along in shutting down
+			// to have closed the listener we certainly can't respond to any more requests.
+			if (!_listenerThread.IsAlive || !_listener.IsListening)
+				return;
 
 			lock (_queue)
 			{
