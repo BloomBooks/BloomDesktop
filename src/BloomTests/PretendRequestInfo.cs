@@ -14,7 +14,7 @@ namespace Bloom.web
 		public long StatusCode;
 		public string StatusDescription;
 
-		public PretendRequestInfo(string url, bool forPrinting)
+		public PretendRequestInfo(string url, bool forPrinting = false)
 		{
 			// In the real request, RawUrl does not include this prefix
 			RawUrl = url.Replace("http://localhost:8089", "");

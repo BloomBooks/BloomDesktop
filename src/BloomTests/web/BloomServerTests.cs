@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Runtime.Remoting.Contexts;
-using System.Text;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
@@ -23,7 +18,7 @@ namespace BloomTests.web
 		private TemporaryFolder _folder;
 		private FileLocator _fileLocator;
 		private Mock<BookCollection> _vernacularLibraryCollection;
-		private List<Bloom.Book.BookInfo> _bookInfoList;
+		private List<BookInfo> _bookInfoList;
 		private Mock<SourceCollectionsList> _storeCollectionList;
 		private Mock<CollectionSettings> _librarySettings;
 
@@ -37,8 +32,8 @@ namespace BloomTests.web
 //			_vernacularLibraryCollection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, BookFactory,
 //				BookStorageFactory, null, null, new CreateFromSourceBookCommand(), new EditBookCommand());
 
-			_vernacularLibraryCollection = new Moq.Mock<BookCollection>();
-			_bookInfoList = new List<Bloom.Book.BookInfo>();
+			_vernacularLibraryCollection = new Mock<BookCollection>();
+			_bookInfoList = new List<BookInfo>();
 			_vernacularLibraryCollection.Setup(x => x.GetBookInfos()).Returns(_bookInfoList);
 			_storeCollectionList = new Mock<SourceCollectionsList>();
 			_storeCollectionList.Setup(x => x.GetSourceCollections()).Returns(() => GetStoreCollections());
@@ -75,7 +70,7 @@ namespace BloomTests.web
 		public void GetLibaryPage_ReturnsLibraryPage()
 		{
 			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "library/library.htm", false);
+			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "library/library.htm");
 			b.MakeReply(transaction);
 			Assert.IsTrue(transaction.ReplyContents.Contains("library.css"));
 		}
@@ -89,7 +84,7 @@ namespace BloomTests.web
 		public void GetVernacularBookList_ThereAreNone_ReturnsNoListItems()
 		{
 			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents", false);
+			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents");
 			_bookInfoList.Clear();
 			b.MakeReply(transaction);
 			AssertThatXmlIn.String(transaction.ReplyContentsAsXml).HasNoMatchForXpath("//li");
@@ -98,7 +93,7 @@ namespace BloomTests.web
 		public void GetVernacularBookList_ThereAre2_Returns2ListItems()
 		{
 			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents", false);
+			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents");
 			AddBook("1","one");
 			AddBook("2", "two");
 			b.MakeReply(transaction);
@@ -118,7 +113,7 @@ namespace BloomTests.web
 		 */
 		private void AddBook(string id, string title)
 		{
-			var b = new Moq.Mock<Bloom.Book.BookInfo>();
+			var b = new Mock<BookInfo>();
 			b.SetupGet(x => x.Id).Returns(id);
 			b.SetupGet(x => x.QuickTitleUserDisplay).Returns(title);
 			b.SetupGet(x => x.FolderPath).Returns(Path.GetTempPath);//TODO. this works at the moment, cause we just need some folder which exists
@@ -130,7 +125,7 @@ namespace BloomTests.web
 		{
 			var path = @"//someserver/somefolder/somebook.htm";
 			var url = path.ToLocalhost();
-			var request = new PretendRequestInfo(url, false);
+			var request = new PretendRequestInfo(url);
 			var result = ServerBase.GetLocalPathWithoutQuery(request);
 			Assert.That(result, Is.EqualTo(path));
 		}
