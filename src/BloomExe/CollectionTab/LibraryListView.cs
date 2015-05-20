@@ -858,7 +858,16 @@ namespace Bloom.CollectionTab
 
 		private void OnBringBookUpToDate_Click(object sender, EventArgs e)
 		{
-			_model.BringBookUpToDate();
+			try
+			{
+				_model.BringBookUpToDate();
+			}
+			catch (Exception error)
+			{
+				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.ErrorUpdating",
+					"There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.");
+				ErrorReport.NotifyUserOfProblem(error, msg);
+			}
 		}
 
 		private void _openFolderOnDisk_Click(object sender, EventArgs e)

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.ImageProcessing;
 using Bloom.web;
 using DesktopAnalytics;
 using Gecko;
@@ -124,18 +125,14 @@ namespace Bloom
 			//Sitting on disk?
 			if (!string.IsNullOrEmpty(folderForThumbNailCache))
 			{
-
 				if (File.Exists(thumbNailFilePath))
 				{
-					//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
-					using (image = Image.FromFile(thumbNailFilePath))
-					{
-						var thumbnail = new Bitmap(image) { Tag = thumbNailFilePath };
-						if (!String.IsNullOrWhiteSpace(key))
-							_images.Add(key, thumbnail);
-						callback(thumbnail);
-						return;
-					}
+					var thumbnail = ImageUtils.GetImageFromFile(thumbNailFilePath);
+					thumbnail.Tag = thumbNailFilePath;
+					if (!String.IsNullOrWhiteSpace(key))
+						_images.Add(key, thumbnail);
+					callback(thumbnail);
+					return;
 				}
 			}
 
@@ -239,8 +236,14 @@ namespace Bloom
 #else
 			var creator = new ImageCreator(browser);
 			byte[] imageBytes = creator.CanvasGetPngImage((uint)browser.Width, (uint)browser.Height);
+			// Ensure image is still valid after the MemoryStream closes.
 			using (var stream = new MemoryStream(imageBytes))
-				return Image.FromStream(stream);
+			{
+				using (var image = new Bitmap(stream))
+				{
+					return new Bitmap((image));
+				}
+			}
 #endif
 		}
 

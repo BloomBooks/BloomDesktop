@@ -181,19 +181,18 @@ namespace Bloom.ImageProcessing
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);
 				using(var pi = PalasoImage.FromFile(path))
 				{
-					if(!ImageUtils.AppearsToBeJpeg(pi))
+					if (!AppearsToBeJpeg(pi))
 					{
-						RemoveTransparency(path, progress);
+						RemoveTransparency(pi.Image, path, progress);
 					}
 				}
 				completed++;
 			}
 		}
 
-		private static void RemoveTransparency(string path, IProgress progress)
+		private static void RemoveTransparency(Image original, string path, IProgress progress)
 		{
 			progress.WriteStatus("RemovingTransparency from image: " + Path.GetFileName(path));
-			var original = Image.FromFile(path);
 			using(var b = new Bitmap(original.Width, original.Height))
 			{
 				b.SetResolution(original.HorizontalResolution, original.VerticalResolution);
@@ -203,7 +202,6 @@ namespace Bloom.ImageProcessing
 					g.Clear(Color.White);
 					g.DrawImageUnscaled(original, 0, 0);
 				}
-				original.Dispose();
 				b.Save(path, ImageFormat.Png);
 			}
 		}
@@ -256,6 +254,27 @@ namespace Bloom.ImageProcessing
 					safetyImage.Save(tempPath.Path, jpgEncoder, parameters);
 				}
 				Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath.Path, destinationPath, null);
+			}
+		}
+
+		/// <summary>
+		/// Read a bitmap image from a file.  The file must be known to exist before calling this method.
+		/// </summary>
+		/// <remarks>
+		/// Image.FromFile and Image.FromStream lock the file until the image is disposed of.  Therefore,
+		/// we copy the image and dispose of the original.  On Windows, Image.FromFile leaks file handles,
+		/// so we use FromStream instead.  For details, see the last answer to
+		/// http://stackoverflow.com/questions/16055667/graphics-drawimage-out-of-memory-exception
+		/// </remarks>
+		public static Image GetImageFromFile(string path)
+		{
+			Debug.Assert(File.Exists(path), String.Format("{0} does not exist for ImageUtils.GetImageFromFile()?!", path));
+			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+			{
+				using (var image = new Bitmap(stream))
+				{
+					return new Bitmap(image);
+				}
 			}
 		}
 	}

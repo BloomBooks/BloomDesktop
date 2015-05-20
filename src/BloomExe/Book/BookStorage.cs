@@ -162,11 +162,7 @@ namespace Bloom.Book
 			string path = Path.Combine(_folderPath, fileName);
 			if (File.Exists(path))
 			{
-				//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
-				using (var tempImage = Image.FromFile(path))
-				{
-					image = new Bitmap(tempImage);
-				}
+				image = ImageUtils.GetImageFromFile(path);
 				return true;
 			}
 			image = null;
