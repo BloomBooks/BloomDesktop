@@ -55,7 +55,7 @@ namespace BloomTests.web
 			using (var server = CreateImageServer())
 			using (var file = MakeTempImage())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path);
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path, false);
 
 				// Execute
 				server.MakeReply(transaction);
@@ -72,7 +72,7 @@ namespace BloomTests.web
 			using (var server = CreateImageServer())
 			using (var file = TempFile.WithExtension(".pdf"))
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path);
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path, false);
 
 				// Execute
 				server.MakeReply(transaction);
@@ -88,7 +88,7 @@ namespace BloomTests.web
 			// Setup
 			using (var server = CreateImageServer())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "/non-existing-file.pdf");
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "/non-existing-file.pdf", false);
 
 				// Execute
 				server.MakeReply(transaction);
@@ -116,7 +116,7 @@ namespace BloomTests.web
 		{
 			using (var server = CreateImageServer())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + query);
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + query, false);
 				server.MakeReply(transaction);
 				Debug.WriteLine(transaction.ReplyContents);
 				return Newtonsoft.Json.JsonConvert.DeserializeObject(transaction.ReplyContents);
@@ -151,7 +151,7 @@ namespace BloomTests.web
 				using (var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom))
 				{
 					url = fakeTempFile.Key;
-					var transaction = new PretendRequestInfo(url);
+					var transaction = new PretendRequestInfo(url, false);
 
 					// Execute
 					server.MakeReply(transaction);
@@ -163,7 +163,7 @@ namespace BloomTests.web
 					Assert.That(transaction.ReplyContents,
 						Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
 				}
-				var transactionFail = new PretendRequestInfo(url);
+				var transactionFail = new PretendRequestInfo(url, false);
 
 				// Execute
 				server.MakeReply(transactionFail);
@@ -182,6 +182,10 @@ namespace BloomTests.web
 			var cssFile = Path.Combine(_collectionPath, "settingsCollectionStyles.css");
 			File.WriteAllText(cssFile, @".settingsCollectionStylesCssTest{}");
 
+			// customCollectionStyles.css
+			cssFile = Path.Combine(_collectionPath, "customCollectionStyles.css");
+			File.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
+
 			// create book directory
 			var bookPath = Path.Combine(_collectionPath, "TestBook");
 			Directory.CreateDirectory(bookPath);
@@ -193,6 +197,10 @@ namespace BloomTests.web
 			// Factory-XMatter.css
 			cssFile = Path.Combine(bookPath, "Factory-XMatter.css");
 			File.WriteAllText(cssFile, @".factoryXmatterCssTest{}");
+
+			// customBookStyles.css
+			cssFile = Path.Combine(bookPath, "customBookStyles.css");
+			File.WriteAllText(cssFile, @".customBookStylesCssTest{}");
 
 			// miscStyles.css - a file name not distributed with or created by Bloom
 			cssFile = Path.Combine(bookPath, "miscStyles.css");
@@ -208,7 +216,7 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "languageDisplay.css");
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url);
+				var transaction = new PretendRequestInfo(url, false);
 
 				server.MakeReply(transaction);
 
@@ -222,14 +230,73 @@ namespace BloomTests.web
 			using (var server = CreateImageServer())
 			{
 				SetupCssTests();
-				var cssFile = Path.Combine(_folder.Path, "TestCollection", "settingsCollectionStyles.css");
+				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
+				var filePath = ".." + Path.DirectorySeparatorChar + "settingsCollectionStyles.css";
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url);
+				var transaction = new PretendRequestInfo(url, false);
 
 				server.MakeReply(transaction);
 
 				Assert.That(transaction.ReplyContents, Is.EqualTo(".settingsCollectionStylesCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void GetCorrect_SettingsCollectionStylesCss_WhenMakingPdf()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
+				var filePath = ".." + Path.DirectorySeparatorChar + "settingsCollectionStyles.css";
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url, true);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".settingsCollectionStylesCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void GetCorrect_CustomCollectionStylesCss()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
+				var filePath = ".." + Path.DirectorySeparatorChar + "customCollectionStyles.css";
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url, false);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".customCollectionStylesCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void GetCorrect_CustomCollectionStylesCss_WhenMakingPdf()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
+				var filePath = ".." + Path.DirectorySeparatorChar + "customCollectionStyles.css";
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url, true);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".customCollectionStylesCssTest{}"));
 			}
 		}
 
@@ -242,11 +309,45 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "Factory-XMatter.css");
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url);
+				var transaction = new PretendRequestInfo(url, false);
 
 				server.MakeReply(transaction);
 
 				Assert.AreNotEqual(transaction.ReplyContents, ".factoryXmatterCssTest{}");
+			}
+		}
+
+		[Test]
+		public void GetCorrect_CustomBookStylesCss()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "customBookStyles.css");
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url, false);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".customBookStylesCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void GetCorrect_CustomBookStylesCss_WhenMakingPdf()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "customBookStyles.css");
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url, true);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".customBookStylesCssTest{}"));
 			}
 		}
 
@@ -259,7 +360,7 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "miscStyles.css");
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url);
+				var transaction = new PretendRequestInfo(url, false);
 
 				server.MakeReply(transaction);
 

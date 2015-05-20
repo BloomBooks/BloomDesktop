@@ -18,7 +18,7 @@ namespace BloomTests.web
 			{
 				using (var utf8File = MakeTempFile(Encoding.UTF8.GetBytes(fileContents)))
 				{
-					var request = new PretendRequestInfo(ServerBase.PathEndingInSlash);
+					var request = new PretendRequestInfo(ServerBase.PathEndingInSlash, false);
 
 					request.WriteCompleteOutput(File.ReadAllText(asciiFile.Path));
 					var asciiString = request.ReplyContents;

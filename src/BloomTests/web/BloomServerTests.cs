@@ -75,7 +75,7 @@ namespace BloomTests.web
 		public void GetLibaryPage_ReturnsLibraryPage()
 		{
 			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "library/library.htm");
+			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "library/library.htm", false);
 			b.MakeReply(transaction);
 			Assert.IsTrue(transaction.ReplyContents.Contains("library.css"));
 		}
@@ -89,7 +89,7 @@ namespace BloomTests.web
 		public void GetVernacularBookList_ThereAreNone_ReturnsNoListItems()
 		{
 			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents");
+			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents", false);
 			_bookInfoList.Clear();
 			b.MakeReply(transaction);
 			AssertThatXmlIn.String(transaction.ReplyContentsAsXml).HasNoMatchForXpath("//li");
@@ -98,7 +98,7 @@ namespace BloomTests.web
 		public void GetVernacularBookList_ThereAre2_Returns2ListItems()
 		{
 			var b = CreateBloomServer();
-			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents");
+			var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "libraryContents", false);
 			AddBook("1","one");
 			AddBook("2", "two");
 			b.MakeReply(transaction);
@@ -130,7 +130,7 @@ namespace BloomTests.web
 		{
 			var path = @"//someserver/somefolder/somebook.htm";
 			var url = path.ToLocalhost();
-			var request = new PretendRequestInfo(url);
+			var request = new PretendRequestInfo(url, false);
 			var result = ServerBase.GetLocalPathWithoutQuery(request);
 			Assert.That(result, Is.EqualTo(path));
 		}

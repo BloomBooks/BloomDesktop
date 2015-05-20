@@ -33,7 +33,7 @@ namespace BloomTests.RuntimeImageProcessing
 			using (var server = CreateImageServer())
 			using (var file = MakeTempImage())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "abc.png");
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "abc.png", false);
 				server.MakeReply(transaction);
 				Assert.AreEqual(404, transaction.StatusCode);
 			}
@@ -45,7 +45,7 @@ namespace BloomTests.RuntimeImageProcessing
 			using (var server = CreateImageServer())
 			using (var file = MakeTempImage())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path);
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path, false);
 				server.MakeReply(transaction);
 				Assert.IsTrue(transaction.ReplyImagePath.Contains(".png"));
 			}
