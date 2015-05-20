@@ -55,7 +55,7 @@ namespace BloomTests.web
 			using (var server = CreateImageServer())
 			using (var file = MakeTempImage())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path, false);
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path);
 
 				// Execute
 				server.MakeReply(transaction);
@@ -72,7 +72,7 @@ namespace BloomTests.web
 			using (var server = CreateImageServer())
 			using (var file = TempFile.WithExtension(".pdf"))
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path, false);
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path);
 
 				// Execute
 				server.MakeReply(transaction);
@@ -88,7 +88,7 @@ namespace BloomTests.web
 			// Setup
 			using (var server = CreateImageServer())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "/non-existing-file.pdf", false);
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "/non-existing-file.pdf");
 
 				// Execute
 				server.MakeReply(transaction);
@@ -116,7 +116,7 @@ namespace BloomTests.web
 		{
 			using (var server = CreateImageServer())
 			{
-				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + query, false);
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + query);
 				server.MakeReply(transaction);
 				Debug.WriteLine(transaction.ReplyContents);
 				return Newtonsoft.Json.JsonConvert.DeserializeObject(transaction.ReplyContents);
@@ -151,7 +151,7 @@ namespace BloomTests.web
 				using (var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom))
 				{
 					url = fakeTempFile.Key;
-					var transaction = new PretendRequestInfo(url, false);
+					var transaction = new PretendRequestInfo(url);
 
 					// Execute
 					server.MakeReply(transaction);
@@ -163,7 +163,7 @@ namespace BloomTests.web
 					Assert.That(transaction.ReplyContents,
 						Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
 				}
-				var transactionFail = new PretendRequestInfo(url, false);
+				var transactionFail = new PretendRequestInfo(url);
 
 				// Execute
 				server.MakeReply(transactionFail);
@@ -216,7 +216,7 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "languageDisplay.css");
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url, false);
+				var transaction = new PretendRequestInfo(url);
 
 				server.MakeReply(transaction);
 
@@ -235,7 +235,7 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url, false);
+				var transaction = new PretendRequestInfo(url);
 
 				server.MakeReply(transaction);
 
@@ -273,7 +273,7 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url, false);
+				var transaction = new PretendRequestInfo(url);
 
 				server.MakeReply(transaction);
 
@@ -309,7 +309,7 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "Factory-XMatter.css");
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url, false);
+				var transaction = new PretendRequestInfo(url);
 
 				server.MakeReply(transaction);
 
@@ -326,7 +326,7 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "customBookStyles.css");
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url, false);
+				var transaction = new PretendRequestInfo(url);
 
 				server.MakeReply(transaction);
 
@@ -360,7 +360,7 @@ namespace BloomTests.web
 				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "miscStyles.css");
 
 				var url = cssFile.ToLocalhost();
-				var transaction = new PretendRequestInfo(url, false);
+				var transaction = new PretendRequestInfo(url);
 
 				server.MakeReply(transaction);
 
