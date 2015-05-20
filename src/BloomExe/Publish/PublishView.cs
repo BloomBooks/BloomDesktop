@@ -87,6 +87,12 @@ namespace Bloom.Publish
 			GeckoPreferences.Default["pdfjs.disabled"] = false;
 			SetupLocalization();
 			localizationChangedEvent.Subscribe(o=>SetupLocalization());
+
+			// Make this extra box available to show when wanted.
+			_previewBox = new PictureBox();
+			_previewBox.Visible = false;
+			Controls.Add(_previewBox);
+			_previewBox.BringToFront();
 		}
 
 		private void BackgroundColorsForLinux() {
@@ -505,18 +511,17 @@ namespace Bloom.Publish
 			if (File.Exists(printSettingsSampleName))
 			{
 				var form = FindForm();
-				// We will add a control to the main form to show sample print settings. We need to get rid of it
-				// when the print dialog goes away. The only way I've found to know when that is is that the main
+				// We display the _previewBox to show sample print settings. We need to get rid of it when the
+				// print dialog goes away. The only way I've found to know when that happens is that the main
 				// Bloom form gets activated again.
 				form.Activated += FormActivatedAfterPrintDialog;
-				_previewBox = new PictureBox {Image = Image.FromFile(printSettingsSampleName)};
+				_previewBox.Image = Image.FromFile(printSettingsSampleName);
 				_previewBox.Bounds =
 					new Rectangle(
-						new Point(form.ClientRectangle.Width - _previewBox.Image.Width,
-							form.ClientRectangle.Height - _previewBox.Image.Height),
+						new Point(ClientRectangle.Width - _previewBox.Image.Width,
+							ClientRectangle.Height - _previewBox.Image.Height),
 						_previewBox.Image.Size);
-				form.Controls.Add(_previewBox);
-				_previewBox.BringToFront();
+				_previewBox.Show();
 				if (!Settings.Default.DontShowPrintNotification)
 				{
 					using (var dlg = new SamplePrintNotification())
@@ -541,15 +546,12 @@ namespace Bloom.Publish
 		{
 			var form = FindForm();
 			form.Activated -= FormActivatedAfterPrintDialog;
-			if (_previewBox == null)
-				return; // somehow obsolete?
+			_previewBox.Hide();
 			if (_previewBox.Image != null)
+			{
 				_previewBox.Image.Dispose();
-			if (form.Controls.Contains(_previewBox))
-				form.Controls.Remove(_previewBox);
-			if (!_previewBox.IsDisposed)
-				_previewBox.Dispose();
-			_previewBox = null;
+				_previewBox.Image = null;
+			}
 		}
 
 		private void OnPrintProgress(object sender, PdfPrintProgressEventArgs e)
