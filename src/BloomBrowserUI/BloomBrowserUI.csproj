@@ -102,7 +102,6 @@
     <Content Include="bookEdit\test\readerTools.Test.js" />
     <Content Include="bookEdit\test\readerTools_libSynphony.Test.js" />
     <Content Include="bookEdit\test\SynphonyApi.Test.js" />
-    <Content Include="bookField\bloomEditable\test.htm" />
     <Content Include="bookLayout\.guidsForInstaller.xml" />
     <Content Include="bookLayout\collection styles override template.css" />
     <Content Include="bookLayout\languageDisplayTemplate.css" />
@@ -152,7 +151,6 @@
     <Content Include="lib\jquery.sizes.js" />
     <Content Include="lib\jquery.watermark.js" />
     <Content Include="lib\json.js" />
-    <Content Include="lib\localizationManager.js" />
     <Content Include="lib\long-press\jquery.longpress.js" />
     <Content Include="lib\long-press\jquery.mousewheel.js" />
     <Content Include="lib\split-pane\split-pane.css" />
@@ -252,7 +250,6 @@
     <Content Include="test\.guidsForInstaller.xml" />
     <Content Include="test\fixtures\basePage.css" />
     <Content Include="test\fixtures\OverflowTestPage.htm" />
-    <Content Include="test\lib\jasmine-query-1.3.1.js" />
     <Content Include="test\specs\OverflowSpec.js" />
     <Content Include="test\specs\StyleEditorSpec.js" />
     <Content Include="themes\bloom-jqueryui-theme\.guidsForInstaller.xml" />
@@ -279,10 +276,8 @@
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />
     <TypeScriptCompile Include="bookEdit\StyleEditor\StyleEditor.ts" />
-    <Content Include="bookField\bloomEditable\bloomField.ts" />
     <TypeScriptCompile Include="lib\jquery.alphanum.d.ts" />
     <TypeScriptCompile Include="lib\jquery.i18n.custom.ts" />
-    <TypeScriptCompile Include="lib\localizationManager.ts" />
     <TypeScriptCompile Include="lib\localizationManager\localizationManager.ts" />
     <TypeScriptCompile Include="lib\localizationManager\localizationManagerSpec.ts" />
     <TypeScriptCompile Include="test\specs\StyleEditorSpec.ts" />
