@@ -14,11 +14,13 @@ namespace Bloom.web
 		public long StatusCode;
 		public string StatusDescription;
 
-		public PretendRequestInfo(string url)
+		public PretendRequestInfo(string url, bool forPrinting = false)
 		{
 			// In the real request, RawUrl does not include this prefix
 			RawUrl = url.Replace("http://localhost:8089", "");
 			// Fixing the /// emulates a behavior of the real HttpListener
+			if (forPrinting)
+				url = url.Replace("/bloom/", "/bloom/OriginalImages/");
 			LocalPathWithoutQuery = url.Replace("/bloom///", "/bloom/").Replace("http://localhost:8089", "").UnescapeCharsForHttp();
 		}
 

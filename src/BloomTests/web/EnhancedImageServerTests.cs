@@ -182,6 +182,10 @@ namespace BloomTests.web
 			var cssFile = Path.Combine(_collectionPath, "settingsCollectionStyles.css");
 			File.WriteAllText(cssFile, @".settingsCollectionStylesCssTest{}");
 
+			// customCollectionStyles.css
+			cssFile = Path.Combine(_collectionPath, "customCollectionStyles.css");
+			File.WriteAllText(cssFile, @".customCollectionStylesCssTest{}");
+
 			// create book directory
 			var bookPath = Path.Combine(_collectionPath, "TestBook");
 			Directory.CreateDirectory(bookPath);
@@ -193,6 +197,10 @@ namespace BloomTests.web
 			// Factory-XMatter.css
 			cssFile = Path.Combine(bookPath, "Factory-XMatter.css");
 			File.WriteAllText(cssFile, @".factoryXmatterCssTest{}");
+
+			// customBookStyles.css
+			cssFile = Path.Combine(bookPath, "customBookStyles.css");
+			File.WriteAllText(cssFile, @".customBookStylesCssTest{}");
 
 			// miscStyles.css - a file name not distributed with or created by Bloom
 			cssFile = Path.Combine(bookPath, "miscStyles.css");
@@ -222,7 +230,9 @@ namespace BloomTests.web
 			using (var server = CreateImageServer())
 			{
 				SetupCssTests();
-				var cssFile = Path.Combine(_folder.Path, "TestCollection", "settingsCollectionStyles.css");
+				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
+				var filePath = ".." + Path.DirectorySeparatorChar + "settingsCollectionStyles.css";
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
 
 				var url = cssFile.ToLocalhost();
 				var transaction = new PretendRequestInfo(url);
@@ -230,6 +240,63 @@ namespace BloomTests.web
 				server.MakeReply(transaction);
 
 				Assert.That(transaction.ReplyContents, Is.EqualTo(".settingsCollectionStylesCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void GetCorrect_SettingsCollectionStylesCss_WhenMakingPdf()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
+				var filePath = ".." + Path.DirectorySeparatorChar + "settingsCollectionStyles.css";
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url, true);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".settingsCollectionStylesCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void GetCorrect_CustomCollectionStylesCss()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
+				var filePath = ".." + Path.DirectorySeparatorChar + "customCollectionStyles.css";
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".customCollectionStylesCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void GetCorrect_CustomCollectionStylesCss_WhenMakingPdf()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				// Let's do it the way BookStorage.EnsureHasLinksToStylesheets() does it
+				var filePath = ".." + Path.DirectorySeparatorChar + "customCollectionStyles.css";
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", filePath);
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url, true);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".customCollectionStylesCssTest{}"));
 			}
 		}
 
@@ -247,6 +314,40 @@ namespace BloomTests.web
 				server.MakeReply(transaction);
 
 				Assert.AreNotEqual(transaction.ReplyContents, ".factoryXmatterCssTest{}");
+			}
+		}
+
+		[Test]
+		public void GetCorrect_CustomBookStylesCss()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "customBookStyles.css");
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".customBookStylesCssTest{}"));
+			}
+		}
+
+		[Test]
+		public void GetCorrect_CustomBookStylesCss_WhenMakingPdf()
+		{
+			using (var server = CreateImageServer())
+			{
+				SetupCssTests();
+				var cssFile = Path.Combine(_folder.Path, "TestCollection", "TestBook", "customBookStyles.css");
+
+				var url = cssFile.ToLocalhost();
+				var transaction = new PretendRequestInfo(url, true);
+
+				server.MakeReply(transaction);
+
+				Assert.That(transaction.ReplyContents, Is.EqualTo(".customBookStylesCssTest{}"));
 			}
 		}
 

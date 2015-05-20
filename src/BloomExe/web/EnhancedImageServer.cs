@@ -516,6 +516,9 @@ namespace Bloom.web
 
 		private bool ProcessCssFile(IRequestInfo info, string localPath)
 		{
+			// BL-2219: "OriginalImages" means we're generating a pdf and want full images,
+			// but it has nothing to do with css files and defeats the following 'if'
+			localPath = localPath.Replace("OriginalImages/", "");
 			// is this request the full path to a real file?
 			if (File.Exists(localPath) && Path.IsPathRooted(localPath))
 			{
