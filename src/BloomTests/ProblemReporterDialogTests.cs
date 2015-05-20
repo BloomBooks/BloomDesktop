@@ -49,6 +49,7 @@ namespace BloomTests
 		/// It sends reports to https://jira.sil.org/browse/AUT
 		/// </summary>
 		[Test]
+		[Platform(Exclude = "Linux", Reason = "YouTrackSharp is too Windows-centric")]
 		public void CanSubmitToSILJiraAutomatedTestProject()
 		{
 			using (var dlg = new ProblemReporterDialogDouble())
