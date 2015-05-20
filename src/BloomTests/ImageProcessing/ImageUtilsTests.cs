@@ -59,7 +59,7 @@ namespace BloomTests.ImageProcessing
 				var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path);
 				Assert.AreEqual(expectedOutputFormat == ImageFormat.Jpeg ? ".jpg" : ".png", Path.GetExtension(fileName));
 				var outputPath = folder.Combine(fileName);
-				using (var img = ImageUtils.GetImageFromFile(outputPath))
+				using (var img = Image.FromFile(outputPath))
 				{
 					Assert.AreEqual(expectedOutputFormat, img.RawFormat);
 				}
