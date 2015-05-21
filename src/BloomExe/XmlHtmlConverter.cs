@@ -36,6 +36,12 @@ namespace Bloom
 			var dom = new XmlDocument();
 			content = AddFillerToKeepTidyFromRemovingEmptyElements(content);
 
+			//in BL-2250, we had a report of these REMOVEWHITEPACE's hanging around. It's conceivable that they got in there 
+			//from some previous release that maybe had bug, but with the version in the screenshot that they provided, 
+			//we could not reproduce. So there is some doubt. Meanwhile, we needed to give them a way to clean up existing books.
+
+			content = content.Replace(@"REMOVEWHITESPACE", "");
+
 			// It also likes to insert newlines before <b>, <u>, and <i>, and convert any existing whitespace
 			// there to a space.
 			content = content.Replace(@"<b>", "REMOVEWHITESPACE<b>");
@@ -86,6 +92,8 @@ namespace Bloom
 						// The regex here is mainly for the \s as a convenient way to remove whatever whitespace TIDY
 						// has inserted. It's a fringe benefit that we can use the[bi] to deal with both elements in one replace.
 						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*\<([biu])\>", "<$1>");
+
+						Debug.Assert(!newContents.Contains("REMOVEWHITESPACE"), "BL-2250 Reproduction");
 
 						// remove blank lines at the end of style blocks
 						newContents = Regex.Replace(newContents, @"\s+\<\/style\>", "</style>");
