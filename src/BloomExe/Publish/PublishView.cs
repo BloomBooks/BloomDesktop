@@ -510,11 +510,18 @@ namespace Bloom.Publish
 				printSettingsSampleName = printSettingsSamplePrefix + "en" + ".png";
 			if (File.Exists(printSettingsSampleName))
 			{
-				var form = FindForm();
 				// We display the _previewBox to show sample print settings. We need to get rid of it when the
-				// print dialog goes away. The only way I've found to know when that happens is that the main
-				// Bloom form gets activated again.
+				// print dialog goes away. For Windows, the only way I've found to know when that happens is
+				// that the main Bloom form gets activated again.  For Linux, waiting for process spawned off
+				// to print the pdf file to finish seems to be the only way to know it's safe to hide the
+				// sample print settings.  (On Linux/Mono, the form activates almost as soon as the print
+				// dialog appears.)
+#if __MonoCS__
+				_pdfViewer.PrintFinished += FormActivatedAfterPrintDialog;
+#else
+				var form = FindForm();
 				form.Activated += FormActivatedAfterPrintDialog;
+#endif
 				_previewBox.Image = Image.FromFile(printSettingsSampleName);
 				_previewBox.Bounds =
 					new Rectangle(
@@ -526,9 +533,15 @@ namespace Bloom.Publish
 				{
 					using (var dlg = new SamplePrintNotification())
 					{
+#if __MonoCS__
+						_pdfViewer.PrintFinished -= FormActivatedAfterPrintDialog;
+						dlg.ShowDialog(this);
+						_pdfViewer.PrintFinished += FormActivatedAfterPrintDialog;
+#else
 						form.Activated -= FormActivatedAfterPrintDialog; // not wanted when we close the dialog.
 						dlg.ShowDialog(this);
 						form.Activated += FormActivatedAfterPrintDialog;
+#endif
 						if (dlg.StopShowing)
 						{
 							Settings.Default.DontShowPrintNotification = true;
@@ -544,8 +557,12 @@ namespace Bloom.Publish
 
 		private void FormActivatedAfterPrintDialog(object sender, EventArgs eventArgs)
 		{
+#if __MonoCS__
+			_pdfViewer.PrintFinished -= FormActivatedAfterPrintDialog;
+#else
 			var form = FindForm();
 			form.Activated -= FormActivatedAfterPrintDialog;
+#endif
 			_previewBox.Hide();
 			if (_previewBox.Image != null)
 			{
