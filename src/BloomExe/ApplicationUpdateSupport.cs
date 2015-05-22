@@ -97,7 +97,7 @@ namespace Bloom
 				string newInstallDir;
 				UpdateOutcome outcome;
 				ArrangeToDisposeSquirrelManagerOnExit();
-				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45, rootDirectory))
+				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, rootDirectory))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
 					var result = await UpdateApp(_bloomUpdateManager);
@@ -190,7 +190,7 @@ namespace Bloom
 			{
 				UpdateInfo info;
 				ArrangeToDisposeSquirrelManagerOnExit();
-				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45))
+				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
 					info = await _bloomUpdateManager.CheckForUpdate();
