@@ -191,13 +191,25 @@ namespace Bloom.web
 				}
 				catch (Exception error)
 				{
-					Logger.WriteEvent("At ServerBase: ListenerCallback(): msg=" + error.Message);
-					Logger.WriteEvent("At ServerBase: ListenerCallback(): url=" + rawurl);
-					Logger.WriteEvent("At ServerBase: ListenerCallback(): stack=");
-					Logger.WriteEvent(error.StackTrace);
-#if DEBUG
-					throw;
+#if __MonoCS__
+					// Something keeps closing the socket connection prematurely on Linux/Mono.  But I'm not sure
+					// it's an important failure since the program appears to work okay, so we'll ignore the error.
+					if (error is IOException && error.InnerException != null && error.InnerException is System.Net.Sockets.SocketException)
+					{
+						Logger.WriteEvent("At ServerBase: ListenerCallback(): IOException/SocketException, which may indicate that the caller closed the connection before we could reply. msg=" + error.Message + " / " + error.InnerException.Message);
+						Logger.WriteEvent("At ServerBase: ListenerCallback(): url=" + rawurl);
+					}
+					else
 #endif
+					{
+						Logger.WriteEvent("At ServerBase: ListenerCallback(): msg=" + error.Message);
+						Logger.WriteEvent("At ServerBase: ListenerCallback(): url=" + rawurl);
+						Logger.WriteEvent("At ServerBase: ListenerCallback(): stack=");
+						Logger.WriteEvent(error.StackTrace);
+#if DEBUG
+						throw;
+#endif
+					}
 				}
 			}
 		}
