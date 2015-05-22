@@ -75,20 +75,8 @@
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
-    <Reference Include="DeltaCompressionDotNet">
-      <HintPath>..\..\packages\DeltaCompressionDotNet.1.0.0\lib\net45\DeltaCompressionDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="EasyHttp">
-      <HintPath>..\..\packages\EasyHttp.1.6.29.0\lib\net40\EasyHttp.dll</HintPath>
-    </Reference>
     <Reference Include="Fleck">
       <HintPath>..\..\packages\Fleck.0.12.0.39\lib\net40\Fleck.dll</HintPath>
-    </Reference>
-    <Reference Include="DeltaCompressionDotNet.MsDelta">
-      <HintPath>..\..\packages\DeltaCompressionDotNet.1.0.0\lib\net45\DeltaCompressionDotNet.MsDelta.dll</HintPath>
-    </Reference>
-    <Reference Include="DeltaCompressionDotNet.PatchApi">
-      <HintPath>..\..\packages\DeltaCompressionDotNet.1.0.0\lib\net45\DeltaCompressionDotNet.PatchApi.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -108,25 +96,6 @@
       <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Web.XmlTransform">
-      <HintPath>..\..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Core, Version=2.8.50926.602, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
-    </Reference>
     <Reference Include="PdfDroplet">
       <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
     </Reference>
@@ -140,7 +109,7 @@
     <Reference Include="Splat">
       <HintPath>..\..\packages\Splat.1.5.1\lib\Net45\Splat.dll</HintPath>
     </Reference>
-    <Reference Include="Squirrel, Version=0.9.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Squirrel, Version=0.99.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\Squirrel.dll</HintPath>
     </Reference>
