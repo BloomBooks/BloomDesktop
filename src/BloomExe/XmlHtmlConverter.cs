@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
+using NuGet;
 using Palaso.Xml;
 using TidyManaged;
 using Palaso.IO;
@@ -247,6 +250,7 @@ namespace Bloom
 		/// </summary>
 		public static string SaveDOMAsHtml5(XmlDocument dom, string targetPath)
 		{
+			RemoveUiElements(dom);
 			using (var xmlFile = new TempFile())
 			{
 				// First we write the DOM out to string
@@ -298,6 +302,14 @@ namespace Bloom
 			}
 
 			return targetPath;
+		}
+
+		private static void RemoveUiElements(XmlDocument dom)
+		{
+			var allDivs = dom.GetElementsByTagName("div");
+			var toBeRemoved = allDivs.Cast<XmlNode>().Where(div => div.GetOptionalStringAttribute("class", "").Contains("bloom-ui")).ToList();
+			foreach (var node in toBeRemoved)
+				node.ParentNode.RemoveChild(node);
 		}
 
 		public static void RemoveAllContentTypesMetas(XmlDocument dom)
