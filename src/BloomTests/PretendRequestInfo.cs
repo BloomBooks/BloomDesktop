@@ -14,13 +14,20 @@ namespace Bloom.web
 		public long StatusCode;
 		public string StatusDescription;
 
-		public PretendRequestInfo(string url, bool forPrinting = false)
+		public PretendRequestInfo(string url, bool forPrinting = false, bool forSrcAttr = false)
 		{
 			// In the real request, RawUrl does not include this prefix
 			RawUrl = url.Replace("http://localhost:8089", "");
-			// Fixing the /// emulates a behavior of the real HttpListener
+
 			if (forPrinting)
 				url = url.Replace("/bloom/", "/bloom/OriginalImages/");
+
+			// When JavaScript inserts a real path into the html it replaces the three magic html characters with these substitutes.
+			// For this PretendRequestInfo we simulate that by doing the replace here in the url.
+			if (forSrcAttr)
+				url = url.Replace("<", "&lt;").Replace(">", "&gt;").Replace("&", "&amp;");
+
+			// Fixing the /// emulates a behavior of the real HttpListener
 			LocalPathWithoutQuery = url.Replace("/bloom///", "/bloom/").Replace("http://localhost:8089", "").UnescapeCharsForHttp();
 		}
 

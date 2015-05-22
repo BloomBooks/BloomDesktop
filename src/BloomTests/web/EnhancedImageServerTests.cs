@@ -173,6 +173,35 @@ namespace BloomTests.web
 			}
 		}
 
+		[Test]
+		public void CanRetrieveContentOfFakeTempFile_WhenFolderContainsAmpersand()
+		{
+			using (var server = CreateImageServer())
+			{
+				var ampSubfolder = Path.Combine(_folder.Path, "Mom & Dad");
+				Directory.CreateDirectory(ampSubfolder);
+				var html = @"<html ><head><title>Mom &amp; Dad</title></head><body>here it is</body></html>";
+				var dom = new HtmlDom(html);
+				dom.BaseForRelativePaths = ampSubfolder.ToLocalhost();
+				string url;
+				using (var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom, true))
+				{
+					url = fakeTempFile.Key;
+					var transaction = new PretendRequestInfo(url, false, true);
+
+					// Execute
+					server.MakeReply(transaction);
+
+					// Verify
+					// Whitespace inserted by CreateHtml5StringFromXml seems to vary across versions and platforms.
+					// I would rather verify the actual output, but don't want this test to be fragile, and the
+					// main point is that we get a file with the DOM content.
+					Assert.That(transaction.ReplyContents,
+						Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
+				}
+			}
+		}
+
 		private void SetupCssTests()
 		{
 			// create collection directory

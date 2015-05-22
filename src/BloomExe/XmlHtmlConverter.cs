@@ -250,6 +250,7 @@ namespace Bloom
 		/// </summary>
 		public static string SaveDOMAsHtml5(XmlDocument dom, string targetPath)
 		{
+			// I got tired of seeing data-book elements with formatButton divs saved in them.
 			RemoveUiElements(dom);
 			using (var xmlFile = new TempFile())
 			{
