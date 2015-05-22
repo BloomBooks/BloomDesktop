@@ -25,7 +25,7 @@ namespace Bloom.web
 			// When JavaScript inserts a real path into the html it replaces the three magic html characters with these substitutes.
 			// For this PretendRequestInfo we simulate that by doing the replace here in the url.
 			if (forSrcAttr)
-				url = url.Replace("<", "&lt;").Replace(">", "&gt;").Replace("&", "&amp;");
+				url = EnhancedImageServer.SimulateJavaScriptHandlingOfHtml(url);
 
 			// Fixing the /// emulates a behavior of the real HttpListener
 			LocalPathWithoutQuery = url.Replace("/bloom///", "/bloom/").Replace("http://localhost:8089", "").UnescapeCharsForHttp();

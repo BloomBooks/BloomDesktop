@@ -176,18 +176,19 @@ namespace BloomTests.web
 		[Test]
 		public void CanRetrieveContentOfFakeTempFile_WhenFolderContainsAmpersand_ViaJavaScript()
 		{
+			const bool simulateCallingFromJavaScript = true;
 			using (var server = CreateImageServer())
 			{
-				var ampSubfolder = Path.Combine(_folder.Path, "Mom & Dad");
+				var ampSubfolder = Path.Combine(_folder.Path, "Using &lt;, &gt;, & &amp; in HTML");
 				Directory.CreateDirectory(ampSubfolder);
-				var html = @"<html ><head><title>Mom &amp; Dad</title></head><body>here it is</body></html>";
+				var html = @"<html ><head><title>Using &lt;lt;, &gt;gt;, &amp; &amp;amp; in HTML</title></head><body>here it is</body></html>";
 				var dom = new HtmlDom(html);
 				dom.BaseForRelativePaths = ampSubfolder.ToLocalhost();
 				string url;
-				using (var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom, true))
+				using (var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom, simulateCallingFromJavaScript))
 				{
 					url = fakeTempFile.Key;
-					var transaction = new PretendRequestInfo(url, false, true);
+					var transaction = new PretendRequestInfo(url, false, simulateCallingFromJavaScript);
 
 					// Execute
 					server.MakeReply(transaction);
@@ -207,9 +208,9 @@ namespace BloomTests.web
 		{
 			using (var server = CreateImageServer())
 			{
-				var ampSubfolder = Path.Combine(_folder.Path, "Mom & Dad");
+				var ampSubfolder = Path.Combine(_folder.Path, "Using &lt;, &gt;, & &amp; in HTML");
 				Directory.CreateDirectory(ampSubfolder);
-				var html = @"<html ><head><title>Mom &amp; Dad</title></head><body>here it is</body></html>";
+				var html = @"<html ><head><title>Using &lt;lt;, &gt;gt;, &amp; &amp;amp; in HTML</title></head><body>here it is</body></html>";
 				var dom = new HtmlDom(html);
 				dom.BaseForRelativePaths = ampSubfolder.ToLocalhost();
 				string url;

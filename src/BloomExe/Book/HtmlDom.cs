@@ -563,6 +563,17 @@ namespace Bloom.Book
 
 		public static void ProcessPageAfterEditing(XmlElement page, XmlElement divElement)
 		{
+			// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
+			// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
+			// The idea is to match class attriutes which have class bloom-ui, but may have other classes. We don't want to match
+			// classes where bloom-ui is a substring, though, if there should be any. So we wrap spaces around the class attribute
+			// and then see whether it contains bloom-ui surrounded by spaces.
+			// However, we need to do this in the edited page before copying to the storage page, since we are about to suck
+			// info from the edited page into the dataDiv and we don't want the bloom-ui elements in there either!
+			foreach (
+				var node in divElement.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
+				node.ParentNode.RemoveChild(node);
+
 			page.InnerXml = divElement.InnerXml;
 
 			//Enhance: maybe we should just copy over all attributes?
@@ -572,15 +583,6 @@ namespace Bloom.Book
 			//back to the html in keeping with our goal of having the page look right if you were to just open the
 			//html file in Firefox.
 			page.SetAttribute("lang", divElement.GetAttribute("lang"));
-
-			// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
-			// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
-			// The idea is to match class attriutes which have class bloom-ui, but may have other classes. We don't want to match
-			// classes where bloom-ui is a substring, though, if there should be any. So we wrap spaces around the class attribute
-			// and then see whether it contains bloom-ui surrounded by spaces.
-			foreach(
-				var node in page.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
-				node.ParentNode.RemoveChild(node);
 
 			// Upon save, make sure we are not in layout mode.  Otherwise we show the sliders.
 			foreach(
