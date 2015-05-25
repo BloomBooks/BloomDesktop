@@ -282,6 +282,8 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		private static readonly string[] excludedFileNames = { "thumbs.db" }; // these files (if encountered) won't be uploaded
+
 		/// <summary>
 		/// Adds a directory, along with all files and subdirectories, to the ZipStream.
 		/// </summary>
@@ -291,26 +293,30 @@ namespace Bloom.CollectionTab
 		/// before creating the zip entry name</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
-		private static void CompressDirectory(string directoryPath, ZipOutputStream zipStream, int dirNameOffest,
+		/// <remarks>Protected for testing purposes</remarks>
+		protected static void CompressDirectory(string directoryPath, ZipOutputStream zipStream, int dirNameOffest,
 			bool forReaderTools)
 		{
 			var files = Directory.GetFiles(directoryPath);
 			var bookFile = BookStorage.FindBookHtmlInFolder(directoryPath);
 
-			foreach (var fileName in files)
+			foreach (var filePath in files)
 			{
-				FileInfo fi = new FileInfo(fileName);
+				if (excludedFileNames.Contains(Path.GetFileName(filePath)))
+					continue; // BL-2246: skip putting this one into the BloomPack
 
-				var entryName = fileName.Substring(dirNameOffest);  // Makes the name in zip based on the folder
+				FileInfo fi = new FileInfo(filePath);
+
+				var entryName = filePath.Substring(dirNameOffest);  // Makes the name in zip based on the folder
 				entryName = ZipEntry.CleanName(entryName);          // Removes drive from name and fixes slash direction
 				ZipEntry newEntry = new ZipEntry(entryName) { DateTime = fi.LastWriteTime };
 				newEntry.IsUnicodeText = true; // encode filename and comment in UTF8
 				byte[] bookContent = {};
 
 				// if this is a ReaderTools book, call GetBookReplacedWithTemplate() to get the contents
-				if (forReaderTools && (bookFile == fileName))
+				if (forReaderTools && (bookFile == filePath))
 				{
-					bookContent = GetBookReplacedWithTemplate(fileName);
+					bookContent = GetBookReplacedWithTemplate(filePath);
 					newEntry.Size = bookContent.Length;
 				}
 				else
@@ -331,7 +337,7 @@ namespace Bloom.CollectionTab
 				{
 					// Zip the file in buffered chunks
 					byte[] buffer = new byte[4096];
-					using (var streamReader = File.OpenRead(fileName))
+					using (var streamReader = File.OpenRead(filePath))
 					{
 						StreamUtils.Copy(streamReader, zipStream, buffer);
 					}

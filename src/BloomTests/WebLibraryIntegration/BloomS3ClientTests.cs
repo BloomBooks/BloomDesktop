@@ -44,6 +44,11 @@ namespace BloomTests.WebLibraryIntegration
 			return f.FolderPath;
 		}
 
+		private void AddThumbsFile(string bookFolderPath)
+		{
+			File.WriteAllText(Path.Combine(bookFolderPath, "thumbs.db"), "test thumbs.db file");
+		}
+
 		private string UploadBook(string path)
 		{
 			_client.UploadBook(_storageKeyOfBookFolder, path, new NullProgress());
@@ -67,6 +72,27 @@ namespace BloomTests.WebLibraryIntegration
 			}
 		}
 
+		[Test]
+		public void UploadBook_ContainsThumbsFile_DontCopyItToS3()
+		{
+			string srcBookPath = MakeBook();
+			AddThumbsFile(srcBookPath);
+			const string excludedFile = "thumbs.db";
+			var storageKeyOfBookFolder = UploadBook(srcBookPath);
+
+			// It's possible that another unit test uploads a book at the same time, so we can't
+			// test for strict equality.
+			Assert.That(_client.GetCountOfAllFilesInBucket(), Is.AtLeast(Directory.GetFiles(srcBookPath).Count()));
+
+			var expectedDir = Path.GetFileName(srcBookPath);
+			foreach (var file in Directory.GetFiles(srcBookPath))
+			{
+				if (Path.GetFileName(file) == excludedFile)
+					continue; // should NOT be uploaded
+				Assert.IsTrue(_client.FileExists(storageKeyOfBookFolder, expectedDir, Path.GetFileName(file)));
+			}
+			Assert.IsFalse(_client.FileExists(storageKeyOfBookFolder, expectedDir, excludedFile));
+		}
 
 		/// <summary>
 		/// I actually don't care at the moment if we throw or not, I just want to specify what the behavior is.
