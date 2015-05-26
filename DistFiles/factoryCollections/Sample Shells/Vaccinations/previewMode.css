@@ -1,4 +1,4 @@
-@media screen {
+﻿@media screen {
   BODY {
     background-color: #363333;
   }
@@ -56,9 +56,6 @@ BUTTON {
 DIV.pageLabel {
   display: none;
 }
-P {
-  border: 1px solid transparent !important;
-}
 TEXTAREA.coverColor {
   background-color: #D8ADAD;
 }
@@ -106,7 +103,7 @@ DIV.numberedPage:nth-of-type(even):after {
 and as a result, the labels are shifted to this many pixels to the width. This shifts them back.*/
   padding-left: 22px;
 }
-/* when making a PDF or a thumbnail, if no image is chosen, just don't show anything */
-.hidePlaceHolders img[src="placeHolder.png"] {
+.hidePlaceHolders img[src*="placeHolder.png"] {
   display: none;
 }
+/*# sourceMappingURL=previewMode.css.map */
