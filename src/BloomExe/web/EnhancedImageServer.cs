@@ -131,6 +131,10 @@ namespace Bloom.web
 			{
 				// We need to UrlEncode the single and double quote characters so they will play nicely with JavaScript. 
 				url = EscapeUrlQuotes(url);
+				// When JavaScript inserts our path into the html it replaces the three magic html characters with these substitutes.
+				// We need to modify our key so that when the JavaScript comes looking for the page its modified url will
+				// generate the right key.
+				key = SimulateJavaScriptHandlingOfHtml(key);
 			}
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
 			lock (_urlToSimulatedPageContent)
@@ -138,6 +142,16 @@ namespace Bloom.web
 				_urlToSimulatedPageContent[key] = html5String;
 			}
 			return new SimulatedPageFile() {Key = url};
+		}
+
+		/// <summary>
+		/// When JavaScript inserts a url into an html document, it replaces the three magic html characters
+		/// with these substitutes.
+		/// </summary>
+		/// <remarks>Also used by PretendRequestInfo for testing</remarks>
+		public static string SimulateJavaScriptHandlingOfHtml(string url)
+		{
+			return url.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
 		}
 
 		private static string EscapeUrlQuotes(string originalUrl)

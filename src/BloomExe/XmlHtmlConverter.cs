@@ -3,12 +3,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using System.Xml;
+using Palaso.IO;
 using Palaso.Xml;
 using TidyManaged;
-using Palaso.IO;
-
 
 namespace Bloom
 {
@@ -56,7 +54,7 @@ namespace Bloom
 			var temp = new TempFile();
 			{
 				File.WriteAllText(temp.Path, content, Encoding.UTF8);
-				using (var tidy = TidyManaged.Document.FromFile(temp.Path))
+				using (var tidy = Document.FromFile(temp.Path))
 				{
 					tidy.ShowWarnings = false;
 					tidy.Quiet = true;
@@ -165,7 +163,7 @@ namespace Bloom
 		/// <param name="content"></param>
 		public static void ThrowIfHtmlHasErrors(string content)
 		{
-			using (var tidy = TidyManaged.Document.FromString(content))
+			using (var tidy = Document.FromString(content))
 			{
 				tidy.ShowWarnings = false;
 				tidy.Quiet = true;
@@ -265,7 +263,7 @@ namespace Bloom
 
 				// Now re-write as html, indented nicely
 				string html;
-				using (var tidy = TidyManaged.Document.FromString(xml))
+				using (var tidy = Document.FromString(xml))
 				{
 					tidy.ShowWarnings = false;
 					tidy.Quiet = true;
