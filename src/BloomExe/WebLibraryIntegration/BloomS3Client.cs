@@ -214,6 +214,8 @@ namespace Bloom.WebLibraryIntegration
 			fileSystemInfo.Delete();
 		}
 
+		private readonly string[] excludedFileNames = { "thumbs.db" }; // these files (if encountered) won't be uploaded
+
 		/// <summary>
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
 		/// and it will name it that, and gui client apps then treat that like a folder structure, so you feel like there are folders.
@@ -238,7 +240,10 @@ namespace Bloom.WebLibraryIntegration
 				BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);;
 			foreach (string file in filesToUpload)
 			{
-				string fileName = Path.GetFileName(file);
+				var fileName = Path.GetFileName(file);
+				if (excludedFileNames.Contains(fileName))
+					continue; // BL-2246: skip uploading this one
+
 				var request = new TransferUtilityUploadRequest()
 				{
 					BucketName = _bucketName,
