@@ -14,7 +14,8 @@ namespace BloomTests.CollectionTab
 		public readonly string TestFolderPath;
 
 		public TestLibraryModel(TemporaryFolder testFolder)
-			: base(testFolder.Path, new CollectionSettings(), null, new BookSelection(), new SourceCollectionsList(), null, null, new CreateFromSourceBookCommand(), null, null)
+			: base(testFolder.Path, new CollectionSettings(), null, new BookSelection(), new SourceCollectionsList(),
+			null, null, new CreateFromSourceBookCommand(), null, null)
 		{
 			TestFolderPath = testFolder.Path;
 		}
@@ -24,8 +25,6 @@ namespace BloomTests.CollectionTab
 			get
 			{
 				var rootName = Path.GetFileName(TestFolderPath);
-				if (rootName == null)
-					throw new ApplicationException("Not in a test we don't!");
 				return TestFolderPath.Length - rootName.Length;
 			}
 		}

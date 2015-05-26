@@ -59,38 +59,24 @@ namespace BloomTests.WebLibraryIntegration
 		public void UploadBook_Simple_FilesAreOnS3InExpectedDirectory()
 		{
 			string srcBookPath = MakeBook();
-			var storageKeyOfBookFolder = UploadBook(srcBookPath);
-
-			// It's possible that another unit test uploads a book at the same time, so we can't
-			// test for strict equality.
-			Assert.That(_client.GetCountOfAllFilesInBucket(), Is.AtLeast(Directory.GetFiles(srcBookPath).Count()));
-
-			var expectedDir = Path.GetFileName(srcBookPath);
-			foreach (var file in Directory.GetFiles(srcBookPath))
-			{
-				Assert.IsTrue(_client.FileExists(storageKeyOfBookFolder, expectedDir, Path.GetFileName(file)));
-			}
-		}
-
-		[Test]
-		public void UploadBook_ContainsThumbsFile_DontCopyItToS3()
-		{
-			string srcBookPath = MakeBook();
 			AddThumbsFile(srcBookPath);
 			const string excludedFile = "thumbs.db";
 			var storageKeyOfBookFolder = UploadBook(srcBookPath);
 
 			// It's possible that another unit test uploads a book at the same time, so we can't
 			// test for strict equality.
+			// N.B. Since GetCountOfAllFilesInBucket() seems to return 1000, this test should always pass
 			Assert.That(_client.GetCountOfAllFilesInBucket(), Is.AtLeast(Directory.GetFiles(srcBookPath).Count()));
 
 			var expectedDir = Path.GetFileName(srcBookPath);
 			foreach (var file in Directory.GetFiles(srcBookPath))
 			{
-				if (Path.GetFileName(file) == excludedFile)
-					continue; // should NOT be uploaded
-				Assert.IsTrue(_client.FileExists(storageKeyOfBookFolder, expectedDir, Path.GetFileName(file)));
+				var fileName = Path.GetFileName(file);
+				if (fileName == excludedFile)
+					continue; // we'll test that this one is NOT uploaded below
+				Assert.IsTrue(_client.FileExists(storageKeyOfBookFolder, expectedDir, fileName));
 			}
+			// Verify that thumbs.db did NOT get uploaded
 			Assert.IsFalse(_client.FileExists(storageKeyOfBookFolder, expectedDir, excludedFile));
 		}
 

@@ -67,16 +67,10 @@ namespace BloomTests.CollectionTab
 
 			// Don't do anything with the zip file except read in the filenames
 			var actualFiles = new List<string>();
-			ZipFile zip = null;
-			try
+			using (var zip = new ZipFile(bloomPackName))
 			{
-				zip = new ZipFile(bloomPackName);
 				actualFiles.AddRange(from ZipEntry entry in zip select entry.Name);
-			}
-			finally
-			{
-				if (zip != null)
-					zip.Close();
+				zip.Close();
 			}
 			// +1 for collection-level css file, -1 for thumbs file, so the count is right
 			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count()));
