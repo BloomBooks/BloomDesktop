@@ -24,7 +24,7 @@ body
 	+standardTestField(name="Default font bloom-editable with no styles doesn't overflow") Test text
 
 	// Test#1
-	-var styles="font-family:Andika;font-size:large;height:21px;";
+	-var styles="font-family:'Andika New Basic', Andika;font-size:large;height:21px;";
 	+standardTestField(name="Andika bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
 
 	// Test#2
@@ -32,13 +32,13 @@ body
 	+standardTestField(name="Default font bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
 
 	// Test#3
-	-var styles="font-family:Andika;";
+	-var styles="font-family:'Andika New Basic', Andika;";
 	+standardTestField(name="Andika bloom-editable with no other styles should not overflow", style=styles) Test text
 
 	// Test#4
-	-var styles="font-family:Andika;height=50px";
+	-var styles="font-family:'Andika New Basic', Andika;height=50px";
 	+standardTestField(name="Andika bloom-editable with fixed height should not overflow", style=styles) Test text
 
 	// Test#5
-	-var styles="font-family:Andika;padding: 2px;";
+	-var styles="font-family:'Andika New Basic', Andika;padding: 2px;";
 	+standardTestField(name="Andika bloom-editable with only some padding should not overflow", style=styles) Test text
