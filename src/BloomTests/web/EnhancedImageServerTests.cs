@@ -176,60 +176,56 @@ namespace BloomTests.web
 		[Test]
 		public void CanRetrieveContentOfFakeTempFile_WhenFolderContainsAmpersand_ViaJavaScript()
 		{
-			const bool simulateCallingFromJavaScript = true;
-			using (var server = CreateImageServer())
-			{
-				var ampSubfolder = Path.Combine(_folder.Path, "Using &lt;, &gt;, & &amp; in HTML");
-				Directory.CreateDirectory(ampSubfolder);
-				var html = @"<html ><head><title>Using &lt;lt;, &gt;gt;, &amp; &amp;amp; in HTML</title></head><body>here it is</body></html>";
-				var dom = new HtmlDom(html);
-				dom.BaseForRelativePaths = ampSubfolder.ToLocalhost();
-				string url;
-				using (var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom, simulateCallingFromJavaScript))
-				{
-					url = fakeTempFile.Key;
-					var transaction = new PretendRequestInfo(url, false, simulateCallingFromJavaScript);
-
-					// Execute
-					server.MakeReply(transaction);
-
-					// Verify
-					// Whitespace inserted by CreateHtml5StringFromXml seems to vary across versions and platforms.
-					// I would rather verify the actual output, but don't want this test to be fragile, and the
-					// main point is that we get a file with the DOM content.
-					Assert.That(transaction.ReplyContents,
-						Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
-				}
-			}
+			var dom = SetupDomWithAmpersandInTitle();
+			// the 'true' parameter simulates calling EnhancedImageServer via JavaScript
+			var transaction = CreateServerMakeSimPageMakeReply(dom, true);
+			// Verify
+			// Whitespace inserted by CreateHtml5StringFromXml seems to vary across versions and platforms.
+			// I would rather verify the actual output, but don't want this test to be fragile, and the
+			// main point is that we get a file with the DOM content.
+			Assert.That(transaction.ReplyContents,
+				Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
 		}
 
 		[Test]
 		public void CanRetrieveContentOfFakeTempFile_WhenFolderContainsAmpersand_NotViaJavaScript()
 		{
+			var dom = SetupDomWithAmpersandInTitle();
+			var transaction = CreateServerMakeSimPageMakeReply(dom);
+			// Verify
+			// Whitespace inserted by CreateHtml5StringFromXml seems to vary across versions and platforms.
+			// I would rather verify the actual output, but don't want this test to be fragile, and the
+			// main point is that we get a file with the DOM content.
+			Assert.That(transaction.ReplyContents,
+				Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
+		}
+
+		private HtmlDom SetupDomWithAmpersandInTitle()
+		{
+			var ampSubfolder = Path.Combine(_folder.Path, "Using &lt;, &gt;, & &amp; in HTML");
+			Directory.CreateDirectory(ampSubfolder);
+			var html =
+				@"<html ><head><title>Using &lt;lt;, &gt;gt;, &amp; &amp;amp; in HTML</title></head><body>here it is</body></html>";
+			var dom = new HtmlDom(html);
+			dom.BaseForRelativePaths = ampSubfolder.ToLocalhost();
+			return dom;
+		}
+
+		private PretendRequestInfo CreateServerMakeSimPageMakeReply(HtmlDom dom, bool simulateCallingFromJavascript = false)
+		{
+			PretendRequestInfo transaction;
 			using (var server = CreateImageServer())
 			{
-				var ampSubfolder = Path.Combine(_folder.Path, "Using &lt;, &gt;, & &amp; in HTML");
-				Directory.CreateDirectory(ampSubfolder);
-				var html = @"<html ><head><title>Using &lt;lt;, &gt;gt;, &amp; &amp;amp; in HTML</title></head><body>here it is</body></html>";
-				var dom = new HtmlDom(html);
-				dom.BaseForRelativePaths = ampSubfolder.ToLocalhost();
-				string url;
-				using (var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom))
+				using (var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom, simulateCallingFromJavascript))
 				{
-					url = fakeTempFile.Key;
-					var transaction = new PretendRequestInfo(url);
+					var url = fakeTempFile.Key;
+					transaction = new PretendRequestInfo(url, false, simulateCallingFromJavascript);
 
 					// Execute
 					server.MakeReply(transaction);
-
-					// Verify
-					// Whitespace inserted by CreateHtml5StringFromXml seems to vary across versions and platforms.
-					// I would rather verify the actual output, but don't want this test to be fragile, and the
-					// main point is that we get a file with the DOM content.
-					Assert.That(transaction.ReplyContents,
-						Is.EqualTo(TempFileUtils.CreateHtml5StringFromXml(dom.RawDom)));
 				}
 			}
+			return transaction;
 		}
 
 		private void SetupCssTests()
