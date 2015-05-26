@@ -19,7 +19,7 @@ head
 body
 	// Test#0
 	-var margins="width:25em;height:45px";
-	-var styles="font-family:Andika;font-size:20pt";
+	-var styles="font-family:'Andika New Basic', Andika;font-size:20pt";
 	div(style=margins)
 		.bloom-translationGroup
 			+standardTestField(name="Test that expanding vertically past fixed ancestor overflows", style=styles).expectToOverflow Too much test text to put on one line at 20pt font.
@@ -51,7 +51,7 @@ body
 
 	// Test#5
 	-margins = "width:25em;height:45px";
-	-styles="font-family:Andika;font-size:20pt";
+	-styles="font-family:'Andika New Basic', Andika;font-size:20pt";
 	div(style=margins)
 		//- With an intervening div wrapper
 		div
