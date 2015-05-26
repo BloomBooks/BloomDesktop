@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Net.Mail;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
 using L10NSharp;
@@ -148,9 +150,22 @@ namespace Bloom.MiscUI
 #endif
 		}
 
+		public bool IsLegalEmail(string emailAddress)
+		{
+				//from http://stackoverflow.com/a/6893571/723299
+				return Regex.IsMatch(emailAddress, @"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*"
+					+ "@"
+					+ @"((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$"); 
+		}
+
 		protected virtual void UpdateDisplay()
 		{
-			_submitButton.Enabled = !string.IsNullOrWhiteSpace(_name.Text.Trim()) && !string.IsNullOrWhiteSpace(_email.Text.Trim()) &&
+			if(!string.IsNullOrWhiteSpace(_email.Text.Trim()))
+			{
+				_email.ForeColor = IsLegalEmail(_email.Text) ? Color.Black : Color.Red;
+			}
+
+			_submitButton.Enabled = !string.IsNullOrWhiteSpace(_name.Text.Trim()) && !string.IsNullOrWhiteSpace(_email.Text.Trim()) && IsLegalEmail(_email.Text) &&
 								   !string.IsNullOrWhiteSpace(_description.Text.Trim());
 
 			_screenshotHolder.Visible = _includeScreenshot.Checked;
@@ -264,12 +279,14 @@ namespace Bloom.MiscUI
 			{
 				ChangeState(State.Submitting);
 
+
+
 				_youTrackConnection.Authenticate("auto_report_creator", "thisIsInOpenSourceCode");
 				_issueManagement = new IssueManagement(_youTrackConnection);
 				_youTrackIssue = new Issue();
 				_youTrackIssue.ProjectShortName = _youTrackProjectKey;
 				_youTrackIssue.Type = "Awaiting Classification";
-				_youTrackIssue.Summary = "User Problem Report " + _email.Text;
+				_youTrackIssue.Summary = "User Problem Report " + _name.Text;
 				_youTrackIssue.Description = GetFullDescriptionContents(false);
 				_youTrackIssueId = _issueManagement.CreateIssue(_youTrackIssue);
 
@@ -383,8 +400,19 @@ namespace Bloom.MiscUI
 
 		private string GetFullDescriptionContents(bool appendLog)
 		{
+			string obfuscatedEmail;
+			try
+			{
+				var m = new MailAddress(_email.Text);
+				obfuscatedEmail = string.Format("{1} {0}", m.User, m.Host).Replace(".", "/");
+			}
+			catch(Exception)
+			{
+				obfuscatedEmail = _email.Text; // ah well, it's not valid anyhow, so no need to obfuscate (other code may not let the user get this far anyhow)
+			}
+
 			var bldr = new StringBuilder();
-			bldr.AppendLine("Error Report from " + _name.Text + " (" + _email.Text + ") on " + DateTime.UtcNow.ToUniversalTime());
+			bldr.AppendLine("Error Report from " + _name.Text + " (" + obfuscatedEmail + ") on " + DateTime.UtcNow.ToUniversalTime());
 			bldr.AppendLine("=Problem Description=");
 			bldr.AppendLine(_description.Text);
 			bldr.AppendLine();
