@@ -11,6 +11,7 @@ using Chorus.UI.Clone;
 using Palaso.UI.WindowsForms.Extensions;
 using Palaso.i18n;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Bloom.CollectionChoosing
 {
@@ -56,12 +57,23 @@ namespace Bloom.CollectionChoosing
 
 			_templateButton.Parent.Controls.Remove(_templateButton);
 
+			const int maxMruItems = 3;
+			List<string> collectionsToShow = _mruList.Paths.Take(maxMruItems).ToList();
+			if (collectionsToShow.Count() < maxMruItems && Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
+			{
+				collectionsToShow.AddRange(Directory.GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
+					.Select(d => Path.Combine(d, Path.ChangeExtension(Path.GetFileName(d),"BloomCollection")))
+					.Where(c => File.Exists(c) && !collectionsToShow.Contains(c))
+					.OrderBy(c => Directory.GetLastWriteTime(Path.GetDirectoryName(c)))
+					.Reverse()
+					.Take(maxMruItems - collectionsToShow.Count()));
+			}
 			int count = 0;
-			foreach (string path in _mruList.Paths)
+			foreach (string path in collectionsToShow)
 			{
 				AddFileChoice(path, count);
 				++count;
-				if (count > 3)
+				if (count > maxMruItems)
 					break;
 			}
 
