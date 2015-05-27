@@ -21,6 +21,7 @@ using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
+using Palaso.Xml;
 
 namespace Bloom.Edit
 {
@@ -496,8 +497,13 @@ namespace Bloom.Edit
 			{
 				if (_previouslySelectedPage != null && _domForCurrentPage != null)
 				{
-					if(!_inProcessOfDeleting)//this is a mess.. before if you did a delete and quickly selected another page, events transpired such that you're now trying to save a deleted page
+					// Before if you did a delete and quickly selected another page,
+					// events transpired such that you're now trying to save a deleted page
+					if (!_inProcessOfDeleting)
+					{
+						CheckForUnsavedOrigamiAndSave();
 						SaveNow();
+					}
 					_view.UpdateThumbnailAsync(_previouslySelectedPage);
 				}
 				_previouslySelectedPage = _pageSelection.CurrentSelection;
@@ -507,6 +513,29 @@ namespace Bloom.Edit
 			}
 
 			GC.Collect();//i put this in while looking for memory leaks, feel free to remove it.
+		}
+
+		private void CheckForUnsavedOrigamiAndSave()
+		{
+			// The following does the equivalent of these 3 lines of javascript
+			// marginBox.removeClass('origami-layout-mode');
+			// marginBox.find('.bloom-translationGroup .textBox-identifier').remove();
+			// fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
+			var marginBoxElement = _domForCurrentPage.Body.SelectSingleNode("//div[contains(@class, 'marginBox')]");
+			if (marginBoxElement == null)
+				return;
+			var classElement = marginBoxElement.GetStringAttribute("class");
+			if (!classElement.Contains("origami-layout-mode"))
+				return;
+			// If we got to here, then we still have unsaved origami stuff that needs processing
+			marginBoxElement.Attributes["class"].Value = classElement.Replace("origami-layout-mode", "");
+			var textIdents = marginBoxElement.SelectNodes("//div[contains(@class, 'bloom-translationGroup')]//div[contains(@class, 'textBox-identifier')]");
+			if (textIdents != null && textIdents.Count > 0)
+			{
+				foreach (XmlNode textIdent in textIdents)
+					textIdent.ParentNode.RemoveChild(textIdent);
+			}
+			RethinkPageAndReloadIt(String.Empty);
 		}
 
 		public void RefreshDisplayOfCurrentPage()
