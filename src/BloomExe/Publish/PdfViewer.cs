@@ -31,6 +31,9 @@ namespace Bloom.Publish
 		private const ulong STATE_STOP = 0x00000010;
 		private bool _printing;
 		public event EventHandler<PdfPrintProgressEventArgs> PrintProgress;
+#if __MonoCS__
+		public event EventHandler PrintFinished;
+#endif
 		//private PdfPrintProgressListener _listener;
 		private string _pdfPath;
 
@@ -243,9 +246,21 @@ namespace Bloom.Publish
 					CreateNoWindow = true // don't need a DOS box (does not suppress print dialog)
 				}
 			};
+#if __MonoCS__
+			proc.EnableRaisingEvents = true;
+			proc.Exited += PrintProcessExited;
+#endif
 			proc.Start();
 			return true; // we at least think we printed it (unless the user cancels...anyway, don't try again some other way).
 		}
+
+#if __MonoCS__
+		void PrintProcessExited(object sender, EventArgs e)
+		{
+			if (PrintFinished != null)
+				PrintFinished(sender, e);
+		}
+#endif
 
 		private void PrintAfterPause(object sender, EventArgs e)
 		{
