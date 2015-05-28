@@ -12,7 +12,17 @@
 ### The end of the line for Windows XP
 - Starting with Bloom 3.1, Bloom will no longer run on Windows XP. Sorry! As Microsoft has retired support for XP, it has gotten too restraining for us to be limitted to program bits that work on XP. But Bloom 3.0 will continue to be available and works just fine. For now, we don't expect there to be any problems with someone using Bloom 3.0 on XP using books created by other people using Bloom 3.1.
 
-## 3.1
+## 3.1 Beta 2
+When printing, Bloom now shows a example of how to set up your printer's settings
+Fixed incorrect margins in PDFs
+Improved feedback during application updating
+Various memory-use improvments (more to come)
+Fix overlapping text bubbles
+Fix page numbering
+52 other minor fixes/improvements
+
+
+## 3.1 Beta 1
 - Includes the new "Andika New Basic" font, which includes real bold and italic faces. PDFs made with this show bold and italic, where PDFs created with "Andika" do not.
 - CTRL+Click does a paste, and the pasted material is cleaned up, removing the extraneous line breaks that you get when copying out of a PDF.
 - New faster installer with automatic incremental upgrades
