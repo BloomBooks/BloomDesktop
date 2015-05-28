@@ -1098,6 +1098,13 @@ namespace BloomTests.Book
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
 				</head>
 				<body>
+					<div class='bloom-page bloom-frontMatter'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='tr'>
+								Some Thai in front matter. Should not count at all.
+							</div>
+						</div>
+					</div>
 					<div class='bloom-page' id='guid3'>
 					   <div class='bloom-translationGroup bloom-trailingElement'>
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
@@ -1110,10 +1117,21 @@ namespace BloomTests.Book
 							<div class='bloom-editable' contenteditable='true' lang='fr'>
 								Whatever.
 							</div>
+							<div class='bloom-editable' contenteditable='true' lang='es'>
+							</div>
 						</div>
 					</div>
 					<div class='bloom-page' id='guid3'>
 					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
+								Some German.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='en'>
+								Some English.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='fr'>
+								Some French.
+							</div>
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='es'>
 								Something or other.
 							</div>
@@ -1128,16 +1146,23 @@ namespace BloomTests.Book
 							</div>
 						</div>
 					</div>
+					<div class='bloom-page bloom-backMatter'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='tr'>
+								Some Thai in back matter. Should not count at all.
+							</div>
+						</div>
+					</div>
 				</body></html>");
 
 			var book = CreateBook();
 			var allLanguages = book.AllLanguages;
-			Assert.That(allLanguages, Has.Member("en"));
-			Assert.That(allLanguages, Has.Member("de"));
-			Assert.That(allLanguages, Has.Member("fr"));
-			Assert.That(allLanguages, Has.Member("es"));
-			Assert.That(allLanguages, Has.Member("xkal"));
-			Assert.That(allLanguages.Count(), Is.EqualTo(5));
+			Assert.That(allLanguages["en"], Is.True);
+			Assert.That(allLanguages["de"], Is.True);
+			Assert.That(allLanguages["fr"], Is.True);
+			Assert.That(allLanguages["es"], Is.False); // in first group this is empty
+			Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
+			Assert.That(allLanguages.Count(), Is.EqualTo(5)); // no * or z or tr
 		}
 
 		[Test]

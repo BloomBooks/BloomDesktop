@@ -1144,32 +1144,65 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languages
-		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful? Should we
-		/// require that all bloom-editable elements in a certain language have content? That all parent elements which contain
-		/// any bloom-editable elements contain one in the candidate language? Is bloom-editable even a reliable class to look
-		/// for to identify the main content of the book?
-		/// Initially a book was defined as containing a language if it contained at least one bloom-editable element in that
-		/// language. However some templates (e.g. Story Primer) may not fit this so well, so if that doesn't produce any languages
-		/// we'll say that a book contains a language if it has a title defined in that language.
+		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful?
+		/// Based on BL-2017, we now return a Dictionary of booleans indicating whether a language should be uploaded by default.
+		/// The dictionary contains an entry for every language where the book contains non-x-matter text.
+		/// The value is true if every non-x-matter field which contains text in any language contains text in this.
 		/// </summary>
-		public IEnumerable<string> AllLanguages
+		public Dictionary<string, bool> AllLanguages
 		{
 			get
 			{
-				var langList = OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
+				var result = new Dictionary<string, bool>();
+				var parents = new HashSet<XmlElement>(); // of interesting non-empty children
+				// editable divs that are in non-x-matter pages and have a potentially interesting language.
+				var langDivs = OurHtmlDom.SafeSelectNodes("//div[contains(@class, 'bloom-page') and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))]//div[@class and @lang]").Cast<XmlElement>()
 					.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
-					.Select(div => div.Attributes["lang"].Value)
-					.Where(lang => lang != "*" && lang != "z" && lang != "") // Not valid languages, though we sometimes use them for special purposes
-					.Distinct();
-				if (langList.Count() == 0)
-					langList = OurHtmlDom.SafeSelectNodes("//div[@data-book and @lang]").Cast<XmlElement>()
-						.Where(div => div.Attributes["data-book"].Value.IndexOf("bookTitle", StringComparison.InvariantCulture) >= 0)
-						.Select(div => div.Attributes["lang"].Value)
-						.Where(lang => lang != "*" && lang != "z" && lang != "")
-						.Distinct();
-				return langList;
+					.Where(div =>
+					{
+						var lang = div.Attributes["lang"].Value;
+						return lang != "*" && lang != "z" && lang != ""; // Not valid languages, though we sometimes use them for special purposes
+					}).ToArray();
+				// First pass: fill in the dictionary with languages which have non-empty content in relevant divs
+				foreach (var div in langDivs)
+				{
+					var lang = div.Attributes["lang"].Value;
+					// The test for ContainsKey is redundant but may save a useful amount of time.
+					if (!result.ContainsKey(lang) && !string.IsNullOrWhiteSpace(div.InnerText))
+					{
+						result[lang] = true;
+						parents.Add((XmlElement)div.ParentNode);
+					}
+				}
+				// Second pass: for each parent, if it lacks a non-empty child for one of the languages, set value for that lang to false.
+				foreach (var lang in result.Keys.ToList()) // ToList so we can modify original collection as we go
+				{
+					foreach (var parent in parents)
+					{
+						if (!HasContentInLang(parent, lang))
+						{
+							result[lang] = false; // not complete
+							break; // no need to check other parents.
+						}
+					}
+				}
+
+				return result;
 			}
 		}
+
+		bool HasContentInLang(XmlElement parent, string lang)
+		{
+			foreach (var divN in parent.ChildNodes)
+			{
+				var div = divN as XmlElement;
+				if (div == null || div.Attributes["lang"] == null || div.Attributes["lang"].Value != lang)
+					continue;
+				return !string.IsNullOrWhiteSpace(div.InnerText); // this one settles it: success if non-empty
+			}
+			return false; // not found
+		}
+
 
 		public string GetAboutBookHtml
 		{
