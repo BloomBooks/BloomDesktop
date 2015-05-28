@@ -130,7 +130,7 @@ namespace Bloom.Publish
 			string paperSizeName, bool landscape)
 		{
 			bldr.AppendFormat("\"{0}\" \"{1}\"", inputHtmlPath, outputPdfPath);
-			bldr.AppendFormat(" -B0 -T0 -L0 -R0 -s {0}", paperSizeName);
+			bldr.AppendFormat(" -B 0 -T 0 -L 0 -R 0 -s {0}", paperSizeName);
 			bldr.Append(" --graphite");
 			if (landscape)
 				bldr.Append(" -Landscape");
