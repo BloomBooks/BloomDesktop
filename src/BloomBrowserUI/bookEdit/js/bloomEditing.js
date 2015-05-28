@@ -655,4 +655,14 @@ $(document).ready(function() {
 //        var commandStatus = JSON.parse(event.data);
 //        alert("DeleteCurrentPage Command "+ (commandStatus.deleteCurrentPage.enabled == true ? "Enabled" : "Disabled")) ;
 //    }
+
+    // This is invoked from C# when we are about to change pages. It is mainly for origami,
+    // but preparePageForEditingAfterOrigamiChangesEvent currently has the (very important)
+    // side effect of saving the changes to the current page.
+    var pageSelectionChanging = function () {
+        var marginBox = $('.marginBox');
+        marginBox.removeClass('origami-layout-mode');
+        marginBox.find('.bloom-translationGroup .textBox-identifier').remove();
+        fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
+    }
 }); // end document ready function

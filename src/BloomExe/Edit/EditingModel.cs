@@ -83,6 +83,7 @@ namespace Bloom.Edit
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
+			pageSelection.SelectionChanging += OnPageSelectionChanging;
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
 
 			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
@@ -485,6 +486,15 @@ namespace Bloom.Edit
 			}
 		}
 
+		// Invoked by an event handler just before we change pages. Unless we are in the process of deleting the
+		// current page, we need to save changes to it. Currently this is a side effect of calling the JS
+		// pageSelectionChanging(), which calls back to our 'RethinkPageAndReloadIt()'
+		private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
+		{
+			if (_view != null && !_inProcessOfDeleting)
+				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.pageSelectionChanging();}");
+		}
+
 		void OnPageSelectionChanged(object sender, EventArgs e)
 		{
 			Logger.WriteMinorEvent("changing page selection");
@@ -496,8 +506,6 @@ namespace Bloom.Edit
 			{
 				if (_previouslySelectedPage != null && _domForCurrentPage != null)
 				{
-					if(!_inProcessOfDeleting)//this is a mess.. before if you did a delete and quickly selected another page, events transpired such that you're now trying to save a deleted page
-						SaveNow();
 					_view.UpdateThumbnailAsync(_previouslySelectedPage);
 				}
 				_previouslySelectedPage = _pageSelection.CurrentSelection;
@@ -607,6 +615,11 @@ namespace Bloom.Edit
 			// listen for events raised by javascript
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
+			// Currently this event is raised by the JS which is run when we are about to change pages.
+			// If it is an origami page, we we indeed need to do this origami cleanup.
+			// However, even if it is not an origami page, we need to call RethinkPageAndReloadIt, because
+			// it also has the crtical side effect of saving the page. Something should probably be renamed
+			// (or the responsibilities divided) to reflect this, but I can't see a clear way forward.
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 		}
 

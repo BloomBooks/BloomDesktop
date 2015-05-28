@@ -1,4 +1,4 @@
-/// <reference path="readerToolsModel.ts" />
+﻿/// <reference path="readerToolsModel.ts" />
 var CalledByCSharp = (function () {
     function CalledByCSharp() {
     }
@@ -16,6 +16,11 @@ var CalledByCSharp = (function () {
         if (!contentWindow || !contentWindow.model || !contentWindow.model.shouldHandleUndo())
             return 'fail';
         return contentWindow.model.canUndo();
+    };
+
+    CalledByCSharp.prototype.pageSelectionChanging = function () {
+        var contentWindow = this.getPageContent();
+        contentWindow['pageSelectionChanging']();
     };
 
     CalledByCSharp.prototype.loadReaderToolSettings = function (settings, bookFontName) {
