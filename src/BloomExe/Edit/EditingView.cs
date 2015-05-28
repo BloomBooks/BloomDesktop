@@ -401,6 +401,7 @@ namespace Bloom.Edit
 				return; // Keep receiving until it is complete.
 			_browser1.WebBrowser.ReadyStateChange -= WebBrowser_ReadyStateChanged; // just do this once
 			_browser1.WebBrowser.DocumentCompleted -= WebBrowser_ReadyStateChanged;
+			ChangingPages = false;
 			_model.DocumentCompleted();
 		}
 
@@ -1022,6 +1023,22 @@ namespace Bloom.Edit
 		{
 			_templatePagesView.Enabled = !isModal;
 			_pageListView.Enabled = !isModal;
+		}
+
+		/// <summary>
+		/// BL-2153: This is to provide visual feedback to the user that the program has received their
+		///          page change click and is actively processing the request.
+		/// </summary>
+		public bool ChangingPages 
+		{ 
+			set {
+				if (_browser1.Visible != value) return;
+
+				_browser1.Visible = !value;
+				_pageListView.Enabled = !value;
+				Cursor = value ? Cursors.WaitCursor : Cursors.Default;
+				_pageListView.Cursor = Cursor;
+			} 
 		}
 	}
 }
