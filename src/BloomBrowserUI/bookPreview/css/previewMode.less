@@ -97,26 +97,18 @@ body {
 {
 	counter-increment: pageNumber;
 }
-DIV.numberedPage:nth-of-type(odd):after
-{
-	content: counter(pageNumber);
+.numberedPage:after{
+  content: counter(pageNumber);
 	font-size: 14pt;
-	/*+placement:anchor-bottom-left 57px 37px;*/
-	position: absolute;
-	left: 57px;
-	bottom: 37px;
-	margin-top: -7mm;
+  position: absolute;
+  bottom: 20px;
 }
-DIV.numberedPage:nth-of-type(even):after
-{
-	content: counter(pageNumber);
-	font-size: 14pt;
-	/*+placement:anchor-bottom-right 60px 37px;*/
-	position: absolute;
+.numberedPage:nth-of-type(odd):after{
+	left: 57px;
+}
+.numberedPage:nth-of-type(even):after{
 	right: 60px;
-	bottom: 37px;
 	text-align: right;
-	margin-top: -7mm;
 }
 
 .bloom-draggableLabel
