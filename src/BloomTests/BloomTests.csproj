@@ -187,6 +187,7 @@
     <Compile Include="WebLibraryIntegration\BloomLinkArgsTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomParseClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />
+    <Compile Include="WebLibraryIntegration\BloomS3StandardUpDownloadTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
     <Compile Include="web\BloomServerTests.cs" />
     <Compile Include="ImageProcessing\ImageServerTests.cs" />
