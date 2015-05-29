@@ -489,6 +489,14 @@ namespace Bloom.Edit
 		// Invoked by an event handler just before we change pages. Unless we are in the process of deleting the
 		// current page, we need to save changes to it. Currently this is a side effect of calling the JS
 		// pageSelectionChanging(), which calls back to our 'FinishSavingPage()'
+		// Note that this is fully synchronous event handling, all in the current thread:
+		// PageSelection.SelectPage [CS] raises PageSelectionChanging
+		//		OnPageSelectionChanging() [CS, here] responds to this event
+		//			it calls pageSelectionChanging() [in JS]
+		//				pageSelectionChanging raises HTML event finishSavingPage
+		//					this class is listening for finishSavingPage, and handles it by calling FinishSavingPage() [CS]
+		//		all those calls return
+		//		SelectPage continues with actually changing the current page, and then calls PageChanged.
 		private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
 		{
 			if (_view != null && !_inProcessOfDeleting)
