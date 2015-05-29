@@ -488,7 +488,7 @@ namespace Bloom.Edit
 
 		// Invoked by an event handler just before we change pages. Unless we are in the process of deleting the
 		// current page, we need to save changes to it. Currently this is a side effect of calling the JS
-		// pageSelectionChanging(), which calls back to our 'RethinkPageAndReloadIt()'
+		// pageSelectionChanging(), which calls back to our 'FinishSavingPage()'
 		private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
 		{
 			if (_view != null && !_inProcessOfDeleting)
@@ -615,17 +615,29 @@ namespace Bloom.Edit
 			// listen for events raised by javascript
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
-			// Currently this event is raised by the JS which is run when we are about to change pages.
-			// If it is an origami page, we we indeed need to do this origami cleanup.
-			// However, even if it is not an origami page, we need to call RethinkPageAndReloadIt, because
-			// it also has the crtical side effect of saving the page. Something should probably be renamed
-			// (or the responsibilities divided) to reflect this, but I can't see a clear way forward.
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
+			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
 		{
-			if(_bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null || _currentlyDisplayedBook == null)
+			if (CannotSavePage())
+				return;
+			FinishSavingPage();
+			RefreshDisplayOfCurrentPage();
+		}
+
+		/// <summary>
+		/// Called from a JavaScript event after it has done everything appropriate in JS land towards saving a page,
+		/// in the process of wrapping up this page before moving to another.
+		/// The main point is that any changes on this page get saved back to the main document.
+		/// In case it is an origami page, there is some special stuff to do as commented below.
+		/// (Argument is required for JS callback, not used).
+		/// </summary>
+		/// <returns>true if it was aborted (nothing to save or refresh)</returns>
+		private void FinishSavingPage(string ignored = null)
+		{
+			if (CannotSavePage())
 				return;
 
 			SaveNow();
@@ -641,7 +653,12 @@ namespace Bloom.Edit
 			//Enhance: Probably we could avoid having two saves, by determing what it is that they entail that is required.
 			//But at the moment both of them are required
 			SaveNow();
-			RefreshDisplayOfCurrentPage();
+		}
+
+		private bool CannotSavePage()
+		{
+			return _bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null ||
+				_currentlyDisplayedBook == null;
 		}
 
 		private void SaveAccordionSettings(string data)
