@@ -497,6 +497,15 @@ namespace Bloom.Edit
 		//					this class is listening for finishSavingPage, and handles it by calling FinishSavingPage() [CS]
 		//		all those calls return
 		//		SelectPage continues with actually changing the current page, and then calls PageChanged.
+		// I am confident that RunJavaScript does not return until it has finished executing the JavaScript function,
+		// because the wrapper code in Browser.cs is capable of returning a result from the JS function.
+		// I am confident that fireCSharpEditEvent (in bloomEditing.js) does not return until all the event handlers
+		// (in this case, our C# FinishSavingPage() method) have completed, because it is implemented using
+		// document.dispatchEvent(), and this returns a result determined by the handlers, specifically whether
+		// one of them canceled the event.
+		// Thus, the whole sequence of steps above behaves like a series of nested function calls,
+		// and SelectPage does not proceed with actually changing the current page until after FinishSavingPage has
+		// completed saving it.
 		private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
 		{
 			if (_view != null && !_inProcessOfDeleting)
