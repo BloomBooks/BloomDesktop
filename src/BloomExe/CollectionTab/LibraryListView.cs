@@ -486,12 +486,6 @@ namespace Bloom.CollectionTab
 				ForeColor = Palette.TextAgainstDarkBackground,
 				UseMnemonic = false, //otherwise, it tries to interpret '&' as a shortcut
 				ContextMenuStrip = _bookContextMenu,
-
-				// Setting the AutoEllipsis property is strange but makes it behave the same on
-				// Windows and Linux. Despite its name it won't show an ellipsis but wrap the line
-				// at a word boundary if the text is too long (at least if the height is large
-				// enough - didn't try what happens if the text doesn't fit in multiple lines)
-				AutoEllipsis = true,
 				AutoSize = false,
 
 				Tag = bookInfo
