@@ -1,27 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Net;
 using System.Security;
 using System.Text;
-using System.Windows.Forms;
 using Amazon;
-using Amazon.EC2.Model;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
 using Palaso.Code;
+using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.Progress;
-using Palaso.UI.WindowsForms.Reporting;
 using RestSharp.Contrib;
-using Palaso.IO;
-using System.Net;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -85,25 +80,6 @@ namespace Bloom.WebLibraryIntegration
 			return count;
 		}
 
-		public int GetCountOfAllFilesInBucket()
-		{
-			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
-			{
-				BucketName = _bucketName
-			});
-			return matchingFilesResponse.S3Objects.Count;
-		}
-
-
-		public IEnumerable<string> GetFilePaths()
-		{
-			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
-			{
-				BucketName = _bucketName
-			});
-			return from x in matchingFilesResponse.S3Objects select x.Key;
-		}
-
 		public void DeleteBookData(string key)
 		{
 			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
@@ -123,17 +99,6 @@ namespace Bloom.WebLibraryIntegration
 			var response = _amazonS3.DeleteObjects(deleteObjectsRequest);
 			Debug.Assert(response.DeleteErrors.Count == 0);
 
-		}
-
-
-		public bool FileExists(params string[] parts)
-		{
-			var request = new ListObjectsRequest()
-			{
-				BucketName = _bucketName,
-				Prefix = String.Join(kDirectoryDelimeterForS3,parts)
-			};
-			return _amazonS3.ListObjects(request).S3Objects.Count>0;
 		}
 
 		public void EmptyUnitTestBucket(string prefix)

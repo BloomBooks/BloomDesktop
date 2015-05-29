@@ -43,14 +43,12 @@ namespace BloomTests.WebLibraryIntegration
 		public void UploadBook_EmptyFolder_DoesntThrow()
 		{
 			var storageKeyOfBookFolder = Guid.NewGuid().ToString();
-			using (var f = new TemporaryFolder(_workFolder,"emptyFolder"))
+			using (var f = new TemporaryFolder(_workFolder, "emptyFolder"))
 			{
 				_client.UploadBook(storageKeyOfBookFolder, f.FolderPath, new NullProgress());
 			}
-
-			// since we're making a new storage key just for this test
-			// we need to delete it after our test
-			_client.EmptyUnitTestBucket(storageKeyOfBookFolder);
+			// This doesn't actually create an entry, since the folder is empty,
+			// so no need to delete it after our test
 		}
 
 		[Test]
