@@ -90,9 +90,11 @@ namespace BloomTests.WebLibraryIntegration
 			var fullBookDestPath = Path.Combine(_destCollectionPath, BookName);
 
 			Assert.IsTrue(Directory.Exists(_destCollectionPath));
+			var srcFileCount = Directory.GetFiles(fullBookSrcPath).Count();
 
 			// Do not count the excluded file (thumbs.db)
-			Assert.AreEqual(Directory.GetFiles(fullBookDestPath).Count() + 1, Directory.GetFiles(fullBookSrcPath).Count());
+			Assert.AreEqual(_client.GetBookFileCount(_storageKeyOfBookFolder) + 1, srcFileCount);
+			Assert.AreEqual(Directory.GetFiles(fullBookDestPath).Count() + 1, srcFileCount);
 			foreach (var fileName in Directory.GetFiles(fullBookSrcPath)
 				.Select(Path.GetFileName)
 				.Where(file => file != ExcludedFile))
