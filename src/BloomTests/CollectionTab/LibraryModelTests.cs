@@ -43,15 +43,14 @@ namespace BloomTests.CollectionTab
 			File.WriteAllText(Path.Combine(bookFolderPath, "thumbs.db"), "test thumbs.db file");
 		}
 
-		[Test]
-		public void MakeBloomPack_DoesntIncludeThumbsFile()
+		private void AddPdfFile(string bookFolderPath)
 		{
-			var srcBookPath = MakeBook();
-			AddThumbsFile(srcBookPath);
-			const string excludedFile = "thumbs.db";
-			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
+			File.WriteAllText(Path.Combine(bookFolderPath, "xfile1.pdf"), "test pdf file");
+		}
 
-			// Imitate LibraryModel.MakeBloomPack() without the user interaction
+		// Imitate LibraryModel.MakeBloomPack() without the user interaction
+		private void MakeTestBloomPack(string bloomPackName)
+		{
 			using (var fsOut = File.Create(bloomPackName))
 			{
 				using (var zipStream = new ZipOutputStream(fsOut))
@@ -64,14 +63,57 @@ namespace BloomTests.CollectionTab
 					zipStream.Close();
 				}
 			}
+		}
 
-			// Don't do anything with the zip file except read in the filenames
+		// Don't do anything with the zip file except read in the filenames
+		private static List<string> GetActualFilenamesFromZipfile(string bloomPackName)
+		{
 			var actualFiles = new List<string>();
 			using (var zip = new ZipFile(bloomPackName))
 			{
 				actualFiles.AddRange(from ZipEntry entry in zip select entry.Name);
 				zip.Close();
 			}
+			return actualFiles;
+		}
+
+		[Test]
+		public void MakeBloomPack_DoesntIncludePdfFile()
+		{
+			var srcBookPath = MakeBook();
+			AddPdfFile(srcBookPath);
+			const string excludedFile = "xfile1.pdf";
+			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
+
+			// Imitate LibraryModel.MakeBloomPack() without the user interaction
+			MakeTestBloomPack(bloomPackName);
+
+			// Don't do anything with the zip file except read in the filenames
+			var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);
+
+			// +1 for collection-level css file, -1 for pdf file, so the count is right
+			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count()));
+
+			foreach (var filePath in actualFiles)
+			{
+				Assert.IsFalse(Equals(Path.GetFileName(filePath), excludedFile));
+			}
+		}
+
+		[Test]
+		public void MakeBloomPack_DoesntIncludeThumbsFile()
+		{
+			var srcBookPath = MakeBook();
+			AddThumbsFile(srcBookPath);
+			const string excludedFile = "thumbs.db";
+			var bloomPackName = Path.Combine(_folder.Path, "testPack.BloomPack");
+
+			// Imitate LibraryModel.MakeBloomPack() without the user interaction
+			MakeTestBloomPack(bloomPackName);
+
+			// Don't do anything with the zip file except read in the filenames
+			var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);
+
 			// +1 for collection-level css file, -1 for thumbs file, so the count is right
 			Assert.That(actualFiles.Count, Is.EqualTo(Directory.GetFiles(srcBookPath).Count()));
 

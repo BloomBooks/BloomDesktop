@@ -67,6 +67,7 @@ namespace BloomTests.WebLibraryIntegration
 			var bookFolder = new TemporaryFolder(srcFolder, BookName).FolderPath;
 			File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "test");
 			File.WriteAllText(Path.Combine(bookFolder, "one.css"), "test");
+			File.WriteAllText(Path.Combine(bookFolder, "preview.pdf"), "test pdf file");
 			File.WriteAllText(Path.Combine(bookFolder, "thumbs.db"), "test thumbs.db file");
 			return bookFolder;
 		}
