@@ -53,7 +53,7 @@ namespace BloomTests
 		/// invalid.
 		/// </summary>
 		[Test]
-		public void SaveAsHTML_EmptyUbi_DoesNotContractOrRemove()
+		public void SaveAsHTML_EmptyUbi_Removed()
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<html><body><div data-book='test'/>Text with <u></u> and <b></b> and <i></i> works</body></html>");
@@ -64,9 +64,9 @@ namespace BloomTests
 				Assert.That(text, Is.Not.StringContaining("<u />"));
 				Assert.That(text, Is.Not.StringContaining("<b />"));
 				Assert.That(text, Is.Not.StringContaining("<i />"));
-				Assert.That(text, Is.StringContaining("<b></b>"));
-				Assert.That(text, Is.StringContaining("<u></u>"));
-				Assert.That(text, Is.StringContaining("<i></i>"));
+				Assert.That(text, Is.Not.StringContaining("<b></b>"));
+				Assert.That(text, Is.Not.StringContaining("<u></u>"));
+				Assert.That(text, Is.Not.StringContaining("<i></i>"));
 			}
 		}
 
@@ -74,7 +74,7 @@ namespace BloomTests
 		public void SaveAsHTML_MinimalUbiSpan_DoesNotContractOrRemove()
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml("<html><body><div data-book='test'/>Text with <u /> and <b/><span /> and <i /> works</body></html>");
+			dom.LoadXml("<html><body><div data-book='test'/>Text with <u /><u attr=\"1\" /> and <b/><b attr=\"1\" /><span /><span attr=\"1\" /> and <i /><i attr=\"1\" /> works</body></html>");
 			using (var temp = new TempFile())
 			{
 				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -83,10 +83,14 @@ namespace BloomTests
 				Assert.That(text, Is.Not.StringContaining("<b />"));
 				Assert.That(text, Is.Not.StringContaining("<i />"));
 				Assert.That(text, Is.Not.StringContaining("<span />"));
-				Assert.That(text, Is.StringContaining("<b></b>"));
-				Assert.That(text, Is.StringContaining("<u></u>"));
-				Assert.That(text, Is.StringContaining("<i></i>"));
-				Assert.That(text, Is.StringContaining("<span></span>"));
+				Assert.That(text, Is.Not.StringContaining("<b></b>"));
+				Assert.That(text, Is.Not.StringContaining("<u></u>"));
+				Assert.That(text, Is.Not.StringContaining("<i></i>"));
+				Assert.That(text, Is.Not.StringContaining("<span></span>"));
+				Assert.That(text, Is.StringContaining("<b attr=\"1\"></b>"));
+				Assert.That(text, Is.StringContaining("<u attr=\"1\"></u>"));
+				Assert.That(text, Is.StringContaining("<i attr=\"1\"></i>"));
+				Assert.That(text, Is.StringContaining("<span attr=\"1\"></span>"));
 			}
 		}
 
@@ -131,6 +135,38 @@ namespace BloomTests
 <b>six</b>seven <i>eight</i>nine</div></body></html>";
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
 			Assert.That(dom.InnerXml, Is.StringContaining(@"one<b>two</b>three<i>four</i>five <b>six</b>seven <i>eight</i>nine"));
+		}
+
+		[Test]
+		public void GetXmlDomFromHtml_HasEmptyTags_RemoveTags()
+		{
+			var html = "<!DOCTYPE html><html><head></head><body><div><u> </u></div></body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
+			Assert.AreEqual("<div></div>", xml);
+		}
+
+		[Test]
+		public void GetXmlDomFromHtml_HasNestedEmptyTags_RemoveTags()
+		{
+			var html = "<!DOCTYPE html><html><head></head><body><div><u><i /></u></div></body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
+			Assert.AreEqual("<div></div>", xml);
+		}
+
+		[Test]
+		public void GetXmlDomFromHtml_HasEmptyTagsWithAttributes_NoRemoveTags()
+		{
+			var html = "<!DOCTYPE html><html><head></head><body><div><u style=\"test\"> </u></div></body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
+			Assert.AreEqual("<div><u style=\"test\"></u></div>", xml);
+
+			html = "<!DOCTYPE html><html><head></head><body><div><u><i style=\"test\" /></u></div></body></html>";
+			dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
+			Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml);
 		}
 	}
 }
