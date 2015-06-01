@@ -482,7 +482,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
       <tuv xml:lang="en">
-        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
@@ -2462,7 +2462,8 @@
     <tu tuid="PublishTab.BodyOnlyRadio-tooltip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
+        <seg>Make a booklet from the inside pages of the book.
+ Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.ButtonThatShowsUploadForm">

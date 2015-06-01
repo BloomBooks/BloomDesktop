@@ -379,7 +379,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
       <tuv xml:lang="en">
-        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</seg>
       </tuv>
       <tuv xml:lang="ar">
         <seg>لوم سيتم الآن فتح هذا المستند HTML في برنامج معالجة الكلمات الخاصة بك (عادة كلمة أو LibreOffice). سوف تكون قادرة على العمل مع النص والصور من هذا الكتاب، ولكن هذه البرامج عادة لا جيدا مع الاحتفاظ بالتخطيط، حيث لا نتوقع الكثير.</seg>
