@@ -282,7 +282,8 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		private static readonly string[] excludedFileNames = { "thumbs.db" }; // these files (if encountered) won't be uploaded
+		// these files (if encountered) won't be compressed into a BloomPack
+		private static readonly string[] excludedFileExtensions = { ".db", ".pdf" };
 
 		/// <summary>
 		/// Adds a directory, along with all files and subdirectories, to the ZipStream.
@@ -302,7 +303,7 @@ namespace Bloom.CollectionTab
 
 			foreach (var filePath in files)
 			{
-				if (excludedFileNames.Contains(Path.GetFileName(filePath)))
+				if (excludedFileExtensions.Contains(Path.GetExtension(filePath)))
 					continue; // BL-2246: skip putting this one into the BloomPack
 
 				FileInfo fi = new FileInfo(filePath);
