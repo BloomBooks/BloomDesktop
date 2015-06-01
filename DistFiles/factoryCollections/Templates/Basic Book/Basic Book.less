@@ -72,7 +72,7 @@ generic*/
 	.bloom-editable {
 		left: 0;
 	}
-	&:not(.layout-style-SideBySide) {
+	&:not(.layout-style-SideBySide):not(.layout-style-SplitAcrossPages) {
 		.bloom-imageContainer {
 			.SetHeightWithPercentMinusConstant(45%, @StandardMultilingualEditBoxSeparation);
 			width: 100%;
@@ -130,7 +130,34 @@ generic*/
 		}
 	}
 
-
+	&.layout-style-SplitAcrossPages {
+		.bloom-imageContainer {
+			width: 100%;
+			height: 100%;
+			top: 0;
+		}
+		&.bloom-bilingual .bloom-editable{
+			.SetHeightWithPercentMinusConstant(50%, @StandardMultilingualEditBoxSeparation);
+		}
+		&.bloom-trilingual .bloom-editable{
+			.SetHeightWithPercentMinusConstant(33%, @StandardMultilingualEditBoxSeparation);
+		}
+		.bloom-translationGroup {
+			height: 100%;
+			width: 100%;
+			/*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
+			/*[disabled]position:relative;*/
+			/*So instead, we're settling for starting the text part of the way down*/
+			//position: relative !important;
+			display: block !important;
+			position: relative;
+			left: 0;
+			top: 0;
+			.bloom-editable {
+				font-size: 300%;
+			}
+		}
+	}
 	&.layout-style-SideBySide {
 		.bloom-imageContainer {
 			width: 48%;
@@ -201,9 +228,6 @@ generic*/
 	}
 }
 
-
-
-
 .imageInMiddle {
 	//we place the edit boxes in different places depending on the multilingual settings,
 	//so we don't want the default margin-top's for the 2nd and 3rd ones.
@@ -217,7 +241,7 @@ generic*/
 	}
 	// ----- GROUP ------
 	.bloom-translationGroup {
-		height: 33% !important;
+		height: 33%; // !important messes up other layout-style-xxx
 		width: 100%;
 		position: absolute;
 	}
@@ -238,6 +262,37 @@ generic*/
 		bottom: 0;
 		.bloom-editable {
 			margin-top: @SpaceBetweenMultilingualAlternatives;
+		}
+	}
+
+	&.layout-style-SplitAcrossPages {
+		.bloom-imageContainer {
+			width: 100%;
+			height: 100%;
+			top: 0;
+		}
+		.bloom-translationGroup {
+			.SetHeightWithPercentMinusConstant(50%, @StandardMultilingualEditBoxSeparation);
+		}
+		&.bloom-bilingual .bloom-translationGroup .bloom-editable {
+			.SetHeightWithPercentMinusConstant(50%, @StandardMultilingualEditBoxSeparation);
+		}
+		&.bloom-trilingual .bloom-translationGroup .bloom-editable {
+			.SetHeightWithPercentMinusConstant(33%, @StandardMultilingualEditBoxSeparation);
+		}
+		.bloom-translationGroup {
+			width: 100%;
+			/*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
+			/*[disabled]position:relative;*/
+			/*So instead, we're settling for starting the text part of the way down*/
+			//position: relative !important;
+			display: block !important;
+			position: relative;
+			left: 0;
+			top: 0;
+			.bloom-editable {
+				font-size: 300%;
+			}
 		}
 	}
 	// ----- Text Boxes ------
@@ -277,7 +332,7 @@ generic*/
 	}
 	&.bloom-bilingual {
 		.bloom-translationGroup .bloom-editable {
-		.SetHeightWithPercentMinusConstant(50%, @StandardMultilingualEditBoxSeparation);
+			.SetHeightWithPercentMinusConstant(50%, @StandardMultilingualEditBoxSeparation);
 		}
 	}
 	&.bloom-trilingual .bloom-translationGroup .bloom-editable {
@@ -296,6 +351,28 @@ generic*/
 		position: absolute;
 		left: 0;
 		top: 0;
+	}
+	&.layout-style-SplitAcrossPages {
+		.bloom-imageContainer {
+			width: 100%;
+			height: 100%;
+			top: 0;
+		}
+		.bloom-translationGroup {
+			width: 100%;
+			height: 100%;
+			/*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
+			/*[disabled]position:relative;*/
+			/*So instead, we're settling for starting the text part of the way down*/
+			//position: relative !important;
+			display: block !important;
+			position: relative;
+			left: 0;
+			top: 0;
+			.bloom-editable {
+				font-size: 300%;
+			}
+		}
 	}
 }
 .imageWholePage {
