@@ -6,12 +6,13 @@ namespace Bloom.Edit
 	public class PageSelection
 	{
 		private IPage _currentSelection;
-		public event EventHandler SelectionChanged;
+		public event EventHandler SelectionChanging; // before it changes
+		public event EventHandler SelectionChanged; // after it changed
 
 		public bool SelectPage(IPage page)
 		{
-			//enhance... send out cancellable pre-change event
-
+			//enhance... make pre-change event cancellable
+			InvokeSelectionChanging();
 			_currentSelection = page;
 
 			InvokeSelectionChanged();
@@ -21,6 +22,15 @@ namespace Bloom.Edit
 		public IPage CurrentSelection
 		{
 			get { return _currentSelection; }
+		}
+
+		private void InvokeSelectionChanging()
+		{
+			EventHandler handler = SelectionChanging;
+			if (handler != null)
+			{
+				handler(this, null);
+			}
 		}
 
 		private void InvokeSelectionChanged()

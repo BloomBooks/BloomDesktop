@@ -83,6 +83,7 @@ namespace Bloom.Edit
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
+			pageSelection.SelectionChanging += OnPageSelectionChanging;
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
 
 			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
@@ -485,6 +486,32 @@ namespace Bloom.Edit
 			}
 		}
 
+		// Invoked by an event handler just before we change pages. Unless we are in the process of deleting the
+		// current page, we need to save changes to it. Currently this is a side effect of calling the JS
+		// pageSelectionChanging(), which calls back to our 'FinishSavingPage()'
+		// Note that this is fully synchronous event handling, all in the current thread:
+		// PageSelection.SelectPage [CS] raises PageSelectionChanging
+		//		OnPageSelectionChanging() [CS, here] responds to this event
+		//			it calls pageSelectionChanging() [in JS]
+		//				pageSelectionChanging raises HTML event finishSavingPage
+		//					this class is listening for finishSavingPage, and handles it by calling FinishSavingPage() [CS]
+		//		all those calls return
+		//		SelectPage continues with actually changing the current page, and then calls PageChanged.
+		// I am confident that RunJavaScript does not return until it has finished executing the JavaScript function,
+		// because the wrapper code in Browser.cs is capable of returning a result from the JS function.
+		// I am confident that fireCSharpEditEvent (in bloomEditing.js) does not return until all the event handlers
+		// (in this case, our C# FinishSavingPage() method) have completed, because it is implemented using
+		// document.dispatchEvent(), and this returns a result determined by the handlers, specifically whether
+		// one of them canceled the event.
+		// Thus, the whole sequence of steps above behaves like a series of nested function calls,
+		// and SelectPage does not proceed with actually changing the current page until after FinishSavingPage has
+		// completed saving it.
+		private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
+		{
+			if (_view != null && !_inProcessOfDeleting)
+				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.pageSelectionChanging();}");
+		}
+
 		void OnPageSelectionChanged(object sender, EventArgs e)
 		{
 			Logger.WriteMinorEvent("changing page selection");
@@ -496,8 +523,6 @@ namespace Bloom.Edit
 			{
 				if (_previouslySelectedPage != null && _domForCurrentPage != null)
 				{
-					if(!_inProcessOfDeleting)//this is a mess.. before if you did a delete and quickly selected another page, events transpired such that you're now trying to save a deleted page
-						SaveNow();
 					_view.UpdateThumbnailAsync(_previouslySelectedPage);
 				}
 				_previouslySelectedPage = _pageSelection.CurrentSelection;
@@ -608,11 +633,28 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
+			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
 		{
-			if(_bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null || _currentlyDisplayedBook == null)
+			if (CannotSavePage())
+				return;
+			FinishSavingPage();
+			RefreshDisplayOfCurrentPage();
+		}
+
+		/// <summary>
+		/// Called from a JavaScript event after it has done everything appropriate in JS land towards saving a page,
+		/// in the process of wrapping up this page before moving to another.
+		/// The main point is that any changes on this page get saved back to the main document.
+		/// In case it is an origami page, there is some special stuff to do as commented below.
+		/// (Argument is required for JS callback, not used).
+		/// </summary>
+		/// <returns>true if it was aborted (nothing to save or refresh)</returns>
+		private void FinishSavingPage(string ignored = null)
+		{
+			if (CannotSavePage())
 				return;
 
 			SaveNow();
@@ -628,7 +670,12 @@ namespace Bloom.Edit
 			//Enhance: Probably we could avoid having two saves, by determing what it is that they entail that is required.
 			//But at the moment both of them are required
 			SaveNow();
-			RefreshDisplayOfCurrentPage();
+		}
+
+		private bool CannotSavePage()
+		{
+			return _bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null ||
+				_currentlyDisplayedBook == null;
 		}
 
 		private void SaveAccordionSettings(string data)
