@@ -75,12 +75,20 @@ namespace Bloom.Book
 			_collectDynamicStrings = false;
 		}
 
-		internal static void AddLanguagesUsedInPage(XmlDocument xmlDocument, Dictionary<string, string> d)
+		/// <summary>
+		/// Add to the dictionary which maps original to Localized strings an entry for any language code that doesn't already
+		/// have one. We have localizations for a few major languages that map e.g. de->German/Deutsch/etc, so they are functioning
+		/// not just to localize but to expand from a language code to an actual name. For any other languages where we don't
+		/// have localization information, we'd like to at least expand the cryptic code into a name. This method does that.
+		/// </summary>
+		/// <param name="xmlDocument"></param>
+		/// <param name="mapOriginalToLocalized"></param>
+		internal static void AddLanguagesUsedInPage(XmlDocument xmlDocument, Dictionary<string, string> mapOriginalToLocalized)
 		{
 			var langs = xmlDocument.SafeSelectNodes("//*[@lang]").Cast<XmlElement>()
 				.Select(e => e.Attributes["lang"].Value)
 				.Distinct()
-				.Where(lang => !d.ContainsKey(lang))
+				.Where(lang => !mapOriginalToLocalized.ContainsKey(lang))
 				.ToList();
 			if (langs.Any())
 			{
@@ -90,7 +98,7 @@ namespace Bloom.Book
 				{
 					var match = lookup.GetExactLanguageMatch(lang);
 					if (match != null)
-						d[lang] = match.Name;
+						mapOriginalToLocalized[lang] = match.Name;
 				}
 			}
 		}
