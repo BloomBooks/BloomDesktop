@@ -505,7 +505,15 @@ namespace Bloom.Publish
 			var printSettingsPreviewFolder = FileLocator.GetDirectoryDistributedWithApplication("printer settings images");
 			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
 				_model.PageLayout.SizeAndOrientation + "-" + (isBooklet() ? "Booklet-" : ""));
-			var printSettingsSampleName = printSettingsSamplePrefix + LocalizationManager.UILanguageId + ".png";
+			string printSettingsSampleName = null;
+			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			{
+				printSettingsSampleName = printSettingsSamplePrefix + "Linux-" + LocalizationManager.UILanguageId + ".png";
+				if (!File.Exists(printSettingsSampleName))
+					printSettingsSampleName = printSettingsSamplePrefix + "Linux-en.png";
+			}
+			if (printSettingsSampleName == null || !File.Exists(printSettingsSampleName))
+				printSettingsSampleName = printSettingsSamplePrefix + LocalizationManager.UILanguageId + ".png";
 			if (!File.Exists(printSettingsSampleName))
 				printSettingsSampleName = printSettingsSamplePrefix + "en" + ".png";
 			if (File.Exists(printSettingsSampleName))
