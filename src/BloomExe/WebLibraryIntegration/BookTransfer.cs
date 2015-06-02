@@ -124,7 +124,9 @@ namespace Bloom.WebLibraryIntegration
 				}
 				var message = LocalizationManager.GetString("Download.ProblemNotice",
 					"There was a problem downloading your book. You may need to restart Bloom or get technical help.");
-				if (e is TimeoutException) // BL-1233, we've seen what appear to be timeout exceptions, can't confirm the actual Exception subclass though.
+				// BL-1233, we've seen what appear to be timeout exceptions, can't confirm the actual Exception subclass though.
+				// It's likely that S3 wraps the original TimeoutException from .net with its own AmazonServiceException.
+				if (e is TimeoutException || e.InnerException is TimeoutException)
 					message = LocalizationManager.GetString("Download.TimeoutProblemNotice",
 					"There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
 				if (e is AmazonServiceException || e is WebException) // Network problems, not an internal error, less alarming message called for
