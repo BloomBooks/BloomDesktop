@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Xml;
@@ -8,6 +10,8 @@ using Bloom.Properties;
 using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.IO;
+using Palaso.UI.WindowsForms.WritingSystems;
+using Palaso.Xml;
 
 namespace Bloom.Book
 {
@@ -57,6 +61,10 @@ namespace Bloom.Book
 			// Hard-coded localizations for 2.0
 			AddHtmlUiStrings(d);
 
+			// Do this last, on the off-chance that the page contains a localizable string that matches
+			// a language code.
+			AddLanguagesUsedInPage(pageDom.RawDom, d);
+
 			dictionaryScriptElement.InnerText = String.Format("function GetInlineDictionary() {{ return {0};}}", JsonConvert.SerializeObject(d));
 
 			// add i18n initialization script to the page
@@ -65,6 +73,34 @@ namespace Bloom.Book
 			pageDom.Head.InsertAfter(dictionaryScriptElement, pageDom.Head.LastChild);
 
 			_collectDynamicStrings = false;
+		}
+
+		/// <summary>
+		/// Add to the dictionary which maps original to Localized strings an entry for any language code that doesn't already
+		/// have one. We have localizations for a few major languages that map e.g. de->German/Deutsch/etc, so they are functioning
+		/// not just to localize but to expand from a language code to an actual name. For any other languages where we don't
+		/// have localization information, we'd like to at least expand the cryptic code into a name. This method does that.
+		/// </summary>
+		/// <param name="xmlDocument"></param>
+		/// <param name="mapOriginalToLocalized"></param>
+		internal static void AddLanguagesUsedInPage(XmlDocument xmlDocument, Dictionary<string, string> mapOriginalToLocalized)
+		{
+			var langs = xmlDocument.SafeSelectNodes("//*[@lang]").Cast<XmlElement>()
+				.Select(e => e.Attributes["lang"].Value)
+				.Distinct()
+				.Where(lang => !mapOriginalToLocalized.ContainsKey(lang))
+				.ToList();
+			if (langs.Any())
+			{
+				// We don't have a localization for these languages, but we can at least try to give them a name
+				var lookup = new LookupIsoCodeModel(); // < 1ms
+				foreach (var lang in langs) // may include things like empty string, z, *, but this is harmless as they are not language codes.
+				{
+					var match = lookup.GetExactLanguageMatch(lang);
+					if (match != null)
+						mapOriginalToLocalized[lang] = match.Name;
+				}
+			}
 		}
 
 		private static void CheckDynamicStrings()

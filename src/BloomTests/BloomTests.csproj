@@ -159,6 +159,7 @@
     <Compile Include="Book\BookStorageTests.cs" />
     <Compile Include="Book\BookStarterTests.cs" />
     <Compile Include="Book\BookDataTests.cs" />
+    <Compile Include="Book\RuntimeInformationInjectorTests.cs" />
     <Compile Include="Book\TranslationGroupManagerTests.cs" />
     <Compile Include="Book\LayoutTests.cs" />
     <Compile Include="Book\XMatterHelperTests.cs" />
