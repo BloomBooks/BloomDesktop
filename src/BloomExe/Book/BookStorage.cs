@@ -12,6 +12,7 @@ using System.Xml;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
+using L10NSharp;
 using Palaso.Code;
 using Palaso.IO;
 using Palaso.Progress;
@@ -295,14 +296,21 @@ namespace Bloom.Book
 			return relocatableDom;
 		}
 
-
 		public void SetBookName(string name)
 		{
-
 			if (!Directory.Exists(_folderPath)) //bl-290 (user had 4 month-old version, so the bug may well be long gone)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom has a pesky bug we've been searching for, and you've found it. Most likely, you won't lose any work, but we do need to report the problem and then have you restart. Bloom will now show an error box where you can tell us anything that might help us understand how to reproduce the problem, and let you email it to us.\r\nThanks for your help!");
-				throw new ApplicationException(string.Format("In SetBookName('{0}'), BookStorage thinks the existing folder is '{1}', but that does not exist. (ref bl-290)", name, _folderPath));
+				var msg = LocalizationManager.GetString("BookStorage.FolderMoved",
+					"It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					new ApplicationException(
+						string.Format(
+							"In SetBookName('{0}'), BookStorage thinks the existing folder is '{1}', but that does not exist. (ref bl-290)",
+							name, _folderPath)),
+					msg);
+				// Application.Exit() is not drastic enough to terminate all the call paths here and all the code
+				// that tries to make sure we save on exit. Get lots of flashing windows during shutdown.
+				Environment.Exit(-1);
 			}
 			name = SanitizeNameForFileSystem(name);
 
