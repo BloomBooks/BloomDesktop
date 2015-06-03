@@ -1341,6 +1341,9 @@ namespace Bloom.Book
 			//review: could move to page
 			var pageElement = OurHtmlDom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv);
 			Require.That(pageElement != null,"Page could not be found: "+page.XPathToDiv);
+			if (pageElement != null)
+				pageElement.InnerXml = XmlHtmlConverter.RemoveEmptySelfClosingTags(pageElement.InnerXml);
+				
 			return pageElement as XmlElement;
 		}
 

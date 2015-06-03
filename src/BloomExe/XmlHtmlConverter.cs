@@ -10,25 +10,23 @@ using TidyManaged;
 
 namespace Bloom
 {
-	public class XmlHtmlConverter
+	public static class XmlHtmlConverter
 	{
-		/// <summary>
-		///
-		/// </summary>
-		/// <param name="content"></param>
-		/// <exception cref="">Throws if there are parsing errors</exception>
-		/// <returns></returns>
+
+		private static readonly Regex _selfClosingRegex = new Regex(@"<([ubi]|span)(\s+[^><]+\s*)/>");
+		private static readonly Regex _emptySelfClosingRegex = new Regex(@"<([ubi]|span)\s*/>");
+		private static readonly Regex _emptyTagsRegex = new Regex(@"<([ubi]|span)(\s+[^><]+\s*)>(\s*)</\1>");
+
+
 		public static XmlDocument GetXmlDomFromHtmlFile(string path, bool includeXmlDeclaration = false)
 		{
 			return GetXmlDomFromHtml(File.ReadAllText(path), includeXmlDeclaration);
 		}
 
-		/// <summary>
-		///
-		/// </summary>
+		/// <summary></summary>
 		/// <param name="content"></param>
 		/// <param name="includeXmlDeclaration"></param>
-		/// <exception cref="">Throws if there are parsing errors</exception>
+		/// <exception>Throws if there are parsing errors</exception>
 		/// <returns></returns>
 		public static XmlDocument GetXmlDomFromHtml(string content, bool includeXmlDeclaration = false)
 		{
@@ -37,14 +35,11 @@ namespace Bloom
 
 			//in BL-2250, we found that in previous versions, this method would turn, for example, "<u> </u>" REMOVEWHITESPACE.
 			//That is fixed now, but this is needed to give to clean up existing books.
-
 			content = content.Replace(@"REMOVEWHITESPACE", "");
 
 			// It also likes to insert newlines before <b>, <u>, and <i>, and convert any existing whitespace
 			// there to a space.
-			content = content.Replace(@"<b>", "REMOVEWHITESPACE<b>");
-			content = content.Replace(@"<i>", "REMOVEWHITESPACE<i>");
-			content = content.Replace(@"<u>", "REMOVEWHITESPACE<u>");
+			content = new Regex(@"<([ubi])>").Replace(content, "REMOVEWHITESPACE<$1>");
 
 			// fix for <br></br> tag doubling
 			content = content.Replace("<br></br>", "<br />");
@@ -89,7 +84,7 @@ namespace Bloom
 
 						// The regex here is mainly for the \s as a convenient way to remove whatever whitespace TIDY
 						// has inserted. It's a fringe benefit that we can use the[bi] to deal with both elements in one replace.
-						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*\<([biu])\>", "<$1>");
+						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*<([biu])>", "<$1>");
 
 						//In BL2250, we still had REMOVEWHITESPACE sticking around sometimes. The way we reproduced it was
 						//with <u> </u>. That is, we started with
@@ -98,7 +93,7 @@ namespace Bloom
 						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE", "");
 
 						// remove blank lines at the end of style blocks
-						newContents = Regex.Replace(newContents, @"\s+\<\/style\>", "</style>");
+						newContents = Regex.Replace(newContents, @"\s+<\/style>", "</style>");
 
 						dom.LoadXml(newContents);
 					}
@@ -138,19 +133,22 @@ namespace Bloom
 		/// <returns></returns>
 		private static string AddFillerToKeepTidyFromRemovingEmptyElements(string content)
 		{
-			//hack. tidy deletes <span data-libray='somethingImportant'></span>
-			// and also (sometimes...apparently only the first child in a parent) <i some-important-attributes></i>
-			content = content.Replace("></span>", ">REMOVEME</span>");
-			content = content.Replace("></i>", ">REMOVEME</i>");
-			content = content.Replace("></b>", ">REMOVEME</b>");
-			content = content.Replace("></u>", ">REMOVEME</u>");
-			// This handles empty elements in the form of XML contractions like <i />
-			content = new Regex(@"<([ubi]|span)\s*/>").Replace(content, "<$1>REMOVEME</$1>");
+
+			// This handles empty elements in the form of XML contractions like <i some-important-attributes />
+			content = ConvertSelfClosingTags(content, "REMOVEME");
+
+			// hack. Tidy deletes <span data-libray='somethingImportant'></span>
+			// and also (sometimes...apparently only the first child in a parent) <i some-important-attributes></i>.
+			// $1 is the tag name.
+			// $2 is the tag attributes.
+			// $3 is the blank space between the opening and closing tags, if any.
+			content = _emptyTagsRegex.Replace(content, "<$1$2>REMOVEME$3</$1>");
+
 			return content;
 		}
 
 		/// <summary>
-		/// This is to be run after running tity
+		/// This is to be run after running tidy
 		/// </summary>
 		private static string RemoveFillerInEmptyElements(string contents)
 		{
@@ -158,7 +156,19 @@ namespace Bloom
 		}
 
 
+		private static string ConvertSelfClosingTags(string html, string innerHtml = "")
+		{
+			html = RemoveEmptySelfClosingTags(html);
 
+			// $1 is the tag name.
+			// $2 is the tag attributes.
+			return _selfClosingRegex.Replace(html, "<$1$2>" + innerHtml + "</$1>");
+		}
+
+		public static string RemoveEmptySelfClosingTags(string html)
+		{
+			return _emptySelfClosingRegex.Replace(html, "");
+		}
 
 		/// <summary>
 		/// Beware... htmltidy doesn't consider such things as a second <body> element to warrant any more than a "warning", so this won't throw!
