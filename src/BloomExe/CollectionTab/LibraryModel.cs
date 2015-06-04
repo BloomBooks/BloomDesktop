@@ -207,7 +207,11 @@ namespace Bloom.CollectionTab
 		/// <summary>
 		/// All we do at this point is make a file with a ".doc" extension and open it.
 		/// </summary>
-		/// <param name="path"></param>
+		/// <remarks>
+		/// The .doc extension allows the operating system to recognize which program
+		/// should open the file, and the program (whether Microsoft Word or LibreOffice
+		/// or OpenOffice) seems to handle HTML content just fine.
+		/// </remarks>
 		public void ExportDocFormat(string path)
 		{
 			string sourcePath = _bookSelection.CurrentSelection.GetPathHtmlFile();
@@ -215,7 +219,15 @@ namespace Bloom.CollectionTab
 			{
 				File.Delete(path);
 			}
-			File.Copy(sourcePath, path);
+			// Linux (Trusty) LibreOffice requires slightly different metadata at the beginning
+			// of the file in order to recognize it as HTML.  Otherwise it opens the file as raw
+			// HTML (See https://silbloom.myjetbrains.com/youtrack/issue/BL-2276 if you don't
+			// believe me.)  I don't know any perfect way to add this information to the file,
+			// but a simple string replace should be safe.  This change works okay for both
+			// Windows and Linux and for all three programs (Word, OpenOffice and Libre Office).
+			string content = File.ReadAllText(sourcePath);
+			string fixedContent = content.Replace("<meta charset=\"UTF-8\">", "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
+			File.WriteAllText(path, fixedContent);
 		}
 
 		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
