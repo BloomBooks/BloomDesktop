@@ -181,6 +181,11 @@ namespace Bloom.web
 				try
 				{
 					rawurl = context.Request.RawUrl;
+
+					// set lower priority for thumbnails in order to have less impact on the UI thread
+					if (rawurl.Contains("thumbnail=1"))
+						Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
+
 					MakeReply(new RequestInfo(context));
 				}
 				catch (HttpListenerException e)
@@ -210,6 +215,10 @@ namespace Bloom.web
 						throw;
 #endif
 					}
+				}
+				finally
+				{
+					Thread.CurrentThread.Priority = ThreadPriority.Normal;
 				}
 			}
 		}

@@ -10,6 +10,7 @@
     <script type="text/javascript" src="/bloom/bookEdit/editor/jquery.gridly.js"></script>
     <script type="text/javascript" src="/bloom/lib/errorHandler.js"></script>
     <script>
+        var thumbnailTimerInterval = 200;
         var reorder = function (elements) {
             var ids = "";
             elements.each(function () {
@@ -32,8 +33,14 @@
                 fireCSharpEvent("gridClick", $(this).attr('id'));
             });
 
-			// The 100 ms value is based on experimentation. It may need to be re-evaluated in the future.
-            setTimeout(loadNextThumbnail, 100);
+			// start the thumbnail timer
+            var timerSetting = document.body.dataset['thumbnailInterval'];
+            if (timerSetting)
+                thumbnailTimerInterval = parseInt(timerSetting.value);
+
+            // This timeout expires before the main page is displayed to the user, so we're using
+            // thumbnailTimerInterval * 2 for the first interval to give the UI more time to catch up.
+            setTimeout(loadNextThumbnail, thumbnailTimerInterval * 2);
         });
         function fireCSharpEvent(eventName, eventData) {
 
@@ -60,8 +67,10 @@
 
             // This delay is needed because the processing of larger images was causing out-of-memory errors if several
             // images were requested before the server had finished processing previous images requests. We are also
-			// attempting to prevent the browser from timing out and showing the alt text instead of the image.
-            setTimeout(loadNextThumbnail, 100);
+            // attempting to prevent the browser from timing out and showing the alt text instead of the image.
+            // 2015-06-04: The interval is now a variable rather than a constant in order to make the initial Edit tab
+            // load more responsive, especially on low-end hardware.
+            setTimeout(loadNextThumbnail, thumbnailTimerInterval);
         }
     </script>
     <title></title>

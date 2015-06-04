@@ -509,7 +509,10 @@ namespace Bloom.Edit
 		private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
 		{
 			if (_view != null && !_inProcessOfDeleting)
+			{
+				_view.ChangingPages = true;
 				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.pageSelectionChanging();}");
+			}
 		}
 
 		void OnPageSelectionChanged(object sender, EventArgs e)
@@ -674,8 +677,13 @@ namespace Bloom.Edit
 
 		private bool CannotSavePage()
 		{
-			return _bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null ||
+			var returnVal = _bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null ||
 				_currentlyDisplayedBook == null;
+
+			if (returnVal)
+				_view.ChangingPages = false;
+
+			return returnVal;
 		}
 
 		private void SaveAccordionSettings(string data)
