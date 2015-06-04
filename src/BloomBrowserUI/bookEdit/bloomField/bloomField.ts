@@ -42,6 +42,7 @@ class BloomField {
         }
         else{
             BloomField.PrepareNonParagraphField(bloomEditableDiv);
+            BloomField.ManageWhatHappensIfTheyDeleteEverythingNonParagraph(bloomEditableDiv);
         }
     }
 
@@ -364,6 +365,15 @@ class BloomField {
         }
     }
 
+    private static ManageWhatHappensIfTheyDeleteEverythingNonParagraph(field: HTMLElement) {
+        // if the user deletes everthing then we get an empty element, and we may need the bug work around described above.
+        // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2274.
+        $(field).on("input", function (e) {
+                BloomField.PrepareNonParagraphField(this);
+        });
+    }
+
+
     //In PrepareNonParagraphField(), to work around a FF bug, we made a text box non-empty so that the cursor would show up correctly.
     //Now, they have entered something, so remove it
     private static FixUpOnFirstInput(event: any) {
@@ -378,15 +388,32 @@ class BloomField {
             // this caused BL-933 by somehow making us lose the on click event link on the formatButton
             //   $(this).html($(this).html().replace('&nbsp;', ""));
 
-            //so now we do the following business, where we select the &nbsp; we want to delete, momements before the character is typed or text pasted
+            //so now we do the following business, where we select the &nbsp; we want to delete, moments before the character is typed or text pasted
             var selection = window.getSelection();
 
             //if we're at the start of the text, we're to the left of the character we want to replace
             if (selection.anchorOffset === 0) {
-                selection.modify("extend", "forward", "character");
-                //REVIEW: I actually don't know why this is necessary; the pending keypress should do the same thing
-                //But BL-952 showed that without it, we actually somehow end up selecting the format gear icon as well
-                selection.deleteFromDocument();
+                var doNotDeleteOrMove = false;
+                // if we've typed a backspace, delete, or arrow key, don't do it and call this method again next time.
+                // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2274.
+                if (typeof event.charCode == "number" && event.charCode == 0) {
+                    doNotDeleteOrMove = (event.keyCode == 8 /*backspace*/ ||
+                        event.keyCode == 46 /*delete*/ ||
+                        event.keyCode == 37 /*left arrow*/ ||
+                        event.keyCode == 38 /*up arrow*/ ||
+                        event.keyCode == 39 /*right arrow*/ ||
+                        event.keyCode == 40 /*down arrow*/);
+                }
+                if (doNotDeleteOrMove) {
+                    event.stopImmediatePropagation();
+                    event.stopPropagation();
+                    $(field).one('paste keypress', this.FixUpOnFirstInput);
+                } else {
+                    selection.modify("extend", "forward", "character");
+                    //REVIEW: I actually don't know why this is necessary; the pending keypress should do the same thing
+                    //But BL-952 showed that without it, we actually somehow end up selecting the format gear icon as well
+                    selection.deleteFromDocument();
+                }
             } //if we're at position 1 in the text, then we're just to the right of the character we want to replace
             else if (selection.anchorOffset === 1) {
                 selection.modify("extend", "backward", "character");
