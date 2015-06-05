@@ -610,7 +610,11 @@ namespace Bloom.WebLibraryIntegration
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null);
 				string dummy;
-				FullUpload(book, dlg.Progress, view, out dummy, dlg);
+				// Normally we let the user choose which languages to upload. Here, just the ones that have complete information.
+				var langDict = book.AllLanguages;
+				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToArray();
+				if (languagesToUpload.Any())
+					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, dlg);
 				return;
 			}
 			foreach (var sub in Directory.GetDirectories(folder))
@@ -624,15 +628,16 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="progressBox"></param>
 		/// <param name="publishView"></param>
 		/// <param name="parseId"></param>
+		/// <param name="languages"></param>
 		/// <param name="invokeTarget"></param>
 		/// <returns></returns>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, out string parseId, Form invokeTarget = null)
+		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, Form invokeTarget = null)
 		{
 			var bookFolder = book.FolderPath;
 			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 			// These bits of data can't easily be set while saving the book because we save one page at a time
 			// and they apply to the book as a whole.
-			book.BookInfo.LanguageTableReferences = _parseClient.GetLanguagePointers(book.CollectionSettings.MakeLanguageUploadData(book.AllLanguages.ToArray()));
+			book.BookInfo.LanguageTableReferences = _parseClient.GetLanguagePointers(book.CollectionSettings.MakeLanguageUploadData(languages));
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));

@@ -43,8 +43,7 @@ namespace Bloom.Publish
 			this.label6 = new System.Windows.Forms.Label();
 			this._titleLabel = new System.Windows.Forms.Label();
 			this._copyrightLabel = new System.Windows.Forms.Label();
-			this.label9 = new System.Windows.Forms.Label();
-			this._languagesLabel = new System.Windows.Forms.Label();
+			this._langsLabel = new System.Windows.Forms.Label();
 			this._loginLink = new System.Windows.Forms.LinkLabel();
 			this._termsLink = new System.Windows.Forms.LinkLabel();
 			this._creditsLabel = new System.Windows.Forms.Label();
@@ -65,6 +64,7 @@ namespace Bloom.Publish
 			this.panel3 = new System.Windows.Forms.Panel();
 			this._ccPanel = new System.Windows.Forms.Panel();
 			this.panel1 = new System.Windows.Forms.Panel();
+			this._languagesFlow = new System.Windows.Forms.FlowLayoutPanel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.panel1a.SuspendLayout();
@@ -96,7 +96,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this.label1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.label1, null);
 			this._L10NSharpExtender.SetLocalizingId(this.label1, "PublishTab.Upload.UploadProgress");
-			this.label1.Location = new System.Drawing.Point(3, 427);
+			this.label1.Location = new System.Drawing.Point(3, 420);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(300, 15);
 			this.label1.TabIndex = 19;
@@ -240,34 +240,19 @@ namespace Bloom.Publish
 			this._copyrightLabel.Text = "Copyright";
 			this._copyrightLabel.UseMnemonic = false;
 			// 
-			// label9
+			// _langsLabel
 			// 
-			this.label9.Anchor = System.Windows.Forms.AnchorStyles.Left;
-			this.label9.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label9.ForeColor = System.Drawing.SystemColors.ControlText;
-			this._L10NSharpExtender.SetLocalizableToolTip(this.label9, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.label9, null);
-			this._L10NSharpExtender.SetLocalizingId(this.label9, "PublishTab.Upload.Languages");
-			this.label9.Location = new System.Drawing.Point(3, 265);
-			this.label9.Name = "label9";
-			this.label9.Size = new System.Drawing.Size(300, 15);
-			this.label9.TabIndex = 10;
-			this.label9.Text = "Languages";
-			// 
-			// _languagesLabel
-			// 
-			this._languagesLabel.AutoSize = true;
-			this._languagesLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._languagesLabel.ForeColor = System.Drawing.SystemColors.ControlText;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._languagesLabel, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._languagesLabel, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._languagesLabel, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._languagesLabel, "PublishTab.Upload.BloomLibraryPublishControl._languagesLabel");
-			this._languagesLabel.Location = new System.Drawing.Point(3, 280);
-			this._languagesLabel.Name = "_languagesLabel";
-			this._languagesLabel.Size = new System.Drawing.Size(604, 13);
-			this._languagesLabel.TabIndex = 11;
-			this._languagesLabel.Text = "Langs";
+			this._langsLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
+			this._langsLabel.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._langsLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._langsLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._langsLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._langsLabel, "PublishTab.Upload.Languages");
+			this._langsLabel.Location = new System.Drawing.Point(3, 265);
+			this._langsLabel.Name = "_langsLabel";
+			this._langsLabel.Size = new System.Drawing.Size(300, 15);
+			this._langsLabel.TabIndex = 10;
+			this._langsLabel.Text = "Languages";
 			// 
 			// _loginLink
 			// 
@@ -309,7 +294,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._creditsLabel, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._creditsLabel, null);
 			this._L10NSharpExtender.SetLocalizingId(this._creditsLabel, "PublishTab.Upload.Credits");
-			this._creditsLabel.Location = new System.Drawing.Point(3, 322);
+			this._creditsLabel.Location = new System.Drawing.Point(3, 315);
 			this._creditsLabel.Name = "_creditsLabel";
 			this._creditsLabel.Size = new System.Drawing.Size(604, 20);
 			this._creditsLabel.TabIndex = 13;
@@ -429,7 +414,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizingId(this.label11, "PublishTab.Upload.Gaurantee");
 			this.label11.Location = new System.Drawing.Point(0, 0);
 			this.label11.Name = "label11";
-			this.label11.Size = new System.Drawing.Size(591, 13);
+			this.label11.Size = new System.Drawing.Size(592, 13);
 			this.label11.TabIndex = 3;
 			this.label11.Text = "By uploading, you confirm your agreement with the Bloom Library Terms of Use and " +
     "grant the rights it describes";
@@ -461,7 +446,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizationComment(this._progressBox, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._progressBox, L10NSharp.LocalizationPriority.NotLocalizable);
 			this._L10NSharpExtender.SetLocalizingId(this._progressBox, "PublishTab.Upload.BloomLibraryPublishControl._progressBox");
-			this._progressBox.Location = new System.Drawing.Point(3, 445);
+			this._progressBox.Location = new System.Drawing.Point(3, 438);
 			this._progressBox.Name = "_progressBox";
 			this._progressBox.ProgressIndicator = null;
 			this._progressBox.ShowCopyToClipboardMenuItem = false;
@@ -492,13 +477,13 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 5);
 			this.tableLayoutPanel1.Controls.Add(this.label7, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this.label6, 0, 2);
-			this.tableLayoutPanel1.Controls.Add(this._languagesLabel, 0, 17);
 			this.tableLayoutPanel1.Controls.Add(this._titleLabel, 0, 3);
-			this.tableLayoutPanel1.Controls.Add(this.label9, 0, 16);
+			this.tableLayoutPanel1.Controls.Add(this._langsLabel, 0, 16);
 			this.tableLayoutPanel1.Controls.Add(this._summaryBox, 0, 6);
 			this.tableLayoutPanel1.Controls.Add(this._copyrightLabel, 0, 14);
 			this.tableLayoutPanel1.Controls.Add(this.label5, 0, 8);
 			this.tableLayoutPanel1.Controls.Add(this._labelAfterLicense, 0, 13);
+			this.tableLayoutPanel1.Controls.Add(this._languagesFlow, 0, 17);
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(43, 18);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
 			this.tableLayoutPanel1.RowCount = 27;
@@ -537,7 +522,7 @@ namespace Bloom.Publish
 			this.panel1a.Controls.Add(this.label8);
 			this.panel1a.Controls.Add(this._signUpLink);
 			this.panel1a.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.panel1a.Location = new System.Drawing.Point(3, 355);
+			this.panel1a.Location = new System.Drawing.Point(3, 348);
 			this.panel1a.Name = "panel1a";
 			this.panel1a.Size = new System.Drawing.Size(604, 14);
 			this.panel1a.TabIndex = 28;
@@ -547,7 +532,7 @@ namespace Bloom.Publish
 			this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
 			this.panel2.Controls.Add(this._uploadButton);
 			this.panel2.Controls.Add(this._loginLink);
-			this.panel2.Location = new System.Drawing.Point(3, 375);
+			this.panel2.Location = new System.Drawing.Point(3, 368);
 			this.panel2.Name = "panel2";
 			this.panel2.Size = new System.Drawing.Size(604, 25);
 			this.panel2.TabIndex = 28;
@@ -557,7 +542,7 @@ namespace Bloom.Publish
 			this.panel4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
 			this.panel4.Controls.Add(this.label11);
 			this.panel4.Controls.Add(this._termsLink);
-			this.panel4.Location = new System.Drawing.Point(3, 406);
+			this.panel4.Location = new System.Drawing.Point(3, 399);
 			this.panel4.Name = "panel4";
 			this.panel4.Size = new System.Drawing.Size(604, 18);
 			this.panel4.TabIndex = 29;
@@ -567,7 +552,7 @@ namespace Bloom.Publish
 			this.panel3.Controls.Add(this.label3);
 			this.panel3.Controls.Add(this._optional2);
 			this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.panel3.Location = new System.Drawing.Point(3, 306);
+			this.panel3.Location = new System.Drawing.Point(3, 299);
 			this.panel3.Name = "panel3";
 			this.panel3.Size = new System.Drawing.Size(604, 13);
 			this.panel3.TabIndex = 28;
@@ -591,6 +576,14 @@ namespace Bloom.Publish
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(604, 13);
 			this.panel1.TabIndex = 29;
+			// 
+			// _languagesFlow
+			// 
+			this._languagesFlow.AutoSize = true;
+			this._languagesFlow.Location = new System.Drawing.Point(3, 283);
+			this._languagesFlow.Name = "_languagesFlow";
+			this._languagesFlow.Size = new System.Drawing.Size(0, 0);
+			this._languagesFlow.TabIndex = 11;
 			// 
 			// BloomLibraryPublishControl
 			// 
@@ -637,8 +630,7 @@ namespace Bloom.Publish
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.Label _titleLabel;
 		private System.Windows.Forms.Label _copyrightLabel;
-		private System.Windows.Forms.Label label9;
-		private System.Windows.Forms.Label _languagesLabel;
+		private System.Windows.Forms.Label _langsLabel;
 		private System.Windows.Forms.LinkLabel _loginLink;
 		private System.Windows.Forms.Label _creditsLabel;
 		private System.Windows.Forms.TextBox _summaryBox;
@@ -660,6 +652,7 @@ namespace Bloom.Publish
 		private System.Windows.Forms.Label label11;
 		private System.Windows.Forms.LinkLabel _termsLink;
 		private System.Windows.Forms.Panel panel4;
+		private FlowLayoutPanel _languagesFlow;
 
 	}
 }
