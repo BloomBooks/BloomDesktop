@@ -263,16 +263,14 @@ preview.css.
   /* BL-1022 Keeps XMatter thumb images from going too wide */
   max-width: 136mm;
 }
-.bloom-page:nth-of-type(odd) .marginBox {
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {
   left: 15mm;
 }
-.bloom-page:nth-of-type(even) .marginBox {
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even) .marginBox {
   left: 25mm;
 }
-.bloom-page.outsideFrontCover .marginBox,
-.bloom-page.outsideBackCover .marginBox {
-  /*For the outside cover, just center the margin box, ignore the binding (may need to revisit this decision, I (JH) just think it'll be better)*/
-  left: 15mm;
+body:not(.publishMode) .marginBox {
+  left: 20mm;
 }
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
 LABEL.bubble,
