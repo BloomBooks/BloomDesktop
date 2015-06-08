@@ -274,6 +274,12 @@ preview.css.
 .publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even) .marginBox {
   left: 25mm;
 }
+.rightToLeft.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {
+  left: 25mm;
+}
+.rightToLeft.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even) .marginBox {
+  left: 15mm;
+}
 body:not(.publishMode) .marginBox {
   left: 20mm;
 }

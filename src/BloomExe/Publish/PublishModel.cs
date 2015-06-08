@@ -143,6 +143,8 @@ namespace Bloom.Publish
 			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
 			HtmlDom.AddPublishClassToBody(dom.RawDom);
+			if(LayoutPagesForRightToLeft)
+				HtmlDom.AddRightToLeftClassToBody(dom.RawDom);
 			HtmlDom.AddHidePlaceHoldersClassToBody(dom.RawDom);
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
@@ -383,13 +385,15 @@ namespace Bloom.Publish
 						var previewXmlDocumentForPage = book.GetPreviewXmlDocumentForPage(page);
 						BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, book.FolderPath);
 						HtmlDom.AddPublishClassToBody(previewXmlDocumentForPage.RawDom);
+						if(LayoutPagesForRightToLeft)
+							HtmlDom.AddRightToLeftClassToBody(previewXmlDocumentForPage.RawDom);
 						HtmlDom.AddHidePlaceHoldersClassToBody(previewXmlDocumentForPage.RawDom);
 
 						yield return previewXmlDocumentForPage;
 					}
 				}
 			}
-			else //this one is just for testing, it's not especially fruitfal to export for a single book
+			else //this one is just for testing, it's not especially fruitful to export for a single book
 			{
 				//need to hide the "notes for illustrators" on SHRP, which is controlled by the layout
 				BookSelection.CurrentSelection.SetLayout(new Layout()
@@ -404,6 +408,8 @@ namespace Bloom.Publish
 					//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
 					BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, BookSelection.CurrentSelection.FolderPath);
 					HtmlDom.AddPublishClassToBody(previewXmlDocumentForPage.RawDom);
+					if(LayoutPagesForRightToLeft)
+						HtmlDom.AddRightToLeftClassToBody(previewXmlDocumentForPage.RawDom);
 					HtmlDom.AddHidePlaceHoldersClassToBody(previewXmlDocumentForPage.RawDom);
 					yield return previewXmlDocumentForPage;
 				}

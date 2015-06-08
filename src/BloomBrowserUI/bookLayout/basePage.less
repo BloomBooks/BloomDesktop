@@ -257,6 +257,16 @@ preview.css.
   }
 }
 
+//in right to left books, the way our pdf maker works, it just reverses
+.rightToLeft.publishMode :not(.outsideFrontCover):not(.outsideBackCover){
+  &.bloom-page:nth-of-type(odd) .marginBox  {
+	  left: @MarginInner;
+  }
+  &.bloom-page:nth-of-type(even) .marginBox  {
+	  left: @MarginOuter;
+  }
+}
+
 //in edit mode, just split the difference, centering the margin box
 body:not(.publishMode) .marginBox{
   left: @MarginOuter + ( (@MarginInner - @MarginOuter) / 2)
