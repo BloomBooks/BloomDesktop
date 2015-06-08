@@ -11,35 +11,39 @@
 
 
 @BottomMargin-SmallerForCover: 10mm;
-//normally the marginBox sizing is done by the basePage, but for the font cover, we want to cheat to have
+//normally the marginBox sizing is done by the basePage, but for the front and back cover, we want to cheat to have
 //a smaller bottom margin, since there is no page number
-.frontCover .marginBox {
-    .SetMarginBoxHeightOnCover(@PageHeight) {
-        /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-        height: @PageHeight - (@MarginTop + @BottomMargin-SmallerForCover);
-    }
-    .A4Portrait& {
-        .SetMarginBoxHeightOnCover(@A4Portrait-Height);
-    }
-    .A4Landscape& {
-        .SetMarginBoxHeightOnCover(@A4Landscape-Height);
-    }
-    .A5Portrait& {
-        .SetMarginBoxHeightOnCover(@A5Portrait-Height);
-    }
-    .A5Landscape& {
-        .SetMarginBoxHeightOnCover(@A5Landscape-Height);
-    }
-    .A6Portrait& {
-        .SetMarginBoxHeightOnCover(@A6Portrait-Height);
-    }
-    .A6Landscape& {
-        .SetMarginBoxHeightOnCover(@A6Landscape-Height);
-    }
-    .B5Portrait& {
-        .SetMarginBoxHeightOnCover(@B5Portrait-Height);
-    }
-}
+   .outsideFrontCover .marginBox, .outsideBackCover .marginBox {
+      .SetMarginBoxCover(@PageHeight, @PageWidth) {
+          /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+          height: @PageHeight - (@MarginTop + @BottomMargin-SmallerForCover);
+         //Just center the margin box, (for now, we're ignoring the binding) 
+          left: @MarginOuter;
+          width:  @PageWidth - (2 * @MarginOuter);
+      }
+      .A4Portrait& {
+          .SetMarginBoxCover(@A4Portrait-Height, @A4Portrait-Width);
+      }
+      .A4Landscape& {
+          .SetMarginBoxCover(@A4Landscape-Height,@A4Landscape-Width);
+      }
+      .A5Portrait& {
+          .SetMarginBoxCover(@A5Portrait-Height, @A5Portrait-Width);
+      }
+      .A5Landscape& {
+          .SetMarginBoxCover(@A5Landscape-Height,@A5Landscape-Width);
+      }
+      .A6Portrait& {
+          .SetMarginBoxCover(@A6Portrait-Height, @A6Portrait-Width);
+      }
+      .A6Landscape& {
+          .SetMarginBoxCover(@A6Landscape-Height,@A6Landscape-Width);
+      }
+      .B5Portrait& {
+          .SetMarginBoxCover(@B5Portrait-Height, @B5Portrait-Width);
+      }
+  }
+
 
 
 .insideFrontCover {
