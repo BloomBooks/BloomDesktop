@@ -1,4 +1,4 @@
-/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+﻿/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 /*+clearfix {*/
 BODY {
   background-color: #363333;
@@ -212,6 +212,9 @@ TEXTAREA.province {
 }
 .overflow p:empty:after {
   content: '¶';
+}
+.childOverflowingThis {
+  border-bottom: solid thick red !important;
 }
 .Layout-Problem-Detected:before,
 .Layout-Problem-Detected:after {
@@ -561,3 +564,4 @@ SPAN.possible-word
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
   right: 0px;
 }
+/*# sourceMappingURL=editMode.css.map */

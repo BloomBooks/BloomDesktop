@@ -157,10 +157,7 @@ namespace Bloom.Workspace
 			if (Palaso.PlatformUtilities.Platform.IsMono)
 			{
 				// Without this adjustment, we lose some controls on smaller resolutions.
-				var location = _toolSpecificPanel.Location;
-				location.X = _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10;
-				_toolSpecificPanel.Location = location;
-
+				AdjustToolPanelLocation(true);
 				// in mono auto-size causes the height of the tab strip to be too short
 				_tabStrip.AutoSize = false;
 			}
@@ -168,6 +165,78 @@ namespace Bloom.Workspace
 			SetupUILanguageMenu();
 		}
 
+		/// <summary>
+		/// Adjusts the tool panel location to allow more (or optionally less) space
+		/// for the tab buttons.
+		/// </summary>
+		void AdjustToolPanelLocation(bool allowNarrowing)
+		{
+			var widthOfTabButtons = _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10;
+			var location = _toolSpecificPanel.Location;
+			if (widthOfTabButtons > location.X || allowNarrowing)
+			{
+				location.X = widthOfTabButtons;
+				_toolSpecificPanel.Location = location;
+			}
+		}
+
+		/// <summary>
+		/// Adjust the tool panel location when the chosen localization changes.
+		/// See https://jira.sil.org/browse/BL-1212 for what can happen if we
+		/// don't adjust.  At the moment, we only widen, we never narrow the
+		/// overall area allotted to the tab buttons.  Button widths adjust
+		/// themselves automatically to their Text width.  There doesn't seem
+		/// to be a built-in mechanism to limit the width to a given maximum
+		/// so we implement such an operation ourselves.
+		/// </summary>
+		void HandleTabTextChanged(object sender, EventArgs e)
+		{
+			var btn = sender as Messir.Windows.Forms.TabStripButton;
+			if (btn != null)
+			{
+				const string kEllipsis = "\u2026";
+				// Preserve the original string as the tooltip.
+				if (!btn.Text.EndsWith(kEllipsis))
+					btn.ToolTipText = btn.Text;
+				// Ensure the button width is no more than 110 pixels.
+				if (btn.Width > 110)
+				{
+					using (Graphics g = btn.Owner.CreateGraphics())
+					{
+						btn.Text = ShortenStringToFit(btn.Text, 110, btn.Width, btn.Font, g);
+					}
+				}
+			}
+			AdjustToolPanelLocation(false);
+		}
+
+		/// <summary>
+		/// Ensure that the TabStripItem or Control or Whatever is no wider than desired by
+		/// truncating the Text as needed, with an ellipsis appended to show truncation has
+		/// occurred.
+		/// </summary>
+		/// <returns>the possibly shortened string</returns>
+		/// <param name="text">the string to shorten if necessary</param>
+		/// <param name="maxWidth">the maximum item width allowed</param>
+		/// <param name="originalWidth">the original item width (with the original string)</param>
+		/// <param name="font">the font to use</param>
+		/// <param name="g">the relevant Graphics object for drawing/measuring</param>
+		/// <remarks>Would this be a good library method somewhere?  Where?</remarks>
+		public static string ShortenStringToFit(string text, int maxWidth, int originalWidth, Font font, Graphics g)
+		{
+			const string kEllipsis = "\u2026";
+			var txtWidth = g.MeasureString(text, font).Width;
+			var padding = originalWidth - txtWidth;
+			while (txtWidth + padding > maxWidth)
+			{
+				var len = text.Length - 2;
+				if (len <= 0)
+					break;	// I can't conceive this happening, but I'm also paranoid.
+				text = text.Substring(0, len) + kEllipsis;	// trim, add ellipsis
+				txtWidth = g.MeasureString(text, font).Width;
+			}
+			return text;
+		}
 
 		private void _applicationUpdateCheckTimer_Tick(object sender, EventArgs e)
 		{
@@ -310,7 +379,8 @@ namespace Bloom.Workspace
 		private void SelectPage(Control view)
 		{
 			CurrentTabView = view as IBloomTabArea;
-			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "switched page in workspace", true);
+			// Warn the user if we're starting to use too much memory.
+			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "switched page in workspace", true);
 
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);

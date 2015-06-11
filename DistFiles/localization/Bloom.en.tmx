@@ -274,6 +274,18 @@
         <seg>(Experimental) Show Send/Receive Controls</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionSettingsDialog.AndikaNewBasicUpdate1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Bloom is switching the default font for "{0}" to the new "Andika New Basic".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AndikaNewBasicUpdate2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
       <tuv xml:lang="en">
         <seg>Book Making</seg>
@@ -470,7 +482,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
       <tuv xml:lang="en">
-        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
@@ -617,22 +629,10 @@
         <seg>Templates</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.ThreeLanguageSet">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>ThreeLanguageSet</seg>
-      </tuv>
-    </tu>
     <tu tuid="CollectionTab.TitleMissing">
       <note>Shown as the thumbnail caption when the book doesn't have a title</note>
       <tuv xml:lang="en">
         <seg>Title Missing</seg>
-      </tuv>
-    </tu>
-    <tu tuid="CollectionTab.Turkishtest Books">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Turkishtest Books</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Vernacular Collection Heading">
@@ -853,7 +853,7 @@
         <seg>Downloading book</seg>
       </tuv>
     </tu>
-    <tu tuid="Download.GenericDownloadProblemNotice">
+    <tu tuid="Download.GenericNetworkProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book.</seg>
       </tuv>
@@ -949,9 +949,25 @@
         <seg>Text Box</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.DecodableReaderTool.SightWord">
+      <tuv xml:lang="en">
+        <seg>Sight Word</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.DecodableReaderTool.WordNotDecodable">
+      <tuv xml:lang="en">
+        <seg>This word is not decodable in this stage.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.Edit">
       <tuv xml:lang="en">
         <seg>Edit</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.EditNotAllowed">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You cannot change these because this is not the original copy.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.EditTabLabel">
@@ -1208,6 +1224,12 @@
         <seg>Change Layout</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.LeveledReaderTool.SentenceTooLong">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This sentence is too long for this level.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.NewBookName">
       <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
       <tuv xml:lang="en">
@@ -1233,6 +1255,12 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Position</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ReadOnlyInEditMode">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You cannot put anything in there while making an original book.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Spacing">
@@ -1756,6 +1784,12 @@
     <tu tuid="Errors.XMatterNotFound">
       <tuv xml:lang="en">
         <seg>This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a BloomPack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ExperimentalNotice">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This page is an experimental prototype which may have many problems, for which we apologize.</seg>
       </tuv>
     </tu>
     <tu tuid="FirstTabLabel">
@@ -2428,7 +2462,8 @@
     <tu tuid="PublishTab.BodyOnlyRadio-tooltip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
+        <seg>Make a booklet from the inside pages of the book.
+ Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.ButtonThatShowsUploadForm">
@@ -2537,7 +2572,7 @@
         <seg>credits</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.DownloadProblem">
+    <tu tuid="Download.ProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
       </tuv>

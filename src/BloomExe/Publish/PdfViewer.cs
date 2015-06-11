@@ -10,7 +10,9 @@ using System.Runtime.InteropServices;
 using Bloom.Properties;
 using Gecko;
 using Gecko.Interop;
+#if !__MonoCS__
 using IWshRuntimeLibrary;
+#endif
 using Microsoft.Win32;
 using Palaso.IO;
 
@@ -29,6 +31,9 @@ namespace Bloom.Publish
 		private const ulong STATE_STOP = 0x00000010;
 		private bool _printing;
 		public event EventHandler<PdfPrintProgressEventArgs> PrintProgress;
+#if __MonoCS__
+		public event EventHandler PrintFinished;
+#endif
 		//private PdfPrintProgressListener _listener;
 		private string _pdfPath;
 
@@ -97,9 +102,25 @@ namespace Bloom.Publish
 				// and continue to show it using that.
 			}
 #endif
-
-			var url = string.Format("{0}{1}?file=/bloom/{2}", Bloom.web.ServerBase.PathEndingInSlash,
-				FileLocator.GetFileDistributedWithApplication("pdf/web/viewer.html"), pdfFile);
+			// Escaping the filename twice for characters like # is needed in order to get the
+			// pdf filename through Geckofx/xulrunner to our local server on Linux.  This is to
+			// prevent the filename from being cut short at the # character.  As far as I can
+			// tell, Linux xulrunner strips one level of escaping on input, then before passing
+			// the query on to the localhost server it truncates the query portion at the first
+			// # it sees.  The localhost processor expects one level of encoding, and we deal
+			// with having a # in the query (file path) there without any problem.  You may
+			// regard this double escaping as a hack to get around the Linux xulrunner which
+			// behaves differently than the Windows xulrunner.  It is an exception to the rule
+			// of matching EscapeCharsForHttp() with UnescapeCharsForHttp().  See a comment in
+			// https://jira.sil.org/browse/BL-951 for a description of the buggy program
+			// behavior without this hack.
+			var file = pdfFile;
+			if (Palaso.PlatformUtilities.Platform.IsUnix)
+				file = file.EscapeCharsForHttp().EscapeCharsForHttp();
+			var url = string.Format("{0}{1}?file=/bloom/{2}",
+				Bloom.web.ServerBase.PathEndingInSlash,
+				FileLocator.GetFileDistributedWithApplication("pdf/web/viewer.html"),
+				file);
 
 			var browser = ((GeckoWebBrowser)_pdfViewerControl);
 			browser.Navigate(url);
@@ -167,12 +188,14 @@ namespace Bloom.Publish
 
 		private bool TryGhostcriptPrint()
 		{
+			string systemSpecificArgs = String.Empty;
 #if __MonoCS__
-	// todo Linux: I don't think this is quite right.
-	// Also -sDEVICE#mswinpr2 almost certainly needs to be changed.
-	// We want some sort of default device that causes it to display the print dialog.
-	// Todo Linux: set up a dependency so that our package requires GhostScript.
-			var exePath = "/etc/gs"
+			// Ghostscript is built into the CUPS printer service, which is the standard
+			// setup in Ubuntu.  It handles PDF automatically.  gtklp is a graphical
+			// front end to the printer service that allows the user to specify the
+			// printer, paper size, and other parameters that may need to be tweaked.
+			var exePath = "/usr/bin/gtklp";
+			systemSpecificArgs = "";
 #else
 			var gsKey = Registry.LocalMachine.OpenSubKey(@"Software\GPL Ghostscript");
 			if (gsKey == null)
@@ -205,6 +228,11 @@ namespace Bloom.Publish
 					break;
 				// some old install in a bad state? Try another subkey
 			}
+			// -sDEVICE#mswinpr2 makes it display a print dialog so the user can choose printer.
+			// -dBATCH -dNOPAUSE -dQUIET make it go ahead without waiting for user input on each page or after last
+			// -dQUIET was an attempt to prevent it display per-page messages. Didn't work. Not sure it does any good.
+			// -dNORANGEPAGESIZE makes it automatically select the right page orientation.
+			systemSpecificArgs = "-sDEVICE#mswinpr2 -dBATCH -dNOPAUSE -dQUIET -dNORANGEPAGESIZE ";
 #endif
 			if (exePath == null || !System.IO.File.Exists(exePath))
 				return false; // Can't use ghostscript approach
@@ -213,18 +241,26 @@ namespace Bloom.Publish
 				StartInfo =
 				{
 					FileName = exePath,
-					// -sDEVICE#mswinpr2 makes it display a print dialog so the user can choose printer.
-					// -dBATCH -dNOPAUSE -dQUIET make it go ahead without waiting for user input on each page or after last
-					// -dQUIET was an attempt to prevent it display per-page messages. Didn't work. Not sure it does any good.
-					// -dNORANGEPAGESIZE makes it automatically select the right page orientation.
-					Arguments = "-sDEVICE#mswinpr2 -dBATCH -dNOPAUSE -dQUIET -dNORANGEPAGESIZE \"" + _pdfPath + "\"",
+					Arguments = systemSpecificArgs + "\"" + _pdfPath + "\"",
 					UseShellExecute = false, // enables CreateNoWindow
 					CreateNoWindow = true // don't need a DOS box (does not suppress print dialog)
 				}
 			};
+#if __MonoCS__
+			proc.EnableRaisingEvents = true;
+			proc.Exited += PrintProcessExited;
+#endif
 			proc.Start();
 			return true; // we at least think we printed it (unless the user cancels...anyway, don't try again some other way).
 		}
+
+#if __MonoCS__
+		void PrintProcessExited(object sender, EventArgs e)
+		{
+			if (PrintFinished != null)
+				PrintFinished(sender, e);
+		}
+#endif
 
 		private void PrintAfterPause(object sender, EventArgs e)
 		{

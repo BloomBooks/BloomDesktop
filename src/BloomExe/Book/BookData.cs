@@ -534,7 +534,7 @@ namespace Bloom.Book
 					}
 
 					string value = node.InnerXml.Trim(); //may contain formatting
-					if (node.Name.ToLower() == "img")
+					if (node.Name.ToLowerInvariant() == "img")
 					{
 						value = node.GetAttribute("src");
 						//Make the name of the image safe for showing up in raw html (not just in the relatively safe confines of the src attribut),
@@ -560,7 +560,7 @@ namespace Bloom.Book
 					else if (!value.StartsWith("{"))
 						//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
 					{
-						if ((elementName.ToLower() == "textarea" || elementName.ToLower() == "input" ||
+						if ((elementName.ToLowerInvariant() == "textarea" || elementName.ToLowerInvariant() == "input" ||
 							 node.GetOptionalStringAttribute("contenteditable", "false") == "true") &&
 							(lang == "V" || lang == "N1" || lang == "N2"))
 						{
@@ -630,7 +630,7 @@ namespace Bloom.Book
 					{
 						if (data.TextVariables.ContainsKey(key))
 						{
-							if (node.Name.ToLower() == "img")
+							if (node.Name.ToLowerInvariant() == "img")
 							{
 								string imageName =
 									WebUtility.HtmlDecode(data.TextVariables[key].TextAlternatives.GetFirstAlternative());
@@ -692,7 +692,7 @@ namespace Bloom.Book
 								}
 							}
 						}
-						else if (node.Name.ToLower() != "img")
+						else if (node.Name.ToLowerInvariant() != "img")
 						{
 							// See whether we need to delete something
 							string lang = node.GetOptionalStringAttribute("lang", "*");
@@ -799,6 +799,10 @@ namespace Bloom.Book
 
 			string idOfLanguageUsed;
 			string description = metadata.License.GetDescription(_collectionSettings.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed);
+			// Don't really have a description for custom license, it returns the RightsStatement for the sake of having something.
+			// However, we're already showing that in licenseNotes; if we use it for description too we get duplicate (BL-2198).
+			if (metadata.License is CustomLicense)
+				description = "";
 			data.UpdateLanguageString("licenseDescription", WebUtility.HtmlEncode(description), "en", false);
 
 			string licenseUrl = metadata.License.Url;

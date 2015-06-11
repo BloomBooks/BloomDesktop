@@ -408,7 +408,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
       <tuv xml:lang="en">
-        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</seg>
       </tuv>
       <tuv xml:lang="lo">
         <seg>Bloom ແມ່ນ HTML ທີ່ເປີດແປນ (Word ຫຼື LibreOffice) ໃນໂຮງງານຜະລິດຄໍາຂອງທ່ານ. ສັງເກດວ່າທ່ານສາມາດຈັດການກັບການທັງຫມົດຂອງຫນັງສືຫຼືຮູບພາບ. ແຕ່ບໍ່ຈໍາເປັນຈະສາມາດເພື່ອຊ່ວຍປະຢັດຮູບແບບ.</seg>
@@ -891,7 +891,7 @@
         <seg>ການດາວໂຫລດປື້ມບັນ</seg>
       </tuv>
     </tu>
-    <tu tuid="Download.GenericDownloadProblemNotice">
+    <tu tuid="Download.GenericNetworkProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book.</seg>
       </tuv>
@@ -2872,7 +2872,7 @@
         <seg>ສິນເຊື່ອ</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.DownloadProblem">
+    <tu tuid="Download.ProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
       </tuv>

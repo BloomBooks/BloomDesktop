@@ -745,7 +745,7 @@ class ReaderToolsModel {
   static updateWholeBookCounts(pageSource: string): void {
 
     model.bookPageWords = JSON.parse(pageSource);
-    model.displayBookTotals();
+    model.doMarkup();
   }
 
   displayBookTotals(): void {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Bloom.Collection.BloomPack;
+﻿using Bloom.Collection.BloomPack;
 using NUnit.Framework;
 
 namespace BloomTests.Collection

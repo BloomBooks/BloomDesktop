@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.28.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.105.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.31.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.1.1348.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -300,6 +300,15 @@
         <seg>Titre du livre en {lang}</seg>
       </tuv>
     </tu>
+    <tu tuid="BookEditor.DefaultForText">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This formatting is the default for all text boxes with '{0}' style</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ce format s'applique par défaut à toutes les zones de texte avec le style '{0}'</seg>
+      </tuv>
+    </tu>
     <tu tuid="BookEditor.FontSizeTip">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -321,7 +330,7 @@
     <tu tuid="BookEditor.ForTextInLang">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>This formatting is for all {0} text in boxes with '{1}' style</seg>
+        <seg>This formatting is for all {0} text boxes with '{1}' style</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Ce format s'applique à chaque texte en langue {0} avec le style '{1}'.</seg>
@@ -342,6 +351,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Configuration avancée du logiciel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.AutoUpdate">
+      <tuv xml:lang="en">
+        <seg>Automatically update Bloom</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Mise à jour automatique de Bloom</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
@@ -384,6 +401,24 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>(Expérimental) Afficher contrôles d'Envoyer/recevoir</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AndikaNewBasicUpdate1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Bloom is switching the default font for "{0}" to the new "Andika New Basic".</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom changera la police par défaut pour "{0}" à "Andika New Basic".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AndikaNewBasicUpdate2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Cela améliorera l'impression pour la plupart des langues. Si votre langue est une des rares qui exige "Andika", vous pouvez changer la police à partir de Configuration:Création de livre.</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
@@ -439,11 +474,20 @@
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Right to Left Writing System</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Système d'écriture de droite à gauche</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink">
+      <tuv xml:lang="en">
+        <seg>Special Script Settings</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Configuration d'écriture spéciale</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
@@ -687,7 +731,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
       <tuv xml:lang="en">
-        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Bloom ouvrira maintenant ce document HTML dans votre logiciel de traitement de texte (normalement Word ou LibreOffice). On pourra travailler avec le texte et les images de ce livre, mais souvent ces logiciels ne conserve pas bien la mise en page, donc on n'espère pas beaucoup.</seg>
@@ -857,6 +901,22 @@
         <seg>Ouvrir/Créer/Obtenir une collection</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionTab.Progress">
+      <tuv xml:lang="en">
+        <seg>({0}% complete)</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>({0}% complet)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.RestartToUpdate">
+      <tuv xml:lang="en">
+        <seg>Restart to Update</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Redémarrer pour mettre à jour</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionTab.Sample Shells">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -906,6 +966,81 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Modèles</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.TitleMissing">
+      <note>Shown as the thumbnail caption when the book doesn't have a title</note>
+      <tuv xml:lang="en">
+        <seg>Title Missing</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Manque de titre</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UnableToCheckForUpdate">
+      <note>Shown when Bloom tries to check for an update but can't, for example becuase it can't connect to the internet, or a problems with our server, etc.</note>
+      <tuv xml:lang="en">
+        <seg>Could not connect to the server to check for an update. Are you connected to the internet?</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Impossible de se connecter au serveur pour chercher une mise à jour. Êtes-vous connecté à l'Internet ?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpToDate">
+      <tuv xml:lang="en">
+        <seg>Your Bloom is up to date.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Votre copie de Bloom est à jour.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpdateCheckInProgress">
+      <tuv xml:lang="en">
+        <seg>Bloom is already working on checking for updates.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom cherche déjà des mises à jour.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpdateFailed">
+      <tuv xml:lang="en">
+        <seg>A new version appears to be available, but Bloom could not install it.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Une nouvelle version semble être disponible, mais Bloom n'a pas pu l'installer.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpdateInstalled">
+      <note>Appears after Bloom has downloaded a program update in the background and is ready to switch the user to it the next time they run Bloom.</note>
+      <tuv xml:lang="en">
+        <seg>Update for {0} is ready</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Mise à jour pour {0} est prête</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpdateNow">
+      <tuv xml:lang="en">
+        <seg>Update Now</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Mettre à jour maintenant</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.UpdatesAvailable">
+      <tuv xml:lang="en">
+        <seg>A new version of Bloom is available.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Une nouvelle version de Bloom est disponible.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Updating">
+      <tuv xml:lang="en">
+        <seg>Downloading update to {0} ({1}K)</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Téléchargement de mise à jour à {0} ({1} K)</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Vernacular Collection Heading">
@@ -1096,7 +1231,6 @@
       </tuv>
     </tu>
     <tu tuid="Common.OK">
-      <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>OK</seg>
       </tuv>
@@ -1225,6 +1359,14 @@
         <seg>Téléchargement terminé</seg>
       </tuv>
     </tu>
+    <tu tuid="Download.CopyFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom a téléchargé le livre mais n'a pas pu le rendre disponible. Veuillez redémarrez votre ordinateur et réessayez. Si ce message s'affiche encore, veuillez cliquer sur le bouton 'Détails' et signaler le problème aux développeurs.</seg>
+      </tuv>
+    </tu>
     <tu tuid="Download.DownloadingDialogTitle">
       <tuv xml:lang="en">
         <seg>Downloading book</seg>
@@ -1234,11 +1376,36 @@
       </tuv>
     </tu>
     <tu tuid="Download.GenericDownloadProblemNotice">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book.</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Problème de téléchargement de votre livre.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.GenericNetworkProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem downloading your book.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Il y avait un problème de téléchargement de votre livre.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.ProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Il y avait un problème de téléchargement de votre livre. Vous devrez peut-être redémarrer Bloom ou obtenir de l'aide technique.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.TimeoutProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Il y avait un problème de téléchargement du livre : quelque chose a pris trop de temps. Vous pouvez réessayer plus tard ou nous écrire à issues@bloomlibrary.org si vous ne pouvez pas le télécharger à partir de votre endroit.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
@@ -1739,6 +1906,30 @@
         <seg>Ce livre est verrouillé comme un livre canevas. Êtes-vous sûr de vouloir modifier l'image ?</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.JpegWarningDialog.DoNotUse">
+      <tuv xml:lang="en">
+        <seg>Cancel this import</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Annuler cette importation</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.JpegWarningDialog.Photograph">
+      <tuv xml:lang="en">
+        <seg>Use the JPEG file</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Utiliser le fichier JPEG</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.JpegWarningDialog.WarningText">
+      <tuv xml:lang="en">
+        <seg>The file you’ve chosen is a “jpeg” file. JPEGs are perfect for photographs and color artwork. However, JPEGs are a big problem for black and white line art. Problems include:\n• Fuzziness and grey dots.\n• Large file sizes, making the book hard to share.\n• If there are many large JPEGs, Bloom may not have enough memory to make PDFs.\n\nNote: Because JPEG is “lossy”, converting a JPEG to PNG, TIFF, or bmp actually makes things even worse. If this is black and white line art, you want to get an original scan in one of those formats.\n\nPlease select from one of the following, then click “OK”:</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Le fichier sélectionné est un fichier JPEG. Des fichiers JPEG sont bons pour des photos et des illustrations en couleur, mais ils sont un grand problème pour des dessins au trait en noir et blanc. Problèmes inclus :\n• des images floues et des points gris.\n• des tailles de fichier volumineuses, ce qui rend le livre difficiles à partager.\n• en cas de beaucoup de fichiers JPEG grands, Bloom manquera de mémoire pour créer des PDFs.\n\nNB : Parce que le format JPEG est "avec pertes", la conversion du fichier JPEG en format PNG, TIFF, ou BMP rend la situation plus pire. S'il s'agit de dessins au trait noir et blanc, vous voulez obtenir une copie de l'original numérisée dans l'un de ces formats mentionnés ci-dessus.\n\nVeuillez choisir une des options suivantes, puis cliquer sur 'OK' :</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.LayoutMode.ChangeLayout">
       <prop type="x-dynamic">true</prop>
       <prop type="x-nolongerused">true</prop>
@@ -1747,6 +1938,15 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Modifier la mise en page</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.NewBookName">
+      <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
+      <tuv xml:lang="en">
+        <seg>Book</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Livre</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.NoImageFoundOnClipboard">
@@ -2248,12 +2448,37 @@
         <seg>Trois langues</seg>
       </tuv>
     </tu>
+    <tu tuid="Errors.BrokenBook">
+      <tuv xml:lang="en">
+        <seg>Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong. Consider using the 'Report a Problem' command under the 'Help' menu.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom avait un problème d'affichage de cet ouvrage. Cela ne signifie pas que votre travail est perdu, mais cela signifie que quelque chose est dépassé, manquant ou en panne. On peut utiliser l'option 'Signaler un problème' sur le menu 'Aide'.</seg>
+      </tuv>
+    </tu>
     <tu tuid="Errors.CouldNotSavePage">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Bloom avait de la difficulté à enregistrer une page. Veuillez cliquer sur Détails ci-dessous et nous le signaler. Puis quitter Bloom, le relancer et vérifier si la page que vous venez d'éditer manque quelque chose. Désolé !</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.ProblemImportingPicture">
+      <tuv xml:lang="en">
+        <seg>Bloom had a problem importing this picture.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom avait un problème d'importer cette image.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Errors.XMatterNotFound">
+      <tuv xml:lang="en">
+        <seg>This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a BloomPack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ce livre exige '{0}' pour la couverture, les pages liminaires et les parties annexes, mais Bloom n'a pas pu le trouver sur cet ordinateur. Vous pouvez installer un BloomPack qui vous donnera '{0}', ou faire un autre choix pour la couverture, les pages liminaires et les parties annexes à partir de Configuration:Création de livre.</seg>
       </tuv>
     </tu>
     <tu tuid="FirstTabLabel">
@@ -2434,7 +2659,7 @@
     </tu>
     <tu tuid="HelpMenu.documentationMenuItem">
       <tuv xml:lang="en">
-        <seg>Great Help. No, Really!</seg>
+        <seg>Help. Lots of help!</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Documentation</seg>
@@ -2509,7 +2734,7 @@
     <tu tuid="InDesignXmlInformationDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
-        <seg>InDesign XML Information</seg>
+        <seg>Making PDF...</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Format XML d'InDesign</seg>
@@ -2521,6 +2746,22 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Ne plus afficher ce message</seg>
+      </tuv>
+    </tu>
+    <tu tuid="InstallProblem.GeckofxHtmlToPdf">
+      <tuv xml:lang="en">
+        <seg>A component of Bloom, GeckofxHtmlToPdf.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Un composant de Bloom, GeckofxHtmlToPdf.exe, semble manquer. Cela empêche l'apérçu et l'impression. Parfois un logiciel antivirus peut le faire. Vous devrez peut-être de l'aide technique pour réparer l'installation de Bloom et éviter la suppression de ce fichier de nouveau.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="JpegWarningDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>JPEG Warning</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Avertissement sur les fichiers JPEG</seg>
       </tuv>
     </tu>
     <tu tuid="LayoutChoices.A4Landscape">
@@ -2584,6 +2825,24 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>A5 Portrait aligné en bas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A6Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A6Landscape</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>A6 Paysage</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A6Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A6Portrait</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>A6 Portrait</seg>
       </tuv>
     </tu>
     <tu tuid="LayoutChoices.B5Portrait">
@@ -2776,6 +3035,22 @@
         <seg>Comptes de mots</seg>
       </tuv>
     </tu>
+    <tu tuid="LicenseDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Bloom {0}</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LicenseDialog._acceptButton">
+      <tuv xml:lang="en">
+        <seg>I accept the terms of the license agreement</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>J'accepte les termes du contrat de licence</seg>
+      </tuv>
+    </tu>
     <tu tuid="LoginDialog.AgreeToTerms">
       <tuv xml:lang="en">
         <seg>I agree to the Bloom Library's Terms of Use</seg>
@@ -2902,6 +3177,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Choisir le type de collection</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.existingCollectionInstructions">
+      <tuv xml:lang="en">
+        <seg>If you already have a collection you want to open, click  the 'Cancel' button.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Si vous avez déjà une collection que vous voulez ouvrir, cliquez sur le bouton 'Annuler'.</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
@@ -3041,6 +3324,14 @@
         <seg>Cliquer sur 'Suivant' pour commencer.</seg>
       </tuv>
     </tu>
+    <tu tuid="OpenCreateCloneControl.InDropboxMessage">
+      <tuv xml:lang="en">
+        <seg>Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bloom a détecté que cette collection se trouve dans votre dossier Dropbox. Cela peut provoquer des problèmes parce que Dropbox bloque parfois l'accès de ses propres fichiers à Bloom. Si vous avez des problèmes, on vous conseille de déplacer votre collection ailleurs ou désactiver Dropbox pendant l'utilisation de Bloom.</seg>
+      </tuv>
+    </tu>
     <tu tuid="OpenCreateNewCollectionsDialog.Bloom Collections">
       <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
       <tuv xml:lang="en">
@@ -3129,6 +3420,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Attention</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PageList.CantMoveWhenTranslating">
+      <tuv xml:lang="en">
+        <seg>Pages can not be re-ordered when you are translating a book</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Lorsqu'on traduit un livre, on ne peut pas changer l'ordre des pages.</seg>
       </tuv>
     </tu>
     <tu tuid="PageList.CantMoveXMatter">
@@ -3372,6 +3671,7 @@
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.DownloadProblem">
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
       </tuv>
@@ -4583,6 +4883,30 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Compression de livre en cours...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ScriptSettingsDialog.RightToLeftScriptCheckBox">
+      <tuv xml:lang="en">
+        <seg>This script is right to left</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Cette écriture est de droit à gauche</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ScriptSettingsDialog.ScriptSettingsWindowTitle">
+      <tuv xml:lang="en">
+        <seg>Special Script Settings...</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Configuration d'écriture spéciale...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ScriptSettingsDialog.TallerLinesCheckBox">
+      <tuv xml:lang="en">
+        <seg>This script requires taller lines</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ce script nécessite des lignes plus hauts</seg>
       </tuv>
     </tu>
     <tu tuid="SendReceiveutton">

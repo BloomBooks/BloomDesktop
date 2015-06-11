@@ -28,7 +28,11 @@ class BloomField {
             BloomField.ModifyForParagraphMode(bloomEditableDiv);
             BloomField.ManageWhatHappensIfTheyDeleteEverything(bloomEditableDiv);
             BloomField.PreventArrowingOutIntoField(bloomEditableDiv);
+            BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(bloomEditableDiv);
+            BloomField.MakeTabEnterTabElement(bloomEditableDiv);
+            BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
             $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
+            $(bloomEditableDiv).click(function() { this.ProcessClick; });
             $(bloomEditableDiv).blur(function () {
                 BloomField.ModifyForParagraphMode(this);
             });
@@ -38,22 +42,109 @@ class BloomField {
         }
         else{
             BloomField.PrepareNonParagraphField(bloomEditableDiv);
+            BloomField.ManageWhatHappensIfTheyDeleteEverythingNonParagraph(bloomEditableDiv);
         }
     }
 
-    private static ProcessIncomingPaste(e: any) {
+    private static MakeTabEnterTabElement(field: HTMLElement) {
+        $(field).keydown(e => {
+            if (e.which === 9) {
+                    //note: some people introduce a new element, <tab>. That has the advantage
+                    //of having a stylesheet-controllable width. However, Firefox leave the
+                    //cursor in side of the <tab></tab>, and though we could manage
+                    //to get out of that, what if someone moved back into it? Etc. etc.
+                    //So I'm going with the conservative choice for now, which is the em space,
+                    //which is about as wide as 4 spaces.
+                    document.execCommand("insertHTML", false, "&emsp;");
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+            }
+        );
+    }
+    
+    private static MakeShiftEnterInsertLineBreak(field: HTMLElement) {
+        $(field).keypress(e => {
+            if (e.which == 13) { //enter key
+                if (e.shiftKey) {
+                    //we put in a specially marked span which stylesheets can use to give us "soft return" in the midst of paragraphs
+                    //which have either indents or prefixes (like "step 1", "step 2").
+                    //The difficult part is that the browser will leave our cursor inside of the new span, which isn't really
+                    //what we want. So we also add a zero-width-non-joiner (&#xfeff;) there so that we can get outside of the span.
+                    document.execCommand("insertHTML", false, "<span class='bloom-linebreak'></span>&#xfeff;");
+                } else {
+                    // If the enter didn't come with a shift key, just insert a paragraph.
+                    // Now, why are we doing this if firefox would do it anyway? Because if we previously pressed shift - enter
+                    // and got that <span class='bloom-linebreak'></span>, firefox will actually insert that span again, in the
+                    // new paragraphs (which would be reasonable if we had turned on a normal text-formating style, like a text color.
+                    // So we do the paragraph creation ourselves, so that we don't get any unwanted <span>s in it.
+                    // Note that this is going to remove that "make new spans automatically" feature entirely. 
+                    // If we need it someday, we'll have to make this smarter and only override the normal behavior if we can detect
+                    // that the span it would create would be one of those bloom-linbreak ones.
+
+                    //The other thing going on is that Firefox doesn't like to see multiple empty <p></p>'s. It won't let us insert
+                    //two or more of these in a row. So we stick in a zero-width-non-joiner element to pacify it.
+                    //This has the downside that it takes to presses of "DEL" to remove the line; a future enhancement could fix
+                    //that.
+                    document.execCommand("insertHTML", false, "<p>&zwnj;</p>");
+                }
+                e.stopPropagation();
+                e.preventDefault();
+
+            }
+        });
+    }
+
+    private static ProcessClick(e: any) {
+
         // note: currently, the c# code also intercepts the past event and
         // makes sure that we just get plain 'ol text on the clipboard.
         // That's a bit heavy handed, but the mess you get from pasting
         // html from word is formidable.
 
         var txt = e.originalEvent.clipboardData.getData('text/plain');
-        
-        //some typists in SHRP indent in MS Word by hitting newline and pressing a bunch of spaces.
-        // We replace any newline followed by 3 or more spaces with just one space. It could
-        // conceivalby hit some false positive, but it would be easy for the user to fix.
-        var html = txt.replace(/\n\s{3,}/g, ' ');
 
+        var html: string;
+        if (e.ctrlKey) {
+            html = txt.replace(/\n\n/g, 'twonewlines');
+            html = html.replace(/\n/g, ' ');
+            html = html.replace(/\s+/g, ' ');
+            html = html.replace(/twonewlines/g, '\n');
+
+            //convert remaining newlines to paragraphs. We're already inside a  <p>, so each 
+            //newline finishes that off and starts a new one
+            html = html.replace(/\n/g, '</p><p>');
+
+            document.execCommand("insertHTML", false, html);
+
+            //don't do the normal paste
+            e.stopPropagation();
+            e.preventDefault();
+        }
+    }
+
+    private static ProcessIncomingPaste(e: any) {
+
+        // note: currently, the c# code also intercepts the past event and
+        // makes sure that we just get plain 'ol text on the clipboard.
+        // That's a bit heavy handed, but the mess you get from pasting
+        // html from word is formidable.
+
+        var txt = e.originalEvent.clipboardData.getData('text/plain');
+
+        var html: string;
+
+        if (e.ctrlKey) {
+            html = txt.replace(/\n\n/g, 'twonewlines');
+            html = html.replace(/\n/g, ' ');
+            html = html.replace(/\s+/g, ' ');
+            html = html.replace(/twonewlines/g, '\n');
+        } else {
+            //some typists in SHRP indent in MS Word by hitting newline and pressing a bunch of spaces.
+            // We replace any newline followed by 3 or more spaces with just one space. It could
+            // conceivalby hit some false positive, but it would be easy for the user to fix.
+            html = txt.replace(/\n\s{3,}/g, ' ');
+        }
         //convert remaining newlines to paragraphs. We're already inside a  <p>, so each 
         //newline finishes that off and starts a new one
         html = html.replace(/\n/g, '</p><p>');
@@ -65,10 +156,65 @@ class BloomField {
         e.preventDefault();
     }
 
+    // Since embedded images come before the first editable text, going to the beginning of the field and pressing Backspace moves the current paragraph into the caption. Sigh.
+    private static PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(field: HTMLElement) {
+
+        if ($(field).find('.bloom-keepFirstInField.bloom-preventRemoval').length == 0) {
+            return;
+        }
+
+        var divToProtect = $(field).find('.bloom-keepFirstInField.bloom-preventRemoval')[0];
+
+        //We have this to fix up cases existing before we introduced this prevention, and also
+        // as a backup plan, in case there is some way we haven't discovered to bypass the
+        //prevention algorithm below.
+
+        //The following checks the top level elemenents and only allows divs; the two items
+        //that we expect in there are the div for the "imagePusherDowner" and the div for 
+        //the image - container(which in turn contains the caption).
+        $(divToProtect).children().filter(function() {
+            return this.localName.toLowerCase() != 'div';
+        }).each(function () {
+            //divToProtect.removeChild(this);
+        });
+        //also remove any raw text nodes, which you can only get at with "contents"
+        //note this is still only one level deep, so it doesn't endanger the caption
+        $(divToProtect).contents().filter(function () {
+            return this.nodeType == Node.TEXT_NODE && this.textContent.trim().length > 0;
+        }).each(function () {
+            // divToProtect.removeChild(this);
+        });
+
+        //Enhance: Currently, this will prevent backspacing sometimes when it should be OK. Specifically,
+        //If we are in the first paragraph and the cursor is to the left of the first character of another
+        //element  (<b>, <i>, <span>, etc.), then we'll have a false positive because sel.anchorOffset will
+        //be 0. To really solve this, we would need to be able to determine if we are in the first text node
+        //of the paragraph, because that's the case where FF will try and remove the  P and move it into the
+        //preceding div.
+        $(field).keydown(e => {
+            if (e.which == 8 /* backspace*/) {
+                var sel = window.getSelection();
+                //Are we at the start of a paragraph with nothing selected?
+                if (sel.anchorOffset == 0 && sel.isCollapsed) {
+                    //Are we in the first paragraph? 
+                    //Embedded image divs come before the first editable paragraph, so we look at the previous element and
+                    //see if it is one those. Anything marked with bloom-preventRemoval is probably not something we want to
+                    //be merging with.
+                    var previousElement = $(sel.anchorNode).closest('P').prev();
+                    if(previousElement.length>0 && previousElement[0] == divToProtect) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        console.log("Prevented Backspace");
+                    }
+                }
+            }
+        });
+    }
+
     // Without this, ctrl+a followed by a left-arrow or right-arrow gets you out of all paragraphs,
     // so you can start messing things up.
     private static PreventArrowingOutIntoField(field:HTMLElement) {
-        $(field).keydown(function (e) {
+        $(field).keydown(function(e) {
             var leftArrowPressed = e.which === 37;
             var rightArrowPressed = e.which === 39;
             if (leftArrowPressed || rightArrowPressed) {
@@ -78,7 +224,7 @@ class BloomField {
                     BloomField.MoveCursorToEdgeOfField(this, leftArrowPressed ? CursorPosition.start : CursorPosition.end);
                 }
             }
-        })
+        });
     }
 
     private static EnsureStartsWithParagraphElement(field:HTMLElement) {
@@ -219,6 +365,15 @@ class BloomField {
         }
     }
 
+    private static ManageWhatHappensIfTheyDeleteEverythingNonParagraph(field: HTMLElement) {
+        // if the user deletes everthing then we get an empty element, and we may need the bug work around described above.
+        // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2274.
+        $(field).on("input", function (e) {
+                BloomField.PrepareNonParagraphField(this);
+        });
+    }
+
+
     //In PrepareNonParagraphField(), to work around a FF bug, we made a text box non-empty so that the cursor would show up correctly.
     //Now, they have entered something, so remove it
     private static FixUpOnFirstInput(event: any) {
@@ -233,15 +388,32 @@ class BloomField {
             // this caused BL-933 by somehow making us lose the on click event link on the formatButton
             //   $(this).html($(this).html().replace('&nbsp;', ""));
 
-            //so now we do the following business, where we select the &nbsp; we want to delete, momements before the character is typed or text pasted
+            //so now we do the following business, where we select the &nbsp; we want to delete, moments before the character is typed or text pasted
             var selection = window.getSelection();
 
             //if we're at the start of the text, we're to the left of the character we want to replace
             if (selection.anchorOffset === 0) {
-                selection.modify("extend", "forward", "character");
-                //REVIEW: I actually don't know why this is necessary; the pending keypress should do the same thing
-                //But BL-952 showed that without it, we actually somehow end up selecting the format gear icon as well
-                selection.deleteFromDocument();
+                var doNotDeleteOrMove = false;
+                // if we've typed a backspace, delete, or arrow key, don't do it and call this method again next time.
+                // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2274.
+                if (typeof event.charCode == "number" && event.charCode == 0) {
+                    doNotDeleteOrMove = (event.keyCode == 8 /*backspace*/ ||
+                        event.keyCode == 46 /*delete*/ ||
+                        event.keyCode == 37 /*left arrow*/ ||
+                        event.keyCode == 38 /*up arrow*/ ||
+                        event.keyCode == 39 /*right arrow*/ ||
+                        event.keyCode == 40 /*down arrow*/);
+                }
+                if (doNotDeleteOrMove) {
+                    event.stopImmediatePropagation();
+                    event.stopPropagation();
+                    $(field).one('paste keypress', this.FixUpOnFirstInput);
+                } else {
+                    selection.modify("extend", "forward", "character");
+                    //REVIEW: I actually don't know why this is necessary; the pending keypress should do the same thing
+                    //But BL-952 showed that without it, we actually somehow end up selecting the format gear icon as well
+                    selection.deleteFromDocument();
+                }
             } //if we're at position 1 in the text, then we're just to the right of the character we want to replace
             else if (selection.anchorOffset === 1) {
                 selection.modify("extend", "backward", "character");

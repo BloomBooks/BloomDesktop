@@ -8,6 +8,7 @@
 /// <reference path="../js/getIframeChannel.ts"/>
 /// <reference path="../js/interIframeChannel.ts"/>
 /// <reference path="../js/collectionSettings.d.ts"/>
+/// <reference path="../OverflowChecker/OverflowChecker.ts"/>
 
 var iframeChannel = getIframeChannel();
 
@@ -15,9 +16,7 @@ interface qtipInterface extends JQuery {
     qtipSecondary(options: any): JQuery;
 }
 
-interface overflowInterface extends JQuery {
-    IsOverflowing(): boolean;
-}
+declare function GetDifferenceBetweenHeightAndParentHeight(JQuery):number;
 
 class StyleEditor {
 
@@ -146,10 +145,7 @@ class StyleEditor {
         if (parseInt(sizeString) < this.MIN_FONT_SIZE)
             return; // too small, quietly don't do it!
         rule.style.setProperty("font-size", sizeString + units, "important");
-        if ((<overflowInterface>$(target)).IsOverflowing())
-            $(target).addClass('overflow');
-        else
-            $(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
+        OverflowChecker.MarkOverflowInternal(target);
 
         // alert("New size rule: " + rule.cssText);
         // Now update tooltip
@@ -315,7 +311,7 @@ class StyleEditor {
                 return <CSSStyleRule> ruleList[i];
             }
         }
-        (<CSSStyleSheet>styleSheet).insertRule('.' + styleAndLang + "{ }", ruleList.length);
+        (<CSSStyleSheet>styleSheet).insertRule('.' + styleAndLang + " { }", ruleList.length);
 
         return <CSSStyleRule> ruleList[ruleList.length - 1]; //new guy is last
     }
@@ -470,7 +466,7 @@ class StyleEditor {
         // Detecting 'none' is difficult because our edit boxes inherit a faint grey border
         // Currently we use plain rgb for our official borders, and the inherited one uses rgba(0, 0, 0, 0.2).
         // We have a problem in that the edit mode UI also uses borders. Its borders, however, are all partially
-        // transparent (up to 0.6 at the moment). So we can detect that there isn't an actual style border by looking at the 4th, oppacity member of the rgba.
+        // transparent (up to 0.6 at the moment). So we can detect that there isn't an actual style border by looking at the 4th, opacity member of the rgba.
         // REVIEW (JH) @JT: Why do we look at the actual style, instead of the style rule we are editing?
         if (!borderStyle || borderStyle === 'none' || !borderColor || (borderColor.toLowerCase().startsWith("rgba(") && parseFloat(borderColor.split(',')[3]) < 1.0)) {
             borderChoice = 'none';
@@ -507,6 +503,16 @@ class StyleEditor {
         return typeof ($target.closest('.bloom-frontMatter')[0]) !== 'undefined' || typeof ($target.closest('.bloom-backMatter')[0]) !== 'undefined';
     }
 
+    AdjustFormatButton(jqueryNode: JQuery):void {
+        var newBottom = -1 * GetDifferenceBetweenHeightAndParentHeight(jqueryNode.parent());
+        if (newBottom < 0) {
+            newBottom = 0;
+        }
+        $("#formatButton").css({
+            bottom: newBottom
+        });
+    }
+
     AttachToBox(targetBox: HTMLElement) {
         var styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName)
@@ -534,12 +540,10 @@ class StyleEditor {
         $(targetBox).append('<div id="formatButton" contenteditable="false" class="bloom-ui"><img  contenteditable="false" src="' + editor._supportFilesRoot + '/img/cogGrey.svg"></div>');
 
         //make the button stay at the bottom if we overflow and thus scroll
-        $(targetBox).on("scroll", function () {
-            var newBottom = -1 * $(this).scrollTop();
-            $("#formatButton").css({
-                bottom: newBottom
-            });
-        });
+        $(targetBox).on("scroll", this.AdjustFormatButton);
+
+        // And in case we are starting out on a centerVertically page we might need to adjust it now
+        this.AdjustFormatButton($(targetBox));
 
         var formatButton = $('#formatButton');
         /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened
@@ -669,6 +673,8 @@ class StyleEditor {
                 }
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
+                StyleEditor.positionInViewport(toolbar);
+
                 $('html').off('click.toolbar');
                 $('html').on("click.toolbar", function (event) {
                     if (event.target != toolbar &&
@@ -687,6 +693,34 @@ class StyleEditor {
                 });
             });
         });
+    }
+
+    /**
+     * Positions the Style Editor toolbar so that it is completely visible, so that it does not extend below the
+     * current viewport.
+     * @param toolbar
+     */
+    static positionInViewport(toolbar: JQuery): void {
+
+        // get the current size and position of the toolbar
+        var elem: HTMLElement = toolbar[0];
+        var top = elem.offsetTop;
+        var height = elem.offsetHeight;
+
+        // get the top of the toolbar in relation to the top of its containing elements
+        while (elem.offsetParent) {
+            elem = <HTMLElement>elem.offsetParent;
+            top += elem.offsetTop;
+        }
+
+        // diff is the portion of the toolbar that is below the viewport
+        var diff = (top + height) - (window.pageYOffset + window.innerHeight);
+        if (diff > 0) {
+            var offset = toolbar.offset();
+
+            // the extra 30 pixels is for padding
+            toolbar.offset({left: offset.left, top: offset.top - diff - 30});
+        }
     }
 
     getButtonIds() {
@@ -1154,10 +1188,7 @@ class StyleEditor {
         var styleName = StyleEditor.GetStyleNameForElement(target);
         if (!styleName)
             return; // bizarre, since we put up the dialog
-        if ((<overflowInterface>$(target)).IsOverflowing())
-            $(target).addClass('overflow');
-        else
-            $(target).removeClass('overflow'); // If it's not here, this won't hurt anything.
+        OverflowChecker.MarkOverflowInternal(target);
         this.getCharTabDescription();
         this.getMoreTabDescription();
     }

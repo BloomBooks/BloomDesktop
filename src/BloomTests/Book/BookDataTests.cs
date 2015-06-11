@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
+using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
-using Bloom.Book;
+using Palaso.Extensions;
+using Palaso.Reporting;
 using Palaso.TestUtilities;
 using Palaso.UI.WindowsForms.ClearShare;
 
@@ -22,6 +24,7 @@ namespace BloomTests.Book
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() {
 				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(new TemporaryFolder("BookDataTests").Path, "test"),
 				Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
+			ErrorReport.IsOkToInteractWithUser = false;
 		}
 
 		[Test]
@@ -587,6 +590,157 @@ namespace BloomTests.Book
 			Assert.AreEqual("health", data.GetVariableOrNull("topic", "en"));
 			Assert.IsNull(data.GetVariableOrNull("topic", "tpi"));
 		}
+
+		private bool AndikaNewBasicIsInstalled()
+		{
+			const string fontToCheck = "andika new basic";
+			return FontFamily.Families.FirstOrDefault(f => f.Name.ToLowerInvariant() == fontToCheck) != null;
+		}
+
+		[Test]
+		[Category("SkipOnTeamCity")]
+		public void AndikaNewBasic_MustBeInstalled()
+		{
+			Assert.That(AndikaNewBasicIsInstalled());
+		}
+
+		[Test]
+		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_DoIt()
+		{
+			// This test needs Andika New Basic installed to work
+			// dump out and pass if the font isn't installed
+			if (!AndikaNewBasicIsInstalled())
+				return; // quietly pass the test if the font isn't installed
+
+			var filepath = _collectionSettings.SettingsFilePath;
+			var cssFilePath = Path.GetDirectoryName(filepath).CombineForPath("settingsCollectionStyles.css");
+			File.Delete(cssFilePath);
+			WriteSettingsFile(filepath, _preAndikaMigrationCollection);
+
+			// SUT
+			_collectionSettings.Load();
+
+			// Verify
+			var oneTimeCheckVersion = _collectionSettings.OneTimeCheckVersionNumber;
+			Assert.That(Convert.ToInt32(oneTimeCheckVersion).Equals(1));
+			var font1 = _collectionSettings.DefaultLanguage1FontName;
+			Assert.That(font1.Equals("Andika New Basic"));
+			var font2 = _collectionSettings.DefaultLanguage1FontName;
+			Assert.That(font2.Equals("Andika New Basic"));
+			var font3 = _collectionSettings.DefaultLanguage1FontName;
+			Assert.That(font3.Equals("Andika New Basic"));
+			Assert.That(File.Exists(cssFilePath)); // if this file exists, it means we did the migration
+		}
+
+		[Test]
+		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_alreadyDone()
+		{
+			var filepath = _collectionSettings.SettingsFilePath;
+			var cssFilePath = Path.GetDirectoryName(filepath).CombineForPath("settingsCollectionStyles.css");
+			File.Delete(cssFilePath);
+			WriteSettingsFile(filepath, _postAndikaMigrationCollection);
+
+			// SUT
+			_collectionSettings.Load();
+
+			// Verify
+			var font1 = _collectionSettings.DefaultLanguage1FontName;
+			var oneTimeCheckVersion = _collectionSettings.OneTimeCheckVersionNumber;
+			Assert.That(Convert.ToInt32(oneTimeCheckVersion).Equals(1));
+			Assert.That(font1.Equals("Andika New Basic"));
+			Assert.That(!File.Exists(cssFilePath)); // if this file doesn't exist, it means we didn't do any migration
+		}
+
+		[Test]
+		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_doneUserReverted()
+		{
+			var filepath = _collectionSettings.SettingsFilePath;
+			var cssFilePath = Path.GetDirectoryName(filepath).CombineForPath("settingsCollectionStyles.css");
+			File.Delete(cssFilePath);
+			WriteSettingsFile(filepath, _postAndikaMigrationCollectionNoANB);
+
+			// SUT
+			_collectionSettings.Load();
+
+			// Verify
+			var font1 = _collectionSettings.DefaultLanguage1FontName;
+			var oneTimeCheckVersion = _collectionSettings.OneTimeCheckVersionNumber;
+			Assert.That(Convert.ToInt32(oneTimeCheckVersion).Equals(1));
+			Assert.That(font1.Equals("Andika"));
+			Assert.That(!File.Exists(cssFilePath)); // if this file doesn't exist, it means we didn't do any migration
+		}
+
+		private void WriteSettingsFile(string filepath, string xmlString)
+		{
+			File.WriteAllText(filepath, xmlString);
+		}
+
+		#region Collection Settings test data
+
+		private const string _preAndikaMigrationCollection = @"﻿<?xml version='1.0' encoding='utf-8'?>
+			<Collection version='0.2'>
+				<Language1Name>Tok Pisin</Language1Name>
+				<Language1Iso639Code>tpi</Language1Iso639Code>
+				<Language2Iso639Code>en</Language2Iso639Code>
+				<Language3Iso639Code>ara</Language3Iso639Code>
+				<DefaultLanguage1FontName>Andika</DefaultLanguage1FontName>
+				<DefaultLanguage2FontName>Andika</DefaultLanguage2FontName>
+				<DefaultLanguage3FontName>Andika</DefaultLanguage3FontName>
+				<IsLanguage1Rtl>false</IsLanguage1Rtl>
+				<IsLanguage2Rtl>false</IsLanguage2Rtl>
+				<IsLanguage3Rtl>true</IsLanguage3Rtl>
+				<IsSourceCollection>False</IsSourceCollection>
+				<XMatterPack>Factory</XMatterPack>
+				<Country></Country>
+				<Province></Province>
+				<District></District>
+				<AllowNewBooks>True</AllowNewBooks>
+			</Collection>";
+
+		private const string _postAndikaMigrationCollection = @"﻿<?xml version='1.0' encoding='utf-8'?>
+			<Collection version='0.2'>
+				<Language1Name>Tok Pisin</Language1Name>
+				<Language1Iso639Code>tpi</Language1Iso639Code>
+				<Language2Iso639Code>en</Language2Iso639Code>
+				<Language3Iso639Code>ara</Language3Iso639Code>
+				<DefaultLanguage1FontName>Andika New Basic</DefaultLanguage1FontName>
+				<DefaultLanguage2FontName>Andika New Basic</DefaultLanguage2FontName>
+				<DefaultLanguage3FontName>Andika New Basic</DefaultLanguage3FontName>
+				<OneTimeCheckVersionNumber>1</OneTimeCheckVersionNumber>
+				<IsLanguage1Rtl>false</IsLanguage1Rtl>
+				<IsLanguage2Rtl>false</IsLanguage2Rtl>
+				<IsLanguage3Rtl>true</IsLanguage3Rtl>
+				<IsSourceCollection>False</IsSourceCollection>
+				<XMatterPack>Factory</XMatterPack>
+				<Country></Country>
+				<Province></Province>
+				<District></District>
+				<AllowNewBooks>True</AllowNewBooks>
+			</Collection>";
+
+		private const string _postAndikaMigrationCollectionNoANB = @"﻿<?xml version='1.0' encoding='utf-8'?>
+			<Collection version='0.2'>
+				<Language1Name>Tok Pisin</Language1Name>
+				<Language1Iso639Code>tpi</Language1Iso639Code>
+				<Language2Iso639Code>en</Language2Iso639Code>
+				<Language3Iso639Code>ara</Language3Iso639Code>
+				<DefaultLanguage1FontName>Andika</DefaultLanguage1FontName>
+				<DefaultLanguage2FontName>Andika</DefaultLanguage2FontName>
+				<DefaultLanguage3FontName>Andika</DefaultLanguage3FontName>
+				<OneTimeCheckVersionNumber>1</OneTimeCheckVersionNumber>
+				<IsLanguage1Rtl>false</IsLanguage1Rtl>
+				<IsLanguage2Rtl>false</IsLanguage2Rtl>
+				<IsLanguage3Rtl>true</IsLanguage3Rtl>
+				<IsSourceCollection>False</IsSourceCollection>
+				<XMatterPack>Factory</XMatterPack>
+				<Country></Country>
+				<Province></Province>
+				<District></District>
+				<AllowNewBooks>True</AllowNewBooks>
+			</Collection>";
+
+		#endregion
+
 		#region Metadata
 		[Test]
 		public void GetLicenseMetadata_HasCustomLicense_RightsStatementContainsCustom()

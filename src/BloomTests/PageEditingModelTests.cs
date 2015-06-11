@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using NUnit.Framework;
 using Palaso.TestUtilities;
 using Palaso.UI.WindowsForms.ImageToolbox;
@@ -60,7 +61,7 @@ namespace BloomTests
 					var destDogImagePath = dest.Combine("dog.png");
 					File.WriteAllText(destDogImagePath, "old dog");
 					model.ChangePicture(dest.Path, dom, "two", original);
-					Assert.IsTrue(Image.FromFile(destDogImagePath).Width == kSampleImageDimension);
+					Assert.IsTrue(ImageUtils.GetImageFromFile(destDogImagePath).Width == kSampleImageDimension);
 				}
 			}
 		}

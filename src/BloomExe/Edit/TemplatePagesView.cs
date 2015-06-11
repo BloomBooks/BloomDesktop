@@ -145,19 +145,19 @@ namespace Bloom.Edit
 				var pageClasses = pageThumbnail.GetStringAttribute("class");
 
 				//enhance: there is doubtless code somewhere else that picks these size/orientations out elegantly
-				if (pageClasses.ToLower().Contains("a5portrait"))
+				if (pageClasses.ToLowerInvariant().Contains("a5portrait"))
 				{
 					pageContainer.SetAttribute("class", "pageContainer A5Portrait");
 				}
-				if(pageClasses.ToLower().Contains("a6portrait"))
+				if (pageClasses.ToLowerInvariant().Contains("a6portrait"))
 				{
 					pageContainer.SetAttribute("class", "pageContainer A6Portrait");
 				}
-				if (pageClasses.ToLower().Contains("a4portrait"))
+				if (pageClasses.ToLowerInvariant().Contains("a4portrait"))
 				{
 					pageContainer.SetAttribute("class", "pageContainer A4Portrait");
 				}
-				if (pageClasses.ToLower().Contains("a4landscape"))
+				if (pageClasses.ToLowerInvariant().Contains("a4landscape"))
 				{
 					pageContainer.SetAttribute("class", "pageContainer A4Landscape");
 				}

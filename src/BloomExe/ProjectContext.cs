@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
@@ -11,7 +10,6 @@ using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
-using Bloom.Library;
 using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
@@ -56,7 +54,7 @@ namespace Bloom
 				AddShortCutInComputersBloomCollections(collectionDirectory);
 			}
 
-			_httpServer.StartWithSetupIfNeeded();
+			_httpServer.StartListening();
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -160,6 +158,7 @@ namespace Bloom
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
 								c.Resolve<CurrentEditableCollectionSelection>())).InstancePerLifetimeScope();
 
+					// Keep in sync with OptimizedFileLocator: it wants to return the object created here.
 					builder.Register<IChangeableFileLocator>(
 						c =>
 							new BloomFileLocator(c.Resolve<CollectionSettings>(), c.Resolve<XMatterPackFinder>(), GetFactoryFileLocations(),
@@ -277,10 +276,15 @@ namespace Bloom
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/js/toolbar");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/css");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html/font-awesome/css");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/accordion");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/readerSetup");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/StyleEditor");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/TopicChooser");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/js");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/css");
@@ -288,12 +292,16 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/img");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/collection");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/editor/gridly version");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/editor");
 
-			//yield return FileLocator.GetDirectoryDistributedWithApplication("widgets");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/themes/bloom-jqueryui-theme");
+
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/localizationManager");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/long-press");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/split-pane");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
-
 		}
 
 		/// <summary>
@@ -432,6 +440,11 @@ namespace Bloom
 		public SendReceiver SendReceiver
 		{
 			get { return _scope.Resolve<SendReceiver>(); }
+		}
+
+		internal BloomFileLocator OptimizedFileLocator
+		{
+			get { return (BloomFileLocator)_scope.Resolve<IChangeableFileLocator>(); }
 		}
 
 		internal BookServer BookServer

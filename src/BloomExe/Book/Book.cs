@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -155,9 +156,9 @@ namespace Bloom.Book
 					//the SIL-LEAD project, SHRP (around 2012-2016) had books that just had an English name, before we changed Bloom
 					//to not show English names. But the order was also critical. So we want those old books to go ahead and use their
 					//English names.
-					var englishTitle = title.GetExactAlternative("en").ToLower();
+					var englishTitle = title.GetExactAlternative("en").ToLowerInvariant();
 					var SHRPMatches = new string[] {"p1", "p2", "p3", "p4", "SHRP"};
-					var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(m => englishTitle.Contains(m.ToLower()));
+					var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(m => englishTitle.Contains(m.ToLowerInvariant()));
 
 					//if this book is one of the ones we're editing in our collection, it really
 					//needs a title in our main language, it would be confusing to show a title from some other langauge
@@ -285,19 +286,20 @@ namespace Bloom.Book
 
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css").ToLocalhost());
-			if(LockedDown)
+			pageDom.AddStyleSheet("basePage.css");
+			pageDom.AddStyleSheet("editMode.css");
+			if (LockedDown)
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css").ToLocalhost());
-				pageDom.AddEditMode("translation");
+				pageDom.AddStyleSheet("editTranslationMode.css");
 			}
 			else
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css").ToLocalhost());
-				pageDom.AddEditMode("original");
+				pageDom.AddStyleSheet("editOriginalMode.css");
 			}
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css").ToLocalhost());
+
+			AddCreationTypeAttribute(pageDom);
+
+			pageDom.AddStyleSheet("editPaneGlobal.css");
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _collectionSettings);
@@ -447,10 +449,9 @@ namespace Bloom.Book
 		{
 			var dom = _storage.GetRelocatableCopyOfDom(_log);
 			dom.RemoveModeStyleSheets();
-			var fileLocator = _storage.GetFileLocator();
 			foreach (var cssFileName in cssFileNames)
 			{
-				dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName).ToLocalhost());
+				dom.AddStyleSheet(cssFileName);
 			}
 			dom.SortStyleSheetLinks();
 
@@ -544,7 +545,7 @@ namespace Bloom.Book
 				Book book=null;
 				if (!String.IsNullOrEmpty(templateKey))
 				{
-					if (templateKey.ToLower() == "basicbook")//catch this pre-beta spelling with no space
+					if (templateKey.ToLowerInvariant() == "basicbook")//catch this pre-beta spelling with no space
 						templateKey = "Basic Book";
 					book = _templateFinder.FindTemplateBook(templateKey);
 					if(book==null)
@@ -607,6 +608,7 @@ namespace Bloom.Book
 				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
 			}
 			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "origami.css");
+			AddCreationTypeAttribute(previewDom);
 
 			//We may have just run into an error for the first time
 			if (HasFatalError)
@@ -626,6 +628,11 @@ namespace Bloom.Book
 			AddPreviewJScript(previewDom);
 			previewDom.AddPublishClassToBody();
 			return previewDom;
+		}
+
+		private void AddCreationTypeAttribute(HtmlDom htmlDom)
+		{
+			htmlDom.AddCreationType(LockedDown ? "translation" : "original");
 		}
 
 		public void BringBookUpToDate(IProgress progress)
@@ -709,7 +716,6 @@ namespace Bloom.Book
 			//    bookDOM.Title = Title;
 			// Bit of a kludge, but there's no way to tell whether a boolean is already set in the JSON, so we fake that it is not,
 			// thus ensuring that if something is in the metadata we use it.
-			bookDOM.RemoveMetaElement("SuitableForMakingShells", () => null, val => BookInfo.IsSuitableForMakingShells = val == "yes" || val == "definitely");
 			// If there is nothing there the default of true will survive.
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
 
@@ -760,7 +766,6 @@ namespace Bloom.Book
 		internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 		{
 			var oldTags = File.ReadAllText(oldTagsPath);
-			bookMetaData.IsSuitableForMakingShells = oldTags.Contains("suitableForMakingShells");
 			bookMetaData.IsFolio = oldTags.Contains("folio");
 			bookMetaData.IsExperimental = oldTags.Contains("experimental");
 		}
@@ -809,11 +814,11 @@ namespace Bloom.Book
 			foreach (XmlElement templatePageDiv in templateDom.SafeSelectNodes("//body/div"))
 			{
 				if (templatePageDiv.GetOptionalStringAttribute("class", "").Contains("customPage"))
-					return; // we sure don't want to revert this page to its blank custom state
+					continue; // we sure don't want to revert this page to its blank custom state
 
 				var templateId = templatePageDiv.GetStringAttribute("id");
 				if (string.IsNullOrEmpty(templateId))
-					return;
+					continue;
 
 				var templatePageClasses = templatePageDiv.GetAttribute("class");
 				//note, lineage is a series of guids separated by a semicolon
@@ -1141,32 +1146,65 @@ namespace Bloom.Book
 
 		/// <summary>
 		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languages
-		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful? Should we
-		/// require that all bloom-editable elements in a certain language have content? That all parent elements which contain
-		/// any bloom-editable elements contain one in the candidate language? Is bloom-editable even a reliable class to look
-		/// for to identify the main content of the book?
-		/// Initially a book was defined as containing a language if it contained at least one bloom-editable element in that
-		/// language. However some templates (e.g. Story Primer) may not fit this so well, so if that doesn't produce any languages
-		/// we'll say that a book contains a language if it has a title defined in that language.
+		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful?
+		/// Based on BL-2017, we now return a Dictionary of booleans indicating whether a language should be uploaded by default.
+		/// The dictionary contains an entry for every language where the book contains non-x-matter text.
+		/// The value is true if every non-x-matter field which contains text in any language contains text in this.
 		/// </summary>
-		public IEnumerable<string> AllLanguages
+		public Dictionary<string, bool> AllLanguages
 		{
 			get
 			{
-				var langList = OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
+				var result = new Dictionary<string, bool>();
+				var parents = new HashSet<XmlElement>(); // of interesting non-empty children
+				// editable divs that are in non-x-matter pages and have a potentially interesting language.
+				var langDivs = OurHtmlDom.SafeSelectNodes("//div[contains(@class, 'bloom-page') and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))]//div[@class and @lang]").Cast<XmlElement>()
 					.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
-					.Select(div => div.Attributes["lang"].Value)
-					.Where(lang => lang != "*" && lang != "z" && lang != "") // Not valid languages, though we sometimes use them for special purposes
-					.Distinct();
-				if (langList.Count() == 0)
-					langList = OurHtmlDom.SafeSelectNodes("//div[@data-book and @lang]").Cast<XmlElement>()
-						.Where(div => div.Attributes["data-book"].Value.IndexOf("bookTitle", StringComparison.InvariantCulture) >= 0)
-						.Select(div => div.Attributes["lang"].Value)
-						.Where(lang => lang != "*" && lang != "z" && lang != "")
-						.Distinct();
-				return langList;
+					.Where(div =>
+					{
+						var lang = div.Attributes["lang"].Value;
+						return lang != "*" && lang != "z" && lang != ""; // Not valid languages, though we sometimes use them for special purposes
+					}).ToArray();
+				// First pass: fill in the dictionary with languages which have non-empty content in relevant divs
+				foreach (var div in langDivs)
+				{
+					var lang = div.Attributes["lang"].Value;
+					// The test for ContainsKey is redundant but may save a useful amount of time.
+					if (!result.ContainsKey(lang) && !string.IsNullOrWhiteSpace(div.InnerText))
+					{
+						result[lang] = true;
+						parents.Add((XmlElement)div.ParentNode);
+					}
+				}
+				// Second pass: for each parent, if it lacks a non-empty child for one of the languages, set value for that lang to false.
+				foreach (var lang in result.Keys.ToList()) // ToList so we can modify original collection as we go
+				{
+					foreach (var parent in parents)
+					{
+						if (!HasContentInLang(parent, lang))
+						{
+							result[lang] = false; // not complete
+							break; // no need to check other parents.
+						}
+					}
+				}
+
+				return result;
 			}
 		}
+
+		bool HasContentInLang(XmlElement parent, string lang)
+		{
+			foreach (var divN in parent.ChildNodes)
+			{
+				var div = divN as XmlElement;
+				if (div == null || div.Attributes["lang"] == null || div.Attributes["lang"].Value != lang)
+					continue;
+				return !string.IsNullOrWhiteSpace(div.InnerText); // this one settles it: success if non-empty
+			}
+			return false; // not found
+		}
+
 
 		public string GetAboutBookHtml
 		{
@@ -1338,6 +1376,9 @@ namespace Bloom.Book
 			//review: could move to page
 			var pageElement = OurHtmlDom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv);
 			Require.That(pageElement != null,"Page could not be found: "+page.XPathToDiv);
+			if (pageElement != null)
+				pageElement.InnerXml = XmlHtmlConverter.RemoveEmptySelfClosingTags(pageElement.InnerXml);
+				
 			return pageElement as XmlElement;
 		}
 
@@ -1461,7 +1502,7 @@ namespace Bloom.Book
 
 				_bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
-				 var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
+				var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
 				if (userModifiedStyles != null)
 				{
 					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
@@ -1617,12 +1658,11 @@ namespace Bloom.Book
 		public HtmlDom GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer)
 		{
 			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
-			//dom.LoadXml(OurHtmlDom.OuterXml);
+			AddCreationTypeAttribute(printingDom);
 
 			if (IsFolio)
 			{
 				AddChildBookContentsToFolio(printingDom, currentBookCollection, bookServer);
-				_storage.UpdateStyleSheetLinkPaths(printingDom);
 				printingDom.SortStyleSheetLinks();
 			}
 
@@ -1638,10 +1678,10 @@ namespace Bloom.Book
 				case PublishModel.BookletPortions.AllPagesNoBooklet:
 					break;
 				case PublishModel.BookletPortions.BookletCover:
-					DeletePages(printingDom.RawDom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
+					DeletePages(printingDom.RawDom, p => !p.GetAttribute("class").ToLowerInvariant().Contains("cover"));
 					break;
 				 case PublishModel.BookletPortions.BookletPages:
-					DeletePages(printingDom.RawDom, p => p.GetAttribute("class").ToLower().Contains("cover"));
+					DeletePages(printingDom.RawDom, p => p.GetAttribute("class").ToLowerInvariant().Contains("cover"));
 					break;
 				 default:
 					throw new ArgumentOutOfRangeException("bookletPortion");
@@ -1684,7 +1724,7 @@ namespace Bloom.Book
 					if (!userModifiedStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
 					{
 						userModifiedStyleSheets.Add(sheetName);
-						printingDom.AddStyleSheetIfMissing("file://"+Path.Combine(childBook.FolderPath,sheetName));
+						printingDom.AddStyleSheetIfMissing(sheetName);
 					}
 				}
 				printingDom.SortStyleSheetLinks();
@@ -1695,7 +1735,15 @@ namespace Bloom.Book
 					currentLastContentPage.ParentNode.InsertAfter(importedPage, currentLastContentPage);
 					currentLastContentPage = importedPage;
 
-					ImageUpdater.MakeImagePathsOfImportedPagePointToOriginalLocations(importedPage, bookInfo.FolderPath);
+					foreach(XmlElement img in importedPage.SafeSelectNodes("descendant::img"))
+					{
+						var bookFolderName = Path.GetFileName(bookInfo.FolderPath);
+						var pathRelativeToFolioFolder = ".../" + bookFolderName + "/" + img.GetAttribute("src");
+						//NB: URLEncode would replace spaces with '+', which is ok in the parameter section, but not the URL
+						//So we are using UrlPathEncode
+						var fullPathInLinkFormat = HttpUtility.UrlPathEncode(pathRelativeToFolioFolder);
+						img.SetAttribute("src", fullPathInLinkFormat);
+					}
 				}
 			}
 		}

@@ -21,7 +21,8 @@ namespace Bloom.CollectionTab
 {
 	public partial class LibraryListView : UserControl
 	{
-		private const int ButtonHeight = 110;
+		private const int ButtonHeight = 112;
+		private const int ButtonWidth = 92;
 
 		public delegate LibraryListView Factory();//autofac uses this
 
@@ -35,7 +36,6 @@ namespace Bloom.CollectionTab
 		private BookTransfer _bookTransferrer;
 		private DateTime _lastClickTime;
 		private bool _primaryCollectionReloadPending;
-		private LinkLabel _missingBooksLink;
 		private bool _disposed;
 		private BookCollection _downloadedBookCollection;
 		enum ButtonManagementStage
@@ -121,18 +121,15 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-//TODO
-//            foreach (ListViewItem item in _listView.Items)
-//            {
-//                if(item.Tag == _bookSelection.CurrentSelection)
-//                {
-//                    item.Selected = true;
-//                    break;
-//                }
-//            }
+			if (sender == null) return;
+
+			var selection = (BookSelection)sender;
+			if ((selection.CurrentSelection != null) && (selection.CurrentSelection.BookInfo != null))
+			{
+				HighlightBookButton(selection.CurrentSelection.BookInfo);					
+			}
 		}
 
 		public int PreferredWidth
@@ -285,24 +282,7 @@ namespace Bloom.CollectionTab
 
 		private void AddFinalLinks()
 		{
-			if (_model.IsShellProject)
-			{
-				_missingBooksLink = new LinkLabel()
-					{
-						Text =
-							L10NSharp.LocalizationManager.GetString("CollectionTab.hiddenBooksNotice",
-																	"Where's the rest?",
-																	"Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden"),
-						Width = 200,
-						Margin = new Padding(0, 30, 0, 0),
-						TextAlign = ContentAlignment.TopCenter,
-						LinkColor = Palette.TextAgainstDarkBackground
-					};
-
-				_missingBooksLink.Click += new EventHandler(OnMissingBooksLink_Click);
-				_sourceBooksFlow.Controls.Add(_missingBooksLink);
-				_sourceBooksFlow.SetFlowBreak(_missingBooksLink, true);
-			}
+			// Nothing to do currently. This was used to display the missing books link in a source collection.
 		}
 
 		/// <summary>
@@ -342,12 +322,14 @@ namespace Bloom.CollectionTab
 			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
 			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay, button))
 			{
-			var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay, button);
-			if (titleBestForUserDisplay != button.Text)
-			{
+				var bestTitle = book.TitleBestForUserDisplay;
+				var titleBestForUserDisplay = ShortenTitleIfNeeded(bestTitle, button);
+				if (titleBestForUserDisplay != button.Text)
+				{
 					Debug.WriteLine(button.Text + " --> " + titleBestForUserDisplay);
-				button.Text = titleBestForUserDisplay;
-			}
+					button.Text = titleBestForUserDisplay;
+					toolTip1.SetToolTip(button, bestTitle);
+				}
 			}
 			if (buttonInfo.ThumbnailRefreshNeeded)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
 				ScheduleRefreshOfOneThumbnail(book);
@@ -373,14 +355,6 @@ namespace Bloom.CollectionTab
 			return dlg.GetVerification(this);
 		}
 
-		void OnMissingBooksLink_Click(object sender, EventArgs e)
-		{
-			if (_model.IsShellProject)
-			{
-				MessageBox.Show(LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."), _missingBooksLink.Text);
-			}
-		}
-
 		/// <summary>
 		///
 		/// </summary>
@@ -393,18 +367,15 @@ namespace Bloom.CollectionTab
 			{
 				try
 				{
-					if (IsSuitableSourceForThisEditableCollection(bookInfo) || collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+					if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
 					{
-						if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
-						{
-							loadedAtLeastOneBook = true;
-							AddOneBook(bookInfo, flowLayoutPanel, collection.Name.ToLower() == "templates");
-						}
+						loadedAtLeastOneBook = true;
+						AddOneBook(bookInfo, flowLayoutPanel, collection.Name.ToLowerInvariant() == "templates");
 					}
 				}
 				catch (Exception error)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Could not load the book at "+bookInfo.FolderPath);
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not load the book at " + bookInfo.FolderPath);
 				}
 			}
 			if (collection.Name == BookCollection.DownloadedBooksCollectionNameInEnglish)
@@ -498,43 +469,48 @@ namespace Bloom.CollectionTab
 			get { return Parent.Parent.Parent.Parent != null; }
 		}
 
-		private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, bool localizeTitle)
+		private void AddOneBook(BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, bool localizeTitle)
 		{
-			var button = new Button(){Size=new Size(90, ButtonHeight)};
 			string title = bookInfo.QuickTitleUserDisplay;
 			if (localizeTitle)
-				title = LocalizationManager.GetDynamicString("Bloom", "Template."+title,title);
+				title = LocalizationManager.GetDynamicString("Bloom", "Template." + title, title);
 
-			button.Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont;
-			button.Text = ShortenTitleIfNeeded(title, button);
-			button.TextImageRelation = TextImageRelation.ImageAboveText;
-			button.ImageAlign = ContentAlignment.TopCenter;
-			button.TextAlign = ContentAlignment.BottomCenter;
-			button.FlatStyle = FlatStyle.Flat;
-			button.ForeColor = Palette.TextAgainstDarkBackground ;
-			button.FlatAppearance.BorderSize = 0;
-			button.UseMnemonic = false; //otherwise, it tries to interpret '&' as a shortcut
-			button.ContextMenuStrip = _bookContextMenu;
+			var button = new Button
+			{
+				Size = new Size(ButtonWidth, ButtonHeight),
+				Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
+				TextImageRelation = TextImageRelation.ImageAboveText,
+				ImageAlign = ContentAlignment.TopCenter,
+				TextAlign = ContentAlignment.BottomCenter,
+				FlatStyle = FlatStyle.Flat,
+				ForeColor = Palette.TextAgainstDarkBackground,
+				UseMnemonic = false, //otherwise, it tries to interpret '&' as a shortcut
+				ContextMenuStrip = _bookContextMenu,
+				AutoSize = false,
+
+				Tag = bookInfo
+			};
+
 			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
+			
+			button.Text = ShortenTitleIfNeeded(title, button);
+			button.FlatAppearance.BorderSize = 1;
+			button.FlatAppearance.BorderColor = BackColor;
 
-			// Setting the AutoEllipsis property is strange but makes it behave the same on
-			// Windows and Linux. Despite its name it won't show an ellipsis but wrap the line
-			// at a word boundary if the text is too long (at least if the height is large
-			// enough - didn't try what happens if the text doesn't fit in multiple lines)
-			button.AutoEllipsis = true;
-			button.AutoSize = false;
+			toolTip1.SetToolTip(button, title);
 
-			button.Tag=bookInfo;
-
-
-			Image thumbnail = Resources.PagePlaceHolder;;
+			Image thumbnail = Resources.PagePlaceHolder;
 			_bookThumbnails.Images.Add(bookInfo.Id, thumbnail);
 			button.ImageIndex = _bookThumbnails.Images.Count - 1;
-			flowLayoutPanel.Controls.Add(button);
+			flowLayoutPanel.Controls.Add(button); // important to add it before RefreshOneThumbnail; uses parent flow to decide whether primary
+
+			// Can't use this test until after we add button (uses parent info)
+			if (!IsUsableBook(button))
+				button.ForeColor = Palette.DisabledTextAgainstDarkBackColor;
 
 			Image img;
-			bool refreshThumbnail = false;
+			var refreshThumbnail = false;
 			//review: we could do this at idle time, too:
 			if (bookInfo.TryGetPremadeThumbnail(out img))
 			{
@@ -547,19 +523,15 @@ namespace Bloom.CollectionTab
 				refreshThumbnail = true;
 			}
 			_buttonsNeedingSlowUpdate.Enqueue(new ButtonInfo(button, refreshThumbnail));
-
-//			bookInfo.GetThumbNailOfBookCoverAsync(bookInfo.Type != Book.Book.BookType.Publication,
-//				                                  image => RefreshOneThumbnail(bookInfo, image),
-//												  error=> RefreshOneThumbnail(bookInfo, Resources.Error70x70));
-
 		}
 
 		private string ShortenTitleIfNeeded(string title, Button button)
 		{
-			var maxHeight = ButtonHeight - HtmlThumbNailer.ThumbnailOptions.DefaultHeight;
-			// -2 was determined experimentally. Any less and some titles go to three lines.
-			// "Pame's Family Battles Maleria" is especially close.
-			int width = button.Width - button.Margin.Horizontal - 2;
+			var maxHeight = ButtonHeight - HtmlThumbNailer.ThumbnailOptions.DefaultHeight - (button.FlatAppearance.BorderSize * 2);
+
+			// -2 because the text will wrap if there is not at least one pixel between the text and the border
+			var width = button.Width - button.Margin.Horizontal - (button.FlatAppearance.BorderSize * 2) - 2;
+
 			var targetSize = new Size(width, int.MaxValue);
 			// WordBreak is necessary for sensible measurment of line widths...otherwise it ignores the width
 			// constraint and puts all the text on one line.
@@ -645,6 +617,11 @@ namespace Bloom.CollectionTab
 
 		private void OnClickBook(object sender, EventArgs e)
 		{
+			if (!IsUsableBook((Button) sender))
+			{
+				MessageBox.Show(LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."));
+				return;
+			}
 			BookInfo bookInfo = ((Button)sender).Tag as BookInfo;
 			if (bookInfo == null)
 				return;
@@ -674,6 +651,17 @@ namespace Bloom.CollectionTab
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
 			}
 			SelectBook(bookInfo);
+		}
+
+		private void HighlightBookButton(BookInfo bookInfo)
+		{
+			foreach (var btn in AllBookButtons())
+			{
+				if (btn.Tag == bookInfo)
+					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
+				else
+					btn.FlatAppearance.BorderColor = BackColor;
+			}
 		}
 
 		private void SelectBook(BookInfo bookInfo)
@@ -747,8 +735,9 @@ namespace Bloom.CollectionTab
 				Book.Book book = SelectedBook;
 				if (book != null && SelectedButton != null)
 				{
-					SelectedButton.Text = ShortenTitleIfNeeded(book.TitleBestForUserDisplay, SelectedButton);
-
+					var bestTitle = book.TitleBestForUserDisplay;
+					SelectedButton.Text = ShortenTitleIfNeeded(bestTitle, SelectedButton);
+					toolTip1.SetToolTip(SelectedButton, bestTitle);
 					if (_thumbnailRefreshPending)
 					{
 						_thumbnailRefreshPending = false;
@@ -782,7 +771,7 @@ namespace Bloom.CollectionTab
 				{
 					_bookThumbnails.Images[imageIndex] = image;
 					var button = FindBookButton(bookInfo);
-					button.Image = image;
+					button.Image = IsUsableBook(button) ? image : MakeDim(image);
 				}
 			}
 
@@ -793,6 +782,65 @@ namespace Bloom.CollectionTab
 				throw;
 #endif
 			}
+		}
+
+		bool IsUsableBook(Button bookButton)
+		{
+			// We'd prefer to use collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+			// but we don't have access to the collection at all the points where we need to evaluate this.
+			// Depending on the parent like this unfortunately means we can't use this method until the button
+			// has its parent.
+			// Eithe way, the basic idea is that books in the main collection you are now editing are always usable.
+			if (bookButton.Parent == _primaryCollectionFlow)
+				return true;
+			var bookInfo = (BookInfo) bookButton.Tag;
+			return IsSuitableSourceForThisEditableCollection(bookInfo);
+		}
+
+		// Adapted from http://tech.pro/tutorial/660/csharp-tutorial-convert-a-color-image-to-grayscale
+		// Author claims this is about 20x faster than manipulating pixels directly (62 vs 1135ms for some image on some hardware).
+		public static Bitmap MakeDim(Image original)
+		{
+			//create a blank bitmap the same size as original
+			Bitmap newBitmap = new Bitmap(original.Width, original.Height);
+
+			//get a graphics object from the new image
+			using (Graphics g = Graphics.FromImage(newBitmap))
+			{
+				//create the grayscale ColorMatrix
+				var colorMatrix = new ColorMatrix(
+					new float[][]
+					{
+						// convert to greyscale: this (original) version leaves them too bright, and the distinction may be lost on color-blind
+						//new float[] {.3f, .3f, .3f, 0, 0},
+						//new float[] {.59f, .59f, .59f, 0, 0},
+						//new float[] {.11f, .11f, .11f, 0, 0},
+						//new float[] {0, 0, 0, 1, 0},
+						//new float[] {0, 0, 0, 0, 1}
+
+						// halve all color values to make darker--very similar to the chosen variant, but dark colors are strengthened.
+						//new float[] {0.5f, 0, 0, 0, 0},
+						//new float[] {0, 0.5f, 0, 0, 0},
+						//new float[] {0, 0, 0.5f, 0, 0},
+						//new float[] {0, 0, 0, 1, 0},
+						//new float[] {0, 0, 0, 0, 1}
+
+						// make it semi-transparent; this reduces contrast with background for all colors.
+						new float[] {1.0f, 0, 0, 0, 0},
+						new float[] {0, 1.0f, 0, 0, 0},
+						new float[] {0, 0, 1.0f, 0, 0},
+						new float[] {0, 0, 0, 0.4f, 0}, // the 0.4 here is what really does it.
+						new float[] {0, 0, 0, 0, 1}
+					});
+
+				ImageAttributes attributes = new ImageAttributes();
+				attributes.SetColorMatrix(colorMatrix);
+
+				//draw the original image on the new image using the color matrix to adapt the colors
+				g.DrawImage(original, new Rectangle(0, 0, original.Width, original.Height),
+					0, 0, original.Width, original.Height, GraphicsUnit.Pixel, attributes);
+			}
+			return newBitmap;
 		}
 
 		private Button FindBookButton(Book.BookInfo bookInfo)
@@ -843,7 +891,16 @@ namespace Bloom.CollectionTab
 
 		private void OnBringBookUpToDate_Click(object sender, EventArgs e)
 		{
-			_model.BringBookUpToDate();
+			try
+			{
+				_model.BringBookUpToDate();
+			}
+			catch (Exception error)
+			{
+				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.ErrorUpdating",
+					"There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.");
+				ErrorReport.NotifyUserOfProblem(error, msg);
+			}
 		}
 
 		private void _openFolderOnDisk_Click(object sender, EventArgs e)
@@ -939,7 +996,7 @@ namespace Bloom.CollectionTab
 			try
 			{
 				MessageBox.Show(LocalizationManager.GetString("CollectionTab.BookMenu.ExportDocMessage",
-					"Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much."));
+					"Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much."));
 				var destPath = _bookSelection.CurrentSelection.GetPathHtmlFile().Replace(".htm", ".doc");
 				_model.ExportDocFormat(destPath);
 				PathUtilities.OpenFileInApplication(destPath);

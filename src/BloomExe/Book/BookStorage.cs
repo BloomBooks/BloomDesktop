@@ -12,6 +12,7 @@ using System.Xml;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
+using L10NSharp;
 using Palaso.Code;
 using Palaso.IO;
 using Palaso.Progress;
@@ -50,7 +51,6 @@ namespace Bloom.Book
 		event EventHandler FolderPathChanged;
 
 		BookInfo MetaData { get; set; }
-		void UpdateStyleSheetLinkPaths(HtmlDom printingDom);
 	}
 
 	public class BookStorage : IBookStorage
@@ -163,11 +163,7 @@ namespace Bloom.Book
 			string path = Path.Combine(_folderPath, fileName);
 			if (File.Exists(path))
 			{
-				//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
-				using (var tempImage = Image.FromFile(path))
-				{
-					image = new Bitmap(tempImage);
-				}
+				image = ImageUtils.GetImageFromFile(path);
 				return true;
 			}
 			image = null;
@@ -280,7 +276,6 @@ namespace Bloom.Book
 
 			SetBaseForRelativePaths(relocatableDom, _folderPath);
 			EnsureHasLinksToStylesheets(relocatableDom);
-			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
 
 			return relocatableDom;
 		}
@@ -297,24 +292,30 @@ namespace Bloom.Book
 
 			SetBaseForRelativePaths(relocatableDom, _folderPath);
 			EnsureHasLinksToStylesheets(relocatableDom);
-			UpdateStyleSheetLinkPaths(relocatableDom, _fileLocator, log);
 
 			return relocatableDom;
 		}
 
-
 		public void SetBookName(string name)
 		{
-
 			if (!Directory.Exists(_folderPath)) //bl-290 (user had 4 month-old version, so the bug may well be long gone)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom has a pesky bug we've been searching for, and you've found it. Most likely, you won't lose any work, but we do need to report the problem and then have you restart. Bloom will now show an error box where you can tell us anything that might help us understand how to reproduce the problem, and let you email it to us.\r\nThanks for your help!");
-				throw new ApplicationException(string.Format("In SetBookName('{0}'), BookStorage thinks the existing folder is '{1}', but that does not exist. (ref bl-290)", name, _folderPath));
+				var msg = LocalizationManager.GetString("BookStorage.FolderMoved",
+					"It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					new ApplicationException(
+						string.Format(
+							"In SetBookName('{0}'), BookStorage thinks the existing folder is '{1}', but that does not exist. (ref bl-290)",
+							name, _folderPath)),
+					msg);
+				// Application.Exit() is not drastic enough to terminate all the call paths here and all the code
+				// that tries to make sure we save on exit. Get lots of flashing windows during shutdown.
+				Environment.Exit(-1);
 			}
 			name = SanitizeNameForFileSystem(name);
 
 			var currentFilePath = PathToExistingHtml;
-			//REVIEW: This doesn't immediataly make sense; if this functino is told to call it Foo but it's current Foo1... why does this just return?
+			//REVIEW: This doesn't immediately make sense; if this function is told to call it Foo but it's current Foo1... why does this just return?
 
 			if (Path.GetFileNameWithoutExtension(currentFilePath).StartsWith(name)) //starts with because maybe we have "myBook1"
 				return;
@@ -492,7 +493,7 @@ namespace Bloom.Book
 
 			//ok, so maybe they changed the name of the folder and not the htm. Can we find a *single* html doc?
 			var candidates = new List<string>(Directory.GetFiles(folderPath, "*.htm"));
-			candidates.RemoveAll((name) => name.ToLower().Contains("configuration"));
+			candidates.RemoveAll((name) => name.ToLowerInvariant().Contains("configuration"));
 			if (candidates.Count == 1)
 				return candidates[0];
 
@@ -515,10 +516,7 @@ namespace Bloom.Book
 				//big images before giving them to gecko which has trouble with really hi-res ones
 				//Some clients don't want low-res images and can suppress this by setting HtmlDom.UseOriginalImages.
 				var uri = folderPath + Path.DirectorySeparatorChar;
-				uri = uri.Replace(":", "%3A");
-				uri = uri.Replace('\\', '/');
-				uri = ImageServer.PathEndingInSlash + uri;
-				path = uri;
+				path = uri.ToLocalhost();
 			}
 			dom.BaseForRelativePaths = path; // We actually don't WANT any base elements in the DOM
 		}
@@ -638,16 +636,16 @@ namespace Bloom.Book
 			}
 			else
 			{
-				UpdateIfNewer("placeHolder.png");
-				UpdateIfNewer("basePage.css");
-				UpdateIfNewer("previewMode.css");
-				UpdateIfNewer("origami.css");
+				Update("placeHolder.png");
+				Update("basePage.css");
+				Update("previewMode.css");
+				Update("origami.css");
 
 				foreach (var path in Directory.GetFiles(_folderPath, "*.css"))
 				{
 					var file = Path.GetFileName(path);
 					//if (file.ToLower().Contains("portrait") || file.ToLower().Contains("landscape"))
-					UpdateIfNewer(file);
+					Update(file);
 				}
 			}
 
@@ -657,7 +655,7 @@ namespace Bloom.Book
 			try
 			{
 				var helper = new XMatterHelper(_dom, nameOfXMatterPack, _fileLocator);
-				UpdateIfNewer(Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation), helper.PathToStyleSheetForPaperAndOrientation);
+				Update(Path.GetFileName(helper.PathToStyleSheetForPaperAndOrientation), helper.PathToStyleSheetForPaperAndOrientation);
 			}
 			catch (Exception error)
 			{
@@ -670,11 +668,11 @@ namespace Bloom.Book
 			return (File.GetAttributes(path) & FileAttributes.ReadOnly) != 0;
 		}
 
-		private void UpdateIfNewer(string fileName, string factoryPath = "")
+		private void Update(string fileName, string factoryPath = "")
 		{
 			if (!IsUserFolder)
 			{
-				if (fileName.ToLower().Contains("xmatter") && ! fileName.ToLower().StartsWith("factory-xmatter"))
+				if (fileName.ToLowerInvariant().Contains("xmatter") && !fileName.ToLower().StartsWith("factory-xmatter"))
 				{
 					return; //we don't want to copy custom xmatters around to the program files directory, template directories, the Bloom src code folders, etc.
 				}
@@ -719,35 +717,35 @@ namespace Bloom.Book
 				if(string.IsNullOrEmpty(factoryPath))//happens during unit testing
 					return;
 
-				var factoryTime = File.GetLastWriteTimeUtc(factoryPath);
 				documentPath = Path.Combine(_folderPath, fileName);
 				if(!File.Exists(documentPath))
 				{
-					Logger.WriteEvent("BookStorage.UpdateIfNewer() Copying missing file {0} to {1}", factoryPath, documentPath);
+					Logger.WriteEvent("BookStorage.Update() Copying missing file {0} to {1}", factoryPath, documentPath);
 					File.Copy(factoryPath, documentPath);
 					return;
 				}
-				var documentTime = File.GetLastWriteTimeUtc(documentPath);
-				if(factoryTime> documentTime)
+				// due to BL-2166, we no longer compare times since downloaded books often have
+				// more recent times than the DistFiles versions we want to use
+				// var documentTime = File.GetLastWriteTimeUtc(documentPath);
+				if (factoryPath == documentPath)
+					return; // no point in trying to update self!
+				if (IsPathReadonly(documentPath))
 				{
-					if (IsPathReadonly(documentPath))
-					{
-						var msg = string.Format("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
-						Logger.WriteEvent(msg);
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
-						return;
-					}
-					Logger.WriteEvent("BookStorage.UpdateIfNewer() Updating file {0} to {1}", factoryPath, documentPath);
-
-					File.Copy(factoryPath, documentPath,true);
-					//if the source was locked, don't copy the lock over
-					File.SetAttributes(documentPath,FileAttributes.Normal);
+					var msg = string.Format("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
+					Logger.WriteEvent(msg);
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
+					return;
 				}
+				Logger.WriteEvent("BookStorage.Update() Updating file {0} to {1}", factoryPath, documentPath);
+
+				File.Copy(factoryPath, documentPath, true);
+				//if the source was locked, don't copy the lock over
+				File.SetAttributes(documentPath, FileAttributes.Normal);
 			}
 			catch (Exception e)
 			{
 				if(documentPath.Contains(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFiles))
-					|| documentPath.ToLower().Contains("program"))//english only
+					|| documentPath.ToLowerInvariant().Contains("program"))//english only
 				{
 					Logger.WriteEvent("Could not update file {0} because it was in the program directory.", documentPath);
 					return;
@@ -844,16 +842,6 @@ namespace Bloom.Book
 //
 //			return relativePath.Replace('/', Path.DirectorySeparatorChar);
 //		}
-
-		//TODO: Clean up this patch that is being done in emergency mode for a customer with a deadline
-		private  void UpdateStyleSheetLinkPaths(HtmlDom dom, IFileLocator fileLocator, IProgress log)
-		{
-			dom.UpdateStyleSheetLinkPaths(_fileLocator, _folderPath, log);
-		}
-		public void UpdateStyleSheetLinkPaths(HtmlDom printingDom)
-		{
-			printingDom.UpdateStyleSheetLinkPaths(_fileLocator, _folderPath, new NullProgress());
-		}
 
 		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
 		//we want to make sure it's ready to be opened in a browser.

@@ -408,7 +408,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
       <tuv xml:lang="en">
-        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</seg>
       </tuv>
       <tuv xml:lang="th">
         <seg>Bloom จะเปิดไฟล์ HTML (Word หรือ LibreOffice)ในประมวลผลคำของคุณ. โปรดทราบว่าคุณสามารถจัดการกับข้อความของหนังสือหรือภาพ แต่ไม่จำเป็นต้องสามารถที่จะบันทึกรูปแบบ</seg>
@@ -891,7 +891,7 @@
         <seg>การดาวน์โหลดหนังสือ</seg>
       </tuv>
     </tu>
-    <tu tuid="Download.GenericDownloadProblemNotice">
+    <tu tuid="Download.GenericNetworkProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book.</seg>
       </tuv>
@@ -2872,7 +2872,7 @@
         <seg>หน่วยกิต</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.DownloadProblem">
+    <tu tuid="Download.ProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
       </tuv>

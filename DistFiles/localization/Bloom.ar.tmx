@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="ar" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+  <header srclang="ar" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.31.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
     <prop type="x-appversion">3.0.000.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
@@ -11,7 +11,7 @@
         <seg>Decodable Reader Tool</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>أداة قارئ ديكودابل</seg>
+        <seg>أداة قارئ نصوص قابلة لفك التشفير</seg>
       </tuv>
     </tu>
     <tu tuid="Accordion.LeveledReaderTool">
@@ -20,7 +20,7 @@
         <seg>Leveled Reader Tool</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>أداة قارئ تعادل</seg>
+        <seg>أداة قارئ متعدد المستويات</seg>
       </tuv>
     </tu>
     <tu tuid="Accordion.More">
@@ -29,7 +29,7 @@
         <seg>More...</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>أكثر...</seg>
+        <seg>المزيد..</seg>
       </tuv>
     </tu>
     <tu tuid="BloomPackInstallDialog.BloomPackInstalled">
@@ -79,7 +79,7 @@
         <seg>Book title in {lang}</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>عنوان الكتاب في {lang}</seg>
+        <seg>{lang} عنوان الورقة</seg>
       </tuv>
     </tu>
     <tu tuid="BookEditor.FontSizeTip">
@@ -114,7 +114,7 @@
         <seg>Advanced Program Settings</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>إعدادات برنامج متقدم</seg>
+        <seg>إعدادات البرنامج المتقدمة</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
@@ -155,7 +155,7 @@
         <seg>Book Making</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>صنع كتاب</seg>
+        <seg>إنشاء الورقات</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
@@ -164,7 +164,7 @@
         <seg>Default Font for {0}</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الخط الافتراضي ل {0}</seg>
+        <seg>الخط الافتراضي لـ  {0}</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
@@ -193,6 +193,14 @@
         <seg>حدد اللغات التي تكتب من اليمين إلى اليسار</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <tuv xml:lang="en">
+        <seg>Right to Left Writing System</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>نظام الكتابة من اليمين إلى اليسار</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
@@ -207,7 +215,7 @@
         <seg>Settings</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>إعدادات</seg>
+        <seg>الإعدادات</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
@@ -224,7 +232,7 @@
         <seg>Language 1</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>لغة 1</seg>
+        <seg>اللغة 1</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
@@ -233,7 +241,7 @@
         <seg>Language 2</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>لغة 2</seg>
+        <seg>اللغة 2</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
@@ -242,7 +250,7 @@
         <seg>Language 3</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>لغة 3</seg>
+        <seg>اللغة 3</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
@@ -276,7 +284,7 @@
         <seg>Vernacular Language</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>اللغة العامية</seg>
+        <seg>لغة عامية</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.LanguageTab._language2Label">
@@ -308,7 +316,7 @@
         <seg>Bloom Collection Name</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>اسم المجموعة بلوم</seg>
+        <seg>اسم مجموعة Bloom  </seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.ProjectInformationTab.Country">
@@ -316,7 +324,7 @@
         <seg>Country</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>البلد</seg>
+        <seg>الدولة</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.ProjectInformationTab.District">
@@ -324,7 +332,7 @@
         <seg>District</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>حي</seg>
+        <seg>مقاطعة</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
@@ -340,7 +348,7 @@
         <seg>Province</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مقاطعة</seg>
+        <seg>المقاطعة</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
@@ -358,7 +366,7 @@
         <seg>Restart</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>قم بإعادة تشغيل</seg>
+        <seg>إعادة البدء</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog._restartMessage">
@@ -371,7 +379,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
       <tuv xml:lang="en">
-        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</seg>
       </tuv>
       <tuv xml:lang="ar">
         <seg>لوم سيتم الآن فتح هذا المستند HTML في برنامج معالجة الكلمات الخاصة بك (عادة كلمة أو LibreOffice). سوف تكون قادرة على العمل مع النص والصور من هذا الكتاب، ولكن هذه البرامج عادة لا جيدا مع الاحتفاظ بالتخطيط، حيث لا نتوقع الكثير.</seg>
@@ -398,7 +406,7 @@
         <seg>Delete Book</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>حذف الكتاب</seg>
+        <seg>حذف ورقة</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
@@ -512,7 +520,7 @@
         <seg>Make a book using this source</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>جعل كتاب باستخدام هذا المصدر</seg>
+        <seg>إنشاء ورقة باستخدام هذا المورد</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Open/CreateCollectionButton">
@@ -530,7 +538,7 @@
         <seg>Sample Shells</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>قذائف عينة</seg>
+        <seg>نماذج غلاف</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.SendReceive">
@@ -546,7 +554,7 @@
         <seg>Settings</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>إعدادات</seg>
+        <seg>الإعدادات</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Source Collection">
@@ -555,7 +563,7 @@
         <seg>Source Collection</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>جمع المصدر</seg>
+        <seg>مجموعة المورد</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
@@ -563,7 +571,7 @@
         <seg>Open Additional Collections Folder</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>المجلد مجموعات إضافية مفتوحة</seg>
+        <seg>فتح مجلد مجموعات إضافية</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.Templates">
@@ -580,7 +588,7 @@
         <seg>Edit this book</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>تحرير هذا الكتاب</seg>
+        <seg>تحرير هذه الورقة</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab._makeBloomPackButton">
@@ -593,10 +601,10 @@
     </tu>
     <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
       <tuv xml:lang="en">
-        <seg>Make Reader Template BloomPack...</seg>
+        <seg>Make Reader Template Bloom Pack...</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>تجعل القارئ قالب بلومباك...</seg>
+        <seg>إنشاء حزمة Bloom من قوالب القارئ...</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.advancedToolStripMenuItem">
@@ -622,7 +630,7 @@
         <seg>Source Collection</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>جمع المصدر</seg>
+        <seg>مجموعة المورد</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.bookSourceHeading">
@@ -630,7 +638,7 @@
         <seg>Sources For New Books</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مصادر لكتب جديدة</seg>
+        <seg>موارد للورقات الجديدة</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.bookSourcesLockNotice">
@@ -663,7 +671,7 @@
         <seg>More...</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>أكثر...</seg>
+        <seg>المزيد..</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.sourcesForNewShellsHeading">
@@ -689,7 +697,7 @@
         <seg>Cancel</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>إلغاء الأمر</seg>
+        <seg>إلغاء</seg>
       </tuv>
     </tu>
     <tu tuid="Common.CancelButton">
@@ -697,7 +705,7 @@
         <seg>&amp;Cancel</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>إلغاء الأمر</seg>
+        <seg>إلغاء</seg>
       </tuv>
     </tu>
     <tu tuid="Common.Finish">
@@ -714,7 +722,7 @@
         <seg>&amp;Help</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>تعليمات</seg>
+        <seg>المساعدة</seg>
       </tuv>
     </tu>
     <tu tuid="Common.Next">
@@ -732,7 +740,7 @@
         <seg>Next</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>القادم</seg>
+        <seg>التالي</seg>
       </tuv>
     </tu>
     <tu tuid="Common.OK">
@@ -774,7 +782,7 @@
         <seg>Letters in this stage</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>رسائل في هذه المرحلة</seg>
+        <seg>الحروف في هذه المرحلة</seg>
       </tuv>
     </tu>
     <tu tuid="DecodableReaderTool.MakeLetterWordList">
@@ -783,7 +791,7 @@
         <seg>Open a Letter and Word List File</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>قم بفتح رسالة وكلمة قائمة ملف</seg>
+        <seg>فتح حرف وملف قائمة الكلمة</seg>
       </tuv>
     </tu>
     <tu tuid="DecodableReaderTool.SetUpStages">
@@ -792,7 +800,7 @@
         <seg>Set up Stages</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>قم بإعداد المراحل</seg>
+        <seg>إعداد المراحل</seg>
       </tuv>
     </tu>
     <tu tuid="DecodableReaderTool.Stage">
@@ -801,7 +809,7 @@
         <seg>Stage</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>المرحلة</seg>
+        <seg>مرحلة</seg>
       </tuv>
     </tu>
     <tu tuid="DecodableReaderTool.StageOf">
@@ -846,7 +854,7 @@
         <seg>تحميل الكتاب</seg>
       </tuv>
     </tu>
-    <tu tuid="Download.GenericDownloadProblemNotice">
+    <tu tuid="Download.GenericNetworkProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book.</seg>
       </tuv>
@@ -874,7 +882,7 @@
     </tu>
     <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
       <tuv xml:lang="en">
-        <seg>Open the Html used to make this PDF, in Chrome (must be on path)</seg>
+        <seg>Open the Html used to make this PDF, in Firefox (must be on path)</seg>
       </tuv>
       <tuv xml:lang="ar">
         <seg>فتح Html تستخدم لجعل هذا قوات الدفاع الشعبي، في الكروم (يجب أن تكون في المسار)</seg>
@@ -917,7 +925,25 @@
         <seg>This page will be permanently removed.</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>سيتم إزالة هذه الصفحة بشكل دائم.</seg>
+        <seg>سيتم حذف هذه الصفحة بشكل دائم</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>نص</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.TextBox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text Box</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>مربع نص</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Edit">
@@ -926,6 +952,15 @@
       </tuv>
       <tuv xml:lang="ar">
         <seg>تحرير</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Font">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>الخط</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FontMissing">
@@ -943,6 +978,133 @@
       </tuv>
       <tuv xml:lang="ar">
         <seg>تغيير حجم النص لكافة مربعات تحمل النمط '{0}' واللغة '{1}'.\nالحجم الحالي هو حزب العمال {2}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.BorderToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the border and background</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>تغيير الحدود والخلفية</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.CharactersTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Characters</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>أحرف</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Create">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Create</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>إنشاء</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font face</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>تغيير الخط الوجه</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font size</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>تغيير حجم الخط</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.LineSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between lines of text</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>تغيير التباعد بين أسطر النص</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.MoreTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>More</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>المزيد</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Style">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Style</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>أسلوب</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.StyleNameTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Style Name</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>اسم الأسلوب</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingExtraWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Extra Wide</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>عرض إضافي</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingNormal">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>طبيعي</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between words</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>تغيير التباعد بين الكلمات</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wide</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>عريض</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialogTip">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Adjust formatting for style</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>ضبط التنسيق للنمط</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
@@ -969,7 +1131,7 @@
         <seg>Book title in {lang}</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>عنوان الكتاب في {lang}</seg>
+        <seg>{lang} عنوان الورقة</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.CopyrightPrompt">
@@ -1041,7 +1203,7 @@
         <seg>Change Image</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>تغيير الصورة!</seg>
+        <seg>تغيير صورة</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Image.EditMetadata">
@@ -1059,10 +1221,11 @@
         <seg>Paste Image</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>لصق الصورة</seg>
+        <seg>لصق صورة</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.LayoutMode.ChangeLayout">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Change Layout</seg>
@@ -1095,85 +1258,13 @@
         <seg>اختر حجم الصفحة والاتجاه</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.FormatDialog.BorderToolTip">
+    <tu tuid="EditTab.Spacing">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Change the border and background</seg>
+        <seg>Spacing</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>تغيير الحدود والخلفية</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Change the font face</seg>
-      </tuv>
-      <tuv xml:lang="ar">
-        <seg>تغيير الخط الوجه</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Change the font size</seg>
-      </tuv>
-      <tuv xml:lang="ar">
-        <seg>تغيير حجم الخط</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.FormatDialog.LineSpacingToolTip">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Change the spacing between lines of text</seg>
-      </tuv>
-      <tuv xml:lang="ar">
-        <seg>تغيير التباعد بين أسطر النص</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.FormatDialog.WordSpacingExtraWide">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Extra Wide</seg>
-      </tuv>
-      <tuv xml:lang="ar">
-        <seg>نطاق إضافي</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.FormatDialog.WordSpacingNormal">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Normal</seg>
-      </tuv>
-      <tuv xml:lang="ar">
-        <seg>عادي</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.FormatDialog.WordSpacingToolTip">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Change the spacing between words</seg>
-      </tuv>
-      <tuv xml:lang="ar">
-        <seg>تغيير التباعد بين الكلمات</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.FormatDialog.WordSpacingWide">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Wide</seg>
-      </tuv>
-      <tuv xml:lang="ar">
-        <seg>على نطاق واسع</seg>
-      </tuv>
-    </tu>
-    <tu tuid="EditTab.FormatDialogTip">
-      <prop type="x-dynamic">true</prop>
-      <tuv xml:lang="en">
-        <seg>Adjust formatting for style</seg>
-      </tuv>
-      <tuv xml:lang="ar">
-        <seg>ضبط التنسيق للنمط</seg>
+        <seg>التباعد</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.TemplatePagesList.Heading">
@@ -1271,7 +1362,7 @@
         <seg>Alphabet</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الأبجدية</seg>
+        <seg>حروف الأبجدية</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
@@ -1280,7 +1371,7 @@
         <seg>Basic Text &amp; Image</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>النص الأساسي آند الصورة</seg>
+        <seg>النص الأساسي والصورة</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
@@ -1289,7 +1380,7 @@
         <seg>Basic Text &amp; Picture</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>النص الأساسي آند الصورة</seg>
+        <seg>النص الأساسي والصورة</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Credits Page">
@@ -1298,7 +1389,7 @@
         <seg>Credits Page</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>صفحة القروض</seg>
+        <seg>صفحة الاعتمادات </seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Custom">
@@ -1370,7 +1461,7 @@
         <seg>Front Cover</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الغلاف الأمامي</seg>
+        <seg>غلاف أمامي</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
@@ -1388,7 +1479,7 @@
         <seg>Image in Middle</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الصورة في المنتصف</seg>
+        <seg>صورة في المنتصف</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
@@ -1397,7 +1488,7 @@
         <seg>Inside Back Cover</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>داخل الغلاف الخلفي</seg>
+        <seg>غلاف خلفي داخلي </seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
@@ -1433,7 +1524,7 @@
         <seg>Just a Picture</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مجرد صورة</seg>
+        <seg>صورة فقط</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Just an Image">
@@ -1442,7 +1533,7 @@
         <seg>Just an Image</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مجرد صورة</seg>
+        <seg>صورة فقط</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
@@ -1451,7 +1542,7 @@
         <seg>Outside Back Cover</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الغلاف الخلفي الخارجي</seg>
+        <seg>غلاف خلفي خارجي</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
@@ -1478,7 +1569,7 @@
         <seg>Picture in Middle</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الصورة في المنتصف</seg>
+        <seg>صورة في المنتصف</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
@@ -1496,7 +1587,7 @@
         <seg>Title Page</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>عنوان الصفحة</seg>
+        <seg>صفحة العنوان</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab._contentLanguagesDropdown">
@@ -1512,7 +1603,7 @@
         <seg>Copy</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>نسخة</seg>
+        <seg>نسخ</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab._cutButton">
@@ -1552,7 +1643,7 @@
         <seg>Undo</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>التراجع عن</seg>
+        <seg>تراجع</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.bilingual">
@@ -1561,7 +1652,7 @@
         <seg>Two Languages</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>لغتي</seg>
+        <seg>لغتان</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.copyImageIPMetdataQuestion">
@@ -1621,7 +1712,7 @@
         <seg>Building Reader Templates</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>قوالب بناء القارئ</seg>
+        <seg>بناء قوالب قارئ </seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu.Help Menu">
@@ -1629,7 +1720,7 @@
         <seg>Help</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>تعليمات</seg>
+        <seg>المساعدة</seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
@@ -1669,12 +1760,12 @@
         <seg>About Bloom</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>عن لوم</seg>
+        <seg>حول Bloom</seg>
       </tuv>
     </tu>
     <tu tuid="HelpMenu.documentationMenuItem">
       <tuv xml:lang="en">
-        <seg>Documentation</seg>
+        <seg>Help. Lots of help!</seg>
       </tuv>
       <tuv xml:lang="ar">
         <seg>الوثائق</seg>
@@ -1718,7 +1809,7 @@
         <seg>Don't Show This Again</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>عدم إظهار هذا مرة أخرى</seg>
+        <seg>لا تعرض هذا مرة أخرى</seg>
       </tuv>
     </tu>
     <tu tuid="LayoutChoices.A4Landscape">
@@ -1790,7 +1881,7 @@
         <seg>Actual</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الفعلية</seg>
+        <seg>واقعي</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.ChoiceOfTopic">
@@ -1845,7 +1936,7 @@
         <seg>Keep in mind</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>نأخذ في الاعتبار</seg>
+        <seg>تذكر</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.Level">
@@ -1854,7 +1945,7 @@
         <seg>Level </seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مستوى</seg>
+        <seg>المستوى</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.LevelOf">
@@ -1872,7 +1963,7 @@
         <seg>Max</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>ماكس</seg>
+        <seg>الحد الأقصى</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.PerPage">
@@ -1881,7 +1972,7 @@
         <seg>per page</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>في الصفحة الواحدة</seg>
+        <seg>لكل صفحة</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.PerSentence">
@@ -1890,7 +1981,7 @@
         <seg>per sentence</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>كل جملة</seg>
+        <seg>لكل جملة</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.Predictability">
@@ -1899,7 +1990,7 @@
         <seg>Predictability</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>القدرة على التنبؤ</seg>
+        <seg>القابلية للتنبؤ</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.SetUpLevels">
@@ -1908,7 +1999,7 @@
         <seg>Set up Levels</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>إعداد مستويات</seg>
+        <seg>إعداد المستويات</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.ThisBook">
@@ -1917,7 +2008,7 @@
         <seg>This Book</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>هذا الكتاب</seg>
+        <seg>هذه الورقة</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.ThisPage">
@@ -1935,7 +2026,7 @@
         <seg>total</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>المجموع</seg>
+        <seg>الإجمالي</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.Unique">
@@ -1944,7 +2035,7 @@
         <seg>unique</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>فريدة من نوعها</seg>
+        <seg>فريد</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.Vocabulary">
@@ -1953,7 +2044,7 @@
         <seg>Vocabulary</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>المفردات</seg>
+        <seg>مفردات</seg>
       </tuv>
     </tu>
     <tu tuid="LeveledReaderTool.WordCounts">
@@ -1962,7 +2053,7 @@
         <seg>Word counts</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>التهم كلمة</seg>
+        <seg>حساب عدد الكلمات</seg>
       </tuv>
     </tu>
     <tu tuid="LoginDialog.AgreeToTerms">
@@ -2098,12 +2189,12 @@
         <seg>Source Collection</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>جمع المصدر</seg>
+        <seg>مجموعة المورد</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
       <tuv xml:lang="en">
-        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a BloomPack to give to others so that they can make vernacular books with your shells.</seg>
+        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a Bloom Pack to give to others so that they can make vernacular books with your shells.</seg>
       </tuv>
       <tuv xml:lang="ar">
         <seg>مجموعة شل أو قالب كتب في لغة واحدة أو أكثر من الاتصالات الأوسع نطاقا. سوف تكون قادرة على تحميل هذه القذائف إلى BloomLibrary.org وجعل اختيارياً بلومباك يعطي للآخرين حيث أنه يمكن أن تجعل الكتب العامية مع قذائف الخاص بك.</seg>
@@ -2114,7 +2205,7 @@
         <seg>Vernacular/Local Language Collection</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>جمع اللغة العامية والمحلية</seg>
+        <seg>مجموعة عامية</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
@@ -2138,7 +2229,7 @@
         <seg>Country</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>البلد</seg>
+        <seg>الدولة</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.LocationPage.District">
@@ -2146,7 +2237,7 @@
         <seg>District</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>حي</seg>
+        <seg>مقاطعة</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
@@ -2162,7 +2253,7 @@
         <seg>Province</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مقاطعة</seg>
+        <seg>المقاطعة</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.NewBookPattern">
@@ -2203,7 +2294,7 @@
         <seg>Welcome To Bloom!</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مرحبا بكم في لوم!</seg>
+        <seg>مرحبًا بك في Bloom</seg>
       </tuv>
     </tu>
     <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine1">
@@ -2519,7 +2610,7 @@
         <seg>الاعتمادات</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.DownloadProblem">
+    <tu tuid="Download.ProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
       </tuv>
@@ -2660,7 +2751,7 @@
         <seg>Please agree to terms of use</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الرجاء الموافقة على شروط الاستخدام</seg>
+        <seg>يرجى الموافقة على شروط الاستخدام</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.Login.PleaseProvideEmail">
@@ -2829,7 +2920,7 @@
         <seg>Title</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>العنوان</seg>
+        <seg>عنوان</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.UploadButton">
@@ -2966,10 +3057,11 @@
         <seg>Add Stage</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>إضافة المرحلة</seg>
+        <seg>إضافة مرحلة</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.AddTexts">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Please add texts to the Sample Texts folder.</seg>
@@ -2984,7 +3076,7 @@
         <seg>Book</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>كتاب</seg>
+        <seg>الورقة</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.BookMaxWords">
@@ -3006,6 +3098,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.CombinationHelp1">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Separate by spaces</seg>
@@ -3015,6 +3108,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.CombinationHelp2">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>E.g. "ai oo sh ng th ing"</seg>
@@ -3024,6 +3118,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Combinations">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Letter Combinations (Graphemes)</seg>
@@ -3038,7 +3133,7 @@
         <seg>Decodable Stages</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مراحل ديكودابل</seg>
+        <seg>مراحل نصوص قابلة لفك التشفير</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.FirstSetupAlphabet">
@@ -3069,6 +3164,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Language">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Language</seg>
@@ -3078,6 +3174,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.LetterHelp1">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>List letters and word-forming characters in alphabetic order.</seg>
@@ -3087,6 +3184,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.LetterHelp2">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Separate by spaces</seg>
@@ -3096,6 +3194,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.LetterHelp3">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>E.g. "a b c d"</seg>
@@ -3110,7 +3209,7 @@
         <seg>Letters</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>رسائل</seg>
+        <seg>الحروف</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Letters.Header">
@@ -3119,7 +3218,7 @@
         <seg>Letters and Letter Combinations</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الحروف وتركيبات الرسالة</seg>
+        <seg>الحروف وتركيباتها </seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Letters.Intro">
@@ -3173,7 +3272,7 @@
         <seg>Level</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مستوى</seg>
+        <seg>المستوى</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.LevelLabel">
@@ -3182,7 +3281,7 @@
         <seg>Level </seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مستوى</seg>
+        <seg>المستوى</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Levels">
@@ -3191,7 +3290,7 @@
         <seg>Reader Levels</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مستويات القارئ</seg>
+        <seg>مستويات القارىء</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.MatchingWords">
@@ -3213,6 +3312,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.MoreWords">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More Words</seg>
@@ -3222,6 +3322,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.OpenSampleTexts">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Open the sample texts folder for this language.</seg>
@@ -3236,7 +3337,7 @@
         <seg>Page</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الصفحة</seg>
+        <seg>صفحة</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.PageMaxWords">
@@ -3263,7 +3364,7 @@
         <seg>Reader Levels</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>مستويات القارئ</seg>
+        <seg>مستويات القارىء</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.RemoveLevel">
@@ -3281,7 +3382,7 @@
         <seg>Remove Stage {0}</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>إزالة المرحلة {0}</seg>
+        <seg>إزالة مرحلة {0}</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.ReorderLevels">
@@ -3303,6 +3404,7 @@
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SampleTexts">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Word Lists and Sample Texts</seg>
@@ -3326,7 +3428,7 @@
         <seg>Previous and New Letters</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الرسائل السابقة والجديدة</seg>
+        <seg>الحروف الجديدة والسابقة</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SentenceHeader">
@@ -3335,7 +3437,7 @@
         <seg>Sentence</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الجملة</seg>
+        <seg>جملة</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SentenceMaxWords">
@@ -3371,10 +3473,11 @@
         <seg>set up the alphabet for this language.</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>قم بإعداد الحروف الأبجدية لهذه اللغة.</seg>
+        <seg>إعداد الحروف الأبجدية لهذه اللغة</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SightWordHelp">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>What are sight words?</seg>
@@ -3389,7 +3492,7 @@
         <seg>New Sight Words</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>كلمات جديدة في الأفق</seg>
+        <seg>كلمات مشاهد جديدة</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.SightWordsHeader">
@@ -3398,7 +3501,7 @@
         <seg>Sight Words</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>عبارة عن الأنظار</seg>
+        <seg>كلمات المشاهد</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.StageHeader">
@@ -3407,7 +3510,7 @@
         <seg>Stage</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>المرحلة</seg>
+        <seg>مرحلة</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.StageLabel">
@@ -3416,7 +3519,7 @@
         <seg>Stage </seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>المرحلة</seg>
+        <seg>مرحلة</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Stages">
@@ -3443,7 +3546,7 @@
         <seg>Things to remember for this level:</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الأشياء تذكر لهذا المستوى:</seg>
+        <seg>أشياء يجب تذكرها لهذا المستوى</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.UniqueHeader">
@@ -3452,7 +3555,7 @@
         <seg>Unique</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>فريدة من نوعها</seg>
+        <seg>فريد</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Words">
@@ -3485,10 +3588,10 @@
     <tu tuid="ReaderSetup.Words.SampleTextFolder">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Sample Text Folder</seg>
+        <seg>Sample Texts Folder</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>عينة نص المجلد</seg>
+        <seg>مجلد نماذج نصوص</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderSetup.Words.TypeWordsHere">
@@ -3506,12 +3609,12 @@
         <seg>Letters</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>رسائل</seg>
+        <seg>الحروف</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
       <tuv xml:lang="en">
-        <seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the "{0}" language. Anyone opening this BloomPack , who then opens a "{0}" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
+        <seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this BloomPack , who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
       </tuv>
       <tuv xml:lang="ar">
         <seg>وباﻹضافة إلى ذلك، سيقوم هذا بلومباك الخاص بك إعدادات القارئ ديكودابل وتعادل آخر للغة "{0}". وسيكون أي شخص فتح هذا بلومباك، الذي ثم يقوم بفتح مجموعة "{0}"، إعداداتها القارئ ديكودابل وتعادل حاليا الاستعاضة عن الإعدادات الموجودة في هذا بلومباك. أنها أيضا الحصول على المجموعة الحالية من الكلمات للاستخدام في ديكودابل القراء.</seg>
@@ -3527,18 +3630,18 @@
     </tu>
     <tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
       <tuv xml:lang="en">
-        <seg>Save BloomPack</seg>
+        <seg>Save Bloom Pack</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>حفظ بلومباك</seg>
+        <seg>حفظ حزمة Bloom</seg>
       </tuv>
     </tu>
     <tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
       <tuv xml:lang="en">
-        <seg>Make Reader Template BloomPack</seg>
+        <seg>Make Reader Template Bloom Pack</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>تجعل القارئ القالب بلومباك</seg>
+        <seg>إنشاء حزمة Bloom من قوالب القارئ  </seg>
       </tuv>
     </tu>
     <tu tuid="RegisterDialog.Email">
@@ -3616,13 +3719,22 @@
         <seg>سجل {0}</seg>
       </tuv>
     </tu>
+    <tu tuid="ReportProblemDialog.Close">
+      <note>Shown in the button that closes the dialog after a successful report submission.</note>
+      <tuv xml:lang="en">
+        <seg>Close</seg>
+      </tuv>
+      <tuv xml:lang="ar">
+        <seg>إغلاق</seg>
+      </tuv>
+    </tu>
     <tu tuid="Template.Basic Book">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Book</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الكتاب الأساسية</seg>
+        <seg>الورقة الأساسية</seg>
       </tuv>
     </tu>
     <tu tuid="Template.Big Book">
@@ -3631,7 +3743,7 @@
         <seg>Big Book</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>الكتاب الكبير</seg>
+        <seg>ورقة كبيرة</seg>
       </tuv>
     </tu>
     <tu tuid="Template.Decodable Reader">
@@ -3640,7 +3752,7 @@
         <seg>Decodable Reader</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>قارئ ديكودابل</seg>
+        <seg>قارئ نصوص قابلة لفك التشفير</seg>
       </tuv>
     </tu>
     <tu tuid="Template.Leveled Reader">
@@ -3649,7 +3761,7 @@
         <seg>Leveled Reader</seg>
       </tuv>
       <tuv xml:lang="ar">
-        <seg>قارئ تعادل</seg>
+        <seg>قارئ متعدد المستويات</seg>
       </tuv>
     </tu>
     <tu tuid="Template.Picture Dictionary">

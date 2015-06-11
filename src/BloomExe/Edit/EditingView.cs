@@ -401,6 +401,7 @@ namespace Bloom.Edit
 				return; // Keep receiving until it is complete.
 			_browser1.WebBrowser.ReadyStateChange -= WebBrowser_ReadyStateChanged; // just do this once
 			_browser1.WebBrowser.DocumentCompleted -= WebBrowser_ReadyStateChanged;
+			ChangingPages = false;
 			_model.DocumentCompleted();
 		}
 
@@ -462,7 +463,7 @@ namespace Bloom.Edit
 					return;
 				}
 
-				if (anchor.Href.ToLower().StartsWith("http")) //will cover https also
+				if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
 				{
 					// do not open in external browser if localhost...except for some links in the accordion
 					if (anchor.Href.ToLowerInvariant().StartsWith(ServerBase.PathEndingInSlash))
@@ -475,7 +476,7 @@ namespace Bloom.Edit
 					ge.Handled = true;
 					return;
 				}
-				if (anchor.Href.ToLower().StartsWith("file")) //source bubble tabs
+				if (anchor.Href.ToLowerInvariant().StartsWith("file")) //source bubble tabs
 				{
 					ge.Handled = false; //let gecko handle it
 					return;
@@ -599,7 +600,7 @@ namespace Bloom.Edit
 						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
 					}
 					//they pasted a path to a png
-					else if(Path.GetExtension(clipboardImage.OriginalFilePath).ToLower() == ".png")
+					else if (Path.GetExtension(clipboardImage.OriginalFilePath).ToLowerInvariant() == ".png")
 					{
 						Logger.WriteMinorEvent("[Paste Image] Pasting png file {0}", clipboardImage.OriginalFilePath);
 						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
@@ -650,7 +651,7 @@ namespace Bloom.Edit
 			foreach (var n in target.Parent.ChildNodes)
 			{
 				imageElement = n as GeckoHtmlElement;
-				if (imageElement != null && imageElement.TagName.ToLower() == "img")
+				if (imageElement != null && imageElement.TagName.ToLowerInvariant() == "img")
 				{
 					return imageElement;
 				}
@@ -701,7 +702,7 @@ namespace Bloom.Edit
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
 
 			//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
-			if (!currentPath.ToLower().Contains("placeholder") && File.Exists(existingImagePath))
+			if (!currentPath.ToLowerInvariant().Contains("placeholder") && File.Exists(existingImagePath))
 			{
 				try
 				{
@@ -713,6 +714,8 @@ namespace Bloom.Edit
 				}
 			}
 			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
+			// Check memory for the benefit of developers.  The user won't see anything.
+			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "about to choose picture", false);
 			// Deep in the ImageToolboxDialog, when the user asks to see images from the ArtOfReading,
 			// We need to use the Gecko version of the thumbnail viewer, since the original ListView
 			// one has a sticky scroll bar in applications that are using Gecko.  On Linux, we also
@@ -727,15 +730,20 @@ namespace Bloom.Edit
 			}
 			using (var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
-				if (DialogResult.OK == dlg.ShowDialog())
+				var result = dlg.ShowDialog();
+				// Check memory for the benefit of developers.  The user won't see anything.
+				Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen or canceled", false);
+				if (DialogResult.OK == result)
 				{
-
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					SaveChangedImage(imageElement, dlg.ImageInfo, "Bloom had a problem including that image");
+					// Warn the user if we're starting to use too much memory.
+					Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen and saved", true);
 				}
 			}
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
 			Cursor = Cursors.Default;
+			imageInfo.Dispose();	// ensure memory doesn't leak
 		}
 
 		void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
@@ -928,6 +936,19 @@ namespace Bloom.Edit
 		private void UpdateButtonEnabled(Button button, Command command)
 		{
 			button.Enabled = command != null && command.Enabled;
+			// DuplicatePage and DeletePage are a bit tricky to get right.
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2183.
+			if (button.Enabled && command.Implementer != null)
+			{
+				var target = command.Implementer.Target as EditingModel;
+				if (target != null)
+				{
+					if (command is DuplicatePageCommand)
+						button.Enabled = target.CanDuplicatePage;
+					else if (command is DeletePageCommand)
+						button.Enabled = target.CanDeletePage;
+				}
+			}
 			//doesn't work because the forecolor is ignored when disabled...
 			button.ForeColor = button.Enabled ? _enabledToolbarColor : _disabledToolbarColor; //.DimGray;
 			button.Invalidate();
@@ -1002,6 +1023,22 @@ namespace Bloom.Edit
 		{
 			_templatePagesView.Enabled = !isModal;
 			_pageListView.Enabled = !isModal;
+		}
+
+		/// <summary>
+		/// BL-2153: This is to provide visual feedback to the user that the program has received their
+		///          page change click and is actively processing the request.
+		/// </summary>
+		public bool ChangingPages 
+		{ 
+			set {
+				if (_browser1.Visible != value) return;
+
+				_browser1.Visible = !value;
+				_pageListView.Enabled = !value;
+				Cursor = value ? Cursors.WaitCursor : Cursors.Default;
+				_pageListView.Cursor = Cursor;
+			} 
 		}
 	}
 }

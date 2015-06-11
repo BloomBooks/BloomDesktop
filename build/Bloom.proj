@@ -200,8 +200,10 @@
 
 		<Exec Command="$(RootDir)\.nuget\NuGet pack $(RootDir)\src\SquirrelInstaller\Bloom.nuspec"/>
 
-		<!-- The relaseDir here is a shared drive for all the build agents (though for now we only use one, because only it has the signing data). -->
-		<Exec Command="$(RootDir)\packages\squirrel.windows.0.9.2.1\tools\Squirrel --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) -Version $(Version) -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop, StartMenu'"/>
+		<!-- This is the command that actually runs Squirrel. Usually the exe invoked here is called Squirrel. However, we're building our own
+		version, and it's easiest to go with the exe name that the Squirrel build process actually produces.
+		The relaseDir here is a shared drive for all the build agents (though for now we only use one, because only it has the signing data). -->
+		<Exec Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) -Version $(Version) -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop, StartMenu'"/>
 
 		<Copy SourceFiles="$(SquirrelReleaseFolder)\Setup.exe"
 			  DestinationFiles="$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"

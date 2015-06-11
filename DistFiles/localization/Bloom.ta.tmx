@@ -396,7 +396,7 @@
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
       <tuv xml:lang="en">
-        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't too well with preserving the layout, so don't expect much.</seg>
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</seg>
       </tuv>
       <tuv xml:lang="ta">
         <seg>Bloom இந்த HTML ஆவணத்தை உங்கள் சொற்செயலி நிரலில் (இயல்பாக சொல் அல்லது மையம் Office) திறக்கும் இப்போது. நீங்கள் உரை மற்றும் இந்த புத்தகத்தில் படிமங்கள் வேலை இருக்கும், ஆனால் இந்த நிரல்களை உருவமைப்பு, எனவே வேண்டாம் எதிர்பார்க்கும் அதிகம் பரப்பவும் கொண்டு மிக நன்றாக இயல்பாக வேண்டாம்.</seg>
@@ -881,7 +881,7 @@
         <seg>புத்தகம் பதிவிறக்குகிறது</seg>
       </tuv>
     </tu>
-    <tu tuid="Download.GenericDownloadProblemNotice">
+    <tu tuid="Download.GenericNetworkProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book.</seg>
       </tuv>
@@ -2682,7 +2682,7 @@
         <seg>வரவுகளை</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.DownloadProblem">
+    <tu tuid="Download.ProblemNotice">
       <tuv xml:lang="en">
         <seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
       </tuv>

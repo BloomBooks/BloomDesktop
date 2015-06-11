@@ -5,10 +5,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
 using System.Linq;
-using Palaso.Code;
 using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.Xml;
 
@@ -189,10 +186,15 @@ namespace Bloom.Book
 			Body.AppendChild(MakeJavascriptElement(pathToJavascript));
 		}
 
-		public void AddEditMode(string mode)
+		/// <summary>
+		/// The Creation Type is either "translation" or "original". This is used to protect fields that should
+		/// normally not be editable in one or the other.
+		/// This is a bad name, and we know it!
+		/// </summary>
+		public void AddCreationType(string mode)
 		{
 			// RemoveModeStyleSheets() should have already removed any editMode attribute on the body element
-			Body.SetAttribute("editMode", mode);
+			Body.SetAttribute("bookcreationtype", mode);
 		}
 
 		public void RemoveModeStyleSheets()
@@ -200,7 +202,7 @@ namespace Bloom.Book
 			foreach (XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
 			{
 				var href = linkNode.GetAttribute("href");
-				if (href == null)
+				if (string.IsNullOrEmpty(href))
 				{
 					continue;
 				}
@@ -371,7 +373,7 @@ namespace Bloom.Book
 
 		public string GetMetaValue(string name, string defaultValue)
 		{
-			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "' or @name='" + name.ToLower() + "']");
+			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "' or @name='" + name.ToLowerInvariant() + "']");
 			if (node.Count > 0)
 			{
 				return ((XmlElement) node[0]).GetAttribute("content");
@@ -524,59 +526,6 @@ namespace Bloom.Book
 			AddClass((XmlElement)dom.SelectSingleNode("//body"), "hidePlaceHolders");
 		}
 
-
-		public void UpdateStyleSheetLinkPaths(IFileLocator fileLocator, string folderPath, IProgress log)
-		{
-			foreach (XmlElement linkNode in SafeSelectNodes("/html/head/link"))
-			{
-				var href = linkNode.GetAttribute("href");
-				if (href == null)
-				{
-					continue;
-				}
-
-				//TODO: see long comment on ProjectContextGetFileLocations() about linking to the right version of a css
-
-				//TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
-				href = FileUtils.NormalizePath(href.Replace("%5C", "/"));
-
-				var fileName = FileUtils.NormalizePath(Path.GetFileName(href));
-				if (!fileName.StartsWith("xx"))
-					//I use xx  as a convenience to temporarily turn off stylesheets during development
-				{
-					var path = fileLocator.LocateOptionalFile(fileName);
-
-					//we want these stylesheets to come from the book folder
-					if (string.IsNullOrEmpty(path) || path.Contains("languageDisplay.css"))
-					{
-						//look in the same directory as the book
-						var local = Path.Combine(folderPath, fileName);
-						if (File.Exists(local))
-							path = local;
-					}
-						//we want these stylesheets to come from the user's collection folder, not ones found in the templates directories
-					else if (path.Contains("CollectionStyles.css")) //settingsCollectionStyles & custonCollectionStyles
-					{
-						//look in the parent directory of the book
-						var pathInCollection = Path.Combine(Path.GetDirectoryName(folderPath), fileName);
-						if (File.Exists(pathInCollection))
-							path = pathInCollection;
-					}
-					if (!string.IsNullOrEmpty(path))
-					{
-						//this is here for geckofx 11... probably can remove it when we move up to modern gecko, as FF22 doesn't like it.
-						//linkNode.SetAttribute("href", "file://" + path);
-						linkNode.SetAttribute("href", path.ToLocalhost());
-					}
-					else
-					{
-						throw new ApplicationException(
-							string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName,
-								folderPath));
-					}
-				}
-			}
-		}
 		/// <summary>
 		/// The chosen xmatter changes, so we need to clear out any old ones
 		/// </summary>
@@ -585,7 +534,7 @@ namespace Bloom.Book
 			foreach(XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
 			{
 				var href = linkNode.GetAttribute("href");
-				if(Path.GetFileName(href).ToLower().EndsWith("xmatter.css"))
+				if (Path.GetFileName(href).ToLowerInvariant().EndsWith("xmatter.css"))
 				{
 					linkNode.ParentNode.RemoveChild(linkNode);
 				}
@@ -621,6 +570,17 @@ namespace Bloom.Book
 
 		public static void ProcessPageAfterEditing(XmlElement page, XmlElement divElement)
 		{
+			// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
+			// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
+			// The idea is to match class attriutes which have class bloom-ui, but may have other classes. We don't want to match
+			// classes where bloom-ui is a substring, though, if there should be any. So we wrap spaces around the class attribute
+			// and then see whether it contains bloom-ui surrounded by spaces.
+			// However, we need to do this in the edited page before copying to the storage page, since we are about to suck
+			// info from the edited page into the dataDiv and we don't want the bloom-ui elements in there either!
+			foreach (
+				var node in divElement.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
+				node.ParentNode.RemoveChild(node);
+
 			page.InnerXml = divElement.InnerXml;
 
 			//Enhance: maybe we should just copy over all attributes?
@@ -630,15 +590,6 @@ namespace Bloom.Book
 			//back to the html in keeping with our goal of having the page look right if you were to just open the
 			//html file in Firefox.
 			page.SetAttribute("lang", divElement.GetAttribute("lang"));
-
-			// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
-			// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
-			// The idea is to match class attriutes which have class bloom-ui, but may have other classes. We don't want to match
-			// classes where bloom-ui is a substring, though, if there should be any. So we wrap spaces around the class attribute
-			// and then see whether it contains bloom-ui surrounded by spaces.
-			foreach(
-				var node in page.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
-				node.ParentNode.RemoveChild(node);
 
 			// Upon save, make sure we are not in layout mode.  Otherwise we show the sliders.
 			foreach(

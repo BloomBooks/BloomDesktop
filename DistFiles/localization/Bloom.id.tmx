@@ -1,0 +1,5029 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tmx version="1.4">
+  <header srclang="id" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.28.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.0.107.0</prop>
+    <prop type="x-hardlinebreakreplacement">\n</prop>
+  </header>
+  <body>
+    <tu tuid="._creditsMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>About Bloom</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tentang Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="._documentationMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Documentation</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Documentasi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="._releaseNotesMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Release Notes</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Catatan atas Versi Baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="._updateFrontMatterToolStripMenu">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Update Book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Segarkan Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="._updateThumbnailMenu">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Update Thumbnail</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Segarkan Thumbnail</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".deleteMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Delete</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hapus</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".doChecksAndUpdatesOfAllBooksToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Do Checks and Updates of All Books</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Periksa dan Segarkan Semua Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".openHtmlInBrowserToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Open the Html used to make this PDF, in Browser</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku file HTML yng digunakan untuk membuat file PDF dalam Browser</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".showEventLogToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Show Event Log</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tampilkan Show Event Log</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".showHistoryToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Collection History...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Riwaya Koleksi...</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".showNotesToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Collection Notes...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Catatan Koleksi...</seg>
+      </tuv>
+    </tu>
+    <tu tuid=".toolStripMenuItem1">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Open Additional Collections Folder</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buka Map Koleksi Tambahan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog.AboutDialogWindowTitle">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>About Bloom</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tentang Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog._checkForUpdates">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Check For Updates</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Cek kalau ada Versi Baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="AboutDialog._releaseNotesLabel">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Release Notes</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Catatan Versi Baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.DecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Perkakas Buku Dasar ygn Decodable</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.DecodableReaderToolCheckbox">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Perkakas Buku Dasar ygn Decodable </seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.LeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Perkakas Buku Dasar ygn Leveled</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.LeveledReaderToolCheckbox">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Perkakas Buku Dasar ygn Leveled</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Accordion.More">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>More...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tambahan...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstallation">
+      <tuv xml:lang="en">
+        <seg>Bloom Pack Installation</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Instalasi untuk Paket Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstalled">
+      <tuv xml:lang="en">
+        <seg>The {0} Collection is now ready to use on this computer.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan buku buat {0} ini siap digunakan di komputer ini.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.BloomPackInstaller">
+      <note>Displayed as the message box title</note>
+      <tuv xml:lang="en">
+        <seg>Bloom Pack Installer</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Instalasi untuk Paket Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.DoesNotExist">
+      <tuv xml:lang="en">
+        <seg>{0} does not exist</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>{0} tidak ketemu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.ErrorInstallingBloomPack">
+      <tuv xml:lang="en">
+        <seg>Bloom was not able to install that Bloom Pack</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Paket Bloom tidak dapat diinstal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.Extracting">
+      <note>Shown while BloomPacks are being installed</note>
+      <tuv xml:lang="en">
+        <seg>Extracting...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Membongkar...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.MustRestartToSee">
+      <tuv xml:lang="en">
+        <seg>Bloom is already running, but the contents will not show up until the next time you run Bloom</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bloom sedang jalan, tapi ininya tidak akan ditemui sebelum Bloom dimatikan dan dihidupkan lagi.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.NotInstalled">
+      <tuv xml:lang="en">
+        <seg>The Bloom collection will not be installed.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku ini dari Bloom tidak akan diinstal.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.Opening">
+      <tuv xml:lang="en">
+        <seg>Opening {0}...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buka {0}...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.Replace">
+      <tuv xml:lang="en">
+        <seg>This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku ini dari Bloom bernama '{0}' sudah ada di komputer ini. Apakah mau ganti yang ada dengan yang dalam Paket Bloom ini?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.SingleCollectionFolder">
+      <tuv xml:lang="en">
+        <seg>Bloom Packs should have only a single collection folder at the top level of the zip file.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Paket Bloom hanya boleh punya satu map koleksi di tingkat pertama dalam berkas zip.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomPackInstallDialog.UnableToReplace">
+      <tuv xml:lang="en">
+        <seg>Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running &amp; try again. Otherwise, try again after restarting your computer.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bloom tidak dapat menhapus '{0}' yang ada. Keluar Bloom kalau iti masih jalan dan coba lagin. Kalau masih belum bisa, coba mengulangi komputermu.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Book title in {lang}">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Judul Buku dalam Bahasa {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ini akan merubah ukuran teks buat semua kotak yg gunakan ciri '{0}' dan bahasa '{1}'.\nUkuran sekarang: {2}pt.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.ForText">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This formatting is for all text boxes with '{0}' style</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Format ini merubah semua kotak teks yg gunakan gaya '{0}'</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.ForTextInLang">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This formatting is for all {0} text in boxes with '{1}' style</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Format ini merubah semua teks {0} dalam kotak yg gunakan gaya '{1}'</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Click to choose topic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to choose topic</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Klik untuk pilih topik buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.AdvancedProgramSettingsTabLabel">
+      <tuv xml:lang="en">
+        <seg>Advanced Program Settings</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Opsi Program Lanjutan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalCommands">
+      <tuv xml:lang="en">
+        <seg>Show Experimental Commands (e.g. Export XML for InDesign)</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tampilkan Pilihan Uji-coba (seperti Ekspor XML buat InDesign)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalTemplates">
+      <tuv xml:lang="en">
+        <seg>Show Experimental Templates (e.g. Picture Dictionary)</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tampilkan Tata Halaman Uji-coba (seperti Kamus Bergambar)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowLocalizationControls">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>(Experimental) Show User Interface Localization Controls</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>(Experimental) Show User Interface Localization Controls</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.UseImageServer">
+      <note>This option will probably go away, as any bugs with the Image Server get ironed out. This has to do with how Bloom works internally; the I.S. makes it work better on slow computers.</note>
+      <tuv xml:lang="en">
+        <seg>Use Image Server to reduce memory usage with large images.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gunakan Gambar di Server untuk kecilkan memori dipakai oleh gambar besar.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive">
+      <tuv xml:lang="en">
+        <seg>(Experimental) Show Send/Receive Controls</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tampilkan Opsi Kirim/Terima (Uji-coba)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
+      <tuv xml:lang="en">
+        <seg>Book Making</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Membuat Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.DefaultFontFor">
+      <note>{0} is a language name.</note>
+      <tuv xml:lang="en">
+        <seg>Default Font for {0}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Font Dasar buat {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Font">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Font</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack">
+      <tuv xml:lang="en">
+        <seg>Front/Back Matter Pack</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Paket Informasi Muka/Belakang</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeft">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Right To Left</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Right To Left</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftTip">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Select languages that are written from right to left</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Select languages that are written from right to left</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.RightToLeftWritingSystem">
+      <tuv xml:lang="en">
+        <seg>Right to Left Writing System</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sistem Tulisan Kanan ke Kiri</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab._aboutBookMakingSettingsButton">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>About These Settings</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>About These Settings</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ChangeLink">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Change...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.CollectionSettingsWindowTitle">
+      <tuv xml:lang="en">
+        <seg>Settings</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Opsi-opsi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
+      <tuv xml:lang="en">
+        <seg>Change...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ubah...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language1InSourceCollection">
+      <note>In a vernacular collection, we say 'Vernacular Language', but in a source collection, Vernacular has no relevance, so we use this different label</note>
+      <tuv xml:lang="en">
+        <seg>Language 1</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bahasa 1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language2InSourceCollection">
+      <note>In a vernacular collection, we say 'Language 2 (e.g. National Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <tuv xml:lang="en">
+        <seg>Language 2</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bahasa 2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.Language3InSourceCollection">
+      <note>In a vernacular collection, we say 'Language 3 (e.g. Regional Language)', but in a source collection, National Language has no relevance, so we use this different label</note>
+      <tuv xml:lang="en">
+        <seg>Language 3</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bahasa 3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.LanguageTabLabel">
+      <tuv xml:lang="en">
+        <seg>Languages</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bahasa-bahasa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink">
+      <note>If there is no third language specified, the link changes to this.</note>
+      <tuv xml:lang="en">
+        <seg>Set...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pilih...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._aboutLanguageSettingsButton">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>About These Settings</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>About These Settings</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
+      <tuv xml:lang="en">
+        <seg>Vernacular Language</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bahasa Lokal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._language2Label">
+      <tuv xml:lang="en">
+        <seg>Language 2 (e.g. National Language)</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bahasa 2 (mis. Bahasa Nasional)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._language3Label">
+      <tuv xml:lang="en">
+        <seg>Language 3 (e.g. Regional Language)   (Optional)</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bahasa 3 (mis. Bahasa Internasional, Bahasa Daerah)   (Opsional)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
+      <tuv xml:lang="en">
+        <seg>Remove</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hapus</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.BloomCollectionName">
+      <tuv xml:lang="en">
+        <seg>Bloom Collection Name</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Nama Tumpukan Buku di dalam Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.Country">
+      <tuv xml:lang="en">
+        <seg>Country</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Negara</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.District">
+      <tuv xml:lang="en">
+        <seg>District</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Daerah</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.ProjectInformationTabLabel">
+      <tuv xml:lang="en">
+        <seg>Project Information</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Informasi Materi Ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab.Province">
+      <tuv xml:lang="en">
+        <seg>Province</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Propinsi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.ProjectInformationTab._aboutProjectInformationSetingsButton">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>About These Settings</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>About These Settings</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.Restart">
+      <note>If you make certain changes in the settings dialog, the OK button changes to this.</note>
+      <tuv xml:lang="en">
+        <seg>Restart</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Keluar/Masuk Lagi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog._restartMessage">
+      <tuv xml:lang="en">
+        <seg>Bloom will close and re-open this project with the new settings.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bloom akan tutup lalu buka ulang proyek ini atas aturan baru ini.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.label1">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Front/Back Matter Pack</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Front/Back Matter Pack</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.label5">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>District</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>District</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.label7">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Country</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Country</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.tabPage1">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Languages</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Languages</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.tabPage2">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book Making</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Book Making</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.tabPage3">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Project Information</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Project Information</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
+      <tuv xml:lang="en">
+        <seg>Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bloom akan buka dokumen HTML ini dalam program word procesor (biasanya ini Word atau LibreOffice). Anda akan dapat merubah teks dan gambar dalam buku ini, tapi program-program ini biasanya tidak bisa menjaga tata halaman, jadi jangan harap terlalu.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
+      <tuv xml:lang="en">
+        <seg>Update Book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Segarkan Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu._updateThumbnail">
+      <tuv xml:lang="en">
+        <seg>Update Thumbnail</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Segarkan Gambar Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.deleteBook">
+      <tuv xml:lang="en">
+        <seg>Delete Book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hapus Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
+      <tuv xml:lang="en">
+        <seg>Export to Word or LibreOffice...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ekspor ke Word atau LibreOffice...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
+      <tuv xml:lang="en">
+        <seg>Export to XML for InDesign...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ekspor ke XML untuk InDesign...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Books From BloomLibrary.org">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Books From BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku-buku dari BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
+      <tuv xml:lang="en">
+        <seg>Do Updates of All Books</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Segarkan Semua Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.doChecksOfAllBooks">
+      <tuv xml:lang="en">
+        <seg>Do Checks of All Books</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Periksa Semua Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.rescueMissingImages">
+      <tuv xml:lang="en">
+        <seg>Rescue Missing Images...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Selamatkan Gambar yang Hilang...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.showHistory">
+      <tuv xml:lang="en">
+        <seg>Collection History...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Riwayat Koleksi...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionMenu.showNotes">
+      <tuv xml:lang="en">
+        <seg>Collection Notes...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Catatan Koleksi...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.CollectionTabLabel">
+      <tuv xml:lang="en">
+        <seg>Collections</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku-buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Collections">
+      <tuv xml:lang="en">
+        <seg>Collections</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku-buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.ConfirmRecycleDescription">
+      <tuv xml:lang="en">
+        <seg>The book '{0}'</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku '{0}'</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.ContextMenu._openFolderOnDisk">
+      <tuv xml:lang="en">
+        <seg>Open Folder on Disk</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buka Map dari Komputer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Health">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Health</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kesehatan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.MakeBookUsingThisTemplate">
+      <tuv xml:lang="en">
+        <seg>Make a book using this source</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Membuat buku baru atas buku kerangka ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Open/CreateCollectionButton">
+      <note>This is is the button you use to create a new collection, open a new one, or get one from a repository somewhere</note>
+      <tuv xml:lang="en">
+        <seg>Other Collection</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Lain</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.PNG Animal Stories - Copy">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>PNG Animal Stories - Copy</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>PNG Animal Stories - Copy</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Sample Shells">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Shells</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku-Buku Kerangka</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SendReceive">
+      <tuv xml:lang="en">
+        <seg>Send/Receive</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kirim/Terima</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SettingsButton">
+      <tuv xml:lang="en">
+        <seg>Settings</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Aturan-Aturan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Source Collection">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku-buku Sumber </seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.SourceBooksMenu.OpenFolderContainingSourceCollections">
+      <tuv xml:lang="en">
+        <seg>Open Additional Collections Folder</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku Map Tumpukan Buku-buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Templates">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Templates</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tata Halaman</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Vernacular Collection Heading">
+      <note>The {0} is where we fill in the name of the Vernacular</note>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>{0} Books</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>{0} Books</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Zaza Reader Templates">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Zaza Reader Templates</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Zaza Reader Templates</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab._addToLibraryButton">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make a book using this template</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Make a book using this template</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab._editBookButton">
+      <tuv xml:lang="en">
+        <seg>Edit this book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Klik sini untuk Mengedit Buku ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab._makeBloomPackButton">
+      <tuv xml:lang="en">
+        <seg>Make Bloom Pack</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buat Paket Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template Bloom Pack...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buat Paket Bloom Reader Template...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.advancedToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Advanced</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Lanjutan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.bloomLibraryLinkLabel">
+      <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
+      <tuv xml:lang="en">
+        <seg>Get more source books at BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Cari buku kerangka tambahan dari BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
+      <note>get this clicking on BloomLibrary.org link in source collection</note>
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku-buku Sumber </seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.bookSourceHeading">
+      <tuv xml:lang="en">
+        <seg>Sources For New Books</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sumber Buku untuk membuat Buku Baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.bookSourcesLockNotice">
+      <tuv xml:lang="en">
+        <seg>This collection is locked, so new books cannot be added/removed.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku ini dikunci, jadi buku baru tidak dapat ditambah/dicoret</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
+      <tuv xml:lang="en">
+        <seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Oleh karena ini sumber koleksi, Bloom tidak sediakan buku kerangka yang ada sebagai sumber buku untuk buku kerangka baru. Kalau Anda perlu tambah salah satu bahasa ke dalam buku kerangka ini, harus mengedit kerangka ini dalam koleksi biasa, daripada mebuat salin di sini. Juga, Kalender Dinding belum bisa digunakan untuk membuat kerangka baru.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.hiddenBooksNotice">
+      <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
+      <tuv xml:lang="en">
+        <seg>Where's the rest?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Di mana buku-buku sisanya?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+      <tuv xml:lang="en">
+        <seg>More...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tambahan...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.openCreateCollectionToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Open or Create Another Collection</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buka Tumpukan Buku yang Lain/Buat Tumpukan Buku yang Baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.sourcesForNewShellsHeading">
+      <tuv xml:lang="en">
+        <seg>Sources For New Shells</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sumber Buku untuk Buku Kerangka Baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.BackButton">
+      <note>In a wizard, this button takes you to the previous step.</note>
+      <tuv xml:lang="en">
+        <seg>Back</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Mundur</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Cancel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Cancel</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Batal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.CancelButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Cancel</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ba&amp;tal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Finish">
+      <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
+      <tuv xml:lang="en">
+        <seg>&amp;Finish</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Selesai</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.HelpButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Help</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Bantuan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Next">
+      <note>Used for the Next button in wizards, like that used for making a New Collection</note>
+      <tuv xml:lang="en">
+        <seg>&amp;Next</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Lanjut</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.NextButton">
+      <note>In a wizard, this button takes you to the next step.</note>
+      <tuv xml:lang="en">
+        <seg>Next</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Lanjut</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.OK">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>OK</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Oke</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.OKButton">
+      <tuv xml:lang="en">
+        <seg>&amp;OK</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Oke</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Common.Optional">
+      <tuv xml:lang="en">
+        <seg>optional</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>opsional</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ConfiguringBookMessage">
+      <tuv xml:lang="en">
+        <seg>Building...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sedang Membuat...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ConfirmRecycleDialog.ConfirmRecycleWindowTitle">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Confirm Delete</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Confirm Delete</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ConfirmRecycleDialog.cancelBtn">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>&amp;Cancel</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Cancel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ConfirmRecycleDialog.deleteBtn">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>&amp;Delete</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Delete</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.LettersInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters in this stage</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Huruf-huruf dalam Tahap Ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.MakeLetterWordList">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Open a Letter and Word List File</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buka Berkas Daftar Huruf dan Kata</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.SetUpStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Stages</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Atur Tahap-Tahap</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.Stage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tahap</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.StageOf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>of</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>dari</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.WordsInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Words in this stage</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kata-kata dalam Tahap Ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.Completed">
+      <tuv xml:lang="en">
+        <seg>Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. If you don't seem to be in the middle of doing something, Bloom will select it for you.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Download ({0}) selesai. Buku in dapat dalam bagian 'Buku dari BloomLibrary.org'  di Koleksi-Koleski buku. Kalau Anda tidak sedang kerja buku yang lain, Bloom akan buka buku ini secara otomatis.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.CompletedCaption">
+      <tuv xml:lang="en">
+        <seg>Download complete</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Download selesai</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.DownloadingDialogTitle">
+      <tuv xml:lang="en">
+        <seg>Downloading book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku Sedang Didownload</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Download.GenericDownloadProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem downloading your book.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kenal masala waktu mendownload buku mu.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kalau Anda perlu tambah informasi dalam buku ini, silahkan gunakan halaman ini, sebelah dalam kulit/sampul buku belakang.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BackMatter.OutsideBackCoverTextPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kalau Anda perlu tambah informasi dalam buku ini, silahkan gunakan halaman ini, sebelah luar kulit/sampul buku belakang.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Background">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Background</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Latar Belakang</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.BookContextMenu.openHtmlInBrowser">
+      <tuv xml:lang="en">
+        <seg>Open the Html used to make this PDF, in Firefox (must be on path)</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buka berkas Html digunakan untuk membuat berkas PDF ini, dalam Firefox (harus sudah diinstal)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Borders">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Borders</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bingkai</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CannotChangeCopyright">
+      <tuv xml:lang="en">
+        <seg>Sorry, the copyright and license for this book cannot be changed.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Maaf, hak cipta dan izin atas buku ini tidak dapat diubah.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CantPasteImageLocked">
+      <tuv xml:lang="en">
+        <seg>Sorry, this book is locked down so that images cannot be changed.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Maaf, buku ini terkunci supaya gambarnya tidak dapat diubah.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ChangeImage">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Image</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Change Image</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ConfirmRemovePageDialog.ConformRemovePageWindowTitle">
+      <tuv xml:lang="en">
+        <seg>Really Delete Page?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sungguhnya mau Hapus Halaman Ini?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ConfirmRemovePageDialog.DeleteButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Delete</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Hapus</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ConfirmRemovePageDialog._messageLabel">
+      <tuv xml:lang="en">
+        <seg>This page will be permanently removed.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Halaman ini akan dihapus.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.ChangeLayout">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Layout</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti Tata Halaman</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Or">
+      <note>Shown between 'Picture' and 'Text' when Custom Page is in Layout mode</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>or</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>atau</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gambar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Teks</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CustomPage.TextBox">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Text Box</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kotak Teks</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Edit">
+      <tuv xml:lang="en">
+        <seg>Edit</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Edit</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.EditTabLabel">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Collections</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Collections</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Emphasis">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Emphasis</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Aksen</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Font">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Font</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Font</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FontMissing">
+      <tuv xml:lang="en">
+        <seg>The current selected font is '{0}', but it is not installed on this computer. Some other font will be used.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Font sekarang ini adalah '{0}', tapi ini belum diinstal dalam komputer ini. Jadi font lain akan digunakan.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FontSizeTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti ukuran teks dalam semua kotak yg gunakan ciri '{0}' dan bahasa '{1}'.\nUnkuran sekarang adalah {2}pt.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.AlreadyExists">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>That style already exists. Please choose another name.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gaya ini sudah ada. Tolong pilih nama lain.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.BorderToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the border and background</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti Bingkai dan Latar Belakang</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.CharactersTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Characters</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Huruf-huruf</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Create">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Create</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.CreateStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Create a new style</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buat gaya baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.DontSeeNeed">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Don't see what you need?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tidak dapat lihat apa diperlukan?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontFaceToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font face</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti ciri font</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.FontSizeToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font size</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti ukuran font</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Format">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Format</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Format</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.LineSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between lines of text</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti jarak diantara baris teks</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.MoreTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>More</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tampahan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.NewStyle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>New style</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gaya baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.PleaseUseAlpha">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Please use only alphabetical characters. Numbers at the end are ok, as in "part2".</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tolong gunakan huruf-huruf alfabet saja. Angka boleh digunakan pada akhirnya, seperti "bagian2".</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.Style">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Style</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gaya</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.StyleNameTab">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Style Name</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Nama Gaya</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingExtraWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Extra Wide</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sangat Lebar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingNormal">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Biasa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between words</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti jarak diantara kata-kata</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialog.WordSpacingWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wide</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Lebar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FormatDialogTip">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Adjust formatting for style</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Adjust formatting for style</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Contributions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you are making an original book, use this box to record contributions made by writers, illustrators, editors, etc.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kalau buku ini buku asli, gunakan kotak ini untuk terangkan nama pengerang, ilustrator, dan pengedit, dll.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BigBook.Translator">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you make a book from a shell, use this box to tell who did the translation.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kalau buku ini asal dari buku kerangka, gunakan kotak ini untuk terangkan nama penerjemah.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Judul Buku dalam bahasa {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.CopyrightPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to Edit Copyright &amp; License</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Klik untuk Edit Hak Cipta &amp; Ijin</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.FundingAgenciesPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Use this to acknowledge any funding agencies.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gunakan tempat ini untuk mengakui sumber dana.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.ISBNPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>International Standard Book Number. Biar kosong kalau nomor ini belum ada untuk buku ini.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalAcknowledgmentsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Original (or Shell) Acknowledgments in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pengakuan Asli (atau Kerangka) dalam bahasa {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.OriginalContributorsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kontribusi dari pengarang, ilustrator, pengedit, dll., dalam bahasa {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.TopicPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to choose topic</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Klik untuk pilih topik</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Acknowledgments for translated version, in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pengakuan atas versi diterjemahkan, dalam bahasa {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.ChangeImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Image</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti Gambar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.EditMetadata">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Edit Image Credits, Copyright, &amp; License</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Edit Pengakuan, Hak Cipta, &amp; Izin buat Gambar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.PasteImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Paste Image</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tempel Gambar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ImageChangeWarning">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>This book is locked down as shell. Are you sure you want to change the picture?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.LayoutMode.ChangeLayout">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change Layout</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Change Layout</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.NoImageFoundOnClipboard">
+      <tuv xml:lang="en">
+        <seg>Before you can paste an image, copy one onto your 'clipboard', from another program.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sebelum bisa menempel gambar di sini, harus silang gambar itu ke 'Clipboard' dulu di program lain.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PageList.Heading">
+      <tuv xml:lang="en">
+        <seg>Pages</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Halaman-Halaman</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.PageSizeAndOrientation.Tooltip">
+      <tuv xml:lang="en">
+        <seg>Choose a page size and orientation</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pilih ukuran dan aturan halaman </seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Position">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Position</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Posisi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Spacing">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Spacing</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Jarak</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.BorderToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the border and background</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti Bingkai dan Latar Belakang</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontFaceToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font face</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti ciri font</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.FontSizeToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the font size</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti ukuran font</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.LineSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between lines of text</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti jarak diantara baris teks</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingExtraWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Extra Wide</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sangat Lebar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingNormal">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Normal</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Biasa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingToolTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Change the spacing between words</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti jarak diantara kata-kata</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditor.WordSpacingWide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wide</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Lebar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.StyleEditorTip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Adjust formatting for style</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti format untuk Gaya ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.TemplatePagesList.Heading">
+      <tuv xml:lang="en">
+        <seg>Template Pages</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tata Halaman</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>1</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>2</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>3</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>4</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>4</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.5">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>5</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>5</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.6">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>6</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>6</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.7">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>7</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>7</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.8">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>8</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>8</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.9">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>9</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>9</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Alphabet</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Alfabet</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Text &amp; Image</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Teks dan Gambar Dasar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Text &amp; Picture</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Teks dan Gambar Dasar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Credits Page">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Credits Page</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Informasi &amp; Pengakuan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Custom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Custom</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ciri Sendiri</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 1</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hari Pertama</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 2</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hari ke2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 3</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hari ke3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 4</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hari ke4</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 5a">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 5a</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hari ke5a</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Day 5b">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 5b</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hari ke5b</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Front Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Front Cover</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sampul Depan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Image On Bottom</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gambar di Bawah</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Image in Middle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Image in Middle</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gambar di Tengah</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Inside Back Cover</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Dalam Sampul Belakang</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Inside Front Cover</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Dalam Sampul Depan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Instructions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Instructions</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pedoman</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Just Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just Text</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Teks Saja</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Just a Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just a Picture</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gambar Saja</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Just an Image">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just an Image</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gambar Saja</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Outside Back Cover</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sampul Belakang</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture &amp; Word</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gambar dan Kata</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture On Bottom</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gambar di Bawah</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture in Middle</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gambar di Tengah</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Page Is Intentionally Blank</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Halaman ini Kosong dgn Maksud</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ThumbnailCaptions.Title Page">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Title Page</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Judul Halaman</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._contentLanguagesDropdown">
+      <tuv xml:lang="en">
+        <seg>Multilingual Settings</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Multilingual Settings</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._copyButton">
+      <tuv xml:lang="en">
+        <seg>Copy</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Salin</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._cutButton">
+      <tuv xml:lang="en">
+        <seg>Cut</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Potong</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._deletePageButton">
+      <tuv xml:lang="en">
+        <seg>Remove\n  Page</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>  Hapus\nHalamam</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._duplicatePageButton">
+      <tuv xml:lang="en">
+        <seg>Duplicate\n   Page</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>   Salin\nHalaman</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._menusToolStrip">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>toolStrip1</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>toolStrip1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._pasteButton">
+      <tuv xml:lang="en">
+        <seg>Paste</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tempel</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab._undoButton">
+      <tuv xml:lang="en">
+        <seg>Undo</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Batalkan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.bilingual">
+      <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
+      <tuv xml:lang="en">
+        <seg>Two Languages</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Dua Bahasa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.copyImageIPMetdataQuestion">
+      <note>get this after you edit the metadata of an image</note>
+      <tuv xml:lang="en">
+        <seg>Copy this information to all other pictures in this book?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Apakah mau informasi ini disalinkan pada semua gambar dalam buku ini?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+      <tuv xml:lang="en">
+        <seg>This option is only available in the Publish tab.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Opsi ini hanya ada di tab Terbit.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.monolingual">
+      <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
+      <tuv xml:lang="en">
+        <seg>One Language</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Satu Bahasa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.noOtherLayouts">
+      <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
+      <tuv xml:lang="en">
+        <seg>There are no other layout options for this template.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tidak ada tata halaman lain pada kerangka ini.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
+      <tuv xml:lang="en">
+        <seg>Picture Intellectual Property Information</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Informasi Intellectual Property buat Gambar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.trilingual">
+      <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
+      <tuv xml:lang="en">
+        <seg>Three Languages</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tiga Bahasa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FirstTabLabel">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Collections</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Collections</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.*You may use this space for author/illustrator, or anything else.">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>*You may use this space for author/illustrator, or anything else.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>*You may use this space for author/illustrator, or anything else.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Acknowledgments for translated version, in {lang}">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Acknowledgments for translated version, in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Acknowledgments for translated version, in {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Acknowledgments in {lang}">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Acknowledgments in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Acknowledgments in {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Book title in {lang}">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Book title in {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Click to Edit Copyright &amp; License">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to Edit Copyright &amp; License</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Click to Edit Copyright &amp; License</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Click to choose topic">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click to choose topic</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Click to choose topic</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>International Standard Book Number. Leave blank if you don't have one of these.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.The contributions made by writers, illustrators, editors, etc., in {lang}">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>The contributions made by writers, illustrators, editors, etc., in {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="FrontMatter.Factory.Use this to acknowledge any funding agencies.">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Use this to acknowledge any funding agencies.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Use this to acknowledge any funding agencies.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.BuildingReaderTemplatesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Building Reader Templates</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Cara membuat Buku Belajar Membaca</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.Help Menu">
+      <tuv xml:lang="en">
+        <seg>Help</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bantuan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.UsingReaderTemplatesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Using Reader Templates </seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Cara Gunakan Kerangka Buku Belajar Baca</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu._makeASuggestionMenuItem">
+      <tuv xml:lang="en">
+        <seg>Make a Suggestion</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sampaikan Usulan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu._webSiteMenuItem">
+      <tuv xml:lang="en">
+        <seg>Web Site</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Situs Bloom di Internet</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.bloomContentDemonstrationToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Content Demonstration</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Content Demonstration</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Check For New Version</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Cek kalau ada Versi Baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.creditsMenuItem">
+      <tuv xml:lang="en">
+        <seg>About Bloom</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tentang Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.documentationMenuItem">
+      <tuv xml:lang="en">
+        <seg>Help. Lots of help!</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Dokumentasi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.keyBloomConceptsMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Key Bloom Concepts</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Key Bloom Concepts</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.keyBloomConceptsToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Key Bloom Concepts</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Konsep Penting buat Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.registrationMenuItem">
+      <tuv xml:lang="en">
+        <seg>Registration</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Daftar Nama</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.releaseNotesMenuItem">
+      <tuv xml:lang="en">
+        <seg>Release Notes...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Catatan buat Versi Baru...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.reportAProblemToolStripMenuItem">
+      <tuv xml:lang="en">
+        <seg>Report a Problem...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Lapor Masala...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.shellBookInstructionsToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Shell Book Instructions</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Shell Book Instructions</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.showEventLogMenuItem">
+      <tuv xml:lang="en">
+        <seg>Show Event Log</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tampilkan Catatan Peristiwa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.trainingManualToolStripMenuItem">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Training Manual</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Training Manual</seg>
+      </tuv>
+    </tu>
+    <tu tuid="HelpMenu.trainingVideos">
+      <tuv xml:lang="en">
+        <seg>Training Videos</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Latihan dari Video</seg>
+      </tuv>
+    </tu>
+    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+      <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
+      <tuv xml:lang="en">
+        <seg>InDesign XML Information</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Informasi buat InDesign XML</seg>
+      </tuv>
+    </tu>
+    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+      <tuv xml:lang="en">
+        <seg>Don't Show This Again</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Jangan Tampilkan ini Lagi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A4Landscape</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>A4 Mendatar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Landscape SideBySide">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A4Landscape SideBySide</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>A4 Mendatar Berdampingan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Landscape SplitAcrossPages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A4Landscape SplitAcrossPages</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>A4 Mendatar Sambung Halaman</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A4Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A4Portrait</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>A4 Tegak</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A5Landscape">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A5Landscape</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>A5 Mendatar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A5Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A5Portrait</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>A5 Tegak</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.A5Portrait BottomAlign">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A5Portrait BottomAlign</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>A5 Tegak Rata Bawah</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.B5Portrait">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>B5Portrait</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>B5 Berdiri</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Actual">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Actual</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Nyata</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ChoiceOfTopic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Choice of Topic</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Topik Terpilih</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ConceptLoad">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Concept load</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Concept load</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.FoThisLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>For this Level</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pada Tingkat ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Formatting">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Formatting</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Format</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>How to make a great leveled reader</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>How to make a great leveled reader</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.IllustrationSupport">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Illustration Support</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bantuan atas Gambar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.KeepInMind">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Keep in mind</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ingat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Level">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level </seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tingkat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.LevelOf">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg> of </seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>dari</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Max">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Max</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Maksi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PatternAndRecognition">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Pattern and recognition</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pattern and recognition</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per page</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>setiap halaman</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.PerSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>per sentence</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>setiap kalimat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Predictability">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Predictability</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Predictability</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.SetUpLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Levels</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Mengatur Tingkat-tingkat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisBook">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku Ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.ThisPage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Page</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Halaman Ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.TopicFamiliarity">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Topic familiarity</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Topic familiarity</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Total">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>total</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>total</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Unique">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>unique</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>unik</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.Vocabulary">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Vocabulary</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Daftar Kata</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LeveledReaderTool.WordCounts">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Word counts</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hitung Kata</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.AgreeToTerms">
+      <tuv xml:lang="en">
+        <seg>I agree to the Bloom Library's Terms of Use</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Saya setujuh dengan peraturan Penggunaan Perpustakaan Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.Email">
+      <tuv xml:lang="en">
+        <seg>Email Address</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Alamat Email</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.ForgotPassword">
+      <tuv xml:lang="en">
+        <seg>Forgot Password</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Lupa Kata Sandi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.LoginButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Login</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Login</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.Password">
+      <tuv xml:lang="en">
+        <seg>Password</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kata Sandi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.ShowTerms">
+      <tuv xml:lang="en">
+        <seg>Show Terms of Use</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tampilkan Aturan Penguanaan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Log in to BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Log in ke situs BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.label3">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>label3</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>label3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="LoginDialog.showPassword">
+      <tuv xml:lang="en">
+        <seg>&amp;Show Password</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Tampilkan Kata Sandi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.AlreadyCollectionWithThatName">
+      <tuv xml:lang="en">
+        <seg>There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sudah ada koleksi dengan nama itu, pada &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nTolong pilih nama lain.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.ChooseLanguagePage">
+      <tuv xml:lang="en">
+        <seg>Choose the Main Language For This Collection</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pilih bahasa dasar buat koleksi ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionNamePage.ExampleText">
+      <tuv xml:lang="en">
+        <seg>Examples: "Health Books", "PNG Animal Stories"</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Contoh: "Buku Kesehatan", "Buku Dongeng-Dongeng Papua"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionNamePage.NameCollectionLabel">
+      <tuv xml:lang="en">
+        <seg>What would you like to call this collection?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Mau namakan koleksi ini apa?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionNameProblem">
+      <tuv xml:lang="en">
+        <seg>Collection Name Problem</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ada masala dengan nama tumpukan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.CollectionWillBeCreatedAt">
+      <tuv xml:lang="en">
+        <seg>Collection will be created at: {0}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku-buku akan dibuat pada: {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.FinishPage">
+      <tuv xml:lang="en">
+        <seg>Ready To Create New Collection</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Siap Koleksi Baru Dibuat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage">
+      <tuv xml:lang="en">
+        <seg>Choose the Collection Type</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pilih Tipe Koleksi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollection">
+      <tuv xml:lang="en">
+        <seg>Source Collection</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku-buku Sumber </seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.sourceCollectionDescription">
+      <tuv xml:lang="en">
+        <seg>A collection of shell or template books in one or more languages of wider communication. You will be able to upload these shells to BloomLibrary.org and optionally make a Bloom Pack to give to others so that they can make vernacular books with your shells.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Salah satu koleksi buku keranga dalam bahasa umum (daerah, propinsi, negara). Buku ini dapat diupload ke situs BloomLibrary.org dan juga bisa digunakan untuk membuat Paket Bloom untuk sampaikan ke orang lain, supaya mereka bisa membuat buku lokal didasarkan bukumu.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollection">
+      <tuv xml:lang="en">
+        <seg>Vernacular/Local Language Collection</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku-buku Bahasa Daerah/Lokal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.KindOfCollectionPage.vernacularCollectionDescription">
+      <tuv xml:lang="en">
+        <seg>A collection of books in a local language.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sekoleksi buku-buku dalam salah satu bahasa daerah.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage">
+      <tuv xml:lang="en">
+        <seg>Give Language Location</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sampaikan Lokasi Bahasa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.Country">
+      <tuv xml:lang="en">
+        <seg>Country</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Negara</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.District">
+      <tuv xml:lang="en">
+        <seg>District</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Daerah</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.MessageAboutLocationBeingOptional">
+      <tuv xml:lang="en">
+        <seg>These are optional. Bloom will place them in the right places on title page of books you create.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Informasi ini terserah saja. Bloom akan tempel ini di lokasi yng cocok pada halaman judul  buku yng dibuat.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.LocationPage.Province">
+      <tuv xml:lang="en">
+        <seg>Province</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Propinsi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.NewBookPattern">
+      <note>The {0} is replaced by the name of the language.</note>
+      <tuv xml:lang="en">
+        <seg>{0} Books</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.NewCollectionWindowTitle">
+      <tuv xml:lang="en">
+        <seg>Create New Bloom Collection</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buat Tumpukan Buku Bloom yang Baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.ProjectName">
+      <tuv xml:lang="en">
+        <seg>Project Name</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Nama Materi Ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
+      <tuv xml:lang="en">
+        <seg>Unable to create a new collection using that name.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku yang baru atas nama itu tidak dapat dibuat.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage">
+      <tuv xml:lang="en">
+        <seg>Welcome To Bloom!</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Selamat Datang ke Bloom!</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine1">
+      <tuv xml:lang="en">
+        <seg>You are almost ready to start making books.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Anda hampir siap untuk mulai membuat buku baru.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine2">
+      <tuv xml:lang="en">
+        <seg>In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. So the first thing we need to do is make one for you.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Supaya tidak terlalu rumit, Bloom simpan semua buku-buku Anda dalam satu lebih &lt;i&gt;Kolksi&lt;/i&gt;. Jadi sebelum mulai, Bloom perlu membuat satu Koleksi untuk Anda.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="NewCollectionWizard.WelcomePage.WelcomeLine3">
+      <tuv xml:lang="en">
+        <seg>Click 'Next' to get started.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Klik 'Lanjut' untuk mulai.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.Bloom Collections">
+      <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
+      <tuv xml:lang="en">
+        <seg>Bloom Collections</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tumpukan Buku untuk Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
+      <tuv xml:lang="en">
+        <seg>Browse for another collection on this computer</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Cari tumpukan buku yang lain di komputer ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
+      <tuv xml:lang="en">
+        <seg>Copy From Chorus Hub on Local Network</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Salin dari Chorus Hub di Jaringan Lokal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CopyFromInternet">
+      <tuv xml:lang="en">
+        <seg>Copy from Internet</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Salin dari Internet</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CopyFromUsbDrive">
+      <tuv xml:lang="en">
+        <seg>Copy from USB Drive</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Salin dari drive USB</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.CreateNewCollection">
+      <tuv xml:lang="en">
+        <seg>Create New Collection</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buat Tumpukan Buku yang Baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
+      <tuv xml:lang="en">
+        <seg>Open/Create Collections</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buka Tumpukan Buku yang Lain/Buat Tumpukan Buku yang Baru</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.ReadMoreLink">
+      <note>This opens the Chorus Help to learn more about send/receive.</note>
+      <tuv xml:lang="en">
+        <seg>Read More</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Informasi Tambahan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OpenCreateNewCollectionsDialog.TextAboutGetUsingChorus">
+      <tuv xml:lang="en">
+        <seg>Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>*Has someone else used Send/Receive to share a collection with you?\nUse one of these red buttons to copy their collection to your computer.\nLater, use Send/Receive to share your work back with them.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+      <tuv xml:lang="en">
+        <seg>Replace Existing</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gantikan yg Ada</seg>
+      </tuv>
+    </tu>
+    <tu tuid="OverwriteWarning.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Notice</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Catatan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PageList.CantMoveXMatter">
+      <tuv xml:lang="en">
+        <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Itu dilarang. Halaman Depan dan Belakang harus tetap dilokasinya</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PageList.CantMoveXMatterCaption">
+      <tuv xml:lang="en">
+        <seg>Invalid Move</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tidak Boleh Pindah Begitu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.AdobeReaderControl.NotInstalled">
+      <tuv xml:lang="en">
+        <seg>Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tolong menginstal Adobe Reader supaya buku yg selesai ini dapat ditampilkan dalam Bloom. Sebelumnya, Anda boleh simpan buku PDFnya dan buka itu dengan program yang lain.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.AdobeReaderControl.ProblemShowingPDF">
+      <tuv xml:lang="en">
+        <seg>That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Aduh... Adobe Reader melaporkan bahwa kena masala sedang coba tampilkan berkas PDF itu. Anda masih bisa coba simpan buku PDF itu.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.AdobeReaderControl.UnknownError">
+      <tuv xml:lang="en">
+        <seg>Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Maaf. Adobe Reader tidak jadi menampil dalam Bloom, jadi Bloom tidak bisa menampilkan buku Anda yang siap ini.\nTolong hapus/uninstal versi 'Adobe Reader' yang ada di komputer Anda dan menginstal versi 'Adobe Reader' yang lebih baru.\nSebelum ini debereskan, Anda masih bisa simpan buku PDF dan buka buku itu dengan program yang lain.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.BodyOnlyRadio">
+      <tuv xml:lang="en">
+        <seg>Booklet Insides</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Isi Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.BodyOnlyRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make a booklet from the inside pages of the book.
+ Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pilihan ini akan membuat berkas PDF dibentuk sebagai Buku Lipat. Buku Lipat ini akan muat halaman-halaman isi buku saja.\nHalaman ini akan disusun supaya bisa dicetak bolak-balik dan dilipat, supaya dapat buku yang bentuk asli.\n</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ButtonThatShowsUploadForm">
+      <tuv xml:lang="en">
+        <seg>Upload</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Upload</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ButtonThatShowsUploadForm-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Upload to BloomLibrary.org, where others can download and localize into their own language.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pilihan ini akan mengupload buku ini ke situs Perpustakaan Bloom (BloomLibrary.org) di Internet. Dari situs itu orang lain bisa download dan gunakan buku ini untuk membuat buku baru dalam bahasa mereka sendiri.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.CoverOnlyRadio">
+      <tuv xml:lang="en">
+        <seg>Booklet Cover</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sampul Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.CoverOnlyRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make a PDF of just the front and back (both sides), so you can  print on colored paper.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pilihan ini akan membuat berkas PDF dari kulit/sampul buku depan dan belakang saja, supaya bisa dicetak di kertas tebal dan berwarna.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OnPagePerPaperRadio">
+      <note>Instead of making a booklet, just make normal pages</note>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>One page per piece of paper</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>One page per piece of paper</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OnePagePerPaperRadio">
+      <note>Instead of making a booklet, just make normal pages</note>
+      <tuv xml:lang="en">
+        <seg>Simple</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Halaman Saja</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OnePagePerPaperRadio-tooltip">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Make a PDF of every page of the book, one page per piece of paper.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pilihan ini akan membuat berkas PDF terisi dengan setiap halaman di dalam buku ini, dengan aturan satu halaman buku per satu halaman kertas.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.OpenThePDFInTheSystemPDFViewer">
+      <tuv xml:lang="en">
+        <seg>Open the PDF in the default system pdf viewer</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buka berkas PDF dalam program pdf peninjauan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMakingDialog.ConversionProgress._statusLabel">
+      <tuv xml:lang="en">
+        <seg>Loading...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sedang Muat...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PdfMakingDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Making PDF...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sedang Membuat PDFnya...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.PrintButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Print...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Cetak...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Publish">
+      <tuv xml:lang="en">
+        <seg>Publish</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Terbit</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.SaveButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Save PDF...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Simpan sebagai PDF...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.ShowCropMarks">
+      <tuv xml:lang="en">
+        <seg>Crop Marks</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tanda Potong</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Acknowledgments">
+      <tuv xml:lang="en">
+        <seg>Acknowledgments</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pengakuan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.AdditionalRequests">
+      <tuv xml:lang="en">
+        <seg>AdditionalRequests: </seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Usulan yg Lain:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.AllReserved">
+      <tuv xml:lang="en">
+        <seg>All rights reserved (Contact the Copyright holder for any permissions.)</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hak Cipta dilindungi oleh Undang-Undang (Harus ada izin dari Hak Cipta sebelum buku ini diperbanyak.)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.ConfirmReplaceExisting">
+      <tuv xml:lang="en">
+        <seg>BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Di situs BloomLibrary.org sudah ada versi lama atas buku Anda. Kalau mengupload buku ini lagi, ini akan mengantikan buku versi lama yang ada di situ.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Copyright">
+      <tuv xml:lang="en">
+        <seg>Copyright</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hak Cipta</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Credits">
+      <tuv xml:lang="en">
+        <seg>credits</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>pengakuan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.DownloadProblem">
+      <tuv xml:lang="en">
+        <seg>There was a problem downloading your book. You may need to restart Bloom or get technical help.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ada masala waktu coba mendownload buku tersebut. Mungkin Bloom perlu ditutup dan dijalankan lagi.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.ErrorUploading">
+      <tuv xml:lang="en">
+        <seg>Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Maaf, ada masala dengan proses mengupload {0}. Lihat informasi berikutnya. Mungkin perlu bantuan teknisi.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.FieldsNeedAttention">
+      <tuv xml:lang="en">
+        <seg>One or more fields above need your attention before uploading</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Salah satu lebih kotak atas ini perlu diisi sebelum bisa buku ini bisa diupload</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.FinalUploadFailureNotice">
+      <tuv xml:lang="en">
+        <seg>Sorry, "{0}" was not successfully uploaded</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Maaf, "{0}" tidak dapat diupload dengan sukses.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Gaurantee">
+      <tuv xml:lang="en">
+        <seg>By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>*By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.GenericUploadProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem uploading your book.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kena masala pada waktu mengupload buku Anda.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Languages">
+      <tuv xml:lang="en">
+        <seg>Languages</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bahasa-bahasa</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.License">
+      <tuv xml:lang="en">
+        <seg>Usage/License</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Penggunaan/Ijin</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.AccountAlreadyExists">
+      <tuv xml:lang="en">
+        <seg>Account Already Exists</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Akun Pengguna ini Sudah Ada</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.AlreadyHaveAccount">
+      <tuv xml:lang="en">
+        <seg>We cannot sign you up with that address, because we already have an account with that address.  Would you like to log in instead?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bloom tidak bisa daftar Anda atas alamat email itu, sebab sudah ada akun lain yang gunakan alamat itu.  Mau log in atas akun itu kan?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginConnectFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to verify your login. Please check your network connection.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bloom tidak dapat tersambung sama server untuk konfirmasi akun Anda. Tolong cek jaringan Internet Anda.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginFailed">
+      <tuv xml:lang="en">
+        <seg>Login failed</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Login gagal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.LoginOrSignupConnectionFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to complete your login or signup. This could be a problem with your internet connection, our server, or some equipment in between.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bloom tidak dapat tersambung sama server di Internet untuk selesaikan login (atau daftar baru). Masala ini mungkin dari jaringan internet, server Bloom, atau alat lain di antara ini. </seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.MustAgreeTerms">
+      <tuv xml:lang="en">
+        <seg>In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>*In order to sign up for a BloomLibrary.org account, you must check the box indicating that you agree to the BloomLibrary Terms of Use.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.Need Email">
+      <tuv xml:lang="en">
+        <seg>Email Needed</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Perlu Alamat Email</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.NoRecordOfUser">
+      <tuv xml:lang="en">
+        <seg>We don't have a user on record with that email. Would you like to sign up?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>We don't have a user on record with that email. Would you like to sign up?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PasswordMismatch">
+      <tuv xml:lang="en">
+        <seg>Password and user ID did not match</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kata Sandi dan ID Pengguna tidak cocok</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PleaseAgreeTerms">
+      <tuv xml:lang="en">
+        <seg>Please agree to terms of use</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Silahkan setuju sama aturan penggunaan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.PleaseProvideEmail">
+      <tuv xml:lang="en">
+        <seg>Please enter a valid email address. We will send an email to this address so you can reset your password.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tolong masukkan alamat email yang sah. Kami akan kirim email pada alamat itu, supaya Anda bisa ganti kata sandi.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetConnectFailed">
+      <tuv xml:lang="en">
+        <seg>Bloom could not connect to the server to reset your password. Please check your network connection.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bloom tidak dapat tersambung sama server untuk gantikan kata sandi Anda. Tolong cek jaringan Internet Anda.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetFailed">
+      <tuv xml:lang="en">
+        <seg>Reset Password failed</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ganti Kata Sandi gagal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.ResetPassword">
+      <tuv xml:lang="en">
+        <seg>Resetting Password</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sedang mengantikan Kata Sandi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.SendingResetPassword">
+      <tuv xml:lang="en">
+        <seg>We are sending an email to {0} with instructions for how to reset your password</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kami sedang mengirim email ke {0} dengan instruksi bagaimana bisa ganti kata sandi Anda.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.Signup">
+      <tuv xml:lang="en">
+        <seg>Sign up for Bloom Library.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Daftar nama untuk Perpustakaan Bloom.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Login.UnknownUser">
+      <tuv xml:lang="en">
+        <seg>Unknown user</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pengguna Belum Dikenal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.LoginFailure">
+      <tuv xml:lang="en">
+        <seg>Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bloom tidak dapat tersambung sama BloomLibrary.org atas informasi Anda yang sudah disimpan. Tolong cek jaringan Internet Anda.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Logout">
+      <tuv xml:lang="en">
+        <seg>Log out of BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Log keluar dari situs BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.MakingPdf">
+      <tuv xml:lang="en">
+        <seg>Making PDF Preview...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sedang Membuat PDF Preview...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.MakingThumbnail">
+      <tuv xml:lang="en">
+        <seg>Making thumbnail image...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sedang membuat gambar kecil...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.OldVersion">
+      <tuv xml:lang="en">
+        <seg>Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.PleaseLogIn">
+      <tuv xml:lang="en">
+        <seg>Please log in to BloomLibrary.org (or sign up) before uploading</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Silahkan log in masuk ke BloomLibrary.org sebelum coba mengupload</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.PleaseSetThis">
+      <note>This shows next to the license, if the license has not yet been set.</note>
+      <tuv xml:lang="en">
+        <seg>Please set this from the edit tab</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Silahkan mengatur ini di label Edit</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Step1">
+      <tuv xml:lang="en">
+        <seg>Step 1: Confirm Metadata</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tahap 1: Tentukan info Metadata</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Step2">
+      <tuv xml:lang="en">
+        <seg>Step 2: Upload</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tahap 2: Mengupload</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.SuggestAssignCC">
+      <tuv xml:lang="en">
+        <seg>Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>*Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.SuggestChangeCC">
+      <tuv xml:lang="en">
+        <seg>Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>*Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Summary">
+      <tuv xml:lang="en">
+        <seg>Summary</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ringkasan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.TermsLink">
+      <tuv xml:lang="en">
+        <seg>Show Terms of Use</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tampilkan Aturan Penguanaan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Title">
+      <tuv xml:lang="en">
+        <seg>Title</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Judul</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadButton">
+      <tuv xml:lang="en">
+        <seg>Upload Book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Mengupload Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadCompleteNotice">
+      <tuv xml:lang="en">
+        <seg>Congratulations, "{0}" is now available on BloomLibrary.org ({1})</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Syukur! "{0}" sudah sediakan di situs BloomLibrary.org ({1})</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadNotAllowed">
+      <tuv xml:lang="en">
+        <seg>Upload Not Allowed</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tidak boleh Upload</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadProblemNotice">
+      <tuv xml:lang="en">
+        <seg>There was a problem uploading your book. You may need to restart Bloom or get technical help.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bloom kena masala pada waktu mengupload buku Anda. Mungkin harus keluar/masuk Bloom lagi atau minta bantuan dari orang teknisi.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadProgress">
+      <tuv xml:lang="en">
+        <seg>Upload Progress</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Proses Mengupload</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadSandbox">
+      <tuv xml:lang="en">
+        <seg>Upload Book (to Sandbox)</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Upload Buku (ke Sandbox)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadingBook">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Uploading book record</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Uploading book record</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadingBookMetadata">
+      <note>In this step, Bloom is uploading things like title, languages, &amp; topic tags to the bloomlibrary.org database.</note>
+      <tuv xml:lang="en">
+        <seg>Uploading book metadata</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sedang Upload Metadata Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.UploadingStatus">
+      <tuv xml:lang="en">
+        <seg>Uploading {0}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sedang Upload {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.ccLink">
+      <tuv xml:lang="en">
+        <seg>CC-BY-NC</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>CC-BY-NC</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.loginLink">
+      <tuv xml:lang="en">
+        <seg>Log in to BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Log masuk ke situs BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.signupLink">
+      <tuv xml:lang="en">
+        <seg>Sign up for BloomLibrary.org</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Daftar Nama di BloomLibrary.org</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AboutSampleTexts1">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>About Word Lists and Sample TextsWhen you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>About Word Lists and Sample TextsWhen you place text files in your sample texts folder, the Decodable Reader Tool can find words to suggest while you are creating your readers.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AboutSampleTexts2">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Don't have a word list for you language yet? Consider using SIL's free WeSay software and the RapidWords.net technique to easily collect lots of words and get started on a dictionary.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AboutSampleTexts4">
+      <prop type="x-nolongerused">true</prop>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Don't have texts for your language yet? Check out SIL's free SayMore software. With it you can record people and then transcribe what they said.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Level</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tambah Tingkat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Stage</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tambah Tahap</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.AddTexts">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Please add texts to the Sample Texts folder.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Please add texts to the Sample Texts folder.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.BookHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.BookMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Words per Book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kata-kata Maksimal per Buku</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ClickLetter">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Click on letters to add them to this stage.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Klik di huruf-huruf untuk tambah dalam Tahap ini.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.CombinationHelp1">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Separate by spaces</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Separate by spaces</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.CombinationHelp2">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>E.g. "ai oo sh ng th ing"</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>E.g. "ai oo sh ng th ing"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Combinations">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letter Combinations (Graphemes)</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Letter Combinations (Graphemes)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.DecodableStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Stages</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tahap Decodable</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.FileNeedsTxtExtension">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>File needs .txt extension</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Nama berkas harus gunakan ekstensi .txt </seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.FirstSetupAlphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>First,</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sebelumnya,</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.FormatNotSupported">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Cannot read this format</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Format ini tidak dapat dibaca</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.HowToExport">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Help exporting and converting files to use as sample texts</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bantuan atas proses menekspor dan mengubah berkas supaya bisa digunakan sebagai teks contoh.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Language">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Language</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Language</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp1">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>List letters and word-forming characters in alphabetic order.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>List letters and word-forming characters in alphabetic order.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp2">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Separate by spaces</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Separate by spaces</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LetterHelp3">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>E.g. "a b c d"</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>E.g. "a b c d"</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Huruf-huruf</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.Header">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters and Letter Combinations</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Huruf dan Kombinasi Huruf</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Untuk membatnu Anda membuat Buku Belajar Baca yang decodable, Bloom perlu tahu huruf-huruf dan kombinasinya yang ingin diajarkan*.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Separate each letter or letter combination with a space. For example, here is what we might use for the English language:</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ceraikan setiap huruf dengan sepasi. Pada contoh, apa yang bisa digunakan untuk bahasa Inggris diatur begini:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Notice that the English list includes symbols that are used to make words, like ' in </seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Notice that the English list includes symbols that are used to make words, like ' in </seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>it's</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>it's</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Letters.LetterHelp4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LevelHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tingkat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.LevelLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Level </seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tingkat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Levels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reader Levels</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tingkat-tingkat Pembaca</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MatchingWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>matching words</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Setelan Kata</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MaxUniqueWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Unique Words per Book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Maximum Unique Words per Book</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.MoreWords">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>More Words</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>More Words</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.OpenSampleTexts">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Open the sample texts folder for this language.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Open the sample texts folder for this language.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Page</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Halaman</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PageMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Words on each Page</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Maximum Words on each Page</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.PoweredBy">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Powered by </seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Didayakan oleh </seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReaderLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Reader Levels</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tahap-Tahap di Buku Belajar Baca</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.RemoveLevel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Remove Level {0}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hapus Tingkat {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.RemoveStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Remove Stage {0}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hapus Tahap {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReorderLevels">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Drag rows to reorder levels.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Drag rows to reorder levels.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ReorderStages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Drag rows to reorder stages.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Drag rows to reorder stages.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SampleTexts">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Word Lists and Sample Texts</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Word Lists and Sample Texts</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SearchEngine">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>, the Search Engine for Literacy.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>, ini alat/cara Mencari sesuatu buat Literasi.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SelectedLetters">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Previous and New Letters</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Huruf Baru dan Telah Dilatih</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentenceHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sentence</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kalimat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SentenceMaxWords">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Maximum Words in each Sentence</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Maximum Words in each Sentence</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetUpDecodableReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Decodable Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Siapkan Perkakas  untuk Buku Belejar Baca Decodable</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetUpLeveledReaderTool">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Set up Leveled Reader Tool</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Siapkan Perkakas untuk Buku Belejar Baca Tahap-tahap</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SetupAlphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>set up the alphabet for this language.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Siapkan alfabet untuk bahasa ini.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordHelp">
+      <prop type="x-dynamic">true</prop>
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>What are sight words?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>What are sight words?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>New Sight Words</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>New Sight Words</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.SightWordsHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sight Words</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kata Penglihatan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.StageHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tahap</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.StageLabel">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stage </seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tahap</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Stages">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Stages</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tingkat-tingkat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Synphony">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>SynPhony</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>SynPhony</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.ToRemember">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Things to remember for this level:</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Things to remember for this level:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.UniqueHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Unique</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Unik</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Words</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kata-kata</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.Intro">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.PlaceTextFiles">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>2) Place Text Files in Your</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>2) Taruh Berkas Teks di </seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.SampleTextFolder">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample Texts Folder</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Map Teks Contoh</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.Words.TypeWordsHere">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>1) Type Words Here</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>1) Ketik Kata Di Sini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderSetup.lettersHeader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Letters</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Huruf-huruf</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.ExplanationParagraph">
+      <tuv xml:lang="en">
+        <seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this BloomPack , who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>In addition, this BloomPack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this BloomPack , who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this BloomPack. They will also get the current set of words for use in decodable readers.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.IntroLabel">
+      <tuv xml:lang="en">
+        <seg>The following books will be made into templates:</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku-buku ini akan menjadi Buku Kerangka:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.SaveBloomPackButton">
+      <tuv xml:lang="en">
+        <seg>Save Bloom Pack</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Simpan Paket Bloom</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReaderTemplateBloomPackDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Make Reader Template Bloom Pack</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Membuat Paket Bloom untuk Reader Template ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Email">
+      <tuv xml:lang="en">
+        <seg>Email Address</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Alamat Email</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.FirstName">
+      <tuv xml:lang="en">
+        <seg>First Name</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Nama Panggilan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Heading">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="en">
+        <seg>Please take a minute to register {0}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tolong mendaftar nama buat {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.HowAreYouUsing">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="en">
+        <seg>How are you using {0}?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Mau gunakan {0} untuk apa?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.IAmStuckLabel">
+      <tuv xml:lang="en">
+        <seg>I'm stuck, I'll finish this later.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Saya kandas, jadi mau selesaikan ini nanti saja.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Organization">
+      <tuv xml:lang="en">
+        <seg>Organization</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Organisasi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.RegisterButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Register</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Daftar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.Surname">
+      <tuv xml:lang="en">
+        <seg>Surname</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Nama Marga</seg>
+      </tuv>
+    </tu>
+    <tu tuid="RegisterDialog.WindowTitle">
+      <note>Place a {0} where the name of the program goes.</note>
+      <tuv xml:lang="en">
+        <seg>Register {0}</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Daftar Nama buat {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Close">
+      <note>Shown in the button that closes the dialog after a successful report submission.</note>
+      <tuv xml:lang="en">
+        <seg>Close</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Tutup</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.CouldNotSendToServer">
+      <tuv xml:lang="en">
+        <seg>Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Maaf, Bloom tidak dapat mengirim laporanmu langsung. Cobalah lagi, atau email {0} ke {1}.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Email">
+      <tuv xml:lang="en">
+        <seg>Email</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Email</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.IncludeBookButton">
+      <tuv xml:lang="en">
+        <seg>Include Book '{0}'</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Lampirkan Buku '{0}'</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.IncludeScreenshotButton">
+      <tuv xml:lang="en">
+        <seg>Include this screenshot</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Lampirkan gambar layar ini</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Name">
+      <tuv xml:lang="en">
+        <seg>Name</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Nama</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Retry">
+      <note>Shown if there was an error submitting the report. Lets the user try submitting it again.</note>
+      <tuv xml:lang="en">
+        <seg>Retry</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Coba Lagi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.SeeDetails">
+      <tuv xml:lang="en">
+        <seg>See what else will be submitted</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Lihat laporan lain yang akan dikirim</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.SubmitButton">
+      <tuv xml:lang="en">
+        <seg>&amp;Submit</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>&amp;Kirim</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Submitting">
+      <note>This is shown while Bloom is sending the problem report to our server.</note>
+      <tuv xml:lang="en">
+        <seg>Submitting to server...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Sedang dikirim ke server...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Success">
+      <tuv xml:lang="en">
+        <seg>We received your report, thanks for taking the time to help make Bloom better!</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kami telah terima laporanmu. Terima kasih atas bantuanmu untuk membuat Bloom lebih bagus lagi!</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.WhatsTheProblem">
+      <tuv xml:lang="en">
+        <seg>What seems to be the problem?</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Apakah soalnya?</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Report A Problem</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Lapor Masala</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ReportProblemDialog.Zipping">
+      <note>This is shown while Bloom is creating the problem report. It's generally too fast to see, unless you include a large book.</note>
+      <tuv xml:lang="en">
+        <seg>Zipping up book...</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku dikecilkan...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="SendReceiveutton">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Send/Receive</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Send/Receive</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Basic Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku Dasar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Big Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Big Book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku Besar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Decodable Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Belajar Baca Decodable</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Leveled Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Belajar Baca Tahap</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Picture Dictionary">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture Dictionary</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kamus Bergambar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Wall Calendar">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wall Calendar</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kalender Dinding</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Agriculture">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Agriculture</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pertanian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Animal Stories">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Animal Stories</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Dongeng-Dongeng</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Business">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Business</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Bisnis</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Community Living">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Community Living</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Hidup Umat</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Culture">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Culture</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Budaya</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Dictionary">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Dictionary</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kamus</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Environment">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Environment</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Lingkungan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Fiction">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Fiction</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Fiksi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Health">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Health</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Kesehatan</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.How To">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>How To</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Pedoman</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Math">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Math</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Matematika</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.NoTopic">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>No Topic</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Topik Tdk Ada</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Non Fiction">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Non Fiction</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Non-Fiksi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Personal Development">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Personal Development</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Dayakan Diri</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Primer">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Primer</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Buku Belajar Baca</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Science">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Science</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Ilmu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Spiritual">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Spiritual</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Rohani</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Story Book">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Story Book</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Cerita</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Tradition">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Tradition</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Adat/Tradisi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Topics.Traditional Story">
+      <note>shows in the topics chooser in the edit tab</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Traditional Story</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Cerita Adat/Tradisi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WallCalendar.TitleOfSetupDialog">
+      <note>This is the dialog used to set up the wall calendar</note>
+      <tuv xml:lang="en">
+        <seg>Setup</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Atur</seg>
+      </tuv>
+    </tu>
+    <tu tuid="WorkspaceView._tabStrip">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>tabStrip1</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>tabStrip1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="You may use this space for author/illustrator, or anything else.">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You may use this space for author/illustrator, or anything else.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Gunakan tempat ini buat pengarang, ilustrator, atau informasi lainnya.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="button3">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>button3</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>button3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="checkBox1.checkBox1">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Use Image Server to reduce memory usage with large images.</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Use Image Server to reduce memory usage with large images.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="tabPage4.tabPage4">
+      <prop type="x-nolongerused">true</prop>
+      <tuv xml:lang="en">
+        <seg>Advanced Program Settings</seg>
+      </tuv>
+      <tuv xml:lang="id">
+        <seg>Advanced Program Settings</seg>
+      </tuv>
+    </tu>
+  </body>
+</tmx>

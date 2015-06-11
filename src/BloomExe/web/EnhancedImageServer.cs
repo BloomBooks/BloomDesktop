@@ -3,22 +3,23 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
-using System.Text.RegularExpressions;
-using System.Xml;
 using Bloom.Book;
 using System.IO;
 using Bloom.ImageProcessing;
 using BloomTemp;
 using L10NSharp;
 using Microsoft.Win32;
+using Palaso.Code;
 using Palaso.IO;
 using Bloom.Collection;
 using Palaso.Reporting;
-using Palaso.Xml;
 using Palaso.Extensions;
+using RestSharp.Contrib;
 
 namespace Bloom.web
 {
@@ -30,13 +31,11 @@ namespace Bloom.web
 	/// thread-safe.</remarks>
 	public class EnhancedImageServer: ImageServer
 	{
-		// A string unlikely to occur in a book name which we can substitute for a single quote
-		// when making a book path name to insert into JavaScript.
-		private const string QuoteSubstitute = "&apos;";
 		private const string OriginalImageMarker = "OriginalImages"; // Inserted into simulated page urls to suppress image processing
 		private FileSystemWatcher _sampleTextsWatcher;
 		private bool _sampleTextsChanged = true;
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
+		private BloomFileLocator _fileLocator;
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -47,7 +46,15 @@ namespace Bloom.web
 		{ }
 
 		public EnhancedImageServer(RuntimeImageProcessor cache): base(cache)
+		{ }
+
+		/// <summary>
+		/// This constructor is used for unit testing
+		/// </summary>
+		public EnhancedImageServer(RuntimeImageProcessor cache, BloomFileLocator fileLocator)
+			: base(cache)
 		{
+			_fileLocator = fileLocator;
 		}
 
 		// We use two different locks to synchronize access to the methods of this class.
@@ -102,8 +109,8 @@ namespace Bloom.web
 		/// </summary>
 		/// <param name="dom"></param>
 		/// <param name="forSrcAttr">If this is true, the url will be inserted by JavaScript into
-		/// a src attr for an IFrame. We need to account for this because the page request will have
-		/// XML magic characters escaped.</param>
+		/// a src attr for an IFrame. We need to account for this because un-escaped quotation marks in the
+		/// URL can cause errors in JavaScript strings.</param>
 		/// <returns></returns>
 		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool forSrcAttr = false)
 		{
@@ -122,20 +129,12 @@ namespace Bloom.web
 			var key = pathToSimulatedPageFile.Replace('\\', '/');
 			if (forSrcAttr)
 			{
-				// It doesn't seem to matter if we make a url with most non-standard characters, but in one case we
-				// insert the URL into JavaScript which then sets it as the src of an iframe. We need to handle
-				// four special cases here in two ways:
-				// Single quote will terminate the url string in the JavaScript prematurely, so it must be fixed
-				// in both the url and the 'key', which is what we try to match in the urls we are asked to
-				// retrieve.
-				// JavaScript will convert &<> when inserting our url into an HTML attribute, so we need to expect
-				// the key that way. It would make sense for double-quote to be converted, too, but experimentally
-				// it seems it is not.
-				// We do NOT convert &<> in the url, however: if we do that, JS will convert the resulting &'s again.
-				// Since our quote substiture contains an &, that will get converted, so the key must contain the
-				// converted version of the quote substitute.
-				key = XmlUtils.MakeSafeXml(key.Replace("'", QuoteSubstitute));
-				url = url.Replace("'", QuoteSubstitute);
+				// We need to UrlEncode the single and double quote characters so they will play nicely with JavaScript. 
+				url = EscapeUrlQuotes(url);
+				// When JavaScript inserts our path into the html it replaces the three magic html characters with these substitutes.
+				// We need to modify our key so that when the JavaScript comes looking for the page its modified url will
+				// generate the right key.
+				key = SimulateJavaScriptHandlingOfHtml(key);
 			}
 			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
 			lock (_urlToSimulatedPageContent)
@@ -146,58 +145,23 @@ namespace Bloom.web
 		}
 
 		/// <summary>
-		/// Producing PDF with gecko doesn't work on Windows for some reason when referencing
-		/// the localhost server.  So we need to use actual files, and refer to actual files in
-		/// the links to the css files.
+		/// When JavaScript inserts a url into an html document, it replaces the three magic html characters
+		/// with these substitutes.
 		/// </summary>
-		/// <remarks>
-		/// See http://jira.sil.org/browse/BL-932 for details on the bug.
-		/// </remarks>
-		public static SimulatedPageFile MakeRealPublishModeFileInBookFolder(HtmlDom dom)
+		/// <remarks>Also used by PretendRequestInfo for testing</remarks>
+		public static string SimulateJavaScriptHandlingOfHtml(string url)
 		{
-			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".tmp");
-			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
-			if (dom.BaseForRelativePaths != null)
-				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths, simulatedPageFileName).Replace('\\', '/');
-			pathToSimulatedPageFile = RemoveLocalhostReferenceFromPath(pathToSimulatedPageFile);
-			FixStyleLinkReferences(dom);
-			var html5String = TempFileUtils.CreateHtml5StringFromXml(dom.RawDom);
-			using (var writer = File.CreateText(pathToSimulatedPageFile))
-			{
-				writer.Write(html5String);
-				writer.Close();
-			}
-			var uri = new Uri(pathToSimulatedPageFile);
-			return new SimulatedPageFile() { Key = uri.AbsoluteUri };
+			return url.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
 		}
 
-		private static string RemoveLocalhostReferenceFromPath(string path)
+		private static string EscapeUrlQuotes(string originalUrl)
 		{
-			if (String.IsNullOrEmpty(path) || !path.StartsWith(PathEndingInSlash))
-				return path;
-			path = path.Substring(PathEndingInSlash.Length - 1);
-			path = Regex.Replace(path, "^/([A-Z])%3A/", "$1:/");
-			if (path.StartsWith("//"))
-				path = path.Substring(1);
-			return path;
+			return originalUrl.Replace("'", "%27").Replace("\"", "%22");
 		}
 
-		private static void FixStyleLinkReferences(HtmlDom dom)
+		private static string UnescapeUrlQuotes(string escapedUrl)
 		{
-			var links = dom.RawDom.SelectNodes("//links");
-			if (links != null)
-			{
-				foreach (XmlNode xn in links)
-				{
-					var attrs = xn.Attributes;
-					if (attrs == null)
-						continue;
-					var href = attrs["href"];
-					if (href == null)
-						continue;
-					href.Value = RemoveLocalhostReferenceFromPath(href.Value);
-				}
-			}
+			return escapedUrl.Replace("%27", "'").Replace("%22", "\"");
 		}
 
 		internal static void RemoveSimulatedPageFile(string key)
@@ -238,7 +202,7 @@ namespace Bloom.web
 				return true;
 			}
 
-			if (localPath.StartsWith(OriginalImageMarker))
+			if (localPath.StartsWith(OriginalImageMarker) && IsImageTypeThatCanBeDegraded(localPath))
 			{
 				// Path relative to simulated page file, and we want the file contents without modification.
 				// (Note that the simulated page file's own URL starts with this, so it's important to check
@@ -251,6 +215,10 @@ namespace Bloom.web
 			{
 				if (ProcessReaders(localPath, info))
 					return true;
+			}
+			if(localPath.StartsWith("imageInfo", StringComparison.InvariantCulture))
+			{
+				return ReplyWithImageInfo(info, localPath);
 			}
 			if (localPath.StartsWith("error", StringComparison.InvariantCulture))
 			{
@@ -296,6 +264,50 @@ namespace Bloom.web
 			}
 
 			return ProcessContent(info, localPath);
+		}
+
+		/// <summary>
+		/// Get a json of stats about the image. It is used to populate a tooltip when you hover over an image container
+		/// </summary>
+		private bool ReplyWithImageInfo(IRequestInfo info, string localPath)
+		{
+			lock (SyncObj)
+			{
+				try
+				{
+					info.ContentType = "text/json";
+					Require.That(info.RawUrl.Contains("?"));
+					var query = info.RawUrl.Split('?')[1];
+					var args = HttpUtility.ParseQueryString(query);
+					Guard.AssertThat(args.Get("image") != null, "problem with image parameter");
+					var fileName = args["image"];
+					Guard.AgainstNull(CurrentBook, "CurrentBook");
+					var path = Path.Combine(CurrentBook.FolderPath, fileName);
+					RequireThat.File(path).Exists();
+					var fileInfo = new FileInfo(path);
+					dynamic result = new ExpandoObject();
+					result.name = fileName;
+					result.bytes = fileInfo.Length;
+
+					// Using a stream this way, according to one source,
+					// http://stackoverflow.com/questions/552467/how-do-i-reliably-get-an-image-dimensions-in-net-without-loading-the-image,
+					// supposedly avoids loading the image into memory when we only want its dimensions
+					using(var stream = File.OpenRead(path))
+					using(var img = Image.FromStream(stream, false,false))
+					{
+						result.width = img.Width;
+						result.height = img.Height;
+					}
+					info.WriteCompleteOutput(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+					return true;
+				}
+				catch (Exception e)
+				{
+					Logger.WriteEvent("Error in server imageInfo/: url was " + localPath);
+					Logger.WriteEvent("Error in server imageInfo/: exception is " + e.Message);
+				}
+				return false;
+			}
 		}
 
 		private bool ProcessReaders(string localPath, IRequestInfo info)
@@ -404,7 +416,10 @@ namespace Bloom.web
 
 		private bool ProcessContent(IRequestInfo info, string localPath)
 		{
-			// as long as deal with simple string/bool properties or static methods we don't
+			if (localPath.EndsWith(".css"))
+			{
+				return ProcessCssFile(info, localPath);
+			}
 
 			switch (localPath)
 			{
@@ -477,18 +492,30 @@ namespace Bloom.web
 			string modPath = localPath;
 			string path = null;
 			// When JavaScript inserts our path into the html it replaces the three magic html characters with these substitutes.
-			// We need to convert back in order to match our key. Then, reverse the change we made to deal with single quote.
-			// QuoteSubstitute currently contains an &, so we must do that replace last.
-			string tempPath = modPath.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&amp;", "&").Replace(QuoteSubstitute, "'");
+			// We need to convert back in order to match our key. Then, reverse the change we made to deal with quotation marks.
+			string tempPath = UnescapeUrlQuotes(modPath.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&amp;", "&"));
 			if (File.Exists(tempPath))
 				modPath = tempPath;
 			try
 			{
-				// Surprisingly, this method will return localPath unmodified if it is a fully rooted path
-				// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
-				// can return contents of any file that exists if the URL gives its full path...even ones that
-				// are generated temp files most certainly NOT distributed with the application.
-				path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", modPath);
+				// Is this request the full path to an image file? For most images, we just have the filename. However, in at
+				// least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when 
+				// we are looking at a "folio", a book that gathers up other books into one big PDF. In that case, we want
+				// to find the image in the correct book folder.  See AddChildBookContentsToFolio();
+				var possibleFullImagePath = localPath;
+				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
+				{
+					path = possibleFullImagePath;
+				}
+				else
+				{
+
+					// Surprisingly, this method will return localPath unmodified if it is a fully rooted path
+					// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
+					// can return contents of any file that exists if the URL gives its full path...even ones that
+					// are generated temp files most certainly NOT distributed with the application.
+					path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", modPath);
+				}
 			}
 			catch (ApplicationException)
 			{
@@ -497,6 +524,48 @@ namespace Bloom.web
 			if (!File.Exists(path))
 				return false;
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
+			info.ReplyWithFileContent(path);
+			return true;
+		}
+
+		private bool ProcessCssFile(IRequestInfo info, string localPath)
+		{
+			// BL-2219: "OriginalImages" means we're generating a pdf and want full images,
+			// but it has nothing to do with css files and defeats the following 'if'
+			localPath = localPath.Replace("OriginalImages/", "");
+			// is this request the full path to a real file?
+			if (File.Exists(localPath) && Path.IsPathRooted(localPath))
+			{
+				// Typically this will be files in the book or collection directory, since the browser
+				// is supplying the path.
+
+				// currently this only applies to languageDisplay.css, settingsCollectionStyles.css, and customCollectionStyles.css
+				var cssFile = Path.GetFileName(localPath);
+				if ((cssFile == "languageDisplay.css") || (cssFile == "settingsCollectionStyles.css") || (cssFile == "customCollectionStyles.css"))
+				{
+					info.ContentType = "text/css";
+					info.ReplyWithFileContent(localPath);
+					return true;
+				}
+			}
+
+			// if not a full path, try to find the correct file
+			var fileName = Path.GetFileName(localPath);
+
+			// try to find the css file in the xmatter and templates
+			if (_fileLocator == null)
+			{
+				_fileLocator = Program.OptimizedFileLocator;
+			}
+			var path = _fileLocator.LocateFile(fileName);
+
+			// if still not found, and localPath is an actual file path, use it
+			if (string.IsNullOrEmpty(path) && File.Exists(localPath)) path = localPath;
+
+			// return false if the file was not found
+			if (string.IsNullOrEmpty(path)) return false;
+
+			info.ContentType = "text/css";
 			info.ReplyWithFileContent(path);
 			return true;
 		}

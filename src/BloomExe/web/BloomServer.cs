@@ -40,7 +40,7 @@ namespace Bloom.web
 			if (base.ProcessRequest(info))
 				return true;
 
-			var r = info.LocalPathWithoutQuery;
+			var r = CorrectedLocalPath(info);
 			const string slashBloomSlash = "/bloom/";
 			if (r.StartsWith(slashBloomSlash))
 				r = r.Substring(slashBloomSlash.Length);
@@ -150,9 +150,9 @@ namespace Bloom.web
 		{
 			if (x.Name == y.Name)
 				return 0;
-			if (x.Name.ToLower().Contains("templates"))
+			if (x.Name.ToLowerInvariant().Contains("templates"))
 				return -1;
-			if (y.Name.ToLower().Contains("templates"))
+			if (y.Name.ToLowerInvariant().Contains("templates"))
 				return 1;
 			return 0;
 		}

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
+using L10NSharp;
 using Palaso.Code;
 using Palaso.Reporting;
 using ThreadState = System.Threading.ThreadState;
@@ -18,9 +19,15 @@ namespace Bloom.web
 	public abstract class ServerBase : IDisposable
 	{
 		/// <summary>
+		/// Prefix we add to http://localhost:8089 in all our urls. I'm not sure why...possibly to guard against
+		/// some other program trying to use this port?
+		/// </summary>
+		internal const string BloomUrlPrefix = "/bloom/";
+
+		/// <summary>
 		/// Listens for requests on "http://localhost:8089/bloom/"
 		/// </summary>
-		private readonly HttpListener _listener;
+		private HttpListener _listener;
 
 		/// <summary>
 		/// Requests that come into the _listener are placed in the _queue so they can be processed
@@ -55,7 +62,6 @@ namespace Bloom.web
 			_queue = new Queue<HttpListenerContext>();
 			_stop = new ManualResetEvent(false);
 			_ready = new ManualResetEvent(false);
-			_listener = new HttpListener();
 			_listenerThread = new Thread(HandleRequests);
 		}
 
@@ -69,44 +75,29 @@ namespace Bloom.web
 
 		#region Startuup
 
-		public void StartWithSetupIfNeeded()
+		public void StartListening()
 		{
-			Exception error;
-			StartWithSetupIfNeeded(out error);
+			StartWithSetupIfNeeded();
 		}
 
-		protected virtual bool StartWithSetupIfNeeded(out Exception error)
+		protected virtual void StartWithSetupIfNeeded()
 		{
-			var didStart = StartWithExceptionHandling(out error);
-			if (didStart)
-				return true;
-
-			// REVIEW Linux: do we need something similar on Linux?
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
-			{
-				AddUrlAccessControlEntry();
-				didStart = StartWithExceptionHandling(out error);
-			}
-			return didStart;
-		}
-
-		private bool StartWithExceptionHandling(out Exception error)
-		{
-			error = null;
 			try
 			{
-				return TryStart();
+				TryStart();
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
-				error = e;
-				return false;
+				if (!Palaso.PlatformUtilities.Platform.IsWindows) throw;
+
+				AddUrlAccessControlEntry();
+				TryStart();
 			}
 		}
 
-		private bool TryStart()
+		private void TryStart()
 		{
-			_listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
+			_listener = new HttpListener {AuthenticationSchemes = AuthenticationSchemes.Anonymous};
 			_listener.Prefixes.Add(PathEndingInSlash);
 			_listener.Start();
 
@@ -118,7 +109,7 @@ namespace Bloom.web
 				_workers[i].Start();
 			}
 
-			return GetIsAbleToUsePort();
+			GetIsAbleToUsePort();
 		}
 
 		#endregion
@@ -145,7 +136,12 @@ namespace Bloom.web
 		private void QueueRequest(IAsyncResult ar)
 		{
 			// this can happen when shutting down
-			if (!_listenerThread.IsAlive) return;
+			// BL-2207 indicates it may be possible for the thread to be alive and the listener closed,
+			// although the only way I know it gets closed happens after joining with that thread.
+			// Still, one more check seems worthwhile...if we're far enough along in shutting down
+			// to have closed the listener we certainly can't respond to any more requests.
+			if (!_listenerThread.IsAlive || !_listener.IsListening)
+				return;
 
 			lock (_queue)
 			{
@@ -185,6 +181,11 @@ namespace Bloom.web
 				try
 				{
 					rawurl = context.Request.RawUrl;
+
+					// set lower priority for thumbnails in order to have less impact on the UI thread
+					if (rawurl.Contains("thumbnail=1"))
+						Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
+
 					MakeReply(new RequestInfo(context));
 				}
 				catch (HttpListenerException e)
@@ -195,13 +196,29 @@ namespace Bloom.web
 				}
 				catch (Exception error)
 				{
-					Logger.WriteEvent("At ServerBase: ListenerCallback(): msg=" + error.Message);
-					Logger.WriteEvent("At ServerBase: ListenerCallback(): url=" + rawurl);
-					Logger.WriteEvent("At ServerBase: ListenerCallback(): stack=");
-					Logger.WriteEvent(error.StackTrace);
-#if DEBUG
-					throw;
+#if __MonoCS__
+					// Something keeps closing the socket connection prematurely on Linux/Mono.  But I'm not sure
+					// it's an important failure since the program appears to work okay, so we'll ignore the error.
+					if (error is IOException && error.InnerException != null && error.InnerException is System.Net.Sockets.SocketException)
+					{
+						Logger.WriteEvent("At ServerBase: ListenerCallback(): IOException/SocketException, which may indicate that the caller closed the connection before we could reply. msg=" + error.Message + " / " + error.InnerException.Message);
+						Logger.WriteEvent("At ServerBase: ListenerCallback(): url=" + rawurl);
+					}
+					else
 #endif
+					{
+						Logger.WriteEvent("At ServerBase: ListenerCallback(): msg=" + error.Message);
+						Logger.WriteEvent("At ServerBase: ListenerCallback(): url=" + rawurl);
+						Logger.WriteEvent("At ServerBase: ListenerCallback(): stack=");
+						Logger.WriteEvent(error.StackTrace);
+#if DEBUG
+						throw;
+#endif
+					}
+				}
+				finally
+				{
+					Thread.CurrentThread.Priority = ThreadPriority.Normal;
 				}
 			}
 		}
@@ -214,7 +231,7 @@ namespace Bloom.web
 		protected virtual bool ProcessRequest(IRequestInfo info)
 		{
 			// process request for directory index
-			var requestedPath = info.LocalPathWithoutQuery.Substring(7);
+			var requestedPath = GetLocalPathWithoutQuery(info);
 			if (info.RawUrl.EndsWith("/") && (Directory.Exists(requestedPath)))
 			{
 				info.WriteError(403, "Directory listing denied");
@@ -247,21 +264,37 @@ namespace Bloom.web
 			info.WriteError(404);
 		}
 
-		protected static string GetLocalPathWithoutQuery(IRequestInfo info)
+		protected internal static string CorrectedLocalPath(IRequestInfo info)
 		{
-			var r = info.LocalPathWithoutQuery;
-			const string slashBloomSlash = "/bloom/";
-			if (r.StartsWith(slashBloomSlash))
-				r = r.Substring(slashBloomSlash.Length);
-			r = r.Replace("%3A", ":");
-			r = r.Replace("%20", " ");
-			r = r.Replace("%27", "'");
-			return r;
+			// Note that LocalPathWithoutQuery removes all % escaping from the URL.
+			var result = info.LocalPathWithoutQuery;
+			if (info.RawUrl.StartsWith(BloomUrlPrefix + "//"))
+			{
+				// for some reason Url.LocalPath strips out two of the three slashes that we get
+				// with network drive paths when we stick /bloom/ in front of a path like //mydrive/myfolder/...
+				result = BloomUrlPrefix + "//" + result.Substring(BloomUrlPrefix.Length);
+			}
+			return result;
+		}
+
+		protected internal static string GetLocalPathWithoutQuery(IRequestInfo info)
+		{
+			var localPath = CorrectedLocalPath(info);
+			if (localPath.StartsWith(BloomUrlPrefix))
+				localPath = localPath.Substring(BloomUrlPrefix.Length);
+			if (!File.Exists(localPath) && localPath.Contains("?"))
+			{
+				var idx = localPath.LastIndexOf("?", StringComparison.Ordinal);
+				var temp = localPath.Substring(0, idx);
+				if (localPath.EndsWith("?thumbnail=1") || File.Exists(localPath))
+					return temp;
+			}
+			return localPath;
 		}
 
 		public static string PathEndingInSlash
 		{
-			get { return "http://localhost:8089/bloom/"; }
+			get { return "http://localhost:8089" + BloomUrlPrefix; }
 		}
 
 		public static string GetContentType(string extension)
@@ -304,16 +337,13 @@ namespace Bloom.web
 			Process.Start(startInfo);
 		}
 
-		private static bool GetIsAbleToUsePort()
+		private static void GetIsAbleToUsePort()
 		{
-			try
+			var x = new WebClientWithTimeout { Timeout = 3000 };
+			if ("OK" != x.DownloadString(PathEndingInSlash + "testconnection"))
 			{
-				var x = new WebClientWithTimeout { Timeout = 3000 };
-				return ("OK" == x.DownloadString(PathEndingInSlash + "testconnection"));
-			}
-			catch (Exception e)
-			{
-				return false;
+				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.CannotConnectToBloomServer", "Bloom could not connect to the local server.");
+				throw new ApplicationException(msg);
 			}
 		}
 

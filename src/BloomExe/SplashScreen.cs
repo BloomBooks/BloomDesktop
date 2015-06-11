@@ -58,7 +58,7 @@ namespace Bloom
 			TopMost = true;
 			Focus();
 			var channel = ApplicationUpdateSupport.ChannelName;
-			_channelLabel.Visible = channel.ToLower() != "release";
+			_channelLabel.Visible = channel.ToLowerInvariant() != "release";
 			_channelLabel.Text = LocalizationManager.GetDynamicString("Bloom", "SplashScreen." + channel, channel);
 			BringToFront();
 		}

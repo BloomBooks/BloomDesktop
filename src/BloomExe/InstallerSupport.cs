@@ -83,24 +83,31 @@ namespace Bloom
 			}
 			switch (args[0])
 			{
-					// args[1] is version number
+				// args[1] is version number
 				case "--squirrel-install": // (first?) installed
 				case "--squirrel-updated": // updated to specified version
 				case "--squirrel-obsolete": // this version is no longer newest
 				case "--squirrel-uninstall": // being uninstalled
-					using (var mgr = new UpdateManager(updateUrlResult.URL, Application.ProductName, FrameworkVersion.Net45))
+					using (var mgr = new UpdateManager(updateUrlResult.URL, Application.ProductName))
 					{
 						// Note, in most of these scenarios, the app exits after this method
 						// completes!
+						// We replace two of the usual calls in order to take control of where shortcuts are installed.
 						SquirrelAwareApp.HandleEvents(
-							onInitialInstall: v => mgr.CreateShortcutForThisExe(),
+							onInitialInstall: v => mgr.CreateShortcutsForExecutable(Path.GetFileName(Assembly.GetEntryAssembly().Location),
+								StartMenuLocations, args[0] != "--squirrel-install"),
 							onAppUpdate: v => mgr.CreateShortcutForThisExe(),
-							onAppUninstall: v => mgr.RemoveShortcutForThisExe(),
+							onAppUninstall: v => mgr.RemoveShortcutsForExecutable(Path.GetFileName(Assembly.GetEntryAssembly().Location), StartMenuLocations),
 							onFirstRun: () => firstTime = true,
 							arguments: args);
 					}
 					break;
 			}
+		}
+
+		private static ShortcutLocation StartMenuLocations
+		{
+			get { return ShortcutLocation.Desktop | ShortcutLocation.StartMenuPrograms; }
 		}
 
 		/// <summary>

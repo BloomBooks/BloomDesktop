@@ -1,4 +1,4 @@
-@media screen {
+﻿@media screen {
   BODY {
     background-color: #363333;
   }
@@ -56,9 +56,6 @@ BUTTON {
 DIV.pageLabel {
   display: none;
 }
-P {
-  border: 1px solid transparent !important;
-}
 TEXTAREA.coverColor {
   background-color: #D8ADAD;
 }
@@ -78,34 +75,29 @@ DIV.coverBottomBookTopic DIV.topicN1 {
 body {
   counter-reset: pageNumber;
 }
-DIV.numberedPage {
+.numberedPage,
+.countPageButDoNotShowNumber {
   counter-increment: pageNumber;
 }
-DIV.numberedPage:nth-of-type(odd):after {
+.numberedPage:after {
   content: counter(pageNumber);
   font-size: 14pt;
-  /*+placement:anchor-bottom-left 57px 37px;*/
   position: absolute;
-  left: 57px;
-  bottom: 37px;
-  margin-top: -7mm;
+  bottom: 20px;
 }
-DIV.numberedPage:nth-of-type(even):after {
-  content: counter(pageNumber);
-  font-size: 14pt;
-  /*+placement:anchor-bottom-right 60px 37px;*/
-  position: absolute;
+.numberedPage:nth-of-type(odd):after {
+  left: 57px;
+}
+.numberedPage:nth-of-type(even):after {
   right: 60px;
-  bottom: 37px;
   text-align: right;
-  margin-top: -7mm;
 }
 .bloom-draggableLabel {
   /*This matches the width of the dragHandle, which doesn't get added in preview mode
 and as a result, the labels are shifted to this many pixels to the width. This shifts them back.*/
   padding-left: 22px;
 }
-/* when making a PDF or a thumbnail, if no image is chosen, just don't show anything */
-.hidePlaceHolders img[src="placeHolder.png"] {
+.hidePlaceHolders img[src*="placeHolder.png"] {
   display: none;
 }
+/*# sourceMappingURL=previewMode.css.map */

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Gecko;
+using Palaso.UI.WindowsForms.Reporting;
 using Palaso.Xml;
 using L10NSharp;
 
@@ -34,33 +35,47 @@ namespace Bloom.Edit
 		public event EventHandler PageSelectedChanged;
 		private Bloom.Browser _browser;
 		private int _verticalScrollDistance;
+		private static string _thumbnailInterval;
 
 		public WebThumbNailList()
 		{
 			InitializeComponent();
-//            this.Font = new System.Drawing.Font(SystemFonts.DialogFont.FontFamily, 9F);
-//        	_listView.LargeImageList = _thumbnailImageList;
-//        	_listView.Sorting = SortOrder.Ascending;
-//        	_listView.ListViewItemSorter = new SortListViewItemByIndex();
-//              _listView.OwnerDraw = true;
-//             _listView.DrawItem+=new DrawListViewItemEventHandler(_listView_DrawItem);
-//             _boundsPen = new Pen(Brushes.DarkGray, 2);
-//
-//			_placeHolderImage = new Bitmap(32, 32);
-
 
 			if (!ReallyDesignMode)
 			{
 				_browser = new Browser();
-				this._browser.BackColor = System.Drawing.Color.DarkGray;
-				this._browser.Dock = System.Windows.Forms.DockStyle.Fill;
-				this._browser.Location = new System.Drawing.Point(0, 0);
-				this._browser.Name = "_browser";
-				this._browser.Size = new System.Drawing.Size(150, 491);
-				this._browser.TabIndex = 0;
+				_browser.BackColor = Color.DarkGray;
+				_browser.Dock = DockStyle.Fill;
+				_browser.Location = new Point(0, 0);
+				_browser.Name = "_browser";
+				_browser.Size = new Size(150, 491);
+				_browser.TabIndex = 0;
 				_browser.ScaleToFullWidthOfPage = false;
 				_browser.VerticalScroll.Visible = false;
-				this.Controls.Add(_browser);
+				Controls.Add(_browser);
+			}
+
+			// set the thumbnail interval based on physical RAM
+			if (string.IsNullOrEmpty(_thumbnailInterval))
+			{
+				var memInfo = MemoryManagement.GetMemoryInformation();
+
+				// We need to divide by 1024 three times rather than dividing by Math.Pow(1024, 3) because the
+				// later will force floating point math, producing incorrect results.
+				var physicalMemGb = Convert.ToDecimal(memInfo.TotalPhysicalMemory) / 1024 / 1024 / 1024;
+
+				if (physicalMemGb < 2.5M) // less than 2.5 GB physical RAM
+				{
+					_thumbnailInterval = "400";
+				}
+				else if (physicalMemGb < 4M) // less than 4 GB physical RAM
+				{
+					_thumbnailInterval = "200";
+				}
+				else  // 4 GB or more physical RAM
+				{
+					_thumbnailInterval = "100";
+				}
 			}
 		}
 
@@ -604,7 +619,7 @@ namespace Bloom.Edit
 					classes, since we can't write a rule in css3 that peeks into a child attribute.
 				*/
 				var pageClasses = pageThumbnail.GetStringAttribute("class").Split(new[] {' '});
-				var cssClass = pageClasses.FirstOrDefault(c => c.ToLower().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
+				var cssClass = pageClasses.FirstOrDefault(c => c.ToLowerInvariant().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
 				if (!string.IsNullOrEmpty(cssClass))
 					pageContainer.SetAttribute("class", "pageContainer " + cssClass);
 
@@ -615,9 +630,15 @@ namespace Bloom.Edit
 				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
 				captionDiv.InnerText = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + captionOrPageNumber, captionOrPageNumber);
 			}
+
+			// set interval based on physical RAM
+			var intervalAttrib = pageDoc.CreateAttribute("data-thumbnail-interval");
+			intervalAttrib.Value = _thumbnailInterval;
+			body.Attributes.Append(intervalAttrib);
+
 			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 			_verticalScrollDistance = _browser.VerticalScrollDistance;
-			_browser.Navigate(dom, null);
+			_browser.Navigate(dom);
 			return result;
 		}
 
@@ -707,6 +728,11 @@ namespace Bloom.Edit
 						"That change is not allowed. Front matter and back matter pages must remain where they are");
 					var caption = LocalizationManager.GetString("PageList.CantMoveXMatterCaption",
 						"Invalid Move");
+					if (_pages[i].Book.LockedDown)
+					{
+						msg = LocalizationManager.GetString("PageList.CantMoveWhenTranslating",
+							"Pages can not be re-ordered when you are translating a book");
+					}
 					MessageBox.Show(msg, caption);
 					UpdateItems(_pages); // reset to old state
 					return;

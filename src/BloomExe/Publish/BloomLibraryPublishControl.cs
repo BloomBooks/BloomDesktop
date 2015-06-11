@@ -28,6 +28,7 @@ namespace Bloom.Publish
 		private Book.Book _book;
 		private string _originalLoginText;
 		private bool _okToUpload = true;
+		private bool _okToUploadDependsOnLangsChecked;
 		private bool _usingNotesLabel = true;
 		private bool _usingNotesSuggestion = true;
 		private bool _usingCcControls = true;
@@ -95,7 +96,31 @@ namespace Bloom.Publish
 
 			_copyrightLabel.Text = book.BookInfo.Copyright;
 
-			_languagesLabel.Text = string.Join(", ", book.AllLanguages.Select(lang => _book.PrettyPrintLanguage(lang)).ToArray());
+			var allLanguages = book.AllLanguages;
+			foreach (var lang in allLanguages.Keys)
+			{
+				var checkBox = new CheckBox();
+				checkBox.Text = _book.PrettyPrintLanguage(lang);
+				if (allLanguages[lang])
+					checkBox.Checked = true;
+				else
+				{
+					checkBox.Text += @" " + LocalizationManager.GetString("PublishTab.Upload.Partial", "(partial)");
+				}
+				checkBox.Size = new Size(TextRenderer.MeasureText(checkBox.Text, checkBox.Font).Width + 50, checkBox.Height);
+				checkBox.Tag = lang;
+				checkBox.CheckStateChanged += delegate(object sender, EventArgs args)
+				{
+					bool someLangChecked = _languagesFlow.Controls.Cast<CheckBox>().Any(b => b.Checked);
+					_langsLabel.ForeColor = someLangChecked ? Color.Black : Color.Red;
+					if (_okToUploadDependsOnLangsChecked)
+					{
+						_okToUpload = someLangChecked;
+						UpdateDisplay();
+					}
+				};
+				_languagesFlow.Controls.Add(checkBox);
+			}
 
 			_creditsLabel.Text = book.BookInfo.Credits;
 			_summaryBox.Text = book.BookInfo.Summary;
@@ -113,7 +138,6 @@ namespace Bloom.Publish
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
 			RequireValue(_copyrightLabel);
 			RequireValue(_titleLabel);
-			RequireValue(_languagesLabel);
 
 			if (BookTransfer.UseSandbox)
 			{
@@ -121,6 +145,16 @@ namespace Bloom.Publish
 				_uploadButton.Text = LocalizationManager.GetString("PublishTab.Upload.UploadSandbox","Upload Book (to Sandbox)");
 				var neededWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
 				_uploadButton.Width += neededWidth - oldTextWidth;
+			}
+			// After considering all the factors except whether any languages are selected,
+			// if we can upload at this point, whether we can from here on depends on whether one is checked.
+			// This test needs to come after evaluating everything else uploading depends on (except login)
+			_okToUploadDependsOnLangsChecked = _okToUpload;
+			if (!allLanguages.Keys.Any())
+			{
+				_langsLabel.Text += " " + LocalizationManager.GetString("PublishTab.Upload.NoLangsFound", "(None found)");
+				_langsLabel.ForeColor = Color.Red;
+				_okToUpload = false;
 			}
 		}
 
@@ -239,6 +273,20 @@ namespace Bloom.Publish
 			}
 			info.Uploader = _bookTransferrer.UserId;
 
+			if (_book.BookInfo.IsSuitableForMakingShells)
+			{
+				// Hopefully this message is never seen...there is supposed to be no way for an end user to create a template...so I think we can afford
+				// not to burden localizers with it.
+				if (MessageBox.Show(Form.ActiveForm,
+					@"This book is marked as suitable for making shells, that is, a new template like Basic Book containing blank pages for authoring a new book. "
+					+ @"Such books are normally only created and uploaded by HTML specialists. "
+					+ @"If this book is intended as a shell to translate, something is wrong, and you should get expert help before uploading this book."
+					+ "\n\n"
+					+ @"Do you want to go ahead?",
+					"Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+					return;
+			}
+
 			_progressBox.WriteMessage("Checking bloom version eligibility...");
 			if (!_bookTransferrer.IsThisVersionAllowedToUpload())
 			{
@@ -312,7 +360,8 @@ namespace Bloom.Publish
 		void BackgroundUpload(object sender, DoWorkEventArgs e)
 		{
 			var book = (Book.Book) e.Argument;
-			var result = _bookTransferrer.FullUpload(book, _progressBox, _parentView, out _parseId);
+			var languages = _languagesFlow.Controls.Cast<CheckBox>().Where(b => b.Checked).Select(b => b.Tag).Cast<string>().ToArray();
+			var result = _bookTransferrer.FullUpload(book, _progressBox, _parentView, languages, out _parseId);
 			e.Result = result;
 		}
 

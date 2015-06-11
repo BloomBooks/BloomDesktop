@@ -81,6 +81,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="L10NSharp, Version=2.0.30.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\dotnet\L10NSharp.dll</HintPath>
@@ -147,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BloomFileLocatorTests.cs" />
+    <Compile Include="BloomZipFileTests.cs" />
     <Compile Include="Book\BookCollectionTests.cs" />
     <Compile Include="Book\BookInfoTests.cs" />
     <Compile Include="Book\ExportEpubTests.cs" />
@@ -155,16 +160,20 @@
     <Compile Include="Book\BookStorageTests.cs" />
     <Compile Include="Book\BookStarterTests.cs" />
     <Compile Include="Book\BookDataTests.cs" />
+    <Compile Include="Book\RuntimeInformationInjectorTests.cs" />
     <Compile Include="Book\TranslationGroupManagerTests.cs" />
     <Compile Include="Book\LayoutTests.cs" />
     <Compile Include="Book\XMatterHelperTests.cs" />
     <Compile Include="Book\SizeAndOrientationTests.cs" />
+    <Compile Include="CollectionTab\LibraryModelTests.cs" />
+    <Compile Include="CollectionTab\TestLibraryModel.cs" />
     <Compile Include="Collection\BloomPackInstallerTests.cs" />
     <Compile Include="HelpLauncherTests.cs" />
     <Compile Include="Chorus\MergingTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
     <Compile Include="FluentAssertXml.cs" />
-    <Compile Include="LowResImageProcessing\RuntimeImageProcessingTests.cs" />
+    <Compile Include="ImageProcessing\ImageUtilsTests.cs" />
+    <Compile Include="ImageProcessing\RuntimeImageProcessingTests.cs" />
     <Compile Include="NavigationIsolatorTests.cs" />
     <Compile Include="NewCollectionWizardTests.cs" />
     <Compile Include="PageEditingModelTests.cs" />
@@ -180,9 +189,10 @@
     <Compile Include="WebLibraryIntegration\BloomLinkArgsTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomParseClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />
+    <Compile Include="WebLibraryIntegration\BloomS3StandardUpDownloadTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
     <Compile Include="web\BloomServerTests.cs" />
-    <Compile Include="LowResImageProcessing\ImageServerTests.cs" />
+    <Compile Include="ImageProcessing\ImageServerTests.cs" />
     <Compile Include="web\RequestInfoTests.cs" />
     <Compile Include="XmlHtmlConverterTests.cs" />
     <Compile Include="web\EnhancedImageServerTests.cs" />

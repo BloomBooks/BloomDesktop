@@ -64,8 +64,8 @@ namespace Bloom.Collection
 					_useImageServer.CheckState = CheckState.Checked;
 					break;
 			}
-//			this._useImageServer.CheckedChanged += new System.EventHandler(this._useImageServer_CheckedChanged);
-			_useImageServer.CheckStateChanged += new EventHandler(_useImageServer_CheckedChanged);
+
+			_useImageServer.CheckStateChanged += _useImageServer_CheckedChanged;
 
 			UpdateDisplay();
 		}
@@ -96,7 +96,7 @@ namespace Bloom.Collection
 				_removeLanguage3Link.Visible = false;
 				_language3FontLabel.Visible = false;
 				_fontComboLanguage3.Visible = false;
-				_rtlLanguage3CheckBox.Visible = false;
+				_fontSettings3Link.Visible = false;
 				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.SetThirdLanguageLink", "Set...", "If there is no third language specified, the link changes to this.");
 			}
 			else
@@ -107,7 +107,7 @@ namespace Bloom.Collection
 				_removeLanguage3Link.Visible = true;
 				_language3FontLabel.Visible = true;
 				_fontComboLanguage3.Visible = true;
-				_rtlLanguage3CheckBox.Visible = true;
+				_fontSettings3Link.Visible = true;
 				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
 			}
 
@@ -186,17 +186,14 @@ namespace Bloom.Collection
 			if (_fontComboLanguage1.SelectedItem != null)
 			{
 				_collectionSettings.DefaultLanguage1FontName = _fontComboLanguage1.SelectedItem.ToString();
-				_collectionSettings.IsLanguage1Rtl = _rtlLanguage1CheckBox.Checked;
 			}
 			if (_fontComboLanguage2.SelectedItem != null)
 			{
 				_collectionSettings.DefaultLanguage2FontName = _fontComboLanguage2.SelectedItem.ToString();
-				_collectionSettings.IsLanguage2Rtl = _rtlLanguage2CheckBox.Checked;
 			}
 			if (_fontComboLanguage3.SelectedItem != null)
 			{
 				_collectionSettings.DefaultLanguage3FontName = _fontComboLanguage3.SelectedItem.ToString();
-				_collectionSettings.IsLanguage3Rtl = _rtlLanguage3CheckBox.Checked;
 			}
 
 			//no point in letting them have the Nat lang 2 be the same as 1
@@ -285,7 +282,6 @@ namespace Bloom.Collection
 			_bloomCollectionName.Text = _collectionSettings.CollectionName;
 			LoadFontCombo();
 			AdjustFontComboDropdownWidth();
-			SetupRtlCheckBoxes();
 			
 			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");
@@ -301,7 +297,7 @@ namespace Bloom.Collection
 			ListViewItem itemForFactoryDefault = null;
 			foreach(var pack in _xmatterPackFinder.All)
 			{
-				if (packsToSkip.Any(s => pack.Key.ToLower().Contains(s.ToLower())))
+				if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
 					continue;
 
 				var item = _xmatterList.Items.Add(pack.Key);
@@ -362,16 +358,9 @@ namespace Bloom.Collection
 			_fontComboLanguage3.DropDownWidth = width;
 		}
 
-		private void SetupRtlCheckBoxes()
-		{
-			_rtlLanguage1CheckBox.Checked = _collectionSettings.IsLanguage1Rtl;
-			_rtlLanguage2CheckBox.Checked = _collectionSettings.IsLanguage2Rtl;
-			_rtlLanguage3CheckBox.Checked = _collectionSettings.IsLanguage3Rtl;
-		}
-
 		private void _cancelButton_Click(object sender, EventArgs e)
 		{
-			this.DialogResult = DialogResult.Cancel;
+			DialogResult = DialogResult.Cancel;
 			Close();
 		}
 
@@ -398,19 +387,19 @@ namespace Bloom.Collection
 
 		private void _fontComboLanguage1_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if(_fontComboLanguage1.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage1FontName.ToLower())
+			if (_fontComboLanguage1.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.DefaultLanguage1FontName.ToLower())
 				ChangeThatRequiresRestart();
 		}
 
 		private void _fontComboLanguage2_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (_fontComboLanguage2.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage2FontName.ToLower())
+			if (_fontComboLanguage2.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.DefaultLanguage2FontName.ToLower())
 				ChangeThatRequiresRestart();
 		}
 
 		private void _fontComboLanguage3_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (_fontComboLanguage3.SelectedItem.ToString().ToLower() != _collectionSettings.DefaultLanguage3FontName.ToLower())
+			if (_fontComboLanguage3.SelectedItem.ToString().ToLowerInvariant() != _collectionSettings.DefaultLanguage3FontName.ToLower())
 				ChangeThatRequiresRestart();
 		}
 
@@ -429,11 +418,6 @@ namespace Bloom.Collection
 		private void checkBox1_CheckedChanged(object sender, EventArgs e)
 		{
 			Settings.Default.ShowExperimentalCommands = _showExperimentCommands.Checked;
-			ChangeThatRequiresRestart();
-		}
-
-		private void _rtlLanguageCheckBox_CheckedChanged(object sender, EventArgs e)
-		{
 			ChangeThatRequiresRestart();
 		}
 
@@ -458,5 +442,46 @@ namespace Bloom.Collection
 			Settings.Default.AutoUpdate = _automaticallyUpdate.Checked;
 		}
 
+		private void _fontSettings1Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			FontSettingsLinkClicked(_collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId), 1);
+		}
+
+		private void _fontSettings2Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			FontSettingsLinkClicked(_collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId), 2);
+		}
+
+		private void _fontSettings3Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			FontSettingsLinkClicked(_collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId), 3);
+		}
+
+		private void FontSettingsLinkClicked(string langName, int langNum)
+		{
+			using (var frm = new ScriptSettingsDialog())
+			{
+				frm.LanguageName = langName;
+				frm.LanguageRightToLeft = _collectionSettings.GetLanguageRtl(langNum);
+				frm.LanguageLineSpacing = _collectionSettings.GetLanguageLineHeight(langNum);
+				frm.ShowDialog(this);
+
+				// get the changes
+				var newRtl = frm.LanguageRightToLeft;
+				var newLs = frm.LanguageLineSpacing;
+
+				if (newRtl != _collectionSettings.GetLanguageRtl(langNum))
+				{
+					_collectionSettings.SetLanguageRtl(langNum, newRtl);
+					ChangeThatRequiresRestart();
+				}
+
+				if (newLs != _collectionSettings.GetLanguageLineHeight(langNum))
+				{
+					_collectionSettings.SetLanguageLineHeight(langNum, newLs);
+					ChangeThatRequiresRestart();
+				}
+			}
+		}
 	}
 }

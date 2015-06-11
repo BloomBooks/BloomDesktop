@@ -1,4 +1,4 @@
-/*+init {*/
+﻿/*+init {*/
 * {
   position: relative;
   margin: 0;
@@ -58,7 +58,7 @@ A IMG {
 }
 BODY {
   line-height: 1.5;
-  font-family: Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
+  font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
   /*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
 Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
 Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
@@ -69,7 +69,7 @@ To handling the mis-match.*/
 }
 /* gridItem means this is a page thumbnail */
 .gridItem .pageOverflows {
-  background-image: url("../images/Attention.svg");
+  background-image: url("/bloom/BloomBrowserUI/images/Attention.svg");
   /* red triangle with exclamation point */
   background-position: bottom;
   background-repeat: no-repeat;
@@ -88,6 +88,9 @@ DIV.ui-tooltip-content {
   min-height: 50px;
   z-index: 100;
 }
+p {
+  min-height: 1em;
+}
 TEXTAREA,
 .bloom-editable,
 TD {
@@ -98,6 +101,13 @@ TD {
   line-height: 1.5em;
   min-height: 1.8em;
   width: 100%;
+}
+p {
+  min-height: 1em;
+}
+span.bloom-linebreak {
+  display: block;
+  text-indent: 0;
 }
 DIV.bloom-page {
   display: block;
@@ -253,16 +263,14 @@ preview.css.
   /* BL-1022 Keeps XMatter thumb images from going too wide */
   max-width: 136mm;
 }
-.bloom-page:nth-of-type(odd) .marginBox {
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {
   left: 15mm;
 }
-.bloom-page:nth-of-type(even) .marginBox {
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even) .marginBox {
   left: 25mm;
 }
-.bloom-page.outsideFrontCover .marginBox,
-.bloom-page.outsideBackCover .marginBox {
-  /*For the outside cover, just center the margin box, ignore the binding (may need to revisit this decision, I (JH) just think it'll be better)*/
-  left: 15mm;
+body:not(.publishMode) .marginBox {
+  left: 20mm;
 }
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
 LABEL.bubble,
@@ -277,7 +285,6 @@ H1 {
   font-size: 1.5em;
 }
 H2 {
-  sfont-weight: bold ;
   font-size: 1.2em;
 }
 /* we will have UI that switches this .box-header-on if th user wants it*/
@@ -304,3 +311,4 @@ H2 {
   height: 99%;
   width: 99%;
 }
+/*# sourceMappingURL=basePage.css.map */

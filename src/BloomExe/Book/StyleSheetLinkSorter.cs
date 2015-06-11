@@ -30,9 +30,9 @@ namespace Bloom.Book
 				//Note that kDefaultValueForStyleSheetsThatShouldListInTheMiddle should fall in between here
 				//for the template-specific stuff, but we don't know those names
 
-				_values.Add("settingsCollectionStyles.css".ToLower(), 1000);
-				_values.Add("customCollectionStyles.css".ToLower(), 2000); // the almost last word
-				_values.Add("customBookStyles.css".ToLower(), 3000); // the very last word
+				_values.Add("settingsCollectionStyles.css".ToLowerInvariant(), 1000);
+				_values.Add("customCollectionStyles.css".ToLowerInvariant(), 2000); // the almost last word
+				_values.Add("customBookStyles.css".ToLowerInvariant(), 3000); // the very last word
 			}
 		}
 
@@ -40,8 +40,8 @@ namespace Bloom.Book
 		{
 			Init();
 
-			var x = a.GetStringAttribute("href").ToLower();
-			var y = b.GetStringAttribute("href").ToLower();
+			var x = a.GetStringAttribute("href").ToLowerInvariant();
+			var y = b.GetStringAttribute("href").ToLowerInvariant();
 
 			int xValue = GetValue(x);
 			int yValue = GetValue(y);
@@ -60,9 +60,9 @@ namespace Bloom.Book
 		{
 			foreach (var pair in _values)
 			{
-				if (s.ToLower() == pair.Key	//no path in there
-					|| (s.ToLower().EndsWith("/"+pair.Key))
-					|| (s.ToLower().EndsWith("\\"+pair.Key)))
+				if (s.ToLowerInvariant() == pair.Key	//no path in there
+					|| (s.ToLowerInvariant().EndsWith("/" + pair.Key))
+					|| (s.ToLowerInvariant().EndsWith("\\" + pair.Key)))
 					return pair.Value;
 			}
 
@@ -70,7 +70,7 @@ namespace Bloom.Book
 			// "SHRP Labels.css" is used by the SIL LEAD SHRP project to inject vernacular labels for sections of the book
 			// we just need it to always come after the other stylesheet(s) of the book, which may supply default
 			// labels
-			if (s.ToLower().EndsWith("labels.css"))
+			if (s.ToLowerInvariant().EndsWith("labels.css"))
 				return kDefaultValueForStyleSheetsThatShouldListInTheMiddle + 1;
 
 			return kDefaultValueForStyleSheetsThatShouldListInTheMiddle;

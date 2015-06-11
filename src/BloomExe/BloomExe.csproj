@@ -75,17 +75,8 @@
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
-    <Reference Include="DeltaCompressionDotNet">
-      <HintPath>..\..\packages\DeltaCompressionDotNet.1.0.0\lib\net45\DeltaCompressionDotNet.dll</HintPath>
-    </Reference>
     <Reference Include="Fleck">
       <HintPath>..\..\packages\Fleck.0.12.0.39\lib\net40\Fleck.dll</HintPath>
-    </Reference>
-    <Reference Include="DeltaCompressionDotNet.MsDelta">
-      <HintPath>..\..\packages\DeltaCompressionDotNet.1.0.0\lib\net45\DeltaCompressionDotNet.MsDelta.dll</HintPath>
-    </Reference>
-    <Reference Include="DeltaCompressionDotNet.PatchApi">
-      <HintPath>..\..\packages\DeltaCompressionDotNet.1.0.0\lib\net45\DeltaCompressionDotNet.PatchApi.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -95,6 +86,9 @@
       <HintPath>..\..\lib\dotnet\Interop.Acrobat.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="JsonFx">
+      <HintPath>..\..\packages\JsonFx.2.0.1209.2802\lib\net40\JsonFx.dll</HintPath>
+    </Reference>
     <Reference Include="L10NSharp">
       <HintPath>..\..\lib\dotnet\L10NSharp.dll</HintPath>
     </Reference>
@@ -102,25 +96,6 @@
       <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Web.XmlTransform">
-      <HintPath>..\..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Core, Version=2.8.50926.602, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NuGet.Core.2.8.3\lib\net40-Client\NuGet.Core.dll</HintPath>
-    </Reference>
     <Reference Include="PdfDroplet">
       <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
     </Reference>
@@ -134,19 +109,20 @@
     <Reference Include="Splat">
       <HintPath>..\..\packages\Splat.1.5.1\lib\Net45\Splat.dll</HintPath>
     </Reference>
-    <Reference Include="Squirrel, Version=0.9.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Squirrel, Version=0.99.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\squirrel.windows.0.9.2.1\lib\Net45\Squirrel.dll</HintPath>
+      <HintPath>..\..\lib\dotnet\Squirrel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Printing" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -196,8 +172,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\DesktopAnalytics.1.1.3\lib\net40\DesktopAnalytics.dll</HintPath>
     </Reference>
-    <Reference Include="TechTalk.JiraRestClient">
-      <HintPath>..\..\packages\TechTalk.JiraRestClient.RestSharp105.2.3.0.1\lib\net40-Client\TechTalk.JiraRestClient.dll</HintPath>
+    <Reference Include="YouTrackSharp">
+      <HintPath>..\..\packages\YouTrackSharp.2.0.30.0\lib\net40\YouTrackSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -241,6 +217,12 @@
     </Compile>
     <Compile Include="Collection\NaturalSortComparer.cs" />
     <Compile Include="BloomZipFile.cs" />
+    <Compile Include="Collection\ScriptSettingsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Collection\ScriptSettingsDialog.Designer.cs">
+      <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Edit\ConfirmRemovePageDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -326,6 +308,12 @@
     </Compile>
     <Compile Include="Publish\PdfViewer.Designer.cs">
       <DependentUpon>PdfViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\SamplePrintNotification.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Publish\SamplePrintNotification.Designer.cs">
+      <DependentUpon>SamplePrintNotification.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\SHRP_TeachersGuideExtension.cs" />
     <Compile Include="Publish\SHRP_PupilBookExtension.cs" />
@@ -610,6 +598,9 @@
     <EmbeddedResource Include="CollectionTab\MakeReaderTemplateBloomPackDlg.resx">
       <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Collection\ScriptSettingsDialog.resx">
+      <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Edit\ConfirmRemovePageDialog.resx">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -647,6 +638,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\PdfViewer.resx">
       <DependentUpon>PdfViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\SamplePrintNotification.resx">
+      <DependentUpon>SamplePrintNotification.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Registration\LicenseDialog.resx">
       <DependentUpon>LicenseDialog.cs</DependentUpon>
@@ -802,14 +796,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="web\EnhancedImageServer.cs" />
-    <None Include="..\..\lib\dotnet\NDesk.DBus.dll" Condition="'$(OS)'=='Unix'">
-      <Link>NDesk.DBus.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\lib\dotnet\NDesk.DBus.dll.config" Condition="'$(OS)'=='Unix'">
-      <Link>NDesk.DBus.dll.config</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <Compile Include="Workspace\BloomClipboard.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
   </ItemGroup>
@@ -1086,9 +1072,6 @@
     <None Include="Resources\greyTriangleButton.png" />
     <None Include="Resources\installerBackground.jpg" />
     <None Include="Resources\videos.png" />
-    <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
-    <Content Include="Scripts\jquery-1.7.2.js" />
-    <Content Include="Scripts\jquery-1.7.2.min.js" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

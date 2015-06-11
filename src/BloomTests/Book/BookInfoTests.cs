@@ -43,7 +43,8 @@ namespace BloomTests.Book
 			var bi = new BookInfo(_folder.Path, true);
 			Assert.That(bi.IsExperimental);
 			Assert.That(bi.IsFolio);
-			Assert.That(bi.IsSuitableForMakingShells);
+			// BL-2163, we are no longer migrating suitableForMakingShells
+			Assert.That(bi.IsSuitableForMakingShells, Is.False);
 
 			// Check that json takes precedence
 			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);

@@ -1,6 +1,7 @@
 // Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 using System.Collections.Specialized;
+using System.IO;
 using System.Text;
 
 namespace Bloom.web
@@ -13,10 +14,21 @@ namespace Bloom.web
 		public long StatusCode;
 		public string StatusDescription;
 
-		public PretendRequestInfo(string url)
+		public PretendRequestInfo(string url, bool forPrinting = false, bool forSrcAttr = false)
 		{
-			RawUrl = url;
-			LocalPathWithoutQuery = url.Replace("http://localhost:8089", "");
+			// In the real request, RawUrl does not include this prefix
+			RawUrl = url.Replace("http://localhost:8089", "");
+
+			if (forPrinting)
+				url = url.Replace("/bloom/", "/bloom/OriginalImages/");
+
+			// When JavaScript inserts a real path into the html it replaces the three magic html characters with these substitutes.
+			// For this PretendRequestInfo we simulate that by doing the replace here in the url.
+			if (forSrcAttr)
+				url = EnhancedImageServer.SimulateJavaScriptHandlingOfHtml(url);
+
+			// Fixing the /// emulates a behavior of the real HttpListener
+			LocalPathWithoutQuery = url.Replace("/bloom///", "/bloom/").Replace("http://localhost:8089", "").UnescapeCharsForHttp();
 		}
 
 		public string LocalPathWithoutQuery { get; set; }
@@ -40,6 +52,7 @@ namespace Bloom.web
 		public void ReplyWithFileContent(string path)
 		{
 			ReplyImagePath = path;
+			WriteCompleteOutput(File.ReadAllText(path));
 		}
 
 		public void ReplyWithImage(string path)

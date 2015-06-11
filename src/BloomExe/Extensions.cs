@@ -11,17 +11,45 @@ namespace Bloom
 			// don't do this if it is done already
 			if (fileName.StartsWith(ServerBase.PathEndingInSlash)) return fileName;
 
-			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
-			fileName = fileName.Replace("(", "%28").Replace(")", "%29");
-
-			return ServerBase.PathEndingInSlash + fileName.Replace(":", "%3A").Replace("\\", "/");
+			return ServerBase.PathEndingInSlash + fileName.EscapeCharsForHttp().Replace(System.IO.Path.DirectorySeparatorChar, '/');
 		}
 
 		public static string FromLocalhost(this string uri)
 		{
 			if (uri.StartsWith(ServerBase.PathEndingInSlash))
-				uri = uri.Substring(ServerBase.PathEndingInSlash.Length).Replace("%3A", ":");
+				uri = uri.Substring(ServerBase.PathEndingInSlash.Length).UnescapeCharsForHttp();
 			return uri;
+		}
+
+		/// <summary>
+		/// Escapes a number of characters that need it for our url/http processing.
+		/// </summary>
+		/// <remarks>
+		/// Note that calls to EscapeCharsForHttp() must be matched by an equal number of
+		/// subsequent calls to UnescapeCharsForHttp().  (Normally each is called once.)
+		/// </remarks>
+		public static string EscapeCharsForHttp(this string fileName)
+		{
+			fileName = fileName.Replace("%","%25");
+
+			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
+			fileName = fileName.Replace("(", "%28").Replace(")", "%29");
+
+			return fileName.Replace(":", "%3A").Replace("#","%23").Replace("?","%3F");
+		}
+
+		/// <summary>
+		/// Remove the escaping of characters that need it for our url/http processing to restore
+		/// a valid file pathname.
+		/// </summary>
+		/// <remarks>
+		/// Note that calls to UnescapeCharsForHttp() must be matched by an equal number of
+		/// previous calls to EscapeCharsForHttp().  (Normally each is called once.)
+		/// </remarks>
+		public static string UnescapeCharsForHttp(this string uri)
+		{
+			// Include the quoting for space in case someone wants to unescape a raw url string.
+			return uri.Replace("%20", " ").Replace("%3A", ":").Replace("%23","#").Replace("%3F","?").Replace("%28","(").Replace("%29",")").Replace("%25","%");
 		}
 
 		public static int ToInt(this bool value)

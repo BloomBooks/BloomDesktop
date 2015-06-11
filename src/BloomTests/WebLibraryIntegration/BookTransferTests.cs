@@ -277,7 +277,7 @@ namespace BloomTests.WebLibraryIntegration
 			var dest = _workFolderPath.CombineForPath("output");
 			Directory.CreateDirectory(dest);
 
-			var newBookFolder = _transfer.DownloadFromOrderUrl(_transfer.BookOrderUrl, dest);
+			var newBookFolder = _transfer.DownloadFromOrderUrl(_transfer.BookOrderUrl, dest, "nonsense");
 			Assert.That(Directory.GetFiles(newBookFolder).Length, Is.EqualTo(fileCount + 1)); // book order is added during upload
 		}
 

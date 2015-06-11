@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.MiscUI;
@@ -96,10 +97,10 @@ namespace Bloom
 				string newInstallDir;
 				UpdateOutcome outcome;
 				ArrangeToDisposeSquirrelManagerOnExit();
-				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45, rootDirectory))
+				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, rootDirectory))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
-					var result = await UpdateApp(_bloomUpdateManager, null);
+					var result = await UpdateApp(_bloomUpdateManager);
 					newInstallDir = result.NewInstallDirectory;
 					outcome = result.Outcome;
 				}
@@ -165,6 +166,19 @@ namespace Bloom
 				{
 					return ChannelNameForUnitTests;
 				}
+				if (Palaso.PlatformUtilities.Platform.IsUnix)
+				{
+					// The package name and the specific directories where the program is
+					// installed reflect the status ("channel") of the program on Linux.
+					var path = Assembly.GetEntryAssembly().ManifestModule.FullyQualifiedName;
+					if (path.Contains("-testing/") || path.Contains("-alpha/"))
+						return "Alpha";
+					if (path.Contains("-unstable/") || path.Contains ("-beta/"))
+						return "Beta";
+					if (path.EndsWith("/output/Debug/Bloom.exe"))
+						return "Debug";		// verifies this code is working on developer machines.
+					return "Release";
+				}
 				var s = Assembly.GetEntryAssembly().ManifestModule.Name.Replace("bloom", "").Replace("Bloom", "").Replace(".exe", "").Trim();
 				return (s == "") ? "Release" : s;
 			}
@@ -176,7 +190,7 @@ namespace Bloom
 			{
 				UpdateInfo info;
 				ArrangeToDisposeSquirrelManagerOnExit();
-				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName, FrameworkVersion.Net45))
+				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName))
 				{
 					// At this point the method returns(!) and no longer blocks anything.
 					info = await _bloomUpdateManager.CheckForUpdate();
@@ -230,10 +244,8 @@ namespace Bloom
 		}
 
 		// Adapted from Squirrel's EasyModeMixin.UpdateApp, but this version yields the new directory.
-		internal static async Task<UpdateResult> UpdateApp(IUpdateManager manager, Action<int> progress = null)
+		internal static async Task<UpdateResult> UpdateApp(IUpdateManager manager)
 		{
-			progress = progress ?? (_ => { });
-
 			bool ignoreDeltaUpdates = false;
 
 			retry:
@@ -242,23 +254,48 @@ namespace Bloom
 
 			try
 			{
-				updateInfo = await manager.CheckForUpdate(ignoreDeltaUpdates, x => progress(x / 3));
+				updateInfo = await manager.CheckForUpdate(ignoreDeltaUpdates, x => { });
 				if (NoUpdatesAvailable(updateInfo))
 					return new UpdateResult() { NewInstallDirectory = null, Outcome = UpdateOutcome.AlreadyUpToDate }; // none available.
 
 				var updatingNotifier = new ToastNotifier();
 				updatingNotifier.Image.Image = Resources.Bloom.ToBitmap();
 				var version = updateInfo.FutureReleaseEntry.Version;
-				var size = updateInfo.ReleasesToApply.Sum(x => x.Filesize)/1024;
+				var releasesToDownload = updateInfo.ReleasesToApply;
+				var size = releasesToDownload.Sum(x => x.Filesize)/1024;
 				var updatingMsg = String.Format(LocalizationManager.GetString("CollectionTab.Updating", "Downloading update to {0} ({1}K)"), version, size);
 				Palaso.Reporting.Logger.WriteEvent("Squirrel: "+updatingMsg);
-				updatingNotifier.Show(updatingMsg, "", 5);
+				updatingNotifier.Show(updatingMsg, "", -1);
 
-				await manager.DownloadReleases(updateInfo.ReleasesToApply, x => progress(x / 3 + 33));
+				var sb = new StringBuilder("Squirrel update downloading " + releasesToDownload.Count + " release files starting at" + DateTime.Now + ":");
+				foreach (var release in releasesToDownload)
+				{
+					sb.Append(" ");
+					sb.Append(release.Filename);
+					sb.Append("(");
+					sb.Append(release.Filesize);
+					sb.Append(")");
+				}
+				Palaso.Reporting.Logger.WriteEvent(sb.ToString());
 
-				newInstallDirectory = await manager.ApplyReleases(updateInfo, x => progress(x / 3 + 66));
+				var progressMsg = LocalizationManager.GetString("CollectionTab.Progress", "({0}% complete)");
+
+				await manager.DownloadReleases(releasesToDownload, x => UpdateProgress(updatingNotifier, updatingMsg, progressMsg, x));
+
+				Palaso.Reporting.Logger.WriteEvent("Squirrel update download succeeded at " + DateTime.Now);
+
+				// There's no telling what fraction of the total download and update will be. With a bad connection downloading can take a long time.
+				// With a lot of updates applying can take a long time.  If it has to
+				// download the whole package applying will be negligible and downloading all of it.
+				// Rather than have it suddenly slow down or speed up half way I decided to actually describe the two stages.
+				updatingMsg = LocalizationManager.GetString("CollectionTab.Applying", "Applying updates");
+				UpdateProgress(updatingNotifier, updatingMsg, progressMsg, 0);
+				newInstallDirectory = await manager.ApplyReleases(updateInfo, x => UpdateProgress(updatingNotifier, updatingMsg, progressMsg, x));
+
+				Palaso.Reporting.Logger.WriteEvent("Squirrel update finished applying updates at " + DateTime.Now);
 
 				await manager.CreateUninstallerRegistryEntry();
+				updatingNotifier.Hide();
 			}
 			catch (Exception ex)
 			{
@@ -271,6 +308,7 @@ namespace Bloom
 					// it are not part of the sequence on the web site at all, or even if there's
 					// some sort of discontinuity in the sequence of deltas.
 					ignoreDeltaUpdates = true;
+					Palaso.Reporting.Logger.WriteEvent("Squirrel update incremental download failed; trying whole package. Exception: " + ex.Message);
 					goto retry;
 				}
 
@@ -288,6 +326,14 @@ namespace Bloom
 				NewInstallDirectory = newInstallDirectory,
 				Outcome = newInstallDirectory == null ? UpdateOutcome.AlreadyUpToDate : UpdateOutcome.GotNewVersion
 			};
+		}
+
+		private static void UpdateProgress(ToastNotifier updatingNotifier, string updatingMsg, string progressMsg, int x)
+		{
+			updatingNotifier.Invoke((Action)(() =>
+			{
+				updatingNotifier.UpdateMessage(updatingMsg + " " + string.Format(progressMsg, x));
+			}));
 		}
 	}
 }

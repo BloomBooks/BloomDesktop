@@ -42,7 +42,7 @@ BODY
 {
 	line-height: 1.5;
 
-	font-family: Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
+	font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
 	/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
 Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
 Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
@@ -55,7 +55,7 @@ To handling the mis-match.*/
 /* gridItem means this is a page thumbnail */
 .gridItem {
 	.pageOverflows {
-		background-image: url("../images/Attention.svg"); /* red triangle with exclamation point */
+		background-image: url("/bloom/BloomBrowserUI/images/Attention.svg"); /* red triangle with exclamation point */
         background-position: bottom;
         background-repeat: no-repeat;
         background-size: 70%;
@@ -78,6 +78,9 @@ DIV.ui-tooltip-content
 	min-height: 50px;
 	z-index: 100;
 }
+p{
+  min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
+}
 TEXTAREA, .bloom-editable, TD
 {
 	resize: none;
@@ -88,6 +91,16 @@ TEXTAREA, .bloom-editable, TD
 	min-height:  @defaultLineHeight + .3em;
 	width: 100%;
 }
+p{
+  min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
+}
+
+//user can get this in a "bloom-requiresParagraphs" div by pressing shift-enter. See bloomField.ts
+span.bloom-linebreak {
+  display: block;
+  text-indent: 0;
+}
+
 DIV.bloom-page
 {
 	display: block;
@@ -241,19 +254,22 @@ preview.css.
 	}
 }
 
-.bloom-page:nth-of-type(odd) .marginBox
-{
-	left: @MarginOuter;
+//currently, in edit mode every page looks like page 1 to css, so left-vs-right margins are just confusing
+//so we only turn them on when making PDF
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover){
+  &.bloom-page:nth-of-type(odd) .marginBox  {
+	  left: @MarginOuter;
+  }
+  &.bloom-page:nth-of-type(even) .marginBox  {
+	  left: @MarginInner;
+  }
 }
-.bloom-page:nth-of-type(even) .marginBox
-{
-	left: @MarginInner;
+
+//in edit mode, just split the difference, centering the margin box
+body:not(.publishMode) .marginBox{
+  left: @MarginOuter + ( (@MarginInner - @MarginOuter) / 2)
 }
-.bloom-page.outsideFrontCover .marginBox, .bloom-page.outsideBackCover .marginBox
-{
-	/*For the outside cover, just center the margin box, ignore the binding (may need to revisit this decision, I (JH) just think it'll be better)*/
-	left: @MarginOuter;
-}
+
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
 LABEL.bubble, LABEL.placeholder
 {
@@ -271,7 +287,7 @@ H1
 }
 
 H2 {
-	sfont-weight: bold ;
+	//font-weight: bold ;
 	font-size: 1.2em;
 }
 /* we will have UI that switches this .box-header-on if th user wants it*/

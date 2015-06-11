@@ -63,7 +63,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		public string DownloadFromOrderUrl(string orderUrl, string destPath)
+		public string DownloadFromOrderUrl(string orderUrl, string destPath, string title = "unknown")
 		{
 			var decoded = HttpUtilityFromMono.UrlDecode(orderUrl);
 			var bucketStart = decoded.IndexOf(_s3Client.BucketName,StringComparison.InvariantCulture);
@@ -96,46 +96,60 @@ namespace Bloom.WebLibraryIntegration
 
 			var s3orderKey = decoded.Substring(bucketStart  + _s3Client.BucketName.Length + 1);
 			string url = "unknown";
-			string title = "unknown";
 			try
 			{
-				var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
-				url = metadata.DownloadSource;
-				title = metadata.Title;
+				GetUrlAndTitle(s3orderKey, ref url, ref title);
 				if (_progressDialog != null)
 					_progressDialog.Invoke((Action) (() => { _progressDialog.Progress = 1; }));
 				// downloading the metadata is considered step 1.
-				var destinationPath = DownloadBook(metadata.DownloadSource, destPath);
+				var destinationPath = DownloadBook(url, destPath);
 				LastBookDownloadedPath = destinationPath;
 
 				Analytics.Track("DownloadedBook-Success",
-					new Dictionary<string, string>() {{"url", url}, {"title",title}});
+					new Dictionary<string, string>() {{"url", url}, {"title", title}});
 				return destinationPath;
-			}
-			catch (WebException e)
-			{
-				DisplayNetworkDownloadProblem(e);
-				Analytics.Track("DownloadedBook-Failure",
-					new Dictionary<string, string>() { { "url", url }, { "title", title } });
-				Analytics.ReportException(e);
-				return "";
-			}
-			catch (AmazonServiceException e)
-			{
-				DisplayNetworkDownloadProblem(e);
-				Analytics.Track("DownloadedBook-Failure",
-					new Dictionary<string, string>() { { "url", url }, { "title", title } });
-				Analytics.ReportException(e);
-				return "";
 			}
 			catch (Exception e)
 			{
-				DisplayProblem(e, LocalizationManager.GetString("PublishTab.Upload.DownloadProblem",
-					"There was a problem downloading your book. You may need to restart Bloom or get technical help."));
-				Analytics.Track("DownloadedBook-Failure",
-					new Dictionary<string, string>() { { "url", url }, { "title", title } });
-				Analytics.ReportException(e);
+				try
+				{
+					// We want to try this before we give a report that may terminate the program. But if something
+					// more goes wrong, ignore it.
+					Analytics.Track("DownloadedBook-Failure",
+						new Dictionary<string, string>() { { "url", url }, { "title", title } });
+					Analytics.ReportException(e);
+				}
+				catch (Exception)
+				{
+				}
+				var message = LocalizationManager.GetString("Download.ProblemNotice",
+					"There was a problem downloading your book. You may need to restart Bloom or get technical help.");
+				// BL-1233, we've seen what appear to be timeout exceptions, can't confirm the actual Exception subclass though.
+				// It's likely that S3 wraps the original TimeoutException from .net with its own AmazonServiceException.
+				if (e is TimeoutException || e.InnerException is TimeoutException)
+					message = LocalizationManager.GetString("Download.TimeoutProblemNotice",
+					"There was a problem downloading the book: something took too long. You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
+				if (e is AmazonServiceException || e is WebException) // Network problems, not an internal error, less alarming message called for
+					message = LocalizationManager.GetString("Download.GenericNetworkProblemNotice",
+						"There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
+				DisplayProblem(e, message);
 				return "";
+			}
+		}
+
+		private void GetUrlAndTitle(string s3orderKey, ref string url, ref string title)
+		{
+			int index = s3orderKey.IndexOf('/');
+			if (index > 0)
+				index = s3orderKey.IndexOf('/', index + 1); // second slash
+			if (index > 0)
+				url = s3orderKey.Substring(0,index);
+			if (url == "unknown" || string.IsNullOrWhiteSpace(title) || title == "unknown")
+			{
+				// not getting the info we want in the expected way. This old algorithm may work.
+				var metadata = BookMetaData.FromString(_s3Client.DownloadFile(s3orderKey));
+				url = metadata.DownloadSource;
+				title = metadata.Title;
 			}
 		}
 
@@ -147,12 +161,6 @@ namespace Bloom.WebLibraryIntegration
 					shellWindow.Invoke(action);
 				else
 					action.Invoke();
-		}
-
-		private static void DisplayNetworkDownloadProblem(Exception e)
-		{
-			DisplayProblem(e, LocalizationManager.GetString("Download.GenericDownloadProblemNotice",
-				"There was a problem downloading your book."));
 		}
 
 		private static void DisplayNetworkUploadProblem(Exception e, IProgress progress)
@@ -203,11 +211,11 @@ namespace Bloom.WebLibraryIntegration
 				if (_progressDialog.ProgressStateResult != null &&
 					_progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
 				{
-					Palaso.Reporting.ErrorReport.ReportFatalException(
-						_progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
+						Palaso.Reporting.ErrorReport.ReportFatalException(
+							_progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
+					}
 				}
 			}
-		}
 
 		/// <summary>
 		/// this runs in a worker thread
@@ -218,10 +226,10 @@ namespace Bloom.WebLibraryIntegration
 			if (IsUrlOrder(_downloadRequest))
 			{
 				var link = new BloomLinkArgs(_downloadRequest);
-				DownloadFromOrderUrl(link.OrderUrl, DownloadFolder);
+				DownloadFromOrderUrl(link.OrderUrl, DownloadFolder, link.Title);
 			}
 				// If we are passed a bloom book order, download the corresponding book and open it.
-			else if (_downloadRequest.ToLower().EndsWith(BookTransfer.BookOrderExtension.ToLower()) &&
+			else if (_downloadRequest.ToLowerInvariant().EndsWith(BookTransfer.BookOrderExtension.ToLowerInvariant()) &&
 					 File.Exists(_downloadRequest))
 			{
 				HandleBookOrder(_downloadRequest);
@@ -235,7 +243,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private static bool IsUrlOrder(string argument)
 		{
-			return argument.ToLower().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
+			return argument.ToLowerInvariant().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
 		}
 
 		private void HandleBookOrder(string bookOrderPath)
@@ -602,7 +610,11 @@ namespace Bloom.WebLibraryIntegration
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null);
 				string dummy;
-				FullUpload(book, dlg.Progress, view, out dummy, dlg);
+				// Normally we let the user choose which languages to upload. Here, just the ones that have complete information.
+				var langDict = book.AllLanguages;
+				var languagesToUpload = langDict.Keys.Where(l => langDict[l]).ToArray();
+				if (languagesToUpload.Any())
+					FullUpload(book, dlg.Progress, view, languagesToUpload, out dummy, dlg);
 				return;
 			}
 			foreach (var sub in Directory.GetDirectories(folder))
@@ -616,15 +628,16 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="progressBox"></param>
 		/// <param name="publishView"></param>
 		/// <param name="parseId"></param>
+		/// <param name="languages"></param>
 		/// <param name="invokeTarget"></param>
 		/// <returns></returns>
-		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, out string parseId, Form invokeTarget = null)
+		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, Form invokeTarget = null)
 		{
 			var bookFolder = book.FolderPath;
 			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 			// These bits of data can't easily be set while saving the book because we save one page at a time
 			// and they apply to the book as a whole.
-			book.BookInfo.LanguageTableReferences = _parseClient.GetLanguagePointers(book.CollectionSettings.MakeLanguageUploadData(book.AllLanguages.ToArray()));
+			book.BookInfo.LanguageTableReferences = _parseClient.GetLanguagePointers(book.CollectionSettings.MakeLanguageUploadData(languages));
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));

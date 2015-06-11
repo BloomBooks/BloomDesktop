@@ -91,7 +91,7 @@ namespace Bloom.CollectionTab
 				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
 
 				//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
-				var templates = _bookCollections.First(c => c.Name.ToLower() == "templates");
+				var templates = _bookCollections.First(c => c.Name.ToLowerInvariant() == "templates");
 				_bookCollections.Remove(templates);
 				_bookCollections.Insert(1,templates);
 			}
@@ -207,7 +207,11 @@ namespace Bloom.CollectionTab
 		/// <summary>
 		/// All we do at this point is make a file with a ".doc" extension and open it.
 		/// </summary>
-		/// <param name="path"></param>
+		/// <remarks>
+		/// The .doc extension allows the operating system to recognize which program
+		/// should open the file, and the program (whether Microsoft Word or LibreOffice
+		/// or OpenOffice) seems to handle HTML content just fine.
+		/// </remarks>
 		public void ExportDocFormat(string path)
 		{
 			string sourcePath = _bookSelection.CurrentSelection.GetPathHtmlFile();
@@ -215,7 +219,15 @@ namespace Bloom.CollectionTab
 			{
 				File.Delete(path);
 			}
-			File.Copy(sourcePath, path);
+			// Linux (Trusty) LibreOffice requires slightly different metadata at the beginning
+			// of the file in order to recognize it as HTML.  Otherwise it opens the file as raw
+			// HTML (See https://silbloom.myjetbrains.com/youtrack/issue/BL-2276 if you don't
+			// believe me.)  I don't know any perfect way to add this information to the file,
+			// but a simple string replace should be safe.  This change works okay for both
+			// Windows and Linux and for all three programs (Word, OpenOffice and Libre Office).
+			string content = File.ReadAllText(sourcePath);
+			string fixedContent = content.Replace("<meta charset=\"UTF-8\">", "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
+			File.WriteAllText(path, fixedContent);
 		}
 
 		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
@@ -282,6 +294,9 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+		// these files (if encountered) won't be compressed into a BloomPack
+		private static readonly string[] excludedFileExtensions = { ".db", ".pdf" };
+
 		/// <summary>
 		/// Adds a directory, along with all files and subdirectories, to the ZipStream.
 		/// </summary>
@@ -291,26 +306,30 @@ namespace Bloom.CollectionTab
 		/// before creating the zip entry name</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
-		private static void CompressDirectory(string directoryPath, ZipOutputStream zipStream, int dirNameOffest,
+		/// <remarks>Protected for testing purposes</remarks>
+		protected static void CompressDirectory(string directoryPath, ZipOutputStream zipStream, int dirNameOffest,
 			bool forReaderTools)
 		{
 			var files = Directory.GetFiles(directoryPath);
 			var bookFile = BookStorage.FindBookHtmlInFolder(directoryPath);
 
-			foreach (var fileName in files)
+			foreach (var filePath in files)
 			{
-				FileInfo fi = new FileInfo(fileName);
+				if (excludedFileExtensions.Contains(Path.GetExtension(filePath)))
+					continue; // BL-2246: skip putting this one into the BloomPack
 
-				var entryName = fileName.Substring(dirNameOffest);  // Makes the name in zip based on the folder
+				FileInfo fi = new FileInfo(filePath);
+
+				var entryName = filePath.Substring(dirNameOffest);  // Makes the name in zip based on the folder
 				entryName = ZipEntry.CleanName(entryName);          // Removes drive from name and fixes slash direction
 				ZipEntry newEntry = new ZipEntry(entryName) { DateTime = fi.LastWriteTime };
 				newEntry.IsUnicodeText = true; // encode filename and comment in UTF8
 				byte[] bookContent = {};
 
 				// if this is a ReaderTools book, call GetBookReplacedWithTemplate() to get the contents
-				if (forReaderTools && (bookFile == fileName))
+				if (forReaderTools && (bookFile == filePath))
 				{
-					bookContent = GetBookReplacedWithTemplate(fileName);
+					bookContent = GetBookReplacedWithTemplate(filePath);
 					newEntry.Size = bookContent.Length;
 				}
 				else
@@ -331,7 +350,7 @@ namespace Bloom.CollectionTab
 				{
 					// Zip the file in buffered chunks
 					byte[] buffer = new byte[4096];
-					using (var streamReader = File.OpenRead(fileName))
+					using (var streamReader = File.OpenRead(filePath))
 					{
 						StreamUtils.Copy(streamReader, zipStream, buffer);
 					}

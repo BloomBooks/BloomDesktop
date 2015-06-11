@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -121,6 +122,19 @@ namespace Bloom
 			GeckoPreferences.User["network.proxy.http"] = string.Empty;
 			GeckoPreferences.User["network.proxy.http_port"] = 80;
 			GeckoPreferences.User["network.proxy.type"] = 1; // 0 = direct (uses system settings on Windows), 1 = manual configuration
+			// Try some settings to reduce memory consumption by the mozilla browser engine.
+			// Testing on Linux showed eventual substantial savings after several cycles of viewing
+			// all the pages and then going to the publish tab and producing PDF files for several
+			// books with embedded jpeg files.  (physical memory 1,153,864K, managed heap 37,789K
+			// instead of physical memory 1,952,380K, managed heap 37,723K for stepping through the
+			// same operations on the same books in the same order.  I don't know why managed heap
+			// changed although it didn't change much.)
+			// See http://kb.mozillazine.org/About:config_entries, http://www.davidtan.org/tips-reduce-firefox-memory-cache-usage
+			// and http://forums.macrumors.com/showthread.php?t=1838393.
+			GeckoPreferences.User["memory.free_dirty_pages"] = true;
+			GeckoPreferences.User["browser.sessionhistory.max_entries"] = 1;
+			GeckoPreferences.User["browser.sessionhistory.max_total_viewers"] = 0;
+			GeckoPreferences.User["browser.cache.memory.enable"] = false;
 
 			Application.ApplicationExit += OnApplicationExit;
 		}
@@ -157,7 +171,7 @@ namespace Bloom
 
 			_cutCommand.Implementer = () => _browser.CutSelection();
 			_copyCommand.Implementer = () => _browser.CopySelection();
-			_pasteCommand.Implementer = PasteFilteredText;
+			_pasteCommand.Implementer = () => PasteFilteredText(false);
 			_undoCommand.Implementer = () =>
 			{
 				// Note: this is only used for the Undo button in the toolbar;
@@ -337,20 +351,26 @@ namespace Bloom
 				else if(_browser.CanPaste && BloomClipboard.ContainsText())
 				{
 					e.PreventDefault(); //we'll take it from here, thank you very much
-					PasteFilteredText();
+					PasteFilteredText(false);
 				}
 			}
 		}
 
-		private void PasteFilteredText()
+		private void PasteFilteredText(bool removeSingleLineBreaks)
 		{
 			Debug.Assert(!InvokeRequired);
+
 			//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
-			var originalText = BloomClipboard.GetText(TextDataFormat.UnicodeText);
-			if (!string.IsNullOrEmpty(originalText))
+			var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
+
+			if (!string.IsNullOrEmpty(text))
 			{
-				//setting clears everything else:
-				BloomClipboard.SetText(originalText, TextDataFormat.UnicodeText);
+				if (removeSingleLineBreaks)
+				{
+					text = text.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+				}
+				//setting clears other formats that might be on the clipboard, such as html
+				BloomClipboard.SetText(text, TextDataFormat.UnicodeText);
 				_browser.Paste();
 			}
 		}
@@ -463,6 +483,15 @@ namespace Bloom
 
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
+			var mouseEvent = e as Gecko.DomMouseEventArgs;
+			var specialPasteClick = ModifierKeys.HasFlag(Keys.Control) || (mouseEvent!=null && mouseEvent.Button== GeckoMouseButton.Middle);
+			if(_browser.CanPaste && BloomClipboard.ContainsText() && specialPasteClick)
+			{
+				e.PreventDefault();
+				PasteFilteredText(true);
+				return;
+			}
+
 			Debug.Assert(!InvokeRequired);
 		  //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
 			//it loses its focus.
@@ -471,12 +500,14 @@ namespace Bloom
 			EventHandler handler = OnBrowserClick;
 			if (handler != null)
 				handler(this, e);
+
+
 		}
 
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-			string url = e.Uri.OriginalString.ToLower();
+			string url = e.Uri.OriginalString.ToLowerInvariant();
 
 			if ((!url.StartsWith(Bloom.web.ServerBase.PathEndingInSlash)) && (url.StartsWith("http")))
 			{
@@ -984,13 +1015,13 @@ namespace Bloom
 		public void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
 		{
 			Debug.Assert(!InvokeRequired);
-			if (anchor.Href.ToLower().StartsWith("http")) //will cover https also
+			if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
 			{
 				Process.Start(anchor.Href);
 				eventArgs.Handled = true;
 				return;
 			}
-			if (anchor.Href.ToLower().StartsWith("file"))
+			if (anchor.Href.ToLowerInvariant().StartsWith("file"))
 			//links to files are handled externally if we can tell they aren't html/javascript related
 			{
 				// TODO: at this point spaces in the file name will cause the link to fail.
@@ -999,7 +1030,7 @@ namespace Bloom
 
 				var path = href.Replace("file:///", "");
 
-				if (new List<string>(new[] { ".pdf", ".odt",".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLower()))
+				if (new List<string>(new[] { ".pdf", ".odt", ".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLowerInvariant()))
 				{
 					eventArgs.Handled = true;
 					Process.Start(new ProcessStartInfo()
@@ -1012,7 +1043,7 @@ namespace Bloom
 				eventArgs.Handled = false; //let gecko handle it
 				return;
 			}
-			else if (anchor.Href.ToLower().StartsWith("mailto"))
+			else if (anchor.Href.ToLowerInvariant().StartsWith("mailto"))
 			{
 				eventArgs.Handled = true;
 				Process.Start(anchor.Href); //let the system open the email program

@@ -24,6 +24,7 @@ namespace Bloom.MiscUI
 		private Timer _pauseTimer;
 		private int startPosX;
 		private int startPosY;
+		private bool _stayUp;
 
 		/// <summary>
 		/// The user clicked on the toast popup
@@ -94,7 +95,8 @@ namespace Bloom.MiscUI
 			if (startPosY < Screen.PrimaryScreen.WorkingArea.Height - Height)
 			{
 				_goUpTimer.Stop();
-				_pauseTimer.Start();
+				if(!_stayUp)
+					_pauseTimer.Start();
 			}
 			else
 				SetDesktopLocation(startPosX, startPosY);
@@ -137,13 +139,18 @@ namespace Bloom.MiscUI
 			_callToAction.Text = callToAction;
 			if (seconds < 0)
 			{
-				_pauseTimer.Enabled = false; //just leave it up permanently
+				_stayUp = true; //just leave it up permanently
 			}
 			else
 			{
 				_pauseTimer.Interval = 1000 * seconds;
 			}
 			Show();
+		}
+
+		public void UpdateMessage(string newMessage)
+		{
+			_message.Text = newMessage;
 		}
 
 		private void callToAction_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

@@ -1,23 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Net;
+using System.Security;
 using System.Text;
 using Amazon;
-using Amazon.EC2.Model;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
 using Palaso.Code;
+using Palaso.IO;
 using Palaso.Progress;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.Progress;
 using RestSharp.Contrib;
-using Palaso.IO;
-using System.Net;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -81,25 +80,6 @@ namespace Bloom.WebLibraryIntegration
 			return count;
 		}
 
-		public int GetCountOfAllFilesInBucket()
-		{
-			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
-			{
-				BucketName = _bucketName
-			});
-			return matchingFilesResponse.S3Objects.Count;
-		}
-
-
-		public IEnumerable<string> GetFilePaths()
-		{
-			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
-			{
-				BucketName = _bucketName
-			});
-			return from x in matchingFilesResponse.S3Objects select x.Key;
-		}
-
 		public void DeleteBookData(string key)
 		{
 			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
@@ -119,17 +99,6 @@ namespace Bloom.WebLibraryIntegration
 			var response = _amazonS3.DeleteObjects(deleteObjectsRequest);
 			Debug.Assert(response.DeleteErrors.Count == 0);
 
-		}
-
-
-		public bool FileExists(params string[] parts)
-		{
-			var request = new ListObjectsRequest()
-			{
-				BucketName = _bucketName,
-				Prefix = String.Join(kDirectoryDelimeterForS3,parts)
-			};
-			return _amazonS3.ListObjects(request).S3Objects.Count>0;
 		}
 
 		public void EmptyUnitTestBucket(string prefix)
@@ -210,6 +179,8 @@ namespace Bloom.WebLibraryIntegration
 			fileSystemInfo.Delete();
 		}
 
+		private readonly string[] excludedFileNames = { "thumbs.db" }; // these files (if encountered) won't be uploaded
+
 		/// <summary>
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
 		/// and it will name it that, and gui client apps then treat that like a folder structure, so you feel like there are folders.
@@ -234,7 +205,10 @@ namespace Bloom.WebLibraryIntegration
 				BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);;
 			foreach (string file in filesToUpload)
 			{
-				string fileName = Path.GetFileName(file);
+				var fileName = Path.GetFileName(file);
+				if (excludedFileNames.Contains(fileName))
+					continue; // BL-2246: skip uploading this one
+
 				var request = new TransferUtilityUploadRequest()
 				{
 					BucketName = _bucketName,
@@ -292,8 +266,10 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		/// <param name="sourceDirName"></param>
 		/// <param name="destDirName">Note, this is not the *parent*; this is the actual name you want, e.g. CopyDirectory("c:/foo", "c:/temp/foo") </param>
-		private static void CopyDirectory(string sourceDirName, string destDirName)
+		/// <returns>true if no exception occurred</returns>
+		private static bool CopyDirectory(string sourceDirName, string destDirName)
 		{
+			bool success = true;
 			var sourceDirectory = new DirectoryInfo(sourceDirName);
 
 			if (!sourceDirectory.Exists)
@@ -310,12 +286,50 @@ namespace Bloom.WebLibraryIntegration
 
 			foreach (FileInfo file in sourceDirectory.GetFiles())
 			{
-				file.CopyTo(Path.Combine(destDirName, file.Name), true);
+				var destFileName = Path.Combine(destDirName, file.Name);
+				try
+				{
+					file.CopyTo(destFileName, true);
+				}
+				catch (Exception ex)
+				{
+					if (!(ex is IOException || ex is UnauthorizedAccessException || ex is SecurityException))
+						throw;
+					// Maybe we don't need to write it...it hasn't changed since a previous download?
+					if (!SameFileContent(destFileName, file.FullName))
+						success = false;
+				}
 			}
 
 			foreach (DirectoryInfo subdir in sourceDirectory.GetDirectories())
 			{
-				CopyDirectory(subdir.FullName, Path.Combine(destDirName, subdir.Name));
+				success = CopyDirectory(subdir.FullName, Path.Combine(destDirName, subdir.Name)) && success;
+			}
+			return success;
+		}
+
+		// Return true if both files exist, are readable, and have the same content.
+		static bool SameFileContent(string path1, string path2)
+		{
+			if (!File.Exists(path1))
+				return false;
+			if (!File.Exists(path2))
+				return false;
+			try
+			{
+				var first = File.ReadAllBytes(path1);
+				var second = File.ReadAllBytes(path2);
+				if (first.Length != second.Length)
+					return false;
+				for (int i = 0; i < first.Length; i++)
+					if (first[i] != second[i])
+						return false;
+				return true;
+
+			}
+			catch (IOException)
+			{
+				return false; // can't even read
 			}
 		}
 
@@ -398,21 +412,48 @@ namespace Bloom.WebLibraryIntegration
 				var destinationPath = Path.Combine(pathToDestinationParentDirectory, Path.GetFileName(children[0]));
 
 				//clear out anything exisitng on our target
+				var didDelete = false;
 				if (Directory.Exists(destinationPath))
 				{
-					Directory.Delete(destinationPath, true);
+					try
+					{
+						Directory.Delete(destinationPath, true);
+						didDelete = true;
+					}
+					catch (IOException)
+					{
+						// can't delete it...see if we can copy into it.
+					}
 				}
 
 				//if we're on the same volume, we can just move it. Else copy it.
 				// It's important that books appear as nearly complete as possible, because a file watcher will very soon add the new
 				// book to the list of downloaded books the user can make new ones from, once it appears in the target directory.
-				if (PathUtilities.PathsAreOnSameVolume(pathToDestinationParentDirectory, tempDestination.FolderPath))
+				bool done = false;
+				if (didDelete && PathUtilities.PathsAreOnSameVolume(pathToDestinationParentDirectory, tempDestination.FolderPath))
 				{
-					Directory.Move(children[0], destinationPath);
+					try
+					{
+						Directory.Move(children[0], destinationPath);
+						done = true;
+					}
+					catch (IOException)
+					{
+						// If moving didn't work we'll just try copying
+					}
+					catch (UnauthorizedAccessException)
+					{ }
+
 				}
-				else
+				if (!done)
+					done = CopyDirectory(children[0], destinationPath);
+				if (!done)
 				{
-					CopyDirectory(children[0], destinationPath);
+					var msg = LocalizationManager.GetString("Download.CopyFailed",
+						"Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers");
+					// The exception doesn't add much useful information but it triggers a version of the dialog with a Details button
+					// that leads to the yellow box and an easy way to send the report.
+					ErrorReport.NotifyUserOfProblem(new ApplicationException("File Copy problem"), msg);
 				}
 				return destinationPath;
 			}

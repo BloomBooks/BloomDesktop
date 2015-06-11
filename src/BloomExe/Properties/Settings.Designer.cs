@@ -267,5 +267,31 @@ namespace Bloom.Properties {
                 this["AutoUpdate"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(Palaso.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0, 0, 1028, 586")]
+        public global::System.Drawing.Rectangle RestoreBounds {
+            get {
+                return ((global::System.Drawing.Rectangle)(this["RestoreBounds"]));
+            }
+            set {
+                this["RestoreBounds"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(Palaso.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DontShowPrintNotification {
+            get {
+                return ((bool)(this["DontShowPrintNotification"]));
+            }
+            set {
+                this["DontShowPrintNotification"] = value;
+            }
+        }
     }
 }

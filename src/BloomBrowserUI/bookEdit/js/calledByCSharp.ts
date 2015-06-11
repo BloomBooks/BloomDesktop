@@ -18,6 +18,11 @@ class CalledByCSharp {
     return contentWindow.model.canUndo();
   }
 
+    pageSelectionChanging() {
+        var contentWindow = this.getPageContent();
+        contentWindow['pageSelectionChanging']();
+    }
+
   loadReaderToolSettings(settings: string, bookFontName: string) {
 
     var contentWindow = this.getAccordionContent();

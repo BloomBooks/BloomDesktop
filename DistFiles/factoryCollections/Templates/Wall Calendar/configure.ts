@@ -43,11 +43,11 @@ class CalendarConfigurator {
     //
     updateDom():void {
         var year:string = this.configObject.year;
-        var originalMonthsPicturePage:HTMLDivElement = $('.calendarMonthTop')[0];
-        var pageToInsertAfter:HTMLDivElement = originalMonthsPicturePage;
+        var originalMonthsPicturePage:HTMLElement = $('.calendarMonthTop')[0];
+        var pageToInsertAfter:HTMLElement = originalMonthsPicturePage;
         for (var month:number = 0; month < 12; month++) {
 
-            var monthsPicturePage:HTMLDivElement = $(originalMonthsPicturePage).clone();
+            var monthsPicturePage:HTMLElement = $(originalMonthsPicturePage).clone()[0];
             $(monthsPicturePage).removeClass('templateOnly').removeAttr('id'); // don't want to copy a Guid!
 
             $(pageToInsertAfter).after(monthsPicturePage);

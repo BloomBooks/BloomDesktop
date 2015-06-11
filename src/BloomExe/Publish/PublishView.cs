@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using L10NSharp;
@@ -27,6 +28,7 @@ namespace Bloom.Publish
 		private BloomLibraryPublishControl _publishControl;
 		private BookTransfer _bookTransferrer;
 		private LoginDialog _loginDialog;
+		private PictureBox _previewBox;
 
 		public delegate PublishView Factory();//autofac uses this
 
@@ -85,6 +87,12 @@ namespace Bloom.Publish
 			GeckoPreferences.Default["pdfjs.disabled"] = false;
 			SetupLocalization();
 			localizationChangedEvent.Subscribe(o=>SetupLocalization());
+
+			// Make this extra box available to show when wanted.
+			_previewBox = new PictureBox();
+			_previewBox.Visible = false;
+			Controls.Add(_previewBox);
+			_previewBox.BringToFront();
 		}
 
 		private void BackgroundColorsForLinux() {
@@ -198,26 +206,20 @@ namespace Bloom.Publish
 						//installed, or they had the PDF open in Word, or something like that.
 						ErrorReport.NotifyUserOfProblem(error.Message);
 					}
+					else if (error is FileNotFoundException && ((FileNotFoundException) error).FileName == "GeckofxHtmlToPdf.exe")
+					{
+						ErrorReport.NotifyUserOfProblem(error, error.Message);
+					}
 					else // for others, just give a generic message and include the original exception in the message
 					{
 						ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
 					}
-					// We CAN upload even without a preview.
-					_model.DisplayMode = (_uploadRadio.Checked
-						? PublishModel.DisplayModes.Upload
-						: PublishModel.DisplayModes.WaitForUserToChooseSomething);
-					UpdateDisplay();
+					UpdateDisplayMode();
 					return;
 				}
 				_model.PdfGenerationSucceeded = true;
 					// should be the only place this is set, when we generated successfully.
-				if (IsHandleCreated) // May not be when bulk uploading
-				{
-					_model.DisplayMode = (_uploadRadio.Checked
-						? PublishModel.DisplayModes.Upload
-						: PublishModel.DisplayModes.ShowPdf);
-					Invoke((Action) (UpdateDisplay));
-				}
+				UpdateDisplayMode();
 			}
 			if(e.Cancelled || _model.BookletPortion != (PublishModel.BookletPortions) e.Result )
 			{
@@ -225,6 +227,19 @@ namespace Bloom.Publish
 			}
 		}
 
+		private void UpdateDisplayMode()
+		{
+			if (IsHandleCreated) // May not be when bulk uploading
+			{
+				if (_uploadRadio.Checked)
+					_model.DisplayMode = PublishModel.DisplayModes.Upload; 	// We CAN upload even without a preview.
+				else if (_model.PdfGenerationSucceeded)
+					_model.DisplayMode = PublishModel.DisplayModes.ShowPdf;
+				else
+					_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
+				Invoke((Action) (UpdateDisplay));
+			}
+		}
 
 
 		protected override void OnLoad(EventArgs e)
@@ -478,12 +493,92 @@ namespace Bloom.Publish
 			_makePdfBackgroundWorker.RunWorkerAsync();
 		}
 
+		private bool isBooklet()
+		{
+			return _model.BookletPortion == PublishModel.BookletPortions.BookletCover
+					|| _model.BookletPortion == PublishModel.BookletPortions.BookletPages
+					|| _model.BookletPortion == PublishModel.BookletPortions.InnerContent; // Not sure this last is used, but play safe...
+		}
+
 		private void OnPrint_Click(object sender, EventArgs e)
 		{
+			var printSettingsPreviewFolder = FileLocator.GetDirectoryDistributedWithApplication("printer settings images");
+			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
+				_model.PageLayout.SizeAndOrientation + "-" + (isBooklet() ? "Booklet-" : ""));
+			string printSettingsSampleName = null;
+			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			{
+				printSettingsSampleName = printSettingsSamplePrefix + "Linux-" + LocalizationManager.UILanguageId + ".png";
+				if (!File.Exists(printSettingsSampleName))
+					printSettingsSampleName = printSettingsSamplePrefix + "Linux-en.png";
+			}
+			if (printSettingsSampleName == null || !File.Exists(printSettingsSampleName))
+				printSettingsSampleName = printSettingsSamplePrefix + LocalizationManager.UILanguageId + ".png";
+			if (!File.Exists(printSettingsSampleName))
+				printSettingsSampleName = printSettingsSamplePrefix + "en" + ".png";
+			if (File.Exists(printSettingsSampleName))
+			{
+				// We display the _previewBox to show sample print settings. We need to get rid of it when the
+				// print dialog goes away. For Windows, the only way I've found to know when that happens is
+				// that the main Bloom form gets activated again.  For Linux, waiting for process spawned off
+				// to print the pdf file to finish seems to be the only way to know it's safe to hide the
+				// sample print settings.  (On Linux/Mono, the form activates almost as soon as the print
+				// dialog appears.)
+#if __MonoCS__
+				_pdfViewer.PrintFinished += FormActivatedAfterPrintDialog;
+#else
+				var form = FindForm();
+				form.Activated += FormActivatedAfterPrintDialog;
+#endif
+				_previewBox.Image = Image.FromFile(printSettingsSampleName);
+				_previewBox.Bounds =
+					new Rectangle(
+						new Point(ClientRectangle.Width - _previewBox.Image.Width,
+							ClientRectangle.Height - _previewBox.Image.Height),
+						_previewBox.Image.Size);
+				_previewBox.Show();
+				if (!Settings.Default.DontShowPrintNotification)
+				{
+					using (var dlg = new SamplePrintNotification())
+					{
+#if __MonoCS__
+						_pdfViewer.PrintFinished -= FormActivatedAfterPrintDialog;
+						dlg.ShowDialog(this);
+						_pdfViewer.PrintFinished += FormActivatedAfterPrintDialog;
+#else
+						form.Activated -= FormActivatedAfterPrintDialog; // not wanted when we close the dialog.
+						dlg.ShowDialog(this);
+						form.Activated += FormActivatedAfterPrintDialog;
+#endif
+						if (dlg.StopShowing)
+						{
+							Settings.Default.DontShowPrintNotification = true;
+							Settings.Default.Save();
+						}
+					}
+				}
+			}
 			_pdfViewer.Print();
 			Logger.WriteEvent("Calling Print on PDF Viewer");
 			Analytics.Track("Print PDF");
 		}
+
+		private void FormActivatedAfterPrintDialog(object sender, EventArgs eventArgs)
+		{
+#if __MonoCS__
+			_pdfViewer.PrintFinished -= FormActivatedAfterPrintDialog;
+#else
+			var form = FindForm();
+			form.Activated -= FormActivatedAfterPrintDialog;
+#endif
+			_previewBox.Hide();
+			if (_previewBox.Image != null)
+			{
+				_previewBox.Image.Dispose();
+				_previewBox.Image = null;
+			}
+		}
+
 		private void OnPrintProgress(object sender, PdfPrintProgressEventArgs e)
 		{
 			// BL-788 Only called in Linux version.  Protects against button

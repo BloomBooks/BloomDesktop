@@ -4,22 +4,23 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
-using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Bloom.Registration;
 using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
+using BloomTemp;
 using Gecko;
 using L10NSharp;
-using Microsoft.Win32;
 using Palaso.IO;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.Registration;
+using Palaso.UI.WindowsForms.Reporting;
 using Palaso.UI.WindowsForms.UniqueToken;
 using System.Linq;
-using Squirrel;
 
 namespace Bloom
 {
@@ -81,7 +82,7 @@ namespace Bloom
 					StartUpWithFirstOrNewVersionBehavior = true;
 				}
 
-				if (args.Length > 0 && args[0].StartsWith("--squirrel"))
+				if (IsInstallerLaunch(args))
 				{
 					InstallerSupport.HandleSquirrelInstallEvent(args); // may exit program
 				}
@@ -109,6 +110,9 @@ namespace Bloom
 				}
 #endif
 
+				// Ensures that registration settings for all channels of Bloom are stored in a common place,
+				// so the user is not asked to register each independently.
+				RegistrationSettingsProvider.SetProductName("Bloom");
 #if DEBUG
 				using (new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
 
@@ -116,7 +120,8 @@ namespace Bloom
 				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
 				//default is to allow tracking
-				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLower() == "yes" || feedbackSetting.ToLower() == "true";
+				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
+					|| feedbackSetting.ToLowerInvariant() == "true";
 
 				using (new DesktopAnalytics.Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), allowTracking))
 
@@ -126,7 +131,7 @@ namespace Bloom
 					// do not show the registration dialog if bloom was started for a special purpose
 					if (args.Length > 0) _supressRegistrationDialog = true;
 
-					if (args.Length == 1 && args[0].ToLower().EndsWith(".bloompack"))
+					if (args.Length == 1 && args[0].ToLowerInvariant().EndsWith(".bloompack"))
 					{
 						SetUpErrorHandling();
 						using (_applicationContainer = new ApplicationContainer())
@@ -167,11 +172,12 @@ namespace Bloom
 							InstallerSupport.MakeBloomRegistryEntries();
 							Browser.SetUpXulRunner();
 							Browser.XulRunnerShutdown += OnXulRunnerShutdown;
-							L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+							LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
 								_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
 							transfer.HandleBloomBookOrder(args[0]);
 							PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
+
 							// If another instance is running, this one has served its purpose and can exit right away.
 							// Otherwise, carry on with starting up normally.
 							if (UniqueToken.AcquireTokenQuietly(_mutexId))
@@ -179,12 +185,17 @@ namespace Bloom
 							else
 							{
 								skipReleaseToken = true; // we don't own it, so we better not try to release it
-								string caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
-								string message = LocalizationManager.GetString("Download.Completed",
-									@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. "
-									+ "If you don't seem to be in the middle of doing something, Bloom will select it for you.");
-								message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
-								MessageBox.Show(message, caption);
+
+								// BL-2143: Don't show download complete message if download was not successful
+								if (!string.IsNullOrEmpty(PathToBookDownloadedAtStartup))
+								{
+									var caption = LocalizationManager.GetString("Download.CompletedCaption", "Download complete");
+									var message = LocalizationManager.GetString("Download.Completed",
+										@"Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections. "
+										+ "If you don't seem to be in the middle of doing something, Bloom will select it for you.");
+									message = string.Format(message, Path.GetFileName(PathToBookDownloadedAtStartup));
+									MessageBox.Show(message, caption);
+								}
 							}
 							return;
 						}
@@ -220,9 +231,9 @@ namespace Bloom
 						Logger.Init();
 
 
-						if (args.Length == 1)
+						if (args.Length == 1 && !IsInstallerLaunch(args))
 						{
-							Debug.Assert(args[0].ToLower().EndsWith(".bloomcollection")); // Anything else handled above.
+							Debug.Assert(args[0].ToLowerInvariant().EndsWith(".bloomcollection")); // Anything else handled above.
 							Settings.Default.MruProjects.AddNewPath(args[0]);
 						}
 
@@ -252,18 +263,46 @@ namespace Bloom
 #if DEBUG
 						StartDebugServer();
 #endif
-						L10NSharp.LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
+						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
-						FontInstaller.InstallFont("Andika");
+						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
+						if (FontInstaller.InstallFont("AndikaNewBasic")) 
+							return;
+
 						Run();
 					}
 				}
 			}
 			finally
 			{
+				// Check memory one final time for the benefit of developers.  The user won't see anything.
+				Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
 				if (!skipReleaseToken)
 					UniqueToken.ReleaseToken();
 			}
+		}
+
+		public static void RestartBloom()
+		{
+			try
+			{
+				Process.Start(Application.ExecutablePath);
+
+				//give some time for that process.start to finish staring the new instance, which will see
+				//we have a mutex and wait for us to die.
+
+				Thread.Sleep(2000);
+				Environment.Exit(-1); //Force termination of the current process.
+			}
+			catch (Exception e)
+			{
+				ErrorReport.NotifyUserOfProblem(e, "Bloom encounterd a problem while restarting.");
+			}
+		}
+
+		private static bool IsInstallerLaunch(string[] args)
+		{
+			return args.Length > 0 &&  args[0].ToLowerInvariant().StartsWith("--squirrel");
 		}
 
 		// I think this does something like the Wix element
@@ -332,7 +371,7 @@ namespace Bloom
 
 		private static bool IsBloomBookOrder(string[] args)
 		{
-			return args.Length == 1 && !args[0].ToLower().EndsWith(".bloomcollection");
+			return args.Length == 1 && !args[0].ToLowerInvariant().EndsWith(".bloomcollection") && !IsInstallerLaunch(args);
 		}
 
 		private static void Startup(object sender, EventArgs e)
@@ -479,8 +518,14 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		private static void StartUpShellBasedOnMostRecentUsedIfPossible()
 		{
-			if (Settings.Default.MruProjects.Latest == null  ||
-				!OpenProjectWindow(Settings.Default.MruProjects.Latest))
+			var path = Settings.Default.MruProjects.Latest;
+
+			if (!string.IsNullOrEmpty(path))
+			{
+				CollectionChoosing.OpenCreateCloneControl.CheckForBeingInDropboxFolder(path);
+			}
+
+			if (path == null || !OpenProjectWindow(path))
 			{
 				//since the message pump hasn't started yet, show the UI for choosing when it is //review june 2013... is it still not going, with the current splash screen?
 				Application.Idle += ChooseAnotherProject;
@@ -564,20 +609,24 @@ namespace Bloom
 
 			while (true)
 			{
-				//If it looks like the 1st time, put up the create collection with the welcome.
-				//The user can cancel that if they want to go looking for a collection on disk.
-				if(Settings.Default.MruProjects.Latest == null)
-				{
-					var path = NewCollectionWizard.CreateNewCollection();
-					if (!string.IsNullOrEmpty(path) && File.Exists(path))
-					{
-						OpenCollection(path);
-						return;
-					}
-				}
+				// We decided to stop doing this (BL-1229) since the wizard can feel like part
+				// of installation that might be irrevocable.
+				////If it looks like the 1st time, put up the create collection with the welcome.
+				////The user can cancel that if they want to go looking for a collection on disk.
+				//if(Settings.Default.MruProjects.Latest == null)
+				//{
+				//	var path = NewCollectionWizard.CreateNewCollection();
+				//	if (!string.IsNullOrEmpty(path) && File.Exists(path))
+				//	{
+				//		OpenCollection(path);
+				//		return;
+				//	}
+				//}
 
 				using (var dlg = _applicationContainer.OpenAndCreateCollectionDialog())
 				{
+					dlg.StartPosition = FormStartPosition.Manual; // try not to have it under the splash screen
+					dlg.SetDesktopLocation(50,50);
 					if (dlg.ShowDialog() != DialogResult.OK)
 					{
 						Application.Exit();
@@ -689,7 +738,24 @@ namespace Bloom
 
 		public static void SetUpLocalization()
 		{
-			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication("localization");
+			var installedStringFileFolder = FileLocator.GetDirectoryDistributedWithApplication(true,"localization");
+			if (installedStringFileFolder == null)
+			{
+				// nb do NOT try to localize this...it's a shame, but the problem we're reporting is that the localization data is missing!
+				var msg =
+					@"Bloom seems to be missing some of the files it needs to run. Please uninstall Bloom, then install it again. If that's doesn't fix things, please contact us by clicking the ""Details"" button below, and we'd be glad to help.";
+				ErrorReport.NotifyUserOfProblem(new ApplicationException("Missing localization directory"), msg);
+				// If the user insists on continuing after that, start up using the built-in English.
+				// We need an LM, and it needs some folder of tmx files, though it can be empty. So make a fake one.
+				// Ideally we would dispose this at some point, but I don't know when we safely can. Normally this should never happen,
+				// so I'm not very worried.
+				var fakeLocalDir = new TemporaryFolder("Bloom fake localization").FolderPath;
+				_applicationContainer.LocalizationManager = LocalizationManager.Create("en", "Bloom", "Bloom", Application.ProductVersion, fakeLocalDir, "SIL/Bloom",
+										   Resources.Bloom, "issues@bloomlibrary.org",
+											//the parameters that follow are namespace beginnings:
+										   "Bloom");
+				return;
+			}
 
 			try
 			{
@@ -749,6 +815,14 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		private static void SetUpErrorHandling()
 		{
+			ExceptionReportingDialog.PrivacyNotice = @"If you don't care who reads your bug report, you can skip this notice.
+
+When you submit a crash report or other issue, the contents of your email go in our issue tracking system, ""YouTrack"", which is available via the web at https://silbloom.myjetbrains.com. This is the normal way to handle issues in an open-source project.
+
+Our issue-tracking system is searchable by anyone. Search engines (like Google) should not search it, so someone searching with Google should not see your report, but we can't promise this for all search engines.
+
+Anyone looking specifically at our issue tracking system can read what you sent us. So if you have something private to say, please send it to one of the developers privately with a note that you don't want the issue in our issue tracking system. If need be, we'll make some kind of sanitized place-holder for your issue so that we don't lose it.
+";
 			Palaso.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
@@ -906,7 +980,7 @@ namespace Bloom
 		/// <returns>The number of running Bloom instances</returns>
 		public static int GetRunningBloomProcessCount()
 		{
-			var bloomProcessCount = Process.GetProcesses().Count(p => p.ProcessName.ToLower().Contains("bloom"));
+			var bloomProcessCount = Process.GetProcesses().Count(p => p.ProcessName.ToLowerInvariant().Contains("bloom"));
 
 			// This is your count on Windows.
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
@@ -914,7 +988,7 @@ namespace Bloom
 
 			// On Linux, the process name is usually "mono-sgen" or something similar, but not all processes
 			// with this name are instances of Bloom.
-			var processes = Process.GetProcesses().Where(p => p.ProcessName.ToLower().StartsWith("mono"));
+			var processes = Process.GetProcesses().Where(p => p.ProcessName.ToLowerInvariant().StartsWith("mono"));
 
 			// DO NOT change this foreach loop into a LINQ expression. It takes longer to complete if you do.
 			foreach (var p in processes)
@@ -923,6 +997,11 @@ namespace Bloom
 			}
 
 			return bloomProcessCount;
+		}
+
+		public static BloomFileLocator OptimizedFileLocator
+		{
+			get { return _projectContext.OptimizedFileLocator; }
 		}
 	}
 }

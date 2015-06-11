@@ -140,7 +140,7 @@ namespace Bloom.Edit
 				case JsonType.number:
 					return obj;
 				case JsonType.boolean:
-					return obj.ToString().ToLower();
+					return obj.ToString().ToLowerInvariant();
 				case JsonType.@object:
 					return CreateXObject(obj);
 				case JsonType.array:

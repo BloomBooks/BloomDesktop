@@ -1,34 +1,55 @@
-.bloom-frontMatter .pageLabel:after,
+﻿.bloom-frontMatter .pageLabel:after,
 .bloom-backMatter .pageLabel:after {
   content: ": Factory Front/Back Matter";
 }
-.A4Portrait.frontCover .marginBox {
+.A4Portrait.outsideFrontCover .marginBox,
+.A4Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
   height: 272mm;
+  left: 15mm;
+  width: 180mm;
 }
-.A4Landscape.frontCover .marginBox {
+.A4Landscape.outsideFrontCover .marginBox,
+.A4Landscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
   height: 185mm;
+  left: 15mm;
+  width: 267mm;
 }
-.A5Portrait.frontCover .marginBox {
+.A5Portrait.outsideFrontCover .marginBox,
+.A5Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
   height: 185mm;
+  left: 15mm;
+  width: 118mm;
 }
-.A5Landscape.frontCover .marginBox {
+.A5Landscape.outsideFrontCover .marginBox,
+.A5Landscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
   height: 123mm;
+  left: 15mm;
+  width: 180mm;
 }
-.A6Portrait.frontCover .marginBox {
+.A6Portrait.outsideFrontCover .marginBox,
+.A6Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
   height: 123mm;
+  left: 15mm;
+  width: 75mm;
 }
-.A6Landscape.frontCover .marginBox {
+.A6Landscape.outsideFrontCover .marginBox,
+.A6Landscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
   height: 80mm;
+  left: 15mm;
+  width: 118mm;
 }
-.B5Portrait.frontCover .marginBox {
+.B5Portrait.outsideFrontCover .marginBox,
+.B5Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
   height: 225mm;
+  left: 15mm;
+  width: 146mm;
 }
 .insideFrontCover .bloom-content1 {
   display: inherit;
@@ -246,19 +267,19 @@
 .verso .licenseUrl {
   display: none;
 }
-BODY[editmode="original"] .titlePage #originalContributions .bloom-content1 {
+BODY[bookcreationtype="original"] .titlePage #originalContributions .bloom-content1 {
   display: inherit;
   min-height: 3em;
 }
-BODY[editmode="original"] .titlePage #funding .bloom-content1 {
+BODY[bookcreationtype="original"] .titlePage #funding .bloom-content1 {
   display: inherit;
   min-height: 3em;
 }
-BODY[editmode="translation"] .titlePage #originalContributions .bloom-contentNational1 {
+BODY[bookcreationtype="translation"] .titlePage #originalContributions .bloom-contentNational1 {
   display: inherit;
   min-height: 3em;
 }
-BODY[editmode="translation"] .titlePage #funding .bloom-contentNational1 {
+BODY[bookcreationtype="translation"] .titlePage #funding .bloom-contentNational1 {
   display: inherit;
   min-height: 3em;
 }
@@ -275,16 +296,13 @@ BODY[editmode="translation"] .titlePage #funding .bloom-contentNational1 {
   margin-bottom: 3em;
 }
 .titlePage #titlePageTitleBlock .bloom-editable {
-  min-height: 1.4em;
   line-height: 1.4em;
 }
 .titlePage #titlePageTitleBlock .bloom-content1 {
   display: inherit;
-  margin-bottom: 0.5em;
 }
 .titlePage #titlePageTitleBlock .bloom-contentNational1 {
   display: inherit;
-  margin-bottom: 0.5em;
 }
 .titlePage #titlePageTitleBlock .bloom-content3 {
   display: inherit;
@@ -327,3 +345,4 @@ BODY[editmode="translation"] .titlePage #funding .bloom-contentNational1 {
 .ISBNContainer .ISBNContainer SPAN {
   vertical-align: top;
 }
+/*# sourceMappingURL=Factory-XMatter.css.map */
