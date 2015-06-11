@@ -1,4 +1,4 @@
-﻿/*+init {*/
+/*+init {*/
 * {
   position: relative;
   margin: 0;
@@ -263,11 +263,19 @@ preview.css.
   /* BL-1022 Keeps XMatter thumb images from going too wide */
   max-width: 136mm;
 }
-.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd):not(.A5Landscape):not(.A4Landscape) .marginBox {
   left: 15mm;
 }
-.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even) .marginBox {
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd).A5Landscape .marginBox,
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd).A4Landscape .marginBox {
+  left: 20mm;
+}
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even):not(.A5Landscape):not(.A4Landscape) .marginBox {
   left: 25mm;
+}
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even).A5Landscape:not(.calendarMonthBottom) .marginBox,
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even).A4Landscape .marginBox {
+  left: 20mm;
 }
 body:not(.publishMode) .marginBox {
   left: 20mm;
@@ -311,4 +319,3 @@ H2 {
   height: 99%;
   width: 99%;
 }
-/*# sourceMappingURL=basePage.css.map */

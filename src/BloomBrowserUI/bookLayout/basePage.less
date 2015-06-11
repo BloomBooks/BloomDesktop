@@ -257,17 +257,27 @@ preview.css.
 //currently, in edit mode every page looks like page 1 to css, so left-vs-right margins are just confusing
 //so we only turn them on when making PDF
 .publishMode :not(.outsideFrontCover):not(.outsideBackCover){
-  &.bloom-page:nth-of-type(odd) .marginBox  {
-	  left: @MarginOuter;
-  }
-  &.bloom-page:nth-of-type(even) .marginBox  {
-	  left: @MarginInner;
-  }
+	&.bloom-page:nth-of-type(odd){
+		&:not(.A5Landscape):not(.A4Landscape) .marginBox{
+			left: @MarginOuter;
+		}
+		&.A5Landscape .marginBox, &.A4Landscape .marginBox{
+			left: @MarginEven; // BL-2310 keep left and right the same for calendar fold
+		}
+	}
+	&.bloom-page:nth-of-type(even){
+		&:not(.A5Landscape):not(.A4Landscape) .marginBox{
+			left: @MarginInner;
+		}
+		&.A5Landscape:not(.calendarMonthBottom) .marginBox, &.A4Landscape .marginBox{
+			left: @MarginEven; // BL-2310 keep left and right the same for calendar fold
+		}
+	}
 }
 
 //in edit mode, just split the difference, centering the margin box
 body:not(.publishMode) .marginBox{
-  left: @MarginOuter + ( (@MarginInner - @MarginOuter) / 2)
+  left: @MarginEven;
 }
 
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
