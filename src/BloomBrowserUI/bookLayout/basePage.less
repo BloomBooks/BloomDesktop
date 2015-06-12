@@ -262,7 +262,7 @@ preview.css.
 			left: @MarginOuter;
 		}
 		&.A5Landscape .marginBox, &.A4Landscape .marginBox{
-			left: @MarginEven; // BL-2310 keep left and right the same for calendar fold
+			left: @MarginBalanced; // BL-2310 keep left and right the same for calendar fold
 		}
 	}
 	&.bloom-page:nth-of-type(even){
@@ -270,14 +270,14 @@ preview.css.
 			left: @MarginInner;
 		}
 		&.A5Landscape:not(.calendarMonthBottom) .marginBox, &.A4Landscape .marginBox{
-			left: @MarginEven; // BL-2310 keep left and right the same for calendar fold
+			left: @MarginBalanced; // BL-2310 keep left and right the same for calendar fold
 		}
 	}
 }
 
 //in edit mode, just split the difference, centering the margin box
 body:not(.publishMode) .marginBox{
-  left: @MarginEven;
+  left: @MarginBalanced;
 }
 
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
