@@ -31,30 +31,33 @@ class bloomSourceBubbles {
     //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
     public static MakeSourceTextDivForGroup(group: HTMLElement): void {
 
+        // Copy source texts out to their own div, where we can make a bubble with tabs out of them
+        // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
         var divForBubble = $(group).clone();
         $(divForBubble).removeAttr('style');
+        $(divForBubble).removeClass(); //remove them all
+        $(divForBubble).addClass("ui-sourceTextsForBubble");
 
         //make the source texts in the bubble read-only and remove any user font size adjustments
         $(divForBubble).find("textarea, div").each(function() {
+            //don't want empty items in the bubble
+            if(bloomSourceBubbles.hasNoText(this)) {
+                $(this).remove();
+                return true; // skip to next iteration of each()
+            }
             $(this).attr("readonly", "readonly");
             $(this).removeClass('bloom-editable');
-            $(this).removeClass('overflow'); // don't want red in source text bubbles
             $(this).attr("contenteditable", "false");
+
+            // don't want red in source text bubbles
+            $(this).removeClass('overflow');
+            $(this).removeClass('thisOverflowingParent');
+            $(this).removeClass('childOverflowingThis');
+
             var styleClass = GetStyleClassFromElement(this);
             if (styleClass)
                 $(this).removeClass(styleClass);
             $(this).addClass("source-text");
-        });
-
-        var vernacularLang = localizationManager.getVernacularLang();
-
-        $(divForBubble).removeClass(); //remove them all
-        $(divForBubble).addClass("ui-sourceTextsForBubble");
-        //don't want empty items in the bubble
-        $(divForBubble).find("textarea, div").each(function() {
-            if(bloomSourceBubbles.hasNoText(this)) {
-                $(this).remove();
-            }
         });
 
         //don't want the vernacular or languages in use for bilingual/trilingual boxes to be shown in the bubble
@@ -69,9 +72,13 @@ class bloomSourceBubbles {
         if ($(divForBubble).find("textarea, div").length == 0)
             return;
 
-        /* removed june 12 2013 was dying with new jquery as this was Window and that had no OwnerDocument    $(this).after(divForBubble);*/
+        /* removed june 12 2013 was dying with new jquery as this was Window and that had no OwnerDocument
+           $(this).after(divForBubble);
+         */
 
         var selectorOfDefaultTab="li:first-child";
+
+        var vernacularLang = localizationManager.getVernacularLang();
 
         //make the li's for the source text elements in this new div, which will later move to a tabbed bubble
         $(divForBubble).each(function () {
@@ -115,7 +122,6 @@ class bloomSourceBubbles {
         });
 
         //now turn that new div into a set of tabs
-        // Review: as of 9 May 2014 the tab links have turned into bulleted links
         if ($(divForBubble).find("li").length > 0) {
             (<easytabsInterface>$(divForBubble)).easytabs({
                 animate: false,
