@@ -263,6 +263,8 @@ namespace Bloom.Collection
 				return "العربية";
 			if (codeOfDesiredLanguage == "es" && name == "Spanish")
 				return "español";
+			if(codeOfDesiredLanguage == "id" && name == "Indonesian")
+				return "Bahasa Indonesia";
 			return name;
 		}
 

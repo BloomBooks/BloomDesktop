@@ -215,47 +215,41 @@ preview.css.
 }
 
 .marginBox {
-	.SetMarginBoxHeight(@PageHeight) {
+  .SetMarginBox(@PageWidth, @PageHeight) {
 		height: @PageHeight - (@MarginTop + @MarginBottom);
-	}
-	.SetMarginBoxWidth(@PageWidth) {
-		width: @PageWidth - ( @MarginOuter + @MarginInner );
-        IMG { /* BL-1022 Keeps XMatter thumb images from going too wide */
-                max-width: @PageWidth - ( @MarginOuter + @MarginInner );
-        }
+    width: @PageWidth - ( @MarginOuter + @MarginInner );
+    IMG { /* BL-1022 Keeps XMatter thumb images from going too wide */
+            max-width: @PageWidth - ( @MarginOuter + @MarginInner );
     }
+	}
+	
 	.A4Portrait & {
-		.SetMarginBoxWidth(@A4Portrait-Width);
-		.SetMarginBoxHeight(@A4Portrait-Height);
+		.SetMarginBox(@A4Portrait-Width, @A4Portrait-Height);
 	}
 	.A4Landscape & {
-		.SetMarginBoxWidth(@A4Landscape-Width);
-		.SetMarginBoxHeight(@A4Landscape-Height);
+		.SetMarginBox(@A4Landscape-Width, @A4Landscape-Height);
 	}
 	.A5Portrait & {
-		.SetMarginBoxWidth(@A5Portrait-Width);
-		.SetMarginBoxHeight(@A5Portrait-Height);
+		.SetMarginBox(@A5Portrait-Width, @A5Portrait-Height);
 	}
 	.A5Landscape & {
-		.SetMarginBoxWidth(@A5Landscape-Width);
-		.SetMarginBoxHeight(@A5Landscape-Height);
+		.SetMarginBox(@A5Landscape-Width, @A5Landscape-Height);
 	}
 	.A6Portrait & {
-		.SetMarginBoxWidth(@A6Portrait-Width);
-		.SetMarginBoxHeight(@A6Portrait-Height);
+		.SetMarginBox(@A6Portrait-Width, @A6Portrait-Height);
 	}
 	.A6Landscape & {
-		.SetMarginBoxWidth(@A6Landscape-Width);
-		.SetMarginBoxHeight(@A6Landscape-Height);
+		.SetMarginBox(@A6Landscape-Width, @A6Landscape-Height);
 	}
 	.B5Portrait & {
-		.SetMarginBoxWidth(@B5Portrait-Width);
-		.SetMarginBoxHeight(@B5Portrait-Height);
+		.SetMarginBox(@B5Portrait-Width, @B5Portrait-Height);
 	}
 }
 
-//currently, in edit mode every page looks like page 1 to css, so left-vs-right margins are just confusing
-//so we only turn them on when making PDF
+//Currently, in edit mode there is only one page in the html, so every 
+//page looks like page 1 from the view of the css, so showing every page
+//as if it were odd is just confusing for the user.
+//Therefore we only turn on left-vs.right distinctions when when making PDF.
 .publishMode :not(.outsideFrontCover):not(.outsideBackCover){
 	&.bloom-page:nth-of-type(odd){
 		.marginBox{
@@ -275,6 +269,16 @@ preview.css.
 			left: @MarginBalanced;
 		}
 	}
+}
+
+//in right to left books, the way our pdf maker works, it just reverses
+.rightToLeft.publishMode :not(.outsideFrontCover):not(.outsideBackCover){
+  &.bloom-page:nth-of-type(odd) .marginBox  {
+	  left: @MarginInner;
+  }
+  &.bloom-page:nth-of-type(even) .marginBox  {
+	  left: @MarginOuter;
+  }
 }
 
 //in edit mode, just split the difference, centering the margin box
