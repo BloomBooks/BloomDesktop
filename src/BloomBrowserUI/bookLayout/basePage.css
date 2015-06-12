@@ -1,4 +1,4 @@
-﻿/*+init {*/
+/*+init {*/
 * {
   position: relative;
   margin: 0;
@@ -266,8 +266,16 @@ preview.css.
 .publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {
   left: 15mm;
 }
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd).A5Landscape .marginBox,
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd).A4Landscape .marginBox {
+  left: 20mm;
+}
 .publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even) .marginBox {
   left: 25mm;
+}
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even).A5Landscape .marginBox,
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even).A4Landscape .marginBox {
+  left: 20mm;
 }
 body:not(.publishMode) .marginBox {
   left: 20mm;
@@ -311,4 +319,3 @@ H2 {
   height: 99%;
   width: 99%;
 }
-/*# sourceMappingURL=basePage.css.map */
