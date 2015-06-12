@@ -29,12 +29,12 @@ rm -f ""$2""
 else
 where_curl=$(type -P curl)
 where_wget=$(type -P wget)
-if [ "$where_curl" != "" ]
-then
-copy_curl $1 $2
-elif [ "$where_wget" != "" ]
+if [ "$where_wget" != "" ]
 then
 copy_wget $1 $2
+elif [ "$where_curl" != "" ]
+then
+copy_curl $1 $2
 else
 echo "Missing curl or wget"
 exit 1
@@ -57,7 +57,7 @@ echo "wget: $2 <= $1"
 f=$(basename $2)
 d=$(dirname $2)
 cd $d
-wget -q -L -N $1
+wget --no-cache -q -L -N $1
 cd -
 }
 

@@ -44,6 +44,7 @@
 			this._cancelButton = new System.Windows.Forms.Button();
 			this._status = new Bloom.HtmlLabel();
 			this._submitMsg = new System.Windows.Forms.Label();
+			this._privacyButton = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._screenshotHolder)).BeginInit();
 			this.SuspendLayout();
@@ -245,10 +246,9 @@
 			// _submitMsg
 			// 
 			this._submitMsg.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-				| System.Windows.Forms.AnchorStyles.Right)));
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this._submitMsg.BackColor = System.Drawing.SystemColors.Control;
 			this._submitMsg.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._submitMsg.Text = "";
 			this._L10NSharpExtender.SetLocalizableToolTip(this._submitMsg, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._submitMsg, null);
 			this._L10NSharpExtender.SetLocalizingId(this._submitMsg, "ReportProblemDialog.SubmitLabel");
@@ -258,12 +258,26 @@
 			this._submitMsg.TabIndex = 29;
 			this._submitMsg.Visible = false;
 			// 
+			// _privacyButton
+			// 
+			this._L10NSharpExtender.SetLocalizableToolTip(this._privacyButton, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._privacyButton, null);
+			this._L10NSharpExtender.SetLocalizingId(this._privacyButton, "ReportProblemDialog.Privacy");
+			this._privacyButton.Location = new System.Drawing.Point(242, 467);
+			this._privacyButton.Name = "_privacyButton";
+			this._privacyButton.Size = new System.Drawing.Size(75, 23);
+			this._privacyButton.TabIndex = 30;
+			this._privacyButton.Text = "Privacy";
+			this._privacyButton.UseVisualStyleBackColor = true;
+			this._privacyButton.Click += new System.EventHandler(this._privacyButton_Click);
+			// 
 			// ProblemReporterDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this._cancelButton;
 			this.ClientSize = new System.Drawing.Size(487, 512);
+			this.Controls.Add(this._privacyButton);
 			this.Controls.Add(this._seeDetails);
 			this.Controls.Add(this._includeBook);
 			this.Controls.Add(this._submitButton);
@@ -314,5 +328,6 @@
 		private HtmlLabel _status;
 		private System.Windows.Forms.Button _cancelButton;
 		private System.Windows.Forms.Label _submitMsg;
+		private System.Windows.Forms.Button _privacyButton;
 	}
 }

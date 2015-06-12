@@ -910,7 +910,7 @@ namespace Bloom.CollectionTab
 
 		private void OnOpenAdditionalCollectionsFolderClick(object sender, EventArgs e)
 		{
-			PathUtilities.OpenDirectoryInExplorer(ProjectContext.GetInstalledCollectionsDirectory());
+			PathUtilities.SelectFileInExplorer(ProjectContext.GetInstalledCollectionsDirectory());
 		}
 
 		private void OnVernacularProjectHistoryClick(object sender, EventArgs e)

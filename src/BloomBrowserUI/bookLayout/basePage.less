@@ -246,15 +246,29 @@ preview.css.
 	}
 }
 
-//currently, in edit mode every page looks like page 1 to css, so left-vs-right margins are just confusing
-//so we only turn them on when making PDF
+//Currently, in edit mode there is only one page in the html, so every 
+//page looks like page 1 from the view of the css, so showing every page
+//as if it were odd is just confusing for the user.
+//Therefore we only turn on left-vs.right distinctions when when making PDF.
 .publishMode :not(.outsideFrontCover):not(.outsideBackCover){
-  &.bloom-page:nth-of-type(odd) .marginBox  {
-	  left: @MarginOuter;
-  }
-  &.bloom-page:nth-of-type(even) .marginBox  {
-	  left: @MarginInner;
-  }
+	&.bloom-page:nth-of-type(odd){
+		.marginBox{
+			left: @MarginOuter;
+		}
+		// BL-2310 keep left and right the same for calendar fold
+		&.A5Landscape .marginBox, &.A4Landscape .marginBox{
+			left: @MarginBalanced;
+		}
+	}
+	&.bloom-page:nth-of-type(even){
+		.marginBox{
+			left: @MarginInner;
+		}
+		// BL-2310 keep left and right the same for calendar fold
+		&.A5Landscape .marginBox, &.A4Landscape .marginBox{
+			left: @MarginBalanced;
+		}
+	}
 }
 
 //in right to left books, the way our pdf maker works, it just reverses
@@ -269,7 +283,7 @@ preview.css.
 
 //in edit mode, just split the difference, centering the margin box
 body:not(.publishMode) .marginBox{
-  left: @MarginOuter + ( (@MarginInner - @MarginOuter) / 2)
+  left: @MarginBalanced;
 }
 
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/

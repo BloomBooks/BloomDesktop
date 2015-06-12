@@ -486,5 +486,16 @@ namespace Bloom.MiscUI
 			this.Icon = global::Bloom.Properties.Resources.Bloom;
 			this.ShowIcon = false;
 		}
+
+		private void _privacyButton_Click(object sender, EventArgs e)
+		{
+			var msg = LocalizationManager.GetString("ReportProblemDialog.PrivacyNotice",
+				@"If you don't care who reads your report, you can skip this notice.
+
+Your report goes into our issue tracking system and will be visible via the web. We will obfuscate your address, so automatic spammers are unlikely to get your email this way.
+
+So if you have something private to say, please send it to one of the developers privately with a note that you want your report to stay private.");
+			MessageBox.Show(this, msg, _privacyButton.Text, MessageBoxButtons.OK);
+		}
 	}
 }

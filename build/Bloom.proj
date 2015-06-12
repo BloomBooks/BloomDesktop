@@ -191,6 +191,7 @@
 		<!-- insert the Label into the product ID, which also controls the folder where Squirrel installs.-->
 		<FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;id&gt;[^&lt;]*&lt;"
 					ReplacementText ="&lt;id&gt;Bloom$(channel)&lt;" />
+		<CallTarget Targets="SignExesIfPossible"/>
 		<!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
 		already exists from a previous build. -->
 		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe $(RootDir)\output\$(Configuration)\Bloom$(channel).exe"/>
@@ -210,6 +211,18 @@
 		  />
 		<Message Text="Copied installer to $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
 
+	</Target>
+
+	<Target Name="SignExesIfPossible">
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe" ContinueOnError="true"'></Exec>
+		<!-- These are generated in other TC projects but I think it's OK to sign them here since we control those projects too.-->
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\GeckofxHtmlToPdf.exe" ContinueOnError="true"'></Exec>
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe" ContinueOnError="true"'></Exec>
+		<!-- We don't really need to do this every time since the file is checked in. But this way any updated version
+		is automatically signed, which saves the hassle of coming up with a new signed exe every time we need to check in. -->
+		<Exec Command='sign "$(RootDir)\DistFiles\AndikaNewBasic\Install Bloom Literacy Fonts.exe" ContinueOnError="true"'></Exec>
+		<!--not bothering with Chorus, which is not really used yet and may be signed by its own process before we need it,
+		or BloomBookUploader which is not used (obsolete).-->
 	</Target>
 
 	<!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: squirrel itself
