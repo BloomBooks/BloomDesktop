@@ -258,19 +258,21 @@ preview.css.
 //so we only turn them on when making PDF
 .publishMode :not(.outsideFrontCover):not(.outsideBackCover){
 	&.bloom-page:nth-of-type(odd){
-		&:not(.A5Landscape):not(.A4Landscape) .marginBox{
+		.marginBox{
 			left: @MarginOuter;
 		}
+		// BL-2310 keep left and right the same for calendar fold
 		&.A5Landscape .marginBox, &.A4Landscape .marginBox{
-			left: @MarginBalanced; // BL-2310 keep left and right the same for calendar fold
+			left: @MarginBalanced;
 		}
 	}
 	&.bloom-page:nth-of-type(even){
-		&:not(.A5Landscape):not(.A4Landscape) .marginBox{
+		.marginBox{
 			left: @MarginInner;
 		}
-		&.A5Landscape:not(.calendarMonthBottom) .marginBox, &.A4Landscape .marginBox{
-			left: @MarginBalanced; // BL-2310 keep left and right the same for calendar fold
+		// BL-2310 keep left and right the same for calendar fold
+		&.A5Landscape .marginBox, &.A4Landscape .marginBox{
+			left: @MarginBalanced;
 		}
 	}
 }
