@@ -142,10 +142,7 @@ namespace Bloom.Publish
 
 			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
-			HtmlDom.AddPublishClassToBody(dom.RawDom);
-			if(LayoutPagesForRightToLeft)
-				HtmlDom.AddRightToLeftClassToBody(dom.RawDom);
-			HtmlDom.AddHidePlaceHoldersClassToBody(dom.RawDom);
+			AddStylesheetClasses(dom.RawDom);
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom.RawDom, PageLayout);
@@ -154,6 +151,14 @@ namespace Bloom.Publish
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
 			dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
 			return EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom);
+		}
+
+		private void AddStylesheetClasses(XmlDocument dom)
+		{
+			HtmlDom.AddPublishClassToBody(dom);
+			if (LayoutPagesForRightToLeft)
+				HtmlDom.AddRightToLeftClassToBody(dom);
+			HtmlDom.AddHidePlaceHoldersClassToBody(dom);
 		}
 
 		private string GetPdfPath(string fname)
@@ -384,10 +389,8 @@ namespace Bloom.Publish
 
 						var previewXmlDocumentForPage = book.GetPreviewXmlDocumentForPage(page);
 						BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, book.FolderPath);
-						HtmlDom.AddPublishClassToBody(previewXmlDocumentForPage.RawDom);
-						if(LayoutPagesForRightToLeft)
-							HtmlDom.AddRightToLeftClassToBody(previewXmlDocumentForPage.RawDom);
-						HtmlDom.AddHidePlaceHoldersClassToBody(previewXmlDocumentForPage.RawDom);
+
+						AddStylesheetClasses(previewXmlDocumentForPage.RawDom);
 
 						yield return previewXmlDocumentForPage;
 					}
@@ -407,10 +410,7 @@ namespace Bloom.Publish
 					var previewXmlDocumentForPage = BookSelection.CurrentSelection.GetPreviewXmlDocumentForPage(page);
 					//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
 					BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, BookSelection.CurrentSelection.FolderPath);
-					HtmlDom.AddPublishClassToBody(previewXmlDocumentForPage.RawDom);
-					if(LayoutPagesForRightToLeft)
-						HtmlDom.AddRightToLeftClassToBody(previewXmlDocumentForPage.RawDom);
-					HtmlDom.AddHidePlaceHoldersClassToBody(previewXmlDocumentForPage.RawDom);
+					AddStylesheetClasses(previewXmlDocumentForPage.RawDom);
 					yield return previewXmlDocumentForPage;
 				}
 			}
