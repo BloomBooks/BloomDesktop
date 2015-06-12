@@ -5,6 +5,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Web.UI.WebControls;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
@@ -119,6 +121,7 @@ namespace Bloom.Edit
 			_server.CurrentBook = CurrentBook;
 		}
 
+		private Form _oldActiveForm;
 
 		/// <summary>
 		/// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
@@ -129,11 +132,25 @@ namespace Bloom.Edit
 			if (details.From == _view)
 			{
 				SaveNow();
+				// This bizarre behavior prevents BL-2313 and related problems.
+				// For some reason I cannot discover, switching tabs when focus is in the Browser window
+				// causes Bloom to get deactivated, which prevents various controls from working.
+				// Moreover, it seems (BL-2329) that if the user types Alt-F4 while whatever-it-is is active,
+				// things get into a very bad state indeed. So arrange to re-activate ourselves as soon as the dust settles.
+				_oldActiveForm = Form.ActiveForm;
+				Application.Idle += ReactivateFormOnIdle;
 				//note: if they didn't actually change anything, Chorus is not going to actually do a checkin, so this
 				//won't polute the history
 				_sendReceiver.CheckInNow(string.Format("Edited '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay));
 
 			}
+		}
+
+		private void ReactivateFormOnIdle(object sender, EventArgs eventArgs)
+		{
+			Application.Idle -= ReactivateFormOnIdle;
+			if (_oldActiveForm != null)
+				_oldActiveForm.Activate();
 		}
 
 		private void OnTabChanged(TabChangedDetails details)
