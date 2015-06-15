@@ -211,7 +211,7 @@ namespace Bloom.WebLibraryIntegration
 			foreach (string file in filesToUpload)
 			{
 				var fileName = Path.GetFileName(file);
-				if (excludedFileNames.Contains(fileName))
+				if (excludedFileNames.Contains(fileName.ToLowerInvariant()))
 					continue; // BL-2246: skip uploading this one
 
 				var request = new TransferUtilityUploadRequest()
