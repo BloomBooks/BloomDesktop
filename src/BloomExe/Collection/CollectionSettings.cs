@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using Amazon.CloudFront.Model;
 using Bloom.Book;
+using Bloom.ToPalaso;
 using L10NSharp;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
@@ -205,10 +206,10 @@ namespace Bloom.Collection
 
 		private string GetLanguage1Name_NoCache(string inLanguage)
 		{
-			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(Language1Iso639Code);
-			if (exactLanguageMatch == null)
+			var exactLanguageMatch = _lookupIsoCode.GetBestLanguageName(Language1Iso639Code);
+			if (exactLanguageMatch == Language1Iso639Code) // no useful name found
 				return "L1-Unknown-" + Language1Iso639Code;
-			return GetLanguageNameInUILangIfPossible(exactLanguageMatch.Name, inLanguage);
+			return GetLanguageNameInUILangIfPossible(exactLanguageMatch, inLanguage);
 		}
 
 		public string GetLanguage2Name(string inLanguage)
@@ -241,11 +242,7 @@ namespace Bloom.Collection
 			//profiling showed we were spending a lot of time looking this up, hence the cache
 			if (!_isoToLangNameDictionary.ContainsKey(code))
 			{
-				var match = _lookupIsoCode.GetExactLanguageMatch(code);
-				if (match == null)
-					_isoToLangNameDictionary[code] = code; // best name we can come up with is the code itself
-				else
-					_isoToLangNameDictionary.Add(code, match.Name);
+				_isoToLangNameDictionary[code] = _lookupIsoCode.GetBestLanguageName(code);
 			}
 
 			return GetLanguageNameInUILangIfPossible(_isoToLangNameDictionary[code], inLanguage);
@@ -654,15 +651,9 @@ namespace Bloom.Collection
 			for (int i = 0; i < isoCodes.Length; i++)
 			{
 				var code = isoCodes[i];
-				var data = _lookupIsoCode.GetExactLanguageMatch(code);
-				string name;
-				if (code == Language1Iso639Code)
-					name = Language1Name;
-				else if (data == null)
-					name = code;
-				else
-					name = data.Name;
+				string name = code == Language1Iso639Code ? Language1Name : _lookupIsoCode.GetBestLanguageName(code);
 				string ethCode;
+				var data = _lookupIsoCode.GetExactLanguageMatch(code);
 				if (data == null)
 					ethCode = code;
 				else

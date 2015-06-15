@@ -7,6 +7,7 @@ using System.Text;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.ToPalaso;
 using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.IO;
@@ -96,9 +97,9 @@ namespace Bloom.Book
 				var lookup = new LookupIsoCodeModel(); // < 1ms
 				foreach (var lang in langs) // may include things like empty string, z, *, but this is harmless as they are not language codes.
 				{
-					var match = lookup.GetExactLanguageMatch(lang);
-					if (match != null)
-						mapOriginalToLocalized[lang] = match.Name;
+					var match = lookup.GetBestLanguageName(lang);
+					if (match != lang) // some better name found
+						mapOriginalToLocalized[lang] = match;
 				}
 			}
 		}
