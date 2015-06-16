@@ -19,7 +19,9 @@ namespace BloomTests.ToPalaso
 		public void GetBestLanguageName_ForARA_FindsArabic()
 		{
 			var sut = new LookupIsoCodeModel();
-			Assert.That(sut.GetBestLanguageName("ara"), Is.EqualTo("Arabic"));
+			string name;
+			Assert.That(sut.GetBestLanguageName("ara", out name), Is.True);
+			Assert.That(name, Is.EqualTo("Arabic"));
 		}
 
 		/// <summary>
@@ -29,7 +31,9 @@ namespace BloomTests.ToPalaso
 		public void GetBestLanguageName_ForFR_FindsFrench()
 		{
 			var sut = new LookupIsoCodeModel();
-			Assert.That(sut.GetBestLanguageName("fr"), Is.EqualTo("French"));
+			string name;
+			Assert.That(sut.GetBestLanguageName("fr", out name), Is.True);
+			Assert.That(name, Is.EqualTo("French"));
 		}
 
 		/// <summary>
@@ -39,7 +43,9 @@ namespace BloomTests.ToPalaso
 		public void GetBestLanguageName_ForXYZ_FindsXYZ()
 		{
 			var sut = new LookupIsoCodeModel();
-			Assert.That(sut.GetBestLanguageName("xyz"), Is.EqualTo("xyz"));
+			string name;
+			Assert.That(sut.GetBestLanguageName("xyz", out name), Is.False);
+			Assert.That(name, Is.EqualTo("xyz"));
 		}
 
 		/// <summary>
@@ -49,7 +55,9 @@ namespace BloomTests.ToPalaso
 		public void GetBestLanguageName_ForArab_FindsArab()
 		{
 			var sut = new LookupIsoCodeModel();
-			Assert.That(sut.GetBestLanguageName("arab"), Is.EqualTo("arab"));
+			string name;
+			Assert.That(sut.GetBestLanguageName("arab", out name), Is.False);
+			Assert.That(name, Is.EqualTo("arab"));
 		}
 	}
 }

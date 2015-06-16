@@ -13,17 +13,25 @@ namespace Bloom.ToPalaso
 		/// A smarter way to get a name for an iso code. Currently LookupIsoCodeModel.GetExactLanguageMatch() does not find
 		/// a name at all for some languages, typically macro ones. This adds a fall-back which still finds a language
 		/// that has the exact requested language code.
+		/// If we can't find ANY name, the out param is set to the code itself, and we return false.
 		/// </summary>
-		/// <returns></returns>
-		public static string GetBestLanguageName(this LookupIsoCodeModel isoModel, string code)
+		/// <returns>true if it found a name</returns>
+		public static bool GetBestLanguageName(this LookupIsoCodeModel isoModel, string code, out string name)
 		{
 			var match = isoModel.GetExactLanguageMatch(code);
 			if (match != null)
-				return match.Name;
+			{
+				name = match.Name;
+				return true;
+			}
 			var lang = isoModel.GetMatchingLanguages(code).FirstOrDefault(x => x.Code == code);
 			if (lang != null)
-				return lang.DesiredName;
-			return code; // best name we can come up with is the code itself
+			{
+				name = lang.DesiredName;
+				return true;
+			}
+			name = code; // best name we can come up with is the code itself
+			return false;
 		}
 	}
 }
