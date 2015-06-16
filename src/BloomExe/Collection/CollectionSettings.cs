@@ -467,7 +467,9 @@ namespace Bloom.Collection
 			if (!String.IsNullOrEmpty(msg) && ErrorReport.IsOkToInteractWithUser)
 			{
 				msg += Environment.NewLine + secondaryMessage;
-				MessageBox.Show(msg, String.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
+				// NB: this MessageBoxOptions.DefaultDesktopOnly option is more than the name implies. It changes the message to a "service message" which is the only
+				// way I've found to get the box into the taskbar.
+				MessageBox.Show(msg, "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
 			}
 			return true;
 		}
