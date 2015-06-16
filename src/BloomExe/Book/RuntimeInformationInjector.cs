@@ -97,8 +97,8 @@ namespace Bloom.Book
 				var lookup = new LookupIsoCodeModel(); // < 1ms
 				foreach (var lang in langs) // may include things like empty string, z, *, but this is harmless as they are not language codes.
 				{
-					var match = lookup.GetBestLanguageName(lang);
-					if (match != lang) // some better name found
+					string match;
+					if (lookup.GetBestLanguageName(lang, out match)) // some better name found
 						mapOriginalToLocalized[lang] = match;
 				}
 			}
