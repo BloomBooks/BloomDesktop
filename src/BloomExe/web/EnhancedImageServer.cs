@@ -432,7 +432,9 @@ namespace Bloom.web
 					info.WriteCompleteOutput(AccordionContent ?? "");
 					return true;
 				case "availableFontNames":
-					info.WriteCompleteOutput(string.Join(",", Browser.NamesOfFontsThatBrowserCanRender()));
+					var list = new List<string>(Browser.NamesOfFontsThatBrowserCanRender());
+					list.Sort();
+					info.WriteCompleteOutput(string.Join(",", list.ToArray()));
 					return true;
 				case "authorMode":
 					info.ContentType = "text/plain";
