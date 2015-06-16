@@ -505,6 +505,10 @@ namespace Bloom.web
 				// we are looking at a "folio", a book that gathers up other books into one big PDF. In that case, we want
 				// to find the image in the correct book folder.  See AddChildBookContentsToFolio();
 				var possibleFullImagePath = localPath;
+				// "OriginalImages/" at the beginning means we're generating a pdf and want full images,
+				// but it has nothing to do with the actual file location.
+				if (localPath.StartsWith("OriginalImages/"))
+					possibleFullImagePath = localPath.Substring(15);
 				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{
 					path = possibleFullImagePath;
