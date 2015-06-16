@@ -271,7 +271,10 @@ preview.css.
 	}
 }
 
-//in right to left books, the way our pdf maker works, it just reverses
+//in right-to-left books, the way our pdf booklet maker works, it just reverses
+//the page order. In doing so, what use to be odd becomes even, and our margins
+//and page numbering logic needs to switch accordingly. Page numbering is
+//not part of the basePage.less.
 .rightToLeft.publishMode :not(.outsideFrontCover):not(.outsideBackCover){
   &.bloom-page:nth-of-type(odd) .marginBox  {
 	  left: @MarginInner;
