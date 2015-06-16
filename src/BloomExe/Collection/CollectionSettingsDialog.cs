@@ -41,7 +41,11 @@ namespace Bloom.Collection
 			_showSendReceive.Checked = Settings.Default.ShowSendReceive;
 			_showExperimentalTemplates.Checked = Settings.Default.ShowExperimentalBooks;
 			_showExperimentCommands.Checked = Settings.Default.ShowExperimentalCommands;
-			_automaticallyUpdate.Checked = Settings.Default.AutoUpdate;
+			// AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+				_automaticallyUpdate.Checked = Settings.Default.AutoUpdate;
+			else
+				_automaticallyUpdate.Hide();
 
 //		    _showSendReceive.CheckStateChanged += (sender, args) =>
 //		                                              {
