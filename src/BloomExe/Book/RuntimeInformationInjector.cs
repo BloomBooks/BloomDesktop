@@ -7,6 +7,7 @@ using System.Text;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.ToPalaso;
 using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.IO;
@@ -96,9 +97,9 @@ namespace Bloom.Book
 				var lookup = new LookupIsoCodeModel(); // < 1ms
 				foreach (var lang in langs) // may include things like empty string, z, *, but this is harmless as they are not language codes.
 				{
-					var match = lookup.GetExactLanguageMatch(lang);
-					if (match != null)
-						mapOriginalToLocalized[lang] = match.Name;
+					var match = lookup.GetBestLanguageName(lang);
+					if (match != lang) // some better name found
+						mapOriginalToLocalized[lang] = match;
 				}
 			}
 		}
@@ -158,13 +159,18 @@ namespace Bloom.Book
 		{
 			SafelyAddLanguage(d, "en", "English");
 			SafelyAddLanguage(d, "ha", "Hausa");
-			SafelyAddLanguage(d, "hi", "Hindi");
-			SafelyAddLanguage(d, "es", "Spanish");
-			SafelyAddLanguage(d, "fr", "French");
-			SafelyAddLanguage(d, "pt", "Portuguese");
-			SafelyAddLanguage(d, "swa", "Swahili");
-			SafelyAddLanguage(d, "th", "Thai");
+			SafelyAddLanguage(d, "hi", "हिन्दी");//hindi
+			SafelyAddLanguage(d, "es", "español");
+			SafelyAddLanguage(d, "fr", "français");
+			SafelyAddLanguage(d, "pt", "português");
+			SafelyAddLanguage(d, "swa", "Kiswahili");
+			SafelyAddLanguage(d, "th", "ภาษาไทย"); //thai
 			SafelyAddLanguage(d, "tpi", "Tok Pisin");
+			SafelyAddLanguage(d, "id", "Bahasa Indonesia");
+			SafelyAddLanguage(d, "ar","العربية/عربي‎");//arabic
+			//    return { "en": "English", "vernacularLang": "en", "{V}": "English", "{N1}": "English", "{N2}": "", "ar": "العربية/عربي‎","id": "Bahasa Indonesia", 
+			//"ha": "Hausa", "hi": "हिन्दी", "es": "español", "fr": "français", "pt": "português", "swa": "Swahili", "th": "ภาษาไทย", "tpi": "Tok Pisin", "EditTab.ThumbnailCaptions.Front Cover": "Front Cover", "*You may use this space for author/illustrator, or anything else.": "*You may use this space for author/illustrator, or anything else.", "Click to choose topic": "Click to choose topic", "BookEditor.FontSizeTip": "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\\nCurrent size is {2}pt.", "FrontMatter.Factory.Book title in {lang}": "Book title in {lang}", "FrontMatter.Factory.Click to choose topic": "Click to choose topic", "FrontMatter.Factory.International Standard Book Number. Leave blank if you don't have one of these.": "International Standard Book Number. Leave blank if you don't have one of these.", "FrontMatter.Factory.Acknowledgments for translated version, in {lang}": "Acknowledgments for translated version, in {lang}", "FrontMatter.Factory.Use this to acknowledge any funding agencies.": "Use this to acknowledge any funding agencies.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.", "BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover.": "If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover." };
+
 		}
 
 		private static void SafelyAddLanguage(Dictionary<string, string> d, string key, string name)

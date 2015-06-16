@@ -1,4 +1,5 @@
 ﻿/*+init {*/
+
 * {
   position: relative;
   margin: 0;
@@ -68,6 +69,7 @@ To handling the mis-match.*/
   font-size: 10pt;
 }
 /* gridItem means this is a page thumbnail */
+
 .gridItem .pageOverflows {
   background-image: url("/bloom/BloomBrowserUI/images/Attention.svg");
   /* red triangle with exclamation point */
@@ -112,7 +114,7 @@ span.bloom-linebreak {
 DIV.bloom-page {
   display: block;
   page-break-after: auto;
-  background-color: #FFFFFF;
+  background-color: white;
   /*This is a big help with htmltopdf, both for our errors and a legitimate problem, with the "just text" page in which
 the margin-top is calculated to center the text vertically, but htmltopdf then doesn't shrink the box as it should
 so it just heads down off the page, messing things up.*/
@@ -122,9 +124,7 @@ DIV#bloomDataDiv {
   display: none;
 }
 @media screen {
-  DIV.bloom-page {
-    /*[disabled]border:1px solid #000000;*/
-  }
+  
 }
 .centered {
   text-align: center;
@@ -133,11 +133,13 @@ DIV#bloomDataDiv {
   text-align: center;
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
+
 .bloom-editable {
   display: none;
   height: 100%;
 }
 /*Outside of frontmatter, we assume that if bloom gives it a content tag, then it should be visible*/
+
 .bloom-page:not(.bloom-frontMatter) .bloom-content1,
 .bloom-page:not(.bloom-frontMatter) .bloom-content2,
 .bloom-page:not(.bloom-frontMatter) .bloom-content3 {
@@ -155,6 +157,7 @@ page be the full page, regardless of the contents.
 To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
 preview.css.
 */
+
 .bloom-page.A5Portrait {
   min-width: 148mm;
   max-width: 148mm;
@@ -199,65 +202,67 @@ preview.css.
   max-height: 105mm;
 }
 /*Margins*/
+
 .textWholePage .marginBox {
   position: absolute;
   /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
+
 }
 .marginBox {
   position: absolute;
   top: 15mm;
 }
 .A4Portrait .marginBox {
-  width: 170mm;
   height: 267mm;
+  width: 170mm;
 }
 .A4Portrait .marginBox IMG {
   /* BL-1022 Keeps XMatter thumb images from going too wide */
   max-width: 170mm;
 }
 .A4Landscape .marginBox {
-  width: 257mm;
   height: 180mm;
+  width: 257mm;
 }
 .A4Landscape .marginBox IMG {
   /* BL-1022 Keeps XMatter thumb images from going too wide */
   max-width: 257mm;
 }
 .A5Portrait .marginBox {
-  width: 108mm;
   height: 180mm;
+  width: 108mm;
 }
 .A5Portrait .marginBox IMG {
   /* BL-1022 Keeps XMatter thumb images from going too wide */
   max-width: 108mm;
 }
 .A5Landscape .marginBox {
-  width: 170mm;
   height: 118mm;
+  width: 170mm;
 }
 .A5Landscape .marginBox IMG {
   /* BL-1022 Keeps XMatter thumb images from going too wide */
   max-width: 170mm;
 }
 .A6Portrait .marginBox {
-  width: 65mm;
   height: 118mm;
+  width: 65mm;
 }
 .A6Portrait .marginBox IMG {
   /* BL-1022 Keeps XMatter thumb images from going too wide */
   max-width: 65mm;
 }
 .A6Landscape .marginBox {
-  width: 108mm;
   height: 75mm;
+  width: 108mm;
 }
 .A6Landscape .marginBox IMG {
   /* BL-1022 Keeps XMatter thumb images from going too wide */
   max-width: 108mm;
 }
 .B5Portrait .marginBox {
-  width: 136mm;
   height: 220mm;
+  width: 136mm;
 }
 .B5Portrait .marginBox IMG {
   /* BL-1022 Keeps XMatter thumb images from going too wide */
@@ -266,13 +271,28 @@ preview.css.
 .publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {
   left: 15mm;
 }
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd).A5Landscape .marginBox,
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd).A4Landscape .marginBox {
+  left: 20mm;
+}
 .publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even) .marginBox {
   left: 25mm;
+}
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even).A5Landscape .marginBox,
+.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even).A4Landscape .marginBox {
+  left: 20mm;
+}
+.rightToLeft.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {
+  left: 25mm;
+}
+.rightToLeft.publishMode :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even) .marginBox {
+  left: 15mm;
 }
 body:not(.publishMode) .marginBox {
   left: 20mm;
 }
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
+
 LABEL.bubble,
 LABEL.placeholder {
   display: none;
@@ -288,6 +308,7 @@ H2 {
   font-size: 1.2em;
 }
 /* we will have UI that switches this .box-header-on if th user wants it*/
+
 .box-header-off {
   display: none;
 }
@@ -311,4 +332,3 @@ H2 {
   height: 99%;
   width: 99%;
 }
-/*# sourceMappingURL=basePage.css.map */

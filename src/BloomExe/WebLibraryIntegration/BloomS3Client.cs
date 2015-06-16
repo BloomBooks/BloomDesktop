@@ -124,11 +124,12 @@ namespace Bloom.WebLibraryIntegration
 
 		/// <summary>
 		/// The thing here is that we need to guarantee unique names at the top level, so we wrap the books inside a folder
-		/// with some unique name
+		/// with some unique name. As this involves copying the folder it is also a convenient place to omit any PDF files
+		/// except the one we want.
 		/// </summary>
 		/// <param name="storageKeyOfBookFolder"></param>
 		/// <param name="pathToBloomBookDirectory"></param>
-		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress)
+		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress, string pdfToInclude = null)
 		{
 			BaseUrl = null;
 			BookOrderUrl = null;
@@ -158,7 +159,11 @@ namespace Bloom.WebLibraryIntegration
 
 			Directory.CreateDirectory(wrapperPath);
 
-			CopyDirectory(pathToBloomBookDirectory, Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory)));
+			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
+			CopyDirectory(pathToBloomBookDirectory, destDirName);
+			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
+			foreach (var file in unwantedPdfs)
+				File.Delete(file);
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
@@ -206,7 +211,7 @@ namespace Bloom.WebLibraryIntegration
 			foreach (string file in filesToUpload)
 			{
 				var fileName = Path.GetFileName(file);
-				if (excludedFileNames.Contains(fileName))
+				if (excludedFileNames.Contains(fileName.ToLowerInvariant()))
 					continue; // BL-2246: skip uploading this one
 
 				var request = new TransferUtilityUploadRequest()

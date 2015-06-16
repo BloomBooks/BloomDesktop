@@ -889,12 +889,16 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			// Review JohnT: does this require integration with the NavigationIsolator?
-			using (AutoJSContext context = new AutoJSContext(_browser.Window.JSContext))
+			if (_browser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
 			{
-				string result;
-				context.EvaluateScript(script, (nsISupports)_browser.Document.DomObject, out result);
-				return result;
-		   }
+				using (var context = new AutoJSContext(_browser.Window.JSContext))
+				{
+					string result;
+					context.EvaluateScript(script, (nsISupports)_browser.Document.DomObject, out result);
+					return result;
+				}
+			}
+			return null;
 		}
 
 		HashSet<string> _knownEvents = new HashSet<string>();

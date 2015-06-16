@@ -44,6 +44,7 @@
 			this._cancelButton = new System.Windows.Forms.Button();
 			this._status = new Bloom.HtmlLabel();
 			this._submitMsg = new System.Windows.Forms.Label();
+			this._privacyLabel = new System.Windows.Forms.LinkLabel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this._screenshotHolder)).BeginInit();
 			this.SuspendLayout();
@@ -245,10 +246,9 @@
 			// _submitMsg
 			// 
 			this._submitMsg.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-				| System.Windows.Forms.AnchorStyles.Right)));
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this._submitMsg.BackColor = System.Drawing.SystemColors.Control;
 			this._submitMsg.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._submitMsg.Text = "";
 			this._L10NSharpExtender.SetLocalizableToolTip(this._submitMsg, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._submitMsg, null);
 			this._L10NSharpExtender.SetLocalizingId(this._submitMsg, "ReportProblemDialog.SubmitLabel");
@@ -258,12 +258,28 @@
 			this._submitMsg.TabIndex = 29;
 			this._submitMsg.Visible = false;
 			// 
+			// _privacyLabel
+			// 
+			this._privacyLabel.AutoSize = true;
+			this._privacyLabel.LinkColor = System.Drawing.Color.Black;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._privacyLabel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._privacyLabel, null);
+			this._L10NSharpExtender.SetLocalizingId(this._privacyLabel, "ReportProblemDialog.linkLabel1");
+			this._privacyLabel.Location = new System.Drawing.Point(21, 444);
+			this._privacyLabel.Name = "_privacyLabel";
+			this._privacyLabel.Size = new System.Drawing.Size(92, 13);
+			this._privacyLabel.TabIndex = 31;
+			this._privacyLabel.TabStop = true;
+			this._privacyLabel.Text = "Will not be private";
+			this._privacyLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this._privacyLabel_LinkClicked);
+			// 
 			// ProblemReporterDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this._cancelButton;
 			this.ClientSize = new System.Drawing.Size(487, 512);
+			this.Controls.Add(this._privacyLabel);
 			this.Controls.Add(this._seeDetails);
 			this.Controls.Add(this._includeBook);
 			this.Controls.Add(this._submitButton);
@@ -314,5 +330,6 @@
 		private HtmlLabel _status;
 		private System.Windows.Forms.Button _cancelButton;
 		private System.Windows.Forms.Label _submitMsg;
+		private System.Windows.Forms.LinkLabel _privacyLabel;
 	}
 }

@@ -520,6 +520,10 @@ namespace Bloom.Book
 		{
 			AddClass((XmlElement)dom.SelectSingleNode("//body"),"publishMode");
 		}
+		public static void AddRightToLeftClassToBody(XmlDocument dom)
+		{
+			AddClass((XmlElement)dom.SelectSingleNode("//body"), "rightToLeft");
+		}
 
 		public static void AddHidePlaceHoldersClassToBody(XmlDocument dom)
 		{

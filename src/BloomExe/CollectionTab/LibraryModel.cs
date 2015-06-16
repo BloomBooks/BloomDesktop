@@ -170,7 +170,7 @@ namespace Bloom.CollectionTab
 
 		public void OpenFolderOnDisk()
 		{
-			PathUtilities.OpenDirectoryInExplorer(_bookSelection.CurrentSelection.FolderPath);
+			PathUtilities.SelectFileInExplorer(_bookSelection.CurrentSelection.FolderPath);
 		}
 
 		public void BringBookUpToDate()

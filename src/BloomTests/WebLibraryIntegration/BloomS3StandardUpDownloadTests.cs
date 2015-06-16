@@ -15,7 +15,7 @@ namespace BloomTests.WebLibraryIntegration
 		private string _srcCollectionPath;
 		private string _destCollectionPath;
 		private const string BookName = "Test Book";
-		private const string ExcludedFile = "thumbs.db";
+		private readonly string[] ExcludedFiles = new [] {"thumbs.db", "extra.pdf"};
 		private string _storageKeyOfBookFolder;
 
 		[TestFixtureSetUp]
@@ -68,13 +68,14 @@ namespace BloomTests.WebLibraryIntegration
 			File.WriteAllText(Path.Combine(bookFolder, "one.htm"), "test");
 			File.WriteAllText(Path.Combine(bookFolder, "one.css"), "test");
 			File.WriteAllText(Path.Combine(bookFolder, "preview.pdf"), "test pdf file");
+			File.WriteAllText(Path.Combine(bookFolder, "extra.pdf"), "unwanted pdf file");
 			File.WriteAllText(Path.Combine(bookFolder, "thumbs.db"), "test thumbs.db file");
 			return bookFolder;
 		}
 
 		private void UploadBook(string bookFolder)
 		{
-			_client.UploadBook(_storageKeyOfBookFolder, bookFolder, new NullProgress());
+			_client.UploadBook(_storageKeyOfBookFolder, bookFolder, new NullProgress(), "preview.pdf");
 		}
 
 		private void DownloadBook()
@@ -93,23 +94,26 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.IsTrue(Directory.Exists(_destCollectionPath));
 			var srcFileCount = Directory.GetFiles(fullBookSrcPath).Count();
 
-			// Do not count the excluded file (thumbs.db)
-			Assert.AreEqual(_client.GetBookFileCount(_storageKeyOfBookFolder) + 1, srcFileCount);
-			Assert.AreEqual(Directory.GetFiles(fullBookDestPath).Count() + 1, srcFileCount);
+			// Do not count the excluded files (thumbs.db, extra.pdf)
+			Assert.That(_client.GetBookFileCount(_storageKeyOfBookFolder), Is.EqualTo(srcFileCount - ExcludedFiles.Length));
+			Assert.That(Directory.GetFiles(fullBookDestPath).Count(), Is.EqualTo(srcFileCount - ExcludedFiles.Length));
 			foreach (var fileName in Directory.GetFiles(fullBookSrcPath)
 				.Select(Path.GetFileName)
-				.Where(file => file != ExcludedFile))
+				.Where(file => !ExcludedFiles.Contains(file)))
 			{
 				Assert.IsTrue(File.Exists(Path.Combine(fullBookDestPath, fileName)));
 			}
 		}
 
 		[Test]
-		public void UploadDownloadStandardBook_ThumbsDbFileDidNotGetSent()
+		public void UploadDownloadStandardBook_ExcludedFilesFileDidNotGetSent()
 		{
-			// Verify that thumbs.db did NOT get uploaded
-			var notexpectedDestPath = Path.Combine(_destCollectionPath, BookName, ExcludedFile);
-			Assert.IsFalse(File.Exists(notexpectedDestPath));
+			// Verify that excluded files did NOT get uploaded
+			foreach (var file in ExcludedFiles)
+			{
+				var notexpectedDestPath = Path.Combine(_destCollectionPath, BookName, file);
+				Assert.IsFalse(File.Exists(notexpectedDestPath));
+			}
 		}
 	}
 }
