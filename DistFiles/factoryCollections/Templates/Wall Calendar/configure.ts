@@ -32,8 +32,8 @@ class CalendarConfigurator {
 
     private configObject : CalendarConfigObject;
 
-    constructor(jsonConfig:string) {
-        if(jsonConfig && jsonConfig.length > 0)
+    constructor(jsonConfig:any) {
+        if (jsonConfig && jsonConfig['library'])
             this.configObject = new CalendarConfigObject(jsonConfig);
         else
             this.configObject = new CalendarConfigObject(); // shouldn't happen, even in test...
@@ -124,22 +124,26 @@ class CalendarConfigurator {
 }
 
 class CalendarConfigObject {
-    private defaultConfig : string =  '{"calendar": { "year": "2015" },' +
-    '"library":  {"calendar": {' +
-    '"monthNames": ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"],' +
-    '"dayAbbreviations": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]}}}';
+    private defaultConfig:any = {
+        "calendar": {"year": "2015"},
+        "library": {
+            "calendar": {
+                "monthNames": ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"],
+                "dayAbbreviations": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+            }
+        }
+    };
 
     public year : string;
     public monthNames : string[];
     public dayAbbreviations : string[];
 
-    constructor (jsonConfig? : string) {
-        if(typeof jsonConfig === "undefined" || jsonConfig.length == 0)
+    constructor (jsonConfig? : any) {
+        if (typeof jsonConfig === "undefined" || !jsonConfig['library'])
             jsonConfig = this.defaultConfig;
-        var object = $.parseJSON(jsonConfig);
-        this.year = object.calendar.year;
-        this.monthNames = object.library.calendar.monthNames;
-        this.dayAbbreviations = object.library.calendar.dayAbbreviations;
+        this.year = jsonConfig.calendar.year;
+        this.monthNames = jsonConfig.library.calendar.monthNames;
+        this.dayAbbreviations = jsonConfig.library.calendar.dayAbbreviations;
     }
 }
 
