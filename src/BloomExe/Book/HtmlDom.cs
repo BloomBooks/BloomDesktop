@@ -523,6 +523,10 @@ namespace Bloom.Book
 			AddClass((XmlElement)dom.SelectSingleNode("//body"), "hidePlaceHolders");
 		}
 
+		public static void AddCalendarFoldClassToBody(XmlDocument dom)
+		{
+			AddClass((XmlElement)dom.SelectSingleNode("//body"), "calendarFold");
+		}
 		/// <summary>
 		/// The chosen xmatter changes, so we need to clear out any old ones
 		/// </summary>

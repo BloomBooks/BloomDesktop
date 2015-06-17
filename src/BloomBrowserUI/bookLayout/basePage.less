@@ -250,24 +250,29 @@ preview.css.
 //page looks like page 1 from the view of the css, so showing every page
 //as if it were odd is just confusing for the user.
 //Therefore we only turn on left-vs.right distinctions when when making PDF.
-.publishMode :not(.outsideFrontCover):not(.outsideBackCover){
+.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
 	&.bloom-page:nth-of-type(odd){
 		.marginBox{
+			/* shifted margin */
 			left: @MarginOuter;
-		}
-		// BL-2310 keep left and right the same for calendar fold
-		&.A5Landscape .marginBox, &.A4Landscape .marginBox{
-			left: @MarginBalanced;
 		}
 	}
 	&.bloom-page:nth-of-type(even){
 		.marginBox{
+			/* shifted margin */
 			left: @MarginInner;
 		}
-		// BL-2310 keep left and right the same for calendar fold
-		&.A5Landscape .marginBox, &.A4Landscape .marginBox{
-			left: @MarginBalanced;
-		}
+	}
+}
+
+// Note: we aren't making any assumption about this or that landscape being calendar fold.
+// The publishModel needs to make that decision (perhaps, in the future, user will be able to control that when
+// making the pdf). From the stylesheet's view, we just need to see this calendarFold class on the Body
+
+.calendarFold{
+	.marginBox {
+		/* balanced margin*/
+		left: @MarginBalanced;
 	}
 }
 
@@ -275,11 +280,14 @@ preview.css.
 //the page order. In doing so, what use to be odd becomes even, and our margins
 //and page numbering logic needs to switch accordingly. Page numbering is
 //not part of the basePage.less.
-.rightToLeft.publishMode :not(.outsideFrontCover):not(.outsideBackCover){
+
+.rightToLeft.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
   &.bloom-page:nth-of-type(odd) .marginBox  {
+	  /* swap margins on right to left */
 	  left: @MarginInner;
   }
   &.bloom-page:nth-of-type(even) .marginBox  {
+	  /* swap margins on right to left */
 	  left: @MarginOuter;
   }
 }
