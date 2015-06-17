@@ -14,14 +14,26 @@
 - Starting with Bloom 3.1, Bloom will no longer run on Windows XP. Sorry! As Microsoft has retired support for XP, it has become difficult for us to be limitted to program bits that work on XP. But Bloom 3.0 will continue to be available and works just fine. we don't expect there to be any problems with someone using Bloom 3.0 on XP using books created by other people using Bloom 3.1.
 
 ## 3.1
-Fixed incorrect margins in PDFs
-Improved feedback during application updating
-Various memory-use improvments (more to come)
-Fix overlapping text bubbles
-Fix page numbering
-52 other minor fixes/improvements
+Version 3.1 was a disciplined sustained & effort to improve hundreds of "little things" that could confuse or block people in certain situations form getting books created, translated, or printed. It also represents the first version where the Linux (Trusty and Precise) version is very close to parity with the Windows version.
+
+## 3.1 Beta 3
+- Running the installer again does an uninstall/reinstall
+- Added privacy notice to "Report A Problem" dialog
+- Allow user control which languages are advertised on BL.org, when uploading
+- Show source language names even if they aren't part of the collection
+- Fixed incorrect margins in PDFs
+- Andika New Basics now part of Linux package
+- 61 other minor fixes/improvements
+
+## 3.1 Beta 2
+- Improved feedback during application updating
+- Various memory-use improvments (more to come)
+- Fix overlapping text bubbles
+- Fix page numbering
+- 52 other minor fixes/improvements
 - New faster installer with automatic incremental upgrades. This will be getting some more attention for the next beta, including a re-install capability.
 - Page thumbnails now show an "attention" icon if some text on the page is overflow its box
+
 ## 3.1 Beta 1
 - Includes the new "Andika New Basic" font, which includes real bold and italic faces. PDFs made with this show bold and italic, where PDFs created with "Andika" do not.
 - CTRL+Click does a paste, and the pasted material is cleaned up, removing the extraneous line breaks that you get when copying out of a PDF.
@@ -40,7 +52,6 @@ Fix page numbering
 - Hover over an image to see its file name, size, and dimensions
 - We've reinstated integrations with the [Free Adobe Reader](http://get.adobe.com/reader/enterprise/) after the open source alternative we used in 3.0 proved unreliable. It is still available as a fall-back in situations where Adobe Reader is unavailable. On Linux, we are switching to the system's default way of printing (which is normally GhostScript).
 - In a field with the "RequireParagraphs" flag, pressing tab inserts an emspace instead of moving to the next tab.
-
 
 ### Bloom 3.0 is the last version for Windows XP
 - Starting with Bloom 3.1, Bloom will require Windows Vista, 7, 8, 10, etc.
