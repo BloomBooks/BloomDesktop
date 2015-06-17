@@ -92,7 +92,19 @@ p {
   min-height: 1em;
 }
 TEXTAREA,
-.bloom-editable,
+.bloom-editable {
+  resize: none;
+  /*don't show those cute little resize controls in Firefox 4 and greater*/
+  overflow: visible;
+  font-size: 143%;
+  line-height: 1.5em;
+  min-height: 1.8em;
+  width: 100%;
+}
+/* The following has been split out from the above rule because it should probably be removed,
+	but at this point we are about to go release candidate with 3.1 so it will have to wait.
+	When we do remove it, the main things it could effect are the Story Primer template and the dozen or so SIL LEAD Uganda SHRP templates.
+*/
 TD {
   resize: none;
   /*don't show those cute little resize controls in Firefox 4 and greater*/

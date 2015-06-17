@@ -81,7 +81,7 @@ DIV.ui-tooltip-content
 p{
   min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
 }
-TEXTAREA, .bloom-editable, TD
+TEXTAREA, .bloom-editable
 {
 	resize: none;
 	/*don't show those cute little resize controls in Firefox 4 and greater*/
@@ -91,6 +91,21 @@ TEXTAREA, .bloom-editable, TD
 	min-height:  @defaultLineHeight + .3em;
 	width: 100%;
 }
+
+/* The following has been split out from the above rule because it should probably be removed,
+	but at this point we are about to go release candidate with 3.1 so it will have to wait.
+	When we do remove it, the main things it could effect are the Story Primer template and the dozen or so SIL LEAD Uganda SHRP templates.
+*/
+TD {
+	resize: none;
+	/*don't show those cute little resize controls in Firefox 4 and greater*/
+	overflow: visible;
+	font-size: 143%;
+	line-height: @defaultLineHeight;
+	min-height: @defaultLineHeight + .3em;
+	width: 100%;
+}
+
 p{
   min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
 }

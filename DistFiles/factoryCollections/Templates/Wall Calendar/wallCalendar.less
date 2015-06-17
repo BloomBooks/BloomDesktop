@@ -39,7 +39,7 @@ DIV.calendarMonthTop DIV.imageHolder
 .month THEAD TD
 {
 	font-weight: bold;
-	font-size: larger;
+	font-size: 14pt;
 }
 .month THEAD TH
 {
@@ -53,35 +53,53 @@ DIV.calendarMonthTop DIV.imageHolder
 .calendarMonthBottom TABLE{
 	border-collapse: collapse;
 }
-.calendarMonthBottom TH
-{
+
+.calendarMonthBottom TH {
 	text-align: center;
 	font-weight: bold;
+	display: table-cell;
+	width: 107px;
 }
 
-.calendarMonthBottom TD TEXTAREA
-{
-	width: 96%;
-	height: 95%;
-	font-size: 65%;
+.calendarMonthBottom TD {
+	border: 1px solid #000000;
+	padding-left: 3px;
+	padding-right: 3px;
 	position: relative;
-	left: 1px;
-	margin-top: -20px;
+	font-size: inherit; //override the (later to be removed) "143%" we get from basePage.css
+	line-height: inherit; //override the (later to be removed) rule we get from basePage.css
+	display: table-cell;
+	height: 72px; // NB: have to allow for up to 6 rows of calendar, not 5!!!!!!!!!!!!
+    width: 101px;//103 is good during editing
+
+	vertical-align: top;
+}
+
+.calendarMonthBottom TD TEXTAREA {
+	overflow: hidden;
+	font-size: 9pt;
 	line-height: 1.3em;
 	text-indent: 2.3em;
-	background: transparent;
+	margin-top: 4px;
+	height: 65px;
 }
-.calendarMonthBottom TD P
-{
-	position: relative;
+
+.calendarMonthBottom TD P {
 	font-style: italic;
-	top: -1px;
 	z-index: 5; // keeps day number in play when textarea overflows
+	font-size: 14pt;
+	position: absolute;
+
+	//top:0;  //<--- NO. For some reason in Bloom 3.1, will put all the numbers at the top (but not in later Firefox, so maybe in the future this will be fine)
+	//so we do this instead
+	margin-top: -4px;
 }
+
+
 .calendarBottomPageHeader
 {
 	text-align: center;
-	font: 240% sans-serif;
+	font-size: 30pt;
 	width: 100%;
 	height: 32px;
 	margin-bottom: 5mm;
@@ -100,14 +118,6 @@ DIV.calendarMonthTop DIV.imageHolder
 	height: @A5PageHeight - (2 * @Border);
 }
 
-.calendarMonthBottom TD
-{
-	width: @DayTableWidth / 7;
-	height: 65px; // NB: have to allow for up to 6 rows of calendar, not 5!!!!!!!!!!!!
-	border: 1px solid #000000;
-	padding: 0 0 0 2px;
-	position: relative;
-}
 
 /* bilingual */
 .calendarMonthTop.bloom-bilingual .bloom-imageContainer
