@@ -19,7 +19,7 @@ Architecture: all
 Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
  mono-sil, libgdiplus-sil, geckofx29, gtklp,
  chmsee, libtidy5,
- fonts-sil-andika,
+ fonts-sil-andika-new-basic,
  optipng,
  wmctrl
 Suggests: art-of-reading
