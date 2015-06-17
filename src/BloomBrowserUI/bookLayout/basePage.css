@@ -1,5 +1,4 @@
-﻿/*+init {*/
-
+/*+init {*/
 * {
   position: relative;
   margin: 0;
@@ -69,7 +68,6 @@ To handling the mis-match.*/
   font-size: 10pt;
 }
 /* gridItem means this is a page thumbnail */
-
 .gridItem .pageOverflows {
   background-image: url("/bloom/BloomBrowserUI/images/Attention.svg");
   /* red triangle with exclamation point */
@@ -94,7 +92,19 @@ p {
   min-height: 1em;
 }
 TEXTAREA,
-.bloom-editable,
+.bloom-editable {
+  resize: none;
+  /*don't show those cute little resize controls in Firefox 4 and greater*/
+  overflow: visible;
+  font-size: 143%;
+  line-height: 1.5em;
+  min-height: 1.8em;
+  width: 100%;
+}
+/* The following has been split out from the above rule because it should probably be removed,
+	but at this point we are about to go release candidate with 3.1 so it will have to wait.
+	When we do remove it, the main things it could effect are the Story Primer template and the dozen or so SIL LEAD Uganda SHRP templates.
+*/
 TD {
   resize: none;
   /*don't show those cute little resize controls in Firefox 4 and greater*/
@@ -114,7 +124,7 @@ span.bloom-linebreak {
 DIV.bloom-page {
   display: block;
   page-break-after: auto;
-  background-color: white;
+  background-color: #FFFFFF;
   /*This is a big help with htmltopdf, both for our errors and a legitimate problem, with the "just text" page in which
 the margin-top is calculated to center the text vertically, but htmltopdf then doesn't shrink the box as it should
 so it just heads down off the page, messing things up.*/
@@ -124,7 +134,9 @@ DIV#bloomDataDiv {
   display: none;
 }
 @media screen {
-  
+  DIV.bloom-page {
+    /*[disabled]border:1px solid #000000;*/
+  }
 }
 .centered {
   text-align: center;
@@ -133,13 +145,11 @@ DIV#bloomDataDiv {
   text-align: center;
 }
 /*Unless otherwise positioned and made visible, hide all the language elements in there*/
-
 .bloom-editable {
   display: none;
   height: 100%;
 }
 /*Outside of frontmatter, we assume that if bloom gives it a content tag, then it should be visible*/
-
 .bloom-page:not(.bloom-frontMatter) .bloom-content1,
 .bloom-page:not(.bloom-frontMatter) .bloom-content2,
 .bloom-page:not(.bloom-frontMatter) .bloom-content3 {
@@ -157,7 +167,6 @@ page be the full page, regardless of the contents.
 To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
 preview.css.
 */
-
 .bloom-page.A5Portrait {
   min-width: 148mm;
   max-width: 148mm;
@@ -202,11 +211,9 @@ preview.css.
   max-height: 105mm;
 }
 /*Margins*/
-
 .textWholePage .marginBox {
   position: absolute;
   /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
-
 }
 .marginBox {
   position: absolute;
@@ -292,7 +299,6 @@ body:not(.publishMode) .marginBox {
   left: 20mm;
 }
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
-
 LABEL.bubble,
 LABEL.placeholder {
   display: none;
@@ -308,7 +314,6 @@ H2 {
   font-size: 1.2em;
 }
 /* we will have UI that switches this .box-header-on if th user wants it*/
-
 .box-header-off {
   display: none;
 }

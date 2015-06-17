@@ -29,7 +29,7 @@ DIV.calendarMonthTop DIV.imageHolder {
 }
 .month THEAD TD {
   font-weight: bold;
-  font-size: larger;
+  font-size: 14pt;
 }
 .month THEAD TH {
   width: 3em;
@@ -44,27 +44,39 @@ DIV.calendarMonthTop DIV.imageHolder {
 .calendarMonthBottom TH {
   text-align: center;
   font-weight: bold;
+  display: table-cell;
+  width: 107px;
+}
+.calendarMonthBottom TD {
+  border: 1px solid #000000;
+  padding-left: 3px;
+  padding-right: 3px;
+  position: relative;
+  font-size: inherit;
+  line-height: inherit;
+  display: table-cell;
+  height: 72px;
+  width: 101px;
+  vertical-align: top;
 }
 .calendarMonthBottom TD TEXTAREA {
-  width: 96%;
-  height: 95%;
-  font-size: 65%;
-  position: relative;
-  left: 1px;
-  margin-top: -20px;
+  overflow: hidden;
+  font-size: 9pt;
   line-height: 1.3em;
   text-indent: 2.3em;
-  background: transparent;
+  margin-top: 4px;
+  height: 65px;
 }
 .calendarMonthBottom TD P {
-  position: relative;
   font-style: italic;
-  top: -1px;
   z-index: 5;
+  font-size: 14pt;
+  position: absolute;
+  margin-top: -4px;
 }
 .calendarBottomPageHeader {
   text-align: center;
-  font: 240% sans-serif;
+  font-size: 30pt;
   width: 100%;
   height: 32px;
   margin-bottom: 5mm;
@@ -79,13 +91,6 @@ DIV.calendarMonthTop DIV.imageHolder {
   margin-left: 0;
   width: 20cm;
   height: 13.8cm;
-}
-.calendarMonthBottom TD {
-  width: 2.85714286cm;
-  height: 65px;
-  border: 1px solid #000000;
-  padding: 0 0 0 2px;
-  position: relative;
 }
 /* bilingual */
 .calendarMonthTop.bloom-bilingual .bloom-imageContainer {
