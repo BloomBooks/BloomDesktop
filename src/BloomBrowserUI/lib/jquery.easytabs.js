@@ -48,7 +48,7 @@
     tabActiveClass: "active",
     defaultTab: "li:first-child",
     animationSpeed: "normal",
-    tabs: "> ul > li",
+    tabs: "> nav > ul > li",
     updateHash: true,
     cycle: false,
     collapsible: false,

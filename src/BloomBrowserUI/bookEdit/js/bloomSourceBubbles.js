@@ -51,45 +51,45 @@ var bloomSourceBubbles = (function () {
         /* removed june 12 2013 was dying with new jquery as this was Window and that had no OwnerDocument
            $(this).after(divForBubble);
          */
-        var selectorOfDefaultTab = "li:first-child";
+        var selectorOfDefaultTab = "ul>li:first-child";
         var vernacularLang = localizationManager.getVernacularLang();
         //make the li's for the source text elements in this new div, which will later move to a tabbed bubble
-        $(divForBubble).each(function () {
-            $(this).prepend('<ul class="editTimeOnly bloom-ui"></ul>');
-            var list = $(this).find('ul');
-            //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
-            //it's just a one-line change.
-            var items = $(this).find("textarea, div");
-            items.sort(function (a, b) {
-                var keyA = $(a).attr('lang');
-                var keyB = $(b).attr('lang');
-                if (keyA === vernacularLang)
-                    return -1;
-                if (keyB === vernacularLang)
-                    return 1;
-                if (keyA < keyB)
-                    return -1;
-                if (keyA > keyB)
-                    return 1;
-                return 0;
-            });
-            var shellEditingMode = false;
-            items.each(function () {
-                var iso = $(this).attr('lang');
-                if (iso) {
-                    var languageName = localizationManager.getLanguageName(iso);
-                    if (!languageName)
-                        languageName = iso;
-                    var shouldShowOnPage = (iso === vernacularLang) || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
-                    // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
-                    if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
-                        $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
-                        if (iso === GetSettings().defaultSourceLanguage) {
-                            selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
-                        }
+        // divForBubble is a single cloned bloom-translationGroup, so no need for .each() here
+        var $this = $(divForBubble[0]);
+        $this.prepend('<nav><ul class="editTimeOnly bloom-ui"></ul></nav>');
+        var list = $this.find('ul');
+        //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
+        //it's just a one-line change.
+        var items = $this.find("textarea, div");
+        items.sort(function (a, b) {
+            var keyA = $(a).attr('lang');
+            var keyB = $(b).attr('lang');
+            if (keyA === vernacularLang)
+                return -1;
+            if (keyB === vernacularLang)
+                return 1;
+            if (keyA < keyB)
+                return -1;
+            if (keyA > keyB)
+                return 1;
+            return 0;
+        });
+        var shellEditingMode = false;
+        items.each(function () {
+            var iso = $(this).attr('lang');
+            if (iso) {
+                var languageName = localizationManager.getLanguageName(iso);
+                if (!languageName)
+                    languageName = iso;
+                var shouldShowOnPage = (iso === vernacularLang) || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
+                // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
+                if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
+                    $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
+                    if (iso === GetSettings().defaultSourceLanguage) {
+                        selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
                     }
                 }
-            });
+            }
         });
         //now turn that new div into a set of tabs
         if ($(divForBubble).find("li").length > 0) {
@@ -102,6 +102,7 @@ var bloomSourceBubbles = (function () {
             $(divForBubble).remove(); //no tabs, so hide the bubble
             return;
         }
+        // Make sure selected tab is in view
         var showEvents = false;
         var hideEvents = false;
         var showEventsStr;

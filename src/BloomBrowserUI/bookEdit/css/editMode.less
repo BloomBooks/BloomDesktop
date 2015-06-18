@@ -280,44 +280,47 @@ TEXTAREA.province
 }
 
 .ui-sourceTextsForBubble {
-	UL {
-		padding: 0;
-		z-index: 1;
-		background-color: transparent;
-		text-align: left;
-		width: 219px;
-		/*+placement:shift -7px 1px;*/
-		position: relative;
-		left: -7px;
-		top: 1px;
-	}
-	UL LI {
-		display: inline-block;
-		padding-right: 11px;
-		padding-left: 7px;
-		font-size: 9pt;
-		margin-right: 11px;
-		height: 31px;
-	}
-	UL LI A {
+	position: relative;
+	NAV {
+		overflow: auto;
 		display: block;
-		padding: 5px;
-		outline: none;
-		/*[empty]font-style:;*/
-		text-decoration: none;
-		color: #000000;
-	}
-	UL LI A:hover {
-		text-decoration: underline;
-	}
-	UL LI.active {
-		padding-top: 1px;
-		position: relative;
-		top: 1px;
-		font: bold 11pt sans-serif;
-	}
-	UL LI A.active {
-		font-weight: bold;
+		height: 37px;
+		top: -2px;
+		UL {
+			z-index: 1;
+			background-color: transparent;
+			text-align: left;
+			display: flex;
+			list-style: outside none none;
+			top: 1px;
+			LI {
+				padding-right: 11px;
+				font-size: 9pt;
+				height: 31px;
+				float: left;
+				flex: none;
+				&.active {
+					padding-top: 1px;
+					position: relative;
+					top: -5px;
+					font: bold 11pt sans-serif;
+				}
+				A {
+					display: block;
+					padding: 5px;
+					outline: none;
+					text-decoration: none;
+					color: #000000;
+				}
+				A:hover {
+					text-decoration: underline;
+					background-color: lightyellow;
+				}
+				A.active {
+					font-weight: bold;
+				}
+			}
+		}
 	}
 	.source-text{
 		font-size: 10pt;
