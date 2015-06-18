@@ -1,4 +1,4 @@
-/*!
+﻿/*!
 
 Split Pane v0.4.0
 
@@ -263,6 +263,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 .selector-links a {
   color: #e48c84;
 }
-.selector-links DIV {
+.selector-links div {
   display: inline;
 }
+/*# sourceMappingURL=origami.css.map */

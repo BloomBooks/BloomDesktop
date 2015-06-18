@@ -8,37 +8,37 @@
 		padding: 0;
 		font-size: 1em;
 	}
-	H1, H2, H3, H4, H5, H6, TH {
+	h1, h2, h3, h4, h5, h6, th {
 		font-weight: inherit;
 	}
-	ADDRESS, CITE, DFN, VAR {
+	address, cite, dfn, var {
 		font-style: inherit;
 	}
-	CAPTION, CODE, KBD, PRE, SAMP, TT, INPUT, TEXTAREA, SELECT, BUTTON {
+	caption, code, kbd, pre, samp, tt, input, textarea, select, button {
 		font-family: inherit;
 	}
-	TABLE {
+	table {
 		border-spacing: 0;
 	}
-	TH {
+	th {
 		text-align: left;
 	}
-	HTML, BODY, THEAD, TBODY, TFOOT, TR, TH, TD, BR {
+	html, body, thead, tbody, tfoot, tr, th, td, br {
 		position: static;
 	}
-	INPUT[type=hidden] {
+	input[type=hidden] {
 		display: none !important;
 	}
-	FIELDSET, A IMG {
+	fieldset, a img {
 		border: 0;
 	}
-	BODY {
+	body {
 	}
 }
 
 .Browser-Reset();
 
-BODY
+body
 {
 	line-height: 1.5;
 
@@ -52,7 +52,7 @@ To handling the mis-match.*/
 	font-size: 10pt;
 }
 
-DIV.ui-tooltip-content
+div.ui-tooltip-content
 {
 	overflow: visible !important;
 	font-size: 10pt;
@@ -71,7 +71,7 @@ DIV.ui-tooltip-content
 p{
   min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
 }
-TEXTAREA, .bloom-editable, TD
+textarea, .bloom-editable, TD
 {
 	resize: none;
 	/*don't show those cute little resize controls in Firefox 4 and greater*/
@@ -91,7 +91,7 @@ span.bloom-linebreak {
   text-indent: 0;
 }
 
-DIV.bloom-page
+div.bloom-page
 {
 	display: block;
 	page-break-after: auto;
@@ -101,13 +101,13 @@ the margin-top is calculated to center the text vertically, but htmltopdf then d
 so it just heads down off the page, messing things up.*/
 	overflow: hidden;
 }
-DIV#bloomDataDiv
+div#bloomDataDiv
 {
 	display: none;
 }
 @media screen
 {
-	DIV.bloom-page
+	div.bloom-page
 	{
 		/*[disabled]border:1px solid #000000;*/
 	}
@@ -277,7 +277,7 @@ body:not(.publishMode) .marginBox{
 }
 
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
-LABEL.bubble, LABEL.placeholder
+label.bubble, label.placeholder
 {
 	display: none;
 }
@@ -286,13 +286,13 @@ LABEL.bubble, LABEL.placeholder
 	vertical-align: super;
 	font-size: 80%;
 }
-H1
+h1
 {
 	//font-weight: bold;
 	font-size: 1.5em;
 }
 
-H2 {
+h2 {
 	//font-weight: bold ;
 	font-size: 1.2em;
 }
