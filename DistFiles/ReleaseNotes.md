@@ -1,17 +1,17 @@
 ﻿## Important Notices
 
 ### Andika Replaced By "Andika New Basic" 
-- Many Bloom collection use SIL's free "Andika" literacy font as their default typeface. When you create a PDF using Andika, styles such as bold, italic etc. are lost. This will happen with any font that doesn't include a real bold/italic/etc face. This is problem outside of our control at this time (we've reported it to Mozilla). Happily, SIL has released a subset of Andika named [Andika New Basic](http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=andika). Bloom now installs this font for you and uses it by default. If your language is not fully supported by Andika New Basic, please chose another font, idealy one which includes built-in bold and italic. You can test your font by using CTRL+B to make some text bold, then going to publish and looking to see if bold makes it through to the PDF.
-- Note, Bloom will automatically change the default font from Andika to ADB, if you have Andika set. It will only do this once, so if you choose to change it back to Andika, it won't keep changing it. Note also that Bloom will not attempt to change any custom styles you may have created. If you need bold/italics to show up in a custom style, you'll have to change away from Andika by hand.
+- Many Bloom collections use SIL's free "Andika" literacy font as their default typeface. When you create a PDF using Andika, styles such as bold, italic etc. are lost. This will happen with any font that doesn't include a real bold/italic/etc face. This is problem outside of our control at this time (we've reported it to Mozilla). Happily, SIL has released a subset of Andika named [Andika New Basic](http://scripts.sil.org/cms/scripts/page.php?item_id=Andika_New_Basic). Bloom now installs this font for you and uses it by default. If your language is not fully supported by Andika New Basic, please choose another font, ly one which includes built-in bold and italic. You can test your font by using CTRL+B to make some text bold, then going to publish and looking to see if bold makes it through to the PDF.
+- Note, Bloom will automatically change the default font from Andika to Andika New Basic, if you have Andika set. It will only do this once, so if you choose to change it back to Andika, it won't keep changing it. Note also that Bloom will not attempt to change any custom styles you may have created. If you need bold/italics to show up in a custom style, you'll have to change away from Andika by hand.
 
 ### Keyman 9
-- If you enable Keyman 9 while on a page, you'll need to switch to another page and back before you can type. If this is causing you problems, please [post a suggestion here](bloomlibrary.org/#/suggestions) for us to do more work on this.
+- If you enable Keyman 9 while on a page, you'll need to switch to another page and back before you can type. If this is causing you problems, please [post a suggestion here](http://bloomlibrary.org/#/suggestions) for us to do more work on this.
 
 ### Printing Quality
 - To get good printing reliability on Windows, install the [Free Adobe Reader](http://get.adobe.com/reader/enterprise/) software. On Linux, we are switching to the system's default way of printing PDFs (which is normally GhostScript). On Windows, having Adobe Reader installed will also take care of some problems with showing images in preview of the PDF.
 
 ### The end of the line for Windows XP
-- Starting with Bloom 3.1, Bloom will no longer run on Windows XP. Sorry! As Microsoft has retired support for XP, it has become difficult for us to be limitted to program bits that work on XP. But Bloom 3.0 will continue to be available and works just fine. we don't expect there to be any problems with someone using Bloom 3.0 on XP using books created by other people using Bloom 3.1.
+- Starting with Bloom 3.1, Bloom will no longer run on Windows XP. Sorry! As Microsoft has retired support for XP, it has become difficult for us to be limitted to program bits that work on XP. But Bloom 3.0 will continue to be available and works just fine. We don't expect there to be any problems with someone using Bloom 3.0 on XP using books created by other people using Bloom 3.1.
 
 ## 3.1
 Version 3.1 was a disciplined sustained & effort to improve hundreds of "little things" that could confuse or block people in certain situations form getting books created, translated, or printed. It also represents the first version where the Linux (Trusty and Precise) version is very close to parity with the Windows version.
@@ -19,7 +19,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 ## 3.1 Beta 3
 - Running the installer again does an uninstall/reinstall
 - Added privacy notice to "Report A Problem" dialog
-- Allow user control which languages are advertised on BL.org, when uploading
+- Allow user to control which languages are advertised on BL.org, when uploading
 - Show source language names even if they aren't part of the collection
 - Fixed incorrect margins in PDFs
 - Andika New Basics now part of Linux package
@@ -32,7 +32,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 - Fix page numbering
 - 52 other minor fixes/improvements
 - New faster installer with automatic incremental upgrades. This will be getting some more attention for the next beta, including a re-install capability.
-- Page thumbnails now show an "attention" icon if some text on the page is overflow its box
+- Page thumbnails now show an "attention" icon if some text on the page overflows its box
 
 ## 3.1 Beta 1
 - Includes the new "Andika New Basic" font, which includes real bold and italic faces. PDFs made with this show bold and italic, where PDFs created with "Andika" do not.
