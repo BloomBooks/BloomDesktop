@@ -71,7 +71,7 @@ namespace BloomTests.Book
 
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml']");
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fmyimage1' and @href='my image.png']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fmy_image' and @href='my_image.png']");
 			toCheck.HasAtLeastOneMatchForXpath("package/spine/itemref[@idref='f1']");
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='nav']");
 
@@ -97,6 +97,7 @@ namespace BloomTests.Book
 
 			AssertThatXmlIn.String(page1Data).HasNoMatchForXpath("//xhtml:script", mgr2);
 			AssertThatXmlIn.String(page1Data).HasNoMatchForXpath("//*[@lang='*']");
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//img[@src='my_image.png']");
 
 			mgr2.AddNamespace("epub", "http://www.idpf.org/2007/ops");
 			var navPage = packageDoc.Root.Element(opf + "manifest").Elements(opf + "item").Last().Attribute("href").Value;

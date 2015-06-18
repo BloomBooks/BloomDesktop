@@ -16,6 +16,8 @@ namespace Bloom.Book
 		private readonly IBookStorage _storage;
 		private HashSet<string> _idsUsed = new HashSet<string>();
 		private Dictionary<string, string> _mapItemToId = new Dictionary<string, string>();
+		private Dictionary<string, string>  _mapSrcPathToDestFileName = new Dictionary<string, string>();
+		Dictionary<string, string> _mapChangedFileNames = new Dictionary<string, string>();
 		private List<string> _manifestItems;
 		private List<string> _spineItems;
 		private string _firstContentPageItem;
@@ -64,6 +66,8 @@ namespace Bloom.Book
 					RemoveSpuriousLinks(pageDom);
 					RemoveScripts(pageDom);
 					FixIllegalIds(pageDom);
+					// Since we only allow one htm file in a book folder, I don't think there is any
+					// way this name can clash with anything else.
 					var pageDocName = pageIndex + ".xhtml";
 
 					// Manifest has to include all referenced files
@@ -75,14 +79,7 @@ namespace Bloom.Book
 						var imgName = srcAttr.Value;
 						// Images are always directly in the folder
 						var srcPath = Path.Combine(_book.FolderPath, imgName);
-						var dstPath = Path.Combine(_contentFolder, imgName);
-						if (!File.Exists(dstPath))
-						{
-							// we deleted the dest folder above, so if the file is already there,
-							// it must be a duplicate reference. We don't want a duplicate manifest item.
-							File.Copy(srcPath, dstPath);
-							_manifestItems.Add(imgName);
-						}
+						CopyFileToEpub(srcPath);
 					}
 
 					_manifestItems.Add(pageDocName);
@@ -109,12 +106,13 @@ namespace Bloom.Book
 							});
 							//var path = this.GetFileLocator().LocateFileWithThrow(name);
 							var path = fl.LocateFileWithThrow(name);
-							File.Copy(path, Path.Combine(_contentFolder, name));
-							_manifestItems.Add(name);
+							CopyFileToEpub(path);
 						}
 					}
 					if (pageIndex == firstContentPageIndex)
 						_firstContentPageItem = pageDocName;
+
+					FixChangedFileNames(pageDom);
 
 					// epub validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
 					pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
@@ -194,6 +192,46 @@ namespace Bloom.Book
 					zip.AddDirectory(dir);
 				zip.Save();
 			}
+		}
+
+		private void FixChangedFileNames(HtmlDom pageDom)
+		{
+			foreach (var attr in new[] {"src", "href"})
+			{
+				foreach (var node in pageDom.RawDom.SafeSelectNodes("//*[@" + attr + "]"))
+				{
+					var elt = node as XmlElement;
+					if (elt == null)
+						continue;
+					var oldName = elt.Attributes[attr].Value;
+					string newName;
+					if (_mapChangedFileNames.TryGetValue(oldName, out newName))
+						elt.SetAttribute(attr, newName);
+				}
+			}
+		}
+
+		private void CopyFileToEpub(string srcPath)
+		{
+			if (_mapSrcPathToDestFileName.ContainsKey(srcPath))
+				return; // File already present, must be used more than once.
+			// Validator warns against spaces in filenames.
+			var originalFileName = Path.GetFileName(srcPath);
+			string fileName = originalFileName.Replace(" ", "_");
+			var dstPath = Path.Combine(_contentFolder, fileName);
+			// We deleted the root directory at the start, so if the file is already
+			// there it is a clash, either multiple sources for files with the same name,
+			// or produced by replacing spaces, or something. Come up with a similar unique name.
+			for (int fix = 1; File.Exists(dstPath); fix++)
+			{
+				fileName = fileName + fix;
+				dstPath = Path.Combine(_contentFolder, fileName);
+			}
+			if (originalFileName != fileName)
+				_mapChangedFileNames[originalFileName] = fileName;
+			File.Copy(srcPath, dstPath);
+			_manifestItems.Add(fileName);
+			_mapSrcPathToDestFileName[srcPath] = fileName;
 		}
 
 		// The validator is (probably excessively) upset about IDs that start with numbers.
