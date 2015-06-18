@@ -646,5 +646,10 @@ namespace Bloom.Publish
 				Application.DoEvents(); // Wish we didn't need this, but without it bulk upload freezes making 'preview' which is really the PDF to upload.
 			}
 		}
+
+		private void _epubButton_Click(object sender, EventArgs e)
+		{
+			_model.SaveAsEpub();
+		}
 	}
 }

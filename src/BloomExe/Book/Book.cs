@@ -795,7 +795,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// THe bloomBookId meta value
 		/// </summary>
-		public string ID { get { return _storage.Dom.GetMetaValue("bloomBookId", ""); } }
+		public string ID { get { return _storage.MetaData.Id; } }
 
 		private void UpdateImageMetadataAttributes(XmlElement imgNode)
 		{
@@ -1258,7 +1258,7 @@ namespace Bloom.Book
 		/// Make stuff readonly, which isn't doable via css, surprisingly
 		/// </summary>
 		/// <param name="dom"></param>
-		private void AddPreviewJScript(HtmlDom dom)
+		internal void AddPreviewJScript(HtmlDom dom)
 		{
 //			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
 //			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.js"));
@@ -1610,7 +1610,7 @@ namespace Bloom.Book
 			return true;
 		}
 
-		private XmlNodeList GetPageElements()
+		internal XmlNodeList GetPageElements()
 		{
 			return OurHtmlDom.SafeSelectNodes("/html/body//div[contains(@class,'bloom-page')]");
 		}
@@ -1625,7 +1625,7 @@ namespace Bloom.Book
 				&& indexOfItemAfterRelocation < upperBounds;
 		}
 
-		private int GetIndexLastFrontkMatterPage()
+		internal int GetIndexLastFrontkMatterPage()
 		{
 			XmlElement lastFrontMatterPage =
 				OurHtmlDom.RawDom.SelectSingleNode("(/html/body/div[contains(@class,'bloom-frontMatter')])[last()]") as XmlElement;
@@ -2020,89 +2020,7 @@ namespace Bloom.Book
 
 		public void SaveEpub(string destinationEpubPath)
 		{
-			var stagingDirectory = Path.GetDirectoryName(destinationEpubPath);
-			{
-				var contentFolder = Path.Combine(stagingDirectory,"Content");
-				Directory.CreateDirectory(contentFolder);
-				var pageIndex=0;
-				foreach (XmlElement pageElement in this.GetPageElements())
-				{
-					//var id = pageElement.GetAttribute("id");
-					
-					++pageIndex;
-					var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
-					pageDom.RemoveModeStyleSheets();
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
-
-					pageDom.SortStyleSheetLinks();
-					AddPreviewJScript(pageDom);
-					pageDom.AddPublishClassToBody();
-
-					MakeCssLinksAppropriateForEpub(pageDom);
-					File.WriteAllText(Path.Combine(contentFolder, pageIndex + ".xhtml"), pageDom.RawDom.OuterXml);
-
-					// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
-					//to look at those stylesheets on the first page
-					if (pageIndex == 1)
-					{
-						//css
-						foreach(XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
-						{
-							var href = Path.Combine(this.FolderPath, link.GetAttribute("href"));
-							var name = Path.GetFileName(href);
-							
-							var fl = new FileLocator(new string[]
-											{
-												this.FolderPath, //the book folder
-												Path.GetDirectoryName(this.FolderPath), // the parent colllection folder
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
-												FileLocator.GetDirectoryDistributedWithApplication( "xMatter")
-											});
-							//var path = this.GetFileLocator().LocateFileWithThrow(name);
-							var path = fl.LocateFileWithThrow(name);
-							File.Copy(path, Path.Combine(contentFolder, name));
-						}
-					}
-				}
-
-
-
-				//supporting files
-				var metaInfFolder = Path.Combine(stagingDirectory, "META-INF");
-				Directory.CreateDirectory(metaInfFolder);
-				var containerXmlPath = Path.Combine(metaInfFolder, "Container.xml");
-				File.WriteAllText(containerXmlPath,@"<?xml version='1.0' encoding='utf-8'?>
-					<container version='1.0' xmlns='urn:oasis:names:tc:opendocument:xmlns:container'>
-					<rootfiles>
-					<rootfile full-path='content/content.opf' media-type='application/oebps-package+xml'/>
-					</rootfiles>
-					</container>");
-			}
+			new EpubMaker(this, _storage).SaveEpub(destinationEpubPath);
 		}
-		private static void MakeCssLinksAppropriateForEpub(HtmlDom dom)
-		{
-			dom.RemoveModeStyleSheets();
-			dom.AddStyleSheet("previewMode.css");
-			dom.AddStyleSheet("basePage.css");
-			dom.AddStyleSheet("origami.css");
-			//EnsureHasLinksToStylesheets(dom);
-			dom.SortStyleSheetLinks();
-			dom.RemoveFileProtocolFromStyleSheetLinks();
-			dom.RemoveDirectorySpecificationFromStyleSheetLinks();
-		}
-		private HtmlDom GetEpubFriendlyHtmlDomForPage(XmlElement page)
-		{
-			var headXml = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
-			var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");
-			dom = _storage.MakeDomRelocatable(dom, _log);
-			var body = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
-			var pageDom = dom.RawDom.ImportNode(page, true);
-			body.AppendChild(pageDom);
-			return dom;
-		}
-
 	}
 }

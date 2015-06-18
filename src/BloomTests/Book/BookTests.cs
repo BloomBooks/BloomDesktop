@@ -34,7 +34,7 @@ namespace BloomTests.Book
 		private TemporaryFolder _testFolder;
 		private TemporaryFolder _tempFolder;
 		private CollectionSettings _collectionSettings;
-		private HtmlDom _bookDom;
+		protected HtmlDom _bookDom;
 		private BookInfo _metadata;
 
 		[SetUp]
@@ -1246,7 +1246,7 @@ namespace BloomTests.Book
 			Assert.AreEqual("English", langs.InnerText);
 		}
 
-		private void MakeSamplePngImageWithMetadata(string path)
+		protected void MakeSamplePngImageWithMetadata(string path)
 		{
 			var x = new Bitmap(10, 10);
 			x.Save(path, ImageFormat.Png);

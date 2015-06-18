@@ -468,5 +468,29 @@ namespace Bloom.Publish
 ////	            yield return pageDom;
 ////	        }
 //	    }
+
+		internal void SaveAsEpub()
+		{
+			using (var dlg = new SaveFileDialog())
+			{
+				if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
+					dlg.InitialDirectory = _lastDirectory;
+
+				string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(BookSelection.CurrentSelection.FolderPath),
+													 _collectionSettings.GetLanguage1Name("en"));
+				dlg.FileName = suggestedName;
+				dlg.Filter = "EPUB|*.epub";
+				if (DialogResult.OK == dlg.ShowDialog())
+				{
+					_lastDirectory = Path.GetDirectoryName(dlg.FileName);
+					BookSelection.CurrentSelection.SaveEpub(dlg.FileName);
+					//Analytics.Track("Save PDF", new Dictionary<string, string>()
+					//		{
+					//			{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},
+					//			{"Layout", PageLayout.ToString()}
+					//		});
+				}
+			}
+		}
 	}
 }
