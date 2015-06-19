@@ -1,4 +1,4 @@
-@import "../../../distfiles/less/common-mixins.less";
+@import "../../../DistFiles/less/common-mixins.less";
 
 .Browser-Reset() {
 	/*+init {*/
@@ -230,12 +230,12 @@ preview.css.
 }
 
 .marginBox {
-  .SetMarginBox(@PageWidth, @PageHeight) {
+	.SetMarginBox(@PageWidth, @PageHeight) {
 		height: @PageHeight - (@MarginTop + @MarginBottom);
-    width: @PageWidth - ( @MarginOuter + @MarginInner );
-    IMG { /* BL-1022 Keeps XMatter thumb images from going too wide */
-            max-width: @PageWidth - ( @MarginOuter + @MarginInner );
-    }
+		width: @PageWidth - ( @MarginOuter + @MarginInner );
+		IMG { /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+			max-width: @PageWidth - ( @MarginOuter + @MarginInner );
+		}
 	}
 	
 	.A4Portrait & {
