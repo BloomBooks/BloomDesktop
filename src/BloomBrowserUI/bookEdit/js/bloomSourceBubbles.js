@@ -12,7 +12,17 @@ var bloomSourceBubbles = (function () {
         //}
         return $.trim($(obj).text()).length == 0;
     };
+    // Call this after source bubble is displayed to scroll the current tab into view
+    bloomSourceBubbles.ShowCurrentTab = function () {
+        var activeTabs = $("body").find(".ui-sourceTextsForBubble li.active");
+        if (activeTabs.length) {
+            activeTabs.each(function () {
+                this.scrollIntoView();
+            });
+        }
+    };
     //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
+    // param 'group' is a .bloom-translationGroup DIV
     bloomSourceBubbles.MakeSourceTextDivForGroup = function (group) {
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
@@ -102,7 +112,6 @@ var bloomSourceBubbles = (function () {
             $(divForBubble).remove(); //no tabs, so hide the bubble
             return;
         }
-        // Make sure selected tab is in view
         var showEvents = false;
         var hideEvents = false;
         var showEventsStr;
@@ -160,6 +169,10 @@ var bloomSourceBubbles = (function () {
                             $tip.addClass('passive-bubble');
                             $tip.attr('data-max-height', maxHeight);
                         }
+                    },
+                    visible: function (event, api) {
+                        // After the qtip becomes visible, show the current tab
+                        bloomSourceBubbles.ShowCurrentTab();
                     }
                 }
             });

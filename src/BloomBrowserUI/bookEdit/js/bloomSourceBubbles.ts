@@ -28,9 +28,19 @@ class bloomSourceBubbles {
         return $.trim($(obj).text()).length == 0;
     }
 
-    //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
-    public static MakeSourceTextDivForGroup(group: HTMLElement): void {
+    // Call this after source bubble is displayed to scroll the current tab into view
+    private static ShowCurrentTab(): void {
+        var activeTabs = $("body").find(".ui-sourceTextsForBubble li.active");
+        if (activeTabs.length) {
+            activeTabs.each(function() {
+                this.scrollIntoView();
+            });
+        }
+    }
 
+    //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
+    // param 'group' is a .bloom-translationGroup DIV
+    public static MakeSourceTextDivForGroup(group: HTMLElement): void {
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
         var divForBubble = $(group).clone();
@@ -127,23 +137,17 @@ class bloomSourceBubbles {
                 animate: false,
                 defaultTab: selectorOfDefaultTab
             });
-            //        $(divForBubble).bind('easytabs:after', function(event, tab, panel, settings){
-            //            alert(panel.selector)
-            //        });
-
         }
         else {
             $(divForBubble).remove();//no tabs, so hide the bubble
             return;
         }
-        // TODO: Make sure selected tab is in view
 
         var showEvents = false;
         var hideEvents = false;
         var showEventsStr;
         var hideEventsStr;
         var shouldShowAlways = true;
-
 
         if(bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($(group))) {
             showEvents = true;
@@ -185,7 +189,6 @@ class bloomSourceBubbles {
                 hide: (hideEvents ? hideEventsStr : hideEvents),
                 events: {
                     show: function(event, api) {
-
                         // don't need to do this if there is only one editable area
                         var $body: JQuery = $('body');
                         if ($body.find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").length < 2) return;
@@ -203,6 +206,10 @@ class bloomSourceBubbles {
                             $tip.addClass('passive-bubble');
                             $tip.attr('data-max-height', maxHeight)
                         }
+                    },
+                    visible: function(event, api) {
+                        // After the qtip becomes visible, show the current tab
+                        bloomSourceBubbles.ShowCurrentTab();
                     }
                 }
             });
