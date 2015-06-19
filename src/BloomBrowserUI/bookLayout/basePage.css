@@ -224,7 +224,7 @@ preview.css.
   width: 170mm;
 }
 .A4Portrait .marginBox IMG {
-  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
   max-width: 170mm;
 }
 .A4Landscape .marginBox {
@@ -232,7 +232,7 @@ preview.css.
   width: 257mm;
 }
 .A4Landscape .marginBox IMG {
-  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
   max-width: 257mm;
 }
 .A5Portrait .marginBox {
@@ -240,7 +240,7 @@ preview.css.
   width: 108mm;
 }
 .A5Portrait .marginBox IMG {
-  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
   max-width: 108mm;
 }
 .A5Landscape .marginBox {
@@ -248,7 +248,7 @@ preview.css.
   width: 170mm;
 }
 .A5Landscape .marginBox IMG {
-  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
   max-width: 170mm;
 }
 .A6Portrait .marginBox {
@@ -256,7 +256,7 @@ preview.css.
   width: 65mm;
 }
 .A6Portrait .marginBox IMG {
-  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
   max-width: 65mm;
 }
 .A6Landscape .marginBox {
@@ -264,7 +264,7 @@ preview.css.
   width: 108mm;
 }
 .A6Landscape .marginBox IMG {
-  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
   max-width: 108mm;
 }
 .B5Portrait .marginBox {
@@ -272,7 +272,7 @@ preview.css.
   width: 136mm;
 }
 .B5Portrait .marginBox IMG {
-  /* BL-1022 Keeps XMatter thumb images from going too wide */
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
   max-width: 136mm;
 }
 .publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {

@@ -20,6 +20,9 @@
          //Just center the margin box, (for now, we're ignoring the binding) 
           left: @MarginOuter;
           width:  @PageWidth - (2 * @MarginOuter);
+          IMG { /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+              max-width: @PageWidth - (2 * @MarginOuter);
+          }
       }
       .A4Portrait& {
           .SetMarginBoxCover(@A4Portrait-Height, @A4Portrait-Width);
