@@ -89,7 +89,7 @@ class bloomSourceBubbles {
            $(this).after(divForBubble);
          */
 
-        var selectorOfDefaultTab="ul>li:first-child";
+        var selectorOfDefaultTab="li:first-child";
 
         var vernacularLang = localizationManager.getVernacularLang();
 

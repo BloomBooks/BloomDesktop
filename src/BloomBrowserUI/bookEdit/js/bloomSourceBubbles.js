@@ -20,7 +20,7 @@ var bloomSourceBubbles = (function () {
                 // GJM 6/22/15: This scrolling does put the active tab in view (horizontal scrolling)
                 // However, it also scrolls the whole page up in Bloom by about 2mm. I haven't
                 // discovered yet how to avoid this.
-                this.scrollIntoView();
+                this.parentNode.scrollLeft = $(this).offset().left;
             });
         }
     };
@@ -64,7 +64,7 @@ var bloomSourceBubbles = (function () {
         /* removed june 12 2013 was dying with new jquery as this was Window and that had no OwnerDocument
            $(this).after(divForBubble);
          */
-        var selectorOfDefaultTab = "ul>li:first-child";
+        var selectorOfDefaultTab = "li:first-child";
         var vernacularLang = localizationManager.getVernacularLang();
         //make the li's for the source text elements in this new div, which will later move to a tabbed bubble
         // divForBubble is a single cloned bloom-translationGroup, so no need for .each() here
