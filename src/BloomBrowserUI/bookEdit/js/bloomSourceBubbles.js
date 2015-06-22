@@ -20,7 +20,7 @@ var bloomSourceBubbles = (function () {
                 // GJM 6/22/15: This scrolling does put the active tab in view (horizontal scrolling)
                 // However, it also scrolls the whole page up in Bloom by about 2mm. I haven't
                 // discovered yet how to avoid this.
-                this.parentNode.scrollLeft = $(this).offset().left;
+                this.scrollIntoView();
             });
         }
     };
