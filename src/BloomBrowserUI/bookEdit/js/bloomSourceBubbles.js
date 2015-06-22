@@ -17,6 +17,9 @@ var bloomSourceBubbles = (function () {
         var activeTabs = $("body").find(".ui-sourceTextsForBubble li.active");
         if (activeTabs.length) {
             activeTabs.each(function () {
+                // GJM 6/22/15: This scrolling does put the active tab in view (horizontal scrolling)
+                // However, it also scrolls the whole page up in Bloom by about 2mm. I haven't
+                // discovered yet how to avoid this.
                 this.scrollIntoView();
             });
         }
@@ -105,7 +108,8 @@ var bloomSourceBubbles = (function () {
         if ($(divForBubble).find("li").length > 0) {
             $(divForBubble).easytabs({
                 animate: false,
-                defaultTab: selectorOfDefaultTab
+                defaultTab: selectorOfDefaultTab,
+                tabs: "> nav > ul > li"
             });
         }
         else {
