@@ -28,33 +28,49 @@ class bloomSourceBubbles {
         return $.trim($(obj).text()).length == 0;
     }
 
-    //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
-    public static MakeSourceTextDivForGroup(group: HTMLElement): void {
+    // Call this after source bubble is displayed to scroll the current tab into view
+    private static ShowCurrentTab(): void {
+        var activeTabs = $("body").find(".ui-sourceTextsForBubble li.active");
+        if (activeTabs.length) {
+            activeTabs.each(function() {
+                // GJM 6/22/15: This scrolling does put the active tab in view (horizontal scrolling)
+                // However, it also scrolls the whole page up in Bloom by about 2mm. I haven't
+                // discovered yet how to avoid this.
+                this.scrollIntoView();
+            });
+        }
+    }
 
+    //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
+    // param 'group' is a .bloom-translationGroup DIV
+    public static MakeSourceTextDivForGroup(group: HTMLElement): void {
+        // Copy source texts out to their own div, where we can make a bubble with tabs out of them
+        // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
         var divForBubble = $(group).clone();
         $(divForBubble).removeAttr('style');
+        $(divForBubble).removeClass(); //remove them all
+        $(divForBubble).addClass("ui-sourceTextsForBubble");
 
         //make the source texts in the bubble read-only and remove any user font size adjustments
         $(divForBubble).find("textarea, div").each(function() {
+            //don't want empty items in the bubble
+            if(bloomSourceBubbles.hasNoText(this)) {
+                $(this).remove();
+                return true; // skip to next iteration of each()
+            }
             $(this).attr("readonly", "readonly");
             $(this).removeClass('bloom-editable');
-            $(this).removeClass('overflow'); // don't want red in source text bubbles
             $(this).attr("contenteditable", "false");
+
+            // don't want red in source text bubbles
+            $(this).removeClass('overflow');
+            $(this).removeClass('thisOverflowingParent');
+            $(this).removeClass('childOverflowingThis');
+
             var styleClass = GetStyleClassFromElement(this);
             if (styleClass)
                 $(this).removeClass(styleClass);
             $(this).addClass("source-text");
-        });
-
-        var vernacularLang = localizationManager.getVernacularLang();
-
-        $(divForBubble).removeClass(); //remove them all
-        $(divForBubble).addClass("ui-sourceTextsForBubble");
-        //don't want empty items in the bubble
-        $(divForBubble).find("textarea, div").each(function() {
-            if(bloomSourceBubbles.hasNoText(this)) {
-                $(this).remove();
-            }
         });
 
         //don't want the vernacular or languages in use for bilingual/trilingual boxes to be shown in the bubble
@@ -69,62 +85,62 @@ class bloomSourceBubbles {
         if ($(divForBubble).find("textarea, div").length == 0)
             return;
 
-        /* removed june 12 2013 was dying with new jquery as this was Window and that had no OwnerDocument    $(this).after(divForBubble);*/
+        /* removed june 12 2013 was dying with new jquery as this was Window and that had no OwnerDocument
+           $(this).after(divForBubble);
+         */
 
         var selectorOfDefaultTab="li:first-child";
 
+        var vernacularLang = localizationManager.getVernacularLang();
+
         //make the li's for the source text elements in this new div, which will later move to a tabbed bubble
-        $(divForBubble).each(function () {
-            $(this).prepend('<ul class="editTimeOnly bloom-ui"></ul>');
-            var list = $(this).find('ul');
-            //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
-            //it's just a one-line change.
-            var items = $(this).find("textarea, div");
-            (<arraySort>items).sort(function(a, b) {
-                var keyA = $(a).attr('lang');
-                var keyB = $(b).attr('lang');
-                if (keyA === vernacularLang)
-                    return -1;
-                if (keyB === vernacularLang)
-                    return 1;
-                if (keyA < keyB)
-                    return -1;
-                if (keyA > keyB)
-                    return 1;
-                return 0;
-            });
-            var shellEditingMode = false;
-            items.each(function() {
-                var iso = $(this).attr('lang');
-                if (iso) {
-                    var languageName = localizationManager.getLanguageName(iso);
-                    if (!languageName)
-                        languageName = iso;
-                    var shouldShowOnPage = (iso === vernacularLang) /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
+        // divForBubble is a single cloned bloom-translationGroup, so no need for .each() here
+        var $this = $(divForBubble[0]);
+        $this.prepend('<nav><ul class="editTimeOnly bloom-ui"></ul></nav>');
+        var list = $this.find('ul');
+        //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
+        //it's just a one-line change.
+        var items = $this.find("textarea, div");
+        (<arraySort>items).sort(function(a, b) {
+            var keyA = $(a).attr('lang');
+            var keyB = $(b).attr('lang');
+            if (keyA === vernacularLang)
+                return -1;
+            if (keyB === vernacularLang)
+                return 1;
+            if (keyA < keyB)
+                return -1;
+            if (keyA > keyB)
+                return 1;
+            return 0;
+        });
+        var shellEditingMode = false;
+        items.each(function() {
+            var iso = $(this).attr('lang');
+            if (iso) {
+                var languageName = localizationManager.getLanguageName(iso);
+                if (!languageName)
+                    languageName = iso;
+                var shouldShowOnPage = (iso === vernacularLang) /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
 
-                    // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
-                    if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
+                // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
+                if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
 
-                        $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
-                        if (iso === GetSettings().defaultSourceLanguage) {
-                            selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
-                        }
+                    $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
+                    if (iso === GetSettings().defaultSourceLanguage) {
+                        selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
                     }
                 }
-            });
+            }
         });
 
         //now turn that new div into a set of tabs
-        // Review: as of 9 May 2014 the tab links have turned into bulleted links
         if ($(divForBubble).find("li").length > 0) {
             (<easytabsInterface>$(divForBubble)).easytabs({
                 animate: false,
-                defaultTab: selectorOfDefaultTab
+                defaultTab: selectorOfDefaultTab,
+                tabs: "> nav > ul > li"
             });
-            //        $(divForBubble).bind('easytabs:after', function(event, tab, panel, settings){
-            //            alert(panel.selector)
-            //        });
-
         }
         else {
             $(divForBubble).remove();//no tabs, so hide the bubble
@@ -136,7 +152,6 @@ class bloomSourceBubbles {
         var showEventsStr;
         var hideEventsStr;
         var shouldShowAlways = true;
-
 
         if(bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($(group))) {
             showEvents = true;
@@ -178,7 +193,6 @@ class bloomSourceBubbles {
                 hide: (hideEvents ? hideEventsStr : hideEvents),
                 events: {
                     show: function(event, api) {
-
                         // don't need to do this if there is only one editable area
                         var $body: JQuery = $('body');
                         if ($body.find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").length < 2) return;
@@ -196,6 +210,10 @@ class bloomSourceBubbles {
                             $tip.addClass('passive-bubble');
                             $tip.attr('data-max-height', maxHeight)
                         }
+                    },
+                    visible: function(event, api) {
+                        // After the qtip becomes visible, show the current tab
+                        bloomSourceBubbles.ShowCurrentTab();
                     }
                 }
             });
