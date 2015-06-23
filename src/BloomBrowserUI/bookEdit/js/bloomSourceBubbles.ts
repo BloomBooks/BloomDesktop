@@ -85,18 +85,12 @@ class bloomSourceBubbles {
         if ($(divForBubble).find("textarea, div").length == 0)
             return;
 
-        /* removed june 12 2013 was dying with new jquery as this was Window and that had no OwnerDocument
-           $(this).after(divForBubble);
-         */
-
-        var selectorOfDefaultTab="li:first-child";
-
         var vernacularLang = localizationManager.getVernacularLang();
 
         //make the li's for the source text elements in this new div, which will later move to a tabbed bubble
         // divForBubble is a single cloned bloom-translationGroup, so no need for .each() here
         var $this = $(divForBubble[0]);
-        $this.prepend('<nav><ul class="editTimeOnly bloom-ui"></ul></nav>');
+        $this.prepend('<nav><ul class="editTimeOnly bloom-ui"></ul></nav>'); // build the tabs here
         var list = $this.find('ul');
         //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
         //it's just a one-line change.
@@ -114,6 +108,8 @@ class bloomSourceBubbles {
                 return 1;
             return 0;
         });
+
+        var selectorOfDefaultTab="li:first-child";
         var shellEditingMode = false;
         items.each(function() {
             var iso = $(this).attr('lang');
@@ -134,16 +130,25 @@ class bloomSourceBubbles {
             }
         });
 
+        bloomSourceBubbles.TurnDivIntoTabbedBubbleWithToolTips(group, divForBubble, selectorOfDefaultTab);
+    } // end MakeSourceTextDivForGroup()
+
+    // Turns the cloned div 'divForBubble' into a tabbed bundle with tab corresponding to 'selectorOfDefaultTab'
+    // selected.
+    // Then turns that bundle into a qtip bubble attached to 'group'.
+    // Then makes sure the tooltips are setup correctly.
+    private static TurnDivIntoTabbedBubbleWithToolTips(group: HTMLElement, divForBubble: JQuery, selectorOfDefaultTab: string): void {
+        var $group = $(group);
         //now turn that new div into a set of tabs
-        if ($(divForBubble).find("li").length > 0) {
-            (<easytabsInterface>$(divForBubble)).easytabs({
+        if (divForBubble.find("li").length > 0) {
+            (<easytabsInterface>divForBubble).easytabs({
                 animate: false,
                 defaultTab: selectorOfDefaultTab,
                 tabs: "> nav > ul > li"
             });
         }
         else {
-            $(divForBubble).remove();//no tabs, so hide the bubble
+            divForBubble.remove();//no tabs, so hide the bubble
             return;
         }
 
@@ -153,7 +158,7 @@ class bloomSourceBubbles {
         var hideEventsStr;
         var shouldShowAlways = true;
 
-        if(bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($(group))) {
+        if(bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group)) {
             showEvents = true;
             showEventsStr = 'focusin';
             hideEvents = true;
@@ -162,7 +167,7 @@ class bloomSourceBubbles {
         }
 
         // turn that tab thing into a bubble, and attach it to the original div ("group")
-        $(group).each(function () {
+        $group.each(function () {
             // var targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
 
             var $this: qtipInterface = <qtipInterface>$(this);
@@ -176,7 +181,7 @@ class bloomSourceBubbles {
                         y: 0
                     }
                 },
-                content: $(divForBubble),
+                content: divForBubble,
 
                 show: {
                     event: (showEvents ? showEventsStr : showEvents),
@@ -218,32 +223,34 @@ class bloomSourceBubbles {
                 }
             });
 
-            // BL-878: show the full-size tool tip when the text area has focus
-            $this.find('.bloom-editable').focus(function(event) {
+            bloomSourceBubbles.SetupTooltips($this);
+        });
+    }
 
-                // reset tool tips that may be expanded
-                var $body = $('body');
-                $body.find('.qtip[data-max-height]').each(function(idx, obj) {
-                    var $thisTip = $(obj);
-                    $thisTip.css('max-height', parseInt($thisTip.attr('data-max-height')));
-                    $thisTip.css('z-index', 15001);
-                    $thisTip.addClass('passive-bubble');
-                });
+    private static SetupTooltips(editableDiv: JQuery): void
+    {
+        // BL-878: show the full-size tool tip when the text area has focus
+        editableDiv.find('.bloom-editable').focus(function(event) {
 
-                // show the full tip, if needed
-                var tipId = event.target.parentNode.getAttribute('aria-describedby');
-                var $tip = $body.find('#' + tipId);
-                var maxHeight = $tip.attr('data-max-height');
-
-                if (maxHeight) {
-                    $tip.css('max-height', '');
-                    $tip.css('z-index', 15002);
-                    $tip.removeClass('passive-bubble');
-                }
-
-                //event.stopPropagation();
-                //event.preventDefault();
+            // reset tool tips that may be expanded
+            var $body = $('body');
+            $body.find('.qtip[data-max-height]').each(function(idx, obj) {
+                var $thisTip = $(obj);
+                $thisTip.css('max-height', parseInt($thisTip.attr('data-max-height')));
+                $thisTip.css('z-index', 15001);
+                $thisTip.addClass('passive-bubble');
             });
+
+            // show the full tip, if needed
+            var tipId = event.target.parentNode.getAttribute('aria-describedby');
+            var $tip = $body.find('#' + tipId);
+            var maxHeight = $tip.attr('data-max-height');
+
+            if (maxHeight) {
+                $tip.css('max-height', '');
+                $tip.css('z-index', 15002);
+                $tip.removeClass('passive-bubble');
+            }
         });
     }
 }
