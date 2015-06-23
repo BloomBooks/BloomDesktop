@@ -65,5 +65,10 @@ namespace Bloom.Edit
 			return Caption;
 
 		}
+
+		public int GetIndex()
+		{
+			return -1;
+		}
 	}
 }

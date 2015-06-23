@@ -184,7 +184,7 @@ namespace Bloom.WebLibraryIntegration
 			fileSystemInfo.Delete();
 		}
 
-		private readonly string[] excludedFileNames = { "thumbs.db" }; // these files (if encountered) won't be uploaded
+		private readonly string[] excludedFileNames = { "thumbs.db", "book.userprefs" }; // these files (if encountered) won't be uploaded
 
 		/// <summary>
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
