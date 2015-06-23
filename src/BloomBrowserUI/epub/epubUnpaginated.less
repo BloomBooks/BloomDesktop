@@ -1,0 +1,40 @@
+﻿body {
+  line-height: 1.5;
+  font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
+  /*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
+Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
+Therefore, in the editMode.css, we repeat this, but with a 2% larger size.
+So if you change this, change it there. Note, this might not be the best long-term solution
+To handling the mis-match.*/
+  font-size: 10pt;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
+  order: 0;
+  font-size: 250%;
+  line-height: 1.4em;
+  margin-bottom: 5px;
+}
+
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable {
+  height: auto;
+  justify-content: center;
+}
+
+.Title-On-Cover-style {
+  text-align: center;
+}
+
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
+  order: 1;
+  font-size: 120%;
+  line-height: 1.7em;
+  margin-bottom: 5px;
+}
+
+.credits .licenseAndCopyrightBlock img,
+.verso .licenseAndCopyrightBlock img,
+.credits #versoLicenseAndCopyright img,
+.verso #versoLicenseAndCopyright img {
+  height: 31px;
+}

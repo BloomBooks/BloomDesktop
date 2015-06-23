@@ -302,6 +302,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/split-pane");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/epub");
 		}
 
 		/// <summary>

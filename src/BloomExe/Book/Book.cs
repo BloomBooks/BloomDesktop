@@ -2020,7 +2020,11 @@ namespace Bloom.Book
 
 		public void SaveEpub(string destinationEpubPath)
 		{
-			new EpubMaker(this, _storage).SaveEpub(destinationEpubPath);
+			var epubMaker = new EpubMaker(this);
+			epubMaker.Unpaginated = true; // Todo: UI?
+			epubMaker.SaveEpub(destinationEpubPath);
 		}
+
+		internal IBookStorage Storage {get { return _storage; }}
 	}
 }

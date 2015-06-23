@@ -25,10 +25,15 @@ namespace Bloom.Book
 		private string _contentFolder;
 		private string _navFileName;
 
-		public EpubMaker(Book book, IBookStorage storage)
+		/// <summary>
+		/// Set to true for unpaginated output.
+		/// </summary>
+		public bool Unpaginated { get; set; }
+
+		public EpubMaker(Book book)
 		{
 			_book = book;
-			_storage = storage;
+			_storage = _book.Storage;
 		}
 
 		public void SaveEpub(string destinationEpubPath)
@@ -54,12 +59,21 @@ namespace Bloom.Book
 					++pageIndex;
 					var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
 					pageDom.RemoveModeStyleSheets();
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
+					if (Unpaginated)
+					{
+						RemoveRegularStylesheets(pageDom);
+						pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"epubUnpaginated.css").ToLocalhost());
+					}
+					else
+					{
+						pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
+						pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
+						pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
+					}
+
+					RemoveUnwantedContent(pageDom);
 
 					pageDom.SortStyleSheetLinks();
-					_book.AddPreviewJScript(pageDom);
 					pageDom.AddPublishClassToBody();
 
 					MakeCssLinksAppropriateForEpub(pageDom);
@@ -96,14 +110,7 @@ namespace Bloom.Book
 							var href = Path.Combine(_book.FolderPath, link.GetAttribute("href"));
 							var name = Path.GetFileName(href);
 
-							var fl = new FileLocator(new string[]
-							{
-								_book.FolderPath, //the book folder
-								Path.GetDirectoryName(_book.FolderPath), // the parent colllection folder
-								FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"),
-								FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book"),
-								FileLocator.GetDirectoryDistributedWithApplication("xMatter")
-							});
+							var fl = _book.Storage.GetFileLocator();
 							//var path = this.GetFileLocator().LocateFileWithThrow(name);
 							var path = fl.LocateFileWithThrow(name);
 							CopyFileToEpub(path);
@@ -117,6 +124,7 @@ namespace Bloom.Book
 					// epub validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
 					pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
 					File.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
+
 				}
 
 				MakeNavPage();
@@ -194,6 +202,70 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
+		/// </summary>
+		/// <param name="pageDom"></param>
+		private void RemoveUnwantedContent(HtmlDom pageDom)
+		{
+			// Remove bloom-editable material not in one of the interesting languages
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//div").Cast<XmlElement>().ToArray())
+			{
+				if (!HasClass(elt, "bloom-editable"))
+					continue;
+				var langAttr = elt.Attributes["lang"];
+				var lang = langAttr == null ? null : langAttr.Value;
+				if (lang == _book.MultilingualContentLanguage2 || lang == _book.MultilingualContentLanguage3 ||
+					lang == _book.CollectionSettings.Language1Iso639Code)
+					continue; // keep these
+				if (lang == _book.CollectionSettings.Language2Iso639Code && IsInXMatterPage(elt))
+					continue;
+				elt.ParentNode.RemoveChild(elt);
+			}
+			// Remove and left-over bubbles
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//label").Cast<XmlElement>().ToArray())
+			{
+				if (HasClass(elt, "bubble"))
+					elt.ParentNode.RemoveChild(elt);
+			}
+			// Remove page labels
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//div").Cast<XmlElement>().ToArray())
+			{
+				if (HasClass(elt, "pageLabel"))
+					elt.ParentNode.RemoveChild(elt);
+			}
+		}
+
+		private bool IsInXMatterPage(XmlElement elt)
+		{
+			while (elt != null)
+			{
+				if (HasClass(elt, "bloom-page"))
+					return HasClass(elt, "bloom-frontMatter") || HasClass(elt, "bloom-backMatter");
+				elt = elt.ParentNode as XmlElement;
+			}
+			return false;
+		}
+
+		bool HasClass(XmlElement elt, string className)
+		{
+			var classAttr = elt.Attributes["class"];
+			if (classAttr == null)
+				return false;
+			return ((" " + classAttr.Value + " ").Contains(" " + className + " "));
+		}
+
+		private void RemoveRegularStylesheets(HtmlDom pageDom)
+		{
+			foreach (XmlElement link in pageDom.RawDom.SafeSelectNodes("//head/link").Cast<XmlElement>().ToArray())
+			{
+				var href = link.Attributes["href"];
+				if (href != null && href.Value.StartsWith("custom"))
+					continue;
+				link.ParentNode.RemoveChild(link);
+			}
+		}
+
 		private void FixChangedFileNames(HtmlDom pageDom)
 		{
 			foreach (var attr in new[] {"src", "href"})
@@ -229,9 +301,14 @@ namespace Bloom.Book
 			}
 			if (originalFileName != fileName)
 				_mapChangedFileNames[originalFileName] = fileName;
-			File.Copy(srcPath, dstPath);
+			CopyFile(srcPath, dstPath);
 			_manifestItems.Add(fileName);
 			_mapSrcPathToDestFileName[srcPath] = fileName;
+		}
+
+		internal virtual void CopyFile(string srcPath, string dstPath)
+		{
+			File.Copy(srcPath, dstPath);
 		}
 
 		// The validator is (probably excessively) upset about IDs that start with numbers.
@@ -388,10 +465,6 @@ namespace Bloom.Book
 		private static void MakeCssLinksAppropriateForEpub(HtmlDom dom)
 		{
 			dom.RemoveModeStyleSheets();
-			dom.AddStyleSheet("previewMode.css");
-			dom.AddStyleSheet("basePage.css");
-			dom.AddStyleSheet("origami.css");
-			//EnsureHasLinksToStylesheets(dom);
 			dom.SortStyleSheetLinks();
 			dom.RemoveFileProtocolFromStyleSheetLinks();
 			dom.RemoveDirectorySpecificationFromStyleSheetLinks();
