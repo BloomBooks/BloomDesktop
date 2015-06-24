@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Palaso.Xml;
 using Palaso.IO;
 using System.Collections.Generic;
+using L10NSharp;
 
 namespace Bloom.web
 {
@@ -222,20 +223,22 @@ namespace Bloom.web
 
 			// format the output
 			var sb = new StringBuilder();
-			sb.AppendLineFormat("Letter and word list for making decodable readers in {0}", CurrentBook.CollectionSettings.Language1Name);
+			var str = LocalizationManager.GetString("DecodableReaderTool.LetterWordReportMessage",
+				"The following is a generated report of the decodable stages for {0}.  You can make any changes you want to this file, but Bloom will not notice your changes.  It is just a report.");
+			sb.AppendLineFormat(str, CurrentBook.CollectionSettings.Language1Name);
 
 			var idx = 1;
 			foreach (var stage in settings.Stages)
 			{
 				sb.AppendLine();
-				sb.AppendLineFormat("Stage {0}", idx++);
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportStage", "Stage {0}"), idx++);
 				sb.AppendLine();
-				sb.AppendLineFormat("Letters: {0}", stage.Letters.Replace(" ", ", "));
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportLetters", "Letters: {0}"), stage.Letters.Replace(" ", ", "));
 				sb.AppendLine();
-				sb.AppendLineFormat("New Sight Words: {0}", stage.SightWords.Replace(" ", ", "));
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportSightWords", "New Sight Words: {0}"), stage.SightWords.Replace(" ", ", "));
 
 				Array.Sort(stage.Words);
-				sb.AppendLineFormat("Decodable Words: {0}", string.Join(" ", stage.Words));
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportDecodableWords", "Decodable Words: {0}"), string.Join(" ", stage.Words));
 				sb.AppendLine();
 
 			}
@@ -244,7 +247,7 @@ namespace Bloom.web
 			var words = allWords.Split(new[] { '\t' });
 			Array.Sort(words);
 			sb.AppendLine();
-			sb.AppendLine("Complete Word List");
+			sb.AppendLine(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportWordList", "Complete Word List"));
 			sb.AppendLine(string.Join(" ", words));
 
 			// write the file
