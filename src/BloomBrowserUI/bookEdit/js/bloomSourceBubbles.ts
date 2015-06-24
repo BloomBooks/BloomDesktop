@@ -28,19 +28,6 @@ class bloomSourceBubbles {
         return $.trim($(obj).text()).length == 0;
     }
 
-    // Call this after source bubble is displayed to scroll the current tab into view
-    private static ShowCurrentTab(): void {
-        var activeTabs = $("body").find(".ui-sourceTextsForBubble li.active");
-        if (activeTabs.length) {
-            activeTabs.each(function() {
-                // GJM 6/22/15: This scrolling does put the active tab in view (horizontal scrolling)
-                // However, it also scrolls the whole page up in Bloom by about 2mm. I haven't
-                // discovered yet how to avoid this.
-                this.scrollIntoView();
-            });
-        }
-    }
-
     //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
     // param 'group' is a .bloom-translationGroup DIV
     public static MakeSourceTextDivForGroup(group: HTMLElement): void {
@@ -91,11 +78,12 @@ class bloomSourceBubbles {
         // divForBubble is a single cloned bloom-translationGroup, so no need for .each() here
         var $this = $(divForBubble[0]);
         $this.prepend('<nav><ul class="editTimeOnly bloom-ui"></ul></nav>'); // build the tabs here
-        var list = $this.find('ul');
-        //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
-        //it's just a one-line change.
+
+        // First, sort the divs (and/or textareas) alphabetically by language code
         var items = $this.find("textarea, div");
         (<arraySort>items).sort(function(a, b) {
+            //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
+            //it's just a one-line change.
             var keyA = $(a).attr('lang');
             var keyB = $(b).attr('lang');
             if (keyA === vernacularLang)
@@ -109,8 +97,10 @@ class bloomSourceBubbles {
             return 0;
         });
 
-        var selectorOfDefaultTab="li:first-child";
+        items = bloomSourceBubbles.SmartOrderSourceTabs(items); // BL-2357
+
         var shellEditingMode = false;
+        var list = $this.find('ul');
         items.each(function() {
             var iso = $(this).attr('lang');
             if (iso) {
@@ -121,29 +111,61 @@ class bloomSourceBubbles {
 
                 // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
                 if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
-
                     $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
-                    if (iso === GetSettings().defaultSourceLanguage) {
-                        selectorOfDefaultTab = "li#" + iso; //selectorOfDefaultTab="li:#"+iso; this worked in jquery 1.4
-                    }
                 }
             }
         });
 
-        bloomSourceBubbles.TurnDivIntoTabbedBubbleWithToolTips(group, divForBubble, selectorOfDefaultTab);
+        bloomSourceBubbles.TurnDivIntoTabbedBubbleWithToolTips(group, divForBubble);
     } // end MakeSourceTextDivForGroup()
 
-    // Turns the cloned div 'divForBubble' into a tabbed bundle with tab corresponding to 'selectorOfDefaultTab'
-    // selected.
+    private static SmartOrderSourceTabs(items):JQuery {
+        // BL-2357 Do some smart ordering of source language tabs
+        var settingsObject = GetSettings();
+        var defaultSrcLang = settingsObject.defaultSourceLanguage;
+        items = bloomSourceBubbles.DoSafeReplaceInList(items, defaultSrcLang, 0);
+        var language2 = settingsObject.currentCollectionLanguage2;
+        var language3 = settingsObject.currentCollectionLanguage3;
+        if (language2 && language2 != defaultSrcLang) {
+            items = bloomSourceBubbles.DoSafeReplaceInList(items, language2, 1);
+        }
+        if (language3 && language3 != defaultSrcLang) {
+            items = bloomSourceBubbles.DoSafeReplaceInList(items, language3, 2);
+        }
+        return items;
+    }
+
+    private static DoSafeReplaceInList(items:JQuery, langCode:String, position:number):JQuery {
+        // if items contains a div with langCode, then try to put it at the position specified in the list.
+        var moveFrom = 0;
+        var objToMove;
+        var itemArray = items.toArray();
+        items.each(function(idx, obj) {
+            var iso = $(this).attr('lang');
+            if(iso == langCode && position < idx) {
+                moveFrom = idx;
+                objToMove = obj;
+            }
+        });
+        if(moveFrom > 0) {
+            itemArray.splice(moveFrom, 1); // removes the objToMove from the array
+            itemArray.splice(position, 0, objToMove); // puts objToMove back in at position
+            items = $(itemArray);
+        }
+        return items;
+    }
+
+    // Turns the cloned div 'divForBubble' into a tabbed bundle with the first tab, corresponding to
+    // defaultSourceLanguage, selected.
+    // N.B.: Sorting the last used source language first means we no longer need to specify which tab is selected.
     // Then turns that bundle into a qtip bubble attached to 'group'.
     // Then makes sure the tooltips are setup correctly.
-    private static TurnDivIntoTabbedBubbleWithToolTips(group: HTMLElement, divForBubble: JQuery, selectorOfDefaultTab: string): void {
+    private static TurnDivIntoTabbedBubbleWithToolTips(group: HTMLElement, divForBubble: JQuery): void {
         var $group = $(group);
         //now turn that new div into a set of tabs
         if (divForBubble.find("li").length > 0) {
             (<easytabsInterface>divForBubble).easytabs({
                 animate: false,
-                defaultTab: selectorOfDefaultTab,
                 tabs: "> nav > ul > li"
             });
         }
@@ -216,10 +238,6 @@ class bloomSourceBubbles {
                             $tip.attr('data-max-height', maxHeight)
                         }
                     },
-                    visible: function(event, api) {
-                        // After the qtip becomes visible, show the current tab
-                        bloomSourceBubbles.ShowCurrentTab();
-                    }
                 }
             });
 

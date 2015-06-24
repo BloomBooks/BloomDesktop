@@ -284,6 +284,16 @@ namespace Bloom.Book
 			d.Add("languageForNewTextBoxes", collectionSettings.Language1Iso639Code);
 			d.Add("isSourceCollection", collectionSettings.IsSourceCollection.ToString());
 
+			// BL-2357 To aid in smart ordering of source languages in source bubble
+			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
+			{
+				d.Add("currentCollectionLanguage2", collectionSettings.Language2Iso639Code);
+			}
+			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+			{
+				d.Add("currentCollectionLanguage3", collectionSettings.Language3Iso639Code);
+			}
+
 			d.Add("bloomBrowserUIFolder", FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI").ToLocalhost());
 
 	
