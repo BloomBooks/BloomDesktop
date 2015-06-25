@@ -82,10 +82,20 @@ div.rs-letters {
 	text-align: center;
 	border: thin solid #333;
 	-moz-user-select: none;
+	z-index: 4;
+	height: 34px;
 }
 
 div.unselected-letter { color: #666; background-color: #fff; cursor: pointer; }
-div.previous-letter { color: #000; background-color: #fff; font-weight: 700; cursor: not-allowed; }
+div.previous-letter {
+	color: #000;
+	background-color: #fff;
+	font-weight: 700;
+	cursor: not-allowed;
+	z-index: 1;
+	border: 4px solid #febf00;
+	padding-top: 1px;
+}
 div.current-letter { color: #000; background-color: #febf00; font-weight: 700; cursor: pointer; }
 div.rs-letters-s { width: 32px; }
 div.rs-letters-l { width: 35px; }
