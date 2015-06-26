@@ -219,6 +219,7 @@ namespace BloomTests.Book
 
 		/// <summary>
 		/// Content whose display properties resolves to display:None should be removed.
+		/// This should not include National1 in XMatter.
 		/// </summary>
 		[Test]
 		public void National1_InXMatter_IsNotRemoved()
@@ -275,6 +276,76 @@ namespace BloomTests.Book
 			assertPage1.HasNoMatchForXpath("//xhtml:label", mgr); // labels are hidden
 			assertPage1.HasNoMatchForXpath("//xhtml:div[@class='pageLabel']", mgr);
 
+		}
+
+		[Test]
+		public void ImageStyles_ConvertedToPercent()
+		{
+			SetDom(@"<div class='bloom-page A5Portrait'>
+						<div id='somewrapper' class='marginBox'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
+									This is some text
+								</div>
+								<div lang = '*'>more text</div>
+							</div>
+							<div><img src='image1.png' width='334' height='220' style='width:334px; height:220px; margin-left: 34px; margin-top: 0px;'></img></div>
+							<div><img src='image2.png' width='330' height='220' style='width:330px; height: 220px; margin-left: 33px; margin-top: 0px;'></img></div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("image1.png"));
+			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("image2.png"));
+			var epubFolder = new TemporaryFolder();
+			var epubName = "output.epub";
+			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
+			var maker = new EpubMakerAdjusted(book);
+			maker.SaveEpub(epubPath);
+			Assert.That(File.Exists(epubPath));
+			var zip = new ZipFile(epubPath);
+
+			// Every epub must have a mimetype at the root
+			GetZipContent(zip, "mimetype");
+
+			// Every epub must have a "META-INF/container.xml." (case matters). Most things we could check about its content
+			// would be redundant with the code that produces it, but we can at least verify that it is valid
+			// XML and points us at the rootfile (open package format) file.
+			var containerData = GetZipContent(zip, "META-INF/container.xml");
+			var doc = XDocument.Parse(containerData);
+			XNamespace ns = doc.Root.Attribute("xmlns").Value;
+			var packageFile = doc.Root.Element(ns + "rootfiles").Element(ns + "rootfile").Attribute("full-path").Value;
+
+			// That gives us a path to the main package file, typically content.opf
+			var packageData = StripXmlHeader(GetZipContent(zip, packageFile));
+			var packageDoc = XDocument.Parse(packageData);
+			XNamespace opf = "http://www.idpf.org/2007/opf";
+
+			var page1 = packageDoc.Root.Element(opf + "manifest").Elements(opf + "item").ToArray()[2].Attribute("href").Value;
+			// Names in package file are relative to its folder.
+			var page1Data = StripXmlHeader(GetZipContent(zip, Path.GetDirectoryName(packageFile) + "/" + page1));
+
+			XNamespace xhtml = "http://www.w3.org/1999/xhtml";
+			var mgr = new XmlNamespaceManager(new NameTable());
+			mgr.AddNamespace("xhtml", "http://www.w3.org/1999/xhtml");
+			// A5Portrait page is 297/2 mm wide
+			// Percent size however is relative to containing block, typically the marginBox,
+			// which is inset 40mm from page
+			// a px in a printed book is exactly 1/96 in.
+			// 25.4mm.in
+			var marginboxInches = (297.0/2.0-40)/25.4;
+			var picWidthInches = 334/96.0;
+			var widthPercent = Math.Round(picWidthInches/marginboxInches*1000)/10;
+			var picIndentInches = 34/96.0;
+			var picIndentPercent = Math.Round(picIndentInches / marginboxInches * 1000) / 10;
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='width:" + widthPercent.ToString("F1")
+				+ "%; height:auto; margin-left: " + picIndentPercent.ToString("F1") + "%; margin-top: 0px;']", mgr);
+
+			picWidthInches = 330 / 96.0;
+			widthPercent = Math.Round(picWidthInches / marginboxInches * 1000) / 10;
+			picIndentInches = 33 / 96.0;
+			picIndentPercent = Math.Round(picIndentInches / marginboxInches * 1000) / 10;
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:img[@style='width:" + widthPercent.ToString("F1")
+				+ "%; height:auto; margin-left: " + picIndentPercent.ToString("F1") + "%; margin-top: 0px;']", mgr);
 		}
 
 		private string GetZipContent(ZipFile zip, string path)

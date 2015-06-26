@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using Palaso.IO;
@@ -80,6 +81,7 @@ namespace Bloom.Book
 					RemoveSpuriousLinks(pageDom);
 					RemoveScripts(pageDom);
 					FixIllegalIds(pageDom);
+					FixPictureSizes(pageDom);
 					// Since we only allow one htm file in a book folder, I don't think there is any
 					// way this name can clash with anything else.
 					var pageDocName = pageIndex + ".xhtml";
@@ -203,6 +205,104 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Typically pictures are given an absolute size in px, which looks right given
+		/// the current absolute size of the page it is on. For an epub, a percent size
+		/// will work better. We calculate it based on the page sizes and margins in
+		/// BasePage.less and commonMixins.less. The page size definitions are unlikely
+		/// to change, but change might be needed here if there is a change to the main
+		/// .marginBox rule in basePage.less
+		/// </summary>
+		/// <param name="pageDom"></param>
+		private void FixPictureSizes(HtmlDom pageDom)
+		{
+			bool firstTime = true;
+			double pageWidthMm = 210; // assume A5 Portrait if not specified
+			foreach (XmlElement img in pageDom.RawDom.SafeSelectNodes("//img"))
+			{
+				var marginBox = img.ParentNode.ParentNode as XmlElement;
+				// For now we only attempt to adjust pictures directly contained in the marginBox.
+				// To do better than this we will probably need to actually load the HTML into
+				// a browser; even then it will be complex.
+				if (!HasClass(marginBox, "marginBox"))
+					continue;
+				var page = marginBox.ParentNode as XmlElement;
+				if (!HasClass(page, "bloom-page"))
+					continue; // or return? marginBox should be child of page!
+				if (firstTime)
+				{
+					var pageClass = AttrVal(page, "class").Split().FirstOrDefault(c => c.Contains("Portrait") || c.Contains("Landscape"));
+					const int A4Width = 210;
+					const int A4Height = 297;
+					switch (pageClass)
+					{
+						case "A5Portrait":
+							pageWidthMm = A4Height/2.0;
+							break;
+						case "A4Portrait":
+							pageWidthMm = A4Width;
+							break;
+						case "A5Landscape":
+							pageWidthMm = A4Width / 2.0;
+							break;
+						case "A4Landscape":
+							pageWidthMm = A4Height;
+							break;
+						case "A6Portrait":
+							pageWidthMm = A4Width / 2.0;
+							break;
+						case "A6Landscape":
+							pageWidthMm = A4Height / 2.0;
+							break;
+						case "B5Portrait":
+							pageWidthMm = 176;
+							break;
+					}
+					firstTime = false;
+				}
+				var imgStyle = AttrVal(img, "style");
+				// We want to take something like 'width:334px; height:220px; margin-left: 34px; margin-top: 0px;'
+				// and change it to something like 'width:75%; height:auto; margin-left: 10%; margin-top: 0px;'
+				// This first pass deals with width.
+				if (ConvertWidth("width", pageWidthMm, ref imgStyle)) continue;
+
+				// Now change height to auto, to preserve aspect ratio
+				imgStyle = new Regex("height:\\s*\\d+px").Replace(imgStyle, "height:auto");
+				if (!imgStyle.Contains("height"))
+					imgStyle = "height:auto; " + imgStyle;
+
+				// Similarly fix indent
+				ConvertWidth("margin-left", pageWidthMm, ref imgStyle);
+
+				img.SetAttribute("style", imgStyle);
+			}
+		}
+
+		// Returns true if we don't find the expected style
+		private static bool ConvertWidth(string width, double pageWidthMm, ref string imgStyle)
+		{
+			var match = new Regex("(.*" + width + ":\\s*)(\\d+)px(.*)").Match(imgStyle);
+			if (!match.Success)
+				return true;
+			var widthPx = int.Parse(match.Groups[2].Value);
+			var widthInch = widthPx/96.0; // in print a CSS px is exactly 1/96 inch
+			const int marginBoxMarginMm = 40; // see basePage.less SetMarginBox.
+			const double mmPerInch = 25.4;
+			var marginBoxWidthInch = (pageWidthMm - marginBoxMarginMm)/mmPerInch;
+			// 1/10 percent is close enough and more readable/testable than arbitrary precision; make a string with one decimal
+			var newWidth = (Math.Round(widthInch/marginBoxWidthInch*1000)/10).ToString("F1");
+			imgStyle = match.Groups[1] + newWidth  + "%" + match.Groups[3];
+			return false;
+		}
+
+		string AttrVal(XmlElement elt, string name)
+		{
+			var attr = elt.Attributes[name];
+			if (attr == null)
+				return "";
+			return attr.Value;
+		}
+
+		/// <summary>
 		/// Remove stuff that we don't want displayed. Some e-readers don't obey display:none. Also, not shipping it saves space.
 		/// </summary>
 		/// <param name="pageDom"></param>
@@ -249,6 +349,8 @@ namespace Bloom.Book
 
 		bool HasClass(XmlElement elt, string className)
 		{
+			if (elt == null)
+				return false;
 			var classAttr = elt.Attributes["class"];
 			if (classAttr == null)
 				return false;
