@@ -548,7 +548,9 @@ function SetupElements(container) {
     if ($(container).find(".bloom-preventSourceBubbles").length == 0) {
         $(container).find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").each(function() {
             if ($(this).find("textarea, div").length > 1) {
-                bloomSourceBubbles.MakeSourceTextDivForGroup(this);
+                var divForBubble = bloomSourceBubbles.MakeSourceTextDivForGroup(this);
+                if(divForBubble != null)
+                    bloomSourceBubbles.TurnDivIntoTabbedBubbleWithToolTips(this, divForBubble);
             }
         });
     }

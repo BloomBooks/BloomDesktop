@@ -13,6 +13,8 @@ interface InjectorWindow extends Window {
 function GetSettings(): any {
   var v: any = {};
   v.defaultSourceLanguage = 'en';
+  v.currentCollectionLanguage2 = 'tpi';
+  v.currentCollectionLanguage3 = 'fr';
   v.languageForNewTextBoxes = 'en';
   v.isSourceCollection = 'false';
   v.bloomBrowserUIFolder = '';

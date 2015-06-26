@@ -48,7 +48,7 @@ var bloomSourceBubbles = (function () {
         StyleEditor.CleanupElement(divForBubble);
         //if there are no languages to show in the bubble, bail out now
         if ($(divForBubble).find("textarea, div").length == 0)
-            return;
+            return null;
         var vernacularLang = localizationManager.getVernacularLang();
         //make the li's for the source text elements in this new div, which will later move to a tabbed bubble
         // divForBubble is a single cloned bloom-translationGroup, so no need for .each() here
@@ -87,7 +87,7 @@ var bloomSourceBubbles = (function () {
                 }
             }
         });
-        bloomSourceBubbles.TurnDivIntoTabbedBubbleWithToolTips(group, divForBubble);
+        return divForBubble;
     }; // end MakeSourceTextDivForGroup()
     bloomSourceBubbles.SmartOrderSourceTabs = function (items) {
         // BL-2357 Do some smart ordering of source language tabs
@@ -129,6 +129,7 @@ var bloomSourceBubbles = (function () {
     // N.B.: Sorting the last used source language first means we no longer need to specify which tab is selected.
     // Then turns that bundle into a qtip bubble attached to 'group'.
     // Then makes sure the tooltips are setup correctly.
+    // Made this public in order to test what feeds into it.
     bloomSourceBubbles.TurnDivIntoTabbedBubbleWithToolTips = function (group, divForBubble) {
         var $group = $(group);
         //now turn that new div into a set of tabs

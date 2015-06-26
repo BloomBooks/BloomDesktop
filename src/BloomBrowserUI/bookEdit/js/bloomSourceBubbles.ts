@@ -30,7 +30,7 @@ class bloomSourceBubbles {
 
     //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
     // param 'group' is a .bloom-translationGroup DIV
-    public static MakeSourceTextDivForGroup(group: HTMLElement): void {
+    public static MakeSourceTextDivForGroup(group: HTMLElement): JQuery {
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
         var divForBubble = $(group).clone();
@@ -70,7 +70,7 @@ class bloomSourceBubbles {
 
         //if there are no languages to show in the bubble, bail out now
         if ($(divForBubble).find("textarea, div").length == 0)
-            return;
+            return null;
 
         var vernacularLang = localizationManager.getVernacularLang();
 
@@ -116,7 +116,7 @@ class bloomSourceBubbles {
             }
         });
 
-        bloomSourceBubbles.TurnDivIntoTabbedBubbleWithToolTips(group, divForBubble);
+        return divForBubble;
     } // end MakeSourceTextDivForGroup()
 
     private static SmartOrderSourceTabs(items):JQuery {
@@ -161,7 +161,8 @@ class bloomSourceBubbles {
     // N.B.: Sorting the last used source language first means we no longer need to specify which tab is selected.
     // Then turns that bundle into a qtip bubble attached to 'group'.
     // Then makes sure the tooltips are setup correctly.
-    private static TurnDivIntoTabbedBubbleWithToolTips(group: HTMLElement, divForBubble: JQuery): void {
+    // Made this public in order to test what feeds into it.
+    public static TurnDivIntoTabbedBubbleWithToolTips(group: HTMLElement, divForBubble: JQuery): void {
         var $group = $(group);
         //now turn that new div into a set of tabs
         if (divForBubble.find("li").length > 0) {
@@ -223,7 +224,8 @@ class bloomSourceBubbles {
                     show: function(event, api) {
                         // don't need to do this if there is only one editable area
                         var $body: JQuery = $('body');
-                        if ($body.find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").length < 2) return;
+                        if ($body.find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").length < 2)
+                            return;
 
                         // BL-878: set the tool tips to not be larger than the text area so they don't overlap each other
                         var $tip = api.elements.tooltip;
