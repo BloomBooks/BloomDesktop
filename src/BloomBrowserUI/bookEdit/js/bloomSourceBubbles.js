@@ -105,7 +105,8 @@ var bloomSourceBubbles = (function () {
         return items;
     };
     bloomSourceBubbles.DoSafeReplaceInList = function (items, langCode, position) {
-        // if items contains a div with langCode, then try to put it at the position specified in the list.
+        // if items contains a div with langCode, then try to put it at the position specified in the list
+        // (unless it already occurs at an earlier position).
         var moveFrom = 0;
         var objToMove;
         var itemArray = items.toArray();

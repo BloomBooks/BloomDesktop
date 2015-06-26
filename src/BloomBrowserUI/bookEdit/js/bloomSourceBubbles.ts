@@ -136,7 +136,8 @@ class bloomSourceBubbles {
     }
 
     private static DoSafeReplaceInList(items:JQuery, langCode:String, position:number):JQuery {
-        // if items contains a div with langCode, then try to put it at the position specified in the list.
+        // if items contains a div with langCode, then try to put it at the position specified in the list
+        // (unless it already occurs at an earlier position).
         var moveFrom = 0;
         var objToMove;
         var itemArray = items.toArray();
