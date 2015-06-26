@@ -121,6 +121,8 @@ namespace Bloom.Book
 					if (pageIndex == firstContentPageIndex)
 						_firstContentPageItem = pageDocName;
 
+					CopyFileToEpub(Path.Combine(_book.FolderPath, "thumbnail.png"));
+
 					FixChangedFileNames(pageDom);
 
 					// epub validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
@@ -176,12 +178,12 @@ namespace Bloom.Book
 						new XAttribute("id", GetIdOfFile(item)),
 						new XAttribute("href", item),
 						new XAttribute("media-type", GetMediaType(item)));
-					// For now we will mark the first content page as the 'nav' page...
-					// as good a place as we can send users to for navigating around a bloom book.
 					// This isn't very useful but satisfies a validator requirement until we think of
 					// something better.
 					if (item == _navFileName)
 						itemElt.SetAttributeValue("properties", "nav");
+					if (item == "thumbnail.png")
+						itemElt.SetAttributeValue("properties", "cover-image");
 					manifestElt.Add(itemElt);
 				}
 				var spineElt = new XElement(opf + "spine");

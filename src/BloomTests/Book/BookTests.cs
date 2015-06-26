@@ -120,7 +120,7 @@ namespace BloomTests.Book
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 		}
 
-		protected Bloom.Book.Book CreateBook()
+		protected virtual Bloom.Book.Book CreateBook()
 		{
 			return CreateBook(CreateDefaultCollectionsSettings());
 		}

@@ -76,6 +76,7 @@ namespace BloomTests.Book
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fmy_image' and @href='my_image.png']");
 			toCheck.HasAtLeastOneMatchForXpath("package/spine/itemref[@idref='f1']");
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='nav']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='cover-image']");
 
 			var packageDoc = XDocument.Parse(packageData);
 			XNamespace opf = "http://www.idpf.org/2007/opf";
@@ -107,6 +108,14 @@ namespace BloomTests.Book
 			AssertThatXmlIn.String(navPageData)
 				.HasAtLeastOneMatchForXpath(
 					"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml']", mgr2);
+		}
+
+		protected override Bloom.Book.Book CreateBook()
+		{
+			var book = base.CreateBook();
+			// Export requires us to have a thumbnail.
+			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("thumbnail.png"));
+			return book;
 		}
 
 		[Test]
