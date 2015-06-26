@@ -7,6 +7,8 @@ interface settingsObject {
   isSourceCollection: boolean;
   languageForNewTextBoxes: string;
   defaultSourceLanguage: string;
+  currentCollectionLanguage2: string;
+  currentCollectionLanguage3: string;
   bloomBrowserUIFolder: string;
   topics: string[];
 }
