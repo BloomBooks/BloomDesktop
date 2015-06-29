@@ -21,6 +21,15 @@ namespace Bloom.Book
 			userPrefs._loading = false;
 			return userPrefs;
 		}
+		
+		/// <summary>
+		/// Used when the directory is changed because the book has been renamed
+		/// </summary>
+		/// <param name="newDirectoryName"></param>
+		public void UpdateFileLocation(string newDirectoryName)
+		{
+			_fileName = Path.Combine(newDirectoryName, Path.GetFileName(_fileName));
+		}
 
 		[JsonProperty("mostRecentPage")]
 		public int MostRecentPage

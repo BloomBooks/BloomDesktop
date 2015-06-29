@@ -85,7 +85,7 @@ namespace Bloom.Book
 			_storage = storage;
 
 			//this is a hack to keep these two in sync (in one direction)
-			_storage.FolderPathChanged +=(x,y)=>BookInfo.FolderPath = _storage.FolderPath;
+			_storage.FolderPathChanged += _storage_FolderPathChanged;
 
 			_templateFinder = templateFinder;
 
@@ -122,6 +122,12 @@ namespace Bloom.Book
 			FixBookIdAndLineageIfNeeded();
 			_storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
+		}
+
+		void _storage_FolderPathChanged(object sender, EventArgs e)
+		{
+			BookInfo.FolderPath = _storage.FolderPath;
+			UserPrefs.UpdateFileLocation(_storage.FolderPath);
 		}
 
 		public static Color NextBookColor()
