@@ -123,6 +123,9 @@
   <metadata name="_L10NSharpExtender.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>561, 17</value>
   </metadata>
+  <data name="_updateFrontMatterToolStripMenu.ToolTipText" xml:space="preserve">
+    <value>New versions of Bloom sometimes can fix or otherwise improve books. This should be safe to do at any time, but is only worth doing if need to update the front/back matter or you are instructed to do it by a Bloom specialist.</value>
+  </data>
   <metadata name="_bookThumbnails.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>269, 17</value>
   </metadata>
@@ -131,7 +134,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAABO
-        RgAAAk1TRnQBSQFMAwEBAAFAAQIBQAECAUYBAAFGAQAE/wEZAQAI/wFCAU0BNgcAATYDAAEoAwABGAEB
+        RgAAAk1TRnQBSQFMAwEBAAFIAQIBSAECAUYBAAFGAQAE/wEZAQAI/wFCAU0BNgcAATYDAAEoAwABGAEB
         AgABRgMAAQEBAAEYBQABsAHlMAAD/wP6A/QD6wHaAdsB2gHJAcsBygG6Ab4BvAG2AbsBuAGwAbcBswGr
         AbMBrgGlAa8BqgGiAa0BpwGeAasBowGbAaoBogGXAacBngGWAacBnQGUAacBnQGTAacBmwGTAaYBnAGT
         AacBmwGUAacBnAGVAasBnQGVAaoBnwGaAa0BowGdAbEBpQGfAbIBpwGXAawBoAGrAbYBsP8A/wDYAAGG
@@ -439,9 +442,6 @@
   </metadata>
   <metadata name="_sourcePaneMenuStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>919, 17</value>
-  </metadata>
-  <metadata name="_L10NSharpExtender.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>561, 17</value>
   </metadata>
   <metadata name="_vernacularCollectionMenuStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 56</value>
