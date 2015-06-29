@@ -12,17 +12,31 @@ var bloomSourceBubbles = (function () {
         //}
         return $.trim($(obj).text()).length == 0;
     };
-    //Sets up the (currently yellow) qtip bubbles that give you the contents of the box in the source languages
+    // This is the method that should be called from bloomEditing to create tabbed source bubbles
+    // for translation.
     // param 'group' is a .bloom-translationGroup DIV
+    bloomSourceBubbles.ProduceSourceBubbles = function (group) {
+        var divForBubble = bloomSourceBubbles.MakeSourceTextDivForGroup(group);
+        if (divForBubble == null)
+            return;
+        divForBubble = bloomSourceBubbles.CreateTabsFromDiv(divForBubble);
+        if (divForBubble == null)
+            return;
+        bloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(group, divForBubble);
+    };
+    // Cleans up a clone of the original translationGroup
+    // and sets up the list items with anchors that will become the tabs to jump to linked source text
+    // param 'group' is a .bloom-translationGroup DIV
+    // This method is only public for testing
     bloomSourceBubbles.MakeSourceTextDivForGroup = function (group) {
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
         var divForBubble = $(group).clone();
-        $(divForBubble).removeAttr('style');
-        $(divForBubble).removeClass(); //remove them all
-        $(divForBubble).addClass("ui-sourceTextsForBubble");
+        divForBubble.removeAttr('style');
+        divForBubble.removeClass(); //remove them all
+        divForBubble.addClass("ui-sourceTextsForBubble");
         //make the source texts in the bubble read-only and remove any user font size adjustments
-        $(divForBubble).find("textarea, div").each(function () {
+        divForBubble.find("textarea, div").each(function () {
             //don't want empty items in the bubble
             if (bloomSourceBubbles.hasNoText(this)) {
                 $(this).remove();
@@ -41,18 +55,18 @@ var bloomSourceBubbles = (function () {
             $(this).addClass("source-text");
         });
         //don't want the vernacular or languages in use for bilingual/trilingual boxes to be shown in the bubble
-        $(divForBubble).find("*.bloom-content1, *.bloom-content2, *.bloom-content3").each(function () {
+        divForBubble.find("*.bloom-content1, *.bloom-content2, *.bloom-content3").each(function () {
             $(this).remove();
         });
         //in case some formatting didn't get cleaned up
         StyleEditor.CleanupElement(divForBubble);
         //if there are no languages to show in the bubble, bail out now
-        if ($(divForBubble).find("textarea, div").length == 0)
+        if (divForBubble.find("textarea, div").length == 0)
             return null;
         var vernacularLang = localizationManager.getVernacularLang();
-        //make the li's for the source text elements in this new div, which will later move to a tabbed bubble
+        // Make the li's for the source text elements in this new div, which will later move to a tabbed bubble
         // divForBubble is a single cloned bloom-translationGroup, so no need for .each() here
-        var $this = $(divForBubble[0]);
+        var $this = divForBubble.first();
         $this.prepend('<nav><ul class="editTimeOnly bloom-ui"></ul></nav>'); // build the tabs here
         // First, sort the divs (and/or textareas) alphabetically by language code
         var items = $this.find("textarea, div");
@@ -127,11 +141,7 @@ var bloomSourceBubbles = (function () {
     // Turns the cloned div 'divForBubble' into a tabbed bundle with the first tab, corresponding to
     // defaultSourceLanguage, selected.
     // N.B.: Sorting the last used source language first means we no longer need to specify which tab is selected.
-    // Then turns that bundle into a qtip bubble attached to 'group'.
-    // Then makes sure the tooltips are setup correctly.
-    // Made this public in order to test what feeds into it.
-    bloomSourceBubbles.TurnDivIntoTabbedBubbleWithToolTips = function (group, divForBubble) {
-        var $group = $(group);
+    bloomSourceBubbles.CreateTabsFromDiv = function (divForBubble) {
         //now turn that new div into a set of tabs
         if (divForBubble.find("li").length > 0) {
             divForBubble.easytabs({
@@ -141,13 +151,19 @@ var bloomSourceBubbles = (function () {
         }
         else {
             divForBubble.remove(); //no tabs, so hide the bubble
-            return;
+            return null;
         }
+        return divForBubble;
+    };
+    // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
+    // Also makes sure the tooltips are setup correctly.
+    bloomSourceBubbles.CreateAndShowQtipBubbleFromDiv = function (group, divForBubble) {
         var showEvents = false;
         var hideEvents = false;
         var showEventsStr;
         var hideEventsStr;
         var shouldShowAlways = true;
+        var $group = $(group);
         if (bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles($group)) {
             showEvents = true;
             showEventsStr = 'focusin';
