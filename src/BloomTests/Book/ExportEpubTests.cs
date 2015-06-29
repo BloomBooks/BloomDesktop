@@ -88,6 +88,11 @@ namespace BloomTests.Book
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fcustomCollectionStyles' and @href='customCollectionStyles.css']");
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fcustomBookStyles' and @href='customBookStyles.css']");
 
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fAndikaNewBasic-R' and @href='AndikaNewBasic-R.ttf']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fAndikaNewBasic-B' and @href='AndikaNewBasic-B.ttf']");
+			// It should include italic and BI too...though eventually it may get smarter and figure they are not used...but I think this is enough to test
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='ffonts' and @href='fonts.css']");
+
 			var packageDoc = XDocument.Parse(packageData);
 			XNamespace opf = "http://www.idpf.org/2007/opf";
 			// Some attempt at validating that we actually included the images in the zip.
@@ -96,6 +101,8 @@ namespace BloomTests.Book
 			GetZipEntry(zip, Path.GetDirectoryName(packageFile) + "/" + image1);
 			var image2 = packageDoc.Root.Element(opf + "manifest").Elements(opf + "item").ToArray()[1].Attribute("href").Value;
 			GetZipEntry(zip, Path.GetDirectoryName(packageFile) + "/" + image2);
+			// Similarly try to validate really copying the font files
+			GetZipEntry(zip, Path.GetDirectoryName(packageFile) + "/" + "AndikaNewBasic-R.ttf");
 
 			var page1 = packageDoc.Root.Element(opf + "manifest").Elements(opf + "item").ToArray()[2].Attribute("href").Value;
 			// Names in package file are relative to its folder.
@@ -114,6 +121,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='settingsCollectionStyles.css']", mgr2);
 			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customCollectionStyles.css']", mgr2);
 			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customBookStyles.css']", mgr2);
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='fonts.css']", mgr2);
 
 			mgr2.AddNamespace("epub", "http://www.idpf.org/2007/ops");
 			var navPage = packageDoc.Root.Element(opf + "manifest").Elements(opf + "item").Last().Attribute("href").Value;
@@ -121,6 +129,12 @@ namespace BloomTests.Book
 			AssertThatXmlIn.String(navPageData)
 				.HasAtLeastOneMatchForXpath(
 					"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml']", mgr2);
+
+			var fontCssData = GetZipContent(zip, "content/fonts.css");
+			Assert.That(fontCssData, Is.StringContaining("@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:normal; src:url(AndikaNewBasic-R.ttf) format('opentype');}"));
+			Assert.That(fontCssData, Is.StringContaining("@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:normal; src:url(AndikaNewBasic-B.ttf) format('opentype');}"));
+			Assert.That(fontCssData, Is.StringContaining("@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:italic; src:url(AndikaNewBasic-I.ttf) format('opentype');}"));
+			Assert.That(fontCssData, Is.StringContaining("@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:italic; src:url(AndikaNewBasic-BI.ttf) format('opentype');}"));
 		}
 
 		// Set up some typical CSS files we DO want to include, even in 'unpaginated' mode
@@ -128,11 +142,11 @@ namespace BloomTests.Book
 		{
 			var collectionFolder = Path.GetDirectoryName(book.FolderPath);
 			var settingsCollectionPath = Path.Combine(collectionFolder, "settingsCollectionStyles.css");
-			File.WriteAllText(settingsCollectionPath, "body:{font-family: 'Andika New Basic;'}");
+			File.WriteAllText(settingsCollectionPath, "body:{font-family: 'Andika New Basic';}");
 			var customCollectionPath = Path.Combine(collectionFolder, "customCollectionStyles.css");
-			File.WriteAllText(customCollectionPath, "body:{font-family: 'Andika New Basic;'}");
+			File.WriteAllText(customCollectionPath, "body:{font-family: 'Andika New Basic';}");
 			var customBookPath = Path.Combine(book.FolderPath, "customBookStyles.css");
-			File.WriteAllText(customBookPath, "body:{font-family: 'Andika New Basic;'}");
+			File.WriteAllText(customBookPath, "body:{font-family: 'Andika New Basic';}");
 		}
 
 		protected override Bloom.Book.Book CreateBook()

@@ -1,9 +1,14 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
 using Palaso.IO;
@@ -124,6 +129,8 @@ namespace Bloom.Book
 					CopyFileToEpub(Path.Combine(_book.FolderPath, "thumbnail.png"));
 
 					FixChangedFileNames(pageDom);
+					// Do this AFTER we copy the CSS files, this file is generated in place just for the epub.
+					pageDom.AddStyleSheet("fonts.css"); // enhance: could omit if we don't embed any
 
 					// epub validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
 					pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
@@ -131,8 +138,8 @@ namespace Bloom.Book
 
 				}
 
+				EmbedFonts(); // must call after copying stylesheets
 				MakeNavPage();
-
 
 				//supporting files
 
@@ -204,6 +211,197 @@ namespace Bloom.Book
 					zip.AddDirectory(dir);
 				zip.Save();
 			}
+		}
+
+		/// <summary>
+		/// Try to embed the fonts we need.
+		/// </summary>
+		private void EmbedFonts()
+		{
+			var fontsWanted = GetFontsUsed();
+			var filesToEmbed = fontsWanted.SelectMany(GetFilesForFont).ToArray();
+			foreach (var file in filesToEmbed)
+			{
+				CopyFileToEpub(file);
+			}
+			var sb = new StringBuilder();
+			foreach (var font in fontsWanted)
+			{
+				FontGroup group;
+				if (_fontNameToFiles.TryGetValue(font, out group))
+				{
+					AddFontFace(sb, font, "normal", "normal", group.Normal);
+					AddFontFace(sb, font, "bold", "normal", group.Bold);
+					AddFontFace(sb, font, "normal", "italic", group.Italic);
+					AddFontFace(sb, font, "bold", "italic", group.BoldItalic);
+				}
+			}
+			File.WriteAllText(Path.Combine(_contentFolder, "fonts.css"), sb.ToString());
+			_manifestItems.Add("fonts.css");
+		}
+
+		void AddFontFace(StringBuilder sb, string name, string weight, string style, string path)
+		{
+			if (path == null)
+				return;
+			sb.AppendLineFormat("@font-face {{font-family:'{0}'; font-weight:{1}; font-style:{2}; src:url({3}) format('{4}');}}",
+				name, weight, style, Path.GetFileName(path),
+				Path.GetExtension(path) == ".woff" ? "woff" : "opentype");
+		}
+
+		/// <summary>
+		/// First step of embedding fonts: determine what are used in the document.
+		/// Eventually we may load each page into a DOM and use JavaScript to ask each
+		/// bit of text what actual font and face it is using.
+		/// For now we examine the stylesheets and collect the font families they mention.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<string> GetFontsUsed()
+		{
+			var result = new HashSet<string>();
+			var findFF = new Regex("font-family:\\s*(['\"])([^'\"]*)\\1");
+			foreach (var ss in Directory.GetFiles(_book.FolderPath, "*.css"))
+			{
+				var root = File.ReadAllText(ss, Encoding.UTF8);
+				foreach (Match match in findFF.Matches(root))
+				{
+					result.Add(match.Groups[2].Value);
+				}
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// Set of up to four files useful for a given font name
+		/// </summary>
+		class FontGroup : IEnumerable<string>
+		{
+			public string Normal;
+			public string Bold;
+			public string Italic;
+			public string BoldItalic;
+
+			public void Add(GlyphTypeface gtf, string path)
+			{
+				if (Normal == null)
+					Normal = path;
+				if (gtf.Style == System.Windows.FontStyles.Italic)
+				{
+					if (isBoldFont(gtf))
+						BoldItalic = path;
+					else
+						Italic = path;
+				}
+				else
+				{
+					if (isBoldFont(gtf))
+						Bold = path;
+					else
+						Normal = path;
+				}
+			}
+
+			private static bool isBoldFont(GlyphTypeface gtf)
+			{
+				return gtf.Weight.ToOpenTypeWeight() > 600;
+			}
+
+			public IEnumerator<string> GetEnumerator()
+			{
+				if (Normal != null)
+					yield return Normal;
+				if (Bold != null)
+					yield return Bold;
+				if (Italic != null)
+					yield return Italic;
+				if (BoldItalic != null)
+					yield return BoldItalic;
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+		}
+
+		Dictionary<string, FontGroup> _fontNameToFiles;
+
+		/// <summary>
+		/// This is really hard. We somehow need to figure out what font file(s) are used for a particular font.
+		/// http://stackoverflow.com/questions/16769758/get-a-font-filename-based-on-the-font-handle-hfont
+		/// has some ideas; the result would be Windows-specific. And at some point we should ideally consider
+		/// what faces are needed.
+		/// For now we use brute force.
+		/// 'Andika New Basic' -> AndikaNewBasic-{R,B,I,BI}.ttf
+		/// Arial -> arial.ttf/ariali.ttf/arialbd.ttf/arialbi.ttf
+		/// 'Charis SIL' -> CharisSIL{R,B,I,BI}.ttf (note: no hyphen)
+		/// Doulos SIL -> DoulosSILR
+		/// </summary>
+		/// <param name="fontName"></param>
+		/// <returns>enumeration of file paths (possibly none) that contain data for the specified font name</returns>
+		private IEnumerable<string> GetFilesForFont(string fontName)
+		{
+			// Review Linux: very likely something here is not portable.
+			if (_fontNameToFiles == null)
+			{
+				_fontNameToFiles = new Dictionary<string, FontGroup>();
+				foreach (var fontFile in Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Fonts)))
+				{
+					// Epub only understands these types, so skip anything else.
+					switch (Path.GetExtension(fontFile))
+					{
+						case ".ttf":
+						case ".otf":
+						case ".woff":
+							break;
+						default:
+							continue;
+					}
+					GlyphTypeface gtf;
+					try
+					{
+						gtf = new GlyphTypeface(new Uri("file:///" + fontFile));
+					}
+					catch (Exception)
+					{
+						continue; // file is somehow corrupt or not really a font file? Just ignore it.
+					}
+					switch (gtf.EmbeddingRights)
+					{
+						case FontEmbeddingRight.Editable:
+						case FontEmbeddingRight.EditableButNoSubsetting:
+						case FontEmbeddingRight.Installable:
+						case FontEmbeddingRight.InstallableButNoSubsetting:
+						case FontEmbeddingRight.PreviewAndPrint:
+						case FontEmbeddingRight.PreviewAndPrintButNoSubsetting:
+							break;
+						default:
+							continue; // not allowed to embed (enhance: warn user?)
+					}
+					var fc = new PrivateFontCollection();
+					try
+					{
+						fc.AddFontFile(fontFile);
+					}
+					catch (FileNotFoundException)
+					{
+						continue; // not sure how this can happen but I've seen it.
+					}
+					var name = fc.Families[0].Name;
+					// If you care about bold, italic, etc, you can filter here.
+					FontGroup files;
+					if (!_fontNameToFiles.TryGetValue(name, out files))
+					{
+						files = new FontGroup();
+						_fontNameToFiles[name] = files;
+					}
+					files.Add(gtf, fontFile);
+				}
+			}
+			FontGroup result;
+			if (!_fontNameToFiles.TryGetValue(fontName, out result))
+				return new string[0];
+			return result;
 		}
 
 		/// <summary>
@@ -563,6 +761,11 @@ namespace Bloom.Book
 					return "image/png";
 				case "css":
 					return "text/css";
+				case "woff":
+					return "application/font-woff"; // http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts
+				case "ttf":
+				case "otf":
+					return "application/font-sfnt"; // http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts
 
 			}
 			throw new ApplicationException("unexpected file type in file " + item);
