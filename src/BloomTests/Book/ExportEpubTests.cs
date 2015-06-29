@@ -32,8 +32,14 @@ namespace BloomTests.Book
 							<div><img src='myImage.png'></img></div>
 							<div><img src='my image.png'></img></div>
 						</div>
-					</div>");
+					</div>",
+						   @"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
+							<link rel='stylesheet' href='../customCollectionStyles.css'/>
+							<link rel='stylesheet' href='customBookStyles.css'/>");
 			var book = CreateBook();
+
+			CreateCommonCssFiles(book);
+
 			// These two names are especially interesting because they differ by case and also white space.
 			// The case difference is not important to the Windows file system.
 			// The white space must be removed to make an XML ID.
@@ -78,6 +84,10 @@ namespace BloomTests.Book
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='nav']");
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='cover-image']");
 
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fsettingsCollectionStyles' and @href='settingsCollectionStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fcustomCollectionStyles' and @href='customCollectionStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fcustomBookStyles' and @href='customBookStyles.css']");
+
 			var packageDoc = XDocument.Parse(packageData);
 			XNamespace opf = "http://www.idpf.org/2007/opf";
 			// Some attempt at validating that we actually included the images in the zip.
@@ -101,6 +111,9 @@ namespace BloomTests.Book
 			AssertThatXmlIn.String(page1Data).HasNoMatchForXpath("//xhtml:script", mgr2);
 			AssertThatXmlIn.String(page1Data).HasNoMatchForXpath("//*[@lang='*']");
 			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//img[@src='my_image.png']");
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='settingsCollectionStyles.css']", mgr2);
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customCollectionStyles.css']", mgr2);
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customBookStyles.css']", mgr2);
 
 			mgr2.AddNamespace("epub", "http://www.idpf.org/2007/ops");
 			var navPage = packageDoc.Root.Element(opf + "manifest").Elements(opf + "item").Last().Attribute("href").Value;
@@ -108,6 +121,18 @@ namespace BloomTests.Book
 			AssertThatXmlIn.String(navPageData)
 				.HasAtLeastOneMatchForXpath(
 					"xhtml:html/xhtml:body/xhtml:nav[@epub:type='toc' and @id='toc']/xhtml:ol/xhtml:li/xhtml:a[@href='1.xhtml']", mgr2);
+		}
+
+		// Set up some typical CSS files we DO want to include, even in 'unpaginated' mode
+		private static void CreateCommonCssFiles(Bloom.Book.Book book)
+		{
+			var collectionFolder = Path.GetDirectoryName(book.FolderPath);
+			var settingsCollectionPath = Path.Combine(collectionFolder, "settingsCollectionStyles.css");
+			File.WriteAllText(settingsCollectionPath, "body:{font-family: 'Andika New Basic;'}");
+			var customCollectionPath = Path.Combine(collectionFolder, "customCollectionStyles.css");
+			File.WriteAllText(customCollectionPath, "body:{font-family: 'Andika New Basic;'}");
+			var customBookPath = Path.Combine(book.FolderPath, "customBookStyles.css");
+			File.WriteAllText(customBookPath, "body:{font-family: 'Andika New Basic;'}");
 		}
 
 		protected override Bloom.Book.Book CreateBook()
@@ -133,8 +158,12 @@ namespace BloomTests.Book
 								<div lang='de'>German should never display in this collection</div>
 							</div>
 						</div>
-					</div>");
+					</div>",
+						   @"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
+							<link rel='stylesheet' href='../customCollectionStyles.css'/>
+							<link rel='stylesheet' href='customBookStyles.css'/>");
 			var book = CreateBook();
+			CreateCommonCssFiles(book);
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
@@ -152,6 +181,12 @@ namespace BloomTests.Book
 			// That gives us a path to the main package file, typically content.opf
 			var packageData = StripXmlHeader(GetZipContent(zip, packageFile));
 
+			// should not strip out these three css files.
+			var toCheck = AssertThatXmlIn.String(packageData);
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fsettingsCollectionStyles' and @href='settingsCollectionStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fcustomCollectionStyles' and @href='customCollectionStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fcustomBookStyles' and @href='customBookStyles.css']");
+
 			var packageDoc = XDocument.Parse(packageData);
 			XNamespace opf = "http://www.idpf.org/2007/opf";
 			// Some attempt at validating that we actually included the images in the zip.
@@ -164,6 +199,9 @@ namespace BloomTests.Book
 			mgr.AddNamespace("xhtml", "http://www.w3.org/1999/xhtml");
 			AssertThatXmlIn.String(page1Data).HasNoMatchForXpath("//xhtml:head/xhtml:link[@href='basePage.css']", mgr);
 			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//head/link[@href='epubUnpaginated.css']");
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='settingsCollectionStyles.css']", mgr);
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customCollectionStyles.css']", mgr);
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customBookStyles.css']", mgr);
 		}
 
 		/// <summary>

@@ -81,6 +81,9 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomPreviewBootstrap.js")).Returns("../notareallocation/bloomPreviewBootstrap.js");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("epubUnpaginated.css")).Returns("../notareallocation/epubUnpaginated.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("customBookStyles.css")).Returns(Path.Combine(_tempFolder.Path, "customBookStyles.css"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("settingsCollectionStyles.css")).Returns(Path.Combine(_testFolder.Path, "settingsCollectionStyles.css"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("customCollectionStyles.css")).Returns(Path.Combine(_testFolder.Path, "customCollectionStyles.css"));
 
 
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
@@ -1413,9 +1416,9 @@ namespace BloomTests.Book
 			return dom;
 		}
 
-		protected void SetDom(string bodyContents)
+		protected void SetDom(string bodyContents, string headContents = "")
 		{
-			_bookDom = new HtmlDom(@"<html ><head></head><body>" + bodyContents + "</body></html>");
+			_bookDom = new HtmlDom(@"<html ><head>" + headContents + "</head><body>" + bodyContents + "</body></html>");
 		}
 	}
 }

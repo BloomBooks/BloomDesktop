@@ -110,7 +110,7 @@ namespace Bloom.Book
 						foreach (XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
 						{
 							var href = Path.Combine(_book.FolderPath, link.GetAttribute("href"));
-							var name = Path.GetFileName(href);
+							var name = Path.GetFileName(href) ?? href;
 
 							var fl = _book.Storage.GetFileLocator();
 							//var path = this.GetFileLocator().LocateFileWithThrow(name);
@@ -364,7 +364,9 @@ namespace Bloom.Book
 			foreach (XmlElement link in pageDom.RawDom.SafeSelectNodes("//head/link").Cast<XmlElement>().ToArray())
 			{
 				var href = link.Attributes["href"];
-				if (href != null && href.Value.StartsWith("custom"))
+				if (href != null && Path.GetFileName(href.Value).StartsWith("custom"))
+					continue;
+				if (href != null && Path.GetFileName(href.Value) == "settingsCollectionStyles.css")
 					continue;
 				link.ParentNode.RemoveChild(link);
 			}
