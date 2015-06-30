@@ -240,7 +240,7 @@ TEXTAREA.province {
   position: relative;
 }
 .ui-sourceTextsForBubble NAV {
-  overflow: auto;
+  overflow: hidden;
   display: block;
   height: 37px;
   top: -2px;
