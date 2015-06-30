@@ -27,4 +27,18 @@
 .verso #versoLicenseAndCopyright img {
   height: 31px;
 }
+div.bloom-editable {
+  margin-bottom: 0.6em;
+}
+.pictureAndWordPage .bloom-content1 {
+  font-size: 400%;
+}
+.pictureAndWordPage .bloom-content2,
+.pictureAndWordPage .bloom-content3 {
+  font-size: 200%;
+}
+.pictureAndWordPage .bloom-translationGroup {
+  text-align: center;
+  padding-top: 10px;
+}
 /*# sourceMappingURL=epubUnpaginated.css.map */
