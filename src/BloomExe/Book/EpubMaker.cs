@@ -468,10 +468,12 @@ namespace Bloom.Book
 			foreach (XmlElement img in pageDom.RawDom.SafeSelectNodes("//img"))
 			{
 				var marginBox = img.ParentNode.ParentNode as XmlElement;
-				// For now we only attempt to adjust pictures directly contained in the marginBox.
+				// For now we only attempt to adjust pictures contained in the marginBox.
 				// To do better than this we will probably need to actually load the HTML into
 				// a browser; even then it will be complex.
-				if (!HasClass(marginBox, "marginBox"))
+				while (marginBox != null && !HasClass(marginBox, "marginBox"))
+					marginBox = marginBox.ParentNode as XmlElement;
+				if (marginBox == null)
 					continue;
 				var page = marginBox.ParentNode as XmlElement;
 				if (!HasClass(page, "bloom-page"))
