@@ -98,6 +98,8 @@ namespace Bloom.Book
 						if (srcAttr == null)
 							continue; // hug?
 						var imgName = srcAttr.Value;
+						if (string.IsNullOrEmpty(imgName))
+							continue;
 						// Images are always directly in the folder
 						var srcPath = Path.Combine(_book.FolderPath, imgName);
 						CopyFileToEpub(srcPath);
@@ -127,6 +129,7 @@ namespace Bloom.Book
 						_firstContentPageItem = pageDocName;
 
 					CopyFileToEpub(Path.Combine(_book.FolderPath, "thumbnail.png"));
+					RearrangeImageOnTop(pageDom);
 
 					FixChangedFileNames(pageDom);
 					// Do this AFTER we copy the CSS files, this file is generated in place just for the epub.
@@ -211,6 +214,51 @@ namespace Bloom.Book
 					zip.AddDirectory(dir);
 				zip.Save();
 			}
+		}
+
+		/// <summary>
+		/// Bloom uses tricky styles to re-arrange the elements on a basic book's Basic Text and Picture page.
+		/// We want things to come out in the right order with a simple stylesheet.
+		/// </summary>
+		/// <param name="pageDom"></param>
+		private void RearrangeImageOnTop(HtmlDom pageDom)
+		{
+			var marginBox = pageDom.SafeSelectNodes("//div[@class='marginBox']").Cast<XmlElement>().FirstOrDefault();
+			if (marginBox == null)
+				return;
+			var page = (XmlElement) marginBox.ParentNode;
+			var pageClass = " " + AttrVal(page, "class") + " ";
+			if (!pageClass.Contains(" bloom-page ") || !pageClass.Contains(" imageOnTop ")
+				|| (!pageClass.Contains(" bloom-bilingual ") && !pageClass.Contains(" .bloom-trilingual ")))
+				return; // not the kind of page we want to fix, or not bilingual mode
+			var imageContainer = FindChildWithClass(marginBox, "bloom-imageContainer");
+			var transGroup = FindChildWithClass(marginBox, "bloom-translationGroup");
+			if (imageContainer == null || transGroup == null)
+				return;
+			var content1 = FindChildWithClass(transGroup, "bloom-content1");
+			var content2 = FindChildWithClass(transGroup, "bloom-content2");
+			if (content1 == null || content2 == null)
+				return;
+			var dup = (XmlElement)transGroup.CloneNode(false);
+			marginBox.InsertBefore(dup, imageContainer);
+			transGroup.RemoveChild(content1);
+			dup.AppendChild(content1);
+			if (dup.Attributes["id"] != null)
+				dup.RemoveAttribute("id");
+		}
+
+		XmlElement FindChildWithClass(XmlElement parent, string classVal)
+		{
+			foreach (var node in parent.ChildNodes)
+			{
+				var elt = node as XmlElement;
+				if (elt == null)
+					continue;
+				var eltClass = " " + AttrVal(elt, "class") + " ";
+				if (eltClass.Contains(" " + classVal + " "))
+					return elt;
+			}
+			return null;
 		}
 
 		/// <summary>
