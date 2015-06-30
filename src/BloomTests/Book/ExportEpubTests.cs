@@ -16,7 +16,7 @@ using Palaso.Extensions;
 namespace BloomTests.Book
 {
 	[TestFixture]
-	public class ExportEpubTests : BookTests
+	public class ExportEpubTests : BookTestsBase
 	{
 		private readonly XNamespace _xhtml = "http://www.w3.org/1999/xhtml";
 
