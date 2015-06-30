@@ -15,20 +15,23 @@ var bloomSourceBubbles = (function () {
     // This is the method that should be called from bloomEditing to create tabbed source bubbles
     // for translation.
     // param 'group' is a .bloom-translationGroup DIV
-    bloomSourceBubbles.ProduceSourceBubbles = function (group) {
-        var divForBubble = bloomSourceBubbles.MakeSourceTextDivForGroup(group);
+    // optional param 'newIso' is defined when the user clicks on a language in the dropdown box
+    bloomSourceBubbles.ProduceSourceBubbles = function (group, newIso) {
+        var divForBubble = bloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
         if (divForBubble == null)
             return;
         divForBubble = bloomSourceBubbles.CreateTabsFromDiv(divForBubble);
         if (divForBubble == null)
             return;
+        divForBubble = bloomSourceBubbles.CreateDropdownIfNecessary(divForBubble);
         bloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(group, divForBubble);
     };
     // Cleans up a clone of the original translationGroup
     // and sets up the list items with anchors that will become the tabs to jump to linked source text
     // param 'group' is a .bloom-translationGroup DIV
+    // optional param 'newIso' is defined when the user clicks on a language in the dropdown box
     // This method is only public for testing
-    bloomSourceBubbles.MakeSourceTextDivForGroup = function (group) {
+    bloomSourceBubbles.MakeSourceTextDivForGroup = function (group, newIso) {
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
         var divForBubble = $(group).clone();
@@ -85,7 +88,8 @@ var bloomSourceBubbles = (function () {
                 return 1;
             return 0;
         });
-        items = bloomSourceBubbles.SmartOrderSourceTabs(items); // BL-2357
+        // BL-2357
+        items = bloomSourceBubbles.SmartOrderSourceTabs(items, newIso);
         var shellEditingMode = false;
         var list = $this.find('ul');
         items.each(function () {
@@ -103,10 +107,15 @@ var bloomSourceBubbles = (function () {
         });
         return divForBubble;
     }; // end MakeSourceTextDivForGroup()
-    bloomSourceBubbles.SmartOrderSourceTabs = function (items) {
+    // 'Smart' orders the tabs putting the latest viewed language first, followed by others in the collection
+    // param 'items' is an alphabetical list of all the divs of different languages to be used as tabs
+    // optional param 'newIso' is defined when the user clicks on a language in the dropdown box
+    bloomSourceBubbles.SmartOrderSourceTabs = function (items, newIso) {
         // BL-2357 Do some smart ordering of source language tabs
         var settingsObject = GetSettings();
         var defaultSrcLang = settingsObject.defaultSourceLanguage;
+        if (newIso)
+            defaultSrcLang = newIso;
         items = bloomSourceBubbles.DoSafeReplaceInList(items, defaultSrcLang, 0);
         var language2 = settingsObject.currentCollectionLanguage2;
         var language3 = settingsObject.currentCollectionLanguage3;
@@ -154,6 +163,41 @@ var bloomSourceBubbles = (function () {
             return null;
         }
         return divForBubble;
+    };
+    // If divForBubble contains more than two languages, create a dropdown button
+    // to contain the extra possibilities
+    // This method is only public for testing
+    bloomSourceBubbles.CreateDropdownIfNecessary = function (divForBubble) {
+        var FIRST_SELECT_OPTION = 3;
+        var tabs = divForBubble.find("li");
+        if (tabs.length < FIRST_SELECT_OPTION)
+            return divForBubble; // no change
+        var selectAndOverlay = "<div class='styled-select-overlay'></div><select class='styled-select'></select>";
+        divForBubble.find("ul").append(selectAndOverlay);
+        var container = divForBubble.find(".styled-select");
+        tabs.each(function (idx) {
+            if (idx < FIRST_SELECT_OPTION - 1)
+                return true; // continue to next iteration of .each()
+            var iso = $(this).attr('id');
+            var languageName = localizationManager.getLanguageName(iso);
+            if (!languageName)
+                languageName = iso;
+            var option = "<option value='" + iso + "'>" + languageName + "</option>";
+            container.append(option);
+            $(this).attr('style', "display: none;");
+        });
+        container.append("<option value='' selected></option>");
+        container[0].addEventListener("change", bloomSourceBubbles.styledSelectChangeHandler, false);
+        return divForBubble;
+    };
+    bloomSourceBubbles.styledSelectChangeHandler = function (event) {
+        var newIso = event.target.value;
+        // Figure out which qtip we're in and go find the associated bloom-translationGroup
+        var qtip = $(event.target).closest('.qtip').attr('id');
+        var group = $(document).find('.bloom-translationGroup[aria-describedby="' + qtip + '"]');
+        // Redo creating the source bubbles with the selected language first
+        if (group && group.length > 0)
+            bloomSourceBubbles.ProduceSourceBubbles(group[0], newIso);
     };
     // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
     // Also makes sure the tooltips are setup correctly.

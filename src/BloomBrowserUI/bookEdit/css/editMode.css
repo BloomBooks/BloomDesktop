@@ -291,6 +291,33 @@ TEXTAREA.province {
 .ui-sourceTextsForBubble .source-text:lang(prt) {
   font-size: 18pt;
 }
+.styled-select {
+  width: 18px;
+  height: 28px;
+  border-style: none;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 9pt;
+}
+.styled-select option[selected] {
+  display: none;
+}
+.styled-select-overlay {
+  border-style: none;
+  background: #ffffa3 url("../img/dropdown arrow.png") no-repeat center;
+  z-index: 1;
+  opacity: 1;
+  width: 18px;
+  height: 28px;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  right: 0;
+}
 .panel-container {
   border: 1px solid #000000;
   padding: 0 10px;
