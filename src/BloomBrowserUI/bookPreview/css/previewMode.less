@@ -103,12 +103,30 @@ body {
   position: absolute;
   bottom: 20px;
 }
+
+@OddPageNumberPosition: 57px;
+@EvenPageNumberPosition: 60px;
+
 .numberedPage:nth-of-type(odd):after{
-	left: 57px;
+	left: @OddPageNumberPosition;
 }
 .numberedPage:nth-of-type(even):after{
-	right: 60px;
+	right: @EvenPageNumberPosition;
 	text-align: right;
+}
+
+//in right-to-left books, the way our pdf booklet maker works, it just reverses
+//the page order. In doing so, what use to be odd becomes even, and our margins
+//and page numbering logic needs to switch accordingly.
+.rightToLeft {
+	.numberedPage:nth-of-type(odd):after {
+		right: @EvenPageNumberPosition;
+		left: auto;
+	}
+	.numberedPage:nth-of-type(even):after {
+		left: @OddPageNumberPosition;
+		right: auto;
+	}
 }
 
 .bloom-draggableLabel

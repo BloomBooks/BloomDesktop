@@ -15,6 +15,7 @@ using Bloom.Collection;
 using Bloom.web;
 using DesktopAnalytics;
 using Palaso.IO;
+using PdfDroplet.LayoutMethods;
 
 namespace Bloom.Publish
 {
@@ -159,6 +160,10 @@ namespace Bloom.Publish
 			if (LayoutPagesForRightToLeft)
 				HtmlDom.AddRightToLeftClassToBody(dom);
 			HtmlDom.AddHidePlaceHoldersClassToBody(dom);
+			if (BookSelection.CurrentSelection.GetDefaultBookletLayout() == PublishModel.BookletLayoutMethod.Calendar)
+			{
+				HtmlDom.AddCalendarFoldClassToBody(dom);
+			}
 		}
 
 		private string GetPdfPath(string fname)
@@ -355,7 +360,7 @@ namespace Bloom.Publish
 			if (Palaso.PlatformUtilities.Platform.IsWindows)
 				Process.Start("Firefox.exe", '"' + htmlFilePath + '"');
 			else
-				Process.Start("xdg-open", htmlFilePath);
+				Process.Start("xdg-open", '"' + htmlFilePath + '"');
 		}
 
 		public void RefreshValuesUponActivation()

@@ -5,7 +5,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -23,6 +22,7 @@ using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
+using Palaso.Xml;
 
 namespace Bloom.Edit
 {
@@ -483,13 +483,16 @@ namespace Bloom.Edit
 
 			_currentlyDisplayedBook = CurrentBook;
 
-			var errors = _bookSelection.CurrentSelection.GetErrorsIfNotCheckedBefore();
+			var errors = _currentlyDisplayedBook.GetErrorsIfNotCheckedBefore();
 			if (!string.IsNullOrEmpty(errors))
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(errors);
+				ErrorReport.NotifyUserOfProblem(errors);
 				return;
 			}
-			var page = _bookSelection.CurrentSelection.FirstPage;
+
+			// BL-2339: try to choose the last edited page
+			var page = _currentlyDisplayedBook.GetPageByIndex(_currentlyDisplayedBook.UserPrefs.MostRecentPage) ?? _currentlyDisplayedBook.FirstPage;
+
 			if (page != null)
 				_pageSelection.SelectPage(page);
 
@@ -546,6 +549,15 @@ namespace Bloom.Edit
 					_view.UpdateThumbnailAsync(_previouslySelectedPage);
 				}
 				_previouslySelectedPage = _pageSelection.CurrentSelection;
+
+				// BL-2339: remember last edited page
+				if (_previouslySelectedPage != null)
+				{
+					var idx = _previouslySelectedPage.GetIndex();
+					if (idx > -1)
+						_previouslySelectedPage.Book.UserPrefs.MostRecentPage = idx;
+				}
+
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 				_duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;

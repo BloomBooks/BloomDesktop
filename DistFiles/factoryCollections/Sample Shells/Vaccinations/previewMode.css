@@ -1,4 +1,4 @@
-﻿@media screen {
+@media screen {
   body {
     background-color: #363333;
   }
@@ -92,6 +92,14 @@ body {
   right: 60px;
   text-align: right;
 }
+.rightToLeft .numberedPage:nth-of-type(odd):after {
+  right: 60px;
+  left: auto;
+}
+.rightToLeft .numberedPage:nth-of-type(even):after {
+  left: 57px;
+  right: auto;
+}
 .bloom-draggableLabel {
   /*This matches the width of the dragHandle, which doesn't get added in preview mode
 and as a result, the labels are shifted to this many pixels to the width. This shifts them back.*/
@@ -100,4 +108,3 @@ and as a result, the labels are shifted to this many pixels to the width. This s
 .hidePlaceHolders img[src*="placeHolder.png"] {
   display: none;
 }
-/*# sourceMappingURL=previewMode.css.map */

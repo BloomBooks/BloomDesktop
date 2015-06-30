@@ -206,8 +206,8 @@ namespace Bloom.Collection
 
 		private string GetLanguage1Name_NoCache(string inLanguage)
 		{
-			var exactLanguageMatch = _lookupIsoCode.GetBestLanguageName(Language1Iso639Code);
-			if (exactLanguageMatch == Language1Iso639Code) // no useful name found
+			string exactLanguageMatch;
+			if (!_lookupIsoCode.GetBestLanguageName(Language1Iso639Code, out exactLanguageMatch))
 				return "L1-Unknown-" + Language1Iso639Code;
 			return GetLanguageNameInUILangIfPossible(exactLanguageMatch, inLanguage);
 		}
@@ -242,7 +242,9 @@ namespace Bloom.Collection
 			//profiling showed we were spending a lot of time looking this up, hence the cache
 			if (!_isoToLangNameDictionary.ContainsKey(code))
 			{
-				_isoToLangNameDictionary[code] = _lookupIsoCode.GetBestLanguageName(code);
+				string name;
+				_lookupIsoCode.GetBestLanguageName(code, out name);
+				_isoToLangNameDictionary[code] = name;
 			}
 
 			return GetLanguageNameInUILangIfPossible(_isoToLangNameDictionary[code], inLanguage);
@@ -465,7 +467,9 @@ namespace Bloom.Collection
 			if (!String.IsNullOrEmpty(msg) && ErrorReport.IsOkToInteractWithUser)
 			{
 				msg += Environment.NewLine + secondaryMessage;
-				MessageBox.Show(msg, String.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
+				// NB: this MessageBoxOptions.DefaultDesktopOnly option is more than the name implies. It changes the message to a "service message" which is the only
+				// way I've found to get the box into the taskbar.
+				MessageBox.Show(msg, "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
 			}
 			return true;
 		}
@@ -651,7 +655,9 @@ namespace Bloom.Collection
 			for (int i = 0; i < isoCodes.Length; i++)
 			{
 				var code = isoCodes[i];
-				string name = code == Language1Iso639Code ? Language1Name : _lookupIsoCode.GetBestLanguageName(code);
+				string name = Language1Name;
+				if (code != Language1Iso639Code)
+					_lookupIsoCode.GetBestLanguageName(code, out name);
 				string ethCode;
 				var data = _lookupIsoCode.GetExactLanguageMatch(code);
 				if (data == null)

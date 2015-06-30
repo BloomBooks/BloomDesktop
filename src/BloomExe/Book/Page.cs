@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Xml;
 using Palaso.Code;
-using Palaso.Xml;
 
 namespace Bloom.Book
 {
@@ -19,6 +18,7 @@ namespace Bloom.Book
 		Book Book { get; set; }
 		bool IsBackMatter { get; }
 		string GetCaptionOrPageNumber(ref int pageNumber);
+		int GetIndex();
 	}
 
 	public class Page : IPage
@@ -153,6 +153,22 @@ namespace Bloom.Book
 //    		var id = pageDom.SelectSingleNodeHonoringDefaultNS("/html/body/div").Attributes["id"].Value;
 			var id = pageDom.SelectSingleNode("/html/body/div").Attributes["id"].Value;
 			return string.Format("/html/body/div[@id='{0}']", id);
+		}
+
+		/// <summary>
+		/// Return the index of this page in the IEnumerable of pages
+		/// </summary>
+		/// <returns>Index of the page, or -1 if the page was not found</returns>
+		public int GetIndex()
+		{
+			var i = 0;
+			foreach (var page in Book.GetPages())
+			{
+				if (page == this) return i;
+				i++;
+			}
+
+			return -1;
 		}
 	}
 }

@@ -28,7 +28,7 @@ function runUpdate(jsonConfig) {
 //
 var CalendarConfigurator = (function () {
     function CalendarConfigurator(jsonConfig) {
-        if (jsonConfig && jsonConfig.length > 0)
+        if (jsonConfig && jsonConfig['library'])
             this.configObject = new CalendarConfigObject(jsonConfig);
         else
             this.configObject = new CalendarConfigObject(); // shouldn't happen, even in test...
@@ -111,13 +111,20 @@ var CalendarConfigurator = (function () {
 })();
 var CalendarConfigObject = (function () {
     function CalendarConfigObject(jsonConfig) {
-        this.defaultConfig = '{"calendar": { "year": "2015" },' + '"library":  {"calendar": {' + '"monthNames": ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"],' + '"dayAbbreviations": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]}}}';
-        if (typeof jsonConfig === "undefined" || jsonConfig.length == 0)
+        this.defaultConfig = {
+            "calendar": { "year": "2015" },
+            "library": {
+                "calendar": {
+                    "monthNames": ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"],
+                    "dayAbbreviations": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                }
+            }
+        };
+        if (typeof jsonConfig === "undefined" || !jsonConfig['library'])
             jsonConfig = this.defaultConfig;
-        var object = $.parseJSON(jsonConfig);
-        this.year = object.calendar.year;
-        this.monthNames = object.library.calendar.monthNames;
-        this.dayAbbreviations = object.library.calendar.dayAbbreviations;
+        this.year = jsonConfig.calendar.year;
+        this.monthNames = jsonConfig.library.calendar.monthNames;
+        this.dayAbbreviations = jsonConfig.library.calendar.dayAbbreviations;
     }
     return CalendarConfigObject;
 })();
@@ -133,4 +140,3 @@ var TestCalendar = (function () {
     }
     return TestCalendar;
 })();
-//# sourceMappingURL=configure.js.map

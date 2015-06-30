@@ -1,4 +1,4 @@
-﻿/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 /*+clearfix {*/
 BODY {
   background-color: #363333;
@@ -236,43 +236,48 @@ TEXTAREA.province {
   margin-top: -8px;
   margin-right: 8px;
 }
-.ui-sourceTextsForBubble UL {
-  padding: 0;
+.ui-sourceTextsForBubble {
+  position: relative;
+}
+.ui-sourceTextsForBubble NAV {
+  overflow: auto;
+  display: block;
+  height: 37px;
+  top: -2px;
+}
+.ui-sourceTextsForBubble NAV UL {
   z-index: 1;
   background-color: transparent;
   text-align: left;
-  width: 219px;
-  /*+placement:shift -7px 1px;*/
-  position: relative;
-  left: -7px;
+  display: flex;
+  list-style: outside none none;
   top: 1px;
 }
-.ui-sourceTextsForBubble UL LI {
-  display: inline-block;
+.ui-sourceTextsForBubble NAV UL LI {
   padding-right: 11px;
-  padding-left: 7px;
   font-size: 9pt;
-  margin-right: 11px;
   height: 31px;
+  float: left;
+  flex: none;
 }
-.ui-sourceTextsForBubble UL LI A {
+.ui-sourceTextsForBubble NAV UL LI.active {
+  padding-top: 1px;
+  position: relative;
+  top: -5px;
+  font: bold 11pt sans-serif;
+}
+.ui-sourceTextsForBubble NAV UL LI A {
   display: block;
   padding: 5px;
   outline: none;
-  /*[empty]font-style:;*/
   text-decoration: none;
   color: #000000;
 }
-.ui-sourceTextsForBubble UL LI A:hover {
+.ui-sourceTextsForBubble NAV UL LI A:hover {
   text-decoration: underline;
+  background-color: lightyellow;
 }
-.ui-sourceTextsForBubble UL LI.active {
-  padding-top: 1px;
-  position: relative;
-  top: 1px;
-  font: bold 11pt sans-serif;
-}
-.ui-sourceTextsForBubble UL LI A.active {
+.ui-sourceTextsForBubble NAV UL LI A.active {
   font-weight: bold;
 }
 .ui-sourceTextsForBubble .source-text {
@@ -564,4 +569,3 @@ SPAN.possible-word
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
   right: 0px;
 }
-/*# sourceMappingURL=editMode.css.map */

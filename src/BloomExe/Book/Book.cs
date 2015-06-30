@@ -77,6 +77,7 @@ namespace Bloom.Book
 			BookRefreshEvent bookRefreshEvent)
 		{
 			BookInfo = info;
+			UserPrefs = UserPrefs.Load(Path.Combine(info.FolderPath, "book.userPrefs"));
 
 			Guard.AgainstNull(storage,"storage");
 
@@ -86,7 +87,7 @@ namespace Bloom.Book
 			_storage = storage;
 
 			//this is a hack to keep these two in sync (in one direction)
-			_storage.FolderPathChanged +=(x,y)=>BookInfo.FolderPath = _storage.FolderPath;
+			_storage.FolderPathChanged += _storage_FolderPathChanged;
 
 			_templateFinder = templateFinder;
 
@@ -123,6 +124,12 @@ namespace Bloom.Book
 			FixBookIdAndLineageIfNeeded();
 			_storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
+		}
+
+		void _storage_FolderPathChanged(object sender, EventArgs e)
+		{
+			BookInfo.FolderPath = _storage.FolderPath;
+			UserPrefs.UpdateFileLocation(_storage.FolderPath);
 		}
 
 		public static Color NextBookColor()
@@ -533,6 +540,18 @@ namespace Bloom.Book
 		public IPage FirstPage
 		{
 			get { return GetPages().First(); }
+		}
+
+		public IPage GetPageByIndex(int pageIndex)
+		{
+			// index must be >= 0
+			if (pageIndex < 0) return null;
+
+			// index must be less than the number of pages
+			var pages = GetPages().ToList();
+			if (pages.Count <= pageIndex) return null;
+
+			return pages[pageIndex];
 		}
 
 		public Book FindTemplateBook()
@@ -1110,6 +1129,8 @@ namespace Bloom.Book
 		}
 
 		public BookInfo BookInfo { get; private set; }
+
+		public UserPrefs UserPrefs { get; private set; }
 
 		public int NextStyleNumber
 		{

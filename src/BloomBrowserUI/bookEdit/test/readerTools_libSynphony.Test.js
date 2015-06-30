@@ -26,6 +26,27 @@ describe("readerTools-libSynphony tests", function() {
         return model;
     }
 
+    function generateSightWordsOnlyTestData() {
+
+        lang_data = null;
+        var model = new ReaderToolsModel();
+
+        var settings = {};
+        settings.stages = [];
+
+        settings.stages.push({"letters":"","sightWords":"canine feline"});
+        settings.stages.push({"letters":"","sightWords":"carnivore omnivore"});
+        settings.stages.push({"letters":"","sightWords":"rodent"});
+
+        var synphony = model.getSynphony();
+        synphony.loadSettings(settings);
+
+        model.addWordsToSynphony();
+        model.updateWordList();
+
+        return model;
+    }
+
     function addDiv(id) {
         var div = document.createElement('div');
         div.id = id;
@@ -100,5 +121,28 @@ describe("readerTools-libSynphony tests", function() {
 
         text1.html('Cat<br>Dog.').checkDecodableReader({knownGraphemes: knownGraphemes});
         expect(text1.html()).toEqual('<span class="possible-word" data-segment="word">Cat</span><br><span class="possible-word" data-segment="word">Dog</span>.');
+    });
+
+    it("sightWordOnlyStages", function() {
+
+        generateSightWordsOnlyTestData();
+
+        var knownGraphemes = [];
+        var text1 = $('#text_entry1');
+
+        // test empty div (just a <br>)
+        text1.html('<br>').checkDecodableReader({sightWords:["canine", "feline"]});
+        expect(text1.html()).toEqual('<br>');
+
+        // no sight words
+        text1.html('Cat dog.').checkDecodableReader({sightWords:["canine", "feline"]});
+        expect(text1.html()).toEqual('<span class="word-not-found" data-segment="word">Cat</span> <span class="word-not-found" data-segment="word">dog</span>.');
+
+        // test one sight word
+        text1.html('Canine Dog.').checkDecodableReader({sightWords:["canine", "feline"]});
+        expect(text1.html()).toEqual('<span class="sight-word" data-segment="word">Canine</span> <span class="word-not-found" data-segment="word">Dog</span>.');
+
+        text1.html('Canine feline').checkDecodableReader({sightWords:["canine", "feline"]});
+        expect(text1.html()).toEqual('<span class="sight-word" data-segment="word">Canine</span> <span class="sight-word" data-segment="word">feline</span>');
     });
 });

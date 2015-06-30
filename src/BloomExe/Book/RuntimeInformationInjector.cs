@@ -97,8 +97,8 @@ namespace Bloom.Book
 				var lookup = new LookupIsoCodeModel(); // < 1ms
 				foreach (var lang in langs) // may include things like empty string, z, *, but this is harmless as they are not language codes.
 				{
-					var match = lookup.GetBestLanguageName(lang);
-					if (match != lang) // some better name found
+					string match;
+					if (lookup.GetBestLanguageName(lang, out match)) // some better name found
 						mapOriginalToLocalized[lang] = match;
 				}
 			}
@@ -283,6 +283,16 @@ namespace Bloom.Book
 
 			d.Add("languageForNewTextBoxes", collectionSettings.Language1Iso639Code);
 			d.Add("isSourceCollection", collectionSettings.IsSourceCollection.ToString());
+
+			// BL-2357 To aid in smart ordering of source languages in source bubble
+			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
+			{
+				d.Add("currentCollectionLanguage2", collectionSettings.Language2Iso639Code);
+			}
+			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+			{
+				d.Add("currentCollectionLanguage3", collectionSettings.Language3Iso639Code);
+			}
 
 			d.Add("bloomBrowserUIFolder", FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI").ToLocalhost());
 

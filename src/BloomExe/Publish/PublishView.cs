@@ -531,11 +531,8 @@ namespace Bloom.Publish
 				form.Activated += FormActivatedAfterPrintDialog;
 #endif
 				_previewBox.Image = Image.FromFile(printSettingsSampleName);
-				_previewBox.Bounds =
-					new Rectangle(
-						new Point(ClientRectangle.Width - _previewBox.Image.Width,
-							ClientRectangle.Height - _previewBox.Image.Height),
-						_previewBox.Image.Size);
+				_previewBox.Bounds = GetPreviewBounds();
+				_previewBox.SizeMode = PictureBoxSizeMode.Zoom;
 				_previewBox.Show();
 				if (!Settings.Default.DontShowPrintNotification)
 				{
@@ -561,6 +558,28 @@ namespace Bloom.Publish
 			_pdfViewer.Print();
 			Logger.WriteEvent("Calling Print on PDF Viewer");
 			Analytics.Track("Print PDF");
+		}
+
+		/// <summary>
+		/// Computes the preview bounds (since the image may be bigger than what we have room
+		/// for).
+		/// </summary>
+		Rectangle GetPreviewBounds()
+		{
+			double horizontalScale = 1.0;
+			double verticalScale = 1.0;
+			if (_previewBox.Image.Width > ClientRectangle.Width)
+				horizontalScale = (double)(ClientRectangle.Width) / (double)(_previewBox.Image.Width);
+			if (_previewBox.Image.Height > ClientRectangle.Height)
+				verticalScale = (double)(ClientRectangle.Height) / (double)(_previewBox.Image.Height);
+			double scale = Math.Min(horizontalScale, verticalScale);
+			int widthPreview = (int)(_previewBox.Image.Width * scale);
+			int heightPreview = (int)(_previewBox.Image.Height * scale);
+			var sizePreview = new Size(widthPreview, heightPreview);
+			var xPreview = ClientRectangle.Width - widthPreview;
+			var yPreview = ClientRectangle.Height - heightPreview;
+			var originPreview = new Point(xPreview, yPreview);
+			return new Rectangle(originPreview, sizePreview);
 		}
 
 		private void FormActivatedAfterPrintDialog(object sender, EventArgs eventArgs)

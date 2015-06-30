@@ -1,4 +1,4 @@
-@import "../../../distfiles/less/common-mixins.less";
+@import "../../../DistFiles/less/common-mixins.less";
 
 .Browser-Reset() {
 	/*+init {*/
@@ -71,7 +71,7 @@ div.ui-tooltip-content
 p{
   min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
 }
-textarea, .bloom-editable, TD
+textarea, .bloom-editable
 {
 	resize: none;
 	/*don't show those cute little resize controls in Firefox 4 and greater*/
@@ -81,6 +81,21 @@ textarea, .bloom-editable, TD
 	min-height:  @defaultLineHeight + .3em;
 	width: 100%;
 }
+
+/* The following has been split out from the above rule because it should probably be removed,
+	but at this point we are about to go release candidate with 3.1 so it will have to wait.
+	When we do remove it, the main things it could effect are the Story Primer template and the dozen or so SIL LEAD Uganda SHRP templates.
+*/
+TD {
+	resize: none;
+	/*don't show those cute little resize controls in Firefox 4 and greater*/
+	overflow: visible;
+	font-size: 143%;
+	line-height: @defaultLineHeight;
+	min-height: @defaultLineHeight + .3em;
+	width: 100%;
+}
+
 p{
   min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
 }
@@ -205,12 +220,12 @@ preview.css.
 }
 
 .marginBox {
-  .SetMarginBox(@PageWidth, @PageHeight) {
+	.SetMarginBox(@PageWidth, @PageHeight) {
 		height: @PageHeight - (@MarginTop + @MarginBottom);
-    width: @PageWidth - ( @MarginOuter + @MarginInner );
-    IMG { /* BL-1022 Keeps XMatter thumb images from going too wide */
-            max-width: @PageWidth - ( @MarginOuter + @MarginInner );
-    }
+		width: @PageWidth - ( @MarginOuter + @MarginInner );
+		IMG { /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+			max-width: @PageWidth - ( @MarginOuter + @MarginInner );
+		}
 	}
 	
 	.A4Portrait & {
@@ -240,33 +255,44 @@ preview.css.
 //page looks like page 1 from the view of the css, so showing every page
 //as if it were odd is just confusing for the user.
 //Therefore we only turn on left-vs.right distinctions when when making PDF.
-.publishMode :not(.outsideFrontCover):not(.outsideBackCover){
+.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
 	&.bloom-page:nth-of-type(odd){
 		.marginBox{
+			/* shifted margin */
 			left: @MarginOuter;
-		}
-		// BL-2310 keep left and right the same for calendar fold
-		&.A5Landscape .marginBox, &.A4Landscape .marginBox{
-			left: @MarginBalanced;
 		}
 	}
 	&.bloom-page:nth-of-type(even){
 		.marginBox{
+			/* shifted margin */
 			left: @MarginInner;
-		}
-		// BL-2310 keep left and right the same for calendar fold
-		&.A5Landscape .marginBox, &.A4Landscape .marginBox{
-			left: @MarginBalanced;
 		}
 	}
 }
 
-//in right to left books, the way our pdf maker works, it just reverses
-.rightToLeft.publishMode :not(.outsideFrontCover):not(.outsideBackCover){
+// Note: we aren't making any assumption about this or that landscape being calendar fold.
+// The publishModel needs to make that decision (perhaps, in the future, user will be able to control that when
+// making the pdf). From the stylesheet's view, we just need to see this calendarFold class on the Body
+
+.calendarFold{
+	.marginBox {
+		/* balanced margin*/
+		left: @MarginBalanced;
+	}
+}
+
+//in right-to-left books, the way our pdf booklet maker works, it just reverses
+//the page order. In doing so, what use to be odd becomes even, and our margins
+//and page numbering logic needs to switch accordingly. Page numbering is
+//not part of the basePage.less.
+
+.rightToLeft.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
   &.bloom-page:nth-of-type(odd) .marginBox  {
+	  /* swap margins on right to left */
 	  left: @MarginInner;
   }
   &.bloom-page:nth-of-type(even) .marginBox  {
+	  /* swap margins on right to left */
 	  left: @MarginOuter;
   }
 }
