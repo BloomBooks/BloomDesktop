@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
@@ -38,6 +39,8 @@ namespace Bloom.CollectionTab
 		private bool _primaryCollectionReloadPending;
 		private bool _disposed;
 		private BookCollection _downloadedBookCollection;
+		private PictureBox _thumbnailContextMenuButton;
+
 		enum ButtonManagementStage
 		{
 			LoadPrimary, ImprovePrimary, LoadSourceCollections, ImproveAndRefresh
@@ -91,6 +94,50 @@ namespace Bloom.CollectionTab
 			if(Settings.Default.ShowExperimentalCommands)
 				_settingsProtectionHelper.ManageComponent(_exportToXMLForInDesignToolStripMenuItem);//we are restriting it because it opens a folder from which the user could do damage
 			_exportToXMLForInDesignToolStripMenuItem.Visible = Settings.Default.ShowExperimentalCommands;
+
+			SetupBookDropdownIcon();
+			_bookContextMenu.Closed += _bookContextMenu_Closed;
+		}
+
+		void _bookContextMenu_Closed(object sender, ToolStripDropDownClosedEventArgs e)
+		{
+			// make these controls visible again so they are available in the right-click menu
+			toolStripSeparator1.Visible = true;
+			_updateThumbnailMenu.Visible = true;
+			_updateFrontMatterToolStripMenu.Visible = true;
+		}
+
+		private void SetupBookDropdownIcon()
+		{
+			// we just need the bottom part of the image for this button
+			var img = new Bitmap(13, 11, PixelFormat.Format32bppArgb);
+			var src = (Bitmap)_menuTriangle.Image;
+			using (var g = Graphics.FromImage(img))
+			{
+				g.DrawImage(src, new Rectangle(0, 0, 13, 11), new Rectangle(0, 7, 13, 13), GraphicsUnit.Pixel);
+			}
+
+			// create the 
+			_thumbnailContextMenuButton = new PictureBox
+			{
+				Image = img,
+				BackColor = Color.Transparent,
+				Visible = false,
+				BorderStyle = BorderStyle.None,
+				SizeMode = PictureBoxSizeMode.AutoSize
+			};
+			_thumbnailContextMenuButton.Click += _bookTriangle_Click;
+			Controls.Add(_thumbnailContextMenuButton);
+		}
+
+		void _bookTriangle_Click(object sender, EventArgs e)
+		{
+			// hide these controls in the triangle menu
+			toolStripSeparator1.Visible = false;
+			_updateThumbnailMenu.Visible = false;
+			_updateFrontMatterToolStripMenu.Visible = false;
+
+			_bookContextMenu.Show(MousePosition);
 		}
 
 		private void OnExportToXmlForInDesign(object sender, EventArgs e)
@@ -128,7 +175,7 @@ namespace Bloom.CollectionTab
 			var selection = (BookSelection)sender;
 			if ((selection.CurrentSelection != null) && (selection.CurrentSelection.BookInfo != null))
 			{
-				HighlightBookButton(selection.CurrentSelection.BookInfo);					
+				HighlightBookButtonAndShowContextMenuButton(selection.CurrentSelection.BookInfo);					
 			}
 		}
 
@@ -142,7 +189,6 @@ namespace Bloom.CollectionTab
 			base.OnLoad(e);
 			Application.Idle += ManageButtonsAtIdleTime;
 		}
-
 
 		private void ManageButtonsAtIdleTime(object sender, EventArgs e)
 		{
@@ -653,14 +699,22 @@ namespace Bloom.CollectionTab
 			SelectBook(bookInfo);
 		}
 
-		private void HighlightBookButton(BookInfo bookInfo)
+		private void HighlightBookButtonAndShowContextMenuButton(BookInfo bookInfo)
 		{
 			foreach (var btn in AllBookButtons())
 			{
 				if (btn.Tag == bookInfo)
+				{
 					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
+					_thumbnailContextMenuButton.Left = btn.Left + btn.Width - _thumbnailContextMenuButton.Width - 2;
+					_thumbnailContextMenuButton.Top = btn.Top + 2;
+					_thumbnailContextMenuButton.Visible = true;
+					_thumbnailContextMenuButton.BringToFront();
+				}
 				else
+				{
 					btn.FlatAppearance.BorderColor = BackColor;
+				}
 			}
 		}
 
@@ -934,6 +988,7 @@ namespace Bloom.CollectionTab
 		{
 			_model.DoUpdatesOfAllBooks();
 		}
+
 		private void _doChecksOfAllBooksToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			_model.DoChecksOfAllBooks();
@@ -991,6 +1046,7 @@ namespace Bloom.CollectionTab
 				_model.MakeBloomPack(dlg.FileName, forReaderTools);
 			}
 		}
+
 		private void exportToWordOrLibreOfficeToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			try
@@ -1064,6 +1120,85 @@ namespace Bloom.CollectionTab
 
 				ctrl = parent;
 			}
+		}
+
+		private void _copyBook_Click(object sender, EventArgs e)
+		{
+			if (SelectedBook == null) return;
+
+			// get the book name and copy number of the current directory
+			var collectionDir = SelectedBook.CollectionSettings.FolderPath;
+			var baseName = Path.GetFileName(SelectedBook.FolderPath);
+			var regex = new Regex(@"^(.+)(\s-\sCopy)(\s[0-9]+)?$");
+			var match = regex.Match(baseName);
+			var copyNum = 1;
+
+			if (match.Success)
+			{
+				baseName = match.Groups[1].Value;
+				if (match.Groups[3].Success)
+					copyNum += int.Parse(match.Groups[3].Value.Trim());
+			}
+
+			// directory for the new book
+			var newBookName = GetAvaialableDirectory(collectionDir, baseName, copyNum);
+			var newBookDir = Path.Combine(collectionDir, newBookName);
+			Directory.CreateDirectory(newBookDir);
+
+			// copy files
+			CopyDirectory(SelectedBook.FolderPath, newBookDir);
+			
+			// rename the book htm file
+			var oldName = Path.Combine(newBookDir, Path.GetFileName(SelectedBook.GetPathHtmlFile()));
+			var newName = Path.Combine(newBookDir, newBookName + ".htm");
+			File.Move(oldName, newName);
+
+			// reload the collection
+			_model.ReloadCollections();
+			LoadPrimaryCollectionButtons();
+
+			// select the new book
+			var bookInfo = AllBookButtons().Select(btn => btn.Tag as BookInfo).FirstOrDefault(info => info.FolderPath == newBookDir);
+			if (bookInfo != null)
+			{
+				SelectBook(bookInfo);
+				HighlightBookButtonAndShowContextMenuButton(bookInfo);
+			}
+		}
+
+		/// <summary>
+		/// Get an avaialble directory name for a new copy of a book
+		/// </summary>
+		/// <param name="collectionDir"></param>
+		/// <param name="baseName"></param>
+		/// <param name="copyNum"></param>
+		/// <returns></returns>
+		private static string GetAvaialableDirectory(string collectionDir, string baseName, int copyNum)
+		{
+			string newName;
+			if (copyNum == 1)
+				newName = baseName + " - Copy";
+			else
+				newName = baseName + " - Copy " + copyNum;
+
+			while (Directory.Exists(Path.Combine(collectionDir, newName)))
+			{
+				copyNum++;
+				newName = baseName + " - Copy " + copyNum;
+			}
+
+			return newName;
+		}
+
+		private static void CopyDirectory(string sourceDir, string targetDir)
+		{
+			Directory.CreateDirectory(targetDir);
+
+			foreach (var file in Directory.GetFiles(sourceDir))
+				File.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)));
+
+			foreach (var directory in Directory.GetDirectories(sourceDir))
+				CopyDirectory(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
 		}
 	}
 }

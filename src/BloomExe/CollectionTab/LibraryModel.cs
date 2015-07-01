@@ -86,7 +86,7 @@ namespace Bloom.CollectionTab
 
 		public List<BookCollection> GetBookCollections()
 		{
-			if(_bookCollections ==null)
+			if(_bookCollections == null)
 			{
 				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
 
@@ -96,6 +96,12 @@ namespace Bloom.CollectionTab
 				_bookCollections.Insert(1,templates);
 			}
 			return _bookCollections;
+		}
+
+		public void ReloadCollections()
+		{
+			_bookCollections = null;
+			GetBookCollections();
 		}
 
 		/// <summary>
