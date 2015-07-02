@@ -296,7 +296,7 @@ TEXTAREA.province {
   font-size: 18pt;
 }
 .styled-select {
-  width: 18px;
+  width: 32px;
   height: 28px;
   border-style: none;
   margin: 0;
@@ -311,16 +311,23 @@ TEXTAREA.province {
 }
 .styled-select-overlay {
   border-style: none;
-  background: #ffffa3 url("../img/dropdown arrow.png") no-repeat center;
+  background-color: #FFFFA3;
   z-index: 1;
   opacity: 1;
-  width: 18px;
+  width: 32px;
   height: 28px;
   pointer-events: none;
   margin: 0;
-  padding: 0;
+  padding-top: 4px;
   position: absolute;
   right: 0;
+  font-size: 9pt;
+}
+.styled-select-overlay::before {
+  content: "(";
+}
+.styled-select-overlay::after {
+  content: ")";
 }
 .panel-container {
   border: 1px solid #000000;
