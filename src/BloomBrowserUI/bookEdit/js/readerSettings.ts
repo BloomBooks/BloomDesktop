@@ -7,7 +7,7 @@ class ReaderSettings {
   stages: ReaderStage[] = [];
   letters: string = '';
   moreWords: string = '';
-
+  useAllowedWords: number = 0;
 }
 
 // Defines an object to hold data about one stage in the decodable books tool

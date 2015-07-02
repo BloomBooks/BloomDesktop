@@ -193,18 +193,18 @@ function selectStage(tr: HTMLTableRowElement): void {
 
 function requestWordsForSelectedStage():void {
 
-  var tr = $('#stages-table').find('tbody tr.selected').get(0);
+  var tr: HTMLTableRowElement = $('#stages-table').find('tbody tr.selected').get(0);
 
 
-  desiredGPCs = (tr.cells[1].innerHTML).split(' ');
+  desiredGPCs = ((<HTMLTableCellElement>tr.cells[1]).innerHTML).split(' ');
   previousGPCs = $.makeArray($(tr).prevAll().map(function() {
-    return this.cells[1].innerHTML.split(' ');
+    return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(' ');
   }));
 
   var knownGPCS = previousGPCs.join(' ') + ' ' + desiredGPCs.join(' ');
-  currentSightWords = (tr.cells[2].innerHTML).split(' ');
+  currentSightWords = ((<HTMLTableCellElement>tr.cells[2]).innerHTML).split(' ');
   sightWords = $.makeArray($(tr).prevAll().map(function() {
-    return this.cells[2].innerHTML.split(' ');
+    return (<HTMLTableCellElement>this.cells[2]).innerHTML.split(' ');
   }));
 
   sightWords = _.union(sightWords, currentSightWords);
@@ -260,7 +260,7 @@ function selectLetters(tr: HTMLTableRowElement) {
 
   // letters in previous stages
   stage_letters = $.makeArray($(tr).prevAll().map(function() {
-    return this.cells[1].innerHTML.split(' ');
+    return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(' ');
   }));
   var previous = letters.filter(function(index, element) {
     return stage_letters.indexOf(element.innerHTML) > -1;
@@ -416,11 +416,11 @@ function tabBeforeActivate(ui): void {
     rows.each(function() {
 
       // get the letters for this stage
-      var letters = this.cells[1].innerHTML.split(' ');
+      var letters = (<HTMLTableCellElement>this.cells[1]).innerHTML.split(' ');
 
       // make sure each letter for this stage is all in the allLetters list
       letters = _.intersection(letters, allLetters);
-      this.cells[1].innerHTML = letters.join(' ');
+      (<HTMLTableCellElement>this.cells[1]).innerHTML = letters.join(' ');
     });
 
     // select letters for current stage
@@ -538,7 +538,7 @@ function renumberRows(rows: JQuery): void {
   var rowNum = 1;
 
   $.each(rows, function() {
-    this.cells[0].innerHTML = rowNum++;
+    (<HTMLTableCellElement>this.cells[0]).innerHTML = (rowNum++).toString();
   });
 }
 
@@ -697,7 +697,25 @@ function attachEventHandlers(): void {
       var id = this.id.replace(/^max-/, '');
       $('#levels-table').find('tbody tr.selected td.' + id).html(this.value);
     });
+
+    $('input[name="words-or-letters"]').onOnce('change', function() {
+      enableSampleWords();
+    })
   }
+}
+
+function enableSampleWords() {
+
+  // get the selected option
+  var hide = $('input[name="words-or-letters"]:checked').val() === '1';
+
+  // initialize control state
+  var controls = $('#dlstabs-1').find('.disableable');
+  controls.removeClass('disabled');
+
+  // enable or disable
+  //controls.prop('disabled', hide);
+  if (hide) controls.addClass('disabled');
 }
 
 function setWordContainerHeight() {

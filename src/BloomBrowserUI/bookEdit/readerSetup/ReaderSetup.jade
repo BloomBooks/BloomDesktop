@@ -30,7 +30,7 @@ html
 				span(data-i18n='ReaderSetup.SearchEngine') , the Search Engine for Literacy.
 			ul
 				li: a(href='#dlstabs-0', data-i18n='ReaderSetup.Letters') Letters
-				li: a(href='#dlstabs-1', data-i18n='ReaderSetup.Words') Words
+				li: a(href='#dlstabs-1', data-i18n='ReaderSetup.SampleWords') Sample Words
 				li: a(href='#dlstabs-2', data-i18n='ReaderSetup.DecodableStages') Decodable Stages
 				li: a(href='#dlstabs-3', data-i18n='ReaderSetup.ReaderLevels') Reader Levels
 			#dlstabs-0.reader-setup-tab
@@ -48,18 +48,24 @@ html
 						span(data-i18n='ReaderSetup.Letters.LetterHelp4')
 							= '.'
 			#dlstabs-1.reader-setup-tab
-				p(data-i18n='ReaderSetup.Words.Intro') To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:
-				#more-words-div.floating(style='width: 30%')
-					label(for='dls_more_words', data-i18n='ReaderSetup.Words.TypeWordsHere') 1) Type Words Here
+				p
+					input#use-word-list(type='radio' name='words-or-letters' value='1' checked)
+					label(data-i18n='ReaderSetup.Words.UseAllowedWords' for='use-word-list') We are using lists of allowed words to define stages
 					br
-					textarea#dls_more_words.book-font(style='height: 328px;width:100%')
+					input#use-letters(type='radio' name='words-or-letters' value='0')
+					label(data-i18n='ReaderSetup.Words.UseLetters' for='use-letters') We are using letters with sight words to define stages
+				p.disableable(data-i18n='ReaderSetup.Words.Intro') To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:
+				#more-words-div.floating(style='width: 30%')
+					label.disableable(for='dls_more_words', data-i18n='ReaderSetup.Words.TypeWordsHere') 1) Type Words Here
+					br
+					textarea#dls_more_words.book-font.disableable(style='height: 328px;width:100%')
 				#word-lists-div.floating
-					label(for='dls_word_lists')
+					label.disableable(for='dls_word_lists')
 						span(data-i18n='ReaderSetup.Words.PlaceTextFiles') 2) Place Text Files in Your
 						= ' '
 						a#open-text-folder.blue-link(href='', data-i18n='ReaderSetup.Words.SampleTextFolder') Sample Texts Folder
 					br
-					#dls_word_lists
+					#dls_word_lists.disableable
 					#how_to_export(style="display: none")
 						a(href="", onclick="return getIframeChannel().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');", data-i18n='ReaderSetup.HowToExport') Help exporting and converting files to use as sample texts
 			#dlstabs-2.reader-setup-tab
