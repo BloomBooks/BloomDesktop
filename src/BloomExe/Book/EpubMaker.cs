@@ -11,15 +11,29 @@ using System.Text.RegularExpressions;
 using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
+using BloomTemp;
 using Palaso.IO;
 using Palaso.Xml;
 
 namespace Bloom.Book
 {
-	public class EpubMaker
+	public class EpubMaker : IDisposable
 	{
-		private readonly Book _book;
-		private readonly IBookStorage _storage;
+		public Book Book
+		{
+			get
+			{
+				return _book;
+			}
+			internal set
+			{
+				_book = value;
+				_storage = _book.Storage;
+			}
+		}
+
+		private Book _book;
+		private IBookStorage _storage;
 		private HashSet<string> _idsUsed = new HashSet<string>();
 		private Dictionary<string, string> _mapItemToId = new Dictionary<string, string>();
 		private Dictionary<string, string>  _mapSrcPathToDestFileName = new Dictionary<string, string>();
@@ -30,190 +44,217 @@ namespace Bloom.Book
 		private string _coverPage;
 		private string _contentFolder;
 		private string _navFileName;
+		// This temporary folder holds the staging folder with the bloom content. It also (temporarily)
+		// holds a copy of the Readium code, since I haven't been able to figure out how to get that
+		// code to redirect to display a folder which isn't a child of the folder containing the
+		// readium HTML.
+		private TemporaryFolder _stagingFolder;
+		public string StagingDirectory { get; private set; }
 
 		/// <summary>
 		/// Set to true for unpaginated output.
 		/// </summary>
 		public bool Unpaginated { get; set; }
 
-		public EpubMaker(Book book)
+		public EpubMaker(Book book) : this()
 		{
-			_book = book;
-			_storage = _book.Storage;
+			Book = book;
+			_storage = Book.Storage;
 		}
 
-		public void SaveEpub(string destinationEpubPath)
+		public EpubMaker()
+		{ }
+
+		/// <summary>
+		/// Generate all the files we will zip into the epub for the current book into the StagingFolder.
+		/// It is required that the parent of the StagingFolder is a temporary folder into which we can
+		/// copy the Readium stuff. This folder is deleted when the EpubMaker is disposed.
+		/// </summary>
+		public void StageEpub()
 		{
-			var stagingDirectory = Path.Combine(Path.GetDirectoryName(destinationEpubPath),
-				Path.GetFileNameWithoutExtension(destinationEpubPath));
+			if (_stagingFolder != null)
+				_stagingFolder.Dispose();
+			_stagingFolder = new TemporaryFolder("Epub export");
+			// The readium control remembers the current page for each book.
+			// So it is useful to have a unique name for each one.
+			// However, it needs to be something we can put in a URL without complications,
+			// so a guid is better than say the book's own folder name.
+			StagingDirectory = Path.Combine(_stagingFolder.FolderPath, _book.ID);
+			if (Directory.Exists(StagingDirectory))
+				Directory.Delete(StagingDirectory, true);
+			// in case of previous versions // Enhance: delete when done? Generate new name if conflict?
+			var contentFolderName = "content";
+			_contentFolder = Path.Combine(StagingDirectory, contentFolderName);
+			Directory.CreateDirectory(_contentFolder); // also creates parent staging directory
+			var pageIndex = 0;
+			_manifestItems = new List<string>();
+			_spineItems = new List<string>();
+			int firstContentPageIndex = Book.GetIndexLastFrontkMatterPage() + 2; // pageIndex starts at 1
+			_firstContentPageItem = null;
+			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
-				if (Directory.Exists(stagingDirectory))
-					Directory.Delete(stagingDirectory, true);
-						// in case of previous versions // Enhance: delete when done? Generate new name if conflict?
-				var contentFolderName = "content";
-				_contentFolder = Path.Combine(stagingDirectory, contentFolderName);
-				Directory.CreateDirectory(_contentFolder); // also creates parent staging directory
-				var pageIndex = 0;
-				_manifestItems = new List<string>();
-				_spineItems = new List<string>();
-				int firstContentPageIndex = _book.GetIndexLastFrontkMatterPage() + 2; // pageIndex starts at 1
-				_firstContentPageItem = null;
-				foreach (XmlElement pageElement in _book.GetPageElements())
+				//var id = pageElement.GetAttribute("id");
+
+				++pageIndex;
+				var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
+				pageDom.RemoveModeStyleSheets();
+				if (Unpaginated)
 				{
-					//var id = pageElement.GetAttribute("id");
-
-					++pageIndex;
-					var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
-					pageDom.RemoveModeStyleSheets();
-					if (Unpaginated)
-					{
-						RemoveRegularStylesheets(pageDom);
-						pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"epubUnpaginated.css").ToLocalhost());
-					}
-					else
-					{
-						pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
-						pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
-						pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
-					}
-
-					RemoveUnwantedContent(pageDom);
-
-					pageDom.SortStyleSheetLinks();
-					pageDom.AddPublishClassToBody();
-
-					MakeCssLinksAppropriateForEpub(pageDom);
-					RemoveSpuriousLinks(pageDom);
-					RemoveScripts(pageDom);
-					FixIllegalIds(pageDom);
-					FixPictureSizes(pageDom);
-					// Since we only allow one htm file in a book folder, I don't think there is any
-					// way this name can clash with anything else.
-					var pageDocName = pageIndex + ".xhtml";
-
-					// Manifest has to include all referenced files
-					foreach (XmlElement img in pageDom.SafeSelectNodes("//img"))
-					{
-						var srcAttr = img.Attributes["src"];
-						if (srcAttr == null)
-							continue; // hug?
-						var imgName = srcAttr.Value;
-						if (string.IsNullOrEmpty(imgName))
-							continue;
-						// Images are always directly in the folder
-						var srcPath = Path.Combine(_book.FolderPath, imgName);
-						CopyFileToEpub(srcPath);
-					}
-
-					_manifestItems.Add(pageDocName);
-					_spineItems.Add(pageDocName);
-
-					// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
-					//to look at those stylesheets on the first page
-					if (pageIndex == 1)
-					{
-						_coverPage = pageDocName;
-						//css
-						foreach (XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
-						{
-							var href = Path.Combine(_book.FolderPath, link.GetAttribute("href"));
-							var name = Path.GetFileName(href) ?? href;
-
-							var fl = _book.Storage.GetFileLocator();
-							//var path = this.GetFileLocator().LocateFileWithThrow(name);
-							var path = fl.LocateFileWithThrow(name);
-							CopyFileToEpub(path);
-						}
-					}
-					if (pageIndex == firstContentPageIndex)
-						_firstContentPageItem = pageDocName;
-
-					CopyFileToEpub(Path.Combine(_book.FolderPath, "thumbnail.png"));
-					RearrangeImageOnTop(pageDom);
-
-					FixChangedFileNames(pageDom);
-					// Do this AFTER we copy the CSS files, this file is generated in place just for the epub.
-					pageDom.AddStyleSheet("fonts.css"); // enhance: could omit if we don't embed any
-
-					// epub validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
-					pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-					File.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
-
+					RemoveRegularStylesheets(pageDom);
+					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"epubUnpaginated.css").ToLocalhost());
+				}
+				else
+				{
+					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
+					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
+					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
 				}
 
-				EmbedFonts(); // must call after copying stylesheets
-				MakeNavPage();
+				RemoveUnwantedContent(pageDom);
 
-				//supporting files
+				pageDom.SortStyleSheetLinks();
+				pageDom.AddPublishClassToBody();
 
-				// Fixed requirement for all epubs
-				File.WriteAllText(Path.Combine(stagingDirectory, "mimetype"), @"application/epub+zip");
+				MakeCssLinksAppropriateForEpub(pageDom);
+				RemoveSpuriousLinks(pageDom);
+				RemoveScripts(pageDom);
+				FixIllegalIds(pageDom);
+				FixPictureSizes(pageDom);
+				// Since we only allow one htm file in a book folder, I don't think there is any
+				// way this name can clash with anything else.
+				var pageDocName = pageIndex + ".xhtml";
 
-				var metaInfFolder = Path.Combine(stagingDirectory, "META-INF");
-				Directory.CreateDirectory(metaInfFolder);
-				var containerXmlPath = Path.Combine(metaInfFolder, "container.xml");
-				File.WriteAllText(containerXmlPath, @"<?xml version='1.0' encoding='utf-8'?>
+				// Manifest has to include all referenced files
+				foreach (XmlElement img in pageDom.SafeSelectNodes("//img"))
+				{
+					var srcAttr = img.Attributes["src"];
+					if (srcAttr == null)
+						continue; // hug?
+					var imgName = srcAttr.Value;
+					if (string.IsNullOrEmpty(imgName))
+						continue;
+					// Images are always directly in the folder
+					var srcPath = Path.Combine(Book.FolderPath, imgName);
+					CopyFileToEpub(srcPath);
+				}
+
+				_manifestItems.Add(pageDocName);
+				_spineItems.Add(pageDocName);
+
+				// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
+				//to look at those stylesheets on the first page
+				if (pageIndex == 1)
+				{
+					_coverPage = pageDocName;
+					//css
+					foreach (XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
+					{
+						var href = Path.Combine(Book.FolderPath, link.GetAttribute("href"));
+						var name = Path.GetFileName(href) ?? href;
+
+						var fl = Book.Storage.GetFileLocator();
+						//var path = this.GetFileLocator().LocateFileWithThrow(name);
+						var path = fl.LocateFileWithThrow(name);
+						CopyFileToEpub(path);
+					}
+				}
+				if (pageIndex == firstContentPageIndex)
+					_firstContentPageItem = pageDocName;
+
+				CopyFileToEpub(Path.Combine(Book.FolderPath, "thumbnail.png"));
+				RearrangeImageOnTop(pageDom);
+
+				FixChangedFileNames(pageDom);
+				// Do this AFTER we copy the CSS files, this file is generated in place just for the epub.
+				pageDom.AddStyleSheet("fonts.css"); // enhance: could omit if we don't embed any
+
+				// epub validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
+				pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+				File.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
+
+			}
+
+			EmbedFonts(); // must call after copying stylesheets
+			MakeNavPage();
+
+			//supporting files
+
+			// Fixed requirement for all epubs
+			File.WriteAllText(Path.Combine(StagingDirectory, "mimetype"), @"application/epub+zip");
+
+			var metaInfFolder = Path.Combine(StagingDirectory, "META-INF");
+			Directory.CreateDirectory(metaInfFolder);
+			var containerXmlPath = Path.Combine(metaInfFolder, "container.xml");
+			File.WriteAllText(containerXmlPath, @"<?xml version='1.0' encoding='utf-8'?>
 					<container version='1.0' xmlns='urn:oasis:names:tc:opendocument:xmlns:container'>
 					<rootfiles>
 					<rootfile full-path='content/content.opf' media-type='application/oebps-package+xml'/>
 					</rootfiles>
 					</container>");
 
-				// content.opf
-				var contentOpfPath = Path.Combine(_contentFolder, "content.opf");
-				XNamespace opf = "http://www.idpf.org/2007/opf";
-				var rootElt = new XElement(opf + "package",
-					new XAttribute("version", "3.0"),
-					new XAttribute("unique-identifier", "I" + _book.ID));
-				// add metadata
-				var dcNamespace = "http://purl.org/dc/elements/1.1/";
-				XNamespace dc = dcNamespace;
-				var metadataElt = new XElement(opf + "metadata",
-					new XAttribute(XNamespace.Xmlns + "dc", dcNamespace),
-					// attribute makes the namespace have a prefix, not be a default.
-					new XElement(dc + "title", _book.Title),
-					new XElement(dc + "language", _book.CollectionSettings.Language1Iso639Code),
-					new XElement(dc + "identifier",
-						new XAttribute("id", "I" + _book.ID), "bloomlibrary.org." + _book.ID),
-					new XElement(opf + "meta",
-						new XAttribute("property", "dcterms:modified"),
-						new FileInfo(_storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z")); // like 2012-03-20T11:37:00Z
-				rootElt.Add(metadataElt);
+			// content.opf
+			var contentOpfPath = Path.Combine(_contentFolder, "content.opf");
+			XNamespace opf = "http://www.idpf.org/2007/opf";
+			var rootElt = new XElement(opf + "package",
+				new XAttribute("version", "3.0"),
+				new XAttribute("unique-identifier", "I" + Book.ID));
+			// add metadata
+			var dcNamespace = "http://purl.org/dc/elements/1.1/";
+			XNamespace dc = dcNamespace;
+			var metadataElt = new XElement(opf + "metadata",
+				new XAttribute(XNamespace.Xmlns + "dc", dcNamespace),
+				// attribute makes the namespace have a prefix, not be a default.
+				new XElement(dc + "title", Book.Title),
+				new XElement(dc + "language", Book.CollectionSettings.Language1Iso639Code),
+				new XElement(dc + "identifier",
+					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
+				new XElement(opf + "meta",
+					new XAttribute("property", "dcterms:modified"),
+					new FileInfo(_storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z")); // like 2012-03-20T11:37:00Z
+			rootElt.Add(metadataElt);
 
-				var manifestElt = new XElement(opf + "manifest");
-				rootElt.Add(manifestElt);
-				foreach (var item in _manifestItems)
-				{
-					var itemElt = new XElement(opf + "item",
-						new XAttribute("id", GetIdOfFile(item)),
-						new XAttribute("href", item),
-						new XAttribute("media-type", GetMediaType(item)));
-					// This isn't very useful but satisfies a validator requirement until we think of
-					// something better.
-					if (item == _navFileName)
-						itemElt.SetAttributeValue("properties", "nav");
-					if (item == "thumbnail.png")
-						itemElt.SetAttributeValue("properties", "cover-image");
-					manifestElt.Add(itemElt);
-				}
-				var spineElt = new XElement(opf + "spine");
-				rootElt.Add(spineElt);
-				foreach (var item in _spineItems)
-				{
-					var itemElt = new XElement(opf + "itemref",
-						new XAttribute("idref", GetIdOfFile(item)));
-					spineElt.Add(itemElt);
-				}
-				using (var writer = XmlWriter.Create(contentOpfPath))
-					rootElt.WriteTo(writer);
-
-				var zip = new BloomZipFile(destinationEpubPath);
-				foreach (var file in Directory.GetFiles(stagingDirectory))
-					zip.AddTopLevelFile(file);
-				foreach (var dir in Directory.GetDirectories(stagingDirectory))
-					zip.AddDirectory(dir);
-				zip.Save();
+			var manifestElt = new XElement(opf + "manifest");
+			rootElt.Add(manifestElt);
+			foreach (var item in _manifestItems)
+			{
+				var itemElt = new XElement(opf + "item",
+					new XAttribute("id", GetIdOfFile(item)),
+					new XAttribute("href", item),
+					new XAttribute("media-type", GetMediaType(item)));
+				// This isn't very useful but satisfies a validator requirement until we think of
+				// something better.
+				if (item == _navFileName)
+					itemElt.SetAttributeValue("properties", "nav");
+				if (item == "thumbnail.png")
+					itemElt.SetAttributeValue("properties", "cover-image");
+				manifestElt.Add(itemElt);
 			}
+			var spineElt = new XElement(opf + "spine");
+			rootElt.Add(spineElt);
+			foreach (var item in _spineItems)
+			{
+				var itemElt = new XElement(opf + "itemref",
+					new XAttribute("idref", GetIdOfFile(item)));
+				spineElt.Add(itemElt);
+			}
+			using (var writer = XmlWriter.Create(contentOpfPath))
+				rootElt.WriteTo(writer);
+		}
+
+		public void SaveEpub(string destinationEpubPath)
+		{
+			StageEpub();
+			FinishEpub(destinationEpubPath);
+		}
+
+		public void FinishEpub(string destinationEpubPath)
+		{
+			var zip = new BloomZipFile(destinationEpubPath);
+			foreach (var file in Directory.GetFiles(StagingDirectory))
+				zip.AddTopLevelFile(file);
+			foreach (var dir in Directory.GetDirectories(StagingDirectory))
+				zip.AddDirectory(dir);
+			zip.Save();
 		}
 
 		/// <summary>
@@ -308,7 +349,7 @@ namespace Bloom.Book
 		{
 			var result = new HashSet<string>();
 			var findFF = new Regex("font-family:\\s*(['\"])([^'\"]*)\\1");
-			foreach (var ss in Directory.GetFiles(_book.FolderPath, "*.css"))
+			foreach (var ss in Directory.GetFiles(Book.FolderPath, "*.css"))
 			{
 				var root = File.ReadAllText(ss, Encoding.UTF8);
 				foreach (Match match in findFF.Matches(root))
@@ -565,10 +606,10 @@ namespace Bloom.Book
 					continue;
 				var langAttr = elt.Attributes["lang"];
 				var lang = langAttr == null ? null : langAttr.Value;
-				if (lang == _book.MultilingualContentLanguage2 || lang == _book.MultilingualContentLanguage3 ||
-					lang == _book.CollectionSettings.Language1Iso639Code)
+				if (lang == Book.MultilingualContentLanguage2 || lang == Book.MultilingualContentLanguage3 ||
+					lang == Book.CollectionSettings.Language1Iso639Code)
 					continue; // keep these
-				if (lang == _book.CollectionSettings.Language2Iso639Code && IsInXMatterPage(elt))
+				if (lang == Book.CollectionSettings.Language2Iso639Code && IsInXMatterPage(elt))
 					continue;
 				elt.ParentNode.RemoveChild(elt);
 			}
@@ -838,6 +879,12 @@ namespace Bloom.Book
 			var pageDom = dom.RawDom.ImportNode(page, true);
 			body.AppendChild(pageDom);
 			return dom;
+		}
+
+		public void Dispose()
+		{
+			if (_stagingFolder != null)
+				_stagingFolder.Dispose();
 		}
 	}
 }

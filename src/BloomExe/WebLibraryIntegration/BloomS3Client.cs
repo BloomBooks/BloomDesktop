@@ -272,7 +272,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <param name="sourceDirName"></param>
 		/// <param name="destDirName">Note, this is not the *parent*; this is the actual name you want, e.g. CopyDirectory("c:/foo", "c:/temp/foo") </param>
 		/// <returns>true if no exception occurred</returns>
-		private static bool CopyDirectory(string sourceDirName, string destDirName)
+		internal static bool CopyDirectory(string sourceDirName, string destDirName)
 		{
 			bool success = true;
 			var sourceDirectory = new DirectoryInfo(sourceDirName);

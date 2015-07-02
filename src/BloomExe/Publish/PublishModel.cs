@@ -28,12 +28,15 @@ namespace Bloom.Publish
 
 		public string PdfFilePath { get; private set; }
 
+		private EpubMaker _epubMaker;
+
 		public enum DisplayModes
 		{
 			WaitForUserToChooseSomething,
 			Working,
 			ShowPdf,
 			Upload,
+			Epub,
 			Printing,
 			ResumeAfterPrint
 		}
@@ -82,6 +85,9 @@ namespace Bloom.Publish
 
 		// True when we are showing the controls for uploading. (Review: does this belong in the model or view?)
 		public bool UploadMode { get; set; }
+
+		// True when showing an epub preview.
+		public bool EpubMode { get; set; }
 
 		public bool PdfGenerationSucceeded { get; set; }
 
@@ -235,6 +241,11 @@ namespace Bloom.Publish
 
 				}
 			}
+			if (_epubMaker != null)
+			{
+				_epubMaker.Dispose();
+				_epubMaker = null;
+			}
 
 			GC.SuppressFinalize(this);
 		}
@@ -278,6 +289,18 @@ namespace Bloom.Publish
 
 		public void Save()
 		{
+			if (EpubMode)
+			{
+				try
+				{
+					SaveAsEpub();
+				}
+				catch (Exception err)
+				{
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the epub.  {0}", err.Message);
+				}
+				return;
+			}
 			try
 			{
 				// Give a slight preference to USB keys, though if they used a different directory last time, we favor that.
@@ -474,6 +497,18 @@ namespace Bloom.Publish
 ////	        }
 //	    }
 
+		internal void StageEpub()
+		{
+			if (_epubMaker == null)
+				_epubMaker = new EpubMaker();
+			_epubMaker.Book = BookSelection.CurrentSelection;
+
+			_epubMaker.Unpaginated = true; // Enhance: UI?
+			_epubMaker.StageEpub();
+		}
+
+		internal string StagingDirectory { get { return _epubMaker.StagingDirectory; } }
+
 		internal void SaveAsEpub()
 		{
 			using (var dlg = new SaveFileDialog())
@@ -488,7 +523,7 @@ namespace Bloom.Publish
 				if (DialogResult.OK == dlg.ShowDialog())
 				{
 					_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-					BookSelection.CurrentSelection.SaveEpub(dlg.FileName);
+					_epubMaker.FinishEpub(dlg.FileName);
 					//Analytics.Track("Save PDF", new Dictionary<string, string>()
 					//		{
 					//			{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},

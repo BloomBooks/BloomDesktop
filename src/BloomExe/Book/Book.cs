@@ -2039,13 +2039,6 @@ namespace Bloom.Book
 			return _bookData.GetMultiTextVariableOrEmpty(name);
 		}
 
-		public void SaveEpub(string destinationEpubPath)
-		{
-			var epubMaker = new EpubMaker(this);
-			epubMaker.Unpaginated = true; // Todo: UI?
-			epubMaker.SaveEpub(destinationEpubPath);
-		}
-
 		internal IBookStorage Storage {get { return _storage; }}
 	}
 }
