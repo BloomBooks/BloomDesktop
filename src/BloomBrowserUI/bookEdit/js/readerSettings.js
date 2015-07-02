@@ -16,6 +16,7 @@ var ReaderStage = (function () {
     function ReaderStage(name) {
         this.sightWords = '';
         this.letters = '';
+        this.allowedWordsFile = '';
         this.name = name;
     }
     ReaderStage.prototype.getName = function () {

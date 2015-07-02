@@ -48,7 +48,7 @@ textarea { resize: none; }
 
 div.sub-float { position: relative; }
 #powered-by { position: relative; float: right; padding: 2px 6px; white-space: nowrap; text-align: right; -moz-user-select: none; }
-#setup-stage-letters-and-words { float: left; margin-left: 10px; }
+#setup-stage-letters-and-words, #setup-stage-words-file { float: left; margin-left: 10px; }
 #click-letters { padding-bottom: 10px; }
 
 div.scrolling-table-container { height: 100%; overflow-x: hidden; }
@@ -154,7 +154,32 @@ div.ui-tabs div.ui-tabs-panel ul.asterisk { margin: 0; padding-left: 12px; borde
 }
 textarea.disableable.disabled { background-color: #ddd; }
 
+table.hide-second-column {
+  th:nth-child(2), td:nth-child(2) { display: none; }
+}
+
+table.hide-third-column {
+  th:nth-child(3), td:nth-child(3) { display: none; }
+}
+
+table.hide-fourth-column {
+  th:nth-child(4), td:nth-child(4) { display: none; }
+}
+
 #more-words-div, #more-words-div { margin-bottom: 8px; }
+
+#setup-stage-words-file {
+  a.blue-link {
+    color: #00528D;
+  }
+
+  a.red-x {
+    font-size: 16px;
+    font-weight: 700;
+    color: #a00;
+    text-decoration: none;
+  }
+}
 
 @media (max-width: 539px) {
   .tab-detail div.sub-float { width: ~'calc(100% - 20px)'; }
@@ -186,7 +211,7 @@ textarea.disableable.disabled { background-color: #ddd; }
   .tab-list { height: ~'calc(100% - 16px)'; }
   #stage-detail { width: ~'calc(60% - 6px)'; min-height: 360px; height: ~'calc(100% - 50px)'; margin-left: 12px; margin-top: 0; }
   #stage-detail div.sub-float { width: ~'calc(100% - 258px)'; }
-  #setup-stage-letters-and-words { width: 228px !important; }
+  #setup-stage-letters-and-words, #setup-stage-words-file { width: 228px !important; }
   #setup-stage-matching-words { float: right; margin-right: 10px; height: ~'calc(100% - 45px)'; }
   div.rs-word-container { height: 100%; }
 }

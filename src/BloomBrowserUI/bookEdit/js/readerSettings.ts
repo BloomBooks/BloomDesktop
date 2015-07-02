@@ -17,6 +17,7 @@ class ReaderStage {
   sightWords: string = '';
   letters: string = '';
   words: string[];
+  allowedWordsFile: string = '';
 
   constructor(name: string) {
     this.name = name;

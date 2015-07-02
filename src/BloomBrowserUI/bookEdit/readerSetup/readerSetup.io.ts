@@ -64,7 +64,8 @@ function loadReaderSetupData(jsonData: string): void {
   for (var i = 0; i < stages.length; i++) {
     if (!stages[i].letters) stages[i].letters = '';
     if (!stages[i].sightWords) stages[i].sightWords = '';
-    tbody.append('<tr class="linked"><td>' + (i + 1) + '</td><td class="book-font">' + stages[i].letters + '</td><td class="book-font">' + stages[i].sightWords + '</td></tr>');
+    if (!stages[i].allowedWordsFile) stages[i].allowedWordsFile = '';
+    tbody.append('<tr class="linked"><td>' + (i + 1) + '</td><td class="book-font">' + stages[i].letters + '</td><td class="book-font">' + stages[i].sightWords + '</td><td class="book-font">' + stages[i].allowedWordsFile + '</td></tr>');
   }
 
   // click event for stage rows
@@ -149,9 +150,10 @@ function getChangedSettings(): any {
     var row: HTMLTableRowElement = <HTMLTableRowElement>stages[i];
     stage.letters = (<HTMLTableCellElement>row.cells[1]).innerHTML;
     stage.sightWords = cleanSpaceDelimitedList((<HTMLTableCellElement>row.cells[2]).innerHTML);
+    stage.allowedWordsFile = (<HTMLTableCellElement>row.cells[3]).innerHTML;
 
     // do not save stage with no data
-    if (stage.letters || stage.sightWords)
+    if (stage.letters || stage.sightWords || stage.allowedWordsFile)
       s.stages.push(stage);
   }
 

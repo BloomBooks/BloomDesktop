@@ -107,7 +107,8 @@ div.sub-float {
   text-align: right;
   -moz-user-select: none;
 }
-#setup-stage-letters-and-words {
+#setup-stage-letters-and-words,
+#setup-stage-words-file {
   float: left;
   margin-left: 10px;
 }
@@ -284,9 +285,30 @@ div.ui-tabs div.ui-tabs-panel ul.asterisk {
 textarea.disableable.disabled {
   background-color: #ddd;
 }
+table.hide-second-column th:nth-child(2),
+table.hide-second-column td:nth-child(2) {
+  display: none;
+}
+table.hide-third-column th:nth-child(3),
+table.hide-third-column td:nth-child(3) {
+  display: none;
+}
+table.hide-fourth-column th:nth-child(4),
+table.hide-fourth-column td:nth-child(4) {
+  display: none;
+}
 #more-words-div,
 #more-words-div {
   margin-bottom: 8px;
+}
+#setup-stage-words-file a.blue-link {
+  color: #00528D;
+}
+#setup-stage-words-file a.red-x {
+  font-size: 16px;
+  font-weight: 700;
+  color: #a00;
+  text-decoration: none;
 }
 @media (max-width: 539px) {
   .tab-detail div.sub-float {
@@ -370,7 +392,8 @@ textarea.disableable.disabled {
   #stage-detail div.sub-float {
     width: calc(100% - 258px);
   }
-  #setup-stage-letters-and-words {
+  #setup-stage-letters-and-words,
+  #setup-stage-words-file {
     width: 228px !important;
   }
   #setup-stage-matching-words {
