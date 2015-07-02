@@ -185,7 +185,11 @@ function selectStage(tr: HTMLTableRowElement): void {
   (<HTMLInputElement>document.getElementById('setup-stage-sight-words')).value = (<HTMLTableCellElement>tr.cells[2]).innerHTML;
 
   $('#stages-table').find('tbody tr.selected').removeClass('selected').addClass('linked');
-  $(tr).removeClass('linked').addClass('selected');
+
+  var currentTr = $(tr);
+  currentTr.removeClass('linked').addClass('selected');
+
+  setAllowedWordsFile(currentTr.find('td:nth-child(4)').html());
 
   // get the words
   requestWordsForSelectedStage();
@@ -372,7 +376,7 @@ function displayWordsForSelectedStage(wordsStr: string): void {
 function addNewStage(): void {
 
   var tbody: JQuery = $('#stages-table').find('tbody');
-  tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="book-font"></td><td class="book-font"></td></tr>');
+  tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="book-font"></td><td class="book-font"></td><td class="book-font"></td></tr>');
 
   // click event for stage rows
   tbody.find('tr:last').onOnce('click', function() {
@@ -700,22 +704,72 @@ function attachEventHandlers(): void {
 
     $('input[name="words-or-letters"]').onOnce('change', function() {
       enableSampleWords();
-    })
+    });
+
+    $('#setup-choose-allowed-words-file').onOnce('click', function() {
+      getIframeChannel().simpleAjaxPost('/bloom/readers/selectStageAllowedWordsFile',
+        function(fileName: string) {
+          if (fileName) setAllowedWordsFile(fileName);
+        });
+      return false;
+    });
+
+    $('#remove-allowed-word-file').onOnce('click', function() {
+      setAllowedWordsFile('');
+      return false;
+    });
   }
+}
+
+function setAllowedWordsFile(fileName: string): void {
+
+  (<HTMLSpanElement>document.getElementById('allowed-words-file')).innerHTML = fileName;
+
+  if (fileName) {
+    document.getElementById('setup-choose-allowed-words-file').style.display = 'none';
+    document.getElementById('allowed-words-file-div').style.display = '';
+  }
+  else {
+    document.getElementById('setup-choose-allowed-words-file').style.display = '';
+    document.getElementById('allowed-words-file-div').style.display = 'none';
+    fileName = ''; // to be sure it isn't undefined
+  }
+
+  $('#stages-table').find('tbody tr.selected td:nth-child(4)').html(fileName);
 }
 
 function enableSampleWords() {
 
   // get the selected option
-  var hide = $('input[name="words-or-letters"]:checked').val() === '1';
+  var useSampleWords = $('input[name="words-or-letters"]:checked').val() === '1';
 
   // initialize control state
   var controls = $('#dlstabs-1').find('.disableable');
+  var stagesTable = $('#stages-table');
   controls.removeClass('disabled');
+  stagesTable.removeClass('hide-second-column');
+  stagesTable.removeClass('hide-third-column');
+  stagesTable.removeClass('hide-fourth-column');
 
   // enable or disable
-  //controls.prop('disabled', hide);
-  if (hide) controls.addClass('disabled');
+  if (useSampleWords) {
+    controls.addClass('disabled');
+    stagesTable.addClass('hide-second-column');
+    stagesTable.addClass('hide-third-column');
+  }
+  else {
+    stagesTable.addClass('hide-fourth-column');
+  }
+
+  // controls for letter-based stages
+  document.getElementById('setup-stage-letters-and-words').style.display = useSampleWords ? 'none' : '';
+  document.getElementById('matching-words-span').style.display = useSampleWords ? 'none' : '';
+
+  // controls for word-list-based stages
+  document.getElementById('setup-stage-words-file').style.display = useSampleWords ? '' : 'none';
+  document.getElementById('allowed-words-span').style.display = useSampleWords ? '' : 'none';
+  //
+  //
 }
 
 function setWordContainerHeight() {

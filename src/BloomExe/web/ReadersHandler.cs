@@ -10,6 +10,8 @@ using Newtonsoft.Json;
 using Palaso.Xml;
 using Palaso.IO;
 using System.Collections.Generic;
+using System.Threading;
+using System.Windows.Forms;
 using L10NSharp;
 
 namespace Bloom.web
@@ -34,6 +36,7 @@ namespace Bloom.web
 			if (CurrentBook == null || CurrentBook.CollectionSettings == null)
 			{
 				Debug.Fail("BL-836 reproduction?");
+				// ReSharper disable once HeuristicUnreachableCode
 				return false;
 			}
 			var lastSep = localPath.IndexOf("/", StringComparison.Ordinal);
@@ -92,6 +95,13 @@ namespace Bloom.web
 					OpenTextsFolder();
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput("OK");
+					return true;
+
+				case "selectStageAllowedWordsFile":
+					lock (info)
+					{
+						ChooseAllowedWordListFile(info);
+					}
 					return true;
 			}
 
@@ -264,7 +274,7 @@ namespace Bloom.web
 		private static string SaveReaderToolsWordsFile(string jsonString)
 		{
 			while (_savingReaderWords)
-				System.Threading.Thread.Sleep(0);
+				Thread.Sleep(0);
 
 			try
 			{
@@ -304,7 +314,7 @@ namespace Bloom.web
 			if (Palaso.PlatformUtilities.Platform.IsLinux)
 			{
 				// allow the external process to execute
-				System.Threading.Thread.Sleep(100);
+				Thread.Sleep(100);
 
 				// if the system has wmctrl installed, use it to bring the folder to the front
 				Process.Start(new ProcessStartInfo()
@@ -315,6 +325,64 @@ namespace Bloom.web
 						ErrorDialog = false // do not show a message if not successful
 					});
 			}
+		}
+
+		private static void ChooseAllowedWordListFile(IRequestInfo info)
+		{
+			// Need to do this in order to show the open file dialog
+			var t = new Thread(ShowSelectAllowedWordsFileDialog);
+			t.SetApartmentState(ApartmentState.STA);
+			t.Start(info);
+		}
+
+		private static void ShowSelectAllowedWordsFileDialog(object info)
+		{
+			var returnVal = "";
+
+			var destPath = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Word Lists");
+			if (!Directory.Exists(destPath)) Directory.CreateDirectory(destPath);
+
+			var textFiles = LocalizationManager.GetString("DecodableReaderTool.FileDialogTextFiles", "Text files");
+			var allFiles = LocalizationManager.GetString("DecodableReaderTool.FileDialogAllFiles", "All files");
+			var dlg = new OpenFileDialog
+			{
+				Multiselect = false,
+				CheckFileExists = true,
+				Filter = string.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab|{1} (*.*)|*.*", textFiles, allFiles)
+			};
+			var result = dlg.ShowDialog();
+			if (result == DialogResult.OK)
+			{
+				var srcFile = dlg.FileName;
+				var destFile = Path.GetFileName(srcFile);
+				if (destFile != null)
+				{
+					var i = 0;
+
+					// if file is in the "Word Lists" directory, do not try to copy it again.
+					if (Path.GetFullPath(srcFile) != Path.Combine(destPath, destFile))
+					{
+						// get a unique destination file name
+						while (File.Exists(Path.Combine(destPath, destFile)))
+						{
+							destFile = Path.GetFileName(srcFile);
+							var fileExt = Path.GetExtension(srcFile);
+							destFile = destFile.Substring(0, destFile.Length - fileExt.Length) + " - Copy";
+							if (++i > 1) destFile += " " + i;
+							destFile += fileExt;
+						}
+
+						File.Copy(srcFile, Path.Combine(destPath, destFile));
+					}
+
+					returnVal = destFile;
+				}
+			}
+
+			// send to browser
+			var thisInfo = info as IRequestInfo;
+			thisInfo.ContentType = "text/plain";
+			thisInfo.WriteCompleteOutput(returnVal);
 		}
 	}
 }

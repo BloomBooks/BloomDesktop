@@ -85,6 +85,7 @@ html
 											th(style='min-width: 25px'): div(data-i18n='ReaderSetup.StageHeader') Stage
 											th(style='min-width: 35px'): div(data-i18n='ReaderSetup.lettersHeader') Letters
 											th(style='width: 100%'): div(data-i18n='ReaderSetup.SightWordsHeader') Sight Words
+											th(style='width: 100%'): div(data-i18n='ReaderSetup.AllowedWordsFileHeader') Allowed Words File
 									tbody
 									tfoot
 										tr
@@ -110,12 +111,23 @@ html
 									= ' '
 									a#first-setup-alphabet(href='', onclick='return firstSetupLetters();', data-i18n='ReaderSetup.SetupAlphabet') set up the alphabet for this language.
 						#click-letters.smaller(style='float: left', data-i18n='ReaderSetup.ClickLetter') Click on letters to add them to this stage.
+					#setup-stage-words-file.sub-float
+						div(style='width: 100%;')
+							label(data-i18n='ReaderSetup.AllowedWordsFile') Allowed Words File
+							br
+							a.blue-link#setup-choose-allowed-words-file(href='', data-i18n='ReaderSetup.ChooseAllowedWordsFile') Choose...
+							#allowed-words-file-div
+								span#allowed-words-file
+								span &nbsp;
+									= ' '
+									a#remove-allowed-word-file.red-x(href='') &#x2717;
 					#setup-stage-matching-words.sub-float
 						div(style='width: 100%; height: calc(100% - 18px);')
 							label
 								span#setup-words-count 0
 								= ' '
-								span(data-i18n='ReaderSetup.MatchingWords') matching words
+								span#matching-words-span(data-i18n='ReaderSetup.MatchingWords') matching words
+								span#allowed-words-span(data-i18n='ReaderSetup.AllowedWords') allowed words
 							.rs-word-container
 								#rs-matching-words.book-font(style='margin-left: 8px')
 			#dlstabs-3.reader-setup-tab

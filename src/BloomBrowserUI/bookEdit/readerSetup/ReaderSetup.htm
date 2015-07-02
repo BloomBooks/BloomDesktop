@@ -87,6 +87,9 @@
                       <th style="width: 100%">
                         <div data-i18n="ReaderSetup.SightWordsHeader">Sight Words</div>
                       </th>
+                      <th style="width: 100%">
+                        <div data-i18n="ReaderSetup.AllowedWordsFileHeader">Allowed Words File</div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody></tbody>
@@ -121,9 +124,15 @@
             </div>
             <div id="click-letters" style="float: left" data-i18n="ReaderSetup.ClickLetter" class="smaller">Click on letters to add them to this stage.</div>
           </div>
+          <div id="setup-stage-words-file" class="sub-float">
+            <div style="width: 100%;">
+              <label data-i18n="ReaderSetup.AllowedWordsFile">Allowed Words File</label><br><a id="setup-choose-allowed-words-file" href="" data-i18n="ReaderSetup.ChooseAllowedWordsFile" class="blue-link">Choose...</a>
+              <div id="allowed-words-file-div"><span id="allowed-words-file"></span><span>&nbsp; <a id="remove-allowed-word-file" href="" class="red-x">&#x2717;</a></span></div>
+            </div>
+          </div>
           <div id="setup-stage-matching-words" class="sub-float">
             <div style="width: 100%; height: calc(100% - 18px);">
-              <label><span id="setup-words-count">0</span> <span data-i18n="ReaderSetup.MatchingWords">matching words</span>
+              <label><span id="setup-words-count">0</span> <span id="matching-words-span" data-i18n="ReaderSetup.MatchingWords">matching words</span><span id="allowed-words-span" data-i18n="ReaderSetup.AllowedWords">allowed words</span>
               </label>
               <div class="rs-word-container">
                 <div id="rs-matching-words" style="margin-left: 8px" class="book-font"></div>
