@@ -7,6 +7,7 @@
 /// <reference path="jquery.div-columns.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
 /// <reference path="editableDivUtils.ts" />
+/// <reference path="directoryWatcher.ts" />
 
 var iframeChannel = getIframeChannel();
 
@@ -58,9 +59,7 @@ class ReaderToolsModel {
   fontName: string = '';
   readableFileExtensions: string[] = [];
   keypressTimer: any = null;
-
-  /** @type DirectoryWatcher directoryWatcher */
-  directoryWatcher = null;
+  directoryWatcher: DirectoryWatcher = null;
 
   // remember words so we can update the counts real-time
   bookPageWords = [];
@@ -961,8 +960,7 @@ class ReaderToolsModel {
   addWordsToSynphony() {
 
     // add words to the word list
-    var syn = this.getSynphony();
-    syn.addWords(this.allWords);
+    SynphonyApi.addWords(this.allWords);
     libsynphony.processVocabularyGroups();
   }
 

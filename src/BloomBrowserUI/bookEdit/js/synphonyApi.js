@@ -16,13 +16,12 @@ var SynphonyApi = (function () {
             lang_data = new LanguageData();
         if (!fileContent)
             return;
-        var data = jQuery.extend(new ReaderSettings(), fileContent);
-        this.source = data;
-        if (data.letters !== '') {
-            lang_data.addGrapheme(data.letters.split(' '));
-            lang_data.addWord(data.moreWords.split(' '));
-            lang_data.LanguageSortOrder = data.letters.split(' ');
-            var stgs = data.stages;
+        this.source = jQuery.extend(new ReaderSettings(), fileContent);
+        if (this.source.letters !== '') {
+            lang_data.addGrapheme(this.source.letters.split(' '));
+            lang_data.addWord(this.source.moreWords.split(' '));
+            lang_data.LanguageSortOrder = this.source.letters.split(' ');
+            var stgs = this.source.stages;
             if (stgs) {
                 this.stages = [];
                 for (var j = 0; j < stgs.length; j++) {
@@ -30,7 +29,7 @@ var SynphonyApi = (function () {
                 }
             }
         }
-        var lvls = data.levels;
+        var lvls = this.source.levels;
         if (lvls) {
             this.levels = [];
             for (var i = 0; i < lvls.length; i++) {
@@ -51,22 +50,11 @@ var SynphonyApi = (function () {
     SynphonyApi.prototype.AddStage = function (stage) {
         this.stages.push(stage);
     };
-    //noinspection JSUnusedGlobalSymbols
-    /**
-     * Gets a URI that points to the directory containing the "synphonyApi.js" file.
-     * @returns {String}
-     */
-    SynphonyApi.prototype.getScriptDirectory = function () {
-        var src = $('script[src$="synphonyApi.js"]').attr('src').replace('synphonyApi.js', '').replace(/\\/g, '/');
-        if (!src)
-            return '';
-        return src;
-    };
     /**
      * Add a list of words to the lang_data object
      * @param {Object} words The keys are the words, and the values are the counts
      */
-    SynphonyApi.prototype.addWords = function (words) {
+    SynphonyApi.addWords = function (words) {
         if (!words)
             return;
         var wordNames = Object.keys(words);

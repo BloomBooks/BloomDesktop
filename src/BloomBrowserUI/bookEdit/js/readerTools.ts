@@ -297,7 +297,7 @@ function makeLetterWordList(): void {
     allWords: allWords.join('\t')
   };
 
-  $.ajax(ajaxSettings)
+  $.ajax(<JQueryAjaxSettings>ajaxSettings)
 }
 
 function loadExternalLink(url: string): void {
