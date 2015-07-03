@@ -188,6 +188,8 @@ var bloomSourceBubbles = (function () {
         });
         container.append("<option value='' selected></option>");
         container[0].addEventListener("change", bloomSourceBubbles.styledSelectChangeHandler, false);
+        // BL-2390 Add number of extra tabs to overlay (visible part of dropdown)
+        divForBubble.find(".styled-select-overlay").text((tabs.length - FIRST_SELECT_OPTION + 1).toString());
         return divForBubble;
     };
     bloomSourceBubbles.styledSelectChangeHandler = function (event) {
