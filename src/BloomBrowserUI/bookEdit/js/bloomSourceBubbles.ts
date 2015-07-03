@@ -36,11 +36,16 @@ class bloomSourceBubbles {
         var divForBubble = bloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
         if(divForBubble == null) return;
 
+        // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected.
         divForBubble = bloomSourceBubbles.CreateTabsFromDiv(divForBubble);
         if (divForBubble == null) return;
 
+        // If divForBubble contains more than two languages, create a dropdown menu to contain the
+        // extra possibilities. The menu will show (x), where x is the number of items in the dropdown.
         divForBubble = bloomSourceBubbles.CreateDropdownIfNecessary(divForBubble);
 
+        // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
+        // Also makes sure the tooltips are setup correctly.
         bloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(group, divForBubble);
     }
 
@@ -146,15 +151,27 @@ class bloomSourceBubbles {
         // BL-2357 Do some smart ordering of source language tabs
         var settingsObject = GetSettings();
         var defaultSrcLang = settingsObject.defaultSourceLanguage;
+        var destination = 0;
         if(newIso) defaultSrcLang = newIso;
-        items = bloomSourceBubbles.DoSafeReplaceInList(items, defaultSrcLang, 0);
+        var newItems = bloomSourceBubbles.DoSafeReplaceInList(items, defaultSrcLang, destination);
+        if($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+            destination++;
+            items = newItems;
+        }
         var language2 = settingsObject.currentCollectionLanguage2;
         var language3 = settingsObject.currentCollectionLanguage3;
         if (language2 && language2 != defaultSrcLang) {
-            items = bloomSourceBubbles.DoSafeReplaceInList(items, language2, 1);
+            newItems = bloomSourceBubbles.DoSafeReplaceInList(items, language2, destination);
+            if($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+                destination++;
+                items = newItems;
+            }
         }
         if (language3 && language3 != defaultSrcLang) {
-            items = bloomSourceBubbles.DoSafeReplaceInList(items, language3, 2);
+            newItems = bloomSourceBubbles.DoSafeReplaceInList(items, language3, destination);
+            if($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+                items = newItems;
+            }
         }
         return items;
     }
