@@ -75,6 +75,9 @@
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
+    <Reference Include="EasyHttp">
+      <HintPath>..\..\packages\EasyHttp.1.6.29.0\lib\net40\EasyHttp.dll</HintPath>
+    </Reference>
     <Reference Include="Fleck">
       <HintPath>..\..\packages\Fleck.0.12.0.39\lib\net40\Fleck.dll</HintPath>
     </Reference>
