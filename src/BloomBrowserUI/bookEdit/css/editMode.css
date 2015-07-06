@@ -245,8 +245,9 @@ TEXTAREA.province {
 .ui-sourceTextsForBubble NAV {
   overflow: hidden;
   display: block;
-  height: 37px;
-  top: -2px;
+  height: 39px;
+  top: -5px;
+  margin: 0 -8px;
 }
 .ui-sourceTextsForBubble NAV:hover {
   overflow: visible;
@@ -272,7 +273,7 @@ TEXTAREA.province {
   z-index: 2;
 }
 .ui-sourceTextsForBubble NAV > UL > LI {
-  margin: 0 2px;
+  margin: 2px 2px 0;
   font-size: 9pt;
   height: 31px;
   border: 1px solid #aaaaaa;
@@ -284,12 +285,13 @@ TEXTAREA.province {
   background-color: #ffffa3;
 }
 .ui-sourceTextsForBubble NAV > UL > LI.active {
-  padding-top: 1px;
-  height: 30px;
+  padding-top: 3px;
+  margin-top: 0;
+  height: 32px;
   position: relative;
   font: bold 11pt sans-serif;
-  background-color: #f4f0d6;
-  border-bottom-color: #f4f0d6;
+  background-color: #ffffa3;
+  border-bottom-color: #ffffa3;
   z-index: 3;
 }
 .ui-sourceTextsForBubble NAV > UL > LI A {
@@ -308,7 +310,7 @@ TEXTAREA.province {
 }
 .ui-sourceTextsForBubble NAV > UL > LI A:hover {
   text-decoration: underline;
-  background-color: #f4f0d6;
+  background-color: #ffffa3;
 }
 .ui-sourceTextsForBubble .source-text {
   font-size: 10pt;
@@ -332,7 +334,7 @@ TEXTAREA.province {
   margin-top: 2px;
   white-space: nowrap;
   border: 1px solid #aaaaaa;
-  background-color: #ffffe0 !important;
+  background-color: #ffffff !important;
   right: 0;
   top: 0;
   font-size: 9pt;
@@ -342,7 +344,7 @@ TEXTAREA.province {
   padding: 5px;
 }
 .dropdown-list LI:hover {
-  background-color: #faebd7;
+  background-color: #ffffa3;
 }
 .dropdown-menu {
   width: 32px;
@@ -350,7 +352,7 @@ TEXTAREA.province {
   right: 0;
 }
 .dropdown-menu:hover {
-  background-color: #f4f0d6;
+  background-color: #ffffa3;
 }
 .dropdown-menu:hover UL {
   display: inline-block;

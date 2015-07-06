@@ -281,17 +281,18 @@ TEXTAREA.province
 	overflow: visible;
 }
 
-@SelectedTabColor: #f4f0d6;
 @TabColor: #ffffa3;
 @TabBorder: #aaa;
+@SelectedTabColor: @TabColor;
 
 .ui-sourceTextsForBubble {
 	position: relative;
 	NAV {
 		overflow: hidden;
 		display: block;
-		height: 37px;
-		top: -2px;
+		height: 39px;
+		top: -5px;
+		margin: 0 -8px;
 		&:hover {
 			overflow: visible; // otherwise it masks the language dropdown
 		}
@@ -315,7 +316,7 @@ TEXTAREA.province
 				z-index: 2;
 			}
 			> LI {
-				margin: 0 2px;
+				margin: 2px 2px 0;
 				font-size: 9pt;
 				height: 31px;
 				border: 1px solid @TabBorder;
@@ -326,8 +327,9 @@ TEXTAREA.province
 				flex: none;
 				background-color: @TabColor;
 				&.active {
-					padding-top: 1px;
-					height: 30px;
+					padding-top: 3px;
+					margin-top: 0;
+					height: 32px;
 					position: relative;
 					font: bold 11pt sans-serif;
 					background-color: @SelectedTabColor;
@@ -368,8 +370,8 @@ TEXTAREA.province
 	}
 }
 
-@DropdownBackground: lightyellow;
-@DropdownHovered: antiquewhite;
+@DropdownBackground: white;
+@DropdownHovered: @TabColor;
 
 .dropdown-list {
 	max-height: 200px;
