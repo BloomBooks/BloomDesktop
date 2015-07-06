@@ -158,7 +158,7 @@
 			this._L10NSharpExtender.SetLocalizingId(this._screenshotHolder, "pictureBox1");
 			this._screenshotHolder.Location = new System.Drawing.Point(21, 247);
 			this._screenshotHolder.Name = "_screenshotHolder";
-			this._screenshotHolder.Size = new System.Drawing.Size(437, 156);
+			this._screenshotHolder.Size = new System.Drawing.Size(437, 141);
 			this._screenshotHolder.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
 			this._screenshotHolder.TabIndex = 8;
 			this._screenshotHolder.TabStop = false;
@@ -237,10 +237,10 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._status, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._status, null);
 			this._L10NSharpExtender.SetLocalizingId(this._status, "ReportProblemDialog.HtmlLabel");
-			this._status.Location = new System.Drawing.Point(21, 406);
+			this._status.Location = new System.Drawing.Point(21, 391);
 			this._status.Margin = new System.Windows.Forms.Padding(0);
 			this._status.Name = "_status";
-			this._status.Size = new System.Drawing.Size(337, 84);
+			this._status.Size = new System.Drawing.Size(437, 84);
 			this._status.TabIndex = 28;
 			// 
 			// _submitMsg
@@ -260,6 +260,7 @@
 			// 
 			// _privacyLabel
 			// 
+			this._privacyLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this._privacyLabel.AutoSize = true;
 			this._privacyLabel.LinkColor = System.Drawing.Color.Black;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._privacyLabel, null);
