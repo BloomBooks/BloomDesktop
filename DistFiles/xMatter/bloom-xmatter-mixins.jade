@@ -146,12 +146,8 @@ mixin factoryStandard-titlePage
 		#languageInformation
 			.languagesOfBook(data-book='languagesOfBook')
 			//- review: can we get rid of these "langName" classes?
-			+field-prototypeDeclaredExplicity
-				//- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
-				.langName('data-library'='dialect')
-			+field-prototypeDeclaredExplicity
-				//- review: notice that we have a translation group, but nothing is translatable, just static list of language name? Probably not what we want.
-				.langName(data-library='languageLocation').bloom-writeOnly
+			.langName('data-library'='dialect')
+			.langName(data-library='languageLocation').bloom-writeOnly
 
 mixin standard-blankInsideFrontCover
 	+page-cover('Inside Front Cover').cover.coverColor.insideFrontCover.bloom-frontMatter(data-export='front-matter-inside-front-cover')#BA00DE13-734C-4036-9901-7040275B9000
