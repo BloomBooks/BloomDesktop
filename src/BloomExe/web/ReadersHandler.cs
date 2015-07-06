@@ -318,24 +318,23 @@ namespace Bloom.web
 
 				// if the system has wmctrl installed, use it to bring the folder to the front
 				Process.Start(new ProcessStartInfo()
-					{
-						FileName = "wmctrl",
-						Arguments = "-a \"Sample Texts\"",
-						UseShellExecute = false,
-						ErrorDialog = false // do not show a message if not successful
-					});
+				{
+					FileName = "wmctrl",
+					Arguments = "-a \"Sample Texts\"",
+					UseShellExecute = false,
+					ErrorDialog = false // do not show a message if not successful
+				});
 			}
 		}
 
 		private static void ChooseAllowedWordListFile(IRequestInfo info)
 		{
-			// Need to do this in order to show the open file dialog
-			var t = new Thread(ShowSelectAllowedWordsFileDialog);
-			t.SetApartmentState(ApartmentState.STA);
-			t.Start(info);
+			var frm = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+			// ReSharper disable once PossibleNullReferenceException
+			frm.Invoke(new Action<IRequestInfo>(ShowSelectAllowedWordsFileDialog), info);
 		}
 
-		private static void ShowSelectAllowedWordsFileDialog(object info)
+		private static void ShowSelectAllowedWordsFileDialog(IRequestInfo info)
 		{
 			var returnVal = "";
 
@@ -380,9 +379,8 @@ namespace Bloom.web
 			}
 
 			// send to browser
-			var thisInfo = info as IRequestInfo;
-			thisInfo.ContentType = "text/plain";
-			thisInfo.WriteCompleteOutput(returnVal);
+			info.ContentType = "text/plain";
+			info.WriteCompleteOutput(returnVal);
 		}
 	}
 }
