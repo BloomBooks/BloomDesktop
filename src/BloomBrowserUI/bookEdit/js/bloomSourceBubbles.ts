@@ -223,30 +223,34 @@ class bloomSourceBubbles {
         var tabs = divForBubble.find("li");
         if (tabs.length < FIRST_SELECT_OPTION) return divForBubble; // no change
 
-        var selectAndOverlay = "<div class='styled-select-overlay'></div><select class='styled-select'></select>";
-        divForBubble.find("ul").append(selectAndOverlay);
-        var container = divForBubble.find(".styled-select");
+        var dropMenu = "<li class='dropdown-menu'><div>0</div><ul class='dropdown-list'></ul></li>";
+        divForBubble.find("ul").append(dropMenu);
+        var container = divForBubble.find(".dropdown-list");
         tabs.each(function(idx) {
             if(idx < FIRST_SELECT_OPTION - 1) return true; // continue to next iteration of .each()
-            var iso = $(this).attr('id');
+            var $this = $(this);
+            var iso = $this.attr('id');
             var languageName = localizationManager.getLanguageName(iso);
             if (!languageName)
                 languageName = iso;
-            var option = "<option value='"+iso+"'>"+languageName+"</option>";
-            container.append(option);
-            $(this).attr('style', "display: none;");
+            var listItem = "<li lang='"+iso+"'>"+languageName+"</li>";
+            container.append(listItem);
+            $this.addClass('removeThisOne');
         });
 
-        container.append("<option value='' selected></option>");
-        container[0].addEventListener("change", bloomSourceBubbles.styledSelectChangeHandler, false);
+        tabs.remove('.removeThisOne');
 
-        // BL-2390 Add number of extra tabs to overlay (visible part of dropdown)
-        divForBubble.find(".styled-select-overlay").text((tabs.length - FIRST_SELECT_OPTION + 1).toString());
+        container.find('li').each(function () {
+            this.addEventListener("click", bloomSourceBubbles.styledSelectChangeHandler, false);
+        });
+
+        // BL-2390 Add number of extra tabs to visible part of dropdown
+        divForBubble.find(".dropdown-menu div").text((tabs.length - FIRST_SELECT_OPTION + 1).toString());
         return divForBubble;
     }
 
     private static styledSelectChangeHandler(event) {
-        var newIso = event.target.value;
+        var newIso = event.target.lang;
 
         // Figure out which qtip we're in and go find the associated bloom-translationGroup
         var qtip = $(event.target).closest('.qtip').attr('id');
