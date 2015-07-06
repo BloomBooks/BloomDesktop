@@ -269,25 +269,31 @@ TEXTAREA.province {
   bottom: 0;
   left: 0;
   border-bottom: 1px solid #aaaaaa;
-  z-index: 1;
+  z-index: 2;
 }
 .ui-sourceTextsForBubble NAV > UL > LI {
   margin: 0 2px;
-  padding: 0 5px;
   font-size: 9pt;
   height: 31px;
-  border: 1px solid #ffffa3;
+  border: 1px solid #aaaaaa;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-color: #ffffa3;
   float: left;
   flex: none;
+  background-color: #ffffa3;
 }
 .ui-sourceTextsForBubble NAV > UL > LI.active {
   padding-top: 1px;
+  height: 30px;
   position: relative;
   font: bold 11pt sans-serif;
   background-color: #f4f0d6;
+  border-bottom-color: #f4f0d6;
+  z-index: 3;
 }
 .ui-sourceTextsForBubble NAV > UL > LI A {
-  max-width: 100px;
+  max-width: 85px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -319,6 +325,7 @@ TEXTAREA.province {
   max-height: 200px;
   overflow-y: auto;
   text-align: left;
+  opacity: 1;
   margin: 0;
   padding: 0;
   position: relative;
@@ -329,6 +336,7 @@ TEXTAREA.province {
   right: 0;
   top: 0;
   font-size: 9pt;
+  z-index: 5;
 }
 .dropdown-list LI {
   padding: 5px;
@@ -337,17 +345,9 @@ TEXTAREA.province {
   background-color: #faebd7;
 }
 .dropdown-menu {
-  border-style: none;
-  background-color: #ffffa3;
-  z-index: 10;
-  opacity: 1;
   width: 32px;
-  height: 28px;
-  margin: 0;
-  padding: 5px 5px 0 5px;
   position: absolute;
   right: 0;
-  font-size: 9pt;
 }
 .dropdown-menu:hover {
   background-color: #f4f0d6;

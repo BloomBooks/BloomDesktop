@@ -312,24 +312,30 @@ TEXTAREA.province
 				bottom: 0;
 				left: 0;
 				border-bottom: 1px solid @TabBorder;
-				z-index: 1;
+				z-index: 2;
 			}
 			> LI {
 				margin: 0 2px;
-				padding: 0 5px;
 				font-size: 9pt;
 				height: 31px;
-				border: 1px solid @TabColor;
+				border: 1px solid @TabBorder;
+				border-top-left-radius: 6px;
+				border-top-right-radius: 6px;
+				border-bottom-color: @TabColor; // hide bottom border
 				float: left;
 				flex: none;
+				background-color: @TabColor;
 				&.active {
 					padding-top: 1px;
+					height: 30px;
 					position: relative;
 					font: bold 11pt sans-serif;
 					background-color: @SelectedTabColor;
+					border-bottom-color: @SelectedTabColor; // make active tab appear in front
+					z-index: 3;
 				}
 				A {
-					max-width: 100px;
+					max-width: 85px;
 					white-space: nowrap;
 					text-overflow: ellipsis;
 					overflow: hidden;
@@ -369,6 +375,7 @@ TEXTAREA.province
 	max-height: 200px;
 	overflow-y: auto;
 	text-align: left;
+	opacity: 1;
 	margin: 0;
 	padding: 0;
 	position: relative;
@@ -379,6 +386,7 @@ TEXTAREA.province
 	right: 0;
 	top: 0;
 	font-size: 9pt;
+	z-index: 5;
 	LI {
 		padding: 5px;
 		&:hover {
@@ -387,17 +395,9 @@ TEXTAREA.province
 	}
 }
 .dropdown-menu {
-	border-style: none;
-	background-color: @TabColor;
-	z-index: 10;
-	opacity: 1;
 	width: 32px;
-	height: 28px;
-	margin: 0;
-	padding: 5px 5px 0 5px;
 	position: absolute;
 	right: 0;
-	font-size: 9pt;
 	&:hover {
 		background-color: @SelectedTabColor;
 		UL {
