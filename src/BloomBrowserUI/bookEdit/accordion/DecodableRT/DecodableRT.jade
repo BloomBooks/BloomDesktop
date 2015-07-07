@@ -39,5 +39,6 @@ html
 				a#make-letter-word-list(href='javascript:makeLetterWordList();', data-i18n='DecodableReaderTool.MakeLetterWordReport') Generate a letter and word list report
 			script(type='text/javascript').
 				$(document).ready(function() {
+					// this timeout is different than the LeveledRT timeout to prevent initializing synphony twice
 					setTimeout(initializeDecodableRT, 100);
 				});

@@ -16,6 +16,8 @@ interface textMarkup extends JQueryStatic {
 // listen for messages sent to this page
 window.addEventListener('message', processDLRMessage, false);
 
+var readerToolsInitialized: boolean = false;
+
 function getSetupDialogWindow(): Window {
   return (<HTMLIFrameElement>parent.window.document.getElementById("settings_frame")).contentWindow;
 }
@@ -128,11 +130,8 @@ function setupReaderKeyAndFocusHandlers(container: HTMLElement, model: ReaderToo
 
 function initializeDecodableRT(): void {
 
-  // make sure synphony is initialized
-  if (!model.getSynphony().source) {
-    iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
-    iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
-  }
+  // load synphony settings
+  loadSynphonySettings();
 
   // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
   $('#incStage').onOnce('click.readerTools', function() {
@@ -163,11 +162,8 @@ function initializeDecodableRT(): void {
 
 function initializeLeveledRT(): void {
 
-  // make sure synphony is initialized
-  if (!model.getSynphony().source) {
-    iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
-    iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
-  }
+  // load synphony settings
+  loadSynphonySettings();
 
   $('#incLevel').onOnce('click.readerTools', function() {
     model.incrementLevel();
@@ -187,6 +183,16 @@ if (typeof ($) === "function") {
     model = new ReaderToolsModel();
     model.setSynphony(new SynphonyApi());
   });
+}
+
+function loadSynphonySettings(): void {
+
+  // make sure synphony is initialized
+  if (!readerToolsInitialized && !model.getSynphony().source) {
+    readerToolsInitialized = true;
+    iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
+    iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
+  }
 }
 
 /**
