@@ -36,11 +36,16 @@ class bloomSourceBubbles {
         var divForBubble = bloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
         if(divForBubble == null) return;
 
+        // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected.
         divForBubble = bloomSourceBubbles.CreateTabsFromDiv(divForBubble);
         if (divForBubble == null) return;
 
+        // If divForBubble contains more than two languages, create a dropdown menu to contain the
+        // extra possibilities. The menu will show (x), where x is the number of items in the dropdown.
         divForBubble = bloomSourceBubbles.CreateDropdownIfNecessary(divForBubble);
 
+        // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
+        // Also makes sure the tooltips are setup correctly.
         bloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(group, divForBubble);
     }
 
@@ -146,15 +151,27 @@ class bloomSourceBubbles {
         // BL-2357 Do some smart ordering of source language tabs
         var settingsObject = GetSettings();
         var defaultSrcLang = settingsObject.defaultSourceLanguage;
+        var destination = 0;
         if(newIso) defaultSrcLang = newIso;
-        items = bloomSourceBubbles.DoSafeReplaceInList(items, defaultSrcLang, 0);
+        var newItems = bloomSourceBubbles.DoSafeReplaceInList(items, defaultSrcLang, destination);
+        if($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+            destination++;
+            items = newItems;
+        }
         var language2 = settingsObject.currentCollectionLanguage2;
         var language3 = settingsObject.currentCollectionLanguage3;
         if (language2 && language2 != defaultSrcLang) {
-            items = bloomSourceBubbles.DoSafeReplaceInList(items, language2, 1);
+            newItems = bloomSourceBubbles.DoSafeReplaceInList(items, language2, destination);
+            if($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+                destination++;
+                items = newItems;
+            }
         }
         if (language3 && language3 != defaultSrcLang) {
-            items = bloomSourceBubbles.DoSafeReplaceInList(items, language3, 2);
+            newItems = bloomSourceBubbles.DoSafeReplaceInList(items, language3, destination);
+            if($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+                items = newItems;
+            }
         }
         return items;
     }
@@ -206,30 +223,34 @@ class bloomSourceBubbles {
         var tabs = divForBubble.find("li");
         if (tabs.length < FIRST_SELECT_OPTION) return divForBubble; // no change
 
-        var selectAndOverlay = "<div class='styled-select-overlay'></div><select class='styled-select'></select>";
-        divForBubble.find("ul").append(selectAndOverlay);
-        var container = divForBubble.find(".styled-select");
+        var dropMenu = "<li class='dropdown-menu'><div>0</div><ul class='dropdown-list'></ul></li>";
+        divForBubble.find("ul").append(dropMenu);
+        var container = divForBubble.find(".dropdown-list");
         tabs.each(function(idx) {
             if(idx < FIRST_SELECT_OPTION - 1) return true; // continue to next iteration of .each()
-            var iso = $(this).attr('id');
+            var $this = $(this);
+            var iso = $this.attr('id');
             var languageName = localizationManager.getLanguageName(iso);
             if (!languageName)
                 languageName = iso;
-            var option = "<option value='"+iso+"'>"+languageName+"</option>";
-            container.append(option);
-            $(this).attr('style', "display: none;");
+            var listItem = "<li lang='"+iso+"'>"+languageName+"</li>";
+            container.append(listItem);
+            $this.addClass('removeThisOne');
         });
 
-        container.append("<option value='' selected></option>");
-        container[0].addEventListener("change", bloomSourceBubbles.styledSelectChangeHandler, false);
+        tabs.remove('.removeThisOne');
 
-        // BL-2390 Add number of extra tabs to overlay (visible part of dropdown)
-        divForBubble.find(".styled-select-overlay").text((tabs.length - FIRST_SELECT_OPTION + 1).toString());
+        container.find('li').each(function () {
+            this.addEventListener("click", bloomSourceBubbles.styledSelectChangeHandler, false);
+        });
+
+        // BL-2390 Add number of extra tabs to visible part of dropdown
+        divForBubble.find(".dropdown-menu div").text((tabs.length - FIRST_SELECT_OPTION + 1).toString());
         return divForBubble;
     }
 
     private static styledSelectChangeHandler(event) {
-        var newIso = event.target.value;
+        var newIso = event.target.lang;
 
         // Figure out which qtip we're in and go find the associated bloom-translationGroup
         var qtip = $(event.target).closest('.qtip').attr('id');

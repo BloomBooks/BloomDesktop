@@ -207,20 +207,20 @@ TEXTAREA.province {
   height: 33px;
 }
 .overflow {
-  color: red !important;
-  border: solid thin red !important;
+  color: #ff0000 !important;
+  border: solid thin #ff0000 !important;
 }
 .overflow p:empty:after {
   content: '¶';
 }
 .childOverflowingThis {
-  border-bottom: solid thick red !important;
+  border-bottom: solid thick #ff0000 !important;
 }
 .Layout-Problem-Detected:before,
 .Layout-Problem-Detected:after {
   content: attr(layoutproblem);
   text-align: left;
-  color: red;
+  color: #ff0000;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -236,38 +236,66 @@ TEXTAREA.province {
   margin-top: -8px;
   margin-right: 8px;
 }
+.qtip-content:hover {
+  overflow: visible;
+}
 .ui-sourceTextsForBubble {
   position: relative;
 }
 .ui-sourceTextsForBubble NAV {
   overflow: hidden;
   display: block;
-  height: 37px;
-  top: -2px;
+  height: 39px;
+  top: -5px;
+  margin: 0 -8px;
 }
-.ui-sourceTextsForBubble NAV UL {
+.ui-sourceTextsForBubble NAV:hover {
+  overflow: visible;
+}
+.ui-sourceTextsForBubble NAV > UL {
   z-index: 1;
   background-color: transparent;
-  text-align: left;
+  text-align: center;
+  margin: 0;
+  padding: 0;
   display: flex;
   list-style: outside none none;
   top: 1px;
+  line-height: 22px;
 }
-.ui-sourceTextsForBubble NAV UL LI {
-  padding-right: 5px;
+.ui-sourceTextsForBubble NAV > UL::after {
+  position: absolute;
+  content: "";
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  border-bottom: 1px solid #aaaaaa;
+  z-index: 2;
+}
+.ui-sourceTextsForBubble NAV > UL > LI {
+  margin: 2px 2px 0;
   font-size: 9pt;
   height: 31px;
+  border: 1px solid #aaaaaa;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-color: #ffffa3;
   float: left;
   flex: none;
+  background-color: #ffffa3;
 }
-.ui-sourceTextsForBubble NAV UL LI.active {
-  padding-top: 1px;
+.ui-sourceTextsForBubble NAV > UL > LI.active {
+  padding-top: 3px;
+  margin-top: 0;
+  height: 32px;
   position: relative;
-  top: -5px;
   font: bold 11pt sans-serif;
+  background-color: #ffffa3;
+  border-bottom-color: #ffffa3;
+  z-index: 3;
 }
-.ui-sourceTextsForBubble NAV UL LI A {
-  max-width: 100px;
+.ui-sourceTextsForBubble NAV > UL > LI A {
+  max-width: 85px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -275,19 +303,19 @@ TEXTAREA.province {
   padding: 5px;
   outline: none;
   text-decoration: none;
-  color: #000000;
+  color: black;
 }
-.ui-sourceTextsForBubble NAV UL LI A:hover {
-  text-decoration: underline;
-  background-color: lightyellow;
-}
-.ui-sourceTextsForBubble NAV UL LI A.active {
+.ui-sourceTextsForBubble NAV > UL > LI A.active {
   font-weight: bold;
+}
+.ui-sourceTextsForBubble NAV > UL > LI A:hover {
+  text-decoration: underline;
+  background-color: #ffffa3;
 }
 .ui-sourceTextsForBubble .source-text {
   font-size: 10pt;
   line-height: 1.5;
-  color: #000000;
+  color: black;
 }
 .ui-sourceTextsForBubble .source-text:lang(th),
 .ui-sourceTextsForBubble .source-text:lang(km),
@@ -295,42 +323,55 @@ TEXTAREA.province {
 .ui-sourceTextsForBubble .source-text:lang(prt) {
   font-size: 18pt;
 }
-.styled-select {
-  width: 32px;
-  height: 28px;
-  border-style: none;
+.dropdown-list {
+  max-height: 200px;
+  overflow-y: auto;
+  text-align: left;
+  opacity: 1;
   margin: 0;
   padding: 0;
-  position: absolute;
+  position: relative;
+  margin-top: 2px;
+  white-space: nowrap;
+  border: 1px solid #aaaaaa;
+  background-color: #ffffff !important;
   right: 0;
   top: 0;
   font-size: 9pt;
+  z-index: 5;
 }
-.styled-select option[selected] {
-  display: none;
+.dropdown-list LI {
+  padding: 5px;
 }
-.styled-select-overlay {
-  border-style: none;
-  background-color: #FFFFA3;
-  z-index: 1;
-  opacity: 1;
+.dropdown-list LI:hover {
+  background-color: #ffffa3;
+}
+.dropdown-menu {
   width: 32px;
-  height: 28px;
-  pointer-events: none;
-  margin: 0;
-  padding-top: 4px;
   position: absolute;
   right: 0;
-  font-size: 9pt;
 }
-.styled-select-overlay::before {
+.dropdown-menu:hover {
+  background-color: #ffffa3;
+}
+.dropdown-menu:hover UL {
+  display: inline-block;
+}
+.dropdown-menu DIV {
+  margin: 4px 0 0 0;
+  display: block;
+}
+.dropdown-menu DIV::before {
   content: "(";
 }
-.styled-select-overlay::after {
+.dropdown-menu DIV::after {
   content: ")";
 }
+.dropdown-menu UL {
+  display: none;
+}
 .panel-container {
-  border: 1px solid #000000;
+  border: 1px solid black;
   padding: 0 10px;
 }
 DIV.textWholePage UL {

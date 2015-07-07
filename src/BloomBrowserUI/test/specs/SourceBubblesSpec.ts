@@ -13,6 +13,7 @@ describe("bloomSourceBubbles", function () {
     // TODO: Testing is a bit hampered by not being able (currently) to put test values
     // into the cSharpDependencyInjector version of GetSettings(). Someday it might
     // be worth modifying that file so that tests can setup their own values for:
+
     // defaultSourceLanguage ('en' in tests; also marked vernacular)
     // currentCollectionLanguage2 ('tpi' in tests)
     // currentCollectionLanguage3 ('fr' in tests)
@@ -20,31 +21,36 @@ describe("bloomSourceBubbles", function () {
     var testHtml = $([
       "<div id='testTarget' class='bloom-translationGroup'>",
       "   <div class='bloom-editable' lang='es'>Spanish text</div>",
-      "   <div class='bloom-editable' lang='en'>English text</div>",
+      "   <div class='bloom-editable bloom-content1' lang='en'>English text</div>",
       "   <div class='bloom-editable' lang='fr'>French text</div>",
       "   <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>",
       "</div>"
     ].join("\n"));
     $('body').append(testHtml);
     var result = bloomSourceBubbles.MakeSourceTextDivForGroup($('body').find('#testTarget')[0]);
-    var listItems = result.find('nav ul li');
-    expect(listItems.length).toBe(3); // English in test is vernacular, so no tab for it
+    // English in test is vernacular, so no tab for it
     // Tok Pisin tab gets moved to first place, since it is currentCollectionLanguage2
     // French is second, since it is currentCollectionLanguage3
+    // So result should contain:
+    // <nav>
+    //   <ul>
+    //     <li id='tpi'><a class="sourceTextTab" href="#tpi">Tok Pisin</a></li>
+    //     <li id='fr'><a class="sourceTextTab" href="#fr">français</a></li>
+    //     <li id='es'><a class=\"sourceTextTab\" href=\"#es\">español</a></li>
+    //   </ul>
+    // </nav>
+    // <div class='bloom-editable' lang='es'>Spanish text</div> (order not important here)
+    // <div class='bloom-editable' lang='fr'>French text</div>
+    // <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>
+    var listItems = result.find('nav ul li');
+    expect(listItems.length).toBe(3);
     expect(listItems.first().html()).toBe("<a class=\"sourceTextTab\" href=\"#tpi\">Tok Pisin</a>");
     expect(result.find('li#fr').html()).toBe("<a class=\"sourceTextTab\" href=\"#fr\">français</a>");
     expect(listItems.last().html()).toBe("<a class=\"sourceTextTab\" href=\"#es\">español</a>");
-    expect(result.find('div').length).toBe(4); // including English
+    expect(result.find('div').length).toBe(3);
   });
 
   it("Run CreateDropdownIfNecessary with pre-defined settings", function () {
-    // TODO: Testing is a bit hampered by not being able (currently) to put test values
-    // into the cSharpDependencyInjector version of GetSettings(). Someday it might
-    // be worth modifying that file so that tests can setup their own values for:
-    // defaultSourceLanguage ('en' in tests; also marked vernacular)
-    // currentCollectionLanguage2 ('tpi' in tests)
-    // currentCollectionLanguage3 ('fr' in tests)
-
     var testHtml = $([
       "<div id='testTarget' class='bloom-translationGroup'>",
       "   <nav>",
@@ -61,22 +67,59 @@ describe("bloomSourceBubbles", function () {
     ].join("\n"));
     $('body').append(testHtml);
     var result = bloomSourceBubbles.CreateDropdownIfNecessary($('body').find('#testTarget'));
-    var listItems = result.find('nav ul li');
-    expect(listItems.length).toBe(3); // English in test is vernacular, so no tab for it
-    // Tok Pisin tab gets moved to first place, since it is currentCollectionLanguage2
+    // result should contain:
+    // <nav>
+    //   <ul>
+    //     <li id='tpi'><a class="sourceTextTab" href="#tpi">Tok Pisin</a></li>
+    //     <li id='fr'><a class="sourceTextTab" href="#fr">français</a></li>
+    //     <li class='dropdown-menu'>
+    //       <div>1</div>
+    //       <ul class='dropdown-list'>
+    //         <li value='es'>español</li>
+    //       </ul>
+    //     </li>
+    //   </ul>
+    // </nav>
+    // <div class='bloom-editable' lang='es'>Spanish text</div> (order not important here)
+    // <div class='bloom-editable' lang='fr'>French text</div>
+    // <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>
+    var listItems = result.find('nav > ul > li');
+    expect(listItems.length).toBe(3);
     expect(listItems.first().html()).toBe("<a class=\"sourceTextTab\" href=\"#tpi\">Tok Pisin</a>");
     var frenchTab = result.find('li#fr');
     expect(frenchTab.html()).toBe("<a class=\"sourceTextTab\" href=\"#fr\">français</a>");
-    expect(frenchTab.attr('style')).toBeUndefined(); // 2nd visible tab
-    var spanishTab = listItems.last();
-    expect(spanishTab.html()).toBe("<a class=\"sourceTextTab\" href=\"#es\">español</a>");
-    expect(spanishTab.attr('style')).toBe("display: none;"); // 3rd tab should be in dropdown
-    expect(result.find('.styled-select-overlay').length).toBe(1); // empty overlay div
-    var options = result.find('.styled-select option');
-    expect(options.length).toBe(2); // including selected empty option
-    expect(options.first().html()).toBe("español");
-    expect(options.last().html()).toBe("");
-    var ulChildren = result.find('nav ul').children();
-    expect(ulChildren.length).toBe(5); // including div and select for dropdown
+    var dropdown = listItems.last();
+    expect(dropdown.hasClass('dropdown-menu')).toBe(true);
+    var dropItems = dropdown.find('ul li');
+    expect(dropItems.length).toBe(1);
+    expect(dropItems.first().html()).toBe("español");
+    var dropChildren = dropdown.children();
+    expect(dropChildren.length).toBe(2); // including div holding number and ul holding dropdown items
+    var topLevelDivs = $('#testTarget > div');
+    expect(topLevelDivs.length).toBe(3);
+  });
+
+  it("CreateDropdownIfNecessary doesn't if doesn't need to", function () {
+    var testHtml = $([
+      "<div id='testTarget' class='bloom-translationGroup'>",
+      "   <nav>",
+      "     <ul>",
+      "       <li id='tpi'><a class='sourceTextTab' href='#tpi'>Tok Pisin</a></li>",
+      "       <li id='fr'><a class='sourceTextTab' href='#fr'>français</a></li>",
+      "    </ul>",
+      "   </nav>",
+      "   <div class='source-text' lang='fr'>French text</div>",
+      "   <div class='source-text' lang='tpi'>Tok Pisin text</div>",
+      "</div>"
+    ].join("\n"));
+    $('body').append(testHtml);
+    var result = bloomSourceBubbles.CreateDropdownIfNecessary($('body').find('#testTarget'));
+    var listItems = result.find('nav > ul > li');
+    expect(listItems.length).toBe(2); // this is why we don't need a dropdown
+    expect(listItems.first().html()).toBe("<a class=\"sourceTextTab\" href=\"#tpi\">Tok Pisin</a>");
+    var frenchTab = listItems.last();
+    expect(frenchTab.html()).toBe("<a class=\"sourceTextTab\" href=\"#fr\">français</a>");
+    var srcTexts = result.find('.source-text');
+    expect(srcTexts.length).toBe(2);
   });
 });
