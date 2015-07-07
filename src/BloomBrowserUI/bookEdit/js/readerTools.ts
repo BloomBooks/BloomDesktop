@@ -37,7 +37,16 @@ function processDLRMessage(event: MessageEvent): void {
       return;
 
     case 'Words': // request from setup dialog for a list of words for a stage
-      var words = ReaderToolsModel.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
+      var words: any;
+      if (model.getSynphony().source.useAllowedWords) {
+        // params[1] is the stage number
+        words = ReaderToolsModel.selectWordsFromAllowedLists(parseInt(params[1]));
+      }
+      else {
+        // params[1] is a list of known graphemes
+        words = ReaderToolsModel.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
+      }
+
       getSetupDialogWindow().postMessage('Words\n' + JSON.stringify(words), '*');
       return;
 
@@ -220,8 +229,14 @@ function initializeSynphony(settingsFileContent: string): void {
   model.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
   model.directoryWatcher.start();
 
-  // get the list of sample texts
-  iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+  if (synphony.source.useAllowedWords) {
+    // get the allowed words for each stage
+    model.getAllowedWordsLists();
+  }
+  else {
+    // get the list of sample texts
+    iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+  }
 }
 
 /**

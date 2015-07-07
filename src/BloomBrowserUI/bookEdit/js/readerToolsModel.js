@@ -818,6 +818,23 @@ var ReaderToolsModel = (function () {
         else
             return libsynphony.selectGPCWordsFromCache(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
     };
+    ReaderToolsModel.selectWordsFromAllowedLists = function (stageNumber) {
+        var stages = model.getSynphony().getStages(stageNumber);
+        var words = [];
+        for (var i = 0; i < stages.length; i++) {
+            if (stages[i].allowedWords)
+                words = words.concat(stages[i].allowedWords);
+        }
+        // remove empty elements and duplicates, case-insensitive
+        words = _.uniq(_.compact(words), false, function (a) {
+            return a.toLowerCase();
+        });
+        // sort case-insensitive
+        words.sort(function (a, b) {
+            return a.localeCompare(b);
+        });
+        return words;
+    };
     ReaderToolsModel.prototype.saveState = function () {
         // this is needed for unit testing
         var accordion = $('#accordion');
@@ -847,6 +864,17 @@ var ReaderToolsModel = (function () {
             this.currentMarkupType = state.markupType;
         this.setStageNumber(state.stage);
         this.setLevelNumber(state.level);
+    };
+    ReaderToolsModel.prototype.getAllowedWordsLists = function () {
+        var stages = this.synphony.getStages();
+        stages.forEach(function (stage, index) {
+            if (stage.allowedWordsFile) {
+                iframeChannel.simpleAjaxGetWithCallbackParam('/bloom/readers/getAllowedWordsList', ReaderToolsModel.setAllowedWordsListList, index, stage.allowedWordsFile);
+            }
+        });
+    };
+    ReaderToolsModel.setAllowedWordsListList = function (fileContents, stageIndex) {
+        model.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
     };
     return ReaderToolsModel;
 })();

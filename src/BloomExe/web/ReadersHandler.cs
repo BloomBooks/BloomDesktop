@@ -26,6 +26,12 @@ namespace Bloom.web
 		private static bool _savingReaderWords;
 		private const string kSynphonyFileNameSuffix = "_lang_data.js";
 
+		private enum WordFileType
+		{
+			SampleFile,
+			AllowedWordsFile
+		}
+
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
 		// whole-book counts. If we ever support having more than one book open, ReadersHandler will need to stop being static, or
 		// some similar change. But by then, we may have the whole book in the main DOM, anyway, and getTextOfPages may be obsolete.
@@ -70,9 +76,8 @@ namespace Bloom.web
 					return true;
 
 				case "getSampleFileContents":
-					var fileName = info.GetQueryString()["data"];
 					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(GetSampleFileContents(fileName, currentCollectionSettings.SettingsFilePath));
+					info.WriteCompleteOutput(GetTextFileContents(info.GetQueryString()["data"], WordFileType.SampleFile));
 					return true;
 
 				case "getTextOfPages":
@@ -102,6 +107,11 @@ namespace Bloom.web
 					{
 						ChooseAllowedWordListFile(info);
 					}
+					return true;
+
+				case "getAllowedWordsList":
+					info.ContentType = "text/plain";
+					info.WriteCompleteOutput(GetTextFileContents(info.GetQueryString()["data"], WordFileType.AllowedWordsFile));
 					return true;
 			}
 
@@ -189,12 +199,14 @@ namespace Bloom.web
 			return string.Join("\r", fileList1.ToArray());
 		}
 
-		/// <summary>Gets the contents of a Sample Text file</summary>
+		/// <summary>Gets the contents of a Text file</summary>
 		/// <param name="fileName"></param>
-		/// <param name="settingsFilePath"></param>
-		private static string GetSampleFileContents(string fileName, string settingsFilePath)
+		/// <param name="wordFileType"></param>
+		private static string GetTextFileContents(string fileName, WordFileType wordFileType)
 		{
-			var path = Path.Combine(Path.GetDirectoryName(settingsFilePath), "Sample Texts");
+			var path = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath),
+				wordFileType == WordFileType.AllowedWordsFile ? "Word Lists" : "Sample Texts");
+
 			path = Path.Combine(path, fileName);
 
 			// first try utf-8/ascii encoding (the .Net default)

@@ -57,7 +57,11 @@ function process_UI_Message(event: MessageEvent): void {
       return;
 
     case 'Words':
-      displayWordsForSelectedStage(params[1]);
+      var useSampleWords = $('input[name="words-or-letters"]:checked').val() === '1';
+      if (useSampleWords)
+        displayAllowedWordsForSelectedStage(params[1]);
+      else
+        displayWordsForSelectedStage(params[1]);
       return;
 
     case 'SetupType':
@@ -199,7 +203,6 @@ function requestWordsForSelectedStage():void {
 
   var tr: HTMLTableRowElement = $('#stages-table').find('tbody tr.selected').get(0);
 
-
   desiredGPCs = ((<HTMLTableCellElement>tr.cells[1]).innerHTML).split(' ');
   previousGPCs = $.makeArray($(tr).prevAll().map(function() {
     return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(' ');
@@ -216,7 +219,11 @@ function requestWordsForSelectedStage():void {
   // remove empty items
   sightWords = _.compact(sightWords);
 
-  accordionWindow().postMessage('Words\n' + knownGPCS, '*');
+  var useSampleWords = $('input[name="words-or-letters"]:checked').val() === '1';
+  if (useSampleWords)
+    accordionWindow().postMessage('Words\n' + (<HTMLTableCellElement>tr.cells[0]).innerHTML, '*');
+  else
+    accordionWindow().postMessage('Words\n' + knownGPCS, '*');
 }
 
 /**
@@ -314,6 +321,38 @@ function setLevelCheckBoxValue(id: string, value: string): void {
   var txt: HTMLInputElement = <HTMLInputElement>document.getElementById('max-' + id);
   txt.value = value === '-' ? '' : value;
   txt.disabled = !checked;
+}
+
+function displayAllowedWordsForSelectedStage(wordsStr: string): void {
+
+  var wordList = document.getElementById('rs-matching-words');
+  wordList.innerHTML = '';
+
+  var wordsObj: Object = JSON.parse(wordsStr);
+  var words: string[] = <string[]>_.toArray(wordsObj);
+
+  var result: string = '';
+  var longestWord: string = '';
+  var longestWordLength: number = 0;
+
+  _.each(words, function(w: string) {
+
+    result += '<div class="book-font word">' + w + '</div>';
+
+    if (w.length > longestWordLength) {
+      longestWord = w;
+      longestWordLength = longestWord.length;
+    }
+  });
+
+  // set the list
+  wordList.innerHTML = result;
+
+  // make columns
+  $.divsToColumnsBasedOnLongestWord('word', longestWord);
+
+  // display the count
+  document.getElementById('setup-words-count').innerHTML = words.length.toString();
 }
 
 function displayWordsForSelectedStage(wordsStr: string): void {

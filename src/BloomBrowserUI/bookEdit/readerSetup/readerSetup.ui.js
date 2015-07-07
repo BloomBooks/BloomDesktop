@@ -47,7 +47,11 @@ function process_UI_Message(event) {
             document.getElementById('dls_word_lists').innerHTML = fileList.replace(/\r/g, '<br>');
             return;
         case 'Words':
-            displayWordsForSelectedStage(params[1]);
+            var useSampleWords = $('input[name="words-or-letters"]:checked').val() === '1';
+            if (useSampleWords)
+                displayAllowedWordsForSelectedStage(params[1]);
+            else
+                displayWordsForSelectedStage(params[1]);
             return;
         case 'SetupType':
             //noinspection JSJQueryEfficiency
@@ -181,7 +185,11 @@ function requestWordsForSelectedStage() {
     sightWords = _.union(sightWords, currentSightWords);
     // remove empty items
     sightWords = _.compact(sightWords);
-    accordionWindow().postMessage('Words\n' + knownGPCS, '*');
+    var useSampleWords = $('input[name="words-or-letters"]:checked').val() === '1';
+    if (useSampleWords)
+        accordionWindow().postMessage('Words\n' + tr.cells[0].innerHTML, '*');
+    else
+        accordionWindow().postMessage('Words\n' + knownGPCS, '*');
 }
 /**
  * Update the stage when a letter is selected or unselected.
@@ -262,6 +270,28 @@ function setLevelCheckBoxValue(id, value) {
     var txt = document.getElementById('max-' + id);
     txt.value = value === '-' ? '' : value;
     txt.disabled = !checked;
+}
+function displayAllowedWordsForSelectedStage(wordsStr) {
+    var wordList = document.getElementById('rs-matching-words');
+    wordList.innerHTML = '';
+    var wordsObj = JSON.parse(wordsStr);
+    var words = _.toArray(wordsObj);
+    var result = '';
+    var longestWord = '';
+    var longestWordLength = 0;
+    _.each(words, function (w) {
+        result += '<div class="book-font word">' + w + '</div>';
+        if (w.length > longestWordLength) {
+            longestWord = w;
+            longestWordLength = longestWord.length;
+        }
+    });
+    // set the list
+    wordList.innerHTML = result;
+    // make columns
+    $.divsToColumnsBasedOnLongestWord('word', longestWord);
+    // display the count
+    document.getElementById('setup-words-count').innerHTML = words.length.toString();
 }
 function displayWordsForSelectedStage(wordsStr) {
     var wordList = document.getElementById('rs-matching-words');
