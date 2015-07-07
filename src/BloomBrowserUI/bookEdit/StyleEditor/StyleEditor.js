@@ -744,17 +744,18 @@ var StyleEditor = (function () {
             if (index > 0)
                 styleName = styleName.substring(0, index);
         }
+        // BL-2386 This one should NOT be language-dependent; only style dependent
+        if (this.shouldSetDefaultRule()) {
+            localizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName).done(function (translation) {
+                $('#formatCharDesc').html(translation);
+            });
+            return;
+        }
         //BL-982 Use language name that appears on text windows
         var iso = $(this.boxBeingEdited).attr('lang');
         var lang = localizationManager.getLanguageName(iso);
         if (!lang)
             lang = iso;
-        if (this.shouldSetDefaultRule()) {
-            localizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', lang, styleName).done(function (translation) {
-                $('#formatCharDesc').html(translation);
-            });
-            return;
-        }
         localizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName).done(function (translation) {
             $('#formatCharDesc').html(translation);
         });
@@ -767,11 +768,8 @@ var StyleEditor = (function () {
             if (index > 0)
                 styleName = styleName.substring(0, index);
         }
-        var iso = $(this.boxBeingEdited).attr('lang');
-        var lang = localizationManager.getLanguageName(iso);
-        if (!lang)
-            lang = iso;
-        localizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', lang, styleName).done(function (translation) {
+        // BL-2386 This one should NOT be language-dependent; only style dependent
+        localizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName).done(function (translation) {
             $('#formatMoreDesc').html(translation);
         });
     };
