@@ -32,7 +32,7 @@ class BloomField {
             BloomField.MakeTabEnterTabElement(bloomEditableDiv);
             BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
             $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
-            $(bloomEditableDiv).click(function() { this.ProcessClick; });
+            $(bloomEditableDiv).click(function() { BloomField.ProcessClick; });
             $(bloomEditableDiv).blur(function () {
                 BloomField.ModifyForParagraphMode(this);
             });
@@ -389,7 +389,7 @@ class BloomField {
             //   $(this).html($(this).html().replace('&nbsp;', ""));
 
             //so now we do the following business, where we select the &nbsp; we want to delete, moments before the character is typed or text pasted
-            var selection = window.getSelection();
+            var selection: Selection = window.getSelection();
 
             //if we're at the start of the text, we're to the left of the character we want to replace
             if (selection.anchorOffset === 0) {
