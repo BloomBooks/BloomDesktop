@@ -31,7 +31,7 @@ var BloomField = (function () {
             BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
             $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
             $(bloomEditableDiv).click(function () {
-                this.ProcessClick;
+                BloomField.ProcessClick;
             });
             $(bloomEditableDiv).blur(function () {
                 BloomField.ModifyForParagraphMode(this);
