@@ -53,8 +53,15 @@ function processDLRMessage(event: MessageEvent): void {
     case 'Refresh': // notification from setup dialog that settings have changed
       var synphony = model.getSynphony();
       synphony.loadSettings(JSON.parse(params[1]));
-      model.updateControlContents();
-      model.doMarkup();
+
+      if (model.getSynphony().source.useAllowedWords) {
+        model.getAllowedWordsLists();
+      }
+      else {
+        model.updateControlContents();
+        model.doMarkup();
+      }
+
       return;
 
     case 'SetupType':
@@ -346,11 +353,19 @@ function resizeWordList(): void {
     var wordList: JQuery = div.find('#wordList');
     var top = wordList.parent().position().top;
 
-    var height = Math.floor(currentHeight - top - 20);
+    var synphony = model.getSynphony();
+    if (synphony.source) {
 
-    if (height < 50) height = 50;
+      var height = Math.floor(currentHeight - top);
+      if (synphony.source.useAllowedWords === 1)
+        height += 20;
+      else
+        height -= 20;
 
-    wordList.parent().css('height', height + 'px');
+      if (height < 50) height = 50;
+
+      wordList.parent().css('height', height + 'px');
+    }
   }
 
   setTimeout(function() { resizeWordList(); }, 500);

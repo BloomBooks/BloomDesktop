@@ -19,20 +19,25 @@ html
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 				span.setup.stageLine
 					a(href="javascript:parent.window.showSetupDialog('stages');", data-i18n='DecodableReaderTool.SetUpStages') Set up Stages
-			.section.clear(style='margin-left: 6px')
+			#letters-in-this-stage.section.clear(style='margin-left: 6px')
 				span(data-i18n='DecodableReaderTool.LettersInThisStage') Letters in this stage
 			.tableHolder.clear
 				.letterList#letterList
 			.section.clear(style='margin-left: 6px;')
-				span(data-i18n='DecodableReaderTool.WordsInThisStage') Words in this stage
-				.sortBlock.clear
-					.sortItem.rightBorder.sortIconSelected#sortAlphabetic
-						i.fa.fa-sort-alpha-asc(title='Sort alphabetically')
-					.sortItem.rightBorder#sortLength
-						i.fa.fa-sort-amount-asc(title='Sort by word length')
-					.sortItem#sortFrequency
-						i.fa.fa-long-arrow-up(title='Sort by frequency')
-						i.fa.fa-facebook#sortFrequency2(title='Sort by frequency')
+				table
+					tr
+						td(style='padding-left: 0;')
+							span#sample-words-this-stage(data-i18n='DecodableReaderTool.SampleWordsInThisStage') Sample words in this stage
+							span#allowed-words-this-stage(data-i18n='DecodableReaderTool.AllowedWordsInThisStage') Allowed words in this stage
+						td(style='white-space: nowrap; padding-right: 0;')
+							.sortBlock.clear
+								.sortItem.rightBorder.sortIconSelected#sortAlphabetic
+									i.fa.fa-sort-alpha-asc(title='Sort alphabetically')
+								.sortItem.rightBorder#sortLength
+									i.fa.fa-sort-amount-asc(title='Sort by word length')
+								.sortItem#sortFrequency
+									i.fa.fa-long-arrow-up(title='Sort by frequency')
+									i.fa.fa-facebook#sortFrequency2(title='Sort by frequency')
 			.tableHolder.clear
 				.wordList#wordList
 			#make-letter-word-list-div.clear

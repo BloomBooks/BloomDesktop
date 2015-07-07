@@ -33,8 +33,13 @@ function processDLRMessage(event) {
         case 'Refresh':
             var synphony = model.getSynphony();
             synphony.loadSettings(JSON.parse(params[1]));
-            model.updateControlContents();
-            model.doMarkup();
+            if (model.getSynphony().source.useAllowedWords) {
+                model.getAllowedWordsLists();
+            }
+            else {
+                model.updateControlContents();
+                model.doMarkup();
+            }
             return;
         case 'SetupType':
             getSetupDialogWindow().postMessage('SetupType\n' + model.setupType, '*');
@@ -270,10 +275,17 @@ function resizeWordList() {
         previousHeight = currentHeight;
         var wordList = div.find('#wordList');
         var top = wordList.parent().position().top;
-        var height = Math.floor(currentHeight - top - 20);
-        if (height < 50)
-            height = 50;
-        wordList.parent().css('height', height + 'px');
+        var synphony = model.getSynphony();
+        if (synphony.source) {
+            var height = Math.floor(currentHeight - top);
+            if (synphony.source.useAllowedWords === 1)
+                height += 20;
+            else
+                height -= 20;
+            if (height < 50)
+                height = 50;
+            wordList.parent().css('height', height + 'px');
+        }
     }
     setTimeout(function () {
         resizeWordList();
