@@ -29,7 +29,8 @@ namespace Bloom.Publish
 		private BookTransfer _bookTransferrer;
 		private LoginDialog _loginDialog;
 		private PictureBox _previewBox;
-		private Browser _epubPreviewControl;
+		private EpubView _epubPreviewControl;
+		private Browser _epubPreviewBrowser;
 		private NavigationIsolator _isolator;
 		private string _originalSaveText;
 
@@ -426,14 +427,21 @@ namespace Bloom.Publish
 		{
 			if (_epubPreviewControl == null)
 			{
-				_epubPreviewControl = new Browser();
-				_epubPreviewControl.Isolator = _isolator;
+				_epubPreviewControl = new EpubView();
+				_epubPreviewBrowser = new Browser();
+				_epubPreviewBrowser.Isolator = _isolator;
+				_epubPreviewBrowser.Dock = DockStyle.Fill;
+				_epubPreviewControl.Controls.Add(_epubPreviewBrowser);
+				// Has to be in front of the panel docked top for Fill to work.
+				_epubPreviewBrowser.BringToFront();
 			}
 			_epubPreviewControl.SetBounds(_pdfViewer.Left, _pdfViewer.Top,
 				_pdfViewer.Width, _pdfViewer.Height);
 			_epubPreviewControl.Dock = _pdfViewer.Dock;
 			_epubPreviewControl.Anchor = _pdfViewer.Anchor;
+			var saveBackGround = _epubPreviewControl.BackColor; // changed to match parent during next statement
 			Controls.Add(_epubPreviewControl);
+			_epubPreviewControl.BackColor = saveBackGround; // keep own color.
 			// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
 			_epubPreviewControl.BringToFront();
 			_model.StageEpub();
@@ -453,7 +461,7 @@ namespace Bloom.Publish
 			var rootPath = Path.Combine(tempFolder, "readium-cloudreader.htm");
 			var localPath = rootPath.ToLocalhost();
 			localPath += "?epub=" +Path.GetFileName(_model.StagingDirectory);
-			_epubPreviewControl.Navigate(localPath, false);
+			_epubPreviewBrowser.Navigate(localPath, false);
 		}
 
 		private void OnBookletRadioChanged(object sender, EventArgs e)
