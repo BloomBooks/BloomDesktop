@@ -3,6 +3,7 @@
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 // listen for messages sent to this page
 window.addEventListener('message', processDLRMessage, false);
+var readerToolsInitialized = false;
 function getSetupDialogWindow() {
     return parent.window.document.getElementById("settings_frame").contentWindow;
 }
@@ -94,11 +95,8 @@ function setupReaderKeyAndFocusHandlers(container, model) {
     });
 }
 function initializeDecodableRT() {
-    // make sure synphony is initialized
-    if (!model.getSynphony().source) {
-        iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
-        iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
-    }
+    // load synphony settings
+    loadSynphonySettings();
     // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
     $('#incStage').onOnce('click.readerTools', function () {
         model.incrementStage();
@@ -124,11 +122,8 @@ function initializeDecodableRT() {
     }, 100);
 }
 function initializeLeveledRT() {
-    // make sure synphony is initialized
-    if (!model.getSynphony().source) {
-        iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
-        iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
-    }
+    // load synphony settings
+    loadSynphonySettings();
     $('#incLevel').onOnce('click.readerTools', function () {
         model.incrementLevel();
     });
@@ -143,6 +138,14 @@ if (typeof ($) === "function") {
         model = new ReaderToolsModel();
         model.setSynphony(new SynphonyApi());
     });
+}
+function loadSynphonySettings() {
+    // make sure synphony is initialized
+    if (!readerToolsInitialized && !model.getSynphony().source) {
+        readerToolsInitialized = true;
+        iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
+        iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
+    }
 }
 /**
  * The function that is called to hook everything up.

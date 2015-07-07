@@ -23,6 +23,7 @@
       <div id="make-letter-word-list-div" class="clear"><a id="make-letter-word-list" href="javascript:makeLetterWordList();" data-i18n="DecodableReaderTool.MakeLetterWordReport">Generate a letter and word list report</a></div>
       <script type="text/javascript">
         $(document).ready(function() {
+         // this timeout is different than the LeveledRT timeout to prevent initializing synphony twice
          setTimeout(initializeDecodableRT, 100);
         });
       </script>

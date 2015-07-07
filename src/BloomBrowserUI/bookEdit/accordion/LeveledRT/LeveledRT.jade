@@ -70,5 +70,6 @@ html
 						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?ChoiceOfTopic")', data-i18n='LeveledReaderTool.ChoiceOfTopic') Choice of Topic
 			script(type='text/javascript').
 				$(document).ready(function() {
-					setTimeout(initializeLeveledRT, 100);
+					// this timeout is different than the DecodableRT timeout to prevent initializing synphony twice
+					setTimeout(initializeLeveledRT, 200);
 				});
