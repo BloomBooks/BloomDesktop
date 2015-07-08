@@ -161,6 +161,10 @@ namespace Bloom.WebLibraryIntegration
 
 			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
 			CopyDirectory(pathToBloomBookDirectory, destDirName);
+			// Don't upload audio (todo: test).
+			string audioDir = Path.Combine(destDirName, "audio");
+			if (Directory.Exists(audioDir))
+				Directory.Delete(audioDir, true);
 			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
 			foreach (var file in unwantedPdfs)
 				File.Delete(file);
