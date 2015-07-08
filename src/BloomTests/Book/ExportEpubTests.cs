@@ -501,6 +501,67 @@ namespace BloomTests.Book
 				+ "%; height:auto; margin-left: " + picIndentPercent.ToString("F1") + "%; margin-top: 0px;']", mgr);
 		}
 
+		[Test]
+		public void Audio_ProducesOverlay()
+		{
+			SetDom(@"<div class='bloom-page A5Portrait'>
+						<div id='somewrapper' class='marginBox'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+								<div aria-describedby='qtip-1' class='bloom-editable' lang='xyz'>
+									<span id='a123'>This is some text.</span><span id='a23'>Another sentence</span>
+								</div>
+								<div lang = '*'>more text</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp4"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp4"));
+			var epubFolder = new TemporaryFolder();
+			var epubName = "output.epub";
+			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
+			using (var maker = new EpubMakerAdjusted(book))
+				maker.SaveEpub(epubPath);
+			Assert.That(File.Exists(epubPath));
+			var zip = new ZipFile(epubPath);
+
+			// Every epub must have a mimetype at the root
+			GetZipContent(zip, "mimetype");
+
+			var containerData = GetZipContent(zip, "META-INF/container.xml");
+			var doc = XDocument.Parse(containerData);
+			XNamespace ns = doc.Root.Attribute("xmlns").Value;
+			var packageFile = doc.Root.Element(ns + "rootfiles").Element(ns + "rootfile").Attribute("full-path").Value;
+			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
+			var packageData = StripXmlHeader(GetZipContent(zip, packageFile)).Replace("application/smil", "application^slash^smil");
+			var packageDoc = XDocument.Parse(packageData);
+			XNamespace opf = "http://www.idpf.org/2007/opf";
+
+			var assertManifest = AssertThatXmlIn.String(packageData);
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
+
+			var smilData = StripXmlHeader(GetZipContent(zip, "content/1_overlay.smil"));
+			var mgr = new XmlNamespaceManager(new NameTable());
+			mgr.AddNamespace("smil", "http://www.w3.org/ns/SMIL");
+			mgr.AddNamespace("epub", "http://www.idpf.org/2007/ops");
+			var assertSmil = AssertThatXmlIn.String(smilData);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#a123']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#a23']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio/a123.mp4']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio/a23.mp4']", mgr);
+
+			GetZipEntry(zip, "content/audio/a123.mp4");
+			GetZipEntry(zip, "content/audio/a23.mp4");
+		}
+
+		protected void MakeFakeAudio(string path)
+		{
+			Directory.CreateDirectory(Path.GetDirectoryName(path));
+			File.WriteAllText(path, "fake audio");
+		}
+
 		private string GetZipContent(ZipFile zip, string path)
 		{
 			var entry = GetZipEntry(zip, path);
