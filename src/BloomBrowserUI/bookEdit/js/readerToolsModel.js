@@ -54,6 +54,7 @@ var ReaderToolsModel = (function () {
         this.wordListChangedListeners = {};
         // some things need to wait until the word list has finished loading
         this.wordListLoaded = false;
+        this.allowedWordFilesRemaining = 0;
         // this happens during testing
         if (iframeChannel)
             this.readableFileExtensions = iframeChannel.readableFileExtensions;
@@ -228,6 +229,16 @@ var ReaderToolsModel = (function () {
      * Displays the list of words for the current Stage.
      */
     ReaderToolsModel.prototype.updateWordList = function () {
+        // show the correct headings
+        var useAllowedWords = (this.synphony.source) ? this.synphony.source.useAllowedWords === 1 : false;
+        // this happens during unit testing
+        if (document.getElementById('make-letter-word-list-div')) {
+            document.getElementById('make-letter-word-list-div').style.display = useAllowedWords ? 'none' : '';
+            document.getElementById('letters-in-this-stage').style.display = useAllowedWords ? 'none' : '';
+            document.getElementById('sample-words-this-stage').style.display = useAllowedWords ? 'none' : '';
+            document.getElementById('sortFrequency').style.display = useAllowedWords ? 'none' : '';
+            document.getElementById('allowed-words-this-stage').style.display = useAllowedWords ? '' : 'none';
+        }
         if (!this.wordListLoaded)
             return;
         var wordList = document.getElementById('wordList');
@@ -236,7 +247,11 @@ var ReaderToolsModel = (function () {
         var stages = this.synphony.getStages();
         if (stages.length === 0)
             return;
-        var words = this.getStageWordsAndSightWords(this.stageNumber);
+        var words;
+        if (useAllowedWords)
+            words = ReaderToolsModel.getAllowedWordsAsObjects(this.stageNumber);
+        else
+            words = this.getStageWordsAndSightWords(this.stageNumber);
         switch (this.sort) {
             case SortType.alphabetic:
                 words.sort(function (a, b) {
@@ -835,6 +850,19 @@ var ReaderToolsModel = (function () {
         });
         return words;
     };
+    /**
+     * Get the allowed words for the current stage and all previous stages as an array of DataWord objects
+     * @param stageNumber
+     * @returns An array of DataWord objects
+     */
+    ReaderToolsModel.getAllowedWordsAsObjects = function (stageNumber) {
+        var words = ReaderToolsModel.selectWordsFromAllowedLists(stageNumber);
+        var returnVal = [];
+        for (var i = 0; i < words.length; i++) {
+            returnVal.push(new DataWord(words[i]));
+        }
+        return returnVal;
+    };
     ReaderToolsModel.prototype.saveState = function () {
         // this is needed for unit testing
         var accordion = $('#accordion');
@@ -867,6 +895,8 @@ var ReaderToolsModel = (function () {
     };
     ReaderToolsModel.prototype.getAllowedWordsLists = function () {
         var stages = this.synphony.getStages();
+        // remember how many we are loading so we know when we're finished
+        this.allowedWordFilesRemaining = stages.length;
         stages.forEach(function (stage, index) {
             if (stage.allowedWordsFile) {
                 iframeChannel.simpleAjaxGetWithCallbackParam('/bloom/readers/getAllowedWordsList', ReaderToolsModel.setAllowedWordsListList, index, stage.allowedWordsFile);
@@ -874,7 +904,16 @@ var ReaderToolsModel = (function () {
         });
     };
     ReaderToolsModel.setAllowedWordsListList = function (fileContents, stageIndex) {
+        // remove this one from the count of files remaining
+        model.allowedWordFilesRemaining--;
         model.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
+        // if all loaded...
+        if (model.allowedWordFilesRemaining < 1) {
+            model.wordListLoaded = true;
+            model.updateControlContents();
+            model.doMarkup();
+            model.updateWordList();
+        }
     };
     return ReaderToolsModel;
 })();

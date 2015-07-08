@@ -75,6 +75,7 @@ class ReaderToolsModel {
 
   // some things need to wait until the word list has finished loading
   wordListLoaded: boolean = false;
+  allowedWordFilesRemaining: number = 0;
 
   constructor() {
 
@@ -291,6 +292,18 @@ class ReaderToolsModel {
    */
   updateWordList(): void {
 
+    // show the correct headings
+    var useAllowedWords = (this.synphony.source) ? this.synphony.source.useAllowedWords === 1 : false;
+
+    // this happens during unit testing
+    if (document.getElementById('make-letter-word-list-div')) {
+      document.getElementById('make-letter-word-list-div').style.display = useAllowedWords ? 'none' : '';
+      document.getElementById('letters-in-this-stage').style.display = useAllowedWords ? 'none' : '';
+      document.getElementById('sample-words-this-stage').style.display = useAllowedWords ? 'none' : '';
+      document.getElementById('sortFrequency').style.display = useAllowedWords ? 'none' : '';
+      document.getElementById('allowed-words-this-stage').style.display = useAllowedWords ? '' : 'none';
+    }
+
     if (!this.wordListLoaded) return;
 
     var wordList = document.getElementById('wordList');
@@ -299,7 +312,11 @@ class ReaderToolsModel {
     var stages = this.synphony.getStages();
     if (stages.length === 0) return;
 
-    var words: DataWord[] = this.getStageWordsAndSightWords(this.stageNumber);
+    var words: DataWord[];
+    if (useAllowedWords)
+      words = ReaderToolsModel.getAllowedWordsAsObjects(this.stageNumber);
+    else
+      words = this.getStageWordsAndSightWords(this.stageNumber);
 
     // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
     // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
@@ -1023,6 +1040,23 @@ class ReaderToolsModel {
     return words;
   }
 
+  /**
+   * Get the allowed words for the current stage and all previous stages as an array of DataWord objects
+   * @param stageNumber
+   * @returns An array of DataWord objects
+   */
+  static getAllowedWordsAsObjects(stageNumber: number): DataWord[] {
+
+    var words: string[] = ReaderToolsModel.selectWordsFromAllowedLists(stageNumber);
+    var returnVal: DataWord[] = [];
+
+    for (var i = 0; i < words.length; i++) {
+      returnVal.push(new DataWord(words[i]));
+    }
+
+    return returnVal;
+  }
+
   saveState(): void {
 
     // this is needed for unit testing
@@ -1059,6 +1093,10 @@ class ReaderToolsModel {
   getAllowedWordsLists(): void {
 
     var stages = this.synphony.getStages();
+
+    // remember how many we are loading so we know when we're finished
+    this.allowedWordFilesRemaining = stages.length;
+
     stages.forEach(function(stage, index) {
       if (stage.allowedWordsFile) {
         iframeChannel.simpleAjaxGetWithCallbackParam('/bloom/readers/getAllowedWordsList', ReaderToolsModel.setAllowedWordsListList, index, stage.allowedWordsFile);
@@ -1067,6 +1105,18 @@ class ReaderToolsModel {
   }
 
   static setAllowedWordsListList(fileContents: string, stageIndex: number): void {
+
+    // remove this one from the count of files remaining
+    model.allowedWordFilesRemaining--;
+
     model.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
+
+    // if all loaded...
+    if (model.allowedWordFilesRemaining < 1) {
+      model.wordListLoaded = true;
+      model.updateControlContents();
+      model.doMarkup();
+      model.updateWordList();
+    }
   }
 }
