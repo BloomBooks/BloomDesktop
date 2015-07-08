@@ -281,18 +281,27 @@ TEXTAREA.province
 	overflow: visible;
 }
 
-@TabColor: #ffffa3;
+.uibloomSourceTextsBubble {
+	border-radius: 15px;
+	background-color: @TabColor !important;
+	border-color: @TabBorder !important;
+	border-width: 2px !important;
+}
+
+@TabColor: #ffffc3;
 @TabBorder: #aaa;
-@SelectedTabColor: @TabColor;
+@SelectedTabColor: #ffffa5;
 
 .ui-sourceTextsForBubble {
 	position: relative;
+	background-color: @SelectedTabColor;
 	NAV {
 		overflow: hidden;
 		display: block;
 		height: 39px;
 		top: -5px;
 		margin: 0 -8px;
+		background-color: @TabColor;
 		&:hover {
 			overflow: visible; // otherwise it masks the language dropdown
 		}
@@ -312,7 +321,7 @@ TEXTAREA.province
 				width: 100%;
 				bottom: 0;
 				left: 0;
-				border-bottom: 1px solid @TabBorder;
+				border-bottom: 2px solid @TabBorder;
 				z-index: 2;
 			}
 			> LI {
@@ -371,7 +380,7 @@ TEXTAREA.province
 }
 
 @DropdownBackground: white;
-@DropdownHovered: @TabColor;
+@DropdownHovered: @SelectedTabColor;
 
 .dropdown-list {
 	max-height: 200px;
@@ -401,7 +410,7 @@ TEXTAREA.province
 	position: absolute;
 	right: 0;
 	&:hover {
-		background-color: @SelectedTabColor;
+		background-color: @TabColor;
 		UL {
 			display: inline-block;
 		}
