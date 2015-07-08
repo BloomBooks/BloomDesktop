@@ -641,10 +641,12 @@ namespace Bloom.WebLibraryIntegration
 			book.BookInfo.PageCount = book.GetPages().Count();
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
+			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
 			MakeThumbnail(book, 70, invokeTarget);
 			MakeThumbnail(book, 256, invokeTarget);
-			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
-			var uploadPdfPath = Path.Combine(bookFolder, Path.ChangeExtension(Path.GetFileName(bookFolder), ".pdf"));
+			// Do NOT use ChangeExtension here. If the folder name has a period (e.g.: "Look at the sky. What do you see")
+			// ChangeExtension will strip of the last sentence, which is not what we want (and not what BloomLibrary expects).
+			var uploadPdfPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + ".pdf");
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
 			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
