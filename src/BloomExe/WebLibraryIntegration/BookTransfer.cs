@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Amazon.Runtime;
+using Amazon.S3;
 using Autofac.Features.Metadata;
 using Bloom.Book;
 using Bloom.Collection;
@@ -387,6 +388,25 @@ namespace Bloom.WebLibraryIntegration
 					DisplayNetworkUploadProblem(e, progress);
 					if (!UseSandbox) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
 						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+					return "";
+				}
+				catch (AmazonS3Exception e)
+				{
+					if (e.Message.Contains("The difference between the request time and the current time is too large"))
+					{
+						progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.TimeProblem",
+							"There was a problem uploading your book. This is probably because the system time on your computer is not correct for the timezone the computer is set to."));
+						if (!UseSandbox)
+							Analytics.Track("UploadBook-Failure-SystemTime");
+					}
+					else
+					{
+						DisplayNetworkUploadProblem(e, progress);
+						if (!UseSandbox)
+							// don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+							Analytics.Track("UploadBook-Failure",
+								new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+					}
 					return "";
 				}
 				catch (AmazonServiceException e)
