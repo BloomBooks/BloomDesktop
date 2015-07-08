@@ -2648,11 +2648,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="33.941127"
-     inkscape:cx="-889.62729"
-     inkscape:cy="414.65378"
+     inkscape:zoom="0.5303301"
+     inkscape:cx="-1579.0522"
+     inkscape:cy="247.76828"
      inkscape:document-units="px"
-     inkscape:current-layer="g5326"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1823"
      inkscape:window-height="1177"
@@ -6604,11 +6604,17 @@
          width="73.261314"
          height="91.353279"
          x="-830.00592"
-         y="632.49817" />
+         y="632.49817"
+         inkscape:export-filename="C:\dev\b32\artwork\copyBook.png"
+         inkscape:export-xdpi="163.30183"
+         inkscape:export-ydpi="163.30183" />
       <g
          style="fill:#404040;fill-opacity:1"
          transform="translate(-539.52552,-59.186961)"
-         id="g5283">
+         id="g5283"
+         inkscape:export-filename="C:\dev\b32\artwork\copyBook.png"
+         inkscape:export-xdpi="163.30183"
+         inkscape:export-ydpi="163.30183">
         <path
            sodipodi:nodetypes="cccccccc"
            inkscape:connector-curvature="0"
@@ -6625,7 +6631,10 @@
          style="fill:#404040;fill-opacity:1;fill-rule:evenodd;stroke:#0c8597;stroke-width:4.92581415;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          d="m -818.13912,654.23868 0,25.95168 c 0,14.32983 11.62994,25.94308 25.96984,25.94308 8.12978,0 15.38556,-3.73271 20.14534,-9.57694 3.63579,-4.46417 5.81517,-10.1604 5.81517,-16.36614 l 0,-25.95168 c -14.3399,0 -25.96051,11.62187 -25.96051,25.95168 0,-14.32981 -11.62963,-25.95168 -25.96984,-25.95168 z"
          id="path5295-9"
-         inkscape:connector-curvature="0" />
+         inkscape:connector-curvature="0"
+         inkscape:export-filename="C:\dev\b32\artwork\copyBook.png"
+         inkscape:export-xdpi="163.30183"
+         inkscape:export-ydpi="163.30183" />
     </g>
     <text
        xml:space="preserve"
@@ -6674,7 +6683,7 @@
     <g
        inkscape:export-ydpi="163.30183"
        inkscape:export-xdpi="163.30183"
-       inkscape:export-filename="C:\dev\b32\artwork\copyBook.png"
+       inkscape:export-filename="C:\dev\b32\artwork\copyBookDisabled.png"
        transform="matrix(0.24843723,0,0,0.22125855,-747.11334,487.1392)"
        id="g5359">
       <g
