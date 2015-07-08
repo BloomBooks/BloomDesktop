@@ -123,7 +123,7 @@ var bloomSourceBubbles = (function () {
         if (newIso)
             defaultSrcLang = newIso;
         var newItems = bloomSourceBubbles.DoSafeReplaceInList(items, defaultSrcLang, destination);
-        if ($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+        if ($(newItems).attr('lang') == defaultSrcLang) {
             destination++;
             items = newItems;
         }
@@ -131,14 +131,14 @@ var bloomSourceBubbles = (function () {
         var language3 = settingsObject.currentCollectionLanguage3;
         if (language2 && language2 != defaultSrcLang) {
             newItems = bloomSourceBubbles.DoSafeReplaceInList(items, language2, destination);
-            if ($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+            if ($(newItems[destination]).attr('lang') == language2) {
                 destination++;
                 items = newItems;
             }
         }
         if (language3 && language3 != defaultSrcLang) {
             newItems = bloomSourceBubbles.DoSafeReplaceInList(items, language3, destination);
-            if ($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+            if ($(newItems[destination]).attr('lang') == language3) {
                 items = newItems;
             }
         }
@@ -155,6 +155,7 @@ var bloomSourceBubbles = (function () {
             if (iso == langCode && position < idx) {
                 moveFrom = idx;
                 objToMove = obj;
+                return false; // break out of .each()
             }
         });
         if (moveFrom > 0) {
@@ -196,12 +197,11 @@ var bloomSourceBubbles = (function () {
             if (idx < FIRST_SELECT_OPTION - 1)
                 return true; // continue to next iteration of .each()
             var $this = $(this);
-            var iso = $this.attr('id');
-            var languageName = localizationManager.getLanguageName(iso);
-            if (!languageName)
-                languageName = iso;
-            var listItem = "<li lang='" + iso + "'>" + languageName + "</li>";
+            var link = $this.find('a').clone(true); // 'true' to keep easytab click event
+            var iso = link.attr('href').substring(1); // strip off hashmark
+            var listItem = "<li lang='" + iso + "'></li>";
             container.append(listItem);
+            container.find('li[lang="' + iso + '"]').append(link);
             $this.addClass('removeThisOne');
         });
         tabs.remove('.removeThisOne');
@@ -213,7 +213,7 @@ var bloomSourceBubbles = (function () {
         return divForBubble;
     };
     bloomSourceBubbles.styledSelectChangeHandler = function (event) {
-        var newIso = event.target.lang;
+        var newIso = event.target.href.split('#')[1];
         // Figure out which qtip we're in and go find the associated bloom-translationGroup
         var qtip = $(event.target).closest('.qtip').attr('id');
         var group = $(document).find('.bloom-translationGroup[aria-describedby="' + qtip + '"]');

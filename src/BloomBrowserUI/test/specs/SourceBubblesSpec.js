@@ -69,7 +69,7 @@ describe("bloomSourceBubbles", function () {
         //     <li class='dropdown-menu'>
         //       <div>1</div>
         //       <ul class='dropdown-list'>
-        //         <li value='es'>español</li>
+        //         <li lang='es'><a class="sourceTextTab" href="#es">español</a></li>
         //       </ul>
         //     </li>
         //   </ul>
@@ -86,7 +86,7 @@ describe("bloomSourceBubbles", function () {
         expect(dropdown.hasClass('dropdown-menu')).toBe(true);
         var dropItems = dropdown.find('ul li');
         expect(dropItems.length).toBe(1);
-        expect(dropItems.first().html()).toBe("español");
+        expect(dropItems.first().html()).toBe("<a class=\"sourceTextTab\" href=\"#es\">español</a>");
         var dropChildren = dropdown.children();
         expect(dropChildren.length).toBe(2); // including div holding number and ul holding dropdown items
         var topLevelDivs = $('#testTarget > div');
