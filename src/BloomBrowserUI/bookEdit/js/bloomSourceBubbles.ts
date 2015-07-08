@@ -288,10 +288,10 @@ class bloomSourceBubbles {
             $this.qtip({
                 position: {
                     my: 'left top',
-                    at: 'right top',
+                    at: 'top right',
                     adjust: {
                         x: 10,
-                        y: 0
+                        y: 10
                     }
                 },
                 content: divForBubble,
@@ -304,7 +304,8 @@ class bloomSourceBubbles {
                     tip: {
                         corner: true,
                         width: 10,
-                        height: 10
+                        height: 10,
+                        offset: 50
                     },
                     classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
                 },
