@@ -214,13 +214,13 @@
 	</Target>
 
 	<Target Name="SignExesIfPossible">
-		<Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe" ContinueOnError="true"'></Exec>
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe"' ContinueOnError="true"></Exec>
 		<!-- These are generated in other TC projects but I think it's OK to sign them here since we control those projects too.-->
-		<Exec Command='sign "$(RootDir)\output\$(Configuration)\GeckofxHtmlToPdf.exe" ContinueOnError="true"'></Exec>
-		<Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe" ContinueOnError="true"'></Exec>
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\GeckofxHtmlToPdf.exe"' ContinueOnError="true"></Exec>
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe"' ContinueOnError="true"></Exec>
 		<!-- We don't really need to do this every time since the file is checked in. But this way any updated version
 		is automatically signed, which saves the hassle of coming up with a new signed exe every time we need to check in. -->
-		<Exec Command='sign "$(RootDir)\DistFiles\AndikaNewBasic\Install Bloom Literacy Fonts.exe" ContinueOnError="true"'></Exec>
+		<Exec Command='sign "$(RootDir)\DistFiles\AndikaNewBasic\Install Bloom Literacy Fonts.exe"' ContinueOnError="true"></Exec>
 		<!--not bothering with Chorus, which is not really used yet and may be signed by its own process before we need it,
 		or BloomBookUploader which is not used (obsolete).-->
 	</Target>
