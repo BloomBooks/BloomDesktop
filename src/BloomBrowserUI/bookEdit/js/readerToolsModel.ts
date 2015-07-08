@@ -692,8 +692,16 @@ class ReaderToolsModel {
         if (stages.length === 0) return;
 
         // get word lists
-        var cumulativeWords = this.getStageWords();
-        var sightWords = this.getSightWords(this.stageNumber);
+        var cumulativeWords: DataWord[];
+        var sightWords: string[];
+        if (this.synphony.source.useAllowedWords === 1) {
+          cumulativeWords = [];
+          sightWords = ReaderToolsModel.selectWordsFromAllowedLists(this.stageNumber);
+        }
+        else {
+          cumulativeWords = this.getStageWords();
+          sightWords = this.getSightWords(this.stageNumber);
+        }
 
         editableElements.checkDecodableReader({
           focusWords: cumulativeWords,
