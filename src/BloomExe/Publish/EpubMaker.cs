@@ -114,7 +114,52 @@ namespace Bloom.Publish
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
 				++pageIndex;
-				var pageDom = MakePageFile(pageElement, pageIndex, firstContentPageIndex);
+				var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
+				pageDom.RemoveModeStyleSheets();
+				if (Unpaginated)
+				{
+					RemoveRegularStylesheets(pageDom);
+					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"epubUnpaginated.css").ToLocalhost());
+				}
+				else
+				{
+					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
+					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
+					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
+				}
+
+				RemoveUnwantedContent(pageDom);
+
+				pageDom.SortStyleSheetLinks();
+				pageDom.AddPublishClassToBody();
+
+				MakeCssLinksAppropriateForEpub(pageDom);
+				RemoveSpuriousLinks(pageDom);
+				RemoveScripts(pageDom);
+				FixIllegalIds(pageDom);
+				FixPictureSizes(pageDom);
+				// Since we only allow one htm file in a book folder, I don't think there is any
+				// way this name can clash with anything else.
+				var pageDocName = pageIndex + ".xhtml";
+
+				// Manifest has to include all referenced files
+				foreach (XmlElement img in pageDom.SafeSelectNodes("//img"))
+				{
+					var srcAttr = img.Attributes["src"];
+					if (srcAttr == null)
+						continue; // hug?
+					var imgName = srcAttr.Value;
+					if (string.IsNullOrEmpty(imgName))
+						continue;
+					// Images are always directly in the folder
+					var srcPath = Path.Combine(Book.FolderPath, imgName);
+					CopyFileToEpub(srcPath);
+				}
+
+				_manifestItems.Add(pageDocName);
+				_spineItems.Add(pageDocName);
+				AddAudioOverlay(pageDom, pageDocName);
+
 				// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
 				//to look at those stylesheets on the first page
 				if (pageIndex == 1)
@@ -185,6 +230,12 @@ namespace Bloom.Publish
 					itemElt.SetAttributeValue("properties", "nav");
 				if (item == coverPageImageFile)
 					itemElt.SetAttributeValue("properties", "cover-image");
+				if (Path.GetExtension(item).ToLowerInvariant() == ".xhtml")
+				{
+					var overlay = GetOverlayName(item);
+					if (_manifestItems.Contains(overlay))
+						itemElt.SetAttributeValue("media-overlay", GetIdOfFile(overlay));
+				}
 				manifestElt.Add(itemElt);
 			}
 			MakeSpine(opf, rootElt, manifestPath);
@@ -305,6 +356,65 @@ namespace Bloom.Publish
 		}
 
 		// Combines staging and finishing (currently just used in tests).
+		/// <summary>
+		/// Create an audio overlay for the page if appropriate.
+		/// We are looking for the page to contain spans with IDs. For each such ID X,
+		/// we look for a file _storage.FolderPath/audio/X.mp4.
+		/// If we find at least one such file, we create pageDocName_overlay.smil
+		/// with appropriate contents to tell the reader how to read all such spans
+		/// aloud.
+		/// </summary>
+		/// <param name="pageDom"></param>
+		/// <param name="pageDocName"></param>
+		private void AddAudioOverlay(HtmlDom pageDom, string pageDocName)
+		{
+			var spansWithIds = pageDom.RawDom.SafeSelectNodes("//span[@id]").Cast<XmlElement>();
+			// todo: test case where an mp4 is missing.
+			var spansWithAudio =
+				spansWithIds.Where(
+					x => File.Exists(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(x.Attributes["id"].Value, "mp4"))));
+			if (!spansWithAudio.Any())
+				return; // todo: test this case
+			var overlayName = GetOverlayName(pageDocName);
+			_manifestItems.Add(overlayName);
+			string smilNamespace = "http://www.w3.org/ns/SMIL";
+			XNamespace smil = smilNamespace;
+			string epubNamespace = "http://www.idpf.org/2007/ops";
+			XNamespace epub = epubNamespace;
+			var seq = new XElement(smil+"seq",
+				new XAttribute("id", "id1"), // all <seq> I've seen have this, not sure whether necessary
+				new XAttribute(epub + "textref", pageDocName),
+				new XAttribute(epub + "type", "bodymatter chapter") // only type I've encountered
+				);
+			var root = new XElement(smil + "smil",
+				new XAttribute( "xmlns", smilNamespace),
+				new XAttribute(XNamespace.Xmlns + "epub", epubNamespace),
+				new XAttribute("version", "3.0"),
+				new XElement(smil + "body",
+					seq));
+			int index = 1;
+			foreach (var span in spansWithAudio)
+			{
+				var spanId = span.Attributes["id"].Value;
+				seq.Add(new XElement(smil+"par",
+					new XAttribute("id", "s" + index++),
+					new XElement(smil + "text",
+						new XAttribute("src", pageDocName + "#" + spanId)),
+						new XElement(smil + "audio",
+							new XAttribute("src", "audio/" + spanId + ".mp4"))));
+				CopyFileToEpub(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(spanId, "mp4")));
+			}
+			var overlayPath = Path.Combine(_contentFolder, overlayName);
+			using (var writer = XmlWriter.Create(overlayPath))
+				root.WriteTo(writer);
+
+		}
+
+		private static string GetOverlayName(string pageDocName)
+		{
+			return Path.ChangeExtension(Path.GetFileNameWithoutExtension(pageDocName) + "_overlay", "smil");
+		}
+
 		public void SaveEpub(string destinationEpubPath)
 		{
 			StageEpub();
@@ -625,7 +735,11 @@ namespace Bloom.Publish
 			if (_mapSrcPathToDestFileName.ContainsKey(srcPath))
 				return; // File already present, must be used more than once.
 			// Validator warns against spaces in filenames.
-			var originalFileName = Path.GetFileName(srcPath);
+			string originalFileName;
+			if (srcPath.StartsWith(_storage.FolderPath))
+				originalFileName = srcPath.Substring(_storage.FolderPath.Length + 1).Replace("\\", "/"); // allows keeping folder structure
+			else
+				originalFileName = Path.GetFileName(srcPath); // probably can't happen, but in case, put at root.
 			string fileName = originalFileName.Replace(" ", "_");
 			var dstPath = Path.Combine(_contentFolder, fileName);
 			// We deleted the root directory at the start, so if the file is already
@@ -636,8 +750,10 @@ namespace Bloom.Publish
 				fileName = fileName + fix;
 				dstPath = Path.Combine(_contentFolder, fileName);
 			}
+			fileName = fileName.Replace("/", "_");
 			if (originalFileName != fileName)
 				_mapChangedFileNames[originalFileName] = fileName;
+			Directory.CreateDirectory(Path.GetDirectoryName(dstPath));
 			CopyFile(srcPath, dstPath);
 			_manifestItems.Add(fileName);
 			_mapSrcPathToDestFileName[srcPath] = fileName;
@@ -819,6 +935,10 @@ namespace Bloom.Publish
 				case "ttf":
 				case "otf":
 					return "application/font-sfnt"; // http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts
+				case "smil":
+					return "application/smil+xml";
+				case "mp4":
+					return "audio/mp4";
 
 			}
 			throw new ApplicationException("unexpected file type in file " + item);

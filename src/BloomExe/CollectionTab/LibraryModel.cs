@@ -319,6 +319,8 @@ namespace Bloom.CollectionTab
 		protected static void CompressDirectory(string directoryPath, ZipOutputStream zipStream, int dirNameOffest,
 			bool forReaderTools)
 		{
+			if (Path.GetFileName(directoryPath).ToLowerInvariant() == "audio")
+				return; // don't want audio in bloompack. todo: test
 			var files = Directory.GetFiles(directoryPath);
 			var bookFile = BookStorage.FindBookHtmlInFolder(directoryPath);
 
