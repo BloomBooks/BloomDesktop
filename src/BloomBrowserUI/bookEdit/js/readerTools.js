@@ -19,7 +19,15 @@ function processDLRMessage(event) {
                 getSetupDialogWindow().postMessage('Files\n' + model.texts.join("\r"), '*');
             return;
         case 'Words':
-            var words = ReaderToolsModel.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
+            var words;
+            if (model.getSynphony().source.useAllowedWords) {
+                // params[1] is the stage number
+                words = ReaderToolsModel.selectWordsFromAllowedLists(parseInt(params[1]));
+            }
+            else {
+                // params[1] is a list of known graphemes
+                words = ReaderToolsModel.selectWordsFromSynphony(false, params[1].split(' '), params[1].split(' '), true, true);
+            }
             getSetupDialogWindow().postMessage('Words\n' + JSON.stringify(words), '*');
             return;
         case 'Refresh':
@@ -167,8 +175,14 @@ function initializeSynphony(settingsFileContent) {
     model.directoryWatcher = new DirectoryWatcher('Sample Texts', 10);
     model.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);
     model.directoryWatcher.start();
-    // get the list of sample texts
-    iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+    if (synphony.source.useAllowedWords) {
+        // get the allowed words for each stage
+        model.getAllowedWordsLists();
+    }
+    else {
+        // get the list of sample texts
+        iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+    }
 }
 /**
  * Called in response to a request for the files in the sample texts directory

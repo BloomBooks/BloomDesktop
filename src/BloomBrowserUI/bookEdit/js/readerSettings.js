@@ -1,3 +1,4 @@
+/// <reference path="libsynphony/underscore-1.5.2.d.ts" />
 /**
  * Decodable Leveled Reader Settings
  */
@@ -21,6 +22,15 @@ var ReaderStage = (function () {
     }
     ReaderStage.prototype.getName = function () {
         return this.name;
+    };
+    ReaderStage.prototype.setAllowedWordsString = function (fileContents) {
+        // split into individual words and sort
+        var words = fileContents.split(/[,;\t\s\r\n]/);
+        // remove empty elements and duplicates, case-insensitive
+        words = _.uniq(_.compact(words), false, function (a) {
+            return a.toLowerCase();
+        });
+        this.allowedWords = words;
     };
     return ReaderStage;
 })();

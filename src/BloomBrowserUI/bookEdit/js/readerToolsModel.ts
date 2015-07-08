@@ -1002,6 +1002,27 @@ class ReaderToolsModel {
       return libsynphony.selectGPCWordsFromCache(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
   }
 
+  static selectWordsFromAllowedLists(stageNumber: number): string[] {
+
+    var stages: ReaderStage[] = model.getSynphony().getStages(stageNumber);
+
+    var words: string[] = [];
+    for (var i=0; i < stages.length; i++) {
+      if (stages[i].allowedWords)
+        words = words.concat(stages[i].allowedWords);
+    }
+
+    // remove empty elements and duplicates, case-insensitive
+    words = _.uniq(_.compact(words), false, function (a: string) { return a.toLowerCase(); });
+
+    // sort case-insensitive
+    words.sort(function (a: string, b: string) {
+      return a.localeCompare(b);
+    });
+    
+    return words;
+  }
+
   saveState(): void {
 
     // this is needed for unit testing
@@ -1033,5 +1054,19 @@ class ReaderToolsModel {
     if (!this.currentMarkupType) this.currentMarkupType = state.markupType;
     this.setStageNumber(state.stage);
     this.setLevelNumber(state.level);
+  }
+
+  getAllowedWordsLists(): void {
+
+    var stages = this.synphony.getStages();
+    stages.forEach(function(stage, index) {
+      if (stage.allowedWordsFile) {
+        iframeChannel.simpleAjaxGetWithCallbackParam('/bloom/readers/getAllowedWordsList', ReaderToolsModel.setAllowedWordsListList, index, stage.allowedWordsFile);
+      }
+    });
+  }
+
+  static setAllowedWordsListList(fileContents: string, stageIndex: number): void {
+    model.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
   }
 }
