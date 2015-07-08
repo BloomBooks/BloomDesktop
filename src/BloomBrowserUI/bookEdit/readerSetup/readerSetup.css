@@ -310,6 +310,12 @@ table.hide-fourth-column td:nth-child(4) {
   color: #a00;
   text-decoration: none;
 }
+#allowed-words-file {
+  line-height: 28px;
+}
+#remove-allowed-word-file {
+  display: none;
+}
 @media (max-width: 539px) {
   .tab-detail div.sub-float {
     width: calc(100% - 20px);
