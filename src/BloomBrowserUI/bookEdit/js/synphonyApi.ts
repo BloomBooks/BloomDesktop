@@ -27,13 +27,13 @@ class SynphonyApi {
       lang_data.addGrapheme(this.source.letters.split(' '));
       lang_data.addWord(this.source.moreWords.split(' '));
       lang_data.LanguageSortOrder = this.source.letters.split(' ');
+    }
 
-      var stgs = this.source.stages;
-      if (stgs) {
-        this.stages = [];
-        for (var j = 0; j < stgs.length; j++) {
-          this.AddStage(<ReaderStage>jQuery.extend(true, new ReaderStage((j+1).toString()), stgs[j]));
-        }
+    var stgs = this.source.stages;
+    if (stgs) {
+      this.stages = [];
+      for (var j = 0; j < stgs.length; j++) {
+        this.AddStage(<ReaderStage>jQuery.extend(true, new ReaderStage((j+1).toString()), stgs[j]));
       }
     }
 
