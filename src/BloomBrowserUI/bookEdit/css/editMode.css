@@ -257,6 +257,8 @@ TEXTAREA.province {
   height: 34px;
   margin: 0 -8px;
   background-color: #ffffc3;
+  border-top-right-radius: 15px;
+  border-top-left-radius: 15px;
 }
 .ui-sourceTextsForBubble NAV > UL {
   z-index: 1;
@@ -287,6 +289,13 @@ TEXTAREA.province {
   flex: none;
   background-color: #ffffc3;
 }
+.ui-sourceTextsForBubble NAV > UL > LI:not(:first-child) {
+  border-left: 1px solid #aaaaaa;
+  border-top-left-radius: 6px;
+}
+.ui-sourceTextsForBubble NAV > UL > LI:first-child {
+  border-top-left-radius: 15px;
+}
 .ui-sourceTextsForBubble NAV > UL > LI.active {
   background-color: #ffffa5;
   border-bottom-color: #ffffa5;
@@ -309,7 +318,7 @@ TEXTAREA.province {
 }
 .ui-sourceTextsForBubble NAV > UL > LI A:hover {
   text-decoration: underline;
-  background-color: #ffffa5;
+  background-color: #ffffa5 transparent;
 }
 .ui-sourceTextsForBubble .source-text {
   font-size: 10pt;
@@ -345,7 +354,7 @@ TEXTAREA.province {
 }
 .dropdown-menu {
   width: 32px;
-  border-right: none !important;
+  border: none !important;
 }
 .dropdown-menu:hover {
   background-color: #ffffa5;
