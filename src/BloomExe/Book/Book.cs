@@ -534,10 +534,12 @@ namespace Bloom.Book
 		}
 
 
-
+		/// <summary>
+		/// First page in the book (or null if there are none)
+		/// </summary>
 		public IPage FirstPage
 		{
-			get { return GetPages().First(); }
+			get { return GetPages().FirstOrDefault(); }
 		}
 
 		public IPage GetPageByIndex(int pageIndex)
