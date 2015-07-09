@@ -21,12 +21,9 @@ var bloomSourceBubbles = (function () {
         if (divForBubble == null)
             return;
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
-        // if there is more than one language in the future bubble
-        if (divForBubble.find('nav ul li').length > 1) {
-            divForBubble = bloomSourceBubbles.CreateTabsFromDiv(divForBubble);
-            if (divForBubble == null)
-                return;
-        }
+        divForBubble = bloomSourceBubbles.CreateTabsFromDiv(divForBubble);
+        if (divForBubble == null)
+            return;
         // If divForBubble contains more than two languages, create a dropdown menu to contain the
         // extra possibilities. The menu will show (x), where x is the number of items in the dropdown.
         divForBubble = bloomSourceBubbles.CreateDropdownIfNecessary(divForBubble);

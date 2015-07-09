@@ -107,7 +107,6 @@ BODY[bookcreationtype="original"] DIV.ui-sourceTextsForBubble TEXTAREA, BODY[boo
 BODY[bookcreationtype="translation"] DIV.ui-sourceTextsForBubble
 {
 	width: 203px;
-	margin-top: 10px;
 }
 BODY[bookcreationtype="translation"] DIV.uibloomSourceTextsBubble DIV.ui-tooltip-content
 {

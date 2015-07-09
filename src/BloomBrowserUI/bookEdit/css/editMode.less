@@ -276,16 +276,19 @@ TEXTAREA.province
 	margin-right: 8px;
 }
 
-// Qtip defaults to overflow: hidden, which masks the extra language dropdown
-.qtip-content:hover {
-	overflow: visible;
-}
-
 .uibloomSourceTextsBubble {
+	// The "!important"s in here are needed to override qtip's defaults
 	border-radius: 15px;
 	background-color: @TabColor !important;
 	border-color: @TabBorder !important;
 	border-width: 2px !important;
+	.qtip-content {
+		padding: 0 9px 9px !important; // even up space around source bubbles
+		// Qtip defaults to overflow: hidden, which masks the extra language dropdown
+		&:hover {
+			overflow: visible;
+		}
+	}
 }
 
 @TabColor: #ffffc3;
@@ -296,15 +299,10 @@ TEXTAREA.province
 	position: relative;
 	background-color: @SelectedTabColor;
 	NAV {
-		overflow: hidden;
 		display: block;
-		height: 39px;
-		top: -5px;
+		height: 34px;
 		margin: 0 -8px;
 		background-color: @TabColor;
-		&:hover {
-			overflow: visible; // otherwise it masks the language dropdown
-		}
 		> UL {
 			z-index: 1;
 			background-color: transparent;
@@ -325,28 +323,20 @@ TEXTAREA.province
 				z-index: 2;
 			}
 			> LI {
-				margin: 2px 2px 0;
 				font-size: 9pt;
 				height: 31px;
-				border: 1px solid @TabBorder;
-				border-top-left-radius: 6px;
+				border-right: 1px solid @TabBorder;
 				border-top-right-radius: 6px;
-				border-bottom-color: @TabColor; // hide bottom border
 				float: left;
 				flex: none;
 				background-color: @TabColor;
 				&.active {
-					padding-top: 3px;
-					margin-top: 0;
-					height: 32px;
-					position: relative;
-					font: bold 11pt sans-serif;
 					background-color: @SelectedTabColor;
 					border-bottom-color: @SelectedTabColor; // make active tab appear in front
 					z-index: 3;
 				}
 				A {
-					max-width: 85px;
+					max-width: 79px;
 					white-space: nowrap;
 					text-overflow: ellipsis;
 					overflow: hidden;
@@ -355,6 +345,7 @@ TEXTAREA.province
 					outline: none;
 					text-decoration: none;
 					color: black;
+					font-family: Segoe UI, sans-serif;
 					&.active {
 						font-weight: bold;
 					}
@@ -370,6 +361,7 @@ TEXTAREA.province
 		font-size: 10pt;
 		line-height: 1.5;
 		color: black;
+		padding-top: 4px;
 
 		//thai script languages. If using Arial, they need to be 30% bigger or so. With the
 		// popular Angsana New, it would need to be like 100% bigger
@@ -399,7 +391,6 @@ TEXTAREA.province
 	font-size: 9pt;
 	z-index: 5;
 	LI {
-		padding: 5px;
 		&:hover {
 			background-color: @DropdownHovered;
 		}
@@ -407,10 +398,9 @@ TEXTAREA.province
 }
 .dropdown-menu {
 	width: 32px;
-	position: absolute;
-	right: 0;
+	border-right: none !important;
 	&:hover {
-		background-color: @TabColor;
+		background-color: @DropdownHovered;
 		UL {
 			display: inline-block;
 		}
@@ -598,36 +588,6 @@ SPAN.sentence-too-long
 	border: 5px solid orange !important;
 }
 
-
-/*
-
-	this was all a nice idea, but not a localizable approach
-
-.page-too-many-words .marginBox::after {
-	content: 'Too many words on page';
-	position: absolute;
-	bottom: -35px;
-	background-color: orange;
-}
-
-.book-too-many-words .marginBox::after {
-	content: 'Too many words in book';
-	position: absolute;
-	bottom: -30px;
-		left: 300px;
-	background-color: red;
-	color: white;
-}
-.book-too-many-unique-words .marginBox::after {
-	content: 'Too many unique words in book';
-	position: absolute;
-	bottom: -30px;
-	right: 50px;
-	background-color:  purple
-	color: white;
-}
-*/
-
 .ui-dialog { z-index: 20000; }
 
 SPAN.sight-word
@@ -652,50 +612,50 @@ SPAN.possible-word
  * Layout Mode (origami) switch (from proto.io)
  */
 .onoffswitch {
-  display: inline-block; vertical-align: middle; /* This is the only thing I added custom */
-  position: relative; width: 50px;
-  -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+	display: inline-block; vertical-align: middle; /* This is the only thing I added custom */
+	position: relative; width: 50px;
+	-webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
 }
 .onoffswitch-checkbox {
-  display: none;
+	display: none;
 }
 .onoffswitch-label {
-  display: block; overflow: hidden; cursor: pointer;
-  border: 2px solid #999999; border-radius: 0px;
+	display: block; overflow: hidden; cursor: pointer;
+	border: 2px solid #999999; border-radius: 0px;
 }
 .onoffswitch-inner {
-  display: block; width: 200%; margin-left: -100%;
-  -moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
-  -o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
+	display: block; width: 200%; margin-left: -100%;
+	-moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
+	-o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
 }
 .onoffswitch-inner:before, .onoffswitch-inner:after {
-  display: block; float: left; width: 50%; height: 14px; padding: 0; line-height: 10px;
-  font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
-  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
-  border: 2px solid transparent;
-  background-clip: padding-box;
+	display: block; float: left; width: 50%; height: 14px; padding: 0; line-height: 10px;
+	font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+	-moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+	border: 2px solid transparent;
+	background-clip: padding-box;
 }
 .onoffswitch-inner:before {
-  content: "";
-  padding-left: 10px;
-  background-color: #D65649; color: #FFFFFF;
+	content: "";
+	padding-left: 10px;
+	background-color: #D65649; color: #FFFFFF;
 }
 .onoffswitch-inner:after {
-  content: "";
-  padding-right: 10px;
-  background-color: #CCCCCC; color: #333333;
-  text-align: right;
+	content: "";
+	padding-right: 10px;
+	background-color: #CCCCCC; color: #333333;
+	text-align: right;
 }
 .onoffswitch-switch {
-  display: block; width: 14px; margin: 0px;
-  background: #000000;
-  position: absolute; top: 0; bottom: 0; right: 36px;
-  -moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
-  -o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
+	display: block; width: 14px; margin: 0px;
+	background: #000000;
+	position: absolute; top: 0; bottom: 0; right: 36px;
+	-moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
+	-o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
-  margin-left: 0;
+	margin-left: 0;
 }
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
-  right: 0px;
+	right: 0px;
 }
