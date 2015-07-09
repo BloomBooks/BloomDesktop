@@ -644,9 +644,7 @@ namespace Bloom.WebLibraryIntegration
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
 			MakeThumbnail(book, 70, invokeTarget);
 			MakeThumbnail(book, 256, invokeTarget);
-			// Do NOT use ChangeExtension here. If the folder name has a period (e.g.: "Look at the sky. What do you see")
-			// ChangeExtension will strip of the last sentence, which is not what we want (and not what BloomLibrary expects).
-			var uploadPdfPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + ".pdf");
+			var uploadPdfPath = UploadPdfPath(bookFolder);
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
 			// make sure we have a current correct preview and then copy it to the book folder so it gets uploaded.
@@ -660,6 +658,13 @@ namespace Bloom.WebLibraryIntegration
 				}
 			}
 			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath));
+		}
+
+		internal static string UploadPdfPath(string bookFolder)
+		{
+			// Do NOT use ChangeExtension here. If the folder name has a period (e.g.: "Look at the sky. What do you see")
+			// ChangeExtension will strip of the last sentence, which is not what we want (and not what BloomLibrary expects).
+			return Path.Combine(bookFolder, Path.GetFileName(bookFolder) + ".pdf");
 		}
 
 		void MakeThumbnail(Book.Book book, int height, Control invokeTarget)
