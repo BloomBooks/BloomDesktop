@@ -260,7 +260,7 @@ var bloomSourceBubbles = (function () {
                         corner: true,
                         width: 10,
                         height: 10,
-                        offset: 50
+                        offset: 20
                     },
                     classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
                 },
