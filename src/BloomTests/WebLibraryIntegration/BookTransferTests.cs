@@ -150,6 +150,16 @@ namespace BloomTests.WebLibraryIntegration
 			Assert.That(_transfer.IsBookOnServer(localBook), Is.False);
 		}
 
+		/// <summary>
+		/// Regression test. Using ChangeExtension to append the PDF truncates the name when there is a period.
+		/// </summary>
+		[Test]
+		public void BookWithPeriodInTitle_DoesNotGetTruncatedPdfName()
+		{
+			Assert.That(BookTransfer.UploadPdfPath(@"c:\somewhere\Look at the sky. What do you see"),
+				Is.EqualTo(@"c:\somewhere\Look at the sky. What do you see\Look at the sky. What do you see.pdf"));
+		}
+
 		[Test]
 		[Platform(Exclude="Linux", Reason="Currently hangs on Linux on Jenkins (BL-831)")]
 		public void UploadBooks_SimilarIds_DoNotOverwrite()
