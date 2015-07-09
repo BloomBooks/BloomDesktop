@@ -36,7 +36,7 @@ class bloomSourceBubbles {
         var divForBubble = bloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
         if(divForBubble == null) return;
 
-        // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected.
+        // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
         divForBubble = bloomSourceBubbles.CreateTabsFromDiv(divForBubble);
         if (divForBubble == null) return;
 
@@ -154,7 +154,7 @@ class bloomSourceBubbles {
         var destination = 0;
         if(newIso) defaultSrcLang = newIso;
         var newItems = bloomSourceBubbles.DoSafeReplaceInList(items, defaultSrcLang, destination);
-        if($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+        if($(newItems).attr('lang') == defaultSrcLang) { // .attr() just gets the first one
             destination++;
             items = newItems;
         }
@@ -162,14 +162,14 @@ class bloomSourceBubbles {
         var language3 = settingsObject.currentCollectionLanguage3;
         if (language2 && language2 != defaultSrcLang) {
             newItems = bloomSourceBubbles.DoSafeReplaceInList(items, language2, destination);
-            if($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+            if($(newItems[destination]).attr('lang') == language2) {
                 destination++;
                 items = newItems;
             }
         }
         if (language3 && language3 != defaultSrcLang) {
             newItems = bloomSourceBubbles.DoSafeReplaceInList(items, language3, destination);
-            if($(newItems[destination]).attr('lang') != $(items[destination]).attr('lang')) {
+            if($(newItems[destination]).attr('lang') == language3) {
                 items = newItems;
             }
         }
@@ -187,6 +187,7 @@ class bloomSourceBubbles {
             if(iso == langCode && position < idx) {
                 moveFrom = idx;
                 objToMove = obj;
+                return false; // break out of .each()
             }
         });
         if(moveFrom > 0) {
@@ -229,12 +230,11 @@ class bloomSourceBubbles {
         tabs.each(function(idx) {
             if(idx < FIRST_SELECT_OPTION - 1) return true; // continue to next iteration of .each()
             var $this = $(this);
-            var iso = $this.attr('id');
-            var languageName = localizationManager.getLanguageName(iso);
-            if (!languageName)
-                languageName = iso;
-            var listItem = "<li lang='"+iso+"'>"+languageName+"</li>";
+            var link = $this.find('a').clone(true); // 'true' to keep easytab click event
+            var iso = link.attr('href').substring(1); // strip off hashmark
+            var listItem = "<li lang='"+iso+"'></li>";
             container.append(listItem);
+            container.find('li[lang="'+iso+'"]').append(link);
             $this.addClass('removeThisOne');
         });
 
@@ -250,7 +250,7 @@ class bloomSourceBubbles {
     }
 
     private static styledSelectChangeHandler(event) {
-        var newIso = event.target.lang;
+        var newIso = event.target.href.split('#')[1];
 
         // Figure out which qtip we're in and go find the associated bloom-translationGroup
         var qtip = $(event.target).closest('.qtip').attr('id');
@@ -288,7 +288,7 @@ class bloomSourceBubbles {
             $this.qtip({
                 position: {
                     my: 'left top',
-                    at: 'right top',
+                    at: 'top right',
                     adjust: {
                         x: 10,
                         y: 0
@@ -304,7 +304,9 @@ class bloomSourceBubbles {
                     tip: {
                         corner: true,
                         width: 10,
-                        height: 10
+                        height: 10,
+                        mimic: 'left center',
+                        offset: 20
                     },
                     classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
                 },

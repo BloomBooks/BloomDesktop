@@ -60,7 +60,7 @@ DIV.page.coverColor {
 }
 /*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
 DIV.readOnlyInTranslationMode {
-  border: thin solid #C0B9B9;
+  border: thin solid #c0b9b9;
 }
 DIV.hoverUp {
   background-color: #D5D5E4;
@@ -236,21 +236,29 @@ TEXTAREA.province {
   margin-top: -8px;
   margin-right: 8px;
 }
-.qtip-content:hover {
+.uibloomSourceTextsBubble {
+  border-radius: 15px;
+  background-color: #ffffa5 !important;
+  border-color: #c0b9b9 !important;
+  border-width: 2px !important;
+}
+.uibloomSourceTextsBubble .qtip-content {
+  padding: 0 9px 9px !important;
+}
+.uibloomSourceTextsBubble .qtip-content:hover {
   overflow: visible;
 }
 .ui-sourceTextsForBubble {
   position: relative;
+  background-color: #ffffa5;
 }
 .ui-sourceTextsForBubble NAV {
-  overflow: hidden;
   display: block;
-  height: 39px;
-  top: -5px;
+  height: 34px;
   margin: 0 -8px;
-}
-.ui-sourceTextsForBubble NAV:hover {
-  overflow: visible;
+  background-color: #ffffc3;
+  border-top-right-radius: 15px;
+  border-top-left-radius: 15px;
 }
 .ui-sourceTextsForBubble NAV > UL {
   z-index: 1;
@@ -269,33 +277,32 @@ TEXTAREA.province {
   width: 100%;
   bottom: 0;
   left: 0;
-  border-bottom: 1px solid #aaaaaa;
+  border-bottom: 2px solid #c0b9b9;
   z-index: 2;
 }
 .ui-sourceTextsForBubble NAV > UL > LI {
-  margin: 2px 2px 0;
   font-size: 9pt;
   height: 31px;
-  border: 1px solid #aaaaaa;
-  border-top-left-radius: 6px;
+  border-right: 1px solid #c0b9b9;
   border-top-right-radius: 6px;
-  border-bottom-color: #ffffa3;
   float: left;
   flex: none;
-  background-color: #ffffa3;
+  background-color: #ffffc3;
+}
+.ui-sourceTextsForBubble NAV > UL > LI:not(:first-child) {
+  border-left: 1px solid #c0b9b9;
+  border-top-left-radius: 6px;
+}
+.ui-sourceTextsForBubble NAV > UL > LI:first-child {
+  border-top-left-radius: 15px;
 }
 .ui-sourceTextsForBubble NAV > UL > LI.active {
-  padding-top: 3px;
-  margin-top: 0;
-  height: 32px;
-  position: relative;
-  font: bold 11pt sans-serif;
-  background-color: #ffffa3;
-  border-bottom-color: #ffffa3;
+  background-color: #ffffa5;
+  border-bottom-color: #ffffa5;
   z-index: 3;
 }
 .ui-sourceTextsForBubble NAV > UL > LI A {
-  max-width: 85px;
+  max-width: 79px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -304,18 +311,20 @@ TEXTAREA.province {
   outline: none;
   text-decoration: none;
   color: black;
+  font-family: Segoe UI, sans-serif;
 }
 .ui-sourceTextsForBubble NAV > UL > LI A.active {
   font-weight: bold;
 }
 .ui-sourceTextsForBubble NAV > UL > LI A:hover {
   text-decoration: underline;
-  background-color: #ffffa3;
+  background-color: #ffffa5 transparent;
 }
 .ui-sourceTextsForBubble .source-text {
   font-size: 10pt;
   line-height: 1.5;
   color: black;
+  padding-top: 4px;
 }
 .ui-sourceTextsForBubble .source-text:lang(th),
 .ui-sourceTextsForBubble .source-text:lang(km),
@@ -333,26 +342,19 @@ TEXTAREA.province {
   position: relative;
   margin-top: 2px;
   white-space: nowrap;
-  border: 1px solid #aaaaaa;
-  background-color: #ffffff !important;
+  border: 1px solid #c0b9b9;
+  background-color: #ffffc3 !important;
   right: 0;
   top: 0;
   font-size: 9pt;
   z-index: 5;
 }
-.dropdown-list LI {
-  padding: 5px;
-}
 .dropdown-list LI:hover {
-  background-color: #ffffa3;
+  background-color: #ffffa5;
 }
 .dropdown-menu {
   width: 32px;
-  position: absolute;
-  right: 0;
-}
-.dropdown-menu:hover {
-  background-color: #ffffa3;
+  border: none !important;
 }
 .dropdown-menu:hover UL {
   display: inline-block;
@@ -522,34 +524,6 @@ SPAN.sentence-too-long {
 .book-too-many-words .marginBox {
   border: 5px solid orange !important;
 }
-/*
-
-	this was all a nice idea, but not a localizable approach
-
-.page-too-many-words .marginBox::after {
-	content: 'Too many words on page';
-	position: absolute;
-	bottom: -35px;
-	background-color: orange;
-}
-
-.book-too-many-words .marginBox::after {
-	content: 'Too many words in book';
-	position: absolute;
-	bottom: -30px;
-		left: 300px;
-	background-color: red;
-	color: white;
-}
-.book-too-many-unique-words .marginBox::after {
-	content: 'Too many unique words in book';
-	position: absolute;
-	bottom: -30px;
-	right: 50px;
-	background-color:  purple
-	color: white;
-}
-*/
 .ui-dialog {
   z-index: 20000;
 }
