@@ -291,7 +291,7 @@ class bloomSourceBubbles {
                     at: 'top right',
                     adjust: {
                         x: 10,
-                        y: 10
+                        y: 0
                     }
                 },
                 content: divForBubble,
@@ -305,6 +305,7 @@ class bloomSourceBubbles {
                         corner: true,
                         width: 10,
                         height: 10,
+                        mimic: 'left center',
                         offset: 20
                     },
                     classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
