@@ -610,6 +610,12 @@ function attachEventHandlers() {
             setAllowedWordsFile('');
             return false;
         });
+        $('#allowed-words-file-div').onOnce('mouseenter', function () {
+            $(this).find('a').show();
+        });
+        $('#allowed-words-file-div').onOnce('mouseleave', function () {
+            $(this).find('a').hide();
+        });
     }
 }
 function setAllowedWordsFile(fileName) {
