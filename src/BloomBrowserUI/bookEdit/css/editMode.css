@@ -60,7 +60,7 @@ DIV.page.coverColor {
 }
 /*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
 DIV.readOnlyInTranslationMode {
-  border: thin solid #C0B9B9;
+  border: thin solid #c0b9b9;
 }
 DIV.hoverUp {
   background-color: #D5D5E4;
@@ -238,8 +238,8 @@ TEXTAREA.province {
 }
 .uibloomSourceTextsBubble {
   border-radius: 15px;
-  background-color: #ffffc3 !important;
-  border-color: #aaaaaa !important;
+  background-color: #ffffa5 !important;
+  border-color: #c0b9b9 !important;
   border-width: 2px !important;
 }
 .uibloomSourceTextsBubble .qtip-content {
@@ -277,20 +277,20 @@ TEXTAREA.province {
   width: 100%;
   bottom: 0;
   left: 0;
-  border-bottom: 2px solid #aaaaaa;
+  border-bottom: 2px solid #c0b9b9;
   z-index: 2;
 }
 .ui-sourceTextsForBubble NAV > UL > LI {
   font-size: 9pt;
   height: 31px;
-  border-right: 1px solid #aaaaaa;
+  border-right: 1px solid #c0b9b9;
   border-top-right-radius: 6px;
   float: left;
   flex: none;
   background-color: #ffffc3;
 }
 .ui-sourceTextsForBubble NAV > UL > LI:not(:first-child) {
-  border-left: 1px solid #aaaaaa;
+  border-left: 1px solid #c0b9b9;
   border-top-left-radius: 6px;
 }
 .ui-sourceTextsForBubble NAV > UL > LI:first-child {
@@ -342,8 +342,8 @@ TEXTAREA.province {
   position: relative;
   margin-top: 2px;
   white-space: nowrap;
-  border: 1px solid #aaaaaa;
-  background-color: #ffffff !important;
+  border: 1px solid #c0b9b9;
+  background-color: #ffffc3 !important;
   right: 0;
   top: 0;
   font-size: 9pt;
@@ -355,9 +355,6 @@ TEXTAREA.province {
 .dropdown-menu {
   width: 32px;
   border: none !important;
-}
-.dropdown-menu:hover {
-  background-color: #ffffa5;
 }
 .dropdown-menu:hover UL {
   display: inline-block;

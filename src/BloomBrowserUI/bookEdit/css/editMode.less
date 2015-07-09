@@ -72,9 +72,10 @@ DIV.page.coverColor
 	border: medium outset #000000;
 }
 /*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
+@MediumGray: #C0B9B9;
 DIV.readOnlyInTranslationMode
 {
-	border: thin solid #C0B9B9;
+	border: thin solid @MediumGray;
 }
 DIV.hoverUp
 {
@@ -279,7 +280,7 @@ TEXTAREA.province
 .uibloomSourceTextsBubble {
 	// The "!important"s in here are needed to override qtip's defaults
 	border-radius: 15px;
-	background-color: @TabColor !important;
+	background-color: @SelectedTabColor !important;
 	border-color: @TabBorder !important;
 	border-width: 2px !important;
 	.qtip-content {
@@ -292,7 +293,7 @@ TEXTAREA.province
 }
 
 @TabColor: #ffffc3;
-@TabBorder: #aaa;
+@TabBorder: @MediumGray;
 @SelectedTabColor: #ffffa5;
 
 .ui-sourceTextsForBubble {
@@ -380,7 +381,7 @@ TEXTAREA.province
 	}
 }
 
-@DropdownBackground: white;
+@DropdownBackground: @TabColor;
 @DropdownHovered: @SelectedTabColor;
 
 .dropdown-list {
@@ -409,7 +410,6 @@ TEXTAREA.province
 	width: 32px;
 	border: none !important;
 	&:hover {
-		background-color: @DropdownHovered;
 		UL {
 			display: inline-block;
 		}
