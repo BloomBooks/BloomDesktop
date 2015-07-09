@@ -395,7 +395,7 @@ namespace Bloom.WebLibraryIntegration
 					if (e.Message.Contains("The difference between the request time and the current time is too large"))
 					{
 						progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.TimeProblem",
-							"There was a problem uploading your book. This is probably because the system time on your computer is not correct for the timezone the computer is set to."));
+							"There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this."));
 						if (!UseSandbox)
 							Analytics.Track("UploadBook-Failure-SystemTime");
 					}
