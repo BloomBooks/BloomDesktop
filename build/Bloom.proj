@@ -156,7 +156,11 @@
 		<Copy SourceFiles ="$(RootDir)\src\SquirrelInstaller\DownloadPointers.htm"
 			   DestinationFolder ="$(RootDir)\output\installer"/>
 
-		<!-- replace some parts of the file with the version number & date -->
+		<!-- replace some parts of the file with the version number & date & channel info -->
+		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+				   DatePlaceholder='RELEASE_DATE'
+				  Regex='VERSION_NUMBER.CHANNEL_LABEL'
+				   ReplacementText ="$(Version)$(dotChannel)" />
 
 		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 				   DatePlaceholder='RELEASE_DATE'
