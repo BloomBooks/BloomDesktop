@@ -159,7 +159,12 @@
 		<!-- replace some parts of the file with the version number & date & channel info -->
 		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 				   DatePlaceholder='RELEASE_DATE'
-				  Regex='VERSION_NUMBER.CHANNEL_LABEL'
+				  Regex='INSTALLERS_FOLDER'
+				   ReplacementText ="installers$(channel)" />
+
+		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+				   DatePlaceholder='RELEASE_DATE'
+				  Regex='VERSION_DOT_CHANNEL'
 				   ReplacementText ="$(Version)$(dotChannel)" />
 
 		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
