@@ -20,6 +20,12 @@
 		  (The line below leaves it empty, and thus does nothing except to let an editor know this is
 		  a valid, known property group.)-->
 		<channel Condition="'$(channel)'==''"></channel>
+		<!-- channelRelease is 'Release' if channel is empty, otherwise same as channel-->
+		<channelRelease>$(channel)</channelRelease>
+		<channelRelease Condition="'$(channel)'==''">Release</channelRelease>
+		<!-- channelRelease is empty if channel is empty, otherwise dot before channel-->
+		<dotChannel>.$(channel)</dotChannel>
+		<dotChannel Condition="'$(channel)'==''"></dotChannel>
 		<ApplicationName>Bloom$(channel)</ApplicationName>
 		<Configuration>Release</Configuration>
 		<BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
@@ -71,10 +77,10 @@
 	<CreateProperty Value="$(Version).$(BuildHash)">
 	  <Output PropertyName="FullVersion" TaskParameter="Value"/>
 	</CreateProperty>
-	<CreateProperty Value="BloomInstaller.$(Version).$(channel).msi">
+	<CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).msi">
 	  <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
 	</CreateProperty>
-	<CreateProperty Value="BloomInstaller.$(Version).$(channel).exe">
+	<CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).exe">
 	  <Output PropertyName="SquirrelInstallerFileName" TaskParameter="Value"/>
 	</CreateProperty>
 	  <CreateProperty Value="Bloom$(channel)-$(Version)-full.nupkg">
@@ -155,7 +161,7 @@
 		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 				   DatePlaceholder='RELEASE_DATE'
 				  Regex='CHANNEL_LABEL'
-				   ReplacementText ="$(channel)" />
+				   ReplacementText ="$(channelRelease)" />
 
 		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
 					DatePlaceholder='RELEASE_DATE'
@@ -164,17 +170,17 @@
 
 		<!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
 
-		<Message Text="Attempting rsync of DownloadPointers_$(channel).htm" Importance="high"/>
+		<Message Text="Attempting rsync of DownloadPointers_$(channelRelease).htm" Importance="high"/>
 
 		<!-- Note, this copy appends the "channel" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
 		It is up to the target web site to include or not include the beta. E.g., after you release, there is normally a period of time before the next beta.
 		We have to make this copy because the S3BuildPublisher task does not support renaming.
 		Note that, again, we need to change the DestinationFolder or the web site when we want to go live.
 		-->
-		<Copy SourceFiles="../output/installer/DownloadPointers.htm"  DestinationFiles="../output/installer/DownloadPointers_$(channel).htm"/>
+		<Copy SourceFiles="../output/installer/DownloadPointers.htm"  DestinationFiles="../output/installer/DownloadPointers_$(channelRelease).htm"/>
 		<S3BuildPublisher
 		  EncryptionContainerName ="$(Key)"
-		  SourceFiles="../output/installer/DownloadPointers_$(channel).htm"
+		  SourceFiles="../output/installer/DownloadPointers_$(channelRelease).htm"
 		  DestinationBucket="$(Bucket)"
 		  DestinationFolder="channels"
 		  PublicRead="true" />
