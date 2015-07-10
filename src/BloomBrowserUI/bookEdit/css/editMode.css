@@ -246,7 +246,7 @@ TEXTAREA.province {
   padding: 0 9px 9px !important;
 }
 .uibloomSourceTextsBubble .qtip-content:hover {
-  overflow: visible;
+  overflow: visible !important;
 }
 .ui-sourceTextsForBubble {
   position: relative;
@@ -344,7 +344,6 @@ TEXTAREA.province {
   white-space: nowrap;
   border: 1px solid #c0b9b9;
   background-color: #ffffc3 !important;
-  right: 0;
   top: 0;
   font-size: 9pt;
   z-index: 5;

@@ -160,6 +160,7 @@
     <Content Include="test\fixtures\basePage.css" />
     <Content Include="test\fixtures\OverflowTestPage.htm" />
     <Content Include="test\specs\OverflowSpec.js" />
+    <Content Include="test\specs\SourceBubblesSpec.js" />
     <Content Include="test\specs\StyleEditorSpec.js" />
     <Content Include="themes\bloom-jqueryui-theme\.guidsForInstaller.xml" />
     <Content Include="themes\bloom-jqueryui-theme\images\.guidsForInstaller.xml" />
@@ -181,8 +182,6 @@
     <TypeScriptCompile Include="bookEdit\js\readerTools.ts" />
     <TypeScriptCompile Include="bookEdit\js\readerToolsModel.ts" />
     <TypeScriptCompile Include="bookEdit\js\synphonyApi.ts" />
-    <TypeScriptCompile Include="bookEdit\test\SourceBubblesSpec.ts" />
-    <TypeScriptCompile Include="bookEdit\test\StyleEditorSpec.ts" />
     <TypeScriptCompile Include="bookEdit\TopicChooser\TopicChooser.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />
@@ -191,6 +190,7 @@
     <TypeScriptCompile Include="lib\jquery.i18n.custom.ts" />
     <TypeScriptCompile Include="lib\localizationManager\localizationManager.ts" />
     <TypeScriptCompile Include="lib\localizationManager\localizationManagerSpec.ts" />
+    <TypeScriptCompile Include="test\specs\SourceBubblesSpec.ts" />
     <TypeScriptCompile Include="test\specs\StyleEditorSpec.ts" />
     <Content Include="bookLayout\basePage.css" />
   </ItemGroup>

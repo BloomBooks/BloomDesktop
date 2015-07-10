@@ -65,23 +65,28 @@ class bloomSourceBubbles {
         //make the source texts in the bubble read-only and remove any user font size adjustments
         divForBubble.find("textarea, div").each(function() {
             //don't want empty items in the bubble
+            var $this = $(this);
             if(bloomSourceBubbles.hasNoText(this)) {
-                $(this).remove();
+                $this.remove();
                 return true; // skip to next iteration of each()
             }
-            $(this).attr("readonly", "readonly");
-            $(this).removeClass('bloom-editable');
-            $(this).attr("contenteditable", "false");
+            $this.attr("readonly", "readonly");
+            $this.removeClass('bloom-editable');
+            $this.attr("contenteditable", "false");
 
             // don't want red in source text bubbles
-            $(this).removeClass('overflow');
-            $(this).removeClass('thisOverflowingParent');
-            $(this).removeClass('childOverflowingThis');
+            $this.removeClass('overflow');
+            $this.removeClass('thisOverflowingParent');
+            $this.removeClass('childOverflowingThis');
 
             var styleClass = GetStyleClassFromElement(this);
             if (styleClass)
-                $(this).removeClass(styleClass);
-            $(this).addClass("source-text");
+                $this.removeClass(styleClass);
+
+            // remove any CustomPage min-height styles (they conflict with the source bubble css)
+            bloomSourceBubbles.RemoveCustomPageAdditions($this);
+
+            $this.addClass("source-text");
         });
 
         //don't want the vernacular or languages in use for bilingual/trilingual boxes to be shown in the bubble
@@ -143,6 +148,13 @@ class bloomSourceBubbles {
 
         return divForBubble;
     } // end MakeSourceTextDivForGroup()
+
+    private static RemoveCustomPageAdditions(editableDiv: JQuery):void {
+        var styleAttr = editableDiv.attr('style');
+        if (!styleAttr) return;
+
+        editableDiv.css("min-height", "");
+    }
 
     // 'Smart' orders the tabs putting the latest viewed language first, followed by others in the collection
     // param 'items' is an alphabetical list of all the divs of different languages to be used as tabs
@@ -325,7 +337,7 @@ class bloomSourceBubbles {
                         if ($tip.height() > maxHeight) {
 
                             // make sure to show a minimum size
-                            if (maxHeight < 50) maxHeight = 50;
+                            if (maxHeight < 70) maxHeight = 70;
 
                             $tip.css('max-height', maxHeight);
                             $tip.addClass('passive-bubble');
