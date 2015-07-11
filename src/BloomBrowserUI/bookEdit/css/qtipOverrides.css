@@ -8,14 +8,14 @@
 .qtip.passive-bubble .qtip-content .ui-sourceTextsForBubble {
   margin-top: 0;
 }
-.qtip.passive-bubble .qtip-content .ui-sourceTextsForBubble UL {
+.qtip.passive-bubble .qtip-content .ui-sourceTextsForBubble > UL {
   top: 0;
   white-space: nowrap;
 }
-.qtip.passive-bubble .qtip-content .ui-sourceTextsForBubble UL LI {
+.qtip.passive-bubble .qtip-content .ui-sourceTextsForBubble > UL LI {
   height: 27px;
   /* padding: 0 4px; */
 }
-.qtip.passive-bubble .qtip-content .ui-sourceTextsForBubble UL LI A {
+.qtip.passive-bubble .qtip-content .ui-sourceTextsForBubble > UL LI A {
   padding: 3px 5px 0;
 }
