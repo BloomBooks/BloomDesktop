@@ -110,11 +110,11 @@ namespace Bloom.CollectionTab
 		private void SetupBookDropdownIcon()
 		{
 			// we just need the bottom part of the image for this button
-			var img = new Bitmap(13, 11, PixelFormat.Format32bppArgb);
+			var img = new Bitmap(10, 8, PixelFormat.Format32bppArgb);
 			var src = (Bitmap)_menuTriangle.Image;
 			using (var g = Graphics.FromImage(img))
 			{
-				g.DrawImage(src, new Rectangle(0, 0, 13, 11), new Rectangle(0, 7, 13, 13), GraphicsUnit.Pixel);
+				g.DrawImage(src, new Rectangle(0, 0, 10, 8), new Rectangle(0, 7, 13, 11), GraphicsUnit.Pixel);
 			}
 
 			// create the 
@@ -701,13 +701,15 @@ namespace Bloom.CollectionTab
 
 		private void HighlightBookButtonAndShowContextMenuButton(BookInfo bookInfo)
 		{
+			_thumbnailContextMenuButton.Visible = false;
+
 			foreach (var btn in AllBookButtons())
 			{
 				if (btn.Tag == bookInfo)
 				{
 					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
-					_thumbnailContextMenuButton.Left = btn.Left + btn.Width - _thumbnailContextMenuButton.Width - 2;
-					_thumbnailContextMenuButton.Top = btn.Top + 2;
+					_thumbnailContextMenuButton.Left = btn.Left + btn.Width - _thumbnailContextMenuButton.Width - 3;
+					_thumbnailContextMenuButton.Top = btn.Top + btn.Height - _thumbnailContextMenuButton.Height - 3;
 					_thumbnailContextMenuButton.Visible = true;
 					_thumbnailContextMenuButton.BringToFront();
 				}
