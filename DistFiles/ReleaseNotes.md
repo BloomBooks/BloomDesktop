@@ -1,4 +1,19 @@
-﻿## Important Notices
+﻿
+## 3.2
+
+- Support new Decodable Readers workflow. Instead of defining a set of letters plus sight words for each Decodable Stage, Bloom now allows you to specify one or more text files of "Allowed Words".
+  - These must be simple, unicode text files. Other formats are not supported: Word, LibreOffice, Excel, etc.
+  - We have found that 1000 words works fine even on an old slow laptop. If you have much larger lists and a slow computer, there may be some lag while editing. Please let us know if this is a problem for anyone.
+  - Complex characters in unicode can be [coded in more than one way](https://en.wikipedia.org/wiki/Unicode_equivalence). At this point, if the word list has a word code in one way, and the text in the book was entered a different way, Bloom will not recognize the word.  Please let us know if this is a problem for anyone.
+
+- Bloom's Edit tab now always returns you the last page you were viewing in a book. This was a [UserVoice Request](https://bloombooks.uservoice.com/forums/153625-general/suggestions/6986831-open-to-the-last-edited-page-in-a-book)
+
+- "Source text bubbles" in shell books have received a much needed makeover, including real tabs a drop-down list of languages for books that have many source languages.
+
+## 3.1
+Version 3.1 was a disciplined sustained & effort to improve hundreds of "little things" that could confuse or block people in certain situations from getting books created, translated, or printed. It also represents the first version where the Linux (Trusty and Precise) version is very close to parity with the Windows version.
+
+## Important Notices
 
 ### Andika Replaced By "Andika New Basic" 
 - Many Bloom collections use SIL's free "Andika" literacy font as their default typeface. When you create a PDF using Andika, styles such as bold, italic etc. are lost. This will happen with any font that doesn't include a real bold/italic/etc face. This problem is outside of our control at this time (we've reported it to Mozilla). Happily, SIL has released a subset of Andika named [Andika New Basic](http://scripts.sil.org/cms/scripts/page.php?item_id=Andika_New_Basic). Bloom now installs this font for you and uses it by default. If your language is not fully supported by Andika New Basic, please choose another font, ideally one which includes built-in bold and italic. You can test your font by using CTRL+B to make some text bold, then going to publish and looking to see if bold makes it through to the PDF.
@@ -12,9 +27,6 @@
 
 ### The end of the line for Windows XP
 - Starting with Bloom 3.1, Bloom will no longer run on Windows XP. Sorry! As Microsoft has retired support for XP, it has become difficult for us to be limitted to program bits that work on XP. But Bloom 3.0 will continue to be available and works just fine. We don't expect there to be any problems with someone using Bloom 3.0 on XP using books created by other people using Bloom 3.1.
-
-## 3.1
-Version 3.1 was a disciplined sustained & effort to improve hundreds of "little things" that could confuse or block people in certain situations from getting books created, translated, or printed. It also represents the first version where the Linux (Trusty and Precise) version is very close to parity with the Windows version.
 
 ## 3.1 Beta 3
 - Running the installer again does an uninstall/reinstall
