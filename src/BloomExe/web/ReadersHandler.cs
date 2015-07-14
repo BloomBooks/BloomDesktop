@@ -354,12 +354,11 @@ namespace Bloom.web
 			if (!Directory.Exists(destPath)) Directory.CreateDirectory(destPath);
 
 			var textFiles = LocalizationManager.GetString("DecodableReaderTool.FileDialogTextFiles", "Text files");
-			var allFiles = LocalizationManager.GetString("DecodableReaderTool.FileDialogAllFiles", "All files");
 			var dlg = new OpenFileDialog
 			{
 				Multiselect = false,
 				CheckFileExists = true,
-				Filter = string.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab|{1} (*.*)|*.*", textFiles, allFiles)
+				Filter = string.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab", textFiles)
 			};
 			var result = dlg.ShowDialog();
 			if (result == DialogResult.OK)
