@@ -367,11 +367,14 @@ TEXTAREA.province
 			}
 		}
 	}
-	.source-text{
+	.source-text {
 		font-size: 10pt;
 		line-height: 1.5;
 		color: black;
 		padding-top: 4px;
+		&.active {
+			overflow-y: hidden !important;
+		}
 
 		//thai script languages. If using Arial, they need to be 30% bigger or so. With the
 		// popular Angsana New, it would need to be like 100% bigger
