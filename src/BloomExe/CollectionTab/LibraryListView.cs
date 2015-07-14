@@ -936,6 +936,7 @@ namespace Bloom.CollectionTab
 				if (button != null && _primaryCollectionFlow.Controls.Contains(button))
 				{
 					_primaryCollectionFlow.Controls.Remove(button);
+					_thumbnailContextMenuButton.Visible = false;
 				}
 			}
 		}
