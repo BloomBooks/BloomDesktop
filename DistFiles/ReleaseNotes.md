@@ -10,6 +10,13 @@
 
 - "Source text bubbles" in shell books have received a much needed makeover, including real tabs a drop-down list of languages for books that have many source languages.
 
+- In the set up dialog for Decoable Stages, Bloom now outlines letters from previous stages in orange. Previously, they were only bold and some users didn't notice them.
+
+- In the Collections tab, the selected book now displays a little triangle. Clicking on that shows a menu of things you can do with the book. More advanced items are still only available by right-clicking on the book.
+
+- That Book menu now offers a "Copy Book" command.
+
+
 ## 3.1
 Version 3.1 was a disciplined sustained & effort to improve hundreds of "little things" that could confuse or block people in certain situations from getting books created, translated, or printed. It also represents the first version where the Linux (Trusty and Precise) version is very close to parity with the Windows version.
 
