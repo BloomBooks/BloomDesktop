@@ -12,6 +12,10 @@
   visibility: visible;
 }
 
+.split-pane > .split-pane-component {
+  overflow: hidden !important; // override split-pane.css rules that call for overflow: auto
+}
+
 .split-pane.vertical-percent > .split-pane-component.position-left {
   right: 50%;
   margin-right: 3px;

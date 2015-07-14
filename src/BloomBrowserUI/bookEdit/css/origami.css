@@ -102,6 +102,9 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 .origami-layout-mode .origami-ui {
   visibility: visible;
 }
+.split-pane > .split-pane-component {
+  overflow: hidden !important;
+}
 .split-pane.vertical-percent > .split-pane-component.position-left {
   right: 50%;
   margin-right: 3px;

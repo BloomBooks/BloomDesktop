@@ -326,6 +326,9 @@ TEXTAREA.province {
   color: black;
   padding-top: 4px;
 }
+.ui-sourceTextsForBubble .source-text.active {
+  overflow-y: hidden !important;
+}
 .ui-sourceTextsForBubble .source-text:lang(th),
 .ui-sourceTextsForBubble .source-text:lang(km),
 .ui-sourceTextsForBubble .source-text:lang(kjg),
