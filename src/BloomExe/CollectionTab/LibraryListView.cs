@@ -39,7 +39,7 @@ namespace Bloom.CollectionTab
 		private bool _primaryCollectionReloadPending;
 		private bool _disposed;
 		private BookCollection _downloadedBookCollection;
-		private PictureBox _thumbnailContextMenuButton;
+		private Image _dropdownImage;
 
 		enum ButtonManagementStage
 		{
@@ -110,27 +110,15 @@ namespace Bloom.CollectionTab
 		private void SetupBookDropdownIcon()
 		{
 			// we just need the bottom part of the image for this button
-			var img = new Bitmap(10, 8, PixelFormat.Format32bppArgb);
+			_dropdownImage = new Bitmap(10, 8, PixelFormat.Format32bppArgb);
 			var src = (Bitmap)_menuTriangle.Image;
-			using (var g = Graphics.FromImage(img))
+			using (var g = Graphics.FromImage(_dropdownImage))
 			{
 				g.DrawImage(src, new Rectangle(0, 0, 10, 8), new Rectangle(0, 7, 13, 11), GraphicsUnit.Pixel);
 			}
-
-			// create the 
-			_thumbnailContextMenuButton = new PictureBox
-			{
-				Image = img,
-				BackColor = Color.Transparent,
-				Visible = false,
-				BorderStyle = BorderStyle.None,
-				SizeMode = PictureBoxSizeMode.AutoSize
-			};
-			_thumbnailContextMenuButton.Click += _bookTriangle_Click;
-			Controls.Add(_thumbnailContextMenuButton);
 		}
 
-		void _bookTriangle_Click(object sender, EventArgs e)
+		void _bookTriangle_Click()
 		{
 			// hide these controls in the triangle menu
 			toolStripSeparator1.Visible = false;
@@ -663,12 +651,14 @@ namespace Bloom.CollectionTab
 
 		private void OnClickBook(object sender, EventArgs e)
 		{
-			if (!IsUsableBook((Button) sender))
+			var thisBtn = (Button)sender;
+
+			if (!IsUsableBook(thisBtn))
 			{
 				MessageBox.Show(LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."));
 				return;
 			}
-			BookInfo bookInfo = ((Button)sender).Tag as BookInfo;
+			BookInfo bookInfo = thisBtn.Tag as BookInfo;
 			if (bookInfo == null)
 				return;
 
@@ -681,9 +671,18 @@ namespace Bloom.CollectionTab
 				{
 					//I couldn't get the DoubleClick event to work, so I rolled my own
 					if (Control.MouseButtons == MouseButtons.Left &&
-						DateTime.Now.Subtract(lastClickTime).TotalMilliseconds < SystemInformation.DoubleClickTime)
+					    DateTime.Now.Subtract(lastClickTime).TotalMilliseconds < SystemInformation.DoubleClickTime)
 					{
 						_model.DoubleClickedBook();
+					}
+					else
+					{
+						// detect click on book dropdown menu
+						var pt = thisBtn.PointToClient(MousePosition);
+						if ((pt.X > thisBtn.Width - 12) && (pt.Y > thisBtn.Height - 12))
+						{
+							_bookTriangle_Click();
+						}
 					}
 					return; // already selected, nothing to do.
 				}
@@ -701,23 +700,32 @@ namespace Bloom.CollectionTab
 
 		private void HighlightBookButtonAndShowContextMenuButton(BookInfo bookInfo)
 		{
-			_thumbnailContextMenuButton.Visible = false;
-
 			foreach (var btn in AllBookButtons())
 			{
 				if (btn.Tag == bookInfo)
 				{
+					btn.Paint += btn_Paint;
 					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
-					_thumbnailContextMenuButton.Left = btn.Left + btn.Width - _thumbnailContextMenuButton.Width - 3;
-					_thumbnailContextMenuButton.Top = btn.Top + btn.Height - _thumbnailContextMenuButton.Height - 3;
-					_thumbnailContextMenuButton.Visible = true;
-					_thumbnailContextMenuButton.BringToFront();
 				}
 				else
 				{
+					btn.Paint -= btn_Paint;
 					btn.FlatAppearance.BorderColor = BackColor;
 				}
 			}
+		}
+
+		void btn_Paint(object sender, PaintEventArgs e)
+		{
+			var obj = (Button) sender;
+			var rect = new Rectangle
+			{
+				X = obj.Width - _dropdownImage.Width - 3,
+				Y = obj.Height - _dropdownImage.Height - 3,
+				Width = _dropdownImage.Width,
+				Height = _dropdownImage.Height
+			};
+			e.Graphics.DrawImage(_dropdownImage, rect);
 		}
 
 		private void SelectBook(BookInfo bookInfo)
@@ -814,7 +822,6 @@ namespace Bloom.CollectionTab
 				Application.Idle -= ManageButtonsAtIdleTime;
 			}
 		}
-
 
 		private void RefreshOneThumbnail(Book.BookInfo bookInfo, Image image)
 		{
@@ -936,7 +943,6 @@ namespace Bloom.CollectionTab
 				if (button != null && _primaryCollectionFlow.Controls.Contains(button))
 				{
 					_primaryCollectionFlow.Controls.Remove(button);
-					_thumbnailContextMenuButton.Visible = false;
 				}
 			}
 		}
