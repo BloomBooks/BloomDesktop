@@ -611,7 +611,7 @@ function attachEventHandlers() {
             return false;
         });
         $('#allowed-words-file-div').onOnce('mouseenter', function () {
-            var title = localizationManager.getText('ReaderSetup.RemoveWordList', 'Remove from this stage');
+            var title = document.getElementById('remove_word_list').innerHTML;
             var anchor = $(this).find('a');
             anchor.attr('title', title);
             anchor.show();
