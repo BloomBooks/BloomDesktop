@@ -121,6 +121,8 @@ html
 								span &nbsp;
 									= ' '
 									a#remove-allowed-word-file.red-x(title='Remove from this stage' href='') &#x2717;
+								// Makes sure the tooltip gets loaded
+								#remove-allowed-word-file-tooltip(style='display: none;' data-i18n='ReaderSetup.RemoveWordList')
 					#setup-stage-matching-words.sub-float
 						div(style='width: 100%; height: calc(100% - 18px);')
 							label
