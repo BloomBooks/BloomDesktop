@@ -3079,6 +3079,12 @@
         <seg>Remove Stage {0}</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.RemoveWordList">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Remove from this stage</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.ReorderLevels">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
