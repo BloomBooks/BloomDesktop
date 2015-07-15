@@ -758,7 +758,12 @@ function attachEventHandlers(): void {
       return false;
     });
 
-    $('#allowed-words-file-div').onOnce('mouseenter', function() { $(this).find('a').show(); });
+    $('#allowed-words-file-div').onOnce('mouseenter', function() {
+      var title = document.getElementById('remove_word_list').innerHTML;
+      var anchor = $(this).find('a');
+      anchor.attr('title', title);
+      anchor.show();
+    });
 
     $('#allowed-words-file-div').onOnce('mouseleave', function() { $(this).find('a').hide(); });
   }

@@ -8,9 +8,9 @@
 
 - Bloom's Edit tab now always returns you the last page you were viewing in a book. This was a [UserVoice Request](https://bloombooks.uservoice.com/forums/153625-general/suggestions/6986831-open-to-the-last-edited-page-in-a-book)
 
-- "Source text bubbles" in shell books have received a much needed makeover, including real tabs a drop-down list of languages for books that have many source languages.
+- "Source text bubbles" in shell books have received a much needed makeover, including real tabs in a drop-down list of languages for books that have many source languages.
 
-- In the set up dialog for Decoable Stages, Bloom now outlines letters from previous stages in orange. Previously, they were only bold and some users didn't notice them.
+- In the set up dialog for Decodable Stages, Bloom now outlines letters from previous stages in orange. Previously, they were only bold and some users didn't notice them.
 
 - In the Collections tab, the selected book now displays a little triangle. Clicking on that shows a menu of things you can do with the book. More advanced items are still only available by right-clicking on the book.
 
