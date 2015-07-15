@@ -113,6 +113,12 @@ namespace Bloom.web
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(GetTextFileContents(info.GetQueryString()["data"], WordFileType.AllowedWordsFile));
 					return true;
+
+				case "recycleAllowedWordsFile":
+					RecycleAllowedWordListFile(info.GetPostData()["data"]);
+					info.ContentType = "text/plain";
+					info.WriteCompleteOutput("OK");
+					return true;
 			}
 
 			return false;
@@ -205,9 +211,11 @@ namespace Bloom.web
 		private static string GetTextFileContents(string fileName, WordFileType wordFileType)
 		{
 			var path = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath),
-				wordFileType == WordFileType.AllowedWordsFile ? "Word Lists" : "Sample Texts");
+				wordFileType == WordFileType.AllowedWordsFile ? "Allowed Words" : "Sample Texts");
 
 			path = Path.Combine(path, fileName);
+
+			if (!File.Exists(path)) return string.Empty;
 
 			// first try utf-8/ascii encoding (the .Net default)
 			var text = File.ReadAllText(path);
@@ -350,7 +358,7 @@ namespace Bloom.web
 		{
 			var returnVal = "";
 
-			var destPath = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Word Lists");
+			var destPath = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Allowed Words");
 			if (!Directory.Exists(destPath)) Directory.CreateDirectory(destPath);
 
 			var textFiles = LocalizationManager.GetString("DecodableReaderTool.FileDialogTextFiles", "Text files");
@@ -369,7 +377,7 @@ namespace Bloom.web
 				{
 					var i = 0;
 
-					// if file is in the "Word Lists" directory, do not try to copy it again.
+					// if file is in the "Allowed Words" directory, do not try to copy it again.
 					if (Path.GetFullPath(srcFile) != Path.Combine(destPath, destFile))
 					{
 						// get a unique destination file name
@@ -392,6 +400,15 @@ namespace Bloom.web
 			// send to browser
 			info.ContentType = "text/plain";
 			info.WriteCompleteOutput(returnVal);
+		}
+
+		private static void RecycleAllowedWordListFile(string fileName)
+		{
+			var folderPath = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Allowed Words");
+			var fullFileName = Path.Combine(folderPath, fileName);
+
+			if (File.Exists(fullFileName))
+				PathUtilities.DeleteToRecycleBin(fullFileName);
 		}
 	}
 }
