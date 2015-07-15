@@ -113,6 +113,12 @@ namespace Bloom.web
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(GetTextFileContents(info.GetQueryString()["data"], WordFileType.AllowedWordsFile));
 					return true;
+
+				case "recycleAllowedWordsFile":
+					RecycleAllowedWordListFile(info.GetPostData()["data"]);
+					info.ContentType = "text/plain";
+					info.WriteCompleteOutput("OK");
+					return true;
 			}
 
 			return false;
@@ -392,6 +398,15 @@ namespace Bloom.web
 			// send to browser
 			info.ContentType = "text/plain";
 			info.WriteCompleteOutput(returnVal);
+		}
+
+		private static void RecycleAllowedWordListFile(string fileName)
+		{
+			var folderPath = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Word Lists");
+			var fullFileName = Path.Combine(folderPath, fileName);
+
+			if (File.Exists(fullFileName))
+				PathUtilities.DeleteToRecycleBin(fullFileName);
 		}
 	}
 }

@@ -445,7 +445,12 @@ function removeStage() {
     // remove the current stage
     var current_row = tbody.find('tr.selected');
     var current_stage = parseInt(current_row.find("td").eq(0).html());
+    // remember for the next step
+    var allowedWordsFile = current_row.find("td").eq(3).html();
     current_row.remove();
+    // if there is an Allowed Words file, remove it also
+    if (allowedWordsFile.length > 0)
+        checkAndDeleteAllowedWordsFile(allowedWordsFile);
     var rows = tbody.find('tr');
     if (rows.length > 0) {
         // renumber remaining stages
@@ -610,16 +615,20 @@ function attachEventHandlers() {
             setAllowedWordsFile('');
             return false;
         });
-        $('#allowed-words-file-div').onOnce('mouseenter', function () {
+        var allowedDiv = $('#allowed-words-file-div');
+        allowedDiv.onOnce('mouseenter', function () {
             $(this).find('a').show();
         });
-        $('#allowed-words-file-div').onOnce('mouseleave', function () {
+        allowedDiv.onOnce('mouseleave', function () {
             $(this).find('a').hide();
         });
     }
 }
 function setAllowedWordsFile(fileName) {
-    document.getElementById('allowed-words-file').innerHTML = fileName;
+    var allowedWordsSpan = document.getElementById('allowed-words-file');
+    var currentFile = allowedWordsSpan.innerHTML;
+    // set the new text
+    allowedWordsSpan.innerHTML = fileName;
     if (fileName) {
         document.getElementById('setup-choose-allowed-words-file').style.display = 'none';
         document.getElementById('allowed-words-file-div').style.display = '';
@@ -630,6 +639,29 @@ function setAllowedWordsFile(fileName) {
         fileName = ''; // to be sure it isn't undefined
     }
     $('#stages-table').find('tbody tr.selected td:nth-child(4)').html(fileName);
+    // remove file if no longer used
+    if (currentFile) {
+        checkAndDeleteAllowedWordsFile(currentFile);
+    }
+}
+/**
+ * If this file is no longer being used, delete it from the 'Word Lists' directory.
+ * @param fileName
+ */
+function checkAndDeleteAllowedWordsFile(fileName) {
+    // loop through the stages looking for the file name
+    var stages = $('#stages-table').find('tbody tr');
+    for (var i = 0; i < stages.length; i++) {
+        var row = stages[i];
+        // if this file name is still in use, return now
+        if (row.cells[3].innerHTML == fileName) {
+            console.log(fileName + ' still in use');
+            return;
+        }
+    }
+    console.log(fileName + ' being recycled');
+    // if you are here, the file name is not in use
+    getIframeChannel().simpleAjaxNoCallback('/bloom/readers/recycleAllowedWordsFile', fileName);
 }
 function enableSampleWords() {
     // get the selected option

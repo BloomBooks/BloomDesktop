@@ -548,7 +548,15 @@ function removeStage(): void {
   // remove the current stage
   var current_row: JQuery = tbody.find('tr.selected');
   var current_stage: number = parseInt(current_row.find("td").eq(0).html());
+
+  // remember for the next step
+  var allowedWordsFile = current_row.find("td").eq(3).html();
+
   current_row.remove();
+
+  // if there is an Allowed Words file, remove it also
+  if (allowedWordsFile.length > 0)
+    checkAndDeleteAllowedWordsFile(allowedWordsFile);
 
   var rows: JQuery = tbody.find('tr');
 
@@ -758,15 +766,19 @@ function attachEventHandlers(): void {
       return false;
     });
 
-    $('#allowed-words-file-div').onOnce('mouseenter', function() { $(this).find('a').show(); });
-
-    $('#allowed-words-file-div').onOnce('mouseleave', function() { $(this).find('a').hide(); });
+    var allowedDiv = $('#allowed-words-file-div');
+    allowedDiv.onOnce('mouseenter', function() { $(this).find('a').show(); });
+    allowedDiv.onOnce('mouseleave', function() { $(this).find('a').hide(); });
   }
 }
 
 function setAllowedWordsFile(fileName: string): void {
 
-  (<HTMLSpanElement>document.getElementById('allowed-words-file')).innerHTML = fileName;
+  var allowedWordsSpan: HTMLSpanElement = (<HTMLSpanElement>document.getElementById('allowed-words-file'));
+  var currentFile: string = allowedWordsSpan.innerHTML;
+
+  // set the new text
+  allowedWordsSpan.innerHTML = fileName;
 
   if (fileName) {
     document.getElementById('setup-choose-allowed-words-file').style.display = 'none';
@@ -779,6 +791,32 @@ function setAllowedWordsFile(fileName: string): void {
   }
 
   $('#stages-table').find('tbody tr.selected td:nth-child(4)').html(fileName);
+
+  // remove file if no longer used
+  if (currentFile) {
+    checkAndDeleteAllowedWordsFile(currentFile);
+  }
+}
+
+/**
+ * If this file is no longer being used, delete it from the 'Word Lists' directory.
+ * @param fileName
+ */
+function checkAndDeleteAllowedWordsFile(fileName: string): void {
+
+  // loop through the stages looking for the file name
+  var stages: JQuery = $('#stages-table').find('tbody tr');
+  for (var i: number = 0; i < stages.length; i++) {
+    var row: HTMLTableRowElement = <HTMLTableRowElement>stages[i];
+
+    // if this file name is still in use, return now
+    if ((<HTMLTableCellElement>row.cells[3]).innerHTML == fileName) {
+      return;
+    }
+  }
+  
+  // if you are here, the file name is not in use
+  getIframeChannel().simpleAjaxNoCallback('/bloom/readers/recycleAllowedWordsFile', fileName);
 }
 
 function enableSampleWords() {
