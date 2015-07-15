@@ -120,9 +120,7 @@ html
 								span#allowed-words-file
 								span &nbsp;
 									= ' '
-									a#remove-allowed-word-file.red-x(title='Remove from this stage' href='') &#x2717;
-								// Makes sure the tooltip gets loaded
-								#remove-allowed-word-file-tooltip(style='display: none;' data-i18n='ReaderSetup.RemoveWordList')
+									a#remove-allowed-word-file.red-x(href='') &#x2717;
 					#setup-stage-matching-words.sub-float
 						div(style='width: 100%; height: calc(100% - 18px);')
 							label
@@ -188,3 +186,4 @@ html
 			label#please-add-texts
 			label#format_not_supported(data-i18n='ReaderSetup.FormatNotSupported') Cannot read this format
 			label#needs_txt_extension(data-i18n='ReaderSetup.FileNeedsTxtExtension') File needs .txt extension
+			label#remove_word_list(data-i18n='ReaderSetup.RemoveWordList') Remove from this stage
