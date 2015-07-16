@@ -235,6 +235,7 @@ var ReaderToolsModel = (function () {
         if (document.getElementById('make-letter-word-list-div')) {
             document.getElementById('make-letter-word-list-div').style.display = useAllowedWords ? 'none' : '';
             document.getElementById('letters-in-this-stage').style.display = useAllowedWords ? 'none' : '';
+            document.getElementById('letterList').parentElement.style.display = useAllowedWords ? 'none' : '';
             document.getElementById('sample-words-this-stage').style.display = useAllowedWords ? 'none' : '';
             document.getElementById('sortFrequency').style.display = useAllowedWords ? 'none' : '';
             document.getElementById('allowed-words-this-stage').style.display = useAllowedWords ? '' : 'none';
