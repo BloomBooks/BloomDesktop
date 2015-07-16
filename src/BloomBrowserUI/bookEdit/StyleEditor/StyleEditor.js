@@ -530,7 +530,8 @@ var StyleEditor = (function () {
                 $('body').after(html);
                 var toolbar = $('#format-toolbar');
                 toolbar.find('*[data-i18n]').localize();
-                toolbar.draggable();
+                toolbar.draggable({ distance: 10, scroll: false, containment: $('html') });
+                toolbar.draggable("disable"); // until after we make sure it's in the Viewport
                 toolbar.css('opacity', 1.0);
                 editor.getCharTabDescription();
                 editor.getMoreTabDescription();
@@ -585,6 +586,7 @@ var StyleEditor = (function () {
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
                 StyleEditor.positionInViewport(toolbar);
+                toolbar.draggable("enable");
                 $('html').off('click.toolbar');
                 $('html').on("click.toolbar", function (event) {
                     if (event.target != toolbar && toolbar.has(event.target).length === 0 && $(event.target.parent) != toolbar && toolbar.has(event.target).length === 0 && toolbar.is(":visible")) {
