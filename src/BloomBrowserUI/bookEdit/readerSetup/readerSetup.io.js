@@ -85,7 +85,7 @@ function loadReaderSetupData(jsonData) {
 }
 function saveClicked() {
     // update more words
-    if (document.getElementById('dls_more_words').value !== previousMoreWords) {
+    if ((document.getElementById('dls_more_words').value !== previousMoreWords) || (parseInt($('input[name="words-or-letters"]:checked').val()) != 0)) {
         var accordion = accordionWindow();
         // save the changes and update lists
         saveChangedSettings(function () {
