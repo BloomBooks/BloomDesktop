@@ -608,11 +608,15 @@ function attachEventHandlers() {
             getIframeChannel().simpleAjaxPost('/bloom/readers/selectStageAllowedWordsFile', function (fileName) {
                 if (fileName)
                     setAllowedWordsFile(fileName);
+                // hide stale controls
+                $('#setup-stage-matching-words').find('div').hide();
             });
             return false;
         });
         $('#remove-allowed-word-file').onOnce('click', function () {
             setAllowedWordsFile('');
+            // hide stale controls
+            $('#setup-stage-matching-words').find('div').hide();
             return false;
         });
         var allowedDiv = $('#allowed-words-file-div');
