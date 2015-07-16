@@ -636,7 +636,8 @@ class StyleEditor {
                 $('body').after(html);
                 var toolbar = $('#format-toolbar');
                 toolbar.find('*[data-i18n]').localize();
-                toolbar.draggable();
+                toolbar.draggable({distance: 10, scroll: false, containment: $('html')});
+                toolbar.draggable("disable"); // until after we make sure it's in the Viewport
                 toolbar.css('opacity', 1.0);
                 editor.getCharTabDescription();
                 editor.getMoreTabDescription();
@@ -674,6 +675,7 @@ class StyleEditor {
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
                 StyleEditor.positionInViewport(toolbar);
+                toolbar.draggable("enable");
 
                 $('html').off('click.toolbar');
                 $('html').on("click.toolbar", function (event) {
