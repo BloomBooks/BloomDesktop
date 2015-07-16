@@ -93,7 +93,8 @@ function loadReaderSetupData(jsonData: string): void {
 function saveClicked(): void {
 
   // update more words
-  if ((<HTMLInputElement>document.getElementById('dls_more_words')).value !== previousMoreWords) {
+  if (((<HTMLInputElement>document.getElementById('dls_more_words')).value !== previousMoreWords)
+    || (parseInt($('input[name="words-or-letters"]:checked').val()) != 0)) {
 
     var accordion = accordionWindow();
 
