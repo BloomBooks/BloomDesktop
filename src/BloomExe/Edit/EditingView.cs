@@ -215,9 +215,11 @@ namespace Bloom.Edit
 			}
 			catch (Exception error)
 			{
-#if DEBUG
-				throw;
-#endif
+// Throwing this exception is causing it to be swallowed.  It results in the web browser just showing a blank white page, but no
+// message is displayed and no exception is caught by the debugger.
+//#if DEBUG
+//				throw;
+//#endif
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
 			}
 		}
@@ -228,9 +230,18 @@ namespace Bloom.Edit
 			if (File.Exists(imagePath))
 				File.Delete(imagePath);
 			Image licenseImage = metadata.License.GetImage();
+
 			if (licenseImage != null)
 			{
-				licenseImage.Save(imagePath);
+				// BL-2444: Image.Save(imagePath) was crashing with a GDI+ exception on some books with odd but valid titles.  My guess
+				// is that the GDI+ methods for saving to disk are not handling the odd paths correctly whereas the FileStream object
+				// seems to be able to properly open and write to these paths.  The specific directory name that brought this problem
+				// out into the open is "Testing char. , ;   '   ` ~ ! @ # $ % ^ &   ( ) _".  Bloom was able to create this directory
+				// without raising an exception, and is able to open the book, insert new pages, edit and save text.
+				using (Stream fs = new FileStream(imagePath, FileMode.Create))
+				{
+					licenseImage.Save(fs, ImageFormat.Png);
+				}
 			}
 			else if (File.Exists(imagePath))
 			{
