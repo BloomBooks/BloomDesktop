@@ -268,7 +268,7 @@ namespace Bloom.web
 				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportSightWords", "New Sight Words: {0}"), stage.SightWords.Replace(" ", ", "));
 
 				Array.Sort(stage.Words);
-				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportDecodableWords", "Decodable Words: {0}"), string.Join(" ", stage.Words));
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), string.Join(" ", stage.Words));
 				sb.AppendLine();
 
 			}
