@@ -38,6 +38,14 @@ namespace Bloom.Workspace
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
 		private readonly ProblemReporterDialog.Factory _problemReportDialogFactory;
 		private readonly ChorusSystem _chorusSystem;
+		private bool _viewInitialized;
+		private int _originalToolStripPanelWidth;
+		private int _originalToolSpecificPanelHorizPos;
+		private int _originalUiMenuWidth;
+		private string _originalSettingsText;
+		private string _originalCollectionText;
+		private string _originalHelpText;
+		private string _originalUiLanguageSelection;
 		private LibraryView _collectionView;
 		private EditingView _editingView;
 		private PublishView _publishView;
@@ -163,6 +171,7 @@ namespace Bloom.Workspace
 			}
 
 			SetupUILanguageMenu();
+			_viewInitialized = false;
 		}
 
 		/// <summary>
@@ -285,6 +294,7 @@ namespace Bloom.Workspace
 													Settings.Default.UserInterfaceLanguage = ((CultureInfo)item.Tag).IetfLanguageTag;
 													item.Select();
 													_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
+													SaveOriginalButtonTexts();
 													_localizationChangedEvent.Raise(null);
 												});
 				if (((CultureInfo)item.Tag).IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
@@ -509,13 +519,14 @@ namespace Bloom.Workspace
 
 		private void WorkspaceView_Resize(object sender, EventArgs e)
 		{
-			//when doing videos at this really low resolution, there's just no room for this
-			_panelHoldingToolStrip.Visible = this.Width > 820;
+			AdjustTabStripDisplayForScreenSize();
 		}
 
 		private void WorkspaceView_Load(object sender, EventArgs e)
 		{
 			CheckDPISettings();
+			_originalToolStripPanelWidth = 0;
+			_viewInitialized = true;
 		}
 
 		private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
@@ -623,6 +634,208 @@ namespace Bloom.Workspace
 				dlg.ShowDialog();
 			}
 		}
+
+		#region Responsive Toolbar
+
+		enum Shrinkage { FullSize, Stage1, Stage2, Stage3 }
+		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
+
+		private const int STAGE_1 = 1000;
+		private const int STAGE_2 = 930;
+		private const int STAGE_3 = 725;
+		private const int PANEL_TOOLSTRIP_SMALLWIDTH = 66;
+		private const int PANEL_VERT_FUDGE = 10;
+		private const string SPACE = " ";
+
+		private void AdjustTabStripDisplayForScreenSize()
+		{
+			if (!_viewInitialized)
+				return;
+
+			if (_originalToolStripPanelWidth == 0)
+			{
+				SaveOriginalWidthValues();
+				SaveOriginalButtonTexts();
+				SetInitialShrinkage(); // in case "Full Screen" happens to be really small!
+			}
+
+			switch (_currentShrinkage)
+			{
+				default:
+					// Shrinkage.FullSize
+					if (Width < STAGE_1)
+					{
+						// shrink to stage 1
+						_currentShrinkage = Shrinkage.Stage1;
+						ShrinkToStage1();
+
+						// It is possible that we are jumping from FullScreen to a 'remembered'
+						// smaller screen size, so test for all of them!
+						if (Width < STAGE_2)
+						{
+							_currentShrinkage = Shrinkage.Stage2;
+							ShrinkToStage2();
+							if (Width < STAGE_3)
+							{
+								_currentShrinkage = Shrinkage.Stage3;
+								ShrinkToStage3();
+							}
+						}
+					}
+					break;
+				case Shrinkage.Stage1:
+					if (Width >= STAGE_1)
+					{
+						// grow back to unshrunk
+						_currentShrinkage = Shrinkage.FullSize;
+						GrowToFullSize();
+						break;
+					}
+					if (Width < STAGE_2)
+					{
+						// shrink to stage 2
+						_currentShrinkage = Shrinkage.Stage2;
+						ShrinkToStage2();
+					}
+					break;
+				case Shrinkage.Stage2:
+					if (Width >= STAGE_2)
+					{
+						// grow back to stage 1
+						_currentShrinkage = Shrinkage.Stage1;
+						GrowToStage1();
+						break;
+					}
+					if (Width < STAGE_3)
+					{
+						// shrink to stage 3
+						_currentShrinkage = Shrinkage.Stage3;
+						ShrinkToStage3();
+					}
+					break;
+				case Shrinkage.Stage3:
+					if (Width >= STAGE_3)
+					{
+						// grow back to stage 2
+						_currentShrinkage = Shrinkage.Stage2;
+						GrowToStage2();
+					}
+					break;
+			}
+		}
+
+		private void SetInitialShrinkage()
+		{
+			if (Width >= STAGE_1)
+				return;
+
+			// shrink to stage 1
+			_currentShrinkage = Shrinkage.Stage1;
+			ShrinkToStage1();
+
+			if (Width >= STAGE_2)
+				return;
+
+			// shrink to stage 2
+			_currentShrinkage = Shrinkage.Stage2;
+			ShrinkToStage2();
+
+			if (Width >= STAGE_3)
+				return;
+
+			// shrink to stage 3
+			_currentShrinkage = Shrinkage.Stage3;
+			ShrinkToStage3();
+		}
+
+		private void SaveOriginalWidthValues()
+		{
+			_originalToolStripPanelWidth = _panelHoldingToolStrip.Width;
+			_originalToolSpecificPanelHorizPos = _toolSpecificPanel.Location.X;
+			_originalUiMenuWidth = _uiLanguageMenu.Width;
+		}
+
+		private void SaveOriginalButtonTexts()
+		{
+			_originalSettingsText = _settingsButton.Text;
+			_originalCollectionText = _openCreateCollectionButton.Text;
+			_originalHelpText = _helpMenu.Text;
+			_originalUiLanguageSelection = _uiLanguageMenu.Text;
+		}
+
+		private void RestoreOriginalButtonTexts()
+		{
+			_settingsButton.Text = _originalSettingsText;
+			_openCreateCollectionButton.Text = _originalCollectionText;
+			_helpMenu.Text = _originalHelpText;
+			_uiLanguageMenu.Text = _originalUiLanguageSelection;
+		}
+
+		private void ShrinkToStage1()
+		{
+			// Calculate right edge of tabs and move _toolSpecificPanel over to it
+			var rightEdge = _publishTab.Bounds.Right;
+			var currentToolPanelVert = _toolSpecificPanel.Location.Y;
+			_toolSpecificPanel.Location = new Point(rightEdge + 5, currentToolPanelVert);
+		}
+
+		private void GrowToFullSize()
+		{
+			// revert _toolSpecificPanel to its original location
+			_toolSpecificPanel.Location = new Point(_originalToolSpecificPanelHorizPos, _toolSpecificPanel.Location.Y);
+		}
+
+		private void ShrinkToStage2()
+		{
+			// before this we want to change button sizes and icons on the 4 items
+			_settingsButton.Image = Resources.settingsbw16x16;
+			_settingsButton.Text = string.Empty;
+			_openCreateCollectionButton.Image = Resources.OpenCreateLibrary16x16;
+			_openCreateCollectionButton.Text = string.Empty;
+			_helpMenu.Image = Resources.help16x16;
+			_helpMenu.Text = string.Empty;
+			_uiLanguageMenu.Text = SPACE;
+			var uiMenuHeight = _uiLanguageMenu.Size.Height;
+			_uiLanguageMenu.Width = uiMenuHeight; // make it a small square (hopefully just show the dropdown arrow?)
+			var panelLocation = _panelHoldingToolStrip.Location;
+			var deltaX = _originalToolStripPanelWidth - PANEL_TOOLSTRIP_SMALLWIDTH;
+			_panelHoldingToolStrip.Width = PANEL_TOOLSTRIP_SMALLWIDTH;
+			_panelHoldingToolStrip.Height -= PANEL_VERT_FUDGE;
+			// move the whole panel to the right edge
+			_panelHoldingToolStrip.Location =
+				new Point(panelLocation.X + deltaX, panelLocation.Y + PANEL_VERT_FUDGE);
+			// otherwise as we keep shrinking the right side of the tool specific panel blanks us out
+			_panelHoldingToolStrip.BringToFront();
+		}
+
+		private void GrowToStage1()
+		{
+			_panelHoldingToolStrip.Width = _originalToolStripPanelWidth;
+			_panelHoldingToolStrip.Height += PANEL_VERT_FUDGE;
+			_panelHoldingToolStrip.Location =
+				new Point(this.Width - _originalToolStripPanelWidth, _panelHoldingToolStrip.Location.Y - PANEL_VERT_FUDGE);
+			// restore original button sizes and icons
+			RestoreOriginalButtonTexts();
+			_settingsButton.Image = Resources.settings24x24;
+			_openCreateCollectionButton.Image = Resources.OpenCreateLibrary24x24;
+			_helpMenu.Image = Resources.help24x24;
+			_uiLanguageMenu.Width = _originalUiMenuWidth;
+		}
+
+		private void ShrinkToStage3()
+		{
+			// Extreme measures for really small screens
+			_panelHoldingToolStrip.Visible = false;
+		}
+
+		private void GrowToStage2()
+		{
+			_panelHoldingToolStrip.Visible = true;
+		}
+
+
+		#endregion
+
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
