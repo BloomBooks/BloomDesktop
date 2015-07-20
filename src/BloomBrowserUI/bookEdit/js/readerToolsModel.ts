@@ -8,6 +8,8 @@
 /// <reference path="../../lib/jquery-ui.d.ts" />
 /// <reference path="editableDivUtils.ts" />
 /// <reference path="directoryWatcher.ts" />
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
+/// <reference path="readerTools.ts" />
 
 var iframeChannel = getIframeChannel();
 
@@ -60,6 +62,7 @@ class ReaderToolsModel {
   readableFileExtensions: string[] = [];
   keypressTimer: any = null;
   directoryWatcher: DirectoryWatcher = null;
+  maxAllowedWords: number = 10000;
 
   // remember words so we can update the counts real-time
   bookPageWords = [];
@@ -1038,14 +1041,11 @@ class ReaderToolsModel {
         words = words.concat(stages[i].allowedWords);
     }
 
-    // remove empty elements and duplicates, case-insensitive
-    words = _.uniq(_.compact(words), false, function (a: string) { return a.toLowerCase(); });
+    // we are limiting the number of words to maxAllowedWords for performance reasons
+    if (words.length > model.maxAllowedWords) {
+      words = words.slice(0, model.maxAllowedWords);
+    }
 
-    // sort case-insensitive
-    words.sort(function (a: string, b: string) {
-      return a.localeCompare(b);
-    });
-    
     return words;
   }
 
@@ -1062,6 +1062,21 @@ class ReaderToolsModel {
     for (var i = 0; i < words.length; i++) {
       returnVal.push(new DataWord(words[i]));
     }
+
+    // inform the user if the list was truncated
+    var accordion: Window = iframeChannel.getAccordionWindow();
+    var msgDiv: JQuery = $(accordion).find('#allowed-word-list-truncated');
+
+    // We are reducing the max by 10 here in case there were a couple of duplicates that were removed after the list
+    // was truncated, causing the total number of words to now be slightly less than the max.
+    if (words.length < model.maxAllowedWords - 10) {
+      msgDiv.html('');
+    }
+    else {
+      msgDiv.html(SimpleDotNetFormat($(accordion).find('#allowed_word_list_truncated_text').html(), [model.maxAllowedWords.toLocaleString()]));
+    }
+
+    resizeWordList();
 
     return returnVal;
   }
@@ -1125,7 +1140,6 @@ class ReaderToolsModel {
       model.wordListLoaded = true;
       model.updateControlContents();
       model.doMarkup();
-      model.updateWordList();
     }
   }
 }

@@ -344,7 +344,8 @@ function resizeWordList(): void {
   var div: JQuery = $('body').find('div[data-panelId="DecodableRT"]');
   if (div.length === 0) return; // if not found, the tool was closed
 
-  var currentHeight: number = div.height();
+  var msg: JQuery = div.find('#allowed-word-list-truncated');
+  var currentHeight: number = div.height() - msg.height();
 
   // resize the word list if the size of the pane changed
   if (previousHeight !== currentHeight) {
@@ -357,10 +358,17 @@ function resizeWordList(): void {
     if (synphony.source) {
 
       var height = Math.floor(currentHeight - top);
-      if (synphony.source.useAllowedWords === 1)
-        height += 20;
-      else
+      if (synphony.source.useAllowedWords === 1) {
+        if (msg.height()) {
+          height += 5;
+        }
+        else {
+          height += 20;
+        }
+      }
+      else {
         height -= 20;
+      }
 
       if (height < 50) height = 50;
 

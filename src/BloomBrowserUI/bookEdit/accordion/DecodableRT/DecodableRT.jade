@@ -42,6 +42,9 @@ html
 				.wordList#wordList
 			#make-letter-word-list-div.clear
 				a#make-letter-word-list(href='javascript:makeLetterWordList();', data-i18n='DecodableReaderTool.MakeLetterWordReport') Generate a letter and word list report
+			#allowed-word-list-truncated.clear
+			#hiddenWordListForDecodableReader(style="display: none")
+				label#allowed_word_list_truncated_text(data-i18n='DecodableReaderTool.AllowedWordListTruncated') The list of allowed words has been limited to the first {0} words.
 			script(type='text/javascript').
 				$(document).ready(function() {
 					// this timeout is different than the LeveledRT timeout to prevent initializing synphony twice
