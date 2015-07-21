@@ -8,6 +8,8 @@
 /// <reference path="../../lib/jquery-ui.d.ts" />
 /// <reference path="editableDivUtils.ts" />
 /// <reference path="directoryWatcher.ts" />
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
+/// <reference path="readerTools.ts" />
 var iframeChannel = getIframeChannel();
 var model;
 var SortType = {
@@ -47,6 +49,7 @@ var ReaderToolsModel = (function () {
         this.readableFileExtensions = [];
         this.keypressTimer = null;
         this.directoryWatcher = null;
+        this.maxAllowedWords = 10000;
         // remember words so we can update the counts real-time
         this.bookPageWords = [];
         // BL-599: Speed up the decodable reader tool
@@ -849,14 +852,10 @@ var ReaderToolsModel = (function () {
             if (stages[i].allowedWords)
                 words = words.concat(stages[i].allowedWords);
         }
-        // remove empty elements and duplicates, case-insensitive
-        words = _.uniq(_.compact(words), false, function (a) {
-            return a.toLowerCase();
-        });
-        // sort case-insensitive
-        words.sort(function (a, b) {
-            return a.localeCompare(b);
-        });
+        // we are limiting the number of words to maxAllowedWords for performance reasons
+        if (words.length > model.maxAllowedWords) {
+            words = words.slice(0, model.maxAllowedWords);
+        }
         return words;
     };
     /**
@@ -870,6 +869,18 @@ var ReaderToolsModel = (function () {
         for (var i = 0; i < words.length; i++) {
             returnVal.push(new DataWord(words[i]));
         }
+        // inform the user if the list was truncated
+        var accordion = iframeChannel.getAccordionWindow();
+        var msgDiv = $(accordion).find('#allowed-word-list-truncated');
+        // We are reducing the max by 10 here in case there were a couple of duplicates that were removed after the list
+        // was truncated, causing the total number of words to now be slightly less than the max.
+        if (words.length < model.maxAllowedWords - 10) {
+            msgDiv.html('');
+        }
+        else {
+            msgDiv.html(SimpleDotNetFormat($(accordion).find('#allowed_word_list_truncated_text').html(), [model.maxAllowedWords.toLocaleString()]));
+        }
+        resizeWordList();
         return returnVal;
     };
     ReaderToolsModel.prototype.saveState = function () {
@@ -921,7 +932,6 @@ var ReaderToolsModel = (function () {
             model.wordListLoaded = true;
             model.updateControlContents();
             model.doMarkup();
-            model.updateWordList();
         }
     };
     return ReaderToolsModel;

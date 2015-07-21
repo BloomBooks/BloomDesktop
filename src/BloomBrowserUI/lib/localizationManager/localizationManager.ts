@@ -56,7 +56,7 @@ class LocalizationManager {
 
     // NOTE: This function is not used in Bloom 2.0, but will be used in Bloom 2.1
 
-    var ajaxSettings = {type: 'POST', url: '/bloom/i18n/loadStrings'};
+    var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{type: 'POST', url: '/bloom/i18n/loadStrings'};
     if (keyValuePairs) ajaxSettings['data'] = keyValuePairs;
 
     $.ajax(ajaxSettings)
@@ -118,7 +118,7 @@ class LocalizationManager {
         // try to get from L10NSharp
         if (!text) {
 
-            var ajaxSettings = { type: 'POST', url: '/bloom/i18n/loadStrings' };
+            var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'POST', url: '/bloom/i18n/loadStrings' };
             var pair = {};
             pair[stringId] = englishText;
             ajaxSettings['data'] = pair;

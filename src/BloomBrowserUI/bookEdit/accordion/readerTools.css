@@ -60,3 +60,11 @@ div.section ul li { color: #fff; }
 #make-letter-word-list {
   font-size: 10px;
 }
+
+#allowed-word-list-truncated {
+	position: absolute;
+	bottom: 0;
+	padding: 8px 4px;
+	background-color: #333;
+	color: #87CEFA;
+}
