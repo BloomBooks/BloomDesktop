@@ -42,6 +42,8 @@ namespace Bloom.Workspace
 		private int _originalToolStripPanelWidth;
 		private int _originalToolSpecificPanelHorizPos;
 		private int _originalUiMenuWidth;
+		private int _stage1SpaceSaved;
+		private int _stage2SpaceSaved;
 		private string _originalSettingsText;
 		private string _originalCollectionText;
 		private string _originalHelpText;
@@ -174,13 +176,18 @@ namespace Bloom.Workspace
 			_viewInitialized = false;
 		}
 
+		private int TabButtonSectionWidth
+		{
+			get { return _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10; }
+		}
+
 		/// <summary>
 		/// Adjusts the tool panel location to allow more (or optionally less) space
 		/// for the tab buttons.
 		/// </summary>
 		void AdjustToolPanelLocation(bool allowNarrowing)
 		{
-			var widthOfTabButtons = _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10;
+			var widthOfTabButtons = TabButtonSectionWidth;
 			var location = _toolSpecificPanel.Location;
 			if (widthOfTabButtons > location.X || allowNarrowing)
 			{
@@ -453,6 +460,7 @@ namespace Bloom.Workspace
 			_toolSpecificPanel.BackColor = _panelHoldingToolStrip.BackColor = _tabStrip.BackColor;
 			Logger.WriteEvent("Selecting Tab Page: " + e.SelectedTab.Name);
 			SelectPage((Control) e.SelectedTab.Tag);
+			AdjustTabStripDisplayForScreenSize();
 		}
 
 		private void _tabStrip_BackColorChanged(object sender, EventArgs e)
@@ -640,11 +648,32 @@ namespace Bloom.Workspace
 		enum Shrinkage { FullSize, Stage1, Stage2, Stage3 }
 		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
 
-		private const int STAGE_1 = 1000;
-		private const int STAGE_2 = 930;
-		private const int STAGE_3 = 725;
+		private int STAGE_1
+		{
+			get
+			{
+				if (_editTab.IsSelected)
+				{
+					return TabButtonSectionWidth + _editingView.TopBarControl.Width + _originalToolStripPanelWidth;
+				}
+				if (_publishTab.IsSelected)
+				{
+					return TabButtonSectionWidth + _publishView.TopBarControl.Width + PUBLISH_PANEL_FUDGE + _originalToolStripPanelWidth;
+				}
+				return TabButtonSectionWidth + _originalToolStripPanelWidth;
+			}
+		}
+		private int STAGE_2
+		{
+			get { return STAGE_1 - _stage1SpaceSaved; }
+		}
+		private int STAGE_3
+		{
+			get { return STAGE_2 - _stage2SpaceSaved;}
+		}
 		private const int PANEL_TOOLSTRIP_SMALLWIDTH = 66;
-		private const int PANEL_VERT_FUDGE = 10;
+		private const int PANEL_VERTICAL_SPACER = 10; // Used to center the shrunk icons vertically in the Tool Strip Panel
+		private const int PUBLISH_PANEL_FUDGE = 21; // Somehow Publish view TopBarControl's width isn't right
 		private const string SPACE = " ";
 
 		private void AdjustTabStripDisplayForScreenSize()
@@ -675,6 +704,7 @@ namespace Bloom.Workspace
 						{
 							_currentShrinkage = Shrinkage.Stage2;
 							ShrinkToStage2();
+
 							if (Width < STAGE_3)
 							{
 								_currentShrinkage = Shrinkage.Stage3;
@@ -753,6 +783,8 @@ namespace Bloom.Workspace
 			_originalToolStripPanelWidth = _panelHoldingToolStrip.Width;
 			_originalToolSpecificPanelHorizPos = _toolSpecificPanel.Location.X;
 			_originalUiMenuWidth = _uiLanguageMenu.Width;
+			_stage1SpaceSaved = 0;
+			_stage2SpaceSaved = 0;
 		}
 
 		private void SaveOriginalButtonTexts()
@@ -774,15 +806,19 @@ namespace Bloom.Workspace
 		private void ShrinkToStage1()
 		{
 			// Calculate right edge of tabs and move _toolSpecificPanel over to it
-			var rightEdge = _publishTab.Bounds.Right;
+			var rightEdge = _publishTab.Bounds.Right + 5;
+			if (_originalToolSpecificPanelHorizPos <= rightEdge)
+				return;
+			_stage1SpaceSaved = _originalToolSpecificPanelHorizPos - rightEdge;
 			var currentToolPanelVert = _toolSpecificPanel.Location.Y;
-			_toolSpecificPanel.Location = new Point(rightEdge + 5, currentToolPanelVert);
+			_toolSpecificPanel.Location = new Point(rightEdge, currentToolPanelVert);
 		}
 
 		private void GrowToFullSize()
 		{
 			// revert _toolSpecificPanel to its original location
 			_toolSpecificPanel.Location = new Point(_originalToolSpecificPanelHorizPos, _toolSpecificPanel.Location.Y);
+			_stage1SpaceSaved = 0;
 		}
 
 		private void ShrinkToStage2()
@@ -798,12 +834,12 @@ namespace Bloom.Workspace
 			var uiMenuHeight = _uiLanguageMenu.Size.Height;
 			_uiLanguageMenu.Width = uiMenuHeight; // make it a small square (hopefully just show the dropdown arrow?)
 			var panelLocation = _panelHoldingToolStrip.Location;
-			var deltaX = _originalToolStripPanelWidth - PANEL_TOOLSTRIP_SMALLWIDTH;
+			_stage2SpaceSaved = _originalToolStripPanelWidth - PANEL_TOOLSTRIP_SMALLWIDTH;
 			_panelHoldingToolStrip.Width = PANEL_TOOLSTRIP_SMALLWIDTH;
-			_panelHoldingToolStrip.Height -= PANEL_VERT_FUDGE;
+			_panelHoldingToolStrip.Height -= PANEL_VERTICAL_SPACER;
 			// move the whole panel to the right edge
 			_panelHoldingToolStrip.Location =
-				new Point(panelLocation.X + deltaX, panelLocation.Y + PANEL_VERT_FUDGE);
+				new Point(panelLocation.X + _stage2SpaceSaved, panelLocation.Y + PANEL_VERTICAL_SPACER);
 			// otherwise as we keep shrinking the right side of the tool specific panel blanks us out
 			_panelHoldingToolStrip.BringToFront();
 		}
@@ -811,15 +847,16 @@ namespace Bloom.Workspace
 		private void GrowToStage1()
 		{
 			_panelHoldingToolStrip.Width = _originalToolStripPanelWidth;
-			_panelHoldingToolStrip.Height += PANEL_VERT_FUDGE;
+			_panelHoldingToolStrip.Height += PANEL_VERTICAL_SPACER;
 			_panelHoldingToolStrip.Location =
-				new Point(this.Width - _originalToolStripPanelWidth, _panelHoldingToolStrip.Location.Y - PANEL_VERT_FUDGE);
+				new Point(this.Width - _originalToolStripPanelWidth, _panelHoldingToolStrip.Location.Y - PANEL_VERTICAL_SPACER);
 			// restore original button sizes and icons
 			RestoreOriginalButtonTexts();
 			_settingsButton.Image = Resources.settings24x24;
 			_openCreateCollectionButton.Image = Resources.OpenCreateLibrary24x24;
 			_helpMenu.Image = Resources.help24x24;
 			_uiLanguageMenu.Width = _originalUiMenuWidth;
+			_stage2SpaceSaved = 0;
 		}
 
 		private void ShrinkToStage3()
