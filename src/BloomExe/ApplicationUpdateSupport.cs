@@ -330,10 +330,23 @@ namespace Bloom
 
 		private static void UpdateProgress(ToastNotifier updatingNotifier, string updatingMsg, string progressMsg, int x)
 		{
-			updatingNotifier.Invoke((Action)(() =>
+			if (updatingNotifier.IsHandleCreated)	// Must have a handle to Invoke anything!
 			{
-				updatingNotifier.UpdateMessage(updatingMsg + " " + string.Format(progressMsg, x));
-			}));
+				try
+				{
+					updatingNotifier.Invoke((Action)(() =>
+					{
+						updatingNotifier.UpdateMessage(updatingMsg + " " + string.Format(progressMsg, x));
+					}));
+				}
+				catch (InvalidOperationException)
+				{
+					// This can be caused by someone clicking on the progress Toast display (BL-2465).
+					// Ignore it.  (It's possible that the IsHandleCreated above removes the possibility
+					// of this error, but I've always been a belt AND suspenders type guy when it comes
+					// to bugfixing.)
+				}
+			}
 		}
 	}
 }
