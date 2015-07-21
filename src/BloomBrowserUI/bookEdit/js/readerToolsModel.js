@@ -90,6 +90,9 @@ var ReaderToolsModel = (function () {
             ReaderToolsModel.updateElementContent("stageNumber", "0");
             return;
         }
+        if (this.stageNumber > stages.length) {
+            this.stageNumber = stages.length;
+        }
         ReaderToolsModel.updateElementContent("stageNumber", stages[this.stageNumber - 1].getName());
     };
     ReaderToolsModel.prototype.incrementLevel = function () {
@@ -298,8 +301,11 @@ var ReaderToolsModel = (function () {
      */
     ReaderToolsModel.prototype.updateLetterList = function () {
         var stages = this.synphony.getStages();
-        if (stages.length === 0)
+        if (stages.length === 0) {
+            // In case the user deletes all stages, and something had been displayed before.
+            ReaderToolsModel.updateElementContent("letterList", "");
             return;
+        }
         if (this.stageNumber > 0) {
             this.stageGraphemes = this.getKnownGraphemes(this.stageNumber); //BL-838
         }
