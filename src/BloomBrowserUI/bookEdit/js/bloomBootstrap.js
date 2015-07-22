@@ -24,6 +24,7 @@ var scripts = [
     'bookEdit/OverflowChecker/OverflowChecker.js',
     'bookEdit/TopicChooser/TopicChooser.js',
     'lib/tabpane.js',
+    'lib/ckeditor/ckeditor.js',
     'bookEdit/js/toolbar/jquery.toolbar.js',
     'bookEdit/bloomField/bloomField.js',
     'bookEdit/js/bloomImages.js',
