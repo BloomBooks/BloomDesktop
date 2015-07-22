@@ -1081,7 +1081,6 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition="'$(OS)'=='Windows_NT'">
@@ -1120,6 +1119,9 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   <ItemGroup>
     <GeckofxHtmlToPdf Include="..\..\lib\dotnet\GeckofxHtmlToPdf.exe" />
     <GeckofxHtmlToPdf Include="..\..\lib\dotnet\Args.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AddPageIcon.PNG" />
   </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />

@@ -133,5 +133,10 @@ namespace Bloom.Edit
 		{
 			set { _thumbNailList.Enabled = value; }
 		}
+
+		private void _addPageButton_Click(object sender, EventArgs e)
+		{
+			// Call Add Page Dialog
+		}
 	}
 }
