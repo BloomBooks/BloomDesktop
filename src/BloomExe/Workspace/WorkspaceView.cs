@@ -685,7 +685,6 @@ namespace Bloom.Workspace
 			{
 				SaveOriginalWidthValues();
 				SaveOriginalButtonTexts();
-				SetInitialShrinkage(); // in case "Full Screen" happens to be really small!
 			}
 
 			switch (_currentShrinkage)
@@ -752,30 +751,6 @@ namespace Bloom.Workspace
 					}
 					break;
 			}
-		}
-
-		private void SetInitialShrinkage()
-		{
-			if (Width >= STAGE_1)
-				return;
-
-			// shrink to stage 1
-			_currentShrinkage = Shrinkage.Stage1;
-			ShrinkToStage1();
-
-			if (Width >= STAGE_2)
-				return;
-
-			// shrink to stage 2
-			_currentShrinkage = Shrinkage.Stage2;
-			ShrinkToStage2();
-
-			if (Width >= STAGE_3)
-				return;
-
-			// shrink to stage 3
-			_currentShrinkage = Shrinkage.Stage3;
-			ShrinkToStage3();
 		}
 
 		private void SaveOriginalWidthValues()
