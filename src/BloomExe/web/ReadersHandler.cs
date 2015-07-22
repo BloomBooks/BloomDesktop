@@ -25,6 +25,8 @@ namespace Bloom.web
 	{
 		private static bool _savingReaderWords;
 		private const string kSynphonyFileNameSuffix = "_lang_data.js";
+		private static readonly IEqualityComparer<string> _equalityComparer = new InsensitiveEqualityComparer();
+		private static readonly char[] _allowedWordsDelimiters = {',', ';', ' ', '\t', '\r', '\n'};
 
 		private enum WordFileType
 		{
@@ -111,7 +113,7 @@ namespace Bloom.web
 
 				case "getAllowedWordsList":
 					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(GetTextFileContents(info.GetQueryString()["data"], WordFileType.AllowedWordsFile));
+					info.WriteCompleteOutput(RemoveEmptyAndDupes(GetTextFileContents(info.GetQueryString()["data"], WordFileType.AllowedWordsFile)));
 					return true;
 
 				case "recycleAllowedWordsFile":
@@ -375,11 +377,11 @@ namespace Bloom.web
 				var destFile = Path.GetFileName(srcFile);
 				if (destFile != null)
 				{
-					var i = 0;
-
 					// if file is in the "Allowed Words" directory, do not try to copy it again.
 					if (Path.GetFullPath(srcFile) != Path.Combine(destPath, destFile))
 					{
+						var i = 0;
+
 						// get a unique destination file name
 						while (File.Exists(Path.Combine(destPath, destFile)))
 						{
@@ -409,6 +411,32 @@ namespace Bloom.web
 
 			if (File.Exists(fullFileName))
 				PathUtilities.DeleteToRecycleBin(fullFileName);
+		}
+
+		private static string RemoveEmptyAndDupes(string fileText)
+		{
+			// this splits the text into an array of individual words and removes empty entries
+			var words = fileText.Split(_allowedWordsDelimiters, StringSplitOptions.RemoveEmptyEntries);
+
+			// this removes duplicates entries from the array using case-insensiteve comparison
+			words = words.Distinct(_equalityComparer).ToArray();
+
+			// join the words back into a delimited string to be sent to the browser
+			return string.Join(",", words);
+		}
+
+		/// <summary>Used when removing duplicates from word lists</summary>
+		private class InsensitiveEqualityComparer : IEqualityComparer<string>
+		{
+			public bool Equals(string x, string y)
+			{
+				return string.Equals(x, y, StringComparison.InvariantCultureIgnoreCase);
+			}
+
+			public int GetHashCode(string obj)
+			{
+				return obj.ToLowerInvariant().GetHashCode();
+			}
 		}
 	}
 }

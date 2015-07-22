@@ -8,6 +8,8 @@
 /// <reference path="../../lib/jquery-ui.d.ts" />
 /// <reference path="editableDivUtils.ts" />
 /// <reference path="directoryWatcher.ts" />
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
+/// <reference path="readerTools.ts" />
 var iframeChannel = getIframeChannel();
 var model;
 var SortType = {
@@ -21,6 +23,7 @@ var MarkupType = {
     Decodable: 2
 };
 var previousHeight = 0;
+var previousWidth = 0;
 var sortIconSelectedClass = "sortIconSelected"; // The class we apply to the selected sort icon
 var disabledIconClass = "disabledIcon"; // The class we apply to icons that are disabled.
 var disabledLimitClass = "disabledLimit"; // The class we apply to max values that are disabled (0).
@@ -47,6 +50,7 @@ var ReaderToolsModel = (function () {
         this.readableFileExtensions = [];
         this.keypressTimer = null;
         this.directoryWatcher = null;
+        this.maxAllowedWords = 10000;
         // remember words so we can update the counts real-time
         this.bookPageWords = [];
         // BL-599: Speed up the decodable reader tool
@@ -239,6 +243,7 @@ var ReaderToolsModel = (function () {
             document.getElementById('sample-words-this-stage').style.display = useAllowedWords ? 'none' : '';
             document.getElementById('sortFrequency').style.display = useAllowedWords ? 'none' : '';
             document.getElementById('allowed-words-this-stage').style.display = useAllowedWords ? '' : 'none';
+            document.getElementById('allowed-word-list-truncated').style.display = useAllowedWords ? '' : 'none';
         }
         if (!this.wordListLoaded)
             return;
@@ -253,6 +258,7 @@ var ReaderToolsModel = (function () {
             words = ReaderToolsModel.getAllowedWordsAsObjects(this.stageNumber);
         else
             words = this.getStageWordsAndSightWords(this.stageNumber);
+        resizeWordList(false);
         switch (this.sort) {
             case SortType.alphabetic:
                 words.sort(function (a, b) {
@@ -849,14 +855,10 @@ var ReaderToolsModel = (function () {
             if (stages[i].allowedWords)
                 words = words.concat(stages[i].allowedWords);
         }
-        // remove empty elements and duplicates, case-insensitive
-        words = _.uniq(_.compact(words), false, function (a) {
-            return a.toLowerCase();
-        });
-        // sort case-insensitive
-        words.sort(function (a, b) {
-            return a.localeCompare(b);
-        });
+        // we are limiting the number of words to maxAllowedWords for performance reasons
+        if (words.length > model.maxAllowedWords) {
+            words = words.slice(0, model.maxAllowedWords);
+        }
         return words;
     };
     /**
@@ -869,6 +871,16 @@ var ReaderToolsModel = (function () {
         var returnVal = [];
         for (var i = 0; i < words.length; i++) {
             returnVal.push(new DataWord(words[i]));
+        }
+        // inform the user if the list was truncated
+        var accordion = iframeChannel.getAccordionWindow().document;
+        var msgDiv = $(accordion).find('#allowed-word-list-truncated');
+        // if the list was truncated, show the message
+        if (words.length < model.maxAllowedWords) {
+            msgDiv.html('');
+        }
+        else {
+            msgDiv.html(SimpleDotNetFormat($(accordion).find('#allowed_word_list_truncated_text').html(), [model.maxAllowedWords.toLocaleString()]));
         }
         return returnVal;
     };
@@ -921,7 +933,6 @@ var ReaderToolsModel = (function () {
             model.wordListLoaded = true;
             model.updateControlContents();
             model.doMarkup();
-            model.updateWordList();
         }
     };
     return ReaderToolsModel;
