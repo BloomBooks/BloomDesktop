@@ -54,6 +54,10 @@ DIV.domain DIV.bloom-content2
 	/*[disabled]min-width:159px;*/
 	width: 48%;
 }
+.bloom-bilingual .domain .bloom-content2
+{
+	width: 100%;
+}
 .bloom-trilingual DIV.domain DIV.bloom-content3:before
 {
 	/*[disabled]content:"/  ";*/

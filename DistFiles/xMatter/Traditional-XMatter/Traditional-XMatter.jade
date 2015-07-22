@@ -1,0 +1,22 @@
+include ../bloom-xmatter-mixins.jade
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title Trandtional Front & Back Matter
+		+stylesheets('Traditional-XMatter.css')
+	body
+		+factoryStandard-outsideFrontCover
+		+standard-blankInsideFrontCover
+		+factoryStandard-titlePage
+
+		+page-xmatter("Credits Page").bloom-frontMatter.countPageButDoNotShowNumber.credits(data-export='front-matter-credits')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
+			+field-acknowledgments-originalVersion
+			+block-licenseAndCopyright#versoLicenseAndCopyright
+			+field-ISBN
+			+field-acknowledgments-localizedVersion
+
+		+factoryStandard-insideBackCover
+		+factoryStandard-outsideBackCover

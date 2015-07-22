@@ -1,27 +1,23 @@
 src/Bloom.suo
 *.user
-lib/GeckoFx/Skybound.Gecko/*
-output/*
-*/.svn
-*/bin/*
-*/obj
+*.orig
+lib/GeckoFx/Skybound.Gecko/
+output/
+.svn/
+bin/
+obj/
 userProject
 templates/A4LandscapeBooklet/starter.pdf
-src/_ReSharper.Bloom/*
+src/_ReSharper.Bloom/
 
-*/_ReSharper*
 Bloom VS2010.suo
-_ReSharper.Bloom VS2010/*
-Bloom VS2010.sln.orig
+_ReSharper.Bloom VS2010/
 HL - Health
 Stuff to convert
-_ReSharper
 _ReSharper*
 
 Szn's Shell Books - Copy
-lib/xulrunner
-lib/XulRunner*
-lib/xulrunner*
+lib/xulrunner*/
 **.idea
 DistFiles/root/tmp*
 *.pdb
@@ -29,12 +25,20 @@ lib/dotnet/Palaso*.dll
 DistFiles/factoryCollections/Templates/BasicBook/basePage.css
 DistFiles/factoryCollections/Templates/BasicBook/previewMode.css
 DistFiles/factoryCollections/Templates/BasicBook/languageDisplay.css
+DistFiles/factoryCollections/Templates/Decodable Reader/Basic Book.css
+DistFiles/factoryCollections/Templates/Leveled Reader/Basic Book.css
+DistFiles/factoryCollections/Templates/**/Factory-XMatter.css
+DistFiles/factoryCollections/Templates/**/basePage.css
+
 *.bak
+**/Sample Shells/Vaccinations/*.css
 **/Sample Shells/**/previewMode.css
 **/Sample Shells/**/languageDisplay.css
 **/Sample Shells/**/basePage.css
+**/Sample Shells/**/origami.css
 **/Templates/**/previewMode.css
 **/Templates/**/basePage.css
+**/Templates/**/origami.css
 Acorns*
 _NCrunch*
 *.vsp
@@ -47,7 +51,8 @@ Copy*.bat
 *.orig
 *.map
 *.ncrunchsolution
-Mercurial/
+Mercurial
+Mercurial*/
 Presentations/
 packages/
 videos
@@ -65,7 +70,6 @@ lib/wkhtmltopdf-*.zip
 .nuget/NuGet.exe
 LibChorus.*
 build/Palaso.BuildTasks.dll*
-lib/failed update of AeroWizard Modified for dotnet 4 client/*
 *.userprefs
 Downloads/
 Bloom Q&A SIL Literacy Oct 2013.pdf
@@ -74,6 +78,7 @@ jasmine.d.ts
 connections.dll
 DistFiles/Bloom.chw
 DistFiles/Bloom.chm
+DistFiles/optipng.exe
 build/ChorusInstallerStuff/ChorusMergeModule.msm
 build/JohnsTestInstallerBuild.bat
 src/BloomBrowserUI/bookEdit/js/libsynphony/
@@ -87,4 +92,8 @@ DistFiles/ReleaseNotes.html
 ReadMe_*.html
 B3.sln
 B2.sln
+node_modules/
 *.usertasks
+Andika-R.ttf
+*~
+Bloom/

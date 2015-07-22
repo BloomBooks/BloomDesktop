@@ -80,7 +80,7 @@ namespace Bloom.Book
 		public override string ToString()
 		{
 			var s = "";
-			if (!String.IsNullOrEmpty(Style) && Style.ToLower() != "default")
+			if (!String.IsNullOrEmpty(Style) && Style.ToLowerInvariant() != "default")
 				s = Style;
 			return (SizeAndOrientation.ToString() + " " + s).Trim();
 		}
@@ -95,11 +95,11 @@ namespace Bloom.Book
 
 			foreach (var part in firstPage.GetStringAttribute("class").SplitTrimmed(' '))
 			{
-				if (part.ToLower().Contains("portrait") || part.ToLower().Contains("landscape"))
+				if (part.ToLowerInvariant().Contains("portrait") || part.ToLowerInvariant().Contains("landscape"))
 				{
 					layout.SizeAndOrientation = SizeAndOrientation.FromString(part);
 				}
-				if (part.ToLower().Contains("layout-style-"))
+				if (part.ToLowerInvariant().Contains("layout-style-"))
 				{
 					int startIndex = "layout-style-".Length;
 					layout.Style = part.Substring(startIndex, part.Length-startIndex);	//reivew: this might let us suck up a style that is no longer listed in any css
@@ -154,7 +154,7 @@ namespace Bloom.Book
 						SizeAndOrientation soa = SizeAndOrientation.FromString(((XmlElement)sizeAndOrientation).Name);
 						foreach (XmlElement option in ((XmlElement)sizeAndOrientation).ChildNodes)
 						{
-							if (option.Name.ToLower() != "styles")
+							if (option.Name.ToLowerInvariant() != "styles")
 								continue;//we don't handle anything else yet
 							layouts.Add(new Layout() { SizeAndOrientation = soa, Style = option.InnerText });
 							//								List<string> choices = null;
@@ -207,15 +207,8 @@ namespace Bloom.Book
 
 				//now split the elements
 
-				foreach (XmlElement div in leader.SafeSelectNodes("descendant-or-self::*[contains(@class, 'bloom-trailingElement')]"))
-				{
-					div.ParentNode.RemoveChild(div);
-				}
-
-				foreach (XmlElement div in trailer.SafeSelectNodes("descendant-or-self::*[contains(@class, 'bloom-leadingElement')]"))
-				{
-					div.ParentNode.RemoveChild(div);
-				}
+				leader.DeleteNodes("descendant-or-self::*[contains(@class, 'bloom-trailingElement')]");
+				trailer.DeleteNodes("descendant-or-self::*[contains(@class, 'bloom-leadingElement')]");
 			}
 		}
 	}

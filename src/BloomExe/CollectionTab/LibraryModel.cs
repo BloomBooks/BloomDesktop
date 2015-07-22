@@ -5,19 +5,21 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Edit;
 using Bloom.SendReceive;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using DesktopAnalytics;
-using Ionic.Zip;
+using ICSharpCode.SharpZipLib.Core;
+using ICSharpCode.SharpZipLib.Zip;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms;
 using Palaso.Xml;
 using Palaso.UI.WindowsForms.FileSystem;
 
@@ -65,6 +67,12 @@ namespace Bloom.CollectionTab
 			get { return _bookSelection.CurrentSelection != null && _collectionSettings.AllowDeleteBooks && _bookSelection.CurrentSelection.CanDelete; }
 
 		}
+
+		public bool CanExportSelection
+		{
+			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanExport; }
+		}
+
 		public bool CanUpdateSelection
 		{
 			get { return _bookSelection.CurrentSelection != null && _bookSelection.CurrentSelection.CanUpdate; }
@@ -78,16 +86,30 @@ namespace Bloom.CollectionTab
 
 		public List<BookCollection> GetBookCollections()
 		{
-			if(_bookCollections ==null)
+			if(_bookCollections == null)
 			{
 				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
 
 				//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
-				var templates = _bookCollections.First(c => c.Name.ToLower() == "templates");
+				var templates = _bookCollections.First(c => c.Name.ToLowerInvariant() == "templates");
 				_bookCollections.Remove(templates);
 				_bookCollections.Insert(1,templates);
 			}
 			return _bookCollections;
+		}
+
+		public void ReloadCollections()
+		{
+			_bookCollections = null;
+			GetBookCollections();
+		}
+
+		/// <summary>
+		/// Titles of all the books in the vernacular collection.
+		/// </summary>
+		internal IEnumerable<string> BookTitles
+		{
+			get { return TheOneEditableCollection.GetBookInfos().Select(book => book.Title); }
 		}
 
 		private BookCollection TheOneEditableCollection
@@ -135,7 +157,7 @@ namespace Bloom.CollectionTab
 			{
 				var title = _bookSelection.CurrentSelection.TitleBestForUserDisplay;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
-				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title)))
+				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, title), false, "Palaso"))
 				{
 					TheOneEditableCollection.DeleteBook(book.BookInfo);
 					_bookSelection.SelectBook(null);
@@ -154,7 +176,7 @@ namespace Bloom.CollectionTab
 
 		public void OpenFolderOnDisk()
 		{
-			Process.Start(_bookSelection.CurrentSelection.FolderPath);
+			PathUtilities.SelectFileInExplorer(_bookSelection.CurrentSelection.FolderPath);
 		}
 
 		public void BringBookUpToDate()
@@ -187,39 +209,82 @@ namespace Bloom.CollectionTab
 			}
 		}
 
+
+		/// <summary>
+		/// All we do at this point is make a file with a ".doc" extension and open it.
+		/// </summary>
+		/// <remarks>
+		/// The .doc extension allows the operating system to recognize which program
+		/// should open the file, and the program (whether Microsoft Word or LibreOffice
+		/// or OpenOffice) seems to handle HTML content just fine.
+		/// </remarks>
+		public void ExportDocFormat(string path)
+		{
+			string sourcePath = _bookSelection.CurrentSelection.GetPathHtmlFile();
+			if (File.Exists(path))
+			{
+				File.Delete(path);
+			}
+			// Linux (Trusty) LibreOffice requires slightly different metadata at the beginning
+			// of the file in order to recognize it as HTML.  Otherwise it opens the file as raw
+			// HTML (See https://silbloom.myjetbrains.com/youtrack/issue/BL-2276 if you don't
+			// believe me.)  I don't know any perfect way to add this information to the file,
+			// but a simple string replace should be safe.  This change works okay for both
+			// Windows and Linux and for all three programs (Word, OpenOffice and Libre Office).
+			string content = File.ReadAllText(sourcePath);
+			string fixedContent = content.Replace("<meta charset=\"UTF-8\">", "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
+			File.WriteAllText(path, fixedContent);
+		}
+
 		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
 		{
 			book.RebuildThumbNailAsync(thumbnailOptions, callback, errorCallback);
 		}
 
-		public void MakeBloomPack(string path)
+		public void MakeBloomPack(string path, bool forReaderTools = false)
 		{
 			try
 			{
 				if(File.Exists(path))
 				{
-					//UI already go permission for this
+					// UI already got permission for this
 					File.Delete(path);
 				}
+
 				Logger.WriteEvent("Making BloomPack");
-				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack..."))
+
+				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack...", "Bloom"))
 				{
 					try
 					{
 						pleaseWait.Show();
 						pleaseWait.BringToFront();
-						Application.DoEvents();//actually show it
+						Application.DoEvents(); // actually show it
 						Cursor.Current = Cursors.WaitCursor;
-						using (var zip = new ZipFile(Encoding.UTF8))
+
+						var dir = TheOneEditableCollection.PathToDirectory;
+
+						var rootName = Path.GetFileName(dir);
+						if (rootName == null) return;
+
+						var dirNameOffest = dir.Length - rootName.Length;
+
+						using (var fsOut = File.Create(path))
 						{
-							string dir = TheOneEditableCollection.PathToDirectory;
-							//nb: without this second argument, we don't get the outer directory included, and we need that for the name of the collection
-							zip.AddDirectory(dir, System.IO.Path.GetFileName(dir));
-							zip.Save(path);
+							using (ZipOutputStream zipStream = new ZipOutputStream(fsOut))
+							{
+								zipStream.SetLevel(9);
+
+								CompressDirectory(dir, zipStream, dirNameOffest, forReaderTools);
+
+								zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
+								zipStream.Close();
+							}
 						}
-						//show it
+
+						// show it
 						Logger.WriteEvent("Showing BloomPack on disk");
-						Process.Start(Path.GetDirectoryName(path));
+						PathUtilities.SelectFileInExplorer(path);
 						Analytics.Track("Create BloomPack");
 					}
 					finally
@@ -231,8 +296,103 @@ namespace Bloom.CollectionTab
 			}
 			catch (Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "Could not make the BloomPack");
+				ErrorReport.NotifyUserOfProblem(e, "Could not make the BloomPack");
 			}
+		}
+
+		// these files (if encountered) won't be compressed into a BloomPack
+		private static readonly string[] excludedFileExtensions = { ".db", ".pdf" };
+
+		/// <summary>
+		/// Adds a directory, along with all files and subdirectories, to the ZipStream.
+		/// </summary>
+		/// <param name="directoryPath">The directory to add recursively</param>
+		/// <param name="zipStream">The ZipStream to which the files and directories will be added</param>
+		/// <param name="dirNameOffest">This number of characters will be removed from the full directory or file name
+		/// before creating the zip entry name</param>
+		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
+		/// and leveled readers before they are added to the ZipStream</param>
+		/// <remarks>Protected for testing purposes</remarks>
+		protected static void CompressDirectory(string directoryPath, ZipOutputStream zipStream, int dirNameOffest,
+			bool forReaderTools)
+		{
+			var files = Directory.GetFiles(directoryPath);
+			var bookFile = BookStorage.FindBookHtmlInFolder(directoryPath);
+
+			foreach (var filePath in files)
+			{
+				if (excludedFileExtensions.Contains(Path.GetExtension(filePath)))
+					continue; // BL-2246: skip putting this one into the BloomPack
+
+				FileInfo fi = new FileInfo(filePath);
+
+				var entryName = filePath.Substring(dirNameOffest);  // Makes the name in zip based on the folder
+				entryName = ZipEntry.CleanName(entryName);          // Removes drive from name and fixes slash direction
+				ZipEntry newEntry = new ZipEntry(entryName) { DateTime = fi.LastWriteTime };
+				newEntry.IsUnicodeText = true; // encode filename and comment in UTF8
+				byte[] bookContent = {};
+
+				// if this is a ReaderTools book, call GetBookReplacedWithTemplate() to get the contents
+				if (forReaderTools && (bookFile == filePath))
+				{
+					bookContent = GetBookReplacedWithTemplate(filePath);
+					newEntry.Size = bookContent.Length;
+				}
+				else
+				{
+					newEntry.Size = fi.Length;
+				}
+
+				zipStream.PutNextEntry(newEntry);
+
+				if (bookContent.Length > 0)
+				{
+					using (var memStream = new MemoryStream(bookContent))
+					{
+						StreamUtils.Copy(memStream, zipStream, new byte[bookContent.Length]);
+					}
+				}
+				else
+				{
+					// Zip the file in buffered chunks
+					byte[] buffer = new byte[4096];
+					using (var streamReader = File.OpenRead(filePath))
+					{
+						StreamUtils.Copy(streamReader, zipStream, buffer);
+					}
+				}
+
+				zipStream.CloseEntry();
+			}
+
+			var folders = Directory.GetDirectories(directoryPath);
+
+			foreach (var folder in folders)
+			{
+				var dirName = Path.GetFileName(folder);
+				if ((dirName == null) || (dirName.ToLowerInvariant() == "sample texts"))
+					continue; // Don't want to bundle these up
+
+				CompressDirectory(folder, zipStream, dirNameOffest, forReaderTools);
+			}
+		}
+
+		/// <summary>
+		/// Does some pre-processing on reader files
+		/// </summary>
+		/// <param name="bookFile"></param>
+		/// <returns>A UTF8-encoded byte array filled with the contents of the bookFile</returns>
+		private static byte[] GetBookReplacedWithTemplate(string bookFile)
+		{
+			var text = File.ReadAllText(bookFile, Encoding.UTF8);
+			// Note that we're getting rid of preceding newline but not following one. Hopefully we cleanly remove a whole line.
+			// I'm not sure the </meta> ever occurs in html files, but just in case we'll match if present.
+			var regex = new Regex("\\s*<meta\\s+name=(['\\\"])lockedDownAsShell\\1 content=(['\\\"])true\\2>(</meta>)? *");
+			var match = regex.Match(text);
+			if (match.Success)
+				text = text.Substring(0, match.Index) + text.Substring(match.Index + match.Length);
+
+			return Encoding.UTF8.GetBytes(text);
 		}
 
 		public string GetSuggestedBloomPackPath()
@@ -271,7 +431,7 @@ namespace Bloom.CollectionTab
 					MessageBox.Show("Bloom will now open a list of problems it found.");
 					var path = Path.GetTempFileName() + ".txt";
 					File.WriteAllText(path, dlg.ProgressString.Text);
-					System.Diagnostics.Process.Start(path);
+					PathUtilities.OpenFileInApplication(path);
 				}
 				else
 				{
@@ -296,7 +456,7 @@ namespace Bloom.CollectionTab
 
 				var path = Path.GetTempFileName() + ".txt";
 				File.WriteAllText(path, dlg.ProgressString.Text);
-				System.Diagnostics.Process.Start(path);
+				PathUtilities.OpenFileInApplication(path);
 			}
 
 		}
@@ -331,7 +491,8 @@ namespace Bloom.CollectionTab
 			try
 			{
 				var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
-
+				if (newBook == null)
+					return; //This can happen if there is a configuration dialog and the user clicks Cancel
 
 				TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
 
@@ -359,5 +520,6 @@ namespace Bloom.CollectionTab
 		{
 			return _bookServer.GetBookFromBookInfo(bookInfo);
 		}
+
 	}
 }

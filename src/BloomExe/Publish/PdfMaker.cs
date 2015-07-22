@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Edit;
 using Bloom.ToPalaso;
 using Bloom.Workspace;
+using L10NSharp;
 using Palaso.Code;
 using Palaso.CommandLineProcessing;
 using Palaso.IO;
@@ -15,6 +16,7 @@ using Palaso.Progress;
 using PdfDroplet.LayoutMethods;
 using PdfSharp;
 using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 
 namespace Bloom.Publish
 {
@@ -28,207 +30,103 @@ namespace Bloom.Publish
 		/// </summary>
 		public bool ShowCropMarks;
 
-		/// <summary>
-		///
-		/// </summary>
+		///  <summary>
+		/// 
+		///  </summary>
 		/// <param name="inputHtmlPath"></param>
 		/// <param name="outputPdfPath"></param>
 		/// <param name="paperSizeName">A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B10,B2,B3,B4,B5,B6,B7,B8,B9,C5E,Comm10E,DLE,Executive,Folio,Ledger,Legal,Letter,Tabloid</param>
 		/// <param name="landscape"> </param>
+		/// <param name="layoutPagesForRightToLeft"></param>
 		/// <param name="booketLayoutMethod"> </param>
 		/// <param name="bookletPortion"></param>
-		/// <param name="doWorkEventArgs"> </param>
-		/// <param name="getIsLandscape"></param>
-		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, DoWorkEventArgs doWorkEventArgs)
+		/// <param name="worker">If not null, the Background worker which is running this task, and may be queried to determine whether a cancel is being attempted</param>
+		/// <param name="doWorkEventArgs">The event passed to the worker when it was started. If a cancel is successful, it's Cancel property should be set true.</param>
+		/// <param name="owner">A control which can be used to invoke parts of the work which must be done on the ui thread.</param>
+		public void MakePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, bool layoutPagesForRightToLeft, PublishModel.BookletLayoutMethod booketLayoutMethod, PublishModel.BookletPortions bookletPortion, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner)
 		{
-			Guard.Against(Path.GetExtension(inputHtmlPath) != ".htm",
-						  "wkhtmtopdf will croak if the input file doesn't have an htm extension.");
-
-			MakeSimplePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, doWorkEventArgs);
-			if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
-				return;
-			if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet)
+			// Try up to 4 times. This is a last-resort attempt to handle BL-361.
+			// Most likely that was caused by a race condition in MakePdfUsingGeckofxHtmlToPdfComponent.MakePdf,
+			// but as it was an intermittent problem and we're not sure that was the cause, this might help.
+			for (int i = 0; i < 4; i++)
 			{
-				//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
-				MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod);
+				new MakePdfUsingGeckofxHtmlToPdfProgram().MakePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape,
+					owner, worker, doWorkEventArgs);
+
+				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
+					return;
+				if (File.Exists(outputPdfPath))
+					break; // normally the first time
 			}
-		}
-
-		private void MakeSimplePdf(string inputHtmlPath, string outputPdfPath, string paperSizeName, bool landscape, DoWorkEventArgs doWorkEventArgs)
-		{
-			// NOTE: This method creates a ProgressDialogBackground. On Linux this has to happen
-			// on the thread that is running our main window, otherwise Gecko might crash. Since
-			// we're already running on a background thread we have to use Invoke.
-			// The solution implemented here is a hack; it would be better and more efficient to
-			// directly create the progress dialog in the calling class (PublishView) and then
-			// run this code in the background. Currently we run this code in a background thread
-			// and then have ProgressDialogBackground do the work on yet another background
-			// thread. However, when porting to Linux this seemed to be to big of a change to do
-			// it immediately, therefore this hack.
-			if (RunningOnBackgroundThread && FirstForm != null)
+			if (!File.Exists(outputPdfPath) && owner != null)
 			{
-				FirstForm.Invoke((Action)(() => MakeSimplePdf(inputHtmlPath, outputPdfPath, paperSizeName, landscape, doWorkEventArgs)));
-				return;
-			}
-
-			var customSizes = new Dictionary<string, string>();
-			customSizes.Add("Halfletter", "--page-width 8.5 --page-height 5.5");
-			string pageSizeArguments;
-			if (!customSizes.TryGetValue(paperSizeName, out pageSizeArguments))
-			{
-				pageSizeArguments = "--page-size " + paperSizeName; ; //this works too " --page-width 14.8cm --page-height 21cm"
-			}
-
-			//wkhtmltopdf chokes on stuff like chinese file names, even if we put the console code page to UTF 8 first (CHCP 65001)
-			//so now, we just deal in temp files
-			using (var tempInput = TempFile.WithExtension(".htm"))
-			{
-				File.Delete(tempInput.Path);
-				var source = File.ReadAllText(inputHtmlPath);
-				//hide all placeholders
-
-				File.WriteAllText(tempInput.Path, source.Replace("placeholder.png", "").Replace("placeHolder.png", ""));
-				//File.Copy(inputHtmlPath, tempInput.Path);
-				var tempOutput = TempFile.WithExtension(".pdf"); //we don't want to dispose of this
-				File.Delete(tempOutput.Path);
-
-				/*--------------------------------DEVELOPERS -----------------------------
-				 *
-				 *	Are you trying to debug a disparity between the HTML preview and
-				 *	the PDF output, which should be identical? Some notes:
-				 *
-				 * 1) Wkhtmltopdf requires different handling of file names for the local
-				 * file system than firefox. So if you open this html, do so in Chrome
-				 * instead of Firefox.
-				 *
-				 * 2) Wkhtmltopdf violates the HTML requirement that classes are case
-				 * sensitive. So it could be that it is using a rule you forgot you
-				 * had, and which is not being triggered by the better browsers.
-				 *
-				 */
-				string exePath = FindWkhtmlToPdf();
-
-				var arguments = string.Format(
-					//	"--no-background " + //without this, we get a thin line on the right side, which turned into a line in the middle when made into a booklet. You could only see it on paper or by zooming in.
-					//Nov 2013: the --no-background cure is worse than the disease. It makes it impossible to have, e.g., grey backgrounds in boxes. The line produced in book lets falls on the fold,
-					//so that's ok.
-
-					// --no-outline was added becuase otherwise using <H1> would cause a table of contents to be created and then adobe reader would show thumbnails, which
-					// wasn't so bad but it was confusing for the user why some documents (ones that had H1) would show it and others would not.
-
-					" --no-outline --print-media-type " +
-					pageSizeArguments +
-					(landscape ? " -O Landscape " : "") +
-#if DEBUG
-					" --debug-javascript " +
-#endif
-
- "  --margin-bottom 0mm  --margin-top 0mm  --margin-left 0mm  --margin-right 0mm " +
-					"--disable-smart-shrinking --zoom {0} \"{1}\" \"{2}\"",
-					GetZoomBasedOnScreenDPISettings().ToString(),
-					Path.GetFileName(tempInput.Path), tempOutput.Path);
-
-				ExecutionResult result = null;
-				using (var dlg = new ProgressDialogBackground())
+				// Should never happen, but...
+				owner.Invoke((Action) (() =>
 				{
+					// Review: should we localize this? Hopefully the user never sees it...don't want to increase burden on localizers...
+					MessageBox.Show(
+						"Bloom unexpectedly failed to create the PDF. If this happens repeatedy please report it to the developers. Probably it will work if you just try again.",
+						"Pdf creation failed", MessageBoxButtons.OK);
+				}));
+			}
 
-					/* This isn't really working yet (Aug 2012)... I put a day's work into getting Palaso.CommandLineRunner to
-					 * do asynchronous reading of the
-					 * nice progress that wkhtml2pdf puts out, and feeding it to the UI. It worked find with a sample utility
-					 * (PalasoUIWindowsForms.TestApp.exe). But try as I might, it seems
-					 * that the Process doesn't actually deliver wkhtml2pdf's outputs to me until it's all over.
-					 * If I run wkhtml2pdf from a console, it gives the progress just fine, as it works.
-					 * So there is either a bug in Palaso.CommandLineRunner & friends, or.... ?
-					 */
-
-
-					//this proves that the ui part here is working... it's something about the wkhtml2pdf that we're not getting the updates in real time...
-					//		dlg.ShowAndDoWork(progress => result = CommandLineRunner.Run("PalasoUIWindowsForms.TestApp.exe", "CommandLineRunnerTest", null, string.Empty, 60, progress
-					dlg.ShowAndDoWork((progress, args) =>
-					{
-						progress.WriteStatus("Making PDF...");
-						//this is a trick... since we are so far failing to get
-						//the progress out of wkhtml2pdf until it is done,
-						//we at least have this indicator which on win 7 does
-						//grow from 0 to the set percentage with some animation
-
-						//nb: Later, on a 100page doc, I did get good progress at the end
-						progress.ProgressIndicator.PercentCompleted = 70;
-						result = CommandLineRunner.Run(exePath, arguments, null, Path.GetDirectoryName(tempInput.Path),
-							5 * 60, progress
-							, (s) =>
-							{
-								progress.WriteStatus(s);
-
-								try
-								{
-									//this will hopefully avoid the exception below (which we'll swallow anyhow)
-									if (((BackgroundWorker)args.Argument).IsBusy)
-									{
-										//this wakes up the dialog, which then calls the Refresh() we need
-										((BackgroundWorker)args.Argument).ReportProgress(100);
-									}
-									else
-									{
-#if DEBUG
-										Debug.Fail("Wanna look into this? Why is the process still reporting back?");
-#endif
-									}
-								}
-								catch (InvalidOperationException error)
-								//"This operation has already had OperationCompleted called on it and further calls are illegal"
-								{
-#if DEBUG
-									Palaso.Reporting.ErrorReport.ReportNonFatalException(error);
-#endif
-									//if not in debug, swallow an complaints about it already being completed (bl-233)
-								}
-							});
-					});
+			try
+			{
+				if (bookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet)
+				{
+					//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
+					MakeBooklet(outputPdfPath, paperSizeName, booketLayoutMethod, layoutPagesForRightToLeft);
 				}
-
-				//var progress = new CancellableNullProgress(doWorkEventArgs);
-
-
-				Debug.WriteLine(result.StandardError);
-				Debug.WriteLine(result.StandardOutput);
-
-				if (!File.Exists(tempOutput.Path))
-					throw new ApplicationException(string.Format("Bloom was not able to create the PDF.{0}{0}Details: Wkhtml2pdf did not produce the expected document.", Environment.NewLine));
-
-				try
+				else
 				{
-					File.Move(tempOutput.Path, outputPdfPath);
-				}
-				catch (IOException e)
-				{
-					//I can't figure out how it happened (since GetPdfPath makes sure the file name is unique),
-					//but we had a report (BL-211) of that move failing.
-					throw new ApplicationException(
-						string.Format("Bloom tried to save the file to {0}, but {2} said that it was locked. Please try again.{3}{3}Details: {1}",
-							outputPdfPath, e.Message, Palaso.PlatformUtilities.Platform.IsWindows ? "Windows" : "Linux", Environment.NewLine));
+					 // Just check that we got a valid, readable PDF. (MakeBooklet has to read the PDF itself,
+					// so we don't need to do this check if we're calling that.)
+					// If we get a reliable fix to BL-932 we can take this 'else' out altogether.
+					CheckPdf(outputPdfPath);
 				}
 			}
-		}
-
-		private static bool RunningOnBackgroundThread
-		{
-			get
+			catch (KeyNotFoundException e)
 			{
-				if (Application.OpenForms == null || Application.OpenForms.Count < 1)
-					return false;
+				// This is characteristic of BL-932, where Gecko29 fails to make a valid PDF, typically
+				// because the user has embedded a really huge image, something like 4000 pixels wide.
+				// We think it could also happen with a very long book or if the user is short of memory.
+				// The resulting corruption of the PDF file takes the form of a syntax error in an embedded
+				// object so that the parser finds an empty string where it expected a 'generationNumber'
+				// (currently line 106 of Parser.cs). This exception is swallowed but leads to an empty
+				// externalIDs dictionary in PdfImportedObjectTable, and eventually a new exception trying
+				// to look up an object ID at line 121 of that class. We catch that exception here and
+				// suggest possible actions the user can take until we find a better solution.
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					LocalizationManager.GetString("PdfMaker.BadPdf", "Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:")
+						+ Environment.NewLine + "- "
+						+ LocalizationManager.GetString("PdfMaker.TryRestart", "Restart your computer and try this again right away")
+						+ Environment.NewLine + "- "
+						+
+						LocalizationManager.GetString("PdfMaker.TrySmallerImages",
+							"Replace large, high-resolution images in your document with lower-resolution ones")
+						+ Environment.NewLine + "- "
+						+ LocalizationManager.GetString("PdfMaker.TryMoreMemory", "Try doing this on a computer with more memory"));
 
-				return Application.OpenForms[0].InvokeRequired;
 			}
+
 		}
 
-		private static Form FirstForm
+		// This is a subset of what MakeBooklet normally does, just enough to make it process the PDF to the
+		// point where an exception will be thrown if the file is corrupt as in BL-932.
+		// Possibly one day we will find a faster or more comprehensive way of validating a PDF, but this
+		// at least catches the problem we know about.
+		private static void CheckPdf(string outputPdfPath)
 		{
-			get
+			var pdf = XPdfForm.FromFile(outputPdfPath);
+			PdfDocument outputDocument = new PdfDocument();
+			outputDocument.PageLayout = PdfPageLayout.SinglePage;
+			var page = outputDocument.AddPage();
+			using (XGraphics gfx = XGraphics.FromPdfPage(page))
 			{
-				if (Application.OpenForms == null || Application.OpenForms.Count < 1)
-					return null;
-				return Application.OpenForms[0];
+				XRect sourceRect = new XRect(0, 0, pdf.PixelWidth, pdf.PixelHeight);
+				// We don't really care about drawing the image of the page here, just forcing the
+				// reader to process the PDF file enough to crash if it is corrupt.
+				gfx.DrawImage(pdf, sourceRect);
 			}
 		}
 
@@ -263,18 +161,14 @@ namespace Bloom.Publish
 			return 1.04;
 		}
 
-		private string FindWkhtmlToPdf()
-		{
-			return FileLocator.LocateExecutable("wkhtmltopdf", "wkhtmltopdf.exe");
-		}
-
-		/// <summary>
-		///
-		/// </summary>
+		///  <summary>
+		/// 
+		///  </summary>
 		/// <param name="pdfPath">this is the path where it already exists, and the path where we leave the transformed version</param>
 		/// <param name="incomingPaperSize"></param>
 		/// <param name="booketLayoutMethod"></param>
-		private void MakeBooklet(string pdfPath, string incomingPaperSize, PublishModel.BookletLayoutMethod booketLayoutMethod)
+		/// <param name="layoutPagesForRightToLeft"></param>
+		private void MakeBooklet(string pdfPath, string incomingPaperSize, PublishModel.BookletLayoutMethod booketLayoutMethod, bool layoutPagesForRightToLeft)
 		{
 			//TODO: we need to let the user chose the paper size, as they do in PdfDroplet.
 			//For now, just assume a size double the original
@@ -310,8 +204,6 @@ namespace Bloom.Publish
 					throw new ApplicationException("PdfMaker.MakeBooklet() does not contain a map from " + incomingPaperSize + " to a PdfSharp paper size.");
 			}
 
-
-
 			using (var incoming = new TempFile())
 			{
 				File.Delete(incoming.Path);
@@ -324,7 +216,19 @@ namespace Bloom.Publish
 						method = new NullLayoutMethod();
 						break;
 					case PublishModel.BookletLayoutMethod.SideFold:
-						method = new SideFoldBookletLayouter();
+						// To keep the GUI simple, we assume that A6 page size for booklets
+						// implies 4up printing on A4 paper.  This feature was requested by
+						// https://jira.sil.org/browse/BL-1059 "A6 booklets should print 4
+						// to an A4 sheet".
+						if (incomingPaperSize == "A6")
+						{
+							method = new SideFold4UpBookletLayouter();
+							pageSize = PageSize.A4;
+						}
+						else
+						{
+							method = new SideFoldBookletLayouter();
+						}
 						break;
 					case PublishModel.BookletLayoutMethod.CutAndStack:
 						method = new CutLandscapeLayout();
@@ -337,7 +241,7 @@ namespace Bloom.Publish
 				}
 				var paperTarget = new PaperTarget("ZZ"/*we're not displaying this anyhwere, so we don't need to know the name*/, pageSize);
 				var pdf = XPdfForm.FromFile(incoming.Path);//REVIEW: this whole giving them the pdf and the file too... I checked once and it wasn't wasting effort...the path was only used with a NullLayout option
-				method.Layout(pdf, incoming.Path, pdfPath, paperTarget, /*TODO: rightToLeft*/ false, ShowCropMarks);
+				method.Layout(pdf, incoming.Path, pdfPath, paperTarget, layoutPagesForRightToLeft, ShowCropMarks);
 			}
 		}
 	}

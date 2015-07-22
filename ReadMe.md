@@ -1,4 +1,6 @@
-Bloom Desktop is a c# Windows application that dramatically "lowers the bar" for language communities who want books in their own languages. Bloom delivers a low-training, high-output system where mother tongue speakers and their advocates work together to foster both community authorship and access to external material in the vernacular.
+[![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Wrapper-Trigger-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Wrapper-Trigger-debug/)
+
+Bloom Desktop is a hybrid c#/javascript/html/css application for Windows and Linux that dramatically "lowers the bar" for language communities who want books in their own languages. Bloom delivers a low-training, high-output system where mother tongue speakers and their advocates work together to foster both community authorship and access to external material in the vernacular.
 
 # Development Process
 
@@ -13,39 +15,55 @@ Reports can be entered in [jira](https://jira.sil.org/browse/BL). They can be en
 
 ## Continuous Build System
 
-Each time code is checked in, an automatic build begins on our [TeamCity build server](http://build.palaso.org/project.html?projectId=project16&amp;tab=projectOverview), running all the unit tests. Similarly, when there is a new version of some Bloom dependency (e.g. Palaso, PdfDroplet, our fork of GeckoFX), that server automatically rebuilds Bloom. This automatic build doesn't publish a new installer, however. That kind of build is launched manually, by pressing a button on the TeamCity page. This "publish" process builds Bloom, makes and installer, rsyncs it to the distribution server, and writes out a little bit of html which the [Bloom download page](../download/) then displays to the user.
+Each time code is checked in, an automatic build begins on our [TeamCity build server](http://build.palaso.org/project.html?projectId=project16&amp;tab=projectOverview), running all the unit tests. Similarly, when there is a new version of some Bloom dependency (e.g. Palaso, PdfDroplet, our fork of GeckoFX), that server automatically rebuilds Bloom. This automatic build doesn't publish a new installer, however. That kind of build is launched manually, by pressing a button on the TeamCity page. This "publish" process builds Bloom, makes and installer, rsyncs it to the distribution server, and writes out a little bit of html which the [Bloom download page](http://bloomlibrary.org/#/installers) then displays to the user.
+
+|            | Windows | Linux |
+| :--------: | :-----: | :---: |
+| Build      | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Win32-master-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Win32-master-debug/)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug/) |
+| Unit tests | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Win32-master-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Win32-master-debug-Tests/)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug-Tests/)|
+| JS tests   | | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master--JSTests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master--JSTests/)|
 
 ## Source Code
 
-Bloom is written in C# with Winforms, with an embedded Gecko (Firefox) browser and a bunch of jquery-using javascript & Typescript. You will need Visual Studio 2010 SP1, or greater, to build it. The free Visual Studio Express version should be fine, but we don't test it.
+Bloom is written in C# with Winforms, with an embedded Gecko (Firefox) browser and a bunch of jquery-using javascript & Typescript.
 
-You'll need at least a 2010 edition of Visual Studio, including the free Express version.
+On Windows you'll need at least a 2010 edition of Visual Studio (Version 2010 SP1), including the free Express version.
 
-Now, what revision should you be on? If you're not familiar with DVCS (Distributed version control), this could be a big stumbling block. I hesitate to give advice in this document in case I forget to update it. But a reasonable start is to update to the tip of the "default" branch, which is the most recent one that anyone has checked in, regardless of which branch it is on. To update to the tip, do:
+It will avoid some complications if you update to default branch now, before adding the dependencies that follow.
 
-`hg update default`
+### Building the Source Code
 
-It will avoid some complications if you do that now, before adding the dependencies which follow.
+Before you'll be able to build you'll have to download some binary dependencies (see below).
+
+On Linux you'll also have to make sure that you have installed some dependencies (see below).
+
+To build Bloom you can open and build the solution in Visual Studio or MonoDevelop, or build from the command line using msbuild/xbuild.
 
 ## Get Binary Dependencies
 
-In the build directory, run
+In the `build` directory, run
 
 `getDependencies-windows.sh`
+
 or
-`getDependencies-linux.sh`
+
+`./getDependencies-linux.sh`
 
 That will take several minutes the first time, and afterwards will be quick as it only downloads what has changed. When you change branches, run this again.
 
+## JADE Sources
+
+We use [JADE](http://www.google.com/url?q=http%3A%2F%2Fjade-lang.com%2F&sa=D&sntz=1&usg=AFQjCNGt56mizPKbPZPjua7fjmzoTXAiEQ) as the source language for html. See [these instructions](https://docs.google.com/a/sil.org/document/d/1dYv-yQ18Jandi1TqDwzXIYrZf3M8NIgIQ8Y0rWlXVAI/edit) for setting up a nice JADE evironment in WebStorm.
+
 #### About Bloom Dependencies
 
-Our **[Palaso libraries](http://projects.palaso.org/projects/palaso)** hold the classes that are common to multiple products. If you need to build palaso from source, see [projects.palaso.org/projects/palaso/wiki](http://projects.palaso.org/projects/palaso/wiki).
+Our **[Palaso libraries](https://github.com/sillsdev/libpalaso)** hold the classes that are common to multiple products.
 
 Our **[PdfDroplet ](http://pdfdroplet.palaso.org)**engine drives the booklet-making in the Publish tab. If you need to build PdfDroplet from source, see [projects.palaso.org/projects/pdfdroplet/wiki](http://projects.palaso.org/projects/palaso/wiki).
 
-Our **[Chorus](http://projects.palaso.org/projects/chorus)** library provides the Send/Receive functionality.
+Our **[Chorus](https://github.com/sillsdev/chorus)** library provides the Send/Receive functionality.
 
-**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the [GeckoFX .net wrapper](https://bitbucket.org/geckofx).
+**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the [GeckoFX .net wrapper](https://bitbucket.org/geckofx). As of Bloom version 3, we are using xulrunner 29.
 
 **XulRunner**: If you need some other version, they come from here: [http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases](http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases). You want a "runtime", not an "sdk". Note, in addition to the generic "lib/xulrunner", the code will also work if it finds "lib/xulrunner8" (or 9, or 10, or whatever the current version is).
 
@@ -57,6 +75,131 @@ Now, Mozilla puts out a new version of XulRunner every 6 weeks at the time of th
 3) Bloom source code which is expecting that same version of GeckoFX.
 
 Bloom uses various web services that require identification. We can't really keep those a secret, but we can at least not make them google'able by not checking them into github. To get the file that contains user and test-level authorization codes, just get the connections.dll file out of a shipping version of a Bloom, and place it in your Bloom/DistFiles directory.
+
+
+## Disable analytics
+
+We don't want developer and tester runs (and crashes) polluting our statistics. On Windows, add the environment variable "feedback" with value "off". On Linux, edit $HOME/.profile and add:
+
+		export FEEDBACK=off 
+
+# Special instructions for building on Linux
+
+These notes were written by JohnT on 16 July 2014 based on previous two half-days working with
+Eberhard to get Bloom to build on a Precise Linux box. The computer was previously used to
+develop FLEx, so may have already had something that is needed. Sorry, I have not had the chance
+to try them on another system. If you do, please correct as needed.
+
+Note that as of 16 July 2014, Bloom does not work very well on Linux. Something more may be
+needed by the time we get it fully working. Hopefully these notes will be updated.
+
+Updated when Andrew was setting up his system on Precise Linux VM Oct. 2014. Note this VM also had previously been used for FLEx development.
+
+At various points you will be asked for your password.
+
+1. Install `wget`
+
+		sudo apt-get install wget
+
+2. Add the SIL keys for the main and testing SIL package repositiories
+
+		wget -O - http://linux.lsdev.sil.org/downloads/sil-testing.gpg | sudo apt-key add -
+		wget -O - http://packages.sil.org/sil.gpg | sudo apt-key add -
+
+3. Make sure you have your system set up to look at the main and testing SIL repositories
+
+	Install Synaptic if you haven't (sudo apt-get install synaptic).
+
+	You need Synaptic to look in some extra places for components. In Synaptic, go to
+	`Settings->Repositories`, `Other Software` tab. You want to see the following lines (replace
+	`precise` with your distribution version):
+
+		http://packages.sil.org/ubuntu precise main
+		http://packages.sil.org/ubuntu precise-experimental main
+		http://linux.lsdev.sil.org/ubuntu precise main
+		http://linux.lsdev.sil.org/ubuntu precise-experimental main
+
+	If some are missing, click add and paste the missing line, then insert 'deb' at the start,
+	then confirm.
+
+	(May help to check for and remove any lines that refer to the obsolete `ppa.palaso.org`, if
+	you've been doing earlier work on SIL stuff.)
+
+4. Update your system:
+
+		sudo apt-get update
+		sudo apt-get upgrade
+
+5. Clone the Bloom repository:
+
+		mkdir $HOME/palaso
+		cd $HOME/palaso
+		git clone https://github.com/BloomBooks/BloomDesktop.git
+
+	This should leave you in the default branch, which is currently correct for Linux. Don't be
+	misled into activating the Linux branch, which is no longer used.
+
+6. Install MonoDevelop 5 (or later)
+
+	A current MonoDevelop can be found on launchpad: https://launchpad.net/~ermshiperete/+archive/ubuntu/monodevelop
+	or https://launchpad.net/~ermshiperete/+archive/ubuntu/monodevelop-beta.
+
+	Follow the installation instructions on the launchpad website (currently a link called "Read about installing").
+
+	Make a shortcut to launch MonoDevelop (or just use this command line). The shortcut should execute something like this:
+
+		bash -c 'PATH=/opt/monodevelop/bin:$PATH; \
+			export MONO_ENVIRON="$HOME/palaso/bloom-desktop/environ"; \
+			export MONO_GAC_PREFIX=/opt/monodevelop:/opt/mono-sil:/usr:/usr/local; \
+			monodevelop-launcher.sh'
+
+	Correct the path in MONO_ENVIRON to point to the Bloom source code directory.
+
+7. Install the dependencies needed for Bloom
+
+		cd $HOME/palaso/bloom-desktop/build
+		./install-deps # (Note the initial dot)
+
+	This will also install a custom mono version in `/opt/mono-sil`. However, to successfully
+	use it with MonoDevelop, you'll need to do some additional steps.
+
+	Copy this script to /opt/mono-sil/bin:
+
+		wget https://raw.githubusercontent.com/sillsdev/mono-calgary/develop/mono-sil
+		sudo mv mono-sil /opt/mono-sil/bin
+		sudo chmod +x /opt/mono-sil/bin/mono-sil
+
+	Delete /opt/mono-sil/bin/mono and create two symlinks instead:
+
+		sudo rm /opt/mono-sil/bin/mono
+		sudo ln -s /opt/mono-sil/bin/mono-sgen /opt/mono-sil/bin/mono-real
+		sudo ln -s /opt/mono-sil/bin/mono-sil /opt/mono-sil/bin/mono
+
+8. Get binary dependencies:
+
+		cd $HOME/palaso/bloom-desktop/build
+		./getDependencies-Linux.sh  # (Note the initial dot)
+		cd ..
+		. environ #(note the '.')
+		sudo mozroots --import --sync
+
+9. Open solution in MonoDevelop
+
+	Run MonoDevelop using the shortcut. Open the solution BloomLinux.sln. Go to
+	`Edit -> Preferences`, `Packages/Sources`. The list should include
+	`https://www.nuget.org/api/v2/`, and `http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/`
+	(not sure the second is necessary).
+
+	Add the /opt/mono-sil/ as additional runtime in MonoDevelop (`Edit -> Preferences`, `Projects/.NET Runtimes`). Currently, this is 3.0.4.1 (Oct. 2014).
+
+	When you want to run Bloom you'll have to select the /opt/mono-sil/ as current runtime (Project/Active Runtime).
+
+	At this point you should be able to build the whole BloomLinux solution (right-click in
+	Solution pane, choose Build).
+
+10. You'll have to remember to redo the symlink step (end of #7) every time you install a new mono-sil package. You'll notice quickly if you forget because you get an error saying that it can't find XULRUNNER - that's an indication that it didn't source the environ file, either because the wrong runtime is selected or /opt/mono-sil/bin/mono points to mono-sgen instead of the wrapper script mono-sil.
+
+Hopefully we can streamline this process eventually.
 
 # Registry settings
 

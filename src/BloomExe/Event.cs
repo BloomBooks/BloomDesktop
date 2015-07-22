@@ -144,6 +144,15 @@ namespace Bloom
 		}
 	}
 
+	public class BookDownloadStartingEvent : Event<object>
+	{
+		public BookDownloadStartingEvent()
+			: base("BookDownloadStartingEvent", LoggingLevel.Major)
+		{
+
+		}
+	}
+
 	/// <summary>
 	/// ANything displaying the book should re-load it.
 	/// </summary>
@@ -155,6 +164,19 @@ namespace Bloom
 
 		}
 	}
+
+	/// <summary>
+	/// Anything displaying a book should re-load it the current page
+	/// </summary>
+	public class PageRefreshEvent : Event<object>
+	{
+		public PageRefreshEvent()
+			: base("PageRefreshEvent", LoggingLevel.Minor)
+		{
+
+		}
+	}
+
 
 	public class RelocatePageInfo
 	{
@@ -191,5 +213,15 @@ namespace Bloom
 
 		}
 	}
+	/// <summary>
+	/// fired when its possible that string should update from the localization manager
+	/// </summary>
+	public class LocalizationChangedEvent : Event<object>
+	{
+		public LocalizationChangedEvent()
+			: base("LocalizationChangedEvent", LoggingLevel.Major)
+		{
 
+		}
+	}
 }

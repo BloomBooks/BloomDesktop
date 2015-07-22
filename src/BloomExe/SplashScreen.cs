@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
+using Gecko.Net;
+using L10NSharp;
 
 namespace Bloom
 {
@@ -54,6 +57,9 @@ namespace Bloom
 			//try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
 			TopMost = true;
 			Focus();
+			var channel = ApplicationUpdateSupport.ChannelName;
+			_channelLabel.Visible = channel.ToLowerInvariant() != "release";
+			_channelLabel.Text = LocalizationManager.GetDynamicString("Bloom", "SplashScreen." + channel, channel);
 			BringToFront();
 		}
 
@@ -64,6 +70,14 @@ namespace Bloom
 										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
 										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid,
 										Palette.SILInternationalBlue,5, ButtonBorderStyle.Solid);
+		}
+
+		protected override void OnHandleCreated(EventArgs e)
+		{
+			base.OnHandleCreated(e);
+
+			// BL-552, BL-779: a bug in Mono requires us to wait to set Icon until handle created.
+			this.Icon = global::Bloom.Properties.Resources.Bloom;
 		}
 	}
 }

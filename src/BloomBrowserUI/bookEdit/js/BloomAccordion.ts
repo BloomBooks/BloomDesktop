@@ -1,20 +1,17 @@
 ﻿/// <reference path="../../lib/jquery.d.ts" />
-
-interface accordionInterface extends JQuery {
-	accordion(options: any): JQuery;
-}
+/// <reference path="../../lib/jquery-ui.d.ts" />
 
 class BloomAccordion {
 
-	constructor() {
-		(<accordionInterface>$("#accordion")).accordion({
-			heightStyle: "fill"
-		});
-	}
+  constructor() {
+    $("#accordion").accordion({
+      heightStyle: "fill"
+    });
+  }
 
-	static Resize() {
-		(<accordionInterface>$("#accordion")).accordion("refresh");
-		//var myHeight = $(document).find(".accordionRoot").innerHeight();
-		//console.log("Refreshed accordion to: "+myHeight);
-	}
+  static Resize() {
+    $("#accordion").accordion("refresh");
+    //var myHeight = $(document).find(".accordionRoot").innerHeight();
+    //console.log("Refreshed accordion to: "+myHeight);
+  }
 }

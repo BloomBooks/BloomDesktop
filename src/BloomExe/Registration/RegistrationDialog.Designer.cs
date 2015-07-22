@@ -1,4 +1,4 @@
-﻿namespace PalasoUIWinforms.Registration
+﻿namespace Bloom.Registration
 {
 	partial class RegistrationDialog
 	{
@@ -116,6 +116,7 @@
 			this._howAreYouUsing.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.l10NSharpExtender1.SetLocalizableToolTip(this._howAreYouUsing, null);
 			this.l10NSharpExtender1.SetLocalizationComment(this._howAreYouUsing, null);
+			this.l10NSharpExtender1.SetLocalizationPriority(this._howAreYouUsing, L10NSharp.LocalizationPriority.NotLocalizable);
 			this.l10NSharpExtender1.SetLocalizingId(this._howAreYouUsing, "RegistrationDialog._howAreYouUsing");
 			this._howAreYouUsing.Location = new System.Drawing.Point(3, 40);
 			this._howAreYouUsing.Multiline = true;
@@ -174,7 +175,8 @@
 			this._email.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.l10NSharpExtender1.SetLocalizableToolTip(this._email, null);
 			this.l10NSharpExtender1.SetLocalizationComment(this._email, null);
-			this.l10NSharpExtender1.SetLocalizingId(this._email, "RegisterDialog.textBox2");
+			this.l10NSharpExtender1.SetLocalizationPriority(this._email, L10NSharp.LocalizationPriority.NotLocalizable);
+			this.l10NSharpExtender1.SetLocalizingId(this._email, "RegistrationDialog._email");
 			this._email.Location = new System.Drawing.Point(3, 40);
 			this._email.Name = "_email";
 			this._email.Size = new System.Drawing.Size(177, 25);
@@ -185,7 +187,8 @@
 			this._organization.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.l10NSharpExtender1.SetLocalizableToolTip(this._organization, null);
 			this.l10NSharpExtender1.SetLocalizationComment(this._organization, null);
-			this.l10NSharpExtender1.SetLocalizingId(this._organization, "RegisterDialog.textBox4");
+			this.l10NSharpExtender1.SetLocalizationPriority(this._organization, L10NSharp.LocalizationPriority.NotLocalizable);
+			this.l10NSharpExtender1.SetLocalizingId(this._organization, "RegistrationDialog._organization");
 			this._organization.Location = new System.Drawing.Point(203, 40);
 			this._organization.Name = "_organization";
 			this._organization.Size = new System.Drawing.Size(181, 25);
@@ -233,7 +236,7 @@
 			this.label6.Location = new System.Drawing.Point(203, 20);
 			this.label6.Margin = new System.Windows.Forms.Padding(3, 20, 3, 0);
 			this.label6.Name = "label6";
-			this.label6.Size = new System.Drawing.Size(62, 17);
+			this.label6.Size = new System.Drawing.Size(59, 17);
 			this.label6.TabIndex = 8;
 			this.label6.Text = "Surname";
 			// 
@@ -256,7 +259,8 @@
 			this._firstName.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.l10NSharpExtender1.SetLocalizableToolTip(this._firstName, null);
 			this.l10NSharpExtender1.SetLocalizationComment(this._firstName, null);
-			this.l10NSharpExtender1.SetLocalizingId(this._firstName, "RegisterDialog.textBox1");
+			this.l10NSharpExtender1.SetLocalizationPriority(this._firstName, L10NSharp.LocalizationPriority.NotLocalizable);
+			this.l10NSharpExtender1.SetLocalizingId(this._firstName, "RegistrationDialog._firstName");
 			this._firstName.Location = new System.Drawing.Point(3, 40);
 			this._firstName.Name = "_firstName";
 			this._firstName.Size = new System.Drawing.Size(177, 25);
@@ -268,7 +272,8 @@
 			this._surname.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.l10NSharpExtender1.SetLocalizableToolTip(this._surname, null);
 			this.l10NSharpExtender1.SetLocalizationComment(this._surname, null);
-			this.l10NSharpExtender1.SetLocalizingId(this._surname, "RegisterDialog.textBox3");
+			this.l10NSharpExtender1.SetLocalizationPriority(this._surname, L10NSharp.LocalizationPriority.NotLocalizable);
+			this.l10NSharpExtender1.SetLocalizingId(this._surname, "RegistrationDialog._surname");
 			this._surname.Location = new System.Drawing.Point(203, 40);
 			this._surname.Name = "_surname";
 			this._surname.Size = new System.Drawing.Size(181, 25);
@@ -278,7 +283,7 @@
 			// _okButton
 			// 
 			this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this._okButton.Enabled =false;
+			this._okButton.Enabled = false;
 			this._okButton.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.l10NSharpExtender1.SetLocalizableToolTip(this._okButton, null);
 			this.l10NSharpExtender1.SetLocalizationComment(this._okButton, null);
@@ -294,7 +299,7 @@
 			// 
 			// l10NSharpExtender1
 			// 
-			this.l10NSharpExtender1.LocalizationManagerId = null;
+			this.l10NSharpExtender1.LocalizationManagerId = "Bloom";
 			this.l10NSharpExtender1.PrefixForNewItems = null;
 			// 
 			// _iAmStuckLabel

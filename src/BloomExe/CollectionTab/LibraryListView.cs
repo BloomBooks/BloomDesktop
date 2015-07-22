@@ -6,22 +6,25 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using DesktopAnalytics;
 using Palaso.Reporting;
-using Palaso.UI.WindowsForms.ImageToolbox;
-using Palaso.UI.WindowsForms.Widgets;
 using L10NSharp;
+using Palaso.IO;
 
 namespace Bloom.CollectionTab
 {
 	public partial class LibraryListView : UserControl
 	{
+		private const int ButtonHeight = 112;
+		private const int ButtonWidth = 92;
+
 		public delegate LibraryListView Factory();//autofac uses this
 
 		private readonly LibraryModel _model;
@@ -34,8 +37,10 @@ namespace Bloom.CollectionTab
 		private BookTransfer _bookTransferrer;
 		private DateTime _lastClickTime;
 		private bool _primaryCollectionReloadPending;
-		private LinkLabel _missingBooksLink;
 		private bool _disposed;
+		private BookCollection _downloadedBookCollection;
+		private Image _dropdownImage;
+
 		enum ButtonManagementStage
 		{
 			LoadPrimary, ImprovePrimary, LoadSourceCollections, ImproveAndRefresh
@@ -44,22 +49,23 @@ namespace Bloom.CollectionTab
 		private ButtonManagementStage _buttonManagementStage = ButtonManagementStage.LoadPrimary;
 
 		/// <summary>
-		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in prefered language
+		/// we go through these at idle time, doing slow things like actually instantiating the book to get the title in preferred language
 		/// A stack would be better for updating "the thing I just changed", but we're using a queue at the moment simply because we
 		/// want you'd see at the top of the screen to update before what's at the bottom or offscreen
 		/// </summary>
-		private ConcurrentQueue<Button> _buttonsNeedingSlowUpdate;
+		private readonly ConcurrentQueue<ButtonInfo> _buttonsNeedingSlowUpdate;
 
 		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
-		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent,
+		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent,
 			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory, BookTransfer bookTransferrer)
 		{
 			_model = model;
 			_bookSelection = bookSelection;
+			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
 			_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
 			_bookTransferrer = bookTransferrer;
-			_buttonsNeedingSlowUpdate = new ConcurrentQueue<Button>();
+			_buttonsNeedingSlowUpdate = new ConcurrentQueue<ButtonInfo>();
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
 			_primaryCollectionFlow.HorizontalScroll.Visible = false;
@@ -88,6 +94,38 @@ namespace Bloom.CollectionTab
 			if(Settings.Default.ShowExperimentalCommands)
 				_settingsProtectionHelper.ManageComponent(_exportToXMLForInDesignToolStripMenuItem);//we are restriting it because it opens a folder from which the user could do damage
 			_exportToXMLForInDesignToolStripMenuItem.Visible = Settings.Default.ShowExperimentalCommands;
+
+			SetupBookDropdownIcon();
+			_bookContextMenu.Closed += _bookContextMenu_Closed;
+		}
+
+		void _bookContextMenu_Closed(object sender, ToolStripDropDownClosedEventArgs e)
+		{
+			// make these controls visible again so they are available in the right-click menu
+			toolStripSeparator1.Visible = true;
+			_updateThumbnailMenu.Visible = true;
+			_updateFrontMatterToolStripMenu.Visible = true;
+		}
+
+		private void SetupBookDropdownIcon()
+		{
+			// we just need the bottom part of the image for this button
+			_dropdownImage = new Bitmap(10, 8, PixelFormat.Format32bppArgb);
+			var src = (Bitmap)_menuTriangle.Image;
+			using (var g = Graphics.FromImage(_dropdownImage))
+			{
+				g.DrawImage(src, new Rectangle(0, 0, 10, 8), new Rectangle(0, 7, 13, 11), GraphicsUnit.Pixel);
+			}
+		}
+
+		void _bookTriangle_Click()
+		{
+			// hide these controls in the triangle menu
+			toolStripSeparator1.Visible = false;
+			_updateThumbnailMenu.Visible = false;
+			_updateFrontMatterToolStripMenu.Visible = false;
+
+			_bookContextMenu.Show(MousePosition);
 		}
 
 		private void OnExportToXmlForInDesign(object sender, EventArgs e)
@@ -106,9 +144,7 @@ namespace Bloom.CollectionTab
 					try
 					{
 						_model.ExportInDesignXml(dlg.FileName);
-#if !__MonoCS__
-						Process.Start("explorer.exe", "/select, \"" + dlg.FileName + "\"");
-#endif
+						PathUtilities.SelectFileInExplorer(dlg.FileName);
 						Analytics.Track("Exported XML For InDesign");
 					}
 					catch (Exception error)
@@ -120,18 +156,15 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-
 		private void OnBookSelectionChanged(object sender, EventArgs e)
 		{
-//TODO
-//            foreach (ListViewItem item in _listView.Items)
-//            {
-//                if(item.Tag == _bookSelection.CurrentSelection)
-//                {
-//                    item.Selected = true;
-//                    break;
-//                }
-//            }
+			if (sender == null) return;
+
+			var selection = (BookSelection)sender;
+			if ((selection.CurrentSelection != null) && (selection.CurrentSelection.BookInfo != null))
+			{
+				HighlightBookButtonAndShowContextMenuButton(selection.CurrentSelection.BookInfo);					
+			}
 		}
 
 		public int PreferredWidth
@@ -144,7 +177,6 @@ namespace Bloom.CollectionTab
 			base.OnLoad(e);
 			Application.Idle += ManageButtonsAtIdleTime;
 		}
-
 
 		private void ManageButtonsAtIdleTime(object sender, EventArgs e)
 		{
@@ -172,15 +204,12 @@ namespace Bloom.CollectionTab
 					break;
 				case ButtonManagementStage.LoadSourceCollections:
 					LoadSourceCollectionButtons();
-					// now we're all set to handle any pending book orders, especially one that may have been created
-					// at startup from a command line argument. We're also ready to receive any notifications of new books
-					// downloaded.
-					if (_bookTransferrer != null)
-					{
-						_bookTransferrer.BookDownLoaded += bookTransferrer_BookDownLoaded;
-						_bookTransferrer.HandleOrders();
-					}
 					_buttonManagementStage = ButtonManagementStage.ImproveAndRefresh;
+					if (Program.PathToBookDownloadedAtStartup != null)
+					{
+						// We started up with a command to downloaded a book...Select it.
+						SelectBook(new BookInfo(Program.PathToBookDownloadedAtStartup, false));
+					}
 					break;
 				case ButtonManagementStage.ImproveAndRefresh:
 					ImproveAndRefreshBookButtons();
@@ -203,8 +232,10 @@ namespace Bloom.CollectionTab
 			_primaryCollectionFlow.Controls.Add(invisibleHackPartner);
 			var primaryCollectionHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
 			primaryCollectionHeader.Label.Text = _model.VernacularLibraryNamePhrase;
+			primaryCollectionHeader.AdjustWidth();
 			_primaryCollectionFlow.Controls.Add(primaryCollectionHeader);
-			_primaryCollectionFlow.SetFlowBreak(primaryCollectionHeader, true);
+			//_primaryCollectionFlow.SetFlowBreak(primaryCollectionHeader, true);
+			_primaryCollectionFlow.Controls.Add(_menuTriangle);//NB: we're using a picture box instead of a button because the former can have transparency.
 			LoadOneCollection(_model.GetBookCollections().First(), _primaryCollectionFlow);
 			_primaryCollectionFlow.ResumeLayout();
 		}
@@ -234,13 +265,16 @@ namespace Bloom.CollectionTab
 
 			_sourceBooksFlow.SuspendLayout();
 			_sourceBooksFlow.Controls.Clear();
-			var bookSourcesHeader = new ListHeader() {ForeColor = Palette.TextAgainstDarkBackground};
+			var bookSourcesHeader = new ListHeader() { ForeColor = Palette.TextAgainstDarkBackground, Width = 450 };
 
 			string shellSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.sourcesForNewShellsHeading",
 																				"Sources For New Shells");
 			string bookSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.bookSourceHeading",
 																			   "Sources For New Books");
-				bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
+			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
+			// Don't truncate the heading: see https://jira.sil.org/browse/BL-250.
+			if (bookSourcesHeader.Width < bookSourcesHeader.Label.Width)
+				bookSourcesHeader.Width = bookSourcesHeader.Label.Width;
 			invisibleHackPartner = new Label() {Text = "", Width = 0};
 			_sourceBooksFlow.Controls.Add(invisibleHackPartner);
 			_sourceBooksFlow.Controls.Add(bookSourcesHeader);
@@ -263,7 +297,7 @@ namespace Bloom.CollectionTab
 					//We showed at least one book, so now go back and insert the header
 					var collectionHeader = new Label()
 						{
-							Text = collection.Name,
+							Text = L10NSharp.LocalizationManager.GetDynamicString("Bloom", "CollectionTab." + collection.Name, collection.Name),
 							Size = new Size(_sourceBooksFlow.Width - 20, 20),
 							ForeColor = Palette.TextAgainstDarkBackground,
 							Padding = new Padding(10, 0, 0, 0)
@@ -282,35 +316,19 @@ namespace Bloom.CollectionTab
 
 		private void AddFinalLinks()
 		{
-			if (_model.IsShellProject)
-			{
-				_missingBooksLink = new LinkLabel()
-					{
-						Text =
-							L10NSharp.LocalizationManager.GetString("CollectionTab.hiddenBooksNotice",
-																	"Where's the rest?",
-																	"Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden"),
-						Width = 200,
-						Margin = new Padding(0, 30, 0, 0),
-						TextAlign = ContentAlignment.TopCenter,
-						LinkColor = Palette.TextAgainstDarkBackground
-					};
-
-				_missingBooksLink.Click += new EventHandler(OnMissingBooksLink_Click);
-				_sourceBooksFlow.Controls.Add(_missingBooksLink);
-				_sourceBooksFlow.SetFlowBreak(_missingBooksLink, true);
-			}
+			// Nothing to do currently. This was used to display the missing books link in a source collection.
 		}
 
-				/// <summary>
+		/// <summary>
 		/// Called at idle time after everything else is set up, and only when this tab is visible
 		/// </summary>
 		private void ImproveAndRefreshBookButtons()
 		{
-			Button button;
-			if(!_buttonsNeedingSlowUpdate.TryDequeue(out button))
+			ButtonInfo buttonInfo;
+			if (!_buttonsNeedingSlowUpdate.TryDequeue(out buttonInfo))
 				return;
 
+			Button button = buttonInfo.Button;
 			BookInfo bookInfo = button.Tag as BookInfo;
 			Book.Book book;
 			try
@@ -331,16 +349,24 @@ namespace Bloom.CollectionTab
 				return;
 			}
 
-			var titleBestForUserDisplay = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
-			if (titleBestForUserDisplay != button.Text)
+			//Only go looking for a better title if the book hasn't already been localized when we first showed it.
+			//The idea is, if we already have a localization mapping for this name, then
+			// we're not going to get a better title by digging into the document itself and overriding what the localizer
+			// chose to call it.
+			// Note: currently (August 2014) the books that will have been localized are are those in the main "templates" section: Basic Book, Calendar, etc.
+			if (button.Text == ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay, button))
 			{
-				Debug.WriteLine(button.Text +" --> "+titleBestForUserDisplay);
-				button.Text = titleBestForUserDisplay;
+				var bestTitle = book.TitleBestForUserDisplay;
+				var titleBestForUserDisplay = ShortenTitleIfNeeded(bestTitle, button);
+				if (titleBestForUserDisplay != button.Text)
+				{
+					Debug.WriteLine(button.Text + " --> " + titleBestForUserDisplay);
+					button.Text = titleBestForUserDisplay;
+					toolTip1.SetToolTip(button, bestTitle);
+				}
 			}
-			if (button.ImageIndex==999)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
-			{
+			if (buttonInfo.ThumbnailRefreshNeeded)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
 				ScheduleRefreshOfOneThumbnail(book);
-			}
 		}
 
 		void OnBloomLibrary_Click(object sender, EventArgs e)
@@ -352,21 +378,15 @@ namespace Bloom.CollectionTab
 				if (dialogResult != DialogResult.OK)
 					return;
 			}
-			Process.Start("http://dev.bloomlibrary.org");
+			Process.Start(BookTransfer.UseSandbox
+				? "http://dev.bloomlibrary.org/books"
+				: "http://bloomlibrary.org/books");
 		}
 
 		DialogResult ShowBloomLibraryLinkVerificationDialog()
 		{
 			var dlg = new BloomLibraryLinkVerification();
 			return dlg.GetVerification(this);
-		}
-
-		void OnMissingBooksLink_Click(object sender, EventArgs e)
-		{
-			if (_model.IsShellProject)
-			{
-				MessageBox.Show(LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."), _missingBooksLink.Text);
-			}
 		}
 
 		/// <summary>
@@ -381,25 +401,22 @@ namespace Bloom.CollectionTab
 			{
 				try
 				{
-					var isSuitableSourceForThisEditableCollection = (_model.IsShellProject && bookInfo.IsSuitableForMakingShells) ||
-							  (!_model.IsShellProject && bookInfo.IsSuitableForVernacularLibrary);
-
-					if (isSuitableSourceForThisEditableCollection || collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+					if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
 					{
-						if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
-						{
-							loadedAtLeastOneBook = true;
-							AddOneBook(bookInfo, flowLayoutPanel);
-						}
+						loadedAtLeastOneBook = true;
+						AddOneBook(bookInfo, flowLayoutPanel, collection.Name.ToLowerInvariant() == "templates");
 					}
 				}
 				catch (Exception error)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Could not load the book at "+bookInfo.FolderPath);
+					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not load the book at " + bookInfo.FolderPath);
 				}
 			}
 			if (collection.Name == BookCollection.DownloadedBooksCollectionNameInEnglish)
 			{
+				_downloadedBookCollection = collection;
+				collection.FolderContentChanged += DownLoadedBooksChanged;
+				collection.WatchDirectory(); // In case another instance downloads a book.
 				var bloomLibrayLink = new LinkLabel()
 				{
 					Text =
@@ -417,33 +434,117 @@ namespace Bloom.CollectionTab
 			return loadedAtLeastOneBook;
 		}
 
-		private void AddOneBook(Book.BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel)
+	   private bool IsSuitableSourceForThisEditableCollection(BookInfo bookInfo)
 		{
-			var button = new Button(){Size=new Size(90,110)};
-			button.Text = ShortenTitleIfNeeded(bookInfo.QuickTitleUserDisplay);
-			button.TextImageRelation = TextImageRelation.ImageAboveText;
-			button.ImageAlign = ContentAlignment.TopCenter;
-			button.TextAlign = ContentAlignment.BottomCenter;
-			button.FlatStyle = FlatStyle.Flat;
-			button.ForeColor = Palette.TextAgainstDarkBackground ;
-			button.FlatAppearance.BorderSize = 0;
-			button.ContextMenuStrip = _bookContextMenu;
+			return (_model.IsShellProject && bookInfo.IsSuitableForMakingShells) ||
+				   (!_model.IsShellProject && bookInfo.IsSuitableForVernacularLibrary);
+		}
+
+		private Timer _newDownloadTimer;
+		/// <summary>
+		/// Called when a file system watcher notices a new book (or some similar change) in our downloaded books folder.
+		/// This will happen on a thread-pool thread.
+		/// Since we are updating the UI in response we want to deal with it on the main thread.
+		/// This also has the effect that it can't happen in the middle of another LoadSourceCollectionButtons().
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void DownLoadedBooksChanged(object sender, ProjectChangedEventArgs eventArgs)
+		{
+			Invoke((Action) (() =>
+			{
+				// We may notice a change to the downloaded books directory before the other Bloom instance has finished
+				// copying the new book there. Finishing should not take long, because the download is done...at worst
+				// we have to copy the book on our own filesystem. Typically we only have to move the directory.
+				// As a safeguard, wait half a second before we update things.
+				if (_newDownloadTimer != null)
+				{
+					// Things changed again before we started the update! Forget the old update and wait until things
+					// are stable for the required interval.
+					_newDownloadTimer.Stop();
+					_newDownloadTimer.Dispose();
+				}
+				_newDownloadTimer = new Timer();
+				_newDownloadTimer.Tick += (o, args) =>
+				{
+					_newDownloadTimer.Stop();
+					_newDownloadTimer.Dispose();
+					_newDownloadTimer = null;
+
+					UpdateDownloadedBooks(eventArgs.Path);
+				};
+				_newDownloadTimer.Interval = 500;
+				_newDownloadTimer.Start();
+			}));
+		}
+
+		private void UpdateDownloadedBooks(string pathToChangedBook)
+		{
+			var newBook = new BookInfo(pathToChangedBook, false);
+			// It's always worth reloading...maybe we didn't have a button before because it was not
+			// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
+			// other way...we want the button to have valid metadata for the book.
+			// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
+			LoadSourceCollectionButtons();
+			if (Enabled && CollectionTabIsActive)
+				SelectBook(newBook);
+		}
+
+		/// <summary>
+		/// Tells whether the collections tab is visible. If it isn't, we don't try to switch to show the selected book.
+		/// In the current configuration, Parent.Parent.Parent is the LibraryView; this is added and removed from
+		/// the higher level view depending on whether it is wanted, so if it has no higher parent it is hidden
+		/// (although Visible is still true!) and we should not try to switch.
+		/// One day we may enhance it so that we switch tabs and show it, but there are states where that would
+		/// be dangerous.
+		/// </summary>
+		private bool CollectionTabIsActive
+		{
+			get { return Parent.Parent.Parent.Parent != null; }
+		}
+
+		private void AddOneBook(BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, bool localizeTitle)
+		{
+			string title = bookInfo.QuickTitleUserDisplay;
+			if (localizeTitle)
+				title = LocalizationManager.GetDynamicString("Bloom", "Template." + title, title);
+
+			var button = new Button
+			{
+				Size = new Size(ButtonWidth, ButtonHeight),
+				Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
+				TextImageRelation = TextImageRelation.ImageAboveText,
+				ImageAlign = ContentAlignment.TopCenter,
+				TextAlign = ContentAlignment.BottomCenter,
+				FlatStyle = FlatStyle.Flat,
+				ForeColor = Palette.TextAgainstDarkBackground,
+				UseMnemonic = false, //otherwise, it tries to interpret '&' as a shortcut
+				ContextMenuStrip = _bookContextMenu,
+				AutoSize = false,
+
+				Tag = bookInfo
+			};
+
 			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
 			//doesn't work: item.DoubleClick += (sender,arg)=>_model.DoubleClickedBook();
+			
+			button.Text = ShortenTitleIfNeeded(title, button);
+			button.FlatAppearance.BorderSize = 1;
+			button.FlatAppearance.BorderColor = BackColor;
 
-			button.Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont;
+			toolTip1.SetToolTip(button, title);
 
-
-			button.Tag=bookInfo;
-
-
-			Image thumbnail = Resources.PagePlaceHolder;;
+			Image thumbnail = Resources.PagePlaceHolder;
 			_bookThumbnails.Images.Add(bookInfo.Id, thumbnail);
 			button.ImageIndex = _bookThumbnails.Images.Count - 1;
-			flowLayoutPanel.Controls.Add(button);
+			flowLayoutPanel.Controls.Add(button); // important to add it before RefreshOneThumbnail; uses parent flow to decide whether primary
+
+			// Can't use this test until after we add button (uses parent info)
+			if (!IsUsableBook(button))
+				button.ForeColor = Palette.DisabledTextAgainstDarkBackColor;
 
 			Image img;
-
+			var refreshThumbnail = false;
 			//review: we could do this at idle time, too:
 			if (bookInfo.TryGetPremadeThumbnail(out img))
 			{
@@ -453,21 +554,80 @@ namespace Bloom.CollectionTab
 			{
 				//show this one for now, in the background someone will do the slow work of getting us a better one
 				RefreshOneThumbnail(bookInfo,Resources.placeHolderBookThumbnail);
-				//hack to signal that we need to make a real one when get a chance
-				button.ImageIndex = 999;
+				refreshThumbnail = true;
 			}
-			_buttonsNeedingSlowUpdate.Enqueue(button);
-
-//			bookInfo.GetThumbNailOfBookCoverAsync(bookInfo.Type != Book.Book.BookType.Publication,
-//				                                  image => RefreshOneThumbnail(bookInfo, image),
-//												  error=> RefreshOneThumbnail(bookInfo, Resources.Error70x70));
-
+			_buttonsNeedingSlowUpdate.Enqueue(new ButtonInfo(button, refreshThumbnail));
 		}
 
-		private string ShortenTitleIfNeeded(string title)
+		private string ShortenTitleIfNeeded(string title, Button button)
 		{
-			int kMaxCaptionLetters = 17;
-			return title.Length > kMaxCaptionLetters ? title.Substring(0, kMaxCaptionLetters-2) + "…" : title;
+			var maxHeight = ButtonHeight - HtmlThumbNailer.ThumbnailOptions.DefaultHeight - (button.FlatAppearance.BorderSize * 2);
+
+			// -2 because the text will wrap if there is not at least one pixel between the text and the border
+			var width = button.Width - button.Margin.Horizontal - (button.FlatAppearance.BorderSize * 2) - 2;
+
+			var targetSize = new Size(width, int.MaxValue);
+			// WordBreak is necessary for sensible measurment of line widths...otherwise it ignores the width
+			// constraint and puts all the text on one line.
+			// NoPrefix suppresses special treatment of ampersand.
+			var flags = TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix;
+			var source = title;
+			var firstLine = ""; // May be used if the first line starts with a long word; see below.
+			using (var g = this.CreateGraphics())
+			{
+				var size = TextRenderer.MeasureText(g, source, button.Font, targetSize, flags);
+				if (size.Height <= maxHeight && size.Width <= width)
+					return source;
+				var tooBig = source;
+				var fits = source.Substring(0, 4); // include something not entirely trivial
+				for (int i = 0; i < 2; i++) // trick to get a second iteration for long word on first line
+				{
+					while (tooBig.Length > fits.Length + 1)
+					{
+						var probe = source.Substring(0, (tooBig.Length + fits.Length)/2);
+						size = TextRenderer.MeasureText(g, probe + "…", button.Font, targetSize, flags);
+						if (size.Height <= maxHeight && size.Width <= width)
+							fits = probe;
+						else
+							tooBig = probe;
+					}
+					if (i == 0 && size.Height <= maxHeight/2)
+					{
+						// Pesky TextRenderer won't break long words, but button layout code will.
+						// If we got a long word on first line, the algorithm above will truncate
+						// all the way down to ONE line. See if we can fit some more on the second line.
+						// (Note that we don't need to consider the case of a one-line result that
+						// contains white space. If it's possible to put even one short word on the
+						// first line, that's what the TextRenderer and the button layout code both do.)
+
+						// Enhance: this fix assumes that we are only showing two lines, even though
+						// most of the code here is designed to be more general. If there is room for
+						// three or more lines, the current code could still truncate to two if there
+						// is a long word on the second. It's somewhat tricky to make it handle n lines:
+						// we start to really need to know the line height to tell whether truncation
+						// happened. The space that's available for more lines may not be exactly
+						// the total minus the height of the first line. I decided to apply YAGNI.
+						maxHeight -= size.Height;
+						firstLine = fits;
+						source = source.Substring(firstLine.Length);
+						// Rather arbitrary, but 4 are pretty sure to fit, and trying to measure an
+						// empty string might be a problem.
+						if (source.Length > 4)
+							fits = source.Substring(0, 4);
+						else
+							fits = source;
+
+						tooBig = source;
+					}
+					else
+					{
+						// Already iterated, or what we have already takes two lines
+						// (maybe the long word was on the second line).
+						break;
+					}
+				}
+				return firstLine + fits + "…";
+			}
 		}
 
 		/// <summary>
@@ -489,47 +649,16 @@ namespace Bloom.CollectionTab
 			_primaryCollectionReloadPending = true;
 		}
 
-		void bookTransferrer_BookDownLoaded(object sender, BookDownloadedEventArgs e)
-		{
-			var newBook = e.BookDetails;
-			Invoke((Action) (() =>
-			{
-				if (!HaveButtonForBook(newBook))
-				{
-					var downloadCollection = _model.GetBookCollections().First(c => c.PathToDirectory == BookTransfer.DownloadFolder);
-					downloadCollection.InsertBookInfo(newBook);
-					// It's always worth reloading...maybe we didn't have a button before because it was not
-					// suitable for making vernacular books, but now it is! Or maybe the metadata changed some
-					// other way...we want the button to have valid metadata for the book.
-					// Optimize: maybe it would be worth trying to find the right place to insert or replace just one button?
-					LoadSourceCollectionButtons();
-				}
-				// This actually works...displays the book and offers to let you use it as a template...even if it
-				// is NOT suitable for making vernacular books and hence no button has been created for it. Not sure
-				// whether this is desirable.
-				SelectBook(newBook);
-			}));
-		}
-
-		private bool HaveButtonForBook(BookInfo newBook)
-		{
-			foreach (var item in _sourceBooksFlow.Controls)
-			{
-				var button = item as Button;
-				if (button == null)
-					continue;
-				var info = button.Tag as BookInfo;
-				if (info == null)
-					continue;
-				if (info.FolderPath == newBook.FolderPath)
-					return true;
-			}
-			return false;
-		}
-
 		private void OnClickBook(object sender, EventArgs e)
 		{
-			BookInfo bookInfo = ((Button)sender).Tag as BookInfo;
+			var thisBtn = (Button)sender;
+
+			if (!IsUsableBook(thisBtn))
+			{
+				MessageBox.Show(LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."));
+				return;
+			}
+			BookInfo bookInfo = thisBtn.Tag as BookInfo;
 			if (bookInfo == null)
 				return;
 
@@ -542,9 +671,18 @@ namespace Bloom.CollectionTab
 				{
 					//I couldn't get the DoubleClick event to work, so I rolled my own
 					if (Control.MouseButtons == MouseButtons.Left &&
-						DateTime.Now.Subtract(lastClickTime).TotalMilliseconds < SystemInformation.DoubleClickTime)
+					    DateTime.Now.Subtract(lastClickTime).TotalMilliseconds < SystemInformation.DoubleClickTime)
 					{
 						_model.DoubleClickedBook();
+					}
+					else
+					{
+						// detect click on book dropdown menu
+						var pt = thisBtn.PointToClient(MousePosition);
+						if ((pt.X > thisBtn.Width - 12) && (pt.Y > thisBtn.Height - 12))
+						{
+							_bookTriangle_Click();
+						}
 					}
 					return; // already selected, nothing to do.
 				}
@@ -558,6 +696,36 @@ namespace Bloom.CollectionTab
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
 			}
 			SelectBook(bookInfo);
+		}
+
+		private void HighlightBookButtonAndShowContextMenuButton(BookInfo bookInfo)
+		{
+			foreach (var btn in AllBookButtons())
+			{
+				if (btn.Tag == bookInfo)
+				{
+					btn.Paint += btn_Paint;
+					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
+				}
+				else
+				{
+					btn.Paint -= btn_Paint;
+					btn.FlatAppearance.BorderColor = BackColor;
+				}
+			}
+		}
+
+		void btn_Paint(object sender, PaintEventArgs e)
+		{
+			var obj = (Button) sender;
+			var rect = new Rectangle
+			{
+				X = obj.Width - _dropdownImage.Width - 3,
+				Y = obj.Height - _dropdownImage.Height - 3,
+				Width = _dropdownImage.Width,
+				Height = _dropdownImage.Height
+			};
+			e.Graphics.DrawImage(_dropdownImage, rect);
 		}
 
 		private void SelectBook(BookInfo bookInfo)
@@ -576,6 +744,7 @@ namespace Bloom.CollectionTab
 
 				deleteMenuItem.Enabled = _model.CanDeleteSelection;
 				_updateThumbnailMenu.Visible = _model.CanUpdateSelection;
+				exportToWordOrLibreOfficeToolStripMenuItem.Visible = _model.CanExportSelection;
 				_updateFrontMatterToolStripMenu.Visible = _model.CanUpdateSelection;
 			}
 			catch (Exception error)
@@ -630,8 +799,9 @@ namespace Bloom.CollectionTab
 				Book.Book book = SelectedBook;
 				if (book != null && SelectedButton != null)
 				{
-					SelectedButton.Text = ShortenTitleIfNeeded(book.TitleBestForUserDisplay);
-
+					var bestTitle = book.TitleBestForUserDisplay;
+					SelectedButton.Text = ShortenTitleIfNeeded(bestTitle, SelectedButton);
+					toolTip1.SetToolTip(SelectedButton, bestTitle);
 					if (_thumbnailRefreshPending)
 					{
 						_thumbnailRefreshPending = false;
@@ -641,6 +811,10 @@ namespace Bloom.CollectionTab
 				if (_primaryCollectionReloadPending)
 				{
 					LoadPrimaryCollectionButtons();
+					// One reason to reload is that we created a new book. We need to go through the steps of selecting it
+					// so that e.g. its menu options are properly configured.
+					if (SelectedBook != null)
+						SelectBook(SelectedBook.BookInfo);
 				}
 			}
 			else
@@ -648,7 +822,6 @@ namespace Bloom.CollectionTab
 				Application.Idle -= ManageButtonsAtIdleTime;
 			}
 		}
-
 
 		private void RefreshOneThumbnail(Book.BookInfo bookInfo, Image image)
 		{
@@ -661,7 +834,7 @@ namespace Bloom.CollectionTab
 				{
 					_bookThumbnails.Images[imageIndex] = image;
 					var button = FindBookButton(bookInfo);
-					button.Image = image;
+					button.Image = IsUsableBook(button) ? image : MakeDim(image);
 				}
 			}
 
@@ -672,6 +845,65 @@ namespace Bloom.CollectionTab
 				throw;
 #endif
 			}
+		}
+
+		bool IsUsableBook(Button bookButton)
+		{
+			// We'd prefer to use collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+			// but we don't have access to the collection at all the points where we need to evaluate this.
+			// Depending on the parent like this unfortunately means we can't use this method until the button
+			// has its parent.
+			// Eithe way, the basic idea is that books in the main collection you are now editing are always usable.
+			if (bookButton.Parent == _primaryCollectionFlow)
+				return true;
+			var bookInfo = (BookInfo) bookButton.Tag;
+			return IsSuitableSourceForThisEditableCollection(bookInfo);
+		}
+
+		// Adapted from http://tech.pro/tutorial/660/csharp-tutorial-convert-a-color-image-to-grayscale
+		// Author claims this is about 20x faster than manipulating pixels directly (62 vs 1135ms for some image on some hardware).
+		public static Bitmap MakeDim(Image original)
+		{
+			//create a blank bitmap the same size as original
+			Bitmap newBitmap = new Bitmap(original.Width, original.Height);
+
+			//get a graphics object from the new image
+			using (Graphics g = Graphics.FromImage(newBitmap))
+			{
+				//create the grayscale ColorMatrix
+				var colorMatrix = new ColorMatrix(
+					new float[][]
+					{
+						// convert to greyscale: this (original) version leaves them too bright, and the distinction may be lost on color-blind
+						//new float[] {.3f, .3f, .3f, 0, 0},
+						//new float[] {.59f, .59f, .59f, 0, 0},
+						//new float[] {.11f, .11f, .11f, 0, 0},
+						//new float[] {0, 0, 0, 1, 0},
+						//new float[] {0, 0, 0, 0, 1}
+
+						// halve all color values to make darker--very similar to the chosen variant, but dark colors are strengthened.
+						//new float[] {0.5f, 0, 0, 0, 0},
+						//new float[] {0, 0.5f, 0, 0, 0},
+						//new float[] {0, 0, 0.5f, 0, 0},
+						//new float[] {0, 0, 0, 1, 0},
+						//new float[] {0, 0, 0, 0, 1}
+
+						// make it semi-transparent; this reduces contrast with background for all colors.
+						new float[] {1.0f, 0, 0, 0, 0},
+						new float[] {0, 1.0f, 0, 0, 0},
+						new float[] {0, 0, 1.0f, 0, 0},
+						new float[] {0, 0, 0, 0.4f, 0}, // the 0.4 here is what really does it.
+						new float[] {0, 0, 0, 0, 1}
+					});
+
+				ImageAttributes attributes = new ImageAttributes();
+				attributes.SetColorMatrix(colorMatrix);
+
+				//draw the original image on the new image using the color matrix to adapt the colors
+				g.DrawImage(original, new Rectangle(0, 0, original.Width, original.Height),
+					0, 0, original.Width, original.Height, GraphicsUnit.Pixel, attributes);
+			}
+			return newBitmap;
 		}
 
 		private Button FindBookButton(Book.BookInfo bookInfo)
@@ -722,7 +954,16 @@ namespace Bloom.CollectionTab
 
 		private void OnBringBookUpToDate_Click(object sender, EventArgs e)
 		{
-			_model.BringBookUpToDate();
+			try
+			{
+				_model.BringBookUpToDate();
+			}
+			catch (Exception error)
+			{
+				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.ErrorUpdating",
+					"There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.");
+				ErrorReport.NotifyUserOfProblem(error, msg);
+			}
 		}
 
 		private void _openFolderOnDisk_Click(object sender, EventArgs e)
@@ -732,7 +973,7 @@ namespace Bloom.CollectionTab
 
 		private void OnOpenAdditionalCollectionsFolderClick(object sender, EventArgs e)
 		{
-			Process.Start(ProjectContext.GetInstalledCollectionsDirectory());
+			PathUtilities.SelectFileInExplorer(ProjectContext.GetInstalledCollectionsDirectory());
 		}
 
 		private void OnVernacularProjectHistoryClick(object sender, EventArgs e)
@@ -752,20 +993,11 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		private void label3_Click(object sender, EventArgs e)
-		{
-
-		}
-
-		private void _vernacularCollectionMenuStrip_Opening(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-
-		}
-
 		private void _doChecksAndUpdatesOfAllBooksToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			_model.DoUpdatesOfAllBooks();
 		}
+
 		private void _doChecksOfAllBooksToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			_model.DoChecksOfAllBooks();
@@ -790,40 +1022,192 @@ namespace Bloom.CollectionTab
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing)
 		{
+			if (disposing && (_newDownloadTimer != null))
+			{
+				_newDownloadTimer.Stop();
+				_newDownloadTimer.Dispose();
+			}
 			if (disposing && (components != null))
 			{
 				components.Dispose();
+			}
+			if (disposing && _downloadedBookCollection != null)
+			{
+				_downloadedBookCollection.StopWatchingDirectory();
+				_downloadedBookCollection.FolderContentChanged -= DownLoadedBooksChanged;
 			}
 			base.Dispose(disposing);
 			_disposed = true;
 		}
 
+		internal void MakeBloomPack(bool forReaderTools)
+		{
+			using (var dlg = new SaveFileDialog())
+			{
+				dlg.FileName = _model.GetSuggestedBloomPackPath();
+				dlg.Filter = "BloomPack|*.BloomPack";
+				dlg.RestoreDirectory = true;
+				dlg.OverwritePrompt = true;
+				if (DialogResult.Cancel == dlg.ShowDialog())
+				{
+					return;
+				}
+				_model.MakeBloomPack(dlg.FileName, forReaderTools);
+			}
+		}
+
+		private void exportToWordOrLibreOfficeToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				MessageBox.Show(LocalizationManager.GetString("CollectionTab.BookMenu.ExportDocMessage",
+					"Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book, but these programs normally don't do well with preserving the layout, so don't expect much."));
+				var destPath = _bookSelection.CurrentSelection.GetPathHtmlFile().Replace(".htm", ".doc");
+				_model.ExportDocFormat(destPath);
+				PathUtilities.OpenFileInApplication(destPath);
+				Analytics.Track("Exported To Doc format");
+			}
+			catch (IOException error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error.Message, "Could not export the book");
+				Analytics.ReportException(error);
+			}
+			catch (Exception error)
+			{
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
+				Analytics.ReportException(error);
+			}
+		}
 
 
+		private void makeReaderTemplateBloomPackToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			using (var dlg = new MakeReaderTemplateBloomPackDlg())
+			{
+				dlg.SetLanguage(_model.LanguageName);
+				dlg.SetTitles(_model.BookTitles);
+				if (dlg.ShowDialog(this) != DialogResult.OK)
+					return;
+				MakeBloomPack(true);
+			}
+		}
 
+		private void _menuButton_Click(object sender, EventArgs e)
+		{
+			_vernacularCollectionMenuStrip.Show(_menuTriangle, new Point(0, 0));
+		}
+
+		private class ButtonInfo
+		{
+			public ButtonInfo(Button button, bool thumbnailRefreshNeeded)
+			{
+				Button = button;
+				ThumbnailRefreshNeeded = thumbnailRefreshNeeded;
+			}
+			public Button Button { get; set; }
+			public bool ThumbnailRefreshNeeded { get; set; }
+		}
+
+		private void openCreateCollectionToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var workspaceView = GetWorkspaceView(this, typeof(WorkspaceView));
+			if (workspaceView != null)
+				workspaceView.OpenCreateLibrary();
+		}
+
+		private static WorkspaceView GetWorkspaceView(Control ctrl, Type workspaceViewType)
+		{
+			while (true)
+			{
+				var parent = ctrl.Parent;
+
+				if (parent == null)
+					return null;
+
+				if (parent.GetType() == workspaceViewType)
+					return (WorkspaceView) parent;
+
+				ctrl = parent;
+			}
+		}
+
+		private void _copyBook_Click(object sender, EventArgs e)
+		{
+			if (SelectedBook == null) return;
+
+			// get the book name and copy number of the current directory
+			var collectionDir = SelectedBook.CollectionSettings.FolderPath;
+			var baseName = Path.GetFileName(SelectedBook.FolderPath);
+			var regex = new Regex(@"^(.+)(\s-\sCopy)(\s[0-9]+)?$");
+			var match = regex.Match(baseName);
+			var copyNum = 1;
+
+			if (match.Success)
+			{
+				baseName = match.Groups[1].Value;
+				if (match.Groups[3].Success)
+					copyNum += int.Parse(match.Groups[3].Value.Trim());
+			}
+
+			// directory for the new book
+			var newBookName = GetAvaialableDirectory(collectionDir, baseName, copyNum);
+			var newBookDir = Path.Combine(collectionDir, newBookName);
+			Directory.CreateDirectory(newBookDir);
+
+			// copy files
+			CopyDirectory(SelectedBook.FolderPath, newBookDir);
+			
+			// rename the book htm file
+			var oldName = Path.Combine(newBookDir, Path.GetFileName(SelectedBook.GetPathHtmlFile()));
+			var newName = Path.Combine(newBookDir, newBookName + ".htm");
+			File.Move(oldName, newName);
+
+			// reload the collection
+			_model.ReloadCollections();
+			LoadPrimaryCollectionButtons();
+
+			// select the new book
+			var bookInfo = AllBookButtons().Select(btn => btn.Tag as BookInfo).FirstOrDefault(info => info.FolderPath == newBookDir);
+			if (bookInfo != null)
+			{
+				SelectBook(bookInfo);
+				HighlightBookButtonAndShowContextMenuButton(bookInfo);
+			}
+		}
 
 		/// <summary>
-		/// Occasionally, when select a book, the Bloom App itself loses focus. I assume this is a gecko-related issue.
-		/// You can see it happen because the title bar of the application changes to the Windows unselected color (lighter).
-		/// And then, if you click on a tab, the click is swallowed selecting the app, and you have to click again.
-		///
-		/// So, this occasionally checks that the Workspace control has focus, and if it doesn't, pulls it back here.
+		/// Get an avaialble directory name for a new copy of a book
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-//		private void _keepFocusTimer_Tick(object sender, EventArgs e)
-//		{
-//			if(Visible)
-//			{
-//				var findForm = FindForm();//visible is worthless, but FindForm() happily does fail when we aren't visible.
-//
-//				if (findForm != null && !findForm.ContainsFocus)
-//				{
-//				//	Focus();
-//
-//					//Debug.WriteLine("Grabbing back focus");
-//				}
-//			}
-//		}
+		/// <param name="collectionDir"></param>
+		/// <param name="baseName"></param>
+		/// <param name="copyNum"></param>
+		/// <returns></returns>
+		private static string GetAvaialableDirectory(string collectionDir, string baseName, int copyNum)
+		{
+			string newName;
+			if (copyNum == 1)
+				newName = baseName + " - Copy";
+			else
+				newName = baseName + " - Copy " + copyNum;
+
+			while (Directory.Exists(Path.Combine(collectionDir, newName)))
+			{
+				copyNum++;
+				newName = baseName + " - Copy " + copyNum;
+			}
+
+			return newName;
+		}
+
+		private static void CopyDirectory(string sourceDir, string targetDir)
+		{
+			Directory.CreateDirectory(targetDir);
+
+			foreach (var file in Directory.GetFiles(sourceDir))
+				File.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)));
+
+			foreach (var directory in Directory.GetDirectories(sourceDir))
+				CopyDirectory(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
+		}
 	}
 }

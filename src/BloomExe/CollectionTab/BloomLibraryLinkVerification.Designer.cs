@@ -30,7 +30,7 @@
         {
             this._continueToLinkButton = new System.Windows.Forms.Button();
             this._cancelButton = new System.Windows.Forms.Button();
-            this._message = new System.Windows.Forms.Label();
+			this._message = new System.Windows.Forms.TextBox();
             this._infoIcon = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this._infoIcon)).BeginInit();
             this.SuspendLayout();
@@ -61,12 +61,15 @@
             // 
             // _message
             // 
-            this._message.AutoSize = true;
-            this._message.Location = new System.Drawing.Point(133, 50);
+			this._message.Location = new System.Drawing.Point(107, 48);
             this._message.Name = "_message";
-            this._message.Size = new System.Drawing.Size(212, 17);
+			this._message.Size = new System.Drawing.Size(649, 116);
             this._message.TabIndex = 2;
             this._message.Text = "Some localizable message here.";
+			this._message.Multiline = true;
+			this._message.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this._message.BackColor = System.Drawing.SystemColors.Control;
+			this._message.ReadOnly = true;
             // 
             // _infoIcon
             // 
@@ -81,7 +84,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this._cancelButton;
-            this.ClientSize = new System.Drawing.Size(770, 264);
+            this.ClientSize = new System.Drawing.Size(775, 270);
             this.Controls.Add(this._infoIcon);
             this.Controls.Add(this._message);
             this.Controls.Add(this._cancelButton);
@@ -98,7 +101,6 @@
             this.TopMost = true;
             ((System.ComponentModel.ISupportInitialize)(this._infoIcon)).EndInit();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -106,7 +108,7 @@
 
         private System.Windows.Forms.Button _continueToLinkButton;
         private System.Windows.Forms.Button _cancelButton;
-        private System.Windows.Forms.Label _message;
+		private System.Windows.Forms.TextBox _message;
         private System.Windows.Forms.PictureBox _infoIcon;
     }
 }

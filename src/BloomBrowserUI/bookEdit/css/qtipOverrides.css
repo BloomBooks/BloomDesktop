@@ -1,0 +1,21 @@
+.qtip.passive-bubble .qtip-content {
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-right: 20px;
+  overflow-y: auto;
+  max-height: inherit;
+}
+.qtip.passive-bubble .qtip-content .ui-sourceTextsForBubble {
+  margin-top: 0;
+}
+.qtip.passive-bubble .qtip-content .ui-sourceTextsForBubble > UL {
+  top: 0;
+  white-space: nowrap;
+}
+.qtip.passive-bubble .qtip-content .ui-sourceTextsForBubble > UL LI {
+  height: 27px;
+  /* padding: 0 4px; */
+}
+.qtip.passive-bubble .qtip-content .ui-sourceTextsForBubble > UL LI A {
+  padding: 3px 5px 0;
+}

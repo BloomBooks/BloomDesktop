@@ -16,15 +16,22 @@ namespace Bloom
 		private readonly IEnumerable<string> _factorySearchPaths;
 		private readonly List<string> _bookSpecificSearchPaths;
 		private readonly IEnumerable<string> _userInstalledSearchPaths;
+		private readonly IEnumerable<string> _afterXMatterSearchPaths;
 
-		public BloomFileLocator(CollectionSettings collectionSettings, XMatterPackFinder xMatterPackFinder, IEnumerable<string> factorySearchPaths, IEnumerable<string> userInstalledSearchPaths)
+		public BloomFileLocator(CollectionSettings collectionSettings, XMatterPackFinder xMatterPackFinder, IEnumerable<string> factorySearchPaths, IEnumerable<string> userInstalledSearchPaths,
+			IEnumerable<string> afterXMatterSearchPaths = null)
 			: base(factorySearchPaths.Concat( userInstalledSearchPaths))//review: is this even used, since we override GetSearchPaths()?
 		{
+			if (afterXMatterSearchPaths == null)
+			{
+				afterXMatterSearchPaths = new string[] {};
+			}
 			_bookSpecificSearchPaths = new List<string>();
 			_collectionSettings = collectionSettings;
 			_xMatterPackFinder = xMatterPackFinder;
 			_factorySearchPaths = factorySearchPaths;
-			_userInstalledSearchPaths = userInstalledSearchPaths;;
+			_userInstalledSearchPaths = userInstalledSearchPaths;
+			_afterXMatterSearchPaths = afterXMatterSearchPaths;
 		}
 
 		public override void AddPath(string path)
@@ -53,11 +60,26 @@ namespace Bloom
 			//One particular bug that came out of that was when a custom xmatter (because of a previous bug) snuck into the
 			//Sample "Vaccinations" book, then *that* copy of the xmatter was always used, becuase it was found first.
 
-			foreach (var xMatterInfo in _xMatterPackFinder.All)
+			// So, first we want to try the factory xmatter paths. These have precedence over factory templates.
+			foreach (var xMatterInfo in _xMatterPackFinder.Factory)
 			{
 				//NB: if we knew what the xmatter pack they wanted, we could limit to that. for now, we just iterate over all of
 				//them and rely (reasonably) on the names being unique
 
+				//this is a bit weird... we include the parent, in case they're looking for the xmatter *folder*, and the folder
+				//itself, in case they're looking for something inside it
+				yield return xMatterInfo.PathToFolder;
+				yield return Path.GetDirectoryName(xMatterInfo.PathToFolder);
+			}
+
+			// On the other hand the remaining factory stuff has precedence over non-factory XMatter.
+			foreach (var searchPath in _afterXMatterSearchPaths)
+			{
+				yield return searchPath;
+			}
+
+			foreach (var xMatterInfo in _xMatterPackFinder.NonFactory)
+			{
 				//this is a bit weird... we include the parent, in case they're looking for the xmatter *folder*, and the folder
 				//itself, in case they're looking for something inside it
 				yield return xMatterInfo.PathToFolder;
@@ -87,7 +109,7 @@ namespace Bloom
 
 		public override IFileLocator CloneAndCustomize(IEnumerable<string> addedSearchPaths)
 		{
-			var locator= new BloomFileLocator(_collectionSettings, _xMatterPackFinder,_factorySearchPaths, _userInstalledSearchPaths);
+			var locator= new BloomFileLocator(_collectionSettings, _xMatterPackFinder,_factorySearchPaths, _userInstalledSearchPaths, _afterXMatterSearchPaths);
 			foreach (var path in _bookSpecificSearchPaths)
 			{
 				locator.AddPath(path);

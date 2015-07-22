@@ -77,7 +77,10 @@ function ResetRememberedSize(element) {
   // The numeric interval (in milliseconds) at which the resize event polling
   // loop executes. Defaults to 250.
 
-  jq_resize[ str_delay ] = 250;
+  if (navigator.platform && (navigator.platform.indexOf("Linux") != -1))
+    jq_resize[ str_delay ] = 500;
+  else
+    jq_resize[ str_delay ] = 250;
 
   // Property: jQuery.resize.throttleWindow
   //

@@ -7,9 +7,13 @@ namespace Bloom.web
 	{
 		string LocalPathWithoutQuery { get; }
 		string ContentType { set; }
+		string RawUrl { get; }
 		void WriteCompleteOutput(string s);
 		void ReplyWithFileContent(string path);
 		void ReplyWithImage(string path);
 		void WriteError(int errorCode);
+		void WriteError(int errorCode, string errorDescription);
+		System.Collections.Specialized.NameValueCollection GetQueryString();
+		System.Collections.Specialized.NameValueCollection GetPostData();
 	}
 }

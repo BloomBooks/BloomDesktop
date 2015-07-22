@@ -71,6 +71,7 @@ namespace BloomTests.Book
 			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections","Templates");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplayTemplate.css")).Returns(root.CombineForPath("bookLayout","languageDisplayTemplate.css"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("origami.css")).Returns("../notareallocation/origami.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editMode.css")).Returns("../notareallocation/editMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editTranslationMode.css")).Returns("../notareallocation/editTranslationMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editOriginalMode.css")).Returns("../notareallocation/editOriginalMode.css");
@@ -92,7 +93,7 @@ namespace BloomTests.Book
 			//warning: we're neutering part of what the code under test is trying to do here:
 			_fileLocator.Setup(x => x.CloneAndCustomize(It.IsAny<IEnumerable<string>>())).Returns(_fileLocator.Object);
 
-			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] {new MonitorTarget() });
+			_thumbnailer = new Moq.Mock<HtmlThumbNailer>(new object[] { new NavigationIsolator()});
 			_pageSelection = new Mock<PageSelection>();
 			_pageListChangedEvent = new PageListChangedEvent();
 	  }
@@ -108,12 +109,22 @@ namespace BloomTests.Book
 			_thumbnailer.Object.Dispose();
 		}
 
-		private Bloom.Book.Book CreateBook()
+		private Bloom.Book.Book CreateBook(CollectionSettings collectionSettings)
 		{
-			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
+			_collectionSettings = collectionSettings;
 			return new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
 				_collectionSettings,
 				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+		}
+
+		private Bloom.Book.Book CreateBook()
+		{
+			return CreateBook(CreateDefaultCollectionsSettings());
+		}
+
+		private CollectionSettings CreateDefaultCollectionsSettings()
+		{
+			return new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"), Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
 		}
 
 //        [Test]
@@ -135,7 +146,7 @@ namespace BloomTests.Book
 		public void GetPreviewHtmlFileForWholeBook_BookHasThreePages_ResultHasAll()
 		{
 			var result = CreateBook().GetPreviewHtmlFileForWholeBook().RawDom.StripXHtmlNameSpace();
-			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter'))]", 3);
+			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter') )]", 3);
 		}
 
 //        [Test]
@@ -180,10 +191,46 @@ namespace BloomTests.Book
 		}
 
 
+		[Test]
+		public void UpdateTextsNewlyChangedToRequiresParagraph_HasOneBR()
+		{
+			SetDom(@"<div class='bloom-page'>
+						<div id='somewrapper'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs'>
+								<div class='bloom-editable' lang='en'>
+									a<br/>c
+								</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-editable') and @lang='en']/p", 2);
+		}
 
+		//Removing extra lines is of interest in case the user was entering blank lines by hand to separate the paragraphs, which now will
+		//be separated by the styling of the new paragraphs
+		[Test]
+		public void UpdateTextsNewlyChangedToRequiresParagraph_RemovesEmptyLines()
+		{
+			SetDom(@"<div class='bloom-page'>
+						<div id='somewrapper'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs'>
+								<div class='bloom-editable' lang='en'>
+									<br/>a<br/>
+								</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.BringBookUpToDate(new NullProgress());
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-editable') and @lang='en']/p", 1);
+		}
 
 		[Test]
-		public void UpdateFieldsAndVariables_InsertsRegionalLanguageNameInAsWrittenInNationalLanguage1()
+		public void BringBookUpToDate_InsertsRegionalLanguageNameInAsWrittenInNationalLanguage1()
 		{
 			SetDom(@"<div class='bloom-page'>
 						 <span data-collection='nameOfNationalLanguage2' lang='en'>{Regional}</span>
@@ -196,6 +243,32 @@ namespace BloomTests.Book
 		}
 
 
+		[Test]
+		public void SetMultilingualContentLanguages_UpdatesLanguagesOfBookFieldInDOM()
+		{
+			SetDom(@"<div class='bloom-page'>
+						 <span data-book='languagesOfBook' lang='*'></span>
+					</div>
+			");
+
+			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"),
+				Language1Iso639Code = "th", Language2Iso639Code = "fr", Language3Iso639Code = "es" });
+			var book =  new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
+				_collectionSettings,
+				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+
+			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code);
+
+			//note: our code currently only knows how to display French *in French*; the other come out in English.
+			//That's not part of this test, and will have to be changed as we improve that aspect of things.
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français, Spanish']", 1);
+
+			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, null);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français']", 1);
+
+			book.SetMultilingualContentLanguages("", null);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai']", 1);
+		}
 
 
 
@@ -205,7 +278,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
 			book.SavePage(dom);
-			_storage.Verify(s => s.Save(), Times.Once());
+			_storage.Verify(s => s.Save(), Times.AtLeastOnce());
 		}
 
 		[Test]
@@ -301,18 +374,42 @@ namespace BloomTests.Book
 			Assert.AreEqual("changed", vernacularTextNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
 		 }
 
-
 		[Test]
 		public void GetEditableHtmlDomForPage_HasInjectedElementForEditTimeScript()
 		{
 			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
 			var scriptNodes = dom.SafeSelectNodes("//script");
-			Assert.AreEqual(3, scriptNodes.Count);
+			Assert.AreEqual(4, scriptNodes.Count);
 			Assert.IsNotEmpty(scriptNodes[0].Attributes["src"].Value);
 			Assert.IsTrue(scriptNodes[0].Attributes["src"].Value.Contains(".js"));
 		}
 
+
+		[Test]
+		public void SetupPage_LanguageSettingsHaveChanged_LangAttributesUpdated()
+		{
+				_bookDom = new HtmlDom(@"
+				<html>
+					<body>
+					   <div id='me' class='bloom-page'>
+							<div>
+								 <div data-book='somethingInN1' lang='du' data-metalanguage='N1'></div>
+								<div data-book='somethingInN2' lang='du' data-metalanguage='N2'></div>
+								<div data-book='somethingInV' lang='du' data-metalanguage='V'></div>
+							</div>
+						</div>
+					</body>
+				</html>");
+
+			var book = CreateBook();
+
+			//BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _librarySettings.Object, "abc", "def");
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInN1' and @lang='en']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInN2' and @lang='fr']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInV' and @lang='xyz']", 1);
+		}
 
 		[Test]
 		public void GetEditableHtmlDomForPage_BasicBook_HasA5PortraitClass()
@@ -426,6 +523,51 @@ namespace BloomTests.Book
 //            Assert.IsTrue(gotEvent);
 //        }
 
+		[Test]
+		public void DuplicatePage()
+		{
+			var book = CreateBook();
+			var original = book.GetPages().Count();
+			var existingPage = book.GetPages().Last();
+			book.DuplicatePage(existingPage);
+			AssertPageCount(book, original + 1);
+
+			var newPage = book.GetPages().Last();
+			Assert.AreNotEqual(existingPage, newPage);
+			Assert.AreNotEqual(existingPage.Id, newPage.Id);
+
+			var existingDivNode = existingPage.GetDivNodeForThisPage();
+			var newDivNode = newPage.GetDivNodeForThisPage();
+
+			Assert.AreEqual(existingPage.Id, newDivNode.Attributes["data-pagelineage"].Value);
+			Assert.AreEqual(existingDivNode.InnerXml, newDivNode.InnerXml);
+		}
+
+		[Test]
+		public void DuplicatePageAfterRelocatePage()
+		{
+			var book = CreateBook();
+			var pages = book.GetPages().ToArray();
+
+			book.RelocatePage(pages[1], 2);
+			var rearrangedPages = book.GetPages().ToArray();
+
+			book.DuplicatePage(pages[2]);
+			var newPages = book.GetPages().ToArray();
+
+			Assert.AreEqual(3, rearrangedPages.Length);
+			Assert.AreEqual(4, newPages.Length);
+
+			// New page (with its own, unique Id) should be directly after the page we copied it from.
+			// It was getting inserted first (BL-467)
+			Assert.AreEqual("guid1", rearrangedPages[0].Id);
+			Assert.AreEqual("guid3", rearrangedPages[1].Id);
+			Assert.AreEqual("guid2", rearrangedPages[2].Id);
+
+			Assert.AreEqual("guid1", newPages[0].Id);
+			Assert.AreEqual("guid3", newPages[1].Id);
+			Assert.AreEqual("guid2", newPages[3].Id);
+		}
 
 		[Test]
 		public void DeletePage_OnLastPage_Deletes()
@@ -550,6 +692,20 @@ namespace BloomTests.Book
 			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetDefaultBookletLayout());
 		}
 
+		[Test]
+		public void MissingStyleNumberSequenceIsOne()
+		{
+			var book = CreateBook();
+			Assert.AreEqual(1, book.NextStyleNumber);
+		}
+
+		[Test]
+		public void StyleNumberSequenceIsIncremented()
+		{
+			var book = CreateBook();
+			Assert.AreEqual(1, book.NextStyleNumber);
+			Assert.AreEqual(2, book.NextStyleNumber);
+		}
 
 		[Test]
 		public void BringBookUpToDate_DomHas2ContentLanguages_PulledIntoBookProperties()
@@ -723,8 +879,8 @@ namespace BloomTests.Book
 
 			book = CreateBook();
 			book.BringBookUpToDate(new NullProgress());
-
-			Assert.That(_metadata.IsSuitableForMakingShells, Is.True);
+			// BL-2163, we are no longer migrating suitableForMakingShells
+			Assert.That(_metadata.IsSuitableForMakingShells, Is.False);
 			Assert.That(_metadata.IsSuitableForVernacularLibrary, Is.False);
 		}
 
@@ -802,9 +958,9 @@ namespace BloomTests.Book
 			var book = CreateBook();
 
 			var titleElt = _bookDom.SelectSingleNode("//textarea");
-			titleElt.InnerText = "changed";
+			titleElt.InnerText = "changed & <mangled>";
 			book.Save();
-			Assert.That(_metadata.Title, Is.EqualTo("changed"));
+			Assert.That(_metadata.Title, Is.EqualTo("changed & <mangled>"));
 		}
 
 		[Test]
@@ -879,13 +1035,13 @@ namespace BloomTests.Book
 				</head>
 				<body>
 					<div class='bloom-page' id='guid3'>
-						<textarea lang='en' data-book='topic'>original</textarea>
+						<div lang='en' data-book='topic'>original</div>
 					</div>
 				</body></html>");
 
 			var book = CreateBook();
-
-			var topicElt = _bookDom.SelectSingleNode("//textarea");
+			
+			var topicElt = _bookDom.SelectSingleNode("//div/div[@data-book='topic' and @lang='en']");
 			topicElt.InnerText = "Animal stories";
 			book.Save();
 			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
@@ -942,6 +1098,13 @@ namespace BloomTests.Book
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
 				</head>
 				<body>
+					<div class='bloom-page bloom-frontMatter'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='tr'>
+								Some Thai in front matter. Should not count at all.
+							</div>
+						</div>
+					</div>
 					<div class='bloom-page' id='guid3'>
 					   <div class='bloom-translationGroup bloom-trailingElement'>
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
@@ -954,10 +1117,21 @@ namespace BloomTests.Book
 							<div class='bloom-editable' contenteditable='true' lang='fr'>
 								Whatever.
 							</div>
+							<div class='bloom-editable' contenteditable='true' lang='es'>
+							</div>
 						</div>
 					</div>
 					<div class='bloom-page' id='guid3'>
 					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='de'>
+								Some German.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='en'>
+								Some English.
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='fr'>
+								Some French.
+							</div>
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='es'>
 								Something or other.
 							</div>
@@ -972,16 +1146,23 @@ namespace BloomTests.Book
 							</div>
 						</div>
 					</div>
+					<div class='bloom-page bloom-backMatter'>
+					   <div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='tr'>
+								Some Thai in back matter. Should not count at all.
+							</div>
+						</div>
+					</div>
 				</body></html>");
 
 			var book = CreateBook();
 			var allLanguages = book.AllLanguages;
-			Assert.That(allLanguages, Has.Member("en"));
-			Assert.That(allLanguages, Has.Member("de"));
-			Assert.That(allLanguages, Has.Member("fr"));
-			Assert.That(allLanguages, Has.Member("es"));
-			Assert.That(allLanguages, Has.Member("xkal"));
-			Assert.That(allLanguages.Count(), Is.EqualTo(5));
+			Assert.That(allLanguages["en"], Is.True);
+			Assert.That(allLanguages["de"], Is.True);
+			Assert.That(allLanguages["fr"], Is.True);
+			Assert.That(allLanguages["es"], Is.False); // in first group this is empty
+			Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
+			Assert.That(allLanguages.Count(), Is.EqualTo(5)); // no * or z or tr
 		}
 
 		[Test]
@@ -1055,6 +1236,16 @@ namespace BloomTests.Book
 			Assert.AreEqual("original", title.InnerText);
 		}
 
+		[Test]
+		public void Constructor_LanguagesOfBookIsSet()
+		{
+			var collectionSettings = CreateDefaultCollectionsSettings();
+			collectionSettings.Language1Iso639Code = "en";
+			var book = CreateBook(collectionSettings);
+			var langs = book.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='languagesOfBook']") as XmlElement;
+			Assert.AreEqual("English", langs.InnerText);
+		}
+
 		private void MakeSamplePngImageWithMetadata(string path)
 		{
 			var x = new Bitmap(10, 10);
@@ -1126,6 +1317,52 @@ namespace BloomTests.Book
 			Assert.AreEqual("a sour book", book.Title);
 		}
 
+		/*
+		 * TranslationGroupManager.UpdateContentLanguageClasses() sees that we have three active languages and adds
+		 * bloom-trilingual as a class at the page level.  However, it was not getting added to the stored version
+		 * of the page.  Thus, we are now checking that SavePage() adds it.
+		 */
+		[Test]
+		public void SavePage_MultiLingualClassUpdated()
+		{
+			_bookDom = new HtmlDom(@"
+				<html><head></head><body>
+					<div id='bloomDataDiv'>
+						<div data-book='contentLanguage1' lang='*'>
+							xyz
+						</div>
+						<div data-book='contentLanguage2' lang='*'>
+							en
+						</div>
+						<div data-book='contentLanguage3' lang='*'>
+							fr
+						</div>
+					</div>
+					<div class='bloom-page' id='guid1'>
+						<div class='bloom-editable bloom-content1' contenteditable='true'></div>
+						<div class='bloom-editable bloom-content2' contenteditable='true'></div>
+						<div class='bloom-editable bloom-content3' contenteditable='true'></div>
+					</div>
+				  </body></html>");
+
+			var book = CreateBook();
+
+			// Initially, bloom-trilingual isn't there
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and contains(@class,'bloom-trilingual')]", 0);
+
+			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[0]);
+
+			// bloom-trilingual was added to the temp version of the page
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and contains(@class,'bloom-trilingual')]", 1);
+
+			book.SavePage(dom);
+
+			// bloom-trilingual was also added to the stored version of the page
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page')]", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-page') and contains(@class,'bloom-trilingual')]", 1);
+		}
 
 
 		private Mock<IPage> CreateTemplatePage(string divContent)

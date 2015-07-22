@@ -1,10 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Net;
-using System.Threading;
-using System.Windows.Forms;
+using System.Linq;
 using Bloom.web;
-using Palaso.Code;
 using Palaso.IO;
 using Palaso.Reporting;
 using Bloom.Properties;
@@ -29,10 +26,10 @@ namespace Bloom.ImageProcessing
 	/// </summary>
 	public class ImageServer : ServerBase
 	{
-		private LowResImageCache _cache;
+		private RuntimeImageProcessor _cache;
 		private bool _useCache;
 
-		public ImageServer(LowResImageCache cache)
+		public ImageServer(RuntimeImageProcessor cache)
 		{
 			_cache = cache;
 			_useCache = Settings.Default.ImageHandler != "off";
@@ -40,29 +37,35 @@ namespace Bloom.ImageProcessing
 
 		protected override void Dispose(bool fDisposing)
 		{
-			//the container that gave us this will dispose of it: _cache.Dispose();
-			_cache = null;
+			if (fDisposing)
+			{
+				if (_cache != null)
+					_cache.Dispose();
+				_cache = null;
+			}
 
 			base.Dispose(fDisposing);
 		}
 
-		protected override bool StartWithSetupIfNeeded(out Exception error)
+		protected override void StartWithSetupIfNeeded()
 		{
-			var didStart = base.StartWithSetupIfNeeded(out error);
-
-			if(!didStart)
+			try
+			{
+				base.StartWithSetupIfNeeded();
+			}
+			catch (Exception error)
 			{
 				var e = new ApplicationException("Could not start ImageServer", error);//passing this in will enable the details button
 				ErrorReport.NotifyUserOfProblem(e, "What Happened{0}" +
-					"Bloom could not start its image server, which keeps hi-res images from chewing up memory. You will still be able to work, but Bloom will take more memory, and hi-res images may not always show.{0}{0}" +
+					"Bloom could not start its local file server, and cannot work properly without it.{0}{0}" +
 					"What caused this?{0}" +
-					"Probably Bloom does not know how to get your specific {1} operating system to allow its image server to run.{0}{0}" +
+					"Possibly another version of Bloom is running, perhaps not very obviously. " +
+					"Possibly Bloom does not know how to get your specific {1} operating system to allow its image server to run.{0}{0}" +
 					"What can you do?{0}" +
-					"Click 'Details' and report the problem to the developers.", Environment.NewLine,
+					"Click OK, then exit Bloom and restart your computer.{0}" +
+					"If the problem keeps happening, click 'Details' and report the problem to the developers.", Environment.NewLine,
 					Palaso.PlatformUtilities.Platform.IsWindows ? "Windows" : "Linux");
 			}
-
-			return didStart;
 		}
 
 		protected override bool ProcessRequest(IRequestInfo info)
@@ -73,21 +76,54 @@ namespace Bloom.ImageProcessing
 			if (!_useCache)
 				return false;
 
-			var r = GetLocalPathWithoutQuery(info);
-			if (r.EndsWith(".png") || r.EndsWith(".jpg"))
+			var imageFile = GetLocalPathWithoutQuery(info);
+
+			// only process images
+			var isSvg = imageFile.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);
+			if (!IsImageTypeThatCanBeDegraded(imageFile) && !isSvg)
+				return false;
+
+			imageFile = imageFile.Replace("thumbnail", "");
+
+			var processImage = !isSvg;
+
+			// This happens with the new way we are serving css files
+			if (!File.Exists(imageFile))
 			{
-				info.ContentType = r.EndsWith(".png") ? "image/png" : "image/jpeg";
-				r = r.Replace("thumbnail", "");
-				//if (r.Contains("thumb"))
-				{
-					if (File.Exists(r))
-					{
-						info.ReplyWithImage(_cache.GetPathToResizedImage(r));
-						return true;
-					}
-				}
+				var fileName = Path.GetFileName(imageFile);
+				var sourceDir = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
+				imageFile = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
+
+				// image file not found
+				if (string.IsNullOrEmpty(imageFile)) return false;
+
+				// BL-2368: Do not process files from the BloomBrowserUI directory. These files are already in the state we
+				//          want them. Running them through _cache.GetPathToResizedImage() is not necessary, and in PNG files
+				//          it converts all white areas to transparent. This is resulting in icons which only contain white
+				//          (because they are rendered on a dark background) becoming completely invisible.
+				processImage = false;
 			}
-			return false;
+
+			if (processImage)
+			{
+				// thumbnail requests have the thumbnail parameter set in the query string
+				var thumb = info.GetQueryString()["thumbnail"] != null;
+				imageFile = _cache.GetPathToResizedImage(imageFile, thumb);
+
+				if (string.IsNullOrEmpty(imageFile)) return false;
+			}
+
+			info.ReplyWithImage(imageFile);
+			return true;
+		}
+
+		protected static bool IsImageTypeThatCanBeDegraded(string path)
+		{
+			var extension = Path.GetExtension(path);
+			if(!string.IsNullOrEmpty(extension))
+				extension = extension.ToLower();
+			//note, we're omitting SVG
+			return (new[] { ".png", ".jpg", ".jpeg"}.Contains(extension));
 		}
 	}
 }

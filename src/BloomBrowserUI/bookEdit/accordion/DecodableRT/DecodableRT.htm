@@ -1,30 +1,39 @@
 
 <html>
-  <head>
-	<link rel="stylesheet" href="readerTools.css" type="text/css"/>
-  </head>
+  <head></head>
   <body>
-	<h3 data-markuptype="1">Decodable Reader Tool</h3>
-	<div><img id="decodable-keys" src="../../../images/keys-white.pn" style="margin-left: 14px"/>
-	  <div class="stageLine"><span id="decStage" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine">Stage <span id="stageNumber">1</span><span class="ofStage">&nbsp;of&nbsp;<span id="numberOfStages">2</span></span></span><span id="incStage" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
-	  <div style="margin-left: 6px" class="section clear">Words in this stage
-		<div class="sortBlock">
-		  <div id="sortAlphabetic" class="sortItem rightBorder sortIconSelected"><i title="Sort alphabetically" class="fa fa-sort-alpha-asc"></i></div>
-		  <div id="sortLength" class="sortItem rightBorder"><i title="Sort by word length" class="fa fa-sort-amount-asc"></i></div>
-		  <div id="sortFrequency" class="sortItem"><i title="Sort by frequency" class="fa fa-long-arrow-up"></i><i id="sortFrequency2" title="Sort by frequency" class="fa fa-facebook"></i></div>
-		</div>
-	  </div>
-	  <div class="tableHolder clear">
-		<div id="wordList" class="wordList"></div>
-	  </div>
-	  <div style="display: inline-block; position: relative; float: right; margin: 10px 14px"><span class="setup stageLine"><a href="javascript:showSetupDialog('stages');">Set up Stages</a></span></div>
-	  <script type="text/javascript">
-		$(document).ready(function() {
-		 setTimeout(initializeDecodableRT, 100);
-		 var path = thisDir + '../../images/keys-white.png';
-		 document.getElementById('decodable-keys').src = path;
-		});
-	  </script>
-	</div>
+    <h3 data-panelId="DecodableRT" data-markuptype="1" data-order="10" data-i18n="Accordion.DecodableReaderTool">Decodable Reader Tool</h3>
+    <div data-panelId="DecodableRT"><img id="decodable-keys" src="/bloom/images/keys-white.png" style="margin-left: 14px"/>
+      <div class="stageLine"><span id="decStage" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine"><span data-i18n="DecodableReaderTool.Stage">Stage</span> <span id="stageNumber">1</span> <span data-i18n="DecodableReaderTool.StageOf" class="ofStage">of</span> <span id="numberOfStages" class="ofStage">2</span></span><span id="incStage" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
+      <div style="display: inline-block; position: relative; float: right; margin: 10px 14px"><span class="setup stageLine"><a href="javascript:parent.window.showSetupDialog('stages');" data-i18n="DecodableReaderTool.SetUpStages">Set up Stages</a></span></div>
+      <div id="letters-in-this-stage" style="margin-left: 6px" class="section clear"><span data-i18n="DecodableReaderTool.LettersInThisStage">Letters in this stage</span></div>
+      <div class="tableHolder clear">
+        <div id="letterList" class="letterList"></div>
+      </div>
+      <div style="margin-left: 6px;" class="section clear">
+        <table>
+          <tr>
+            <td style="padding-left: 0;"><span id="sample-words-this-stage" data-i18n="DecodableReaderTool.SampleWordsInThisStage">Sample words in this stage</span><span id="allowed-words-this-stage" data-i18n="DecodableReaderTool.AllowedWordsInThisStage">Allowed words in this stage</span></td>
+            <td style="white-space: nowrap; padding-right: 0;">
+              <div class="sortBlock clear">
+                <div id="sortAlphabetic" class="sortItem rightBorder sortIconSelected"><i title="Sort alphabetically" class="fa fa-sort-alpha-asc"></i></div>
+                <div id="sortLength" class="sortItem rightBorder"><i title="Sort by word length" class="fa fa-sort-amount-asc"></i></div>
+                <div id="sortFrequency" class="sortItem"><i title="Sort by frequency" class="fa fa-long-arrow-up"></i><i id="sortFrequency2" title="Sort by frequency" class="fa fa-facebook"></i></div>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="tableHolder clear">
+        <div id="wordList" class="wordList"></div>
+      </div>
+      <div id="make-letter-word-list-div" class="clear"><a id="make-letter-word-list" href="javascript:makeLetterWordList();" data-i18n="DecodableReaderTool.MakeLetterWordReport">Generate a letter and word list report</a></div>
+      <script type="text/javascript">
+        $(document).ready(function() {
+         // this timeout is different than the LeveledRT timeout to prevent initializing synphony twice
+         setTimeout(initializeDecodableRT, 100);
+        });
+      </script>
+    </div>
   </body>
 </html>

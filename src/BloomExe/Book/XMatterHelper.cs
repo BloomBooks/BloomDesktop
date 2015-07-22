@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using L10NSharp;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress;
@@ -30,7 +31,7 @@ namespace Bloom.Book
 		/// <param name="nameOfXMatterPack">e.g. "Factory", "SILIndonesia"</param>
 		/// <param name="fileLocator">The locator needs to be able tell use the path to an xmater html file, given its name</param>
 		public XMatterHelper(HtmlDom bookDom, string nameOfXMatterPack, IFileLocator fileLocator)
-		{
+		{		
 			_bookDom = bookDom;
 			_nameOfXMatterPack = nameOfXMatterPack;
 
@@ -40,10 +41,15 @@ namespace Bloom.Book
 			{
 				directoryPath = fileLocator.LocateDirectoryWithThrow(directoryName);
 			}
-			catch (Exception error)
+			catch(ApplicationException error)
 			{
+				var errorTemplate = LocalizationManager.GetString("Errors.XMatterNotFound",
+					"This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a BloomPack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.");
+				var msg = string.Format(errorTemplate, nameOfXMatterPack);
+
+				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), msg);
 				//NB: we don't want to put up a dialog for each one; one failure here often means 20 more are coming as the other books are loaded!
-				throw new ApplicationException(String.Format("Could not find xmatter pack directory named " + directoryName), error);
+				throw new ApplicationException(msg);
 			}
 			string htmName = nameOfXMatterPack + "-XMatter.htm";
 			PathToXMatterHtml = directoryPath.CombineForPath(htmName);
@@ -106,7 +112,7 @@ namespace Bloom.Book
 			//note: for debugging the template/css purposes, it makes our life easier if, at runtime, the html is pointing the original.
 			//makes it easy to drop into a css editor and fix it up with the content we're looking at.
 			//TODO:But then later, we want to save it so that these are found in the same dir as the book.
-			_bookDom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation);
+			_bookDom.AddStyleSheet(PathToStyleSheetForPaperAndOrientation.ToLocalhost());
 
 			//it's important that we append *after* this, so that these values take precendance (the template will just have empty values for this stuff)
 			//REVIEW: I think all stylesheets now get sorted once they are all added: see HtmlDoc.SortStyleSheetLinks()
@@ -127,14 +133,16 @@ namespace Bloom.Book
 				//we want the xmatter pages to match what we found in the source book
 				SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, layout);
 
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'V'", '"' + writingSystemCodes["V"] + '"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"V\"", '"' + writingSystemCodes["V"] + '"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N1'", '"' + writingSystemCodes["N1"] + '"');
-				newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N1\"", '"' + writingSystemCodes["N1"] + '"');
-				if (!String.IsNullOrEmpty(writingSystemCodes["N2"]))  //otherwise, styleshee will hide it
+				//any @lang attributes that have a metalanguage code (N1, N2, V) get filled with the actual code.
+				//note that this older method is crude, as you're in trouble if the user changes one of those to
+				//a different language. Instead, use data-metalanguage.
+				foreach ( XmlElement node in newPageDiv.SafeSelectNodes("//*[@lang]"))
 				{
-					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("'N2'", '"' + writingSystemCodes["N2"] + '"');
-					newPageDiv.InnerXml = newPageDiv.InnerXml.Replace("\"N2\"", '"' + writingSystemCodes["N2"] + '"');
+					var lang = node.GetAttribute("lang");
+					if (writingSystemCodes.ContainsKey(lang))
+					{
+						node.SetAttribute("lang", writingSystemCodes[lang]);
+					}
 				}
 
 				_bookDom.RawDom.SelectSingleNode("//body").InsertAfter(newPageDiv, divBeforeNextFrontMattterPage);

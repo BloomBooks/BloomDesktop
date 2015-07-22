@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.SendReceive;
+using Bloom.web;
 using Gecko;
 
 namespace Bloom.CollectionTab
@@ -17,6 +18,7 @@ namespace Bloom.CollectionTab
 		private readonly SendReceiver _sendReceiver;
 		private readonly CreateFromSourceBookCommand _createFromSourceBookCommand;
 		private readonly EditBookCommand _editBookCommand;
+		private Shell _shell;
 		private bool _reshowPending = false;
 		private bool _visible;
 
@@ -26,9 +28,12 @@ namespace Bloom.CollectionTab
 			SendReceiver sendReceiver,
 			CreateFromSourceBookCommand createFromSourceBookCommand,
 			EditBookCommand editBookCommand,
-			SelectedTabChangedEvent selectedTabChangedEvent)
+			SelectedTabChangedEvent selectedTabChangedEvent,
+			NavigationIsolator isolator)
 		{
 			InitializeComponent();
+			_previewBrowser.Isolator = isolator;
+			_readmeBrowser.Isolator = isolator;
 			_bookSelection = bookSelection;
 			_sendReceiver = sendReceiver;
 			_createFromSourceBookCommand = createFromSourceBookCommand;
@@ -52,15 +57,30 @@ namespace Bloom.CollectionTab
 			LoadBook();
 		}
 
+		private void UpdateTitleBar()
+		{
+			if (this.ParentForm != null)
+			{
+				_shell = (Shell)this.ParentForm;
+			}
+			if (_shell != null)
+			{
+				_shell.SetWindowText((_bookSelection.CurrentSelection == null) ? null : _bookSelection.CurrentSelection.TitleBestForUserDisplay);
+			}
+		}
+
 		void OnBookSelectionChanged(object sender, EventArgs e)
 		{
 			try
 			{
 				LoadBook();
+				UpdateTitleBar();
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Problem selecting book");
+				var msg = L10NSharp.LocalizationManager.GetString("Bloom", "Errors.ErrorSelecting",
+					"There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, msg);
 			}
 		}
 
@@ -82,6 +102,7 @@ namespace Bloom.CollectionTab
 			{
 				_reshowPending = true;
 			}
+			UpdateTitleBar();
 		}
 
 		private void ShowBook()
@@ -103,7 +124,7 @@ namespace Bloom.CollectionTab
 				_readmeBrowser.Visible = false;
 				//_previewBrowser.Visible = true;
 				_splitContainerForPreviewAndAboutBrowsers.Visible = true;
-				_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook().RawDom);
+				_previewBrowser.Navigate(_bookSelection.CurrentSelection.GetPreviewHtmlFileForWholeBook());
 				_splitContainerForPreviewAndAboutBrowsers.Panel2Collapsed = true;
 				if (_bookSelection.CurrentSelection.HasAboutBookInformationToShow)
 				{

@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
+using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
-using Bloom.Book;
+using Palaso.Extensions;
+using Palaso.Reporting;
 using Palaso.TestUtilities;
 using Palaso.UI.WindowsForms.ClearShare;
 
@@ -22,16 +24,33 @@ namespace BloomTests.Book
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() {
 				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(new TemporaryFolder("BookDataTests").Path, "test"),
 				Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
+			ErrorReport.IsOkToInteractWithUser = false;
+		}
+
+		[Test]
+		public void TextOfInnerHtml_RemovesMarkup()
+		{
+			var input = "This <em>is</em> the day";
+			var output = BookData.TextOfInnerHtml(input);
+			Assert.That(output, Is.EqualTo("This is the day"));
+		}
+
+		[Test]
+		public void TextOfInnerHtml_HandlesXmlEscapesCorrectly()
+		{
+			var input = "Jack &amp; Jill like xml sequences like &amp;amp; &amp; &amp;lt; &amp; &amp;gt; for characters like &lt;&amp;&gt;";
+			var output = BookData.TextOfInnerHtml(input);
+			Assert.That(output, Is.EqualTo("Jack & Jill like xml sequences like &amp; & &lt; & &gt; for characters like <&>"));
 		}
 
 		[Test]
 		public void MakeLanguageUploadData_FindsDefaultInfo()
 		{
-			var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xyk"});
+			var results = _collectionSettings.MakeLanguageUploadData(new[] {"en", "tpi", "xy3"});
 			Assert.That(results.Length, Is.EqualTo(3), "should get one result per input");
 			VerifyLangData(results[0], "en", "English", "eng");
 			VerifyLangData(results[1], "tpi", "Tok Pisin", "tpi");
-			VerifyLangData(results[2], "xyk", "xyk", "xyk");
+			VerifyLangData(results[2], "xy3", "xy3", "xy3");
 		}
 
 		[Test]
@@ -123,6 +142,18 @@ namespace BloomTests.Book
 			Assert.AreEqual("aa", textarea2.InnerText);
 		}
 
+		[Test]
+		public void UpdateFieldsAndVariables_HasBookTitleTemplateWithVernacularPlaceholder_CreatesTitleForVernacular()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitleTemplate' lang='{V}'>the title</div>
+				</div>
+				</body></html>");
+			var data = new BookData(dom, _collectionSettings, null);
+			data.UpdateVariablesAndDataDivThroughDOM();
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='"+_collectionSettings.Language1Iso639Code+"' and text()='the title']",1);
+		}
 
 		[Test]
 		public void UpdateFieldsAndVariables_VernacularTitleChanged_TitleCopiedToParagraphAnotherPage()
@@ -139,10 +170,10 @@ namespace BloomTests.Book
 			 </body></html>");
 			var data = new BookData(dom,  _collectionSettings, null);
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@data-book='bookTitle' and @lang='xyz']");
-			textarea1.InnerText = "peace";
+			textarea1.InnerText = "peace & quiet";
 			data.SynchronizeDataItemsThroughoutDOM();
 			var paragraph = dom.SelectSingleNodeHonoringDefaultNS("//p[@data-book='bookTitle'  and @lang='xyz']");
-			Assert.AreEqual("peace", paragraph.InnerText);
+			Assert.AreEqual("peace & quiet", paragraph.InnerText);
 		}
 
 
@@ -545,6 +576,170 @@ namespace BloomTests.Book
 			Assert.That(data.PrettyPrintLanguage("en"), Is.EqualTo("English"));
 			Assert.That(data.PrettyPrintLanguage("es"), Is.EqualTo("Spanish"));
 		}
+
+		[Test]
+		public void MigrateData_TopicInTokPisinButNotEnglish_ChangesLangeToEnglish()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='topic' lang='tpi'>health</div>
+				</div>
+			 </body></html>");
+
+			var data = new BookData(bookDom, _collectionSettings, null);
+			Assert.AreEqual("health", data.GetVariableOrNull("topic", "en"));
+			Assert.IsNull(data.GetVariableOrNull("topic", "tpi"));
+		}
+
+		private bool AndikaNewBasicIsInstalled()
+		{
+			const string fontToCheck = "andika new basic";
+			return FontFamily.Families.FirstOrDefault(f => f.Name.ToLowerInvariant() == fontToCheck) != null;
+		}
+
+		[Test]
+		[Category("SkipOnTeamCity")]
+		public void AndikaNewBasic_MustBeInstalled()
+		{
+			Assert.That(AndikaNewBasicIsInstalled());
+		}
+
+		[Test]
+		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_DoIt()
+		{
+			// This test needs Andika New Basic installed to work
+			// dump out and pass if the font isn't installed
+			if (!AndikaNewBasicIsInstalled())
+				return; // quietly pass the test if the font isn't installed
+
+			var filepath = _collectionSettings.SettingsFilePath;
+			var cssFilePath = Path.GetDirectoryName(filepath).CombineForPath("settingsCollectionStyles.css");
+			File.Delete(cssFilePath);
+			WriteSettingsFile(filepath, _preAndikaMigrationCollection);
+
+			// SUT
+			_collectionSettings.Load();
+
+			// Verify
+			var oneTimeCheckVersion = _collectionSettings.OneTimeCheckVersionNumber;
+			Assert.That(Convert.ToInt32(oneTimeCheckVersion).Equals(1));
+			var font1 = _collectionSettings.DefaultLanguage1FontName;
+			Assert.That(font1.Equals("Andika New Basic"));
+			var font2 = _collectionSettings.DefaultLanguage1FontName;
+			Assert.That(font2.Equals("Andika New Basic"));
+			var font3 = _collectionSettings.DefaultLanguage1FontName;
+			Assert.That(font3.Equals("Andika New Basic"));
+			Assert.That(File.Exists(cssFilePath)); // if this file exists, it means we did the migration
+		}
+
+		[Test]
+		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_alreadyDone()
+		{
+			var filepath = _collectionSettings.SettingsFilePath;
+			var cssFilePath = Path.GetDirectoryName(filepath).CombineForPath("settingsCollectionStyles.css");
+			File.Delete(cssFilePath);
+			WriteSettingsFile(filepath, _postAndikaMigrationCollection);
+
+			// SUT
+			_collectionSettings.Load();
+
+			// Verify
+			var font1 = _collectionSettings.DefaultLanguage1FontName;
+			var oneTimeCheckVersion = _collectionSettings.OneTimeCheckVersionNumber;
+			Assert.That(Convert.ToInt32(oneTimeCheckVersion).Equals(1));
+			Assert.That(font1.Equals("Andika New Basic"));
+			Assert.That(!File.Exists(cssFilePath)); // if this file doesn't exist, it means we didn't do any migration
+		}
+
+		[Test]
+		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_doneUserReverted()
+		{
+			var filepath = _collectionSettings.SettingsFilePath;
+			var cssFilePath = Path.GetDirectoryName(filepath).CombineForPath("settingsCollectionStyles.css");
+			File.Delete(cssFilePath);
+			WriteSettingsFile(filepath, _postAndikaMigrationCollectionNoANB);
+
+			// SUT
+			_collectionSettings.Load();
+
+			// Verify
+			var font1 = _collectionSettings.DefaultLanguage1FontName;
+			var oneTimeCheckVersion = _collectionSettings.OneTimeCheckVersionNumber;
+			Assert.That(Convert.ToInt32(oneTimeCheckVersion).Equals(1));
+			Assert.That(font1.Equals("Andika"));
+			Assert.That(!File.Exists(cssFilePath)); // if this file doesn't exist, it means we didn't do any migration
+		}
+
+		private void WriteSettingsFile(string filepath, string xmlString)
+		{
+			File.WriteAllText(filepath, xmlString);
+		}
+
+		#region Collection Settings test data
+
+		private const string _preAndikaMigrationCollection = @"﻿<?xml version='1.0' encoding='utf-8'?>
+			<Collection version='0.2'>
+				<Language1Name>Tok Pisin</Language1Name>
+				<Language1Iso639Code>tpi</Language1Iso639Code>
+				<Language2Iso639Code>en</Language2Iso639Code>
+				<Language3Iso639Code>ara</Language3Iso639Code>
+				<DefaultLanguage1FontName>Andika</DefaultLanguage1FontName>
+				<DefaultLanguage2FontName>Andika</DefaultLanguage2FontName>
+				<DefaultLanguage3FontName>Andika</DefaultLanguage3FontName>
+				<IsLanguage1Rtl>false</IsLanguage1Rtl>
+				<IsLanguage2Rtl>false</IsLanguage2Rtl>
+				<IsLanguage3Rtl>true</IsLanguage3Rtl>
+				<IsSourceCollection>False</IsSourceCollection>
+				<XMatterPack>Factory</XMatterPack>
+				<Country></Country>
+				<Province></Province>
+				<District></District>
+				<AllowNewBooks>True</AllowNewBooks>
+			</Collection>";
+
+		private const string _postAndikaMigrationCollection = @"﻿<?xml version='1.0' encoding='utf-8'?>
+			<Collection version='0.2'>
+				<Language1Name>Tok Pisin</Language1Name>
+				<Language1Iso639Code>tpi</Language1Iso639Code>
+				<Language2Iso639Code>en</Language2Iso639Code>
+				<Language3Iso639Code>ara</Language3Iso639Code>
+				<DefaultLanguage1FontName>Andika New Basic</DefaultLanguage1FontName>
+				<DefaultLanguage2FontName>Andika New Basic</DefaultLanguage2FontName>
+				<DefaultLanguage3FontName>Andika New Basic</DefaultLanguage3FontName>
+				<OneTimeCheckVersionNumber>1</OneTimeCheckVersionNumber>
+				<IsLanguage1Rtl>false</IsLanguage1Rtl>
+				<IsLanguage2Rtl>false</IsLanguage2Rtl>
+				<IsLanguage3Rtl>true</IsLanguage3Rtl>
+				<IsSourceCollection>False</IsSourceCollection>
+				<XMatterPack>Factory</XMatterPack>
+				<Country></Country>
+				<Province></Province>
+				<District></District>
+				<AllowNewBooks>True</AllowNewBooks>
+			</Collection>";
+
+		private const string _postAndikaMigrationCollectionNoANB = @"﻿<?xml version='1.0' encoding='utf-8'?>
+			<Collection version='0.2'>
+				<Language1Name>Tok Pisin</Language1Name>
+				<Language1Iso639Code>tpi</Language1Iso639Code>
+				<Language2Iso639Code>en</Language2Iso639Code>
+				<Language3Iso639Code>ara</Language3Iso639Code>
+				<DefaultLanguage1FontName>Andika</DefaultLanguage1FontName>
+				<DefaultLanguage2FontName>Andika</DefaultLanguage2FontName>
+				<DefaultLanguage3FontName>Andika</DefaultLanguage3FontName>
+				<OneTimeCheckVersionNumber>1</OneTimeCheckVersionNumber>
+				<IsLanguage1Rtl>false</IsLanguage1Rtl>
+				<IsLanguage2Rtl>false</IsLanguage2Rtl>
+				<IsLanguage3Rtl>true</IsLanguage3Rtl>
+				<IsSourceCollection>False</IsSourceCollection>
+				<XMatterPack>Factory</XMatterPack>
+				<Country></Country>
+				<Province></Province>
+				<District></District>
+				<AllowNewBooks>True</AllowNewBooks>
+			</Collection>";
+
+		#endregion
 
 		#region Metadata
 		[Test]

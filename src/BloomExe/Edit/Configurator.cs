@@ -23,13 +23,13 @@ namespace Bloom.Edit
 	public class Configurator
 	{
 		private readonly string _folderInWhichToReadAndSaveLibrarySettings;
-		private readonly MonitorTarget _monitorObjectForBrowserNavigation;
+		private readonly NavigationIsolator _isolator;
 		public delegate Configurator Factory(string folderInWhichToReadAndSaveLibrarySettings);//autofac uses this
 
-		public Configurator(string folderInWhichToReadAndSaveLibrarySettings, MonitorTarget monitorObjectForBrowserNavigation)
+		public Configurator(string folderInWhichToReadAndSaveLibrarySettings, NavigationIsolator isolator)
 		{
 			_folderInWhichToReadAndSaveLibrarySettings = folderInWhichToReadAndSaveLibrarySettings;
-			_monitorObjectForBrowserNavigation = monitorObjectForBrowserNavigation;
+			_isolator = isolator;
 			PathToLibraryJson = _folderInWhichToReadAndSaveLibrarySettings.CombineForPath("configuration.txt");
 			RequireThat.Directory(folderInWhichToReadAndSaveLibrarySettings).Exists();
 			LocalData = string.Empty;
@@ -47,23 +47,14 @@ namespace Bloom.Edit
 
 		public DialogResult ShowConfigurationDialog(string folderPath)
 		{
-			try
+			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.htm"), GetLibraryData(), _isolator))
 			{
-				Monitor.Enter(_monitorObjectForBrowserNavigation);
-				using (
-					var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.htm"), GetLibraryData()))
+				var result = dlg.ShowDialog(null);
+				if (result == DialogResult.OK)
 				{
-					var result = dlg.ShowDialog(null);
-					if (result == DialogResult.OK)
-					{
-						CollectJsonData(dlg.FormData);
-					}
-					return result;
+					CollectJsonData(dlg.FormData);
 				}
-			}
-			finally
-			{
-				Monitor.Exit(_monitorObjectForBrowserNavigation);
+				return result;
 			}
 		}
 
@@ -107,7 +98,7 @@ namespace Bloom.Edit
 
 			//Now we call the method which takes that confuration data and adds/removes/updates pages.
 			//We have the data as json string, so first we turn it into object for the updateDom's convenience.
-			RunJavaScript(b, "updateDom(jQuery.parseJSON('" + GetAllData() + "'))");
+			RunJavaScript(b, "runUpdate(" + GetAllData() + ")");
 
 			//Ok, so we should have a modified DOM now, which we can save back over the top.
 
@@ -137,16 +128,10 @@ namespace Bloom.Edit
 			Cursor.Current = Cursors.WaitCursor;
 			try
 			{
-				//browser.NavigateFinishedNotifier.BlockUntilNavigationFinished();
-				/* in geckofx14, this never fires (perhaps it does for docs, but not javascript?):
 				browser.DocumentCompleted -= browser_DocumentNavigated;
 				browser.DocumentCompleted += browser_DocumentNavigated;
-			 */
 
-				browser.Navigated -= browser_DocumentNavigated;
-				browser.Navigated += browser_DocumentNavigated;
-
-				browser.Navigate(url);
+				_isolator.Navigate(browser, url);
 
 				//in geckofx 14, there wasn't a reliable event for knowing when navigating was done
 				//this could be simplified when we upgrade
@@ -154,6 +139,7 @@ namespace Bloom.Edit
 				while (DateTime.Now < giveUpTime && browser.Tag == null)
 				{
 					Application.DoEvents();
+					Application.RaiseIdle(new EventArgs()); //required for Mono
 				}
 				if (browser.Tag == null)
 					throw new ApplicationException("Timed out waiting for browser to configure book");
@@ -163,6 +149,7 @@ namespace Bloom.Edit
 				while (DateTime.Now < minimumTimeToWait)
 				{
 					Application.DoEvents();
+					Application.RaiseIdle(new EventArgs()); //required for Mono
 				}
 			}
 			finally
@@ -232,7 +219,7 @@ namespace Bloom.Edit
 		private string MergeJsonData(string a, string b)
 		{
 			//NB: this has got to be the ugliest code I have written since HighSchool.  There are just all these weird bugs, missing functions, etc. in the
-			//json libraries. And probably better ways to do this stuff, too.  Maybe it doesn't help that I'm using too different libaries in one function!
+			//json libraries. And probably better ways to do this stuff, too.  Maybe it doesn't help that I'm using two different libaries in one function!
 			//All I can say is it has unit test converage.
 			JObject existing = JObject.Parse(a.ToString());
 			foreach (KeyValuePair<string, dynamic> item in DynamicJson.Parse(b))
@@ -242,7 +229,7 @@ namespace Bloom.Edit
 				{
 					if (inExisting)
 					{
-						string merged = MergeJsonData(existing[item.Key].ToString().Replace("\r\n", "").Replace("\\", ""), item.Value.ToString());
+						string merged = MergeJsonData(existing[item.Key].ToString().Replace("\r\n", "").Replace("\n", "").Replace("\\", ""), item.Value.ToString());
 						existing.Remove(item.Key);
 						existing.Add(item.Key, JToken.Parse(merged));
 					}

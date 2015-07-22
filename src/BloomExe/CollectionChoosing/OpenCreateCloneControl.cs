@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
@@ -8,7 +10,8 @@ using Bloom.Properties;
 using Chorus.UI.Clone;
 using Palaso.UI.WindowsForms.Extensions;
 using Palaso.i18n;
-using Palaso.Extensions;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Bloom.CollectionChoosing
 {
@@ -54,18 +57,29 @@ namespace Bloom.CollectionChoosing
 
 			_templateButton.Parent.Controls.Remove(_templateButton);
 
-			int count = 0;
-			foreach (string path in _mruList.Paths)
+			const int maxMruItems = 3;
+			var collectionsToShow = _mruList.Paths.Take(maxMruItems).ToList();
+			if (collectionsToShow.Count() < maxMruItems && Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
+			{
+				collectionsToShow.AddRange(Directory.GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
+					.Select(d => Path.Combine(d, Path.ChangeExtension(Path.GetFileName(d),"bloomCollection")))
+					.Where(c => File.Exists(c) && !collectionsToShow.Contains(c))
+					.OrderBy(c => Directory.GetLastWriteTime(Path.GetDirectoryName(c)))
+					.Reverse()
+					.Take(maxMruItems - collectionsToShow.Count()));
+			}
+			var count = 0;
+			foreach (var path in collectionsToShow)
 			{
 				AddFileChoice(path, count);
 				++count;
-				if (count > 3)
+				if (count > maxMruItems)
 					break;
 			}
 
 			foreach (Control control in tableLayoutPanel2.Controls)
 			{
-				if (control.Tag == "sendreceive")
+				if (control.Tag != null && control.Tag.ToString() == "sendreceive")
 					control.Visible = Settings.Default.ShowSendReceive;
 			}
 		}
@@ -196,11 +210,93 @@ namespace Bloom.CollectionChoosing
 			SelectedPath = path;
 			if (!string.IsNullOrEmpty(path))
 			{
+				CheckForBeingInDropboxFolder(path);
 				_mruList.AddNewPath(path);
 				Invoke(DoneChoosingOrCreatingLibrary);
 			}
 		}
 
+		/// <summary>
+		/// Path(s) to the user's Dropbox folder(s).  It is static because we only want to look these up once.
+		/// </summary>
+		private static List<string> _dropboxFolders;
+
+		/// <summary>
+		/// This method checks 'path' for being in a Dropbox folder.  If so, it displays a warning message.
+		/// </summary>
+		public static void CheckForBeingInDropboxFolder(string path)
+		{
+			if (string.IsNullOrEmpty(path)) return;
+
+			try
+			{
+				if (_dropboxFolders == null)
+				{
+					_dropboxFolders = new List<string>();
+					string dropboxInfoFile;
+					// On Windows, Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) returns
+					// the path of the user's AppData/Roaming subdirectory.  I know the name looks like it should
+					// return the AppData directory itself, but it returns the Roaming subdirectory (although
+					// there seems to be some confusion about this on stackoverflow.)  MSDN has this to say to
+					// describe this enumeration value:
+					//    The directory that serves as a common repository for application-specific data for the
+					//    current roaming user.
+					// My tests on Windows 7/.Net 4.0 empirically show the return value looks something like
+					//    C:\Users\username\AppData\Roaming
+					// On Linux/Mono 3, the return value looks something like
+					//    /home/username/.config
+					// but Dropbox places its .dropbox folder in the user's home directory so we need to strip
+					// one directory level from that return value.
+					var baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+					if (Palaso.PlatformUtilities.Platform.IsWindows)
+						dropboxInfoFile = Path.Combine(baseFolder, @"Dropbox\info.json");
+					else
+						dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
+
+					if (!File.Exists(dropboxInfoFile))
+						return; // User appears to not have Dropbox installed
+
+					var info = File.ReadAllText(dropboxInfoFile);
+					var matches = Regex.Matches(info, @"{""path"": ""([^""]+)"",");
+					foreach (Match match in matches)
+					{
+						var folder = match.Groups[1].Value;
+						if (Palaso.PlatformUtilities.Platform.IsWindows)
+						{
+							folder = folder.Replace("\\\\", "\\");
+							folder = folder.ToLowerInvariant();
+						}
+						_dropboxFolders.Add(folder + Path.DirectorySeparatorChar);
+					}
+				}
+
+				if (_dropboxFolders.Count == 0)
+					return; // User appears to not have Dropbox installed
+
+				if (Palaso.PlatformUtilities.Platform.IsWindows)
+					path = path.ToLowerInvariant(); // We do a case-insensitive compare on Windows.
+
+				foreach (var folder in _dropboxFolders)
+				{
+					if (path.StartsWith(folder))
+					{
+						var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InDropboxMessage",
+							"Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.",
+							"");
+						MessageBox.Show(msg);
+						return;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				// To help fix BL-1246, we enable this:
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+					"For some reason Bloom could not check your Dropbox settings. This should not cause you any problems, but please report it so we can fix it.");
+				Palaso.Reporting.Logger.WriteEvent("*** In CheckForBeingInDropboxFolder(), got "+e.Message+Environment.NewLine+e.StackTrace);
+				Debug.Fail(e.Message);
+			}
+		}
 
 		private void _readMoreLabel_Click(object sender, LinkLabelLinkClickedEventArgs e)
 		{

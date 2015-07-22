@@ -5,7 +5,6 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,10 +12,10 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.web;
 using DesktopAnalytics;
 using Palaso.IO;
-using Palaso.Reporting;
-using Palaso.Xml;
+using PdfDroplet.LayoutMethods;
 
 namespace Bloom.Publish
 {
@@ -34,7 +33,9 @@ namespace Bloom.Publish
 			WaitForUserToChooseSomething,
 			Working,
 			ShowPdf,
-			Upload
+			Upload,
+			Printing,
+			ResumeAfterPrint
 		}
 
 		public enum BookletPortions
@@ -62,7 +63,8 @@ namespace Bloom.Publish
 		private readonly HtmlThumbNailer _htmlThumbNailer;
 		private string _lastDirectory;
 
-		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings, BookServer bookServer, HtmlThumbNailer htmlThumbNailer)
+		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings,
+			BookServer bookServer, HtmlThumbNailer htmlThumbNailer)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
@@ -93,7 +95,7 @@ namespace Bloom.Publish
 		}
 
 
-		public void LoadBook(DoWorkEventArgs doWorkEventArgs)
+		public void LoadBook(BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 			_currentlyLoadedBook = BookSelection.CurrentSelection;
 
@@ -110,8 +112,13 @@ namespace Bloom.Publish
 					else
 						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
 
-					_pdfMaker.MakePdf(tempHtml.Path, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName, PageLayout.SizeAndOrientation.IsLandScape,
-									  layoutMethod, BookletPortion, doWorkEventArgs);
+					// Check memory for the benefit of developers.  The user won't see anything.
+					Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
+					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
+						PageLayout.SizeAndOrientation.IsLandScape, LayoutPagesForRightToLeft,
+						layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
+					// Warn the user if we're starting to use too much memory.
+					Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
 				}
 			}
 			catch (Exception e)
@@ -124,30 +131,47 @@ namespace Bloom.Publish
 			}
 		}
 
+		private bool LayoutPagesForRightToLeft
+		{
+			get { return _collectionSettings.IsLanguage1Rtl;  }
 
-		private TempFile MakeFinalHtmlForPdfMaker()
+		}
+
+		private SimulatedPageFile MakeFinalHtmlForPdfMaker()
 		{
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
-			XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
+			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
 
-			HtmlDom.AddPublishClassToBody(dom);
-			//HtmlDom.AddWebkitClassToBody(dom);
-
-			//wkhtmltopdf can't handle file://
-			dom.InnerXml = dom.InnerXml.Replace("file://", "");
+			AddStylesheetClasses(dom.RawDom);
 
 			//we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
-			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
-			PageLayout.UpdatePageSplitMode(dom);
+			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom.RawDom, PageLayout);
+			PageLayout.UpdatePageSplitMode(dom.RawDom);
 
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			return BloomTemp.TempFileUtils.CreateHtm5FromXml(dom);
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
+			dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
+			return EnhancedImageServer.MakeSimulatedPageFileInBookFolder(dom);
 		}
 
-		private string GetPdfPath(string fileName)
+		private void AddStylesheetClasses(XmlDocument dom)
+		{
+			HtmlDom.AddPublishClassToBody(dom);
+			if (LayoutPagesForRightToLeft)
+				HtmlDom.AddRightToLeftClassToBody(dom);
+			HtmlDom.AddHidePlaceHoldersClassToBody(dom);
+			if (BookSelection.CurrentSelection.GetDefaultBookletLayout() == PublishModel.BookletLayoutMethod.Calendar)
+			{
+				HtmlDom.AddCalendarFoldClassToBody(dom);
+			}
+		}
+
+		private string GetPdfPath(string fname)
 		{
 			string path = null;
+
+			// Sanitize fileName first
+			string fileName = SanitizeFileName(fname);
 
 			for (int i = 0; i < 100; i++)
 			{
@@ -166,6 +190,21 @@ namespace Bloom.Publish
 				}
 			}
 			return path;
+		}
+
+		/// <summary>
+		/// Ampersand in book title was causing Publish problems
+		/// </summary>
+		/// <param name="fileName"></param>
+		/// <returns></returns>
+		private static string SanitizeFileName(string fileName)
+		{
+			fileName = Path.GetInvalidFileNameChars().Aggregate(
+				fileName, (current, character) => current.Replace(character, ' '));
+			// I (GJM) set this up to keep ampersand out of the book title,
+			// but discovered that ampersand isn't one of the characters that GetInvalidFileNameChars returns!
+			fileName = fileName.Replace('&', ' ');
+			return fileName;
 		}
 
 		DisplayModes _currentDisplayMode = DisplayModes.WaitForUserToChooseSomething;
@@ -196,6 +235,8 @@ namespace Bloom.Publish
 
 				}
 			}
+
+			GC.SuppressFinalize(this);
 		}
 
 		public BookletPortions BookletPortion { get; set; }
@@ -315,7 +356,11 @@ namespace Bloom.Publish
 
 //			System.Diagnostics.Process.Start(tempHtml.Path);
 
-			System.Diagnostics.Process.Start("Chrome.exe",MakeFinalHtmlForPdfMaker().Path);
+			var htmlFilePath = MakeFinalHtmlForPdfMaker().Key;
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+				Process.Start("Firefox.exe", '"' + htmlFilePath + '"');
+			else
+				Process.Start("xdg-open", '"' + htmlFilePath + '"');
 		}
 
 		public void RefreshValuesUponActivation()
@@ -345,11 +390,18 @@ namespace Bloom.Publish
 					});
 					foreach (var page in  book.GetPages())
 					{
-						yield return book.GetPreviewXmlDocumentForPage(page);
+						//yield return book.GetPreviewXmlDocumentForPage(page);
+
+						var previewXmlDocumentForPage = book.GetPreviewXmlDocumentForPage(page);
+						BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, book.FolderPath);
+
+						AddStylesheetClasses(previewXmlDocumentForPage.RawDom);
+
+						yield return previewXmlDocumentForPage;
 					}
 				}
 			}
-			else //this one is just for testing, it's not especially fruitfal to export for a single book
+			else //this one is just for testing, it's not especially fruitful to export for a single book
 			{
 				//need to hide the "notes for illustrators" on SHRP, which is controlled by the layout
 				BookSelection.CurrentSelection.SetLayout(new Layout()
@@ -362,30 +414,34 @@ namespace Bloom.Publish
 				{
 					var previewXmlDocumentForPage = BookSelection.CurrentSelection.GetPreviewXmlDocumentForPage(page);
 					//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
-					BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, BookSelection.CurrentSelection.FolderPath, false);
+					BookStorage.SetBaseForRelativePaths(previewXmlDocumentForPage, BookSelection.CurrentSelection.FolderPath);
+					AddStylesheetClasses(previewXmlDocumentForPage.RawDom);
 					yield return previewXmlDocumentForPage;
 				}
 			}
 		}
 
 
-		public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError )
+		public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError)
 		{
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
 			{
 				BackgroundColor = Color.White,
-				DrawBorderDashed = false,
-				CenterImageUsingTransparentPadding = false
+				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.None,
+				CenterImageUsingTransparentPadding = false,
+				//210x147 is about what the TG's expect, but we're going to tripple that in case it makes for better printing
+				Height = 630,
+				Width = 441,
 			};
-			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom.RawDom,thumbnailOptions,onReady, onError);
+			dom.UseOriginalImages = true; // apparently these thumbnails can be big...anyway we want printable images.
+			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions,onReady, onError);
 		}
 
 		public IEnumerable<ToolStripItem> GetExtensionMenuItems()
 		{
 			//for now we're not doing real extension dlls, just kind of faking it. So we will limit this load
 			//to books we know go with this currently "built-in" "extension" for SIL LEAD's SHRP Project.
-			//TODO: this should work, but it doesn't because BookInfo.BookLineage isn't working: if (SHRP_PupilBookExtension.ExtensionIsApplicable(BookSelection.CurrentSelection.BookInfo.BookLineage))
-			if (SHRP_PupilBookExtension.ExtensionIsApplicable(BookSelection.CurrentSelection.GetBookLineage()))
+			if (SHRP_PupilBookExtension.ExtensionIsApplicable(BookSelection.CurrentSelection))
 			{
 				//load any extension assembly found in the template's root directory
 				//var catalog = new DirectoryCatalog(this.BookSelection.CurrentSelection.FindTemplateBook().FolderPath, "*.dll");
@@ -396,6 +452,7 @@ namespace Bloom.Publish
 				container.ComposeExportedValue<string>("Language1Iso639Code", _collectionSettings.Language1Iso639Code);
 				container.ComposeExportedValue<Func<IEnumerable<HtmlDom>>>(GetPageDoms);
 			  //  container.ComposeExportedValue<Func<string>>("pathToPublishedHtmlFile",GetFileForPrinting);
+				//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
 				container.ComposeExportedValue<Action<int, int, HtmlDom, Action<Image>, Action<Exception>>>(GetThumbnailAsync);
 				container.SatisfyImportsOnce(this);
 				return _getExtensionMenuItems == null ? new List<ToolStripItem>() : _getExtensionMenuItems();

@@ -122,9 +122,20 @@ namespace Bloom.Workspace
 		protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e)
 		{
 			if (_currentRenderer != null)
+			{
 				_currentRenderer.DrawToolStripBackground(e);
-			else
+				return;
+			}
+
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			{
 				base.OnRenderToolStripBackground(e);
+				return;
+			}
+
+			// there is no handler for this event in mono, so we need to handle it here.
+			var b = new SolidBrush(e.ToolStrip.BackColor);
+			e.Graphics.FillRectangle(b, e.AffectedBounds);
 		}
 
 		protected override void OnRenderButtonBackground(ToolStripItemRenderEventArgs e)
@@ -317,18 +328,31 @@ namespace Bloom.Workspace
 
 		protected override void OnRenderItemImage(ToolStripItemImageRenderEventArgs e)
 		{
-			Rectangle rc = e.ImageRectangle;
 			TabStripButton btn = e.Item as TabStripButton;
+
+			var rect = e.ImageRectangle;
+
 			if (btn != null)
 			{
-				int delta = ((Mirrored) ? -1 : 1) * ((btn.Checked) ? 1 : selOffset);
-				if (e.ToolStrip.Orientation == Orientation.Horizontal)
-					rc.Offset((Mirrored) ? 2 : 1, delta + ((Mirrored) ? 1 : 0));
+				// adjust the image position up for Linux
+				if (Palaso.PlatformUtilities.Platform.IsLinux)
+				{
+					if (e.ToolStrip.Orientation == Orientation.Horizontal)
+						rect.Offset(0, -4);
+				}
 				else
-					rc.Offset(delta + 2, 0);
+				{
+					var delta = ((Mirrored) ? -1 : 1) * ((btn.Checked) ? 1 : selOffset);
+					if (e.ToolStrip.Orientation == Orientation.Horizontal)
+						rect.Offset((Mirrored) ? 2 : 1, delta + ((Mirrored) ? 1 : 0));
+					else
+						rect.Offset(delta + 2, 0);
+				}
 			}
+
 			ToolStripItemImageRenderEventArgs x =
-				new ToolStripItemImageRenderEventArgs(e.Graphics, e.Item, e.Image, rc);
+				new ToolStripItemImageRenderEventArgs(e.Graphics, e.Item, e.Image, rect);
+
 			if (_currentRenderer != null)
 				_currentRenderer.DrawItemImage(x);
 			else
@@ -338,35 +362,40 @@ namespace Bloom.Workspace
 
 		protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
 		{
-			Rectangle rc = e.TextRectangle;
+			// set the font before calculating the size because bold text is being cut off in Linux.
 			TabStripButton btn = e.Item as TabStripButton;
+			if ((btn != null) && btn.Checked)
+				e.TextFont = btn.SelectedFont;
 
-			Color c = e.TextColor;
-			Font f = e.TextFont;
+			e.SizeTextRectangleToText();
 
-			rc.Offset(0, 6);//hatton for bloom lower is better
+			// adjust the text position up for Linux
+			var rect = e.TextRectangle;
+			if (Palaso.PlatformUtilities.Platform.IsLinux)
+				rect.Offset(0, -2);
+			else
+				rect.Offset(0, 8); // hatton for bloom lower is better
 
 			if (btn != null)
 			{
-				int delta = ((Mirrored) ? -1 : 1) * ((btn.Checked) ? 1 : selOffset);
+				var delta = ((Mirrored) ? -1 : 1) * ((btn.Checked) ? 1 : selOffset);
 				if (e.ToolStrip.Orientation == Orientation.Horizontal)
-					rc.Offset((Mirrored) ? 2 : 1, delta + ((Mirrored) ? 1 : -1));
+					rect.Offset((Mirrored) ? 2 : 1, delta + ((Mirrored) ? 1 : -1));
 				else
-					rc.Offset(delta + 2, 0);
+					rect.Offset(delta + 2, 0);
+
 				if (btn.Selected)
-					c = btn.HotTextColor;
+					e.TextColor = btn.HotTextColor;
 				else if (btn.Checked)
-					c = btn.SelectedTextColor;
-				if (btn.Checked)
-					f = btn.SelectedFont;
+					e.TextColor = btn.SelectedTextColor;
 			}
-			ToolStripItemTextRenderEventArgs x =
-				new ToolStripItemTextRenderEventArgs(e.Graphics, e.Item, e.Text, rc, c, f, e.TextFormat);
-			x.TextDirection = e.TextDirection;
+
+			e.TextRectangle = rect;
+
 			if (_currentRenderer != null)
-				_currentRenderer.DrawItemText(x);
+				_currentRenderer.DrawItemText(e);
 			else
-				base.OnRenderItemText(x);
+				base.OnRenderItemText(e);
 		}
 
 		protected override void OnRenderArrow(ToolStripArrowRenderEventArgs e)

@@ -8,7 +8,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BloomTests</RootNamespace>
     <AssemblyName>BloomTests</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -28,6 +28,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,6 +38,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -56,6 +58,7 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>..\..\output\Release\</OutputPath>
@@ -74,9 +77,31 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <WarningLevel>4</WarningLevel>
+    <DebugSymbols>true</DebugSymbols>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="L10NSharp, Version=2.0.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\dotnet\L10NSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Moq, Version=4.2.1409.1722, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Moq.4.2.1409.1722\lib\net40\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\RestSharp.105.0.1\lib\net4\RestSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -106,11 +131,8 @@
     <Reference Include="PalasoUIWindowsForms">
       <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
-    <Reference Include="RestSharp">
-      <HintPath>..\..\packages\RestSharp.104.4.0\lib\net4\RestSharp.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.framework">
-      <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+      <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="Geckofx-Core, Version=29.0.6.0, Culture=neutral, PublicKeyToken=3209ac31600d1857" Condition="'$(OS)'!='Windows_NT'">
       <Package>Geckofx-Core</Package>
@@ -126,11 +148,10 @@
     <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Geckofx-Winforms.dll</HintPath>
     </Reference>
-    <Reference Include="Moq">
-      <HintPath>..\..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BloomFileLocatorTests.cs" />
+    <Compile Include="BloomZipFileTests.cs" />
     <Compile Include="Book\BookCollectionTests.cs" />
     <Compile Include="Book\BookInfoTests.cs" />
     <Compile Include="Book\HtmlDomTests.cs" />
@@ -138,35 +159,47 @@
     <Compile Include="Book\BookStorageTests.cs" />
     <Compile Include="Book\BookStarterTests.cs" />
     <Compile Include="Book\BookDataTests.cs" />
+    <Compile Include="Book\RuntimeInformationInjectorTests.cs" />
     <Compile Include="Book\TranslationGroupManagerTests.cs" />
     <Compile Include="Book\LayoutTests.cs" />
     <Compile Include="Book\XMatterHelperTests.cs" />
     <Compile Include="Book\SizeAndOrientationTests.cs" />
+    <Compile Include="CollectionTab\LibraryModelTests.cs" />
+    <Compile Include="CollectionTab\TestLibraryModel.cs" />
     <Compile Include="Collection\BloomPackInstallerTests.cs" />
-    <Compile Include="Edit\ReaderToolsTests.cs" />
     <Compile Include="HelpLauncherTests.cs" />
     <Compile Include="Chorus\MergingTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
     <Compile Include="FluentAssertXml.cs" />
-    <Compile Include="LowResImageProcessing\LowResImageCacheTests.cs" />
+    <Compile Include="ImageProcessing\ImageUtilsTests.cs" />
+    <Compile Include="ImageProcessing\RuntimeImageProcessingTests.cs" />
+    <Compile Include="NavigationIsolatorTests.cs" />
     <Compile Include="NewCollectionWizardTests.cs" />
     <Compile Include="PageEditingModelTests.cs" />
     <Compile Include="PageSelectionTests.cs" />
     <Compile Include="Book\PageTests.cs" />
+    <Compile Include="ProblemReporterDialogTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PdfMakerTests.cs" />
     <Compile Include="OpenCreateDialogTests.cs" />
+    <Compile Include="ToPalaso\LookupIsoCodeModelExtensionsTests.cs" />
     <Compile Include="ToPalaso\MostRecentPathsTests.cs" />
     <Compile Include="ToPalaso\ProgresDialogTests.cs" />
     <Compile Include="UpdateVersionTableTests.cs" />
+    <Compile Include="WebLibraryIntegration\BloomLinkArgsTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomParseClientTests.cs" />
     <Compile Include="WebLibraryIntegration\BloomS3ClientTests.cs" />
+    <Compile Include="WebLibraryIntegration\BloomS3StandardUpDownloadTests.cs" />
     <Compile Include="WebLibraryIntegration\BookTransferTests.cs" />
     <Compile Include="web\BloomServerTests.cs" />
-    <Compile Include="LowResImageProcessing\ImageServerTests.cs" />
+    <Compile Include="ImageProcessing\ImageServerTests.cs" />
+    <Compile Include="web\RequestInfoTests.cs" />
     <Compile Include="XmlHtmlConverterTests.cs" />
     <Compile Include="web\EnhancedImageServerTests.cs" />
     <Compile Include="PretendRequestInfo.cs" />
+    <Compile Include="Collection\ShortcutMakerTests.cs" />
+    <Compile Include="WebLibraryIntegration\ProxyManagerTests.cs" />
+    <Compile Include="SetupFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bloom-ChorusPlugin\BloomChorusPlugin.csproj">

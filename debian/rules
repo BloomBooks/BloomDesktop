@@ -1,0 +1,82 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+export MONO_PREFIX = /opt/mono-sil
+export BUILD = Release
+
+PACKAGE = bloom-desktop-unstable
+DESTDIR = debian/$(PACKAGE)
+LIB     = usr/lib/$(PACKAGE)
+SHARE   = usr/share/$(PACKAGE)
+
+FULL_BUILD_NUMBER ?= 0.0.1.0
+
+%:
+	dh $@ --with=cli --parallel
+
+override_dh_auto_configure:
+
+override_dh_auto_build:
+	build/getDependencies-Linux.sh
+	. ./environ && \
+		xbuild /t:SetAssemblyVersion /p:RootDir=$(shell pwd) /p:BUILD_NUMBER=$(FULL_BUILD_NUMBER) build/Bloom.proj && \
+		xbuild /p:Configuration=$(BUILD) "Bloom VS2010.sln"
+
+override_dh_auto_test:
+
+override_dh_auto_clean:
+	. ./environ && xbuild /p:Configuration=$(BUILD) "Bloom VS2010.sln" /t:Clean
+	dh_clean
+
+override_dh_auto_install:
+	# Install library files
+	install -d $(DESTDIR)/$(LIB)
+	cp -r output/$(BUILD)/* $(DESTDIR)/$(LIB)
+	find $(DESTDIR)/$(LIB) -type f -print0 | xargs -0 chmod 644
+	find $(DESTDIR)/$(LIB) -type d -print0 | xargs -0 chmod 755
+	install -d $(DESTDIR)/$(SHARE)
+	install -m 644 environ* $(DESTDIR)/$(SHARE)
+	cd $(DESTDIR)/$(LIB) && rm AxInterop* BloomTests* Interop* Moq* nunit*
+	# Install data files
+	cp -r DistFiles $(DESTDIR)/$(LIB)/
+	rm -rf $(DESTDIR)/$(LIB)/DistFiles/Andika
+	chmod -R a+rX,og-w $(DESTDIR)/$(LIB)/DistFiles
+	# Install browser support files
+	cp -r src/BloomBrowserUI $(DESTDIR)/$(LIB)/
+	chmod -R a+rX,og-w $(DESTDIR)/$(LIB)/BloomBrowserUI
+	# Install wrapper script
+	install -d $(DESTDIR)/usr/bin
+	install debian/bloom $(DESTDIR)/usr/bin
+	# Add to Applications menu
+	install -d $(DESTDIR)/usr/share/pixmaps
+	install -m 644 debian/bloom.png $(DESTDIR)/usr/share/pixmaps/
+	install -m 644 debian/bloom.svg $(DESTDIR)/usr/share/pixmaps/
+	install -d $(DESTDIR)/usr/share/applications
+	desktop-file-install --dir $(DESTDIR)/usr/share/applications debian/bloom.desktop
+	# Install icon for our mime type so that it shows up as icon for a bloompack
+	# NOTE: mime type installation is handled by dh_installmime
+	install -d $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/
+	install -m 644 debian/BloomPack.png $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/application-bloom.png
+	install -d $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/
+	install -m 644 debian/BloomPack.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/application-bloom.svg
+	# Add bloom-collection mime type
+	install -m 644 debian/bloom-collection.png $(DESTDIR)/usr/share/icons/hicolor/48x48/mimetypes/application-bloom-collection.png
+	install -m 644 debian/bloom-collection.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/mimetypes/application-bloom-collection.svg
+
+# Don't export any assemblies to other packages
+override_dh_makeclilibs:
+
+# Include mono-sil in shlib dirs searched
+override_dh_shlibdeps:
+	dh_shlibdeps -l$(MONO_PREFIX)/lib
+
+# Include mono-sil in cli dirs searched
+override_dh_clideps:
+	dh_clideps -l$(MONO_PREFIX)/lib --exclude-moduleref=Crypt32.dll --exclude-moduleref=libdconf.dll \
+		--exclude-moduleref=connections.dll --exclude-moduleref=icuuc52.dll --exclude-moduleref=icuin52.dll \
+		--exclude-moduleref=icuuc48.dll --exclude-moduleref=icuin48.dll --exclude-moduleref=libtidy.dll \
+		--exclude-moduleref=msdelta.dll --exclude-moduleref=mspatcha.dll --exclude-moduleref=mspatchc.dll \
+		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll

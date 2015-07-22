@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using BloomTemp;
+using L10NSharp;
 using Palaso.Reporting;
 
 namespace Bloom.Edit
@@ -17,7 +18,7 @@ namespace Bloom.Edit
 		private bool _dontForwardSelectionEvent;
 		private IPage _pageWeThinkShouldBeSelected;
 
-		public PageListView(PageSelection pageSelection,  RelocatePageEvent relocatePageEvent, EditingModel model,HtmlThumbNailer thumbnailProvider)
+		public PageListView(PageSelection pageSelection,  RelocatePageEvent relocatePageEvent, EditingModel model,HtmlThumbNailer thumbnailProvider, NavigationIsolator isolator)
 		{
 			_pageSelection = pageSelection;
 			_model = model;
@@ -29,8 +30,26 @@ namespace Bloom.Edit
 			_thumbNailList.KeepShowingSelection = true;
 			_thumbNailList.RelocatePageEvent = relocatePageEvent;
 			_thumbNailList.PageSelectedChanged+=new EventHandler(OnPageSelectedChanged);
-		}
+			_thumbNailList.Isolator = isolator;
+			_thumbNailList.ContextMenuProvider = args =>
+			{
+				var page = _thumbNailList.GetPageContaining(args.TargetNode);
+				if (page == null)
+					return; // no page-related commands if we didn't click on one.
 
+				var dupPage = LocalizationManager.GetString("EditTab._duplicatePageButton", "Duplicate Page"); // same ID as button in toolbar
+				var dupItem = new MenuItem(dupPage, (sender, eventArgs) => _model.DuplicatePage(page));
+				args.ContextMenu.MenuItems.Add(dupItem);
+				var removePage = LocalizationManager.GetString("EditTab._deletePageButton", "Remove Page"); // same ID as button in toolbar
+				var removeItem = new MenuItem(removePage, (sender, eventArgs) =>
+				{
+					if (ConfirmRemovePageDialog.Confirm())
+					_model.DeletePage(page);
+				});
+				args.ContextMenu.MenuItems.Add(removeItem);
+				dupItem.Enabled = removeItem.Enabled = page != null && !page.Required && !_model.CurrentBook.LockedDown;
+			};
+		}
 
 		private void OnPageSelectedChanged(object page, EventArgs e)
 		{
@@ -108,6 +127,11 @@ namespace Bloom.Edit
 		public void EmptyThumbnailCache()
 		{
 			_thumbNailList.EmptyThumbnailCache();
+		}
+
+		public new bool Enabled
+		{
+			set { _thumbNailList.Enabled = value; }
 		}
 	}
 }

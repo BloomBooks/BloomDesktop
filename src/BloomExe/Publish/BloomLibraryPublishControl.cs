@@ -28,12 +28,13 @@ namespace Bloom.Publish
 		private Book.Book _book;
 		private string _originalLoginText;
 		private bool _okToUpload = true;
+		private bool _okToUploadDependsOnLangsChecked;
 		private bool _usingNotesLabel = true;
 		private bool _usingNotesSuggestion = true;
 		private bool _usingCcControls = true;
 
-		private string _pleaseSetThis = LocalizationManager.GetString("Publish.Upload.PleaseSetThis",
-			"Please set this from the edit tab");
+		private string _pleaseSetThis = LocalizationManager.GetString("PublishTab.Upload.PleaseSetThis",
+			"Please set this from the edit tab", "This shows next to the license, if the license has not yet been set.");
 		public BloomLibraryPublishControl(PublishView parentView, BookTransfer bookTransferrer, LoginDialog login, Book.Book book)
 		{
 			_parentView = parentView;
@@ -71,18 +72,18 @@ namespace Bloom.Publish
 				}
 				else
 				{
-					_licenseNotesLabel.Text = LocalizationManager.GetString("Publish.Upload.AdditionalRequests", "AdditionalRequests: ") + license.RightsStatement;
+					_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AdditionalRequests", "AdditionalRequests: ") + license.RightsStatement;
 				}
 			}
 			else if (license is NullLicense)
 			{
 				_usingCcControls = false;
-				_licenseNotesLabel.Text = LocalizationManager.GetString("Publish.Upload.AllReserved", "All rights reserved (Contact the Copyright holder for any permissions");
+				_licenseNotesLabel.Text = LocalizationManager.GetString("PublishTab.Upload.AllReserved", "All rights reserved (Contact the Copyright holder for any permissions.)");
 				if (!string.IsNullOrWhiteSpace(license.RightsStatement))
 				{
 					_licenseNotesLabel.Text += Environment.NewLine + license.RightsStatement;
 				}
-				_licenseSuggestion.Text = LocalizationManager.GetString("Publish.Upload.SuggestAssignCC", "Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.");
+				_licenseSuggestion.Text = LocalizationManager.GetString("PublishTab.Upload.SuggestAssignCC", "Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.");
 
 			}
 			else
@@ -90,12 +91,36 @@ namespace Bloom.Publish
 				// So far, this means it must be custom license (with non-blank rights...actually, currently, the palaso dialog will not allow a custom license with no rights statement).
 				_usingCcControls = false;
 				_licenseNotesLabel.Text = license.RightsStatement;
-				_licenseSuggestion.Text = LocalizationManager.GetString("Publish.Upload.SuggestChangeCC", "Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.");
+				_licenseSuggestion.Text = LocalizationManager.GetString("PublishTab.Upload.SuggestChangeCC", "Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.");
 			}
 
 			_copyrightLabel.Text = book.BookInfo.Copyright;
 
-			_languagesLabel.Text = string.Join(", ", book.AllLanguages.Select(lang => _book.PrettyPrintLanguage(lang)).ToArray());
+			var allLanguages = book.AllLanguages;
+			foreach (var lang in allLanguages.Keys)
+			{
+				var checkBox = new CheckBox();
+				checkBox.Text = _book.PrettyPrintLanguage(lang);
+				if (allLanguages[lang])
+					checkBox.Checked = true;
+				else
+				{
+					checkBox.Text += @" " + LocalizationManager.GetString("PublishTab.Upload.Partial", "(partial)");
+				}
+				checkBox.Size = new Size(TextRenderer.MeasureText(checkBox.Text, checkBox.Font).Width + 50, checkBox.Height);
+				checkBox.Tag = lang;
+				checkBox.CheckStateChanged += delegate(object sender, EventArgs args)
+				{
+					bool someLangChecked = _languagesFlow.Controls.Cast<CheckBox>().Any(b => b.Checked);
+					_langsLabel.ForeColor = someLangChecked ? Color.Black : Color.Red;
+					if (_okToUploadDependsOnLangsChecked)
+					{
+						_okToUpload = someLangChecked;
+						UpdateDisplay();
+					}
+				};
+				_languagesFlow.Controls.Add(checkBox);
+			}
 
 			_creditsLabel.Text = book.BookInfo.Credits;
 			_summaryBox.Text = book.BookInfo.Summary;
@@ -107,20 +132,29 @@ namespace Bloom.Publish
 			catch (Exception e)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
-					LocalizationManager.GetString("Publish.Upload.LoginFailure",
-						"Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection"));
+					LocalizationManager.GetString("PublishTab.Upload.LoginFailure",
+						"Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection."));
 			}
 			_optional1.Left = _summaryBox.Right - _optional1.Width; // right-align these (even if localization changes their width)
 			RequireValue(_copyrightLabel);
 			RequireValue(_titleLabel);
-			RequireValue(_languagesLabel);
 
 			if (BookTransfer.UseSandbox)
 			{
 				var oldTextWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
-				_uploadButton.Text = LocalizationManager.GetString("Publish.Upload.UploadSandbox","Upload Book (to Sandbox)");
+				_uploadButton.Text = LocalizationManager.GetString("PublishTab.Upload.UploadSandbox","Upload Book (to Sandbox)");
 				var neededWidth = TextRenderer.MeasureText(_uploadButton.Text, _uploadButton.Font).Width;
 				_uploadButton.Width += neededWidth - oldTextWidth;
+			}
+			// After considering all the factors except whether any languages are selected,
+			// if we can upload at this point, whether we can from here on depends on whether one is checked.
+			// This test needs to come after evaluating everything else uploading depends on (except login)
+			_okToUploadDependsOnLangsChecked = _okToUpload;
+			if (!allLanguages.Keys.Any())
+			{
+				_langsLabel.Text += " " + LocalizationManager.GetString("PublishTab.Upload.NoLangsFound", "(None found)");
+				_langsLabel.ForeColor = Color.Red;
+				_okToUpload = false;
 			}
 		}
 
@@ -187,16 +221,16 @@ namespace Bloom.Publish
 			{
 				if (!okToUpload)
 				{
-					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("Publish.Upload.FieldsNeedAttention",
+					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("PublishTab.Upload.FieldsNeedAttention",
 						"One or more fields above need your attention before uploading"));
 				}
 				if (!_bookTransferrer.LoggedIn)
 				{
-					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("Publish.Upload.PleaseLogIn",
+					_progressBox.WriteMessageWithColor(Color.Red, LocalizationManager.GetString("PublishTab.Upload.PleaseLogIn",
 						"Please log in to BloomLibrary.org (or sign up) before uploading"));
 				}
 			}
-			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("Publish.Upload.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
+			_loginLink.Text = _bookTransferrer.LoggedIn ? LocalizationManager.GetString("PublishTab.Upload.Logout", "Log out of BloomLibrary.org") : _originalLoginText;
 			_signUpLink.Visible = !_bookTransferrer.LoggedIn;
 		}
 
@@ -239,13 +273,27 @@ namespace Bloom.Publish
 			}
 			info.Uploader = _bookTransferrer.UserId;
 
+			if (_book.BookInfo.IsSuitableForMakingShells)
+			{
+				// Hopefully this message is never seen...there is supposed to be no way for an end user to create a template...so I think we can afford
+				// not to burden localizers with it.
+				if (MessageBox.Show(Form.ActiveForm,
+					@"This book is marked as suitable for making shells, that is, a new template like Basic Book containing blank pages for authoring a new book. "
+					+ @"Such books are normally only created and uploaded by HTML specialists. "
+					+ @"If this book is intended as a shell to translate, something is wrong, and you should get expert help before uploading this book."
+					+ "\n\n"
+					+ @"Do you want to go ahead?",
+					"Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+					return;
+			}
+
 			_progressBox.WriteMessage("Checking bloom version eligibility...");
 			if (!_bookTransferrer.IsThisVersionAllowedToUpload())
 			{
 				MessageBox.Show(this,
-					LocalizationManager.GetString("Publish.Upload.OldVersion",
+					LocalizationManager.GetString("PublishTab.Upload.OldVersion",
 						"Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version."),
-					LocalizationManager.GetString("Publish.Upload.UploadNotAllowed", "Upload Not Allowed"),
+					LocalizationManager.GetString("PublishTab.Upload.UploadNotAllowed", "Upload Not Allowed"),
 					MessageBoxButtons.OK, MessageBoxIcon.Stop);
 				_progressBox.WriteMessage("Canceled.");
 				return;
@@ -273,19 +321,19 @@ namespace Bloom.Publish
 			{
 				if (completedEvent.Error != null)
 				{
-					string errorMessage = LocalizationManager.GetString("Publish.Upload.ErrorUploading","Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.");
+					string errorMessage = LocalizationManager.GetString("PublishTab.Upload.ErrorUploading","Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.");
 					_progressBox.WriteError(errorMessage,_book.Title);
 					_progressBox.WriteException(completedEvent.Error);
 				}
 				else if (string.IsNullOrEmpty((string)completedEvent.Result))
 				{
 					// Something went wrong, typically already reported.
-					string sorryMessage = LocalizationManager.GetString("Publish.Upload.FinalUploadFailureNotice", "Sorry, \"{0}\" was not successfully uploaded");
+					string sorryMessage = LocalizationManager.GetString("PublishTab.Upload.FinalUploadFailureNotice", "Sorry, \"{0}\" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.");
 					_progressBox.WriteError(sorryMessage, _book.Title);
 				}
 				else {
 					var url = BloomLibraryUrlPrefix + "/browse/detail/" + _parseId;
-					string congratsMessage = LocalizationManager.GetString("Publish.Upload.UploadCompleteNotice", "Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})");
+					string congratsMessage = LocalizationManager.GetString("PublishTab.Upload.UploadCompleteNotice", "Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})");
 					_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _book.Title, url);
 				}
 				_uploadButton.Enabled = true; // Don't call UpdateDisplay, it will wipe out the progress messages.
@@ -312,7 +360,8 @@ namespace Bloom.Publish
 		void BackgroundUpload(object sender, DoWorkEventArgs e)
 		{
 			var book = (Book.Book) e.Argument;
-			var result = _bookTransferrer.FullUpload(book, _progressBox, _parentView, out _parseId);
+			var languages = _languagesFlow.Controls.Cast<CheckBox>().Where(b => b.Checked).Select(b => b.Tag).Cast<string>().ToArray();
+			var result = _bookTransferrer.FullUpload(book, _progressBox, _parentView, languages, out _parseId);
 			e.Result = result;
 		}
 

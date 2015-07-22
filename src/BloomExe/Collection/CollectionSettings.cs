@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Amazon.CloudFront.Model;
 using Bloom.Book;
+using Bloom.ToPalaso;
 using L10NSharp;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.WritingSystems;
@@ -29,10 +32,12 @@ namespace Bloom.Collection
 	/// </summary>
 	public class CollectionSettings
 	{
+		private const int kCurrentOneTimeCheckVersionNumber = 1; // bumping this will trigger a new one time check
+
+		public const string ReaderToolsSettingsPrefix = "ReaderToolsSettings-";
 		private string _language1Iso639Code;
 		private LookupIsoCodeModel _lookupIsoCode = new LookupIsoCodeModel();
 		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
-
 
 		/// <summary>
 		/// for moq in unit tests only
@@ -54,7 +59,7 @@ namespace Bloom.Collection
 			:this(collectionInfo.PathToSettingsFile)
 		{
 			AllowNewBooks = collectionInfo.AllowNewBooks;
-			DefaultLanguage1FontName = GetDefaultFontName();
+			DefaultLanguage1FontName = DefaultLanguage2FontName = DefaultLanguage3FontName = GetDefaultFontName();
 
 			Language1Iso639Code = collectionInfo.Language1Iso639Code;
 			Language2Iso639Code = collectionInfo.Language2Iso639Code;
@@ -104,13 +109,87 @@ namespace Bloom.Collection
 			set
 			{
 				_language1Iso639Code = value;
-				Language1Name = GetLanguage1Name(Language2Iso639Code);
+				Language1Name = GetLanguage1Name_NoCache(Language2Iso639Code);
 			}
 		}
 
 		public virtual string Language2Iso639Code { get; set; }
 		public virtual string Language3Iso639Code { get; set; }
 		public virtual string Language1Name { get; set; }
+
+		public virtual bool IsLanguage1Rtl { get; set; }
+		public virtual bool IsLanguage2Rtl { get; set; }
+		public virtual bool IsLanguage3Rtl { get; set; }
+
+		public bool GetLanguageRtl(int langNum)
+		{
+			switch (langNum)
+			{
+				case 1:
+					return IsLanguage1Rtl;
+				case 2:
+					return IsLanguage2Rtl;
+				case 3:
+					return IsLanguage3Rtl;
+				default:
+					throw new InvalidArgumentException("The language number is not valid.");
+			}
+		}
+
+		public void SetLanguageRtl(int langNum, bool isRtl)
+		{
+			switch (langNum)
+			{
+				case 1:
+					IsLanguage1Rtl = isRtl;
+					break;
+				case 2:
+					IsLanguage2Rtl = isRtl;
+					break;
+				case 3:
+					IsLanguage3Rtl = isRtl;
+					break;
+				default:
+					throw new InvalidArgumentException("The language number is not valid.");
+			}
+		}
+
+		public virtual decimal Language1LineHeight { get; set; }
+		public virtual decimal Language2LineHeight { get; set; }
+		public virtual decimal Language3LineHeight { get; set; }
+
+		public decimal GetLanguageLineHeight(int langNum)
+		{
+			switch (langNum)
+			{
+				case 1:
+					return Language1LineHeight;
+				case 2:
+					return Language2LineHeight;
+				case 3:
+					return Language3LineHeight;
+				default:
+					throw new InvalidArgumentException("The language number is not valid.");
+			}
+		}
+
+		public void SetLanguageLineHeight(int langNum, decimal lineHeight)
+		{
+			switch (langNum)
+			{
+				case 1:
+					Language1LineHeight = lineHeight;
+					break;
+				case 2:
+					Language2LineHeight = lineHeight;
+					break;
+				case 3:
+					Language3LineHeight = lineHeight;
+					break;
+				default:
+					throw new InvalidArgumentException("The language number is not valid.");
+			}
+		}
 
 		/// <summary>
 		/// Intended for making shell books and templates, not vernacular
@@ -122,10 +201,15 @@ namespace Bloom.Collection
 			if(!string.IsNullOrEmpty(this.Language1Name))
 				return Language1Name;
 
-			Iso639LanguageCode exactLanguageMatch = _lookupIsoCode.GetExactLanguageMatch(Language1Iso639Code);
-			if (exactLanguageMatch == null)
+			return GetLanguage1Name_NoCache(inLanguage);
+		}
+
+		private string GetLanguage1Name_NoCache(string inLanguage)
+		{
+			string exactLanguageMatch;
+			if (!_lookupIsoCode.GetBestLanguageName(Language1Iso639Code, out exactLanguageMatch))
 				return "L1-Unknown-" + Language1Iso639Code;
-			return GetLanguageNameInUILangIfPossible(exactLanguageMatch.Name, inLanguage);
+			return GetLanguageNameInUILangIfPossible(exactLanguageMatch, inLanguage);
 		}
 
 		public string GetLanguage2Name(string inLanguage)
@@ -158,11 +242,9 @@ namespace Bloom.Collection
 			//profiling showed we were spending a lot of time looking this up, hence the cache
 			if (!_isoToLangNameDictionary.ContainsKey(code))
 			{
-				var match = _lookupIsoCode.GetExactLanguageMatch(code);
-				if (match == null)
-					_isoToLangNameDictionary[code] = code; // best name we can come up with is the code itself
-				else
-					_isoToLangNameDictionary.Add(code, match.Name);
+				string name;
+				_lookupIsoCode.GetBestLanguageName(code, out name);
+				_isoToLangNameDictionary[code] = name;
 			}
 
 			return GetLanguageNameInUILangIfPossible(_isoToLangNameDictionary[code], inLanguage);
@@ -174,6 +256,14 @@ namespace Bloom.Collection
 
 			if (codeOfDesiredLanguage == "fr" && name == "French")
 				return "français";
+			if(codeOfDesiredLanguage == "th" && name == "Thai")
+				return "ภาษา ไทย";
+			if(codeOfDesiredLanguage == "ar" && name == "Arabic")
+				return "العربية";
+			if (codeOfDesiredLanguage == "es" && name == "Spanish")
+				return "español";
+			if(codeOfDesiredLanguage == "id" && name == "Indonesian")
+				return "Bahasa Indonesia";
 			return name;
 		}
 
@@ -200,11 +290,20 @@ namespace Bloom.Collection
 
 			XElement library = new XElement("Collection");
 			library.Add(new XAttribute("version", "0.2"));
-			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
 			library.Add(new XElement("Language1Name", Language1Name));
-			library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName));
+			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
 			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
 			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
+			library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName));
+			library.Add(new XElement("DefaultLanguage2FontName", DefaultLanguage2FontName));
+			library.Add(new XElement("DefaultLanguage3FontName", DefaultLanguage3FontName));
+			library.Add(new XElement("OneTimeCheckVersionNumber", OneTimeCheckVersionNumber));
+			library.Add(new XElement("IsLanguage1Rtl", IsLanguage1Rtl));
+			library.Add(new XElement("IsLanguage2Rtl", IsLanguage2Rtl));
+			library.Add(new XElement("IsLanguage3Rtl", IsLanguage3Rtl));
+			library.Add(new XElement("Language1LineHeight", Language1LineHeight));
+			library.Add(new XElement("Language2LineHeight", Language2LineHeight));
+			library.Add(new XElement("Language3LineHeight", Language3LineHeight));
 			library.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			library.Add(new XElement("XMatterPack", XMatterPackName));
 			library.Add(new XElement("Country", Country));
@@ -225,17 +324,32 @@ namespace Bloom.Collection
 				var sb = new StringBuilder();
 				sb.AppendLine("/* These styles are controlled by the Settings dialog box in Bloom. */");
 				sb.AppendLine("/* They many be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
-				sb.AppendLine();
-				sb.AppendLine("BODY");
-				sb.AppendLine("{");
-				sb.AppendLine(" font-family: '" + DefaultLanguage1FontName + "';");
-				sb.AppendLine("}");
+				AddFontCssRule(sb, "BODY", GetDefaultFontName(), 0);
+				AddFontCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, Language1LineHeight);
+				AddFontCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, Language2LineHeight);
+				if (!string.IsNullOrEmpty(Language3Iso639Code))
+				{
+					AddFontCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, Language3LineHeight);
+				}
 				File.WriteAllText(path, sb.ToString());
 			}
 			catch (Exception error)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
 			}
+		}
+
+		private void AddFontCssRule(StringBuilder sb, string selector, string fontName, decimal lineHeight)
+		{
+			sb.AppendLine();
+			sb.AppendLine(selector);
+			sb.AppendLine("{");
+			sb.AppendLine(" font-family: '" + fontName + "';");
+
+			if (lineHeight > 0)
+				sb.AppendLine(" line-height: " + lineHeight + ";");
+
+			sb.AppendLine("}");
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -250,6 +364,15 @@ namespace Bloom.Collection
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
 				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
+				DefaultLanguage2FontName = GetValue(library, "DefaultLanguage2FontName", GetDefaultFontName());
+				DefaultLanguage3FontName = GetValue(library, "DefaultLanguage3FontName", GetDefaultFontName());
+				OneTimeCheckVersionNumber = GetIntegerValue(library, "OneTimeCheckVersionNumber", 0);
+				IsLanguage1Rtl = GetBoolValue(library, "IsLanguage1Rtl", false);
+				IsLanguage2Rtl = GetBoolValue(library, "IsLanguage2Rtl", false);
+				IsLanguage3Rtl = GetBoolValue(library, "IsLanguage3Rtl", false);
+				Language1LineHeight = GetDecimalValue(library, "Language1LineHeight", 0);
+				Language2LineHeight = GetDecimalValue(library, "Language2LineHeight", 0);
+				Language3LineHeight = GetDecimalValue(library, "Language3LineHeight", 0);
 
 				Country = GetValue(library, "Country", "");
 				Province = GetValue(library, "Province", "");
@@ -279,6 +402,76 @@ namespace Bloom.Collection
 			{
 				//ah well, we tried, no big deal, only a couple of beta testers used this old name
 			}
+
+			// Check if we need to do a one time check (perhaps migrate to a new Settings value)
+			if (OneTimeCheckVersionNumber < kCurrentOneTimeCheckVersionNumber)
+			{
+				DoOneTimeCheck();
+			}
+		}
+
+		private void DoOneTimeCheck()
+		{
+			// If we ever have to do another one of these besides our minimal Andika New Basic migration
+			// we should refactor this so it calls a method based on the OneTimeCheckVersionNumber
+			do
+			{
+				if(!MigrateSettingsToAndikaNewBasicFont())
+					break; // in case of failed migration
+				OneTimeCheckVersionNumber++;
+
+			} while (OneTimeCheckVersionNumber < kCurrentOneTimeCheckVersionNumber);
+			Save(); // save updated settings
+		}
+
+		private bool MigrateSettingsToAndikaNewBasicFont()
+		{
+			const string newFont = "Andika New Basic";
+			if (GetDefaultFontName() != newFont) // sanity check to make sure Andika New Basic is installed
+				return false;
+
+			const string id = "CollectionSettingsDialog.AndikaNewBasicUpdate";
+			var basicMessage = LocalizationManager.GetDynamicString("Bloom", id + "1",
+				"Bloom is switching the default font for \"{0}\" to the new \"Andika New Basic\".");
+			var secondaryMessage = LocalizationManager.GetDynamicString("Bloom", id + "2",
+				"This will improve the printed output for most languages. If your language is one of the few that need \"Andika\", you can switch it back in Settings:Book Making.");
+			const string oldFont = "Andika";
+			var safeLanguages = new[] {"en", "es", "fr", "id", "tpi"};
+			string msg = string.Empty;
+			if(DefaultLanguage1FontName == oldFont)
+			{
+				DefaultLanguage1FontName = newFont;
+				if (!safeLanguages.Contains(Language1Iso639Code))
+				{
+					msg += String.Format(basicMessage, Language1Name) + Environment.NewLine;
+				}
+			}
+			if (DefaultLanguage2FontName == oldFont)
+			{
+				DefaultLanguage2FontName = newFont;
+				if (!String.IsNullOrEmpty(Language2Iso639Code) && !safeLanguages.Contains(Language2Iso639Code))
+				{
+					msg += String.Format(basicMessage, GetLanguage2Name(Language2Iso639Code)) + Environment.NewLine;
+				}
+			}
+			if (DefaultLanguage3FontName == oldFont)
+			{
+				DefaultLanguage3FontName = newFont;
+				if (!String.IsNullOrEmpty(Language3Iso639Code) && !safeLanguages.Contains(Language3Iso639Code))
+				{
+					msg += String.Format(basicMessage, GetLanguage3Name(Language3Iso639Code)) + Environment.NewLine;
+				}
+			}
+			// Only notify the user if the change involves a language that is not known to be okay with
+			// the new font.
+			if (!String.IsNullOrEmpty(msg) && ErrorReport.IsOkToInteractWithUser)
+			{
+				msg += Environment.NewLine + secondaryMessage;
+				// NB: this MessageBoxOptions.DefaultDesktopOnly option is more than the name implies. It changes the message to a "service message" which is the only
+				// way I've found to get the box into the taskbar.
+				MessageBox.Show(msg, "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
+			}
+			return true;
 		}
 
 		private bool GetBoolValue(XElement library, string id, bool defaultValue)
@@ -287,6 +480,22 @@ namespace Bloom.Collection
 			bool b;
 			bool.TryParse(s, out b);
 			return b;
+		}
+
+		private int GetIntegerValue(XElement library, string id, int defaultValue)
+		{
+			var s = GetValue(library, id, defaultValue.ToString(CultureInfo.InvariantCulture));
+			int i;
+			int.TryParse(s, out i);
+			return i;
+		}
+
+		private decimal GetDecimalValue(XElement library, string id, decimal defaultValue)
+		{
+			var s = GetValue(library, id, defaultValue.ToString(CultureInfo.InvariantCulture));
+			decimal d;
+			decimal.TryParse(s, out d);
+			return d;
 		}
 
 		private string GetValue(XElement document, string id, string defaultValue)
@@ -309,7 +518,7 @@ namespace Bloom.Collection
 		/// </summary>
 		public string DecodableLevelPathName
 		{
-			get { return Path.Combine(Path.GetDirectoryName(SettingsFilePath), "DecodableLevelData.json"); }
+			get { return Path.Combine(Path.GetDirectoryName(SettingsFilePath), ReaderToolsSettingsPrefix + Language1Iso639Code + ".json"); }
 		}
 
 		[XmlIgnore]
@@ -347,6 +556,12 @@ namespace Bloom.Collection
 		}
 
 		public string DefaultLanguage1FontName { get; set; }
+
+		public string DefaultLanguage2FontName { get; set; }
+
+		public string DefaultLanguage3FontName { get; set; }
+
+		public int OneTimeCheckVersionNumber { get; set; }
 
 		public bool AllowNewBooks { get; set; }
 
@@ -408,12 +623,12 @@ namespace Bloom.Collection
 
 		private string GetDefaultFontName()
 		{
-			foreach (var candidate in new[] { "Andika", "Gentium", "Charis", "Paduak"/*Myanmar*/})
+			foreach(var candidate in new[] { "Andika New Basic", "Andika", "Gentium", "Charis", "Paduak"/*Myanmar*/})
 			{
-				string lower = candidate.ToLower();
+				string lower = candidate.ToLowerInvariant();
 				if (FontFamily.Families.FirstOrDefault(f =>
 														   {
-															   return f.Name.ToLower() == lower;
+															   return f.Name.ToLowerInvariant() == lower;
 														   }) != null)
 				{
 					return candidate;
@@ -426,11 +641,11 @@ namespace Bloom.Collection
 		{
 			try
 			{
-				return Directory.GetFiles(folderPath, "*.BloomCollection").First();
+				return Directory.GetFiles(folderPath, "*.bloomCollection").First();
 			}
 			catch (Exception)
 			{
-				throw new ApplicationException(string.Format("Bloom expected to find a .BloomCollectionFile in {0}, but there isn't one.", folderPath));
+				throw new ApplicationException(string.Format("Bloom expected to find a .bloomCollectionFile in {0}, but there isn't one.", folderPath));
 			}
 		}
 
@@ -440,15 +655,11 @@ namespace Bloom.Collection
 			for (int i = 0; i < isoCodes.Length; i++)
 			{
 				var code = isoCodes[i];
-				var data = _lookupIsoCode.GetExactLanguageMatch(code);
-				string name;
-				if (code == Language1Iso639Code)
-					name = Language1Name;
-				else if (data == null)
-					name = code;
-				else
-					name = data.Name;
+				string name = Language1Name;
+				if (code != Language1Iso639Code)
+					_lookupIsoCode.GetBestLanguageName(code, out name);
 				string ethCode;
+				var data = _lookupIsoCode.GetExactLanguageMatch(code);
 				if (data == null)
 					ethCode = code;
 				else
@@ -460,6 +671,14 @@ namespace Bloom.Collection
 				result[i] = new LanguageDescriptor() { IsoCode = code, Name = name, EthnologueCode = ethCode };
 			}
 			return result;
+		}
+
+		/// <summary>
+		/// Given a choice, what language should we use to describe the license on the page (not in the UI, which is controlled by the UI Language)
+		/// </summary>
+		public IEnumerable<string> LicenseDescriptionLanguagePriorities
+		{
+			get { return new[] { Language1Iso639Code, Language2Iso639Code, Language3Iso639Code, "en" }; }
 		}
 	}
 }

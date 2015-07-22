@@ -5,10 +5,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Xsl;
 using System.Linq;
-using Palaso.Code;
 using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.Xml;
 
@@ -22,6 +19,7 @@ namespace Bloom.Book
 	/// </summary>
 	public class HtmlDom
 	{
+		public const string RelativePathAttrName = "data-base";
 		private XmlDocument _dom;
 
 		public HtmlDom()
@@ -59,8 +57,8 @@ namespace Bloom.Book
 			set
 			{
 				var t = value.Trim();
-				if (!String.IsNullOrEmpty(t))
-				{
+				//if (!String.IsNullOrEmpty(t))
+				//{
 					var makeSureItsThere = Head;
 					var titleNode = XmlUtils.GetOrCreateElement(_dom, "html/head", "title");
 					//ah, but maybe that contains html element in there, like <br/> where the user typed a return in the title,
@@ -73,7 +71,7 @@ namespace Bloom.Book
 					titleNode.InnerXml = "";
 					//and set the text again!
 					titleNode.InnerText = justTheText;
-				}
+				//}
 			}
 		}
 
@@ -107,27 +105,45 @@ namespace Bloom.Book
 			}
 		}
 
+		private string _baseForRelativePaths = null;
 
-
-
-		public void SetBaseForRelativePaths(string path)
+		/// <summary>
+		/// This property records the folder in which the browser needs to find files referred to using
+		/// non-absolute locations.
+		/// This method is designed to be used in conjunction with EnhancedImageServer.MakeSimulatedPageFileInBookFolder().
+		/// which generates URLs that give the browser the content of this DOM, and also handles derived urls
+		/// relative to that one.
+		/// </summary>
+		/// <remarks>Originally, this method created a 'base' element in the DOM, and a real
+		/// temporary file would typically be created. The base element caused the browser to
+		/// redirect things in much the way described above. However, this strategy fails
+		/// for internal links within the document: a url like #mybookmark is translated
+		/// into localhost://c:/users/someone/bloom/mycollection/mybookfolder#mybookmark, with no
+		/// document specified at all, and passed to the server, which fails to find anything.
+		/// Later it was discovered that Configurator (for Wall Calendar) put in a 'base' element,
+		/// so we still need the parts that remove any 'base' element.</remarks>
+		public string BaseForRelativePaths
 		{
-			var head = _dom.SelectSingleNodeHonoringDefaultNS("//head");
-			Guard.AgainstNull(head, "Expected the DOM to already have a head element");
-
-			foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
+			get { return _baseForRelativePaths; }
+			set
 			{
-				head.RemoveChild(baseNode);
-			}
-
-			if (path.Trim() != "") //jim (BL-323) reported a problem with  <base href="">
-			{
-				var baseElement = _dom.CreateElement("base");
-
-				baseElement.SetAttribute("href", path);
-				head.AppendChild(baseElement);
+				var path = value;
+				_baseForRelativePaths = path ?? string.Empty;
+				var head = _dom.SelectSingleNodeHonoringDefaultNS("//head");
+				if (head == null)
+					return;
+				foreach (XmlNode baseNode in head.SafeSelectNodes("base"))
+				{
+					head.RemoveChild(baseNode);
+				}
 			}
 		}
+
+		/// <summary>
+		/// Set this for DOMs that should not get the on-screen enhancements (transparency, possibly compression)
+		/// of images. Typically for generating print-quality PDFs.
+		/// </summary>
+		internal bool UseOriginalImages { get; set; }
 
 
 		public void AddStyleSheet(string locateFile)
@@ -170,10 +186,15 @@ namespace Bloom.Book
 			Body.AppendChild(MakeJavascriptElement(pathToJavascript));
 		}
 
-		public void AddEditMode(string mode)
+		/// <summary>
+		/// The Creation Type is either "translation" or "original". This is used to protect fields that should
+		/// normally not be editable in one or the other.
+		/// This is a bad name, and we know it!
+		/// </summary>
+		public void AddCreationType(string mode)
 		{
 			// RemoveModeStyleSheets() should have already removed any editMode attribute on the body element
-			Body.SetAttribute("editMode", mode);
+			Body.SetAttribute("bookcreationtype", mode);
 		}
 
 		public void RemoveModeStyleSheets()
@@ -181,7 +202,7 @@ namespace Bloom.Book
 			foreach (XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
 			{
 				var href = linkNode.GetAttribute("href");
-				if (href == null)
+				if (string.IsNullOrEmpty(href))
 				{
 					continue;
 				}
@@ -280,28 +301,19 @@ namespace Bloom.Book
 			}
 		}
 
-		//        /// <summary>
-		//        /// the wkhtmltopdf thingy can't find stuff if we have any "file://" references (used for getting to pdf)
-		//        /// </summary>
-		//        /// <param name="dom"></param>
-		//        private void StripStyleSheetLinkPaths(HtmlDom dom)
-		//        {
-		//            foreach (XmlElement linkNode in dom.SafeSelectNodes("/html/head/link"))
-		//            {
-		//                var href = linkNode.GetAttribute("href");
-		//                if (href == null)
-		//                {
-		//                    continue;
-		//                }
-		//                linkNode.SetAttribute("href", Path.GetFileName(href));
-		//            }
-		//        }
-
-
-
 		public static void AddClass(XmlElement e, string className)
 		{
 			e.SetAttribute("class", (e.GetAttribute("class").Replace(className,"").Trim() + " " + className).Trim());
+		}
+
+		public static void AddRtlDir(XmlElement e)
+		{
+			e.SetAttribute("dir", "rtl");
+		}
+
+		public static void RemoveRtlDir(XmlElement e)
+		{
+			e.RemoveAttribute("dir");
 		}
 
 		public static void RemoveClassesBeginingWith(XmlElement xmlElement, string classPrefix)
@@ -354,7 +366,7 @@ namespace Bloom.Book
 
 		public string GetMetaValue(string name, string defaultValue)
 		{
-			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "' or @name='" + name.ToLower() + "']");
+			var node = _dom.SafeSelectNodes("//head/meta[@name='" + name + "' or @name='" + name.ToLowerInvariant() + "']");
 			if (node.Count > 0)
 			{
 				return ((XmlElement) node[0]).GetAttribute("content");
@@ -435,10 +447,16 @@ namespace Bloom.Book
 
 		public void AddStyleSheetIfMissing(string path)
 		{
+			// Remember, Linux filenames are case sensitive.
+			var pathToCheck = path;
+			if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+				pathToCheck = pathToCheck.ToLowerInvariant();
 			foreach (XmlElement link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
-				var fileName = link.GetStringAttribute("href").ToLower();
-				if (fileName == path.ToLower())
+				var fileName = link.GetStringAttribute("href");
+				if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+					fileName = fileName.ToLowerInvariant();
+				if (fileName == pathToCheck)
 					return;
 			}
 			_dom.AddStyleSheet(path.Replace("file://", ""));
@@ -447,23 +465,30 @@ namespace Bloom.Book
 		public IEnumerable<string> GetTemplateStyleSheets()
 		{
 			var stylesheetsToIgnore = new List<string>();
-			stylesheetsToIgnore.Add("basepage.css");
-			stylesheetsToIgnore.Add("languagedisplay.css");
-			stylesheetsToIgnore.Add("editmode.css");
-			stylesheetsToIgnore.Add("editoriginalmode.css");
-			stylesheetsToIgnore.Add("previewmode.css");
-			stylesheetsToIgnore.Add("settingsCollectionStyles.css".ToLower());
-			stylesheetsToIgnore.Add("customCollectionStyles.css".ToLower());
-			stylesheetsToIgnore.Add("customBookStyles.css".ToLower());
-			stylesheetsToIgnore.Add("xmatter");
+			// Remember, Linux filenames are case sensitive!
+			stylesheetsToIgnore.Add("basePage.css");
+			stylesheetsToIgnore.Add("languageDisplay.css");
+			stylesheetsToIgnore.Add("editMode.css");
+			stylesheetsToIgnore.Add("editOriginalMode.css");
+			stylesheetsToIgnore.Add("previewMode.css");
+			stylesheetsToIgnore.Add("settingsCollectionStyles.css");
+			stylesheetsToIgnore.Add("customCollectionStyles.css");
+			stylesheetsToIgnore.Add("customBookStyles.css");
+			stylesheetsToIgnore.Add("XMatter");
 
 			foreach (XmlElement link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
-				var fileName = link.GetStringAttribute("href").ToLower();
+				var fileName = link.GetStringAttribute("href");
+				var nameToCheck = fileName;
+				if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+					nameToCheck = fileName.ToLowerInvariant();
 				bool match = false;
 				foreach (var nameOrFragment in stylesheetsToIgnore)
 				{
-					if (fileName.Contains(nameOrFragment))
+					var nameStyle = nameOrFragment;
+					if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+						nameStyle = nameStyle.ToLowerInvariant();
+					if (nameToCheck.Contains(nameStyle))
 					{
 						match = true;
 						break;
@@ -488,58 +513,31 @@ namespace Bloom.Book
 		{
 			AddClass((XmlElement)dom.SelectSingleNode("//body"),"publishMode");
 		}
-
-
-
-		public void UpdateStyleSheetLinkPaths(IFileLocator fileLocator, string folderPath, IProgress log)
+		public static void AddRightToLeftClassToBody(XmlDocument dom)
 		{
-			foreach (XmlElement linkNode in SafeSelectNodes("/html/head/link"))
+			AddClass((XmlElement)dom.SelectSingleNode("//body"), "rightToLeft");
+		}
+
+		public static void AddHidePlaceHoldersClassToBody(XmlDocument dom)
+		{
+			AddClass((XmlElement)dom.SelectSingleNode("//body"), "hidePlaceHolders");
+		}
+
+		public static void AddCalendarFoldClassToBody(XmlDocument dom)
+		{
+			AddClass((XmlElement)dom.SelectSingleNode("//body"), "calendarFold");
+		}
+		/// <summary>
+		/// The chosen xmatter changes, so we need to clear out any old ones
+		/// </summary>
+		public void RemoveXMatterStyleSheets()
+		{
+			foreach(XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
 			{
 				var href = linkNode.GetAttribute("href");
-				if (href == null)
+				if (Path.GetFileName(href).ToLowerInvariant().EndsWith("xmatter.css"))
 				{
-					continue;
-				}
-
-				//TODO: see long comment on ProjectContextGetFileLocations() about linking to the right version of a css
-
-				//TODO: what cause this to get encoded this way? Saw it happen when creating wall calendar
-				href = href.Replace("%5C", "/");
-
-				var fileName = FileUtils.NormalizePath(Path.GetFileName(href));
-				if (!fileName.StartsWith("xx"))
-					//I use xx  as a convenience to temporarily turn off stylesheets during development
-				{
-					var path = fileLocator.LocateOptionalFile(fileName);
-
-					//we want these stylesheets to come from the book folder
-					if (string.IsNullOrEmpty(path) || path.Contains("languageDisplay.css"))
-					{
-						//look in the same directory as the book
-						var local = Path.Combine(folderPath, fileName);
-						if (File.Exists(local))
-							path = local;
-					}
-						//we want these stylesheets to come from the user's collection folder, not ones found in the templates directories
-					else if (path.Contains("CollectionStyles.css")) //settingsCollectionStyles & custonCollectionStyles
-					{
-						//look in the parent directory of the book
-						var pathInCollection = Path.Combine(Path.GetDirectoryName(folderPath), fileName);
-						if (File.Exists(pathInCollection))
-							path = pathInCollection;
-					}
-					if (!string.IsNullOrEmpty(path))
-					{
-						//this is here for geckofx 11... probably can remove it when we move up to modern gecko, as FF22 doesn't like it.
-						//linkNode.SetAttribute("href", "file://" + path);
-						linkNode.SetAttribute("href", path.ToLocalhost());
-					}
-					else
-					{
-						throw new ApplicationException(
-							string.Format("Bloom could not find the stylesheet '{0}', which is used in {1}", fileName,
-								folderPath));
-					}
+					linkNode.ParentNode.RemoveChild(linkNode);
 				}
 			}
 		}
@@ -547,6 +545,61 @@ namespace Bloom.Book
 		internal void RemoveStyleSheetIfFound(string path)
 		{
 			XmlDomExtensions.RemoveStyleSheetIfFound(RawDom, path);
+		}
+
+		/* The following, to use normal url query parameters to say if we wanted transparency,
+		 * was a nice idea, but turned out to not be necessary. I'm leave the code here in
+		 * case in the future we do find a need to add query parameters.
+		public  void SetImagesForMode(bool editMode)
+		{
+			SetImagesForMode((XmlNode)RawDom, editMode);
+		}
+
+		public static void SetImagesForMode(XmlNode pageNode, bool editMode)
+		{
+			foreach(XmlElement imgNode in pageNode.SafeSelectNodes(".//img"))
+			{
+				var src = imgNode.GetAttribute("src");
+				const string kTransparent = "?makeWhiteTransparent=true";
+				src = src.Replace(kTransparent, "");
+				if (editMode)
+					src = src + kTransparent;
+				imgNode.SetAttribute("src",src);
+			}
+		}
+		*/
+
+		public static void ProcessPageAfterEditing(XmlElement page, XmlElement divElement)
+		{
+			// strip out any elements that are part of bloom's UI; we don't want to save them in the document or show them in thumbnails etc.
+			// Thanks to http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string for the xpath.
+			// The idea is to match class attriutes which have class bloom-ui, but may have other classes. We don't want to match
+			// classes where bloom-ui is a substring, though, if there should be any. So we wrap spaces around the class attribute
+			// and then see whether it contains bloom-ui surrounded by spaces.
+			// However, we need to do this in the edited page before copying to the storage page, since we are about to suck
+			// info from the edited page into the dataDiv and we don't want the bloom-ui elements in there either!
+			foreach (
+				var node in divElement.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
+				node.ParentNode.RemoveChild(node);
+
+			page.InnerXml = divElement.InnerXml;
+
+			//Enhance: maybe we should just copy over all attributes?
+			page.SetAttribute("class", divElement.GetAttribute("class"));
+			//The SIL LEAD SHRP templates rely on "lang" on some ancestor to trigger the correct rules in labels.css.
+			//Those get set by putting data-metalanguage on Page, which then leads to a lang='xyz'. Let's save that
+			//back to the html in keeping with our goal of having the page look right if you were to just open the
+			//html file in Firefox.
+			page.SetAttribute("lang", divElement.GetAttribute("lang"));
+
+			// Upon save, make sure we are not in layout mode.  Otherwise we show the sliders.
+			foreach(
+				var node in
+					page.SafeSelectNodes(".//*[contains(concat(' ', @class, ' '), ' origami-layout-mode ')]").Cast<XmlNode>().ToArray())
+			{
+				string currentValue = node.Attributes["class"].Value;
+				node.Attributes["class"].Value = currentValue.Replace("origami-layout-mode", "");
+			}
 		}
 	}
 }

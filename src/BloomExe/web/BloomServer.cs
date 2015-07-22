@@ -9,6 +9,7 @@ using System.Net;
 using System.Text;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.ImageProcessing;
 using Palaso.IO;
 using Palaso.Reporting;
 
@@ -17,7 +18,7 @@ namespace Bloom.web
 	//Though I didn't use it yet, I've since seen this an insteresting tiny example of a minimal server: https://gist.github.com/369432
 
 	// REVIEW: This class doesn't seem to be intented yet for production use
-	public class BloomServer : ServerBase
+	public class BloomServer : EnhancedImageServer
 	{
 		private readonly CollectionSettings _collectionSettings;
 		private readonly BookCollection _booksInProjectLibrary;
@@ -26,6 +27,7 @@ namespace Bloom.web
 
 		public BloomServer(CollectionSettings collectionSettings, BookCollection booksInProjectLibrary,
 						   SourceCollectionsList sourceCollectionsesList, HtmlThumbNailer thumbNailer)
+			:base(new RuntimeImageProcessor(new BookRenamedEvent()))
 		{
 			_collectionSettings = collectionSettings;
 			_booksInProjectLibrary = booksInProjectLibrary;
@@ -38,7 +40,10 @@ namespace Bloom.web
 			if (base.ProcessRequest(info))
 				return true;
 
-			var r = info.LocalPathWithoutQuery.Replace("/bloom/", "");
+			var r = CorrectedLocalPath(info);
+			const string slashBloomSlash = "/bloom/";
+			if (r.StartsWith(slashBloomSlash))
+				r = r.Substring(slashBloomSlash.Length);
 			r = r.Replace("library/", "");
 			if (r.Contains("libraryContents"))
 			{
@@ -64,8 +69,6 @@ namespace Bloom.web
 			}
 			else if (r.EndsWith(".png") && r.Contains("thumbnail"))
 			{
-				info.ContentType = "image/png";
-
 				r = r.Replace("thumbnail", "");
 				//if (r.Contains("thumb"))
 				{
@@ -147,9 +150,9 @@ namespace Bloom.web
 		{
 			if (x.Name == y.Name)
 				return 0;
-			if (x.Name.ToLower().Contains("templates"))
+			if (x.Name.ToLowerInvariant().Contains("templates"))
 				return -1;
-			if (y.Name.ToLower().Contains("templates"))
+			if (y.Name.ToLowerInvariant().Contains("templates"))
 				return 1;
 			return 0;
 		}

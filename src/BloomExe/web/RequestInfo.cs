@@ -2,10 +2,12 @@
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System;
-using System.Drawing;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Web;
+
 
 namespace Bloom.web
 {
@@ -15,10 +17,20 @@ namespace Bloom.web
 	public class RequestInfo : IRequestInfo
 	{
 		private readonly HttpListenerContext _actualContext;
+		private NameValueCollection _queryStringList;
+		private NameValueCollection _postData;
 
 		public string LocalPathWithoutQuery
 		{
-			get { return _actualContext.Request.Url.LocalPath; }
+			get
+			{
+				// The problem with LocalPath alone is that it stops when it encounters even an
+				// encoded #.  Since Bloom doesn't worry about internal addresses, and does allow
+				// book titles (and thus file names) to have a # character, we need to piece together
+				// the original information.  Note that LocalPath removes all Http escaping, but
+				// Fragment does not.  See https://jira.sil.org/browse/BL-951 for details.
+				return _actualContext.Request.Url.LocalPath + HttpUtility.UrlDecode(_actualContext.Request.Url.Fragment);
+			}
 		}
 
 		public string ContentType
@@ -46,13 +58,33 @@ namespace Bloom.web
 
 		public void ReplyWithFileContent(string path)
 		{
-			var buffer = new byte[1024*512]; //512KB
-			using ( var fs = File.OpenRead(path))
+			var buffer = new byte[1024 * 512]; //512KB
+			var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
+
+			using (var fs = File.OpenRead(path))
 			{
 				_actualContext.Response.ContentLength64 = fs.Length;
-				int read;
-				while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
-					_actualContext.Response.OutputStream.Write(buffer, 0, read);
+
+				// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
+				// to the OutputStream. It is normally used to check if the contents of the file have changed without taking the
+				// time and bandwidth needed to download the full contents of the file. The 2 pieces of information being returned
+				// are the Content-Length and Last-Modified headers. The requestor can use this information to determine if the
+				// contents of the file have changed, and if they have changed the requestor can then decide if the file needs to
+				// be reloaded. It is useful when debugging with tools which automatically reload the page when something changes.
+				if (_actualContext.Request.HttpMethod == "HEAD")
+				{
+					// Originally we were returning the Last-Modified header with every response, but we discovered that this was
+					// causing Geckofx to cache the contents of the files. This made debugging difficult because, even if the file
+					// changed, Geckofx would use the cached file rather than requesting the updated file from the localhost.
+					_actualContext.Response.AppendHeader("Last-Modified", lastModified);
+				}
+				else
+				{
+					int read;
+					while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+						_actualContext.Response.OutputStream.Write(buffer, 0, read);
+				}
+
 			}
 
 			_actualContext.Response.OutputStream.Close();
@@ -60,53 +92,93 @@ namespace Bloom.web
 
 		public void ReplyWithImage(string path)
 		{
-			var isJPEG = !path.EndsWith(".png");
+			var pos = path.LastIndexOf('.');
+			if (pos > 0)
+				_actualContext.Response.ContentType = ServerBase.GetContentType(path.Substring(pos));
 
-			_actualContext.Response.ContentType = isJPEG ? "image/png" : "image/jpeg";
+			ReplyWithFileContent(path);
+		}
 
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+		public void WriteError(int errorCode, string errorDescription)
+		{
+			_actualContext.Response.StatusCode = errorCode;
+			_actualContext.Response.StatusDescription = errorDescription;
+			_actualContext.Response.Close();
+		}
+
+		public void WriteError(int errorCode)
+		{
+			WriteError(errorCode, "File not found");
+		}
+
+		/// <summary>
+		/// Processes the QueryString, decoding the values if needed
+		/// </summary>
+		/// <returns></returns>
+		public NameValueCollection GetQueryString()
+		{
+			// UrlDecode the values, if needed
+			if (_queryStringList == null)
 			{
-				ReplyWithFileContent(path);
-				return;
+				var qs = _actualContext.Request.QueryString;
+
+				_queryStringList = new NameValueCollection();
+
+				foreach (var key in qs.AllKeys)
+				{
+					var val = qs[key];
+					if (val.Contains("%") || val.Contains("+"))
+						val = Uri.UnescapeDataString(val.Replace('+', ' '));
+
+					_queryStringList.Add(key, val);
+				}
+
 			}
 
-			//problems around here? See: http://www.west-wind.com/weblog/posts/2006/Oct/19/Common-Problems-with-rendering-Bitmaps-into-ASPNET-OutputStream
-			using (var image = Image.FromFile(path))
+			return _queryStringList;
+		}
+
+		public NameValueCollection GetPostData()
+		{
+			if (_postData == null)
 			{
-				//				var output = _actualContext.Response.OutputStream;
-				//				img.Save(output, Path.GetExtension(path)==".jpg"? ImageFormat.Jpeg : ImageFormat.Png);
-				//				output.Close();
+				var request = _actualContext.Request;
 
-				//On Vista an XP, I would get a "generic GDI+ error" when I saved the image I just loaded.
-				//The workaround (see about link) is to make a copy and stream that
+				if (!request.HasEntityBody)
+					return null;
 
-				using (Bitmap workAroundCopy = new Bitmap(image))
+				_postData = new NameValueCollection();
+
+				using (var body = request.InputStream)
 				{
-					if (isJPEG)
+					using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
 					{
-						workAroundCopy.Save(_actualContext.Response.OutputStream, System.Drawing.Imaging.ImageFormat.Jpeg);
-						_actualContext.Response.Close();
-					}
-					else //PNG's reportedly need this further special treatment:
-					{
-						using (MemoryStream ms = new MemoryStream())
+						var inputString = reader.ReadToEnd();
+						var pairs = inputString.Split('&');
+						foreach (var pair in pairs)
 						{
-							workAroundCopy.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-							ms.WriteTo(_actualContext.Response.OutputStream);
-							_actualContext.Response.Close();
+							var kvp = pair.Split('=');
+							if (kvp.Length == 1)
+								_postData.Add(UnescapeString(kvp[0]), String.Empty);
+							else
+								_postData.Add(UnescapeString(kvp[0]), UnescapeString(kvp[1]));
 						}
 					}
 				}
 			}
 
-			//_actualContext.Response.Close();
+			return _postData;
+
 		}
 
-		public void WriteError(int errorCode)
+		private static string UnescapeString(string value)
 		{
-			_actualContext.Response.StatusCode = errorCode;
-			_actualContext.Response.StatusDescription = "File not found";
-			_actualContext.Response.Close();
+			return Uri.UnescapeDataString(value.Replace("+", " "));
+		}
+
+		public string RawUrl
+		{
+			get { return _actualContext.Request.RawUrl; }
 		}
 	}
 }

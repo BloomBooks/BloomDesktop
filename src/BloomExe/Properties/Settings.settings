@@ -2,49 +2,67 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Bloom.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="FirstTimeRun" Type="System.Boolean" Scope="User">
+    <Setting Name="FirstTimeRun" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="MruProjects" Type="Bloom.CollectionChoosing.MostRecentPathsList" Scope="User">
+    <Setting Name="MruProjects" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="Bloom.CollectionChoosing.MostRecentPathsList" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="NeedUpgrade" Type="System.Boolean" Scope="User">
+    <Setting Name="NeedUpgrade" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UserInterfaceLanguage" Type="System.String" Scope="User">
+    <Setting Name="UserInterfaceLanguage" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="LastSourceLanguageViewed" Type="System.String" Scope="User">
+    <Setting Name="LastSourceLanguageViewed" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ImageHandler" Type="System.String" Scope="User">
+    <Setting Name="ImageHandler" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)">http</Value>
     </Setting>
-    <Setting Name="ShowSendReceive" Type="System.Boolean" Scope="User">
+    <Setting Name="ShowSendReceive" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="ShowLocalizationControls" Type="System.Boolean" Scope="User">
+    <Setting Name="ShowLocalizationControls" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="ShowExperimentalBooks" Type="System.Boolean" Scope="User">
+    <Setting Name="ShowExperimentalBooks" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="DontShowThisAgain" Type="System.String" Scope="User">
+    <Setting Name="DontShowThisAgain" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ShowExperimentalCommands" Type="System.Boolean" Scope="User">
+    <Setting Name="ShowExperimentalCommands" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="WebUserId" Type="System.String" Scope="User">
+    <Setting Name="WebUserId" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="WebPassword" Type="System.String" Scope="User">
+    <Setting Name="WebPassword" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="WebShowPassword" Type="System.Boolean" Scope="User">
+    <Setting Name="WebShowPassword" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="UseAdobePdfViewer" Type="System.Boolean" Scope="User">
+    <Setting Name="UseAdobePdfViewer" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="MaximizeWindow" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="WindowSizeAndLocation" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="Palaso.UI.WindowsForms.PortableSettingsProvider.FormSettings" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LicenseAccepted" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="AutoUpdate" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="RestoreBounds" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Drawing.Rectangle" Scope="User">
+      <Value Profile="(Default)">0, 0, 1028, 586</Value>
+    </Setting>
+    <Setting Name="DontShowPrintNotification" Provider="Palaso.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>

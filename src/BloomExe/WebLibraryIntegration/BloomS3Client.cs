@@ -1,18 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Net;
+using System.Security;
 using System.Text;
 using Amazon;
-using Amazon.EC2.Model;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
+using Palaso.Code;
+using Palaso.IO;
 using Palaso.Progress;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.Progress;
 using RestSharp.Contrib;
 
@@ -34,8 +36,19 @@ namespace Bloom.WebLibraryIntegration
 		public BloomS3Client(string bucketName)
 		{
 			_bucketName = bucketName;
+			var s3config = new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" };
+			var proxy = new ProxyManager();
+			if (!string.IsNullOrEmpty(proxy.Hostname))
+			{
+				s3config.ProxyHost = proxy.Hostname;
+				s3config.ProxyPort = proxy.Port;
+				if (!string.IsNullOrEmpty(proxy.Username))
+					s3config.ProxyCredentials = new NetworkCredential(proxy.Username, proxy.Password);
+			}
+
 			_amazonS3 = AWSClientFactory.CreateAmazonS3Client(KeyManager.S3AccessKey,
-				KeyManager.S3SecretAccessKey, new AmazonS3Config { ServiceURL = "https://s3.amazonaws.com" });
+				KeyManager.S3SecretAccessKey, s3config);
+			Guard.AgainstNull(_amazonS3, "Connection to AWS");
 			_transferUtility = new TransferUtility(_amazonS3);
 		}
 
@@ -67,25 +80,6 @@ namespace Bloom.WebLibraryIntegration
 			return count;
 		}
 
-		public int GetCountOfAllFilesInBucket()
-		{
-			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
-			{
-				BucketName = _bucketName
-			});
-			return matchingFilesResponse.S3Objects.Count;
-		}
-
-
-		public IEnumerable<string> GetFilePaths()
-		{
-			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
-			{
-				BucketName = _bucketName
-			});
-			return from x in matchingFilesResponse.S3Objects select x.Key;
-		}
-
 		public void DeleteBookData(string key)
 		{
 			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
@@ -98,7 +92,7 @@ namespace Bloom.WebLibraryIntegration
 
 			var deleteObjectsRequest = new DeleteObjectsRequest()
 			{
-				BucketName = UnitTestBucketName,
+				BucketName = _bucketName,
 				Objects = matchingFilesResponse.S3Objects.Select(s3Object => new KeyVersion() { Key = s3Object.Key }).ToList()
 			};
 
@@ -107,23 +101,13 @@ namespace Bloom.WebLibraryIntegration
 
 		}
 
-
-		public bool FileExists(params string[] parts)
-		{
-			var request = new ListObjectsRequest()
-			{
-				BucketName = _bucketName,
-				Prefix = String.Join(kDirectoryDelimeterForS3,parts)
-			};
-			return _amazonS3.ListObjects(request).S3Objects.Count>0;
-		}
-
-		public void EmptyUnitTestBucket()
+		public void EmptyUnitTestBucket(string prefix)
 		{
 			var matchingFilesResponse = _amazonS3.ListObjects(new ListObjectsRequest()
 			{
 				//NB: this one intentionally hard-codes the folder it can delete, to protect from accidents
 				BucketName = UnitTestBucketName,
+				Prefix = prefix,
 			});
 			if (matchingFilesResponse.S3Objects.Count == 0)
 				return;
@@ -140,11 +124,12 @@ namespace Bloom.WebLibraryIntegration
 
 		/// <summary>
 		/// The thing here is that we need to guarantee unique names at the top level, so we wrap the books inside a folder
-		/// with some unique name
+		/// with some unique name. As this involves copying the folder it is also a convenient place to omit any PDF files
+		/// except the one we want.
 		/// </summary>
 		/// <param name="storageKeyOfBookFolder"></param>
 		/// <param name="pathToBloomBookDirectory"></param>
-		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress)
+		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress, string pdfToInclude = null)
 		{
 			BaseUrl = null;
 			BookOrderUrl = null;
@@ -174,7 +159,11 @@ namespace Bloom.WebLibraryIntegration
 
 			Directory.CreateDirectory(wrapperPath);
 
-			CopyDirectory(pathToBloomBookDirectory, Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory)));
+			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
+			CopyDirectory(pathToBloomBookDirectory, destDirName);
+			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
+			foreach (var file in unwantedPdfs)
+				File.Delete(file);
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
@@ -194,6 +183,8 @@ namespace Bloom.WebLibraryIntegration
 			fileSystemInfo.Attributes = FileAttributes.Normal; // thumbnails can be intentionally readonly (when they are created by hand)
 			fileSystemInfo.Delete();
 		}
+
+		private readonly string[] excludedFileNames = { "thumbs.db", "book.userprefs" }; // these files (if encountered) won't be uploaded
 
 		/// <summary>
 		/// THe weird thing here is that S3 doesn't really have folders, but you can give it a key like "collection/book2/file3.htm"
@@ -219,15 +210,17 @@ namespace Bloom.WebLibraryIntegration
 				BaseUrl = "https://s3.amazonaws.com/" + _bucketName + "/" + HttpUtility.UrlEncode(prefix);;
 			foreach (string file in filesToUpload)
 			{
-				string fileName = Path.GetFileName(file);
+				var fileName = Path.GetFileName(file);
+				if (excludedFileNames.Contains(fileName.ToLowerInvariant()))
+					continue; // BL-2246: skip uploading this one
+
 				var request = new TransferUtilityUploadRequest()
 				{
 					BucketName = _bucketName,
 					FilePath = file,
 					Key = prefix + fileName
 				};
-				// The effect of this is that navigating to the file's URL is always treated as an attempt to download the file,
-				// and the file is downloaded with the specified name (rather than a name which includes the full path from the S3 bucket root).
+				// The effect of this is that navigating to the file's URL is always treated as an attempt to download the file.
 				// This is definitely not desirable for the PDF (typically a preview) which we want to navigate to in the Preview button
 				// of BloomLibrary.
 				// I'm not sure whether there is still any reason to do it for other files.
@@ -236,11 +229,17 @@ namespace Bloom.WebLibraryIntegration
 				// it may not be needed for anything. Still, at least for the files a browser would not know how to
 				// open, it seems desirable to download them with their original names, if such a thing should ever happen.
 				// So I'm leaving the code in for now except in cases where we know we don't want it.
+				// It is possible to also set the filename ( after attachment, put ; filename='" + Path.GetFileName(file) + "').
+				// In principle this would be a good thing, since the massive AWS filenames are not useful.
+				// However, AWSSDK can't cope with setting this for files with non-ascii names.
+				// It seems that the header we insert here eventually becomes a header for a web request, and these allow only ascii.
+				// There may be some way to encode non-ascii filenames to get the effect, if we ever want it again. Or AWS may fix the problem.
+				// If you put setting the filename back in without such a workaround, be sure to test with a non-ascii book title.
 				if (Path.GetExtension(file).ToLowerInvariant() != ".pdf")
-					request.Headers.ContentDisposition = "attachment; filename='" + Path.GetFileName(file) + "'";
+					request.Headers.ContentDisposition = "attachment";
 				request.CannedACL = S3CannedACL.PublicRead; // Allows any browser to download it.
 
-				progress.WriteStatus(LocalizationManager.GetString("Publish.Upload.UploadingStatus", "Uploading {0}"),
+				progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}"),
 					fileName);
 
 				try
@@ -272,8 +271,10 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		/// <param name="sourceDirName"></param>
 		/// <param name="destDirName">Note, this is not the *parent*; this is the actual name you want, e.g. CopyDirectory("c:/foo", "c:/temp/foo") </param>
-		private static void CopyDirectory(string sourceDirName, string destDirName)
+		/// <returns>true if no exception occurred</returns>
+		private static bool CopyDirectory(string sourceDirName, string destDirName)
 		{
+			bool success = true;
 			var sourceDirectory = new DirectoryInfo(sourceDirName);
 
 			if (!sourceDirectory.Exists)
@@ -290,12 +291,50 @@ namespace Bloom.WebLibraryIntegration
 
 			foreach (FileInfo file in sourceDirectory.GetFiles())
 			{
-				file.CopyTo(Path.Combine(destDirName, file.Name), true);
+				var destFileName = Path.Combine(destDirName, file.Name);
+				try
+				{
+					file.CopyTo(destFileName, true);
+				}
+				catch (Exception ex)
+				{
+					if (!(ex is IOException || ex is UnauthorizedAccessException || ex is SecurityException))
+						throw;
+					// Maybe we don't need to write it...it hasn't changed since a previous download?
+					if (!SameFileContent(destFileName, file.FullName))
+						success = false;
+				}
 			}
 
 			foreach (DirectoryInfo subdir in sourceDirectory.GetDirectories())
 			{
-				CopyDirectory(subdir.FullName, Path.Combine(destDirName, subdir.Name));
+				success = CopyDirectory(subdir.FullName, Path.Combine(destDirName, subdir.Name)) && success;
+			}
+			return success;
+		}
+
+		// Return true if both files exist, are readable, and have the same content.
+		static bool SameFileContent(string path1, string path2)
+		{
+			if (!File.Exists(path1))
+				return false;
+			if (!File.Exists(path2))
+				return false;
+			try
+			{
+				var first = File.ReadAllBytes(path1);
+				var second = File.ReadAllBytes(path2);
+				if (first.Length != second.Length)
+					return false;
+				for (int i = 0; i < first.Length; i++)
+					if (first[i] != second[i])
+						return false;
+				return true;
+
+			}
+			catch (IOException)
+			{
+				return false; // can't even read
 			}
 		}
 
@@ -324,8 +363,12 @@ namespace Bloom.WebLibraryIntegration
 			if (!GetBookExists(storageKeyOfBookFolder))
 				throw new DirectoryNotFoundException("The book we tried to download is no longer in the BloomLibrary");
 
-			using (var tempDestination =
-					new TemporaryFolder("BloomDownloadStaging " + storageKeyOfBookFolder + " " + Guid.NewGuid()))
+			// Amazon.S3 appears to truncate titles at 50 characters when building directory and filenames.  This means
+			// that relative paths can be as long as 117 characters (2 * 50 + 2 for slashes + 15 for .BloomBookOrder).
+			// So our temporary folder must be no more than 140 characters (allow some margin) since paths can be a
+			// maximum of 260 characters in Windows.  (More margin than that may be needed because there's no guarantee
+			// that image filenames are no longer than 65 characters.)  See https://jira.sil.org/browse/BL-1160.
+			using (var tempDestination = new TemporaryFolder("BDS_" + Guid.NewGuid()))
 			{
 				var request = new TransferUtilityDownloadDirectoryRequest()
 				{
@@ -374,19 +417,48 @@ namespace Bloom.WebLibraryIntegration
 				var destinationPath = Path.Combine(pathToDestinationParentDirectory, Path.GetFileName(children[0]));
 
 				//clear out anything exisitng on our target
+				var didDelete = false;
 				if (Directory.Exists(destinationPath))
 				{
-					Directory.Delete(destinationPath, true);
+					try
+					{
+						Directory.Delete(destinationPath, true);
+						didDelete = true;
+					}
+					catch (IOException)
+					{
+						// can't delete it...see if we can copy into it.
+					}
 				}
 
 				//if we're on the same volume, we can just move it. Else copy it.
-				if (Directory.GetDirectoryRoot(pathToDestinationParentDirectory) == Directory.GetDirectoryRoot(tempDestination.FolderPath))
+				// It's important that books appear as nearly complete as possible, because a file watcher will very soon add the new
+				// book to the list of downloaded books the user can make new ones from, once it appears in the target directory.
+				bool done = false;
+				if (didDelete && PathUtilities.PathsAreOnSameVolume(pathToDestinationParentDirectory, tempDestination.FolderPath))
 				{
-					Directory.Move(children[0], destinationPath);
+					try
+					{
+						Directory.Move(children[0], destinationPath);
+						done = true;
+					}
+					catch (IOException)
+					{
+						// If moving didn't work we'll just try copying
+					}
+					catch (UnauthorizedAccessException)
+					{ }
+
 				}
-				else
+				if (!done)
+					done = CopyDirectory(children[0], destinationPath);
+				if (!done)
 				{
-					CopyDirectory(children[0], destinationPath);
+					var msg = LocalizationManager.GetString("Download.CopyFailed",
+						"Bloom downloaded the book but had problems making it available in Bloom. Please restart your computer and try again. If you get this message again, please click the 'Details' button and report the problem to the Bloom developers");
+					// The exception doesn't add much useful information but it triggers a version of the dialog with a Details button
+					// that leads to the yellow box and an easy way to send the report.
+					ErrorReport.NotifyUserOfProblem(new ApplicationException("File Copy problem"), msg);
 				}
 				return destinationPath;
 			}
@@ -404,6 +476,8 @@ namespace Bloom.WebLibraryIntegration
 				_amazonS3.Dispose();
 				_amazonS3 = null;
 			}
+
+			GC.SuppressFinalize(this);
 		}
 
 	}

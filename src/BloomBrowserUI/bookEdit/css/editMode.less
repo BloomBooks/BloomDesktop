@@ -1,0 +1,672 @@
+/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+/*+clearfix {*/
+BODY
+{
+	background-color: #363333;
+}
+.tool-items:after
+{
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+	font-size: 0;
+}
+.tool-items
+{
+	display: inline-block;
+}
+.tool-items
+{
+	/*\*/
+	display: block;
+	/**/
+	-height: 1px;
+}
+/*+}*/
+DIV.bloom-imageContainer
+{
+	border: 1px solid #C0B9B9;
+}
+.coverColor DIV.bloom-imageContainer
+{
+	border: thin solid rgba(1, 1, 1, 0.2);
+}
+/*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
+.marginBox DIV.pageLabel
+{
+	/*+placement:anchor-top-left -1px -29px;*/
+	position: absolute;
+	left: -1px;
+	top: -29px;
+}
+DIV.pageLabel
+{
+	text-align: left;
+	/*This black with high transparency gives us a grey on white, and a darker color of whatever the colored background is.*/
+	color: rgba(0, 0, 0, 0.2);
+	/*+placement:anchor-top-left 0px 19px;*/
+	position: absolute;
+	left: 15mm;
+	top: 19px;
+	float: left;
+}
+.evenPage DIV.pageLabel
+{
+	margin-left: 2.5cm;
+}
+.oddPage DIV.pageLabel
+{
+	margin-left: 1.3cm;
+}
+
+DIV.page
+{
+	background-color: #F8F8F8;
+	border: medium outset #000000;
+}
+DIV.page.coverColor
+{
+	background-color: #D5D5E4;
+	border: medium outset #000000;
+}
+/*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
+@MediumGray: #C0B9B9;
+DIV.readOnlyInTranslationMode
+{
+	border: thin solid @MediumGray;
+}
+DIV.hoverUp
+{
+	background-color: #D5D5E4;
+}
+BUTTON.smallImageButton
+{
+	width: 50%;
+	height: 50%;
+	/*+border-radius:0;*/
+	-moz-border-radius: 0;
+	-webkit-border-radius: 0;
+	-khtml-border-radius: 0;
+	border-radius: 0;
+	border-radius: 0 0 0 0;
+	z-index: 100;
+	background-repeat: no-repeat;
+	border-style: none !important;
+	background-size: contain !important;
+}
+BUTTON.largeImageButton
+{
+	width: 70px;
+	height: 52px;
+	/*+border-radius:3px;*/
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	border-radius: 3px;
+	z-index: 100;
+	background-repeat: no-repeat;
+	background-position: 12px 4px;
+	border: 2px outset #716666;
+}
+BUTTON.pasteImageButton.smallImageButton
+{
+	background-image: url("../img/pasteImageButtonSmall.png") !important;
+	background-position: 67% 28% !important;
+}
+BUTTON.pasteImageButton.largeImageButton
+{
+	background-image: url("../img/pasteImageButtonLarge.png") !important;
+}
+BUTTON.changeImageButton.smallImageButton
+{
+	background-image: url("../img/changeImageButtonSmall.png");
+	background-position: 63% 27% !important;
+}
+BUTTON.changeImageButton.largeImageButton
+{
+	background-image: url("../img/changeImageButtonLarge.png") !important;
+}
+BUTTON.changeImageButton
+{
+	/*+placement:anchor-top-right 0px 0px;*/
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	/*[disabled]background-position:13px 3px;*/
+	background-color: #96668F;
+}
+BUTTON.pasteImageButton
+{
+	/*+placement:anchor-bottom-right 0px 0px;*/
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	/*[disabled]background-position:13px 3px;*/
+	background-color: #0C8597;
+}
+BUTTON.editMetadataButton
+{
+	background-image: url("../img/imageMetaDataButton.svg") !important;
+	background-size: contain;
+	background-position: 5px 0px;
+	/*[disabled]width:70px;*/
+	/*[disabled]height:52px;*/
+	background-repeat: no-repeat !important;
+	/*+placement:anchor-top-left 0px 0px;*/
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	z-index: 1000;
+}
+BUTTON.editMetadataButton.smallImageButton
+{
+	background-position: 0 0 !important;
+}
+BUTTON.editMetadataButton.imgMetadataProblem
+{
+	background-image: url("../img/imageMissingMetaData.svg") !important;
+	background: transparent;
+	background-size: contain;
+	background-position: 5px 0px;
+	border: none;
+}
+.hoverUp BUTTON.editMetadataButton
+{
+	background: #3A7F62;
+	background-size: contain;
+	background-position: 5px 0px;
+	border: 2px outset #716666;
+}
+BUTTON.deleteButton
+{
+	/*+placement:anchor-bottom-left;*/
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	background-image: url("../img/deleteButtonSmall.png") !important;
+	width: 40px;
+	height: 40px;
+	z-index: 100;
+	/*[disabled]background-position:13px 3px;*/
+}
+/*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
+.moveButtonIcon
+{
+	background-image: url("../img/moveDivButton.png") !important;
+	width: 37px !important;
+	height: 37px !important;
+}
+BUTTON.moveButton
+{
+	/*+placement:anchor-top-left -19px -17px;*/
+	position: absolute;
+	left: -19px;
+	top: -17px;
+	background-image: url("../img/moveDivButton.png") !important;
+	background-repeat: no-repeat;
+	background-color: transparent;
+	width: 16px;
+	height: 16px;
+	border: 0 hidden #000000;
+	z-index: 1000;
+	background-size: contain;
+}
+TEXTAREA, DIV.bloom-editable
+{
+	border: thin solid #C0B9B9;
+	/*[disabled]min-height:34px;*/
+}
+/*need a darker border when we have a background color*/
+.coverColor TEXTAREA, DIV.bloom-editable
+{
+	border: thin solid rgba(0, 0, 0, 0.2);
+}
+IMG.hoverUp
+{
+	background-color: #DFDFDF;
+	border: 1px outset #000000;
+}
+TEXTAREA:focus, DIV.bloom-editable:focus
+{
+	border: 1px solid rgba(82, 168, 236, 0.6);
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px rgba(82, 168, 236, 0.6);
+	outline: 0;
+}
+TEXTAREA.province
+{
+	width: 151px;
+	height: 33px;
+}
+
+@OverflowColor: red;
+
+.overflow
+{
+	color: @OverflowColor !important;
+	border: solid thin @OverflowColor !important; //NB: can't afford to go "thick" because it throws off the calculation
+	p:empty:after{ //br:after would be great but it doesn't work
+		content:'¶';
+	}
+}
+.childOverflowingThis {
+	border-bottom: solid thick @OverflowColor !important;
+	// no, that's really confusing when text far from the crime turns red color: red !important;
+}
+//we do both in case one is already used and !important
+.Layout-Problem-Detected:before, .Layout-Problem-Detected:after {
+	content: attr(layoutproblem);
+	text-align: left;
+	color: @OverflowColor;
+	position:absolute;
+	bottom: 0;
+	left: 0;
+	font-size: 9pt;
+	line-height: 9pt;
+}
+
+.fieldInfo-qtip .ui-tooltip-content
+{
+	border: 0 solid #A03C50;
+	padding: 0px;
+	text-align: right;
+	color: #363333;
+	font-size: 8pt;
+	margin-top: -8px;
+	margin-right: 8px;
+}
+
+.uibloomSourceTextsBubble {
+	// The "!important"s in here are needed to override qtip's defaults
+	border-radius: 15px;
+	background-color: @SelectedTabColor !important;
+	border-color: @TabBorder !important;
+	border-width: 2px !important;
+	.qtip-content {
+		padding: 0 9px 9px !important; // even up space around source bubbles
+		// Qtip defaults to overflow: hidden, which masks the extra language dropdown
+		&:hover {
+			overflow: visible !important;
+		}
+	}
+}
+
+@TabColor: #ffffc3;
+@TabBorder: @MediumGray;
+@SelectedTabColor: #ffffa5;
+
+.ui-sourceTextsForBubble {
+	position: relative;
+	background-color: @SelectedTabColor;
+	NAV {
+		display: block;
+		height: 34px;
+		margin: 0 -8px;
+		background-color: @TabColor;
+		border-top-right-radius: 15px;
+		border-top-left-radius: 15px;
+		> UL {
+			z-index: 1;
+			background-color: transparent;
+			text-align: center;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			list-style: outside none none;
+			top: 1px;
+			line-height: 22px;
+			&::after {
+				position: absolute;
+				content: "";
+				width: 100%;
+				bottom: 0;
+				left: 0;
+				border-bottom: 2px solid @TabBorder;
+				z-index: 2;
+			}
+			> LI {
+				font-size: 9pt;
+				height: 31px;
+				border-right: 1px solid @TabBorder;
+				border-top-right-radius: 6px;
+				float: left;
+				flex: none;
+				background-color: @TabColor;
+				&:not(:first-child) {
+					border-left: 1px solid @TabBorder;
+					border-top-left-radius: 6px;
+				}
+				&:first-child {
+					border-top-left-radius: 15px; // needed to overcome gecko bug
+				}
+				&.active {
+					background-color: @SelectedTabColor;
+					border-bottom-color: @SelectedTabColor; // make active tab appear in front
+					z-index: 3;
+				}
+				A {
+					max-width: 79px;
+					white-space: nowrap;
+					text-overflow: ellipsis;
+					overflow: hidden;
+					display: block;
+					padding: 5px;
+					outline: none;
+					text-decoration: none;
+					color: black;
+					font-family: Segoe UI, sans-serif;
+					&.active {
+						font-weight: bold;
+					}
+					&:hover {
+						text-decoration: underline;
+						background-color: @SelectedTabColor transparent;
+					}
+				}
+			}
+		}
+	}
+	.source-text {
+		font-size: 10pt;
+		line-height: 1.5;
+		color: black;
+		padding-top: 4px;
+		&.active {
+			overflow-y: hidden !important;
+		}
+
+		//thai script languages. If using Arial, they need to be 30% bigger or so. With the
+		// popular Angsana New, it would need to be like 100% bigger
+		&:lang(th), &:lang(km),&:lang(kjg), &:lang(prt){
+			font-size: 18pt;
+		}
+	}
+}
+
+@DropdownBackground: @TabColor;
+@DropdownHovered: @SelectedTabColor;
+
+.dropdown-list {
+	max-height: 200px;
+	overflow-y: auto;
+	text-align: left;
+	opacity: 1;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	margin-top: 2px;
+	white-space: nowrap;
+	border: 1px solid @TabBorder;
+	background-color: @DropdownBackground !important; // !important is needed to override a rule in editPaneGlobal.css
+	top: 0;
+	font-size: 9pt;
+	z-index: 5;
+	LI {
+		&:hover {
+			background-color: @DropdownHovered;
+		}
+	}
+}
+.dropdown-menu {
+	width: 32px;
+	border: none !important;
+	&:hover {
+		UL {
+			display: inline-block;
+		}
+	}
+	DIV {
+		margin: 4px 0 0 0;
+		display: block;
+		&::before {
+			content: "(";
+		}
+		&::after {
+			content: ")";
+		}
+	}
+	UL {
+		display: none;
+	}
+}
+.panel-container
+{
+	border: 1px solid black;
+	padding: 0 10px;
+}
+DIV.textWholePage UL
+{
+	/*+placement:displace 1px -37px;*/
+	position: absolute;
+	margin-left: 1px;
+	margin-top: -37px;
+}
+/*suggested by http://jqueryui.com/docs/Upgrade_Guide_17*/
+.ui-mouseOver .ui-resizable-handle
+{
+	width: 8px;
+	height: 8px;
+	border: 1px solid rgb(128, 128, 128);
+	background: rgb(242, 242, 242);
+}
+.ui-resizable-n, .ui-resizable-s
+{
+	left: 45%;
+}
+.ui-resizable-e, .ui-resizable-w
+{
+	top: 45%;
+}
+.ui-resizable-se
+{
+	/*[disabled]bottom:-5px;*/
+	/*[disabled]right:-5px;*/
+}
+DIV.marginBox
+{
+	border: 1px solid rgba(115, 189, 189, 0.3);
+}
+.bloom-frontMatter DIV.marginBox
+{
+	/*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
+	border: none;
+}
+
+#formatButton
+{
+	overflow: hidden;
+	position: absolute;
+	margin-left: 3px;
+	bottom: 0;
+	left:0;
+	/*The font-size here is weird, but if we don't set it, the growing/shrinking font of the text will actually move the button up/down on the page*/
+	font-size: 10pt;
+	height: 20px;
+	width: 20px;
+	img{
+		position: absolute;
+		bottom: 0;
+		left: 0;
+	}
+}
+#formatButton:Hover
+{
+	color: #000000;
+}
+/*Toolbox*/
+#toolbox
+{
+	background-color: #FFFFA3;
+	/*+placement:shift 564px -649px;*/
+	position: relative;
+	left: 564px;
+	top: -649px;
+	width: 274px;
+	height: 645px;
+	/*[empty]padding-top:;*/
+	/*[empty]margin-top:;*/
+}
+.ui-resizable, .ui-draggable, .ui-deletable
+{
+	border: 1px solid #C1E6CA;
+}
+#toolbox IMG
+{
+	width: 116px;
+}
+#toolbox > UL > LI > DIV
+{
+	border: 1px dotted #787800;
+	margin-top: 34px;
+	/*[empty]padding-top:;*/
+}
+UL.toolbox
+{
+	height: 212px;
+	width: 207px;
+	margin-left: 31px;
+	margin-top: 15px;
+	background-color: transparent;
+}
+UL.toolbox LI
+{
+	display: inline-block;
+	width: 162px;
+}
+TEXTAREA.Heading1-style,  DIV.bloom-editable.Heading1-style{
+	font-size: 16pt;
+}
+TEXTAREA.Heading2-style,  DIV.bloom-editable.Heading2-style {
+	font-size: 13pt;
+	font-weight: bold;
+}
+.centered
+{
+	text-align: center;
+}
+/*Put in little grey language tooltips in the bottom-right of the editable divs*/
+.languageTip, .bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):after
+{
+	position: absolute;
+	right: 0;
+	bottom: 0px;
+	/*Same grey color as pageLabel*/
+	color: rgba(0, 0, 0, 0.2);
+	font-size: small;
+	font-family: Arial, sans-serif; /* Arial matches .qtip-content */
+	font-style: normal;
+	font-weight: normal;
+	line-height: 1;//else it will draw up in the box somewhere if the font is large
+}
+.languageTip
+{
+	/* 'top' is added by javascript (StyleEditor.AttachLanguageTip) based on the height of the element */
+	margin-right: 1px;
+	text-align: right;
+}
+.bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):after
+{
+	content: attr(data-languageTipContent);
+	bottom: 0px;
+	margin-right: 2px;
+}
+/*Simulate the html5 placeholder attribute which is not available on divs
+The :not(:focus) selector here is something we do NOT want. It was added as a workaround for a firefox bug
+https://bugzilla.mozilla.org/show_bug.cgi?id=997749, namely that when the user clicks in an element which
+has a :before rule applied and which already has focus, weird things happen and typing is suppressed.
+When this bug is fixed, or if we can find a better workaround, the :not(:focus) should be removed
+so that when a div has the data-placeholder attribute set, the placeholder will continue to appear
+even when the div is focused (as long as it is empty).*/
+[contentEditable=true][data-placeholder]:empty:not(:focus):before
+{
+	content: attr(data-placeholder);
+	color: #DDDBDB;
+}
+/*This block handles marking elements that violate decodable book and leveled reader constraints*/
+SPAN.sentence-too-long
+{
+	background-color: orange;
+}
+
+.page-too-many-words .marginBox {
+	border: 5px solid orange !important;
+}
+.book-too-many-unique-words .marginBox {
+	border: 5px solid orange !important;
+}
+.book-too-many-words .marginBox {
+	border: 5px solid orange !important;
+}
+
+.ui-dialog { z-index: 20000; }
+
+SPAN.sight-word
+{
+}
+SPAN.word-not-found
+{
+	background-color: #1D94A4;/*bloomblue	   #D65649; /* bloomRed */
+
+}
+
+/* We are disabling the "Possible Word" feature at this time.
+SPAN.possible-word
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: blue;
+}
+*/
+
+/*
+ * Layout Mode (origami) switch (from proto.io)
+ */
+.onoffswitch {
+	display: inline-block; vertical-align: middle; /* This is the only thing I added custom */
+	position: relative; width: 50px;
+	-webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+	display: none;
+}
+.onoffswitch-label {
+	display: block; overflow: hidden; cursor: pointer;
+	border: 2px solid #999999; border-radius: 0px;
+}
+.onoffswitch-inner {
+	display: block; width: 200%; margin-left: -100%;
+	-moz-transition: margin 0.3s ease-in 0s; -webkit-transition: margin 0.3s ease-in 0s;
+	-o-transition: margin 0.3s ease-in 0s; transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+	display: block; float: left; width: 50%; height: 14px; padding: 0; line-height: 10px;
+	font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+	-moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+	border: 2px solid transparent;
+	background-clip: padding-box;
+}
+.onoffswitch-inner:before {
+	content: "";
+	padding-left: 10px;
+	background-color: #D65649; color: #FFFFFF;
+}
+.onoffswitch-inner:after {
+	content: "";
+	padding-right: 10px;
+	background-color: #CCCCCC; color: #333333;
+	text-align: right;
+}
+.onoffswitch-switch {
+	display: block; width: 14px; margin: 0px;
+	background: #000000;
+	position: absolute; top: 0; bottom: 0; right: 36px;
+	-moz-transition: all 0.3s ease-in 0s; -webkit-transition: all 0.3s ease-in 0s;
+	-o-transition: all 0.3s ease-in 0s; transition: all 0.3s ease-in 0s;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+	margin-left: 0;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+	right: 0px;
+}

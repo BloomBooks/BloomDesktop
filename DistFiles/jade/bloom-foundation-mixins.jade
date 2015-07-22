@@ -24,6 +24,9 @@ mixin stylesheets(nameOfTemplateSpecificCSS)
 	+stylesheet(nameOfTemplateSpecificCSS)
 	//- +stylesheet('file://..\customCollectionStyles.css')
 
+mixin bookVariable(element, langCode, value)
+	div(data-book=element, lang=langCode)=value
+
 mixin bookVariable-title(langCode, title)
 	div(data-book='bookTitle', lang=langCode)=title
 
@@ -42,6 +45,17 @@ mixin page(englishLabel)
 //- The most common kind of page template; it is numbered and not required.
 mixin page-choice(englishLabel)
 	+page(englishLabel).numberedPage(attributes, data-page='extra')
+		block
+
+mixin page-layout(englishLabel)
+	+pageWithJustPageSize.bloom-page(attributes)
+		+page-label-english(englishLabel)
+		.marginBox.origami-layout-mode
+			block
+
+//- The most common kind of page template; it is numbered and not required.
+mixin page-choice-layout(englishLabel)
+	+page-layout(englishLabel).numberedPage(attributes, data-page='extra')
 		block
 
 //- This is a page that is always in the book and can't be removed, like a cover page.
@@ -148,7 +162,7 @@ mixin field-mono-version1(language, bubbleText)
 //- Language is always mandatory, but you can use '*' to mean "Don't worry what language it is"
 mixin field-mono-meta(language, dataBookName)
 	- requireTwoArguments('field-mono-meta', arguments);
-	+editable(language)(data-book=dataBookName,attributes)
+	+editable(language)(data-book=dataBookName,data-metalanguage=language,attributes)
 		block
 
 //- A splittable page is one that has each element tagged with either 'bloom-leadingElement' or 'bloom-trailingElement'.
@@ -174,6 +188,11 @@ mixin editable(language)
 	- requireOneArgument('editable', arguments)
 	.bloom-content1.bloom-editable(lang=language, contenteditable="true", attributes)
 		block
+
+mixin page-Custom()
+	+page-choice-layout('Custom').customPage#5dcd48df-e9ab-4a07-afd4-6a24d0398386
+		.split-pane-component-inner
+			.box-header-off.bloom-translationGroup
 
 //----- utility functions------------------------------
 - function requireZeroArguments(functionName, args) {

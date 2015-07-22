@@ -6,32 +6,10 @@ $.fn.CenterVerticallyInParent = function () {
         var ph = $(this).parent().height();
         var mh = Math.ceil((ph - ah) / 2);
         $(this).css('margin-top', mh);
-
-        ///There is a bug in wkhtmltopdf where it determines the height of these incorrectly, causing, in a multlingual situation, the 1st text box to hog up all the room and
-        //push the other guys off the page. So the hack solution of the moment is to remember the correct height here, in gecko-land, and use it over there to set the max-height.
-        //See bloomPreview.SetMaxHeightForHtmlToPDFBug()
-        $(this).children().each(function () {
-            var h = $(this).height();
-            $(this).attr('data-firefoxHeight', h);
-        });
     });
 };
 
  //Do the little bit of jscript needed even when we're just displaying the document
-
-function SetMaxHeightForHtmlToPDFBug(element)
-{
-        //this comes from trying tying to find a way to work-around a bug in htmltopdf, which, when the margin-top grows, just pushes the box down & off the page.
-        //we were able to make it work for one lang by doing an overflow:hidden, but for multilingual, the first div just pushes then next into oblivion.
-        //I started trying to dynamically set the max-height of each div. Problem: we don't actually have a way of knowing how high they *should* be, because
-        // here in wkhtmltopdf, we get the wrong value (that's what got us in this fix in the first place).
-        //The hack for now is to, over in the editing javascript, remember the proper height while we're still in firefox, then use it here in wkhtmltopdf
-        $(element).children().each(function(){
-          if($(this).attr('data-firefoxHeight') != undefined){
-                $(this).css('max-height', $(this).attr('data-firefoxHeight'));
-          };
-        });
-}
 
 jQuery(document).ready(function () {
 
@@ -40,8 +18,11 @@ jQuery(document).ready(function () {
     //make images scale up to their container without distorting their proportions, while being centered within it.
     $(".bloom-imageContainer img").scaleImage({ scale: "fit" }); //uses jquery.myimgscale.js
 
-    $(".bloom-page").mouseenter(function(){$(this).addClass("disabledVisual")});
-    $(".bloom-page").mouseleave(function(){$(this).removeClass("disabledVisual")});
+    // Preview is currently used for the main document window when not editing, but also for the template pages view.
+    // We want the disabledVisual style for the main page when not editing, but not in the template pages chooser.
+    // Pages in the latter view are embedded in a .gridItem div, so we use that to suppress adding the style.
+    $(".bloom-page:not('.gridItem .bloom-page')").mouseenter(function(){$(this).addClass("disabledVisual")});
+    $(".bloom-page:not('.gridItem .bloom-page')").mouseleave(function () { $(this).removeClass("disabledVisual") });
 
         //Allow labels and separators to be marked such that if the user doesn't fill in a value, the label will be invisible when published.
     //NB: why in cleanup? it's not ideal, but if it gets called after each editing session, then things will be left in the proper state.
@@ -67,7 +48,5 @@ jQuery(document).ready(function () {
     //Like I say, it doesn't work yet anyhow...
 
     $(".bloom-centerVertically").CenterVerticallyInParent();
-
-    $(".bloom-centerVertically").each(function () { SetMaxHeightForHtmlToPDFBug($(this)) });
 
 });

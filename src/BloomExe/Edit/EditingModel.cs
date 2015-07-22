@@ -5,19 +5,24 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
+using Bloom.web;
+using BloomTemp;
 using DesktopAnalytics;
+using L10NSharp;
+using Newtonsoft.Json;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
+using Palaso.Xml;
 
 namespace Bloom.Edit
 {
@@ -26,10 +31,15 @@ namespace Bloom.Edit
 		private readonly BookSelection _bookSelection;
 		private readonly PageSelection _pageSelection;
 		private readonly LanguageSettings _languageSettings;
+		private readonly DuplicatePageCommand _duplicatePageCommand;
 		private readonly DeletePageCommand _deletePageCommand;
+		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly SendReceiver _sendReceiver;
 		private HtmlDom _domForCurrentPage;
+		// We dispose of this when we create a new one. It may hang around a little longer than needed, but memory
+		// is the only resource being used, and there is only one instance of this object.
+		private SimulatedPageFile _currentPage;
 		public bool Visible;
 		private Book.Book _currentlyDisplayedBook;
 		private EditingView _view;
@@ -37,6 +47,11 @@ namespace Bloom.Edit
 		private IPage _previouslySelectedPage;
 		private bool _inProcessOfDeleting;
 		private string _accordionFolder;
+		private EnhancedImageServer _server;
+
+		// These variables are not thread-safe. Access only on UI thread.
+		private bool _inProcessOfSaving;
+		private List<Action> _tasksToDoAfterSaving = new List<Action>();
 
 		//public event EventHandler UpdatePageList;
 
@@ -48,34 +63,65 @@ namespace Bloom.Edit
 			PageListChangedEvent pageListChangedEvent,
 			RelocatePageEvent relocatePageEvent,
 			BookRefreshEvent bookRefreshEvent,
+			PageRefreshEvent pageRefreshEvent,
+			DuplicatePageCommand duplicatePageCommand,
 			DeletePageCommand deletePageCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 			LibraryClosing libraryClosingEvent,
+			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
-			SendReceiver sendReceiver)
+			SendReceiver sendReceiver,
+			EnhancedImageServer server)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;
 			_languageSettings = languageSettings;
+			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
 			_collectionSettings = collectionSettings;
 			_sendReceiver = sendReceiver;
+			_server = server;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
+			pageSelection.SelectionChanging += OnPageSelectionChanging;
 			templateInsertionCommand.InsertPage += new EventHandler(OnInsertTemplatePage);
 
 			bookRefreshEvent.Subscribe((book) => OnBookSelectionChanged(null, null));
+			pageRefreshEvent.Subscribe((book) => RethinkPageAndReloadIt(null));
 			selectedTabChangedEvent.Subscribe(OnTabChanged);
 			selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
-			deletePageCommand.Implementer=OnDeletePage;
+			duplicatePageCommand.Implementer = OnDuplicatePage;
+			deletePageCommand.Implementer = OnDeletePage;
 			pageListChangedEvent.Subscribe(x => _view.UpdatePageList(false));
 			relocatePageEvent.Subscribe(OnRelocatePage);
 			libraryClosingEvent.Subscribe(o=>SaveNow());
+			localizationChangedEvent.Subscribe(o =>
+			{
+				//this is visible was added for https://jira.sil.org/browse/BL-267, where the edit tab has never been
+				//shown so the view has never been full constructed, so we're not in a good state to do a refresh
+				if (Visible)
+				{
+					SaveNow();
+					_view.UpdateButtonLocalizations();
+					RefreshDisplayOfCurrentPage();
+					//_view.UpdateDisplay();
+					_view.UpdatePageList(false);
+					_view.UpdateTemplateList();
+				}
+				else if (_view != null)
+				{
+					// otherwise changing UI language in Publish tab (for instance) won't update these localizations
+					_view.UpdateButtonLocalizations();
+				}
+			});
 			_contentLanguages = new List<ContentLanguage>();
+			_server.CurrentCollectionSettings = _collectionSettings;
+			_server.CurrentBook = CurrentBook;
 		}
 
+		private Form _oldActiveForm;
 
 		/// <summary>
 		/// we need to guarantee that we save *before* any other tabs try to update, hence this "about to change" event
@@ -86,11 +132,25 @@ namespace Bloom.Edit
 			if (details.From == _view)
 			{
 				SaveNow();
+				// This bizarre behavior prevents BL-2313 and related problems.
+				// For some reason I cannot discover, switching tabs when focus is in the Browser window
+				// causes Bloom to get deactivated, which prevents various controls from working.
+				// Moreover, it seems (BL-2329) that if the user types Alt-F4 while whatever-it-is is active,
+				// things get into a very bad state indeed. So arrange to re-activate ourselves as soon as the dust settles.
+				_oldActiveForm = Form.ActiveForm;
+				Application.Idle += ReactivateFormOnIdle;
 				//note: if they didn't actually change anything, Chorus is not going to actually do a checkin, so this
 				//won't polute the history
 				_sendReceiver.CheckInNow(string.Format("Edited '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay));
 
 			}
+		}
+
+		private void ReactivateFormOnIdle(object sender, EventArgs eventArgs)
+		{
+			Application.Idle -= ReactivateFormOnIdle;
+			if (_oldActiveForm != null)
+				_oldActiveForm.Activate();
 		}
 
 		private void OnTabChanged(TabChangedDetails details)
@@ -106,6 +166,7 @@ namespace Bloom.Edit
 			var wasNull = _domForCurrentPage == null;
 			_domForCurrentPage = null;
 			_currentlyDisplayedBook = null;
+			_server.CurrentBook = CurrentBook;
 			if (Visible)
 			{
 				_view.ClearOutDisplay();
@@ -114,13 +175,51 @@ namespace Bloom.Edit
 			}
 		}
 
+		private void OnDuplicatePage()
+		{
+			DuplicatePage(_pageSelection.CurrentSelection);
+		}
+
+		internal void DuplicatePage(IPage page)
+		{
+			try
+			{
+				SaveNow(); //ensure current page is saved first
+				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
+				_currentlyDisplayedBook.DuplicatePage(page);
+				_view.UpdatePageList(false);
+				Logger.WriteEvent("Duplicate Page");
+				Analytics.Track("Duplicate Page");
+			}
+			catch (Exception error)
+			{
+				ErrorReport.NotifyUserOfProblem(error,
+					"Could not duplicate that page. Try quiting Bloom, run it again, and then attempt to duplicate the page again. And please click 'details' below and report this to us.");
+			}
+		}
+
 		private void OnDeletePage()
 		{
+			DeletePage(_pageSelection.CurrentSelection);
+		}
+
+		internal void DeletePage(IPage page)
+		{
+			// This can only be called on the UI thread in response to a user button click.
+			// If that ever changed we might need to arrange locking for access to _inProcessOfSaving and _tasksToDoAfterSaving.
+			Debug.Assert(!_view.InvokeRequired);
+			if (_inProcessOfSaving && page == _pageSelection.CurrentSelection)
+			{
+				// Somehow (BL-431) it's possible that a Save is still in progress when we start executing a delete page.
+				// If this happens, to prevent crashes we need to let the Save complete before we go ahead with the delete.
+				_tasksToDoAfterSaving.Add(OnDeletePage);
+				return;
+			}
 			try
 			{
 				_inProcessOfDeleting = true;
 				_domForCurrentPage = null; //prevent us trying to save it later, as the page selection changes
-				_currentlyDisplayedBook.DeletePage(_pageSelection.CurrentSelection);
+				_currentlyDisplayedBook.DeletePage(page);
 				_view.UpdatePageList(false);
 				Logger.WriteEvent("Delete Page");
 				Analytics.Track("Delete Page");
@@ -128,7 +227,7 @@ namespace Bloom.Edit
 			catch (Exception error)
 			{
 				ErrorReport.NotifyUserOfProblem(error,
-																 "Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us.");
+					"Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us.");
 			}
 			finally
 			{
@@ -200,6 +299,16 @@ namespace Bloom.Edit
 			}
 		}
 
+		public bool CanDuplicatePage
+		{
+			get
+			{
+				return _pageSelection != null && _pageSelection.CurrentSelection != null &&
+					   !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null
+					   && !_currentlyDisplayedBook.LockedDown;//this clause won't work when we start allowing custom front/backmatter pages
+			}
+		}
+
 		public bool CanDeletePage
 		{
 			get
@@ -223,12 +332,13 @@ namespace Bloom.Edit
 				{
 					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1Iso639Code,
 															  _collectionSettings.GetLanguage1Name("en"))
-											{Locked = true, Selected = true});
+											{Locked = true, Selected = true, IsRtl = _collectionSettings.IsLanguage1Rtl});
 
-					//NB: these won't *alway* be tied to teh national and regional languages, but they are for now. We would need more UI, without making for extra complexity
+					//NB: these won't *always* be tied to the national and regional languages, but they are for now. We would need more UI, without making for extra complexity
 					var item2 = new ContentLanguage(_collectionSettings.Language2Iso639Code,
 													_collectionSettings.GetLanguage2Name("en"))
 									{
+										IsRtl = _collectionSettings.IsLanguage1Rtl
 //					            		Selected =
 //					            			_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
 //					            			_librarySettings.Language2Iso639Code
@@ -242,14 +352,21 @@ namespace Bloom.Edit
 //						                _bookSelection.CurrentSelection.MultilingualContentLanguage3 ==
 //						                _librarySettings.Language3Iso639Code;
 						var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
-														_collectionSettings.GetLanguage3Name("en"));// {Selected = selected};
+														_collectionSettings.GetLanguage3Name("en"))
+						{
+							IsRtl = _collectionSettings.IsLanguage3Rtl
+						};// {Selected = selected};
 						_contentLanguages.Add(item3);
 					}
 				}
 				//update the selections
-				_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language2Iso639Code).First().Selected =
+				_contentLanguages.First(l => l.Iso639Code == _collectionSettings.Language2Iso639Code).Selected =
 					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.Language2Iso639Code;
 
+				//the first language is always selected. This covers the common situation in shellbook collections where
+				//we have English as both the 1st and national language. https://jira.sil.org/browse/BL-756
+				_contentLanguages.First(l => l.Iso639Code == _collectionSettings.Language1Iso639Code).Selected = true;
+					
 
 				var contentLanguageMatchingNatLan2 =
 					_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language3Iso639Code).FirstOrDefault();
@@ -327,6 +444,11 @@ namespace Bloom.Edit
 
 		}
 
+		public IEnumerable<string> LicenseDescriptionLanguagePriorities
+		{
+			get { return _collectionSettings.LicenseDescriptionLanguagePriorities; }
+		}
+
 		public class ContentLanguage
 		{
 			public readonly string Iso639Code;
@@ -344,6 +466,7 @@ namespace Bloom.Edit
 
 			public bool Selected;
 			public bool Locked;
+			public bool IsRtl;
 		}
 
 		public bool GetBookHasChanged()
@@ -360,13 +483,16 @@ namespace Bloom.Edit
 
 			_currentlyDisplayedBook = CurrentBook;
 
-			var errors = _bookSelection.CurrentSelection.GetErrorsIfNotCheckedBefore();
+			var errors = _currentlyDisplayedBook.GetErrorsIfNotCheckedBefore();
 			if (!string.IsNullOrEmpty(errors))
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(errors);
+				ErrorReport.NotifyUserOfProblem(errors);
 				return;
 			}
-			var page = _bookSelection.CurrentSelection.FirstPage;
+
+			// BL-2339: try to choose the last edited page
+			var page = _currentlyDisplayedBook.GetPageByIndex(_currentlyDisplayedBook.UserPrefs.MostRecentPage) ?? _currentlyDisplayedBook.FirstPage;
+
 			if (page != null)
 				_pageSelection.SelectPage(page);
 
@@ -380,21 +506,60 @@ namespace Bloom.Edit
 			}
 		}
 
+		// Invoked by an event handler just before we change pages. Unless we are in the process of deleting the
+		// current page, we need to save changes to it. Currently this is a side effect of calling the JS
+		// pageSelectionChanging(), which calls back to our 'FinishSavingPage()'
+		// Note that this is fully synchronous event handling, all in the current thread:
+		// PageSelection.SelectPage [CS] raises PageSelectionChanging
+		//		OnPageSelectionChanging() [CS, here] responds to this event
+		//			it calls pageSelectionChanging() [in JS]
+		//				pageSelectionChanging raises HTML event finishSavingPage
+		//					this class is listening for finishSavingPage, and handles it by calling FinishSavingPage() [CS]
+		//		all those calls return
+		//		SelectPage continues with actually changing the current page, and then calls PageChanged.
+		// I am confident that RunJavaScript does not return until it has finished executing the JavaScript function,
+		// because the wrapper code in Browser.cs is capable of returning a result from the JS function.
+		// I am confident that fireCSharpEditEvent (in bloomEditing.js) does not return until all the event handlers
+		// (in this case, our C# FinishSavingPage() method) have completed, because it is implemented using
+		// document.dispatchEvent(), and this returns a result determined by the handlers, specifically whether
+		// one of them canceled the event.
+		// Thus, the whole sequence of steps above behaves like a series of nested function calls,
+		// and SelectPage does not proceed with actually changing the current page until after FinishSavingPage has
+		// completed saving it.
+		private void OnPageSelectionChanging(object sender, EventArgs eventArgs)
+		{
+			if (_view != null && !_inProcessOfDeleting)
+			{
+				_view.ChangingPages = true;
+				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.pageSelectionChanging();}");
+			}
+		}
+
 		void OnPageSelectionChanged(object sender, EventArgs e)
 		{
 			Logger.WriteMinorEvent("changing page selection");
 			Analytics.Track("Select Page");//not "edit page" because at the moment we don't have the capability of detecting that.
+			// Trace memory usage in case it may be useful
+			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "switched page in edit", true);
 
 			if (_view != null)
 			{
 				if (_previouslySelectedPage != null && _domForCurrentPage != null)
 				{
-					if(!_inProcessOfDeleting)//this is a mess.. before if you did a delete and quickly selected another page, events transpired such that you're now trying to save a deleted page
-						SaveNow();
 					_view.UpdateThumbnailAsync(_previouslySelectedPage);
 				}
 				_previouslySelectedPage = _pageSelection.CurrentSelection;
+
+				// BL-2339: remember last edited page
+				if (_previouslySelectedPage != null)
+				{
+					var idx = _previouslySelectedPage.GetIndex();
+					if (idx > -1)
+						_previouslySelectedPage.Book.UserPrefs.MostRecentPage = idx;
+				}
+
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+				_duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 			}
 
@@ -406,60 +571,148 @@ namespace Bloom.Edit
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 		}
 
-		public HtmlDom GetXmlDocumentForCurrentPage()
+		public void SetupServerWithCurrentPageIframeContents()
 		{
 			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
+			if (_currentPage != null)
+				_currentPage.Dispose();
+			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 
-			AddFontAwesomeToPage(_domForCurrentPage);
-			AddAccordionToPage();
+			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
+				_server.AccordionContent = MakeAccordionContent();
+			else
+				_server.AccordionContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 
+			_server.CurrentBook = _currentlyDisplayedBook;
+			_server.AuthorMode = ShowTemplatePanel;
+		}
+
+		/// <summary>
+		/// Return the DOM that represents the content of the current page.
+		/// Note that this is typically not the top-level thing displayed by the browser; rather, it is embedded in an
+		/// iframe.
+		/// </summary>
+		/// <returns></returns>
+		public HtmlDom GetXmlDocumentForCurrentPage()
+		{
 			return _domForCurrentPage;
 		}
 
 		/// <summary>
-		/// View calls this once the main document has completed loading
+		/// Return the top-level document that should be displayed in the browser for the current page.
+		/// </summary>
+		/// <returns></returns>
+		public HtmlDom GetXmlDocumentForEditScreenWebPage()
+		{
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit", "EditViewFrame.htm");
+			// {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
+			// We don't really make a file for the page, the contents are just saved in our local server.
+			// But we give it a url that makes it seem to be in the book folder so local urls work.
+			// See EnhancedImageServer.MakeSimulatedPageFileInBookFolder() for more details.
+			var frameText = File.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
+			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
+
+			// only show the accordion when the template enables it
+			var css_class = dom.Body.GetAttributeNode("class");
+
+			if (css_class == null)
+			{
+				css_class = dom.Body.OwnerDocument.CreateAttribute("class");
+				dom.Body.Attributes.Append(css_class);
+			}
+
+			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
+				css_class.Value = "accordion";
+			else
+				css_class.Value = "no-accordion";
+
+			return dom;
+		}
+
+		/// <summary>
+		/// View calls this once the main document has completed loading.
+		/// But this is not really reliable.
+		/// Also see comments in EditingView.UpdateSingleDisplayedPage.
+		/// TODO really need a more reliable way of determining when the document really is complete
 		/// </summary>
 		internal void DocumentCompleted()
 		{
-			// listen for events raised by javascript
-			_view.AddMessageEventListener("loadReaderToolSettingsEvent", LoadReaderToolSettings);
-			_view.AddMessageEventListener("saveDecodableLevelSettingsEvent", SaveDecodableLevelSettings);
-			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
-			_view.AddMessageEventListener("loadAccordionPanelEvent", LoadAccordionPanel);
-			_view.AddMessageEventListener("openTextsFolderEvent", OpenTextsFolder);
-			_view.AddMessageEventListener("getTextsListEvent", GetTextsList);
-			_view.AddMessageEventListener("getSampleFileContentsEvent", GetSampleFileContents);
-
-			var tools = _currentlyDisplayedBook.BookInfo.Tools.Where(t => t.Enabled == true);
-			var settings = new Dictionary<string, object>();
-
-			settings.Add("showPE", tools.Any(t => t.Name == "pageElements").ToInt());
-			settings.Add("showDRT", tools.Any(t => t.Name == "decodableReader").ToInt());
-			settings.Add("showLRT", tools.Any(t => t.Name == "leveledReader").ToInt());
-			settings.Add("current", accordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool));
-
-			var settingsStr = CleanUpJsonDataForJavascript(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
-
-			_view.RunJavaScript("if (typeof(restoreAccordionSettings) === \"function\") {restoreAccordionSettings(\"" + settingsStr + "\");}");
+			System.Windows.Forms.Application.Idle += OnIdleAfterDocumentSupposedlyCompleted;
 		}
 
-		/// <summary>Gets reader tool settings from DecodableLevelData.json and send to javascript</summary>
-		/// <param name="arg">Not Used, but required because it is being called by a javascrip MessageEvent</param>
-		private void LoadReaderToolSettings(string arg)
+		/// <summary>
+		/// For some reason, we need to call this code OnIdle.
+		/// We couldn't figure out the timing any other way.
+		/// Otherwise, sometimes the calledByCSharp object doesn't exist; then we don't call restoreAccordionSettings.
+		/// If we don't call restoreAccordionSettings, then the more panel stays open without the checkboxes checked.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void OnIdleAfterDocumentSupposedlyCompleted(object sender, EventArgs e)
 		{
-			// get saved reader settings
-			var path = _collectionSettings.DecodableLevelPathName;
-			var decodableLeveledSettings = "";
-			if (File.Exists(path))
-				decodableLeveledSettings = File.ReadAllText(path, Encoding.UTF8);
+			System.Windows.Forms.Application.Idle -= OnIdleAfterDocumentSupposedlyCompleted;
 
-			var input = CleanUpJsonDataForJavascript(decodableLeveledSettings);
-#if DEBUG
-			var fakeIt = "true";
-#else
-			var fakeIt = "false";
-#endif
-			_view.RunJavaScript("if (typeof(initializeSynphony) === \"function\") {initializeSynphony(\"" + input + "\", " + fakeIt + ");}");
+			//Work-around for BL-422: https://jira.sil.org/browse/BL-422
+			if (_currentlyDisplayedBook == null)
+			{
+				Debug.Fail(
+					"Debug Only: BL-422 reproduction (currentlyDisplayedBook was null in OnIdleAfterDocumentSupposedlyCompleted).");
+				Logger.WriteEvent("BL-422 happened just now (currentlyDisplayedBook was null in OnIdleAfterDocumentSupposedlyCompleted).");
+				return;
+			}
+			// listen for events raised by javascript
+			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
+			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
+			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
+			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
+		}
+
+		private void RethinkPageAndReloadIt(string obj)
+		{
+			if (CannotSavePage())
+				return;
+			FinishSavingPage();
+			RefreshDisplayOfCurrentPage();
+		}
+
+		/// <summary>
+		/// Called from a JavaScript event after it has done everything appropriate in JS land towards saving a page,
+		/// in the process of wrapping up this page before moving to another.
+		/// The main point is that any changes on this page get saved back to the main document.
+		/// In case it is an origami page, there is some special stuff to do as commented below.
+		/// (Argument is required for JS callback, not used).
+		/// </summary>
+		/// <returns>true if it was aborted (nothing to save or refresh)</returns>
+		private void FinishSavingPage(string ignored = null)
+		{
+			if (CannotSavePage())
+				return;
+
+			SaveNow();
+
+			// "Origami" is the javascript system that lets the user introduce new elements to the page.
+			// It can insert .bloom-translationGroup's, but it can't populate them with .bloom-editables
+			// or set the proper classes on those editables to match the current multilingual settings.
+			// So after a change, this eventually gets called. We then ask the page's book to fix things
+			// up so that those boxes are ready to edit
+			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			_currentlyDisplayedBook.UpdateEditableAreasOfElement(_domForCurrentPage);
+
+			//Enhance: Probably we could avoid having two saves, by determing what it is that they entail that is required.
+			//But at the moment both of them are required
+			SaveNow();
+		}
+
+		private bool CannotSavePage()
+		{
+			var returnVal = _bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null ||
+				_currentlyDisplayedBook == null;
+
+			if (returnVal)
+				_view.ChangingPages = false;
+
+			return returnVal;
 		}
 
 		private void SaveAccordionSettings(string data)
@@ -469,24 +722,37 @@ namespace Bloom.Edit
 			switch (args[0])
 			{
 				case "showPE":
-					updateActiveToolSetting("pageElements", args[1] == "1");
+					UpdateActiveToolSetting("pageElements", args[1] == "1");
 					return;
 
 				case "showDRT":
-					updateActiveToolSetting("decodableReader", args[1] == "1");
+					UpdateActiveToolSetting("decodableReader", args[1] == "1");
 					return;
 
 				case "showLRT":
-					updateActiveToolSetting("leveledReader", args[1] == "1");
+					UpdateActiveToolSetting("leveledReader", args[1] == "1");
 					return;
 
 				case "current":
-					_currentlyDisplayedBook.BookInfo.CurrentTool = accordionDirectoryNameToToolName(args[1]);
+					_currentlyDisplayedBook.BookInfo.CurrentTool = AccordionDirectoryNameToToolName(args[1]);
+					return;
+
+				case "state":
+					UpdateToolState(args[1], args[2]);
 					return;
 			}
 		}
 
-		private void updateActiveToolSetting(string toolName, bool enabled)
+		private void UpdateToolState(string toolName, string state)
+		{
+			var tools = _currentlyDisplayedBook.BookInfo.Tools;
+			var item = tools.FirstOrDefault(t => t.Name == toolName);
+
+			if (item != null)
+				item.State = state;
+		}
+
+		private void UpdateActiveToolSetting(string toolName, bool enabled)
 		{
 			var tools = _currentlyDisplayedBook.BookInfo.Tools;
 			var item = tools.FirstOrDefault(t => t.Name == toolName);
@@ -497,7 +763,7 @@ namespace Bloom.Edit
 				item.Enabled = enabled;
 		}
 
-		private static string accordionToolNameToDirectoryName(string toolName)
+		private static string AccordionToolNameToDirectoryName(string toolName)
 		{
 			switch (toolName)
 			{
@@ -514,7 +780,7 @@ namespace Bloom.Edit
 			return string.Empty;
 		}
 
-		private static string accordionDirectoryNameToToolName(string directoryName)
+		private static string AccordionDirectoryNameToToolName(string directoryName)
 		{
 			switch (directoryName)
 			{
@@ -529,6 +795,11 @@ namespace Bloom.Edit
 			}
 
 			return string.Empty;
+		}
+
+		private void SetModalState(string isModal)
+		{
+			_view.SetModalState(isModal == "true");
 		}
 
 		private static string CleanUpDataForJavascript(string data)
@@ -551,201 +822,73 @@ namespace Bloom.Edit
 			return CleanUpDataForJavascript(jsonData);
 		}
 
-		/// <summary>Receives data from javascript, saves it, then closes the dialog</summary>
-		/// <param name="content"></param>
-		private void SaveDecodableLevelSettings(string content)
+		private string MakeAccordionContent()
 		{
-			var path = _collectionSettings.DecodableLevelPathName;
-			File.WriteAllText(path, content, Encoding.UTF8);
-
-			_view.RunJavaScript("if (typeof(closeSetupDialog) === \"function\") {closeSetupDialog();}");
-		}
-
-		/// <summary>Opens Explorer (or Linux equivalent) displaying the contents of the Sample Texts directory</summary>
-		/// <param name="arg">Not Used, but required because it is being called by a javascrip MessageEvent</param>
-		private void OpenTextsFolder(string arg)
-		{
-			if (_collectionSettings.SettingsFilePath == null) return;
-			var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
-			if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-			Process.Start(path);
-		}
-
-		/// <summary>Gets a list of the files in the Sample Texts folder</summary>
-		/// <param name="arg">Not Used, but required because it is being called by a javascrip MessageEvent</param>
-		private void GetTextsList(string arg)
-		{
-			var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
-			var fileList = "";
-
-			if (Directory.Exists(path)) {
-				foreach (var file in Directory.GetFiles(path))
-				{
-					if (fileList.Length == 0) fileList = Path.GetFileName(file);
-					else fileList += "\\r" + Path.GetFileName(file);
-				}
-			}
-
-			_view.RunJavaScript("if (typeof(setTextsList) === \"function\") {setTextsList(\"" + fileList + "\");}");
-		}
-
-		/// <summary>Gets the contents of a Sample Text file</summary>
-		/// <param name="fileName"></param>
-		private void GetSampleFileContents(string fileName)
-		{
-			var path = Path.Combine(Path.GetDirectoryName(_collectionSettings.SettingsFilePath), "Sample Texts");
-			path = Path.Combine(path, fileName);
-
-			var text = File.ReadAllText(path);
-			text = CleanUpDataForJavascript(text);
-
-			_view.RunJavaScript("if (typeof(setSampleFileContents) === \"function\") {setSampleFileContents(\"" + text + "\");}");
-		}
-
-		/// <summary>
-		/// In order to satisfy Gecko's rules about what files may be safely referenced, the folder in which the font-awesome files
-		/// live must be a subfolder of the one containing our temporary page file. So make sure what we need is there.
-		/// (We haven't made the temp file yet; but it will be in the system temp folder.)
-		/// </summary>
-		private void AddFontAwesomeToPage(HtmlDom dom)
-		{
-			// current location
-			var pathToFontAwesomeStyles = _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"font-awesome/css/font-awesome.min.css");
-			var pathToFontAwesomeFont = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(pathToFontAwesomeStyles)),
-				"fonts", "fontawesome-webfont.woff");
-
-			// required location
-			var tempFontAwesomeDir = Path.Combine(Path.GetTempPath(), "font-awesome");
-			var requiredLocationOfFontAwesomeStyles = Path.Combine(tempFontAwesomeDir, "css", "font-awesome.min.css");
-			var requiredLocationOfFontAwesomeFont = Path.Combine(tempFontAwesomeDir, "fonts", "fontawesome-webfont.woff");
-
-			// create directories
-			Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeStyles));
-			Directory.CreateDirectory(Path.GetDirectoryName(requiredLocationOfFontAwesomeFont));
-
-			// copy files
-			File.Copy(pathToFontAwesomeStyles, requiredLocationOfFontAwesomeStyles, true);
-			File.Copy(pathToFontAwesomeFont, requiredLocationOfFontAwesomeFont, true);
-
-			dom.AddStyleSheet(requiredLocationOfFontAwesomeStyles.ToLocalhost());
-		}
-
-		private void AddAccordionToPage()
-		{
-			MoveBodyAndStylesIntoScopedDiv(_domForCurrentPage);
-
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "accordion.htm");
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "Accordion.htm");
 			_accordionFolder = Path.GetDirectoryName(path);
 
 			var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
-			AddFontAwesomeToPage(domForAccordion);
 
-			// move css files from the head into scoped tags in ReaderTools.htm
-			var div = domForAccordion.Body.SelectSingleNode("//div[@class='accordionRoot']");
-			MoveStylesIntoScopedTag(domForAccordion, div);
+			// embed settings on the page
+			var tools = _currentlyDisplayedBook.BookInfo.Tools.Where(t => t.Enabled == true).ToList();
 
-			AppendAllChildren(domForAccordion.RawDom.DocumentElement.LastChild, _domForCurrentPage.Body);
+			var settings = new Dictionary<string, object>
+			{
+				{"current", AccordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool)}
+			};
 
-			_domForCurrentPage.AddJavascriptFile(_currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(@"accordion.js"));
+			var decodableTool = tools.FirstOrDefault(t => t.Name == "decodableReader");
+			if (decodableTool != null && !string.IsNullOrEmpty(decodableTool.State))
+				settings.Add("decodableState", decodableTool.State);
+			var leveledTool = tools.FirstOrDefault(t => t.Name == "leveledReader");
+			if (leveledTool != null && !string.IsNullOrEmpty(leveledTool.State))
+				settings.Add("leveledState", leveledTool.State);
 
-			AppendAllChildren(domForAccordion.RawDom.DocumentElement.FirstChild, _domForCurrentPage.Head);
+			var settingsStr = JsonConvert.SerializeObject(settings);
+			settingsStr = String.Format("function GetAccordionSettings() {{ return {0};}}", settingsStr) +
+				"\n$(document).ready(function() { restoreAccordionSettings(GetAccordionSettings()); });";
+
+			var scriptElement = domForAccordion.RawDom.CreateElement("script");
+			scriptElement.SetAttribute("type", "text/javascript");
+			scriptElement.SetAttribute("id", "ui-accordionSettings");
+			scriptElement.InnerText = settingsStr;
+
+			domForAccordion.Head.InsertAfter(scriptElement, domForAccordion.Head.LastChild);
+
+			// get additional tabs to load
+			var checkedBoxes = new List<string>();
+
+			if (tools.Any(t => t.Name == "decodableReader"))
+			{
+				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "DecodableRT", "DecodableRT.htm")));
+				checkedBoxes.Add("showDRT");
+			}
+
+			if (tools.Any(t => t.Name == "leveledReader"))
+			{
+				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "LeveledRT", "LeveledRT.htm")));
+				checkedBoxes.Add("showLRT");
+			}
 
 			// Load settings into the accordion panel
-			AppendAccordionSettingsPanel();
-		}
+			AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "settings", "Settings.htm")));
 
-		/// <summary>
-		/// Request from javascript to load a panel into the accordion.
-		/// NOTE: currently each panel is being loaded separately using this method because of security restrictions placed on file:// urls.
-		/// TODO: see if it is possible to move this to javascript (using http://localhost:8089/bloom/C%3A/.../accordion/DecodableRT/DecodableRT.htm)
-		/// </summary>
-		/// <param name="panelName"></param>
-		private void LoadAccordionPanel(string panelName)
-		{
-			// load the requested panel
-			var subFolder = Path.Combine(_accordionFolder, panelName);
-			var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, panelName + ".htm");
-			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath));
-
-			// move stylesheets to scoped div
-			var div = subPanelDom.Body.SelectSingleNode("//div");
-			MoveStylesIntoScopedTag(subPanelDom, div);
-
-			// escape for javascript
-			var html = CleanUpDataForJavascript(subPanelDom.Body.InnerXml);
-
-			// load panel into the accordion
-			_view.RunJavaScript("if (typeof(loadAccordionPanel) === \"function\") {loadAccordionPanel(\"" + html + "\", \"" + panelName + "\");}");
-		}
-
-		/// <summary>Loads the initial panel into the accordion</summary>
-		private void AppendAccordionSettingsPanel()
-		{
-			var accordion = _domForCurrentPage.Body.SelectSingleNode("//div[@id='accordion']");
-			var subFolder = Path.Combine(_accordionFolder, "settings");
-			var filePath = FileLocator.GetFileDistributedWithApplication(subFolder, "Settings.htm");
-			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(filePath));
-			AppendAllChildren(subPanelDom.Body, accordion);
-		}
-
-		/// <summary>
-		/// Move everything in the body into a new div, which begins with a style scoped element.
-		/// Replace stylesheet links in the head with importing those styles into the style element.
-		/// </summary>
-		/// <param name="_domForCurrentPage"></param>
-		private void MoveBodyAndStylesIntoScopedDiv(HtmlDom domForCurrentPage)
-		{
-			var body = domForCurrentPage.Body;
-			var childrenToMove = body.ChildNodes.Cast<XmlNode>().ToArray();
-			var newDiv = body.OwnerDocument.CreateElement("div");
-			newDiv.SetAttribute("style", "float:left");
-			// Various things in JavaScript land that want to add things using the styles add them to this element instead of body.
-			newDiv.SetAttribute("id", "mainPageScope");
-			body.AppendChild(newDiv);
-
-			MoveStylesIntoScopedTag(domForCurrentPage, newDiv);
-
-			foreach (var child in childrenToMove)
-				newDiv.AppendChild(child);
-		}
-
-		private void MoveStylesIntoScopedTag(HtmlDom domForCurrentPage, XmlNode target)
-		{
-			var body = domForCurrentPage.Body;
-			var head = domForCurrentPage.Head;
-
-			// get the style sheets linked to this document
-			var stylesToMove = head.SelectNodes("//link[@rel='stylesheet']").Cast<XmlNode>().ToArray();
-
-			// create a style tag for the style sheets
-			var scope = body.OwnerDocument.CreateElement("style");
-			target.AppendChild(scope);
-			scope.SetAttribute("scoped", "scoped");
-
-			foreach (var style in stylesToMove)
+			// check the appropriate boxes
+			foreach (var checkBoxId in checkedBoxes)
 			{
-				var source = style.Attributes["href"].Value;
-				if (source.Contains("editPaneGlobal"))
-					continue; // Leave this one at the global level, it contains things that should NOT be scoped.
-
-				if (!source.StartsWith("file") && !source.StartsWith("http"))
-				{
-					// get the filename
-					var idx = source.LastIndexOfAny("\\/".ToCharArray());
-					if (idx > -1)
-						source = source.Substring(idx + 1);
-
-					// do not attempt to do this to jquery
-					if (source.StartsWith("jquery")) continue;
-
-					// look for the css file, and build a file URI
-					source = _currentlyDisplayedBook.GetFileLocator().LocateFileWithThrow(source).ToLocalhost();
-				}
-
-				var import = body.OwnerDocument.CreateTextNode("@import \"" + source + "\";\n");
-				scope.AppendChild(import);
-				head.RemoveChild(style);
+				domForAccordion.Body.SelectSingleNode("//div[@id='" + checkBoxId + "']").InnerXml = "&#10004;";
 			}
+
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForAccordion.RawDom);
+			return TempFileUtils.CreateHtml5StringFromXml(domForAccordion.RawDom);
+		}
+
+		/// <summary>Loads the requested panel into the accordion</summary>
+		private void AppendAccordionPanel(HtmlDom domForAccordion, string fileName)
+		{
+			var accordion = domForAccordion.Body.SelectSingleNode("//div[@id='accordion']");
+			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(fileName));
+			AppendAllChildren(subPanelDom.Body, accordion);
 		}
 
 		void AppendAllChildren(XmlNode source, XmlNode dest)
@@ -772,8 +915,60 @@ namespace Bloom.Edit
 		{
 			if (_domForCurrentPage != null)
 			{
-				_view.CleanHtmlAndCopyToPageDom();
-				_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+				try
+				{
+					// CleanHtml already requires that we are on UI thread. But it's worth asserting here too in case that changes.
+					// If we weren't sure of that we would need locking for access to _tasksToDoAfterSaving and _inProcessOfSaving,
+					// and would need to be careful about whether any delayed tasks needed to be on the UI thread.
+					Debug.Assert(!_view.InvokeRequired);
+					_inProcessOfSaving = true;
+					_tasksToDoAfterSaving.Clear();
+					_view.CleanHtmlAndCopyToPageDom();
+
+					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
+					//this old code:
+					//	_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+					//would some times ask book X to save a page from book Y.
+					//We could never reproduce it at will, so this is to help with that...
+					if(this._pageSelection.CurrentSelection.Book != _currentlyDisplayedBook)
+					{
+						Debug.Fail("This is the BL-1064 Situation");
+						Logger.WriteEvent("Warning: SaveNow() with a page that is not the current book. That should be ok, but it is the BL-1064 situation (though we now work around it).");
+					}
+					//but meanwhile, the page knows its book, so we can see if it looks like a valid book and give a helpful
+					//error if, for example, it was deleted:
+					try
+					{
+						if (!_pageSelection.CurrentSelection.Book.CanUpdate)
+						{
+							Logger.WriteEvent("Error: SaveNow() found that this book had CanUpdate=='false'");
+							Logger.WriteEvent("Book path was {0}",_pageSelection.CurrentSelection.Book.FolderPath);
+							throw new ApplicationException("Bloom tried to save a page to a book that was not in a position to be updated.");
+						}
+					}
+					catch (ObjectDisposedException err) // in case even calling CanUpdate gave an error
+					{
+						Logger.WriteEvent("Error: SaveNow() found that this book was disposed.");
+						throw err;
+					}
+					catch(Exception err) // in case even calling CanUpdate gave an error
+					{
+						Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
+						throw err;
+					}
+					//OK, looks safe, time to save.
+					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage);
+				}
+				finally
+				{
+					_inProcessOfSaving = false;
+				}
+				while (_tasksToDoAfterSaving.Count > 0)
+				{
+					var task = _tasksToDoAfterSaving[0];
+					_tasksToDoAfterSaving.RemoveAt(0);
+					task();
+				}
 			}
 		}
 
@@ -798,7 +993,8 @@ namespace Bloom.Edit
 			}
 			catch (Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e, "Could not change the picture");
+				var msg = LocalizationManager.GetString("Errors.ProblemImportingPicture","Bloom had a problem importing this picture.");
+				ErrorReport.NotifyUserOfProblem(e, msg+Environment.NewLine+e.Message);
 			}
 		}
 
@@ -884,9 +1080,10 @@ namespace Bloom.Edit
 
 		public string GetFontAvailabilityMessage()
 		{
-			var name = _collectionSettings.DefaultLanguage1FontName.ToLower();
+			// REVIEW: does this ToLower() do the right thing on Linux, where filenames are case sensitive?
+			var name = _collectionSettings.DefaultLanguage1FontName.ToLowerInvariant();
 
-			if(null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLower() == name))
+			if (null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLowerInvariant() == name))
 			{
 				var s = L10NSharp.LocalizationManager.GetString("EditTab.FontMissing",
 														   "The current selected " +

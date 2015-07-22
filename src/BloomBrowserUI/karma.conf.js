@@ -15,6 +15,16 @@ module.exports = function (config) {
             'lib/jquery-1.10.1.js',
             'lib/jquery-ui-1.10.3.custom.min.js',
             'lib/jquery.myimgscale.js',
+            'lib/jquery.qtip.js',
+            'lib/jquery.qtipSecondary.js',
+            'bookEdit/js/interIframeChannel.js',
+            'bookEdit/js/getIframeChannel.js',
+            'bookEdit/test/interIframeChannelInitializer.js',
+            'lib/localizationManager/localizationManager.js',
+            'lib/jquery.i18n.custom.js',
+            'lib/split-pane/split-pane.js',
+            'lib/long-press/jquery.mousewheel.js',
+            'lib/long-press/jquery.longpress.js',
 
             // helpers -- jasmine-query
             'test/lib/**/*.js',
@@ -27,9 +37,13 @@ module.exports = function (config) {
             //under the assumption that anything we want to test will be written with typescript (at least eventually)
             '**/js/bloomBootstrap.js',
             '**/js/bloomEditing.js',
-            '**/js/StyleEditor.js',
+            '**/StyleEditor/StyleEditor.js',
+            '**/OverflowChecker/OverflowChecker.js',
+            '**/js/bloomSourceBubbles.js',
             // as long as the test filename is in the test/specs folder, it will be included in the test run
             'test/specs/**/*.js',
+
+            'lib/**/*Spec.js',
 
             // synphony files
             'bookEdit/js/libsynphony/underscore_min_152.js',
@@ -38,6 +52,8 @@ module.exports = function (config) {
             'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
             'bookEdit/js/libsynphony/bloom_lib.js',
             'bookEdit/js/libsynphony/jquery.text-markup.js',
+            'bookEdit/js/synphonyApi.js',
+            'bookEdit/js/readerToolsModel.js',
             'bookEdit/js/*.js',
             'bookEdit/accordion/accordion.js',
             'bookEdit/test/*.js',
@@ -73,7 +89,7 @@ module.exports = function (config) {
         // - Safari (only Mac)
         // - PhantomJS
         // - IE (only Windows)
-        browsers: ['Chrome'],
+        browsers: ['Firefox', 'Chrome'],
 
 
         // If browser does not capture in given timeout [ms], kill it

@@ -1,0 +1,2 @@
+[V1]* Credits on the back of the title page.
+* Includes ISO 639 code on the credits page.

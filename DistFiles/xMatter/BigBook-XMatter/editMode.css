@@ -29,7 +29,6 @@ DIV.bloom-imageContainer
 {
 	border: thin solid rgba(1, 1, 1, 0.2);
 }
-/*There are 2 sub-modes of editing, each with their own stylesheets: originalEditMode and translationEditMode.*/
 BODY
 {
 	background-color: #363333;
@@ -461,15 +460,16 @@ UL.toolbox LI
 	display: inline-block;
 	width: 162px;
 }
-.heading1-style
-{
-	font-weight: bold;
-	font-size: 14pt;
+/* Predefined styles user can apply. Must not be !important otherwise they beat user mods; must be as specific as possible so they otherwise win.
+	A lower-case version of these styles was previously defined as part of an experiment in allowing the user to drag things onto a page;
+	that may need adjustment for the renaming if it is revived.
+*/
+TEXTAREA.Heading1-style,  DIV.bloom-editable.Heading1-style{
+	font-size: 16pt;
 }
-.heading2-style
-{
-	font-weight: bold;
+TEXTAREA.Heading2-style,  DIV.bloom-editable.Heading2-style {
 	font-size: 13pt;
+	font-weight: bold;
 }
 .centered
 {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
@@ -60,49 +61,60 @@ namespace BloomTemp
 	{
 		public static TempFile CreateHtm5FromXml(XmlNode dom)
 		{
-			var temp = TempFile.TrackExisting(GetHtmlTempPath());
+			var temp = TempFile.WithFilenameInTempFolder("tempHtml.htm");
 
-
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.Indent = true;
-			settings.CheckCharacters = true;
-			settings.OmitXmlDeclaration = true;//we're aiming at normal html5, here. Not xhtml.
-			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
-
-			// Enhance JohnT: no reason to go to disk for this intermediate version.
-			using (var writer = XmlWriter.Create(temp.Path, settings))
-			{
-				dom.WriteContentTo(writer);
-				writer.Close();
-			}
-			// xml output will produce things like <title /> or <div /> for empty elements, which are not valid HTML 5 and produce
-			// weird results; for example, the browser interprets <title /> as the beginning of an element that is not terminated
-			// until the end of the whole document. Thus, everything becomes part of the title. This then causes errors in our
-			// thumbnail generation because gecko thinks the document has an empty  body (the real one is lost inside the title).
-			// Also, embedded controls (like ReaderTools.htm) now pass through this xml-to-html conversion, and this file contains
-			// several more kinds of empty element, some of which have attributes.
-			// There are probably more elements than these which may not be empty. However we can't just use [^ ]* in place of title|div
-			// because there are some elements that never have content like <br /> which should NOT be converted.
-			// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
-			string xhtml = File.ReadAllText(temp.Path);
-			var re = new Regex("<(title|div|i|table|td|span) ([^<]*)/>");
-			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
-			//now insert the non-xml-ish <!doctype html>
-			File.WriteAllText(temp.Path, string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine,xhtml));
+			File.WriteAllText(temp.Path, CreateHtml5StringFromXml(dom));
 
 			return temp;
 		}
 
-		private static string GetHtmlTempPath()
+		/// <summary>
+		/// Create a string that could be the contents of an HTML5 file and which corresponds to the specified DOM
+		/// (presumed to contain appropriate content).
+		/// This method has no business in this class except that it is so parallel to CreateHtml5FromXml that I wanted to keep them together.
+		/// </summary>
+		/// <param name="dom"></param>
+		public static string CreateHtml5StringFromXml(XmlNode dom)
 		{
-			string x,y;
-			do
+			var output = new StringBuilder();
+			using (var writer = XmlWriter.Create(output, GetXmlWriterSettingsForHtml5()))
 			{
-				x = Path.GetTempFileName();
-				y = x + ".htm";
-			} while (File.Exists(y));
-			File.Move(x,y);
-			return y;
+				dom.WriteContentTo(writer);
+				writer.Close();
+			}
+			return CleanupHtml5(output.ToString());
+		}
+
+		/// <summary>
+		/// Return the settings that should be used for an XmlWriter to write a DOM as HTML5.
+		/// (The writer results should then be passed through CleanupHtml5.)
+		/// </summary>
+		/// <returns></returns>
+		public static XmlWriterSettings GetXmlWriterSettingsForHtml5()
+		{
+			XmlWriterSettings settings = new XmlWriterSettings();
+			settings.Indent = true;
+			settings.CheckCharacters = true;
+			settings.OmitXmlDeclaration = true; //we're aiming at normal html5, here. Not xhtml.
+			//CAN'T DO THIS: settings.OutputMethod = XmlOutputMethod.Html; // JohnT: someone please explain why not?
+			return settings;
+		}
+
+		// xml output will produce things like <title /> or <div /> for empty elements, which are not valid HTML 5 and produce
+		// weird results; for example, the browser interprets <title /> as the beginning of an element that is not terminated
+		// until the end of the whole document. Thus, everything becomes part of the title. This then causes errors in our
+		// thumbnail generation because gecko thinks the document has an empty  body (the real one is lost inside the title).
+		// Also, embedded controls (like ReaderTools.htm) now pass through this xml-to-html conversion, and this file contains
+		// several more kinds of empty element, some of which have attributes.
+		// There are probably more elements than these which may not be empty. However we can't just use [^ ]* in place of title|div
+		// because there are some elements that never have content like <br /> which should NOT be converted.
+		// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
+		public static string CleanupHtml5(string xhtml)
+		{
+			var re = new Regex("<(title|div|i|table|td|span|style) ([^<]*)/>");
+			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
+			//now insert the non-xml-ish <!doctype html>
+			return string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine, xhtml);
 		}
 	}
 
@@ -157,7 +169,9 @@ namespace BloomTemp
 
 		public void Dispose()
 		{
-		   DeleteFolderThatMayBeInUse(_path);
+			DeleteFolderThatMayBeInUse(_path);
+
+			GC.SuppressFinalize(this);
 		}
 
 		[Obsolete("It's better to wrap the use of this in a using() so that it is automatically cleaned up, even if a test fails.")]

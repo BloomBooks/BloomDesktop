@@ -1,174 +1,88 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
 
 namespace Bloom.Wizard
 {
 	/// <summary>
-	/// Override control to allow setting of the privite parentForm field at the appropiate time.
+	/// Not sure if this control is even needed now. We used to have two different Wizard implementations,
+	/// but now we're only using the WinForms version.
 	/// </summary>
-	class MyFixedAeroWizard : AeroWizard.WizardControl
-	{
-		protected override void OnParentChanged(EventArgs e)
-		{
-			base.OnParentChanged(e);
-
-			FieldInfo parentFormField = typeof(AeroWizard.WizardControl).GetField("parentForm", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-			parentFormField.SetValue(this, this.FindForm());
-
-			//var form = this.FindForm();
-		}
-	}
-
 	class WizardAdapterControl : Control, ISupportInitialize
 	{
-		protected AeroWizard.WizardControl _aeroWizard;
-
 		protected WinForms.WizardControl _winformsWizard;
 
-		internal static bool _useAeroWizard = Palaso.PlatformUtilities.Platform.IsWindows && (System.Environment.GetEnvironmentVariable("USE_WINFORM_WIZARD") == null);
-
-		#region Implemetaion specific logic
+		#region Implementation specific logic
 		public void Setup()
 		{
-			if (_useAeroWizard)
+			InitializeControl = () =>
 			{
-				InitializeControl = () =>
+				_winformsWizard = new WinForms.WizardControl();
+
+				_winformsWizard.Cancelled += (sender, e) =>
 				{
-					_aeroWizard = new MyFixedAeroWizard();
-
-					_aeroWizard.Cancelled += (sender, e) =>
-					{
-						if (this.Cancelled != null)
-							this.Cancelled(sender, e);
-					};
-
-					_aeroWizard.Finished += (sender, e) =>
-					{
-						if (this.Finished != null)
-							this.Finished(sender, e);
-					};
-
-					_aeroWizard.SelectedPageChanged += (sender, e) =>
-					{
-						if (this.SelectedPageChanged != null)
-							this.SelectedPageChanged(sender, e);
-					};
+					if (this.Cancelled != null)
+						this.Cancelled(sender, e);
 				};
 
-				GetSelectedPage = () => new WizardAdapterPage(_aeroWizard.SelectedPage);
-
-				GetPages = () =>
+				_winformsWizard.Finished += (sender, e) =>
 				{
-					if (_pages == null)
-					{
-						_pages = new List<WizardAdapterPage>();
-						foreach (AeroWizard.WizardPage page in _aeroWizard.Pages)
-						{
-							_pages.Add(new WizardAdapterPage(page));
-						}
-					}
-
-					return _pages;
+					if (this.Finished != null)
+						this.Finished(sender, e);
 				};
 
-				GetTitle = () => _aeroWizard.Title;
-				SetTitle = (value) => _aeroWizard.Title = value;
-				GetNextButtonText = () => _aeroWizard.NextButtonText;
-				SetNextButtonText = (value) => _aeroWizard.NextButtonText = value;
-				GetFinishButtonText= () => _aeroWizard.FinishButtonText;
-				SetFinishButtonText= (value) => _aeroWizard.FinishButtonText = value;
-				GetIcon = () => _aeroWizard.TitleIcon;
-				SetIcon = (icon) => _aeroWizard.TitleIcon = icon;
+				_winformsWizard.SelectedPageChanged += (sender, e) =>
+				{
+					if (this.SelectedPageChanged != null)
+						this.SelectedPageChanged(sender, e);
+				};
+			};
 
-				BeginInitLogic = () => _aeroWizard.BeginInit();
-				EndInitLogic = () =>
-					{
-						foreach (WizardAdapterPage page in _pages)
-						{
-							page.AeroPage.Controls.AddRange(page.Controls.Cast<Control>().ToArray());
+			GetSelectedPage = () => new WizardAdapterPage(_winformsWizard.SelectedPage);
 
-							_aeroWizard.Pages.Add(page.AeroPage);
-
-						}
-
-						this.Controls.Add(_aeroWizard);
-
-						_aeroWizard.EndInit();
-					};
-
-			}
-			else
+			GetPages = () =>
 			{
-				InitializeControl = () =>
+				if (_pages == null)
 				{
-					_winformsWizard = new WinForms.WizardControl();
-
-					_winformsWizard.Cancelled += (sender, e) =>
+					_pages = new List<WizardAdapterPage>();
+					foreach (var page in _winformsWizard.Pages)
 					{
-						if (this.Cancelled != null)
-							this.Cancelled(sender, e);
-					};
-
-					_winformsWizard.Finished += (sender, e) =>
-					{
-						if (this.Finished != null)
-							this.Finished(sender, e);
-					};
-
-					_winformsWizard.SelectedPageChanged += (sender, e) =>
-					{
-						if (this.SelectedPageChanged != null)
-							this.SelectedPageChanged(sender, e);
-					};
-				};
-
-				GetSelectedPage = () => new WizardAdapterPage(_winformsWizard.SelectedPage);
-
-				GetPages = () =>
-				{
-					if (_pages == null)
-					{
-						_pages = new List<WizardAdapterPage>();
-						foreach (var page in _winformsWizard.Pages)
-						{
-							_pages.Add(new WizardAdapterPage(page));
-						}
+						_pages.Add(new WizardAdapterPage(page));
 					}
+				}
 
-					return _pages;
-				};
+				return _pages;
+			};
 
-				GetTitle = () => _winformsWizard.Title;
-				SetTitle = (value) => _winformsWizard.Title = value;
-				GetNextButtonText = () => _winformsWizard.NextButtonText;
-				SetNextButtonText = (value) => _winformsWizard.NextButtonText = value;
-				GetFinishButtonText= () => _winformsWizard.FinishButtonText;
-				SetFinishButtonText= (value) => _winformsWizard.FinishButtonText = value;
-				GetIcon = () => _winformsWizard.TitleIcon;
-				SetIcon = (icon) => _winformsWizard.TitleIcon = icon;
+			GetTitle = () => _winformsWizard.Title;
+			SetTitle = (value) => _winformsWizard.Title = value;
+			GetNextButtonText = () => _winformsWizard.NextButtonText;
+			SetNextButtonText = (value) => _winformsWizard.NextButtonText = value;
+			GetFinishButtonText= () => _winformsWizard.FinishButtonText;
+			SetFinishButtonText= (value) => _winformsWizard.FinishButtonText = value;
+			GetCancelButtonText = () => _winformsWizard.CancelButtonText;
+			SetCancelButtonText = (value) => _winformsWizard.CancelButtonText = value;
+			GetIcon = () => _winformsWizard.TitleIcon;
+			SetIcon = (icon) => _winformsWizard.TitleIcon = icon;
 
-				BeginInitLogic = () => _winformsWizard.BeginInit();
-				EndInitLogic = () =>
+			BeginInitLogic = () => _winformsWizard.BeginInit();
+			EndInitLogic = () =>
+			{
+				foreach (WizardAdapterPage page in _pages)
 				{
-					foreach (WizardAdapterPage page in _pages)
-					{
-						page.WinFormPage.AddControls(page.Controls.Cast<Control>().ToArray());
+					page.WinFormPage.AddControls(page.Controls.Cast<Control>().ToArray());
 
-						_winformsWizard.Pages.Add(page.WinFormPage);
-					}
+					_winformsWizard.Pages.Add(page.WinFormPage);
+				}
 
-					this.Controls.Add(_winformsWizard);
+				this.Controls.Add(_winformsWizard);
 
-					_winformsWizard.EndInit();
-				};
-			}
+				_winformsWizard.EndInit();
+			};
+			AfterInitialization = () => _winformsWizard.ShowFirstPage();
 		}
 
 		Action InitializeControl;
@@ -180,10 +94,13 @@ namespace Bloom.Wizard
 		Action<string> SetNextButtonText;
 		Func<string> GetFinishButtonText;
 		Action<string> SetFinishButtonText;
+		Func<string> GetCancelButtonText;
+		Action<string> SetCancelButtonText;
 		Func<Icon> GetIcon;
 		Action<Icon> SetIcon;
 		Action BeginInitLogic;
 		Action EndInitLogic;
+		internal Action AfterInitialization;
 
 		#endregion
 
@@ -244,6 +161,17 @@ namespace Bloom.Wizard
 				SetFinishButtonText(value);
 			}
 		}
+		public string CancelButtonText
+		{
+			get
+			{
+				return GetCancelButtonText();
+			}
+			set
+			{
+				SetCancelButtonText(value);
+			}
+		}
 
 		public Icon TitleIcon
 		{
@@ -278,79 +206,36 @@ namespace Bloom.Wizard
 
 	class WizardAdapterPage : Control
 	{
-		AeroWizard.WizardPage _aeroPage;
-
 		WinForms.WizardPage _winformPage;
 
-		#region Implemetaion specific logic
+		#region Implementation specific logic
 		public void Setup()
 		{
-			if (WizardAdapterControl._useAeroWizard)
+			InitializeControl = (page) =>
 			{
-				InitializeControl = (page) =>
+				_winformPage = (WinForms.WizardPage)page;
+
+				_winformPage.Initialize += (s, e) =>
 				{
-					_aeroPage = (AeroWizard.WizardPage)page;
-
-					_aeroPage.Initialize += (s, e) =>
-					{
-						if (this.Initialize != null)
-							this.Initialize(s, e);
-					};
-
-					GetTag = () =>  _aeroPage.Tag;
-					SetTag = (value) => _aeroPage.Tag = value;
-					GetSuppress = () => _aeroPage.Suppress;
-					SetSuppress = (value) => _aeroPage.Suppress = value;
-					GetAllowNext = () => _aeroPage.AllowNext;
-					SetAllowNext = (value) => _aeroPage.AllowNext = value;
-					GetNextPage = () => new WizardAdapterPage(_aeroPage.NextPage);
-					SetNextPage = (value) => _aeroPage.NextPage = value._aeroPage;
-					GetIsFinishedPage = () => _aeroPage.IsFinishPage;
-					SetIsFinishedPage = (value) => _aeroPage.IsFinishPage = value;
-					GetText = () => _aeroPage.Text;
-					SetText = (value) => _aeroPage.Text = value;
-					GetSize = () => _aeroPage.Size;
-					SetSize = (value) => _aeroPage.Size = value;
-
+					if (this.Initialize != null)
+						this.Initialize(s, e);
 				};
-			}
-			else
-			{
-				InitializeControl = (page) =>
-				{
-					_winformPage = (WinForms.WizardPage)page;
 
-					_winformPage.Initialize += (s, e) =>
-					{
-						if (this.Initialize != null)
-							this.Initialize(s, e);
-					};
-
-					GetTag = () => _winformPage.Tag;
-					SetTag = (value) => _winformPage.Tag = value;
-					GetSuppress = () => _winformPage.Suppress;
-					SetSuppress = (value) => _winformPage.Suppress = value;
-					GetAllowNext = () => _winformPage.AllowNext;
-					SetAllowNext = (value) => _winformPage.AllowNext = value;
-					GetNextPage = () => new WizardAdapterPage(_winformPage.NextPage);
-					SetNextPage = (value) => _winformPage.NextPage = value._winformPage;
-					GetIsFinishedPage = () => _winformPage.IsFinishPage;
-					SetIsFinishedPage = (value) => _winformPage.IsFinishPage = value;
-					GetText = () => _winformPage.Text;
-					SetText = (value) => _winformPage.Text = value;
-					GetSize = () => _winformPage.Size;
-					SetSize = (value) => _winformPage.Size = value;
-				};
-			}
-		}
-
-
-		internal AeroWizard.WizardPage AeroPage
-		{
-			get
-			{
-				return _aeroPage;
-			}
+				GetTag = () => _winformPage.Tag;
+				SetTag = (value) => _winformPage.Tag = value;
+				GetSuppress = () => _winformPage.Suppress;
+				SetSuppress = (value) => _winformPage.Suppress = value;
+				GetAllowNext = () => _winformPage.AllowNext;
+				SetAllowNext = (value) => _winformPage.AllowNext = value;
+				GetNextPage = () => new WizardAdapterPage(_winformPage.NextPage);
+				SetNextPage = (value) => _winformPage.NextPage = value._winformPage;
+				GetIsFinishedPage = () => _winformPage.IsFinishPage;
+				SetIsFinishedPage = (value) => _winformPage.IsFinishPage = value;
+				GetText = () => _winformPage.Text;
+				SetText = (value) => _winformPage.Text = value;
+				GetSize = () => _winformPage.Size;
+				SetSize = (value) => _winformPage.Size = value;
+			};
 		}
 
 		internal WinForms.WizardPage WinFormPage
@@ -381,7 +266,7 @@ namespace Bloom.Wizard
 		#endregion
 
 		public WizardAdapterPage()
-			: this(WizardAdapterControl._useAeroWizard ? (Control)new AeroWizard.WizardPage() : (Control)new WinForms.WizardPage())
+			: this((Control)new WinForms.WizardPage())
 		{
 
 		}
@@ -489,6 +374,4 @@ namespace Bloom.Wizard
 
 		public event EventHandler<EventArgs> Initialize;
 	}
-
-
 }

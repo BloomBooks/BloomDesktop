@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
+using Bloom.ImageProcessing;
+using Bloom.ToPalaso;
+using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.Extensions;
-using System.Xml;
+using Palaso.Reporting;
 
 namespace Bloom.Book
 {
@@ -16,9 +23,6 @@ namespace Bloom.Book
 	/// </summary>
 	public class BookInfo
 	{
-		public static Color[] CoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(176, 222, 228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
-		private static int _coverColorIndex = 0;
-
 		private BookMetaData _metadata;
 
 		private BookMetaData MetaData
@@ -28,11 +32,11 @@ namespace Bloom.Book
 
 		public BookInfo(string folderPath, bool isEditable)
 		{
-			IsSuitableForVernacularLibrary = true; // default
 			FolderPath = folderPath;
-			Id = Guid.NewGuid().ToString();
-			CoverColor = NextBookColor();
 
+			//NB: This was coded in an unfornate way such that touching almost any property causes a new metadata to be quitely created.
+			//So It's vital that we not touch properties that could create a blank metadata, before attempting to load the existing one.
+			
 			var jsonPath = MetaDataPath;
 			if (File.Exists(jsonPath))
 			{
@@ -45,6 +49,16 @@ namespace Bloom.Book
 				if (File.Exists(oldTagsPath))
 				{
 					Book.ConvertTagsToMetaData(oldTagsPath, this);
+				}
+			}
+
+			// should the accordion be enabled?
+			if ((_metadata != null) && (_metadata.Tools != null))
+			{
+				if (!_metadata.ReaderToolsAvailable)
+				{
+					if (_metadata.Tools.Any(t => t.Enabled))
+						_metadata.ReaderToolsAvailable = true;
 				}
 			}
 
@@ -61,13 +75,12 @@ namespace Bloom.Book
 			set { MetaData.Id = value; }
 		}
 
-		public Color CoverColor { get; set; }
-
 		public string FolderPath { get; set; }
 
 		public bool AllowUploading
 		{
 			get { return MetaData.AllowUploadingToBloomLibrary; }
+			set { MetaData.AllowUploadingToBloomLibrary = value; }
 		}
 
 		//there was a beta version that would introduce the .json files with the incorrect defaults
@@ -211,25 +224,41 @@ namespace Bloom.Book
 			string path = Path.Combine(FolderPath, "thumbnail.png");
 			if (File.Exists(path))
 			{
-				//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
-				using (var tempImage = Image.FromFile(path))
-				{
-					image = new Bitmap(tempImage);
-				}
+				image = ImageUtils.GetImageFromFile(path);
 				return true;
 			}
 			image = null;
 			return false;
 		}
 
-		public static Color NextBookColor()
-		{
-			return CoverColors[_coverColorIndex++%CoverColors.Length];
-		}
-
 		public void Save()
 		{
-			File.WriteAllText(MetaDataPath, MetaData.Json);
+			// https://jira.sil.org/browse/BL-354 "The requested operation cannot be performed on a file with a user-mapped section open"
+			var count = 0;
+
+			do
+			{
+				try
+				{
+					File.WriteAllText(MetaDataPath, MetaData.Json);
+					return;
+				}
+				catch (IOException e)
+				{
+					Thread.Sleep(500);
+					count++;
+
+					// stop trying after 5 attempts to save the file.
+					if (count > 4)
+					{
+						Debug.Fail("Reproduction of BL-354 that we have taken steps to avoid");
+
+						var msg = LocalizationManager.GetDynamicString("Bloom", "BookEditor.ErrorSavingPage", "Bloom wasn't able to save the changes to the page.");
+						ErrorReport.NotifyUserOfProblem(e, msg);
+					}
+				}
+
+			} while (count < 5);
 		}
 
 		internal string MetaDataPath
@@ -319,6 +348,23 @@ namespace Bloom.Book
 			get { return MetaData.CurrentTool; }
 			set { MetaData.CurrentTool = value; }
 		}
+
+		public bool ReaderToolsAvailable
+		{
+			get { return MetaData.ReaderToolsAvailable; }
+			set { MetaData.ReaderToolsAvailable = value; }
+		}
+
+		public static IEnumerable<string> TopicsKeys
+		{
+			get
+			{
+				//If you modify any of these, consider modifying/updating the localization files; the localization ids for these are just the current English (which is fragile)
+				//If you make changes/additions here, also synchronize with the bloomlibrary source in services.js
+
+				return new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Story Book", "Traditional Story" };
+			}
+		}
 	}
 
 	public class ErrorBookInfo : BookInfo
@@ -346,6 +392,8 @@ namespace Bloom.Book
 			IsExperimental = false;
 			AllowUploadingToBloomLibrary = true;
 			BookletMakingIsAppropriate = true;
+			IsSuitableForVernacularLibrary = true;
+			Id = Guid.NewGuid().ToString();
 		}
 		public static BookMetaData FromString(string input)
 		{
@@ -373,6 +421,59 @@ namespace Bloom.Book
 			get
 			{
 				return JsonConvert.SerializeObject(this);
+			}
+		}
+
+		/// <summary>
+		/// Get the reduced Json string that we upload to set the database entry for the book on our website.
+		/// This leaves out some of the metadata that we use while working on the book.
+		/// Note that the full metadata is currently uploaded to S3 as part of the book content;
+		/// this reduced subset is just for the website itself.
+		/// Note that if you add a property to the upload set here, you must manually add a corresponding field to
+		/// the Book table in Parse.com. This is very important. Currently, the field will auto-add to
+		/// the Parse databases used for unit testing and even (I think) the one for sandbox testing,
+		/// but not to the live site; so if you forget to do this uploading will suddenly break.
+		/// It is for this reason that we deliberately don't automatically add new fields to the upload set.
+		/// Note that it is desirable that the name you give each property in the anonymous object which
+		/// get jsonified here matches the JsonProperty name used to deserialize it.
+		/// That allows the WebDataJson to be a valid Json representation of this class with just
+		/// some fields left out. At least one unit test will fail if the names don't match.
+		/// (Though, I don't think anything besides that test currently attempts to create
+		/// a BookMetaData object from a WebDataJson string.)
+		/// It is of course vital that the names in the anonymous object match the fields in parse.com.
+		/// </summary>
+		[JsonIgnore]
+		public string WebDataJson
+		{
+			get
+			{
+				return JsonConvert.SerializeObject(
+					new
+					{
+						bookInstanceId = Id, // our master key; worth uploading though BloomLibrary doesn't use directly.
+						suitableForMakingShells = IsSuitableForMakingShells, // not yet used by BL, potentially useful filter
+						suitableForVernacularLibrary = IsSuitableForVernacularLibrary,  // not yet used by BL, potentially useful filter
+						experimental = IsExperimental,  // not yet used by BL (I think), potentially useful filter
+						title = Title,
+						allTitles = AllTitles, // created for BL to search, though it doesn't yet.
+						baseUrl = BaseUrl, // how web site finds image and download
+						bookOrder = BookOrder, // maybe obsolete? Keep uploading until sure.
+						isbn = Isbn,
+						bookLineage = BookLineage,
+						//downloadSource = DownloadSource, // seems to be obsolete
+						license = License,
+						formatVersion = FormatVersion,
+						licenseNotes = LicenseNotes,
+						copyright = Copyright,
+						credits = Credits,
+						tags = Tags,
+						authors = Authors,
+						summary = Summary,
+						pageCount = PageCount,
+						langPointers = LanguageTableReferences,
+						uploader = Uploader
+						// Other fields are not needed by the web site and we don't expect they will be.
+					});
 			}
 		}
 
@@ -471,11 +572,12 @@ namespace Bloom.Book
 		public string Summary { get; set; }
 
 		// This is set to true in situations where the materials that are not permissively licensed and the creator doesn't want derivative works being uploaded.
-		[JsonProperty("allowUploadingToBloomLibrary",DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+		// Currently we don't need this property in Parse.com, so we don't upload it.
+		[JsonProperty("allowUploadingToBloomLibrary",DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue(true)]
 		public bool AllowUploadingToBloomLibrary { get; set; }
 
-		[JsonProperty("bookletMakingIsAppropriate",DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+		[JsonProperty("bookletMakingIsAppropriate", DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue(true)]
 		public bool BookletMakingIsAppropriate { get; set; }
 
@@ -502,6 +604,10 @@ namespace Bloom.Book
 
 		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
 		public string CurrentTool { get; set; }
+
+		[JsonProperty("readerToolsAvailable")]
+		[DefaultValue(false)]
+		public bool ReaderToolsAvailable { get; set; }
 	}
 
 	/// <summary>
@@ -555,5 +661,12 @@ namespace Bloom.Book
 
 		[JsonProperty("enabled")]
 		public bool Enabled { get; set; }
+
+		/// <summary>
+		/// Different tools may use this arbitrarily. Currently decodable and leveled readers use it to store
+		/// the stage or level a book belongs to (at least the one last active when editing it).
+		/// </summary>
+		[JsonProperty("state")]
+		public string State { get; set; }
 	}
 }

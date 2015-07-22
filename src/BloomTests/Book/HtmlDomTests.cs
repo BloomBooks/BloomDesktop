@@ -36,29 +36,32 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void SetBaseForRelativePaths_NoHead_Throw()
+		public void BaseForRelativePaths_NoHead_NoLongerThrows()
 		{
 			var dom = new HtmlDom(
 						  @"<html></html>");
-			Assert.Throws<ArgumentNullException>(() => dom.SetBaseForRelativePaths("theBase"));
+			dom.BaseForRelativePaths = "theBase";
+			Assert.AreEqual("theBase", dom.BaseForRelativePaths);
 		}
+
 		[Test]
-		public void SetBaseForRelativePaths_NoExistingBase_Adds()
+		public void BaseForRelativePaths_NullPath_SetsToEmpty()
 		{
 			var dom = new HtmlDom(
-						  @"<html><head/></html>");
-			dom.SetBaseForRelativePaths("theBase");
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='theBase']", 1);
+						  @"<html><head><base href='original'/></head></html>");
+			dom.BaseForRelativePaths = null;
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base", 0);
+			Assert.AreEqual(string.Empty, dom.BaseForRelativePaths);
 		}
 		[Test]
-		public void SetBaseForRelativePaths_HasExistingBase_Replaces()
+		public void BaseForRelativePaths_HasExistingBase_Removes()
 		{
 			var dom = new HtmlDom(
 						  @"<html><head><base href='original'/></head></html>");
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='original']", 1);
-			dom.SetBaseForRelativePaths("new");
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='original']", 0);
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base[@href='new']", 1);
+			dom.BaseForRelativePaths = "new";
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("html/head/base", 0);
+			Assert.AreEqual("new", dom.BaseForRelativePaths);
 		}
 
 		[Test]

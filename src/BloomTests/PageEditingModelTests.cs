@@ -7,17 +7,20 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using NUnit.Framework;
 using Palaso.TestUtilities;
 using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace BloomTests
 {
+	[TestFixture]
 	public class PageEditingModelTests
 	{
 		private int kSampleImageDimension = 5;
 
 		[Test]
+		[Category("RequiresUI")]
 		public void ChangePicture_PictureIsFromOutsideProject_PictureCopiedAndAttributeChanged()
 		{
 			var dom = new XmlDocument();
@@ -58,7 +61,7 @@ namespace BloomTests
 					var destDogImagePath = dest.Combine("dog.png");
 					File.WriteAllText(destDogImagePath, "old dog");
 					model.ChangePicture(dest.Path, dom, "two", original);
-					Assert.IsTrue(Image.FromFile(destDogImagePath).Width == kSampleImageDimension);
+					Assert.IsTrue(ImageUtils.GetImageFromFile(destDogImagePath).Width == kSampleImageDimension);
 				}
 			}
 		}
@@ -90,6 +93,7 @@ namespace BloomTests
 		/// Some (or maybe all?) browsers can't show tiff, so we might as well convert it
 		/// </summary>
 		[Test]
+		[Category("RequiresUI")]
 		public void ChangePicture_PictureIsTiff_ConvertedToPng()
 		{
 			var dom = new XmlDocument();

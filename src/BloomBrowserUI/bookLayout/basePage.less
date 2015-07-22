@@ -1,0 +1,364 @@
+@import "../../../DistFiles/less/common-mixins.less";
+
+.Browser-Reset() {
+	/*+init {*/
+	* {
+		position: relative;
+		margin: 0;
+		padding: 0;
+		font-size: 1em;
+	}
+	H1, H2, H3, H4, H5, H6, TH {
+		font-weight: inherit;
+	}
+	ADDRESS, CITE, DFN, VAR {
+		font-style: inherit;
+	}
+	CAPTION, CODE, KBD, PRE, SAMP, TT, INPUT, TEXTAREA, SELECT, BUTTON {
+		font-family: inherit;
+	}
+	TABLE {
+		border-spacing: 0;
+	}
+	TH {
+		text-align: left;
+	}
+	HTML, BODY, THEAD, TBODY, TFOOT, TR, TH, TD, BR {
+		position: static;
+	}
+	INPUT[type=hidden] {
+		display: none !important;
+	}
+	FIELDSET, A IMG {
+		border: 0;
+	}
+	BODY {
+	}
+}
+
+.Browser-Reset();
+
+BODY
+{
+	line-height: 1.5;
+
+	font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
+	/*Most text in the document should be % changes from this value. Collection.css can then change it to make all the text  bigger.
+Note: the webkit browsers (wkhtml which bloom uses for pdf, and google chrome)
+Need about 2% more space to draw the same text on a ine (can't tell if the font is bigger or the box is smaller)
+Therefore, in the editMode.css, we repeat this, but with a 2% larger size.
+So if you change this, change it there. Note, this might not be the best long-term solution
+To handling the mis-match.*/
+	font-size: 10pt;
+}
+
+/* gridItem means this is a page thumbnail */
+.gridItem {
+	.pageOverflows {
+		background-image: url("/bloom/BloomBrowserUI/images/Attention.svg"); /* red triangle with exclamation point */
+        background-position: bottom;
+        background-repeat: no-repeat;
+        background-size: 70%;
+	}
+}
+
+DIV.ui-tooltip-content
+{
+	overflow: visible !important;
+	font-size: 10pt;
+	padding: 0px 9px;
+}
+.uibloomSourceTextsBubble .ui-tooltip-content
+{
+	/*This minimum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
+	min-height: 60px !important;
+}
+.bloom-imageContainer
+{
+	min-height: 50px;
+	z-index: 100;
+}
+p{
+  min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
+}
+TEXTAREA, .bloom-editable
+{
+	resize: none;
+	/*don't show those cute little resize controls in Firefox 4 and greater*/
+	overflow: visible;
+	font-size: 143%;
+	line-height: @defaultLineHeight;
+	min-height:  @defaultLineHeight + .3em;
+	width: 100%;
+}
+
+/* The following has been split out from the above rule because it should probably be removed,
+	but at this point we are about to go release candidate with 3.1 so it will have to wait.
+	When we do remove it, the main things it could effect are the Story Primer template and the dozen or so SIL LEAD Uganda SHRP templates.
+*/
+TD {
+	resize: none;
+	/*don't show those cute little resize controls in Firefox 4 and greater*/
+	overflow: visible;
+	font-size: 143%;
+	line-height: @defaultLineHeight;
+	min-height: @defaultLineHeight + .3em;
+	width: 100%;
+}
+
+p{
+  min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
+}
+
+//user can get this in a "bloom-requiresParagraphs" div by pressing shift-enter. See bloomField.ts
+span.bloom-linebreak {
+  display: block;
+  text-indent: 0;
+}
+
+DIV.bloom-page
+{
+	display: block;
+	page-break-after: auto;
+	background-color: #FFFFFF;
+	/*This is a big help with htmltopdf, both for our errors and a legitimate problem, with the "just text" page in which
+the margin-top is calculated to center the text vertically, but htmltopdf then doesn't shrink the box as it should
+so it just heads down off the page, messing things up.*/
+	overflow: hidden;
+}
+DIV#bloomDataDiv
+{
+	display: none;
+}
+@media screen
+{
+	DIV.bloom-page
+	{
+		/*[disabled]border:1px solid #000000;*/
+	}
+}
+.centered
+{
+	text-align: center;
+}
+.centerJustify
+{
+	text-align: center;
+}
+
+/*Unless otherwise positioned and made visible, hide all the language elements in there*/
+.bloom-editable
+{
+	display: none;
+	height: 100%;
+}
+/*Outside of frontmatter, we assume that if bloom gives it a content tag, then it should be visible*/
+.bloom-page:not(.bloom-frontMatter) .bloom-content1, .bloom-page:not(.bloom-frontMatter) .bloom-content2, .bloom-page:not(.bloom-frontMatter) .bloom-content3
+{
+	display: inherit;
+}
+.bloom-page:not(.bloom-frontMatter) .bloom-content2
+{
+	display: inherit;
+}
+/*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
+these should be 14.8, but wkhtmltopdf shinks it
+The folowing are the values which work with a 1px border.  With 0px border, I could not get the pages to come out
+properly at all with wkhtmltopdf 0.10.0. It's as if the borders actually help by making the used part of each
+page be the full page, regardless of the contents.
+
+To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
+preview.css.
+*/
+.bloom-page {
+	&.A5Portrait {
+		min-width: @A5Portrait-Width;
+		max-width: @A5Portrait-Width;
+		min-height: @A5Portrait-Height;
+		max-height: @A5Portrait-Height;
+	}
+	&.A5Landscape {
+		min-width: @A5Landscape-Width;
+		max-width: @A5Landscape-Width;
+		min-height: @A5Landscape-Height;
+		max-height: @A5Landscape-Height;
+	}
+	&.B5Portrait {
+		min-width: @B5Portrait-Width;
+		max-width: @B5Portrait-Width;
+		min-height: @B5Portrait-Height;
+		max-height: @B5Portrait-Height;
+	}
+	&.A4Landscape, &.A4LandscapeSideBySide {
+		min-width: @A4Landscape-Width;
+		max-width: @A4Landscape-Width;
+		min-height: @A4Landscape-Height;
+		max-height: @A4Landscape-Height;
+	}
+
+	&.A4Portrait {
+		min-width: @A4Portrait-Width;
+		max-width: @A4Portrait-Width;
+		min-height: @A4Portrait-Height;
+		max-height: @A4Portrait-Height;
+	}
+	&.A6Portrait {
+		min-width: @A6Portrait-Width;
+		max-width: @A6Portrait-Width;
+		min-height: @A6Portrait-Height;
+		max-height: @A6Portrait-Height;
+	}
+	&.A6Landscape {
+		min-width: @A6Landscape-Width;
+		max-width: @A6Landscape-Width;
+		min-height: @A6Landscape-Height;
+		max-height: @A6Landscape-Height;
+	}
+}
+/*Margins*/
+.textWholePage .marginBox {
+	position: absolute; /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
+}
+
+.SetMarginBoxHeight(@PageHeight) {
+	height: @PageHeight - (@MarginTop + @MarginBottom);
+}
+
+.marginBox{
+	position: absolute;
+	top: @MarginTop;
+}
+
+.marginBox {
+	.SetMarginBox(@PageWidth, @PageHeight) {
+		height: @PageHeight - (@MarginTop + @MarginBottom);
+		width: @PageWidth - ( @MarginOuter + @MarginInner );
+		IMG { /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+			max-width: @PageWidth - ( @MarginOuter + @MarginInner );
+		}
+	}
+	
+	.A4Portrait & {
+		.SetMarginBox(@A4Portrait-Width, @A4Portrait-Height);
+	}
+	.A4Landscape & {
+		.SetMarginBox(@A4Landscape-Width, @A4Landscape-Height);
+	}
+	.A5Portrait & {
+		.SetMarginBox(@A5Portrait-Width, @A5Portrait-Height);
+	}
+	.A5Landscape & {
+		.SetMarginBox(@A5Landscape-Width, @A5Landscape-Height);
+	}
+	.A6Portrait & {
+		.SetMarginBox(@A6Portrait-Width, @A6Portrait-Height);
+	}
+	.A6Landscape & {
+		.SetMarginBox(@A6Landscape-Width, @A6Landscape-Height);
+	}
+	.B5Portrait & {
+		.SetMarginBox(@B5Portrait-Width, @B5Portrait-Height);
+	}
+}
+
+//Currently, in edit mode there is only one page in the html, so every 
+//page looks like page 1 from the view of the css, so showing every page
+//as if it were odd is just confusing for the user.
+//Therefore we only turn on left-vs.right distinctions when when making PDF.
+.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
+	&.bloom-page:nth-of-type(odd){
+		.marginBox{
+			/* shifted margin */
+			left: @MarginOuter;
+		}
+	}
+	&.bloom-page:nth-of-type(even){
+		.marginBox{
+			/* shifted margin */
+			left: @MarginInner;
+		}
+	}
+}
+
+// Note: we aren't making any assumption about this or that landscape being calendar fold.
+// The publishModel needs to make that decision (perhaps, in the future, user will be able to control that when
+// making the pdf). From the stylesheet's view, we just need to see this calendarFold class on the Body
+
+.calendarFold{
+	.marginBox {
+		/* balanced margin*/
+		left: @MarginBalanced;
+	}
+}
+
+//in right-to-left books, the way our pdf booklet maker works, it just reverses
+//the page order. In doing so, what use to be odd becomes even, and our margins
+//and page numbering logic needs to switch accordingly. Page numbering is
+//not part of the basePage.less.
+
+.rightToLeft.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover){
+  &.bloom-page:nth-of-type(odd) .marginBox  {
+	  /* swap margins on right to left */
+	  left: @MarginInner;
+  }
+  &.bloom-page:nth-of-type(even) .marginBox  {
+	  /* swap margins on right to left */
+	  left: @MarginOuter;
+  }
+}
+
+//in edit mode, just split the difference, centering the margin box
+body:not(.publishMode) .marginBox{
+  left: @MarginBalanced;
+}
+
+/*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
+LABEL.bubble, LABEL.placeholder
+{
+	display: none;
+}
+.superscript
+{
+	vertical-align: super;
+	font-size: 80%;
+}
+H1
+{
+	//font-weight: bold;
+	font-size: 1.5em;
+}
+
+H2 {
+	//font-weight: bold ;
+	font-size: 1.2em;
+}
+/* we will have UI that switches this .box-header-on if th user wants it*/
+.box-header-off{
+	display: none;
+}
+
+// page-specific stylesheets can call this with (false) to turn it off
+.Common-SeparateMultilingualEditables(@StandardMultilingualEditBoxSeparation);
+
+.customPage {
+	.bloom-imageContainer {
+		width: 99%;
+		height: 98%;
+		// above so buttons show
+		z-index: 1000;
+		// Solves BL-1033 small picture frames cycling red overflow
+        overflow: hidden;
+	}
+    .bloom-editable {
+        overflow-y: hidden;
+    }
+	.split-pane-component {
+		//Enhance: this doesn't buy us much... it would be more helpful if the minimum was
+		// the min-height of the child
+		min-height: @defaultLineHeight;
+	}
+	&.A5Portrait.bloom-monolingual .bloom-translationGroup {
+		height: 99%;
+		width: 99%;
+	}
+}

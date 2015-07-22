@@ -1,18 +1,55 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<!-- This makes defaults for various properties unless they are set from the command line or TeamCity parameter settings.
+	Typically command line includes /p:BUILD_NUMBER=3.1.22.0 (all 4 digits required).
+	May include something like /p:channel=Alpha.-->
 	<PropertyGroup>
-		<RootDir>$(teamcity_build_checkoutDir)</RootDir>
+		<RootDir Condition="'$(teamcity_version)' == '' Or '$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)\..</RootDir>
+		<RootDir Condition="'$(teamcity_version)' != '' And '$(OS)'=='Windows_NT'">$(teamcity_build_checkoutDir)</RootDir>
 		<Solution>Bloom VS2010.sln</Solution>
-		<ApplicationName>Bloom</ApplicationName>
+		<!-- This controls the following things; the some of them pretty much have to match for Squirrel:
+		  - the nupkg ID (Bloom<channel>)
+		  - the name that occurs in the (Uninstall) Programs and Features control panel (Bloom <version> <channel>)
+		  - the folder in appdata/local in which Bloom (and subsequent versions in the same channel) will be installed (Bloom<channel>)
+		  - the name of the main exe (and its config and pdb) (Bloom<channel>.exe)
+		  - the folder on TC on z: where TC maintains the version history for this channel (z:\Bloom<channel>)
+		  - the folder on S3 in which this sequence of installers lives (bloomlibrary.org/installers<channel>)
+		  - the folder on S3 in which the deltas for this channel live (bloomlibrary.org/deltas<channel>.
+		  - It becomes part of the name of the installer package (BloomInstaller.<version>.<channel>.exe)
+		  - It controls which DownloadPointers.htm we generate and upload (DownloadPointers<channel>.htm)
+		  It is an empty string for plain Bloom, which is intended to be the stable release.
+		  (The line below leaves it empty, and thus does nothing except to let an editor know this is
+		  a valid, known property group.)-->
+		<channel Condition="'$(channel)'==''"></channel>
+		<ApplicationName>Bloom$(channel)</ApplicationName>
 		<Configuration>Release</Configuration>
+		<BUILD_NUMBER Condition="'$(BUILD_NUMBER)'==''">1.2.3.4</BUILD_NUMBER>
+		<useNUnit-x86 Condition="'$(OS)'=='Windows_NT'">true</useNUnit-x86>
+		<useNUnit-x86 Condition="'$(OS)'!='Windows_NT'">false</useNUnit-x86>
+		<MSBuildCommunityTasksPath>$(RootDir)/build</MSBuildCommunityTasksPath>
+		<teamcity_agent_home_dir Condition="'$(teamcity_agent_home_dir)'=='' And '$(OS)'!='Windows_NT'">/var/lib/TeamCity/agent</teamcity_agent_home_dir>
 	</PropertyGroup>
 
 	<UsingTask TaskName="StampAssemblies" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="MakeWixForDirTree" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="Split" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
 	<UsingTask TaskName="FileUpdate" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
-	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"/>
-	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
-  <UsingTask AssemblyFile="C:\Program Files (x86)\MSBuild\MSBuildCommunityTasks\MSBuild.Community.Tasks.dll" TaskName="MsBuild.Community.Tasks.WebDownload" />
+	<UsingTask TaskName="NUnit" AssemblyFile="$(RootDir)/build/Palaso.BuildTasks.dll" />
+	<UsingTask TaskName="NUnitTeamCity"
+		AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)"
+		Condition=" '$(teamcity_version)' != '' And '$(OS)'=='Windows_NT'"/>
+	<UsingTask TaskName="NUnitTeamCity"
+		AssemblyFile="$(teamcity_agent_home_dir)/plugins/dotnetPlugin/bin/JetBrains.BuildServer.MSBuildLoggers.dll"
+		Condition=" '$(teamcity_version)' != '' And '$(OS)'!='Windows_NT'"/>
+	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
+	<UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
+	<Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets" Condition="'$(OS)'=='Windows_NT'"/>
+
+  <PropertyGroup>
+	<AccessKey>AKIAJ24BTPKNQCTQ3WQQ</AccessKey> <!-- This is for JohnThomson, a user who can upload to our libraries; override with /p:AccessKey=; used by ConfigureS3 target-->
+	<Secret></Secret> <!-- Secret access key for use in $(AccessKey) Must override with /p:Secret=; used by ConfigureS3 target-->
+	<Key>Dev</Key>  <!-- Which set of keys to use; May override with /p:Key=; used by all S3 upload targets. Must configure with this key before using other targets.-->
+	<Bucket>bloomlibrary.org</Bucket> <!-- Which bucket to target; May override with /p:Bucket=; used by all targets. User identified by access key must have write permission.-->
+  </PropertyGroup>
 
   <Target Name="VersionNumbers">
 	<Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
@@ -20,184 +57,235 @@
 	<Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="2">
 	  <Output TaskParameter="ReturnValue" PropertyName="BuildCounter" />
 	</Split>
+	<Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="3">
+	  <Output TaskParameter="ReturnValue" PropertyName="BuildHash" />
+	</Split>
 
 	<Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
+	<Message Text="BuildHash: $(BuildHash)" Importance="high"/>
 
 	<!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
-	<CreateProperty Value="3.0.$(BuildCounter)">
+	<CreateProperty Value="3.2.$(BuildCounter)">
 	  <Output PropertyName="Version" TaskParameter="Value"/>
 	</CreateProperty>
-
+	<CreateProperty Value="$(Version).$(BuildHash)">
+	  <Output PropertyName="FullVersion" TaskParameter="Value"/>
+	</CreateProperty>
+	<CreateProperty Value="BloomInstaller.$(Version).$(channel).msi">
+	  <Output PropertyName="InstallerFileName" TaskParameter="Value"/>
+	</CreateProperty>
+	<CreateProperty Value="BloomInstaller.$(Version).$(channel).exe">
+	  <Output PropertyName="SquirrelInstallerFileName" TaskParameter="Value"/>
+	</CreateProperty>
+	  <CreateProperty Value="Bloom$(channel)-$(Version)-full.nupkg">
+		  <Output PropertyName="SquirrelFullPkg" TaskParameter="Value"/>
+	  </CreateProperty>
+	  <CreateProperty Value="Bloom$(channel)-$(Version)-delta.nupkg">
+		  <Output PropertyName="SquirrelDeltaPkg" TaskParameter="Value"/>
+	  </CreateProperty>
+	  <!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
+	  you should set your preferred release folder from the command line, usually /p:SquirrelReleaseFolder=<root>/output/installer-->
+	  <CreateProperty Value="Z:\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
+		  <Output PropertyName="SquirrelReleaseFolder" TaskParameter="Value"/>
+	  </CreateProperty>
 	<Message Text="Version: $(Version)" Importance="high"/>
+	<Message Text="FullVersion: $(FullVersion)" Importance="high"/>
   </Target>
 
   <Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
 	<ItemGroup>
-	  <AssemblyInfoFiles Include="$(RootDir)/src/**/assemblyinfo.cs"/>
+	  <AssemblyInfoFiles Include="$(RootDir)/src/**/AssemblyInfo.cs"/>
 	</ItemGroup>
 	<StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
+	  <!--the product name also needs to have the channel in it. This controls (at least) the name used for the desktop icon.-->
+	  <FileUpdate File="$(RootDir)\src\BloomExe\Properties\AssemblyInfo.cs"
+			 DatePlaceholder='RELEASE_DATE'
+			Regex='AssemblyProduct\("Bloom[^"]*"\)'
+			 ReplacementText ='AssemblyProduct("Bloom$(channel)")' />
   </Target>
 
   <Target Name="Build" DependsOnTargets="SetAssemblyVersion">
-
 	<MSBuild Projects="$(RootDir)/$(Solution)"
 			 Targets="Rebuild"
 			 Properties="Configuration=$(Configuration)" />
   </Target>
 
+	<ItemGroup>
+		<TestAssemblies Include="$(RootDir)/output/$(Configuration)/BloomTests.dll"/>
+	</ItemGroup>
 
-  <!-- Review: are GetWkhtmlToXIntoLib & GetXulRunnerIntoLib needed anymore? We now use Teamcity and static-dependencies configurations. The Build grabs the zips and unzips them in the right place. -->
+	<Target Name="Test" DependsOnTargets="Build">
+		<CallTarget Targets="TestOnly"/>
+	</Target>
 
-  <Target Name="Test" DependsOnTargets="Build; DownloadDistFilesNeedForTests;">
-		<CreateItem Include="$(RootDir)/output/$(Configuration)/*Tests.dll">
-			<Output ItemName="TestAssemblies" TaskParameter="Include" />
-		</CreateItem>
+	<Target Name="TestOnly" DependsOnTargets="RunNUnitTC;RunNUnit"/>
+
+	<Target Name="RunNUnitTC" Condition="'$(teamcity_version)' != ''">
 		<NUnitTeamCity
 			Assemblies="@(TestAssemblies)"
 			ExcludeCategory="SkipOnTeamCity"
-			NUnitVersion="NUnit-2.5.5" />
+			NUnitVersion="NUnit-2.6.2" />
 	</Target>
 
-  <Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers" >
-	<!-- USES THESE PROPERTIES: Label, Version, BuildConfigurationID -->
+	<Target Name="RunNUnit" Condition="'$(teamcity_version)' == ''">
+		<NUnit Assemblies="@(TestAssemblies)"
+			ToolPath="$(RootDir)/packages/NUnit.Runners.Net4.2.6.4/tools"
+			TestInNewThread="false"
+			ExcludeCategory="$(excludedCategories)"
+			WorkingDirectory="$(RootDir)/output/$(Configuration)"
+			Force32Bit="$(useNUnit-x86)"
+			Verbose="true"
+			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"/>
+	</Target>
+
+	<Target Name="MakeDownloadPointers" DependsOnTargets="VersionNumbers"
+		Condition="'$(OS)'=='Windows_NT'">
+		<!-- USES THESE PROPERTIES: channel, Version, BuildConfigurationID -->
 
 
-	<!-- 1) we customize and upload a version of DownloadPointers, named after our Label (RELEASE or BETA), and upload it.
-			That file is then iframe'd in to a download page somewhere.
+		<!-- we customize and upload a version of DownloadPointers, named after our channel (RELEASE or BETA), and upload it.
+			That file is then iframe'd in to a download page somewhere.	-->
 
-		 2) we customize and just save a version of appcast.xml, which is used by our crude in-app downloader/updater
-	-->
+		<!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
+		<Copy SourceFiles ="$(RootDir)\src\SquirrelInstaller\DownloadPointers.htm"
+			   DestinationFolder ="$(RootDir)\output\installer"/>
 
-	<!-- copy it so we aren't modifying the original, which then is a pain on dev machines -->
-	<Copy SourceFiles ="$(RootDir)\src\Installer\DownloadPointers.htm"
-		   DestinationFolder ="$(RootDir)\output\installer"/>
+		<!-- replace some parts of the file with the version number & date -->
 
-	<!-- replace some parts of the file with the version number & date -->
+		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+					DatePlaceholder='RELEASE_DATE'
+					Regex='CHANNEL_LABEL'
+					ReplacementText ="$(channel)"
+					Condition=" '$(channel)' != '' "/>
 
-	  <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-				 DatePlaceholder='RELEASE_DATE'
-				Regex='CHANNEL_LABEL'
-				 ReplacementText ="$(Label)" />
+		<FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
+					DatePlaceholder='RELEASE_DATE'
+				   Regex='VERSION_NUMBER'
+					ReplacementText ="$(Version)" />
 
-	 <FileUpdate File="$(RootDir)\output\installer\DownloadPointers.htm"
-				 DatePlaceholder='RELEASE_DATE'
-				Regex='VERSION_NUMBER'
-				 ReplacementText ="$(Version)" />
+		<!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
 
+		<Message Text="Attempting rsync of DownloadPointers_$(channel).htm" Importance="high"/>
 
-	<!--- also copy this appcast.xml file, which is used by the in-app update downloader -->
-	<Copy SourceFiles ="$(RootDir)\src\Installer\appcast.xml"
-		   DestinationFolder ="$(RootDir)\output\installer"/>
-
-	<!-- In TeamCity, this appcast.xml file needs to be listed in the General Settings:Artifact paths, so that it can be retrieved using http://build.palaso.org/guestAuth/repository/download/bt___/.lastSuccessful/appcast.xml   (note the bt___ part is fragile, it's dependent on the actual project in TeamCity,
-		but I haven't seen how to get at that value programmatically. TC docs just tell you to look at the URL in the browser :-/  Our new VersionUpgradeTable approach (see below) lets us get arround this if we need to change to a new configuration id).
-	-->
-
-	<!-- Note: The issue of channels is worked out yet. For one thing, this current approach doesn't have some common appcast.xml that multiple TeamCity configurations can be updating.
-			Instead, each configuration is maintaining its own appcast.xml, and the installers that came from a config only know to check that one config. So RELEASE versions only
-			find out about new RELEASE versions from the same configuration, not about betas, not about new Releases from some new configuration.
-
-		For another, a strict "Channel" approach is overly simplistic; you don't actually want to be stuck with a beta if a release just came out. What we'd want is more of a "tolerance"
-		approach where you take the latest beta unless there's a newer release on the same version track, (but not on some previous version).
-
-		Update: Bloom now has a way of us controlling the "channel": At runtime, Bloom tries to retrieves "VersionUpgradeTable.txt"
-		from a fixed URL. It looks up its current version and the table tells it which appcast to download.
-
-		In this way, we can control the upgrade path for users of old versions. We can, for example, move beta users to
-		a release version. For more information, see the class UpdateVersionTable. If you don't find it in Bloom, it may
-		have been moved to github.com/hatton/NetSparkle so that other apps can use it.
-
-		-->
-
-	<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-				 DatePlaceholder='VERSION_NUMBER'
-				Regex='VERSION_NUMBER'
-				 ReplacementText ="$(Version)" />
-		<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-				 DatePlaceholder='VERSION_NUMBER'
-				Regex='TEAMCITY_CONFIGURATION'
-				 ReplacementText ="$(BuildConfigurationID)" />
-	<!--<FileUpdate File="$(RootDir)\output\installer\appcast.xml"
-				   DatePlaceholder='DEV_RELEASE_DATE'
-				  Regex='DEV_VERSION_NUMBER'
-				   ReplacementText ="$(Version)" />-->
-
-	<!-- push up to the web so that on our downloads page, we can give a link to the latest version -->
-
-	<Message Text="Attempting rsync of DownloadPointers_$(Label).htm" Importance="high"/>
-
-	<!-- Note, at the end of this command line we're appending the "Label" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
+		<!-- Note, this copy appends the "channel" build property to the name of downloadpointers, so we have, for example, downloadpointers_release.htm & downloadpointers_beta.htm.
 		It is up to the target web site to include or not include the beta. E.g., after you release, there is normally a period of time before the next beta.
-	-->
-	<Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/DownloadPointers.htm" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/DownloadPointers_$(Label).htm' />
-  </Target>
+		We have to make this copy because the S3BuildPublisher task does not support renaming.
+		Note that, again, we need to change the DestinationFolder or the web site when we want to go live.
+		-->
+		<Copy SourceFiles="../output/installer/DownloadPointers.htm"  DestinationFiles="../output/installer/DownloadPointers_$(channel).htm"/>
+		<S3BuildPublisher
+		  EncryptionContainerName ="$(Key)"
+		  SourceFiles="../output/installer/DownloadPointers_$(channel).htm"
+		  DestinationBucket="$(Bucket)"
+		  DestinationFolder="channels"
+		  PublicRead="true" />
+	</Target>
 
-
-
-  <Target Name="Upload" DependsOnTargets="VersionNumbers; Installer" >
-	<Message Text="Attempting rsync of BloomInstaller.$(Version).msi" Importance="high"/>
-
-	<Exec Command ='"c:\program files\cwRsync\bin\rsync.exe" -vz -p --chmod=ug+rw,o+r -e"\"c:\program files\cwRsync\bin\ssh\" -oUserKnownHostsFile=C:\BuildAgent\conf\known_hosts -oIdentityFile=C:\BuildAgent\conf\bob.key -l bob"  "../output/installer/BloomInstaller.$(Version).msi" bob@palaso.org:/var/www/virtual/palaso.org/bloom/htdocs/downloads/BloomInstaller.$(Version).msi' />
-
-	<CallTarget Targets ='MakeDownloadPointers'/>
-  </Target>
-
-
-  <Target Name="Installer" DependsOnTargets="VersionNumbers;  MakeWixForDistFiles; MakeWixForXulRunner; Build ">
-
-
-	<!-- set the version number in the installer configuration program.  Perhaps there's a way to just send in the variables rather than this brute-force
+	<Target Name="Installer" DependsOnTargets="VersionNumbers; Build ">
+		<!-- set the version number in the script that configures squirrel.  Perhaps there's a way to just send in the variables rather than this brute-force
 		changing of the script, but I haven't figured that out. -->
+		<FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;version&gt;[^&lt;]*&lt;"
+					ReplacementText ="&lt;version&gt;$(Version)&lt;" />
+		<!-- insert the version number in the description also (for Windows uninstaller UI, ultimately)-->
+		<FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;description&gt;[^&lt;]*&lt;"
+					ReplacementText ="&lt;description&gt;Bloom $(Version) $(channel)&lt;" />
+		<!-- insert the Label into the product ID, which also controls the folder where Squirrel installs.-->
+		<FileUpdate File="$(RootDir)\src\SquirrelInstaller\Bloom.nuspec" Regex="&lt;id&gt;[^&lt;]*&lt;"
+					ReplacementText ="&lt;id&gt;Bloom$(channel)&lt;" />
+		<CallTarget Targets="SignExesIfPossible"/>
+		<!-- the name of the exe must also match the application product name. Use move rather than rename in case the destination
+		already exists from a previous build. -->
+		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe $(RootDir)\output\$(Configuration)\Bloom$(channel).exe"/>
+		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.exe.config $(RootDir)\output\$(Configuration)\Bloom$(channel).exe.config"/>
+		<Exec Command="move /y $(RootDir)\output\$(Configuration)\Bloom.pdb $(RootDir)\output\$(Configuration)\Bloom$(channel).pdb"/>
+		<Message Text="Making Nuget package: $(Version)" Importance="high"  />
 
-	<FileUpdate File="$(RootDir)\src\Installer\Installer.wxs" Regex='Property_ProductVersion = ".*"'
-				ReplacementText ="Property_ProductVersion = &quot;$(Version)&quot;" />
+		<Exec Command="$(RootDir)\.nuget\NuGet pack $(RootDir)\src\SquirrelInstaller\Bloom.nuspec"/>
 
+		<!-- This is the command that actually runs Squirrel. Usually the exe invoked here is called Squirrel. However, we're building our own
+		version, and it's easiest to go with the exe name that the Squirrel build process actually produces.
+		The relaseDir here is a shared drive for all the build agents (though for now we only use one, because only it has the signing data). -->
+		<Exec Command="$(RootDir)\lib\dotnet\Update --releasify $(RootDir)\build\Bloom$(channel).$(Version).nupkg --releaseDir=$(SquirrelReleaseFolder) -i $(RootDir)\src\SquirrelInstaller\BloomSetup.ico -g $(RootDir)\src\SquirrelInstaller\installing.gif -l 'Desktop,StartMenu'"/>
 
-	<Message Text="Making Installer Version: $(Version)" Importance="high"  />
-
-	<MSBuild Projects="$(RootDir)\src\Installer\Installer.wixproj"/>
-
-	<!-- remove an existing one with the same name, if necessary -->
-	<Delete Files="$(RootDir)\output\installer\BloomInstaller.$(Version).msi" TreatErrorsAsWarnings="false" />
-
-	<Copy SourceFiles="$(RootDir)\output\installer\BloomInstaller.msi"
-		  DestinationFiles="$(RootDir)\output\installer\BloomInstaller.$(Version).msi"
+		<Copy SourceFiles="$(SquirrelReleaseFolder)\Setup.exe"
+			  DestinationFiles="$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"
 		  />
+		<Message Text="Copied installer to $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
 
-	<!-- remove the installer which has no version number (wouldn't need this if the copy above was a move, instead) -->
-	<Delete Files="$(RootDir)\output\installer\BloomInstaller.msi" TreatErrorsAsWarnings="false" />
+	</Target>
 
-  </Target>
+	<Target Name="SignExesIfPossible">
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe"' ContinueOnError="true"></Exec>
+		<!-- These are generated in other TC projects but I think it's OK to sign them here since we control those projects too.-->
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\GeckofxHtmlToPdf.exe"' ContinueOnError="true"></Exec>
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe"' ContinueOnError="true"></Exec>
+		<!-- We don't really need to do this every time since the file is checked in. But this way any updated version
+		is automatically signed, which saves the hassle of coming up with a new signed exe every time we need to check in. -->
+		<Exec Command='sign "$(RootDir)\DistFiles\AndikaNewBasic\Install Bloom Literacy Fonts.exe"' ContinueOnError="true"></Exec>
+		<!--not bothering with Chorus, which is not really used yet and may be signed by its own process before we need it,
+		or BloomBookUploader which is not used (obsolete).-->
+	</Target>
 
+	<!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: squirrel itself
+	can sign things if passed the right command line arguments. Is that a better thing to do? -->
+	<Target Name="SignInstaller" DependsOnTargets="VersionNumbers; Installer">
+		<Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"'></Exec>
+		<Message Text="Signed squirrel installer at $(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)" Importance="high"/>
+	</Target>
 
-  <Target Name="MakeWixForDistFiles" DependsOnTargets="DownloadDistFiles">
-	<MakeDir Directories ="$(RootDir)\output\installer" ContinueOnError ="true"/>
+	<Target Name="Upload" DependsOnTargets="VersionNumbers; SignInstaller" >
+		<CallTarget Targets="UploadCore"/>
+	</Target>
+	<!--Same as upload, except that if it is run on an agent that can't sign things, it just quietly
+	doesn't sign the installer. Intended for continuous builds whose output will not be made public.-->
+	<Target Name="UploadSignIfPossible" DependsOnTargets="VersionNumbers; SignIfPossible" >
+		<CallTarget Targets="UploadCore"/>
+	</Target>
+	<Target Name="UploadCore">
+		<Message Text="Attempting rsync of $(SquirrelInstallerFileName)" Importance="high"/>
 
-	<MakeWixForDirTree
-				DirectoryReferenceId="ProgramDir"
-					ComponentGroupId="DistFiles"
-						RootDirectory="$(RootDir)\DistFiles"
-				OutputFilePath="$(RootDir)\output\installer\GeneratedDistFiles.wxs"
-				MatchRegExPattern=".*"
-				>
-	  <!--what does this do?-->
-	  <Output TaskParameter="OutputFilePath" ItemName="Compile" />
-	</MakeWixForDirTree>
+		<!--Kludge, but S3BuildPublisher needs this file in the build folder-->
+		<Copy SourceFiles="../output/$(Configuration)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
 
-	<!--Gather up all the javascript, css, png, etc. files under src/BrowserUI -->
-	<MakeWixForDirTree
-			   DirectoryReferenceId="BrowserUIDir"
-			   ComponentGroupId="BrowserUIFiles"
-			   RootDirectory="$(RootDir)\src\BloomBrowserUI"
-			   OutputFilePath="$(RootDir)\output\installer\GeneratedBrowserUIFiles.wxs"
-			   IgnoreRegExPattern=".*csproj.*|obj|Properties|.*test.*|_Chutzpah.*"
-			   MatchRegExPattern=".*"
-				>
-	</MakeWixForDirTree>
+		<!-- The way the web site generates the list of old installers requires that they be the only files in the
+		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.
+		When we're ready to go live with squirrel we can change this target folder or the web site.-->
+		<S3BuildPublisher
+		EncryptionContainerName ="$(Key)"
+		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelInstallerFileName)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="installers$(channel)"
+		PublicRead="true" />
 
-  </Target>
+		<!-- The delta, full, and RELEASES files must all be in the same directory, the one indicated by Program.SquirrelUpdateUrl.
+		This MUST NOT CHANGE once we start shipping squirrel installers, because it's where all the old versions will look for
+		newer ones.-->
+		<S3BuildPublisher
+		EncryptionContainerName ="$(Key)"
+		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelDeltaPkg)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="deltas$(channel)"
+		PublicRead="true" />
 
-	<Target Name="DownloadDistFilesNeedForTests">
+		<S3BuildPublisher
+		EncryptionContainerName ="$(Key)"
+		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelFullPkg)"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="deltas$(channel)"
+		PublicRead="true" />
+
+		<S3BuildPublisher
+		EncryptionContainerName ="$(Key)"
+		SourceFiles="$(SquirrelReleaseFolder)/RELEASES"
+		DestinationBucket="$(Bucket)"
+		DestinationFolder="deltas$(channel)"
+		PublicRead="true" />
+
+		<CallTarget Targets ='MakeDownloadPointers'/>
+	</Target>
+
+	<Target Name="SignIfPossible" DependsOnTargets="VersionNumbers; Installer">
+		<Exec Command='sign "$(SquirrelReleaseFolder)\$(SquirrelInstallerFileName)"' ContinueOnError="true"></Exec>
 	</Target>
 
 	<Target Name="DownloadDistFiles">
@@ -207,21 +295,10 @@
 		These are not necessarily redundant, since the static dependencies configuration
 		does not know when a new version of the help file is available, so it can get stale,
 		which is fine for developers, but not for our official builds.
+
+		Note, the original name for this on Dropbox may differ (e.g. "Bloom2.1.chm") but we
+		are renaming it here to just Bloom.chm.
 		-->
-		<WebDownload FileUri="https://www.dropbox.com/s/yyz41un2smi2u7n/Bloom.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
+		<WebDownload FileUri="https://www.dropbox.com/s/4mgbc5xhmhndia2/Bloom3.chm?dl=1" FileName="$(RootDir)\DistFiles\Bloom.chm"></WebDownload>
 	</Target>
-
-
-  <Target Name="MakeWixForXulRunner">
-	<MakeWixForDirTree
-				DirectoryReferenceId="XulRunnerDir"
-					ComponentGroupId="XulRunner"
-						RootDirectory="..\lib\xulrunner"
-				OutputFilePath="..\output\installer\GeneratedXulRunner.wxs"
-				MatchRegExPattern=".*"
-				>
-	  <!--what does this do?-->
-	  <Output TaskParameter="OutputFilePath" ItemName="Compile" />
-	</MakeWixForDirTree>
-  </Target>
 </Project>

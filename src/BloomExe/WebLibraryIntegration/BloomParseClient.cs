@@ -14,7 +14,7 @@ namespace Bloom.WebLibraryIntegration
 {
 	public class BloomParseClient
 	{
-		private string kBaseUrl="https://api.parse.com/1/";
+		private readonly string kBaseUrl="https://api.parse.com/1/";
 		private readonly RestClient _client;
 		private string _sessionToken;
 		private string _userId;
@@ -28,6 +28,9 @@ namespace Bloom.WebLibraryIntegration
 		// REST key. Unit tests update these.
 		public string ApiKey = KeyManager.ParseApiKey;
 		public string ApplicationKey = KeyManager.ParseApplicationKey;
+		// Don't even THINK of making this mutable so each unit test uses a different class.
+		// Those classes hang around, can only be deleted manually, and eventually use up a fixed quota of classes.
+		protected const string ClassesLanguagePath = "classes/language";
 
 		public string UserId {get { return _userId; }}
 
@@ -132,7 +135,7 @@ namespace Bloom.WebLibraryIntegration
 			_sessionToken = String.Empty;
 			Account = string.Empty;
 			var request = MakeGetRequest("login");
-			request.AddParameter("username", account);
+			request.AddParameter("username", account.ToLowerInvariant());
 			request.AddParameter("password", password);
 			var response = _client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
@@ -193,7 +196,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			var request = MakePostRequest("users");
 			var metadataJson =
-				"{\"username\":\"" + account + "\",\"password\":\"" + password + "\",\"email\":\"" + account + "\"}";
+				"{\"username\":\"" + account.ToLowerInvariant() + "\",\"password\":\"" + password + "\",\"email\":\"" + account + "\"}";
 			request.AddParameter("application/json", metadataJson, ParameterType.RequestBody);
 			var response = _client.Execute(request);
 			if (response.StatusCode != HttpStatusCode.Created)
@@ -216,14 +219,14 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LoggedIn)
 				throw new ApplicationException();
-			var getLangs = MakeGetRequest("classes/language");
+			var getLangs = MakeGetRequest(ClassesLanguagePath);
 			var response1 = _client.Execute(getLangs);
 			dynamic json = JObject.Parse(response1.Content);
-			if (json == null)
+			if (json == null || response1.StatusCode != HttpStatusCode.OK)
 				return;
 			foreach (var obj in json.results)
 			{
-				var request = MakeDeleteRequest("classes/language/" + obj.objectId);
+				var request = MakeDeleteRequest(ClassesLanguagePath + "/" + obj.objectId);
 				var response = _client.Execute(request);
 				if (response.StatusCode != HttpStatusCode.OK)
 					throw new ApplicationException(response.StatusDescription + " " + response.Content);
@@ -234,7 +237,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LoggedIn)
 				throw new ApplicationException();
-			var request = MakePostRequest("classes/language");
+			var request = MakePostRequest(ClassesLanguagePath);
 			var langjson = lang.Json;
 			request.AddParameter("application/json", langjson, ParameterType.RequestBody);
 			var response = _client.Execute(request);
@@ -259,7 +262,7 @@ namespace Bloom.WebLibraryIntegration
 
 		internal int LanguageCount(LanguageDescriptor lang)
 		{
-			var getLang = MakeGetRequest("classes/language");
+			var getLang = MakeGetRequest(ClassesLanguagePath);
 			getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
 			var response = _client.Execute(getLang);
 			if (response.StatusCode != HttpStatusCode.OK)
@@ -273,7 +276,7 @@ namespace Bloom.WebLibraryIntegration
 
 		internal string LanguageId(LanguageDescriptor lang)
 		{
-			var getLang = MakeGetRequest("classes/language");
+			var getLang = MakeGetRequest(ClassesLanguagePath);
 			getLang.AddParameter("where", lang.Json, ParameterType.QueryString);
 			var response = _client.Execute(getLang);
 			if (response.StatusCode != HttpStatusCode.OK)
@@ -286,7 +289,7 @@ namespace Bloom.WebLibraryIntegration
 
 		internal dynamic GetLanguage(string objectId)
 		{
-			var getLang = MakeGetRequest("classes/language/" + objectId);
+			var getLang = MakeGetRequest(ClassesLanguagePath + "/" + objectId);
 			var response = _client.Execute(getLang);
 			if (response.StatusCode != HttpStatusCode.OK)
 				return null;
@@ -304,7 +307,7 @@ namespace Bloom.WebLibraryIntegration
 		internal bool UserExists(string account)
 		{
 			var request = MakeGetRequest("users");
-			request.AddParameter("where", "{\"username\":\"" + account + "\"}");
+			request.AddParameter("where", "{\"username\":\"" + account.ToLowerInvariant() + "\"}");
 			var response = _client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			// Todo

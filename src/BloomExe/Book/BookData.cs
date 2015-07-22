@@ -2,16 +2,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms.VisualStyles;
 using System.Xml;
+using System.Xml.Linq;
 using Bloom.Collection;
+using L10NSharp;
 using Palaso.Code;
 using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.Xml;
+using RestSharp;
 
 namespace Bloom.Book
 {
@@ -54,6 +59,7 @@ namespace Bloom.Book
 		private readonly CollectionSettings _collectionSettings;
 		private readonly DataSet _dataset;
 		private XmlElement _dataDiv;
+		private Object thisLock = new Object();
 
 		/// <param name="dom">Set this parameter to, say, a page that the user just edited, to limit reading to it, so its values don't get overriden by previous pages.
 		///   Supply the whole dom if nothing has priority (which will mean the data-div will win, because it is first)</param>
@@ -67,6 +73,7 @@ namespace Bloom.Book
 			GetOrCreateDataDiv();
 			_dataset = GatherDataItemsFromCollectionSettings(_collectionSettings);
 			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
+			MigrateData();
 		}
 
 		/// <summary>
@@ -90,6 +97,28 @@ namespace Bloom.Book
 			{
 				GatherDataItemsFromXElement(_dataset, _dom.RawDom);
 				return GetVariableOrNull("contentLanguage3", "*");
+			}
+		}
+
+		/// <summary>
+		/// A book-level style number sequence
+		/// </summary>
+		public int StyleNumberSequence
+		{
+			get
+			{
+				lock(thisLock)
+				{
+					GatherDataItemsFromXElement(_dataset, _dom.RawDom);
+					string curSeqStr = GetVariableOrNull("styleNumberSequence", "*");
+					int curSeq;
+					int nextSeq = 1;
+					if (Int32.TryParse(curSeqStr, out curSeq))
+						nextSeq = curSeq + 1;
+					Set("styleNumberSequence", nextSeq.ToString(CultureInfo.InvariantCulture),
+						false);
+					return nextSeq;
+				}
 			}
 		}
 
@@ -139,10 +168,10 @@ namespace Bloom.Book
 			foreach (var v in incomingData.TextVariables)
 			{
 				if (!v.Value.IsCollectionValue)
-					UpdateSingleTextVariableThroughoutDOM(v.Key,v.Value.TextAlternatives);
+					UpdateSingleTextVariableInDataDiv(v.Key,v.Value.TextAlternatives);
 			}
 			foreach (var tuple in itemsToDelete)
-				UpdateSingleTextVariableThrougoutDom(tuple.Item1, tuple.Item2, "");
+				UpdateSingleTextVariableInDataDiv(tuple.Item1, tuple.Item2, "");
 			Debug.WriteLine("after update: " + _dataDiv.OuterXml);
 
 			UpdateTitle(info);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
@@ -151,28 +180,78 @@ namespace Bloom.Book
 			UpdateCredits(info);
 		}
 
+		private void MigrateData()
+		{
+			//Until late in Bloom 3, we collected the topic in the National language, which is messy because then we would have to know how to 
+			//translate from all those languages to all other languages. Now, we just save English, and translate from English to whatever.
+			//By far the largest number of books posted to bloomlibrary with this problem were Tok Pisin books, which actually just had
+			//an English word as their value for "topic", so there we just switch it over to English.
+			NamedMutliLingualValue topic;
+			if(_dataset.TextVariables.TryGetValue("topic", out topic))
+			{
+				var topicStrings = topic.TextAlternatives;
+				if (string.IsNullOrEmpty(topicStrings["en"] ) && topicStrings["tpi"] != null)
+				{
+					topicStrings["en"] = topicStrings["tpi"];
+
+					topicStrings.RemoveLanguageForm(topicStrings.Find("tpi"));
+				}
+			}
+		}
+
 		private void UpdateCredits(BookInfo info)
 		{
+			if (info == null)
+				return;
+
 			NamedMutliLingualValue creditsData;
 			string credits = "";
 			if (_dataset.TextVariables.TryGetValue("originalAcknowledgments", out creditsData))
 			{
 				credits = creditsData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 			}
-			if (info != null)
-				info.Credits = credits.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+			info.Credits = credits.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+		}
+
+		/// <summary>
+		/// grabs the english (which serves as the 'key') from the datadiv and then adds or updates
+		/// the equivalent for the current cover language
+		/// </summary>
+		/// <param name="data"></param>
+		private void UpdateTopicInLanguageOfCover(DataSet data)
+		{
+			NamedMutliLingualValue topicData;
+			if(data.TextVariables.TryGetValue("topic", out topicData))
+			{
+				//we use English as the "key" for topics.
+				var englishTopic = topicData.TextAlternatives.GetExactAlternative("en");
+				if (string.IsNullOrEmpty(englishTopic))
+					return;
+				string langOfTopicToShowOnCover = _collectionSettings.Language2Iso639Code;
+				var id = "Topics." + englishTopic;
+
+				string s = "";
+				
+				var bestTranslation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishTopic, "this is a book topic", langOfTopicToShowOnCover);;
+				//NB: in a unit test environment, GetDynamicStringOrEnglish is going to give us the id back, which is annoying.
+				if (bestTranslation == id)
+					bestTranslation = englishTopic;
+				data.AddLanguageString("topic", bestTranslation, langOfTopicToShowOnCover, false);
+			}
 		}
 
 		private void UpdateIsbn(BookInfo info)
 		{
+			if (info == null)
+				return;
+
 			NamedMutliLingualValue isbnData;
 			string isbn = null;
 			if (_dataset.TextVariables.TryGetValue("ISBN", out isbnData))
 			{
 				isbn = isbnData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry); // Review: not really multilingual data, do we need this?
 			}
-			if (info != null)
-				info.Isbn = isbn ?? "";
+			info.Isbn = isbn ?? "";
 		}
 
 		// For now, when there is no UI for multiple tags, we make Tags a single item, the book topic.
@@ -181,6 +260,9 @@ namespace Bloom.Book
 		// Should we still remove the old one?
 		private void UpdateTags(BookInfo info)
 		{
+			if (info == null)
+				return;
+
 			NamedMutliLingualValue tagData;
 			string tag = null;
 			if (_dataset.TextVariables.TryGetValue("topic", out tagData))
@@ -188,22 +270,29 @@ namespace Bloom.Book
 				tag = tagData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 			}
 
-			if (info != null && tag != null)
+			if (tag == null)
+				return;
+
+			// In case we're running localized, for now we'd like to record in the metadata the original English tag.
+			// This allows the book to be found by this tag in the current, non-localized version of bloom library.
+			// Eventually it will make it easier, we think, to implement localization of bloom library.
+			string originalTag;
+			if (RuntimeInformationInjector.TopicReversal == null ||
+				!RuntimeInformationInjector.TopicReversal.TryGetValue(tag, out originalTag))
 			{
-				// In case we're running localized, for now we'd like to record in the metadata the original English tag.
-				// This allows the book to be found by this tag in the current, non-localized version of bloom library.
-				// Eventually it will make it easier, we think, to implement localization of bloom library.
-				string originalTag;
-				if (RuntimeInformationInjector.TopicReversal == null ||
-					!RuntimeInformationInjector.TopicReversal.TryGetValue(tag, out originalTag))
-				{
-					originalTag = tag; // just use it unmodified if we don't have anything
-				}
-				info.TagsList = originalTag;
+				originalTag = tag; // just use it unmodified if we don't have anything
 			}
+			info.TagsList = originalTag;
 		}
 
-		private void UpdateSingleTextVariableThroughoutDOM(string key, MultiTextBase multiText)
+
+		/// <summary>
+		///
+		/// </summary>
+		/// <remarks>I (jh) found this labelled UpdateSingleTextVariableThrougoutDom but it actually only updated the datadiv, so I changed the name.</remarks>
+		/// <param name="key"></param>
+		/// <param name="multiText"></param>
+		private void UpdateSingleTextVariableInDataDiv(string key, MultiTextBase multiText)
 		{
 			//Debug.WriteLine("before: " + dataDiv.OuterXml);
 
@@ -214,11 +303,18 @@ namespace Bloom.Book
 			foreach (LanguageForm languageForm in multiText.Forms)
 			{
 				string writingSystemId = languageForm.WritingSystemId;
-				UpdateSingleTextVariableThrougoutDom(key, writingSystemId, languageForm.Form);
+				UpdateSingleTextVariableInDataDiv(key, writingSystemId, languageForm.Form);
 			}
 		}
 
-		private void UpdateSingleTextVariableThrougoutDom(string key, string writingSystemId, string form)
+		/// <summary>
+		///
+		/// </summary>
+		/// <remarks>I (jh) found this labelled UpdateSingleTextVariableThrougoutDom but it actually only updated the datadiv, so I changed the name.</remarks>
+		/// <param name="key"></param>
+		/// <param name="writingSystemId"></param>
+		/// <param name="form"></param>
+		private void UpdateSingleTextVariableInDataDiv(string key, string writingSystemId, string form)
 		{
 			XmlNode node =
 				_dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
@@ -263,7 +359,7 @@ namespace Bloom.Book
 		public void Set(string key, string value, bool isCollectionValue)
 		{
 			_dataset.UpdateGenericLanguageString(key, value, isCollectionValue);
-			UpdateSingleTextVariableThroughoutDOM(key, _dataset.TextVariables[key].TextAlternatives);
+			UpdateSingleTextVariableInDataDiv(key, _dataset.TextVariables[key].TextAlternatives);
 		}
 
 		public void Set(string key, string value, string lang)
@@ -271,7 +367,7 @@ namespace Bloom.Book
 			_dataset.UpdateLanguageString(key, value, lang, false);
 			if(_dataset.TextVariables.ContainsKey(key))
 			{
-				UpdateSingleTextVariableThroughoutDOM(key,_dataset.TextVariables[key].TextAlternatives);
+				UpdateSingleTextVariableInDataDiv(key,_dataset.TextVariables[key].TextAlternatives);
 			}
 			else //we go this path if we just removed the last value from the multitext
 			{
@@ -331,6 +427,7 @@ namespace Bloom.Book
 			UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
 
 			UpdateTitle();
+
 			return data;
 		}
 
@@ -417,7 +514,7 @@ namespace Bloom.Book
 			string elementName = "*";
 			try
 			{
-				string query = String.Format(".//{0}[(@data-book or @data-library or @data-collection)]", elementName);
+				string query = String.Format(".//{0}[(@data-book or @data-library or @data-collection) and not(contains(@class,'bloom-writeOnly'))]", elementName);
 
 				XmlNodeList nodesOfInterest = sourceElement.SafeSelectNodes(query);
 
@@ -437,7 +534,7 @@ namespace Bloom.Book
 					}
 
 					string value = node.InnerXml.Trim(); //may contain formatting
-					if (node.Name.ToLower() == "img")
+					if (node.Name.ToLowerInvariant() == "img")
 					{
 						value = node.GetAttribute("src");
 						//Make the name of the image safe for showing up in raw html (not just in the relatively safe confines of the src attribut),
@@ -447,6 +544,13 @@ namespace Bloom.Book
 					string lang = node.GetOptionalStringAttribute("lang", "*");
 					if (lang == "") //the above doesn't stop a "" from getting through
 						lang = "*";
+					if (lang == "{V}")
+						lang = _collectionSettings.Language1Iso639Code;
+					if(lang == "{N1}")
+						lang = _collectionSettings.Language2Iso639Code;
+					if(lang == "{N2}")
+						lang = _collectionSettings.Language3Iso639Code;
+
 					if (string.IsNullOrEmpty(value))
 					{
 						// This is a value we may want to delete
@@ -456,7 +560,7 @@ namespace Bloom.Book
 					else if (!value.StartsWith("{"))
 						//ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
 					{
-						if ((elementName.ToLower() == "textarea" || elementName.ToLower() == "input" ||
+						if ((elementName.ToLowerInvariant() == "textarea" || elementName.ToLowerInvariant() == "input" ||
 							 node.GetOptionalStringAttribute("contenteditable", "false") == "true") &&
 							(lang == "V" || lang == "N1" || lang == "N2"))
 						{
@@ -489,11 +593,21 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// given the values in our dataset, push them out to the fields in the pages
+		/// </summary>
+		public void UpdateDomFromDataset()
+		{
+			var noItemsToDelete = new HashSet<Tuple<string, string>>();
+			UpdateDomFromDataSet(_dataset, "*", _dom.RawDom, noItemsToDelete);
+		}
+
+		/// <summary>
 		/// Where, for example, somewhere on a page something has data-book='foo' lan='fr',
 		/// we set the value of that element to French subvalue of the data item 'foo', if we have one.
 		/// </summary>
 		private void UpdateDomFromDataSet(DataSet data, string elementName,XmlDocument targetDom, HashSet<Tuple<string, string>> itemsToDelete)
 		{
+			UpdateTopicInLanguageOfCover(data); //reveiw
 			try
 			{
 				string query = String.Format("//{0}[(@data-book or @data-collection or @data-library)]", elementName);
@@ -516,7 +630,7 @@ namespace Bloom.Book
 					{
 						if (data.TextVariables.ContainsKey(key))
 						{
-							if (node.Name.ToLower() == "img")
+							if (node.Name.ToLowerInvariant() == "img")
 							{
 								string imageName =
 									WebUtility.HtmlDecode(data.TextVariables[key].TextAlternatives.GetFirstAlternative());
@@ -578,7 +692,7 @@ namespace Bloom.Book
 								}
 							}
 						}
-						else if (node.Name.ToLower() != "img")
+						else if (node.Name.ToLowerInvariant() != "img")
 						{
 							// See whether we need to delete something
 							string lang = node.GetOptionalStringAttribute("lang", "*");
@@ -627,7 +741,12 @@ namespace Bloom.Book
 			string s = "";
 
 			if ((languageCodeOfTargetField == _collectionSettings.Language2Iso639Code || //is it a national language?
-				 languageCodeOfTargetField == _collectionSettings.Language3Iso639Code))
+				 languageCodeOfTargetField == _collectionSettings.Language3Iso639Code) ||
+				//this one is a kludge as we clearly have this case of a vernacular field that people have used
+				//to hold stuff that should be copied to every shell. So we can either remove the restriction of the
+				//first two clauses in this if statement, or add another bloom-___ class in order to make execptions.
+				//Today, I'm not seing the issue clearly enough, so I'm just going to path this one exisint hole.
+				 classes.Contains("smallCoverCredits"))
 			{
 				formToCopyFromSinceOursIsMissing =
 					data.TextVariables[key].TextAlternatives.GetBestAlternative(new[] {languageCodeOfTargetField, "*", "en", "fr", "es", "pt"});
@@ -671,21 +790,26 @@ namespace Bloom.Book
 
 		public void SetLicenseMetdata(Metadata metadata)
 		{
-			var data = new DataSet();
+			var data = GatherDataItemsFromCollectionSettings(_collectionSettings);
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
 			GatherDataItemsFromXElement(data,  _dom.RawDom, itemsToDelete);
 
-			string copyright = metadata.CopyrightNotice;
+			string copyright = WebUtility.HtmlEncode(metadata.CopyrightNotice);
 			data.UpdateLanguageString("copyright", copyright, "*", false);
 
-			string description = metadata.License.GetDescription("en");
-			data.UpdateLanguageString("licenseDescription", description, "en", false);
+			string idOfLanguageUsed;
+			string description = metadata.License.GetDescription(_collectionSettings.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed);
+			// Don't really have a description for custom license, it returns the RightsStatement for the sake of having something.
+			// However, we're already showing that in licenseNotes; if we use it for description too we get duplicate (BL-2198).
+			if (metadata.License is CustomLicense)
+				description = "";
+			data.UpdateLanguageString("licenseDescription", WebUtility.HtmlEncode(description), "en", false);
 
 			string licenseUrl = metadata.License.Url;
 			data.UpdateLanguageString("licenseUrl", licenseUrl, "*", false);
 
 			string licenseNotes = metadata.License.RightsStatement;
-			data.UpdateLanguageString("licenseNotes", licenseNotes, "*", false);
+			data.UpdateLanguageString("licenseNotes", WebUtility.HtmlEncode(licenseNotes), "*", false);
 
 			string licenseImageName = metadata.License.GetImage() == null ? "" : "license.png";
 			data.UpdateGenericLanguageString("licenseImage", licenseImageName, false);
@@ -727,7 +851,7 @@ namespace Bloom.Book
 			string licenseUrl = "";
 			if (data.TextVariables.TryGetValue("licenseUrl", out d))
 			{
-				licenseUrl = d.TextAlternatives.GetFirstAlternative();
+				licenseUrl = WebUtility.HtmlDecode(d.TextAlternatives.GetFirstAlternative());
 			}
 
 			if (licenseUrl == null || licenseUrl.Trim() == "")
@@ -738,7 +862,7 @@ namespace Bloom.Book
 				{
 					string licenseNotes = d.TextAlternatives.GetFirstAlternative();
 
-					metadata.License = new CustomLicense {RightsStatement = licenseNotes};
+					metadata.License = new CustomLicense { RightsStatement = WebUtility.HtmlDecode(licenseNotes) };
 				}
 				else
 				{
@@ -751,7 +875,7 @@ namespace Bloom.Book
 				metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
 				if (data.TextVariables.TryGetValue("licenseNotes", out d))
 				{
-					metadata.License.RightsStatement = d.TextAlternatives.GetFirstAlternative();
+					metadata.License.RightsStatement = WebUtility.HtmlDecode(d.TextAlternatives.GetFirstAlternative());
 				}
 			}
 			return metadata;
@@ -798,19 +922,24 @@ namespace Bloom.Book
 			NamedMutliLingualValue title;
 			if (_dataset.TextVariables.TryGetValue("bookTitleTemplate", out title))
 			{
-				var t = title.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
+				//NB: In seleting from an ordered shopping list of priority entries, this is only 
+				//handling a scenario where a single (title,writingsystem) pair is of interest.
+				//That's all we've needed thusfar. But we could imagine needing to work through each one.
+
+				var form = title.TextAlternatives.GetBestAlternative(WritingSystemIdsToTry);
 
 				//allow the title to be a template that pulls in data variables, e.g. "P1 Primer Term{book.term} Week {book.week}"
 				foreach (var dataItem in _dataset.TextVariables)
 				{
-					t = t.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry));
+					form.Form = form.Form.Replace("{" + dataItem.Key + "}", dataItem.Value.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry));
 				}
 
-				_dom.Title = t;
+				_dom.Title = form.Form;
 				if (info != null)
-					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
-				//review: notice we're only changing the value in this dataset
-				this.Set("bookTitle", t,"en");
+					info.Title =form.Form.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+
+				this.Set("bookTitle", form.Form, form.WritingSystemId);
+				
 			}
 			else if (_dataset.TextVariables.TryGetValue("bookTitle", out title))
 			{
@@ -818,7 +947,7 @@ namespace Bloom.Book
 				_dom.Title = t;
 				if (info != null)
 				{
-					info.Title = t.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+					info.Title = TextOfInnerHtml(t.Replace("<br />", "")); // Clean out breaks inserted at newlines.
 					// Now build the AllTitles field
 					var sb = new StringBuilder();
 					sb.Append("{");
@@ -829,13 +958,27 @@ namespace Bloom.Book
 						sb.Append("\"");
 						sb.Append(langForm.WritingSystemId);
 						sb.Append("\":\"");
-						sb.Append(langForm.Form.Replace("\\", "\\\\").Replace("\"","\\\"")); // Escape backslash and double-quote
+						sb.Append(TextOfInnerHtml(langForm.Form).Replace("\\", "\\\\").Replace("\"", "\\\"")); // Escape backslash and double-quote
 						sb.Append("\"");
 					}
 					sb.Append("}");
 					info.AllTitles = sb.ToString();
 				}
 			}
+		}
+
+		/// <summary>
+		/// The data we extract into title fields of _dataSet is the InnerXml of some XML node.
+		/// This might have markup, e.g., making a word italic. It will also have the amp, lt, and gt escaped.
+		/// We want to reduce it to plain text to store in bookInfo.
+		/// </summary>
+		/// <param name="input"></param>
+		/// <returns></returns>
+		internal static string TextOfInnerHtml(string input)
+		{
+			// Parsing it as XML and then extracting the value removes any markup.
+			var doc = XElement.Parse("<doc>" + input + "</doc>");
+			return doc.Value;
 		}
 
 		private string[] WritingSystemIdsToTry

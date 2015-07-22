@@ -9,6 +9,9 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.ImageProcessing;
+using Bloom.web;
+using DesktopAnalytics;
 using Gecko;
 using Gecko.Events;
 using Gecko.Utils;
@@ -26,9 +29,8 @@ namespace Bloom
 
 		// This is used to synchronize browser access between different
 		// instances of Gecko which are used in various classes.
-		private readonly MonitorTarget _monitorObjectForBrowserNavigation;
+		private readonly NavigationIsolator _isolator;
 		private Color _backgroundColorOfResult;
-		private Queue<ThumbnailOrder> _orders = new Queue<ThumbnailOrder>();
 		private static HtmlThumbNailer _theOnlyOneAllowed;
 
 		/// <summary>
@@ -47,17 +49,17 @@ namespace Bloom
 
 		private bool _disposed;
 
-		public HtmlThumbNailer(MonitorTarget monitorObjectForBrowserNavigation)
+		public HtmlThumbNailer(NavigationIsolator isolator)
 		{
 			if (_theOnlyOneAllowed != null)
-		{
+			{
 				Debug.Fail("Something tried to make a second HtmlThumbnailer; there should only be one.");
 				throw new ApplicationException("Something tried to make a second HtmlThumbnailer; there should only be one.");
 			}
 
 			_theOnlyOneAllowed = this;
 
-			_monitorObjectForBrowserNavigation = monitorObjectForBrowserNavigation;
+			_isolator = isolator;
 
 			_syncControl = new Control();
 			_syncControl.CreateControl();
@@ -73,9 +75,14 @@ namespace Bloom
 
 		public class ThumbnailOptions
 		{
+			public const int DefaultHeight = 70;
+			public enum BorderStyles
+			{
+				Solid, Dashed, None
+			}
 			public Color BackgroundColor = Color.White;
 			public Color BorderColor = Color.Transparent;
-			public bool DrawBorderDashed = false;
+			public BorderStyles BorderStyle;
 
 			/// <summary>
 			/// Use this when all thumbnails need to be the centered in the same size png.
@@ -85,7 +92,7 @@ namespace Bloom
 			public bool CenterImageUsingTransparentPadding = true;
 
 			public int Width = 70;
-			public int Height = 70;
+			public int Height = DefaultHeight;
 			public string FileName = "thumbnail.png";
 		}
 
@@ -98,7 +105,7 @@ namespace Bloom
 		/// <param name="backgroundColorOfResult">use Color.Transparent if you'll be composing in onto something else</param>
 		/// <param name="drawBorderDashed"></param>
 		/// <returns></returns>
-		public void GetThumbnailAsync(string folderForThumbNailCache, string key, XmlDocument document,
+		public void GetThumbnailAsync(string folderForThumbNailCache, string key, HtmlDom document,
 			ThumbnailOptions options, Action<Image> callback, Action<Exception> errorCallback)
 		{
 			//review: old code had it using "key" in one place(checking for existing), thumbNailFilePath in another (adding new)
@@ -109,7 +116,7 @@ namespace Bloom
 
 			//In our cache?
 			Image image;
-			if (_images.TryGetValue(key, out image))
+			if (!String.IsNullOrWhiteSpace(key) && _images.TryGetValue(key, out image))
 			{
 				callback(image);
 				return;
@@ -118,30 +125,32 @@ namespace Bloom
 			//Sitting on disk?
 			if (!string.IsNullOrEmpty(folderForThumbNailCache))
 			{
-
 				if (File.Exists(thumbNailFilePath))
 				{
-					//this FromFile thing locks the file until the image is disposed of. Therefore, we copy the image and dispose of the original.
-					using (image = Image.FromFile(thumbNailFilePath))
-					{
-						var thumbnail = new Bitmap(image) { Tag = thumbNailFilePath };
+					var thumbnail = ImageUtils.GetImageFromFile(thumbNailFilePath);
+					thumbnail.Tag = thumbNailFilePath;
+					if (!String.IsNullOrWhiteSpace(key))
 						_images.Add(key, thumbnail);
-						callback(thumbnail);
-						return;
-					}
+					callback(thumbnail);
+					return;
 				}
 			}
 
-			ThreadPool.QueueUserWorkItem(new WaitCallback(ProcessOrder),
-				new ThumbnailOrder() {
-					ThumbNailFilePath = thumbNailFilePath,
-					Options = options,
-					Callback = callback,
-					ErrorCallback = errorCallback,
-					Document = document,
-					FolderForThumbNailCache = folderForThumbNailCache,
-					Key = key
-				});
+			var order = new ThumbnailOrder() {
+				ThumbNailFilePath = thumbNailFilePath,
+				Options = options,
+				Callback = callback,
+				ErrorCallback = errorCallback,
+				Document = document,
+				FolderForThumbNailCache = folderForThumbNailCache,
+				Key = key
+			};
+			QueueOrder(order);
+		}
+
+		private void QueueOrder(ThumbnailOrder order)
+		{
+			ThreadPool.QueueUserWorkItem(new WaitCallback(ProcessOrder), order);
 		}
 
 #if DEBUG
@@ -150,14 +159,19 @@ namespace Bloom
 
 		private bool OpenTempFileInBrowser(GeckoWebBrowser browser, string filePath)
 		{
-			var order = (ThumbnailOrder)browser.Tag;
+			var order = (ThumbnailOrder) browser.Tag;
+			bool navigationHappened = true;
 			using (var waitHandle = new AutoResetEvent(false))
 			{
 				order.WaitHandle = waitHandle;
-				_syncControl.BeginInvoke(new Action<string>(browser.Navigate), filePath);
+				_syncControl.BeginInvoke(new Action<string>(path =>
+				{
+					if (!_isolator.NavigateIfIdle(browser, path))
+						navigationHappened = false; // some browser is busy, try again later.
+				}), filePath);
 				waitHandle.WaitOne(10000);
 			}
-			if (_disposed)
+			if (_disposed || !navigationHappened)
 				return false;
 			if (!order.Done)
 			{
@@ -167,7 +181,7 @@ namespace Bloom
 				if (!_thumbnailTimeoutAlreadyDisplayed)
 				{
 					_thumbnailTimeoutAlreadyDisplayed = true;
-					_syncControl.Invoke((Action)(() => Debug.Fail("(debug only) Make thumbnail timed out (won't show again)")));
+					_syncControl.Invoke((Action) (() => Debug.Fail("(debug only) Make thumbnail timed out (won't show again)")));
 				}
 #endif
 				return false;
@@ -177,26 +191,38 @@ namespace Bloom
 
 		private Size SetWidthAndHeight(GeckoWebBrowser browser)
 		{
-			if (_syncControl.InvokeRequired)
+			try
 			{
-				return (Size)_syncControl.Invoke(new Func<GeckoWebBrowser, Size>(SetWidthAndHeight), browser);
+				if (_syncControl.InvokeRequired)
+				{
+					return (Size) _syncControl.Invoke(new Func<GeckoWebBrowser, Size>(SetWidthAndHeight), browser);
+				}
 			}
+			catch (Exception e)
+			{
+				//Debug.Fail("Reproduction of BL-524: Crash making thumbnail?");
+				//otherwise, don't tell the user, just log and send exception if they're online
+				Logger.WriteEvent("***Error making thumbnail, possible bl-524 reproduction, swallowed. "+ e.Message);
+				Analytics.ReportException(e);
+				return new Size(0,0); // this tells the caller we failed
+			}
+
 			Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
 			var div = browser.Document.ActiveElement.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault() as GeckoElement;
-			if (div == null)
-			{
+						if (div == null)
+						{
 				var order = (ThumbnailOrder)browser.Tag;
 				Logger.WriteEvent("HtmlThumNailer ({1}):  found no div with a class of bloom-Page ({0})", order.ThumbNailFilePath,
 					Thread.CurrentThread.ManagedThreadId);
-				throw new ApplicationException("thumbnails found no div with a class of bloom-Page");
-			}
-			browser.Height = div.ClientHeight;
-			browser.Width = div.ClientWidth;
+							throw new ApplicationException("thumbnails found no div with a class of bloom-Page");
+						}
+						browser.Height = div.ClientHeight;
+						browser.Width = div.ClientWidth;
 			return new Size(browser.Width, browser.Height);
 		}
 
 		private Image CreateImage(GeckoWebBrowser browser)
-		{
+						{
 			if (_syncControl.InvokeRequired)
 			{
 				return (Image)_syncControl.Invoke(new Func<GeckoWebBrowser, Image>(CreateImage), browser);
@@ -210,39 +236,58 @@ namespace Bloom
 #else
 			var creator = new ImageCreator(browser);
 			byte[] imageBytes = creator.CanvasGetPngImage((uint)browser.Width, (uint)browser.Height);
+			// Ensure image is still valid after the MemoryStream closes.
 			using (var stream = new MemoryStream(imageBytes))
-				return Image.FromStream(stream);
+			{
+				using (var image = new Bitmap(stream))
+				{
+					return new Bitmap((image));
+				}
+			}
 #endif
 		}
 
-		private Image CreateThumbNail(ThumbnailOrder order, GeckoWebBrowser browser)
+		/// <summary>
+		/// Returns true if it make some attempt at an image, false if navigation is currently suppressed.
+		/// </summary>
+		/// <param name="order"></param>
+		/// <param name="browser"></param>
+		/// <param name="thumbnail"></param>
+		/// <returns></returns>
+		private bool CreateThumbNail(ThumbnailOrder order, GeckoWebBrowser browser, out Image thumbnail)
 		{
 			// runs on threadpool thread
-			using (var temp = TempFileUtils.CreateHtm5FromXml(order.Document))
+			thumbnail = null;
+			using (var temp = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(order.Document))
 			{
 				order.Done = false;
 				browser.Tag = order;
-				if (!OpenTempFileInBrowser(browser, temp.Path))
-					return null;
+				if (!OpenTempFileInBrowser(browser, temp.Key))
+					return false;
 
 				var browserSize = SetWidthAndHeight(browser);
+				if (browserSize.Height == 0) //happens when we run into the as-yet-unreproduced-or-fixed bl-254
+					return false; // will try again later
+
 				try
 				{
-					Logger.WriteMinorEvent("HtmlThumNailer ({2}): browser.GetBitmap({0},{1})", browserSize.Width, (uint)browserSize.Height,
+					Logger.WriteMinorEvent("HtmlThumNailer ({2}): browser.GetBitmap({0},{1})", browserSize.Width,
+						(uint) browserSize.Height,
 						Thread.CurrentThread.ManagedThreadId);
 					//BUG (April 2013) found that the initial call to GetBitMap always had a zero width, leading to an exception which
 					//the user doesn't see and then all is well. So at the moment, we avoid the exception, and just leave with
 					//the placeholder thumbnail.
 					if (browserSize.Width == 0 || browserSize.Height == 0)
 					{
-						var paperSizeName = GetPaperSizeName(order.Document);
+						var paperSizeName = GetPaperSizeName(order.Document.RawDom);
 						throw new ApplicationException("Problem getting thumbnail browser for document with Paper Size: " + paperSizeName);
 					}
 					using (Image fullsizeImage = CreateImage(browser))
 					{
 						if (_disposed)
-							return null;
-						return MakeThumbNail(fullsizeImage, order.Options);
+							return false;
+						thumbnail = MakeThumbNail(fullsizeImage, order.Options);
+						return true;
 					}
 				}
 				catch (Exception error)
@@ -258,16 +303,17 @@ namespace Bloom
 						}
 						catch (Exception e2)
 						{
-							Logger.WriteEvent("While trying to dispose of thumbnailer browsers as a result of an exception, go another: " + e2.Message);
+							Logger.WriteEvent(
+								"While trying to dispose of thumbnailer browsers as a result of an exception, go another: " + e2.Message);
 						}
 					}
 					_browserCacheForDifferentPaperSizes.Clear();
-					#if DEBUG
-					_syncControl.Invoke((Action)(() => Debug.Fail(error.Message)));
-					#endif
+#if DEBUG
+					_syncControl.Invoke((Action) (() => Debug.Fail(error.Message)));
+#endif
 				}
 			}
-			return null;
+			return false;
 		}
 
 		private void ProcessOrder(object stateInfo)
@@ -277,18 +323,30 @@ namespace Bloom
 			if (order == null)
 				return;
 
+			if (Program.ApplicationExiting)
+				return;
+
 			Image pendingThumbnail = null;
 
-			lock (_monitorObjectForBrowserNavigation)
+			lock (this)
 			{
 				Logger.WriteMinorEvent("HtmlThumbNailer ({1}): starting work on thumbnail ({0})", order.ThumbNailFilePath,
 					Thread.CurrentThread.ManagedThreadId);
 
 				_backgroundColorOfResult = order.Options.BackgroundColor;
-				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document);
+				XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(order.Document.RawDom);
 
-				var browser = GetBrowserForPaperSize(order.Document);
-				pendingThumbnail = CreateThumbNail(order, browser);
+				var browser = GetBrowserForPaperSize(order.Document.RawDom);
+				if (browser == null)
+					return;
+
+				if (!CreateThumbNail(order, browser, out pendingThumbnail))
+				{
+					// For some reason...possibly another navigation was in progress...we can't do this just now.
+					// Try it again later.
+					// Enhance: should we have some limit after which we give up?
+					QueueOrder(order);
+				}
 				if (pendingThumbnail == null)
 				{
 					pendingThumbnail = Resources.PagePlaceHolder;
@@ -357,7 +415,9 @@ namespace Bloom
 			}
 			else
 				b = MakeNewBrowser();
-			_browserCacheForDifferentPaperSizes.Add(paperSizeName, b);
+
+			if (b != null)
+				_browserCacheForDifferentPaperSizes.Add(paperSizeName, b);
 			return b;
 		}
 
@@ -370,6 +430,9 @@ namespace Bloom
 
 		private GeckoWebBrowser MakeNewBrowser()
 		{
+			if (Program.ApplicationExiting)
+				return null;
+
 			Debug.WriteLine("making browser ({0})", Thread.CurrentThread.ManagedThreadId);
 #if !__MonoCS__
 			var browser = new GeckoWebBrowser();
@@ -444,16 +507,19 @@ namespace Bloom
 						0,0, bmp.Width, bmp.Height, //source
 						GraphicsUnit.Pixel, WhiteToBackground);
 
-				using (var pn = new Pen(Color.Black, 1))
+				if (options.BorderStyle != ThumbnailOptions.BorderStyles.None)
 				{
-				if (options.DrawBorderDashed)
-				{
-					pn.DashStyle = DashStyle.Dash;
-					pn.Width = 2;
-				}
-				destRect.Height--;//hack, we were losing the bottom
-				destRect.Width--;
-				graphics.DrawRectangle(pn, destRect);
+					using (var pn = new Pen(Color.Black, 1))
+					{
+						if (options.BorderStyle == ThumbnailOptions.BorderStyles.Dashed)
+						{
+							pn.DashStyle = DashStyle.Dash;
+							pn.Width = 2;
+						}
+					destRect.Height--; //hack, we were losing the bottom
+						destRect.Width--;
+						graphics.DrawRectangle(pn, destRect);
+					}
 				}
 			}
 			return thumbnail;
@@ -520,17 +586,25 @@ namespace Bloom
 		public void Dispose()
 		{
 			_disposed = true;
-			_orders.Clear();
 			foreach (var browser in _browserCacheForDifferentPaperSizes)
 			{
-				browser.Value.Invoke((Action)(() =>
-					{
+				if (browser.Value.InvokeRequired)
+				{
+					browser.Value.Invoke((Action)(() => {
 						browser.Value.DocumentCompleted -= _browser_OnDocumentCompleted;
 						browser.Value.Dispose();
 					}));
+				}
+				else
+				{
+					browser.Value.DocumentCompleted -= _browser_OnDocumentCompleted;
+					browser.Value.Dispose();
+				}
 			}
 			_browserCacheForDifferentPaperSizes.Clear();
 			_theOnlyOneAllowed = null;
+
+			GC.SuppressFinalize(this);
 		}
 
 		/// <summary>
@@ -540,11 +614,7 @@ namespace Bloom
 		/// </summary>
 		internal void Advance(Control invokeTarget)
 		{
-			if (_orders.Count == 0)
-				return;
-			// Should not be needed anymore with the new approach
-//            if (invokeTarget != null)
-//                invokeTarget.Invoke((Action)(() => Application_Idle(this, new EventArgs())));
+			// apparently obsolete
 		}
 	}
 
@@ -553,7 +623,7 @@ namespace Bloom
 		public Image ResultingThumbnail;
 		public Action<Image> Callback;
 		public Action<Exception> ErrorCallback;
-		public XmlDocument Document;
+		public HtmlDom Document;
 		public string FolderForThumbNailCache;
 		public string Key;
 		public bool Done;

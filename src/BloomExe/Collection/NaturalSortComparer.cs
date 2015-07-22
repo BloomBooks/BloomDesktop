@@ -8,7 +8,7 @@ namespace Bloom.Collection
 	/// From James McCormack, http://zootfroot.blogspot.com/2009/09/natural-sort-compare-with-linq-orderby.html
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class NaturalSortComparer<T> : IComparer<string>, IDisposable
+	public class NaturalSortComparer<T> : IComparer<string>
 	{
 		private bool isAscending;
 
@@ -76,6 +76,12 @@ namespace Bloom.Collection
 
 		private static int PartCompare(string left, string right)
 		{
+			// Make "blah 2 blah" sort before "blah 2.1 blah". NB: Sort order ends up determinging order in the Folio PDF, so SIL-Lead SHRP (Uganda) is dependent on this
+			if (left == ".")
+				return 1;
+			if(right == ".")
+				return -1;
+
 			int x, y;
 			if (!int.TryParse(left, out x))
 				return left.CompareTo(right);
@@ -90,10 +96,5 @@ namespace Bloom.Collection
 
 		private Dictionary<string, string[]> table = new Dictionary<string, string[]>();
 
-		public void Dispose()
-		{
-			table.Clear();
-			table = null;
-		}
 	}
 }

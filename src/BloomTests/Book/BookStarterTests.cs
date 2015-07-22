@@ -1,14 +1,19 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
+using Palaso.Xml;
 
 namespace BloomTests.Book
 {
@@ -36,7 +41,7 @@ namespace BloomTests.Book
 
 			var xmatterFinder = new XMatterPackFinder(new []{FileLocator.GetDirectoryDistributedWithApplication("xMatter")});
 
-			_fileLocator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations());
+			_fileLocator = new BloomFileLocator(collectionSettings, xmatterFinder, ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 
 
 			_starter = new BookStarter(_fileLocator, dir => new BookStorage(dir, _fileLocator, new BookRenamedEvent(), collectionSettings), _librarySettings.Object);
@@ -99,8 +104,59 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='tpi' and text()='Tambu Sut']", 1);
 		}
 
-		//regression
 		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_GetsCoverColor()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
+																			"Vaccinations");
+			// We need to call the actual BookServer method for this test, since it is BookServer code that adds
+			// the cover color.
+			var server = CreateBookServer();
+			var book = server.CreateFromSourceBook(source, _projectFolder.Path);
+
+			AssertThatXmlIn.HtmlFile(book.GetPathHtmlFile()).HasSpecifiedNumberOfMatchesForXpath("//head/style/text()[contains(., 'coverColor')]", 1);
+		}
+
+		private BookServer CreateBookServer()
+		{
+			var collectionSettings =
+				new CollectionSettings(new NewCollectionSettings()
+				{
+					PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_projectFolder.Path, "test"),
+					Language1Iso639Code = "xyz"
+				});
+			var server = new BookServer((bookInfo, storage) =>
+			{
+				return new Bloom.Book.Book(bookInfo, storage, null, collectionSettings, null,
+					new PageSelection(),
+					new PageListChangedEvent(), new BookRefreshEvent());
+			}, path => new BookStorage(path, _fileLocator, null, collectionSettings), () => _starter, null);
+			return server;
+		}
+
+		[Test]
+		public void GetBookFromBookInfo_OnBookWithNoCoverColor_GetsCoverColor_ButNotIfItHasOne()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
+																			"Vaccinations");
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path)); // book starter does NOT set cover color
+
+			var server = CreateBookServer();
+			var book = server.GetBookFromBookInfo(new BookInfo(Path.GetDirectoryName(path), true));
+
+			AssertThatXmlIn.HtmlFile(book.GetPathHtmlFile()).HasSpecifiedNumberOfMatchesForXpath("//head/style/text()[contains(., 'coverColor')]", 1);
+
+			// If we make a book from the same file again, we do NOT get a NEW cover color. In fact, the style element
+			// that sets the color should not have changed at all...except that white space may have been re-arranged.
+			var styleNode = book.OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]")[0].Value;
+			var reloadedBook = server.GetBookFromBookInfo(new BookInfo(Path.GetDirectoryName(path), true));
+			var newStylenode = reloadedBook.OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]")[0].Value;
+			var spaceFixer = new Regex("\\s+");
+			Assert.That(spaceFixer.Replace(newStylenode, " ").Trim(), Is.EqualTo(spaceFixer.Replace(styleNode, " ").Trim()));
+		}
+
+		//For Bloom 3.1, we decided to retire this feature. Now, new books are just called "book"
+		/*[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_InitialFolderNameIsCalledVaccinations()
 		{
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
@@ -111,7 +167,18 @@ namespace BloomTests.Book
 
 			//NB: although the clas under test here may produce a folder with the right name, the Book class may still mess it up based on variables
 			//But that is a different set of unit tests.
+		}*/
+
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_InitialFolderNameIsJustBook()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
+																			"Vaccinations");
+
+			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			Assert.AreEqual("Book", Path.GetFileName(path));
 		}
+
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasDataDivIntact()
@@ -158,7 +225,31 @@ namespace BloomTests.Book
 			_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 		}
 
+		[Test]
+		public void CreateBookOnDiskFromTemplate_OriginalIsTemplate_CopyIsNotTemplate()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
+																			"Basic Book");
+			var originalMetaData = BookMetaData.FromFolder(source);
+			Assert.That(originalMetaData.IsSuitableForMakingShells);
+			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+			var newMetaData = BookMetaData.FromFolder(path);
+			Assert.That(newMetaData.IsSuitableForMakingShells, Is.False);
+		}
 
+		[Test]
+		public void CreateBookOnDiskFromTemplate_OriginalIsTemplate_CopyHasNoTitle()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
+																			"Basic Book");
+			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+
+			var server = CreateBookServer();
+			var book = server.GetBookFromBookInfo(new BookInfo(path, true));
+			Assert.AreEqual("Title Missing",book.TitleBestForUserDisplay);
+			Assert.That(book.GetDataItem("Title").Empty);
+
+		}
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryA5_CreatesWithCoverAndTitle()
 		{
@@ -231,18 +322,18 @@ namespace BloomTests.Book
 		{
 			_starter.TestingSoSkipAddingXMatter = true;
 			var body = @"<div class='bloom-page'>
-						<p class='bloom-translationGroup'>
-						 <textarea lang='en'>This is some English</textarea>
-						</p>
+						<div class='bloom-translationGroup'>
+						 <div lang='en'>This is some English</div>
+						</div>
 					</div>";
 			string sourceTemplateFolder = GetShellBookFolder(body,null);
 			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(sourceTemplateFolder, _projectFolder.Path));
 			//nb: testid is used rather than id because id is replaced with a guid when the copy is made
 
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='en']", 1);
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='xyz']", 1);
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class,'bloom-translationGroup')]/div[@lang='en']", 1);
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class,'bloom-translationGroup')]/div[@lang='xyz']", 1);
 			//the new text should also have been emptied of English
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/p/textarea[@lang='xyz' and not(text())]", 1);
+			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class,'bloom-translationGroup')]/div[@lang='xyz' and not(text())]", 1);
 		}
 
 		[Test]
@@ -358,10 +449,10 @@ namespace BloomTests.Book
 
 
 		[Test]
-		public void CreateBookOnDiskFromTemplate_ShellHasNoNameDirective_FileNameSameAsShell()
+		public void CreateBookOnDiskFromTemplate_ShellHasNoNameDirective_FileNameJust_Book_()
 		{
 			string folderPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
-			Assert.AreEqual("guitar", Path.GetFileName(folderPath));
+			Assert.AreEqual("Book", Path.GetFileName(folderPath));
 		}
 
 
@@ -371,8 +462,8 @@ namespace BloomTests.Book
 			string firstPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
 			string secondPath = _starter.CreateBookOnDiskFromTemplate(GetShellBookFolder(), _projectFolder.Path);
 
-			Assert.IsTrue(File.Exists(firstPath.CombineForPath("guitar.htm")));
-			Assert.IsTrue(File.Exists(secondPath.CombineForPath("guitar1.htm")));
+			Assert.IsTrue(File.Exists(firstPath.CombineForPath("Book.htm")));
+			Assert.IsTrue(File.Exists(secondPath.CombineForPath("Book1.htm")));
 			Assert.IsTrue(Directory.Exists(secondPath),"it clobbered the first one!");
 		}
 
@@ -384,25 +475,25 @@ namespace BloomTests.Book
 			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 			var path = GetPathToHtml(bookFolderPath);
 
-			Assert.AreEqual("My Book.htm", Path.GetFileName(path));
+			Assert.AreEqual("Book.htm", Path.GetFileName(path));
 			Assert.IsTrue(Directory.Exists(bookFolderPath));
 			Assert.IsTrue(File.Exists(path));
 		}
 
-		[Test]
-		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedEnglishTitleInDataDivAndJson()
-		{
-			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","Basic Book");
-
-			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
-			var path = GetPathToHtml(bookFolderPath);
-
-			//see  <meta name="defaultNameForDerivedBooks" content="My Book" />
-			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and text()='My Book']",1);
-
-			var metadata = new BookInfo(bookFolderPath, false);
-			Assert.That(metadata.Title, Is.EqualTo("My Book"));
-		}
+//		[Test]
+//		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsExpectedEnglishTitleInDataDivAndJson()
+//		{
+//			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates","Basic Book");
+//
+//			string bookFolderPath = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+//			var path = GetPathToHtml(bookFolderPath);
+//
+//			//see  <meta name="defaultNameForDerivedBooks" content="My Book" />
+//			AssertThatXmlIn.HtmlFile(path).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en' and text()='My Book']",1);
+//
+//			var metadata = new BookInfo(bookFolderPath, false);
+//			Assert.That(metadata.Title, Is.EqualTo("My Book"));
+//		}
 
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromBasicBook_GetsNoDefaultNameMetaElement()
@@ -505,18 +596,18 @@ namespace BloomTests.Book
 		[Test]
 		public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_SameNameAlreadyUsed_FindsUsableNumberSuffix()
 		{
-			Directory.CreateDirectory(_projectFolder.Combine("My Book"));
-			Directory.CreateDirectory(_projectFolder.Combine("My Book1"));
-			Directory.CreateDirectory(_projectFolder.Combine("My Book3"));
+			Directory.CreateDirectory(_projectFolder.Combine("Book"));
+			Directory.CreateDirectory(_projectFolder.Combine("Book1"));
+			Directory.CreateDirectory(_projectFolder.Combine("Book3"));
 
 			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates",
 																			"Basic Book");
 
 			var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
 
-			Assert.AreEqual("My Book2", Path.GetFileName(path));
+			Assert.AreEqual("Book2", Path.GetFileName(path));
 			Assert.IsTrue(Directory.Exists(path));
-			Assert.IsTrue(File.Exists(Path.Combine(path, "My Book2.htm")));
+			Assert.IsTrue(File.Exists(Path.Combine(path, "Book2.htm")));
 		}
 
 		[Test]
@@ -634,5 +725,26 @@ namespace BloomTests.Book
 //				Assert.That(File.Exists(dest.Combine("inner", "more inner", "two.txt")));
 //			}
 //		}
+
+
+		[Test]
+		public void SetupPage_LanguageSettingsHaveChanged_LangAttributesUpdated()
+		{
+			var contents = @"<div class='bloom-page'>
+						<div>
+							 <div data-book='somethingInN1' lang='en' data-metalanguage='N1'></div>
+							<div data-book='somethingInN2' lang='en' data-metalanguage='N2'></div>
+							<div data-book='somethingInV' lang='en' data-metalanguage='V'></div>
+						</div>
+					</div>";
+
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+
+			BookStarter.SetupPage((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], _librarySettings.Object, "abc", "def");
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInN1' and @lang='fr']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInN2' and @lang='es']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInV' and @lang='xyz']", 1);
+		}
 	}
 }

@@ -32,18 +32,24 @@ namespace Bloom.Book
 
 		public Book CreateFromSourceBook(Book sourceBook, string containingDestinationFolder)
 		{
+			return CreateFromSourceBook(sourceBook.FolderPath, containingDestinationFolder);
+		}
+
+		public Book CreateFromSourceBook(string sourceBookFolder, string containingDestinationFolder)
+		{
 			string pathToFolderOfNewBook = null;
 
-			Logger.WriteMinorEvent("Starting CreateFromSourceBook({0})", sourceBook.FolderPath);
+			Logger.WriteMinorEvent("Starting CreateFromSourceBook({0})", sourceBookFolder);
 			try
 			{
 				var starter = _bookStarterFactory();
-				pathToFolderOfNewBook = starter.CreateBookOnDiskFromTemplate(sourceBook.FolderPath, containingDestinationFolder);
+				pathToFolderOfNewBook = starter.CreateBookOnDiskFromTemplate(sourceBookFolder, containingDestinationFolder);
 				if (Configurator.IsConfigurable(pathToFolderOfNewBook))
 				{
 					var c = _configuratorFactory(containingDestinationFolder);
 					if (DialogResult.Cancel == c.ShowConfigurationDialog(pathToFolderOfNewBook))
 					{
+						Directory.Delete(pathToFolderOfNewBook, true);
 						return null; // the template had a configuration page and they clicked "cancel"
 					}
 					c.ConfigureBook(BookStorage.FindBookHtmlInFolder(pathToFolderOfNewBook));
@@ -52,7 +58,7 @@ namespace Bloom.Book
 				var newBookInfo = new BookInfo(pathToFolderOfNewBook,true); // _bookInfos.Find(b => b.FolderPath == pathToFolderOfNewBook);
 				if (newBookInfo is ErrorBookInfo)
 				{
-					throw ((ErrorBookInfo)newBookInfo).Exception;
+					throw ((ErrorBookInfo) newBookInfo).Exception;
 				}
 
 				Book newBook = GetBookFromBookInfo(newBookInfo);

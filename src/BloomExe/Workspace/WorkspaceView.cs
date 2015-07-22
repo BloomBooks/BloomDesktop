@@ -1,22 +1,29 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Globalization;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
-using Bloom.Library;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
-using PalasoUIWinforms.Registration;
+using Bloom.Registration;
+using Bloom.ToPalaso;
 using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
 using Messir.Windows.Forms;
 using Palaso.IO;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.ReleaseNotes;
 using Palaso.UI.WindowsForms.SettingProtection;
 
 namespace Bloom.Workspace
@@ -27,7 +34,9 @@ namespace Bloom.Workspace
 		private readonly CollectionSettingsDialog.Factory _settingsDialogFactory;
 		private readonly SelectedTabAboutToChangeEvent _selectedTabAboutToChangeEvent;
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
+		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
+		private readonly ProblemReporterDialog.Factory _problemReportDialogFactory;
 		private readonly ChorusSystem _chorusSystem;
 		private LibraryView _collectionView;
 		private EditingView _editingView;
@@ -35,7 +44,6 @@ namespace Bloom.Workspace
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
-
 		private readonly LocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
 
@@ -52,7 +60,9 @@ namespace Bloom.Workspace
 							SendReceiveCommand sendReceiveCommand,
 							 SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
+							LocalizationChangedEvent localizationChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory,
+							ProblemReporterDialog.Factory problemReportDialogFactory,
 							ChorusSystem chorusSystem,
 							LocalizationManager localizationManager
 
@@ -62,11 +72,15 @@ namespace Bloom.Workspace
 			_settingsDialogFactory = settingsDialogFactory;
 			_selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
 			_selectedTabChangedEvent = selectedTabChangedEvent;
+			_localizationChangedEvent = localizationChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
+			_problemReportDialogFactory = problemReportDialogFactory;
 			_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
+
+			_checkForNewVersionMenuItem.Visible = Palaso.PlatformUtilities.Platform.IsWindows;
 
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
@@ -77,7 +91,7 @@ namespace Bloom.Workspace
 
 			//NB: the rest of these aren't really settings, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
 			_settingsLauncherHelper.ManageComponent(_openCreateCollectionButton);
-			_settingsLauncherHelper.ManageComponent(deepBloomPaperToolStripMenuItem);
+			_settingsLauncherHelper.ManageComponent(_keyBloomConceptsMenuItem);
 			_settingsLauncherHelper.ManageComponent(_makeASuggestionMenuItem);
 			_settingsLauncherHelper.ManageComponent(_webSiteMenuItem);
 			_settingsLauncherHelper.ManageComponent(_showLogMenuItem);
@@ -91,7 +105,7 @@ namespace Bloom.Workspace
 
 
 			_uiLanguageMenu.Visible = true;
-		   _settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
+			_settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
 
 			editBookCommand.Subscribe(OnEditBook);
 			sendReceiveCommand.Subscribe(OnSendReceive);
@@ -140,7 +154,97 @@ namespace Bloom.Workspace
 				SelectPage(_collectionView);
 //			}
 
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+			{
+				// Without this adjustment, we lose some controls on smaller resolutions.
+				AdjustToolPanelLocation(true);
+				// in mono auto-size causes the height of the tab strip to be too short
+				_tabStrip.AutoSize = false;
+			}
+
 			SetupUILanguageMenu();
+		}
+
+		/// <summary>
+		/// Adjusts the tool panel location to allow more (or optionally less) space
+		/// for the tab buttons.
+		/// </summary>
+		void AdjustToolPanelLocation(bool allowNarrowing)
+		{
+			var widthOfTabButtons = _tabStrip.Items.Cast<TabStripButton>().Sum(tab => tab.Width) + 10;
+			var location = _toolSpecificPanel.Location;
+			if (widthOfTabButtons > location.X || allowNarrowing)
+			{
+				location.X = widthOfTabButtons;
+				_toolSpecificPanel.Location = location;
+			}
+		}
+
+		/// <summary>
+		/// Adjust the tool panel location when the chosen localization changes.
+		/// See https://jira.sil.org/browse/BL-1212 for what can happen if we
+		/// don't adjust.  At the moment, we only widen, we never narrow the
+		/// overall area allotted to the tab buttons.  Button widths adjust
+		/// themselves automatically to their Text width.  There doesn't seem
+		/// to be a built-in mechanism to limit the width to a given maximum
+		/// so we implement such an operation ourselves.
+		/// </summary>
+		void HandleTabTextChanged(object sender, EventArgs e)
+		{
+			var btn = sender as Messir.Windows.Forms.TabStripButton;
+			if (btn != null)
+			{
+				const string kEllipsis = "\u2026";
+				// Preserve the original string as the tooltip.
+				if (!btn.Text.EndsWith(kEllipsis))
+					btn.ToolTipText = btn.Text;
+				// Ensure the button width is no more than 110 pixels.
+				if (btn.Width > 110)
+				{
+					using (Graphics g = btn.Owner.CreateGraphics())
+					{
+						btn.Text = ShortenStringToFit(btn.Text, 110, btn.Width, btn.Font, g);
+					}
+				}
+			}
+			AdjustToolPanelLocation(false);
+		}
+
+		/// <summary>
+		/// Ensure that the TabStripItem or Control or Whatever is no wider than desired by
+		/// truncating the Text as needed, with an ellipsis appended to show truncation has
+		/// occurred.
+		/// </summary>
+		/// <returns>the possibly shortened string</returns>
+		/// <param name="text">the string to shorten if necessary</param>
+		/// <param name="maxWidth">the maximum item width allowed</param>
+		/// <param name="originalWidth">the original item width (with the original string)</param>
+		/// <param name="font">the font to use</param>
+		/// <param name="g">the relevant Graphics object for drawing/measuring</param>
+		/// <remarks>Would this be a good library method somewhere?  Where?</remarks>
+		public static string ShortenStringToFit(string text, int maxWidth, int originalWidth, Font font, Graphics g)
+		{
+			const string kEllipsis = "\u2026";
+			var txtWidth = g.MeasureString(text, font).Width;
+			var padding = originalWidth - txtWidth;
+			while (txtWidth + padding > maxWidth)
+			{
+				var len = text.Length - 2;
+				if (len <= 0)
+					break;	// I can't conceive this happening, but I'm also paranoid.
+				text = text.Substring(0, len) + kEllipsis;	// trim, add ellipsis
+				txtWidth = g.MeasureString(text, font).Width;
+			}
+			return text;
+		}
+
+		private void _applicationUpdateCheckTimer_Tick(object sender, EventArgs e)
+		{
+			_applicationUpdateCheckTimer.Enabled = false;
+			if (!Debugger.IsAttached)
+			{
+				ApplicationUpdateSupport.CheckForASquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Quiet, newInstallDir => RestartBloom(newInstallDir), Settings.Default.AutoUpdate);
+			}
 		}
 
 		private void OnSendReceive(object obj)
@@ -159,8 +263,7 @@ namespace Bloom.Workspace
 		{
 			//when we need to use Ctrl+Shift to display stuff, we don't want it also firing up the localization dialog (which shouldn't be done by a user under settings protection anyhow)
 
-			LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog =
-				!SettingsProtectionSettings.Default.NormallyHidden;
+			LocalizationManager.EnableClickingOnControlToBringUpLocalizationDialog = !SettingsProtectionSettings.Default.NormallyHidden;
 		}
 
 		private void SetupUILanguageMenu()
@@ -168,7 +271,13 @@ namespace Bloom.Workspace
 			_uiLanguageMenu.DropDownItems.Clear();
 			foreach (var lang in L10NSharp.LocalizationManager.GetUILanguages(true))
 			{
-				var item = _uiLanguageMenu.DropDownItems.Add(lang.NativeName);
+				string englishName="";
+				var langaugeNamesRecognizableByOtherLatinScriptReaders = new List<string> {"en","fr","es","it","tpi"};
+				if((lang.EnglishName != lang.NativeName) && !(langaugeNamesRecognizableByOtherLatinScriptReaders.Contains(lang.Name)))
+				{
+					englishName = " (" + lang.EnglishName + ")";
+				}
+				var item = _uiLanguageMenu.DropDownItems.Add(lang.NativeName + englishName);
 				item.Tag = lang;
 				item.Click += new EventHandler((a, b) =>
 												{
@@ -176,6 +285,7 @@ namespace Bloom.Workspace
 													Settings.Default.UserInterfaceLanguage = ((CultureInfo)item.Tag).IetfLanguageTag;
 													item.Select();
 													_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
+													_localizationChangedEvent.Raise(null);
 												});
 				if (((CultureInfo)item.Tag).IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
 				{
@@ -185,14 +295,15 @@ namespace Bloom.Workspace
 				}
 			}
 
-
 			_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
 			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.menuToBringUpLocalizationDialog","More..."));
 			menu.Click += new EventHandler((a, b) =>
-											{
-												_localizationManager.ShowLocalizationDialogBox(false);
-												SetupUILanguageMenu();
-											});
+			{
+				_localizationManager.ShowLocalizationDialogBox(false);
+				SetupUILanguageMenu();
+				LocalizationManager.ReapplyLocalizationsToAllObjectsInAllManagers(); //review: added this based on its name... does it help?
+				_localizationChangedEvent.Raise(null);
+			});
 		}
 
 
@@ -220,6 +331,11 @@ namespace Bloom.Workspace
 		}
 
 		private void OnOpenCreateLibrary_Click(object sender, EventArgs e)
+		{
+			OpenCreateLibrary();
+		}
+
+		public void OpenCreateLibrary()
 		{
 			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
 			{
@@ -263,9 +379,8 @@ namespace Bloom.Workspace
 		private void SelectPage(Control view)
 		{
 			CurrentTabView = view as IBloomTabArea;
-			//SetTabVisibility(_infoTab, false); //we always hide this after it is used
-
-
+			// Warn the user if we're starting to use too much memory.
+			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "switched page in workspace", true);
 
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
@@ -276,6 +391,12 @@ namespace Bloom.Workspace
 			_toolSpecificPanel.Controls.Clear();
 
 			_panelHoldingToolStrip.BackColor = CurrentTabView.TopBarControl.BackColor = _tabStrip.BackColor;
+
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+			{
+				BackgroundColorsForLinux(CurrentTabView);
+			}
+
 			CurrentTabView.TopBarControl.Dock = DockStyle.Left;
 			if(CurrentTabView!=null)//can remove when we get rid of info view
 				_toolSpecificPanel.Controls.Add(CurrentTabView.TopBarControl);
@@ -293,6 +414,24 @@ namespace Bloom.Workspace
 											});
 
 			_previouslySelectedControl = view;
+		}
+
+		private void BackgroundColorsForLinux(IBloomTabArea currentTabView) {
+
+			if (currentTabView.ToolStripBackground == null)
+			{
+				var bmp = new Bitmap(_toolStrip.Width, _toolStrip.Height);
+				using (var g = Graphics.FromImage(bmp))
+				{
+					using (var b = new SolidBrush(_panelHoldingToolStrip.BackColor))
+					{
+						g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
+					}
+				}
+				currentTabView.ToolStripBackground = bmp;
+			}
+
+			_toolStrip.BackgroundImage = currentTabView.ToolStripBackground;
 		}
 
 		protected IBloomTabArea CurrentTabView { get; set; }
@@ -313,7 +452,12 @@ namespace Bloom.Workspace
 
 		private void OnAboutBoxClick(object sender, EventArgs e)
 		{
-			using(var dlg = new Palaso.UI.WindowsForms.SIL.SILAboutBox(FileLocator.GetFileDistributedWithApplication(false,"infoPages","aboutBox.htm")))
+			string path = FileLocator.GetFileDistributedWithApplication(true,"infoPages","aboutBox-"+LocalizationManager.UILanguageId+".htm");
+			if (String.IsNullOrEmpty(path))
+			{
+				path = FileLocator.GetFileDistributedWithApplication(false,"infoPages","aboutBox.htm");
+			}
+			using(var dlg = new Palaso.UI.WindowsForms.SIL.SILAboutBox(path))
 			{
 				dlg.ShowDialog();
 			}
@@ -332,7 +476,11 @@ namespace Bloom.Workspace
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages","0 Release Notes.htm"));
+			var path = FileLocator.GetFileDistributedWithApplication("ReleaseNotes.md");
+			using (var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.Bloom, path))
+			{
+				dlg.ShowDialog();
+			}
 		}
 
 		private void _makeASuggestionMenuItem_Click(object sender, EventArgs e)
@@ -346,11 +494,6 @@ namespace Bloom.Workspace
 		private void OnHelpButtonClick(object sender, MouseEventArgs e)
 		{
 			HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
-		}
-
-		private void deepBloomPaperToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", "Deep Bloom.pdf"));
 		}
 
 		private void _showLogMenuItem_Click(object sender, EventArgs e)
@@ -406,14 +549,91 @@ namespace Bloom.Workspace
 
 		private void _checkForNewVersionMenuItem_Click(object sender, EventArgs e)
 		{
-			//_sparkleApplicationUpdater.CheckForUpdatesAtUserRequest();
+			if (ApplicationUpdateSupport.BloomUpdateInProgress)
+			{
+				//enhance: ideally, what this would do is show a toast of whatever it is squirrel is doing: checking, downloading, waiting for a restart.
+				MessageBox.Show(this,
+					LocalizationManager.GetString("CollectionTab.UpdateCheckInProgress",
+						"Bloom is already working on checking for updates."));
+				return;
+			}
+			if (Debugger.IsAttached)
+			{
+				MessageBox.Show(this, "Sorry, you cannot check for updates from the debugger.");
+			}
+			else
+			{
+				ApplicationUpdateSupport.CheckForASquirrelUpdate(ApplicationUpdateSupport.BloomUpdateMessageVerbosity.Verbose,
+					newInstallDir => RestartBloom(newInstallDir), Settings.Default.AutoUpdate);
+			}
 		}
 
+		private void RestartBloom(string newInstallDir)
+		{
+			Control ancestor = Parent;
+			while (ancestor != null && !(ancestor is Shell))
+				ancestor = ancestor.Parent;
+			if (ancestor == null)
+				return;
+			var shell = (Shell) ancestor;
+			var pathToNewExe = Path.Combine(newInstallDir, Path.ChangeExtension(Application.ProductName, ".exe"));
+			if (!File.Exists(pathToNewExe))
+				return; // aargh!
+			shell.QuitForVersionUpdate = true;
+			Process.Start(pathToNewExe);
+			Thread.Sleep(2000);
+			shell.Close();
+		}
 
+		private static void OpenInfoFile(string fileName)
+		{
+			Process.Start(FileLocator.GetFileDistributedWithApplication("infoPages", fileName));
+		}
+
+		private void keyBloomConceptsMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenInfoFile("KeyBloomConcepts.pdf");
+		}
+
+		private void buildingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenInfoFile("Building and Distributing Reader Templates in Bloom.pdf");
+		}
+
+		private void usingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
+		{
+			OpenInfoFile("Using Bloom Reader Templates.pdf");
+		}
+
+		private void _reportAProblemMenuItem_Click(object sender, EventArgs e)
+		{
+			using (var dlg = _problemReportDialogFactory(this))
+			{
+				dlg.ShowDialog();
+			}
+		}
+
+		private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
+		{
+			var path = FileLocator.GetFileDistributedWithApplication(false,"infoPages", "TrainingVideos-en.md");
+			//enhance: change the name of this class in Palaso to just "MarkDownDialog"
+			using(var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.Bloom, path))
+			{
+				dlg.Text = LocalizationManager.GetString("HelpMenu.trainingVideos", "Training Videos");
+				dlg.ShowDialog();
+			}
+		}
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer
 	{
 		protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { }
+
+		protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+		{
+			// this is needed, especially on Linux
+			e.SizeTextRectangleToText();
+			base.OnRenderItemText(e);
+		}
 	}
 }

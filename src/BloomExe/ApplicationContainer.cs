@@ -7,8 +7,8 @@ using Bloom.ToPalaso;
 using System.Linq;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
-using NetSparkle;
 using Palaso.Reporting;
+using System.Windows.Forms;
 
 
 namespace Bloom
@@ -33,28 +33,7 @@ namespace Bloom
 				builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
 					.Where(t => t.GetInterfaces().Contains(typeof(ICommand))).InstancePerLifetimeScope();
 
-				builder.Register<Sparkle>(c =>
-				{
-					string url;
-					try
-					{
-						var updateTable = new UpdateVersionTable();
-						url = updateTable.GetAppcastUrl();
-					}
-					catch (Exception)
-					{
-						url = "";
-						Logger.WriteEvent("Could not retrieve UpdateVersionTable from the internet");
-					}
-					var s =new Sparkle(url,Resources.Bloom);
-					s.CustomInstallerArguments = "/qb";
-					s.DoLaunchAfterUpdate = false;
-					return s;
-				}).InstancePerLifetimeScope();
-
-
 				builder.Register(c => LocalizationManager).SingleInstance();
-				builder.Register(c => new DownloadOrderList()).SingleInstance();
 
 				if (Settings.Default.MruProjects==null)
 				{
@@ -64,11 +43,19 @@ namespace Bloom
 
 				//this is to prevent some problems we were getting while waiting for a browser to navigate and being forced to call Application.DoEvents().
 				//HtmlThumbnailer & ConfigurationDialog, at least, use this.
-				builder.Register(c => new MonitorTarget()).InstancePerLifetimeScope();
+				builder.Register(c => new NavigationIsolator()).InstancePerLifetimeScope();
 
-				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(c.Resolve<MonitorTarget>())).SingleInstance();
+				builder.Register<HtmlThumbNailer>(c => new HtmlThumbNailer(c.Resolve<NavigationIsolator>())).SingleInstance();
 
 				_container = builder.Build();
+
+				Application.ApplicationExit += OnApplicationExit;
+			}
+
+			private void OnApplicationExit(object sender, EventArgs e)
+			{
+				Application.ApplicationExit -= OnApplicationExit;
+				Dispose();
 			}
 
 			public OpenAndCreateCollectionDialog OpenAndCreateCollectionDialog()
@@ -78,17 +65,15 @@ namespace Bloom
 
 			public LocalizationManager LocalizationManager;
 
-			public DownloadOrderList DownloadOrderList
-			{
-				get { return _container.Resolve<DownloadOrderList>(); }
-			}
-
 			public HtmlThumbNailer HtmlThumbnailer { get { return _container.Resolve<HtmlThumbNailer>();}}
 
 			public void Dispose()
 			{
-				_container.Dispose();
+				if (_container != null)
+					_container.Dispose();
 				_container = null;
+
+				GC.SuppressFinalize(this);
 			}
 
 			public ProjectContext CreateProjectContext(string projectPath)

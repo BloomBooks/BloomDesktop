@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
@@ -12,6 +14,7 @@ using Palaso.TestUtilities;
 
 namespace BloomTests.Book
 {
+	[TestFixture]
 	public class BookCollectionTests
 	{
 		private BookCollection _collection;
@@ -23,21 +26,29 @@ namespace BloomTests.Book
 		{
 			Palaso.Reporting.ErrorReport.IsOkToInteractWithUser = false;
 			_folder  =new TemporaryFolder("BookCollectionTests");
-			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[] {}), ProjectContext.GetFactoryFileLocations(), ProjectContext.GetFoundFileLocations());
+			_fileLocator = new BloomFileLocator(new CollectionSettings(), new XMatterPackFinder(new string[] {}), ProjectContext.GetFactoryFileLocations(),
+				ProjectContext.GetFoundFileLocations(), ProjectContext.GetAfterXMatterFileLocations());
 			_collection = new BookCollection(_folder.Path, BookCollection.CollectionType.TheOneEditableCollection, new BookSelection());
 		}
 
-		 Bloom.Book.Book BookFactory(BookInfo bookInfo, IBookStorage storage, bool editable)
-		 {
-			 return new Bloom.Book.Book(bookInfo,  storage, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"),  Language1Iso639Code = "xyz" }), null,
-													  new PageSelection(),
-													  new PageListChangedEvent(), new BookRefreshEvent());
-		 }
+		Bloom.Book.Book BookFactory(BookInfo bookInfo, IBookStorage storage, bool editable)
+		{
+			return new Bloom.Book.Book(bookInfo,  storage, null, new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_folder.Path, "test"),  Language1Iso639Code = "xyz" }), null,
+													new PageSelection(),
+													new PageListChangedEvent(), new BookRefreshEvent());
+		}
 
-		 BookStorage BookStorageFactory(string folderPath)
-		 {
-			 return new BookStorage(folderPath,_fileLocator, new BookRenamedEvent(), new CollectionSettings());
-		 }
+		BookStorage BookStorageFactory(string folderPath)
+		{
+			return new BookStorage(folderPath,_fileLocator, new BookRenamedEvent(), new CollectionSettings());
+		}
+
+		private void AddBook()
+		{
+			string path = _folder.Combine("alpha");
+			Directory.CreateDirectory(path);
+			File.WriteAllText(Path.Combine(path, "alpha.htm"), @"<html></html>");
+		}
 
 		[Test]
 		public void DeleteBook_FirstBookInEditableCollection_RemovedFromCollection()
@@ -51,8 +62,6 @@ namespace BloomTests.Book
 			Assert.IsFalse(Directory.Exists(bookFolder));
 		}
 
-
-
 		[Test]
 		public void DeleteBook_FirstBookInEditableCollection_RaisesCollectionChangedEvent()
 		{
@@ -61,13 +70,6 @@ namespace BloomTests.Book
 			_collection.CollectionChanged+= (x,y)=>triggered=true;
 			_collection.DeleteBook(_collection.GetBookInfos().First());
 			Assert.IsTrue(triggered);
-		}
-
-		private void AddBook()
-		{
-			string path = _folder.Combine("alpha");
-			Directory.CreateDirectory(path);
-			File.WriteAllText(Path.Combine(path,"alpha.htm"), @"<html></html>");
 		}
 
 		[Test]
@@ -115,6 +117,22 @@ namespace BloomTests.Book
 			collection.InsertBookInfo(infoNew);
 			Assert.That(state[2], Is.EqualTo(infoNew), "book info should replace existing book");
 			Assert.That(state, Has.Count.EqualTo(4));
+		}
+
+		[Test]
+		public void WatchDirectory_CausesNotification_OnAddFile()
+		{
+			var temp = new TemporaryFolder("BookCollectionWatch");
+			var collection = new BookCollection(temp.Path, BookCollection.CollectionType.SourceCollection, null);
+			collection.WatchDirectory();
+			bool gotNotification = false;
+			collection.FolderContentChanged += (sender, args) =>
+			{
+				gotNotification = true;
+			};
+			File.WriteAllText(Path.Combine(temp.Path, "somefile"), @"This is some test data");
+			// It takes a little time to get the notification. This tells NUnit to try every 20ms for up to 1s.
+			Assert.That(() => gotNotification, Is.True.After(1000, 20));
 		}
 	}
 }

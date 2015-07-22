@@ -5,8 +5,12 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+#if !__MonoCS__
+using IWshRuntimeLibrary;
+#endif
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
+using File = System.IO.File;
 
 namespace Bloom.Collection
 {
@@ -75,7 +79,6 @@ namespace Bloom.Collection
 				return;
 
 			Logger.WriteEvent("After BookStorage.DeleteBook({0})", bookInfo.FolderPath);
-			//ListOfBooksIsOutOfDate();
 			Debug.Assert(_bookInfos.Contains(bookInfo));
 			_bookInfos.Remove(bookInfo);
 
@@ -98,17 +101,13 @@ namespace Bloom.Collection
 
 		}
 
-
-		private void ListOfBooksIsOutOfDate()
-		{
-			_bookInfos = null;
-		}
-
 		public virtual IEnumerable<Book.BookInfo> GetBookInfos()
 		{
 			if (_bookInfos == null)
 			{
+				_watcherIsDisabled = true;
 				LoadBooks();
+				_watcherIsDisabled = false;
 			}
 
 			return _bookInfos;
@@ -124,7 +123,9 @@ namespace Bloom.Collection
 			{
 				if (Path.GetFileName(folder.FullName).StartsWith("."))//as in ".hg"
 					continue;
-				if (Path.GetFileName(folder.FullName).ToLower().Contains("xmatter"))
+				if (Path.GetFileName(folder.FullName).ToLowerInvariant().Contains("xmatter"))
+					continue;
+				if(File.Exists(Path.Combine(folder.FullName, ".bloom-ignore")))
 					continue;
 				AddBookInfo(folder.FullName);
 			}
@@ -189,5 +190,52 @@ namespace Bloom.Collection
 		}
 
 		public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
+
+		private FileSystemWatcher _watcher;
+		/// <summary>
+		/// Watch for changes to your directory (currently just additions). Raise CollectionChanged if you see anything.
+		/// </summary>
+		public void WatchDirectory()
+		{
+			_watcher = new FileSystemWatcher();
+			_watcher.Path = PathToDirectory;
+			// The default filter, LastWrite|FileName|DirectoryName, is probably OK.
+			// Watch everything for now.
+			// watcher.Filter = "*.txt";
+			_watcher.Created += WatcherOnChange;
+			_watcher.Changed += WatcherOnChange;
+
+			// Begin watching.
+			_watcher.EnableRaisingEvents = true;
+		}
+
+		/// <summary>
+		/// This could plausibly be a Dispose(), but I don't want to make BoolCollection Disposable, as most of them don't need it.
+		/// </summary>
+		public void StopWatchingDirectory()
+		{
+			if (_watcher != null)
+			{
+				_watcher.Dispose();
+				_watcher = null;
+			}
+		}
+
+		public event EventHandler<ProjectChangedEventArgs> FolderContentChanged;
+		private bool _watcherIsDisabled = false;
+
+		private void WatcherOnChange(object sender, FileSystemEventArgs fileSystemEventArgs)
+		{
+			if (_watcherIsDisabled)
+				return;
+			_bookInfos = null; // Possibly obsolete; next request will update it.
+			if (FolderContentChanged != null)
+				FolderContentChanged(this, new ProjectChangedEventArgs() { Path = fileSystemEventArgs.FullPath });
+		}
+	}
+
+	public class ProjectChangedEventArgs : EventArgs
+	{
+		public string Path { get; set; }
 	}
 }

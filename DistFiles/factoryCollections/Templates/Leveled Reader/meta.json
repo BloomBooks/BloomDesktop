@@ -1,0 +1,8 @@
+{
+"bookInstanceId":"ea43ce61-a752-429d-ad1a-ec282db33328",
+"suitableForMakingShells":"true",
+"suitableForVernacularLibrary":"true",
+"bookLineage":"056B6F11-4A6C-4942-B2BC-8861E62B03B3",
+"tools":[{"name":"leveledReader","enabled":true}],
+"currentTool":"leveledReader"
+}

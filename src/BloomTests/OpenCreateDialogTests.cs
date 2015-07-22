@@ -18,7 +18,7 @@ namespace BloomTests.ToPalaso
 			var mru = new MostRecentPathsList();
 			foreach (var dir in Directory.GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections))
 			{
-				foreach (var path in Directory.GetFiles(dir, "*.BloomCollection"))
+				foreach (var path in Directory.GetFiles(dir, "*.bloomCollection"))
 				{
 					mru.AddNewPath(path);
 					break;
@@ -31,5 +31,4 @@ namespace BloomTests.ToPalaso
 		}
 
 	}
-
 }

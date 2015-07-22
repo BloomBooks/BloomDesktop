@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
 using Bloom.Collection;
+using L10NSharp;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Reporting;
@@ -49,10 +51,8 @@ namespace Bloom.Book
 		{
 			Logger.WriteEvent("BookStarter.CreateBookOnDiskFromTemplate({0}, {1})", sourceBookFolder, parentCollectionPath);
 
-			//TODO: is this meta value at odds with with data-book="bookTitle" somewhere in the book?
-			//need to figure out the pro's cons of each approach. Right now, I can't think of why we need the special
-			// defaultNameForDerivedBooks, but maybe there is a reason. Maybe it should be for templates, not for shells?
-
+			// We use the "initial name" to make the intial copy, and it gives us something
+			//to name the folder and file until such time as the user enters a title in for the book.
 			string initialBookName = GetInitialName(sourceBookFolder, parentCollectionPath);
 			var newBookFolder = Path.Combine(parentCollectionPath, initialBookName);
 			CopyFolder(sourceBookFolder, newBookFolder);
@@ -81,7 +81,7 @@ namespace Bloom.Book
 		private string GetPathToHtmlFile(string folder)
 		{
 			var candidates = from x in Directory.GetFiles(folder, "*.htm")
-							 where !(x.ToLower().EndsWith("configuration.htm"))
+							 where !(x.ToLowerInvariant().EndsWith("configuration.htm"))
 							 select x;
 			if (candidates.Count() == 1)
 				return candidates.First();
@@ -107,6 +107,8 @@ namespace Bloom.Book
 		private string SetupNewDocumentContents(string sourceFolderPath, string initialPath)
 		{
 			var storage = _bookStorageFactory(initialPath);
+			bool usingTemplate = storage.MetaData.IsSuitableForMakingShells;
+
 			var bookData = new BookData(storage.Dom, _collectionSettings, null);
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
 
@@ -139,7 +141,7 @@ namespace Bloom.Book
 
 			SetLineageAndId(storage, sourceFolderPath);
 
-			SetBookTitle(storage, bookData);
+			SetBookTitle(storage, bookData, usingTemplate);
 
 
 
@@ -242,41 +244,39 @@ namespace Bloom.Book
 			}
 		}
 
-		private static void SetBookTitle(BookStorage storage, BookData bookData)
+		private static void SetBookTitle(BookStorage storage, BookData bookData, bool usingTemplate)
 		{
-//NB: no multi-lingual name suggestion ability yet
+			//This is what we were trying to do: there was a defaultNameForDerivedBooks meta tag in the html
+			//which had no language code. It worked fine for English, e.g., naming new English books
+			//"My Book" or "My Dicionary" or whatever.
+			//But in other cases, it actually hurt becuase that English name would be hidden down in the new
+			//book, where the author wouldn't see it. But some consumer, using English, would see it, and
+			//"My Book" is a pretty dumb name for tha carefully prepared book to be listed under.
+			//
+			//Now, if we are making this book from a shell book, we can keep whatever (title,language) pairs it has.
+			//Those will be just fine, for example, if we have English as one of our national langauges and so get
+			// "vaccinations" for free wihtout having to type that in again.
+			//
+			//But if we are making this from a *template*, then we *don't* want to keep the various ways to say the
+			//name of the template. Seeing "Basic Book" as the name of a resulting shell is not helpful.
 
-			//otherwise, the case where there is no defaultNameForDerivedBooks, we just want to use the names
-			//that the shell used, e.g. "Vaccinations".
-			//We don't have to do anything special to get that.
-			string kdefaultName = null;
-			var nameSuggestion = storage.Dom.GetMetaValue("defaultNameForDerivedBooks", kdefaultName);
-//	        var nameSuggestion = storage.Dom.SafeSelectNodes("//head/meta[@name='defaultNameForDerivedBooks']");
-
-			if (nameSuggestion != null)
-			{
-				bookData.Set("bookTitle", nameSuggestion, "en");
-				storage.MetaData.Title = nameSuggestion;
-			}
+			//We just don't have a use for this at all anymore: nice idea, doesn't really work:
 			storage.Dom.RemoveMetaElement("defaultNameForDerivedBooks");
 
-//	        //var name = "New Book"; //shouldn't rarel show up, because it will be overriden by the meta tag
-//	        if (nameSuggestion.Count > 0)
-//	        {
-//	            var metaTag = (XmlElement) nameSuggestion[0];
-//	            var name = metaTag.GetAttribute("content");
-//	            bookData.SetDataDivBookVariable("bookTitle", name, "en");
-//	            metaTag.ParentNode.RemoveChild(metaTag);
-//	        }
-//	        else
-//	        {
-//
-//	        }
+			// Clear these out let other code set again when there is a real title.
+			storage.MetaData.Title = "";
+			storage.Dom.Title = "";
+
+			//If we're making a book from a template, remove all the titles in all languages
+			if(usingTemplate)
+			{
+				bookData.RemoveAllForms("bookTitle");
+			}
 		}
 
 		private void InjectXMatter(string initialPath, BookStorage storage, Layout sizeAndOrientation)
 		{
-//now add in the xmatter from the currently selected xmatter pack
+			//now add in the xmatter from the currently selected xmatter pack
 			if (!TestingSoSkipAddingXMatter)
 			{
 				var data = new DataSet();
@@ -347,15 +347,17 @@ namespace Bloom.Book
 			//but things from Basic Book are normally not.
 			var x = GetMetaValue(storage.Dom, "DerivativesAreSuitableForMakingShells", "false");
 #else
-			var x = "false";
+			var x = false;
 #endif
-			storage.Dom.UpdateMetaElement("SuitableForMakingShells", x);
+			storage.MetaData.IsSuitableForMakingShells = x;
 		}
 
 
 		public static void SetupPage(XmlElement pageDiv, CollectionSettings collectionSettings, string contentLanguageIso1, string contentLanguageIso2)//, bool inShellMode)
 		{
 			TranslationGroupManager.PrepareElementsInPageOrDocument(pageDiv, collectionSettings);
+
+			SetLanguageForElementsWithMetaLanguage(pageDiv, collectionSettings);
 
 			// a page might be "extra" as far as the template is concerned, but
 			// once a page is inserted into book (which may become a shell), it's
@@ -364,7 +366,44 @@ namespace Bloom.Book
 			ClearAwayDraftText(pageDiv);
 	   }
 
+		/// <summary>
+		/// In xmatter, text fields are normally labeled with a "meta" language code, like "N1" for first national language.
+		/// This method detects those and then looks them up, returning the actual language code in use at the moment.
+		/// </summary>
+		/// <remarks>This is a little uncomfortable in this class, as this feature is not currently used in any
+		/// bloom-translationGroup elements.
+		/// </remarks>
+		public static void SetLanguageForElementsWithMetaLanguage(XmlNode elementOrDom, CollectionSettings settings)
+		{
+			foreach (XmlElement element in elementOrDom.SafeSelectNodes(".//*[@data-metalanguage]"))
+			{
+				string lang = "";
+				string metaLanguage = element.GetStringAttribute("data-metalanguage").Trim();
+				switch (metaLanguage)
+				{
+					case "V":
+						lang = settings.Language1Iso639Code;
+						break;
+					case "N1":
+						lang = settings.Language2Iso639Code;
+						break;
+					case "N2":
+						lang = settings.Language3Iso639Code;
+						break;
+					default:
+						var msg = "Element called for meta language '" + metaLanguage + "', which is unrecognized.";
+						Debug.Fail(msg);
+						Logger.WriteEvent(msg);
+						continue;
+						break;
+				}
+				element.SetAttribute("lang", lang);
 
+				// As an aside: if the field also has a class "bloom-copyFromOtherLanguageIfNecessary", then elsewhere we will copy from the old
+				// national language (or regional, or whatever) to this one if necessary, so as not to lose what they had before.
+
+			}
+		}
 		public static void SetupIdAndLineage(XmlElement parentPageDiv, XmlElement childPageDiv)
 		{
 			//NB: this works even if the parent and child are the same, which is the case when making a new book
@@ -380,21 +419,24 @@ namespace Bloom.Book
 			}
 		}
 
-
-
-
-
 		private string GetInitialName(string sourcePath, string parentCollectionPath)
 		{
 			var storage = _bookStorageFactory(sourcePath);
-			var name = storage.Dom.GetMetaValue("defaultNameForDerivedBooks",  Path.GetFileName(sourcePath));
+			/* we're experimenting with doing away with defaultNameForDerivedBooks
+				var name = storage.Dom.GetMetaValue("defaultNameForDerivedBooks",  "Book");
+				if (name == "My Book") //some older stuff has this
+					name = "Book";
+			*/
+			var name = LocalizationManager.GetString("EditTab.NewBookName", "Book",
+					"Default file and folder name when you make a new book, but haven't give it a title yet.");
+
 			int i = 0;
 			string suffix = "";
 
 			while (Directory.Exists(Path.Combine(parentCollectionPath, name+suffix)))
 			{
 				++i;
-				suffix = i.ToString();
+				suffix = i.ToString(CultureInfo.InvariantCulture);
 			}
 			return name+suffix;
 		}
@@ -406,9 +448,12 @@ namespace Bloom.Book
 			foreach (var filePath in Directory.GetFiles(sourcePath))
 			{
 				//better to not just copy the old thumbnail, as the on in the library may well need to look different
-				if (Path.GetFileNameWithoutExtension(filePath).ToLower() == "thumbnail")
+				if (Path.GetFileNameWithoutExtension(filePath).ToLowerInvariant() == "thumbnail")
 					continue;
 				if (Path.GetFileNameWithoutExtension(filePath).StartsWith(".")) //.guidsForInstaller.xml
+					continue;
+				var ext = Path.GetExtension(filePath).ToLowerInvariant();
+				if (new String[] {".jade", ".less"}.Any(ex => ex == ext))
 					continue;
 				File.Copy(filePath, Path.Combine(destinationPath, Path.GetFileName(filePath)));
 			}

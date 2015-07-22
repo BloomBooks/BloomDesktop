@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Diagnostics;
+using System.IO;
 
 namespace Bloom
 {
 	class ResolveShortcut
 	{
+#if !__MonoCS__
 		//from http://stackoverflow.com/questions/139010/how-to-resolve-a-lnk-in-c
 		#region Signitures imported from http://pinvoke.net
-
-		[DllImport("shfolder.dll", CharSet = CharSet.Auto)]
-		internal static extern int SHGetFolderPath(IntPtr hwndOwner, int nFolder, IntPtr hToken, int dwFlags, StringBuilder lpszPath);
 
 		[Flags()]
 		enum SLGP_FLAGS
@@ -167,10 +167,11 @@ namespace Bloom
 		}
 
 		#endregion
-
+#endif
 
 		public static string Resolve(string filename)
 		{
+#if !__MonoCS__
 			ShellLink link = new ShellLink();
 			((IPersistFile)link).Load(filename, STGM_READ);
 			// TODO: if I can get hold of the hwnd call resolve first. This handles moved and renamed files.
@@ -179,6 +180,12 @@ namespace Bloom
 			WIN32_FIND_DATAW data = new WIN32_FIND_DATAW();
 			((IShellLinkW)link).GetPath(sb, sb.Capacity, out data, 0);
 			return sb.ToString();
+#else
+			if (!File.Exists(filename))
+				return string.Empty;
+
+			return File.ReadAllText(filename);
+#endif
 		}
 	}
 }

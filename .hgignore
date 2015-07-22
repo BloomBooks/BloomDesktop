@@ -33,8 +33,10 @@ DistFiles/factoryCollections/Templates/BasicBook/languageDisplay.css
 **/Sample Shells/**/previewMode.css
 **/Sample Shells/**/languageDisplay.css
 **/Sample Shells/**/basePage.css
+**/Sample Shells/**/origami.css
 **/Templates/**/previewMode.css
 **/Templates/**/basePage.css
+**/Templates/**/origami.css
 Acorns*
 _NCrunch*
 *.vsp
@@ -65,7 +67,6 @@ lib/wkhtmltopdf-*.zip
 .nuget/NuGet.exe
 LibChorus.*
 build/Palaso.BuildTasks.dll*
-lib/failed update of AeroWizard Modified for dotnet 4 client/*
 *.userprefs
 Downloads/
 Bloom Q&A SIL Literacy Oct 2013.pdf
@@ -87,4 +88,6 @@ DistFiles/ReleaseNotes.html
 ReadMe_*.html
 B3.sln
 B2.sln
+node_modules/*
 *.usertasks
+Andika-R.ttf

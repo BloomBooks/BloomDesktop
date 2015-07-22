@@ -18,7 +18,6 @@ namespace Bloom.Edit
 		private bool _inSelectionAlready;
 		private bool _intentionallyChangingSelection;
 
-
 		private ListViewItem _currentDraggingItem;
 		private ListViewItem _currentTarget;
 		private Pen _boundsPen;
@@ -141,11 +140,11 @@ namespace Bloom.Edit
 
 		public void UpdateThumbnailAsync(IPage page)
 		{
-			XmlDocument pageDom = page.Book.GetPreviewXmlDocumentForPage(page).RawDom;
+			var pageDom = page.Book.GetPreviewXmlDocumentForPage(page);
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
 			{
 				BackgroundColor = Palette.TextAgainstDarkBackground,
-				DrawBorderDashed = false,
+				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid,
 				CenterImageUsingTransparentPadding = true
 			};
 			Thumbnailer.GetThumbnailAsync(String.Empty, page.Id, pageDom, thumbnailOptions, image => RefreshOneThumbnailCallback(page, image),
@@ -175,6 +174,17 @@ namespace Bloom.Edit
 		private void RefreshOneThumbnailCallback(IPage page, Image image)
 		{
 			if (IsDisposed)
+				return;
+			// This guards against a bizarre situation we don't fully understand which arises when switching UI language (BL-221).
+			// In this situation, it appears that the ThumbnailList is in some sort of zombie state...its _listView has a handle,
+			// but it doesn't. No handle causes InvokeRequired to return false, but the ListView does require invoke and throws
+			// when we try to do anything with it.
+			// We tried a version that used Invoke on the listView, but got even weirder problems.
+			// Giving up when there is no handle doesn't seem to suppress thumbnail generation, so somehow things must get back
+			// into a good state.
+			// If you think of trying something else, please test carefully the scenario described in BL-221, and also that you can
+			// switch back to English without cross-thread exceptions being thrown.
+			if (!IsHandleCreated)
 				return;
 			if (InvokeRequired)
 			{
@@ -440,7 +450,25 @@ namespace Bloom.Edit
 					Thumbnailer.PageChanged(pageId);
 			}
 		}
+
+		public new bool Enabled
+		{
+			set
+			{
+				if (!value)
+				{
+					var panel = new TransparentPanel("disabled", _listView);
+					Controls.Add(panel);
+					panel.BringToFront();
+				}
+				else
+				{
+					Controls.RemoveByKey("disabled");
+				}
+			}
+		}
 	}
+
 
 	/// <summary>
 	/// This makes a list view act, well, like one would expect; the items

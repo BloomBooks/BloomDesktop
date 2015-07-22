@@ -1,4 +1,310 @@
-﻿## 2.0.1038 BETA 6 June 2014
+﻿
+## 3.2
+
+- Support new Decodable Readers workflow. Instead of defining a set of letters plus sight words for each Decodable Stage, Bloom now allows you to specify one or more text files of "Allowed Words".
+  - These must be simple, unicode text files. Other formats are not supported: Word, LibreOffice, Excel, etc.
+  - We have found that 1000 words works fine even on an old slow laptop. If you have much larger lists and a slow computer, there may be some lag while editing. Please let us know if this is a problem for anyone.
+  - Complex characters in unicode can be [coded in more than one way](https://en.wikipedia.org/wiki/Unicode_equivalence). At this point, if the word list has a word code in one way, and the text in the book was entered a different way, Bloom will not recognize the word.  Please let us know if this is a problem for anyone.
+
+- Bloom's Edit tab now always returns you the last page you were viewing in a book. This was a [UserVoice Request](https://bloombooks.uservoice.com/forums/153625-general/suggestions/6986831-open-to-the-last-edited-page-in-a-book)
+
+- "Source text bubbles" in shell books have received a much needed makeover, including real tabs in a drop-down list of languages for books that have many source languages.
+
+- In the set up dialog for Decodable Stages, Bloom now outlines letters from previous stages in orange. Previously, they were only bold and some users didn't notice them.
+
+- In the Collections tab, the selected book now displays a little triangle. Clicking on that shows a menu of things you can do with the book. More advanced items are still only available by right-clicking on the book.
+
+- That Book menu now offers a "Copy Book" command.
+
+
+## 3.1
+Version 3.1 was a disciplined sustained & effort to improve hundreds of "little things" that could confuse or block people in certain situations from getting books created, translated, or printed. It also represents the first version where the Linux (Trusty and Precise) version is very close to parity with the Windows version.
+
+## Important Notices
+
+### Andika Replaced By "Andika New Basic" 
+- Many Bloom collections use SIL's free "Andika" literacy font as their default typeface. When you create a PDF using Andika, styles such as bold, italic etc. are lost. This will happen with any font that doesn't include a real bold/italic/etc face. This problem is outside of our control at this time (we've reported it to Mozilla). Happily, SIL has released a subset of Andika named [Andika New Basic](http://scripts.sil.org/cms/scripts/page.php?item_id=Andika_New_Basic). Bloom now installs this font for you and uses it by default. If your language is not fully supported by Andika New Basic, please choose another font, ideally one which includes built-in bold and italic. You can test your font by using CTRL+B to make some text bold, then going to publish and looking to see if bold makes it through to the PDF.
+- Note, Bloom will automatically change the default font from Andika to Andika New Basic, if you have Andika set. It will only do this once, so if you choose to change it back to Andika, it won't keep changing it. Note also that Bloom will not attempt to change any custom styles you may have created. If you need bold/italics to show up in a custom style, you'll have to change away from Andika by hand.
+
+### Keyman 9
+- If you enable Keyman 9 while on a page, you'll need to switch to another page and back before you can type. If this is causing you problems, please [post a suggestion here](http://bloomlibrary.org/#/suggestions) for us to do more work on this.
+
+### Printing Quality
+- To get good printing reliability on Windows, install the [Free Adobe Reader](http://get.adobe.com/reader/enterprise/) software. On Linux, we are switching to the system's default way of printing PDFs (which is normally GhostScript). On Windows, having Adobe Reader installed will also take care of some problems with showing images in preview of the PDF.
+
+### The end of the line for Windows XP
+- Starting with Bloom 3.1, Bloom will no longer run on Windows XP. Sorry! As Microsoft has retired support for XP, it has become difficult for us to be limitted to program bits that work on XP. But Bloom 3.0 will continue to be available and works just fine. We don't expect there to be any problems with someone using Bloom 3.0 on XP using books created by other people using Bloom 3.1.
+
+## 3.1 Beta 3
+- Running the installer again does an uninstall/reinstall
+- Added privacy notice to "Report A Problem" dialog
+- Allow user to control which languages are advertised on bloomlibrary.org, when uploading
+- Show source language names even if they aren't part of the collection
+- Fixed incorrect margins in PDFs
+- Andika New Basics now part of Linux package
+- 61 other minor fixes/improvements
+
+## 3.1 Beta 2
+- Improved feedback during application updating
+- Various memory-use improvments (more to come)
+- Fix overlapping text bubbles
+- Fix page numbering
+- 52 other minor fixes/improvements
+- New faster installer with automatic incremental upgrades. This will be getting some more attention for the next beta, including a re-install capability.
+- Page thumbnails now show an "attention" icon if some text on the page overflows its box
+
+## 3.1 Beta 1
+- Includes the new "Andika New Basic" font, which includes real bold and italic faces. PDFs made with this show bold and italic, where PDFs created with "Andika" do not.
+- CTRL+Click does a paste, and the pasted material is cleaned up, removing the extraneous line breaks that you get when copying out of a PDF.
+- Window remembers un-maximized size and placement
+- New Indonesian localization
+- Updated Arabic, French, & Spanish localizations
+- Added description texts to Leveled and Decodable Reader templates
+- Added links to training videos in the Help menu
+- Book name now shown in the title bar
+- Higher quality creative commons logos
+- Warns if your collection is in Dropbox
+- Pasted images are now named "image1",2,3, etc.
+- Improved support for Paragraph-oriented fields (indention, numbers, prefixes) in hand-made templates.
+- Support for text wrapping around images and captions in hand-made templates.
+- When pasting large color images from Libre Office, automatically switch to jpeg if that will keep the file size small
+- Hover over an image to see its file name, size, and dimensions
+- We've reinstated integrations with the [Free Adobe Reader](http://get.adobe.com/reader/enterprise/) after the open source alternative we used in 3.0 proved unreliable. It is still available as a fall-back in situations where Adobe Reader is unavailable. On Linux, we are switching to the system's default way of printing (which is normally GhostScript).
+- In a field with the "RequireParagraphs" flag, pressing tab inserts an emspace instead of moving to the next tab.
+
+### Bloom 3.0 is the last version for Windows XP
+- Starting with Bloom 3.1, Bloom will require Windows Vista, 7, 8, 10, etc.
+### Fixes
+- Can now type with KeyMan 9 if (and only if) it was turned on before displaying the current page. In a future release we'll remove that requirement.
+- Fixed Booklet production of A6 Books
+- Make Format dialog more localizable
+- Fixed problem when deleting a box in a custom page.
+- Fixed Image License changes made directly in Bloom are lost
+- Fixed Text size is different on title page: "Language" is smaller than "Topic"
+- Fixed Vertical Scroll Bars showing prematurely on small boxes in custom page
+- Fixed insufficient space for French labels on thumbnails
+- Fixed Font size of "second language" Book Title is lost after re-opening
+- Many fixes related to book topic and different languages
+- Overflow detector misfires on right to left text.
+- Reinstated Chinese UI translation.
+- Bloom no longer saves metadata you enter back to the original image. Too dangerous.
+- Can choose TIFF images again.
+- Bolding or underlined parts of words would introduce unwanted spaces.
+- Stopped "Source Bubbles" from overlapping with other stuff by saying that unless the field takes up the full width of the page, only show the bubble when the cursor is in the field.
+- Fixed problem with changing the collection name.
+- Pasted images are now named "image 1", "image 2", etc., instead of having random names.
+- Vaccninations book had lost its Creative Commons license image.
+- Fixed problem with saving meta data into certain jpeg images.
+- [Decodable Reader] If you change the letters of a stage then close the dialog by clicking "OK", the accordion tool doesn't update to show the new letters
+- [Decodable Reader] If a letter is in a letter combination in current the stage, DR should not automatically allow its consituent letters
+- Bloom's feature of making white transparent makes pdfs look awful in some previewers.
+- Calendar Title Page font-changing widget in "Funding" box is non-functional
+- Fixed bold items not using the same font as its surroundings when styles are customized.
+- [Linux] Right-click on Main Tabs & other Menu Bar Selections causes focus shift
+- [Linux] Edit page (sometimes) needs multiple refreshes
+- [Linux] "Report A Problem" can't report directly, has to go through email.
+- [Linux] Art Of Reading instructions truncated
+- [Linux] Problem typing in Art Of Reading search box
+- [Linux] Some interfaces languages are listed multiple times.
+- [Linux] Double clicking on a BloomPack didn't run Bloom
+
+## 3.0.106 Version Stable Release
+- Fix problem with downloading Kande's story
+- Allow letters and sight words in Decodable Reader tool to be entered separated by commas
+- For tall scripts like Devanagari, automatically increase the minimum height of fields to the line height
+
+## 3.0.103 Version Stable Release
+- Added links to training videos in the Help Menu.
+
+## 3.0.102 Version Stable Release
+- Update French and Spanish User Interface localizations.
+- Add explanatory texts to decodable and leveled reader templates.
+- Fixed an error in the "Key Concepts" document.
+- Decodable reader will now complain about words with letter combinations.(like "ch") if they are defined but haven't been taught at the current level, but only the consituents (like "c" and "h") have.
+- Fix display of a page number count in leveled reader tool.
+
+## 3.0.101 Version Stable Release
+- Adds Thai User Interface localization
+- Adds Lao User Interface localization
+- Fixed rare error when a page is being saved
+
+## 3.0.100 Version Stable Release
+
+## 3.0.97 Beta
+- Update French UI Translation (thanks David Rowe)
+- When importing, Bloom no longer
+  - makes images transparent when importing.
+  - compresses images transparent when importing.
+  - saves copyright/license back to the original files
+- Fix crash after closing settings dialog when no book is selected
+- Fix insertion of unwanted space before bolded, underlined, and italicized portions of words
+- Fix creative commons license on Vaccinations sample shell
+
+### Fixes
+- Spaces are no longer inserted between bold or underlined parts of a word and the normal parts
+- Fixed a problem that prevent renaming a collection
+- Fixed Vaccination shell Creative Commons logo
+
+## 3.0.93 BETA
+
+### A couple known problems
+- If upgrading from Bloom 2, the Windows installer loses one of Bloom's files. It will now notify you that this happened and ask you do reinstall and choose "repair".
+- We discovered that books with very large illustrations (e.g. 5 mb color files) are breaking the PDF'ing system. Bloom now detects this and gives you pointers on how to work around the problem, until Bloom itself can do so, in the future.
+
+
+### Fixes
+- Fixed text in calendar day boxes
+- Calendar grid lines are now uniformly thin
+- Fixed a occasional crash when switching to a different user-interface language
+- Tweak xmatter stuff to ease creating custom xmatter from installer
+
+## 3.0.88 BETA
+
+- Users upgrading from Bloom 2 may need to uninstall first, or run the Bloom 3 installer twice. A message with instructions now appears if this is necessary.
+
+- [UserVoice Suggestion] Introduction of A6 Portrait option. **Feedback appreciated**
+
+### Front/Back Matter
+
+#### Cover Page
+- Fields on the Cover can now grow to fit however many lines you neeed, because...
+- The image on the Cover page  will now automatically shrink so that whatever text you need can fit
+- Front cover & title page can now show title in all 3 languages
+
+#### Title Page
+- [UserVoice Suggestion] Title page's funding box can now grow, to use for a cheap Table Of Contents if Needed
+
+#### Credits Page
+- The Credits page now has more room for acknowledgments
+- When selecting a Front/Back Matter pack in the Settings dialog, you can now read a short description of each one
+- When you select a different Front/Back Matter pack, existing books will automatically use it if appropriate
+
+#### Other Front/Back Matter
+- Trial of a Front/Back Matter pack for SIL Cameroon, which is like "Traditional" but includes the ISO 639 code of the language
+- Big Books now use the same Front/Back Matter pack as the rest of the collection. You can now delete the "instructions for teachers" page if you don't want it
+
+### Other
+- Big Books now include the "Custom" page template
+- Removed the "A5 Portrait Bottom Align" option
+- New shortcut keys (In the future we expect to introduce UI buttons for these things, but we are delayed because we need to do it without making the UI more complex):
+  - CTRL+R: right-align
+  - CTRL+L: left-align
+  - CTRL+SHIFT+E: center text
+  - ALT+CTRL+0: Normal
+  - ALT+CTRL+1: Heading 1
+  - ALT+CTRL+2: Heading 2
+
+### Fixes
+- Bloom will now be patient if Dropbox is temporarily locking the langaugedisplay.css file
+- Title page now updates immeditatley if you change country/province in Settings Dialog
+- Format dialog tooltips no longer make Source Bubbles disappear
+- Improved error messages when an html file can't be opened
+- Thai script is now larger in shell book source bubbles
+
+### Linux Fixes
+- Can now open book downloaded from Bloom Library
+- Fonts are now listed in alphabetical order
+- Crash due to deleted temporary html file has been fixed.
+- We are working on a problem typing in the "Report Problem" dialog box.
+
+## 3.0.80 BETA
+- Fix: "Open in Firefox" should now work even if you have spaces in the path
+- Fix: BigBook National Language title was missinga parenthesis
+- Fix: Was hard to insert an uppercase character using the long-press special character feature
+- Fix: "Update Book" messed up custom pages
+- Several Linux-only fixes 
+
+## 3.0.74 BETA
+
+- A new Front/Backmatter option is available, named "Traditional". This puts the credits page on the back of the title page, rather than the inside of the front cover. This is good in cases where you pay by the page imprint, rather than by pieces of paper. You can select it from Settings:Book Making:Front/Back Matter Pack. <s>Once you have chosen this, you won't see it on any existing books until you do these steps: In the Collection Tab, click on the little triangle, then select "Advanced: Do Updates of All Books".</s>
+## 3.0.72 BETA
+
+- More French coverage of UI
+- Better captioning of books with long names
+- Calendar now has smaller margins, more room for text in day boxes
+- Restored vertical centering in "just text" page
+
+### Known Issues
+- Fonts with modifiers like "Arial Narrow" cannot be shown. This appears to be a bug in Firefox (which is at the heart of Bloom). So for now we don't offer these fonts in the font-picking menu.
+
+## 3.0.70 BETA
+
+### New
+
+- More Right To Left support. If the Vernacular language is right-to-left, PDF Booklets will be ordered so that pages are ordered back-to-front (see Settings:Book Making).
+- New right-click menu on pages for removing and duplicating.
+- Language picker: when picking a language and there are more than 2 countries, now says, .e.g. "4 countries".
+- Language picker: when picking a language, you can now have major spelling differences and it will still find the language.
+
+### Fixes
+- Fixed "sticky" scrollbar on page template list and Art Of Reading gallery.
+- Fixed problems with opening books over a network (needs user testing in various environments, though).
+- Fixed problems with the front-cover language.
+- Fixed problem with booklet pdfs.
+- Fixed problem with downloading and then using book templates that are a collection of re-usable pages, e.g. Gleny's Water's Primer Template
+- Book colors will now always stay the same (until we add the option of selecting the color you want).
+- Many other small fixes
+
+### Known Issues
+- The gear-shaped button that brings up the Format box has positioning problems; we're working on a solution.
+
+## 3.0.69 BETA (Windows Only)
+
+- The Help menu now has has a "Report Problem" command.
+- Now installs the newly updated Andika version 5.
+- Fixed problem with "Booklet Insides" publishing option. 
+- Fixed several issues in the Format dialog.
+- Modifier keys no longer trigger the Special Characters popup.
+- Several other minor fixes.
+
+## 3.0.66 BETA (Windows Only)
+
+### Flexible Layouts and Styling
+- Use the new "Custom" page template to make your own unique page layouts.
+- Use "Duplicate" button to reuse your custom page within a book.
+- You can now set a default font family for each of the languages in a book.
+- You can now apply styles name (like Word / LibreOffice) to text boxes keep things consistent throughout the book
+- You can now set the font family, size, line spacing, word spacing, justification, border, and background of each text box, along with all other boxes with the same "style". Just click on the little "gear" icon in the lower left of a text box.
+
+### Improved PDF Making
+- Bloom now uses the same rendering engine for both editing and pdf-making, eliminating WYSIWYG glitches of previous versions.
+- New PDF engine renders fonts better.
+- Languages requiring Graphite Complex-non-roman script rendering are now supported.
+- Adobe Acrobat no longer needed to view PDFs in the Publish tab
+
+### Other
+- Holding down a key now shows a "Special Characters Panel" that lets you select from similar characters. Use you mouse, mouse wheel, or arrow keys to select the character you want (see screenshot below).
+- You can now right click on a book and export its contents to Word or Libre Office (most formatting will be lost).
+- Bloom's interface has new translations, in Arabic, Chinese, Tamil (India), Hindi (India), Telugu (India), and Kinyarwanda (Rwanda). French and Spanish translations have been updated.
+- Andika Font is now installed along with Bloom
+
+###Experimental Features in this release
+- Decodable Reader Tool helps you develop a series of books that introduce a few letters at a time.
+	* Reads a folder for texts you have placed there, and suggests words to the writer that are "decodable" at each stage.
+	* Words that are not appropriate for the current stage are highlighted.
+	* You can export a file detailing each decodable stage: letters, sight words, and available words to use.
+	* Thanks to Norbert Rennert for sharing code from his Synphony engine.
+  * See "Help: Building/User Reader Templates" for more information.
+- Leveled Reader Tool helps you develop books for readers at various levels of ability by setting limits on the number of words per sentence, page, and book.
+  * See "Help: Building/User Reader Templates" for more information.
+- New "Custom" page that lets you divide up the page into text and picture portions. You can then just use the page, or treat it like a template for other pages in the book.
+- Holding down a key now shows a "Special Characters Panel" that lets you select from similar characters.
+- Languages can be marked as Right-To-Left. However, changing the page order is still up to you, using a PDF editor like Adobe Acrobat (or maybe use the RTL option in PdfDroplet)?
+- Initial Linux Version (Precise and Trusty).
+
+### Known Bugs & Limitations
+- "A5Portrait Bottom Align" does not layout correctly in bilingual or trilingual mode [BL-46].
+- Page Template names are always shown in English.
+- Books with Graphite complex-non-roman scripts cannot be printed directly from Bloom yet. Instead, open the PDF in Adobe Reader and print from there.
+- Sample texts for use with the decodable reader must be saved as unicode text files.
+
+## 2.0 RELEASE October 2014
+
+## 2.0.1038 BETA 23 July 2014
+A4Landscape with "Picture on top" now gives 70% of the page to the picture, was previously 45%.
+
+
+## 2.0.1038 BETA 6 June 2014
 Added ability to have <p></p> edit boxes, rather than FF's <BR /> default, so you can do styling like paragraph indents. Needed for SIL-LEAD SHRP project.
 
 ## 2.0 1022 BETA 13 May 2014
@@ -7,7 +313,6 @@ Templates can now have a markdown "readme" for telling people about the template
 ## 2.0.1021 BETA 9 May 2014
 Can now publish books to books.bloomlibrary.org
 Can now get books at books.bloomlibrary.org and they will open in Bloom
-Can can font sizes of all similar books
 New Big Book template & Front matter
 Basic Book now auto-enlarges fonts if you make it A4Landscape (for making a5 books into Big Books)
 
@@ -459,13 +764,3 @@ A5 Wall Calendar now usable, with vernacular days and months. Could use a graphi
 ## 0.3: 24 Nov 2011
 In the image toolbox, you can now reuse metadata (license, copyright, illustrator) from the last image you edited.
 
-### Limitations
-This version has the following limitations (and probably many others). Feel free to suggest your priorities, especially if you're contributing to the Bloom project in some way :-)
-
-* The font is always Andika (if you have it).
-* All books are A5 size.
-* You can't control the cover color.
-* Diglots are not supported.
-* Right-To-Left languages are not supported (but I haven't seen what works and what doesn't)
-* If you have a pdf reader other than Adobe Acrobat set up to display PDFs in Firefox, that will also show up in the Publish tab of Bloom, and it might or might not work. PDF-XChange, for exmample, can make the screen quite complicated with toolbars, and doesn't auto-shrink to fit in the page.
-* You can't tweak the picture size, the text location, etc.

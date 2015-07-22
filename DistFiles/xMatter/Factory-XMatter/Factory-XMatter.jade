@@ -1,5 +1,5 @@
 
-include ../../jade/bloom-xmatter-mixins.jade
+include ../bloom-xmatter-mixins.jade
 
 doctype html
 html
@@ -11,6 +11,9 @@ html
 	body
 		+factoryStandard-outsideFrontCover
 		+factoryStandard-creditsInsideFrontCover
-		+factoryStandard-titlePage
+		// The important thing here, with countPageButDoNotShowNumber,
+		// is to get the left pages being even, else the professional publishing folks freak.
+		// Beyond that, it's not yet clear what is best, needs some research
+		+factoryStandard-titlePage.countPageButDoNotShowNumber
 		+factoryStandard-insideBackCover
 		+factoryStandard-outsideBackCover

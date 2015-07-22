@@ -4,9 +4,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
+using System.Linq;
 using System.Threading;
-using BloomTemp;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace Bloom.ImageProcessing
 {
@@ -20,13 +21,13 @@ namespace Bloom.ImageProcessing
 		private readonly BookRenamedEvent _bookRenamedEvent;
 		public int TargetDimension=500;
 		private Dictionary<string,string> _paths;
-		private TemporaryFolder _cacheFolder;
+		private string _cacheFolder;
 
 		public LowResImageCache(BookRenamedEvent bookRenamedEvent)
 		{
 			_bookRenamedEvent = bookRenamedEvent;
 			_paths = new Dictionary<string, string>();
-			_cacheFolder = new TemporaryFolder("Bloom");
+			_cacheFolder = Path.Combine(Path.GetTempPath(), "Bloom");
 			_bookRenamedEvent.Subscribe(OnBookRenamed);
 		}
 
@@ -48,6 +49,8 @@ namespace Bloom.ImageProcessing
 			//NB: this turns out to be dangerous. Without it, we still delete all we can, leave some files around
 			//each time, and then deleting them on the next run
 			//			_cacheFolder.Dispose();
+
+			GC.SuppressFinalize(this);
 		}
 
 		private void TryToDeleteCachedImages()
@@ -76,12 +79,16 @@ namespace Bloom.ImageProcessing
 
 		private DateTime GetModifiedDateTime(string path)
 		{
-			FileInfo f = new FileInfo(path);
+			var f = new FileInfo(path);
 			return f.LastWriteTimeUtc;
 		}
 
 		public string GetPathToResizedImage(string originalPath)
 		{
+			//don't mess with Bloom UI images
+			if (new[] {"/img/","placeHolder", "Button"}.Any(s => originalPath.Contains(s)))
+				return originalPath;
+
 			string resizedPath;
 			if(_paths.TryGetValue(originalPath, out resizedPath))
 			{
@@ -94,28 +101,31 @@ namespace Bloom.ImageProcessing
 					_paths.Remove(originalPath);
 				}
 			}
-
-			var original = Image.FromFile(originalPath);
-			try
+			using (var originalImage = PalasoImage.FromFile(originalPath))
 			{
-				if (original.Width > TargetDimension || original.Height > TargetDimension)
+				if (!originalPath.Contains("Button") && !ImageUtils.AppearsToBeJpeg(originalImage))
 				{
-					var maxDimension = Math.Max(original.Width, original.Height);
+					((Bitmap)originalImage.Image).MakeTransparent(Color.White); //instead of white, show the background color
+				}
+
+				if (originalImage.Image.Width > TargetDimension || originalImage.Image.Height > TargetDimension)
+				{
+					var maxDimension = Math.Max(originalImage.Image.Width, originalImage.Image.Height);
 					double shrinkFactor = (TargetDimension/(double) maxDimension);
 
-					var destWidth = (int) (shrinkFactor*original.Width);
-					var destHeight = (int) (shrinkFactor*original.Height);
+					var destWidth = (int) (shrinkFactor*originalImage.Image.Width);
+					var destHeight = (int) (shrinkFactor*originalImage.Image.Height);
 					using (var b = new Bitmap(destWidth, destHeight))
 					{
-						using (Graphics g = Graphics.FromImage((Image)b))
+						using (Graphics g = Graphics.FromImage((Image) b))
 						{
 							//in version 1.0, we used .NearestNeighbor. But if there is a border line down the right size (as is common for thumbnails that,
 							//are, for example, re-inserted into Teacher's Guides), then the line gets cut off. So I switched it to HighQualityBicubic
-							g.InterpolationMode = InterpolationMode.HighQualityBicubic;//.NearestNeighbor;//or smooth it: HighQualityBicubic
-							g.DrawImage(original, 0, 0, destWidth, destHeight);
+							g.InterpolationMode = InterpolationMode.HighQualityBicubic; //.NearestNeighbor;//or smooth it: HighQualityBicubic
+							g.DrawImage(originalImage.Image, 0, 0, destWidth, destHeight);
 						}
 
-						var temp = _cacheFolder.GetPathForNewTempFile(false, Path.GetExtension(originalPath));
+						var temp = Path.Combine(_cacheFolder, Path.GetRandomFileName() + Path.GetExtension(originalPath));
 
 
 						//Hatton July 2012:
@@ -125,8 +135,8 @@ namespace Bloom.ImageProcessing
 						//It's not clear why the temp/bloom directory isn't there... possibly it was there a moment ago
 						//but then some startup thread cleared and deleted it? (we are now running on a thread responding to the http request)
 
-						Exception error=null;
-						for (int i = 0; i < 5; i++ )//try up to five times, a second apart
+						Exception error = null;
+						for (int i = 0; i < 5; i++) //try up to five times, a second apart
 						{
 							try
 							{
@@ -136,7 +146,7 @@ namespace Bloom.ImageProcessing
 								{
 									Directory.CreateDirectory(Path.GetDirectoryName(temp));
 								}
-								b.Save(temp, original.RawFormat);
+								b.Save(temp, originalImage.Image.RawFormat);
 								break;
 							}
 							catch (Exception e)
@@ -144,19 +154,21 @@ namespace Bloom.ImageProcessing
 								Logger.WriteEvent("Error in LowResImage while trying to write image.");
 								Logger.WriteEvent(e.Message);
 								error = e;
-								Thread.Sleep(1000);//wait a second before trying again
+								Thread.Sleep(1000); //wait a second before trying again
 							}
 						}
-						if(error!=null)
+						if (error != null)
 						{
 							//NB: this will be on a non-UI thread, so it probably won't work well!
-							ErrorReport.NotifyUserOfProblem(error, "Bloom is having problem saving a low-res version to your temp directory, at "+temp+"\r\n\r\nYou might want to quit and restart Bloom. In the meantime, Bloom will try to use the full-res images.");
+							ErrorReport.NotifyUserOfProblem(error,
+								"Bloom is having problem saving a low-res version to your temp directory, at " + temp +
+								"\r\n\r\nYou might want to quit and restart Bloom. In the meantime, Bloom will try to use the full-res images.");
 							return originalPath;
 						}
 
 						try
 						{
-							_paths.Add(originalPath, temp);//remember it so we can reuse if they show it again, and later delete
+							_paths.Add(originalPath, temp); //remember it so we can reuse if they show it again, and later delete
 						}
 						catch (Exception)
 						{
@@ -171,10 +183,6 @@ namespace Bloom.ImageProcessing
 				{
 					return originalPath;
 				}
-			}
-			finally
-			{
-				original.Dispose();
 			}
 		}
 	}

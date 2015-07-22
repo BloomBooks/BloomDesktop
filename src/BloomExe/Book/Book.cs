@@ -8,18 +8,21 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
+using System.Web;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
+using L10NSharp;
 using MarkdownSharp;
 using Palaso.Code;
 using Palaso.Extensions;
 using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
+using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.Xml;
 using Image = System.Drawing.Image;
@@ -29,6 +32,14 @@ namespace Bloom.Book
 	public class Book
 	{
 		public delegate Book Factory(BookInfo info, IBookStorage storage);//autofac uses this
+		public static Color[] CoverColors = new Color[] { Color.FromArgb(228, 140, 132), Color.FromArgb(176, 222, 228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
+
+
+		//We only randomize the initial value for each run. Without it, we were making a lot 
+		// more red books than any other color, because the 
+		//first book for a given run would always be red, and people are unlikely to make more
+		//than one book per session.
+		private static int _coverColorIndex=new Random().Next(CoverColors.Length-1);
 
 		private readonly ITemplateFinder _templateFinder;
 		private readonly CollectionSettings _collectionSettings;
@@ -64,6 +75,7 @@ namespace Bloom.Book
 			BookRefreshEvent bookRefreshEvent)
 		{
 			BookInfo = info;
+			UserPrefs = UserPrefs.Load(Path.Combine(info.FolderPath, "book.userPrefs"));
 
 			Guard.AgainstNull(storage,"storage");
 
@@ -73,7 +85,7 @@ namespace Bloom.Book
 			_storage = storage;
 
 			//this is a hack to keep these two in sync (in one direction)
-			_storage.FolderPathChanged +=(x,y)=>BookInfo.FolderPath = _storage.FolderPath;
+			_storage.FolderPathChanged += _storage_FolderPathChanged;
 
 			_templateFinder = templateFinder;
 
@@ -86,6 +98,8 @@ namespace Bloom.Book
 			_bookData = new BookData(OurHtmlDom,
 					_collectionSettings, UpdateImageMetadataAttributes);
 
+			InjectStringListingActiveLanguagesOfBook(); 
+
 			if (IsEditable && !HasFatalError)
 			{
 				_bookData.SynchronizeDataItemsThroughoutDOM();
@@ -93,10 +107,32 @@ namespace Bloom.Book
 				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
 				OurHtmlDom.AddStyleSheet(@"languageDisplay.css");
 			}
-
+			// If it doesn't already have a cover color give it one.
+			if (OurHtmlDom.SafeSelectNodes("//head/style/text()[contains(., 'coverColor')]").Count == 0)
+			{
+				InitCoverColor();
+				if (info.IsEditable)
+				{
+					// make that cover color permanent!
+					// We don't use simply Save() because that does some extra work we don't need here
+					// and it causes at least one unit test to fail.
+					_storage.Save();
+				}
+			}
 			FixBookIdAndLineageIfNeeded();
 			_storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
+		}
+
+		void _storage_FolderPathChanged(object sender, EventArgs e)
+		{
+			BookInfo.FolderPath = _storage.FolderPath;
+			UserPrefs.UpdateFileLocation(_storage.FolderPath);
+		}
+
+		public static Color NextBookColor()
+		{
+			return CoverColors[_coverColorIndex++ % CoverColors.Length];
 		}
 
 		public CollectionSettings CollectionSettings { get { return _collectionSettings; }}
@@ -117,23 +153,54 @@ namespace Bloom.Book
 		{
 			get
 			{
-				var list = new List<string>();
-				list.Add(_collectionSettings.Language1Iso639Code);
-				if (_collectionSettings.Language2Iso639Code != null)
-					list.Add(_collectionSettings.Language2Iso639Code);
-				if (_collectionSettings.Language3Iso639Code != null)
-					list.Add(_collectionSettings.Language3Iso639Code);
-				list.Add("en");
-
 				var title = _bookData.GetMultiTextVariableOrEmpty("bookTitle");
-				var t = title.GetBestAlternativeString(list);
-				if(string.IsNullOrEmpty(t))
+				var display = title.GetExactAlternative(_collectionSettings.Language1Iso639Code);
+
+				if (string.IsNullOrEmpty(display))
 				{
-					return "Title Missing";
+					//the SIL-LEAD project, SHRP (around 2012-2016) had books that just had an English name, before we changed Bloom
+					//to not show English names. But the order was also critical. So we want those old books to go ahead and use their
+					//English names.
+					var englishTitle = title.GetExactAlternative("en").ToLowerInvariant();
+					var SHRPMatches = new string[] {"p1", "p2", "p3", "p4", "SHRP"};
+					var couldBeOldStyleUgandaSHRPBook = SHRPMatches.Any(m => englishTitle.Contains(m.ToLowerInvariant()));
+
+					//if this book is one of the ones we're editing in our collection, it really
+					//needs a title in our main language, it would be confusing to show a title from some other langauge
+					if(!couldBeOldStyleUgandaSHRPBook && (IsEditable || title.Empty))
+					{
+						display = LocalizationManager.GetString("CollectionTab.TitleMissing", "Title Missing",
+							"Shown as the thumbnail caption when the book doesn't have a title");
+					}
+					//but if this book is just in our list of sources, well then let's look through the names
+					//and try to get one that is likely to be helpful
+					else
+					{
+						var orderedPreferences = new List<string>();
+						orderedPreferences.Add(LocalizationManager.UILanguageId);
+
+						//already checked for this, previsouly. orderedPreferences.Add(_collectionSettings.Language1Iso639Code);
+						if (_collectionSettings.Language2Iso639Code != null)
+							orderedPreferences.Add(_collectionSettings.Language2Iso639Code);
+						if (_collectionSettings.Language3Iso639Code != null)
+							orderedPreferences.Add(_collectionSettings.Language3Iso639Code);
+
+						orderedPreferences.Add("en");
+						orderedPreferences.Add("fr");
+						orderedPreferences.Add("es");
+						display = title.GetBestAlternativeString(orderedPreferences);
+						if (string.IsNullOrWhiteSpace(display))
+						{
+							display = title.GetFirstAlternative();
+							Debug.Assert(!string.IsNullOrEmpty(display), "by our logic, this shouldn't possible");
+						}
+					}
 				}
-				t = t.Replace("<br />", " ").Replace("\r\n"," ").Replace("  "," ");
-				t = RemoveXmlMarkup(t);
-				return t;
+				// Handle both Windows and Linux line endings in case a file copied between the two
+				// ends up with the wrong one.
+				display = display.Replace("<br />", " ").Replace("\r\n"," ").Replace("\n", " ").Replace("  "," ");
+				display = RemoveXmlMarkup(display).Trim();
+				return display;
 			}
 		}
 
@@ -224,22 +291,22 @@ namespace Bloom.Book
 
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editMode.css").ToLocalhost());
-			if(LockedDown)
+			pageDom.AddStyleSheet("basePage.css");
+			pageDom.AddStyleSheet("editMode.css");
+			if (LockedDown)
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editTranslationMode.css").ToLocalhost());
-				pageDom.AddEditMode("translation");
+				pageDom.AddStyleSheet("editTranslationMode.css");
 			}
 			else
 			{
-				pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editOriginalMode.css").ToLocalhost());
-				pageDom.AddEditMode("original");
+				pageDom.AddStyleSheet("editOriginalMode.css");
 			}
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"editPaneGlobal.css").ToLocalhost());
+
+			AddCreationTypeAttribute(pageDom);
+
+			pageDom.AddStyleSheet("editPaneGlobal.css");
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
-			AddCoverColor(pageDom, CoverColor);
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _collectionSettings);
 			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _collectionSettings, _storage.GetFileLocator());
 			UpdateMultilingualSettings(pageDom);
@@ -248,16 +315,20 @@ namespace Bloom.Book
 
 		private void AddJavaScriptForEditing(HtmlDom dom)
 		{
-			dom.AddJavascriptFile(_storage.GetFileLocator().LocateFileWithThrow("bloomBootstrap.js").ToLocalhost());
+			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
+			dom.AddJavascriptFile("bookEdit/js/bloomBootstrap.js".ToLocalhost());
+
+			if (BookInfo.ReaderToolsAvailable)
+				dom.AddJavascriptFile("bookEdit/js/readerToolsBootstrap.js".ToLocalhost());
 		}
 
 
 		private void UpdateMultilingualSettings(HtmlDom dom)
 		{
-			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings.Language1Iso639Code,
-													 _collectionSettings.Language2Iso639Code,
-													 _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2,
+			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _collectionSettings, _collectionSettings.Language1Iso639Code, _bookData.MultilingualContentLanguage2,
 													 _bookData.MultilingualContentLanguage3);
+
+			BookStarter.SetLanguageForElementsWithMetaLanguage(dom.RawDom, _collectionSettings);
 		}
 
 		private HtmlDom GetHtmlDomWithJustOnePage(IPage page)
@@ -280,6 +351,23 @@ namespace Bloom.Book
 			return dom;
 		}
 
+		public HtmlDom GetHtmlDomReadyToAddPages(HtmlDom inputDom)
+		{
+			var headNode = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head");
+			var inputHead = inputDom.SelectSingleNodeHonoringDefaultNS("/html/head");
+			var insertBefore = inputHead.FirstChild;  // Enhance: handle case where there is no existing child
+			foreach (XmlNode child in headNode.ChildNodes)
+			{
+				inputHead.InsertBefore(inputDom.RawDom.ImportNode(child, true), insertBefore);
+			}
+
+			// This version somehow leaves the head in the wrong (empty) namespace and nothing works.
+			//var importNode = inputDom.RawDom.ImportNode(headNode, true);
+			//foreach (XmlNode child in inputHead.ChildNodes)
+			//	importNode.AppendChild(child);
+			//inputHead.ParentNode.ReplaceChild(importNode, inputHead);
+			return _storage.MakeDomRelocatable(inputDom, _log);
+		}
 
 		public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
 		{
@@ -290,15 +378,15 @@ namespace Bloom.Book
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
 			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
+			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
 
 			pageDom.SortStyleSheetLinks();
 
-			AddCoverColor(pageDom, CoverColor);
 			AddPreviewJScript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
 			return pageDom;
 		}
 
-		public XmlDocument GetPreviewXmlDocumentForFirstPage()
+		public HtmlDom GetPreviewXmlDocumentForFirstPage()
 		{
 			if (_log.ErrorEncountered)
 			{
@@ -307,9 +395,8 @@ namespace Bloom.Book
 
 			var bookDom = GetBookDomWithStyleSheets("previewMode.css","thumbnail.css");
 
-			AddCoverColor(bookDom, CoverColor);
 			HideEverythingButFirstPageAndRemoveScripts(bookDom.RawDom);
-			return bookDom.RawDom;
+			return bookDom;
 		}
 
 		private static void HideEverythingButFirstPageAndRemoveScripts(XmlDocument bookDom)
@@ -323,21 +410,38 @@ namespace Bloom.Book
 				}
 				onFirst =false;
 			}
-			foreach (XmlElement node in bookDom.SafeSelectNodes("//script"))
+			//Without casting to array, Mono considers this manipulating the enumerable list
+			foreach (var node in bookDom.SafeSelectNodes("//script").Cast<XmlNode>().ToArray())
 			{
 				//TODO: this removes image scaling, which is ok so long as it's already scaled with width/height attributes
 				node.ParentNode.RemoveChild(node);
 			}
 		}
 
-		private static void HidePages(XmlDocument bookDom, Func<XmlElement, bool> hidePredicate)
+		private static void DeletePages(XmlDocument bookDom, Func<XmlElement, bool> pageSelectingPredicate)
 		{
+			// Seems safest to make a list so we're not modifying the document while iterating through it.
+			var pagesToDelete = new List<XmlElement>();
 			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]"))
 			{
-				if (hidePredicate(node))
+				if (pageSelectingPredicate(node))
 				{
-					node.SetAttribute("style", "", "display:none");
+					pagesToDelete.Add(node);
 				}
+			}
+			foreach (var node in pagesToDelete)
+			{
+				// An earlier version of this method just set the visibility of the pages we don't want
+				// in this printout to display:none, like this:
+				//node.SetAttribute("style", "", "display:none");
+				// However, this runs up against a defect in Gecko PDF generation: apparently when
+				// all the content after the last page in a paginated document is display:none, Gecko
+				// puts in an extra blank page. We suspect something like code that detects that
+				// the current page is finished and the document is not finished and starts a new page,
+				// which turns out not to be needed. The extra blank page can mess up booklet generation
+				// and cause an extra sheet of paper to be used (leaving a wasted four blank pages at
+				// the end). See BL-705.
+				node.ParentNode.RemoveChild(node);
 			}
 		}
 
@@ -350,10 +454,9 @@ namespace Bloom.Book
 		{
 			var dom = _storage.GetRelocatableCopyOfDom(_log);
 			dom.RemoveModeStyleSheets();
-			var fileLocator = _storage.GetFileLocator();
 			foreach (var cssFileName in cssFileNames)
 			{
-				dom.AddStyleSheet(fileLocator.LocateFileWithThrow(cssFileName).ToLocalhost());
+				dom.AddStyleSheet(cssFileName);
 			}
 			dom.SortStyleSheetLinks();
 
@@ -362,14 +465,21 @@ namespace Bloom.Book
 
 		public virtual string StoragePageFolder { get { return _storage.FolderPath; } }
 
+		private string GetGenericBrokenBookRecommendationString()
+		{
+			return LocalizationManager.GetString("Errors.BrokenBook",
+				"Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong. Consider using the 'Report a Problem' command under the 'Help' menu.");
+		}
+		
 		private HtmlDom GetPageListingErrorsWithBook(string contents)
 		{
 			var builder = new StringBuilder();
-			builder.Append("<html><body>");
-			builder.AppendLine("<p>This book (" + StoragePageFolder + ") has errors.");
-			builder.AppendLine(
-				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
+			builder.Append("<html><body style='font-family:arial,sans'>");
 
+			builder.AppendLine("<p>" + GetGenericBrokenBookRecommendationString() + "</p>");
+
+			builder.AppendFormat("<p>" + _storage.ErrorMessages + "</p>");
+			
 			foreach (var line in contents.Split(new []{'\n'}))
 			{
 				builder.AppendFormat("<li>{0}</li>\n", WebUtility.HtmlEncode(line));
@@ -381,10 +491,11 @@ namespace Bloom.Book
 		private HtmlDom GetErrorDom()
 		{
 			var builder = new StringBuilder();
-			builder.Append("<html><body>");
-			builder.AppendLine("<p>This book (" + FolderPath + ") has errors.");
-			builder.AppendLine(
-				"This doesn't mean your work is lost, but it does mean that something is out of date or has gone wrong, and that someone needs to find and fix the problem (and your book).</p>");
+			builder.Append("<html><body style='font-family:arial,sans'>");
+			
+			builder.AppendLine(GetGenericBrokenBookRecommendationString());
+
+			builder.AppendFormat("<p>" + _storage.ErrorMessages + "</p>");
 
 			builder.Append(((StringBuilderProgress)_log).Text);
 
@@ -423,10 +534,24 @@ namespace Bloom.Book
 		}
 
 
-
+		/// <summary>
+		/// First page in the book (or null if there are none)
+		/// </summary>
 		public IPage FirstPage
 		{
-			get { return GetPages().First(); }
+			get { return GetPages().FirstOrDefault(); }
+		}
+
+		public IPage GetPageByIndex(int pageIndex)
+		{
+			// index must be >= 0
+			if (pageIndex < 0) return null;
+
+			// index must be less than the number of pages
+			var pages = GetPages().ToList();
+			if (pages.Count <= pageIndex) return null;
+
+			return pages[pageIndex];
 		}
 
 		public Book FindTemplateBook()
@@ -439,7 +564,7 @@ namespace Bloom.Book
 				Book book=null;
 				if (!String.IsNullOrEmpty(templateKey))
 				{
-					if (templateKey.ToLower() == "basicbook")//catch this pre-beta spelling with no space
+					if (templateKey.ToLowerInvariant() == "basicbook")//catch this pre-beta spelling with no space
 						templateKey = "Basic Book";
 					book = _templateFinder.FindTemplateBook(templateKey);
 					if(book==null)
@@ -458,6 +583,11 @@ namespace Bloom.Book
 		}
 
 		public BookType TypeOverrideForUnitTests;
+
+		/// <summary>
+		/// once in our lifetime, we want to do any migrations needed for this version of bloom
+		/// </summary>
+		private bool _haveDoneUpdate = false;
 
 		public BookType Type
 		{
@@ -496,7 +626,8 @@ namespace Bloom.Book
 			{
 				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
 			}
-			var previewDom= GetBookDomWithStyleSheets("previewMode.css");
+			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "origami.css");
+			AddCreationTypeAttribute(previewDom);
 
 			//We may have just run into an error for the first time
 			if (HasFatalError)
@@ -504,22 +635,23 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 
-			//shells & templates may be stored without frontmatter. This will add and update the frontmatter to our preivew dom
-			if (Type == BookType.Shell || Type == BookType.Template)
-			{
-				BringBookUpToDate(previewDom, new NullProgress());
-			}
+			BringBookUpToDate(previewDom, new NullProgress());
+
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
 			var primaryLanguage = _collectionSettings.Language1Iso639Code;
 			if (IsShellOrTemplate) //TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
 				primaryLanguage = _collectionSettings.Language2Iso639Code;
 
-			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, primaryLanguage, _collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
-			AddCoverColor(previewDom, CoverColor);
+			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, _collectionSettings, primaryLanguage, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
 
 			AddPreviewJScript(previewDom);
 			previewDom.AddPublishClassToBody();
 			return previewDom;
+		}
+
+		private void AddCreationTypeAttribute(HtmlDom htmlDom)
+		{
+			htmlDom.AddCreationType(LockedDown ? "translation" : "original");
 		}
 
 		public void BringBookUpToDate(IProgress progress)
@@ -530,12 +662,12 @@ namespace Bloom.Book
 			{
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
 				UpdatePageFromFactoryTemplates(OurHtmlDom, progress);
-				ImageUpdater.CompressImages(FolderPath, progress);
+				//ImageUpdater.CompressImages(FolderPath, progress);
+				ImageUtils.RemoveTransparencyOfImagesInFolder(FolderPath, progress);
 				Save();
 			}
 
-			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(BookInfo.BookLineage +", "
-														+ _storage.Dom.GetMetaValue("bloomBookLineage","")) /* had a case where the lineage hadn't been moved over to json yet */)
+			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
 			{
 				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
 			}
@@ -547,25 +679,28 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// As the bloom format evolves, including structure and classes and other attributes, this
+		/// makes changes to old books. It needs to be very fast, because currently we dont' have
+		/// a real way to detect the need for migration. So we do it all the time.
+		/// 
+		/// Yes, we have format version number, but, for example, one overhaul of the common xmatter
+		/// html introduced a new class, "frontCover". Hardly enough to justify bumping the version number
+		/// and making older Blooms unable to read new books. But because this is run, the xmatter will be
+		/// migrated to the new template.
+		/// </summary>
+		/// <param name="bookDOM"></param>
+		/// <param name="progress"></param>
 		private void BringBookUpToDate(HtmlDom bookDOM /* may be a 'preview' version*/, IProgress progress)
 		{
+			progress.WriteStatus("Updating Front/Back Matter...");
+			BringXmatterHtmlUpToDate(bookDOM);
+
 			progress.WriteStatus("Gathering Data...");
-
-			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
-			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
-
-			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
-			//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
-			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
-			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);
-			XMatterHelper.RemoveExistingXMatter(bookDOM);
-			layout = Layout.FromDom(bookDOM, layout);			//this says, if you can't figure out the page size, use the one we got before we removed the xmatter
-			progress.WriteStatus("Injecting XMatter...");
-
-			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _collectionSettings);
 			progress.WriteStatus("Updating Data...");
 
+			InjectStringListingActiveLanguagesOfBook();
 
 			//hack
 			if(bookDOM == OurHtmlDom)//we already have a data for this
@@ -600,15 +735,56 @@ namespace Bloom.Book
 			//    bookDOM.Title = Title;
 			// Bit of a kludge, but there's no way to tell whether a boolean is already set in the JSON, so we fake that it is not,
 			// thus ensuring that if something is in the metadata we use it.
-			bookDOM.RemoveMetaElement("SuitableForMakingShells", () => null, val => BookInfo.IsSuitableForMakingShells = val == "yes" || val == "definitely");
 			// If there is nothing there the default of true will survive.
 			bookDOM.RemoveMetaElement("SuitableForMakingVernacularBooks", () => null, val => BookInfo.IsSuitableForVernacularLibrary = val == "yes" || val == "definitely");
+
+			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
+
+			//we've removed and possible added pages, so our page cache is invalid
+			_pagesCache = null;
 		}
+
+		private void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
+		{
+			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
+			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
+			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
+			//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
+			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
+			Layout layout = Layout.FromDom(bookDOM, Layout.A5Portrait);
+			XMatterHelper.RemoveExistingXMatter(bookDOM);
+			layout = Layout.FromDom(bookDOM, layout);
+				//this says, if you can't figure out the page size, use the one we got before we removed the xmatter
+			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
+		}
+
+
+		// Around May 2014 we added a class, .bloom-requireParagraphs, backed by javascript that makes geckofx
+		// emit <p>s instead of <br>s (which you can't style and don't leave a space in wkhtmltopdf).
+		// If there is existing text after we added this, it needs code to do the conversion. There
+		// is already javascript for this, but by having it here allows us to update an entire collection in one commmand.
+		// Note, this doesn't yet do as much as the javascript version, which also can be triggered by a border-top-style
+		// of "dashed", so that books shipped without this class can still be converted over.
+		public void UpdateTextsNewlyChangedToRequiresParagraph(HtmlDom bookDom)
+		{
+			var texts = OurHtmlDom.SafeSelectNodes("//*[contains(@class,'bloom-requiresParagraphs')]/div[contains(@class,'bloom-editable') and br]");
+			foreach (XmlElement text in texts)
+			{
+				string s = "";
+				foreach (var chunk in text.InnerXml.Split(new string[] { "<br />", "<br/>"}, StringSplitOptions.None))
+				{
+					if (chunk.Trim().Length > 0)
+						s += "<p>" + chunk + "</p>";
+				}
+				text.InnerXml = s;
+			}
+		}
+
+
 
 		internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 		{
 			var oldTags = File.ReadAllText(oldTagsPath);
-			bookMetaData.IsSuitableForMakingShells = oldTags.Contains("suitableForMakingShells");
 			bookMetaData.IsFolio = oldTags.Contains("folio");
 			bookMetaData.IsExperimental = oldTags.Contains("experimental");
 		}
@@ -656,9 +832,12 @@ namespace Bloom.Book
 			progress.WriteStatus("Updating pages that were based on Basic Book...");
 			foreach (XmlElement templatePageDiv in templateDom.SafeSelectNodes("//body/div"))
 			{
+				if (templatePageDiv.GetOptionalStringAttribute("class", "").Contains("customPage"))
+					continue; // we sure don't want to revert this page to its blank custom state
+
 				var templateId = templatePageDiv.GetStringAttribute("id");
 				if (string.IsNullOrEmpty(templateId))
-					return;
+					continue;
 
 				var templatePageClasses = templatePageDiv.GetAttribute("class");
 				//note, lineage is a series of guids separated by a semicolon
@@ -694,8 +873,6 @@ namespace Bloom.Book
 			}
 			targetElement.SetAttribute("class", templateElement.GetAttribute("class"));
 		}
-
-		public Color CoverColor { get { return BookInfo.CoverColor; } }
 
 		public bool IsShellOrTemplate
 		{
@@ -805,9 +982,37 @@ namespace Bloom.Book
 			{
 				if(_collectionSettings.IsSourceCollection) //nothing is locked if we're in a shell-making library
 					return false;
+				return RecordedAsLockedDown;
+			}
+		}
 
-				var node = OurHtmlDom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
-				return node.Count > 0;
+		/// <summary>
+		/// This is how the book's LockedDown state will be reported in a vernacular collection.
+		/// </summary>
+		public bool RecordedAsLockedDown
+		{
+			get { return IsLockedDown(OurHtmlDom); }
+			set
+			{
+				RecordAsLockedDown(OurHtmlDom, value);
+			}
+		}
+
+		public static bool IsLockedDown(HtmlDom dom)
+		{
+			var node = dom.SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']"));
+			return node.Count > 0;
+		}
+
+		public static void RecordAsLockedDown(HtmlDom dom, bool locked)
+		{
+			if (locked)
+			{
+				dom.UpdateMetaElement("lockedDownAsShell", "true");
+			}
+			else
+			{
+				dom.RemoveMetaElement("lockedDownAsShell");
 			}
 		}
 
@@ -846,7 +1051,7 @@ namespace Bloom.Book
 
 		public virtual bool HasFatalError
 		{
-			get { return _log.ErrorEncountered; }
+			get { return _log.ErrorEncountered || !string.IsNullOrEmpty(_storage.ErrorMessages); }
 		}
 
 
@@ -859,7 +1064,10 @@ namespace Bloom.Book
 		{
 			get { return IsEditable && !HasFatalError; }
 		}
-
+		public virtual bool CanExport
+		{
+			get { return IsEditable && !HasFatalError; }
+		}
 
 		/// <summary>
 		/// In a vernacular library, we want to hide books that are meant only for people making shells
@@ -922,40 +1130,102 @@ namespace Bloom.Book
 
 		public BookInfo BookInfo { get; private set; }
 
+		public UserPrefs UserPrefs { get; private set; }
+
+		public int NextStyleNumber
+		{
+			get { return _bookData.StyleNumberSequence; }
+		}
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
 			_bookData.SetMultilingualContentLanguages(language2Code, language3Code);
+			InjectStringListingActiveLanguagesOfBook();
+			_bookData.UpdateDomFromDataset();
+		}
+
+		/// <summary>
+		/// Bloom books can have up to 3 languages active at any time. This method pushes in a string
+		/// listing then, separated by commas. It is then usable on the front page, title page, etc.
+		/// </summary>
+		private void InjectStringListingActiveLanguagesOfBook()
+		{
+			string codeOfNationalLanguage = _collectionSettings.Language2Iso639Code;
+			var languagesOfBook = _collectionSettings.GetLanguage1Name(codeOfNationalLanguage);
+
+			if (MultilingualContentLanguage2 != null)
+			{
+				languagesOfBook += ", " + _collectionSettings.GetLanguageName(MultilingualContentLanguage2, codeOfNationalLanguage);
+			}
+			if (MultilingualContentLanguage3 != null)
+			{
+				languagesOfBook += ", " + _collectionSettings.GetLanguageName(MultilingualContentLanguage3, codeOfNationalLanguage);
+			}
+
+			_bookData.Set("languagesOfBook", languagesOfBook, false);
 		}
 
 		/// <summary>
 		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languages
-		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful? Should we
-		/// require that all bloom-editable elements in a certain language have content? That all parent elements which contain
-		/// any bloom-editable elements contain one in the candidate language? Is bloom-editable even a reliable class to look
-		/// for to identify the main content of the book?
-		/// Initially a book was defined as containing a language if it contained at least one bloom-editable element in that
-		/// language. However some templates (e.g. Story Primer) may not fit this so well, so if that doesn't produce any languages
-		/// we'll say that a book contains a language if it has a title defined in that language.
+		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful?
+		/// Based on BL-2017, we now return a Dictionary of booleans indicating whether a language should be uploaded by default.
+		/// The dictionary contains an entry for every language where the book contains non-x-matter text.
+		/// The value is true if every non-x-matter field which contains text in any language contains text in this.
 		/// </summary>
-		public IEnumerable<string> AllLanguages
+		public Dictionary<string, bool> AllLanguages
 		{
 			get
 			{
-				var langList = OurHtmlDom.SafeSelectNodes("//div[@class and @lang]").Cast<XmlElement>()
+				var result = new Dictionary<string, bool>();
+				var parents = new HashSet<XmlElement>(); // of interesting non-empty children
+				// editable divs that are in non-x-matter pages and have a potentially interesting language.
+				var langDivs = OurHtmlDom.SafeSelectNodes("//div[contains(@class, 'bloom-page') and not(contains(@class, 'bloom-frontMatter')) and not(contains(@class, 'bloom-backMatter'))]//div[@class and @lang]").Cast<XmlElement>()
 					.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
-					.Select(div => div.Attributes["lang"].Value)
-					.Where(lang => lang != "*" && lang != "z" && lang != "") // Not valid languages, though we sometimes use them for special purposes
-					.Distinct();
-				if (langList.Count() == 0)
-					langList = OurHtmlDom.SafeSelectNodes("//div[@data-book and @lang]").Cast<XmlElement>()
-						.Where(div => div.Attributes["data-book"].Value.IndexOf("bookTitle", StringComparison.InvariantCulture) >= 0)
-						.Select(div => div.Attributes["lang"].Value)
-						.Where(lang => lang != "*" && lang != "z" && lang != "")
-						.Distinct();
-				return langList;
+					.Where(div =>
+					{
+						var lang = div.Attributes["lang"].Value;
+						return lang != "*" && lang != "z" && lang != ""; // Not valid languages, though we sometimes use them for special purposes
+					}).ToArray();
+				// First pass: fill in the dictionary with languages which have non-empty content in relevant divs
+				foreach (var div in langDivs)
+				{
+					var lang = div.Attributes["lang"].Value;
+					// The test for ContainsKey is redundant but may save a useful amount of time.
+					if (!result.ContainsKey(lang) && !string.IsNullOrWhiteSpace(div.InnerText))
+					{
+						result[lang] = true;
+						parents.Add((XmlElement)div.ParentNode);
+					}
+				}
+				// Second pass: for each parent, if it lacks a non-empty child for one of the languages, set value for that lang to false.
+				foreach (var lang in result.Keys.ToList()) // ToList so we can modify original collection as we go
+				{
+					foreach (var parent in parents)
+					{
+						if (!HasContentInLang(parent, lang))
+						{
+							result[lang] = false; // not complete
+							break; // no need to check other parents.
+						}
+					}
+				}
+
+				return result;
 			}
 		}
+
+		bool HasContentInLang(XmlElement parent, string lang)
+		{
+			foreach (var divN in parent.ChildNodes)
+			{
+				var div = divN as XmlElement;
+				if (div == null || div.Attributes["lang"] == null || div.Attributes["lang"].Value != lang)
+					continue;
+				return !string.IsNullOrWhiteSpace(div.InnerText); // this one settles it: success if non-empty
+			}
+			return false; // not found
+		}
+
 
 		public string GetAboutBookHtml
 		{
@@ -981,17 +1251,24 @@ namespace Bloom.Book
 			}
 		}
 
+		// Assign the next of the standard cover colors which will be used consistently henceforth for this book
+		// (except when actually printing...for that we switch to white so the
+		// actual cardstock color comes through unchanged).
+		internal void InitCoverColor()
+		{
+			AddCoverColor(this.OurHtmlDom, NextBookColor());
+		}
+
 		private void AddCoverColor(HtmlDom dom, Color coverColor)
 		{
 			var colorValue = ColorTranslator.ToHtml(coverColor);
 //            var colorValue = String.Format("#{0:X2}{1:X2}{2:X2}", coverColor.R, coverColor.G, coverColor.B);
 			XmlElement colorStyle = dom.RawDom.CreateElement("style");
 			colorStyle.SetAttribute("type","text/css");
-			colorStyle.InnerXml = @"<!--
-
+			colorStyle.InnerXml = @"
 				DIV.coverColor  TEXTAREA	{		background-color: colorValue !important;	}
 				DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
-				-->".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
+				".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
 
 			var header = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//head");
 			header.AppendChild(colorStyle);
@@ -1099,9 +1376,6 @@ namespace Bloom.Book
 
 		private static string GetPageLabelFromDiv(XmlElement pageNode)
 		{
-//todo: try to get the one with the current UI language
-			//var pageLabelDivs = pageNode.SelectNodes("div[contains(@class,'pageLabel')]");
-
 			var englishDiv = pageNode.SelectSingleNode("div[contains(@class,'pageLabel') and @lang='en']");
 			var caption = (englishDiv == null) ? String.Empty : englishDiv.InnerText;
 			return caption;
@@ -1110,9 +1384,7 @@ namespace Bloom.Book
 		private IPage CreatePageDecriptor(XmlElement pageNode, string caption)//, Action<Image> thumbNailReadyCallback)
 		{
 			return new Page(this, pageNode, caption,
-//				   ((page) => _thumbnailProvider.GetThumbnailAsync(String.Empty, page.id, GetPreviewXmlDocumentForPage(page, iso639Code), Color.White, false, thumbNailReadyCallback)),
-//					//	(page => GetPageThumbNail()),
-						(page => FindPageDiv(page)));
+				(page => FindPageDiv(page)));
 		}
 
 		public Image GetPageThumbNail()
@@ -1123,7 +1395,12 @@ namespace Bloom.Book
 		private XmlElement FindPageDiv(IPage page)
 		{
 			//review: could move to page
-			return OurHtmlDom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv) as XmlElement;
+			var pageElement = OurHtmlDom.RawDom.SelectSingleNodeHonoringDefaultNS(page.XPathToDiv);
+			Require.That(pageElement != null,"Page could not be found: "+page.XPathToDiv);
+			if (pageElement != null)
+				pageElement.InnerXml = XmlHtmlConverter.RemoveEmptySelfClosingTags(pageElement.InnerXml);
+				
+			return pageElement as XmlElement;
 		}
 
 		public void InsertPageAfter(IPage pageBefore, IPage templatePage)
@@ -1157,7 +1434,42 @@ namespace Bloom.Book
 			InvokeContentsChanged(null);
 		}
 
+		public void DuplicatePage(IPage page)
+		{
+			Guard.Against(Type != BookType.Publication, "Tried to edit a non-editable book.");
 
+			var pages = GetPageElements();
+			var pageDiv = FindPageDiv(page);
+			var newpageDiv = (XmlElement) pageDiv.CloneNode(true);
+			BookStarter.SetupIdAndLineage(pageDiv, newpageDiv);
+			var body = pageDiv.ParentNode;
+			int currentPageIndex = -1;
+
+			// Have to compare Ids; can't use _pagesCache.IndexOf(page) -- (BL-467)
+			foreach (IPage cachedPage in _pagesCache)
+				if (cachedPage.Id.Equals(page.Id))
+				{
+					currentPageIndex = _pagesCache.IndexOf(cachedPage);
+					break;
+				}
+
+			// This should never happen. But just in case, don't do something we don't want to do.
+			if (currentPageIndex < 0)
+				return;
+
+			body.InsertAfter(newpageDiv, pages[currentPageIndex]);
+
+			ClearPagesCache();
+			Save();
+			if (_pageListChangedEvent != null)
+				_pageListChangedEvent.Raise(null);
+
+			InvokeContentsChanged(null);
+
+			if (_pagesCache == null)
+				BuildPageCache();
+			_pageSelection.SelectPage(_pagesCache[currentPageIndex + 1]);
+		}
 
 		public void DeletePage(IPage page)
 		{
@@ -1206,20 +1518,12 @@ namespace Bloom.Book
 				XmlElement divElement = editedPageDom.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
 				string pageDivId = divElement.GetAttribute("id");
 				var page = GetPageFromStorage(pageDivId);
-				/*
-				 * there are too many non-semantic variations that are introduced by various processes (e.g. self closing of empy divs, handling of non-ascii)
-				 * var selfClosingVersion = divElement.InnerXml.Replace("\"></div>", "\"/>");
-					if (page.InnerXml == selfClosingVersion)
-					{
-						return;
-					}
-				 */
 
-				page.InnerXml = divElement.InnerXml;
+				HtmlDom.ProcessPageAfterEditing(page, divElement);
 
-				 _bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
+				_bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
-				 var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
+				var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
 				if (userModifiedStyles != null)
 				{
 					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
@@ -1245,7 +1549,8 @@ namespace Bloom.Book
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
+				var msg = LocalizationManager.GetString("Errors.CouldNotSavePage", "Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, msg);
 			}
 		}
 
@@ -1371,15 +1676,14 @@ namespace Bloom.Book
 			return -1;
 		}
 
-		public XmlDocument GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer)
+		public HtmlDom GetDomForPrinting(PublishModel.BookletPortions bookletPortion, BookCollection currentBookCollection, BookServer bookServer)
 		{
-			var printingDom = GetBookDomWithStyleSheets("previewMode.css");
-			//dom.LoadXml(OurHtmlDom.OuterXml);
+			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
+			AddCreationTypeAttribute(printingDom);
 
 			if (IsFolio)
 			{
 				AddChildBookContentsToFolio(printingDom, currentBookCollection, bookServer);
-				_storage.UpdateStyleSheetLinkPaths(printingDom);
 				printingDom.SortStyleSheetLinks();
 			}
 
@@ -1388,24 +1692,24 @@ namespace Bloom.Book
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
 
 			var pathSafeForWkHtml2Pdf = Palaso.IO.FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
-			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf, false);
+			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf);
 
 			switch (bookletPortion)
 			{
 				case PublishModel.BookletPortions.AllPagesNoBooklet:
 					break;
 				case PublishModel.BookletPortions.BookletCover:
-					HidePages(printingDom.RawDom, p=>!p.GetAttribute("class").ToLower().Contains("cover"));
+					DeletePages(printingDom.RawDom, p => !p.GetAttribute("class").ToLowerInvariant().Contains("cover"));
 					break;
 				 case PublishModel.BookletPortions.BookletPages:
-					HidePages(printingDom.RawDom, p => p.GetAttribute("class").ToLower().Contains("cover"));
+					DeletePages(printingDom.RawDom, p => p.GetAttribute("class").ToLowerInvariant().Contains("cover"));
 					break;
 				 default:
 					throw new ArgumentOutOfRangeException("bookletPortion");
 			}
 			AddCoverColor(printingDom, Color.White);
 			AddPreviewJScript(printingDom);
-			return printingDom.RawDom;
+			return printingDom;
 		}
 
 		/// <summary>
@@ -1425,6 +1729,13 @@ namespace Bloom.Book
 					continue;
 				var childBook =bookServer.GetBookFromBookInfo(bookInfo);
 
+				//this will set the class bloom-content1 on the correct language
+				//this happens anyhow if the page was ever looked at in the Edti Tab
+				//But if we are testing a collection's folio pdf'ing ability on a newly-generated
+				//SHRP collection, and we don't do this, we see lots of sample text because every
+				//bloom-editable has "bloom-content1", even the "Z" language ones.
+				childBook.UpdateEditableAreasOfElement(childBook.OurHtmlDom);
+				
 				//add links to the template css needed by the children.
 				//NB: at this point this code can't hand the "userModifiedStyles" from children, it'll ignore them (they would conflict with each other)
 				//NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
@@ -1434,7 +1745,7 @@ namespace Bloom.Book
 					if (!userModifiedStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
 					{
 						userModifiedStyleSheets.Add(sheetName);
-						printingDom.AddStyleSheetIfMissing("file://"+Path.Combine(childBook.FolderPath,sheetName));
+						printingDom.AddStyleSheetIfMissing(sheetName);
 					}
 				}
 				printingDom.SortStyleSheetLinks();
@@ -1445,7 +1756,15 @@ namespace Bloom.Book
 					currentLastContentPage.ParentNode.InsertAfter(importedPage, currentLastContentPage);
 					currentLastContentPage = importedPage;
 
-					ImageUpdater.MakeImagePathsOfImportedPagePointToOriginalLocations(importedPage, bookInfo.FolderPath);
+					foreach(XmlElement img in importedPage.SafeSelectNodes("descendant::img"))
+					{
+						var bookFolderName = Path.GetFileName(bookInfo.FolderPath);
+						var pathRelativeToFolioFolder = ".../" + bookFolderName + "/" + img.GetAttribute("src");
+						//NB: URLEncode would replace spaces with '+', which is ok in the parameter section, but not the URL
+						//So we are using UrlPathEncode
+						var fullPathInLinkFormat = HttpUtility.UrlPathEncode(pathRelativeToFolioFolder);
+						img.SetAttribute("src", fullPathInLinkFormat);
+					}
 				}
 			}
 		}
@@ -1494,10 +1813,17 @@ namespace Bloom.Book
 		{
 			var template = File.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
-			if (File.Exists(path))
-				File.Delete(path);
-			File.WriteAllText(path, template.Replace("VERNACULAR", _collectionSettings.Language1Iso639Code).Replace("NATIONAL", _collectionSettings.Language2Iso639Code));
 
+			using (var temp = TempFile.WithExtension(".css"))
+			{
+				File.WriteAllText(temp.Path,
+					template.Replace("VERNACULAR", _collectionSettings.Language1Iso639Code)
+						.Replace("NATIONAL", _collectionSettings.Language2Iso639Code));
+
+				//hoping this helps with the occasional report we were getting where the files were in Dropbox and
+				//the previous File.Delete(path) would fail:
+				FileUtils.ReplaceFileWithUserInteractionIfNeeded(temp.Path, path, null);
+			}
 			//ENHANCE: this works for editable books, but for shell collections, it would be nice to show the national language of the user... e.g., when browsing shells,
 			//see the French.  But we don't want to be changing those collection folders at runtime if we can avoid it. So, this style sheet could be edited in memory, at runtime.
 		}
@@ -1512,17 +1838,31 @@ namespace Bloom.Book
 		/// </summary>
 		public void PrepareForEditing()
 		{
-			// I may re-enable this later....			RebuildXMatter(RawDom);
+			if (!_haveDoneUpdate)
+			{
+				BringBookUpToDate(OurHtmlDom, new NullProgress());
+				_haveDoneUpdate = true;
+			}
+			//We could re-enable RebuildXMatter() here later, so that we get this nice refresh each time.
+			//But currently this does some really slow image compression:	RebuildXMatter(RawDom);
+			UpdateEditableAreasOfElement(OurHtmlDom);
+		}
 
+		/// <summary>
+		/// This is called both for the whole book, and for individual pages when the user uses Origami to make changes to the layout of the page
+		/// </summary>
+		/// <param name="elementToUpdate"></param>
+		public void UpdateEditableAreasOfElement(HtmlDom elementToUpdate)
+		{
 			var language1Iso639Code = _collectionSettings.Language1Iso639Code;
 			var language2Iso639Code = _collectionSettings.Language2Iso639Code;
 			var language3Iso639Code = _collectionSettings.Language3Iso639Code;
 			var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2;
 			var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3;
-		   foreach (XmlElement div in OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			foreach (XmlElement div in elementToUpdate.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				TranslationGroupManager.PrepareElementsInPageOrDocument(div, _collectionSettings);
-				TranslationGroupManager.UpdateContentLanguageClasses(div, language1Iso639Code, language2Iso639Code, language3Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);
+				TranslationGroupManager.UpdateContentLanguageClasses(div, _collectionSettings, language1Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);
 			}
 		}
 
@@ -1544,7 +1884,8 @@ namespace Bloom.Book
 			}
 
 			_thumbnailProvider.RemoveFromCache(_storage.Key);
-			thumbnailOptions.DrawBorderDashed = Type != BookType.Publication;
+
+			thumbnailOptions.BorderStyle = (Type == BookType.Publication)?HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid : HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed;
 			GetThumbNailOfBookCoverAsync(thumbnailOptions, image=>callback(this.BookInfo,image),
 				error=>
 					{
@@ -1680,6 +2021,22 @@ namespace Bloom.Book
 		public string GetBookLineage()
 		{
 			return OurHtmlDom.GetMetaValue("bloomBookLineage","");
+		}
+
+
+		public bool IsCalendar
+		{
+			get
+			{
+				if (OurHtmlDom == null)
+					return false;
+
+				return OurHtmlDom.GetMetaValue("defaultBookletLayout", "") == "Calendar";
+			}
+		}
+		public MultiTextBase GetDataItem(string name)
+		{
+			return _bookData.GetMultiTextVariableOrEmpty(name);
 		}
 	}
 }

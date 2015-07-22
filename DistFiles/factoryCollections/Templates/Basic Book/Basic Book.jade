@@ -7,16 +7,14 @@ mixin image-leading
 //- items marked with 'bloom-trailingElement' will be on the right page of a side-by-side layout
 mixin field-trailing
 	//- Is default-style needed? Yes, but it needs to be normal-style. (BL-26)
-	+field(class='bloom-trailingElement normal-style', attributes)
+	+field.bloom-trailingElement.normal-style(attributes)
 
 doctype html
 html
 	head
-		+metadata-standard()
-		meta(name='defaultNameForDerivedBooks', content='My Book')
-		//- TODO remove this when we move to json metadata
-		meta(name='SuitableForMakingShells', content='yes')
-
+		+metadata-standard
+		//- This "Book" name is used for saving the file, until the user enters a title
+		meta(name='defaultNameForDerivedBooks', content='Book')
 		meta(name='bloomBookId', content='056B6F11-4A6C-4942-B2BC-8861E62B03B3')
 
 		//- Eventually, we'll remove Bloom's need for this.
@@ -26,8 +24,7 @@ html
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Basic Book')
-			+bookVariable-title('tpi', 'Nupela Buk')
-			+bookVariable-title('id', 'Buku Dasar')
+			+bookVariable('styleNumberSequence', '*', '0')
 
 		//- NB: HTML 4 ids were not supposed to start with numbers. But for html 5, they
 		//- can. Unfortunately webstorm doesn't know that.
@@ -53,4 +50,6 @@ html
 
 		+page-choice('Picture & Word').pictureAndWordPage#FD115DFF-0415-4444-8E76-3D2A18DBBD27
 			+image-leading
-			+field-trailing
+			+field(attributes).bloom-trailingElement.BigWords-style
+
+		+page-Custom()

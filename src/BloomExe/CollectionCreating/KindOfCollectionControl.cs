@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows.Forms;
 using Bloom.Collection;
+using L10NSharp;
+using Palaso.UI.WindowsForms.i18n;
 
 namespace Bloom.CollectionCreating
 {

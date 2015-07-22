@@ -1,41 +1,57 @@
-var scripts = document.getElementsByTagName('script');
-var path = scripts[scripts.length - 1].src.split('?')[0];      // remove any ?query
-var thisDir = path.split('/').slice(0, -1).join('/') + '/';  // remove last filename part of path
-var libDir = thisDir + "../../lib/";
-var themeDir = thisDir + "../../themes/";
-var fontsDir = thisDir + "../iconfont/";
+var scripts = [
+    'lib/jquery-1.10.1.js',               // nb: we just rename whatever version of jquery we have to this.
+    'lib/jquery-ui-1.10.3.custom.min.js', // nb: we just rename whatever version of jquery-ui we have to this.
+    'lib/jquery.easytabs.js',
+    'lib/jquery.hashchange.min.js',       // needed by easytabs
+    'lib/jquery.qtip.js',
+    'lib/jquery.qtipSecondary.js',
+    'bookEdit/js/getIframeChannel.js',
+    'lib/localizationManager/localizationManager.js',
+    'lib/jquery.i18n.custom.js',
+    'lib/jquery.sizes.js',
+    'lib/jquery.watermark.js',
+    'lib/jquery.myimgscale.js',
+    'lib/jquery.resize.js',
+    'lib/errorHandler.js',
+    'bookEdit/js/editableDivUtils.js',
+    'bookEdit/js/jquery.hotkeys.js',
+    'bookEdit/js/BloomAccordion.js',
+    'bookEdit/js/bloomQtipUtils.js',
+    'bookEdit/js/bloomSourceBubbles.js',
+    'bookEdit/js/bloomNotices.js',
+    'bookEdit/js/bloomHintBubbles.js',
+    'bookEdit/StyleEditor/StyleEditor.js',
+    'bookEdit/OverflowChecker/OverflowChecker.js',
+    'bookEdit/TopicChooser/TopicChooser.js',
+    'lib/tabpane.js',
+    'bookEdit/js/toolbar/jquery.toolbar.js',
+    'bookEdit/bloomField/bloomField.js',
+    'bookEdit/js/bloomImages.js',
+    'bookEdit/js/bloomEditing.js',
+    'lib/split-pane/split-pane.js',
+    'bookEdit/js/origami.js',
+    'lib/long-press/jquery.mousewheel.js',
+    'lib/jquery.alphanum.js',
+    'lib/long-press/jquery.longpress.js'
+];
 
-document.write('<script type="text/javascript" src="' + libDir + 'jquery-1.10.1.js"></script>');//nb: we just rename whatever version of jquery we have to this.
-document.write('<script type="text/javascript" src="' + libDir + 'jquery-ui-1.10.3.custom.min.js"></script>');//nb: we just rename whatever version of jqueryui we have to this.
-document.write('<link rel="stylesheet" type="text/css" href="' + themeDir + 'bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css">');
+var styleSheets = [
+    'themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css',
+    'themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css',
+    'lib/jquery.qtip.css',
+    'bookEdit/css/qtipOverrides.css',
+    'bookEdit/js/toolbar/jquery.toolbars.css',
+    'bookEdit/css/origami.css',
+    'bookEdit/css/tab.winclassic.css',
+    'bookEdit/StyleEditor/StyleEditor.css',
+    'bookEdit/css/bloomDialog.css',
+    'lib/long-press/longpress.css'
+];
 
-document.write('<script type="text/javascript" src="' + libDir + 'jquery.easytabs.js"></script>');
-document.write('<script type="text/javascript" src="' + libDir + 'jquery.hashchange.min.js"></script>');//needed by easytabs
+for (var i = 0; i < scripts.length; i++) {
+    document.write('<script type="text/javascript" src="/bloom/' + scripts[i] + '"></script>');
+}
 
-document.write('<script type="text/javascript" src="' + libDir + 'jquery.qtip.js"></script>');
-document.write('<script type="text/javascript" src="' + libDir + 'jquery.qtipSecondary.js"></script>');
-document.write('<link rel="stylesheet" type="text/css" href="' + libDir + 'jquery.qtip.css">');
-
-document.write('<script type="text/javascript" src="' + libDir + 'jquery.sizes.js"></script>');
-document.write('<script type="text/javascript" src="' + libDir + 'jquery.watermark.js"></script>');
-document.write('<script type="text/javascript" src="' + libDir + 'jquery.myimgscale.js"></script>');
-document.write('<script type="text/javascript" src="' + libDir + 'jquery.resize.js"></script>');
-document.write('<script type="text/javascript" src="' + thisDir + 'jquery.hotkeys.js"></script>');
-
-document.write('<script type="text/javascript" src="' + thisDir + 'bloomEditing.js"></script>');
-document.write('<script type="text/javascript" src="' + thisDir + 'BloomAccordion.js"></script>');
-document.write('<script type="text/javascript" src="' + thisDir + 'StyleEditor.js"></script>');
-
-document.write('<script type="text/javascript" src="' + thisDir + 'toolbar/jquery.toolbar.js"></script>');
-document.write('<link rel="stylesheet" type="text/css" href="' + thisDir + 'toolbar/jquery.toolbars.css">');
-
-// synphony-related scripts
-document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/underscore_min_152.js"></script>');
-document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/xregexp-all-min.js"></script>');
-document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/bloom_xregexp_categories.js"></script>');
-document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/jquery.text-markup.js"></script>');
-document.write('<script type="text/javascript" src="' + thisDir + 'jquery.div-columns.js"></script>');
-document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/synphony_lib.js"></script>');
-document.write('<script type="text/javascript" src="' + thisDir + 'libsynphony/bloom_lib.js"></script>');
-document.write('<script type="text/javascript" src="' + thisDir + 'synphonyApi.js"></script>');
-document.write('<script type="text/javascript" src="' + thisDir + 'readerTools.js"></script>');
+for (var j = 0; j < styleSheets.length; j++) {
+    document.write('<link rel="stylesheet" type="text/css" href="/bloom/' + styleSheets[j] + '">');
+}

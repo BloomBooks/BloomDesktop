@@ -5,19 +5,20 @@ div.stageLine {
 	float: right;
 	margin: 10px 14px;
 	-moz-user-select: none;
+	font-size: 16pt;
 }
 span.stageLine { float: left; -moz-user-select: none; }
-td.acceptable { color: green; }
+td.acceptable { color: lightgreen; }
 td.tooLarge { color: orange; }
 td.statistics-label { padding-right: 5px; }
 td.statistics-max { padding-right: 3px; text-align: center; }
 td.statistics-actual { padding-right: 3px; text-align: center; }
 span.setup { font-size: xx-small; margin-left: 10px; }
-div.tableHolder { overflow: auto; max-height: 300px; }
+div.tableHolder { overflow: auto; }
 div.sortBlock {
 	position: relative;
 	float: right;
-	margin: -4px 14px 0 15px;
+	margin: 0 14px 8px 6px;
 	display: inline-block;
 	border: 1px solid #fff;
 }
@@ -32,12 +33,14 @@ div.sortItem {
 	padding: 2px 3px;
 	cursor: pointer;
 }
-span.ofStage { font-size: xx-small; }
+span.ofStage { font-size: 12pt; }
 span.disabledIcon { visibility: hidden; }
 td.disabledLimit { visibility: hidden; }
 
-div.wordList { margin: 4px; }
-div.word { min-width: 40px; margin: 2px; float: left; }
+div.wordList, div.letterList { margin: 4px; }
+div.wordList { column-count: 3; }
+div.letter { margin: 0 2px 2px; float: left; min-width: 20px; }
+div.word { margin: 0 2px 2px; width: auto; }
 div.sight-word {
 	-moz-text-decoration-style: wavy;
 	-moz-text-decoration-line: underline;
@@ -48,3 +51,12 @@ div.section ul { padding-left: 16px; margin-top: 4px; }
 div.section ul li { color: #fff; }
 
 .ui-icon-triangle-1-w, .ui-icon-triangle-1-e { cursor: pointer; }
+
+#make-letter-word-list-div {
+  position: absolute;
+  bottom: 15px;
+  margin-left: 6px
+}
+#make-letter-word-list {
+  font-size: 10px;
+}

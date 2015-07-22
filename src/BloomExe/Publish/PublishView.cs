@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition.Primitives;
 using System.IO;
 using System.Linq;
@@ -8,12 +9,14 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using L10NSharp;
 using Palaso.Reporting;
 using Gecko;
 using Palaso.IO;
+using System.Drawing;
 
 namespace Bloom.Publish
 {
@@ -25,24 +28,32 @@ namespace Bloom.Publish
 		private BloomLibraryPublishControl _publishControl;
 		private BookTransfer _bookTransferrer;
 		private LoginDialog _loginDialog;
+		private PictureBox _previewBox;
 
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, BookTransfer bookTransferrer, LoginDialog login)
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookTransfer bookTransferrer, LoginDialog login)
 		{
 			_bookTransferrer = bookTransferrer;
 			_loginDialog = login;
 
 			InitializeComponent();
 
-			if(this.DesignMode)
+			if (this.DesignMode)
 				return;
 
 			_model = model;
 			_model.View = this;
 
 			_makePdfBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(_makePdfBackgroundWorker_RunWorkerCompleted);
+			_pdfViewer.PrintProgress += new System.EventHandler<PdfPrintProgressEventArgs>(OnPrintProgress);
+
+			// BL-625: With mono, if a RadioButton group has its AutoCheck properties set to true, the default RadioButton.OnEnter
+			//         event checks to make sure one of the RadioButtons is checked. If none are checked, the one the mouse pointer
+			//         is over is checked, causing the CheckChanged event to fire.
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+				SetAutoCheck(false);
 
 			//NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
 			//off the tab itself changing, either to us or away from us.
@@ -65,9 +76,65 @@ namespace Bloom.Publish
 //			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
 //        	tableLayoutPanel1.Controls.Add(linkLabel);
 //#endif
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+			{
+				BackgroundColorsForLinux();
+			}
 
+			// Adding this renderer prevents a white line from showing up under the components.
 			_menusToolStrip.Renderer = new EditingView.FixedToolStripRenderer();
+
 			GeckoPreferences.Default["pdfjs.disabled"] = false;
+			SetupLocalization();
+			localizationChangedEvent.Subscribe(o=>SetupLocalization());
+
+			// Make this extra box available to show when wanted.
+			_previewBox = new PictureBox();
+			_previewBox.Visible = false;
+			Controls.Add(_previewBox);
+			_previewBox.BringToFront();
+		}
+
+		private void BackgroundColorsForLinux() {
+
+			var bmp = new Bitmap(_menusToolStrip.Width, _menusToolStrip.Height);
+			using (var g = Graphics.FromImage(bmp))
+			{
+				using (var b = new SolidBrush(_menusToolStrip.BackColor))
+				{
+					g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
+				}
+			}
+			_menusToolStrip.BackgroundImage = bmp;
+		}
+
+		private void SetAutoCheck(bool autoCheck)
+		{
+			if (_simpleAllPagesRadio.AutoCheck == autoCheck)
+				return;
+
+			_simpleAllPagesRadio.AutoCheck = autoCheck;
+			_bookletCoverRadio.AutoCheck = autoCheck;
+			_bookletBodyRadio.AutoCheck = autoCheck;
+			_uploadRadio.AutoCheck = autoCheck;
+		}
+
+		private void SetupLocalization()
+		{
+			LocalizeSuperToolTip(_simpleAllPagesRadio, "PublishTab.OnePagePerPaperRadio");
+			LocalizeSuperToolTip(_bookletCoverRadio, "PublishTab.CoverOnlyRadio");
+			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
+			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
+		}
+
+		private void LocalizeSuperToolTip(Control controlThatHasSuperTooltipAttached, string l10nIdOfControl)
+		{
+			var tooltipinfo = _superToolTip.GetSuperStuff(controlThatHasSuperTooltipAttached);
+			var english = tooltipinfo.SuperToolTipInfo.BodyText;
+			//enhance: GetLocalizingId didn't work: var l10nidForTooltip = _L10NSharpExtender.GetLocalizingId(controlThatHasSuperTooltipAttached) + ".tooltip";
+			var l10nidForTooltip = l10nIdOfControl + "-tooltip";
+			tooltipinfo.SuperToolTipInfo.BodyText = LocalizationManager.GetDynamicString("Bloom", l10nidForTooltip, english);
+			_superToolTip.SetSuperStuff(controlThatHasSuperTooltipAttached, tooltipinfo);
 		}
 
 
@@ -121,41 +188,58 @@ namespace Bloom.Publish
 			get { return _topBarPanel; }
 		}
 
+		public Bitmap ToolStripBackground { get; set; }
+
 		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 		{
 			_model.PdfGenerationSucceeded = false;
-			if(e.Result is Exception)
+			if (!e.Cancelled)
 			{
-				var error = e.Result as Exception;
-				if(error is ApplicationException)
+				if (e.Result is Exception)
 				{
-					//For common exceptions, we catch them earlier (in the worker thread) and give a more helpful message
-					//note, we don't want to include the original, as it leads to people sending in reports we don't
-					//actually want to see. E.g., we don't want a bug report just because they didn't have Acrobat
-					//installed, or they had the PDF open in Word, or something like that.
-					ErrorReport.NotifyUserOfProblem(error.Message);
+					var error = e.Result as Exception;
+					if (error is ApplicationException)
+					{
+						//For common exceptions, we catch them earlier (in the worker thread) and give a more helpful message
+						//note, we don't want to include the original, as it leads to people sending in reports we don't
+						//actually want to see. E.g., we don't want a bug report just because they didn't have Acrobat
+						//installed, or they had the PDF open in Word, or something like that.
+						ErrorReport.NotifyUserOfProblem(error.Message);
+					}
+					else if (error is FileNotFoundException && ((FileNotFoundException) error).FileName == "GeckofxHtmlToPdf.exe")
+					{
+						ErrorReport.NotifyUserOfProblem(error, error.Message);
+					}
+					else // for others, just give a generic message and include the original exception in the message
+					{
+						ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
+					}
+					UpdateDisplayMode();
+					return;
 				}
-				else // for others, just give a generic message and include the original exception in the message
-				{
-					ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
-				}
-				// We CAN upload even without a preview.
-				_model.DisplayMode = (_uploadRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.WaitForUserToChooseSomething);
-				UpdateDisplay();
-				return;
+				_model.PdfGenerationSucceeded = true;
+					// should be the only place this is set, when we generated successfully.
+				UpdateDisplayMode();
 			}
-			_model.PdfGenerationSucceeded = true; // should be the only place this is set, when we generated successfully.
-			if (IsHandleCreated) // May not be when bulk uploading
-			{
-				_model.DisplayMode = (_uploadRadio.Checked ? PublishModel.DisplayModes.Upload : PublishModel.DisplayModes.ShowPdf);
-				Invoke((Action) (UpdateDisplay));
-			}
-			if(_model.BookletPortion != (PublishModel.BookletPortions) e.Result )
+			if(e.Cancelled || _model.BookletPortion != (PublishModel.BookletPortions) e.Result )
 			{
 				MakeBooklet();
 			}
 		}
 
+		private void UpdateDisplayMode()
+		{
+			if (IsHandleCreated) // May not be when bulk uploading
+			{
+				if (_uploadRadio.Checked)
+					_model.DisplayMode = PublishModel.DisplayModes.Upload; 	// We CAN upload even without a preview.
+				else if (_model.PdfGenerationSucceeded)
+					_model.DisplayMode = PublishModel.DisplayModes.ShowPdf;
+				else
+					_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
+				Invoke((Action) (UpdateDisplay));
+			}
+		}
 
 
 		protected override void OnLoad(EventArgs e)
@@ -182,25 +266,31 @@ namespace Bloom.Publish
 			_uploadRadio.Enabled = _model.AllowUpload;
 			_bookletBodyRadio.Enabled = _model.ShowBookletOption;
 			_bookletCoverRadio.Enabled = _model.ShowCoverOption;
+			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
 
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
 			//_showCropMarks.Checked = _model.ShowCropMarks;
 
+			var layout = _model.PageLayout;
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
 			_layoutChoices.DropDownItems.Clear();
 //			_layoutChoices.Items.AddRange(layoutChoices.ToArray());
 //			_layoutChoices.SelectedText = _model.BookSelection.CurrentSelection.GetLayout().ToString();
-			foreach (var l in layoutChoices)
+			foreach (var lc in layoutChoices)
 			{
-				ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(l.ToString());
-				item.Tag = l;
-				item.Text = l.ToString();
-				item.Checked = l.ToString() == _model.PageLayout.ToString();
+				var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + lc, lc.ToString());
+				ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(text);
+				item.Tag = lc;
+				item.Text = text;
+				item.Checked = lc.ToString() == layout.ToString();
 				item.CheckOnClick = true;
-				item.Click += new EventHandler(OnLayoutChosen);
+				item.Click += OnLayoutChosen;
 			}
-			_layoutChoices.Text = _model.PageLayout.ToString();
+			_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
+
+			// "EditTab" because it is the same text.  No sense in having it listed twice.
+			_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip", "Choose a page size and orientation");
 		}
 
 		private void OnLayoutChosen(object sender, EventArgs e)
@@ -242,6 +332,23 @@ namespace Bloom.Publish
 						_saveButton.Enabled = true;
 						_printButton.Enabled = _pdfViewer.ShowPdf(_model.PdfFilePath);
 					}
+					break;
+				case PublishModel.DisplayModes.Printing:
+					_simpleAllPagesRadio.Enabled = false;
+					_bookletCoverRadio.Enabled = false;
+					_bookletBodyRadio.Enabled = false;
+					_printButton.Enabled = _saveButton.Enabled = false;
+					_workingIndicator.Cursor = Cursors.WaitCursor;
+					Cursor = Cursors.WaitCursor;
+					_workingIndicator.Visible = true;
+					break;
+				case PublishModel.DisplayModes.ResumeAfterPrint:
+					_simpleAllPagesRadio.Enabled = true;
+					_pdfViewer.Visible = true;
+					_workingIndicator.Visible = false;
+					Cursor = Cursors.Default;
+					_saveButton.Enabled = true;
+					_printButton.Enabled = true;
 					break;
 				case PublishModel.DisplayModes.Upload:
 				{
@@ -285,6 +392,10 @@ namespace Bloom.Publish
 		{
 			if (!_activated)
 				return;
+
+			// BL-625: One of the RadioButtons is now checked, so it is safe to re-enable AutoCheck.
+			if (Palaso.PlatformUtilities.Platform.IsMono)
+				SetAutoCheck(true);
 
 			var oldPortion = _model.BookletPortion;
 			var oldCrop = _model.ShowCropMarks; // changing to or from cloud radio CAN change this.
@@ -382,17 +493,130 @@ namespace Bloom.Publish
 			_makePdfBackgroundWorker.RunWorkerAsync();
 		}
 
+		private bool isBooklet()
+		{
+			return _model.BookletPortion == PublishModel.BookletPortions.BookletCover
+					|| _model.BookletPortion == PublishModel.BookletPortions.BookletPages
+					|| _model.BookletPortion == PublishModel.BookletPortions.InnerContent; // Not sure this last is used, but play safe...
+		}
+
 		private void OnPrint_Click(object sender, EventArgs e)
 		{
+			var printSettingsPreviewFolder = FileLocator.GetDirectoryDistributedWithApplication("printer settings images");
+			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
+				_model.PageLayout.SizeAndOrientation + "-" + (isBooklet() ? "Booklet-" : ""));
+			string printSettingsSampleName = null;
+			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			{
+				printSettingsSampleName = printSettingsSamplePrefix + "Linux-" + LocalizationManager.UILanguageId + ".png";
+				if (!File.Exists(printSettingsSampleName))
+					printSettingsSampleName = printSettingsSamplePrefix + "Linux-en.png";
+			}
+			if (printSettingsSampleName == null || !File.Exists(printSettingsSampleName))
+				printSettingsSampleName = printSettingsSamplePrefix + LocalizationManager.UILanguageId + ".png";
+			if (!File.Exists(printSettingsSampleName))
+				printSettingsSampleName = printSettingsSamplePrefix + "en" + ".png";
+			if (File.Exists(printSettingsSampleName))
+			{
+				// We display the _previewBox to show sample print settings. We need to get rid of it when the
+				// print dialog goes away. For Windows, the only way I've found to know when that happens is
+				// that the main Bloom form gets activated again.  For Linux, waiting for process spawned off
+				// to print the pdf file to finish seems to be the only way to know it's safe to hide the
+				// sample print settings.  (On Linux/Mono, the form activates almost as soon as the print
+				// dialog appears.)
+#if __MonoCS__
+				_pdfViewer.PrintFinished += FormActivatedAfterPrintDialog;
+#else
+				var form = FindForm();
+				form.Activated += FormActivatedAfterPrintDialog;
+#endif
+				_previewBox.Image = Image.FromFile(printSettingsSampleName);
+				_previewBox.Bounds = GetPreviewBounds();
+				_previewBox.SizeMode = PictureBoxSizeMode.Zoom;
+				_previewBox.Show();
+				if (!Settings.Default.DontShowPrintNotification)
+				{
+					using (var dlg = new SamplePrintNotification())
+					{
+#if __MonoCS__
+						_pdfViewer.PrintFinished -= FormActivatedAfterPrintDialog;
+						dlg.ShowDialog(this);
+						_pdfViewer.PrintFinished += FormActivatedAfterPrintDialog;
+#else
+						form.Activated -= FormActivatedAfterPrintDialog; // not wanted when we close the dialog.
+						dlg.ShowDialog(this);
+						form.Activated += FormActivatedAfterPrintDialog;
+#endif
+						if (dlg.StopShowing)
+						{
+							Settings.Default.DontShowPrintNotification = true;
+							Settings.Default.Save();
+						}
+					}
+				}
+			}
 			_pdfViewer.Print();
 			Logger.WriteEvent("Calling Print on PDF Viewer");
 			Analytics.Track("Print PDF");
 		}
 
+		/// <summary>
+		/// Computes the preview bounds (since the image may be bigger than what we have room
+		/// for).
+		/// </summary>
+		Rectangle GetPreviewBounds()
+		{
+			double horizontalScale = 1.0;
+			double verticalScale = 1.0;
+			if (_previewBox.Image.Width > ClientRectangle.Width)
+				horizontalScale = (double)(ClientRectangle.Width) / (double)(_previewBox.Image.Width);
+			if (_previewBox.Image.Height > ClientRectangle.Height)
+				verticalScale = (double)(ClientRectangle.Height) / (double)(_previewBox.Image.Height);
+			double scale = Math.Min(horizontalScale, verticalScale);
+			int widthPreview = (int)(_previewBox.Image.Width * scale);
+			int heightPreview = (int)(_previewBox.Image.Height * scale);
+			var sizePreview = new Size(widthPreview, heightPreview);
+			var xPreview = ClientRectangle.Width - widthPreview;
+			var yPreview = ClientRectangle.Height - heightPreview;
+			var originPreview = new Point(xPreview, yPreview);
+			return new Rectangle(originPreview, sizePreview);
+		}
+
+		private void FormActivatedAfterPrintDialog(object sender, EventArgs eventArgs)
+		{
+#if __MonoCS__
+			_pdfViewer.PrintFinished -= FormActivatedAfterPrintDialog;
+#else
+			var form = FindForm();
+			form.Activated -= FormActivatedAfterPrintDialog;
+#endif
+			_previewBox.Hide();
+			if (_previewBox.Image != null)
+			{
+				_previewBox.Image.Dispose();
+				_previewBox.Image = null;
+			}
+		}
+
+		private void OnPrintProgress(object sender, PdfPrintProgressEventArgs e)
+		{
+			// BL-788 Only called in Linux version.  Protects against button
+			// pushes while print is in progress.
+			if (e.PrintInProgress)
+			{
+				SetDisplayMode(PublishModel.DisplayModes.Printing);
+			}
+			else
+			{
+				SetDisplayMode(PublishModel.DisplayModes.ResumeAfterPrint);
+				UpdateDisplay ();
+			}
+
+		}
 		private void _makePdfBackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			e.Result = _model.BookletPortion; //record what our parameters were, so that if the user changes the request and we cancel, we can detect that we need to re-run
-			_model.LoadBook(e);
+			_model.LoadBook(sender as BackgroundWorker, e);
 		}
 
 		private void OnSave_Click(object sender, EventArgs e)
@@ -412,6 +636,10 @@ namespace Bloom.Publish
 		private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
 		{
 
+		}
+		private void _openPDF_Click(object sender, EventArgs e)
+		{
+			PathUtilities.OpenFileInApplication(_model.PdfFilePath);
 		}
 
 		/// <summary>

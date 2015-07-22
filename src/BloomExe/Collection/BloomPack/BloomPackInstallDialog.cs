@@ -4,14 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using System.Linq;
-using DesktopAnalytics;
-using Ionic.Zip;
+using ICSharpCode.SharpZipLib.Zip;
 using Palaso.Reporting;
 
 namespace Bloom.Collection.BloomPack
 {
 	/// <summary>
-	/// A BloomPack is just a zipped collection folder (a folder full of book folders).
+	/// A Bloom Pack is just a zipped collection folder (a folder full of book folders).
 	/// </summary>
 	public partial class BloomPackInstallDialog : Form
 	{
@@ -27,6 +26,13 @@ namespace Bloom.Collection.BloomPack
 			_okButton.Enabled = false;
 		}
 
+		protected override void OnHandleCreated(EventArgs e)
+		{
+			base.OnHandleCreated(e);
+
+			// BL-552, BL-779: a bug in Mono requires us to wait to set Icon until handle created.
+			this.Icon = global::Bloom.Properties.Resources.Bloom;
+		}
 
 		private void _okButton_Click(object sender, EventArgs e)
 		{
@@ -37,42 +43,40 @@ namespace Bloom.Collection.BloomPack
 		{
 			if (!File.Exists(_path))
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("{0} does not exist", _path);
+				string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.DoesNotExist", "{0} does not exist");
+				ErrorReport.NotifyUserOfProblem(msg, _path);
 				return;
 			}
-			using (var zip = ZipFile.Read(_path))
+			_folderName = GetRootFolderName();
+			if (_folderName == null)
+				return;
+			string destinationFolder = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
+			if (Directory.Exists(destinationFolder))
 			{
-				_folderName = GetRootFolderName(zip);
-				if (_folderName == null)
-					return;
-				string destinationFolder = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
-				if (Directory.Exists(destinationFolder))
+				Logger.WriteEvent("Bloom Pack already exists, asking...");
+				string title = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BloomPackInstaller",
+						"Bloom Pack Installer", "Displayed as the message box title");
+				string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.Replace",
+					"This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this Bloom Pack?");
+				msg = string.Format(msg, _folderName);
+				if (DialogResult.OK != MessageBox.Show(msg, title, MessageBoxButtons.OKCancel))
 				{
-					Logger.WriteEvent("BloomPack already exists, asking...");
-					var msg =
-						string.Format(
-							"This computer already has a Bloom collection named '{0}'. Do you want to replace it with the one from this BloomPack?",
-							_folderName);
-					if (DialogResult.OK != MessageBox.Show(msg, "BloomPack Installer", MessageBoxButtons.OKCancel))
-					{
-						_message.Text = "The Bloom collection will not be installed.";
-						_okButton.Text = "&Cancel";
-						return;
-					}
-					try
-					{
-						Logger.WriteEvent("Deleting existing BloomPack at " + destinationFolder);
-						DeleteExistingDirectory(destinationFolder);
-					}
-					catch (Exception error)
-					{
-						throw new ApplicationException(string.Format(
-								"Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running & try again. Otherwise, try again after restarting your computer.",
-								destinationFolder), error);
-					}
+					_message.Text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.NotInstalled", "The Bloom collection will not be installed.");
+					_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton", "&Cancel");
+					return;
+				}
+				try
+				{
+					Logger.WriteEvent("Deleting existing Bloom Pack at " + destinationFolder);
+					DeleteExistingDirectory(destinationFolder);
+				}
+				catch (Exception error)
+				{
+					string text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.UnableToReplace", "Bloom was not able to remove the existing copy of '{0}'. Quit Bloom if it is running & try again. Otherwise, try again after restarting your computer.");
+					throw new ApplicationException(string.Format(text, destinationFolder), error);
 				}
 			}
-			Logger.WriteEvent("Installing BloomPack " + _path);
+			Logger.WriteEvent("Installing Bloom Pack " + _path);
 			_okButton.Enabled = false;
 			_message.Text = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.Extracting", "Extracting...", "Shown while BloomPacks are being installed");
 			_backgroundWorker.RunWorkerAsync();
@@ -99,46 +103,98 @@ namespace Bloom.Collection.BloomPack
 			Directory.Delete(destinationFolder, true);
 		}
 
-		private string GetRootFolderName(ZipFile zip)
+		private string GetRootFolderName()
 		{
-			string fileName = null;
-			foreach (var f in zip.Entries)
+			string rootDirectory = null;
+			ZipFile zip = null;
+			try
 			{
-				var parts = f.FileName.Split(new[] {'/', '\\'});
-				if (fileName != null && fileName != parts[0])
+				zip = new ZipFile(_path);
+				foreach (ZipEntry zipEntry in zip)
 				{
-					string msg = "Bloom Packs should have only a single collection folder at the top level of the zip file.";
-					_message.Text = msg;
-					pictureBox1.Image = _errorImage.Image;
-					_okButton.Text = "&Cancel";
-					return null;
+					var parts = zipEntry.Name.Split(new[] { '/', '\\' });
+					if (rootDirectory != null && rootDirectory != parts[0])
+					{
+						string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.SingleCollectionFolder",
+							"Bloom Packs should have only a single collection folder at the top level of the zip file.");
+						_message.Text = msg;
+						pictureBox1.Image = _errorImage.Image;
+						_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton", "&Cancel");
+						return null;
+					}
+					rootDirectory = parts[0];
 				}
-				fileName = parts[0];
 			}
-			return fileName;
+			finally
+			{
+				if (zip != null)
+					zip.Close();
+			}
+			return rootDirectory;
 		}
 
 		private void _backgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		{
 			//nb: we want exceptions to be uncaught, to be transferred up to the worker completed event
-
-			using (var zip = ZipFile.Read(_path))
+			_folderName = GetRootFolderName();
+			if (_folderName == null)
+				return;
+			// ZipFile internally converts all \ separators to / (at least on Linux). So using
+			// ZipFile instead of FastZip fixes https://jira.sil.org/browse/BL-1213.
+			ZipFile zip = null;
+			try
 			{
-				_folderName = GetRootFolderName(zip);
-				if (_folderName == null)
-					return;
+				zip = new ZipFile(_path);
+				byte[] buffer = new byte[4096];     // 4K is optimum
+				foreach (ZipEntry entry in zip)
+				{
+					var fullOutputPath = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), entry.Name);
+					if (entry.IsDirectory)
+					{
+						Directory.CreateDirectory(fullOutputPath);
+						// In the SharpZipLib code, IsFile and IsDirectory are not defined exactly as inverse: a third
+						// (or fourth) type of entry might be possible.  In practice in BloomPacks, this should not be
+						// an issue.
+						continue;
+					}
+					var directoryName = Path.GetDirectoryName(fullOutputPath);
+					if (!String.IsNullOrEmpty(directoryName))
+						Directory.CreateDirectory(directoryName);
+					using (var instream = zip.GetInputStream(entry))
+					using (var writer = File.Create(fullOutputPath))
+					{
+						ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
+					}
+				}
+			}
+			finally
+			{
+				if (zip != null)
+					zip.Close();
+			}
 
-				//NB: in the version i have at the moment, EntriesExtracted & EntriesTotal are always 0
-				zip.ExtractProgress +=(o, extractProgress) =>
-					_backgroundWorker.ReportProgress(extractProgress.EntriesExtracted/
-													 (extractProgress.EntriesTotal > 0 ? extractProgress.EntriesTotal : 1));
+			var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
+			CopyXMatterFoldersToWhereTheyBelong(newlyAddedFolderOfThePack);
+			CopyReaderToolsSettingsToWhereTheyBelong(newlyAddedFolderOfThePack);
+		}
 
-				zip.ZipError += (o, args) => { throw args.Exception; };
-
-				zip.ExtractAll(ProjectContext.GetInstalledCollectionsDirectory());
-
-				var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
-				CopyXMatterFoldersToWhereTheyBelong(newlyAddedFolderOfThePack);
+		private void CopyReaderToolsSettingsToWhereTheyBelong(string newlyAddedFolderOfThePack)
+		{
+			var destFolder = ProjectContext.GetBloomAppDataFolder();
+			foreach (var readerSettingsFile in Directory.GetFiles(newlyAddedFolderOfThePack, CollectionSettings.ReaderToolsSettingsPrefix + "*.json")
+				.Concat(Directory.GetFiles(newlyAddedFolderOfThePack,"ReaderToolsWords-*.json")))
+			{
+				try
+				{
+					File.Copy(readerSettingsFile, Path.Combine(destFolder, Path.GetFileName(readerSettingsFile)), true);
+				}
+				catch (IOException e)
+				{
+					// If we can't do it, we can't. Don't worry about it in production.
+#if DEBUG
+					Debug.Fail("Some file error copying reader settings");
+#endif
+				}
 			}
 		}
 
@@ -178,22 +234,28 @@ namespace Bloom.Collection.BloomPack
 			if(e.Error!=null)
 			{
 				_message.Text =  L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.ErrorInstallingBloomPack","Bloom was not able to install that Bloom Pack");
+				if (e.Error is ArgumentException && e.Error.StackTrace.Contains("CheckIllegalCharacters"))
+				{
+					_message.Text += Environment.NewLine + Environment.NewLine
+						+ L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BadCharsInFileName",
+						"Possibly this is an old BloomPack created before BloomPacks could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.");
+				}
 				_errorImage.Visible = true;
 				_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton","&Cancel");
 				DesktopAnalytics.Analytics.ReportException(e.Error);
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e.Error, _message.Text);
+				ErrorReport.NotifyUserOfProblem(e.Error, _message.Text);
 				return;
 			}
 			var allDone = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.BloomPackInstalled",
-																			  "The {0} Collection is now ready to use on this computer.");
+				"The {0} Collection is now ready to use on this computer.");
 			_message.Text = string.Format(allDone, _folderName);
-			if (Process.GetProcesses().Count(p => p.ProcessName.Contains("Bloom")) > 1)
+			if (Program.GetRunningBloomProcessCount() > 1)
 			{
-				_message.Text += System.Environment.NewLine + System.Environment.NewLine
-								 + L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.MustRestartToSee",
-																		   "Bloom is already running, but the contents will not show up until the next time you run Bloom");
+				_message.Text += Environment.NewLine + Environment.NewLine +
+					L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.MustRestartToSee",
+					"Bloom is already running, but the contents will not show up until the next time you run Bloom");
 			}
-			//Analytics.Track("Install BloomPack");
+			//Analytics.Track("Install Bloom Pack");
 		}
 
 		private void _backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)

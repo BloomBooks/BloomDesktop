@@ -6,7 +6,7 @@ using Bloom.Properties;
 using DesktopAnalytics;
 using L10NSharp;
 
-namespace PalasoUIWinforms.Registration
+namespace Bloom.Registration
 {
 	public partial class RegistrationDialog : Form
 	{
@@ -26,9 +26,10 @@ namespace PalasoUIWinforms.Registration
 
 			_cancelButton.Visible = _registrationIsOptional;
 
-			Text = LocalizationManager.GetString("RegisterDialog.WindowTitle", string.Format(Text,Application.ProductName), "Place a {0} where the name of the program goes.");
-			_headingLabel.Text = LocalizationManager.GetString("RegisterDialog.Heading", string.Format(_headingLabel.Text,Application.ProductName), "Place a {0} where the name of the program goes.");
-			_howUsingLabel.Text = LocalizationManager.GetString("RegisterDialog.HowAreYouUsing", string.Format(_howUsingLabel.Text, Application.ProductName), "Place a {0} where the name of the program goes.");
+			//Text = LocalizationManager.GetString("RegisterDialog.WindowTitle", "not used");
+			Text = string.Format(Text, Application.ProductName);
+			_headingLabel.Text = string.Format(_headingLabel.Text, Application.ProductName);
+			_howUsingLabel.Text = string.Format(_howUsingLabel.Text, Application.ProductName);
 		}
 
 		protected bool ReallyDesignMode
@@ -76,6 +77,12 @@ namespace PalasoUIWinforms.Registration
 
 		public static bool ShouldWeShowRegistrationDialog()
 		{
+			//there is no point registering if we are are developer/tester
+			string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
+			if (!string.IsNullOrEmpty(feedbackSetting) && feedbackSetting.ToLowerInvariant() != "yes" &&
+				feedbackSetting.ToLowerInvariant() != "true")
+				return false;
+
 			if (!_haveRegisteredLaunch)//in case the client app calls this more then once during a single run (like Bloom does when opening a different collection)
 			{
 				_haveRegisteredLaunch=true;
@@ -157,6 +164,14 @@ namespace PalasoUIWinforms.Registration
 		private void _cancelButton_Click(object sender, EventArgs e)
 		{
 			Close();
+		}
+
+		protected override void OnHandleCreated(EventArgs e)
+		{
+			base.OnHandleCreated(e);
+
+			// BL-832: a bug in Mono requires us to wait to set Icon until handle created.
+			this.Icon = global::Bloom.Properties.Resources.Bloom;
 		}
 	}
 }

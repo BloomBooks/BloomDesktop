@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,6 +7,7 @@ using System.Xml;
 using Palaso.CommandLineProcessing;
 using Palaso.Extensions;
 using Palaso.IO;
+using Palaso.Network;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
@@ -18,14 +18,6 @@ namespace Bloom.Book
 {
 	public class ImageUpdater
 	{
-		public static void MakeImagePathsOfImportedPagePointToOriginalLocations(XmlElement pageDiv, string folderPath)
-		{
-			foreach (XmlElement img in pageDiv.SafeSelectNodes("descendant::img"))
-			{
-				img.SetAttribute("src", "file://"+ Path.Combine(folderPath, img.GetAttribute("src")));
-			}
-		}
-
 		public static void CopyImageMetadataToWholeBook(string folderPath, HtmlDom dom, Metadata metadata, IProgress progress)
 		{
 			progress.WriteStatus("Starting...");
@@ -59,7 +51,8 @@ namespace Bloom.Book
 		{
 			foreach (var path in Directory.EnumerateFiles(folderPath).Where(s => s.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)))
 			{
-				if ((path.ToLower() == "placeholder.png") || path.ToLower() == ("license.png") || path.ToLower() == ("thumbnail.png"))
+				if ((path.ToLowerInvariant() == "placeholder.png") || path.ToLowerInvariant() == ("license.png")
+					|| path.ToLowerInvariant() == ("thumbnail.png"))
 					continue;
 				yield return path;
 			}
@@ -73,14 +66,13 @@ namespace Bloom.Book
 		public static void UpdateImgMetdataAttributesToMatchImage(string folderPath, XmlElement imgElement, IProgress progress, Metadata metadata)
 		{
 			//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
-			var fileName = imgElement.GetOptionalStringAttribute("src", string.Empty).ToLower();
-
+			var fileName = imgElement.GetOptionalStringAttribute("src", string.Empty);
 			var end = fileName.IndexOf('?');
 			if (end > 0)
 			{
 				fileName = fileName.Substring(0, end);
 			}
-			if (fileName == "placeholder.png" || fileName == "license.png")
+			if (fileName.ToLowerInvariant() == "placeholder.png" || fileName.ToLowerInvariant() == "license.png")
 				return;
 			if (string.IsNullOrEmpty(fileName))
 			{
@@ -88,6 +80,8 @@ namespace Bloom.Book
 				//Debug.Fail(" (Debug only) img has no or empty src attribute");
 				return; // they have bigger problems, which aren't appropriate to deal with here.
 			}
+
+			fileName = HttpUtilityFromMono.UrlDecode(fileName);
 			if (metadata == null)
 			{
 				progress.WriteStatus("Reading metadata from " + fileName);
@@ -143,6 +137,10 @@ namespace Bloom.Book
 			int completed = 0;
 			foreach (string path in imageFiles)
 			{
+
+				if (Path.GetFileName(path).ToLowerInvariant() == "placeholder.png")
+					return;
+
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);
 				CompressImage(path, progress);
 				completed++;

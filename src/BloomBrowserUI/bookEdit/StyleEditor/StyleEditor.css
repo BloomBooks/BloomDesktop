@@ -1,0 +1,72 @@
+#format-toolbar * {
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+#format-toolbar H2 {
+  font-size: 10pt;
+}
+#format-toolbar .format-toolbar-description {
+  font-size: small;
+  line-height: 1.2;
+  margin: 10px 0px 5px 0px;
+  color: grey;
+}
+#format-toolbar .mainBlock {
+  display: inline-block;
+  vertical-align: top;
+  line-height: normal;
+}
+#format-toolbar .leftBlock {
+  width: 150px;
+}
+#format-toolbar .spacing-fudge {
+  margin: 0px 0px -5px 0px;
+}
+#format-toolbar #size-select {
+  width: 43px;
+  margin-left: 5px;
+}
+#format-toolbar #line-height-select {
+  width: 45px;
+  margin-left: 2px;
+}
+#format-toolbar #word-space-select {
+  margin-left: 2px;
+}
+#format-toolbar #styleSelect {
+  margin: 0px 0px 12px 0px;
+  width: 145px;
+}
+#format-toolbar #style-select-input {
+  width: 143px;
+}
+#format-toolbar .bloomDialogContainer {
+  width: 350px !important;
+}
+#format-toolbar .state-initial #dont-see {
+  display: block;
+}
+#format-toolbar .state-initial #createStyle {
+  display: none;
+}
+#format-toolbar .state-enteringStyle #createStyle {
+  display: block;
+}
+#format-toolbar .state-enteringStyle #dont-see,
+#format-toolbar .state-enteringStyle #please-use-alpha,
+#format-toolbar .state-enteringStyle #already-exists {
+  display: none;
+}
+#format-toolbar .state-invalid-characters #please-use-alpha {
+  display: block;
+}
+#format-toolbar .state-invalid-characters #already-exists,
+#format-toolbar .state-invalid-characters #dont-see {
+  display: none;
+}
+#format-toolbar .state-already-exists #already-exists {
+  display: block;
+}
+#format-toolbar .state-already-exists #please-use-alpha,
+#format-toolbar .state-already-exists #dont-see {
+  display: none;
+}

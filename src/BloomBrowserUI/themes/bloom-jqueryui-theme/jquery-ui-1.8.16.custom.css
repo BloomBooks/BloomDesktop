@@ -1395,6 +1395,7 @@ BUTTON.ui-button::-moz-focus-inner
 	width: 17px;
 	height: 17px;
 	display: block;
+	/*margin: 1px; this was causing the close 'x' to be mispositioned */
 }
 .ui-dialog .ui-dialog-titlebar-close:hover, .ui-dialog .ui-dialog-titlebar-close:focus
 {
