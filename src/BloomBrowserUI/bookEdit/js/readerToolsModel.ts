@@ -942,6 +942,7 @@ class ReaderToolsModel {
       setTimeout(function() {
 
         model.wordListLoaded = true;
+        model.updateControlContents(); // needed if user deletes all of the stages.
         model.doMarkup();
         model.updateWordList();
         model.processWordListChangedListeners();

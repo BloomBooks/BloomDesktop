@@ -772,6 +772,7 @@ var ReaderToolsModel = (function () {
             // the JavaScript version of Application.DoEvents().
             setTimeout(function () {
                 model.wordListLoaded = true;
+                model.updateControlContents(); // needed if user deletes all of the stages.
                 model.doMarkup();
                 model.updateWordList();
                 model.processWordListChangedListeners();
