@@ -147,7 +147,6 @@ namespace Bloom.CollectionTab
 
 					_createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
 					_sendReceiver.CheckInNow(checkinNotice);
-					Palaso.UI.WindowsForms.ClearShare.Metadata.DeleteStoredExemplar(Palaso.UI.WindowsForms.ClearShare.Metadata.FileCategory.Image);
 				}
 				catch(Exception error)
 				{
