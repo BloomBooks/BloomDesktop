@@ -1,0 +1,185 @@
+// page-chooser.less - rules for the Bloom Page Chooser dialog
+// try not to overwrite the bloomDialog.less rules
+
+@PreviewPaneLeftPadding: 15px;
+#mainContainer {
+	border: 2px;
+	border-style: solid;
+	margin: 5px;
+	height: 721px;
+    max-width: 930px;
+    display: flex;
+    flex-direction: column;
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+}
+#page-title {
+	font-size: medium;
+	font-weight: bold;
+	border-bottom: 2px solid;
+	padding-left: 5px;
+	padding-top: 2px;
+    flex: 1;
+}
+.bloomDialogMainPage {
+	flex: 1;
+    display: flex;
+    flex-direction: row;
+}
+.templatePageDisplay {
+	overflow-y: auto;
+	height: 681px;
+	flex: 3;
+	display: flex;
+	flex-direction: column;
+}
+#singlePagePreview {
+    flex: 2;
+	order: 2;
+	height: 681px;
+	IFRAME {
+		pointer-events: none;
+	}
+}
+#preview {
+	position: relative;
+	right: 0;
+	top: 0;
+	margin-top: -185px;
+	margin-left: -130px;
+	margin-right: -130px;
+	-moz-transform-origin: 50% 50%;
+	-moz-transform: scale(0.5);
+	-webkit-transform-origin: 50% 50%;
+	-webkit-transform: scale(0.5);
+	transform-origin: 50% 50%;
+	transform: scale(0.5);
+	height: 798px;
+	width: 571px;
+	border: 2pt solid #008000;
+}
+#previewCaption {
+	font-weight: bold;
+	height: 25px;
+	width: 326px;
+	position: relative;
+	padding-left: @PreviewPaneLeftPadding;
+	top: 10px;
+}
+#previewDescription {
+	position: relative;
+	bottom: 190px;
+	height: 165px;
+	border: 2px solid yellow;
+	padding-left: @PreviewPaneLeftPadding;
+	.DescriptionHeader {
+		font-weight: bold;
+	}
+	.DescriptionText {
+		overflow-y: scroll;
+		white-space: normal;
+		max-height: 145px;
+	}
+}
+#addPageButton {
+	z-index: 10;
+	width: 135px;
+	height: 45px;
+	font-weight: bold;
+	position: absolute;
+	right: 140px;
+	bottom: 5px;
+	background: url("../bookEdit/img/AddPageIcon.png") left no-repeat;
+	text-align: right;
+}
+#cancelButton {
+	z-index: 10;
+	width: 115px;
+	height: 45px;
+	font-weight: bold;
+	position: absolute;
+	right: 15px;
+	bottom: 5px;
+}
+// Currently unused
+//.templatesCaption {
+//	overflow: hidden;
+//	background: #E0E0E0;
+//	padding-top: 4px;
+//	padding-bottom: 4px;
+//	padding-left: 20px;
+//	margin-top: 5px;
+//	margin-left: 5px;
+//    flex: 1 1 100%;
+//    flex-wrap: nowrap;
+//}
+.outerCollectionContainer {
+	flex: 1;
+}
+.collectionCaption {
+	font-weight: bold;
+	padding-left: 4px;
+	margin-left: 20px;
+	margin-top: 12px;
+	display: block;
+}
+.innerCollectionContainer {
+	margin: 5px 0 0 20px;
+}
+.templatePage {
+	margin: 5px 10px 5px 11px;
+	width: 104px;
+	height: 162px;
+	display: inline-block;
+}
+.templatePage:hover {
+	background: #F4EAE3;
+}
+.templatePage.ui-selected {
+	background: #FFDCAC;
+	border:1px solid #000000;
+}
+.thumbnail {
+	overflow: hidden;
+	display: block;
+	margin-left: 10px;
+	margin-top: 4px;
+	margin-bottom: -672px;
+	background: inherit;
+	-moz-transform-origin: 2px 0;
+	-moz-transform: scale(0.14);
+	-webkit-transform-origin: 2px 0;
+	-webkit-transform: scale(0.14);
+	transform-origin: 2px 0;
+	transform: scale(0.14);
+	width: 575px;
+	height: 800px;
+	border: 8px solid #20318A;
+}
+.templatePageCaption {
+	font-weight: bold;
+	text-align: center;
+	height: 43px;
+	position: relative;
+	left: 0;
+	top: -28px;
+	overflow: hidden;
+}
+.invisibleThumbCover {
+	z-index: 5;
+	position: absolute;
+	height: 162px;
+	width: 100px;
+	background: url(transparent.gif);
+}
+#testButton {
+	position: absolute;
+	left: 10px;
+	top: 4px;
+	height: 24px;
+	width: 79px;
+	z-index: 20;
+	//Re-enable the "display: none;" for production
+	//display:none;
+}

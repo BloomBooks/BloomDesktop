@@ -1,197 +1,167 @@
-/*[fmt]1A90-1A0A-1*/
-/*page-chooser.css - rules for the Bloom Page Chooser dialog*/
-* {
-	position: relative;
-	margin: 0;
-	padding: 0;
-}
-BODY {
-	font-size: 100%;
-	font-family: sans-serif;
-	line-height: 1.5;
-}
-TABLE {
-	border: none;
-	margin: 0px;
-	padding: 0px;
-	border-spacing: 0;
-}
 #mainContainer {
-	border: 2px;
-	border-style: solid;
-	margin: 5px;
-	height: 721px;
-	box-sizing: border-box;
-	-webkit-box-sizing: border-box;
-	-ms-box-sizing: border-box;
-}
-#mainContainer > TABLE {
-	width: 100%;
+  border: 2px;
+  border-style: solid;
+  margin: 5px;
+  height: 721px;
+  max-width: 930px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing: border-box;
 }
 #page-title {
-	font-size: medium;
-	font-weight: bold;
-	border-bottom: 2px solid;
-	padding-left: 5px;
-	padding-top: 2px;
+  font-size: medium;
+  font-weight: bold;
+  border-bottom: 2px solid;
+  padding-left: 5px;
+  padding-top: 2px;
+  flex: 1;
 }
-.twoColumnTable {
-	width: 100%;
-}
-#singlePagePreview {
-	width: 385px;
-}
-#preview {
-	/*+placement:anchor-top-right 0px 0px;*/
-	position: absolute;
-	right: 0px;
-	top: 0px;
-	margin-top: 31px;
-	margin-right: -210px;
-	-moz-transform-origin: 0 0;
-	-moz-transform: scale(0.6);
-	-webkit-transform-origin: 0 0;
-	-webkit-transform: scale(0.6);
-	transform-origin: 0 0;
-	transform: scale(0.6);
-	height: 798px;
-	width: 571px;
-	overflow: hidden;
-	border: 2pt solid #008000;
-}
-#invisiblePreviewCover {
-	/*[disabled]border:2px dashed #008000;*/
-	z-index: 5;
-	/*+placement:anchor-top-right 1px 6px;*/
-	position: absolute;
-	right: 1px;
-	top: 6px;
-	height: 677px;
-	width: 374px;
-	background: url(transparent.gif);
-}
-#previewCaption {
-	font-weight: bold;
-	text-align: center;
-	height: 25px;
-	width: 326px;
-	/*+placement:float-left 30px -270px;*/
-	float: left;
-	position: relative;
-	left: 30px;
-	top: -270px;
-}
-#previewDescription {
-	/*+placement:shift 24px 241px;*/
-	position: relative;
-	left: 24px;
-	top: 241px;
-	width: 341px;
-	height: 134px;
-}
-#addPageButton {
-	background: #FFA500;
-	z-index: 10;
-	width: 135px;
-	height: 45px;
-	font-weight: bold;
-	/*+placement:anchor-bottom-right 6px 5px;*/
-	position: absolute;
-	right: 6px;
-	bottom: 5px;
+.bloomDialogMainPage {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
 }
 .templatePageDisplay {
-	overflow-y: auto;
-	display: block;
-	height: 683px;
+  overflow-y: auto;
+  height: 681px;
+  flex: 3;
+  display: flex;
+  flex-direction: column;
 }
-.templatePageDisplay TABLE {
-	width: 100%;
+#singlePagePreview {
+  flex: 2;
+  order: 2;
+  height: 681px;
 }
-.templatesCaption {
-	overflow: hidden;
-	background: #E0E0E0;
-	padding-top: 4px;
-	padding-bottom: 4px;
-	padding-left: 20px;
-	margin-top: 5px;
-	margin-left: 5px;
+#singlePagePreview IFRAME {
+  pointer-events: none;
+}
+#preview {
+  position: relative;
+  right: 0;
+  top: 0;
+  margin-top: -185px;
+  margin-left: -130px;
+  margin-right: -130px;
+  -moz-transform-origin: 50% 50%;
+  -moz-transform: scale(0.5);
+  -webkit-transform-origin: 50% 50%;
+  -webkit-transform: scale(0.5);
+  transform-origin: 50% 50%;
+  transform: scale(0.5);
+  height: 798px;
+  width: 571px;
+  border: 2pt solid #008000;
+}
+#previewCaption {
+  font-weight: bold;
+  height: 25px;
+  width: 326px;
+  position: relative;
+  padding-left: 15px;
+  top: 10px;
+}
+#previewDescription {
+  position: relative;
+  bottom: 190px;
+  height: 165px;
+  border: 2px solid yellow;
+  padding-left: 15px;
+}
+#previewDescription .DescriptionHeader {
+  font-weight: bold;
+}
+#previewDescription .DescriptionText {
+  overflow-y: scroll;
+  white-space: normal;
+  max-height: 145px;
+}
+#addPageButton {
+  z-index: 10;
+  width: 135px;
+  height: 45px;
+  font-weight: bold;
+  position: absolute;
+  right: 140px;
+  bottom: 5px;
+  background: url("../bookEdit/img/AddPageIcon.png") left no-repeat;
+  text-align: right;
+}
+#cancelButton {
+  z-index: 10;
+  width: 115px;
+  height: 45px;
+  font-weight: bold;
+  position: absolute;
+  right: 15px;
+  bottom: 5px;
 }
 .outerCollectionContainer {
-	display: block;
-	/*[disabled]height:675px;*/
+  flex: 1;
 }
 .collectionCaption {
-	font-weight: bold;
-	padding-left: 4px;
-	margin-left: 20px;
-	margin-top: 12px;
-	display: block;
+  font-weight: bold;
+  padding-left: 4px;
+  margin-left: 20px;
+  margin-top: 12px;
+  display: block;
 }
 .innerCollectionContainer {
-	margin: 5px 0px 0px 20px;
+  margin: 5px 0 0 20px;
 }
 .templatePage {
-	margin: 5px 10px 5px 11px;
-	width: 104px;
-	height: 162px;
-	display: inline-block;
-	/*[disabled]border: 1px solid #63BC84;*/
+  margin: 5px 10px 5px 11px;
+  width: 104px;
+  height: 162px;
+  display: inline-block;
 }
 .templatePage:hover {
-	background: #F4EAE3;
+  background: #F4EAE3;
 }
 .templatePage.ui-selected {
-	background: #FFDCAC;
-	border:1px solid #000000;
+  background: #FFDCAC;
+  border: 1px solid #000000;
 }
 .thumbnail {
-	overflow: hidden;
-	display: block;
-	margin-left: 10px;
-	margin-top: 4px;
-	margin-bottom: -672px;
-	background: inherit;
-	-moz-transform-origin: 2px 0;
-	-moz-transform: scale(0.14);
-	-webkit-transform-origin: 2px 0;
-	-webkit-transform: scale(0.14);
-	transform-origin: 2px 0;
-	transform: scale(0.14);
-	width: 575px;
-	height: 800px;
-	border: 8px solid #20318A;
+  overflow: hidden;
+  display: block;
+  margin-left: 10px;
+  margin-top: 4px;
+  margin-bottom: -672px;
+  background: inherit;
+  -moz-transform-origin: 2px 0;
+  -moz-transform: scale(0.14);
+  -webkit-transform-origin: 2px 0;
+  -webkit-transform: scale(0.14);
+  transform-origin: 2px 0;
+  transform: scale(0.14);
+  width: 575px;
+  height: 800px;
+  border: 8px solid #20318A;
 }
 .templatePageCaption {
-	font-weight: bold;
-	text-align: center;
-	height: 43px;
-	/*+placement:shift 0px -28px;*/
-	position: relative;
-	left: 0px;
-	top: -28px;
-	overflow: hidden;
+  font-weight: bold;
+  text-align: center;
+  height: 43px;
+  position: relative;
+  left: 0;
+  top: -28px;
+  overflow: hidden;
 }
 .invisibleThumbCover {
-	/*[disabled]border:2px dashed #008000;*/
-	z-index: 5;
-	/*+placement:anchor-top-left 0px -3px;*/
-	position: absolute;
-	left: 0px;
-	top: -3px;
-	height: 166px;
-	width: 100px;
-	background: url(transparent.gif);
+  z-index: 5;
+  position: absolute;
+  height: 162px;
+  width: 100px;
+  background: url(transparent.gif);
 }
 #testButton {
-	/*+placement:anchor-top-left 373px 2px;*/
-	position: absolute;
-	left: 373px;
-	top: 2px;
-	top: 1px;
-	background-color: #DA1B1B;
-	height: 24px;
-	width: 79px;
-	/*Re-enable the "display: none;" for production*/
-	/*[disabled]display:none;*/
+  position: absolute;
+  left: 10px;
+  top: 4px;
+  height: 24px;
+  width: 79px;
+  z-index: 20;
 }
