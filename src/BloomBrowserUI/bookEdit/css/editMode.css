@@ -624,3 +624,12 @@ SPAN.possible-word
 .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
   right: 0px;
 }
+div.cke_float {
+  border: 1px solid #555 !important;
+}
+div.cke_float div.cke_top {
+  padding: 4px !important;
+}
+div.cke_float div.cke_top span.cke_toolgroup {
+  margin: 0 !important;
+}
