@@ -650,6 +650,7 @@ $(document).ready(function() {
     OneTimeSetup();
 
     // configure ckeditor
+    if (typeof CKEDITOR === "undefined") return;  // this happens during unit testing
     CKEDITOR.disableAutoInline = true;
 
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
