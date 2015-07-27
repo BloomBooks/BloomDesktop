@@ -534,6 +534,11 @@ class StyleEditor {
 
         $('#format-toolbar').remove(); // in case there's still one somewhere else
 
+        // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
+        var suppress = $(document).find('meta[name="suppressFormatting"]');
+        if (suppress.length > 0 && suppress.attr('content').toLowerCase() === 'true')
+            return;
+
         // put the format button in the editable text box itself, so that it's always in the right place.
         // unfortunately it will be subject to deletion because this is an editable box. But we can mark it as uneditable, so that
         // the user won't see resize and drag controls when they click on it
@@ -567,7 +572,7 @@ class StyleEditor {
                 if (editor.styles.indexOf(styleName) == -1) {
                     editor.styles.push(styleName);
                 }
-                editor.styles.sort(function (a, b) {
+                editor.styles.sort(function (a: string, b: string) {
                     return a.toLowerCase().localeCompare(b.toLowerCase());
                 });
 
