@@ -535,6 +535,15 @@ namespace Bloom.Edit
 			}
 		}
 
+		public string ShowAddPageDialog()
+		{
+			if (_view == null || _inProcessOfDeleting)
+				return string.Empty;
+			var jsonTemplates = GetJsonTemplatePageObject;
+			var result = _view.RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
+			return result == "fail" ? string.Empty : result;
+		}
+
 		void OnPageSelectionChanged(object sender, EventArgs e)
 		{
 			Logger.WriteMinorEvent("changing page selection");
@@ -583,6 +592,10 @@ namespace Bloom.Edit
 				_server.AccordionContent = MakeAccordionContent();
 			else
 				_server.AccordionContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
+			if (ShowTemplatePanel)
+			{
+				_server.PageChooserDialog = GetDialogContent();
+			}
 
 			_server.CurrentBook = _currentlyDisplayedBook;
 			_server.AuthorMode = ShowTemplatePanel;
@@ -820,6 +833,33 @@ namespace Bloom.Edit
 		{
 			jsonData = jsonData.Replace("\r", "").Replace("\n", "");
 			return CleanUpDataForJavascript(jsonData);
+		}
+
+		private string GetDialogContent()
+		{
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/page chooser", "page-chooser-main.htm");
+			_accordionFolder = Path.GetDirectoryName(path);
+
+			var domForDialog = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+
+			// embed settings on the page
+			var settings = new Dictionary<string, object>
+			{
+				{"pageId", "noResult"}
+			};
+
+			var settingsStr = JsonConvert.SerializeObject(settings);
+			settingsStr = String.Format("function GetDialogResult() {{ return {0};}}", settingsStr);
+
+			var scriptElement = domForDialog.RawDom.CreateElement("script");
+			scriptElement.SetAttribute("type", "text/javascript");
+			scriptElement.SetAttribute("id", "ui-dialogResult");
+			scriptElement.InnerText = settingsStr;
+
+			domForDialog.Head.InsertAfter(scriptElement, domForDialog.Head.LastChild);
+
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForDialog.RawDom);
+			return TempFileUtils.CreateHtml5StringFromXml(domForDialog.RawDom);
 		}
 
 		private string MakeAccordionContent()
@@ -1135,6 +1175,22 @@ namespace Bloom.Edit
 			}
 		}
 	   */
+
+		/// <summary>
+		/// As a first pass, we are creating the AddPageDialog with only the Basic Book pages.
+		/// Eventually we will need to come up with heuristics to know which templates to load.
+		/// </summary>
+		/// <returns></returns>
+		private string GetJsonTemplatePageObject
+		{
+			get
+			{
+				var path =
+					BloomFileLocator.GetFileDistributedWithApplication("factoryCollections/Templates/Basic Book/Basic Book.htm");
+				var jsonString = "[{ \"templateBookUrl\": \"" + path + "\" }]";
+				return jsonString;
+			}
+		}
 	}
 
 	public class TemplateInsertionCommand
