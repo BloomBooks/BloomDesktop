@@ -105,14 +105,14 @@ var PageChooser = (function () {
             var currentPageHTML = $(pageHTML).clone();
             $('.templatePageCaption', currentPageHTML).first().text(pageTitle);
             $('iframe', currentPageHTML).attr('src', url + '#' + currentId);
-            $(currentCollection).append(currentPageHTML);
-        });
+            $('.innerCollectionContainer', currentCollection).append(currentPageHTML);
+        }); // each
         // once the template pages are installed, attach click handler to them.
         $('.invisibleThumbCover', currentCollection).each(function(index, div) {
             $(div).click(function() {
                 ThumbnailClickHandler(div);
             }); // invisibleThumbCover click
-        }); // each */
+        }); // each
     }; // LoadPagesFromCollection
 
     var TestButtonClickHandler = function() {
