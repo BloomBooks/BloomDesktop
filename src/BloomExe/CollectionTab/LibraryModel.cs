@@ -397,8 +397,8 @@ namespace Bloom.CollectionTab
 			match = regex.Match(text);
 			if (match.Success)
 			{
-				// has the suppressFormatting meta tag been added already?
-				var regexSuppress = new Regex("\\s*<meta\\s+name=(['\\\"])suppressFormatting\\1 content=(['\\\"])(.*)\\2>(</meta>)? *");
+				// has the lockFormatting meta tag been added already?
+				var regexSuppress = new Regex("\\s*<meta\\s+name=(['\\\"])lockFormatting\\1 content=(['\\\"])(.*)\\2>(</meta>)? *");
 				var matchSuppress = regexSuppress.Match(text);
 				if (matchSuppress.Success)
 				{
@@ -413,7 +413,7 @@ namespace Bloom.CollectionTab
 				{
 					// the meta tag has not been added, add it now
 					text = text.Insert(match.Index + match.Length,
-						"\r\n    <meta name=\"suppressFormatting\" content=\"true\"></meta>");
+						"\r\n    <meta name=\"lockFormatting\" content=\"true\"></meta>");
 				}
 			}
 

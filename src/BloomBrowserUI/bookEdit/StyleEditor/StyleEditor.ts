@@ -535,7 +535,7 @@ class StyleEditor {
         $('#format-toolbar').remove(); // in case there's still one somewhere else
 
         // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
-        var suppress = $(document).find('meta[name="suppressFormatting"]');
+        var suppress = $(document).find('meta[name="lockFormatting"]');
         if (suppress.length > 0 && suppress.attr('content').toLowerCase() === 'true')
             return;
 
