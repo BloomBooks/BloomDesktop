@@ -1,3 +1,8 @@
+#addPageConfig {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
 #mainContainer {
   border: 2px;
   border-style: solid;
@@ -164,4 +169,5 @@
   height: 24px;
   width: 79px;
   z-index: 20;
+  display: none;
 }

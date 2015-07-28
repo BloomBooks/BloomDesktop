@@ -15,7 +15,7 @@ html
 		+script('js/page-chooser.js')
 	body
 		#mainContainer.bloomDialogContainer
-			//.bloomDialogTitleBar#page-title=pageTitle
+			.bloomDialogTitleBar#page-title=pageTitle
 			.bloomDialogMainPage
 				.templatePageDisplay
 					// .templatesCaption Installed Templates (Currently unused)
@@ -33,12 +33,12 @@ html
 									.templatePageCaption Page Title
 				#singlePagePreview
 					//#invisiblePreviewCover
-					#previewCaption Caption goes here
+					#previewCaption
 					iframe(src='blank-preview.htm', width=500, height=700, scrolling='no', frameborder='0')#preview
 						p Your browser does not support iframes
 					#previewDescription
 						.DescriptionHeader Description
-						.DescriptionText Description goes here even if there's enough to scroll around several lines and cause scrolling down below and so forth.
+						.DescriptionText
 					button#addPageButton Add This Page
 					button#cancelButton Cancel
 			button#testButton Test

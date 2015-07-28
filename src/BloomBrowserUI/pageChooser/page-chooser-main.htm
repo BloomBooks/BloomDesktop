@@ -12,7 +12,7 @@
   </head>
   <body>
     <div id="mainContainer" class="bloomDialogContainer">
-      <!--.bloomDialogTitleBar#page-title=pageTitle-->
+      <div id="page-title" class="bloomDialogTitleBar">Add Page...</div>
       <div class="bloomDialogMainPage">
         <div class="templatePageDisplay">
           <!-- .templatesCaption Installed Templates (Currently unused)-->
@@ -33,13 +33,13 @@
         </div>
         <div id="singlePagePreview">
           <!--#invisiblePreviewCover-->
-          <div id="previewCaption">Caption goes here</div>
+          <div id="previewCaption"></div>
           <iframe src="blank-preview.htm" width="500" height="700" scrolling="no" frameborder="0" id="preview">
             <p>Your browser does not support iframes</p>
           </iframe>
           <div id="previewDescription">
             <div class="DescriptionHeader">Description</div>
-            <div class="DescriptionText">Description goes here even if there's enough to scroll around several lines and cause scrolling down below and so forth.</div>
+            <div class="DescriptionText"></div>
           </div>
           <button id="addPageButton">Add This Page</button>
           <button id="cancelButton">Cancel</button>

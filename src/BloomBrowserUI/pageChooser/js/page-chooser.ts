@@ -1,6 +1,8 @@
 /// <reference path="../../lib/jquery.d.ts" />
 
-var JSONTestString = "[{ \"templateBookUrl\": \"../../../DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }, { \"templateBookUrl\": \"../../../DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }]";
+// this version of the test string may be useful later testing more than one template collection
+//var JSONTestString = "[{ \"templateBookUrl\": \"../../../DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }, { \"templateBookUrl\": \"../../../DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }]";
+var JSONTestString = "[{ \"templateBookUrl\": \"../../../DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }]";
 
 var PageChooser = (function () {
     // Constructor
@@ -16,15 +18,15 @@ var PageChooser = (function () {
         var addPage = $( "#addPageButton" );
         addPage.prop( "disabled", true );
         addPage.click( function() {
-            AddPageClickHandler();
+            addPageClickHandler();
         }); // Add Page button click
         // Comment out this function to disable testButton; or better yet just hide it in the css
         $( "#testButton" ).click( function() {
-            TestButtonClickHandler();
+            testButtonClickHandler();
         }); // Test button click
     }); // document ready
 
-    var ThumbnailClickHandler = function( div ) {
+    var thumbnailClickHandler = function( div ) {
         // 'div' is an .invisibleThumbCover
         // Mark any previously selected thumbnail as no longer selected
         if (this._selectedTemplatePage != undefined) {
@@ -35,20 +37,26 @@ var PageChooser = (function () {
         $(this._selectedTemplatePage).addClass('ui-selected');
         // Display large preview
         $( '#previewCaption').text($('.templatePageCaption', this._selectedTemplatePage).text());
+        $('#previewCaption').attr('style', 'display: block;');
         $( '#preview' ).attr( 'src', $( this._selectedTemplatePage ).find('iframe').first().attr('src'));
         $( '#addPageButton' ).prop( "disabled", false );
-    }; // ThumbnailClickHandler
+    }; // thumbnailClickHandler
 
-    var AddPageClickHandler = function() {
+    var addPageClickHandler = function() {
         if (this._selectedTemplatePage == undefined || this._templateBookUrls == undefined) {
-            return;
+            return null;
         }
         // TODO: Add page to book here
-        console.log('Selected template page: ' + $( this._selectedTemplatePage ).find('iframe').first().attr('src'));
+        var pageId = $(this._selectedTemplatePage).find('iframe').first().attr('src');
+        console.log('Selected template page: ' + pageId);
         console.log('Input urls: ' + this._templateBookUrls);
         // Mark any previously selected thumbnail as no longer selected
         $(this._selectedTemplatePage).removeClass('ui-selected');
     }; // AddPageClickHandler
+
+    var cancelButtonClickHandler = function() {
+        $(this).dialog("close");
+    };
 
     var LoadInstalledCollections = function() {
         // Save html sections that will get cloned later
@@ -110,15 +118,15 @@ var PageChooser = (function () {
         // once the template pages are installed, attach click handler to them.
         $('.invisibleThumbCover', currentCollection).each(function(index, div) {
             $(div).click(function() {
-                ThumbnailClickHandler(div);
+                thumbnailClickHandler(div);
             }); // invisibleThumbCover click
         }); // each
     }; // LoadPagesFromCollection
 
-    var TestButtonClickHandler = function() {
+    var testButtonClickHandler = function() {
         this._templateBookUrls = JSONTestString;
         LoadInstalledCollections();
-    }; // TestButtonClickHandler
+    }; // testButtonClickHandler
 
     return PageChooser;
 })();
