@@ -28,9 +28,9 @@ namespace BloomTests.CollectionTab
 			}
 		}
 
-		public void RunCompressDirectoryTest(ZipOutputStream zipStream)
+		public void RunCompressDirectoryTest(ZipOutputStream zipStream, bool forReaderTools = false)
 		{
-			CompressDirectory(TestFolderPath, zipStream, GetDirNameOffset, false);
+			CompressDirectory(TestFolderPath, zipStream, GetDirNameOffset, forReaderTools);
 		}
 	}
 }
