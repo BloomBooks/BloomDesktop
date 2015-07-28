@@ -592,10 +592,6 @@ namespace Bloom.Edit
 				_server.AccordionContent = MakeAccordionContent();
 			else
 				_server.AccordionContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
-			if (ShowTemplatePanel)
-			{
-				_server.PageChooserDialog = GetDialogContent();
-			}
 
 			_server.CurrentBook = _currentlyDisplayedBook;
 			_server.AuthorMode = ShowTemplatePanel;

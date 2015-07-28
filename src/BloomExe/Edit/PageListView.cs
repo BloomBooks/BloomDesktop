@@ -111,7 +111,8 @@ namespace Bloom.Edit
 			{
 				_dontForwardSelectionEvent = true;
 				_thumbNailList.SelectPage(page);
-				_addPageButton.Enabled = _addPageButton.Visible = _model.ShowTemplatePanel;
+				_addPageButton.Enabled = _model.ShowTemplatePanel;
+				_addPageButton.Visible = true;
 			}
 			finally
 			{
