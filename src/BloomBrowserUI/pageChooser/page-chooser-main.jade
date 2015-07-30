@@ -3,19 +3,18 @@ doctype html
 
 include mixins/page-chooser-mixins
 
-- var pageTitle = 'Add Page...'
 html
 	head
 		meta(charset='UTF-8')
 		title Bloom Add Page Chooser Dialog
-		+stylesheet('bloom/pageChooser/page-chooser.css')
+		+stylesheet('page-chooser.css')
 		+stylesheet('../bookEdit/css/bloomDialog.css')
 		+script('../lib/jquery.js')
 		+script('../lib/jquery-ui.js')
-		+script('bloom/pageChooser/js/page-chooser.js')
+		+script('js/page-chooser.js')
 	body
 		#mainContainer.bloomDialogContainer
-			.bloomDialogTitleBar#page-title=pageTitle
+			//.bloomDialogTitleBar#page-title=pageTitle
 			.bloomDialogMainPage
 				.templatePageDisplay
 					// .templatesCaption Installed Templates (Currently unused)
@@ -34,11 +33,11 @@ html
 				#singlePagePreview
 					//#invisiblePreviewCover
 					#previewCaption
-					iframe(src='pageChooser/blank-preview.htm', width=500, height=700, scrolling='no', frameborder='0')#preview
+					iframe(src='blank-preview.htm', width=500, height=700, scrolling='no', frameborder='0')#preview
 						p Your browser does not support iframes
 					#previewDescription
 						.DescriptionHeader Description
 						.DescriptionText
-					button#addPageButton Add This Page
-					button#cancelButton Cancel
+					//button#addPageButton Add This Page
+					//button#cancelButton Cancel
 			button#testButton Test

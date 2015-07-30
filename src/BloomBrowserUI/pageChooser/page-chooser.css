@@ -1,32 +1,21 @@
-#addPageConfig {
-  position: absolute;
-  top: 0;
-  left: 0;
+BODY {
+  margin: 4px;
 }
 #mainContainer {
-  border: 2px;
-  border-style: solid;
-  margin: 5px;
+  border: none;
+  margin: 0;
   height: 721px;
   max-width: 930px;
+  display: block;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -ms-box-sizing: border-box;
-}
-#page-title {
-  font-size: medium;
-  font-weight: bold;
-  border-bottom: 2px solid;
-  padding-left: 5px;
-  padding-top: 2px;
-  flex: 1;
 }
 .bloomDialogMainPage {
   flex: 1;
   display: flex;
   flex-direction: row;
+  margin: 0 !important;
 }
 .templatePageDisplay {
   overflow-y: auto;
@@ -83,25 +72,14 @@
   white-space: normal;
   max-height: 145px;
 }
-#addPageButton {
-  z-index: 10;
-  width: 135px;
-  height: 45px;
-  font-weight: bold;
-  position: absolute;
-  right: 140px;
-  bottom: 5px;
-  background: url("../bookEdit/img/AddPageIcon.png") left no-repeat;
-  text-align: right;
+.ui-dialog-buttonset:first-child {
+  width: 155px;
 }
-#cancelButton {
-  z-index: 10;
-  width: 115px;
-  height: 45px;
-  font-weight: bold;
-  position: absolute;
-  right: 15px;
-  bottom: 5px;
+.ui-dialog-buttonset:first-child .ui-icon-plusthick {
+  left: 0.25em;
+}
+.ui-dialog-buttonset:first-child .ui-button-text {
+  text-align: right;
 }
 .outerCollectionContainer {
   flex: 1;

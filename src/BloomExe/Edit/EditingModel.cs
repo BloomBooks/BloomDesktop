@@ -1181,8 +1181,11 @@ namespace Bloom.Edit
 		{
 			get
 			{
-				var path =
+				const string prefix = "../localhost/";
+				var path = prefix + 
 					BloomFileLocator.GetFileDistributedWithApplication("factoryCollections/Templates/Basic Book/Basic Book.htm");
+				path = path.Replace(':', '$');
+				//var path = "../localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm";
 				var jsonString = "[{ \"templateBookUrl\": \"" + path + "\" }]";
 				return jsonString;
 			}

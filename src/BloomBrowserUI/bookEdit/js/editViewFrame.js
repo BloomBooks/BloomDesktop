@@ -84,58 +84,60 @@ function showSetupDialog(showWhat) {
 
 }
 
-function FindOrCreateAddPageDiv(templates) {
+function FindOrCreateAddPageDiv(templates, descriptionLabel, blankPreviewMsg) {
 
-    var dialogContents = $('<div id="addPageConfig"/>').appendTo($("body"));
+    var dialogContents = $('<div id="addPageConfig"/>').appendTo($('body'));
 
-    var html = '<iframe id="addPage_frame" src="/bloom/page chooser/page-chooser-main.htm" scrolling="no" ' +
+    var html = '<iframe id="addPage_frame" src="/bloom/pageChooser/page-chooser-main.htm" scrolling="no" ' +
         'style="width: 100%; height: 100%; border-width: 0; margin: 0" ' +
         'onload="initializeAddPageDialog(' + templates + ');"></iframe>';
 
     dialogContents.append(html);
 
+    // When the page chooser loads, get the iframe holding it to resize to what's inside
+    $('#addPage_frame').load(function() {
+        // remove this bit for production
+        var testButton = $(this).contents().find('#testButton');
+        if(testButton.css('display') == 'visible')
+            testButton.trigger('click');
+
+        localizeDialogContents(dialogContents, descriptionLabel, blankPreviewMsg);
+
+        $(this).width($(this).contents().find('#mainContainer').width());
+        $(this).height($(this).contents().find('#mainContainer').height());
+    });
+
     return dialogContents;
 }
-
+// method run from EditingModel.cs
 function showAddPageDialog(templates) {
 
+    var theDialog;
     var parentElement = document.getElementById('page').contentWindow;
     parentElement.localizationManager.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
 
         var title = parentElement.localizationManager.getText('AddPageDialog.Title', 'Add Page...');
         var descriptionLabel = parentElement.localizationManager.getText('AddPageDialog.DescriptionLabel', 'Description');
-        var dialogContents = FindOrCreateAddPageDiv(templates);
+        var blankPreviewMsg = parentElement.localizationManager.getText('AddPageDialog.PreviewMessage',
+            'This will contain a preview of a template page when one is selected.');
+        var dialogContents = FindOrCreateAddPageDiv(templates, descriptionLabel, blankPreviewMsg);
 
-        var h = 580;
-        var w = 720;
-
-        // This height and width will fit inside the "800 x 600" settings
-        var sw = document.body.scrollWidth;
-        if (sw < 583) {
-            h = 460;
-            w = 390;
-        }
-
-        // This height and width will fit inside the "1024 x 586 Low-end netbook with windows Task bar" settings
-        else if ((sw < 723) || (window.innerHeight < 583)) {
-            h = 460;
-            w = 580;
-        }
-
-        $(dialogContents).dialog({
-            autoOpen: "true",
-            modal: "true",
+        theDialog = $(dialogContents).dialog({
+            autoOpen: false,
+            modal: true,
+            resizable: false,
+            width: 'auto',
+            height: 'auto',
+            position: {
+                my: "left top", at: "left top", of: window
+            },
+            title: title,
             buttons: {
-                //Help: {
-                //    // For consistency, I would have made this 'Common.Help', but we already had 'HelpMenu.Help Menu' translated
-                //    text: dialogElement.localizationManager.getText('HelpMenu.Help Menu', 'Help'),
-                //    class: 'left-button',
-                //    click: function() {
-                //        document.getElementById('addPage_frame').contentWindow.postMessage('Help', '*');
-                //    }
-                //},
                 OK: {
                     text: parentElement.localizationManager.getText('AddPageDialog.AddPageButton', 'Add This Page'),
+                    icons: {
+                        primary: "ui-icon-plusthick"
+                    },
                     click: function () {
                         document.getElementById('addPage_frame').contentWindow.postMessage('OK', '*');
                     }
@@ -154,13 +156,23 @@ function showAddPageDialog(templates) {
             },
             open: function () {
                 $('#addPageConfig').css('overflow', 'hidden');
-                //$('button span:contains("Help")').prepend('<i class="fa fa-question-circle"></i> ');
-            },
-            height: h,
-            width: w
+            }
         });
         fireCSharpEvent('setModalStateEvent', 'true');
     });
+    setTimeout(function() {
+        theDialog.dialog('open');
+    }, 100);
+}
+
+//function closeAddPageDialog() {
+//    var page = document.getElementById('#page');
+//    $(page).remove('#addPageConfig');
+//}
+
+function localizeDialogContents(dialogContents, description, blankMessage) {
+    $(dialogContents).find('iframe').contents().find('#previewDescription .DescriptionHeader').text(description);
+    $(dialogContents).find('iframe').contents().find('iframe').contents().find('#innerBox').text(blankMessage);
 }
 
 /**
@@ -207,6 +219,7 @@ function getAddPageDialogLocalizedStrings() {
     var pairs = {};
     pairs['AddPageDialog.Title'] = 'Add Page...';
     pairs['AddPageDialog.DescriptionLabel'] = 'Description';
+    pairs['AddPageDialog.PreviewMessage'] = 'This will contain a preview of a template page when one is selected.';
     //pairs['HelpMenu.Help Menu'] = 'Help';
     pairs['AddPageDialog.AddPageButton'] = 'Add This Page';
     pairs['Common.Cancel'] = 'Cancel';
@@ -233,12 +246,11 @@ function initializeReaderSetupDialog() {
  */
 function initializeAddPageDialog(templates) {
 
-    var model = document.getElementById('page-chooser-dialog').contentWindow.model;
-
-    var sourceMsg = 'Data\n' +  JSON.stringify(model.getSynphony().source);
-    document.getElementById('addPage_frame').contentWindow.postMessage(sourceMsg, '*');
+    //alert('arrived in initializeAddPageDialog with templates= ' + templates);
+    //
+    //var templateMsg = 'Data\n' +  templates;
+    //document.getElementById('addPageConfig').postMessage(templateMsg, '*');
 }
-
 
 /**
  * Called by C# after the setup data has been saved, following Save click.
