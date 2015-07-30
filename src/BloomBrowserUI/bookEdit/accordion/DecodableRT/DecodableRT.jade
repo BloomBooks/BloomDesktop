@@ -4,10 +4,13 @@ html
 	body
 		h3(data-panelId='DecodableRT', data-markuptype='1', data-order='10', data-i18n='Accordion.DecodableReaderTool') Decodable Reader Tool
 		div(data-panelId='DecodableRT')
-			img#decodable-keys(src='/bloom/images/keys-white.png', style='margin-left: 14px')
-			.stageLine
+			#setupStages
+				img#decodable-edit(src='/bloom/images/edit-white.png')
+				span.setup.noSelect
+					a(href="javascript:parent.window.showSetupDialog('stages');", data-i18n='DecodableReaderTool.SetUpStages') Set up Stages
+			.stageLine.clear.noSelect
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decStage
-				span.stageLabel.stageLine
+				span.stageLabel.stageLine.noSelect
 					span(data-i18n='DecodableReaderTool.Stage') Stage
 					= ' '
 					span#stageNumber 1
@@ -16,9 +19,6 @@ html
 					= ' '
 					span#numberOfStages.ofStage 2
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incStage
-			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
-				span.setup.stageLine
-					a(href="javascript:parent.window.showSetupDialog('stages');", data-i18n='DecodableReaderTool.SetUpStages') Set up Stages
 			#letters-in-this-stage.section.clear(style='margin-left: 6px')
 				span(data-i18n='DecodableReaderTool.LettersInThisStage') Letters in this stage
 			.tableHolder.clear
