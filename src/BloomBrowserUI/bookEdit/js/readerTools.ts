@@ -171,6 +171,7 @@ function initializeDecodableRT(): void {
   });
 
   model.updateControlContents();
+  $("#accordion").accordion("refresh");
 
   setTimeout(function() { resizeWordList(); }, 100);
   setTimeout(function() { $.divsToColumns('letter'); }, 100);
@@ -190,6 +191,7 @@ function initializeLeveledRT(): void {
   });
 
   model.updateControlContents();
+  $("#accordion").accordion("refresh");
 }
 
 if (typeof ($) === "function") {

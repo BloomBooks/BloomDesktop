@@ -127,6 +127,7 @@ function initializeDecodableRT() {
         model.sortByFrequency();
     });
     model.updateControlContents();
+    $("#accordion").accordion("refresh");
     setTimeout(function () {
         resizeWordList();
     }, 100);
@@ -144,6 +145,7 @@ function initializeLeveledRT() {
         model.decrementLevel();
     });
     model.updateControlContents();
+    $("#accordion").accordion("refresh");
 }
 if (typeof ($) === "function") {
     // Running for real, and jquery properly loaded first
