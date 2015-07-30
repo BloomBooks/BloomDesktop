@@ -664,13 +664,20 @@ $(document).ready(function() {
             var rng = editor.getSelection().getRanges()[0];
             var show = (rng.startOffset !== rng.endOffset);
             var bar = $('body').find('.' + editor.id);
+            bar.css('top', bar.data('top'));
             show ? bar.show() : bar.hide();
         });
 
         // hide the toolbar when ckeditor starts
         ckedit.on('instanceReady', function(evt) {
             var editor = evt['editor'];
-            $('body').find('.' + editor.id).hide();
+            var bar = $('body').find('.' + editor.id);
+
+            // Remember this because the toolbar appears in the wrong place if the div
+            // was empty when the editor was initialized.
+            bar.data('top', bar.css('top'));
+
+            bar.hide();
         });
     });
 

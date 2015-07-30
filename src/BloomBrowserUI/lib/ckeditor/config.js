@@ -34,4 +34,7 @@ CKEDITOR.editorConfig = function( config ) {
 
 	// this aligns to tool bar with the right side fo the edit field
 	config.floatSpacePreferRight = true;
+
+	// This is required to prevent Bloom from crashing when the Undo button is clicked.
+	config.undoStackSize = 0;
 };
