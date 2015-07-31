@@ -1,3 +1,4 @@
+// "region" ReaderSetup dialog
 function FindOrCreateConfigDiv(title) {
 
     var dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($("body"));
@@ -84,43 +85,71 @@ function showSetupDialog(showWhat) {
 
 }
 
-function FindOrCreateAddPageDiv(templates, descriptionLabel, blankPreviewMsg) {
+function getSettingsDialogLocalizedStrings() {
+    // Without preloading these, they are not available when the dialog is created
+    var pairs = {};
+    pairs['ReaderSetup.SetUpDecodableReaderTool'] = 'Set up Decodable Reader Tool';
+    pairs['ReaderSetup.SetUpLeveledReaderTool'] = 'Set up Leveled Reader Tool';
+    pairs['HelpMenu.Help Menu'] = 'Help';
+    pairs['Common.OK'] = 'OK';
+    pairs['Common.Cancel'] = 'Cancel';
+    return pairs;
+}
+
+//noinspection JSUnusedGlobalSymbols
+/**
+ * Used by the settings_frame to initialize the setup dialog
+ */
+function initializeReaderSetupDialog() {
+
+    var model = document.getElementById('accordion').contentWindow.model;
+
+    var sourceMsg = 'Data\n' +  JSON.stringify(model.getSynphony().source);
+    var fontMsg = 'Font\n' +  model.fontName;
+    document.getElementById('settings_frame').contentWindow.postMessage(sourceMsg, '*');
+    document.getElementById('settings_frame').contentWindow.postMessage(fontMsg, '*');
+}
+
+/**
+ * Called by C# after the setup data has been saved, following Save click.
+ */
+function closeSetupDialog() {
+    $('#synphonyConfig').dialog("close");
+}
+// "endregion" ReaderSetup dialog
+
+// "region" Add Page dialog
+function FindOrCreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg) {
 
     var dialogContents = $('<div id="addPageConfig"/>').appendTo($('body'));
 
-    var html = '<iframe id="addPage_frame" src="/bloom/pageChooser/page-chooser-main.htm" scrolling="no" ' +
-        'style="width: 100%; height: 100%; border-width: 0; margin: 0" ' +
-        'onload="initializeAddPageDialog(' + templates + ');"></iframe>';
+    var html = "<iframe id=\"addPage_frame\" src=\"/bloom/pageChooser/page-chooser-main.htm\" scrolling=\"no\" style=\"width: 100%; height: 100%; border-width: 0; margin: 0\"></iframe>";
 
     dialogContents.append(html);
 
     // When the page chooser loads, get the iframe holding it to resize to what's inside
     $('#addPage_frame').load(function() {
-        // remove this bit for production
-        var testButton = $(this).contents().find('#testButton');
-        if(testButton.css('display') == 'visible')
-            testButton.trigger('click');
-
         localizeDialogContents(dialogContents, descriptionLabel, blankPreviewMsg);
-
-        $(this).width($(this).contents().find('#mainContainer').width());
-        $(this).height($(this).contents().find('#mainContainer').height());
+        initializeAddPageDialog(templatesJSON);
     });
 
     return dialogContents;
 }
-// method run from EditingModel.cs
-function showAddPageDialog(templates) {
+
+//noinspection JSUnusedGlobalSymbols
+// method called from EditingModel.cs
+function showAddPageDialog(templatesJSON) {
 
     var theDialog;
     var parentElement = document.getElementById('page').contentWindow;
     parentElement.localizationManager.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
 
         var title = parentElement.localizationManager.getText('AddPageDialog.Title', 'Add Page...');
+        var addButtonText = parentElement.localizationManager.getText('AddPageDialog.AddPageButton', 'Add This Page');
         var descriptionLabel = parentElement.localizationManager.getText('AddPageDialog.DescriptionLabel', 'Description');
         var blankPreviewMsg = parentElement.localizationManager.getText('AddPageDialog.PreviewMessage',
             'This will contain a preview of a template page when one is selected.');
-        var dialogContents = FindOrCreateAddPageDiv(templates, descriptionLabel, blankPreviewMsg);
+        var dialogContents = FindOrCreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg);
 
         theDialog = $(dialogContents).dialog({
             autoOpen: false,
@@ -134,15 +163,14 @@ function showAddPageDialog(templates) {
             title: title,
             buttons: {
                 OK: {
-                    text: parentElement.localizationManager.getText('AddPageDialog.AddPageButton', 'Add This Page'),
+                    text: addButtonText,
                     icons: {
                         primary: "ui-icon-plusthick"
                     },
                     click: function () {
-                        document.getElementById('addPage_frame').contentWindow.postMessage('OK', '*');
+                        document.getElementById('addPage_frame').contentWindow.postMessage('AddSelectedPage', '*');
                     }
                 },
-
                 Cancel: {
                     text: parentElement.localizationManager.getText('Common.Cancel', 'Cancel'),
                     click: function () {
@@ -155,25 +183,54 @@ function showAddPageDialog(templates) {
                 fireCSharpEvent('setModalStateEvent', 'false');
             },
             open: function () {
-                $('#addPageConfig').css('overflow', 'hidden');
+                adjustAddPageButton(addButtonText);
+                setTimeout(function() {
+                    setDialogInnerIframeWidth();
+                }, 100);
             }
         });
         fireCSharpEvent('setModalStateEvent', 'true');
-    });
-    setTimeout(function() {
         theDialog.dialog('open');
-    }, 100);
+    });
 }
 
-//function closeAddPageDialog() {
-//    var page = document.getElementById('#page');
-//    $(page).remove('#addPageConfig');
-//}
+function adjustAddPageButton(addButtonText) {
+    var button = $('.ui-dialog-buttonpane').find('button:contains('+addButtonText+')');
+    button.width(button.width() + 15);
+}
+
+function setDialogInnerIframeWidth() {
+    var $this = $('#addPage_frame');
+    var width = $this.contents().find('#mainContainer').width();
+    var height = $this.contents().find('#mainContainer').height();
+    $this.height(height);
+    $this.width(width);
+}
 
 function localizeDialogContents(dialogContents, description, blankMessage) {
-    $(dialogContents).find('iframe').contents().find('#previewDescription .DescriptionHeader').text(description);
+    $(dialogContents).find('iframe').contents().find('.DescriptionHeader').text(description);
     $(dialogContents).find('iframe').contents().find('iframe').contents().find('#innerBox').text(blankMessage);
 }
+
+function getAddPageDialogLocalizedStrings() {
+    // Without preloading these, they are not available when the dialog is created
+    var pairs = {};
+    pairs['AddPageDialog.Title'] = 'Add Page...';
+    pairs['AddPageDialog.DescriptionLabel'] = 'Description';
+    pairs['AddPageDialog.PreviewMessage'] = 'This will contain a preview of a template page when one is selected.';
+    //pairs['HelpMenu.Help Menu'] = 'Help';
+    pairs['AddPageDialog.AddPageButton'] = 'Add This Page';
+    pairs['Common.Cancel'] = 'Cancel';
+    return pairs;
+}
+
+//noinspection JSUnusedGlobalSymbols
+// Used by the addPage_frame to initialize the setup dialog
+function initializeAddPageDialog(templatesJSON) {
+    var templateMsg = 'Data\n' + JSON.stringify(templatesJSON);
+    document.getElementById('addPage_frame').contentWindow.postMessage(templateMsg, '*');
+}
+// "endregion" Add Page dialog
 
 /**
  * Fires an event for C# to handle
@@ -201,60 +258,4 @@ function fireCSharpEvent(eventName, eventData) {
 
     // Solution III
     //var event = new (<any>MessageEvent)(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
-}
-
-function getSettingsDialogLocalizedStrings() {
-    // Without preloading these, they are not available when the dialog is created
-    var pairs = {};
-    pairs['ReaderSetup.SetUpDecodableReaderTool'] = 'Set up Decodable Reader Tool';
-    pairs['ReaderSetup.SetUpLeveledReaderTool'] = 'Set up Leveled Reader Tool';
-    pairs['HelpMenu.Help Menu'] = 'Help';
-    pairs['Common.OK'] = 'OK';
-    pairs['Common.Cancel'] = 'Cancel';
-    return pairs;
-}
-
-function getAddPageDialogLocalizedStrings() {
-    // Without preloading these, they are not available when the dialog is created
-    var pairs = {};
-    pairs['AddPageDialog.Title'] = 'Add Page...';
-    pairs['AddPageDialog.DescriptionLabel'] = 'Description';
-    pairs['AddPageDialog.PreviewMessage'] = 'This will contain a preview of a template page when one is selected.';
-    //pairs['HelpMenu.Help Menu'] = 'Help';
-    pairs['AddPageDialog.AddPageButton'] = 'Add This Page';
-    pairs['Common.Cancel'] = 'Cancel';
-    return pairs;
-}
-
-//noinspection JSUnusedGlobalSymbols
-/**
- * Used by the settings_frame to initialize the setup dialog
- */
-function initializeReaderSetupDialog() {
-
-    var model = document.getElementById('accordion').contentWindow.model;
-
-    var sourceMsg = 'Data\n' +  JSON.stringify(model.getSynphony().source);
-    var fontMsg = 'Font\n' +  model.fontName;
-    document.getElementById('settings_frame').contentWindow.postMessage(sourceMsg, '*');
-    document.getElementById('settings_frame').contentWindow.postMessage(fontMsg, '*');
-}
-
-//noinspection JSUnusedGlobalSymbols
-/**
- * Used by the addPage_frame to initialize the setup dialog
- */
-function initializeAddPageDialog(templates) {
-
-    //alert('arrived in initializeAddPageDialog with templates= ' + templates);
-    //
-    //var templateMsg = 'Data\n' +  templates;
-    //document.getElementById('addPageConfig').postMessage(templateMsg, '*');
-}
-
-/**
- * Called by C# after the setup data has been saved, following Save click.
- */
-function closeSetupDialog() {
-    $('#synphonyConfig').dialog("close");
 }
