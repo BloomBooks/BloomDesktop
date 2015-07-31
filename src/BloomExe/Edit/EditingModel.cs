@@ -48,6 +48,8 @@ namespace Bloom.Edit
 		private bool _inProcessOfDeleting;
 		private string _accordionFolder;
 		private EnhancedImageServer _server;
+		private readonly TemplateInsertionCommand _templateInsertionCommand;
+		private Dictionary<string, IPage> _templatePagesDict;
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
@@ -82,6 +84,7 @@ namespace Bloom.Edit
 			_collectionSettings = collectionSettings;
 			_sendReceiver = sendReceiver;
 			_server = server;
+			_templatePagesDict = null;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -119,6 +122,7 @@ namespace Bloom.Edit
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
 			_server.CurrentBook = CurrentBook;
+			_templateInsertionCommand = templateInsertionCommand;
 		}
 
 		private Form _oldActiveForm;
@@ -167,6 +171,7 @@ namespace Bloom.Edit
 			_domForCurrentPage = null;
 			_currentlyDisplayedBook = null;
 			_server.CurrentBook = CurrentBook;
+			_templatePagesDict = null;
 			if (Visible)
 			{
 				_view.ClearOutDisplay();
@@ -677,9 +682,27 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("addPage", AddPageFromDialog);
 		}
 
+		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
+		{
+			if (_templatePagesDict != null)
+				return _templatePagesDict;
+
+			// avoid going through TemplatePagesView which is going away when I get this working
+			var templateBook = _bookSelection.CurrentSelection.FindTemplateBook();
+			_templatePagesDict = templateBook.GetTemplatePagesIdDictionary();
+			return templateBook == null ? null : _templatePagesDict;
+		}
+
 		private void AddPageFromDialog(string data)
 		{
-			MessageBox.Show("I think we got a pageId from the AddPage dialog! " + data);
+			// The Page Chooser dialog will generate the page guid from a template book
+			var args = data.Split(new[] {'#'});
+			if (args.Length < 2)
+				return;
+			var pageId = args[1];
+			IPage page;
+			if(GetTemplatePagesForThisBook().TryGetValue(pageId, out page))
+				_templateInsertionCommand.Insert(page as Page);
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
@@ -1177,28 +1200,25 @@ namespace Bloom.Edit
 		}
 	   */
 
-		private string GetBasicBookTemplate
+		private string GetCurrentTemplate
 		{
 			get
 			{
-				return BloomFileLocator.GetFileDistributedWithApplication("factoryCollections/Templates/Basic Book/Basic Book.htm");
+				var templateBook = CurrentBook.FindTemplateBook();
+				if (templateBook == null)
+					return null;
+
+				return templateBook.GetPathHtmlFile();
 			}
 		}
 
-		/// <summary>
-		/// As a first pass, we are creating the AddPageDialog with only the Basic Book pages.
-		/// Eventually we will need to come up with heuristics to know which templates to load.
-		/// </summary>
-		/// <returns></returns>
 		private string GetJsonTemplatePageObject
 		{
 			get
 			{
 				const string prefix = "/bloom/localhost/";
-				//const string prefix = "../localhost/";
-				var path = prefix + GetBasicBookTemplate;
+				var path = prefix + GetCurrentTemplate;
 				path = path.Replace(':', '$').Replace('\\', '/');
-				//var path = "../localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm";
 				var jsonString = "[{ \"templateBookUrl\": \"" + path + "\" }]";
 				return jsonString;
 			}

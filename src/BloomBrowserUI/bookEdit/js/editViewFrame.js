@@ -186,7 +186,7 @@ function showAddPageDialog(templatesJSON) {
                 adjustAddPageButton(addButtonText);
                 setTimeout(function() {
                     setDialogInnerIframeWidth();
-                }, 100);
+                }, 200);
             }
         });
         fireCSharpEvent('setModalStateEvent', 'true');
