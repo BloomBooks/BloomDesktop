@@ -383,6 +383,26 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Hamburger {
+            get {
+                object obj = ResourceManager.GetObject("Hamburger", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap help16x16 {
+            get {
+                object obj = ResourceManager.GetObject("help16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap help24x24 {
             get {
                 object obj = ResourceManager.GetObject("help24x24", resourceCulture);
@@ -546,6 +566,16 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap open {
             get {
                 object obj = ResourceManager.GetObject("open", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap OpenCreateLibrary16x16 {
+            get {
+                object obj = ResourceManager.GetObject("OpenCreateLibrary16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -726,6 +756,16 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap settings32x32 {
             get {
                 object obj = ResourceManager.GetObject("settings32x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap settingsbw16x16 {
+            get {
+                object obj = ResourceManager.GetObject("settingsbw16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

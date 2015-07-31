@@ -86,7 +86,7 @@
 			this._toolSpecificPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
 			this._toolSpecificPanel.Location = new System.Drawing.Point(333, 2);
 			this._toolSpecificPanel.Name = "_toolSpecificPanel";
-			this._toolSpecificPanel.Size = new System.Drawing.Size(700, 66);
+			this._toolSpecificPanel.Size = new System.Drawing.Size(762, 66);
 			this._toolSpecificPanel.TabIndex = 17;
 			// 
 			// _panelHoldingToolStrip
@@ -368,12 +368,6 @@
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = "HelpMenu";
 			// 
-			// _applicationUpdateCheckTimer
-			// 
-			this._applicationUpdateCheckTimer.Enabled = true;
-			this._applicationUpdateCheckTimer.Interval = 60000;
-			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
-			// 
 			// _tabStrip
 			// 
 			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
@@ -417,9 +411,9 @@
 			this._collectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._collectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._collectionTab.Size = new System.Drawing.Size(103, 71);
-			this._collectionTab.TextChanged += HandleTabTextChanged;
 			this._collectionTab.Text = "Collections";
 			this._collectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._collectionTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
 			// 
 			// _editTab
 			// 
@@ -439,9 +433,9 @@
 			this._editTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._editTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._editTab.Size = new System.Drawing.Size(69, 71);
-			this._editTab.TextChanged += HandleTabTextChanged;
 			this._editTab.Text = "Edit";
 			this._editTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._editTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
 			// 
 			// _publishTab
 			// 
@@ -463,9 +457,15 @@
 			this._publishTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 			this._publishTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
 			this._publishTab.Size = new System.Drawing.Size(83, 71);
-			this._publishTab.TextChanged += HandleTabTextChanged;
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._publishTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
+			// 
+			// _applicationUpdateCheckTimer
+			// 
+			this._applicationUpdateCheckTimer.Enabled = true;
+			this._applicationUpdateCheckTimer.Interval = 60000;
+			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
 			// 
 			// WorkspaceView
 			// 

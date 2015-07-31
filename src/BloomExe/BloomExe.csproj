@@ -1123,6 +1123,18 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   <ItemGroup>
     <None Include="Resources\AddPageIcon.PNG" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\settingsbw16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OpenCreateLibrary16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\help16x16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Hamburger.PNG" />
+  </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(GeckoBrowserAdapter)" DestinationFolder="$(OutDir)" />

@@ -392,6 +392,31 @@ namespace Bloom.CollectionTab
 			if (match.Success)
 				text = text.Substring(0, match.Index) + text.Substring(match.Index + match.Length);
 
+			// BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
+			regex = new Regex("\\s*<meta\\s+name=(['\\\"])pageTemplateSource\\1 content=(['\\\"])(Leveled|Decodable) Reader\\2>(</meta>)? *");
+			match = regex.Match(text);
+			if (match.Success)
+			{
+				// has the lockFormatting meta tag been added already?
+				var regexSuppress = new Regex("\\s*<meta\\s+name=(['\\\"])lockFormatting\\1 content=(['\\\"])(.*)\\2>(</meta>)? *");
+				var matchSuppress = regexSuppress.Match(text);
+				if (matchSuppress.Success)
+				{
+					// the meta tag already exists, make sure the value is "true"
+					if (matchSuppress.Groups[3].Value.ToLower() != "true")
+					{
+						text = text.Substring(0, matchSuppress.Groups[3].Index) + "true"
+							+  text.Substring(matchSuppress.Groups[3].Index + matchSuppress.Groups[3].Length);
+					}
+				}
+				else
+				{
+					// the meta tag has not been added, add it now
+					text = text.Insert(match.Index + match.Length,
+						"\r\n    <meta name=\"lockFormatting\" content=\"true\"></meta>");
+				}
+			}
+
 			return Encoding.UTF8.GetBytes(text);
 		}
 

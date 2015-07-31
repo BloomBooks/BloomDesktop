@@ -14,8 +14,8 @@ div.accordionRoot {
 .ui-accordion-header { -moz-user-select: none; }
 td.section { margin-top: 20px; padding-top: 20px; }
 span.scroll-button { color: white; float: left; }
-div.ui-accordion { padding-left: 0px; padding-right: 0px; }
-div.ui-accordion-content { padding-left: 3px !important; padding-right: 0px !important; }
+div.ui-accordion { padding-left: 0; padding-right: 0; }
+div.ui-accordion-content { padding-left: 3px !important; padding-right: 0 !important; }
 div.section { padding-top: 20px; color: lightskyblue; }
 div.clear, table.clear { clear: both; }
 .hidden { display: none !important; }
@@ -47,4 +47,24 @@ div.checkbox-label {
 	float: left;
 	-moz-user-select: none;
 	cursor: default;
+}
+
+.ui-accordion h3[data-panelId="DecodableRT"],
+.ui-accordion h3[data-panelId="LeveledRT"] {
+	padding-left: 28px;
+}
+
+.ui-accordion h3[data-panelId="DecodableRT"] span.ui-accordion-header-icon,
+.ui-accordion h3[data-panelId="LeveledRT"] span.ui-accordion-header-icon {
+	background-size: 16px 16px;
+	background-position: 0 0;
+	display: inline-block;
+}
+
+.ui-accordion h3[data-panelId="DecodableRT"] span.ui-accordion-header-icon {
+	background-image:url('/bloom/images/keys-white.png') !important;
+}
+
+.ui-accordion h3[data-panelId="LeveledRT"] span.ui-accordion-header-icon {
+	background-image:url('/bloom/images/steps-white.png') !important;
 }

@@ -649,6 +649,38 @@ $(document).ready(function() {
     SetupElements($('body'));
     OneTimeSetup();
 
+    // configure ckeditor
+    if (typeof CKEDITOR === "undefined") return;  // this happens during unit testing
+    CKEDITOR.disableAutoInline = true;
+
+    // attach ckeditor to the contenteditable="true" class="bloom-content1"
+    $('div.bloom-page').find('.bloom-content1[contenteditable="true"]').each(function() {
+
+        var ckedit = CKEDITOR.inline(this);
+
+        // show or hide the toolbar when the text selection changes
+        ckedit.on('selectionCheck', function(evt) {
+            var editor = evt['editor'];
+            var rng = editor.getSelection().getRanges()[0];
+            var show = (rng.startOffset !== rng.endOffset);
+            var bar = $('body').find('.' + editor.id);
+            bar.css('top', bar.data('top'));
+            show ? bar.show() : bar.hide();
+        });
+
+        // hide the toolbar when ckeditor starts
+        ckedit.on('instanceReady', function(evt) {
+            var editor = evt['editor'];
+            var bar = $('body').find('.' + editor.id);
+
+            // Remember this because the toolbar appears in the wrong place if the div
+            // was empty when the editor was initialized.
+            bar.data('top', bar.css('top'));
+
+            bar.hide();
+        });
+    });
+
     //this is some sample code for working on CommandAvailabilityPublisher websocket messages
 //   var client = new WebSocket("ws://127.0.0.1:8189");
 //   client.onmessage = function(event) {
@@ -665,4 +697,4 @@ var pageSelectionChanging = function () {
     marginBox.removeClass('origami-layout-mode');
     marginBox.find('.bloom-translationGroup .textBox-identifier').remove();
     fireCSharpEditEvent('finishSavingPage', '');
-}
+};

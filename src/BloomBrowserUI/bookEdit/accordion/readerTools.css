@@ -1,10 +1,6 @@
 /*Styles for ReaderTools.htm*/
 div.stageLine {
-	display: inline-block;
-	position: relative;
-	float: right;
-	margin: 10px 14px;
-	-moz-user-select: none;
+	display: block;
 	font-size: 16pt;
 }
 span.stageLine { float: left; -moz-user-select: none; }
@@ -59,4 +55,21 @@ div.section ul li { color: #fff; }
 }
 #make-letter-word-list {
   font-size: 10px;
+}
+
+#setupStages {
+	display: block;
+	position: relative;
+	float: right;
+	margin: 0 10px 14px 0;
+}
+
+#setupStages span.setup { margin-left: 2px; }
+
+.noSelect { -moz-user-select: none; }
+
+#decodable-edit {
+	height: 14px;
+	position: relative;
+	top: 3px;
 }
