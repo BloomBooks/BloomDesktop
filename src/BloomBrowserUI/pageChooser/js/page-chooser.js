@@ -4,9 +4,9 @@ function pageWindow() {
     if (window.parent)
         return window.parent.document.getElementById('page').contentWindow;
 }
-window.addEventListener('message', process_IO_Message, false);
+window.addEventListener('message', process_EditFrame_Message, false);
 var logic;
-function process_IO_Message(event) {
+function process_EditFrame_Message(event) {
     var params = event.data.split("\n");
     switch (params[0]) {
         case 'AddSelectedPage':
@@ -134,10 +134,8 @@ var PageChooser = (function () {
      */
     PageChooser.prototype.fireCSharpEvent = function (eventName, eventData) {
         //console.log('firing CSharp event: ' + eventName);
-        var event = new MessageEvent();
-        event.initEvent(eventName, true, true);
-        event.data = eventData;
-        pageWindow().dispatchEvent(event);
+        var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
+        document.dispatchEvent(event);
     };
     return PageChooser;
 })();

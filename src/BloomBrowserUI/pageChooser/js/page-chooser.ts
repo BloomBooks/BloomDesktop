@@ -6,11 +6,11 @@ function pageWindow(): Window {
         return (<HTMLIFrameElement>window.parent.document.getElementById('page')).contentWindow;
 }
 
-window.addEventListener('message', process_IO_Message, false);
+window.addEventListener('message', process_EditFrame_Message, false);
 
 var logic;
 
-function process_IO_Message(event: MessageEvent): void {
+function process_EditFrame_Message(event: MessageEvent): void {
 
     var params = event.data.split("\n");
 
@@ -155,9 +155,7 @@ class PageChooser {
      */
     fireCSharpEvent(eventName, eventData) : void {
         //console.log('firing CSharp event: ' + eventName);
-        var event = new MessageEvent();
-        event.initEvent(eventName, true, true);
-        event.data = eventData;
-        pageWindow().dispatchEvent(event);
+        var event = new (<any>MessageEvent)(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
+        document.dispatchEvent(event);
     }
 }
