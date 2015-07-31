@@ -14,30 +14,24 @@ html
 		+script('js/page-chooser.js')
 	body
 		#mainContainer.bloomDialogContainer
-			//.bloomDialogTitleBar#page-title=pageTitle
-			.bloomDialogMainPage
-				.templatePageDisplay
-					// .templatesCaption Installed Templates (Currently unused)
-					.outerCollectionContainer
-						//- This DIV element will get cloned for each collection
-						//- when we handle more than one collection of templates
-						.collection
-							.collectionCaption Default Pages
-							.innerCollectionContainer
-								//- This DIV element gets cloned for each page in the collection
-								.templatePage
-									.invisibleThumbCover
-									iframe(src='').thumbnail
-										p Your browser does not support iframes.
-									.templatePageCaption Page Title
-				#singlePagePreview
-					//#invisiblePreviewCover
-					#previewCaption
-					iframe(src='blank-preview.htm', width=500, height=700, scrolling='no', frameborder='0')#preview
-						p Your browser does not support iframes
-					#previewDescription
-						.DescriptionHeader Description
-						.DescriptionText
-					//button#addPageButton Add This Page
-					//button#cancelButton Cancel
-			button#testButton Test
+			.templatePageDisplay
+				// .templatesCaption Installed Templates (Currently unused)
+				.outerCollectionContainer
+					//- This DIV element will get cloned for each collection
+					//- when we handle more than one collection of templates
+					.collection
+						.collectionCaption Default Pages
+						.innerCollectionContainer
+							//- This DIV element gets cloned for each page in the collection
+							.templatePage
+								.invisibleThumbCover
+								iframe(src='').thumbnail
+									p Your browser does not support iframes.
+								.templatePageCaption Page Title
+			#singlePagePreview
+				#previewCaption
+				iframe(src='blank-preview.htm', width=500, height=700, scrolling='no', frameborder='0')#preview
+					p Your browser does not support iframes
+				#previewDescription
+					.DescriptionHeader Description
+					.DescriptionText

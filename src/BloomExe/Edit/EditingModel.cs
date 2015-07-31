@@ -535,13 +535,12 @@ namespace Bloom.Edit
 			}
 		}
 
-		public string ShowAddPageDialog()
+		public void ShowAddPageDialog()
 		{
 			if (_view == null || _inProcessOfDeleting)
-				return string.Empty;
+				return;
 			var jsonTemplates = GetJsonTemplatePageObject;
-			var result = _view.RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
-			return result == "fail" ? string.Empty : result;
+			_view.RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
 		}
 
 		void OnPageSelectionChanged(object sender, EventArgs e)
@@ -675,6 +674,12 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
+			_view.AddMessageEventListener("addPage", AddPageFromDialog);
+		}
+
+		private void AddPageFromDialog(string data)
+		{
+			MessageBox.Show("I think we got a pageId from the AddPage dialog! " + data);
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
@@ -1172,6 +1177,14 @@ namespace Bloom.Edit
 		}
 	   */
 
+		private string GetBasicBookTemplate
+		{
+			get
+			{
+				return BloomFileLocator.GetFileDistributedWithApplication("factoryCollections/Templates/Basic Book/Basic Book.htm");
+			}
+		}
+
 		/// <summary>
 		/// As a first pass, we are creating the AddPageDialog with only the Basic Book pages.
 		/// Eventually we will need to come up with heuristics to know which templates to load.
@@ -1181,10 +1194,10 @@ namespace Bloom.Edit
 		{
 			get
 			{
-				const string prefix = "../localhost/";
-				var path = prefix + 
-					BloomFileLocator.GetFileDistributedWithApplication("factoryCollections/Templates/Basic Book/Basic Book.htm");
-				path = path.Replace(':', '$');
+				const string prefix = "/bloom/localhost/";
+				//const string prefix = "../localhost/";
+				var path = prefix + GetBasicBookTemplate;
+				path = path.Replace(':', '$').Replace('\\', '/');
 				//var path = "../localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm";
 				var jsonString = "[{ \"templateBookUrl\": \"" + path + "\" }]";
 				return jsonString;

@@ -10,16 +10,9 @@ BODY {
 	margin: 0;
 	height: 721px;
     max-width: 930px;
-    display: block;
-    display: flex;
-    flex-direction: column;
-	box-sizing: border-box;
-}
-.bloomDialogMainPage {
-	flex: 1;
     display: flex;
     flex-direction: row;
-	margin: 0 !important; // override bloomDialog here
+	box-sizing: border-box;
 }
 .templatePageDisplay {
 	overflow-y: auto;
@@ -32,6 +25,7 @@ BODY {
     flex: 2;
 	order: 2;
 	height: 681px;
+	min-width: 320px;
 	IFRAME {
 		pointer-events: none;
 	}
@@ -76,13 +70,14 @@ BODY {
 		max-height: 145px;
 	}
 }
-.ui-dialog-buttonset:first-child {
-	width: 155px;
-	.ui-icon-plusthick {
-		left: 0.25em;
-	}
-	.ui-button-text {
-		text-align: right;
+.ui-dialog-buttonset {
+	&:first-child {
+		.ui-icon-plusthick {
+			left: 0.25em !important;
+		}
+		.ui-button-text {
+			text-align: right !important;
+		}
 	}
 }
 // Currently unused
@@ -111,10 +106,10 @@ BODY {
 	margin: 5px 0 0 20px;
 }
 .templatePage {
-	margin: 5px 10px 5px 11px;
+	margin: 0 10px 10px 11px;
 	width: 104px;
-	height: 162px;
-	display: inline-block;
+	height: 170px;
+	display: block;
 }
 .templatePage:hover {
 	background: #F4EAE3;
@@ -143,7 +138,7 @@ BODY {
 .templatePageCaption {
 	font-weight: bold;
 	text-align: center;
-	height: 43px;
+	height: 55px;
 	position: relative;
 	left: 0;
 	top: -28px;
@@ -152,17 +147,7 @@ BODY {
 .invisibleThumbCover {
 	z-index: 5;
 	position: absolute;
-	height: 162px;
+	height: 170px;
 	width: 100px;
 	background: url(transparent.gif);
-}
-#testButton {
-	position: absolute;
-	left: 10px;
-	top: 4px;
-	height: 24px;
-	width: 79px;
-	z-index: 20;
-	//Re-enable the "display: none;" for production
-	display:none;
 }
