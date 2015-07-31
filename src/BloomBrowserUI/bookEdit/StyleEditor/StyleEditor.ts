@@ -534,11 +534,6 @@ class StyleEditor {
 
         $('#format-toolbar').remove(); // in case there's still one somewhere else
 
-        // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
-        var suppress = $(document).find('meta[name="lockFormatting"]');
-        if (suppress.length > 0 && suppress.attr('content').toLowerCase() === 'true')
-            return;
-
         // put the format button in the editable text box itself, so that it's always in the right place.
         // unfortunately it will be subject to deletion because this is an editable box. But we can mark it as uneditable, so that
         // the user won't see resize and drag controls when they click on it
@@ -555,6 +550,18 @@ class StyleEditor {
         var txt = localizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
         */
+
+        // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
+        var suppress = $(document).find('meta[name="lockFormatting"]');
+        if (suppress.length > 0 && suppress.attr('content').toLowerCase() === 'true') {
+            formatButton.click(function () {
+                localizationManager.asyncGetText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.')
+                    .done(translation => {
+                        alert(translation);
+                });
+            });
+            return;
+        }
         formatButton.click(function () {
             iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
