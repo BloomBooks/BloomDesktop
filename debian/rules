@@ -80,3 +80,8 @@ override_dh_clideps:
 		--exclude-moduleref=icuuc48.dll --exclude-moduleref=icuin48.dll --exclude-moduleref=libtidy.dll \
 		--exclude-moduleref=msdelta.dll --exclude-moduleref=mspatcha.dll --exclude-moduleref=mspatchc.dll \
 		--exclude-moduleref=ole32.dll --exclude-moduleref=version.dll
+
+# Don't strip debug symbols -- we want them for informative crash stack traces
+override_dh_strip:
+
+override_dh_clistrip:

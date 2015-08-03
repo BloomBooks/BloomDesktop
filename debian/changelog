@@ -1,3 +1,10 @@
+bloom-desktop-unstable (3.2.0) stable; urgency=medium
+
+  * Update version number of unstable version to 3.2
+  * Include .mdb files in package for better crash stack traces
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Fri, 31 Jul 2015 15:46:56 -0500
+
 bloom-desktop-unstable (3.1.0) stable; urgency=medium
 
   * Update version number of unstable version to 3.1
