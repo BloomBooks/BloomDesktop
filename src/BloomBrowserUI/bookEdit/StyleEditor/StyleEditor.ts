@@ -553,15 +553,18 @@ class StyleEditor {
 
         // BL-2476: Readers made from BloomPacks should have the formatting dialog disabled
         var suppress = $(document).find('meta[name="lockFormatting"]');
-        if (suppress.length > 0 && suppress.attr('content').toLowerCase() === 'true') {
-            formatButton.click(function () {
-                localizationManager.asyncGetText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.')
-                    .done(translation => {
-                        alert(translation);
-                });
-            });
-            return;
-        }
+        var noFormatChange = suppress.length > 0 && suppress.attr('content').toLowerCase() === 'true';
+        //The following commented out code works fine on Windows, but causes the program to crash
+        //(disappear) on Linux when you click on the format button.
+        //if (suppress.length > 0 && suppress.attr('content').toLowerCase() === 'true') {
+        //    formatButton.click(function () {
+        //        localizationManager.asyncGetText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.')
+        //            .done(translation => {
+        //                alert(translation);
+        //        });
+        //    });
+        //    return;
+        //}
         formatButton.click(function () {
             iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
                 editor.boxBeingEdited = targetBox;
@@ -585,7 +588,11 @@ class StyleEditor {
 
                 var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">'
                     + '<div data-i18n="EditTab.FormatDialog.Format" class="bloomDialogTitleBar">Format</div>';
-                if (editor.authorMode) {
+                if (noFormatChange) {
+                    var translation = localizationManager.getText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.');
+                    html += '<div class="bloomDialogMainPage"><p>' + translation + '</p></div>';
+                }
+                else if (editor.authorMode) {
                     html += '<div class="tab-pane" id="tabRoot">';
                     if (!editor.xmatterMode) {
                         html += '<div class="tab-page"><h2 class="tab" data-i18n="EditTab.FormatDialog.StyleNameTab">Style Name</h2>'
@@ -651,38 +658,40 @@ class StyleEditor {
                 toolbar.draggable({distance: 10, scroll: false, containment: $('html')});
                 toolbar.draggable("disable"); // until after we make sure it's in the Viewport
                 toolbar.css('opacity', 1.0);
-                editor.getCharTabDescription();
-                editor.getMoreTabDescription();
+                if (!noFormatChange) {
+                    editor.getCharTabDescription();
+                    editor.getMoreTabDescription();
 
-                $('#font-select').change(function () { editor.changeFont(); });
-                editor.AddQtipToElement($('#font-select'), localizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
-                $('#size-select').change(function () { editor.changeSize(); });
-                editor.AddQtipToElement($('#size-select'), localizationManager.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
-                $('#line-height-select').change(function () { editor.changeLineheight(); });
-                editor.AddQtipToElement($('#line-height-select').parent(), localizationManager.getText('EditTab.FormatDialog.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
-                $('#word-space-select').change(function () { editor.changeWordSpace(); });
-                editor.AddQtipToElement($('#word-space-select').parent(), localizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
-                if (editor.authorMode) {
-                    if (!editor.xmatterMode) {
-                        $('#styleSelect').change(function() { editor.selectStyle(); });
-                        (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
-                        $('#style-select-input').on('input', function() { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
-                        $('#style-select-input').get(0).trimNotification = function() { editor.styleStateChange('invalid-characters'); }
-                        $('#show-createStyle').click(function(event) {
-                            event.preventDefault();
-                            editor.showCreateStyle();
-                            return false;
-                        });
-                        $('#create-button').click(function() { editor.createStyle(); });
+                    $('#font-select').change(function() { editor.changeFont(); });
+                    editor.AddQtipToElement($('#font-select'), localizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
+                    $('#size-select').change(function() { editor.changeSize(); });
+                    editor.AddQtipToElement($('#size-select'), localizationManager.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
+                    $('#line-height-select').change(function() { editor.changeLineheight(); });
+                    editor.AddQtipToElement($('#line-height-select').parent(), localizationManager.getText('EditTab.FormatDialog.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
+                    $('#word-space-select').change(function() { editor.changeWordSpace(); });
+                    editor.AddQtipToElement($('#word-space-select').parent(), localizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
+                    if (editor.authorMode) {
+                        if (!editor.xmatterMode) {
+                            $('#styleSelect').change(function() { editor.selectStyle(); });
+                            (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
+                            $('#style-select-input').on('input', function() { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
+                            $('#style-select-input').get(0).trimNotification = function() { editor.styleStateChange('invalid-characters'); }
+                            $('#show-createStyle').click(function(event) {
+                                event.preventDefault();
+                                editor.showCreateStyle();
+                                return false;
+                            });
+                            $('#create-button').click(function() { editor.createStyle(); });
+                        }
+                        var buttonIds = editor.getButtonIds();
+                        for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
+                            var button = $('#' + buttonIds[idIndex]);
+                            button.click(function() { editor.buttonClick(this); });
+                            button.addClass('propButton');
+                        }
+                        editor.selectButtons(current);
+                        new WebFXTabPane($('#tabRoot').get(0), false, null);
                     }
-                    var buttonIds = editor.getButtonIds();
-                    for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
-                        var button = $('#' + buttonIds[idIndex]);
-                        button.click(function() { editor.buttonClick(this); });
-                        button.addClass('propButton');
-                    }
-                    editor.selectButtons(current);
-                    new WebFXTabPane($('#tabRoot').get(0), false, null);
                 }
                 var offset = $('#formatButton').offset();
                 toolbar.offset({ left: offset.left + 30, top: offset.top - 30 });
