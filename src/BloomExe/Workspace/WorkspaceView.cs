@@ -303,6 +303,7 @@ namespace Bloom.Workspace
 													_uiLanguageMenu.Text = ((CultureInfo) item.Tag).NativeName;
 													SaveOriginalButtonTexts();
 													_localizationChangedEvent.Raise(null);
+													AdjustButtonTextsForCurrentSize();
 												});
 				if (((CultureInfo)item.Tag).IetfLanguageTag == Settings.Default.UserInterfaceLanguage)
 				{
@@ -773,9 +774,11 @@ namespace Bloom.Workspace
 		private void RestoreOriginalButtonTexts()
 		{
 			_settingsButton.Text = _originalSettingsText;
+			_settingsButton.ToolTipText = null;
 			_openCreateCollectionButton.Text = _originalCollectionText;
 			_helpMenu.Text = _originalHelpText;
 			_uiLanguageMenu.Text = _originalUiLanguageSelection;
+			_uiLanguageMenu.ToolTipText = null;
 		}
 
 		private void ShrinkToStage1()
@@ -796,16 +799,43 @@ namespace Bloom.Workspace
 			_stage1SpaceSaved = 0;
 		}
 
+		/// <summary>
+		/// Remove the button texts if needed for the current size of the main window.
+		/// </summary>
+		void AdjustButtonTextsForCurrentSize()
+		{
+			if (_currentShrinkage == Shrinkage.Stage2 || _currentShrinkage == Shrinkage.Stage3)
+				RemoveButtonTexts();
+		}
+
+		/// <summary>
+		/// Remove the text from each of the buttons, but set the tooltip text where
+		/// needed.  (Tooltips different than the text have already been set on two of
+		/// these buttons.)
+		/// </summary>
+		private void RemoveButtonTexts()
+		{
+			// Mono requires an explicit tooltip text when setting the text to an empty
+			// string, but .Net seems to remember the previous text string used as a
+			// default tooltip.  It's simplest (and safest) to set it in both cases.
+			_settingsButton.Text = string.Empty;
+			_settingsButton.ToolTipText = _originalSettingsText;
+			_helpMenu.Text = string.Empty;
+			_openCreateCollectionButton.Text = string.Empty;
+			// We can't set this text to the empty string because that makes the menu
+			// icon too small by itself.  But setting it to a space also sets the
+			// (default) tooltip to just a space.
+			_uiLanguageMenu.Text = SPACE;
+			_uiLanguageMenu.ToolTipText = _originalUiLanguageSelection;
+		}
+
 		private void ShrinkToStage2()
 		{
 			// before this we want to change button sizes and icons on the 4 items
+			RemoveButtonTexts();
 			_settingsButton.Image = Resources.settingsbw16x16;
-			_settingsButton.Text = string.Empty;
 			_openCreateCollectionButton.Image = Resources.OpenCreateLibrary16x16;
-			_openCreateCollectionButton.Text = string.Empty;
 			_helpMenu.Image = Resources.help16x16;
-			_helpMenu.Text = string.Empty;
-			_uiLanguageMenu.Text = SPACE;
 			var uiMenuHeight = _uiLanguageMenu.Size.Height;
 			_uiLanguageMenu.Width = uiMenuHeight; // make it a small square (hopefully just show the dropdown arrow?)
 			var panelLocation = _panelHoldingToolStrip.Location;
