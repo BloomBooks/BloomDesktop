@@ -250,5 +250,20 @@ namespace Bloom
 			}
 		}
 
+		private void _upgradePromptTimer_Tick(object sender, EventArgs e)
+		{
+			_upgradePromptTimer.Enabled = false;
+			Version version = Assembly.GetEntryAssembly().GetName().Version;
+			//if this is version 3.0 (added this in case it gets merged upstream)
+			if(version.Major == 3 && version.Minor == 0)
+            { 
+				//if still on windows xp, keep to the old appcast/sparkle installer system of looking for updates
+				if (System.Environment.OSVersion.Version.Major > 5 || System.Environment.OSVersion.Version.Minor > 1)
+				{
+					MessageBox.Show(
+						"This old version of Bloom is only for Windows XP users. Please download a new version from bloomlibrary.org");
+				}
+			}
+		}
 	}
 }

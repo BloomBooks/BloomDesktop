@@ -35,6 +35,7 @@
 			this._size800x600 = new System.Windows.Forms.ToolStripMenuItem();
 			this._size1024x600 = new System.Windows.Forms.ToolStripMenuItem();
 			this._size1024x768 = new System.Windows.Forms.ToolStripMenuItem();
+			this._upgradePromptTimer = new System.Windows.Forms.Timer(this.components);
 			this._contextMenu.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -82,6 +83,11 @@
 			this._size1024x768.Text = "1024 x 768";
 			this._size1024x768.Click += new System.EventHandler(this.On1024x768);
 			// 
+			// _upgradePromptTimer
+			// 
+			this._upgradePromptTimer.Enabled = true;
+			this._upgradePromptTimer.Tick += new System.EventHandler(this._upgradePromptTimer_Tick);
+			// 
 			// Shell
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -110,8 +116,6 @@
 		private System.Windows.Forms.ToolStripMenuItem _size1024x768;
 		private System.Windows.Forms.ToolStripMenuItem _size1024x586;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
-
-
-
+		private System.Windows.Forms.Timer _upgradePromptTimer;
 	}
 }
