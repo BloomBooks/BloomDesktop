@@ -37,4 +37,7 @@ CKEDITOR.editorConfig = function( config ) {
 
 	// This is required to prevent Bloom from crashing when the Undo button is clicked.
 	config.undoStackSize = 0;
+
+	// Remove the annoying tooltip "Rich Text Editor, editorN".
+	config.title = false;
 };
