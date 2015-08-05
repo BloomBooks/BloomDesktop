@@ -23,13 +23,13 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="-4189.5126"
-     inkscape:cy="3015.8928"
+     inkscape:zoom="0.35355339"
+     inkscape:cx="-3752.4973"
+     inkscape:cy="553.92791"
      inkscape:document-units="px"
-     inkscape:current-layer="g4833"
+     inkscape:current-layer="g12117-48-8"
      showgrid="false"
-     inkscape:window-width="1823"
+     inkscape:window-width="1754"
      inkscape:window-height="1177"
      inkscape:window-x="1192"
      inkscape:window-y="-8"
@@ -72,6 +72,14 @@
        id="guide3420"
        position="-665.38746,-1426.2343"
        orientation="0,1" />
+    <sodipodi:guide
+       position="-4039,1517.5"
+       orientation="1,0"
+       id="guide4842" />
+    <sodipodi:guide
+       position="-3444,1695"
+       orientation="1,0"
+       id="guide4844" />
   </sodipodi:namedview>
   <defs
      id="defs4">
@@ -4252,18 +4260,6 @@
            transform="matrix(1.0091946,0,0,1.0922864,687.2481,-2160.7206)">
           <text
              xml:space="preserve"
-             style="font-style:normal;font-weight:normal;font-size:21.7015934px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
-             x="-1071.6975"
-             y="2318.5344"
-             id="text4939-0-5-9-4-9"
-             sodipodi:linespacing="125%"><tspan
-               sodipodi:role="line"
-               id="tspan4941-7-9-0-0-6"
-               x="-1071.6975"
-               y="2318.5344"
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Palatino Linotype';-inkscape-font-specification:'Palatino Linotype';fill:#000000;fill-opacity:1">let's grow a library</tspan></text>
-          <text
-             xml:space="preserve"
              style="font-style:normal;font-weight:normal;font-size:105.8065567px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
              x="-1201.5529"
              y="2301.6633"
@@ -4275,6 +4271,22 @@
                x="-1201.5529"
                y="2301.6633"
                style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Palatino Linotype';-inkscape-font-specification:'Palatino Linotype';letter-spacing:-4.84888411px;fill:#000000;fill-opacity:1">Bloom</tspan></text>
+          <text
+             inkscape:export-ydpi="49.189999"
+             inkscape:export-xdpi="49.189999"
+             inkscape:export-filename="C:\dev\BloomWebsite\app\img\LogoOnDark210x76.png"
+             sodipodi:linespacing="125%"
+             id="text4939-0-5-9-6-1-6-3-7-2-4"
+             y="2423.709"
+             x="-1031.5045"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:36.70128632px;line-height:125%;font-family:'Freestyle Script';-inkscape-font-specification:'Freestyle Script';letter-spacing:0px;word-spacing:0px;fill:#d65649;fill-opacity:1;stroke:none;"
+             xml:space="preserve"
+             transform="scale(1.0403532,0.96121202)"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:33.82358551px;line-height:125%;font-family:'Freestyle Script';-inkscape-font-specification:'Freestyle Script';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#d65649;fill-opacity:1;stroke:none;"
+               y="2423.709"
+               x="-1031.5045"
+               id="tspan4941-7-9-0-5-7-3-0-4-3-6"
+               sodipodi:role="line">Let's grow a library</tspan></text>
         </g>
         <g
            inkscape:export-ydpi="600.0318"
@@ -4364,27 +4376,13 @@
            id="g3773-4"
            transform="translate(3417.5857,-1543.1543)">
           <image
-             width="478.99997"
-             height="203.49998"
+             width="411.61481"
+             height="188.38556"
              xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAAAiCAIAAABDbBkNAAAAA3NCSVQICAjb4U/gAAAAQ0lEQVRo ge3PMQEAIAzAMEDH/OtExo40Cto7M8fztgN2tC1pW9K2pG1J25K2JW1L2pa0LWlb0rakbUnbkrYl bUvalnw/+wCYIeQU+QAAAABJRU5ErkJggg== "
              id="image4153-1-4"
              x="-4003.1873"
-             y="1612.2679" />
-          <text
-             inkscape:export-ydpi="49.189999"
-             inkscape:export-xdpi="49.189999"
-             inkscape:export-filename="C:\dev\BloomWebsite\app\img\LogoOnDark210x76.png"
-             sodipodi:linespacing="125%"
-             id="text4939-0-5-9-6-1-6-3-7-2"
-             y="1714.0776"
-             x="-3805.811"
-             style="font-style:normal;font-weight:normal;font-size:21.7015934px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#e5e5e5;fill-opacity:1;stroke:none"
-             xml:space="preserve"><tspan
-               style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:20px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#e5e5e5;fill-opacity:1;stroke:none"
-               y="1714.0776"
-               x="-3805.811"
-               id="tspan4941-7-9-0-5-7-3-0-4-3"
-               sodipodi:role="line">let's grow a library</tspan></text>
+             y="1627.3824"
+             style="stroke:none" />
           <text
              inkscape:export-ydpi="49.189999"
              inkscape:export-xdpi="49.189999"
@@ -4426,15 +4424,14 @@
                style="fill:#d65649;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none"
                sodipodi:nodetypes="csssccc" />
             <circle
-               r="54.447071"
-               cy="476.20172"
-               cx="-557.7818"
+               r="15.694093"
+               cy="3013.3167"
+               cx="-2700.8982"
                inkscape:export-ydpi="67.648125"
                inkscape:export-xdpi="67.648125"
                inkscape:export-filename="C:\dev\Bloom\artwork\LogoAgainstDark276x100.png"
-               transform="matrix(0.28824494,0,0,0.28824494,-2538.3392,2872.0462)"
                id="path3101-5-6-7-9-0-4-9-4-7-0-8-3-0-2-4-3-4-72"
-               style="fill:#e5e5e5;fill-opacity:1;stroke:none" />
+               style="fill:#e5e5e5;fill-opacity:1;stroke:#1c1c1c;stroke-width:2.51907206;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
             <path
                inkscape:export-ydpi="67.648125"
                inkscape:export-xdpi="67.648125"
@@ -4485,6 +4482,21 @@
                d="m -2656.3816,3036.72 c -5.929,0.6001 -10.9725,1.4608 -15.452,3.3139 -18.8475,7.7966 -25.5,24.3093 -25.298,29.5611 -0.25,-6.75 -14.125,-29.125 -43.25,-33.25 m 0.125,3.375 c 33.375,7 43.125,30.375 43.125,30.375 0,0 8.875,-28.5 41.25,-29.125"
                style="fill:none;stroke:#d65649;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
           </g>
+          <text
+             inkscape:export-ydpi="49.189999"
+             inkscape:export-xdpi="49.189999"
+             inkscape:export-filename="C:\dev\BloomWebsite\app\img\LogoOnDark210x76.png"
+             sodipodi:linespacing="125%"
+             id="text4939-0-5-9-6-1-6-3-7-2"
+             y="1724.5376"
+             x="-3803.3381"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:38.53337097px;line-height:125%;font-family:'Freestyle Script';-inkscape-font-specification:'Freestyle Script';letter-spacing:0px;word-spacing:0px;fill:#e5e5e5;fill-opacity:1;stroke:none"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35.51202011px;line-height:125%;font-family:'Freestyle Script';-inkscape-font-specification:'Freestyle Script';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#e5e5e5;fill-opacity:1;stroke:none"
+               y="1724.5376"
+               x="-3803.3381"
+               id="tspan4941-7-9-0-5-7-3-0-4-3"
+               sodipodi:role="line">Let's grow a library</tspan></text>
         </g>
         <g
            id="g3414-68"
