@@ -1,3 +1,9 @@
+bloom-desktop-unstable (3.2.0) stable; urgency=medium
+
+  * Update version number of unstable version to 3.2
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Thu, 06 Aug 2015 17:00:52 -0500
+
 bloom-desktop-unstable (3.1.0) stable; urgency=medium
 
   * Update version number of unstable version to 3.1
