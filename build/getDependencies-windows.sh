@@ -57,7 +57,7 @@ echo "wget: $2 <= $1"
 f=$(basename $2)
 d=$(dirname $2)
 cd $d
-wget -q -L -N $1
+wget --no-cache -q -L -N $1 -O $f
 cd -
 }
 
