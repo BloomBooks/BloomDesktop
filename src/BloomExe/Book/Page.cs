@@ -126,6 +126,9 @@ namespace Bloom.Book
 			if (outerXml.Contains("numberedPage") || outerXml.Contains("countPageButDoNotShowNumber"))
 			{
 				pageNumber++;
+			}
+			if(outerXml.Contains("numberedPage"))
+			{
 				return pageNumber.ToString();
 			}
 			return Caption;
