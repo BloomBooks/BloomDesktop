@@ -242,7 +242,7 @@ namespace Bloom.Collection.BloomPack
 				}
 				_errorImage.Visible = true;
 				_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton","&Cancel");
-				DesktopAnalytics.Analytics.ReportException(e.Error);
+				DesktopAnalytics.Analytics.ReportException(e.Error, Program.GetProgramProperties());
 				ErrorReport.NotifyUserOfProblem(e.Error, _message.Text);
 				return;
 			}
