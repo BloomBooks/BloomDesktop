@@ -123,7 +123,7 @@ namespace Bloom.Book
 			{
 				pageNumber = 1;
 			}
-			if (outerXml.Contains("numberedPage"))
+			if (outerXml.Contains("numberedPage") || outerXml.Contains("countPageButDoNotShowNumber"))
 			{
 				pageNumber++;
 				return pageNumber.ToString();

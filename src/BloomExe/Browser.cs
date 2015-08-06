@@ -388,6 +388,9 @@ namespace Bloom
 			if (ContextMenuProvider != null)
 			{
 				ContextMenuProvider(e);
+#if DEBUG
+				e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)", new EventHandler(OnOpenPageInSystemBrowser));
+#endif
 				return;
 			}
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", new EventHandler(OnOpenPageInStylizer));
