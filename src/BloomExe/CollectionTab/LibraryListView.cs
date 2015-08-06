@@ -150,7 +150,7 @@ namespace Bloom.CollectionTab
 					catch (Exception error)
 					{
 						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book to XML");
-						Analytics.ReportException(error);
+						Analytics.ReportException(error, Program.GetProgramProperties());
 					}
 				}
 			}
@@ -1070,12 +1070,12 @@ namespace Bloom.CollectionTab
 			catch (IOException error)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error.Message, "Could not export the book");
-				Analytics.ReportException(error);
+				Analytics.ReportException(error, Program.GetProgramProperties());
 			}
 			catch (Exception error)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
-				Analytics.ReportException(error);
+				Analytics.ReportException(error, Program.GetProgramProperties());
 			}
 		}
 

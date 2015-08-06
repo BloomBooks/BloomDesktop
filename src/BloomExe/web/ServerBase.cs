@@ -397,8 +397,8 @@ namespace Bloom.web
 					//prompted by the mysterious BL 273, Crash while closing down the imageserver
 #if DEBUG
 					throw;
-#else				//just quitely report this
-					DesktopAnalytics.Analytics.ReportException(e);
+#else				//just quietly report this
+					DesktopAnalytics.Analytics.ReportException(e, Program.GetProgramProperties());
 #endif
 				}
 			}
