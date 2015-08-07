@@ -121,6 +121,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" Condition="'$(OS)'=='Windows_NT'"/>
     <Reference Include="System.Printing" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
@@ -258,12 +259,24 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="ImageProcessing\ImageUtils.cs" />
     <Compile Include="InstallerSupport.cs" />
+    <Compile Include="MiscUI\BloomIntegrityDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MiscUI\BloomIntegrityDialog.Designer.cs">
+      <DependentUpon>BloomIntegrityDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="JavaScriptErrorHandler.cs" />
     <Compile Include="MiscUI\DontShowThisAgainButton.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="MiscUI\DontShowThisAgainButton.Designer.cs">
       <DependentUpon>DontShowThisAgainButton.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MiscUI\MarkDownTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MiscUI\MarkDownTextBox.Designer.cs">
+      <DependentUpon>MarkDownTextBox.cs</DependentUpon>
     </Compile>
     <Compile Include="MiscUI\TipDialog.cs">
       <SubType>Form</SubType>
@@ -572,9 +585,7 @@
     <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
     <Compile Include="SourceCollectionsList.cs" />
-    <Compile Include="Workspace\TabStrip.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Workspace\TabStrip.cs" />
     <Compile Include="Workspace\TabStripRenderer.cs" />
     <Compile Include="Workspace\WorkspaceModel.cs" />
     <Compile Include="Publish\PublishView.cs">
@@ -623,6 +634,12 @@
     <EmbeddedResource Include="Edit\WebThumbNailList.resx">
       <DependentUpon>WebThumbNailList.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MiscUI\BloomIntegrityDialog.resx">
+      <DependentUpon>BloomIntegrityDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MiscUI\MarkDownTextBox.resx">
+      <DependentUpon>MarkDownTextBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\ProblemReporterDialog.resx">
       <DependentUpon>ProblemReporterDialog.cs</DependentUpon>
