@@ -52,7 +52,8 @@ namespace Bloom.MiscUI
 			// If so, check Linux, as we had problems there with the old Jira reporting. Until
 			// then we use the unsecured URL.
 			YouTrackUrl = "http://issues.bloomlibrary.org";
-			_bookSelection = bookSelection;
+			Summary = "User Problem Report {0}";
+            _bookSelection = bookSelection;
 
 			InitializeComponent();
 
@@ -98,6 +99,12 @@ namespace Bloom.MiscUI
 				_includeBook.Visible = false;
 			}
 			ChangeState(State.WaitingForSubmission);
+		}
+
+		public string Description
+		{
+			get { return _description.Text; }
+			set { _description.Text = value; }
 		}
 
 		private void GetScreenshot(Control targetOfScreenshot)
@@ -286,7 +293,7 @@ namespace Bloom.MiscUI
 				_youTrackIssue = new Issue();
 				_youTrackIssue.ProjectShortName = _youTrackProjectKey;
 				_youTrackIssue.Type = "Awaiting Classification";
-				_youTrackIssue.Summary = "User Problem Report " + _name.Text;
+				_youTrackIssue.Summary = string.Format(Summary,_name.Text);
 				_youTrackIssue.Description = GetFullDescriptionContents(false);
 				_youTrackIssueId = _issueManagement.CreateIssue(_youTrackIssue);
 
@@ -338,6 +345,11 @@ namespace Bloom.MiscUI
 			}
 #endif
 		}
+
+		/// <summary>
+		/// Will become the summary of the issue. Include {0} for the user name
+		/// </summary>
+		public string Summary { get; set; }
 
 		/// <summary>
 		/// If we are able to directly submit to YouTrack, we do that. But otherwise,
