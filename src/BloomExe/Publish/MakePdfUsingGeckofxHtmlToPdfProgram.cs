@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Printing;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
@@ -55,7 +54,7 @@ namespace Bloom.Publish
 				}
 				else
 				{
-					PrintQueue defaultPrinter;
+					System.Printing.PrintQueue defaultPrinter;
 					// BL-2535 it's possible get past the above printQueues.Any() but then get 
 					// a System.Printing.PrintQueueException exception with "Access Denied" error here, if
 					// the default printer for some reason is no longer "allowed".
