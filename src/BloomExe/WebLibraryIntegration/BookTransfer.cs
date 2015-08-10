@@ -118,7 +118,7 @@ namespace Bloom.WebLibraryIntegration
 					// more goes wrong, ignore it.
 					Analytics.Track("DownloadedBook-Failure",
 						new Dictionary<string, string>() { { "url", url }, { "title", title } });
-					Analytics.ReportException(e);
+					Analytics.ReportException(e, Program.GetProgramProperties());
 				}
 				catch (Exception)
 				{

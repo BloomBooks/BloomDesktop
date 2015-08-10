@@ -236,6 +236,12 @@
         <seg>This formatting is for all {0} text boxes with '{1}' style</seg>
       </tuv>
     </tu>
+    <tu tuid="BookEditor.FormattingDisabled">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sorry, Reader Templates do not allow changes to formatting.</seg>
+      </tuv>
+    </tu>
     <tu tuid="Click to choose topic">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">

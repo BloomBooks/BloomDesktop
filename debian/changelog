@@ -1,3 +1,17 @@
+bloom-desktop-unstable (3.3.0) stable; urgency=medium
+
+  * Update the Linux package version to 3.3
+  * More bug fixes: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Thu, 06 Aug 2015 17:07:38 -0500
+
+bloom-desktop-unstable (3.2.0) stable; urgency=medium
+
+  * Update version number of unstable version to 3.2
+  * Include .mdb files in package for better crash stack traces
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Fri, 31 Jul 2015 15:46:56 -0500
+
 bloom-desktop-unstable (3.1.0) stable; urgency=medium
 
   * Update version number of unstable version to 3.1

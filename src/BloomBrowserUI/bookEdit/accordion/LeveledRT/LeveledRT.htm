@@ -4,7 +4,8 @@
   <body>
     <h3 data-panelId="LeveledRT" data-markuptype="2" data-order="20" data-i18n="Accordion.LeveledReaderTool">Leveled Reader Tool</h3>
     <div data-panelId="LeveledRT">
-      <div class="stageLine noSelect"><span id="decLevel" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine noSelect"><span data-i18n="LeveledReaderTool.Level">Level </span><span id="levelNumber">1</span><span data-i18n="LeveledReaderTool.LevelOf" class="ofStage">&nbsp;of&nbsp;</span><span id="numberOfLevels" class="ofStage">2</span></span><span id="incLevel" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
+      <div id="setupStages"><img id="leveled-edit" src="/bloom/images/edit-white.png"/><span class="setup noSelect"><a href="javascript:parent.window.showSetupDialog('levels');" data-i18n="LeveledReaderTool.SetUpLevels">Set up Levels</a></span></div>
+      <div class="stageLine clear noSelect"><span id="decLevel" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine noSelect"><span data-i18n="LeveledReaderTool.Level">Level </span><span id="levelNumber">1</span><span data-i18n="LeveledReaderTool.LevelOf" class="ofStage">&nbsp;of&nbsp;</span><span id="numberOfLevels" class="ofStage">2</span></span><span id="incLevel" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
       <table style="margin-left: 6px" class="statistics clear">
         <tr>
           <td data-i18n="LeveledReaderTool.WordCounts" class="section">Word counts</td>
@@ -53,7 +54,7 @@
           <td id="actualUniqueWords" class="statistics-actual">-</td>
         </tr>
       </table>
-      <div style="display: inline-block; position: relative; float: right; margin: 10px 14px"><span class="setup stageLine noSelect"><a href="javascript:parent.window.showSetupDialog('levels');" data-i18n="LeveledReaderTool.SetUpLevels">Set up Levels</a></span></div>
+      <div style="display: inline-block; position: relative; float: right; margin: 10px 14px"></div>
       <div style="clear: both; margin-left: 8px;" class="section"><span data-i18n="LeveledReaderTool.FoThisLevel">For this Level</span>
         <ul id="thingsToRemember"></ul>
       </div>

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.Properties;
@@ -827,7 +828,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
 
-			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
+			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception, Program.GetProgramProperties()));
 		}
 
 
@@ -1002,6 +1003,24 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 		public static BloomFileLocator OptimizedFileLocator
 		{
 			get { return _projectContext.OptimizedFileLocator; }
+		}
+
+		/// <summary>
+		/// Get the standard program properties for analytics crash reporting.
+		/// </summary>
+		public static Dictionary<string, string> GetProgramProperties()
+		{
+			var props = ErrorReport.GetStandardProperties();
+			// Sanitize user and specific machine information.  These aren't really needed
+			// for debugging analysis.
+			// (username can probably be derived from the CommandLine and CurrentDirectory,
+			// but why make it blatant to snoopers?)
+			props.Remove("MachineName");
+			props.Remove("UserName");
+			props.Remove("UserDomainName");
+			// Bloom specific information.
+			props.Add("Channel", ApplicationUpdateSupport.ChannelName);
+			return props;
 		}
 	}
 }

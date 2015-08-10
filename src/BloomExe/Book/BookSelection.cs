@@ -20,7 +20,8 @@ namespace Bloom.Book
 			//enhance... send out cancellable pre-change event
 
 		   _currentSelection = book;
-			CreateLicenseImageIfNeeded(book);
+			if (book != null)
+				CreateLicenseImageIfNeeded(book);
 
 			InvokeSelectionChanged();
 		}
