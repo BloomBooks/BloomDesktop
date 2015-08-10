@@ -6,15 +6,16 @@
  *
  *  Modified Oct 2014 to work with editable divs also
  *  Modified August 2015 to remove arrow key feature, which was interfering with ckeditor (or vice-versa, really)
+ *  Modified August 2015 to add instructions at the bottom
  */
 
 ;(function ($, window, undefined) {
 
     var pluginName = 'longPress',
         document = window.document,
-        defaults = {/*
-            propertyName: "value"
-        */};
+        defaults = {
+            instructions: ""
+        };
 
     var moreChars={
         // extended latin (and african latin)
@@ -113,7 +114,7 @@
     var textAreaCaretPosition;
     var storedOffset;
 
-    var popup=$('<ul class=long-press-popup />');
+    var popup;
 
     $(window).mousewheel(onWheel);
 
@@ -136,6 +137,7 @@
 
         if (e.which==lastWhich) {
             e.preventDefault();
+            e.stopPropagation(); //attempt to stop ckeditor from seeing this event
             if (!timer) timer=setTimeout(onTimer, 10);
             return;
         }
@@ -168,13 +170,13 @@
         }
     }
     function showPopup(chars) {
-        popup.empty();
+        popup.find('ul').empty();
         var letter;
         for (var i=0; i<chars.length; i++) {
             letter=$('<li class=long-press-letter />').text(chars[i]);
             letter.mouseenter(activateLetter);
             letter.click(onPopupLetterClick);
-            popup.append(letter);
+            popup.find('ul').append(letter);
         }
         $('body').append(popup);
         selectedCharIndex=-1;
@@ -340,6 +342,7 @@
         this._defaults = defaults;
         this._name = pluginName;
 
+        popup = $('<div  class=long-press-popup><ul />' + this.options.instructions + '</div>');
         this.init();
     }
 

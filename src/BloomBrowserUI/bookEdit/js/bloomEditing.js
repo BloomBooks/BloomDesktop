@@ -573,8 +573,12 @@ function SetupElements(container) {
     });
 
     getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
-        if (response === 'Yes')
-            $(container).find('.bloom-editable').longPress();
+        if (response === 'Yes') {
+            localizationManager.asyncGetText('BookEditor.CharacterMap.Instructions', "To select, use your mouse wheel or point at what you want, then release the key.")
+                        .done(translation => {
+                            $(container).find('.bloom-editable').longPress({ instructions:translation });
+                        });
+        }
     });
 
     //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed,
