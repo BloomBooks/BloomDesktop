@@ -5,6 +5,7 @@
  *    Licence: MIT License http://opensource.org/licenses/mit-license.php
  *
  *  Modified Oct 2014 to work with editable divs also
+ *  Modified August 2015 to remove arrow key feature, which was interfering with ckeditor (or vice-versa, really)
  */
 
 ;(function ($, window, undefined) {
@@ -117,15 +118,18 @@
     $(window).mousewheel(onWheel);
 
     function onKeyDown(e) {
-
+        /* we had to disable thes because ckeditor was seeing them and messing things up. Hopefully in the future it can be reinstated:
         // Arrow key with popup visible
-        if ($('.long-press-popup').length>0 && (e.which==37 || e.which==39)) {
-            if (e.which==37) activePreviousLetter();
+        if ($('.long-press-popup').length > 0 && (e.which == 37 || e.which == 39)) {
+            e.stopPropagation(); //stop ckeditor from seeing this (DOESN"T WORK)
+            e.preventDefault();
+            if (e.which == 37) activePreviousLetter();
             else if (e.which==39) activateNextLetter();
 
-            e.preventDefault();
+
             return;
         }
+        */
 
         if (ignoredKeyDownKeys.indexOf(e.which)>-1) return;
         activeElement=e.target;
