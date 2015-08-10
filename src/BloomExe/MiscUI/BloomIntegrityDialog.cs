@@ -31,7 +31,7 @@ namespace Bloom
 		public static bool CheckIntegrity()
 		{
 			var errors = new StringBuilder();
-			var files = new[] { "Bloom.chm","PdfDroplet.exe", "xChorus.exe", "GeckofxHtmlToPdf.exe", "BloomBookUploader.exe", "optipng.exe" };
+			var files = new[] { "Bloom.chm","PdfDroplet.exe", "Chorus.exe", "GeckofxHtmlToPdf.exe", "BloomBookUploader.exe", "optipng.exe" };
 			
 			var dirs = new[] {"AndikaNewBasic","factoryCollections","localization","xMatter","xslts"};
 			
