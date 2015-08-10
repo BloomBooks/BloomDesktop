@@ -215,7 +215,7 @@ namespace Bloom
 							// A special path to upload chunks of stuff. This is not currently documented and is not very robust.
 							// - User must log in before running this
 							// - For best results each bloom book needs to be part of a collection in its parent folder
-							// - little error checking (e.g., we don't apply the usual constaints that a book must have title and licence info)
+							// - little error checking (e.g., we don't apply the usual constraints that a book must have title and licence info)
 							SetUpLocalization();
 							Browser.SetUpXulRunner();
 								Browser.XulRunnerShutdown += OnXulRunnerShutdown;
@@ -263,6 +263,12 @@ namespace Bloom
 #if DEBUG
 						StartDebugServer();
 #endif
+
+						if(!BloomIntegrityDialog.CheckIntegrity())
+						{
+							Environment.Exit(-1);
+						}
+
 						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 
 						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
