@@ -1,10 +1,4 @@
 /// <reference path="../../bookEdit/js/getIframeChannel.ts" />
-/// <reference path="../../lib/jquery.d.ts" />
-
-function pageWindow(): Window {
-    if (window.parent)
-        return (<HTMLIFrameElement>window.parent.document.getElementById('page')).contentWindow;
-}
 
 window.addEventListener('message', process_EditFrame_Message, false);
 
@@ -12,7 +6,7 @@ var logic;
 
 function process_EditFrame_Message(event: MessageEvent): void {
 
-    var params = event.data.split("\n");
+    var params = event.data.split('\n');
 
     switch(params[0]) {
         case 'AddSelectedPage':
@@ -33,7 +27,8 @@ function process_EditFrame_Message(event: MessageEvent): void {
 
 // this version of the test string may be useful later testing more than one template collection
 //var JSONTestString = "[{ \"templateBookUrl\": \"../../../DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }, { \"templateBookUrl\": \"../../../DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }]";
-var JSONTestString = "[{ \"templateBookUrl\": \"bloom/localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }]";
+// no longer using test string, but let's keep it around as documentation of what PageChooser's ctor is expecting
+//var JSONTestString = "[{ \"templateBookUrl\": \"bloom/localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }]";
 
 class PageChooser {
 

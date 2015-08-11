@@ -151,12 +151,28 @@ function showAddPageDialog(templatesJSON) {
             'This will contain a preview of a template page when one is selected.');
         var dialogContents = FindOrCreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg);
 
+        // Set dialog size (borrowed from reader tools setup dialog; how much of this is useful?!)
+        var h = 750;
+        var w = 940;
+
+        // This height and width will fit inside the "800 x 600" settings
+        var sw = document.body.scrollWidth;
+        if (sw < 583) {
+            h = 460;
+            w = 390;
+        }
+
+        // This height and width will fit inside the "1024 x 586 Low-end netbook with windows Task bar" settings
+        else if ((sw < 723) || (window.innerHeight < 583)) {
+            h = 460;
+            w = 580;
+        }
+
         theDialog = $(dialogContents).dialog({
             autoOpen: false,
             modal: true,
-            resizable: false,
-            width: 'auto',
-            height: 'auto',
+            width: w,
+            height: h,
             position: {
                 my: "left top", at: "left top", of: window
             },

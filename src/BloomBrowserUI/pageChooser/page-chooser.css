@@ -4,8 +4,9 @@ BODY {
 #mainContainer {
   border: none;
   margin: 0;
-  height: 721px;
+  height: 645px;
   max-width: 930px;
+  width: 100%;
   display: flex;
   flex-direction: row;
   box-sizing: border-box;
@@ -74,6 +75,13 @@ BODY {
 }
 .outerCollectionContainer {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.collection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .collectionCaption {
   font-weight: bold;
@@ -89,7 +97,7 @@ BODY {
   margin: 0 10px 10px 11px;
   width: 104px;
   height: 170px;
-  display: block;
+  display: inline-block;
 }
 .templatePage:hover {
   background: #F4EAE3;
