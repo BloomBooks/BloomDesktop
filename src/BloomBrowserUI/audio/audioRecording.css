@@ -1,0 +1,50 @@
+﻿body #qtip-audio {
+  background-color: #363333 !important;
+}
+body .icon-red {
+  background-image: url(images/ui-icons_a83300_256x240.png);
+}
+body #qtip-audio .ui-icon {
+  display: inline-block;
+}
+body div.ui-audioTitle {
+  color: white;
+  font-size: larger;
+  margin-top: 5px;
+  text-align: center;
+}
+body div.ui-audioBody {
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+body .ui-icon-bullet {
+  transform: scale(5);
+  margin-left: 35px;
+}
+body .ui-icon-play {
+  transform: scale(5);
+  margin-left: 30px;
+}
+body .ui-icon-triangle-1-e,
+body .ui-icon-triangle-1-w {
+  transform: scale(4);
+}
+body .ui-icon-triangle-1-e {
+  margin-left: 35px;
+  margin-right: 15px;
+}
+body .ui-icon-triangle-1-w {
+  margin-left: 10px;
+}
+body .ui-icon-close {
+  transform: scale(3);
+  margin-left: 10px;
+}
+body div.ui-audioFooter {
+  margin-top: 30px;
+  margin-bottom: 5px;
+}
+body span.ui-audioCurrent {
+  background-color: violet;
+}
+/*# sourceMappingURL=audioRecording.css.map */

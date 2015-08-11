@@ -60,13 +60,14 @@ namespace Bloom.Edit
 			{
 				var page = _thumbNailList.GetPageContaining(args.TargetNode);
 				if (page == null)
-					return; // no page-related commands if we didn't click on one.
+					return true; // no page-related commands if we didn't click on one.
 				foreach (var item in menuItems)
 				{
 					var menuItem = new MenuItem(item.Label, (sender, eventArgs) => item.ExecuteCommand(page));
 					args.ContextMenu.MenuItems.Add(menuItem);
 					menuItem.Enabled = item.EnableFunction(page);
 				}
+				return true;
 			};
 			// This sets up the context menu items that will be shown when the user clicks the
 			// arrow in the thumbnail list.
