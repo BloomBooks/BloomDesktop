@@ -111,7 +111,6 @@ namespace Bloom.Edit
 					RefreshDisplayOfCurrentPage();
 					//_view.UpdateDisplay();
 					_view.UpdatePageList(false);
-					_view.UpdateTemplateList();
 				}
 				else if (_view != null)
 				{
@@ -280,27 +279,11 @@ namespace Bloom.Edit
 			get { return _bookSelection.CurrentSelection; }
 		}
 
-		public bool ShowTranslationPanel
+		public bool EnableAddPageFunction
 		{
 			get
 			{
-				return _bookSelection.CurrentSelection.HasSourceTranslations;
-			}
-		}
-
-		public bool ShowTemplatePanel
-		{
-			get
-			{
-//                if (_librarySettings.IsSourceCollection)
-//                {
-//                    return true;
-//                }
-//                else
-//                {
-
-					return _bookSelection.CurrentSelection.UseSourceForTemplatePages;
-//                }
+				return _bookSelection.CurrentSelection.UseSourceForTemplatePages;
 			}
 		}
 
@@ -503,10 +486,6 @@ namespace Bloom.Edit
 
 			if (_view != null)
 			{
-				if(ShowTemplatePanel)
-				{
-					_view.UpdateTemplateList();
-				}
 				_view.UpdatePageList(false);
 			}
 		}
@@ -598,7 +577,7 @@ namespace Bloom.Edit
 				_server.AccordionContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 
 			_server.CurrentBook = _currentlyDisplayedBook;
-			_server.AuthorMode = ShowTemplatePanel;
+			_server.AuthorMode = EnableAddPageFunction;
 		}
 
 		/// <summary>

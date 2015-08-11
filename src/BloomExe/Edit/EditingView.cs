@@ -28,7 +28,6 @@ namespace Bloom.Edit
 	{
 		private readonly EditingModel _model;
 		private PageListView _pageListView;
-		private TemplatePagesView _templatePagesView;
 		private readonly CutCommand _cutCommand;
 		private readonly CopyCommand _copyCommand;
 		private readonly PasteCommand _pasteCommand;
@@ -44,13 +43,12 @@ namespace Bloom.Edit
 		public delegate EditingView Factory(); //autofac uses this
 
 
-		public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView,
+		public EditingView(EditingModel model, PageListView pageListView,
 			CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
 			DeletePageCommand deletePageCommand, NavigationIsolator isolator)
 		{
 			_model = model;
 			_pageListView = pageListView;
-			_templatePagesView = templatePagesView;
 			_cutCommand = cutCommand;
 			_copyCommand = copyCommand;
 			_pasteCommand = pasteCommand;
@@ -295,29 +293,16 @@ namespace Bloom.Edit
 		{
 			_pageListView.Dock = DockStyle.Fill;
 			_pageListView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			_templatePagesView.BackColor = _pageListView.BackColor = _splitContainer1.Panel1.BackColor;
 			_splitContainer1.Panel1.Controls.Add(_pageListView);
-
-			_templatePagesView.Dock = DockStyle.Fill;
-			_templatePagesView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 		}
 
-
+		// TODO: this _splitContainer2 could be eliminated now that we no longer have the TemplatePagesView
 		private void SetTranslationPanelVisibility()
 		{
 			_splitContainer2.Panel2.Controls.Clear();
 			_splitTemplateAndSource.Panel1.Controls.Clear();
 			_splitTemplateAndSource.Panel2.Controls.Clear();
-
-			if (_model.ShowTemplatePanel) //Templates only
-			{
-				_splitContainer2.Panel2Collapsed = false;
-				_splitContainer2.Panel2.Controls.Add(_templatePagesView);
-			}
-			else
-			{
-				_splitContainer2.Panel2Collapsed = true;
-			}
+			_splitContainer2.Panel2Collapsed = true; // used to hold TemplatesPagesView
 		}
 
 		void VisibleNowAddSlowContents(object sender, EventArgs e)
@@ -362,7 +347,6 @@ namespace Bloom.Edit
 					SetTranslationPanelVisibility();
 					//even before showing, we need to clear some things so the user doesn't see the old stuff
 					_pageListView.Clear();
-					_templatePagesView.Clear();
 				}
 				Application.Idle += new EventHandler(VisibleNowAddSlowContents);
 				Cursor = Cursors.WaitCursor;
@@ -419,11 +403,6 @@ namespace Bloom.Edit
 		public void AddMessageEventListener(string eventName, Action<string> action)
 		{
 			_browser1.AddMessageEventListener(eventName, action);
-		}
-
-		public void UpdateTemplateList()
-		{
-			_templatePagesView.Update();
 		}
 
 		public void UpdatePageList(bool emptyThumbnailCache)
@@ -1032,7 +1011,6 @@ namespace Bloom.Edit
 		/// <param name="isModal"></param>
 		internal void SetModalState(bool isModal)
 		{
-			_templatePagesView.Enabled = !isModal;
 			_pageListView.Enabled = !isModal;
 		}
 
