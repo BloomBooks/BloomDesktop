@@ -16,6 +16,8 @@
 
 - That Book menu now offers a "Copy Book" command.
 
+- Both "Factory" and "Traditional" Front Matter packs now set the first content page to "1"
+
 
 ## 3.1
 Version 3.1 was a disciplined sustained & effort to improve hundreds of "little things" that could confuse or block people in certain situations from getting books created, translated, or printed. It also represents the first version where the Linux (Trusty and Precise) version is very close to parity with the Windows version.

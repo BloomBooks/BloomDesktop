@@ -573,8 +573,12 @@ function SetupElements(container) {
     });
 
     getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
-        if (response === 'Yes')
-            $(container).find('.bloom-editable').longPress();
+        if (response === 'Yes') {
+            localizationManager.asyncGetText('BookEditor.CharacterMap.Instructions', "To select, use your mouse wheel or point at what you want, then release the key.")
+                        .done(translation => {
+                            $(container).find('.bloom-editable').longPress({ instructions:translation });
+                        });
+        }
     });
 
     //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed,
@@ -653,30 +657,64 @@ $(document).ready(function() {
     if (typeof CKEDITOR === "undefined") return;  // this happens during unit testing
     CKEDITOR.disableAutoInline = true;
 
+    // Map from ckeditor id strings to the top offset of the corresponding edit box.
+    var mapCkeditBoxTop = new Object();
+    var mapCkeditBoxHeight = new Object();
+    var mapCkeditDiv = new Object();
+
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
     $('div.bloom-page').find('.bloom-content1[contenteditable="true"]').each(function() {
 
         var ckedit = CKEDITOR.inline(this);
 
+        // Record the top and height of the edit box for use later.  A bug in ckeditor
+        // misplaces the format bar vertically when the edit box starts out empty and
+        // the format bar starts out hidden.  This bookkeeping helps to work around that
+        // bug.  Some edit boxes are allowed to grow (or shrink) based on content, and
+        // that can affect their position on the page.
+        mapCkeditDiv[ckedit.id] = this;    // NB: can we get this from the ckeditor object later?
+        mapCkeditBoxTop[ckedit.id] = CalculateEditBoxTop(this);
+        mapCkeditBoxHeight[ckedit.id] = this.offsetHeight;
+
         // show or hide the toolbar when the text selection changes
         ckedit.on('selectionCheck', function(evt) {
             var editor = evt['editor'];
-            var rng = editor.getSelection().getRanges()[0];
-            var show = (rng.startOffset !== rng.endOffset);
+            // Length of selected text is more reliable than compariing
+            // endpoints of the first range.  Mozilla can return multiple
+            // ranges with the first one being empty.
+            var selection = editor.getSelection();
+            var textSelected = selection.getSelectedText();
+            var show = (textSelected.length > 0);
             var bar = $('body').find('.' + editor.id);
-            bar.css('top', bar.data('top'));
             show ? bar.show() : bar.hide();
+
+            // Move the format bar on the screen if needed.
+            // (Note that offsets are not defined if it's not visible.)
+            if (show) {
+                var barTop = bar.offset().top;
+                var boxTop = mapCkeditBoxTop[editor.id];
+                var div = mapCkeditDiv[editor.id];
+                var height = div.offsetHeight;
+                var boxHeight = mapCkeditBoxHeight[editor.id];
+                if (height != boxHeight) {
+                    // We need to update the box's Height and Top because the box has
+                    // changed height and possibly position.
+                    mapCkeditBoxHeight[editor.id] = height;
+                    boxTop = CalculateEditBoxTop(div);
+                    mapCkeditBoxTop[editor.id] = boxTop;
+                }
+                if (boxTop - barTop < 5) {
+                    var barLeft = bar.offset().left;
+                    var barHeight = bar.height();
+                    bar.offset({ top: boxTop - barHeight, left: barLeft });
+                }
+            }
         });
 
         // hide the toolbar when ckeditor starts
         ckedit.on('instanceReady', function(evt) {
             var editor = evt['editor'];
             var bar = $('body').find('.' + editor.id);
-
-            // Remember this because the toolbar appears in the wrong place if the div
-            // was empty when the editor was initialized.
-            bar.data('top', bar.css('top'));
-
             bar.hide();
         });
     });
@@ -688,6 +726,18 @@ $(document).ready(function() {
 //        alert("DeleteCurrentPage Command "+ (commandStatus.deleteCurrentPage.enabled == true ? "Enabled" : "Disabled")) ;
 //    }
 }); // end document ready function
+
+function CalculateEditBoxTop(div) {
+    // We need to go three levels to get the offset used by the format bar.
+    var boxTop = div.offsetTop;
+    if (div.offsetParent) {
+        boxTop += div.offsetParent.offsetTop;
+        if (div.offsetParent.offsetParent)
+            boxTop += div.offsetParent.offsetParent.offsetTop;
+    }
+    return boxTop;
+}
+
 
 // This is invoked from C# when we are about to change pages. It is mainly for origami,
 // but preparePageForEditingAfterOrigamiChangesEvent currently has the (very important)

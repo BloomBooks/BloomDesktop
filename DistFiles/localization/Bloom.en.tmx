@@ -212,7 +212,14 @@
         <seg>Book title in {lang}</seg>
       </tuv>
     </tu>
-    <tu tuid="BookEditor.DefaultForText">
+	<tu tuid="BookEditor.CharacterMap.Instructions">
+		<note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
+		<prop type="x-dynamic">true</prop>
+		<tuv xml:lang="en">
+			<seg>To select, use your mouse wheel or point at what you want, then release the key.</seg>
+		</tuv>
+	</tu>
+	<tu tuid="BookEditor.DefaultForText">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This formatting is the default for all text boxes with '{0}' style</seg>
