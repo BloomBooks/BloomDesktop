@@ -16,14 +16,6 @@ var CalledByCSharp = (function () {
             }
         }
     };
-    CalledByCSharp.prototype.ckEditorUndoCommand = function () {
-        try {
-            return this.getPageContent().CKEDITOR.instances.editor1.commands.undo;
-        }
-        catch (e) {
-            return null;
-        }
-    };
     CalledByCSharp.prototype.canUndo = function () {
         var contentWindow = this.getAccordionContent();
         if (contentWindow && contentWindow.model && contentWindow.model.shouldHandleUndo()) {
@@ -60,6 +52,22 @@ var CalledByCSharp = (function () {
             return;
         if (typeof contentWindow['SetCopyrightAndLicense'] === 'function')
             contentWindow['SetCopyrightAndLicense'](contents);
+    };
+    CalledByCSharp.prototype.recordAudio = function () {
+        var contentWindow = this.getPageContent();
+        if (!contentWindow)
+            return;
+        if (typeof contentWindow['recordAudio'] === 'function') {
+            contentWindow['recordAudio']();
+        }
+    };
+    CalledByCSharp.prototype.cleanupAudio = function () {
+        var contentWindow = this.getPageContent();
+        if (!contentWindow)
+            return;
+        if (typeof contentWindow['cleanupAudio'] === 'function') {
+            contentWindow['cleanupAudio']();
+        }
     };
     CalledByCSharp.prototype.removeSynphonyMarkup = function () {
         var page = this.getPageContent();

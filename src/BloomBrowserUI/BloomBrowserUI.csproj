@@ -29,6 +29,9 @@
     <Content Include="bookEdit\accordion\accordion.css">
       <DependentUpon>accordion.less</DependentUpon>
     </Content>
+    <Content Include="audio\audioRecording.css">
+      <DependentUpon>audioRecording.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\accordion\Accordion.htm" />
     <Content Include="bookEdit\accordion\accordion.js" />
     <Content Include="bookEdit\accordion\DecodableRT\DecodableRT.htm" />
@@ -101,6 +104,7 @@
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
+    <TypeScriptCompile Include="audio\audioRecording.ts" />
     <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
     <TypeScriptCompile Include="bookEdit\js\BloomAccordion.ts" />
     <TypeScriptCompile Include="bookEdit\js\bloomHintBubbles.ts" />
@@ -305,6 +309,10 @@
     <None Include="compilerconfig.json" />
     <Content Include="compilerconfig.json.defaults">
       <DependentUpon>compilerconfig.json</DependentUpon>
+    </Content>
+    <Content Include="audio\audioRecording.less" />
+    <Content Include="audio\audioRecording.css.map">
+      <DependentUpon>audioRecording.css</DependentUpon>
     </Content>
     <Content Include="packages.config" />
     <Content Include="epub\baseEpub.less" />
