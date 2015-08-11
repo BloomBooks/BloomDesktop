@@ -64,9 +64,13 @@ namespace BloomTests
 				Assert.That(text, Is.Not.StringContaining("<u />"));
 				Assert.That(text, Is.Not.StringContaining("<b />"));
 				Assert.That(text, Is.Not.StringContaining("<i />"));
+				Assert.That(text, Is.Not.StringContaining("<em />"));
+				Assert.That(text, Is.Not.StringContaining("<strong />"));
+				Assert.That(text, Is.Not.StringContaining("<i></i>"));
 				Assert.That(text, Is.Not.StringContaining("<b></b>"));
 				Assert.That(text, Is.Not.StringContaining("<u></u>"));
-				Assert.That(text, Is.Not.StringContaining("<i></i>"));
+				Assert.That(text, Is.Not.StringContaining("<em></em>"));
+				Assert.That(text, Is.Not.StringContaining("<strong></strong>"));
 			}
 		}
 
@@ -74,7 +78,7 @@ namespace BloomTests
 		public void SaveAsHTML_MinimalUbiSpan_DoesNotContractOrRemove()
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml("<html><body><div data-book='test'/>Text with <u /><u attr=\"1\" /> and <b/><b attr=\"1\" /><span /><span attr=\"1\" /> and <i /><i attr=\"1\" /> works</body></html>");
+			dom.LoadXml("<html><body><div data-book='test'/>Text with <u /><u attr=\"1\" /> and <b/><b attr=\"1\" /><span /><span attr=\"1\" /> and <i /><i attr=\"1\" />  <em /><em attr=\"1\" />  <strong /><strong attr=\"1\" /> works</body></html>");
 			using (var temp = new TempFile())
 			{
 				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
@@ -82,15 +86,34 @@ namespace BloomTests
 				Assert.That(text, Is.Not.StringContaining("<u />"));
 				Assert.That(text, Is.Not.StringContaining("<b />"));
 				Assert.That(text, Is.Not.StringContaining("<i />"));
+				Assert.That(text, Is.Not.StringContaining("<em />"));
+				Assert.That(text, Is.Not.StringContaining("<strong />"));
 				Assert.That(text, Is.Not.StringContaining("<span />"));
 				Assert.That(text, Is.Not.StringContaining("<b></b>"));
 				Assert.That(text, Is.Not.StringContaining("<u></u>"));
 				Assert.That(text, Is.Not.StringContaining("<i></i>"));
+				Assert.That(text, Is.Not.StringContaining("<em></em>"));
+				Assert.That(text, Is.Not.StringContaining("<strong></strong>"));
 				Assert.That(text, Is.Not.StringContaining("<span></span>"));
 				Assert.That(text, Is.StringContaining("<b attr=\"1\"></b>"));
 				Assert.That(text, Is.StringContaining("<u attr=\"1\"></u>"));
 				Assert.That(text, Is.StringContaining("<i attr=\"1\"></i>"));
+				Assert.That(text, Is.StringContaining("<strong attr=\"1\"></strong>"));
+				Assert.That(text, Is.StringContaining("<em attr=\"1\"></em>"));
 				Assert.That(text, Is.StringContaining("<span attr=\"1\"></span>"));
+			}
+		}
+		[Test, Ignore("Will fix in BL-2558")]
+		public void SaveAsHTML_HasEmUpAgainstStrong_DoesNotInsertSpace()
+		{
+			var dom = new XmlDocument();
+			var original = "<p><em>one</em><strong>two</strong></p>";
+            dom.LoadXml("<html><body><div data-book='test'/>"+original+"</body></html>");
+			using(var temp = new TempFile())
+			{
+				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+				var text = File.ReadAllText(temp.Path);
+				Assert.That(text, Is.StringContaining(original));
 			}
 		}
 
