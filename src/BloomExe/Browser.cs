@@ -376,19 +376,19 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// This action will be passed a GeckoContextMenuEventArgs to which appropriate menu items
-		/// can be added. For now these are in place of our standard extensions; that is, if this
-		/// is non-null the standard ones won't be present.
+		/// This Fucnction will be passed a GeckoContextMenuEventArgs to which appropriate menu items
+		/// can be added. If it returns true these are in place of our standard extensions; if false, the 
+		/// standard ones will follow whatever it adds.
 		/// </summary>
-		public Action<GeckoContextMenuEventArgs> ContextMenuProvider { get; set; }
+		public Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider { get; set; }
 
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
 			if (ContextMenuProvider != null)
 			{
-				ContextMenuProvider(e);
-				return;
+				if (ContextMenuProvider(e))
+					return; // only the provider's items
 			}
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", new EventHandler(OnOpenPageInStylizer));
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());

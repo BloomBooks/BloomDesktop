@@ -300,6 +300,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/localizationManager");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/long-press");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/split-pane");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/audio");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/epub");

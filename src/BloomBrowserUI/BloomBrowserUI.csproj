@@ -23,6 +23,12 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="audio\audioRecording.css">
+      <DependentUpon>audioRecording.less</DependentUpon>
+    </Content>
+    <Content Include="audio\audioRecording.min.css">
+      <DependentUpon>audioRecording.css</DependentUpon>
+    </Content>
     <Content Include="bookEdit\accordion\accordion.css" />
     <Content Include="bookEdit\accordion\Accordion.htm" />
     <Content Include="bookEdit\accordion\accordion.js" />
@@ -76,6 +82,7 @@
     <Content Include="bookEdit\js\toolbar\jquery.d.ts" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
+    <TypeScriptCompile Include="audio\audioRecording.ts" />
     <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
     <TypeScriptCompile Include="bookEdit\js\BloomAccordion.ts" />
     <TypeScriptCompile Include="bookEdit\js\calledByCSharp.ts" />
@@ -239,6 +246,10 @@
     <Content Include="bookEdit\html\font-awesome\fonts\fontawesome-webfont.woff" />
     <Content Include="bookEdit\StyleEditor\StyleEditor.less" />
     <Content Include="bookLayout\basePage.less" />
+    <Content Include="audio\audioRecording.less" />
+    <Content Include="audio\audioRecording.css.map">
+      <DependentUpon>audioRecording.css</DependentUpon>
+    </Content>
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

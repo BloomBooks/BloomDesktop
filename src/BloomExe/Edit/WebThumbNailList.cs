@@ -79,7 +79,7 @@ namespace Bloom.Edit
 			}
 		}
 
-		public Action<GeckoContextMenuEventArgs> ContextMenuProvider
+		public Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider
 		{
 			get { return _browser.ContextMenuProvider; }
 			set { _browser.ContextMenuProvider = value; }

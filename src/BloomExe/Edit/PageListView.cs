@@ -35,7 +35,7 @@ namespace Bloom.Edit
 			{
 				var page = _thumbNailList.GetPageContaining(args.TargetNode);
 				if (page == null)
-					return; // no page-related commands if we didn't click on one.
+					return true; // no page-related commands if we didn't click on one.
 
 				var dupPage = LocalizationManager.GetString("EditTab._duplicatePageButton", "Duplicate Page"); // same ID as button in toolbar
 				var dupItem = new MenuItem(dupPage, (sender, eventArgs) => _model.DuplicatePage(page));
@@ -48,6 +48,7 @@ namespace Bloom.Edit
 				});
 				args.ContextMenu.MenuItems.Add(removeItem);
 				dupItem.Enabled = removeItem.Enabled = page != null && !page.Required && !_model.CurrentBook.LockedDown;
+				return true;
 			};
 		}
 
