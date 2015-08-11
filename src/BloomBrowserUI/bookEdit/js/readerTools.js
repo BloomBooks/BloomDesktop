@@ -128,9 +128,12 @@ function initializeDecodableRT() {
     });
     model.updateControlContents();
     $("#accordion").accordion("refresh");
+    $(window).resize(function () {
+        resizeWordList(false);
+    });
     setTimeout(function () {
         resizeWordList();
-    }, 100);
+    }, 200);
     setTimeout(function () {
         $.divsToColumns('letter');
     }, 100);
@@ -267,30 +270,38 @@ function loadExternalLink(url) {
  * We need to check the size of the decodable reader tool pane periodically so we can adjust the height of the word list
  * @global {number} previousHeight
  */
-function resizeWordList() {
+function resizeWordList(startTimeout) {
+    if (startTimeout === void 0) { startTimeout = true; }
     var div = $('body').find('div[data-panelId="DecodableRT"]');
     if (div.length === 0)
         return; // if not found, the tool was closed
+    var wordList = div.find('#wordList');
     var currentHeight = div.height();
+    var currentWidth = wordList.width();
     // resize the word list if the size of the pane changed
-    if (previousHeight !== currentHeight) {
+    if ((previousHeight !== currentHeight) || (previousWidth !== currentWidth)) {
         previousHeight = currentHeight;
-        var wordList = div.find('#wordList');
+        previousWidth = currentWidth;
         var top = wordList.parent().position().top;
         var synphony = model.getSynphony();
         if (synphony.source) {
-            var height = Math.floor(currentHeight - top);
-            if (synphony.source.useAllowedWords === 1)
-                height += 20;
-            else
-                height -= 20;
-            if (height < 50)
-                height = 50;
-            wordList.parent().css('height', height + 'px');
+            var ht = currentHeight - top;
+            if (synphony.source.useAllowedWords === 1) {
+                ht -= div.find('#allowed-word-list-truncated').height();
+            }
+            else {
+                ht -= div.find('#make-letter-word-list-div').height();
+            }
+            // for a reason I haven't discovered, the height calculation is always off by 6 pixels
+            ht += 6;
+            if (ht < 50)
+                ht = 50;
+            wordList.parent().css('height', Math.floor(ht) + 'px');
         }
     }
-    setTimeout(function () {
-        resizeWordList();
-    }, 500);
+    if (startTimeout)
+        setTimeout(function () {
+            resizeWordList();
+        }, 500);
 }
 //# sourceMappingURL=readerTools.js.map
