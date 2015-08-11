@@ -30,13 +30,8 @@ class ReaderStage {
   }
 
   setAllowedWordsString(fileContents: string): void {
-    // split into individual words and sort
-    var words = fileContents.split(/[,;\t\s\r\n]/);
-
-    // remove empty elements and duplicates, case-insensitive
-    words = _.uniq(_.compact(words), false, function (a: string) { return a.toLowerCase(); });
-
-    this.allowedWords = words;
+    // the list of words is being cleaned and deduped by the server
+    this.allowedWords = fileContents.split(/[,]/);
   }
 }
 

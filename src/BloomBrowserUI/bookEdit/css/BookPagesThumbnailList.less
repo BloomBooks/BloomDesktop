@@ -4,6 +4,19 @@
 BODY {
     background-color: @DarkGray;
 }
+
+/* this is handy for debugging page numbering in the thumbnail list
+.bloom-page::after {
+  content: counter(pageNumber);
+  position: absolute;
+  bottom: 7px;
+  left: 10px;
+  color: red;
+  overflow: visible;
+  font-size: 100pt;
+}
+*/
+
 .pageContainer {
     padding: 3px;
     box-sizing: border-box;

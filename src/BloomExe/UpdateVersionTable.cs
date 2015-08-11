@@ -39,7 +39,7 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Note! This will propogate network exceptions, so client can catch them and warn or not warn the user.
+		/// Note! This will propagate network exceptions, so client can catch them and warn or not warn the user.
 		/// </summary>
 		/// <returns></returns>
 		public UpdateTableLookupResult LookupURLOfUpdate()
@@ -88,8 +88,12 @@ namespace Bloom
 					continue; //comment
 
 				var parts = line.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
-				if(parts.Length!=3)
-					throw new ApplicationException("Could not parse a line of the UpdateVersionTable on "+URLOfTable+" '"+line+"'");
+				if (parts.Length != 3)
+				{
+					Logger.WriteEvent("***Error: UpdateVersionTable could not parse line {0} of this updateTableContent:", line);
+					Logger.WriteEvent(TextContentsOfTable);
+					throw new ApplicationException("Bloom had trouble checking for updates (UpdateVersionTable)");
+				}
 				var lower = Version.Parse(parts[0]);
 				var upper = Version.Parse(parts[1]);
 				if (lower <= RunningVersion && upper >= RunningVersion)
