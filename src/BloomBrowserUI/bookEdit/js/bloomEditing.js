@@ -657,9 +657,7 @@ $(document).ready(function() {
     if (typeof CKEDITOR === "undefined") return;  // this happens during unit testing
     CKEDITOR.disableAutoInline = true;
 
-    // Map from ckeditor id strings to the top offset of the corresponding edit box.
-    var mapCkeditBoxTop = new Object();
-    var mapCkeditBoxHeight = new Object();
+    // Map from ckeditor id strings to the div the ckeditor is wrapping.
     var mapCkeditDiv = new Object();
 
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
@@ -667,14 +665,8 @@ $(document).ready(function() {
 
         var ckedit = CKEDITOR.inline(this);
 
-        // Record the top and height of the edit box for use later.  A bug in ckeditor
-        // misplaces the format bar vertically when the edit box starts out empty and
-        // the format bar starts out hidden.  This bookkeeping helps to work around that
-        // bug.  Some edit boxes are allowed to grow (or shrink) based on content, and
-        // that can affect their position on the page.
-        mapCkeditDiv[ckedit.id] = this;    // NB: can we get this from the ckeditor object later?
-        mapCkeditBoxTop[ckedit.id] = CalculateEditBoxTop(this);
-        mapCkeditBoxHeight[ckedit.id] = this.offsetHeight;
+        // Record the div of the edit box for use later in positioning the format bar.
+        mapCkeditDiv[ckedit.id] = this;
 
         // show or hide the toolbar when the text selection changes
         ckedit.on('selectionCheck', function(evt) {
@@ -692,17 +684,9 @@ $(document).ready(function() {
             // (Note that offsets are not defined if it's not visible.)
             if (show) {
                 var barTop = bar.offset().top;
-                var boxTop = mapCkeditBoxTop[editor.id];
                 var div = mapCkeditDiv[editor.id];
-                var height = div.offsetHeight;
-                var boxHeight = mapCkeditBoxHeight[editor.id];
-                if (height != boxHeight) {
-                    // We need to update the box's Height and Top because the box has
-                    // changed height and possibly position.
-                    mapCkeditBoxHeight[editor.id] = height;
-                    boxTop = CalculateEditBoxTop(div);
-                    mapCkeditBoxTop[editor.id] = boxTop;
-                }
+                var rect = div.getBoundingClientRect();
+                var boxTop = rect.top;
                 if (boxTop - barTop < 5) {
                     var barLeft = bar.offset().left;
                     var barHeight = bar.height();
@@ -726,18 +710,6 @@ $(document).ready(function() {
 //        alert("DeleteCurrentPage Command "+ (commandStatus.deleteCurrentPage.enabled == true ? "Enabled" : "Disabled")) ;
 //    }
 }); // end document ready function
-
-function CalculateEditBoxTop(div) {
-    // We need to go three levels to get the offset used by the format bar.
-    var boxTop = div.offsetTop;
-    if (div.offsetParent) {
-        boxTop += div.offsetParent.offsetTop;
-        if (div.offsetParent.offsetParent)
-            boxTop += div.offsetParent.offsetParent.offsetTop;
-    }
-    return boxTop;
-}
-
 
 // This is invoked from C# when we are about to change pages. It is mainly for origami,
 // but preparePageForEditingAfterOrigamiChangesEvent currently has the (very important)
