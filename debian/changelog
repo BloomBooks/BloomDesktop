@@ -1,3 +1,10 @@
+bloom-desktop-unstable (3.3.1) stable; urgency=medium
+
+  * Revert to using "Bloom VS2010.sln" for package building.
+  * More bug fixes: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Wed, 12 Aug 2015 11:24:57 -0500
+
 bloom-desktop-unstable (3.3.0) stable; urgency=medium
 
   * Update the Linux package version to 3.3
