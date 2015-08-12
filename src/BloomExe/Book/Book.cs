@@ -1377,18 +1377,6 @@ namespace Bloom.Book
 			return result;
 		}
 
-		public IEnumerable<IPage> GetTemplatePages()
-		{
-			if (_log.ErrorEncountered)
-				yield break;
-
-			foreach (XmlElement pageNode in OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@data-page, 'singleton'))]"))
-			{
-				var caption = GetPageLabelFromDiv(pageNode);
-				yield return CreatePageDecriptor(pageNode, caption);
-			}
-		}
-
 		private static string GetPageIdFromDiv(XmlElement pageNode)
 		{
 			return pageNode.GetAttribute("id");
@@ -1405,11 +1393,6 @@ namespace Bloom.Book
 		{
 			return new Page(this, pageNode, caption,
 				(page => FindPageDiv(page)));
-		}
-
-		public Image GetPageThumbNail()
-		{
-			return Resources.Error70x70;
 		}
 
 		private XmlElement FindPageDiv(IPage page)

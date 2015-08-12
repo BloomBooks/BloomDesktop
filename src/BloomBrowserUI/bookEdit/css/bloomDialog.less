@@ -1,9 +1,14 @@
 // Common styles to be applied to htm-js-css dialogs in Bloom
+@backgroundColorWhite: rgb(255, 255, 255);
 @backgroundColorLight: rgb(240, 240, 240);
 @backgroundColorDark: rgb(230, 230, 230);
 @backgroundColorTitleBar: rgb(140, 183, 220);
 @backgroundColorHoverLight: rgb(236, 244, 252);
 @backgroundColorHoverDark: rgb(220, 236, 252);
+@buttonBorder: rgb(138, 187, 244);
+@buttonShadow: rgb(136, 136, 136);
+@disabledText: rgb(211, 211, 211);
+@dialogZindex: 16010;
 
 .bloomDialogContainer .selectedIcon {
 	background-color: rgb(201, 224, 247);
@@ -33,7 +38,7 @@
 	height: 22px;
 	margin-top: 10px;
 	display: inline-block;
-	padding: 1px 0px 0px 1px;
+	padding: 1px 0 0 1px;
 }
 .bloomDialogContainer .iconBox {
 	width: 14px;
@@ -52,35 +57,35 @@
 	border-radius: 4px;
 }
 .bloomDialogContainer .control-section {
-	margin: 0px 0px 12px 0px;
+	margin: 0 0 12px 0;
 }
 .bloomDialogContainer BUTTON, .bloomDialogContainer INPUT, .bloomDialogContainer SELECT {
 	background: linear-gradient(@backgroundColorLight, @backgroundColorDark);
 }
 .bloomDialogContainer BUTTON {
 	.bdRounded;
-	border: 1px solid #8abbf4;
-	box-shadow: 1px 2px 7px #888;
+	border: 1px solid @buttonBorder;
+	box-shadow: 1px 2px 7px @buttonShadow;
 }
 .bloomDialogContainer BUTTON:hover, .bloomDialogContainer INPUT:hover, .bloomDialogContainer SELECT:hover {
 	background: linear-gradient(@backgroundColorHoverLight, @backgroundColorHoverDark);
 }
 .bloomDialogContainer BUTTON[disabled] {
-	border: 1px solid #d3d3d3;
+	border: 1px solid @disabledText;
 	background: @backgroundColorLight;
-	color: #d3d3d3;
+	color: @disabledText;
 }
 .bloomDialogContainer .propButton:NOT(.selectedIcon) {
-	border: 1px solid #d3d3d3;
+	border: 1px solid @disabledText;
 	.bdRounded;
 }
 .bloomDialogContainer .propButton:hover {
 	background: linear-gradient(@backgroundColorHoverLight, @backgroundColorHoverDark);
 }
 .bloomDialogContainer {
-	background-color: white;
+	background-color: @backgroundColorWhite;
 	opacity: 1;
-	z-index: 16010;
+	z-index: @dialogZindex;
 	position: absolute;
 	line-height: 1.8;
 	font-family: Segoe UI, Open Sans, Arial, sans-serif;
@@ -96,7 +101,7 @@
 	text-align: center;
 }
 .bloomDialogContainer .bloomDialogMainPage {
-	background: white;
+	background: @backgroundColorWhite;
 	margin-left: 1em;
 	font-family: Segoe UI, Open Sans, Arial, sans-serif;
 	font-size: 10pt;

@@ -666,10 +666,11 @@ namespace Bloom.Edit
 			if (_templatePagesDict != null)
 				return _templatePagesDict;
 
-			// avoid going through TemplatePagesView which is going away when I get this working
 			var templateBook = _bookSelection.CurrentSelection.FindTemplateBook();
+			if (templateBook == null)
+				return null;
 			_templatePagesDict = templateBook.GetTemplatePagesIdDictionary();
-			return templateBook == null ? null : _templatePagesDict;
+			return _templatePagesDict;
 		}
 
 		private void AddPageFromDialog(string data)
@@ -680,7 +681,8 @@ namespace Bloom.Edit
 				return;
 			var pageId = args[1];
 			IPage page;
-			if(GetTemplatePagesForThisBook().TryGetValue(pageId, out page))
+			var dict = GetTemplatePagesForThisBook();
+			if(dict != null && dict.TryGetValue(pageId, out page))
 				_templateInsertionCommand.Insert(page as Page);
 		}
 

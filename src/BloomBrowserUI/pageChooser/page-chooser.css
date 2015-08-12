@@ -13,7 +13,7 @@ BODY {
 }
 .templatePageDisplay {
   overflow-y: auto;
-  height: 681px;
+  height: auto;
   flex: 3;
   display: flex;
   flex-direction: column;
@@ -21,7 +21,7 @@ BODY {
 #singlePagePreview {
   flex: 2;
   order: 2;
-  height: 681px;
+  height: auto;
   min-width: 320px;
 }
 #singlePagePreview IFRAME {
@@ -34,10 +34,6 @@ BODY {
   margin-top: -185px;
   margin-left: -130px;
   margin-right: -130px;
-  -moz-transform-origin: 50% 50%;
-  -moz-transform: scale(0.5);
-  -webkit-transform-origin: 50% 50%;
-  -webkit-transform: scale(0.5);
   transform-origin: 50% 50%;
   transform: scale(0.5);
   height: 798px;
@@ -113,10 +109,6 @@ BODY {
   margin-top: 4px;
   margin-bottom: -672px;
   background: inherit;
-  -moz-transform-origin: 2px 0;
-  -moz-transform: scale(0.14);
-  -webkit-transform-origin: 2px 0;
-  -webkit-transform: scale(0.14);
   transform-origin: 2px 0;
   transform: scale(0.14);
   width: 575px;

@@ -1,0 +1,189 @@
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
+		link(rel='stylesheet', href='readerSetup.css', type='text/css')
+		link(rel='stylesheet', href='/bloom/lib/long-press/longpress.css', type='text/css')
+		script(src='/bloom/lib/jquery-1.10.1.js')
+		script(src='/bloom/lib/jquery-ui-1.10.3.custom.min.js')
+		script(src='/bloom/lib/errorHandler.js')
+		script(src='/bloom/bookEdit/js/jquery.div-columns.js')
+		script(src='/bloom/bookEdit/js/libsynphony/underscore_min_152.js')
+		script(src='/bloom/bookEdit/js/libsynphony/jquery.text-markup.js')
+		script(src='/bloom/bookEdit/js/libsynphony/synphony_lib.js')
+		script(src='/bloom/bookEdit/js/libsynphony/bloom_lib.js')
+		script(src='/bloom/bookEdit/js/getIframeChannel.js')
+		script(src='/bloom/lib/localizationManager/localizationManager.js')
+		script(src='/bloom/lib/jquery.i18n.custom.js')
+		script(src='/bloom/lib/long-press/jquery.mousewheel.js')
+		script(src='/bloom/lib/long-press/jquery.longpress.js')
+		script(src='/bloom/bookEdit/js/readerSettings.js')
+		script(src='readerSetup.io.js')
+		script(src='readerSetup.ui.js')
+		script(type='text/javascript') $(function() {$("#dlstabs").tabs();});
+	body
+		#dlstabs.ui-dialog.ui-widget
+			#powered-by.smaller
+				span(data-i18n='ReaderSetup.PoweredBy') Powered by&nbsp;
+				a(href='http://call.canil.ca/', data-i18n='ReaderSetup.Synphony') SynPhony
+				span(data-i18n='ReaderSetup.SearchEngine') , the Search Engine for Literacy.
+			ul
+				li: a(href='#dlstabs-0', data-i18n='ReaderSetup.Letters') Letters
+				li: a(href='#dlstabs-1', data-i18n='ReaderSetup.SampleWords') Sample Words
+				li: a(href='#dlstabs-2', data-i18n='ReaderSetup.DecodableStages') Decodable Stages
+				li: a(href='#dlstabs-3', data-i18n='ReaderSetup.ReaderLevels') Reader Levels
+			#dlstabs-0.reader-setup-tab
+				.floating
+					p(data-i18n='ReaderSetup.Letters.Intro') To help you make decodable readers, Bloom needs to know the letters and letter combinations that you will be teaching.
+					br
+					label(data-i18n='ReaderSetup.Letters.Header') Letters and Letter Combinations
+					br
+					textarea#dls_letters.book-font(style='height: 55px; width: 325px')
+					p(data-i18n='ReaderSetup.Letters.LetterHelp1') Separate each letter or letter combination with a space. For example, here is what we might use for the English language:
+					p a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z ' -
+					p
+						span(data-i18n='ReaderSetup.Letters.LetterHelp2') Notice that the English list includes symbols that are used to make words, like ' in&nbsp;
+						i(data-i18n='ReaderSetup.Letters.LetterHelp3') it's
+						span(data-i18n='ReaderSetup.Letters.LetterHelp4')
+							= '.'
+			#dlstabs-1.reader-setup-tab
+				p
+					input#use-word-list(type='radio' name='words-or-letters' value='1' checked)
+					label(data-i18n='ReaderSetup.Words.UseAllowedWords' for='use-word-list') We are using lists of allowed words to define stages
+					br
+					input#use-letters(type='radio' name='words-or-letters' value='0')
+					label(data-i18n='ReaderSetup.Words.UseLetters' for='use-letters') We are using letters with sight words to define stages
+				p.disableable(data-i18n='ReaderSetup.Words.Intro') To help you make decodable readers, Bloom can suggest words that fit within the current stage.  There are two ways to give words to Bloom:
+				#more-words-div.floating(style='width: 30%')
+					label.disableable(for='dls_more_words', data-i18n='ReaderSetup.Words.TypeWordsHere') 1) Type Words Here
+					br
+					textarea#dls_more_words.book-font.disableable(style='height: 328px;width:100%')
+				#word-lists-div.floating
+					label.disableable(for='dls_word_lists')
+						span(data-i18n='ReaderSetup.Words.PlaceTextFiles') 2) Place Text Files in Your
+						= ' '
+						a#open-text-folder.blue-link(href='', data-i18n='ReaderSetup.Words.SampleTextFolder') Sample Texts Folder
+					br
+					#dls_word_lists.disableable
+					#how_to_export(style="display: none")
+						a(href="", onclick="return getIframeChannel().help('/bloom/help/Tasks/Edit_tasks/Decodable_Reader_Tool/Language_tab.htm');", data-i18n='ReaderSetup.HowToExport') Help exporting and converting files to use as sample texts
+			#dlstabs-2.reader-setup-tab
+				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
+					table
+						tr
+							td: img(src='/bloom/images/keys.png')
+							td(style='vertical-align: baseline; white-space: nowrap'): span.rs-heading(style='margin: auto 0', data-i18n='ReaderSetup.Stages') Stages
+				#stage-list-container.floating.tab-list-container
+					#stage-list.tab-list
+						.scrolling-table-container
+							.scrolling-table-header
+							.scrolling-table-container-inner
+								table#stages-table(style='border-collapse: collapse')
+									thead
+										tr
+											th(style='min-width: 25px'): div(data-i18n='ReaderSetup.StageHeader') Stage
+											th(style='min-width: 35px'): div(data-i18n='ReaderSetup.lettersHeader') Letters
+											th(style='width: 100%'): div(data-i18n='ReaderSetup.SightWordsHeader') Sight Words
+											th(style='width: 100%'): div(data-i18n='ReaderSetup.AllowedWordsFileHeader') Allowed Words File
+									tbody
+									tfoot
+										tr
+											td(colspan='3'): a#setup-add-stage(href='', data-i18n='ReaderSetup.AddStage') Add Stage
+					div.smaller(style='float: left', data-i18n='ReaderSetup.ReorderStages') Drag rows to reorder stages.
+					div(style='float: right')
+						a.blue-link#setup-remove-stage.smaller(href='', data-i18n='ReaderSetup.RemoveStage') Remove Stage {0}
+				#stage-detail.floating.tab-detail
+					div(style='display: block; margin: 6px 10px')
+						span.rs-subheading(style='margin: auto 0', data-i18n='ReaderSetup.StageLabel') Stage&nbsp;
+						span#setup-stage-number.rs-subheading 1
+					#setup-stage-letters-and-words.sub-float
+						div(style='width: 100%')
+							label(for='setup-stage-sight-words', data-i18n='ReaderSetup.SightWordLabel') New Sight Words
+							textarea#setup-stage-sight-words.book-font(style='height: 35px; width: 100%; box-sizing:border-box;')
+						br
+						div(style='display: block; margin-top: 12px;'): label(data-i18n='ReaderSetup.SelectedLetters') Previous and New Letters
+						#setup-selected-letters.rs-letter-container
+							// If an alphabet is already set up, the innerHTML of #setup-selected-letters will be replaced with a list of letters and letter combinations.
+							div(style='height: 80px')
+								p
+									span(data-i18n='ReaderSetup.FirstSetupAlphabet') First,
+									= ' '
+									a#first-setup-alphabet(href='', onclick='return firstSetupLetters();', data-i18n='ReaderSetup.SetupAlphabet') set up the alphabet for this language.
+						#click-letters.smaller(style='float: left', data-i18n='ReaderSetup.ClickLetter') Click on letters to add them to this stage.
+					#setup-stage-words-file.sub-float
+						div(style='width: 100%;')
+							label(data-i18n='ReaderSetup.AllowedWordsFile') Allowed Words File
+							br
+							a.blue-link#setup-choose-allowed-words-file(href='', data-i18n='ReaderSetup.ChooseAllowedWordsFile') Choose...
+							#allowed-words-file-div
+								span#allowed-words-file
+								span &nbsp;
+									= ' '
+									a#remove-allowed-word-file.red-x(href='') &#x2717;
+					#setup-stage-matching-words.sub-float
+						div(style='width: 100%; height: calc(100% - 18px);')
+							label
+								span#setup-words-count 0
+								= ' '
+								span#matching-words-span(data-i18n='ReaderSetup.MatchingWords') matching words
+								span#allowed-words-span(data-i18n='ReaderSetup.AllowedWords') allowed words
+							.rs-word-container
+								#rs-matching-words.book-font(style='margin-left: 8px')
+			#dlstabs-3.reader-setup-tab
+				.floating(style='width: 100%; box-sizing: border-box; margin-bottom: 8px;')
+					table
+						tr
+							td: img(src='/bloom/images/steps.png', height='32')
+							td(style='vertical-align: baseline; white-space: nowrap'): span.rs-heading(style='margin: auto 0', data-i18n='ReaderSetup.Levels') Reader Levels
+				#level-list-container.floating.tab-list-container
+					#level-list.tab-list
+						.scrolling-table-container
+							.scrolling-table-header
+							.scrolling-table-container-inner
+								table#levels-table(style='border-collapse: collapse; width: 100%')
+									thead
+										tr
+											th(style='width: 17%'): div(data-i18n='ReaderSetup.LevelHeader') Level
+											th(style='width: 24%'): div(data-i18n='ReaderSetup.SentenceHeader') Sentence
+											th(style='width: 17%'): div(data-i18n='ReaderSetup.PageHeader') Page
+											th(style='width: 17%'): div(data-i18n='ReaderSetup.BookHeader') Book
+											th(style='width: 25%'): div(data-i18n='ReaderSetup.UniqueHeader') Unique
+											th(style='display: none')
+									tbody
+									tfoot
+										tr
+											td(colspan='5'): a#setup-add-level(href='', data-i18n='ReaderSetup.AddLevel') Add Level
+					div.smaller(style='float: left', data-i18n='ReaderSetup.ReorderLevels') Drag rows to reorder levels.
+					div(style='float: right')
+						a.blue-link#setup-remove-level.smaller(href='', data-i18n='ReaderSetup.RemoveLevel') Remove Level {0}
+				#level-detail.floating.tab-detail
+					div(style='display: block; margin: 0 10px 6px')
+						span.rs-subheading(style='margin: auto 0', data-i18n='ReaderSetup.LevelLabel') Level&nbsp;
+						span#setup-level-number.rs-subheading 1
+					table
+						tr
+							td: input#use-words-per-sentence.level-checkbox(type='checkbox')
+							td(style='padding-left: 0'): label(for='use-words-per-sentence', data-i18n='ReaderSetup.SentenceMaxWords') Maximum Words in each Sentence
+							td: input#max-words-per-sentence.level-textbox(type='text')
+						tr
+							td: input#use-words-per-page.level-checkbox(type='checkbox')
+							td: label(for='use-words-per-page', data-i18n='ReaderSetup.PageMaxWords') Maximum Words on each Page
+							td: input#max-words-per-page.level-textbox(type='text')
+						tr
+							td: input#use-words-per-book.level-checkbox(type='checkbox')
+							td: label(for='use-words-per-book', data-i18n='ReaderSetup.BookMaxWords') Maximum Words per Book
+							td: input#max-words-per-book.level-textbox(type='text')
+						tr
+							td: input#use-unique-words-per-book.level-checkbox(type='checkbox')
+							td: label(for='use-unique-words-per-book', data-i18n='ReaderSetup.MaxUniqueWords') Maximum Unique Words per Book
+							td: input#max-unique-words-per-book.level-textbox(type='text')
+					#things-to-remember-container
+						label(for='things-to-remember', data-i18n='ReaderSetup.ToRemember') Things to remember for this level:
+						ul#things-to-remember
+							li(contenteditable='true')
+		#hiddenWordList(style="display: none")
+			label#please-add-texts
+			label#format_not_supported(data-i18n='ReaderSetup.FormatNotSupported') Cannot read this format
+			label#needs_txt_extension(data-i18n='ReaderSetup.FileNeedsTxtExtension') File needs .txt extension
+			label#remove_word_list(data-i18n='ReaderSetup.RemoveWordList') Remove from this stage

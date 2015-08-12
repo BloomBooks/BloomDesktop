@@ -1,18 +1,18 @@
 /// <reference path="../../bookEdit/js/getIframeChannel.ts" />
 window.addEventListener('message', process_EditFrame_Message, false);
-var logic;
+var _pageChooser;
 function process_EditFrame_Message(event) {
     var params = event.data.split('\n');
     switch (params[0]) {
         case 'AddSelectedPage':
-            if (logic)
-                logic.addPageClickHandler();
+            if (_pageChooser)
+                _pageChooser.addPageClickHandler();
             else
                 alert("received AddSelectedPage message before PageChooser was created");
             return;
         case 'Data':
-            logic = new PageChooser(params[1]);
-            logic.LoadInstalledCollections();
+            _pageChooser = new PageChooser(params[1]);
+            _pageChooser.LoadInstalledCollections();
             return;
         default:
     }
@@ -49,16 +49,16 @@ var PageChooser = (function () {
     }; // thumbnailClickHandler
     PageChooser.prototype.addPageClickHandler = function () {
         if (this._selectedTemplatePage == undefined || this._templateBookUrls == undefined) {
-            return null;
+            return null; // TODO: say something to the user!?
         }
-        // TODO: Add page to book here
         var pageId = $(this._selectedTemplatePage).find('iframe').first().attr('src');
         console.log('firing CSharp event - Selected template page: ' + pageId);
         this.fireCSharpEvent('addPage', pageId);
-        // Mark any previously selected thumbnail as no longer selected
-        $(this._selectedTemplatePage).removeClass('ui-selected');
     }; // addPageClickHandler
     PageChooser.prototype.LoadInstalledCollections = function () {
+        // Originally (now maybe YAGNI) the dialog handled more than one collection of template pages.
+        // Right now it only handles one, so the cloning of stub html is perhaps unnecessary,
+        // but I've left it in case we need it later.
         // Save html sections that will get cloned later
         // there should only be one 'collection' at this point; a stub with one default template page
         var collectionHTML = $('.collection', document).first().clone();
@@ -66,7 +66,7 @@ var PageChooser = (function () {
         var templatePageHTML = $('.templatePage', collectionHTML).first().clone();
         var collectionUrls;
         try {
-            collectionUrls = $.parseJSON(logic._templateBookUrls);
+            collectionUrls = $.parseJSON(_pageChooser._templateBookUrls);
         }
         catch (e) {
             console.log('Received bad template url: ' + e);
@@ -76,7 +76,7 @@ var PageChooser = (function () {
             $('.outerCollectionContainer', document).empty();
             $.each(collectionUrls, function (index) {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                logic.LoadCollection(this['templateBookUrl'], collectionHTML, templatePageHTML);
+                _pageChooser.LoadCollection(this['templateBookUrl'], collectionHTML, templatePageHTML);
             });
             window.scrollTo(0, 0); // TODO: wrong window!
         }
@@ -94,7 +94,7 @@ var PageChooser = (function () {
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $(pageData).filter(".bloom-page[id]");
-            logic.LoadPagesFromCollection(collectionToAdd, pages, templatePageHTML, pageUrl);
+            _pageChooser.LoadPagesFromCollection(collectionToAdd, pages, templatePageHTML, pageUrl);
         }, "html");
         request.fail(function (jqXHR, textStatus, errorThrown) {
             console.log('There was a problem reading: ' + pageUrl + ' see documentation on : ' + jqXHR.status + ' ' + textStatus + ' ' + errorThrown);
@@ -119,7 +119,7 @@ var PageChooser = (function () {
         // once the template pages are installed, attach click handler to them.
         $('.invisibleThumbCover', currentCollection).each(function (index, div) {
             $(div).click(function () {
-                logic.thumbnailClickHandler(div);
+                _pageChooser.thumbnailClickHandler(div);
             }); // invisibleThumbCover click
         }); // each
     }; // LoadPagesFromCollection

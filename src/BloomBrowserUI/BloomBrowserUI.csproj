@@ -212,11 +212,6 @@
     <Folder Include="bookPreview\img\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bookEdit\StyleEditor\StyleEditor.js.map">
-      <DependentUpon>StyleEditor.ts</DependentUpon>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="bookEdit\iconfont\fonts\BloomIcons.dev.svg" />
     <Content Include="bookEdit\iconfont\fonts\BloomIcons.eot" />
     <Content Include="bookEdit\iconfont\fonts\BloomIcons.svg" />
@@ -248,7 +243,6 @@
     <Content Include="bookEdit\StyleEditor\StyleEditor.less" />
     <Content Include="bookLayout\basePage.less" />
     <Content Include="pageChooser\blank-preview.jade" />
-    <Content Include="pageChooser\js\page-chooser.js.map" />
     <Content Include="pageChooser\mixins\page-chooser-mixins.jade" />
     <Content Include="pageChooser\page-chooser-main.jade" />
     <Content Include="pageChooser\page-chooser.less" />
