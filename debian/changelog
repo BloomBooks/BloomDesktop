@@ -1,3 +1,10 @@
+bloom-desktop (3.2.1) stable; urgency=medium
+
+  * Minor bug fixes for Version 3.2
+  * Change package name to bloom-desktop
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Wed, 12 Aug 2015 10:39:46 -0500
+
 bloom-desktop-unstable (3.2.0) stable; urgency=medium
 
   * Update version number of unstable version to 3.2
