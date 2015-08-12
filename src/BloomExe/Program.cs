@@ -21,6 +21,7 @@ using Palaso.UI.WindowsForms.Registration;
 using Palaso.UI.WindowsForms.Reporting;
 using Palaso.UI.WindowsForms.UniqueToken;
 using System.Linq;
+using Bloom.MiscUI;
 
 namespace Bloom
 {
