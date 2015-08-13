@@ -1,0 +1,153 @@
+// page-chooser.less - rules for the Bloom Page Chooser dialog
+// try not to overwrite the bloomDialog.less rules
+
+@PreviewPaneLeftPadding: 15px;
+BODY {
+	margin: 4px;
+}
+#mainContainer {
+	border: none;
+	margin: 0;
+	height: 645px;
+    max-width: 930px;
+	width: 100%;
+    display: flex;
+    flex-direction: row;
+	box-sizing: border-box;
+}
+.templatePageDisplay {
+	overflow-y: auto;
+	height: auto;
+	flex: 3;
+	display: flex;
+	flex-direction: column;
+}
+#singlePagePreview {
+    flex: 2;
+	order: 2;
+	height: auto;
+	min-width: 320px;
+	IFRAME {
+		pointer-events: none;
+	}
+}
+#preview {
+	position: relative;
+	right: 0;
+	top: 0;
+	margin-top: -185px;
+	margin-left: -130px;
+	margin-right: -130px;
+	transform-origin: 50% 50%;
+	transform: scale(0.5);
+	height: 798px;
+	width: 571px;
+	border: 2pt solid #008000;
+}
+#previewCaption {
+	font-weight: bold;
+	height: 25px;
+	width: 326px;
+	position: relative;
+	padding-left: @PreviewPaneLeftPadding;
+	top: 10px;
+}
+#previewDescription {
+	position: relative;
+	bottom: 190px;
+	height: 165px;
+	border: 2px solid yellow;
+	padding-left: @PreviewPaneLeftPadding;
+	.DescriptionHeader {
+		font-weight: bold;
+	}
+	.DescriptionText {
+		overflow-y: scroll;
+		white-space: normal;
+		max-height: 145px;
+	}
+}
+.ui-dialog-buttonset {
+	&:first-child {
+		.ui-icon-plusthick {
+			left: 0.25em !important;
+		}
+		.ui-button-text {
+			text-align: right !important;
+		}
+	}
+}
+// Currently unused
+//.templatesCaption {
+//	overflow: hidden;
+//	background: #E0E0E0;
+//	padding-top: 4px;
+//	padding-bottom: 4px;
+//	padding-left: 20px;
+//	margin-top: 5px;
+//	margin-left: 5px;
+//    flex: 1 1 100%;
+//    flex-wrap: nowrap;
+//}
+.outerCollectionContainer {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+.collection {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+.collectionCaption {
+	font-weight: bold;
+	padding-left: 4px;
+	margin-left: 20px;
+	margin-top: 12px;
+	display: block;
+}
+.innerCollectionContainer {
+	margin: 5px 0 0 20px;
+}
+.templatePage {
+	margin: 0 10px 10px 11px;
+	width: 104px;
+	height: 170px;
+	display: inline-block;
+}
+.templatePage:hover {
+	background: #F4EAE3;
+}
+.templatePage.ui-selected {
+	background: #FFDCAC;
+	border:1px solid #000000;
+}
+.thumbnail {
+	overflow: hidden;
+	display: block;
+	margin-left: 10px;
+	margin-top: 4px;
+	margin-bottom: -672px;
+	background: inherit;
+	transform-origin: 2px 0;
+	transform: scale(0.14);
+	width: 575px;
+	height: 800px;
+	border: 8px solid #20318A;
+}
+.templatePageCaption {
+	font-weight: bold;
+	text-align: center;
+	height: 55px;
+	position: relative;
+	left: 0;
+	top: -28px;
+	overflow: hidden;
+}
+.invisibleThumbCover {
+	z-index: 5;
+	position: absolute;
+	height: 170px;
+	width: 100px;
+	background: url(transparent.gif);
+}

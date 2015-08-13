@@ -1362,16 +1362,24 @@ namespace Bloom.Book
 			return _pagesCache[index + 1]; //give the following page
 		}
 
-		public IEnumerable<IPage> GetTemplatePages()
+		public Dictionary<string, IPage> GetTemplatePagesIdDictionary()
 		{
 			if (_log.ErrorEncountered)
-				yield break;
+				return null;
+
+			var result = new Dictionary<string, IPage>();
 
 			foreach (XmlElement pageNode in OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@data-page, 'singleton'))]"))
 			{
 				var caption = GetPageLabelFromDiv(pageNode);
-				yield return CreatePageDecriptor(pageNode, caption);
+				result.Add(GetPageIdFromDiv(pageNode), CreatePageDecriptor(pageNode, caption));
 			}
+			return result;
+		}
+
+		private static string GetPageIdFromDiv(XmlElement pageNode)
+		{
+			return pageNode.GetAttribute("id");
 		}
 
 		private static string GetPageLabelFromDiv(XmlElement pageNode)
@@ -1385,11 +1393,6 @@ namespace Bloom.Book
 		{
 			return new Page(this, pageNode, caption,
 				(page => FindPageDiv(page)));
-		}
-
-		public Image GetPageThumbNail()
-		{
-			return Resources.Error70x70;
 		}
 
 		private XmlElement FindPageDiv(IPage page)

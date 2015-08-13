@@ -568,6 +568,13 @@ namespace Bloom.web
 			// if still not found, and localPath is an actual file path, use it
 			if (string.IsNullOrEmpty(path) && File.Exists(localPath)) path = localPath;
 
+			if (string.IsNullOrEmpty(path))
+			{
+				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
+				var lastTry = FileLocator.GetFileDistributedWithApplication(true, "BloomBrowserUI", localPath);
+				if(File.Exists(lastTry)) path = lastTry;
+			}
+
 			// return false if the file was not found
 			if (string.IsNullOrEmpty(path)) return false;
 

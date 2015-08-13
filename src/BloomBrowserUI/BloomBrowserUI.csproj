@@ -156,6 +156,13 @@
     <Content Include="lib\split-pane\split-pane.css" />
     <Content Include="lib\split-pane\split-pane.js" />
     <Content Include="lib\tabpane.js" />
+    <Content Include="pageChooser\blank-preview.css" />
+    <Content Include="pageChooser\blank-preview.htm" />
+    <Content Include="pageChooser\js\page-chooser.js" />
+    <Content Include="pageChooser\mixins\page-chooser-mixins.htm" />
+    <Content Include="pageChooser\page-chooser-main.htm" />
+    <Content Include="pageChooser\page-chooser.css" />
+    <Content Include="pageChooser\transparent.gif" />
     <Content Include="test\.guidsForInstaller.xml" />
     <Content Include="test\fixtures\basePage.css" />
     <Content Include="test\fixtures\OverflowTestPage.htm" />
@@ -190,6 +197,7 @@
     <TypeScriptCompile Include="lib\jquery.i18n.custom.ts" />
     <TypeScriptCompile Include="lib\localizationManager\localizationManager.ts" />
     <TypeScriptCompile Include="lib\localizationManager\localizationManagerSpec.ts" />
+    <TypeScriptCompile Include="pageChooser\js\page-chooser.ts" />
     <TypeScriptCompile Include="test\specs\SourceBubblesSpec.ts" />
     <TypeScriptCompile Include="test\specs\StyleEditorSpec.ts" />
     <Content Include="bookLayout\basePage.css" />
@@ -202,11 +210,6 @@
     <Folder Include="bookEdit\editor\" />
     <Folder Include="bookPreview\html\" />
     <Folder Include="bookPreview\img\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="bookEdit\StyleEditor\StyleEditor.js.map">
-      <DependentUpon>StyleEditor.ts</DependentUpon>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="bookEdit\iconfont\fonts\BloomIcons.dev.svg" />
@@ -239,6 +242,10 @@
     <Content Include="bookEdit\html\font-awesome\fonts\fontawesome-webfont.woff" />
     <Content Include="bookEdit\StyleEditor\StyleEditor.less" />
     <Content Include="bookLayout\basePage.less" />
+    <Content Include="pageChooser\blank-preview.jade" />
+    <Content Include="pageChooser\mixins\page-chooser-mixins.jade" />
+    <Content Include="pageChooser\page-chooser-main.jade" />
+    <Content Include="pageChooser\page-chooser.less" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

@@ -42,10 +42,10 @@ class CalledByCSharp {
       return "fail"; //go ask the browser
   }
 
-    pageSelectionChanging() {
-        var contentWindow = this.getPageContent();
-        contentWindow['pageSelectionChanging']();
-    }
+  pageSelectionChanging() {
+    var contentWindow = this.getPageContent();
+    contentWindow['pageSelectionChanging']();
+  }
 
   loadReaderToolSettings(settings: string, bookFontName: string) {
 

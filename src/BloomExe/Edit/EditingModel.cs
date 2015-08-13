@@ -48,6 +48,8 @@ namespace Bloom.Edit
 		private bool _inProcessOfDeleting;
 		private string _accordionFolder;
 		private EnhancedImageServer _server;
+		private readonly TemplateInsertionCommand _templateInsertionCommand;
+		private Dictionary<string, IPage> _templatePagesDict;
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
@@ -82,6 +84,7 @@ namespace Bloom.Edit
 			_collectionSettings = collectionSettings;
 			_sendReceiver = sendReceiver;
 			_server = server;
+			_templatePagesDict = null;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -108,7 +111,6 @@ namespace Bloom.Edit
 					RefreshDisplayOfCurrentPage();
 					//_view.UpdateDisplay();
 					_view.UpdatePageList(false);
-					_view.UpdateTemplateList();
 				}
 				else if (_view != null)
 				{
@@ -119,6 +121,7 @@ namespace Bloom.Edit
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
 			_server.CurrentBook = CurrentBook;
+			_templateInsertionCommand = templateInsertionCommand;
 		}
 
 		private Form _oldActiveForm;
@@ -167,6 +170,7 @@ namespace Bloom.Edit
 			_domForCurrentPage = null;
 			_currentlyDisplayedBook = null;
 			_server.CurrentBook = CurrentBook;
+			_templatePagesDict = null;
 			if (Visible)
 			{
 				_view.ClearOutDisplay();
@@ -275,27 +279,11 @@ namespace Bloom.Edit
 			get { return _bookSelection.CurrentSelection; }
 		}
 
-		public bool ShowTranslationPanel
+		public bool EnableAddPageFunction
 		{
 			get
 			{
-				return _bookSelection.CurrentSelection.HasSourceTranslations;
-			}
-		}
-
-		public bool ShowTemplatePanel
-		{
-			get
-			{
-//                if (_librarySettings.IsSourceCollection)
-//                {
-//                    return true;
-//                }
-//                else
-//                {
-
-					return _bookSelection.CurrentSelection.UseSourceForTemplatePages;
-//                }
+				return _bookSelection.CurrentSelection.UseSourceForTemplatePages;
 			}
 		}
 
@@ -498,10 +486,6 @@ namespace Bloom.Edit
 
 			if (_view != null)
 			{
-				if(ShowTemplatePanel)
-				{
-					_view.UpdateTemplateList();
-				}
 				_view.UpdatePageList(false);
 			}
 		}
@@ -533,6 +517,14 @@ namespace Bloom.Edit
 				_view.ChangingPages = true;
 				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.pageSelectionChanging();}");
 			}
+		}
+
+		public void ShowAddPageDialog()
+		{
+			if (_view == null || _inProcessOfDeleting)
+				return;
+			var jsonTemplates = GetJsonTemplatePageObject;
+			_view.RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
 		}
 
 		void OnPageSelectionChanged(object sender, EventArgs e)
@@ -585,7 +577,7 @@ namespace Bloom.Edit
 				_server.AccordionContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 
 			_server.CurrentBook = _currentlyDisplayedBook;
-			_server.AuthorMode = ShowTemplatePanel;
+			_server.AuthorMode = EnableAddPageFunction;
 		}
 
 		/// <summary>
@@ -666,6 +658,32 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
+			_view.AddMessageEventListener("addPage", AddPageFromDialog);
+		}
+
+		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
+		{
+			if (_templatePagesDict != null)
+				return _templatePagesDict;
+
+			var templateBook = _bookSelection.CurrentSelection.FindTemplateBook();
+			if (templateBook == null)
+				return null;
+			_templatePagesDict = templateBook.GetTemplatePagesIdDictionary();
+			return _templatePagesDict;
+		}
+
+		private void AddPageFromDialog(string data)
+		{
+			// The Page Chooser dialog will generate the page guid from a template book
+			var args = data.Split(new[] {'#'});
+			if (args.Length < 2)
+				return;
+			var pageId = args[1];
+			IPage page;
+			var dict = GetTemplatePagesForThisBook();
+			if(dict != null && dict.TryGetValue(pageId, out page))
+				_templateInsertionCommand.Insert(page as Page);
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
@@ -820,6 +838,33 @@ namespace Bloom.Edit
 		{
 			jsonData = jsonData.Replace("\r", "").Replace("\n", "");
 			return CleanUpDataForJavascript(jsonData);
+		}
+
+		private string GetDialogContent()
+		{
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/page chooser", "page-chooser-main.htm");
+			_accordionFolder = Path.GetDirectoryName(path);
+
+			var domForDialog = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+
+			// embed settings on the page
+			var settings = new Dictionary<string, object>
+			{
+				{"pageId", "noResult"}
+			};
+
+			var settingsStr = JsonConvert.SerializeObject(settings);
+			settingsStr = String.Format("function GetDialogResult() {{ return {0};}}", settingsStr);
+
+			var scriptElement = domForDialog.RawDom.CreateElement("script");
+			scriptElement.SetAttribute("type", "text/javascript");
+			scriptElement.SetAttribute("id", "ui-dialogResult");
+			scriptElement.InnerText = settingsStr;
+
+			domForDialog.Head.InsertAfter(scriptElement, domForDialog.Head.LastChild);
+
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForDialog.RawDom);
+			return TempFileUtils.CreateHtml5StringFromXml(domForDialog.RawDom);
 		}
 
 		private string MakeAccordionContent()
@@ -1135,6 +1180,30 @@ namespace Bloom.Edit
 			}
 		}
 	   */
+
+		private string GetCurrentTemplate
+		{
+			get
+			{
+				var templateBook = CurrentBook.FindTemplateBook();
+				if (templateBook == null)
+					return null;
+
+				return templateBook.GetPathHtmlFile();
+			}
+		}
+
+		private string GetJsonTemplatePageObject
+		{
+			get
+			{
+				const string prefix = "/bloom/localhost/";
+				var path = prefix + GetCurrentTemplate;
+				path = path.Replace(':', '$').Replace('\\', '/');
+				var jsonString = "[{ \"templateBookUrl\": \"" + path + "\" }]";
+				return jsonString;
+			}
+		}
 	}
 
 	public class TemplateInsertionCommand

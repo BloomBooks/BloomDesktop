@@ -24,6 +24,7 @@ namespace Bloom.Edit
 			_model = model;
 			this.Font= SystemFonts.MessageBoxFont;
 			InitializeComponent();
+			_addPageButton.Visible = false;
 			_thumbNailList.Thumbnailer = thumbnailProvider;
 			_thumbNailList.CanSelect = true;
 			_thumbNailList.PreferPageNumbers = true;
@@ -110,6 +111,8 @@ namespace Bloom.Edit
 			{
 				_dontForwardSelectionEvent = true;
 				_thumbNailList.SelectPage(page);
+				_addPageButton.Enabled = _model.EnableAddPageFunction;
+				_addPageButton.Visible = true;
 			}
 			finally
 			{
@@ -132,6 +135,12 @@ namespace Bloom.Edit
 		public new bool Enabled
 		{
 			set { _thumbNailList.Enabled = value; }
+		}
+
+		private void _addPageButton_Click(object sender, EventArgs e)
+		{
+			// Call Add Page Dialog
+			_model.ShowAddPageDialog();
 		}
 	}
 }

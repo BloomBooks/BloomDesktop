@@ -63,6 +63,16 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap AddPageIcon {
+            get {
+                object obj = ResourceManager.GetObject("AddPageIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap betatag2 {
             get {
                 object obj = ResourceManager.GetObject("betatag2", resourceCulture);
