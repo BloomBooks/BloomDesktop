@@ -592,7 +592,8 @@ var ReaderToolsModel = (function () {
                 editableElements.checkDecodableReader({
                     focusWords: cumulativeWords,
                     previousWords: cumulativeWords,
-                    sightWords: sightWords,
+                    // libsynphony lowercases the text, so we must do the same with sight words.  (BL-2550)
+                    sightWords: sightWords.join(' ').toLowerCase().split(' '),
                     knownGraphemes: this.stageGraphemes
                 });
                 break;
