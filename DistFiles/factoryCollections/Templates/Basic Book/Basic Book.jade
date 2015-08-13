@@ -33,11 +33,12 @@ html
 		//- This "Book" name is used for saving the file, until the user enters a title
 		meta(name='defaultNameForDerivedBooks', content='Book')
 		meta(name='bloomBookId', content='056B6F11-4A6C-4942-B2BC-8861E62B03B3')
-
 		//- Eventually, we'll remove Bloom's need for this.
 		meta(name='pageTemplateSource', content='Basic Book')
 		title 'Basic Book'
 		+stylesheets('Basic Book.css')
+		style(type="text/css" title="userModifiedStyles")
+			.BigWords-style { font-size: 45pt !important; text-align: center !important; }
 	body
 		+dataDiv
 			+bookVariable-title('en', 'Basic Book')
@@ -109,6 +110,6 @@ html
 				+upper(50)
 					+imagex
 				+lower(50)
-					+fieldx.BigWords-style
+					+field.bloom-trailingElement.BigWords-style
 
 		+page-Custom()
