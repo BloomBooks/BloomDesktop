@@ -322,18 +322,20 @@ H2 {
   margin-top: 10px;
 }
 .customPage .bloom-imageContainer {
-  width: 99%;
-  height: 98%;
+  width: 100%;
+  height: 100%;
   z-index: 1000;
   overflow: hidden;
 }
 .customPage .bloom-editable {
   overflow-y: hidden;
 }
+.customPage.bloom-bilingual .bloom-editable {
+  height: calc(49% - 2px);
+}
+.customPage.bloom-trilingual .bloom-editable {
+  height: calc(32% - 1px);
+}
 .customPage .split-pane-component {
   min-height: 1.5em;
-}
-.customPage.A5Portrait.bloom-monolingual .bloom-translationGroup {
-  height: 99%;
-  width: 99%;
 }

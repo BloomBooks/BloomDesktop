@@ -342,8 +342,11 @@ H2 {
 
 .customPage {
 	.bloom-imageContainer {
-		width: 99%;
-		height: 98%;
+		//width: 99%;
+		//height: 98%;
+		width: 100%;
+		height: 100%;
+
 		// above so buttons show
 		z-index: 1000;
 		// Solves BL-1033 small picture frames cycling red overflow
@@ -352,13 +355,19 @@ H2 {
     .bloom-editable {
         overflow-y: hidden;
     }
+    &.bloom-bilngual{
+      .bloom-editable {  height:49%; }
+    }
+    &.bloom-trilingual{
+      .bloom-editable {  height:32%; }
+    }
 	.split-pane-component {
 		//Enhance: this doesn't buy us much... it would be more helpful if the minimum was
 		// the min-height of the child
 		min-height: @defaultLineHeight;
 	}
-	&.A5Portrait.bloom-monolingual .bloom-translationGroup {
-		height: 99%;
-		width: 99%;
-	}
+	//&.A5Portrait.bloom-monolingual .bloom-translationGroup {
+	//	height: 99%;
+	//	width: 99%;
+	//}
 }
