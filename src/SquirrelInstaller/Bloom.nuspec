@@ -2,7 +2,7 @@
 <package >
   <metadata>
 	<id>Bloom</id><!-- For Squirrel, must match application name. -->
-	<version>3.1.11</version>
+	<version>3.2</version>
     <authors>SIL International</authors>
     <owners>SIL International</owners>
     <projectUrl>http://bloomlibrary.org</projectUrl>
@@ -19,6 +19,6 @@
 		<file src="..\..\Mercurial\**\*.*" target="\lib\net45\Mercurial"/>
 		<file src="..\..\MercurialExtensions\**\*.*" target="\lib\net45\MercurialExtensions"/>
 		<file src="..\..\src\BloomBrowserUI\**\*.*" target="\lib\net45\BloomBrowserUI"/>
-		<file src="..\..\artwork\Bloom*.ico" target="\lib\net45\"/>
+		<file src="..\..\src\BloomExe\Resources\Bloom*.ico" target="\lib\net45\"/>
 	</files>
 </package>
