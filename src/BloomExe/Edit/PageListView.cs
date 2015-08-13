@@ -50,6 +50,7 @@ namespace Bloom.Edit
 				args.ContextMenu.MenuItems.Add(removeItem);
 				dupItem.Enabled = removeItem.Enabled = page != null && !page.Required && !_model.CurrentBook.LockedDown;
 			};
+			BackColor = Color.FromArgb(64, 64, 64);
 		}
 
 		private void OnPageSelectedChanged(object page, EventArgs e)
