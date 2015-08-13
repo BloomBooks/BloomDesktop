@@ -95,6 +95,25 @@ namespace Bloom
 						// remove blank lines at the end of style blocks
 						newContents = Regex.Replace(newContents, @"\s+<\/style>", "</style>");
 
+						// remove <br> elements immediately preceding </p> close tag (BL-2557)
+						// These are apparently inserted by ckeditor as far as we can tell.  They don't show up on
+						// fields that have never had a ckeditor activated, and always show up on fields that have
+						// received focus and activated an inline ckeditor.  The ideal ckeditor use case appears
+						// to be for data entry as part of a web page that get stored separately, with the data
+						// obtained something like the following in javascript:
+						//        ckedit.on('blur', function(evt) {
+						//            var editor = evt['editor'];
+						//            var data = editor.getData();
+						//            <at this point, the data looks okay, with any <br> element before the </p> tag.>
+						//            <store the data somewhere: the following lines have no effect, and may be silly.>
+						//            var div = mapCkeditDiv[editor.id];
+						//            div.innerHTML = data;
+						//        });
+						// Examining the initial value of div.innerHTML shows the unwanted <br> element, but it is
+						// not in the data returned by editor.getData().  Since assigning to div.innerHTML doesn't
+						// affect what gets written to the file, this hack was implemented instead.
+						newContents = Regex.Replace(newContents, @"(<br></br>|<br ?/>)[\r\n]*</p>", "</p>");
+
 						dom.LoadXml(newContents);
 					}
 					catch (Exception e)
