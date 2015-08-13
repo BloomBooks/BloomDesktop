@@ -96,7 +96,6 @@ TEXTAREA,
   resize: none;
   /*don't show those cute little resize controls in Firefox 4 and greater*/
   overflow: visible;
-  font-size: 143%;
   line-height: 1.5em;
   min-height: 1.8em;
   width: 100%;
@@ -321,20 +320,28 @@ H2 {
 .bloom-translationGroup .bloom-editable.bloom-content3 {
   margin-top: 10px;
 }
+.customPage {
+  /* This is in order to divide up the whole section in equal parts.
+		I'm not sure, though...it looks better when you first make the page. But it actually reduces the flexibility for the user a bit. Hmmm*/
+}
 .customPage .bloom-imageContainer {
-  width: 100%;
-  height: 100%;
+  width: calc(100% - 1px);
+  height: calc(100% - 3px);
   z-index: 1000;
   overflow: hidden;
 }
 .customPage .bloom-editable {
   overflow-y: hidden;
 }
+.customPage .bloom-translationGroup {
+  height: calc(100% - 2px);
+  width: calc(100% - 2px);
+}
 .customPage.bloom-bilingual .bloom-editable {
-  height: calc(49% - 2px);
+  height: 47%;
 }
 .customPage.bloom-trilingual .bloom-editable {
-  height: calc(32% - 1px);
+  height: 30%;
 }
 .customPage .split-pane-component {
   min-height: 1.5em;

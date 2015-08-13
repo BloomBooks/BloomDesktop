@@ -86,7 +86,7 @@ TEXTAREA, .bloom-editable
 	resize: none;
 	/*don't show those cute little resize controls in Firefox 4 and greater*/
 	overflow: visible;
-	font-size: 143%;
+	// this is just... bogus! removing it will cause some problems, but.. but... font-size: 143%;
 	line-height: @defaultLineHeight;
 	min-height:  @defaultLineHeight + .3em;
 	width: 100%;
@@ -324,12 +324,10 @@ LABEL.bubble, LABEL.placeholder
 }
 H1
 {
-	//font-weight: bold;
 	font-size: 1.5em;
 }
 
 H2 {
-	//font-weight: bold ;
 	font-size: 1.2em;
 }
 /* we will have UI that switches this .box-header-on if th user wants it*/
@@ -342,10 +340,8 @@ H2 {
 
 .customPage {
 	.bloom-imageContainer {
-		//width: 99%;
-		//height: 98%;
-		width: 100%;
-		height: 100%;
+		width: ~"calc(100% - 1px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
+		height: ~"calc(100% - 3px)"; //hack: this should logically be 1px, but 3 was needed, so I'm missing something, or maybe it's about rounding and such.
 
 		// above so buttons show
 		z-index: 1000;
@@ -355,12 +351,19 @@ H2 {
     .bloom-editable {
         overflow-y: hidden;
     }
-    &.bloom-bilngual{
-      .bloom-editable {  height:49%; }
+	.bloom-translationGroup{
+		height: ~"calc(100% - 2px)";
+		width: ~"calc(100% - 2px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
+	}
+	/* This is in order to divide up the whole section in equal parts.
+		I'm not sure, though...it looks better when you first make the page. But it actually reduces the flexibility for the user a bit. Hmmm*/
+	&.bloom-bilingual{
+      .bloom-editable {  height:47%; }
     }
     &.bloom-trilingual{
-      .bloom-editable {  height:32%; }
+      .bloom-editable {  height:30%; }
     }
+
 	.split-pane-component {
 		//Enhance: this doesn't buy us much... it would be more helpful if the minimum was
 		// the min-height of the child

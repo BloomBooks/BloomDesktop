@@ -42,6 +42,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 	left: 0;
 	cursor: ns-resize;
 	z-index: 2;
+	padding-bottom: 5px; /* this actually enlarges the target area for the user trying to find the splitter, without changing the layout of the page (because the position is absolute)*/
 }
 
 .split-pane.fixed-left > .split-pane-component,
