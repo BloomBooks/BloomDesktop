@@ -679,6 +679,96 @@ namespace Bloom.Book
 			}
 		}
 
+		class GuidAndPath
+		{
+			public string Guid; // replacement guid
+			public string Path; // where to find file, relative to distfiles/factoryCollections/Templates
+		}
+
+		private static Dictionary<string, GuidAndPath> _pageMigrations;
+
+		/// <summary>
+		/// Get (after initializing, if necessary) the dictionary mapping page IDs we know how to migrate
+		/// onto the ID and file location of the page we want to update it to.
+		/// Paths are relative to factoryCollections/Templates
+		/// </summary>
+		private static Dictionary<string, GuidAndPath> PageMigrations
+		{
+			get
+			{
+				if (_pageMigrations == null)
+				{
+					_pageMigrations = new Dictionary<string, GuidAndPath>();
+					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398382"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398382", Path = "Basic Book/Basic Book.htm" }; // Basic Text and Picture
+					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398383"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383", Path = "Basic Book/Basic Book.htm" }; // Picture in Middle
+					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398384"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384", Path = "Basic Book/Basic Book.htm" }; // Picture on Bottom
+					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398385"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Basic Book/Basic Book.htm" }; // Just a Picture
+					_pageMigrations["d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Basic Book/Basic Book.htm" }; // Just Text
+					_pageMigrations["FD115DFF-0415-4444-8E76-3D2A18DBBD27"] = new GuidAndPath() { Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27", Path = "Basic Book/Basic Book.htm" }; // Picture & Word
+				}
+				return _pageMigrations;
+			}
+		}
+
+		/// <summary>
+		/// Bring the page up to date. Currently this is used to switch various old page types to new versions
+		/// based on Custom Page (so they can actually be customized).
+		/// </summary>
+		/// <param name="page"></param>
+		public void BringPageUpToDate(XmlElement page)
+		{
+			var lineageAttr = page.Attributes["data-pagelineage"];
+			if (lineageAttr == null)
+				return;
+			var lineage = lineageAttr.Value;
+			var originalTemplateGuid = lineage;
+			int index = lineage.IndexOf(";", StringComparison.InvariantCulture);
+			if (index >= 0)
+				originalTemplateGuid = lineage.Substring(0, index);
+			GuidAndPath updateTo;
+			if (!PageMigrations.TryGetValue(originalTemplateGuid, out updateTo))
+				return; // unknown page, don't try to migrate it.
+			var rootFolder = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections/Templates");
+			var bookPath = Path.Combine(rootFolder, updateTo.Path);
+			var templateDoc = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
+			var newChild = (XmlElement)templateDoc.SafeSelectNodes("//div[@id='" + updateTo.Guid + "']")[0];
+			var newPage = (XmlElement)page.OwnerDocument.ImportNode(newChild, true);
+			page.ParentNode.ReplaceChild(newPage, page);
+			newPage.SetAttribute("id", page.Attributes["id"].Value);
+			newPage.SetAttribute("data-pagelineage", lineage.Replace(originalTemplateGuid, updateTo.Guid));
+			// migrate text
+			MigrateChildren(page, "bloom-translationGroup", newPage);
+			// migrate images
+			MigrateChildren(page, "bloom-imageContainer", newPage);
+		}
+
+		/// <summary>
+		/// For each div in the page which has the specified class, find the corresponding div with that class in newPage,
+		/// and replace its contents with the contents of the source page.
+		/// </summary>
+		/// <param name="page"></param>
+		/// <param name="parentClass"></param>
+		/// <param name="newPage"></param>
+		private static void MigrateChildren(XmlElement page, string parentClass, XmlElement newPage)
+		{
+			var xpath = "//div[contains(concat(' ', @class, ' '), ' " + parentClass + " ')]";
+			var oldParents = page.SafeSelectNodes(xpath);
+			var newParents = newPage.SafeSelectNodes(xpath);
+			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
+			// thing to copy or where the numbers are not equal. It's just a precaution.
+			for (int i = 0; i < Math.Min(newParents.Count, oldParents.Count); i++)
+			{
+				var oldParent = (XmlElement) oldParents[i];
+				var newParent = (XmlElement) newParents[i];
+				foreach (var child in newParent.ChildNodes.Cast<XmlNode>().ToArray())
+					newParent.RemoveChild(child);
+				// apparently we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
+				// which messes things up unless we make a copy of the collection.
+				foreach (XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
+					newParent.AppendChild(child);
+			}
+		}
+
 		/// <summary>
 		/// As the bloom format evolves, including structure and classes and other attributes, this
 		/// makes changes to old books. It needs to be very fast, because currently we dont' have

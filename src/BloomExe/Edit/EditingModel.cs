@@ -550,6 +550,7 @@ namespace Bloom.Edit
 						_previouslySelectedPage.Book.UserPrefs.MostRecentPage = idx;
 				}
 
+				_pageSelection.CurrentSelection.Book.BringPageUpToDate(_pageSelection.CurrentSelection.GetDivNodeForThisPage());
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 				_duplicatePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
 				_deletePageCommand.Enabled = !_pageSelection.CurrentSelection.Required;
