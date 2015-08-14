@@ -22,37 +22,18 @@ BODY {
   order: 2;
   height: auto;
   min-width: 320px;
-}
-#singlePagePreview IFRAME {
-  pointer-events: none;
+  padding-left: 15px;
+  padding-top: 10px;
 }
 #preview {
-  position: relative;
-  right: 0;
-  top: 0;
-  margin-top: -185px;
-  margin-left: -130px;
-  margin-right: -130px;
-  transform-origin: 50% 50%;
-  transform: scale(0.5);
-  height: 798px;
-  width: 571px;
+  width: 300px;
 }
 #previewCaption {
   font-weight: bold;
-  height: 25px;
-  width: 326px;
-  position: relative;
-  padding-left: 15px;
-  top: 10px;
 }
 #previewDescription {
-  position: relative;
-  bottom: 205px;
   height: 90px;
   border: none;
-  padding-left: 15px;
-  margin-right: 5px;
 }
 #previewDescription .DescriptionHeader {
   font-weight: bold;
@@ -84,7 +65,6 @@ BODY {
   font-weight: bold;
   padding-left: 4px;
   margin-left: 20px;
-  margin-top: 12px;
   display: block;
 }
 .innerCollectionContainer {

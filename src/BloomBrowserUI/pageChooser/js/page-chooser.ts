@@ -58,7 +58,7 @@ class PageChooser {
         var caption = $( '#previewCaption');
         caption.text($('.templatePageCaption', this._selectedTemplatePage).text());
         caption.attr('style', 'display: block;');
-        $( '#preview' ).attr( 'src', $( this._selectedTemplatePage ).find('iframe').first().attr('src'));
+        $( '#preview' ).attr( 'src', $( this._selectedTemplatePage ).find('img').first().attr('src'));
         // TODO: disable the main dialog one! $( '#addPageButton' ).prop( "disabled", false );
     } // thumbnailClickHandler
 
