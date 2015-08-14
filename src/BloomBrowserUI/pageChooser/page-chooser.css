@@ -4,9 +4,8 @@ BODY {
 #mainContainer {
   border: none;
   margin: 0;
-  height: 645px;
-  max-width: 930px;
-  width: 100%;
+  height: 545px;
+  width: 790px;
   display: flex;
   flex-direction: row;
   box-sizing: border-box;
@@ -50,10 +49,11 @@ BODY {
 }
 #previewDescription {
   position: relative;
-  bottom: 190px;
-  height: 165px;
+  bottom: 205px;
+  height: 90px;
   border: 2px solid yellow;
   padding-left: 15px;
+  margin-right: 5px;
 }
 #previewDescription .DescriptionHeader {
   font-weight: bold;
