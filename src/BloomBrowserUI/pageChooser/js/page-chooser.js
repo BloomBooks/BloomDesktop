@@ -111,11 +111,12 @@ var PageChooser = (function () {
         $(pageArray).each(function (index, div) {
             var currentId = $(div).attr('id');
             // TODO: for now just grab the first page label, we may want to know which lang to grab eventually
-            var pageTitle = $('.pageLabel', div).first().text();
+            var pageLabel = $('.pageLabel', div).first().text();
             var currentGridItemHtml = $(gridItemTemplate).clone();
-            $('.templatePageCaption', currentGridItemHtml).first().text(pageTitle);
+            $('.templatePageCaption', currentGridItemHtml).first().text(pageLabel);
             //$('iframe', currentGridItemHtml).attr('src', pageUrl + '#' + currentId);
-            $('img', currentGridItemHtml).attr('src', pageFolderUrl + "/" + "page.svg"); //pageTitle
+            pageLabel = pageLabel.replace("&", "+");
+            $('img', currentGridItemHtml).attr('src', pageFolderUrl + "/" + pageLabel + ".svg"); //pageTitle
             $('.innerCollectionContainer', currentCollection).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.
