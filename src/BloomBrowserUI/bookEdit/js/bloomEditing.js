@@ -686,7 +686,9 @@ $(document).ready(function() {
                 var barTop = bar.offset().top;
                 var div = mapCkeditDiv[editor.id];
                 var rect = div.getBoundingClientRect();
-                var boxTop = rect.top;
+                var parent = bar.scrollParent();
+                var scrollTop = (parent) ? parent.scrollTop() : 0;
+                var boxTop = rect.top + scrollTop;
                 if (boxTop - barTop < 5) {
                     var barLeft = bar.offset().left;
                     var barHeight = bar.height();
