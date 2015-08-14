@@ -162,14 +162,12 @@ function showAddPageDialog(templatesJSON) {
             'This will contain a preview of a template page when one is selected.');
         var dialogContents = CreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg);
 
-        var h = 750;
-        var w = 940;
-        var size = getAppropriateDialogSize(h, w);
-        h = size[0];
-        w = size[1];
+        var h = 652;
+        var w = 795;
 
         theDialog = $(dialogContents).dialog({
             autoOpen: false,
+            resizable: false,
             modal: true,
             width: w,
             height: h,
