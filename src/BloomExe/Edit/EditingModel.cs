@@ -46,6 +46,7 @@ namespace Bloom.Edit
 		private List<ContentLanguage> _contentLanguages;
 		private IPage _previouslySelectedPage;
 		private bool _inProcessOfDeleting;
+		private bool _addPageDialogShowing;
 		private string _accordionFolder;
 		private EnhancedImageServer _server;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
@@ -122,6 +123,7 @@ namespace Bloom.Edit
 			_server.CurrentCollectionSettings = _collectionSettings;
 			_server.CurrentBook = CurrentBook;
 			_templateInsertionCommand = templateInsertionCommand;
+			_addPageDialogShowing = false;
 		}
 
 		private Form _oldActiveForm;
@@ -521,8 +523,9 @@ namespace Bloom.Edit
 
 		public void ShowAddPageDialog()
 		{
-			if (_view == null || _inProcessOfDeleting)
+			if (_view == null || _inProcessOfDeleting || _addPageDialogShowing)
 				return;
+			_addPageDialogShowing = true;
 			var jsonTemplates = GetJsonTemplatePageObject;
 			_view.RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
 		}
@@ -818,6 +821,8 @@ namespace Bloom.Edit
 		private void SetModalState(string isModal)
 		{
 			_view.SetModalState(isModal == "true");
+			if (isModal != "true")
+				_addPageDialogShowing = false;
 		}
 
 		private static string CleanUpDataForJavascript(string data)
