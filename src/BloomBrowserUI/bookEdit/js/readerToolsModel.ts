@@ -927,7 +927,13 @@ class ReaderToolsModel {
     else {
       var words = libsynphony.getWordsFromHtmlString(fileContents);
 
-      for (var i = 0; i < words.length; i++) {
+      // Limit the number of words processed from files.  The program hangs on very long lists.
+      var lim = words.length;
+      var wordNames = Object.keys(this.allWords);
+      if (wordNames.length + words.length > this.maxAllowedWords) {
+        lim = this.maxAllowedWords - wordNames.length;
+      }
+      for (var i = 0; i < lim; i++) {
         this.allWords[words[i]] = 1 + (this.allWords[words[i]] || 0);
       }
     }
