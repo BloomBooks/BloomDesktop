@@ -1130,9 +1130,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     <GeckofxHtmlToPdf Include="..\..\lib\dotnet\Args.dll" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\AddPageIcon.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\settingsbw16x16.png" />
   </ItemGroup>
   <ItemGroup>
@@ -1143,6 +1140,12 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Hamburger.PNG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AddPageIcon.PNG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AddPageIcon %282%29.PNG" />
   </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
