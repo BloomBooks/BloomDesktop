@@ -51,9 +51,9 @@ var PageChooser = (function () {
         if (this._selectedTemplatePage == undefined || this._templateBookUrls == undefined) {
             return null; // TODO: say something to the user!?
         }
-        var pageId = $(this._selectedTemplatePage).find('iframe').first().attr('src');
-        console.log('firing CSharp event - Selected template page: ' + pageId);
-        this.fireCSharpEvent('addPage', pageId);
+        var id = this._selectedTemplatePage.attr('data-pageId');
+        console.log('firing CSharp event - Selected template page: ' + id);
+        this.fireCSharpEvent('addPage', id);
     }; // addPageClickHandler
     PageChooser.prototype.LoadInstalledCollections = function () {
         // Originally (now maybe YAGNI) the dialog handled more than one collection of template pages.
@@ -107,15 +107,15 @@ var PageChooser = (function () {
         }
         // Remove default template page
         $('.innerCollectionContainer', currentCollection).empty();
-        // insert a template page for each page with the correct #id on the url in the iframe
+        // insert a template page for each page with the correct #id on the url
         $(pageArray).each(function (index, div) {
             var currentId = $(div).attr('id');
             // TODO: for now just grab the first page label, we may want to know which lang to grab eventually
             var pageLabel = $('.pageLabel', div).first().text();
             var currentGridItemHtml = $(gridItemTemplate).clone();
             $('.templatePageCaption', currentGridItemHtml).first().text(pageLabel);
-            //$('iframe', currentGridItemHtml).attr('src', pageUrl + '#' + currentId);
             pageLabel = pageLabel.replace("&", "+");
+            $(currentGridItemHtml).attr('data-pageId', currentId);
             $('img', currentGridItemHtml).attr('src', pageFolderUrl + "/" + pageLabel + ".svg"); //pageTitle
             $('.innerCollectionContainer', currentCollection).append(currentGridItemHtml);
         }); // each

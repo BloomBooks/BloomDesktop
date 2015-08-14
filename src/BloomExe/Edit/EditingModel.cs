@@ -676,13 +676,8 @@ namespace Bloom.Edit
 			return _templatePagesDict;
 		}
 
-		private void AddPageFromDialog(string data)
+		private void AddPageFromDialog(string pageId)
 		{
-			// The Page Chooser dialog will generate the page guid from a template book
-			var args = data.Split(new[] {'#'});
-			if (args.Length < 2)
-				return;
-			var pageId = args[1];
 			IPage page;
 			var dict = GetTemplatePagesForThisBook();
 			if(dict != null && dict.TryGetValue(pageId, out page))
