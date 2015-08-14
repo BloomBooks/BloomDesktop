@@ -184,6 +184,7 @@ function showAddPageDialog(templatesJSON) {
                         primary: "ui-icon-plusthick"
                     },
                     click: function () {
+                        fireCSharpEvent('setModalStateEvent', 'false');
                         document.getElementById('addPage_frame').contentWindow.postMessage('AddSelectedPage', '*');
                     }
                 },
