@@ -661,7 +661,8 @@ $(document).ready(function() {
     var mapCkeditDiv = new Object();
 
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
-    $('div.bloom-page').find('.bloom-content1[contenteditable="true"]').each(function() {
+    // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
+    $('div.bloom-page').find('.bloom-content1[contenteditable="true"],.bloom-content2[contenteditable="true"],.bloom-content3[contenteditable="true"]').each(function() {
 
         var ckedit = CKEDITOR.inline(this);
 
