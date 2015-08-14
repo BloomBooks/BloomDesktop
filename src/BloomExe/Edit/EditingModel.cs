@@ -1181,7 +1181,7 @@ namespace Bloom.Edit
 		}
 	   */
 
-		private string GetCurrentTemplate
+		private string GetPathToCurrentTemplateHtml
 		{
 			get
 			{
@@ -1198,9 +1198,11 @@ namespace Bloom.Edit
 			get
 			{
 				const string prefix = "/bloom/localhost/";
-				var path = prefix + GetCurrentTemplate;
-				path = path.Replace(':', '$').Replace('\\', '/');
-				var jsonString = "[{ \"templateBookUrl\": \"" + path + "\" }]";
+				var folderPath = Path.GetDirectoryName(GetPathToCurrentTemplateHtml);
+				folderPath = prefix + folderPath.Replace(':', '$').Replace('\\', '/');
+				var htmlFilePath = prefix + GetPathToCurrentTemplateHtml;
+				htmlFilePath = htmlFilePath.Replace(':', '$').Replace('\\', '/');
+				var jsonString = "[{\"templateBookFolderUrl\": \"" + folderPath + "\" , \"templateBookUrl\": \"" + htmlFilePath + "\" }]";
 				return jsonString;
 			}
 		}

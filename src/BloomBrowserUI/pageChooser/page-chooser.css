@@ -13,7 +13,7 @@ BODY {
 .templatePageDisplay {
   overflow-y: auto;
   height: auto;
-  flex: 3;
+  flex: 2;
   display: flex;
   flex-direction: column;
 }
@@ -37,7 +37,6 @@ BODY {
   transform: scale(0.5);
   height: 798px;
   width: 571px;
-  border: 2pt solid #008000;
 }
 #previewCaption {
   font-weight: bold;
@@ -59,9 +58,11 @@ BODY {
   font-weight: bold;
 }
 #previewDescription .DescriptionText {
-  overflow-y: scroll;
   white-space: normal;
   max-height: 145px;
+  line-height: 1.2em;
+  height: 100px;
+  overflow: hidden;
 }
 .ui-dialog-buttonset:first-child .ui-icon-plusthick {
   left: 0.25em !important;
@@ -92,7 +93,6 @@ BODY {
 .templatePage {
   margin: 0 10px 10px 11px;
   width: 104px;
-  height: 170px;
   display: inline-block;
 }
 .templatePage:hover {
@@ -104,22 +104,17 @@ BODY {
 .thumbnail {
   overflow: hidden;
   display: block;
-  margin-left: 10px;
   margin-top: 4px;
-  margin-bottom: -672px;
   background: inherit;
-  transform-origin: 2px 0;
-  transform: scale(0.14);
-  width: 575px;
-  height: 800px;
-  border: 8px solid #20318A;
+  border: 1px solid darkgray;
+  width: 60px;
+  margin-left: 20px;
 }
 .templatePageCaption {
   text-align: center;
   height: 2em;
   position: relative;
   left: 0;
-  top: -28px;
   overflow: hidden;
   line-height: 1em;
 }

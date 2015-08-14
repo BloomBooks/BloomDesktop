@@ -76,12 +76,12 @@ var PageChooser = (function () {
             $('.outerCollectionContainer', document).empty();
             $.each(collectionUrls, function (index) {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                _pageChooser.LoadCollection(this['templateBookUrl'], collectionHTML, templatePageHTML);
+                _pageChooser.LoadCollection(this['templateBookFolderUrl'], this['templateBookUrl'], collectionHTML, templatePageHTML);
             });
             window.scrollTo(0, 0); // TODO: wrong window!
         }
     }; // LoadInstalledCollections
-    PageChooser.prototype.LoadCollection = function (pageUrl, collectionHTML, templatePageHTML) {
+    PageChooser.prototype.LoadCollection = function (pageFolderUrl, pageUrl, collectionHTML, templatePageHTML) {
         var request = $.get(pageUrl);
         request.done(function (pageData) {
             // TODO: for now just grab the first book title, we may want to know which lang to grab eventually
@@ -94,13 +94,14 @@ var PageChooser = (function () {
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $(pageData).filter(".bloom-page[id]");
-            _pageChooser.LoadPagesFromCollection(collectionToAdd, pages, templatePageHTML, pageUrl);
+            _pageChooser.LoadPagesFromCollection(collectionToAdd, pages, templatePageHTML, pageFolderUrl, pageUrl);
         }, "html");
         request.fail(function (jqXHR, textStatus, errorThrown) {
-            console.log('There was a problem reading: ' + pageUrl + ' see documentation on : ' + jqXHR.status + ' ' + textStatus + ' ' + errorThrown);
+            console.log('There was a problem reading: ' + pageUrl + ' see documentation on : ' +
+                jqXHR.status + ' ' + textStatus + ' ' + errorThrown);
         });
     }; // LoadCollection
-    PageChooser.prototype.LoadPagesFromCollection = function (currentCollection, pageArray, templatePageHTML, url) {
+    PageChooser.prototype.LoadPagesFromCollection = function (currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl) {
         if ($(pageArray).length < 1) {
             return;
         }
@@ -111,10 +112,11 @@ var PageChooser = (function () {
             var currentId = $(div).attr('id');
             // TODO: for now just grab the first page label, we may want to know which lang to grab eventually
             var pageTitle = $('.pageLabel', div).first().text();
-            var currentPageHTML = $(templatePageHTML).clone();
-            $('.templatePageCaption', currentPageHTML).first().text(pageTitle);
-            $('iframe', currentPageHTML).attr('src', url + '#' + currentId);
-            $('.innerCollectionContainer', currentCollection).append(currentPageHTML);
+            var currentGridItemHtml = $(gridItemTemplate).clone();
+            $('.templatePageCaption', currentGridItemHtml).first().text(pageTitle);
+            //$('iframe', currentGridItemHtml).attr('src', pageUrl + '#' + currentId);
+            $('img', currentGridItemHtml).attr('src', pageFolderUrl + "/" + "page.svg"); //pageTitle
+            $('.innerCollectionContainer', currentCollection).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.
         $('.invisibleThumbCover', currentCollection).each(function (index, div) {

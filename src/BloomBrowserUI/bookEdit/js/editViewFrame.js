@@ -133,7 +133,7 @@ function CreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg) {
 
     var dialogContents = $('<div id="addPageConfig"/>').appendTo($('body'));
 
-    var html = "<iframe id=\"addPage_frame\" src=\"/bloom/pageChooser/page-chooser-main.htm\" scrolling=\"no\" style=\"width: 100%; height: 100%; border-width: 0; margin: 0\"></iframe>";
+    var html = "<iframe id=\"addPage_frame\" src=\"/bloom/pageChooser/page-chooser-main.htm\" scrolling=\"no\" style=\"width: 100%; height: 100%; border: none; margin: 0\"></iframe>";
 
     dialogContents.append(html);
 
@@ -162,12 +162,14 @@ function showAddPageDialog(templatesJSON) {
             'This will contain a preview of a template page when one is selected.');
         var dialogContents = CreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg);
 
-        var h = 652;
-        var w = 795;
+        var h = 750;
+        var w = 940;
+        var size = getAppropriateDialogSize(h, w);
+        h = size[0];
+        w = size[1];
 
         theDialog = $(dialogContents).dialog({
             autoOpen: false,
-            resizable: false,
             modal: true,
             width: w,
             height: h,
@@ -247,7 +249,8 @@ function getAddPageDialogLocalizedStrings() {
 //noinspection JSUnusedGlobalSymbols
 // Used by the addPage_frame to initialize the setup dialog with the available template pages
 // 'templatesJSON' will be something like:
-// "[{ \"templateBookUrl\": \"bloom/localhost/...(path to files).../factoryCollections/Templates/Basic Book/Basic Book.htm\" }]"
+//([{ "templateBookFolderUrl": "/bloom/localhost//...(path to files).../factoryCollections/Templates/Basic Book/", 
+//      "templateBookUrl": "/bloom/localhost/...(path to files).../factoryCollections/Templates/Basic Book/Basic Book.htm" }])
 // See property EditingModel.GetJsonTemplatePageObject
 function initializeAddPageDialog(templatesJSON) {
     var templateMsg = 'Data\n' + JSON.stringify(templatesJSON);

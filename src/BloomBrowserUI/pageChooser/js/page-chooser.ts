@@ -92,14 +92,14 @@ class PageChooser {
             $('.outerCollectionContainer', document).empty();
             $.each(collectionUrls, function (index) {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                _pageChooser.LoadCollection( this['templateBookUrl'], collectionHTML, templatePageHTML );
+                _pageChooser.LoadCollection(this['templateBookFolderUrl'], this['templateBookUrl'], collectionHTML, templatePageHTML );
             });
             window.scrollTo(0,0); // TODO: wrong window!
             //console.log('Available pages loaded.');
         }
     } // LoadInstalledCollections
 
-    LoadCollection( pageUrl, collectionHTML, templatePageHTML ) : void {
+    LoadCollection(pageFolderUrl, pageUrl, collectionHTML, templatePageHTML ) : void {
         var request = $.get( pageUrl);
         request.done( function( pageData ) {
             // TODO: for now just grab the first book title, we may want to know which lang to grab eventually
@@ -112,7 +112,7 @@ class PageChooser {
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $( pageData).filter( ".bloom-page[id]" );
-            _pageChooser.LoadPagesFromCollection(collectionToAdd, pages, templatePageHTML, pageUrl );
+            _pageChooser.LoadPagesFromCollection(collectionToAdd, pages, templatePageHTML, pageFolderUrl, pageUrl );
         }, "html");
         request.fail( function(jqXHR, textStatus, errorThrown) {
             console.log('There was a problem reading: ' + pageUrl + ' see documentation on : ' +
@@ -120,7 +120,8 @@ class PageChooser {
         });
     } // LoadCollection
 
-    LoadPagesFromCollection( currentCollection, pageArray, templatePageHTML, url ) : void {
+    
+    LoadPagesFromCollection(currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl ) : void {
         if ($(pageArray).length < 1) {
             return;
         }
@@ -131,10 +132,11 @@ class PageChooser {
             var currentId = $(div).attr('id');
             // TODO: for now just grab the first page label, we may want to know which lang to grab eventually
             var pageTitle = $('.pageLabel', div).first().text();
-            var currentPageHTML = $(templatePageHTML).clone();
-            $('.templatePageCaption', currentPageHTML).first().text(pageTitle);
-            $('iframe', currentPageHTML).attr('src', url + '#' + currentId);
-            $('.innerCollectionContainer', currentCollection).append(currentPageHTML);
+            var currentGridItemHtml = $(gridItemTemplate).clone();
+            $('.templatePageCaption', currentGridItemHtml).first().text(pageTitle);
+            //$('iframe', currentGridItemHtml).attr('src', pageUrl + '#' + currentId);
+            $('img', currentGridItemHtml).attr('src', pageFolderUrl + "/"+"page.svg");//pageTitle
+            $('.innerCollectionContainer', currentCollection).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.
         $('.invisibleThumbCover', currentCollection).each(function(index, div) {
