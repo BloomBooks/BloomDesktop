@@ -2,6 +2,11 @@
 // try not to overwrite the bloomDialog.less rules
 
 @PreviewPaneLeftPadding: 15px;
+@WindowsDialogBackgroundColor: #F0F0F0;
+@WindowsButton-BackgroundColor: #E1E1E1;
+@WindowsButton-BackgroundColor-Hover: #B0DEE4;
+@WindowsButton-Border: #ADADAD;
+
 BODY {
 	margin: 4px;
 }
@@ -56,7 +61,7 @@ BODY {
 	position: relative;
 	bottom: 190px;
 	height: 165px;
-	border: 2px solid yellow;
+	border: none;
 	padding-left: @PreviewPaneLeftPadding;
 	.DescriptionHeader {
 		font-weight: bold;
@@ -107,7 +112,7 @@ BODY {
 	display: block;
 }
 .innerCollectionContainer {
-	margin: 5px 0 0 20px;
+	margin: 0 0 0 0;
 }
 .templatePage {
 	margin: 0 10px 10px 11px;
@@ -115,12 +120,16 @@ BODY {
 	height: 170px;
 	display: inline-block;
 }
+@SelectedColor: rgba(176,222,228,1);
 .templatePage:hover {
-	background: #F4EAE3;
+	background: @SelectedColor;
 }
 .templatePage.ui-selected {
-	background: #FFDCAC;
-	border:1px solid #000000;
+	background: @SelectedColor;
+
+	.invisibleThumbCover {
+		//background: @SelectedColor;
+	}
 }
 .thumbnail {
 	overflow: hidden;
@@ -136,18 +145,46 @@ BODY {
 	border: 8px solid #20318A;
 }
 .templatePageCaption {
-	font-weight: bold;
+	//font-weight: bold;
 	text-align: center;
-	height: 55px;
+	height: 2em; // enough for two lines
 	position: relative;
 	left: 0;
 	top: -28px;
 	overflow: hidden;
+	line-height: 1em;
 }
 .invisibleThumbCover {
 	z-index: 5;
 	position: absolute;
-	height: 170px;
+	height: 130px;
 	width: 100px;
 	background: url(transparent.gif);
+}
+.ui-widget-content .ui-state-default{
+	font-weight: normal !important;
+}
+
+div.ui-dialog div.ui-dialog-buttonset button.ui-button{
+	background: @WindowsButton-BackgroundColor !important;
+	color: black;
+	border: @WindowsButton-Border solid thin;
+	font-size: 10pt;
+}
+
+div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
+	background: @WindowsButton-BackgroundColor-Hover !important;
+	color:
+	black;
+}
+
+div.ui-dialog div.ui-dialog-content, .ui-dialog .ui-dialog-buttonpane, .bloomDialogContainer{
+	background-color: @WindowsDialogBackgroundColor !important;
+}
+
+div.ui-dialog div.ui-dialog-titlebar{
+	border: none;
+	.ui-dialog-title{
+		font-weight: normal;
+	}
 }

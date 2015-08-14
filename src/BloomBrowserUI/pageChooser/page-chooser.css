@@ -52,7 +52,7 @@ BODY {
   position: relative;
   bottom: 190px;
   height: 165px;
-  border: 2px solid yellow;
+  border: none;
   padding-left: 15px;
 }
 #previewDescription .DescriptionHeader {
@@ -87,7 +87,7 @@ BODY {
   display: block;
 }
 .innerCollectionContainer {
-  margin: 5px 0 0 20px;
+  margin: 0 0 0 0;
 }
 .templatePage {
   margin: 0 10px 10px 11px;
@@ -96,11 +96,10 @@ BODY {
   display: inline-block;
 }
 .templatePage:hover {
-  background: #F4EAE3;
+  background: #b0dee4;
 }
 .templatePage.ui-selected {
-  background: #FFDCAC;
-  border: 1px solid #000000;
+  background: #b0dee4;
 }
 .thumbnail {
   overflow: hidden;
@@ -116,18 +115,42 @@ BODY {
   border: 8px solid #20318A;
 }
 .templatePageCaption {
-  font-weight: bold;
   text-align: center;
-  height: 55px;
+  height: 2em;
   position: relative;
   left: 0;
   top: -28px;
   overflow: hidden;
+  line-height: 1em;
 }
 .invisibleThumbCover {
   z-index: 5;
   position: absolute;
-  height: 170px;
+  height: 130px;
   width: 100px;
   background: url(transparent.gif);
+}
+.ui-widget-content .ui-state-default {
+  font-weight: normal !important;
+}
+div.ui-dialog div.ui-dialog-buttonset button.ui-button {
+  background: #e1e1e1 !important;
+  color: black;
+  border: #adadad solid thin;
+  font-size: 10pt;
+}
+div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
+  background: #b0dee4 !important;
+  color: black;
+}
+div.ui-dialog div.ui-dialog-content,
+.ui-dialog .ui-dialog-buttonpane,
+.bloomDialogContainer {
+  background-color: #f0f0f0 !important;
+}
+div.ui-dialog div.ui-dialog-titlebar {
+  border: none;
+}
+div.ui-dialog div.ui-dialog-titlebar .ui-dialog-title {
+  font-weight: normal;
 }

@@ -205,6 +205,11 @@ function showAddPageDialog(templatesJSON) {
                 }, 200);
             }
         });
+
+        //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
+        // theDialog.find('.ui-dialog-buttonpane').prepend("<div id='hint'>You can press ctrl+N to add the same page again, without opening this dialog.</div>");
+     
+
         fireCSharpEvent('setModalStateEvent', 'true');
         theDialog.dialog('open');
     });
