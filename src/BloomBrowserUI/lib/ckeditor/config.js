@@ -40,4 +40,7 @@ CKEDITOR.editorConfig = function( config ) {
 
 	// Remove the annoying tooltip "Rich Text Editor, editorN".
 	config.title = false;
+
+    // Don't filter out any html that couldn't be produced by the toolbar
+	config.allowedContent = true;
 };
