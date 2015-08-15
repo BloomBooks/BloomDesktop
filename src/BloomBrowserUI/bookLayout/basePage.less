@@ -312,6 +312,9 @@ body:not(.publishMode) .marginBox{
   left: @MarginBalanced;
 }
 
+// pageDescription is for javascript to read, we never display it directly on the page
+.pageDescription{display:none}
+
 /*Our javascript (bloomediting.js) uses <label> elements to get help bubbles and placeholders on editable divs.*/
 LABEL.bubble, LABEL.placeholder
 {

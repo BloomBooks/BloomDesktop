@@ -29,29 +29,30 @@ var PageChooser = (function () {
         else {
             console.log('Expected url in PageChooser ctor!');
         }
-        this._selectedTemplatePage = undefined;
+        this._selectedGridItem = undefined;
     }
     PageChooser.prototype.thumbnailClickHandler = function (div) {
         // 'div' is an .invisibleThumbCover
         // Mark any previously selected thumbnail as no longer selected
-        if (this._selectedTemplatePage != undefined) {
-            $(this._selectedTemplatePage).removeClass('ui-selected');
+        if (this._selectedGridItem != undefined) {
+            $(this._selectedGridItem).removeClass('ui-selected');
         }
         // Select new thumbnail
-        this._selectedTemplatePage = $(div).parent();
-        $(this._selectedTemplatePage).addClass('ui-selected');
+        this._selectedGridItem = $(div).parent();
+        $(this._selectedGridItem).addClass('ui-selected');
         // Display large preview
         var caption = $('#previewCaption');
-        caption.text($('.templatePageCaption', this._selectedTemplatePage).text());
+        caption.text($('.gridItemCaption', this._selectedGridItem).text());
         caption.attr('style', 'display: block;');
-        $('#preview').attr('src', $(this._selectedTemplatePage).find('img').first().attr('src'));
+        $('#preview').attr('src', $(this._selectedGridItem).find('img').first().attr('src'));
+        $('#previewDescriptionText').text($('.pageDescription', this._selectedGridItem).text());
         // TODO: disable the main dialog one! $( '#addPageButton' ).prop( "disabled", false );
     }; // thumbnailClickHandler
     PageChooser.prototype.addPageClickHandler = function () {
-        if (this._selectedTemplatePage == undefined || this._templateBookUrls == undefined) {
+        if (this._selectedGridItem == undefined || this._templateBookUrls == undefined) {
             return null; // TODO: say something to the user!?
         }
-        var id = this._selectedTemplatePage.attr('data-pageId');
+        var id = this._selectedGridItem.attr('data-pageId');
         console.log('firing CSharp event - Selected template page: ' + id);
         this.fireCSharpEvent('addPage', id);
     }; // addPageClickHandler
@@ -62,8 +63,8 @@ var PageChooser = (function () {
         // Save html sections that will get cloned later
         // there should only be one 'collection' at this point; a stub with one default template page
         var collectionHTML = $('.collection', document).first().clone();
-        // there should only be the one default 'templatePage' at this point
-        var templatePageHTML = $('.templatePage', collectionHTML).first().clone();
+        // there should only be the one default 'gridItem' at this point
+        var gridItemHTML = $('.gridItem', collectionHTML).first().clone();
         var collectionUrls;
         try {
             collectionUrls = $.parseJSON(_pageChooser._templateBookUrls);
@@ -76,12 +77,12 @@ var PageChooser = (function () {
             $('.outerCollectionContainer', document).empty();
             $.each(collectionUrls, function (index) {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                _pageChooser.LoadCollection(this['templateBookFolderUrl'], this['templateBookUrl'], collectionHTML, templatePageHTML);
+                _pageChooser.LoadCollection(this['templateBookFolderUrl'], this['templateBookUrl'], collectionHTML, gridItemHTML);
             });
             window.scrollTo(0, 0); // TODO: wrong window!
         }
     }; // LoadInstalledCollections
-    PageChooser.prototype.LoadCollection = function (pageFolderUrl, pageUrl, collectionHTML, templatePageHTML) {
+    PageChooser.prototype.LoadCollection = function (pageFolderUrl, pageUrl, collectionHTML, gridItemHTML) {
         var request = $.get(pageUrl);
         request.done(function (pageData) {
             // TODO: for now just grab the first book title, we may want to know which lang to grab eventually
@@ -94,7 +95,7 @@ var PageChooser = (function () {
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $(pageData).filter(".bloom-page[id]");
-            _pageChooser.LoadPagesFromCollection(collectionToAdd, pages, templatePageHTML, pageFolderUrl, pageUrl);
+            _pageChooser.LoadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl);
         }, "html");
         request.fail(function (jqXHR, textStatus, errorThrown) {
             console.log('There was a problem reading: ' + pageUrl + ' see documentation on : ' +
@@ -112,8 +113,10 @@ var PageChooser = (function () {
             var currentId = $(div).attr('id');
             // TODO: for now just grab the first page label, we may want to know which lang to grab eventually
             var pageLabel = $('.pageLabel', div).first().text();
+            var pageDescription = $('.pageDescription', div).first().text();
             var currentGridItemHtml = $(gridItemTemplate).clone();
-            $('.templatePageCaption', currentGridItemHtml).first().text(pageLabel);
+            $('.gridItemCaption', currentGridItemHtml).first().text(pageLabel);
+            $('.pageDescription', currentGridItemHtml).first().text(pageDescription);
             pageLabel = pageLabel.replace("&", "+");
             $(currentGridItemHtml).attr('data-pageId', currentId);
             $('img', currentGridItemHtml).attr('src', pageFolderUrl + "/" + pageLabel + ".svg"); //pageTitle

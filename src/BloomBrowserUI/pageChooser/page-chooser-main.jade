@@ -14,7 +14,7 @@ html
 		+script('js/page-chooser.js')
 	body
 		#mainContainer.bloomDialogContainer
-			.templatePageDisplay
+			.gridItemDisplay
 				// .templatesCaption Installed Templates (Currently unused)
 				.outerCollectionContainer
 					//- This DIV element will get cloned for each collection
@@ -23,15 +23,16 @@ html
 						.collectionCaption Default Pages
 						.innerCollectionContainer
 							//- This DIV element gets cloned for each page in the collection
-							.templatePage
+							.gridItem
 								.invisibleThumbCover
 								//iframe(src='').thumbnail
 								img(src='').thumbnail
-								.templatePageCaption Page Title
+								.gridItemCaption Page Title
+								.pageDescription
 			#singlePagePreview
 				#previewCaption.previewCaption
 					| There should always be a selected page
 				img(src='')#preview
 				#previewDescription
 					.DescriptionHeader Description
-					.DescriptionText Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vel sodales justo.
+					#previewDescriptionText.DescriptionText Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vel sodales justo.

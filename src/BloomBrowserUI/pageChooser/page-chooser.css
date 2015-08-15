@@ -9,8 +9,9 @@ BODY {
   display: flex;
   flex-direction: row;
   box-sizing: border-box;
+  padding-top: 10px;
 }
-.templatePageDisplay {
+.gridItemDisplay {
   overflow-y: auto;
   height: auto;
   flex: 2;
@@ -23,10 +24,9 @@ BODY {
   height: auto;
   min-width: 320px;
   padding-left: 15px;
-  padding-top: 10px;
 }
 #preview {
-  width: 300px;
+  width: 250px;
 }
 #previewCaption {
   font-weight: bold;
@@ -41,6 +41,7 @@ BODY {
 #previewDescription .DescriptionText {
   white-space: normal;
   max-height: 145px;
+  width: 353px;
   line-height: 1.2em;
   height: 100px;
   overflow: hidden;
@@ -70,15 +71,15 @@ BODY {
 .innerCollectionContainer {
   margin: 0 0 0 0;
 }
-.templatePage {
+.gridItem {
   margin: 0 10px 10px 11px;
   width: 104px;
   display: inline-block;
 }
-.templatePage:hover {
+.gridItem:hover {
   background: #b0dee4;
 }
-.templatePage.ui-selected {
+.gridItem.ui-selected {
   background: #b0dee4;
 }
 .thumbnail {
@@ -90,13 +91,16 @@ BODY {
   width: 60px;
   margin-left: 20px;
 }
-.templatePageCaption {
+.gridItem .gridItemCaption {
   text-align: center;
   height: 2em;
   position: relative;
   left: 0;
   overflow: hidden;
   line-height: 1em;
+}
+.gridItem .pageDescription {
+  display: none;
 }
 .invisibleThumbCover {
   z-index: 5;

@@ -20,7 +20,7 @@ BODY {
 	box-sizing: border-box;
 	padding-top: 10px;
 }
-.templatePageDisplay {
+.gridItemDisplay {
 	overflow-y: auto;
 	height: auto;
 	flex: 2;
@@ -28,14 +28,14 @@ BODY {
 	flex-direction: column;
 }
 #singlePagePreview {
-    flex: 2;
+	flex: 2;
 	order: 2;
 	height: auto;
 	min-width: 320px;
 	padding-left: @PreviewPaneLeftPadding;
-
+}
 #preview {
-	width: 300px;
+	width: 250px;
 }
 #previewCaption {
 	font-weight: bold;
@@ -49,6 +49,7 @@ BODY {
 	.DescriptionText {
 		white-space: normal;
 		max-height: 145px;
+		width: 353px;
 		line-height: 1.2em;
 		height: 100px;
 		overflow: hidden;
@@ -96,17 +97,17 @@ BODY {
 .innerCollectionContainer {
 	margin: 0 0 0 0;
 }
-.templatePage {
+.gridItem {
 	margin: 0 10px 10px 11px;
 	width: 104px;
 	//height: 170px;
 	display: inline-block;
 }
 @SelectedColor: rgba(176,222,228,1);
-.templatePage:hover {
+.gridItem:hover {
 	background: @SelectedColor;
 }
-.templatePage.ui-selected {
+.gridItem.ui-selected {
 	background: @SelectedColor;
 
 	.invisibleThumbCover {
@@ -125,14 +126,17 @@ BODY {
 	//take the height proportionally, from the width
 	margin-left: 20px;//centers the thumbnail in the enclosing grid item
 }
-.templatePageCaption {
-	//font-weight: bold;
-	text-align: center;
-	height: 2em; // enough for two lines
-	position: relative;
-	left: 0;
-	overflow: hidden;
-	line-height: 1em;
+.gridItem {
+	.gridItemCaption {
+		//font-weight: bold;
+		text-align: center;
+		height: 2em; // enough for two lines
+		position: relative;
+		left: 0;
+		overflow: hidden;
+		line-height: 1em;
+	}
+	.pageDescription{display:none;}
 }
 .invisibleThumbCover {
 	z-index: 5;
