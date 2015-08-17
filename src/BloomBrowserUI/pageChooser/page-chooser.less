@@ -153,7 +153,7 @@ BODY {
 	background: url(transparent.gif);
 }
 
-div.ui-dialog div.ui-dialog-buttonset button.ui-button{
+#mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button{
 	background: @WindowsButton-BackgroundColor !important;
 	color: black;
 	border: @WindowsButton-Border solid thin;
@@ -161,27 +161,27 @@ div.ui-dialog div.ui-dialog-buttonset button.ui-button{
 	margin-left:10px;
 }
 
-div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
+#mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
 	background: @WindowsButton-BackgroundColor-Hover !important;
 	color:
 	black;
 }
 
-.ui-dialog-buttonpane{
+#mainContainer .ui-dialog-buttonpane{
 	padding: 0.3em 20px 20px 0.4em;
 }
-div.ui-dialog div.ui-dialog-content, .ui-dialog .ui-dialog-buttonpane, .bloomDialogContainer{
+#mainContainer div.ui-dialog div.ui-dialog-content, .ui-dialog .ui-dialog-buttonpane, .bloomDialogContainer{
 	background-color: @WindowsDialogBackgroundColor !important;
 }
 
-div.ui-dialog div.ui-dialog-titlebar{
+#mainContainer div.ui-dialog div.ui-dialog-titlebar{
 	border: none;
 	.ui-dialog-title{
 		font-weight: normal;
 	}
 }
 
-.ui-dialog-buttonpane{	display: none;}
+#mainContainer .ui-dialog-buttonpane{	display: none;}
 /*
 .ui-dialog-buttonset {
 
