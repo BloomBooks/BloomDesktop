@@ -105,32 +105,32 @@ BODY {
   width: 100px;
   background: url(transparent.gif);
 }
-div.ui-dialog div.ui-dialog-buttonset button.ui-button {
+#mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button {
   background: #e1e1e1 !important;
   color: black;
   border: #adadad solid thin;
   font-size: 10pt;
   margin-left: 10px;
 }
-div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
+#mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
   background: #b0dee4 !important;
   color: black;
 }
-.ui-dialog-buttonpane {
+#mainContainer .ui-dialog-buttonpane {
   padding: 0.3em 20px 20px 0.4em;
 }
-div.ui-dialog div.ui-dialog-content,
+#mainContainer div.ui-dialog div.ui-dialog-content,
 .ui-dialog .ui-dialog-buttonpane,
 .bloomDialogContainer {
   background-color: #f0f0f0 !important;
 }
-div.ui-dialog div.ui-dialog-titlebar {
+#mainContainer div.ui-dialog div.ui-dialog-titlebar {
   border: none;
 }
-div.ui-dialog div.ui-dialog-titlebar .ui-dialog-title {
+#mainContainer div.ui-dialog div.ui-dialog-titlebar .ui-dialog-title {
   font-weight: normal;
 }
-.ui-dialog-buttonpane {
+#mainContainer .ui-dialog-buttonpane {
   display: none;
 }
 /*
