@@ -1160,16 +1160,23 @@ namespace Bloom.Edit
 			}
 		}
 
+		private const string URL_PREFIX = "/bloom/localhost/";
+		private const string JSON_START = "[{ ";
+		private const string JSON_DIVIDER = " , ";
+		private const string JSON_END = " }]";
+
 		private string GetJsonTemplatePageObject
 		{
 			get
 			{
-				const string prefix = "/bloom/localhost/";
 				var folderPath = Path.GetDirectoryName(GetPathToCurrentTemplateHtml);
-				folderPath = prefix + folderPath.Replace(':', '$').Replace('\\', '/');
-				var htmlFilePath = prefix + GetPathToCurrentTemplateHtml;
+				folderPath = URL_PREFIX + folderPath.Replace(':', '$').Replace('\\', '/');
+				var jsonBookFolder = "\"templateBookFolderUrl\": \"" + folderPath + "\"";
+				var htmlFilePath = URL_PREFIX + GetPathToCurrentTemplateHtml;
 				htmlFilePath = htmlFilePath.Replace(':', '$').Replace('\\', '/');
-				var jsonString = "[{\"templateBookFolderUrl\": \"" + folderPath + "\" , \"templateBookUrl\": \"" + htmlFilePath + "\" }]";
+				var jsonBook = "\"templateBookUrl\": \"" + htmlFilePath + "\"";
+				var jsonLastPage = "\"lastPageAdded\": \"" + _lastPageAdded + "\"";
+				var jsonString = JSON_START + jsonBookFolder + JSON_DIVIDER + jsonBook + JSON_DIVIDER + jsonLastPage + JSON_END;
 				return jsonString;
 			}
 		}

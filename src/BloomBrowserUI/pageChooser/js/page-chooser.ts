@@ -25,6 +25,7 @@ class PageChooser {
 
     private _templateBookUrls : string;
     private _selectedGridItem: JQuery;
+    private _indexOfLastPageAdded: number;
 
     constructor(templateBookUrls: string) {
         if(templateBookUrls) {
@@ -34,6 +35,7 @@ class PageChooser {
         }
 
         this._selectedGridItem = undefined;
+        this._indexOfLastPageAdded = 0;
     }
 
     thumbnailClickHandler( clickedDiv ) : void {
@@ -85,7 +87,8 @@ class PageChooser {
             $(".outerCollectionContainer", document).empty();
             $.each(collectionUrls, function (index) {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                pageChooser.loadCollection(this["templateBookFolderUrl"], this["templateBookUrl"], collectionHtml, gridItemHtml );
+                var collectionLastPageAdded = this["lastPageAdded"];
+                pageChooser.loadCollection(this["templateBookFolderUrl"], this["templateBookUrl"], collectionHtml, gridItemHtml, collectionLastPageAdded);
             });
         }
         $("#addPageButton", document).button().click(() => {
@@ -93,17 +96,20 @@ class PageChooser {
             this.addPageClickHandler();
         });
 
-        //TODO: choose which one to select based on some other criteria than just being first
-        window.setTimeout( ()=> {
-            this.thumbnailClickHandler($(".invisibleThumbCover").first());
+        window.setTimeout(() => {
+            if (this._indexOfLastPageAdded > 0) {
+                this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfLastPageAdded));
+            } else {
+                this.thumbnailClickHandler($(".invisibleThumbCover").first());
+            }
             //(<any>$).notify("Hint: Double-clicking a thumbnail adds it immediately", { className:"subtleHint",globalPosition:"bottom left",autoHide:false});
-        }, 100);
+        }, 200);
     } // LoadInstalledCollections
 
-    loadCollection(pageFolderUrl, pageUrl, collectionHTML, gridItemHTML ) : void {
+    loadCollection(pageFolderUrl, pageUrl, collectionHTML, gridItemHTML, lastPageAdded:string): void {
         var request = $.get(pageUrl);
         request.done( pageData => {
-            // TODO: send the book (page collection) through the localization system, now or when we actually show the selected on
+            // TODO: send the book (page collection) through the localization system, now or when we actually show the selected one
             var dataBookArray = $( "div[data-book='bookTitle']", pageData );
             var collectionTitle = $( dataBookArray.first() ).text();
             // Add title and container to dialog
@@ -113,7 +119,7 @@ class PageChooser {
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $( pageData).filter( ".bloom-page[id]" );
-            this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl );
+            this._indexOfLastPageAdded = this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl,  lastPageAdded);
         }, "html");
         request.fail( function(jqXHR, textStatus, errorThrown) {
             console.log("There was a problem reading: " + pageUrl + " see documentation on : " +
@@ -122,12 +128,14 @@ class PageChooser {
     } // LoadCollection
 
     
-    loadPagesFromCollection(currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl ) : void {
+    loadPagesFromCollection(currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl, lastPageAdded:string ) : number {
         if ($(pageArray).length < 1) {
-            return;
+            return 0;
         }
         // Remove default template page
         $(".innerCollectionContainer", currentCollection).empty();
+
+        var indexToSelect = 0;
         // insert a template page for each page with the correct #id on the url
         $(pageArray).each((index, div) => {
 
@@ -138,8 +146,10 @@ class PageChooser {
 
             var currentId = $(div).attr("id");
             $(currentGridItemHtml).attr("data-pageId", currentId);
+            if (currentId === lastPageAdded)
+                indexToSelect = index;
             
-            // TODO: send the label and description through the localization system, now or when we actually show the selected on
+            // TODO: send the label and description through the localization system, now or when we actually show the selected one
 
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
@@ -161,6 +171,7 @@ class PageChooser {
                 this.thumbnailClickHandler(div);
             }); // invisibleThumbCover click
         }); // each
+        return indexToSelect;
     } // LoadPagesFromCollection
 
     /**
