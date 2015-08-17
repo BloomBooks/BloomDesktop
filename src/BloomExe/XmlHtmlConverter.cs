@@ -114,6 +114,8 @@ namespace Bloom
 						// affect what gets written to the file, this hack was implemented instead.
 						newContents = Regex.Replace(newContents, @"(<br></br>|<br ?/>)[\r\n]*</p>", "</p>");
 
+						// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
+						dom.PreserveWhitespace = true;
 						dom.LoadXml(newContents);
 					}
 					catch (Exception e)

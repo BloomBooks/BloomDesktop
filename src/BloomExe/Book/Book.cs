@@ -336,6 +336,8 @@ namespace Bloom.Book
 			var headXml = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");
 			dom = _storage.MakeDomRelocatable(dom, _log);
+			// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
+			dom.RawDom.PreserveWhitespace = true;
 			var body = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
 			var divNodeForThisPage = page.GetDivNodeForThisPage();
 			if(divNodeForThisPage==null)
