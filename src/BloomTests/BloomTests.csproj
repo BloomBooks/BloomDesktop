@@ -154,11 +154,13 @@
     <Compile Include="BloomZipFileTests.cs" />
     <Compile Include="Book\BookCollectionTests.cs" />
     <Compile Include="Book\BookInfoTests.cs" />
+    <Compile Include="Book\BookTestsBase.cs" />
     <Compile Include="Book\HtmlDomTests.cs" />
     <Compile Include="Book\BookTests.cs" />
     <Compile Include="Book\BookStorageTests.cs" />
     <Compile Include="Book\BookStarterTests.cs" />
     <Compile Include="Book\BookDataTests.cs" />
+    <Compile Include="Book\PageMigrationTests.cs" />
     <Compile Include="Book\RuntimeInformationInjectorTests.cs" />
     <Compile Include="Book\TranslationGroupManagerTests.cs" />
     <Compile Include="Book\LayoutTests.cs" />
