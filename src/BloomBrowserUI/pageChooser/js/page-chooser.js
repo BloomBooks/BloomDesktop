@@ -82,7 +82,7 @@ var PageChooser = (function () {
         //TODO: choose which one to select based on some other criteria than just being first
         window.setTimeout(function () {
             _this.thumbnailClickHandler($(".invisibleThumbCover").first());
-            $.notify("hello", { autoHide: false });
+            //(<any>$).notify("Hint: Double-clicking a thumbnail adds it immediately", { className:"subtleHint",globalPosition:"bottom left",autoHide:false});
         }, 100);
     }; // LoadInstalledCollections
     PageChooser.prototype.loadCollection = function (pageFolderUrl, pageUrl, collectionHTML, gridItemHTML) {

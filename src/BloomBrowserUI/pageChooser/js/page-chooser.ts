@@ -1,4 +1,4 @@
-/// <reference path="../../bookEdit/js/getIframeChannel.ts" />
+﻿/// <reference path="../../bookEdit/js/getIframeChannel.ts" />
 
 window.addEventListener("message", process_EditFrame_Message, false);
 
@@ -63,7 +63,8 @@ class PageChooser {
         this.fireCSharpEvent("addPage", id);
     } // addPageClickHandler
 
-    loadInstalledCollections() : void {
+    loadInstalledCollections(): void {
+
         // Originally (now maybe YAGNI) the dialog handled more than one collection of template pages.
         // Right now it only handles one, so the cloning of stub html is perhaps unnecessary,
         // but I've left it in case we need it later.
@@ -99,7 +100,7 @@ class PageChooser {
         //TODO: choose which one to select based on some other criteria than just being first
         window.setTimeout( ()=> {
             this.thumbnailClickHandler($(".invisibleThumbCover").first());
-            (<any>$).notify("hello",{autoHide:false});
+            //(<any>$).notify("Hint: Double-clicking a thumbnail adds it immediately", { className:"subtleHint",globalPosition:"bottom left",autoHide:false});
         }, 100);
     } // LoadInstalledCollections
 
