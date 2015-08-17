@@ -25,11 +25,7 @@ function showSetupDialog(showWhat) {
 
         var dialogContents = CreateConfigDiv(title);
 
-        var h = 580;
-        var w = 720;
-        var size = getAppropriateDialogSize(h, w);
-        h = size[0];
-        w = size[1];
+
 
         accordion.model.setupType = showWhat;
 
@@ -66,34 +62,15 @@ function showSetupDialog(showWhat) {
             open: function () {
                 $('#synphonyConfig').css('overflow', 'hidden');
                 $('button span:contains("Help")').prepend('<i class="fa fa-question-circle"></i> ');
-            },
-            height: h,
-            width: w
+            }
+//            height: 0,
+//            width: 700
         });
 
         fireCSharpEvent('setModalStateEvent', 'true');
     });
 }
 
-function getAppropriateDialogSize(preferredHeight, preferredWidth) {
-    var h = preferredHeight;
-    var w = preferredWidth;
-
-    // This height and width will fit inside the "800 x 600" settings
-    var sw = document.body.scrollWidth;
-    if (sw < 583) {
-        h = 460;
-        w = 390;
-    }
-
-    // This height and width will fit inside the "1024 x 586 Low-end netbook with windows Task bar" settings
-    else if ((sw < 723) || (window.innerHeight < 583)) {
-        h = 460;
-        w = 580;
-    }
-
-    return [h, w];
-}
 
 function getSettingsDialogLocalizedStrings() {
     // Without preloading these, they are not available when the dialog is created
@@ -153,6 +130,7 @@ function showAddPageDialog(templatesJSON) {
 
     var theDialog;
     var parentElement = document.getElementById('page').contentWindow;
+
     parentElement.localizationManager.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
 
         var title = parentElement.localizationManager.getText('AddPageDialog.Title', 'Add Page...');
@@ -162,45 +140,55 @@ function showAddPageDialog(templatesJSON) {
             'This will contain a preview of a template page when one is selected.');
         var dialogContents = CreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg);
 
-        var h = 652;
-        var w = 795;
-
         theDialog = $(dialogContents).dialog({
+            class: "addPageDialog",
             autoOpen: false,
             resizable: false,
             modal: true,
-            width: w,
-            height: h,
+            width: 795,
+            height: 550,
             position: {
-                my: "left top", at: "left top", of: window
+                my: "left bottom", at: "left bottom", of: window
             },
             title: title,
-            buttons: {
+            /*buttons: {
                 OK: {
+                    class: 'defaultButton',
                     text: addButtonText,
-                    icons: {
-                        primary: "ui-icon-plusthick"
-                    },
+//                    we could reinstate this if we had the right color
+//                    icons: {
+//                        primary: "ui-icon-plusthick"
+//                    },
                     click: function () {
                         fireCSharpEvent('setModalStateEvent', 'false');
                         document.getElementById('addPage_frame').contentWindow.postMessage('AddSelectedPage', '*');
                     }
                 },
                 Cancel: {
+                    class: 'normalButton',
                     text: parentElement.localizationManager.getText('Common.Cancel', 'Cancel'),
                     click: function () {
                         $(this).dialog("close");
                     }
                 }
-            },
+            },*/
             close: function() {
                 $(this).remove();
                 fireCSharpEvent('setModalStateEvent', 'false');
             },
             open: function () {
-                adjustAddPageButton(addButtonText);
+                //adjustAddPageButton(addButtonText);
                 setTimeout(function() {
                     setDialogInnerIframeSize();
+
+                    jQuery('#addPageButton').click(function () {
+                            alert("addpageclick");
+                            fireCSharpEvent('setModalStateEvent', 'false');
+                            document.getElementById('addPage_frame').contentWindow.postMessage('AddSelectedPage', '*');
+                            return false;
+                    });
+
+          //          jQuery.notify("testing notify");
                 }, 200);
             }
         });
@@ -208,17 +196,22 @@ function showAddPageDialog(templatesJSON) {
         //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
         // theDialog.find('.ui-dialog-buttonpane').prepend("<div id='hint'>You can press ctrl+N to add the same page again, without opening this dialog.</div>");
      
-
+        jQuery(document).on('click', 'body > .ui-widget-overlay', function () {
+            $(".ui-dialog-titlebar-close").trigger('click');
+            return false;
+        });
         fireCSharpEvent('setModalStateEvent', 'true');
         theDialog.dialog('open');
+
+        //parentElement.$.notify("testing notify",{});
     });
 }
 
-function adjustAddPageButton(addButtonText) {
-    var iconAdjustment = 15;
-    var button = $('.ui-dialog-buttonpane').find('button:contains('+addButtonText+')');
-    button.width(button.width() + iconAdjustment); // make room for the 'plus' icon on the button
-}
+//function adjustAddPageButton(addButtonText) {
+//    var iconAdjustment = 15;
+//    var button = $('.ui-dialog-buttonpane').find('button:contains('+addButtonText+')');
+//    button.width(button.width() + iconAdjustment); // make room for the 'plus' icon on the button
+//}
 
 function setDialogInnerIframeSize() {
     var $frame = $('#addPage_frame');

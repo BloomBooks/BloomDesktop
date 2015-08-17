@@ -4,7 +4,7 @@ BODY {
 #mainContainer {
   border: none;
   margin: 0;
-  height: 545px;
+  height: 490px;
   width: 790px;
   display: flex;
   flex-direction: row;
@@ -25,32 +25,27 @@ BODY {
   min-width: 320px;
   padding-left: 15px;
 }
+#singlePagePreview img {
+  border: 1px solid #b0dee4;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
 #preview {
-  width: 250px;
+  width: 200px;
 }
 #previewCaption {
   font-weight: bold;
+  text-align: center;
 }
-#previewDescription {
-  height: 90px;
-  border: none;
-}
-#previewDescription .DescriptionHeader {
-  font-weight: bold;
-}
-#previewDescription .DescriptionText {
+.DescriptionText {
   white-space: normal;
   max-height: 145px;
-  width: 353px;
   line-height: 1.2em;
   height: 100px;
   overflow: hidden;
-}
-.ui-dialog-buttonset:first-child .ui-icon-plusthick {
-  left: 0.25em !important;
-}
-.ui-dialog-buttonset:first-child .ui-button-text {
-  text-align: right !important;
+  margin-right: 15px;
+  margin-left: 15px;
 }
 .outerCollectionContainer {
   flex: 1;
@@ -92,6 +87,7 @@ BODY {
   margin-left: 20px;
 }
 .gridItem .gridItemCaption {
+  display: none;
   text-align: center;
   height: 2em;
   position: relative;
@@ -109,18 +105,19 @@ BODY {
   width: 100px;
   background: url(transparent.gif);
 }
-.ui-widget-content .ui-state-default {
-  font-weight: normal !important;
-}
 div.ui-dialog div.ui-dialog-buttonset button.ui-button {
   background: #e1e1e1 !important;
   color: black;
   border: #adadad solid thin;
   font-size: 10pt;
+  margin-left: 10px;
 }
 div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
   background: #b0dee4 !important;
   color: black;
+}
+.ui-dialog-buttonpane {
+  padding: 0.3em 20px 20px 0.4em;
 }
 div.ui-dialog div.ui-dialog-content,
 .ui-dialog .ui-dialog-buttonpane,
@@ -132,4 +129,34 @@ div.ui-dialog div.ui-dialog-titlebar {
 }
 div.ui-dialog div.ui-dialog-titlebar .ui-dialog-title {
   font-weight: normal;
+}
+.ui-dialog-buttonpane {
+  display: none;
+}
+/*
+.ui-dialog-buttonset {
+
+	.normalButton {
+		font-weight: normal !important;
+	}
+
+	//.defaultButton {
+	//	.ui-icon-plusthick {
+	//		left: 0.25em !important;
+	//	}
+	//	.ui-button-text {
+	//		//text-align: right !important;
+	//		font-weight: bold;
+	//	}
+	//	border: solid 5px @HighlightColor !important;
+	//}
+}*/
+#addPageButton {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px;
+  width: 200px;
+  border: 5px solid #b0dee4;
+  font-weight: bold;
 }

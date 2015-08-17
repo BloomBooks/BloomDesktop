@@ -11,6 +11,7 @@ html
 		+stylesheet('../bookEdit/css/bloomDialog.css')
 		+script('../lib/jquery.js')
 		+script('../lib/jquery-ui.js')
+		+script('../lib/notify-custom.js')
 		+script('js/page-chooser.js')
 	body
 		#mainContainer.bloomDialogContainer
@@ -24,15 +25,14 @@ html
 						.innerCollectionContainer
 							//- This DIV element gets cloned for each page in the collection
 							.gridItem
+								// this was used when we were using iframes to prevent messing with the underlying page items, could come back conceivably for pages that lack svg thumbnails
 								.invisibleThumbCover
-								//iframe(src='').thumbnail
 								img(src='').thumbnail
 								.gridItemCaption Page Title
 								.pageDescription
 			#singlePagePreview
-				#previewCaption.previewCaption
-					| There should always be a selected page
 				img(src='')#preview
-				#previewDescription
-					.DescriptionHeader Description
-					#previewDescriptionText.DescriptionText Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vel sodales justo.
+				#previewCaption.previewCaption
+				#previewDescriptionText.DescriptionText Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vel sodales justo.
+
+				input(type="submit", value="Add Page").foo#addPageButton

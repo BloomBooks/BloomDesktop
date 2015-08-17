@@ -13,6 +13,7 @@ var scripts = [
     'lib/jquery.myimgscale.js',
     'lib/jquery.resize.js',
     'lib/errorHandler.js',
+    'lib/notify-custom.js',
     'bookEdit/js/editableDivUtils.js',
     'bookEdit/js/jquery.hotkeys.js',
     'bookEdit/js/BloomAccordion.js',

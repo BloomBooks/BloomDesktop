@@ -1,24 +1,15 @@
 /// <reference path="../../bookEdit/js/getIframeChannel.ts" />
 
-window.addEventListener('message', process_EditFrame_Message, false);
-
-var _pageChooser;
+window.addEventListener("message", process_EditFrame_Message, false);
 
 function process_EditFrame_Message(event: MessageEvent): void {
 
-    var params = event.data.split('\n');
+    var params = event.data.split("\n");
 
     switch(params[0]) {
-        case 'AddSelectedPage':
-            if(_pageChooser)
-                _pageChooser.addPageClickHandler();
-            else
-                alert("received AddSelectedPage message before PageChooser was created");
-            return;
-
-        case 'Data':
-            _pageChooser = new PageChooser(params[1]);
-            _pageChooser.LoadInstalledCollections();
+        case "Data":
+            var pageChooser = new PageChooser(params[1]);
+            pageChooser.loadInstalledCollections();
             return;
 
         default:
@@ -39,114 +30,134 @@ class PageChooser {
         if(templateBookUrls) {
             this._templateBookUrls = templateBookUrls;
         } else {
-            console.log('Expected url in PageChooser ctor!');
+            console.log("Expected url in PageChooser ctor!");
         }
 
         this._selectedGridItem = undefined;
     }
 
-    thumbnailClickHandler( div ) : void {
+    thumbnailClickHandler( clickedDiv ) : void {
         // 'div' is an .invisibleThumbCover
         // Mark any previously selected thumbnail as no longer selected
         if (this._selectedGridItem != undefined) {
-            $(this._selectedGridItem).removeClass('ui-selected');
+            $(this._selectedGridItem).removeClass("ui-selected");
         }
         // Select new thumbnail
-        this._selectedGridItem = $( div ).parent();
-        $(this._selectedGridItem).addClass('ui-selected');
+        this._selectedGridItem = $( clickedDiv ).parent();
+        $(this._selectedGridItem).addClass("ui-selected");
 
         // Display large preview
-        var caption = $( '#previewCaption');
-        caption.text($('.gridItemCaption', this._selectedGridItem).text());
-        caption.attr('style', 'display: block;');
-        $('#preview').attr('src', $(this._selectedGridItem).find('img').first().attr('src'));
-        $('#previewDescriptionText').text($('.pageDescription', this._selectedGridItem).text());
-        // TODO: disable the main dialog one! $( '#addPageButton' ).prop( "disabled", false );
+        var caption = $( "#previewCaption");
+        caption.text($(".gridItemCaption", this._selectedGridItem).text());
+        caption.attr("style", "display: block;");
+        $("#preview").attr("src", $(this._selectedGridItem).find("img").first().attr("src"));
+        $("#previewDescriptionText").text($(".pageDescription", this._selectedGridItem).text());
     } // thumbnailClickHandler
 
     addPageClickHandler() : void {
         if (this._selectedGridItem == undefined || this._templateBookUrls == undefined) {
-            return null; // TODO: say something to the user!?
+            return null; 
         }
-        var id = this._selectedGridItem.attr('data-pageId'); 
-        console.log('firing CSharp event - Selected template page: ' + id);
-        this.fireCSharpEvent('addPage', id);
+        this.fireCSharpEvent("setModalStateEvent", "false");
+        var id = this._selectedGridItem.attr("data-pageId"); 
+        this.fireCSharpEvent("addPage", id);
     } // addPageClickHandler
 
-    LoadInstalledCollections() : void {
+    loadInstalledCollections() : void {
         // Originally (now maybe YAGNI) the dialog handled more than one collection of template pages.
         // Right now it only handles one, so the cloning of stub html is perhaps unnecessary,
         // but I've left it in case we need it later.
 
         // Save html sections that will get cloned later
         // there should only be one 'collection' at this point; a stub with one default template page
-        var collectionHTML =  $('.collection', document).first().clone();
+        var collectionHtml =  $(".collection", document).first().clone();
         // there should only be the one default 'gridItem' at this point
-        var gridItemHTML = $( '.gridItem', collectionHTML).first().clone();
+        var gridItemHtml = $( ".gridItem", collectionHtml).first().clone();
         var collectionUrls;
         try {
-            collectionUrls = $.parseJSON( _pageChooser._templateBookUrls );
+            collectionUrls = $.parseJSON( this._templateBookUrls );
         } catch (e) {
-            console.log('Received bad template url: ' + e);
+            console.log("Received bad template url: " + e);
+            return;
         }
+        var pageChooser = this;
         if ($( collectionUrls).length > 0) {
             // Remove original stub section
-            $('.outerCollectionContainer', document).empty();
+            $(".outerCollectionContainer", document).empty();
             $.each(collectionUrls, function (index) {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                _pageChooser.LoadCollection(this['templateBookFolderUrl'], this['templateBookUrl'], collectionHTML, gridItemHTML );
+                pageChooser.loadCollection(this["templateBookFolderUrl"], this["templateBookUrl"], collectionHtml, gridItemHtml );
             });
-            window.scrollTo(0,0); // TODO: wrong window!
+            //window.scrollTo(0,0); // : wrong window!
             //console.log('Available pages loaded.');
         }
+        $("#addPageButton", document).button().click(() => {
+            this.fireCSharpEvent("setModalStateEvent", "false");
+            this.addPageClickHandler();
+        });
+
+        //TODO: choose which one to select based on some other criteria than just being first
+        window.setTimeout( ()=> {
+            this.thumbnailClickHandler($(".invisibleThumbCover").first());
+            (<any>$).notify("hello",{autoHide:false});
+        }, 100);
     } // LoadInstalledCollections
 
-    LoadCollection(pageFolderUrl, pageUrl, collectionHTML, gridItemHTML ) : void {
-        var request = $.get( pageUrl);
-        request.done( function( pageData ) {
-            // TODO: for now just grab the first book title, we may want to know which lang to grab eventually
+    loadCollection(pageFolderUrl, pageUrl, collectionHTML, gridItemHTML ) : void {
+        const request = $.get( pageUrl);
+        request.done( pageData => {
+            // TODO: send the book (page collection) through the localization system, now or when we actually show the selected on
             var dataBookArray = $( "div[data-book='bookTitle']", pageData );
             var collectionTitle = $( dataBookArray.first() ).text();
             // Add title and container to dialog
             var collectionToAdd = $( collectionHTML).clone();
-            $( collectionToAdd ).find( '.collectionCaption' ).text(collectionTitle);
-            $( '.outerCollectionContainer', document).append(collectionToAdd);
+            $( collectionToAdd ).find( ".collectionCaption" ).text(collectionTitle);
+            $( ".outerCollectionContainer", document).append(collectionToAdd);
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $( pageData).filter( ".bloom-page[id]" );
-            _pageChooser.LoadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl );
+            this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl );
         }, "html");
         request.fail( function(jqXHR, textStatus, errorThrown) {
-            console.log('There was a problem reading: ' + pageUrl + ' see documentation on : ' +
-                jqXHR.status + ' ' + textStatus + ' ' + errorThrown);
+            console.log("There was a problem reading: " + pageUrl + " see documentation on : " +
+                jqXHR.status + " " + textStatus + " " + errorThrown);
         });
     } // LoadCollection
 
     
-    LoadPagesFromCollection(currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl ) : void {
+    loadPagesFromCollection(currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl ) : void {
         if ($(pageArray).length < 1) {
             return;
         }
         // Remove default template page
-        $('.innerCollectionContainer', currentCollection).empty();
+        $(".innerCollectionContainer", currentCollection).empty();
         // insert a template page for each page with the correct #id on the url
-        $(pageArray).each(function (index, div) {
-            var currentId = $(div).attr('id');
-            // TODO: for now just grab the first page label, we may want to know which lang to grab eventually
-            var pageLabel = $('.pageLabel', div).first().text();
-            var pageDescription = $('.pageDescription', div).first().text();
+        $(pageArray).each((index, div) => {
             var currentGridItemHtml = $(gridItemTemplate).clone();
-            $('.gridItemCaption', currentGridItemHtml).first().text(pageLabel);
-            $('.pageDescription', currentGridItemHtml).first().text(pageDescription);
-            pageLabel = pageLabel.replace("&", "+");
-            $( currentGridItemHtml).attr('data-pageId',currentId);
-            $('img', currentGridItemHtml).attr('src', pageFolderUrl + "/" + pageLabel+".svg");//pageTitle
-            $('.innerCollectionContainer', currentCollection).append(currentGridItemHtml);
+
+            var currentId = $(div).attr("id");
+            $(currentGridItemHtml).attr("data-pageId", currentId);
+            
+            // TODO: send the label and description through the localization system, now or when we actually show the selected on
+
+            var pageDescription = $(".pageDescription", div).first().text();
+            $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
+
+            var pageLabel = $(".pageLabel", div).first().text();
+            $(".gridItemCaption", currentGridItemHtml).first().text(pageLabel);
+            pageLabel = pageLabel.replace("&", "+"); //ampersands don't work in the svg file names, so we use "+" instead
+
+            $("img", currentGridItemHtml).attr("src", pageFolderUrl + "/" + pageLabel+".svg");
+            $(".innerCollectionContainer", currentCollection).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.
-        $('.invisibleThumbCover', currentCollection).each(function(index, div) {
-            $(div).click(function() {
-                _pageChooser.thumbnailClickHandler(div);
+        $(".invisibleThumbCover", currentCollection).each((index, div) => {
+            $(div).dblclick(() => {
+                this.addPageClickHandler();
+            }); // invisibleThumbCover double click
+
+            $(div).click(() => {
+                this.thumbnailClickHandler(div);
             }); // invisibleThumbCover click
         }); // each
     } // LoadPagesFromCollection
