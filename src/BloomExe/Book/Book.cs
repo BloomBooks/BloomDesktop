@@ -727,7 +727,7 @@ namespace Bloom.Book
 				originalTemplateGuid = lineage.Substring(0, index);
 			GuidAndPath updateTo;
 			if (!PageMigrations.TryGetValue(originalTemplateGuid, out updateTo))
-				return; // unknown page, don't try to migrate it.
+				return; // Not one we want to migrate. Possibly already done, or one we don't want to convert, or created in the field...
 			var rootFolder = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections/Templates");
 			var bookPath = Path.Combine(rootFolder, updateTo.Path);
 			var templateDoc = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);

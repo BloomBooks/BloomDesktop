@@ -90,6 +90,57 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void MigratePictureInMiddle_CopiesBothTextsAndImage()
+		{
+			SetDom(@"<div class='bloom-page' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398383' id='thePage'>
+			   <div class='marginBox'>
+					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-leadingElement normal-style'>
+						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable normal-style bloom-content1' contenteditable='true' lang='en'>
+							English in first block
+						</div>
+
+						<div data-hasqtip='true' class='bloom-editable normal-style' contenteditable='true' lang='pis'>
+							Tok Pisin in first block
+						</div>
+					</div>
+					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
+					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
+						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable normal-style bloom-content1' contenteditable='true' lang='en'>
+							There was an old man called Bilanga who was very tall and also not yet married.
+						</div>
+
+						<div data-hasqtip='true' class='bloom-editable normal-style' contenteditable='true' lang='pis'>
+							Wanfala olman nem blong hem Bilanga barava tol an hem no marit tu.
+						</div>
+						<div data-hasqtip='true' class='bloom-editable normal-style' contenteditable='true' lang='xyz'>
+							Translation into xyz, the primary language.
+						</div>
+						<div class='bloom-editable' contenteditable='true' lang='z'></div>
+					</div>
+				</div>
+			</div>
+			");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			book.BringPageUpToDate(page);
+
+			var newPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+
+			CheckPageIsCustomizable(newPage);
+			CheckPageLineage(page, newPage, "5dcd48df-e9ab-4a07-afd4-6a24d0398383", "adcd48df-e9ab-4a07-afd4-6a24d0398383");
+			CheckEditableText(newPage, "en", "English in first block");
+			CheckEditableText(newPage, "pis", "Tok Pisin in first block");
+			CheckEditableText(newPage, "en", "There was an old man called Bilanga who was very tall and also not yet married.", 1);
+			CheckEditableText(newPage, "pis", "Wanfala olman nem blong hem Bilanga barava tol an hem no marit tu.",1);
+			CheckEditableText(newPage, "xyz", "Translation into xyz, the primary language.",1);
+			CheckEditableText(newPage, "z", "",1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//img[@data-license='cc-by-nc-sa' and @data-copyright='Copyright © 2012, LASI' and @src='erjwx3bl.q3c.png']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//img", 1);
+			Assert.That(newPage.SafeSelectNodes("//div[@lang='z' and contains(@class,'bloom-editable')]"), Has.Count.EqualTo(1), "Failed to remove old child element");
+		}
+
+		[Test]
 		public void MigrateJustPicture_CopiesImage()
 		{
 			SetDom(@"<div class='bloom-page' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398385' id='thePage'>
@@ -162,7 +213,7 @@ namespace BloomTests.Book
 			Assert.That(newPage, Is.EqualTo(page), "should not have copied, just kept");
 		}
 
-		// Enhance: if there are ever cases where there are multiple image containers or multiple translation groups to migrate, test this.
+		// Enhance: if there are ever cases where there are multiple image containers to migrate, test this.
 		// Enhance: if there are ever cases where it is possible not to have exactly corresponding parent elements (e.g., migrating a page with
 		// one translation group to one with two), test this.
 		// The current intended behavior is to copy the corresponding ones, leave additional destination elements unchanged, and discard
@@ -182,9 +233,10 @@ namespace BloomTests.Book
 			Assert.That(newLineage, Is.EqualTo(oldLineage.Replace(oldGuid, newGuid)));
 		}
 
-		private void CheckEditableText(XmlElement page, string lang, string text, int index = 0)
+		private void CheckEditableText(XmlElement page, string lang, string text, int groupIndex = 0)
 		{
-			var editDiv = (XmlElement)page.SafeSelectNodes("//div[@lang='" + lang + "' and contains(@class,'bloom-editable')]")[index];
+			var transGroup = (XmlElement)page.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")[groupIndex];
+			var editDiv = (XmlElement)transGroup.SafeSelectNodes("div[@lang='" + lang + "' and contains(@class,'bloom-editable')]")[0];
 			var actualText = editDiv.InnerXml;
 			Assert.That(actualText.Trim(), Is.EqualTo(text));
 		}
