@@ -25,7 +25,11 @@ function showSetupDialog(showWhat) {
 
         var dialogContents = CreateConfigDiv(title);
 
-
+        var h = 580;
+        var w = 720;
+        var size = getAppropriateDialogSize(h, w);
+        h = size[0];
+        w = size[1];
 
         accordion.model.setupType = showWhat;
 
@@ -62,15 +66,34 @@ function showSetupDialog(showWhat) {
             open: function () {
                 $('#synphonyConfig').css('overflow', 'hidden');
                 $('button span:contains("Help")').prepend('<i class="fa fa-question-circle"></i> ');
-            }
-//            height: 0,
-//            width: 700
+            },
+            height: h,
+            width: w
         });
 
         fireCSharpEvent('setModalStateEvent', 'true');
     });
 }
 
+function getAppropriateDialogSize(preferredHeight, preferredWidth) {
+    var h = preferredHeight;
+    var w = preferredWidth;
+
+    // This height and width will fit inside the "800 x 600" settings
+    var sw = document.body.scrollWidth;
+    if (sw < 583) {
+        h = 460;
+        w = 390;
+    }
+
+    // This height and width will fit inside the "1024 x 586 Low-end netbook with windows Task bar" settings
+    else if ((sw < 723) || (window.innerHeight < 583)) {
+        h = 460;
+        w = 580;
+    }
+
+    return [h, w];
+}
 
 function getSettingsDialogLocalizedStrings() {
     // Without preloading these, they are not available when the dialog is created
