@@ -584,6 +584,8 @@ namespace Bloom.Book
 				
 				
 				_dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
+				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
+				_dom.RawDom.PreserveWhitespace = true;
 
 				//Validating here was taking a 1/3 of the startup time
 				// eventually, we need to restructure so that this whole Storage isn't created until actually needed, then maybe this can come back
