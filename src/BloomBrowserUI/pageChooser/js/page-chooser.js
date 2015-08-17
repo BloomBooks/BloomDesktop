@@ -41,9 +41,8 @@ var PageChooser = (function () {
         $("#previewDescriptionText").text($(".pageDescription", this._selectedGridItem).text());
     }; // thumbnailClickHandler
     PageChooser.prototype.addPageClickHandler = function () {
-        if (this._selectedGridItem == undefined || this._templateBookUrls == undefined) {
-            return null;
-        }
+        if (this._selectedGridItem == undefined || this._templateBookUrls == undefined)
+            return;
         this.fireCSharpEvent("setModalStateEvent", "false");
         var id = this._selectedGridItem.attr("data-pageId");
         this.fireCSharpEvent("addPage", id);
@@ -102,8 +101,7 @@ var PageChooser = (function () {
             _this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl);
         }, "html");
         request.fail(function (jqXHR, textStatus, errorThrown) {
-            console.log("There was a problem reading: " + pageUrl + " see documentation on : " +
-                jqXHR.status + " " + textStatus + " " + errorThrown);
+            console.log("There was a problem reading: " + pageUrl + " see documentation on : " + jqXHR.status + " " + textStatus + " " + errorThrown);
         });
     }; // LoadCollection
     PageChooser.prototype.loadPagesFromCollection = function (currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl) {

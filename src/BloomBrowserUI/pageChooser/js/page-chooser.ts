@@ -55,9 +55,7 @@ class PageChooser {
     } // thumbnailClickHandler
 
     addPageClickHandler() : void {
-        if (this._selectedGridItem == undefined || this._templateBookUrls == undefined) {
-            return null; 
-        }
+        if (this._selectedGridItem == undefined || this._templateBookUrls == undefined) return;
         this.fireCSharpEvent("setModalStateEvent", "false");
         var id = this._selectedGridItem.attr("data-pageId"); 
         this.fireCSharpEvent("addPage", id);
@@ -89,8 +87,6 @@ class PageChooser {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
                 pageChooser.loadCollection(this["templateBookFolderUrl"], this["templateBookUrl"], collectionHtml, gridItemHtml );
             });
-            //window.scrollTo(0,0); // : wrong window!
-            //console.log('Available pages loaded.');
         }
         $("#addPageButton", document).button().click(() => {
             this.fireCSharpEvent("setModalStateEvent", "false");
@@ -105,7 +101,7 @@ class PageChooser {
     } // LoadInstalledCollections
 
     loadCollection(pageFolderUrl, pageUrl, collectionHTML, gridItemHTML ) : void {
-        const request = $.get( pageUrl);
+        var request = $.get(pageUrl);
         request.done( pageData => {
             // TODO: send the book (page collection) through the localization system, now or when we actually show the selected on
             var dataBookArray = $( "div[data-book='bookTitle']", pageData );

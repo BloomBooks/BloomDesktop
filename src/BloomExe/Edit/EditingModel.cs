@@ -51,6 +51,7 @@ namespace Bloom.Edit
 		private EnhancedImageServer _server;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private Dictionary<string, IPage> _templatePagesDict;
+		private string _lastPageAdded;
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
@@ -86,6 +87,7 @@ namespace Bloom.Edit
 			_sendReceiver = sendReceiver;
 			_server = server;
 			_templatePagesDict = null;
+			_lastPageAdded = String.Empty;
 
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			pageSelection.SelectionChanged += new EventHandler(OnPageSelectionChanged);
@@ -681,8 +683,11 @@ namespace Bloom.Edit
 		{
 			IPage page;
 			var dict = GetTemplatePagesForThisBook();
-			if(dict != null && dict.TryGetValue(pageId, out page))
+			if (dict != null && dict.TryGetValue(pageId, out page))
+			{
 				_templateInsertionCommand.Insert(page as Page);
+				_lastPageAdded = pageId;
+			}
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
@@ -827,45 +832,6 @@ namespace Bloom.Edit
 			// Backslash first so the ones we insert for quotes don't get further escaped.
 			// Since the input is going to be processed as a string literal in JavaScript, it also can't contain real newlines.
 			return data.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
-		}
-
-		/// <summary>
-		/// Remove line ends, otherwise javascript chokes during JSON.parse().
-		/// Checks for both Windows and Unix line ends.
-		/// </summary>
-		/// <param name="jsonData"></param>
-		/// <returns></returns>
-		private static string CleanUpJsonDataForJavascript(string jsonData)
-		{
-			jsonData = jsonData.Replace("\r", "").Replace("\n", "");
-			return CleanUpDataForJavascript(jsonData);
-		}
-
-		private string GetDialogContent()
-		{
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/page chooser", "page-chooser-main.htm");
-			_accordionFolder = Path.GetDirectoryName(path);
-
-			var domForDialog = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
-
-			// embed settings on the page
-			var settings = new Dictionary<string, object>
-			{
-				{"pageId", "noResult"}
-			};
-
-			var settingsStr = JsonConvert.SerializeObject(settings);
-			settingsStr = String.Format("function GetDialogResult() {{ return {0};}}", settingsStr);
-
-			var scriptElement = domForDialog.RawDom.CreateElement("script");
-			scriptElement.SetAttribute("type", "text/javascript");
-			scriptElement.SetAttribute("id", "ui-dialogResult");
-			scriptElement.InnerText = settingsStr;
-
-			domForDialog.Head.InsertAfter(scriptElement, domForDialog.Head.LastChild);
-
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForDialog.RawDom);
-			return TempFileUtils.CreateHtml5StringFromXml(domForDialog.RawDom);
 		}
 
 		private string MakeAccordionContent()
