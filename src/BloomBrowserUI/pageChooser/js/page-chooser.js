@@ -126,7 +126,7 @@ var PageChooser = (function () {
             var pageLabel = $(".pageLabel", div).first().text();
             $(".gridItemCaption", currentGridItemHtml).first().text(pageLabel);
             pageLabel = pageLabel.replace("&", "+"); //ampersands don't work in the svg file names, so we use "+" instead
-            $("img", currentGridItemHtml).attr("src", pageFolderUrl + "/" + pageLabel + ".svg");
+            $("img", currentGridItemHtml).attr("src", pageFolderUrl + "/template" + "/" + pageLabel + ".svg");
             $(".innerCollectionContainer", currentCollection).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.
