@@ -115,6 +115,8 @@ var PageChooser = (function () {
         $(".innerCollectionContainer", currentCollection).empty();
         // insert a template page for each page with the correct #id on the url
         $(pageArray).each(function (index, div) {
+            if ($(div).attr("data-page") === "singleton")
+                return; // skip this one
             var currentGridItemHtml = $(gridItemTemplate).clone();
             var currentId = $(div).attr("id");
             $(currentGridItemHtml).attr("data-pageId", currentId);
