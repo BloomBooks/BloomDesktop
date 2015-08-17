@@ -662,7 +662,7 @@ $(document).ready(function() {
 
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
     // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
-    $('div.bloom-page').find('.bloom-content1[contenteditable="true"],.bloom-content2[contenteditable="true"],.bloom-content3[contenteditable="true"]').each(function() {
+    $('div.bloom-page').find('.bloom-content1[contenteditable="true"],.bloom-content2[contenteditable="true"],.bloom-content3[contenteditable="true"],.bloom-contentNational1[contenteditable="true"]').each(function() {
 
         var ckedit = CKEDITOR.inline(this);
 
