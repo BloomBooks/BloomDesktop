@@ -1245,15 +1245,6 @@ namespace Bloom.Edit
 				return jsonString;
 			}
 		}
-
-		internal string GetMessageForDisabledAddPageButton
-		{
-			get
-			{
-				const string message = "Sorry, this book does not allow adding pages.";
-				return LocalizationManager.GetDynamicString("Bloom", "Edit.DisabledAddPageMessage", message);
-			}
-		}
 	}
 
 	public class TemplateInsertionCommand

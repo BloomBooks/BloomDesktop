@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using L10NSharp;
 using Palaso.Reporting;
+using Palaso.UI.WindowsForms;
 
 namespace Bloom.Edit
 {
@@ -141,10 +142,9 @@ namespace Bloom.Edit
 			if (_model == null || _addPageButton.Enabled)
 				return;
 			// TODO: localize buttons
-			//if(MessageBox.Show(_model.GetMessageForDisabledAddPageButton, "",
-			//	MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-			//	_addPageButton_Click(null, null);
-			MessageBox.Show(_model.GetMessageForDisabledAddPageButton, "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			string message = "At this time, Bloom does not allow adding pages to a shell book.";
+			message = LocalizationManager.GetDynamicString("Bloom", "EditTab.DisabledAddPageMessage", message);
+			MessageBox.Show(message, "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 	}
 
