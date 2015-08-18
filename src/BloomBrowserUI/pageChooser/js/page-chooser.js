@@ -23,7 +23,8 @@ var PageChooser = (function () {
             console.log("Expected url in PageChooser ctor!");
         }
         this._selectedGridItem = undefined;
-        this._indexOfLastPageAdded = 0;
+        this._indexOfPageToSelect = 0;
+        this._indexOfPageToSelectHasBeenCalculated = false;
     }
     PageChooser.prototype.thumbnailClickHandler = function (clickedDiv) {
         // 'div' is an .invisibleThumbCover
@@ -80,16 +81,20 @@ var PageChooser = (function () {
             _this.fireCSharpEvent("setModalStateEvent", "false");
             _this.addPageClickHandler();
         });
-        window.setTimeout(function () {
-            if (_this._indexOfLastPageAdded > 0) {
-                _this.thumbnailClickHandler($(".invisibleThumbCover").eq(_this._indexOfLastPageAdded));
-            }
-            else {
-                _this.thumbnailClickHandler($(".invisibleThumbCover").first());
-            }
-            //(<any>$).notify("Hint: Double-clicking a thumbnail adds it immediately", { className:"subtleHint",globalPosition:"bottom left",autoHide:false});
-        }, 200);
+        pageChooser.selectInitialThumb();
     }; // LoadInstalledCollections
+    PageChooser.prototype.selectInitialThumb = function () {
+        var _this = this;
+        var timerMs = 400;
+        window.setTimeout(function () {
+            _this.tryToSelectThumb();
+        }, timerMs);
+    }; // this isn't the right way to do this, but I'm leaving it like this until JH has a chance to show me how to get Promise to work on it
+    PageChooser.prototype.tryToSelectThumb = function () {
+        if (this._indexOfPageToSelectHasBeenCalculated) {
+            this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect));
+        }
+    };
     PageChooser.prototype.loadCollection = function (pageFolderUrl, pageUrl, collectionHTML, gridItemHTML, lastPageAdded) {
         var _this = this;
         var request = $.get(pageUrl);
@@ -104,7 +109,8 @@ var PageChooser = (function () {
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $(pageData).filter(".bloom-page[id]");
-            _this._indexOfLastPageAdded = _this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
+            _this._indexOfPageToSelect = _this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
+            _this._indexOfPageToSelectHasBeenCalculated = true;
         }, "html");
         request.fail(function (jqXHR, textStatus, errorThrown) {
             console.log("There was a problem reading: " + pageUrl + " see documentation on : " + jqXHR.status + " " + textStatus + " " + errorThrown);
