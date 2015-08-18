@@ -114,7 +114,6 @@ var PageChooser = (function () {
         var _this = this;
         var request = $.get(pageUrl);
         request.done(function (pageData) {
-            // TODO: send the book (page collection) through the localization system, now or when we actually show the selected on
             var dataBookArray = $("div[data-book='bookTitle']", pageData);
             var collectionTitle = $(dataBookArray.first()).text();
             // Add title and container to dialog
@@ -145,7 +144,6 @@ var PageChooser = (function () {
             var currentGridItemHtml = $(gridItemTemplate).clone();
             var currentId = $(div).attr("id");
             $(currentGridItemHtml).attr("data-pageId", currentId);
-            // TODO: send the label and description through the localization system, now or when we actually show the selected on
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
             var pageLabel = $(".pageLabel", div).first().text();

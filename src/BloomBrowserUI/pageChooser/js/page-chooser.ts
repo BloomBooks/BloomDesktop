@@ -131,8 +131,7 @@ class PageChooser {
     loadCollection(pageFolderUrl, pageUrl, collectionHTML, gridItemHTML ) : void {
         const request = $.get( pageUrl);
         request.done( pageData => {
-            // TODO: send the book (page collection) through the localization system, now or when we actually show the selected on
-            var dataBookArray = $( "div[data-book='bookTitle']", pageData );
+             var dataBookArray = $( "div[data-book='bookTitle']", pageData );
             var collectionTitle = $( dataBookArray.first() ).text();
             // Add title and container to dialog
             var collectionToAdd = $(collectionHTML).clone();
@@ -167,8 +166,6 @@ class PageChooser {
             var currentId = $(div).attr("id");
             $(currentGridItemHtml).attr("data-pageId", currentId);
             
-            // TODO: send the label and description through the localization system, now or when we actually show the selected on
-
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
 
