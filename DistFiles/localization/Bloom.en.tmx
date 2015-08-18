@@ -1341,283 +1341,283 @@
         <seg>Template Pages</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.1">
+    <tu tuid="TemplateBooks.PageLabel.1">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>1</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.10">
+    <tu tuid="TemplateBooks.PageLabel.10">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>10</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.11">
+    <tu tuid="TemplateBooks.PageLabel.11">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>11</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.12">
+    <tu tuid="TemplateBooks.PageLabel.12">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>12</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.13">
+    <tu tuid="TemplateBooks.PageLabel.13">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>13</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.14">
+    <tu tuid="TemplateBooks.PageLabel.14">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>14</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.15">
+    <tu tuid="TemplateBooks.PageLabel.15">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>15</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.16">
+    <tu tuid="TemplateBooks.PageLabel.16">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>16</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.17">
+    <tu tuid="TemplateBooks.PageLabel.17">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>17</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.18">
+    <tu tuid="TemplateBooks.PageLabel.18">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>18</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.19">
+    <tu tuid="TemplateBooks.PageLabel.19">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>19</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.2">
+    <tu tuid="TemplateBooks.PageLabel.2">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>2</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.20">
+    <tu tuid="TemplateBooks.PageLabel.20">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>20</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.21">
+    <tu tuid="TemplateBooks.PageLabel.21">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>21</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.3">
+    <tu tuid="TemplateBooks.PageLabel.3">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>3</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.4">
+    <tu tuid="TemplateBooks.PageLabel.4">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>4</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.5">
+    <tu tuid="TemplateBooks.PageLabel.5">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>5</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.6">
+    <tu tuid="TemplateBooks.PageLabel.6">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>6</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.7">
+    <tu tuid="TemplateBooks.PageLabel.7">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>7</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.8">
+    <tu tuid="TemplateBooks.PageLabel.8">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>8</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.9">
+    <tu tuid="TemplateBooks.PageLabel.9">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>9</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
+    <tu tuid="TemplateBooks.PageLabel.Alphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Alphabet</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Image</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Picture</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Credits Page">
+    <tu tuid="TemplateBooks.PageLabel.Credits Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Credits Page</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Custom">
+    <tu tuid="TemplateBooks.PageLabel.Custom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Custom</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 1">
+    <tu tuid="TemplateBooks.PageLabel.Day 1">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 1</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 2">
+    <tu tuid="TemplateBooks.PageLabel.Day 2">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 2</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 3">
+    <tu tuid="TemplateBooks.PageLabel.Day 3">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 3</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 4">
+    <tu tuid="TemplateBooks.PageLabel.Day 4">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 4</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 5a">
+    <tu tuid="TemplateBooks.PageLabel.Day 5a">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 5a</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 5b">
+    <tu tuid="TemplateBooks.PageLabel.Day 5b">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 5b</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Front Cover">
+    <tu tuid="TemplateBooks.PageLabel.Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Front Cover</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
+    <tu tuid="TemplateBooks.PageLabel.Image On Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image On Bottom</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Image in Middle">
+    <tu tuid="TemplateBooks.PageLabel.Image in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image in Middle</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
+    <tu tuid="TemplateBooks.PageLabel.Inside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Inside Back Cover</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
+    <tu tuid="TemplateBooks.PageLabel.Inside Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Inside Front Cover</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Instructions">
+    <tu tuid="TemplateBooks.PageLabel.Instructions">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Instructions</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just Text">
+    <tu tuid="TemplateBooks.PageLabel.Just Text">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just Text</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just a Picture">
+    <tu tuid="TemplateBooks.PageLabel.Just a Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just a Picture</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just an Image">
+    <tu tuid="TemplateBooks.PageLabel.Just an Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just an Image</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
+    <tu tuid="TemplateBooks.PageLabel.Outside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Outside Back Cover</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
+    <tu tuid="TemplateBooks.PageLabel.Picture &amp; Word">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture &amp; Word</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture on Bottom">
+    <tu tuid="TemplateBooks.PageLabel.Picture on Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image en bas</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
+    <tu tuid="TemplateBooks.PageLabel.Picture in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture in Middle</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
+    <tu tuid="TemplateBooks.PageLabel.This Page Is Intentionally Blank">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Page Is Intentionally Blank</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Title Page">
+    <tu tuid="TemplateBooks.PageLabel.Title Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Title Page</seg>
@@ -3396,37 +3396,37 @@
         <seg>Send/Receive</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Basic Book">
+    <tu tuid="TemplateBooks.BookName.Basic Book">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Book</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Big Book">
+    <tu tuid="TemplateBooks.BookName.Big Book">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Big Book</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Decodable Reader">
+    <tu tuid="TemplateBooks.BookName.Decodable Reader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Leveled Reader">
+    <tu tuid="TemplateBooks.BookName.Leveled Reader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Picture Dictionary">
+    <tu tuid="TemplateBooks.BookName.Picture Dictionary">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture Dictionary</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Wall Calendar">
+    <tu tuid="TemplateBooks.BookName.Wall Calendar">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Wall Calendar</seg>

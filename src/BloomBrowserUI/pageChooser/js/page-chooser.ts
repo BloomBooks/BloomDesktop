@@ -50,10 +50,10 @@ class PageChooser {
         // Display large preview
         var caption = $('#previewCaption');
         var defaultCaptionText = $(".gridItemCaption", this._selectedGridItem).text();
-        this.setLocalizedText(caption, 'EditTab.ThumbnailCaptions.', defaultCaptionText);
+        this.setLocalizedText(caption, 'TemplateBooks.PageLabel.', defaultCaptionText);
         caption.attr("style", "display: block;");
         $("#preview").attr("src", $(this._selectedGridItem).find("img").first().attr("src"));
-        this.setLocalizedText($('#previewDescriptionText'), 'AddPageDialog.Descriptions.', $(".pageDescription", this._selectedGridItem).text(), defaultCaptionText);
+        this.setLocalizedText($('#previewDescriptionText'), 'TemplateBooks.PageDescription.', $(".pageDescription", this._selectedGridItem).text(), defaultCaptionText);
     } // thumbnailClickHandler
 
     // Set the text of the given element to the appropriate localization of defaultText
@@ -136,7 +136,7 @@ class PageChooser {
             var collectionTitle = $( dataBookArray.first() ).text();
             // Add title and container to dialog
             var collectionToAdd = $(collectionHTML).clone();
-            this.setLocalizedText($(collectionToAdd).find(".collectionCaption"), 'Template.', collectionTitle);
+            this.setLocalizedText($(collectionToAdd).find(".collectionCaption"), 'TemplateBooks.BookName.', collectionTitle);
             $( ".outerCollectionContainer", document).append(collectionToAdd);
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!

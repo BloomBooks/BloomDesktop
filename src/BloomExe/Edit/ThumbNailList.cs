@@ -113,7 +113,7 @@ namespace Bloom.Edit
 			{
 				IPage page = (IPage) item.Tag;
 				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-				item.Text = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions."+captionOrPageNumber, captionOrPageNumber);
+				item.Text = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel."+captionOrPageNumber, captionOrPageNumber);
 			}
 			_listView.EndUpdate();
 		}
@@ -121,7 +121,7 @@ namespace Bloom.Edit
 		private void AddOnePage(IPage page, ref int pageNumber)
 		{
 			var label = PreferPageNumbers ? page.GetCaptionOrPageNumber(ref pageNumber) : page.Caption;
-			label = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + label, label);
+			label = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel." + label, label);
 
 			ListViewItem item = new ListViewItem(label, 0);
 			item.Tag = page;

@@ -1209,7 +1209,7 @@
         <seg>టెంప్లేట్ పేజీలు</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.1">
+    <tu tuid="TemplateBooks.PageLabel.1">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>1</seg>
@@ -1218,7 +1218,7 @@
         <seg>1</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.2">
+    <tu tuid="TemplateBooks.PageLabel.2">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>2</seg>
@@ -1227,7 +1227,7 @@
         <seg>2</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.3">
+    <tu tuid="TemplateBooks.PageLabel.3">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>3</seg>
@@ -1236,7 +1236,7 @@
         <seg>3</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.4">
+    <tu tuid="TemplateBooks.PageLabel.4">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>4</seg>
@@ -1245,7 +1245,7 @@
         <seg>4</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.5">
+    <tu tuid="TemplateBooks.PageLabel.5">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>5</seg>
@@ -1254,7 +1254,7 @@
         <seg>5</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.6">
+    <tu tuid="TemplateBooks.PageLabel.6">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>6</seg>
@@ -1263,7 +1263,7 @@
         <seg>6</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.7">
+    <tu tuid="TemplateBooks.PageLabel.7">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>7</seg>
@@ -1272,7 +1272,7 @@
         <seg>7</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.8">
+    <tu tuid="TemplateBooks.PageLabel.8">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>8</seg>
@@ -1281,7 +1281,7 @@
         <seg>8</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.9">
+    <tu tuid="TemplateBooks.PageLabel.9">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>9</seg>
@@ -1290,7 +1290,7 @@
         <seg>9</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
+    <tu tuid="TemplateBooks.PageLabel.Alphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Alphabet</seg>
@@ -1299,7 +1299,7 @@
         <seg>అక్షరమాల</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Image</seg>
@@ -1308,7 +1308,7 @@
         <seg>ప్రాథమిక పాఠం &amp; చిత్రం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Picture</seg>
@@ -1317,7 +1317,7 @@
         <seg>ప్రాథమిక పాఠం &amp; చిత్రాన్ని</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Credits Page">
+    <tu tuid="TemplateBooks.PageLabel.Credits Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Credits Page</seg>
@@ -1326,7 +1326,7 @@
         <seg>క్రెడిట్స్ పేజీ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Custom">
+    <tu tuid="TemplateBooks.PageLabel.Custom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Custom</seg>
@@ -1335,7 +1335,7 @@
         <seg>కస్టమ్</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 1">
+    <tu tuid="TemplateBooks.PageLabel.Day 1">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 1</seg>
@@ -1344,7 +1344,7 @@
         <seg>రోజు 1</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 2">
+    <tu tuid="TemplateBooks.PageLabel.Day 2">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 2</seg>
@@ -1353,7 +1353,7 @@
         <seg>రోజు 2</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 3">
+    <tu tuid="TemplateBooks.PageLabel.Day 3">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 3</seg>
@@ -1362,7 +1362,7 @@
         <seg>రోజు 3</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 4">
+    <tu tuid="TemplateBooks.PageLabel.Day 4">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 4</seg>
@@ -1371,7 +1371,7 @@
         <seg>రోజు 4</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 5a">
+    <tu tuid="TemplateBooks.PageLabel.Day 5a">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 5a</seg>
@@ -1380,7 +1380,7 @@
         <seg>రోజు 5a</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Day 5b">
+    <tu tuid="TemplateBooks.PageLabel.Day 5b">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 5b</seg>
@@ -1389,7 +1389,7 @@
         <seg>రోజు 5b</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Front Cover">
+    <tu tuid="TemplateBooks.PageLabel.Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Front Cover</seg>
@@ -1398,7 +1398,7 @@
         <seg>ముందు కవర్</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
+    <tu tuid="TemplateBooks.PageLabel.Image On Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image On Bottom</seg>
@@ -1407,7 +1407,7 @@
         <seg>అడుగున చిత్రం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Image in Middle">
+    <tu tuid="TemplateBooks.PageLabel.Image in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image in Middle</seg>
@@ -1416,7 +1416,7 @@
         <seg>మధ్యలో చిత్రం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
+    <tu tuid="TemplateBooks.PageLabel.Inside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Inside Back Cover</seg>
@@ -1425,7 +1425,7 @@
         <seg>తిరిగి కవర్ లోపల</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
+    <tu tuid="TemplateBooks.PageLabel.Inside Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Inside Front Cover</seg>
@@ -1434,7 +1434,7 @@
         <seg>ముందు కవర్ లోపల</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Instructions">
+    <tu tuid="TemplateBooks.PageLabel.Instructions">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Instructions</seg>
@@ -1443,7 +1443,7 @@
         <seg>సూచనలను</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just Text">
+    <tu tuid="TemplateBooks.PageLabel.Just Text">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just Text</seg>
@@ -1452,7 +1452,7 @@
         <seg>కేవలం టెక్స్ట్</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just a Picture">
+    <tu tuid="TemplateBooks.PageLabel.Just a Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just a Picture</seg>
@@ -1461,7 +1461,7 @@
         <seg>కేవలం ఒక చిత్రాన్ని</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Just an Image">
+    <tu tuid="TemplateBooks.PageLabel.Just an Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just an Image</seg>
@@ -1470,7 +1470,7 @@
         <seg>కేవలం ఒక చిత్రం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
+    <tu tuid="TemplateBooks.PageLabel.Outside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Outside Back Cover</seg>
@@ -1479,7 +1479,7 @@
         <seg>తిరిగి కవర్ బయట</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
+    <tu tuid="TemplateBooks.PageLabel.Picture &amp; Word">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture &amp; Word</seg>
@@ -1488,7 +1488,7 @@
         <seg>చిత్రాన్ని &amp; పదం</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture on Bottom">
+    <tu tuid="TemplateBooks.PageLabel.Picture on Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture on Bottom</seg>
@@ -1497,7 +1497,7 @@
         <seg>అడుగున చిత్రాన్ని</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
+    <tu tuid="TemplateBooks.PageLabel.Picture in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture in Middle</seg>
@@ -1506,7 +1506,7 @@
         <seg>మధ్యలో చిత్రంలో</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
+    <tu tuid="TemplateBooks.PageLabel.This Page Is Intentionally Blank">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Page Is Intentionally Blank</seg>
@@ -1515,7 +1515,7 @@
         <seg>ఈ పేజీని ఉద్దేశపూర్వకంగా ఖాళీగా ఉంది</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Title Page">
+    <tu tuid="TemplateBooks.PageLabel.Title Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Title Page</seg>
@@ -3788,7 +3788,7 @@
         <seg>నమోదు {0}</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Basic Book">
+    <tu tuid="TemplateBooks.BookName.Basic Book">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Book</seg>
@@ -3797,7 +3797,7 @@
         <seg>ప్రాథమిక పుస్తకం</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Big Book">
+    <tu tuid="TemplateBooks.BookName.Big Book">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Big Book</seg>
@@ -3806,7 +3806,7 @@
         <seg>పెద్ద పుస్తకం</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Decodable Reader">
+    <tu tuid="TemplateBooks.BookName.Decodable Reader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader</seg>
@@ -3815,7 +3815,7 @@
         <seg>దానిని decodable రీడర్</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Leveled Reader">
+    <tu tuid="TemplateBooks.BookName.Leveled Reader">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader</seg>
@@ -3824,7 +3824,7 @@
         <seg>తనపై వచ్చిన రీడర్</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Picture Dictionary">
+    <tu tuid="TemplateBooks.BookName.Picture Dictionary">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture Dictionary</seg>
@@ -3833,7 +3833,7 @@
         <seg>చిత్రాన్ని నిఘంటువు</seg>
       </tuv>
     </tu>
-    <tu tuid="Template.Wall Calendar">
+    <tu tuid="TemplateBooks.BookName.Wall Calendar">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Wall Calendar</seg>

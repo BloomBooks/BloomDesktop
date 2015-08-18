@@ -507,7 +507,7 @@ namespace Bloom.CollectionTab
 		{
 			string title = bookInfo.QuickTitleUserDisplay;
 			if (localizeTitle)
-				title = LocalizationManager.GetDynamicString("Bloom", "Template." + title, title);
+				title = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.BookName." + title, title);
 
 			var button = new Button
 			{
