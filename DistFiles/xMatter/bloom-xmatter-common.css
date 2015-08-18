@@ -286,7 +286,7 @@
 .verso .licenseAndCopyrightBlock img,
 .credits #versoLicenseAndCopyright img,
 .verso #versoLicenseAndCopyright img {
-  height: 31px;
+  width: 94px;
 }
 .credits .originalAcknowledgments .bloom-contentNational1,
 .verso .originalAcknowledgments .bloom-contentNational1 {
