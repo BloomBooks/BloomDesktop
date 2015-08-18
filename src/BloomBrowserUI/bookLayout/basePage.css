@@ -341,10 +341,10 @@ H2 {
   width: calc(100% - 2px);
 }
 .customPage.bloom-bilingual .bloom-editable {
-  height: 47%;
+  height: auto;
 }
 .customPage.bloom-trilingual .bloom-editable {
-  height: 30%;
+  height: auto;
 }
 .customPage .split-pane-component {
   min-height: 1.5em;

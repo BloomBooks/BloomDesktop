@@ -567,6 +567,7 @@ namespace Bloom.Edit
 		public void RefreshDisplayOfCurrentPage()
 		{
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+			_addPageDialogShowing = false; // it doesn't get re-created, so if we think it's there we'll never show it again.
 		}
 
 		public void SetupServerWithCurrentPageIframeContents()
