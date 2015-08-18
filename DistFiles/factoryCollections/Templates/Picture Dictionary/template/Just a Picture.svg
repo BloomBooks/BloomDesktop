@@ -15,7 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="Basic Text + Picture.svg">
+   sodipodi:docname="Just A Picture.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -26,8 +26,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.49497475"
-     inkscape:cx="-561.42523"
-     inkscape:cy="81.683649"
+     inkscape:cx="-3.8358422"
+     inkscape:cy="507.74847"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -35,7 +35,14 @@
      inkscape:window-height="1177"
      inkscape:window-x="1192"
      inkscape:window-y="-8"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     showguides="true"
+     inkscape:guide-bbox="true">
+    <sodipodi:guide
+       position="447.14288,450"
+       orientation="1,0"
+       id="guide5434" />
+  </sodipodi:namedview>
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -44,7 +51,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -54,15 +61,15 @@
      id="layer1"
      transform="translate(0,-308.26772)">
     <rect
-       style="opacity:1;fill:#ffffff;fill-opacity:0.47843137;fill-rule:nonzero;stroke:none;stroke-width:25;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.47843137"
-       id="rect4155"
-       width="522.24884"
-       height="749.57361"
-       x="1.0101523"
-       y="308.84952" />
+       style="opacity:1;fill:#ffffff;fill-opacity:0.72941176;fill-rule:nonzero;stroke:none;stroke-width:25;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.47843137"
+       id="rect4785"
+       width="522.75391"
+       height="742.96716"
+       x="0.50507617"
+       y="308.88995" />
     <g
        id="g4142"
-       transform="matrix(0.66601237,0,0,0.66601237,86.993019,358.74483)">
+       transform="matrix(0.89582149,0,0,0.89582149,32.60399,453.18765)">
       <path
          inkscape:connector-curvature="0"
          id="path1549-1"
@@ -73,49 +80,6 @@
          id="path1551-7"
          d="m 248.43026,199.07901 c -51.2881,2.2016 -74.6527,74.15764 -35.2132,106.52409 36.4312,36.14175 104.9087,5.65148 102.4543,-45.47623 0.7476,-35.54029 -32.1682,-64.99292 -67.2411,-61.04786 z"
          style="fill:#ffffff;fill-opacity:0.32941176;stroke:none" />
-    </g>
-    <rect
-       y="752.34216"
-       x="80.25692"
-       height="33.705379"
-       width="332.35645"
-       id="rect4146"
-       style="opacity:1;fill:#585858;fill-opacity:0.72941176;fill-rule:nonzero;stroke:none;stroke-width:25;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.47843137" />
-    <rect
-       y="857.72266"
-       x="80.25692"
-       height="33.705379"
-       width="262.53705"
-       id="rect4154"
-       style="opacity:1;fill:#585858;fill-opacity:0.72941176;fill-rule:nonzero;stroke:none;stroke-width:25;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.47843137" />
-    <rect
-       style="opacity:1;fill:#585858;fill-opacity:0.72941176;fill-rule:nonzero;stroke:none;stroke-width:25;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.47843137"
-       id="rect4160"
-       width="372.64368"
-       height="33.705379"
-       x="80.25692"
-       y="963.10315" />
-    <g
-       transform="matrix(2.6851847,0,0,1,-99.54442,405.03989)"
-       id="g4766">
-      <rect
-         style="opacity:1;fill:#585858;fill-opacity:0.72941176;fill-rule:nonzero;stroke:none;stroke-width:25;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.47843137"
-         id="rect4150"
-         width="138.46864"
-         height="33.705379"
-         x="66.960503"
-         y="399.99246" />
-    </g>
-    <g
-       transform="matrix(1.4041503,0,0,1,-13.765698,405.95224)"
-       id="g4770">
-      <rect
-         style="opacity:1;fill:#585858;fill-opacity:0.72941176;fill-rule:nonzero;stroke:none;stroke-width:25;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.47843137"
-         id="rect4164"
-         width="247.44533"
-         height="33.705379"
-         x="66.960503"
-         y="504.46069" />
     </g>
   </g>
 </svg>

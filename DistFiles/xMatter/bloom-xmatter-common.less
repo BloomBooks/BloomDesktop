@@ -308,8 +308,14 @@
         .licenseBlock{
             margin-bottom: @MarginBetweenBlocks;
         }
-        img { // creative commons license image
-            height: 31px;
+        img {
+            // creative commons license image
+
+            //note, if this is 93 or less, then FF29 (used to at least bloom 3.3) cuts off the right edge.
+            //It was fine if you zoomed in, fine in a more modern FF, fine in PDF, etc.
+            //I have tried changing a dozen different properties, including the image-rendering, and the
+            // only thing that helped was to make it a bit larger
+            width: 94px;
         }
     }
 

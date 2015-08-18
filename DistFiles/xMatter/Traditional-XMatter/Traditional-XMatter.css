@@ -11,6 +11,7 @@
 }
 .A4Portrait.outsideFrontCover .marginBox IMG,
 .A4Portrait.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
   max-width: 180mm;
 }
 .A4Landscape.outsideFrontCover .marginBox,
@@ -22,6 +23,7 @@
 }
 .A4Landscape.outsideFrontCover .marginBox IMG,
 .A4Landscape.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
   max-width: 267mm;
 }
 .A5Portrait.outsideFrontCover .marginBox,
@@ -33,6 +35,7 @@
 }
 .A5Portrait.outsideFrontCover .marginBox IMG,
 .A5Portrait.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
   max-width: 118mm;
 }
 .A5Landscape.outsideFrontCover .marginBox,
@@ -44,6 +47,7 @@
 }
 .A5Landscape.outsideFrontCover .marginBox IMG,
 .A5Landscape.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
   max-width: 180mm;
 }
 .A6Portrait.outsideFrontCover .marginBox,
@@ -55,6 +59,7 @@
 }
 .A6Portrait.outsideFrontCover .marginBox IMG,
 .A6Portrait.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
   max-width: 75mm;
 }
 .A6Landscape.outsideFrontCover .marginBox,
@@ -66,6 +71,7 @@
 }
 .A6Landscape.outsideFrontCover .marginBox IMG,
 .A6Landscape.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
   max-width: 118mm;
 }
 .B5Portrait.outsideFrontCover .marginBox,
@@ -77,6 +83,7 @@
 }
 .B5Portrait.outsideFrontCover .marginBox IMG,
 .B5Portrait.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
   max-width: 146mm;
 }
 .insideFrontCover .bloom-content1 {
@@ -279,7 +286,7 @@
 .verso .licenseAndCopyrightBlock img,
 .credits #versoLicenseAndCopyright img,
 .verso #versoLicenseAndCopyright img {
-  height: 31px;
+  width: 94px;
 }
 .credits .originalAcknowledgments .bloom-contentNational1,
 .verso .originalAcknowledgments .bloom-contentNational1 {

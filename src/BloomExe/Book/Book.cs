@@ -753,7 +753,8 @@ namespace Bloom.Book
 		/// <param name="newPage"></param>
 		private static void MigrateChildren(XmlElement page, string parentClass, XmlElement newPage)
 		{
-			var xpath = "//div[contains(concat(' ', @class, ' '), ' " + parentClass + " ')]";
+			//the leading '.' here is needed because newPage is an element in a larger DOM, and we only want to search in this page
+			var xpath = ".//div[contains(concat(' ', @class, ' '), ' " + parentClass + " ')]";
 			var oldParents = page.SafeSelectNodes(xpath);
 			var newParents = newPage.SafeSelectNodes(xpath);
 			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one

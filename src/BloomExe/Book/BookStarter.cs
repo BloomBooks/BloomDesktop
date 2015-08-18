@@ -459,7 +459,12 @@ namespace Bloom.Book
 			}
 			foreach (var dirPath in Directory.GetDirectories(sourcePath))
 			{
-				CopyFolder(dirPath, Path.Combine(destinationPath, Path.GetFileName(dirPath)));
+				//any files found under "template" will not be copied. At the moment (Aug 2015), this is only
+				//thumbnail svgs, but we could move readme's and such in there
+				if (Path.GetFileName(dirPath).ToLowerInvariant() != "template")
+				{
+					CopyFolder(dirPath, Path.Combine(destinationPath, Path.GetFileName(dirPath)));
+				}
 			}
 		}
 	}

@@ -664,7 +664,45 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
-			_view.AddMessageEventListener("addPage", AddPageFromDialog);
+			_view.AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
+			_view.AddMessageEventListener("addPage", AddNewPageBasedOnTemplate);
+		}
+
+
+		/// <summary>
+		/// When the user types ctrl+n, we do this:
+		/// 1) If the user is on a page that is xmatter, or a singleton, then we just add the first page in the template
+		/// 2) Else, make a new page of the same type as the current one
+		/// </summary>
+		/// <param name="unused"></param>
+		public void HandleAddNewPageKeystroke(string unused)
+		{
+			if (!HaveCurrentEditableBook || _currentlyDisplayedBook.LockedDown)
+				return;
+
+			try
+			{
+				if (CanDuplicatePage)
+				{
+					AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor);
+					return;
+				}
+				else
+				{
+					var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
+					AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook);
+				}
+			}
+			catch (Exception error)
+			{
+				Logger.WriteEvent(error.Message);
+				//this is not worth bothering the user about
+#if DEBUG
+				throw error;
+#endif
+			}
+			//there was some error figuring out a default page, let's just let the user choose what they want
+			ShowAddPageDialog();
 		}
 
 		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
@@ -679,7 +717,7 @@ namespace Bloom.Edit
 			return _templatePagesDict;
 		}
 
-		private void AddPageFromDialog(string pageId)
+		private void AddNewPageBasedOnTemplate(string pageId)
 		{
 			IPage page;
 			var dict = GetTemplatePagesForThisBook();
@@ -1178,6 +1216,15 @@ namespace Bloom.Edit
 				var jsonLastPage = "\"lastPageAdded\": \"" + _lastPageAdded + "\"";
 				var jsonString = JSON_START + jsonBookFolder + JSON_DIVIDER + jsonBook + JSON_DIVIDER + jsonLastPage + JSON_END;
 				return jsonString;
+			}
+		}
+
+		internal string GetMessageForDisabledAddPageButton
+		{
+			get
+			{
+				const string message = "Sorry, this book does not allow adding pages.";
+				return LocalizationManager.GetDynamicString("Bloom", "Edit.DisabledAddPageMessage", message);
 			}
 		}
 	}
