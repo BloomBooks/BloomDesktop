@@ -68,6 +68,8 @@ interface JQueryStatic {
       var maxWidth: number = textWidth(div, longestWord);
 
       var colCount = Math.floor(parentWidth / maxWidth);
+      if (colCount === 0)
+         colCount = 1;
       parent.css('column-count', colCount);
     }
   });
