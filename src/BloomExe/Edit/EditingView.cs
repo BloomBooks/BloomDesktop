@@ -34,6 +34,7 @@ namespace Bloom.Edit
 		private readonly UndoCommand _undoCommand;
 		private readonly DuplicatePageCommand _duplicatePageCommand;
 		private readonly DeletePageCommand _deletePageCommand;
+		private readonly ControlKeyEvent _controlKeyEvent;
 		private Action _pendingMessageHandler;
 		private bool _updatingDisplay;
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
@@ -41,11 +42,10 @@ namespace Bloom.Edit
 		private bool _visible;
 
 		public delegate EditingView Factory(); //autofac uses this
-
-
+		
 		public EditingView(EditingModel model, PageListView pageListView,
 			CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
-			DeletePageCommand deletePageCommand, NavigationIsolator isolator)
+			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent)
 		{
 			_model = model;
 			_pageListView = pageListView;
@@ -72,11 +72,21 @@ namespace Bloom.Edit
 				BackgroundColorsForLinux();
 			}
 
+			controlKeyEvent.Subscribe(HandleControlKeyEvent);
+
 			// Adding this renderer prevents a white line from showing up under the components.
 			_menusToolStrip.Renderer = new FixedToolStripRenderer();
 
 			//we're giving it to the parent control through the TopBarControls property
 			Controls.Remove(_topBarPanel);
+		}
+
+		private void HandleControlKeyEvent(object keyData)
+		{
+			if(_visible && (Keys)keyData == (Keys.Control | Keys.N))
+			{
+				_model.HandleAddNewPageKeystroke(null);
+			}
 		}
 
 #if TooExpensive

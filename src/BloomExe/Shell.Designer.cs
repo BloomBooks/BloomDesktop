@@ -89,6 +89,7 @@
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
 			this.ClientSize = new System.Drawing.Size(1012, 548);
 			this.ContextMenuStrip = this._contextMenu;
+			this.KeyPreview = true;
 			this.MinimumSize = new System.Drawing.Size(400, 300);
 			this.Name = "Shell";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

@@ -185,12 +185,8 @@ function AddEditKeyHandlers(container) {
         e.preventDefault();
         document.execCommand("justifycenter", false, null);
     });
-
-    //TODO: This will get the ctrl+n if the focus is on the page, but as of Aug 17 2015, it is often... somewhere else until you press 'tab".
-    $(document).bind('keydown', 'ctrl+n', function (e) { 
-        e.preventDefault();
-        fireCSharpEditEvent('handleAddNewPageKeystroke', '');
-    });
+    
+    //Note, CTRL+N is also caught, but up on the Shell where it is turned into an event, so that it can be caught even when the focus isn't on the browser
 }
 
 // Add little language tags
