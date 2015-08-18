@@ -1212,7 +1212,7 @@ namespace Bloom.Edit
 		{
 			get
 			{
-				const string message = "Are you sure?";
+				const string message = "Sorry, this book does not allow adding pages.";
 				return LocalizationManager.GetDynamicString("Bloom", "Edit.DisabledAddPageMessage", message);
 			}
 		}

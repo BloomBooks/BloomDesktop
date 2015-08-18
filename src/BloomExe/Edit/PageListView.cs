@@ -141,9 +141,10 @@ namespace Bloom.Edit
 			if (_model == null || _addPageButton.Enabled)
 				return;
 			// TODO: localize buttons
-			if(MessageBox.Show(_model.GetMessageForDisabledAddPageButton, "",
-				MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-				_addPageButton_Click(null, null);
+			//if(MessageBox.Show(_model.GetMessageForDisabledAddPageButton, "",
+			//	MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+			//	_addPageButton_Click(null, null);
+			MessageBox.Show(_model.GetMessageForDisabledAddPageButton, "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 	}
 }
