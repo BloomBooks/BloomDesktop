@@ -1623,6 +1623,18 @@
         <seg>Title Page</seg>
       </tuv>
     </tu>
+    <tu tuid="TemplateBooks.PageDescription.Custom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A blank page that allows you to add items.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageDescription.Picture &amp; Word">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Page with a picture on top and a large, centered word below.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab._contentLanguagesDropdown">
       <tuv xml:lang="en">
         <seg>Multilingual Settings</seg>
