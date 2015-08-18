@@ -361,10 +361,16 @@ H2 {
 	/* This is in order to divide up the whole section in equal parts.
 		I'm not sure, though...it looks better when you first make the page. But it actually reduces the flexibility for the user a bit. Hmmm*/
 	&.bloom-bilingual{
-      .bloom-editable {  height:47%; }
+		.bloom-editable {
+			// tempting: hard to get right with all the different page layouts in the new customizable world  height:46%;
+			height: auto;
+		}
     }
     &.bloom-trilingual{
-      .bloom-editable {  height:30%; }
+      .bloom-editable {
+		  // tempting: hard to get right with all the different page layouts in the new customizable world height:28%;
+		  height: auto;
+	  }
     }
 
 	.split-pane-component {
