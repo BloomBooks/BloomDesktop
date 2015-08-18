@@ -255,12 +255,20 @@ namespace Bloom.web
 				return ProcessLevedRTInfo(info, localPath);
 			else if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
+#if __MonoCS__
+				// The JSON format may use a string like this to reference a local path.
+				// Try it without the leading marker.
+				var temp = localPath.Substring(10);
+				if (File.Exists(temp))
+					localPath = temp;
+#else
 				// project on network mapped drive like localhost\C$.
 				// URL was something like /bloom///localhost/C$/, but info.LocalPathWithoutQuery uses Uri.LocalPath
 				// which for some reason drops the needed leading slashes.
 				var temp = "//" + localPath;
 				if (File.Exists(temp))
 					localPath = temp;
+#endif
 			}
 
 			return ProcessContent(info, localPath);
