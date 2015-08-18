@@ -1599,7 +1599,7 @@
         <seg>Picture &amp; Word</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
+    <tu tuid="EditTab.ThumbnailCaptions.Picture on Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image en bas</seg>

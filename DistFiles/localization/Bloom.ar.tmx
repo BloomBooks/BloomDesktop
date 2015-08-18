@@ -1554,10 +1554,10 @@
         <seg>كلمة آند الصورة</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
+    <tu tuid="EditTab.ThumbnailCaptions.Picture on Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Picture On Bottom</seg>
+        <seg>Picture on Bottom</seg>
       </tuv>
       <tuv xml:lang="ar">
         <seg>صورة في الأسفل</seg>
