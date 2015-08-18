@@ -33,7 +33,7 @@
 			this._pageThumbnails = new System.Windows.Forms.ImageList(this.components);
 			this._pagesLabel = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._addPageButton = new System.Windows.Forms.Button();
+			this._addPageButton = new Bloom.Edit.GraphicButton();
 			this._thumbNailList = new Bloom.Edit.WebThumbNailList();
 			this._pageControlsPanel = new System.Windows.Forms.Panel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -73,7 +73,6 @@
 			this._addPageButton.FlatAppearance.BorderSize = 0;
 			this._addPageButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this._addPageButton.ForeColor = System.Drawing.Color.White;
-			this._addPageButton.Image = global::Bloom.Properties.Resources.AddPageIcon;
 			this._addPageButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._addPageButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._addPageButton, null);
@@ -141,7 +140,7 @@
         private System.Windows.Forms.Label _pagesLabel;
         private System.Windows.Forms.ImageList _pageThumbnails;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private System.Windows.Forms.Button _addPageButton;
+		private GraphicButton _addPageButton;
 		private WebThumbNailList _thumbNailList;
 		internal System.Windows.Forms.Panel _pageControlsPanel;
     }

@@ -662,7 +662,45 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
-			_view.AddMessageEventListener("addPage", AddPageFromDialog);
+			_view.AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
+			_view.AddMessageEventListener("addPage", AddNewPageBasedOnTemplate);
+		}
+
+
+		/// <summary>
+		/// When the user types ctrl+n, we do this:
+		/// 1) If the user is on a page that is xmatter, or a singleton, then we just add the first page in the template
+		/// 2) Else, make a new page of the same type as the current one
+		/// </summary>
+		/// <param name="unused"></param>
+		public void HandleAddNewPageKeystroke(string unused)
+		{
+			if (!HaveCurrentEditableBook || _currentlyDisplayedBook.LockedDown)
+				return;
+
+			try
+			{
+				if (CanDuplicatePage)
+				{
+					AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor);
+					return;
+				}
+				else
+				{
+					var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
+					AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook);
+				}
+			}
+			catch (Exception error)
+			{
+				Logger.WriteEvent(error.Message);
+				//this is not worth bothering the user about
+#if DEBUG
+				throw error;
+#endif
+			}
+			//there was some error figuring out a default page, let's just let the user choose what they want
+			ShowAddPageDialog();
 		}
 
 		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
@@ -677,7 +715,7 @@ namespace Bloom.Edit
 			return _templatePagesDict;
 		}
 
-		private void AddPageFromDialog(string pageId)
+		private void AddNewPageBasedOnTemplate(string pageId)
 		{
 			IPage page;
 			var dict = GetTemplatePagesForThisBook();
@@ -841,32 +879,32 @@ namespace Bloom.Edit
 			return CleanUpDataForJavascript(jsonData);
 		}
 
-		private string GetDialogContent()
-		{
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/page chooser", "page-chooser-main.htm");
-			_accordionFolder = Path.GetDirectoryName(path);
-
-			var domForDialog = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
-
-			// embed settings on the page
-			var settings = new Dictionary<string, object>
-			{
-				{"pageId", "noResult"}
-			};
-
-			var settingsStr = JsonConvert.SerializeObject(settings);
-			settingsStr = String.Format("function GetDialogResult() {{ return {0};}}", settingsStr);
-
-			var scriptElement = domForDialog.RawDom.CreateElement("script");
-			scriptElement.SetAttribute("type", "text/javascript");
-			scriptElement.SetAttribute("id", "ui-dialogResult");
-			scriptElement.InnerText = settingsStr;
-
-			domForDialog.Head.InsertAfter(scriptElement, domForDialog.Head.LastChild);
-
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForDialog.RawDom);
-			return TempFileUtils.CreateHtml5StringFromXml(domForDialog.RawDom);
-		}
+//		private string GetDialogContent()
+//		{
+//			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/page chooser", "page-chooser-main.htm");
+//			_accordionFolder = Path.GetDirectoryName(path);
+//
+//			var domForDialog = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+//
+//			// embed settings on the page
+//			var settings = new Dictionary<string, object>
+//			{
+//				{"pageId", "noResult"}
+//			};
+//
+//			var settingsStr = JsonConvert.SerializeObject(settings);
+//			settingsStr = String.Format("function GetDialogResult() {{ return {0};}}", settingsStr);
+//
+//			var scriptElement = domForDialog.RawDom.CreateElement("script");
+//			scriptElement.SetAttribute("type", "text/javascript");
+//			scriptElement.SetAttribute("id", "ui-dialogResult");
+//			scriptElement.InnerText = settingsStr;
+//
+//			domForDialog.Head.InsertAfter(scriptElement, domForDialog.Head.LastChild);
+//
+//			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForDialog.RawDom);
+//			return TempFileUtils.CreateHtml5StringFromXml(domForDialog.RawDom);
+//		}
 
 		private string MakeAccordionContent()
 		{

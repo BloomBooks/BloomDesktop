@@ -224,4 +224,14 @@ namespace Bloom
 
 		}
 	}
+
+	public class ControlKeyEvent : Event<object>
+	{
+		public readonly Keys Keys;
+
+		public ControlKeyEvent()
+			: base("ControlKeyEvent", LoggingLevel.Minor)
+		{
+		}
+	}
 }

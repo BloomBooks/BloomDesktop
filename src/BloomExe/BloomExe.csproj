@@ -121,7 +121,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Management" Condition="'$(OS)'=='Windows_NT'"/>
+    <Reference Include="System.Management" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Printing" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
@@ -586,7 +586,9 @@
     <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
     <Compile Include="SourceCollectionsList.cs" />
-    <Compile Include="Workspace\TabStrip.cs" />
+    <Compile Include="Workspace\TabStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Workspace\TabStripRenderer.cs" />
     <Compile Include="Workspace\WorkspaceModel.cs" />
     <Compile Include="Publish\PublishView.cs">
@@ -1146,6 +1148,12 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AddPageIcon %282%29.PNG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AddPageButton.PNG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AddPageButtonDisabled.PNG" />
   </ItemGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
