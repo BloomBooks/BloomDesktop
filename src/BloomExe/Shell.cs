@@ -305,7 +305,7 @@ namespace Bloom
 			if(Control.ModifierKeys == Keys.Control)
 			{
 				_controlKeyEvent.Raise(keyData);
-                return true;
+				return true;
 			}
 			return base.ProcessCmdKey(ref msg, keyData);
 		}

@@ -140,8 +140,8 @@
         private System.Windows.Forms.Label _pagesLabel;
         private System.Windows.Forms.ImageList _pageThumbnails;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private System.Windows.Forms.Panel _pageControlsPanel;
 		private GraphicButton _addPageButton;
 		private WebThumbNailList _thumbNailList;
+		internal System.Windows.Forms.Panel _pageControlsPanel;
     }
 }

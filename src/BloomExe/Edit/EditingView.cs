@@ -42,7 +42,7 @@ namespace Bloom.Edit
 		private bool _visible;
 
 		public delegate EditingView Factory(); //autofac uses this
-		
+
 		public EditingView(EditingModel model, PageListView pageListView,
 			CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
 			DeletePageCommand deletePageCommand, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent)
