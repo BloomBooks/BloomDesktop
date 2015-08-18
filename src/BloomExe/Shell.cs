@@ -19,6 +19,7 @@ namespace Bloom
 	{
 		private readonly CollectionSettings _collectionSettings;
 		private readonly LibraryClosing _libraryClosingEvent;
+		private readonly ControlKeyEvent _controlKeyEvent;
 		private readonly WorkspaceView _workspaceView;
 
 		// This is needed because on Linux the ResizeEnd event is firing before the Load event handler is
@@ -29,11 +30,13 @@ namespace Bloom
 												CollectionSettings collectionSettings,
 												BookDownloadStartingEvent bookDownloadStartingEvent,
 												LibraryClosing libraryClosingEvent,
-												QueueRenameOfCollection queueRenameOfCollection)
+												QueueRenameOfCollection queueRenameOfCollection,
+												ControlKeyEvent controlKeyEvent)
 		{
 			queueRenameOfCollection.Subscribe(newName => _nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 			_collectionSettings = collectionSettings;
 			_libraryClosingEvent = libraryClosingEvent;
+			_controlKeyEvent = controlKeyEvent;
 			InitializeComponent();
 
 			//bring the application to the front (will normally be behind the user's web browser)
@@ -295,6 +298,16 @@ namespace Bloom
 			var formTopLeft = new Rectangle(rect.Left, rect.Top, 100, 100);
 
 			return screens.Any(screen => screen.WorkingArea.Contains(formTopLeft));
+		}
+
+		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+		{
+			if(Control.ModifierKeys == Keys.Control)
+			{
+				_controlKeyEvent.Raise(keyData);
+                return true;
+			}
+			return base.ProcessCmdKey(ref msg, keyData);
 		}
 	}
 }

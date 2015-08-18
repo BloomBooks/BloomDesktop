@@ -185,6 +185,8 @@ function AddEditKeyHandlers(container) {
         e.preventDefault();
         document.execCommand("justifycenter", false, null);
     });
+    
+    //Note, CTRL+N is also caught, but up on the Shell where it is turned into an event, so that it can be caught even when the focus isn't on the browser
 }
 
 // Add little language tags

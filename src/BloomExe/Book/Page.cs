@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Xml;
 using Palaso.Code;
 
@@ -19,6 +20,7 @@ namespace Bloom.Book
 		bool IsBackMatter { get; }
 		string GetCaptionOrPageNumber(ref int pageNumber);
 		int GetIndex();
+		string IdOfFirstAncestor { get; }
 	}
 
 	public class Page : IPage
@@ -28,18 +30,20 @@ namespace Bloom.Book
 		private readonly Func<IPage, XmlElement> _getDivNodeForThisPageMethod;
 		private List<string> _classes;
 		private List<string> _tags;
+		private string[] _pageLineage;
 
 		public Page(Book book, XmlElement sourcePage,  string caption, /*Func<IPage, Image> getThumbnail,*/ Func<IPage, XmlElement> getDivNodeForThisPageMethod)
 		{
 			_id = FixPageId(sourcePage.Attributes["id"].Value);
-			//_getThumbnail = getThumbnail;
+			var lineage = sourcePage.Attributes["data-pagelineage"];
+			_pageLineage = lineage == null ? new string[] {} : lineage.Value.Split(new[] { ',' });
+
 			Guard.AgainstNull(book,"Book");
 			Book = book;
 			_getDivNodeForThisPageMethod = getDivNodeForThisPageMethod;
 			Caption = caption;
 			ReadClasses(sourcePage);
 			ReadPageTags(sourcePage);
-			//ReadPageLabel(sourcePage);
 		}
 
 		//in the beta, 0.8, the ID of the page in the front-matter template was used for the 1st
@@ -172,6 +176,11 @@ namespace Bloom.Book
 			}
 
 			return -1;
+		}
+
+		public string IdOfFirstAncestor
+		{
+			get { return _pageLineage.FirstOrDefault(); }
 		}
 	}
 }
