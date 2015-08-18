@@ -63,9 +63,9 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap AddPageIcon {
+        internal static System.Drawing.Bitmap AddPageButton {
             get {
-                object obj = ResourceManager.GetObject("AddPageIcon", resourceCulture);
+                object obj = ResourceManager.GetObject("AddPageButton", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -73,9 +73,9 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap AddPageIcon_old {
+        internal static System.Drawing.Bitmap AddPageButtonDisabled {
             get {
-                object obj = ResourceManager.GetObject("AddPageIcon_old", resourceCulture);
+                object obj = ResourceManager.GetObject("AddPageButtonDisabled", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
