@@ -143,4 +143,20 @@ namespace Bloom.Edit
 			_model.ShowAddPageDialog();
 		}
 	}
+
+	public class GraphicButton : Button
+	{
+		protected override void OnPaint(PaintEventArgs e)
+		{
+			base.OnPaint(e);
+			e.Graphics.Clear(Color.FromArgb(64, 64, 64));
+			e.Graphics.DrawImage(
+				Enabled ? Properties.Resources.AddPageButton : Properties.Resources.AddPageButtonDisabled,
+				e.ClipRectangle);
+			var sf = new StringFormat();
+			sf.Alignment = StringAlignment.Center;
+			sf.LineAlignment = StringAlignment.Far; // like bottom?
+			e.Graphics.DrawString(Text, Font, new SolidBrush(Enabled ? ForeColor : Color.FromArgb(150, 150, 150)), ClientRectangle, sf );
+		}
+	}
 }
