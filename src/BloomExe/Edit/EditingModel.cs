@@ -1207,6 +1207,15 @@ namespace Bloom.Edit
 				return jsonString;
 			}
 		}
+
+		internal string GetMessageForDisabledAddPageButton
+		{
+			get
+			{
+				const string message = "Are you sure?";
+				return LocalizationManager.GetDynamicString("Bloom", "Edit.DisabledAddPageMessage", message);
+			}
+		}
 	}
 
 	public class TemplateInsertionCommand

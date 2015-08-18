@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
-using BloomTemp;
 using L10NSharp;
 using Palaso.Reporting;
 
@@ -50,6 +47,7 @@ namespace Bloom.Edit
 				args.ContextMenu.MenuItems.Add(removeItem);
 				dupItem.Enabled = removeItem.Enabled = page != null && !page.Required && !_model.CurrentBook.LockedDown;
 			};
+			_pageControlsPanel.Click += _pageControlsPanel_Click; // handles disabled button click
 		}
 
 		private void OnPageSelectedChanged(object page, EventArgs e)
@@ -122,11 +120,6 @@ namespace Bloom.Edit
 			_thumbNailList.SetPageInsertionPoint(_model.DeterminePageWhichWouldPrecedeNextInsertion());
 		}
 
-		protected IPage SelectedPage
-		{
-			get { return _pageWeThinkShouldBeSelected; }
-		}
-
 		public void EmptyThumbnailCache()
 		{
 			_thumbNailList.EmptyThumbnailCache();
@@ -141,6 +134,16 @@ namespace Bloom.Edit
 		{
 			// Call Add Page Dialog
 			_model.ShowAddPageDialog();
+		}
+
+		private void _pageControlsPanel_Click(object sender, EventArgs e)
+		{
+			if (_model == null || _addPageButton.Enabled)
+				return;
+			// TODO: localize buttons
+			if(MessageBox.Show(_model.GetMessageForDisabledAddPageButton, "",
+				MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+				_addPageButton_Click(null, null);
 		}
 	}
 }
