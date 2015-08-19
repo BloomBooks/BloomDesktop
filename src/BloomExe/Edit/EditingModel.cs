@@ -46,7 +46,6 @@ namespace Bloom.Edit
 		private List<ContentLanguage> _contentLanguages;
 		private IPage _previouslySelectedPage;
 		private bool _inProcessOfDeleting;
-		private bool _addPageDialogShowing;
 		private string _accordionFolder;
 		private EnhancedImageServer _server;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
@@ -125,7 +124,6 @@ namespace Bloom.Edit
 			_server.CurrentCollectionSettings = _collectionSettings;
 			_server.CurrentBook = CurrentBook;
 			_templateInsertionCommand = templateInsertionCommand;
-			_addPageDialogShowing = false;
 		}
 
 		private Form _oldActiveForm;
@@ -520,15 +518,6 @@ namespace Bloom.Edit
 			}
 		}
 
-		public void ShowAddPageDialog()
-		{
-			if (_view == null || _inProcessOfDeleting || _addPageDialogShowing)
-				return;
-			_addPageDialogShowing = true;
-			var jsonTemplates = GetJsonTemplatePageObject;
-			_view.RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
-		}
-
 		void OnPageSelectionChanged(object sender, EventArgs e)
 		{
 			Logger.WriteMinorEvent("changing page selection");
@@ -564,7 +553,6 @@ namespace Bloom.Edit
 		public void RefreshDisplayOfCurrentPage()
 		{
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-			_addPageDialogShowing = false; // it doesn't get re-created, so if we think it's there we'll never show it again.
 		}
 
 		public void SetupServerWithCurrentPageIframeContents()
@@ -659,7 +647,6 @@ namespace Bloom.Edit
 			}
 			// listen for events raised by javascript
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
-			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
 			_view.AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
@@ -700,7 +687,8 @@ namespace Bloom.Edit
 #endif
 			}
 			//there was some error figuring out a default page, let's just let the user choose what they want
-			ShowAddPageDialog();
+			if(this._view!=null)
+				this._view.ShowAddPageDialog();
 		}
 
 		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
@@ -855,12 +843,6 @@ namespace Bloom.Edit
 			return string.Empty;
 		}
 
-		private void SetModalState(string isModal)
-		{
-			_view.SetModalState(isModal == "true");
-			if (isModal != "true")
-				_addPageDialogShowing = false;
-		}
 
 		private string MakeAccordionContent()
 		{
@@ -1188,7 +1170,10 @@ namespace Bloom.Edit
 			}
 		}
 
-		private string GetJsonTemplatePageObject
+		/// <summary>
+		/// Returns a json string that gives paths to our current TemplateBook
+		/// </summary>
+		public string GetTemplateBookInfo
 		{
 			get
 			{
@@ -1201,6 +1186,11 @@ namespace Bloom.Edit
 				var settingsString = JsonConvert.SerializeObject(new object[] {addPageSettings});
 				return settingsString;
 			}
+		}
+
+		public void ShowAddPageDialog()
+		{
+			this._view.ShowAddPageDialog();
 		}
 
 		private const string URL_PREFIX = "/bloom/localhost/";

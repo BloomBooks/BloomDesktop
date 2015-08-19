@@ -96,7 +96,6 @@ var PageChooser = (function () {
             });
         }
         $("#addPageButton", document).button().click(function () {
-            _this.fireCSharpEvent("setModalStateEvent", "false");
             _this.addPageClickHandler();
         });
         var pageButton = $("#addPageButton", document);

@@ -111,7 +111,6 @@ class PageChooser {
             });
         }
         $("#addPageButton", document).button().click(() => {
-            this.fireCSharpEvent("setModalStateEvent", "false");
             this.addPageClickHandler();
         });
         var pageButton = $("#addPageButton", document);
