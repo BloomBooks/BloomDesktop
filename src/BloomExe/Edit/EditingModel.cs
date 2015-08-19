@@ -862,14 +862,6 @@ namespace Bloom.Edit
 				_addPageDialogShowing = false;
 		}
 
-		private static string CleanUpDataForJavascript(string data)
-		{
-			// We need to escape backslashes and quotes so the whole content arrives intact.
-			// Backslash first so the ones we insert for quotes don't get further escaped.
-			// Since the input is going to be processed as a string literal in JavaScript, it also can't contain real newlines.
-			return data.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
-		}
-
 		private string MakeAccordionContent()
 		{
 			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "Accordion.htm");
@@ -1196,25 +1188,27 @@ namespace Bloom.Edit
 			}
 		}
 
-		private const string URL_PREFIX = "/bloom/localhost/";
-		private const string JSON_START = "[{ ";
-		private const string JSON_DIVIDER = " , ";
-		private const string JSON_END = " }]";
-
 		private string GetJsonTemplatePageObject
 		{
 			get
 			{
-				var folderPath = Path.GetDirectoryName(GetPathToCurrentTemplateHtml);
-				folderPath = URL_PREFIX + folderPath.Replace(':', '$').Replace('\\', '/');
-				var jsonBookFolder = "\"templateBookFolderUrl\": \"" + folderPath + "\"";
-				var htmlFilePath = URL_PREFIX + GetPathToCurrentTemplateHtml;
-				htmlFilePath = htmlFilePath.Replace(':', '$').Replace('\\', '/');
-				var jsonBook = "\"templateBookUrl\": \"" + htmlFilePath + "\"";
-				var jsonLastPage = "\"lastPageAdded\": \"" + _lastPageAdded + "\"";
-				var jsonString = JSON_START + jsonBookFolder + JSON_DIVIDER + jsonBook + JSON_DIVIDER + jsonLastPage + JSON_END;
-				return jsonString;
+				var addPageSettings = new Dictionary<string, object>();
+				var folderPath = MassageUrlForJavascript(Path.GetDirectoryName(GetPathToCurrentTemplateHtml));
+				addPageSettings.Add("templateBookFolderUrl", folderPath);
+				var htmlFilePath = MassageUrlForJavascript(GetPathToCurrentTemplateHtml);
+				addPageSettings.Add("templateBookUrl", htmlFilePath);
+				addPageSettings.Add("lastPageAdded", _lastPageAdded);
+				var settingsString = JsonConvert.SerializeObject(new object[] {addPageSettings});
+				return settingsString;
 			}
+		}
+
+		private const string URL_PREFIX = "/bloom/localhost/";
+
+		private static string MassageUrlForJavascript(string url)
+		{
+			var newUrl = URL_PREFIX + url;
+			return newUrl.Replace(':', '$').Replace('\\', '/');
 		}
 	}
 
