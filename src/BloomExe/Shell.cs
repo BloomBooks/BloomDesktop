@@ -305,7 +305,9 @@ namespace Bloom
 			if(Control.ModifierKeys == Keys.Control)
 			{
 				_controlKeyEvent.Raise(keyData);
-				return true;
+				//this event system doesn't actually give us a return value,, so we don't know if it was handled or not
+				//so we'll always just let it bubble. If that becomes a problem, we'll need a different design.
+				//return true;
 			}
 			return base.ProcessCmdKey(ref msg, keyData);
 		}
