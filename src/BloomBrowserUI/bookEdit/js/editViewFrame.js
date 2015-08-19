@@ -153,10 +153,18 @@ function showAddPageDialog(templatesJSON) {
     var theDialog;
     var parentElement = document.getElementById('page').contentWindow;
 
+    // don't show if a dialog already exists
+    if ($(document).find(".ui-dialog").length) {
+        return;
+    }
     parentElement.localizationManager.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
 
         var title = parentElement.localizationManager.getText('AddPageDialog.Title', 'Add Page...');
-        var dialogContents = CreateAddPageDiv(templatesJSON);
+        var addButtonText = parentElement.localizationManager.getText('AddPageDialog.AddPageButton', 'Add This Page');
+        var descriptionLabel = parentElement.localizationManager.getText('AddPageDialog.DescriptionLabel', 'Description');
+        var blankPreviewMsg = parentElement.localizationManager.getText('AddPageDialog.PreviewMessage',
+            'This will contain a preview of a template page when one is selected.');
+        var dialogContents = CreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg);
 
         theDialog = $(dialogContents).dialog({
             class: "addPageDialog",
