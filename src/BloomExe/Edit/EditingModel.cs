@@ -283,12 +283,9 @@ namespace Bloom.Edit
 			get { return _bookSelection.CurrentSelection; }
 		}
 
-		public bool EnableAddPageFunction
+		public bool CanAddPages
 		{
-			get
-			{
-				return _bookSelection.CurrentSelection.UseSourceForTemplatePages;
-			}
+			get { return !_bookSelection.CurrentSelection.LockedDown; }
 		}
 
 		public bool CanDuplicatePage
@@ -584,7 +581,7 @@ namespace Bloom.Edit
 				_server.AccordionContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 
 			_server.CurrentBook = _currentlyDisplayedBook;
-			_server.AuthorMode = EnableAddPageFunction;
+			_server.AuthorMode = CanAddPages;
 		}
 
 		/// <summary>
