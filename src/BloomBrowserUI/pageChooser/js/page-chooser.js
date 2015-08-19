@@ -25,7 +25,6 @@ var PageChooser = (function () {
         }
         this._selectedGridItem = undefined;
         this._indexOfPageToSelect = 0;
-        this._indexOfPageToSelectHasBeenCalculated = false;
     }
     PageChooser.prototype.thumbnailClickHandler = function (clickedDiv) {
         // 'div' is an .invisibleThumbCover
@@ -53,8 +52,7 @@ var PageChooser = (function () {
     PageChooser.prototype.setLocalizedText = function (elt, idPrefix, defaultText, id) {
         if (id === void 0) { id = defaultText; }
         if (defaultText) {
-            localizationManager.asyncGetText(idPrefix + id, defaultText)
-                .done(function (translation) {
+            localizationManager.asyncGetText(idPrefix + id, defaultText).done(function (translation) {
                 elt.text(translation);
             });
         }
@@ -101,25 +99,11 @@ var PageChooser = (function () {
             _this.fireCSharpEvent("setModalStateEvent", "false");
             _this.addPageClickHandler();
         });
-        pageChooser.selectInitialThumb();
         var pageButton = $("#addPageButton", document);
-        localizationManager.asyncGetText('AddPageDialog.AddPageButton', 'Add This Page')
-            .done(function (translation) {
+        localizationManager.asyncGetText('AddPageDialog.AddPageButton', 'Add This Page').done(function (translation) {
             pageButton.attr('value', translation);
         });
     }; // LoadInstalledCollections
-    PageChooser.prototype.selectInitialThumb = function () {
-        var _this = this;
-        var timerMs = 400;
-        window.setTimeout(function () {
-            _this.tryToSelectThumb();
-        }, timerMs);
-    }; // this isn't the right way to do this, but I'm leaving it like this until JH has a chance to show me how to get Promise to work on it
-    PageChooser.prototype.tryToSelectThumb = function () {
-        if (this._indexOfPageToSelectHasBeenCalculated) {
-            this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect));
-        }
-    };
     PageChooser.prototype.loadCollection = function (pageFolderUrl, pageUrl, collectionHTML, gridItemHTML, lastPageAdded) {
         var _this = this;
         var request = $.get(pageUrl);
@@ -134,7 +118,7 @@ var PageChooser = (function () {
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $(pageData).filter(".bloom-page[id]");
             _this._indexOfPageToSelect = _this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
-            _this._indexOfPageToSelectHasBeenCalculated = true;
+            _this.thumbnailClickHandler($(".invisibleThumbCover").eq(_this._indexOfPageToSelect));
         }, "html");
         request.fail(function (jqXHR, textStatus, errorThrown) {
             console.log("There was a problem reading: " + pageUrl + " see documentation on : " + jqXHR.status + " " + textStatus + " " + errorThrown);
