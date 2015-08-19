@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -1177,13 +1178,11 @@ namespace Bloom.Edit
 		{
 			get
 			{
-				var addPageSettings = new Dictionary<string, object>();
-				var folderPath = MassageUrlForJavascript(Path.GetDirectoryName(GetPathToCurrentTemplateHtml));
-				addPageSettings.Add("templateBookFolderUrl", folderPath);
-				var htmlFilePath = MassageUrlForJavascript(GetPathToCurrentTemplateHtml);
-				addPageSettings.Add("templateBookUrl", htmlFilePath);
-				addPageSettings.Add("lastPageAdded", _lastPageAdded);
-				var settingsString = JsonConvert.SerializeObject(new object[] {addPageSettings});
+				dynamic addPageSettings = new ExpandoObject();
+				addPageSettings.templateBookFolderUrl = MassageUrlForJavascript(Path.GetDirectoryName(GetPathToCurrentTemplateHtml));
+				addPageSettings.templateBookUrl = MassageUrlForJavascript(GetPathToCurrentTemplateHtml);
+				addPageSettings.lastPageAdded = _lastPageAdded;
+				var settingsString = JsonConvert.SerializeObject(new [] { addPageSettings });
 				return settingsString;
 			}
 		}
