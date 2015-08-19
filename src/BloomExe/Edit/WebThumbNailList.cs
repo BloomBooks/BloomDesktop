@@ -166,7 +166,7 @@ namespace Bloom.Edit
 //			{
 //				IPage page = (IPage) item.Tag;
 //			    var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-//                item.Text = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions."+captionOrPageNumber, captionOrPageNumber);
+//                item.Text = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel."+captionOrPageNumber, captionOrPageNumber);
 //			}
 //			_listView.EndUpdate();
 //		}
@@ -174,7 +174,7 @@ namespace Bloom.Edit
 //		private void AddOnePage(IPage page, ref int pageNumber)
 //		{
 //			var label = PreferPageNumbers ? page.GetCaptionOrPageNumber(ref pageNumber) : page.Caption;
-//            label = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + label, label);
+//            label = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel." + label, label);
 //
 //            ListViewItem item = new ListViewItem(label, 0);
 //			item.Tag = page;
@@ -628,7 +628,7 @@ namespace Bloom.Edit
 				captionDiv.SetAttribute("class", "thumbnailCaption");
 				cellDiv.AppendChild(captionDiv);
 				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-				captionDiv.InnerText = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + captionOrPageNumber, captionOrPageNumber);
+				captionDiv.InnerText = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel." + captionOrPageNumber, captionOrPageNumber);
 			}
 
 			// set interval based on physical RAM
@@ -779,7 +779,7 @@ namespace Bloom.Edit
 				var gridElt = _browser.WebBrowser.Document.GetElementById(GridId(page));
 				var titleElt = GetFirstChildWithClass(gridElt, "gridTitle") as GeckoElement;
 				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-				var desiredText = LocalizationManager.GetDynamicString("Bloom", "EditTab.ThumbnailCaptions." + captionOrPageNumber, captionOrPageNumber);
+				var desiredText = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel." + captionOrPageNumber, captionOrPageNumber);
 				if (titleElt == null || titleElt.TextContent == desiredText)
 					continue;
 				titleElt.TextContent = desiredText;

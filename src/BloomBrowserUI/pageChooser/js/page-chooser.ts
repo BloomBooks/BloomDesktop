@@ -1,4 +1,5 @@
 ﻿/// <reference path="../../bookEdit/js/getIframeChannel.ts" />
+/// <reference path="../../lib/localizationManager/localizationManager.ts" />
 
 window.addEventListener("message", process_EditFrame_Message, false);
 
@@ -47,12 +48,30 @@ class PageChooser {
         $(this._selectedGridItem).addClass("ui-selected");
 
         // Display large preview
-        var caption = $( "#previewCaption");
-        caption.text($(".gridItemCaption", this._selectedGridItem).text());
+        var caption = $('#previewCaption');
+        var defaultCaptionText = $(".gridItemCaption", this._selectedGridItem).text();
+        this.setLocalizedText(caption, 'TemplateBooks.PageLabel.', defaultCaptionText);
         caption.attr("style", "display: block;");
         $("#preview").attr("src", $(this._selectedGridItem).find("img").first().attr("src"));
-        $("#previewDescriptionText").text($(".pageDescription", this._selectedGridItem).text());
+        this.setLocalizedText($('#previewDescriptionText'), 'TemplateBooks.PageDescription.', $(".pageDescription", this._selectedGridItem).text(), defaultCaptionText);
     } // thumbnailClickHandler
+
+    // Set the text of the given element to the appropriate localization of defaultText
+    // (or to defaultText, if no localization is available).
+    // If defaultText is empty, set the element text to empty.
+    // The localization ID to look up is made by concatenating the supplied prefix and the id
+    // parameter, which defaults to the defaultText since we often use the English text of a
+    // label as the last part of its ID.
+    setLocalizedText(elt: JQuery, idPrefix: string, defaultText: string, id: string = defaultText) {
+        if (defaultText) {
+            localizationManager.asyncGetText(idPrefix + id, defaultText)
+                .done(translation => {
+                    elt.text(translation);
+                });
+        } else {
+            elt.text("");
+        }
+    }
 
     addPageClickHandler() : void {
         if (this._selectedGridItem == undefined || this._templateBookUrls == undefined) {
@@ -96,6 +115,11 @@ class PageChooser {
             this.fireCSharpEvent("setModalStateEvent", "false");
             this.addPageClickHandler();
         });
+        var pageButton = $("#addPageButton", document);
+        localizationManager.asyncGetText('AddPageDialog.AddPageButton', 'Add This Page')
+            .done(translation => {
+                pageButton.attr('value', translation);
+            });
 
         //TODO: choose which one to select based on some other criteria than just being first
         window.setTimeout( ()=> {
@@ -107,12 +131,11 @@ class PageChooser {
     loadCollection(pageFolderUrl, pageUrl, collectionHTML, gridItemHTML ) : void {
         const request = $.get( pageUrl);
         request.done( pageData => {
-            // TODO: send the book (page collection) through the localization system, now or when we actually show the selected on
-            var dataBookArray = $( "div[data-book='bookTitle']", pageData );
+             var dataBookArray = $( "div[data-book='bookTitle']", pageData );
             var collectionTitle = $( dataBookArray.first() ).text();
             // Add title and container to dialog
-            var collectionToAdd = $( collectionHTML).clone();
-            $( collectionToAdd ).find( ".collectionCaption" ).text(collectionTitle);
+            var collectionToAdd = $(collectionHTML).clone();
+            this.setLocalizedText($(collectionToAdd).find(".collectionCaption"), 'TemplateBooks.BookName.', collectionTitle);
             $( ".outerCollectionContainer", document).append(collectionToAdd);
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
@@ -143,8 +166,6 @@ class PageChooser {
             var currentId = $(div).attr("id");
             $(currentGridItemHtml).attr("data-pageId", currentId);
             
-            // TODO: send the label and description through the localization system, now or when we actually show the selected on
-
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
 
