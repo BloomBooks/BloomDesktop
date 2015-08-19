@@ -129,7 +129,7 @@ function closeSetupDialog() {
 // "endregion" ReaderSetup dialog
 
 // "region" Add Page dialog
-function CreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg) {
+function CreateAddPageDiv(templatesJSON) {
 
     var dialogContents = $('<div id="addPageConfig"/>').appendTo($('body'));
 
@@ -137,9 +137,8 @@ function CreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg) {
 
     dialogContents.append(html);
 
-    // When the page chooser loads, get the iframe holding it to resize to what's inside
+    // When the page chooser loads, send it the templatesJSON
     $('#addPage_frame').load(function() {
-        localizeDialogContents(dialogContents, descriptionLabel, blankPreviewMsg);
         initializeAddPageDialog(templatesJSON);
     });
 
@@ -157,11 +156,7 @@ function showAddPageDialog(templatesJSON) {
     parentElement.localizationManager.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
 
         var title = parentElement.localizationManager.getText('AddPageDialog.Title', 'Add Page...');
-        var addButtonText = parentElement.localizationManager.getText('AddPageDialog.AddPageButton', 'Add This Page');
-        var descriptionLabel = parentElement.localizationManager.getText('AddPageDialog.DescriptionLabel', 'Description');
-        var blankPreviewMsg = parentElement.localizationManager.getText('AddPageDialog.PreviewMessage',
-            'This will contain a preview of a template page when one is selected.');
-        var dialogContents = CreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg);
+        var dialogContents = CreateAddPageDiv(templatesJSON);
 
         theDialog = $(dialogContents).dialog({
             class: "addPageDialog",
@@ -174,46 +169,10 @@ function showAddPageDialog(templatesJSON) {
                 my: "left bottom", at: "left bottom", of: window
             },
             title: title,
-            /*buttons: {
-                OK: {
-                    class: 'defaultButton',
-                    text: addButtonText,
-//                    we could reinstate this if we had the right color
-//                    icons: {
-//                        primary: "ui-icon-plusthick"
-//                    },
-                    click: function () {
-                        fireCSharpEvent('setModalStateEvent', 'false');
-                        document.getElementById('addPage_frame').contentWindow.postMessage('AddSelectedPage', '*');
-                    }
-                },
-                Cancel: {
-                    class: 'normalButton',
-                    text: parentElement.localizationManager.getText('Common.Cancel', 'Cancel'),
-                    click: function () {
-                        $(this).dialog("close");
-                    }
-                }
-            },*/
             close: function() {
                 $(this).remove();
                 fireCSharpEvent('setModalStateEvent', 'false');
             },
-            open: function () {
-                //adjustAddPageButton(addButtonText);
-                setTimeout(function() {
-                    setDialogInnerIframeSize();
-
-                    jQuery('#addPageButton').click(function () {
-                            alert("addpageclick");
-                            fireCSharpEvent('setModalStateEvent', 'false');
-                            document.getElementById('addPage_frame').contentWindow.postMessage('AddSelectedPage', '*');
-                            return false;
-                    });
-
-          //          jQuery.notify("testing notify");
-                }, 200);
-            }
         });
 
         //TODO:  this doesn't work yet. We need to make it work, and then make it localizationManager.asyncGetText(...).done(translation => { do the insertion into the dialog });
@@ -230,34 +189,10 @@ function showAddPageDialog(templatesJSON) {
     });
 }
 
-//function adjustAddPageButton(addButtonText) {
-//    var iconAdjustment = 15;
-//    var button = $('.ui-dialog-buttonpane').find('button:contains('+addButtonText+')');
-//    button.width(button.width() + iconAdjustment); // make room for the 'plus' icon on the button
-//}
-
-function setDialogInnerIframeSize() {
-    var $frame = $('#addPage_frame');
-    var width = $frame.contents().find('#mainContainer').width();
-    var height = $frame.contents().find('#mainContainer').height();
-    $frame.height(height);
-    $frame.width(width);
-}
-
-function localizeDialogContents(dialogContents, description, blankMessage) {
-    $(dialogContents).find('iframe').contents().find('.DescriptionHeader').text(description);
-    $(dialogContents).find('iframe').contents().find('iframe').contents().find('#innerBox').text(blankMessage);
-}
-
 function getAddPageDialogLocalizedStrings() {
     // Without preloading these, they are not available when the dialog is created
     var pairs = {};
     pairs['AddPageDialog.Title'] = 'Add Page...';
-    pairs['AddPageDialog.DescriptionLabel'] = 'Description';
-    pairs['AddPageDialog.PreviewMessage'] = 'This will contain a preview of a template page when one is selected.';
-    //pairs['HelpMenu.Help Menu'] = 'Help';
-    pairs['AddPageDialog.AddPageButton'] = 'Add This Page';
-    pairs['Common.Cancel'] = 'Cancel';
     return pairs;
 }
 

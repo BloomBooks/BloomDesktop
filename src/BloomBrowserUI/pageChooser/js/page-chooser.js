@@ -24,6 +24,8 @@ var PageChooser = (function () {
             console.log("Expected url in PageChooser ctor!");
         }
         this._selectedGridItem = undefined;
+        this._indexOfPageToSelect = 0;
+        this._indexOfPageToSelectHasBeenCalculated = false;
     }
     PageChooser.prototype.thumbnailClickHandler = function (clickedDiv) {
         // 'div' is an .invisibleThumbCover
@@ -61,9 +63,8 @@ var PageChooser = (function () {
         }
     };
     PageChooser.prototype.addPageClickHandler = function () {
-        if (this._selectedGridItem == undefined || this._templateBookUrls == undefined) {
-            return null;
-        }
+        if (this._selectedGridItem == undefined || this._templateBookUrls == undefined)
+            return;
         this.fireCSharpEvent("setModalStateEvent", "false");
         var id = this._selectedGridItem.attr("data-pageId");
         this.fireCSharpEvent("addPage", id);
@@ -92,25 +93,34 @@ var PageChooser = (function () {
             $(".outerCollectionContainer", document).empty();
             $.each(collectionUrls, function (index) {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                pageChooser.loadCollection(this["templateBookFolderUrl"], this["templateBookUrl"], collectionHtml, gridItemHtml);
+                var collectionLastPageAdded = this["lastPageAdded"];
+                pageChooser.loadCollection(this["templateBookFolderUrl"], this["templateBookUrl"], collectionHtml, gridItemHtml, collectionLastPageAdded);
             });
         }
         $("#addPageButton", document).button().click(function () {
             _this.fireCSharpEvent("setModalStateEvent", "false");
             _this.addPageClickHandler();
         });
+        pageChooser.selectInitialThumb();
         var pageButton = $("#addPageButton", document);
         localizationManager.asyncGetText('AddPageDialog.AddPageButton', 'Add This Page')
             .done(function (translation) {
             pageButton.attr('value', translation);
         });
-        //TODO: choose which one to select based on some other criteria than just being first
-        window.setTimeout(function () {
-            _this.thumbnailClickHandler($(".invisibleThumbCover").first());
-            //(<any>$).notify("Hint: Double-clicking a thumbnail adds it immediately", { className:"subtleHint",globalPosition:"bottom left",autoHide:false});
-        }, 100);
     }; // LoadInstalledCollections
-    PageChooser.prototype.loadCollection = function (pageFolderUrl, pageUrl, collectionHTML, gridItemHTML) {
+    PageChooser.prototype.selectInitialThumb = function () {
+        var _this = this;
+        var timerMs = 400;
+        window.setTimeout(function () {
+            _this.tryToSelectThumb();
+        }, timerMs);
+    }; // this isn't the right way to do this, but I'm leaving it like this until JH has a chance to show me how to get Promise to work on it
+    PageChooser.prototype.tryToSelectThumb = function () {
+        if (this._indexOfPageToSelectHasBeenCalculated) {
+            this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect));
+        }
+    };
+    PageChooser.prototype.loadCollection = function (pageFolderUrl, pageUrl, collectionHTML, gridItemHTML, lastPageAdded) {
         var _this = this;
         var request = $.get(pageUrl);
         request.done(function (pageData) {
@@ -123,20 +133,21 @@ var PageChooser = (function () {
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $(pageData).filter(".bloom-page[id]");
-            _this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl);
+            _this._indexOfPageToSelect = _this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
+            _this._indexOfPageToSelectHasBeenCalculated = true;
         }, "html");
         request.fail(function (jqXHR, textStatus, errorThrown) {
-            console.log("There was a problem reading: " + pageUrl + " see documentation on : " +
-                jqXHR.status + " " + textStatus + " " + errorThrown);
+            console.log("There was a problem reading: " + pageUrl + " see documentation on : " + jqXHR.status + " " + textStatus + " " + errorThrown);
         });
     }; // LoadCollection
-    PageChooser.prototype.loadPagesFromCollection = function (currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl) {
+    PageChooser.prototype.loadPagesFromCollection = function (currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl, lastPageAdded) {
         var _this = this;
         if ($(pageArray).length < 1) {
-            return;
+            return 0;
         }
         // Remove default template page
         $(".innerCollectionContainer", currentCollection).empty();
+        var indexToSelect = 0;
         // insert a template page for each page with the correct #id on the url
         $(pageArray).each(function (index, div) {
             if ($(div).attr("data-page") === "singleton")
@@ -144,6 +155,8 @@ var PageChooser = (function () {
             var currentGridItemHtml = $(gridItemTemplate).clone();
             var currentId = $(div).attr("id");
             $(currentGridItemHtml).attr("data-pageId", currentId);
+            if (currentId === lastPageAdded)
+                indexToSelect = index;
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
             var pageLabel = $(".pageLabel", div).first().text();
@@ -161,6 +174,7 @@ var PageChooser = (function () {
                 _this.thumbnailClickHandler(div);
             }); // invisibleThumbCover click
         }); // each
+        return indexToSelect;
     }; // LoadPagesFromCollection
     /**
      * Fires an event for C# to handle
