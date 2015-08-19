@@ -730,6 +730,21 @@ namespace Bloom.Book
 			}
 		}
 
+		private static Dictionary<string, string> _stylesToDefine;
+
+		private static Dictionary<string, string> StylesToDefine
+		{
+			get
+			{
+				if (_stylesToDefine == null)
+				{
+					_stylesToDefine = new Dictionary<string, string>();
+					_stylesToDefine["BigWords"] = ".BigWords-style { font-size: 45pt !important; text-align: center !important; }";
+				}
+				return _stylesToDefine;
+			}
+		}
+
 		/// <summary>
 		/// Bring the page up to date. Currently this is used to switch various old page types to new versions
 		/// based on Custom Page (so they can actually be customized).
@@ -765,6 +780,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// For each div in the page which has the specified class, find the corresponding div with that class in newPage,
 		/// and replace its contents with the contents of the source page.
+		/// Also inserts any needed styles we know about.
 		/// </summary>
 		/// <param name="page"></param>
 		/// <param name="parentClass"></param>
@@ -786,7 +802,46 @@ namespace Bloom.Book
 				// apparently we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
 				// which messes things up unless we make a copy of the collection.
 				foreach (XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
+				{
 					newParent.AppendChild(child);
+					AddKnownStyleIfMissing(child);
+				}
+			}
+		}
+
+		private static void AddKnownStyleIfMissing(XmlNode child)
+		{
+			if (child.Attributes == null)
+				return; // e.g., whitespace
+			var classAttr = child.Attributes["class"];
+			if (classAttr == null)
+				return;
+			foreach (var style in classAttr.Value.Split(' ').Where(x => x.EndsWith("-style")))
+			{
+				var key = style.Substring(0, style.Length - ".style".Length);
+				string defaultDefn;
+				if (!StylesToDefine.TryGetValue(key, out defaultDefn))
+					continue; // I don't think there should be more than one -style item, but just in case...
+				// Todo: conditions...
+				var headElt = child.OwnerDocument.DocumentElement.ChildNodes.Cast<XmlNode>().First(x => x.Name == "head");
+				var userStyles =
+					headElt.SafeSelectNodes("./style[@type='text/css' and @title='userModifiedStyles']")
+						.Cast<XmlElement>()
+						.FirstOrDefault();
+				if (userStyles == null)
+				{
+					userStyles = child.OwnerDocument.CreateElement("style");
+					userStyles.SetAttribute("type", "text/css");
+					userStyles.SetAttribute("title", "userModifiedStyles");
+					userStyles.InnerText = defaultDefn;
+					headElt.AppendChild(userStyles);
+					continue;
+				}
+				var content = userStyles.InnerText;
+				var lookFor = new Regex("\\." + style + "\\s*{");
+				if (lookFor.IsMatch(content))
+					continue; // style already defined
+				userStyles.InnerText = content + " " + defaultDefn;
 			}
 		}
 
