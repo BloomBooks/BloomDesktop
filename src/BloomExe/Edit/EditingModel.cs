@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -844,14 +845,6 @@ namespace Bloom.Edit
 		}
 
 
-		private static string CleanUpDataForJavascript(string data)
-		{
-			// We need to escape backslashes and quotes so the whole content arrives intact.
-			// Backslash first so the ones we insert for quotes don't get further escaped.
-			// Since the input is going to be processed as a string literal in JavaScript, it also can't contain real newlines.
-			return data.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
-		}
-
 		private string MakeAccordionContent()
 		{
 			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "Accordion.htm");
@@ -1181,32 +1174,30 @@ namespace Bloom.Edit
 		/// <summary>
 		/// Returns a json string that gives paths to our current TemplateBook
 		/// </summary>
-		
-		//Enhance: just a json library instead reinventing the wheel
-		private const string URL_PREFIX = "/bloom/localhost/";
-		private const string JSON_START = "[{ ";
-		private const string JSON_DIVIDER = " , ";
-		private const string JSON_END = " }]";
-
 		public string GetTemplateBookInfo
 		{
 			get
 			{
-				var folderPath = Path.GetDirectoryName(GetPathToCurrentTemplateHtml);
-				folderPath = URL_PREFIX + folderPath.Replace(':', '$').Replace('\\', '/');
-				var jsonBookFolder = "\"templateBookFolderUrl\": \"" + folderPath + "\"";
-				var htmlFilePath = URL_PREFIX + GetPathToCurrentTemplateHtml;
-				htmlFilePath = htmlFilePath.Replace(':', '$').Replace('\\', '/');
-				var jsonBook = "\"templateBookUrl\": \"" + htmlFilePath + "\"";
-				var jsonLastPage = "\"lastPageAdded\": \"" + _lastPageAdded + "\"";
-				var jsonString = JSON_START + jsonBookFolder + JSON_DIVIDER + jsonBook + JSON_DIVIDER + jsonLastPage + JSON_END;
-				return jsonString;
+				dynamic addPageSettings = new ExpandoObject();
+				addPageSettings.templateBookFolderUrl = MassageUrlForJavascript(Path.GetDirectoryName(GetPathToCurrentTemplateHtml));
+				addPageSettings.templateBookUrl = MassageUrlForJavascript(GetPathToCurrentTemplateHtml);
+				addPageSettings.lastPageAdded = _lastPageAdded;
+				var settingsString = JsonConvert.SerializeObject(new [] { addPageSettings });
+				return settingsString;
 			}
 		}
 
 		public void ShowAddPageDialog()
 		{
-			this._view.ShowAddPageDialog();;
+			this._view.ShowAddPageDialog();
+		}
+
+		private const string URL_PREFIX = "/bloom/localhost/";
+
+		private static string MassageUrlForJavascript(string url)
+		{
+			var newUrl = URL_PREFIX + url;
+			return newUrl.Replace(':', '$').Replace('\\', '/');
 		}
 	}
 
