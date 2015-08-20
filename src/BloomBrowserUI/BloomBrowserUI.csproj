@@ -153,6 +153,7 @@
     <Content Include="lib\json.js" />
     <Content Include="lib\long-press\jquery.longpress.js" />
     <Content Include="lib\long-press\jquery.mousewheel.js" />
+    <Content Include="lib\long-press\longpress.css" />
     <Content Include="lib\split-pane\split-pane.css" />
     <Content Include="lib\split-pane\split-pane.js" />
     <Content Include="lib\tabpane.js" />

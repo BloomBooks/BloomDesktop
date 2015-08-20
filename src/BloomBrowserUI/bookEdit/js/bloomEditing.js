@@ -725,7 +725,7 @@ function loadLongpressInstructions(container, editableDivName)
         if (response === 'Yes') {
             localizationManager.asyncGetText('BookEditor.CharacterMap.Instructions',
                 "To select, use your mouse wheel or point at what you want, then release the key.")
-                .done(translation => $(container).find(editableDivName).longPress({ instructions: translation }));
+                .done(translation => $(container).find(editableDivName).longPress({ instructions: "<div class='instructions'>" + translation + "</div>" }));
         }
     });
 }
