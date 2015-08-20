@@ -284,7 +284,7 @@ namespace Bloom.Edit
 
 		public bool CanAddPages
 		{
-			get { return !_bookSelection.CurrentSelection.LockedDown; }
+			get { return !(CurrentBook.LockedDown || CurrentBook.IsCalendar); }
 		}
 
 		public bool CanDuplicatePage
