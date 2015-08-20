@@ -1,12 +1,4 @@
 /// <reference path="readerSetup.io.ts" />
-/// <reference path="../js/libsynphony/jquery.text-markup.d.ts" />
-/// <reference path="../js/libsynphony/bloom_lib.d.ts" />
-/// <reference path="../../lib/localizationManager/localizationManager.ts" />
-/// <reference path="../../lib/jquery.d.ts" />
-/// <reference path="../../lib/jquery-ui.d.ts" />
-/// <reference path="../../lib/jquery.i18n.custom.ts" />
-/// <reference path="../../lib/misc-types.d.ts" />
-/// <reference path="../js/jquery.div-columns.ts" />
 var desiredGPCs;
 var previousGPCs;
 var sightWords;
@@ -727,6 +719,15 @@ $(document).ready(function () {
     $('body').find('*[data-i18n]').localize(finishInitializing);
     var accordion = accordionWindow();
     accordion['addWordListChangedListener']('wordListChanged.ReaderSetup', wordListChangedCallback);
-    $('textarea').longPress();
+    loadLongpressInstructions($('body')[0], 'textarea');
+    //(<longPressInterface>$('textarea')).longPress();
 });
+//TODO: figure out how to reuse this code that comes from bloomEditing.js (which is in a different iframe)
+function loadLongpressInstructions(container, editableDivName) {
+    getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function (response) {
+        if (response === 'Yes') {
+            localizationManager.asyncGetText('BookEditor.CharacterMap.Instructions', "To select, use your mouse wheel or point at what you want, then release the key.").done(function (translation) { return $(container).find(editableDivName).longPress({ instructions: translation }); });
+        }
+    });
+}
 //# sourceMappingURL=readerSetup.ui.js.map
