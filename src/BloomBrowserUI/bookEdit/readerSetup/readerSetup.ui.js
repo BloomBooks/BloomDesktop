@@ -720,9 +720,9 @@ $(document).ready(function () {
     var accordion = accordionWindow();
     accordion['addWordListChangedListener']('wordListChanged.ReaderSetup', wordListChangedCallback);
     loadLongpressInstructions($('body')[0], 'textarea');
-    //(<longPressInterface>$('textarea')).longPress();
 });
-//TODO: figure out how to reuse this code that comes from bloomEditing.js (which is in a different iframe)
+//TODO: figure out how to reuse this code that is basically copied from bloomEditing.js
+// (which is in a different iframe)
 function loadLongpressInstructions(container, editableDivName) {
     getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function (response) {
         if (response === 'Yes') {
