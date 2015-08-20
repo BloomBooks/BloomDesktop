@@ -329,8 +329,11 @@ namespace Bloom.Edit
 
 			Cursor = Cursors.WaitCursor;
 			_model.ViewVisibleNowDoSlowStuff();
+
+			AddMessageEventListener("setModalStateEvent", SetModalState);
 			Cursor = Cursors.Default;
 		}
+
 
 		private void CheckFontAvailablility()
 		{
@@ -1019,9 +1022,9 @@ namespace Bloom.Edit
 		/// Prevent navigation while a dialog box is showing in the browser control
 		/// </summary>
 		/// <param name="isModal"></param>
-		internal void SetModalState(bool isModal)
+		internal void SetModalState(string isModal)
 		{
-			_pageListView.Enabled = !isModal;
+			_pageListView.Enabled = isModal != "true";
 		}
 
 		/// <summary>
@@ -1038,6 +1041,16 @@ namespace Bloom.Edit
 				Cursor = value ? Cursors.WaitCursor : Cursors.Default;
 				_pageListView.Cursor = Cursor;
 			} 
+		}
+
+		public void ShowAddPageDialog()
+		{
+//			if(_view == null || _inProcessOfDeleting || _addPageDialogShowing)
+//				return;
+			//_addPageDialogShowing = true;
+			var jsonTemplates = _model.GetTemplateBookInfo;
+			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
+			RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
 		}
 	}
 }

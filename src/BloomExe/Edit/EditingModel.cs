@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -46,7 +47,6 @@ namespace Bloom.Edit
 		private List<ContentLanguage> _contentLanguages;
 		private IPage _previouslySelectedPage;
 		private bool _inProcessOfDeleting;
-		private bool _addPageDialogShowing;
 		private string _accordionFolder;
 		private EnhancedImageServer _server;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
@@ -125,7 +125,6 @@ namespace Bloom.Edit
 			_server.CurrentCollectionSettings = _collectionSettings;
 			_server.CurrentBook = CurrentBook;
 			_templateInsertionCommand = templateInsertionCommand;
-			_addPageDialogShowing = false;
 		}
 
 		private Form _oldActiveForm;
@@ -520,15 +519,6 @@ namespace Bloom.Edit
 			}
 		}
 
-		public void ShowAddPageDialog()
-		{
-			if (_view == null || _inProcessOfDeleting || _addPageDialogShowing)
-				return;
-			_addPageDialogShowing = true;
-			var jsonTemplates = GetJsonTemplatePageObject;
-			_view.RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
-		}
-
 		void OnPageSelectionChanged(object sender, EventArgs e)
 		{
 			Logger.WriteMinorEvent("changing page selection");
@@ -564,7 +554,6 @@ namespace Bloom.Edit
 		public void RefreshDisplayOfCurrentPage()
 		{
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
-			_addPageDialogShowing = false; // it doesn't get re-created, so if we think it's there we'll never show it again.
 		}
 
 		public void SetupServerWithCurrentPageIframeContents()
@@ -659,7 +648,6 @@ namespace Bloom.Edit
 			}
 			// listen for events raised by javascript
 			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
-			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
 			_view.AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
@@ -700,7 +688,8 @@ namespace Bloom.Edit
 #endif
 			}
 			//there was some error figuring out a default page, let's just let the user choose what they want
-			ShowAddPageDialog();
+			if(this._view!=null)
+				this._view.ShowAddPageDialog();
 		}
 
 		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
@@ -855,20 +844,6 @@ namespace Bloom.Edit
 			return string.Empty;
 		}
 
-		private void SetModalState(string isModal)
-		{
-			_view.SetModalState(isModal == "true");
-			if (isModal != "true")
-				_addPageDialogShowing = false;
-		}
-
-		private static string CleanUpDataForJavascript(string data)
-		{
-			// We need to escape backslashes and quotes so the whole content arrives intact.
-			// Backslash first so the ones we insert for quotes don't get further escaped.
-			// Since the input is going to be processed as a string literal in JavaScript, it also can't contain real newlines.
-			return data.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n");
-		}
 
 		private string MakeAccordionContent()
 		{
@@ -1196,25 +1171,33 @@ namespace Bloom.Edit
 			}
 		}
 
-		private const string URL_PREFIX = "/bloom/localhost/";
-		private const string JSON_START = "[{ ";
-		private const string JSON_DIVIDER = " , ";
-		private const string JSON_END = " }]";
-
-		private string GetJsonTemplatePageObject
+		/// <summary>
+		/// Returns a json string that gives paths to our current TemplateBook
+		/// </summary>
+		public string GetTemplateBookInfo
 		{
 			get
 			{
-				var folderPath = Path.GetDirectoryName(GetPathToCurrentTemplateHtml);
-				folderPath = URL_PREFIX + folderPath.Replace(':', '$').Replace('\\', '/');
-				var jsonBookFolder = "\"templateBookFolderUrl\": \"" + folderPath + "\"";
-				var htmlFilePath = URL_PREFIX + GetPathToCurrentTemplateHtml;
-				htmlFilePath = htmlFilePath.Replace(':', '$').Replace('\\', '/');
-				var jsonBook = "\"templateBookUrl\": \"" + htmlFilePath + "\"";
-				var jsonLastPage = "\"lastPageAdded\": \"" + _lastPageAdded + "\"";
-				var jsonString = JSON_START + jsonBookFolder + JSON_DIVIDER + jsonBook + JSON_DIVIDER + jsonLastPage + JSON_END;
-				return jsonString;
+				dynamic addPageSettings = new ExpandoObject();
+				addPageSettings.templateBookFolderUrl = MassageUrlForJavascript(Path.GetDirectoryName(GetPathToCurrentTemplateHtml));
+				addPageSettings.templateBookUrl = MassageUrlForJavascript(GetPathToCurrentTemplateHtml);
+				addPageSettings.lastPageAdded = _lastPageAdded;
+				var settingsString = JsonConvert.SerializeObject(new [] { addPageSettings });
+				return settingsString;
 			}
+		}
+
+		public void ShowAddPageDialog()
+		{
+			this._view.ShowAddPageDialog();
+		}
+
+		private const string URL_PREFIX = "/bloom/localhost/";
+
+		private static string MassageUrlForJavascript(string url)
+		{
+			var newUrl = URL_PREFIX + url;
+			return newUrl.Replace(':', '$').Replace('\\', '/');
 		}
 	}
 

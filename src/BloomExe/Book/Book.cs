@@ -701,14 +701,47 @@ namespace Bloom.Book
 				if (_pageMigrations == null)
 				{
 					_pageMigrations = new Dictionary<string, GuidAndPath>();
+					// Basic Book
 					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398382"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398382", Path = "Basic Book/Basic Book.htm" }; // Basic Text and Picture
 					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398383"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383", Path = "Basic Book/Basic Book.htm" }; // Picture in Middle
 					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398384"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384", Path = "Basic Book/Basic Book.htm" }; // Picture on Bottom
 					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398385"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Basic Book/Basic Book.htm" }; // Just a Picture
 					_pageMigrations["d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Basic Book/Basic Book.htm" }; // Just Text
 					_pageMigrations["FD115DFF-0415-4444-8E76-3D2A18DBBD27"] = new GuidAndPath() { Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27", Path = "Basic Book/Basic Book.htm" }; // Picture & Word
+					// Big book [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
+					_pageMigrations["AF708725-E961-44AA-9149-ADF66084A04F"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Big Book/BigBook.htm" }; // Just a Picture
+					_pageMigrations["D9A55EB6-43A8-4C6A-8891-2C1CDD95772C"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Big Book/BigBook.htm" }; // Just Text
+					// Decodable reader [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
+					_pageMigrations["f95c0314-ce47-4b47-a638-06325ad1a963"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398382", Path = "Decodable Reader/Decodable Reader.htm" }; // Basic Text and Picture
+					_pageMigrations["c0847f89-b58a-488a-bbee-760ce4a13567"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383", Path = "Decodable Reader/Decodable Reader.htm" }; // Picture in Middle
+					_pageMigrations["f99b252a-26b1-40c8-b543-dbe0b05f08a5"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384", Path = "Decodable Reader/Decodable Reader.htm" }; // Picture on Bottom
+					_pageMigrations["c506f278-cb9f-4053-9e29-f7a9bdf64445"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Decodable Reader/Decodable Reader.htm" }; // Just a Picture
+					_pageMigrations["e4ff6195-b0b6-4909-8025-4424ee9188ea"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Decodable Reader/Decodable Reader.htm" }; // Just Text
+					_pageMigrations["bd85f898-0a45-45b3-8e34-faaac8945a0c"] = new GuidAndPath() { Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27", Path = "Decodable Reader/Decodable Reader.htm" }; // Picture & Word
+					// Leveled reader [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
+					_pageMigrations["e9f2142b-f135-4bcd-9123-5a2623f5302f"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398382", Path = "Leveled Reader/Leveled Reader.htm" }; // Basic Text and Picture
+					_pageMigrations["c5aae471-f801-4c5d-87b7-1614d56b0c53"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383", Path = "Leveled Reader/Leveled Reader.htm" }; // Picture in Middle
+					_pageMigrations["a1f437fe-c002-4548-af02-fe84d048b8fc"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384", Path = "Leveled Reader/Leveled Reader.htm" }; // Picture on Bottom
+					_pageMigrations["d7599aa7-f35c-4029-8aa2-9afda870bcfa"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Leveled Reader/Leveled Reader.htm" }; // Just a Picture
+					_pageMigrations["d93a28c6-9ff8-4f61-a820-49093e3e275b"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Leveled Reader/Leveled Reader.htm" }; // Just Text
+					_pageMigrations["a903467a-dad2-4767-8be9-54336cae7731"] = new GuidAndPath() { Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27", Path = "Leveled Reader/Leveled Reader.htm" }; // Picture & Word
 				}
 				return _pageMigrations;
+			}
+		}
+
+		private static Dictionary<string, string> _stylesToDefine;
+
+		private static Dictionary<string, string> StylesToDefine
+		{
+			get
+			{
+				if (_stylesToDefine == null)
+				{
+					_stylesToDefine = new Dictionary<string, string>();
+					_stylesToDefine["BigWords"] = ".BigWords-style { font-size: 45pt !important; text-align: center !important; }";
+				}
+				return _stylesToDefine;
 			}
 		}
 
@@ -747,6 +780,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// For each div in the page which has the specified class, find the corresponding div with that class in newPage,
 		/// and replace its contents with the contents of the source page.
+		/// Also inserts any needed styles we know about.
 		/// </summary>
 		/// <param name="page"></param>
 		/// <param name="parentClass"></param>
@@ -768,7 +802,46 @@ namespace Bloom.Book
 				// apparently we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
 				// which messes things up unless we make a copy of the collection.
 				foreach (XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
+				{
 					newParent.AppendChild(child);
+					AddKnownStyleIfMissing(child);
+				}
+			}
+		}
+
+		private static void AddKnownStyleIfMissing(XmlNode child)
+		{
+			if (child.Attributes == null)
+				return; // e.g., whitespace
+			var classAttr = child.Attributes["class"];
+			if (classAttr == null)
+				return;
+			foreach (var style in classAttr.Value.Split(' ').Where(x => x.EndsWith("-style")))
+			{
+				var key = style.Substring(0, style.Length - ".style".Length);
+				string defaultDefn;
+				if (!StylesToDefine.TryGetValue(key, out defaultDefn))
+					continue; // I don't think there should be more than one -style item, but just in case...
+				// Todo: conditions...
+				var headElt = child.OwnerDocument.DocumentElement.ChildNodes.Cast<XmlNode>().First(x => x.Name == "head");
+				var userStyles =
+					headElt.SafeSelectNodes("./style[@type='text/css' and @title='userModifiedStyles']")
+						.Cast<XmlElement>()
+						.FirstOrDefault();
+				if (userStyles == null)
+				{
+					userStyles = child.OwnerDocument.CreateElement("style");
+					userStyles.SetAttribute("type", "text/css");
+					userStyles.SetAttribute("title", "userModifiedStyles");
+					userStyles.InnerText = defaultDefn;
+					headElt.AppendChild(userStyles);
+					continue;
+				}
+				var content = userStyles.InnerText;
+				var lookFor = new Regex("\\." + style + "\\s*{");
+				if (lookFor.IsMatch(content))
+					continue; // style already defined
+				userStyles.InnerText = content + " " + defaultDefn;
 			}
 		}
 
