@@ -892,18 +892,9 @@ $(document).ready(function () {
   $('body').find('*[data-i18n]').localize(finishInitializing);
   var accordion = accordionWindow();
   accordion['addWordListChangedListener']('wordListChanged.ReaderSetup', wordListChangedCallback);
-  loadLongpressInstructions($('body')[0], 'textarea');
+  // found solution to longpress access here:
+  // http://stackoverflow.com/questions/3032770/execute-javascript-function-in-a-another-iframe-when-parent-is-from-different-do
+  var pageIframe = parent.frames['page'];
+  var container = $('body');
+  pageIframe.loadLongpressInstructions(container.find('textarea'));
 });
-
-//TODO: figure out how to reuse this code that is basically copied from bloomEditing.js
-// (which is in a different iframe)
-function loadLongpressInstructions(container, editableDivName) {
-    getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function (response) {
-        if (response === 'Yes') {
-            localizationManager.asyncGetText('BookEditor.CharacterMap.Instructions',
-                "To select, use your mouse wheel or point at what you want, then release the key.")
-                .done(translation => (<longPressInterface>$(container).find(editableDivName))
-                    .longPress({ instructions: "<div class='instructions'>" + translation + "</div>" }));
-        }
-    });
-}

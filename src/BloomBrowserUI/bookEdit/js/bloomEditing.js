@@ -574,7 +574,7 @@ function SetupElements(container) {
         }
     });
 
-    loadLongpressInstructions(container, '.bloom-editable');
+    loadLongpressInstructions($(container).find('.bloom-editable'));
 
     //When we do a CTRL+A DEL, FF leaves us with a <br></br> at the start. When the first key is then pressed,
     //a blank line is shown and the letter pressed shows up after that.
@@ -719,13 +719,13 @@ var pageSelectionChanging = function () {
     fireCSharpEditEvent('finishSavingPage', '');
 };
 
-function loadLongpressInstructions(container, editableDivName)
+function loadLongpressInstructions(jQuerySetOfMatchedElements)
 {
     getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
         if (response === 'Yes') {
             localizationManager.asyncGetText('BookEditor.CharacterMap.Instructions',
                 "To select, use your mouse wheel or point at what you want, then release the key.")
-                .done(translation => $(container).find(editableDivName)
+                .done(translation => jQuerySetOfMatchedElements
                     .longPress({ instructions: "<div class='instructions'>" + translation + "</div>" }));
         }
     });
