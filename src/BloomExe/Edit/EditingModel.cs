@@ -671,13 +671,13 @@ namespace Bloom.Edit
 				if (CanDuplicatePage)
 				{
 					AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor);
+					if (_addNewSuccess)
+						return;
+				}
+				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
+				AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook);
+				if (_addNewSuccess)
 					return;
-				}
-				else
-				{
-					var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
-					AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook);
-				}
 			}
 			catch (Exception error)
 			{
@@ -704,14 +704,18 @@ namespace Bloom.Edit
 			return _templatePagesDict;
 		}
 
+		private bool _addNewSuccess;
+
 		private void AddNewPageBasedOnTemplate(string pageId)
 		{
 			IPage page;
+			_addNewSuccess = false;
 			var dict = GetTemplatePagesForThisBook();
 			if (dict != null && dict.TryGetValue(pageId, out page))
 			{
 				_templateInsertionCommand.Insert(page as Page);
 				_lastPageAdded = pageId;
+				_addNewSuccess = true;
 			}
 		}
 
