@@ -705,7 +705,7 @@ namespace Bloom.Edit
 		}
 
 		private bool _addNewSuccess;
-
+		// Normally one would return success or not, but AddMessageEventListener expects a void return value
 		private void AddNewPageBasedOnTemplate(string pageId)
 		{
 			IPage page;
