@@ -16,7 +16,8 @@ namespace Bloom.Edit
 		private bool _dontForwardSelectionEvent;
 		private IPage _pageWeThinkShouldBeSelected;
 
-		public PageListView(PageSelection pageSelection,  RelocatePageEvent relocatePageEvent, EditingModel model,HtmlThumbNailer thumbnailProvider, NavigationIsolator isolator)
+		public PageListView(PageSelection pageSelection,  RelocatePageEvent relocatePageEvent, EditingModel model,
+			HtmlThumbNailer thumbnailProvider, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent)
 		{
 			_pageSelection = pageSelection;
 			_model = model;
@@ -30,6 +31,7 @@ namespace Bloom.Edit
 			_thumbNailList.RelocatePageEvent = relocatePageEvent;
 			_thumbNailList.PageSelectedChanged+=new EventHandler(OnPageSelectedChanged);
 			_thumbNailList.Isolator = isolator;
+			_thumbNailList.ControlKeyEvent = controlKeyEvent;
 			_thumbNailList.ContextMenuProvider = args =>
 			{
 				var page = _thumbNailList.GetPageContaining(args.TargetNode);
