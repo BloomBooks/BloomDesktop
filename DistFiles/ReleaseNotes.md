@@ -1,4 +1,16 @@
-﻿
+﻿## 3.3
+- All basic pages are now "customizable". That means you can change the relative size of elements on the page, for example making the picture bigger and the text area smaller. You can also click the "Change Layout" button to add new elements to the page.
+
+- When you select some text, Bloom now shows a small popup with buttons for bold, underline, and italic.
+
+- Previously, Bloom used screen space to show a list of available pages you could add. Now, we've freed up that precious space and instead there is an "Add Page" button you click to see a list of pages you can add.
+
+- The toolbar now rearranges itself as need so that everything is available on very small screens (netbooks).
+
+- Books now default license to CC-BY (requested by All Children Reading).
+
+- Books made from Leveled Reader template delivered via Leveled Reader Bloom Pack now have all the formatting locked down, preventing writers from altering the font, size, or spacing of the text (requested by All Children Reading).
+
 ## 3.2
 
 - Support new Decodable Readers workflow. Instead of defining a set of letters plus sight words for each Decodable Stage, Bloom now allows you to specify one or more text files of "Allowed Words".
