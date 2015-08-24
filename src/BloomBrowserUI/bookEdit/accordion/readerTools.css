@@ -38,9 +38,7 @@ div.wordList { column-count: 3; }
 div.letter { margin: 0 2px 2px; float: left; min-width: 20px; }
 div.word { margin: 0 2px 2px; width: auto; }
 div.sight-word {
-	-moz-text-decoration-style: wavy;
-	-moz-text-decoration-line: underline;
-	-moz-text-decoration-color: green;
+	color: #87CEFA;
 }
 
 div.section ul { padding-left: 16px; margin-top: 4px; }
