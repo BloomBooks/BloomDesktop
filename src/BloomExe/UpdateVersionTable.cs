@@ -33,7 +33,7 @@ namespace Bloom
 				get
 				{
 					return Error != null &&
-					       Error.Status == WebExceptionStatus.Timeout || Error.Status == WebExceptionStatus.NameResolutionFailure;
+						(Error.Status == WebExceptionStatus.Timeout || Error.Status == WebExceptionStatus.NameResolutionFailure);
 				}
 			}
 		}

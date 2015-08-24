@@ -25,6 +25,16 @@ namespace BloomTests
 		}
 
 		[Test]
+		public void UpgradeTableError_NoCrash()
+		{
+			var t = new UpdateVersionTable();
+			t.TextContentsOfTable = @"0.0.0,3.1.99999, http://first.com/first";
+			t.RunningVersion = Version.Parse("3.2.0");
+			var url = t.LookupURLOfUpdate();
+			Assert.IsFalse(url.IsConnectivityError);
+		}
+
+		[Test]
 		public void ServerAddressIsBogus_ErrorIsCorrect()
 		{
 			var t = new UpdateVersionTable {URLOfTable = "http://notthere7blah/foo.txt"};
