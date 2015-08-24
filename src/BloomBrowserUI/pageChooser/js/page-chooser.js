@@ -25,15 +25,19 @@ var PageChooser = (function () {
         }
         this._selectedGridItem = undefined;
         this._indexOfPageToSelect = 0;
+        this._scrollTopOfTheScrollingDiv = 0;
     }
-    PageChooser.prototype.thumbnailClickHandler = function (clickedDiv) {
+    PageChooser.prototype.thumbnailClickHandler = function (clickedDiv, evt) {
         // 'div' is an .invisibleThumbCover
+        // Select new thumbnail
+        var newsel = this.findProperElement(clickedDiv, evt);
+        if (newsel == null)
+            return;
         // Mark any previously selected thumbnail as no longer selected
         if (this._selectedGridItem != undefined) {
             $(this._selectedGridItem).removeClass("ui-selected");
         }
-        // Select new thumbnail
-        this._selectedGridItem = $(clickedDiv).parent();
+        this._selectedGridItem = newsel;
         $(this._selectedGridItem).addClass("ui-selected");
         // Display large preview
         var caption = $('#previewCaption');
@@ -43,6 +47,44 @@ var PageChooser = (function () {
         $("#preview").attr("src", $(this._selectedGridItem).find("img").first().attr("src"));
         this.setLocalizedText($('#previewDescriptionText'), 'TemplateBooks.PageDescription.', $(".pageDescription", this._selectedGridItem).text(), defaultCaptionText);
     }; // thumbnailClickHandler
+    // There's a bug deep in javascript that doesn't take into account the scrolling
+    // of a div element before something inside it is clicked on.  The following code
+    // detects whether the scrolling has changed since the last mouse click, and if so,
+    // searches for the item which should have matched.  For the initial bug report,
+    // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2623.
+    // Note that the offset().top values returned by jquery properly take into account
+    // the scrollTop of the scrolling parent div.  Which makes me think the bug may be
+    // below the jquery level!?
+    PageChooser.prototype.findProperElement = function (clickedDiv, evt) {
+        var gridItem = $(clickedDiv).parent();
+        if (evt) {
+            var currentScrollTop = this._scrollingDiv.scrollTop();
+            if (currentScrollTop !== this._scrollTopOfTheScrollingDiv) {
+                // The scrolling position has changed, so we need to explicitly search
+                // for the proper object.
+                var y = evt["clientY"]; // retrieve the original click position
+                var x = evt["clientX"];
+                var container = $(clickedDiv).parent().parent();
+                var childs = $(container).children();
+                for (var i = 0; i < childs.length; ++i) {
+                    var child = childs.eq(i);
+                    var top = child.offset().top;
+                    var bottom = top + child.height();
+                    var left = child.offset().left;
+                    var right = left + child.width();
+                    if (top <= y && y <= bottom && left <= x && x <= right) {
+                        // Remember the new scroll position and return the proper object.
+                        this._scrollTopOfTheScrollingDiv = currentScrollTop;
+                        return child;
+                    }
+                }
+                // We couldn't find the proper object, so don't do anything.  The user
+                // apparently clicked on a visually empty spot that got misidentified.
+                return null;
+            }
+        }
+        return gridItem;
+    };
     // Set the text of the given element to the appropriate localization of defaultText
     // (or to defaultText, if no localization is available).
     // If defaultText is empty, set the element text to empty.
@@ -52,7 +94,8 @@ var PageChooser = (function () {
     PageChooser.prototype.setLocalizedText = function (elt, idPrefix, defaultText, id) {
         if (id === void 0) { id = defaultText; }
         if (defaultText) {
-            localizationManager.asyncGetText(idPrefix + id, defaultText).done(function (translation) {
+            localizationManager.asyncGetText(idPrefix + id, defaultText)
+                .done(function (translation) {
                 elt.text(translation);
             });
         }
@@ -68,10 +111,12 @@ var PageChooser = (function () {
         this.fireCSharpEvent("addPage", id);
     }; // addPageClickHandler
     PageChooser.prototype.loadInstalledCollections = function () {
+        var _this = this;
+        // Save a reference to the scrolling div that contains the various page items.
+        this._scrollingDiv = $(".gridItemDisplay", document);
         // Originally (now maybe YAGNI) the dialog handled more than one collection of template pages.
         // Right now it only handles one, so the cloning of stub html is perhaps unnecessary,
         // but I've left it in case we need it later.
-        var _this = this;
         // Save html sections that will get cloned later
         // there should only be one 'collection' at this point; a stub with one default template page
         var collectionHtml = $(".collection", document).first().clone();
@@ -99,7 +144,8 @@ var PageChooser = (function () {
             _this.addPageClickHandler();
         });
         var pageButton = $("#addPageButton", document);
-        localizationManager.asyncGetText('AddPageDialog.AddPageButton', 'Add This Page').done(function (translation) {
+        localizationManager.asyncGetText('AddPageDialog.AddPageButton', 'Add This Page')
+            .done(function (translation) {
             pageButton.attr('value', translation);
         });
     }; // LoadInstalledCollections
@@ -117,10 +163,11 @@ var PageChooser = (function () {
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $(pageData).filter(".bloom-page[id]");
             _this._indexOfPageToSelect = _this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
-            _this.thumbnailClickHandler($(".invisibleThumbCover").eq(_this._indexOfPageToSelect));
+            _this.thumbnailClickHandler($(".invisibleThumbCover").eq(_this._indexOfPageToSelect), null);
         }, "html");
         request.fail(function (jqXHR, textStatus, errorThrown) {
-            console.log("There was a problem reading: " + pageUrl + " see documentation on : " + jqXHR.status + " " + textStatus + " " + errorThrown);
+            console.log("There was a problem reading: " + pageUrl + " see documentation on : " +
+                jqXHR.status + " " + textStatus + " " + errorThrown);
         });
     }; // LoadCollection
     PageChooser.prototype.loadPagesFromCollection = function (currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl, lastPageAdded) {
@@ -153,8 +200,8 @@ var PageChooser = (function () {
             $(div).dblclick(function () {
                 _this.addPageClickHandler();
             }); // invisibleThumbCover double click
-            $(div).click(function () {
-                _this.thumbnailClickHandler(div);
+            $(div).click(function (evt) {
+                _this.thumbnailClickHandler(div, evt);
             }); // invisibleThumbCover click
         }); // each
         return indexToSelect;
