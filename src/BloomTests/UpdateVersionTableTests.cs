@@ -32,6 +32,33 @@ namespace BloomTests
 			t.RunningVersion = Version.Parse("3.2.0");
 			var url = t.LookupURLOfUpdate();
 			Assert.IsFalse(url.IsConnectivityError);
+			Assert.IsNullOrEmpty(url.URL);
+		}
+
+		[Test]
+		public void UpgradeTableParsingError_NoCrash()
+		{
+			var t = new UpdateVersionTable();
+			t.TextContentsOfTable = @"0.0.0,3,1,99999, http://first.com/first"; // too many commas
+			t.RunningVersion = Version.Parse("3.2.0");
+			var url = t.LookupURLOfUpdate();
+			Assert.IsNullOrEmpty(url.URL);
+
+			t = new UpdateVersionTable();
+			t.TextContentsOfTable = @"0.0.0,, http://first.com/first"; // too few commas
+			t.RunningVersion = Version.Parse("3.2.0");
+			url = t.LookupURLOfUpdate();
+			Assert.IsNullOrEmpty(url.URL);
+		}
+
+		[Test]
+		public void UpgradeTableVersionParsingError_NoCrash()
+		{
+			var t = new UpdateVersionTable();
+			t.TextContentsOfTable = @"random,3.1.99999, http://first.com/first"; // bad version number
+			t.RunningVersion = Version.Parse("3.2.0");
+			var url = t.LookupURLOfUpdate();
+			Assert.IsNullOrEmpty(url.URL);
 		}
 
 		[Test]

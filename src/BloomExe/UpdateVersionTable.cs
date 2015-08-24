@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing.Drawing2D;
 using System.Net;
 using System.Reflection;
 using Palaso.Reporting;
@@ -81,21 +82,38 @@ namespace Bloom
 				RunningVersion = Assembly.GetExecutingAssembly().GetName().Version;
 			}
 
-			//NB Programmers: don't change this to some OS-specific line ending, this is  file read by both OS's. '\n' is common to files edited on linux and windows.
-			foreach (var line in TextContentsOfTable.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
+			try
 			{
-				if (line.TrimStart().StartsWith("#"))
-					continue; //comment
+				//NB Programmers: don't change this to some OS-specific line ending, this is  file read by both OS's. '\n' is common to files edited on linux and windows.
+				foreach (var line in TextContentsOfTable.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
+				{
+					if (line.TrimStart().StartsWith("#"))
+						continue; //comment
 
-				var parts = line.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
-				if(parts.Length!=3)
-					throw new ApplicationException("Could not parse a line of the UpdateVersionTable on "+URLOfTable+" '"+line+"'");
-				var lower = Version.Parse(parts[0]);
-				var upper = Version.Parse(parts[1]);
-				if (lower <= RunningVersion && upper >= RunningVersion)
-					return new UpdateVersionTable.UpdateTableLookupResult() {URL = parts[2].Trim()};
+					var parts = line.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+					if (parts.Length != 3)
+						throw new ApplicationException(line);
+					var lower = Version.Parse(parts[0]);
+					var upper = Version.Parse(parts[1]);
+					if (lower <= RunningVersion && upper >= RunningVersion)
+						return new UpdateVersionTable.UpdateTableLookupResult() { URL = parts[2].Trim() };
+				}
 			}
-			return  new UpdateVersionTable.UpdateTableLookupResult() {URL = String.Empty};
+			catch (ApplicationException e)
+			{
+				// BL-2654 Failure when reading upgrade table should not give a crash
+				// In this case, a line of the UpdateVersionTable was not parseable
+				// Put a message in the log and don't upgrade
+				Logger.WriteMinorEvent("Could not parse a line of the UpdateVersionTable" + e.Message);
+			}
+			catch (ArgumentException e)
+			{
+				// BL-2654 Failure when reading upgrade table should not give a crash
+				// In this case, a version number in the UpdateVersionTable was not parseable
+				// Put a message in the log and don't upgrade
+				Logger.WriteMinorEvent("Could not parse a version number in the UpdateVersionTable" + e.Message);
+			}
+			return new UpdateVersionTable.UpdateTableLookupResult() { URL = String.Empty };
 		}
 
 		private string GetUrlOfTable()
