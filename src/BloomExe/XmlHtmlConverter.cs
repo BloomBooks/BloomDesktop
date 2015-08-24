@@ -95,6 +95,8 @@ namespace Bloom
 						// remove blank lines at the end of style blocks
 						newContents = Regex.Replace(newContents, @"\s+<\/style>", "</style>");
 
+						// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
+						dom.PreserveWhitespace = true;
 						dom.LoadXml(newContents);
 					}
 					catch (Exception e)
