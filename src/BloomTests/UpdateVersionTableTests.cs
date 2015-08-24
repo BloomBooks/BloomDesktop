@@ -32,33 +32,41 @@ namespace BloomTests
 			t.RunningVersion = Version.Parse("3.2.0");
 			var lookupResult = t.LookupURLOfUpdate();
 			Assert.IsFalse(lookupResult.IsConnectivityError);
+			Assert.IsNullOrEmpty(lookupResult.Error.Message);
 			Assert.IsNullOrEmpty(lookupResult.URL);
 		}
 
 		[Test]
-		public void UpgradeTableParsingError_NoCrash()
+		public void LookupURLOfUpdate_TooManyCommas_LogsErrorGivesNoURL()
 		{
 			var t = new UpdateVersionTable();
 			t.TextContentsOfTable = @"0.0.0,3,1,99999, http://first.com/first"; // too many commas
 			t.RunningVersion = Version.Parse("3.2.0");
 			var lookupResult = t.LookupURLOfUpdate();
 			Assert.IsNullOrEmpty(lookupResult.URL);
-
-			t = new UpdateVersionTable();
-			t.TextContentsOfTable = @"0.0.0,, http://first.com/first"; // too few commas
-			t.RunningVersion = Version.Parse("3.2.0");
-			lookupResult = t.LookupURLOfUpdate();
-			Assert.IsNullOrEmpty(lookupResult.URL);
+			Assert.IsTrue(lookupResult.Error.Message.StartsWith("Could not parse a line of the UpdateVersionTable"));
 		}
 
 		[Test]
-		public void UpgradeTableVersionParsingError_NoCrash()
+		public void LookupURLOfUpdate_TooFewCommas_LogsErrorGivesNoURL()
+		{
+			var t = new UpdateVersionTable();
+			t.TextContentsOfTable = @"0.0.0, http://first.com/first"; // too few commas
+			t.RunningVersion = Version.Parse("3.2.0");
+			var lookupResult = t.LookupURLOfUpdate();
+			Assert.IsNullOrEmpty(lookupResult.URL);
+			Assert.IsTrue(lookupResult.Error.Message.StartsWith("Could not parse a line of the UpdateVersionTable"));
+		}
+
+		[Test]
+		public void LookupURLOfUpdate_BadVersionNumber_LogsErrorGivesNoURL()
 		{
 			var t = new UpdateVersionTable();
 			t.TextContentsOfTable = @"random,3.1.99999, http://first.com/first"; // bad version number
 			t.RunningVersion = Version.Parse("3.2.0");
 			var lookupResult = t.LookupURLOfUpdate();
 			Assert.IsNullOrEmpty(lookupResult.URL);
+			Assert.IsTrue(lookupResult.Error.Message.StartsWith("Could not parse a version number in the UpdateVersionTable"));
 		}
 
 		[Test]

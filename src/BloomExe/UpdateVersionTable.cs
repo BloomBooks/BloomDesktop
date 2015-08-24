@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing.Drawing2D;
 using System.Net;
 using System.Reflection;
 using Palaso.Reporting;
@@ -73,7 +72,7 @@ namespace Bloom
 						{
 							Logger.WriteEvent("***Error: UpdateVersionTable could not connect to the server");
 						}
-						return new UpdateVersionTable.UpdateTableLookupResult() {Error = e};
+						return new UpdateTableLookupResult() {Error = e};
 					}
 				}
 			}
@@ -82,6 +81,7 @@ namespace Bloom
 				RunningVersion = Assembly.GetExecutingAssembly().GetName().Version;
 			}
 
+			var parsingErrorMsg = String.Empty;
 			try
 			{
 				//NB Programmers: don't change this to some OS-specific line ending, this is  file read by both OS's. '\n' is common to files edited on linux and windows.
@@ -96,24 +96,26 @@ namespace Bloom
 					var lower = Version.Parse(parts[0]);
 					var upper = Version.Parse(parts[1]);
 					if (lower <= RunningVersion && upper >= RunningVersion)
-						return new UpdateVersionTable.UpdateTableLookupResult() { URL = parts[2].Trim() };
+						return new UpdateTableLookupResult() { URL = parts[2].Trim() };
 				}
 			}
 			catch (ApplicationException e)
 			{
 				// BL-2654 Failure when reading upgrade table should not give a crash
 				// In this case, a line of the UpdateVersionTable was not parseable
-				// Put a message in the log and don't upgrade
-				Logger.WriteMinorEvent("Could not parse a line of the UpdateVersionTable" + e.Message);
+				// Put a message in the log and don't upgrade (and return a message that will get into a 'toast')
+				parsingErrorMsg = "Could not parse a line of the UpdateVersionTable" + e.Message;
+				Logger.WriteEvent(parsingErrorMsg);
 			}
 			catch (ArgumentException e)
 			{
 				// BL-2654 Failure when reading upgrade table should not give a crash
 				// In this case, a version number in the UpdateVersionTable was not parseable
-				// Put a message in the log and don't upgrade
-				Logger.WriteMinorEvent("Could not parse a version number in the UpdateVersionTable" + e.Message);
+				// Put a message in the log and don't upgrade (and return a message that will get into a 'toast')
+				parsingErrorMsg = "Could not parse a version number in the UpdateVersionTable" + e.Message;
+				Logger.WriteEvent(parsingErrorMsg);
 			}
-			return new UpdateVersionTable.UpdateTableLookupResult() { URL = String.Empty };
+			return new UpdateTableLookupResult() { URL = String.Empty, Error = new WebException(parsingErrorMsg) };
 		}
 
 		private string GetUrlOfTable()
