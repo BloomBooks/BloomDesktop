@@ -651,7 +651,7 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
 			_view.AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
-			_view.AddMessageEventListener("addPage", AddNewPageBasedOnTemplate);
+			_view.AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
 		}
 
 
@@ -670,13 +670,11 @@ namespace Bloom.Edit
 			{
 				if (CanDuplicatePage)
 				{
-					AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor);
-					if (_addNewSuccess)
+					if (AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor))
 						return;
 				}
 				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
-				AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook);
-				if (_addNewSuccess)
+				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
 					return;
 			}
 			catch (Exception error)
@@ -704,19 +702,17 @@ namespace Bloom.Edit
 			return _templatePagesDict;
 		}
 
-		private bool _addNewSuccess;
-		// Normally one would return success or not, but AddMessageEventListener expects a void return value
-		private void AddNewPageBasedOnTemplate(string pageId)
+		private bool AddNewPageBasedOnTemplate(string pageId)
 		{
 			IPage page;
-			_addNewSuccess = false;
 			var dict = GetTemplatePagesForThisBook();
 			if (dict != null && dict.TryGetValue(pageId, out page))
 			{
 				_templateInsertionCommand.Insert(page as Page);
 				_lastPageAdded = pageId;
-				_addNewSuccess = true;
+				return true;
 			}
+			return false;
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
