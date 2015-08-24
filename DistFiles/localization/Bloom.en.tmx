@@ -1602,7 +1602,7 @@
     <tu tuid="TemplateBooks.PageLabel.Picture on Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Image en bas</seg>
+        <seg>Picture on Bottom</seg>
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.Picture in Middle">
