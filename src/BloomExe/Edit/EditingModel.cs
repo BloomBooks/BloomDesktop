@@ -651,7 +651,7 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
 			_view.AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
-			_view.AddMessageEventListener("addPage", AddNewPageBasedOnTemplate);
+			_view.AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
 		}
 
 
@@ -670,14 +670,12 @@ namespace Bloom.Edit
 			{
 				if (CanDuplicatePage)
 				{
-					AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor);
+					if (AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor))
+						return;
+				}
+				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
+				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
 					return;
-				}
-				else
-				{
-					var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
-					AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook);
-				}
 			}
 			catch (Exception error)
 			{
@@ -704,7 +702,7 @@ namespace Bloom.Edit
 			return _templatePagesDict;
 		}
 
-		private void AddNewPageBasedOnTemplate(string pageId)
+		private bool AddNewPageBasedOnTemplate(string pageId)
 		{
 			IPage page;
 			var dict = GetTemplatePagesForThisBook();
@@ -712,7 +710,9 @@ namespace Bloom.Edit
 			{
 				_templateInsertionCommand.Insert(page as Page);
 				_lastPageAdded = pageId;
+				return true;
 			}
+			return false;
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
