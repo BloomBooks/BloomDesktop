@@ -34,7 +34,6 @@ namespace Bloom.Edit
 		private readonly UndoCommand _undoCommand;
 		private readonly DuplicatePageCommand _duplicatePageCommand;
 		private readonly DeletePageCommand _deletePageCommand;
-		private readonly ControlKeyEvent _controlKeyEvent;
 		private Action _pendingMessageHandler;
 		private bool _updatingDisplay;
 		private Color _enabledToolbarColor = Color.FromArgb(49, 32, 46);
@@ -65,6 +64,8 @@ namespace Bloom.Edit
 			_browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
 
 			_browser1.GeckoReady += new EventHandler(OnGeckoReady);
+
+			_browser1.ControlKeyEvent = controlKeyEvent;
 
 			if (Palaso.PlatformUtilities.Platform.IsMono)
 			{

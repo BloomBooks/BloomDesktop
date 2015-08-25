@@ -135,6 +135,15 @@ namespace Bloom
 			GeckoPreferences.User["browser.sessionhistory.max_entries"] = 1;
 			GeckoPreferences.User["browser.sessionhistory.max_total_viewers"] = 0;
 			GeckoPreferences.User["browser.cache.memory.enable"] = false;
+			// These settings prevent a problem where the gecko instance running the add page dialog
+			// would request several images at once, but we were not able to generate the image
+			// because we could not make additional requests of the localhost server, since some limit
+			// had been reached. I'm not sure all of them are needed, but since in this program we
+			// only talk to our own local server, there is no reason to limit any requests to the server,
+			// so increasing all the ones that look at all relevant seems like a good idea.
+			GeckoPreferences.User["network.http.max-persistent-connections-per-server"] = 200;
+			GeckoPreferences.User["network.http.pipelining.maxrequests"] = 200;
+			GeckoPreferences.User["network.http.pipelining.max-optimistic-requests"] = 200;
 
 			Application.ApplicationExit += OnApplicationExit;
 		}
@@ -155,6 +164,12 @@ namespace Bloom
 		{
 			InitializeComponent();
 		}
+
+		/// <summary>
+		/// Allow creator to hook up this event handler if the browser needs to handle Ctrl-N.
+		/// Not every browser instance needs this.
+		/// </summary>
+		public ControlKeyEvent ControlKeyEvent { get; set; }
 
 		/// <summary>
 		/// Should be set by every caller of the constructor before attempting navigation. The only reason we don't make it a constructor argument
@@ -332,17 +347,16 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Prevent a CTRL+V pasting when we have the Paste button disabled, e.g. when pictures are on the clipboard
+		/// Prevent a CTRL+V pasting when we have the Paste button disabled, e.g. when pictures are on the clipboard.
+		/// Also handle CTRL+N creating a new page on Linux/Mono.
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
 		void OnDomKeyPress(object sender, DomKeyEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
 			const uint DOM_VK_INSERT = 0x2D;
 			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
 			{
-				if (_pasteCommand==null /*happend in calendar config*/ || !_pasteCommand.Enabled)
+				if (_pasteCommand==null /*happened in calendar config*/ || !_pasteCommand.Enabled)
 				{
 					Debug.WriteLine("Paste not enabled, so ignoring.");
 					e.PreventDefault();
@@ -352,6 +366,14 @@ namespace Bloom
 					e.PreventDefault(); //we'll take it from here, thank you very much
 					PasteFilteredText(false);
 				}
+			}
+			// On Windows, Form.ProcessCmdKey (intercepted in Shell) seems to get ctrl messages even when the browser
+			// has focus.  But on Mono, it doesn't.  So we just do the same thing as that Shell.ProcessCmdKey function
+			// does, which is to raise this event.
+			if (Palaso.PlatformUtilities.Platform.IsMono && ControlKeyEvent != null && e.CtrlKey && e.KeyChar == 'n')
+			{
+				Keys keyData = Keys.Control | Keys.N;
+				ControlKeyEvent.Raise(keyData);
 			}
 		}
 

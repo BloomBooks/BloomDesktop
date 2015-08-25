@@ -127,29 +127,29 @@ namespace Bloom.ImageProcessing
 		private static string GetFileNameToUseForSavingImage(string bookFolderPath, PalasoImage imageInfo, bool isJpeg)
 		{
 			var extension = isJpeg ? ".jpg" : ".png";
-			if(string.IsNullOrEmpty(imageInfo.FileName) || imageInfo.FileName.StartsWith("tmp"))
+			// Some images, like from a scanner or camera, won't have a name yet.  Some will need a number
+			// in order to differentiate from what is already there. We don't try and be smart somehow and
+			// know when to just replace the existing one with the same name... some other process will have
+			// to remove unused images.
+			string basename;
+			if (string.IsNullOrEmpty(imageInfo.FileName) || imageInfo.FileName.StartsWith("tmp"))
 			{
-				// Some images, like from a scanner or camera, won't have a name yet.  Some will need a number
-				// in order to differentiate from what is already there. We don't try and be smart somehow and
-				// know when to just replace the existing one with the same name... some other process will have
-				// to remove unused images.
-
-				const string s = "image";
-				var i = 0;
-				var suffix = "";
-
-				while(File.Exists(Path.Combine(bookFolderPath, s + suffix + extension)))
-				{
-					++i;
-					suffix = i.ToString(CultureInfo.InvariantCulture);
-				}
-
-				return s + suffix + extension;
+				basename = "image";
 			}
 			else
 			{
-				return Path.GetFileNameWithoutExtension(imageInfo.FileName) + extension;
+				// Even pictures that aren't obviously unnamed or temporary may have the same name.
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2627 ("Wierd Image Problem").
+				basename = Path.GetFileNameWithoutExtension(imageInfo.FileName);
 			}
+			var i = 0;
+			var suffix = "";
+			while (File.Exists(Path.Combine(bookFolderPath, basename + suffix + extension)))
+			{
+				++i;
+				suffix = i.ToString(CultureInfo.InvariantCulture);
+			}
+			return basename + suffix + extension;
 		}
 
 		private static void LogMemoryUsage()

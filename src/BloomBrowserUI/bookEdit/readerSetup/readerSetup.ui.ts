@@ -1,12 +1,4 @@
 /// <reference path="readerSetup.io.ts" />
-/// <reference path="../js/libsynphony/jquery.text-markup.d.ts" />
-/// <reference path="../js/libsynphony/bloom_lib.d.ts" />
-/// <reference path="../../lib/localizationManager/localizationManager.ts" />
-/// <reference path="../../lib/jquery.d.ts" />
-/// <reference path="../../lib/jquery-ui.d.ts" />
-/// <reference path="../../lib/jquery.i18n.custom.ts" />
-/// <reference path="../../lib/misc-types.d.ts" />
-/// <reference path="../js/jquery.div-columns.ts" />
 
 var desiredGPCs: string[];
 var previousGPCs: string[];
@@ -900,5 +892,9 @@ $(document).ready(function () {
   $('body').find('*[data-i18n]').localize(finishInitializing);
   var accordion = accordionWindow();
   accordion['addWordListChangedListener']('wordListChanged.ReaderSetup', wordListChangedCallback);
-  (<longPressInterface>$('textarea')).longPress();
+  // found solution to longpress access here:
+  // http://stackoverflow.com/questions/3032770/execute-javascript-function-in-a-another-iframe-when-parent-is-from-different-do
+  var pageIframe = parent.frames['page'];
+  var container = $('body');
+  pageIframe.loadLongpressInstructions(container.find('textarea'));
 });
