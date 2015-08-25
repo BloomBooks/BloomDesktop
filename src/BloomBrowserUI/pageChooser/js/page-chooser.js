@@ -146,8 +146,7 @@ var PageChooser = (function () {
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
             var pageLabel = $(".pageLabel", div).first().text();
             $(".gridItemCaption", currentGridItemHtml).first().text(pageLabel);
-            pageLabel = pageLabel.replace("&", "+"); //ampersands don't work in the svg file names, so we use "+" instead
-            $("img", currentGridItemHtml).attr("src", pageFolderUrl + "/template" + "/" + pageLabel + ".svg");
+            $("img", currentGridItemHtml).attr("src", _this.buildThumbSrcFilename(pageFolderUrl, pageLabel));
             $(".innerCollectionContainer", currentCollection).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.
@@ -161,6 +160,10 @@ var PageChooser = (function () {
         }); // each
         return indexToSelect;
     }; // LoadPagesFromCollection
+    PageChooser.prototype.buildThumbSrcFilename = function (pageFolderUrl, pageLabel) {
+        var label = pageLabel.replace('&', '+'); //ampersands don't work in the svg file names, so we use "+" instead
+        return pageFolderUrl + '/template/' + label + (this._orientation === 'landscape' ? '-landscape' : '') + '.svg';
+    };
     /**
      * Fires an event for C# to handle
      * @param {String} eventName
