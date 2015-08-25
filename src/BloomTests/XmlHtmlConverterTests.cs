@@ -17,14 +17,14 @@ namespace BloomTests
 
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml("<!DOCTYPE html><html></html>", false);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//html", 1);//makes sure no namespace was inserted (or does it? what if that assert is too smart))
-			Assert.AreEqual("<html><head><title></title></head><body></body></html>",dom.OuterXml);
+			Assert.AreEqual("<html><head><title></title></head><body></body></html>",dom.OuterXml.Replace("\r\n", ""));
 		}
 		[Test]
 		public void GetXmlDomFromHtml_HasOpenLinkElement_Closes()
 		{
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml("<!DOCTYPE html><html><head>    <link rel='stylesheet' href='basePage.css' type='text/css'> </head></html>", false);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//html", 1);//makes sure no namespace was inserted (or does it? what if that assert is too smart))
-			Assert.AreEqual("<html><head><link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\" /><title></title></head><body></body></html>", dom.OuterXml);
+			Assert.AreEqual("<html><head><link rel=\"stylesheet\" href=\"basePage.css\" type=\"text/css\" /><title></title></head><body></body></html>", dom.OuterXml.Replace("\r\n", ""));
 		}
 		[Test]
 		public void GetXmlDomFromHtml_HasErrors_ReportsError()
@@ -142,7 +142,8 @@ namespace BloomTests
 		{
 			var html = "<!DOCTYPE html><html><head></head><body><div><u> </u></div></body></html>";
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
+			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml.Replace("\r\n", "");
+			;
 			Assert.AreEqual("<div></div>", xml);
 		}
 
@@ -151,7 +152,8 @@ namespace BloomTests
 		{
 			var html = "<!DOCTYPE html><html><head></head><body><div><u><i /></u></div></body></html>";
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
+			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml.Replace("\r\n", "");
+			;
 			Assert.AreEqual("<div></div>", xml);
 		}
 
@@ -160,12 +162,13 @@ namespace BloomTests
 		{
 			var html = "<!DOCTYPE html><html><head></head><body><div><u style=\"test\"> </u></div></body></html>";
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
+			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml.Replace("\r\n","");
 			Assert.AreEqual("<div><u style=\"test\"></u></div>", xml);
 
 			html = "<!DOCTYPE html><html><head></head><body><div><u><i style=\"test\" /></u></div></body></html>";
 			dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
-			xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
+			xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml.Replace("\r\n", "");
+			;
 			Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml);
 		}
 	}
