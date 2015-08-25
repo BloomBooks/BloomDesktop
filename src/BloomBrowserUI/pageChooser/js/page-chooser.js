@@ -11,14 +11,25 @@ function process_EditFrame_Message(event) {
         default:
     }
 }
-// this version of the test string may be useful later testing more than one template collection
-//var JSONTestString = "[{ \"templateBookUrl\": \"../../../DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }, { \"templateBookUrl\": \"../../../DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }]";
-// no longer using test string, but let's keep it around as documentation of what PageChooser's ctor is expecting
-//var JSONTestString = "[{ \"templateBookUrl\": \"bloom/localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }]";
+// latest version of the expected JSON initialization string (from EditingModel.GetTemplateBookInfo)
+// "{\"lastPageAdded\":\"(guid of template page)\",
+//   \"orientation\":\"landscape\",
+//   \"collections\":[{\"templateBookFolderUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book\",
+//                     \"templateBookUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\"}]}"
 var PageChooser = (function () {
-    function PageChooser(templateBookUrls) {
-        if (templateBookUrls) {
-            this._templateBookUrls = templateBookUrls;
+    function PageChooser(initializationJsonString) {
+        var initializationObject;
+        if (initializationJsonString) {
+            try {
+                initializationObject = $.parseJSON(initializationJsonString);
+            }
+            catch (e) {
+                console.log("Received bad JSON string: " + e);
+                return;
+            }
+            this._templateBookUrls = initializationObject["collections"];
+            this._lastPageAdded = initializationObject["lastPageAdded"];
+            this._orientation = initializationObject["orientation"];
         }
         else {
             console.log("Expected url in PageChooser ctor!");
@@ -77,22 +88,12 @@ var PageChooser = (function () {
         var collectionHtml = $(".collection", document).first().clone();
         // there should only be the one default 'gridItem' at this point
         var gridItemHtml = $(".gridItem", collectionHtml).first().clone();
-        var collectionUrls;
-        try {
-            collectionUrls = $.parseJSON(this._templateBookUrls);
-        }
-        catch (e) {
-            console.log("Received bad template url: " + e);
-            return;
-        }
-        var pageChooser = this;
-        if ($(collectionUrls).length > 0) {
+        if ($(this._templateBookUrls).length > 0) {
             // Remove original stub section
             $(".outerCollectionContainer", document).empty();
-            $.each(collectionUrls, function (index) {
+            $.each(this._templateBookUrls, function (index, item) {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                var collectionLastPageAdded = this["lastPageAdded"];
-                pageChooser.loadCollection(this["templateBookFolderUrl"], this["templateBookUrl"], collectionHtml, gridItemHtml, collectionLastPageAdded);
+                _this.loadCollection(item["templateBookFolderUrl"], item["templateBookUrl"], collectionHtml, gridItemHtml, _this._lastPageAdded);
             });
         }
         $("#addPageButton", document).button().click(function () {
@@ -144,8 +145,7 @@ var PageChooser = (function () {
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
             var pageLabel = $(".pageLabel", div).first().text();
             $(".gridItemCaption", currentGridItemHtml).first().text(pageLabel);
-            pageLabel = pageLabel.replace("&", "+"); //ampersands don't work in the svg file names, so we use "+" instead
-            $("img", currentGridItemHtml).attr("src", pageFolderUrl + "/template" + "/" + pageLabel + ".svg");
+            $("img", currentGridItemHtml).attr("src", _this.buildThumbSrcFilename(pageFolderUrl, pageLabel));
             $(".innerCollectionContainer", currentCollection).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.
@@ -159,6 +159,10 @@ var PageChooser = (function () {
         }); // each
         return indexToSelect;
     }; // LoadPagesFromCollection
+    PageChooser.prototype.buildThumbSrcFilename = function (pageFolderUrl, pageLabel) {
+        var label = pageLabel.replace('&', '+'); //ampersands don't work in the svg file names, so we use "+" instead
+        return pageFolderUrl + '/template/' + label + (this._orientation === 'landscape' ? '-landscape' : '') + '.svg';
+    };
     /**
      * Fires an event for C# to handle
      * @param {String} eventName
