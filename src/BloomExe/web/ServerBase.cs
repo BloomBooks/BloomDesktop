@@ -35,6 +35,32 @@ namespace Bloom.web
 		private readonly Queue<HttpListenerContext> _queue;
 
 		/// <summary>
+		/// Some requests which may be made to the server require other requests to be initiated
+		/// and completed before the original request can be completed. Currently there is one
+		/// example of this kind of request, when the server is asked for a thumbnail (image) and needs
+		/// to create a new thumbnail. Creating the thumbnail involves a browser navigating to
+		/// the HTML that represents the page. That html contains requests to the server.
+		///
+		/// If multiple thumbnails are requested as a group (currently likely in the Add Page dialog),
+		/// there is a danger of getting in a situation where all the threads are busy trying to
+		/// retrieve (and hence create) thumbnails, so no threads are available to service the requests
+		/// of the browser that is trying to navigate to the appropriate page to create the thumbnail.
+		/// This is effectively a deadlock; the thumbnail-creation-navigation times-out and we
+		/// don't get a thumbnail.
+		///
+		/// I have chosen to designate such requests as 'recursive' in the sense that a recursive
+		/// request is one that initiates other requests to the server in the course of producing
+		/// its result. We keep track of the number of recursive requests that are under way,
+		/// and spin up additional threads if we don't have at least a couple that are not tied up
+		/// with recursive requests.
+		///
+		/// This variable should only be accessed or modified inside a lock of _queue. It is the actual
+		/// count of threads currently performing recursive requests (that is, it counts the threads
+		/// that are processing contexts for which IsRecursiveRequestContext() returns true).
+		/// </summary>
+		private int _threadsDoingRecursiveRequests;
+
+		/// <summary>
 		/// Gets requests from _listener and puts them in the _queue to be processed
 		/// </summary>
 		private readonly Thread _listenerThread;
@@ -42,7 +68,7 @@ namespace Bloom.web
 		/// <summary>
 		/// Pool of threads that pull a request from the _queue and processes it
 		/// </summary>
-		private readonly Thread[] _workers;
+		private readonly List<Thread> _workers = new List<Thread>();
 
 		/// <summary>
 		/// Notifies threads that they should stop because the ServerBase object is being disposed
@@ -58,7 +84,9 @@ namespace Bloom.web
 		protected ServerBase()
 		{
 			// limit the number of worker threads to the number of processor cores
-			_workers = new Thread[Environment.ProcessorCount];
+			// (but at least 2, since we sometimes need one thread to be free to help
+			// complete the request that another one is executing...see EnhancedImageServer.FindOrGenerateImage)
+			//_workers = new Thread[Math.Max(Environment.ProcessorCount, 2)];
 			_queue = new Queue<HttpListenerContext>();
 			_stop = new ManualResetEvent(false);
 			_ready = new ManualResetEvent(false);
@@ -103,13 +131,21 @@ namespace Bloom.web
 
 			_listenerThread.Start();
 
-			for (var i = 0; i < _workers.Length; i++)
+			for (var i = 0; i < Math.Max(Environment.ProcessorCount, 2); i++)
 			{
-				_workers[i] = new Thread(RequestProcessorLoop);
-				_workers[i].Start();
+				SpinUpAWorker();
 			}
 
 			GetIsAbleToUsePort();
+		}
+
+		// After the initial startup, this should only be called inside a lock(_queue),
+		// to avoid race conditions modifying the _workers collection.
+		private void SpinUpAWorker()
+		{
+			_workers.Add(new Thread(RequestProcessorLoop));
+			_workers.Last().Name = "Server thread " + _workers.Count;
+			_workers.Last().Start();
 		}
 
 		#endregion
@@ -151,6 +187,18 @@ namespace Bloom.web
 		}
 
 		/// <summary>
+		/// Return true if producing the result requested by the context may involve
+		/// making additional requests to the server. (See the fuller discussion on
+		/// the declaration of _threadsDoingRecursiveRequests.)
+		/// </summary>
+		/// <param name="context"></param>
+		/// <returns></returns>
+		protected virtual bool IsRecursiveRequestContext(HttpListenerContext context)
+		{
+			return false;
+		}
+
+		/// <summary>
 		/// The worker threads run this function
 		/// </summary>
 		private void RequestProcessorLoop()
@@ -164,6 +212,7 @@ namespace Bloom.web
 			while (WaitHandle.WaitAny(wait) == 0)
 			{
 				HttpListenerContext context;
+				bool isRecursiveRequestContext; // needs to be declared outside the lock but initialized afte we have the context.
 				lock (_queue)
 				{
 					if (_queue.Count > 0)
@@ -174,6 +223,17 @@ namespace Bloom.web
 					{
 						_ready.Reset();
 						continue;
+					}
+					isRecursiveRequestContext = IsRecursiveRequestContext(context);
+					if (isRecursiveRequestContext)
+					{
+						_threadsDoingRecursiveRequests++;
+						// We've got to have some threads not doing recursive tasks.
+						// One non-recursive thread is probably enough to prevent deadlock but some of those
+						// threads are probably reading files so having a few of them
+						// is likely to speed up the recursive task.
+						if (_threadsDoingRecursiveRequests > _workers.Count - 3)
+							SpinUpAWorker();
 					}
 				}
 
@@ -219,6 +279,13 @@ namespace Bloom.web
 				finally
 				{
 					Thread.CurrentThread.Priority = ThreadPriority.Normal;
+					if (isRecursiveRequestContext)
+					{
+						lock (_queue)
+						{
+							_threadsDoingRecursiveRequests--;
+						}
+					}
 				}
 			}
 		}

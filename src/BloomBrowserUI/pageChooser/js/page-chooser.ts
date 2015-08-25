@@ -215,11 +215,14 @@ class PageChooser {
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
 
-            var pageLabel = $(".pageLabel", div).first().text();
+            var pageLabel = $(".pageLabel", div).first().text().trim();
             $(".gridItemCaption", currentGridItemHtml).first().text(pageLabel);
+            // any changes to how we tweak the page label to get a file name
+            // must also be made in EnhancedImageServer.FindOrGenerateImage().
             pageLabel = pageLabel.replace("&", "+"); //ampersands don't work in the svg file names, so we use "+" instead
 
-            $("img", currentGridItemHtml).attr("src", pageFolderUrl + "/template" +"/" + pageLabel+".svg");
+            // gensvg is a 'magic' extension which the Bloom fileserver understands. See EnhancedImageServer.FindOrGenerateImage.
+            $("img", currentGridItemHtml).attr("src", pageFolderUrl + "/template" +"/" + pageLabel+".gensvg");
             $(".innerCollectionContainer", currentCollection).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.

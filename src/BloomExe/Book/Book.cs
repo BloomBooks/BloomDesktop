@@ -371,6 +371,29 @@ namespace Bloom.Book
 			return _storage.MakeDomRelocatable(inputDom, _log);
 		}
 
+		/// <summary>
+		/// Currently used by the image server
+		/// to get thumbnails that are used in the add page dialog. Since this dialog can show
+		/// an enlarged version of the page, we generate these at a higher resolution than usual.
+		/// Also, to make more realistic views of template pages we insert fake text wherever
+		/// there is an empty edit block.
+		/// </summary>
+		/// <param name="page"></param>
+		/// <returns></returns>
+		public Image GetThumbnailForPage(IPage page)
+		{
+			var pageDom = GetThumbnailXmlDocumentForPage(page);
+			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
+			{
+				BackgroundColor = Palette.TextAgainstDarkBackground,
+				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid,
+				CenterImageUsingTransparentPadding = true,
+				Width = 200,
+				Height = 200
+			};
+			return _thumbnailProvider.GetThumbnail(page.Id, pageDom, thumbnailOptions);
+		}
+
 		public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
 		{
 			if(_log.ErrorEncountered)
@@ -386,6 +409,37 @@ namespace Bloom.Book
 
 			AddPreviewJScript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
 			return pageDom;
+		}
+
+		// Differs from GetPreviewXmlDocumentForPage() by not adding the three stylesheets
+		// adding them will full paths seems to be diastrous. I think cross-domain rules
+		// prevent them from being loaded, and so we lose the page size information, and the
+		// thumbs come out random sizes. Not sure why this isn't a problem in GetPreviewXmlDocumentForPage.
+		// Also, since this is used for thumbnails of template pages, we insert some arbitrary text
+		// into empty editable divs to give a better idea of what a typical page will look like.
+		HtmlDom GetThumbnailXmlDocumentForPage(IPage page)
+		{
+			if (_log.ErrorEncountered)
+			{
+				return GetErrorDom();
+			}
+			var pageDom = GetHtmlDomWithJustOnePage(page);
+			pageDom.SortStyleSheetLinks();
+			AddPreviewJScript(pageDom);
+			AddFillerTextToEmptyEditDivs(pageDom);
+			return pageDom;
+		}
+
+		private static void AddFillerTextToEmptyEditDivs(HtmlDom pageDom)
+		{
+			var placeHolderText =
+				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed porttitor ex at sapien accumsan convallis. Aenean varius nisi justo. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.";
+			var emptyDivs =
+				pageDom.RawDom.SafeSelectNodes("//div[@contenteditable='true' and string-length(normalize-space(text()))=0]");
+			if (emptyDivs.Count > 3)
+				placeHolderText = "Lorem";
+			foreach (XmlElement div in emptyDivs)
+				div.InnerText = placeHolderText;
 		}
 
 		public HtmlDom GetPreviewXmlDocumentForFirstPage()

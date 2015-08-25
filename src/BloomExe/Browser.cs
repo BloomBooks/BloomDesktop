@@ -135,6 +135,15 @@ namespace Bloom
 			GeckoPreferences.User["browser.sessionhistory.max_entries"] = 1;
 			GeckoPreferences.User["browser.sessionhistory.max_total_viewers"] = 0;
 			GeckoPreferences.User["browser.cache.memory.enable"] = false;
+			// These settings prevent a problem where the gecko instance running the add page dialog
+			// would request several images at once, but we were not able to generate the image
+			// because we could not make additional requests of the localhost server, since some limit
+			// had been reached. I'm not sure all of them are needed, but since in this program we
+			// only talk to our own local server, there is no reason to limit any requests to the server,
+			// so increasing all the ones that look at all relevant seems like a good idea.
+			GeckoPreferences.User["network.http.max-persistent-connections-per-server"] = 200;
+			GeckoPreferences.User["network.http.pipelining.maxrequests"] = 200;
+			GeckoPreferences.User["network.http.pipelining.max-optimistic-requests"] = 200;
 
 			Application.ApplicationExit += OnApplicationExit;
 		}
