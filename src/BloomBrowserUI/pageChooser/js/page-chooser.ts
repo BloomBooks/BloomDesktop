@@ -17,20 +17,32 @@ function process_EditFrame_Message(event: MessageEvent): void {
     }
 }
 
-// this version of the test string may be useful later testing more than one template collection
-//var JSONTestString = "[{ \"templateBookUrl\": \"../../../DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }, { \"templateBookUrl\": \"../../../DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }]";
-// no longer using test string, but let's keep it around as documentation of what PageChooser's ctor is expecting
-//var JSONTestString = "[{ \"templateBookUrl\": \"bloom/localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\" }]";
+// latest version of the expected JSON initialization string (from EditingModel.GetTemplateBookInfo)
+// "{\"lastPageAdded\":\"(guid of template page)\",
+//   \"orientation\":\"landscape\",
+//   \"collections\":[{\"templateBookFolderUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book\",
+//                     \"templateBookUrl\":\"/bloom/localhost/C$/BloomDesktop/DistFiles/factoryCollections/Templates/Basic Book/Basic Book.htm\"}]}"
 
 class PageChooser {
 
-    private _templateBookUrls : string;
+    private _templateBookUrls: string;
+    private _lastPageAdded: string;
+    private _orientation: string;
     private _selectedGridItem: JQuery;
     private _indexOfPageToSelect: number;
 
-    constructor(templateBookUrls: string) {
-        if(templateBookUrls) {
-            this._templateBookUrls = templateBookUrls;
+    constructor(initializationJsonString: string) {
+        var initializationObject;
+        if (initializationJsonString) {
+            try {
+                initializationObject = $.parseJSON(initializationJsonString);
+            } catch (e) {
+                console.log("Received bad JSON string: " + e);
+                return;
+            }
+            this._templateBookUrls = initializationObject["collections"];
+            this._lastPageAdded = initializationObject["lastPageAdded"];
+            this._orientation = initializationObject["orientation"];
         } else {
             console.log("Expected url in PageChooser ctor!");
         }
@@ -93,21 +105,13 @@ class PageChooser {
         var collectionHtml =  $(".collection", document).first().clone();
         // there should only be the one default 'gridItem' at this point
         var gridItemHtml = $( ".gridItem", collectionHtml).first().clone();
-        var collectionUrls;
-        try {
-            collectionUrls = $.parseJSON( this._templateBookUrls );
-        } catch (e) {
-            console.log("Received bad template url: " + e);
-            return;
-        }
         var pageChooser = this;
-        if ($( collectionUrls).length > 0) {
+        if ($(this._templateBookUrls).length > 0) {
             // Remove original stub section
             $(".outerCollectionContainer", document).empty();
-            $.each(collectionUrls, function (index) {
+            $.each(this._templateBookUrls, function (index) {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                var collectionLastPageAdded = this["lastPageAdded"];
-                pageChooser.loadCollection(this["templateBookFolderUrl"], this["templateBookUrl"], collectionHtml, gridItemHtml, collectionLastPageAdded);
+                pageChooser.loadCollection(this["templateBookFolderUrl"], this["templateBookUrl"], collectionHtml, gridItemHtml, pageChooser._lastPageAdded);
             });
         }
         $("#addPageButton", document).button().click(() => {

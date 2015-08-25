@@ -160,11 +160,7 @@ function showAddPageDialog(templatesJSON) {
     parentElement.localizationManager.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
 
         var title = parentElement.localizationManager.getText('AddPageDialog.Title', 'Add Page...');
-        var addButtonText = parentElement.localizationManager.getText('AddPageDialog.AddPageButton', 'Add This Page');
-        var descriptionLabel = parentElement.localizationManager.getText('AddPageDialog.DescriptionLabel', 'Description');
-        var blankPreviewMsg = parentElement.localizationManager.getText('AddPageDialog.PreviewMessage',
-            'This will contain a preview of a template page when one is selected.');
-        var dialogContents = CreateAddPageDiv(templatesJSON, descriptionLabel, blankPreviewMsg);
+        var dialogContents = CreateAddPageDiv(templatesJSON);
 
         theDialog = $(dialogContents).dialog({
             class: "addPageDialog",
