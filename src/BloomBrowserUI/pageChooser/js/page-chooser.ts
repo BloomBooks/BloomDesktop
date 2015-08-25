@@ -218,7 +218,7 @@ class PageChooser {
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
 
-            var pageLabel = $(".pageLabel", div).first().text();
+            var pageLabel = $(".pageLabel", div).first().text().trim();
             $(".gridItemCaption", currentGridItemHtml).first().text(pageLabel);
 
             $("img", currentGridItemHtml).attr("src", this.buildThumbSrcFilename(pageFolderUrl, pageLabel));
@@ -237,6 +237,8 @@ class PageChooser {
         return indexToSelect;
     } // LoadPagesFromCollection
 
+    // any changes to how we tweak the page label to get a file name
+    // must also be made in EnhancedImageServer.FindOrGenerateImage().
     buildThumbSrcFilename(pageFolderUrl: string, pageLabel: string): string {
         var label = pageLabel.replace('&', '+'); //ampersands don't work in the svg file names, so we use "+" instead
         return pageFolderUrl + '/template/' + label + (this._orientation === 'landscape' ? '-landscape' : '') + '.svg';
