@@ -68,12 +68,10 @@ namespace Bloom
 						// but if they did, try and give them a hint about what went wrong
 						if (result.IsConnectivityError)
 						{
-
 							var failMsg = LocalizationManager.GetString("CollectionTab.UnableToCheckForUpdate",
 								"Could not connect to the server to check for an update. Are you connected to the internet?",
 								"Shown when Bloom tries to check for an update but can't, for example becuase it can't connect to the internet, or a problems with our server, etc.");
 							ShowFailureNotification(failMsg);
-
 						}
 						else if (result.Error == null)
 						{
