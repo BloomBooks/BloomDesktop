@@ -105,13 +105,12 @@ class PageChooser {
         var collectionHtml =  $(".collection", document).first().clone();
         // there should only be the one default 'gridItem' at this point
         var gridItemHtml = $( ".gridItem", collectionHtml).first().clone();
-        var pageChooser = this;
         if ($(this._templateBookUrls).length > 0) {
             // Remove original stub section
             $(".outerCollectionContainer", document).empty();
-            $.each(this._templateBookUrls, function (index) {
+            $.each(this._templateBookUrls, (index, item) => {
                 //console.log('  ' + (index + 1) + ' loading... ' + this['templateBookUrl'] );
-                pageChooser.loadCollection(this["templateBookFolderUrl"], this["templateBookUrl"], collectionHtml, gridItemHtml, pageChooser._lastPageAdded);
+                this.loadCollection(item["templateBookFolderUrl"], item["templateBookUrl"], collectionHtml, gridItemHtml, this._lastPageAdded);
             });
         }
         $("#addPageButton", document).button().click(() => {
