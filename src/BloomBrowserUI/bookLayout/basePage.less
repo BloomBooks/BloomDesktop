@@ -214,6 +214,54 @@ preview.css.
 		min-height: @A6Landscape-Height;
 		max-height: @A6Landscape-Height;
 	}
+	&.HalfLetterPortrait {
+		min-width: @HalfLetterPortrait-Width;
+		max-width: @HalfLetterPortrait-Width;
+		min-height: @HalfLetterPortrait-Height;
+		max-height: @HalfLetterPortrait-Height;
+	}
+	&.HalfLetterLandscape {
+		min-width: @HalfLetterLandscape-Width;
+		max-width: @HalfLetterLandscape-Width;
+		min-height: @HalfLetterLandscape-Height;
+		max-height: @HalfLetterLandscape-Height;
+	}
+	&.LetterPortrait {
+		min-width: @LetterPortrait-Width;
+		max-width: @LetterPortrait-Width;
+		min-height: @LetterPortrait-Height;
+		max-height: @LetterPortrait-Height;
+	}
+	&.LetterLandscape {
+		min-width: @LetterLandscape-Width;
+		max-width: @LetterLandscape-Width;
+		min-height: @LetterLandscape-Height;
+		max-height: @LetterLandscape-Height;
+	}
+	&.HalfLegalPortrait {
+		min-width: @HalfLegalPortrait-Width;
+		max-width: @HalfLegalPortrait-Width;
+		min-height: @HalfLegalPortrait-Height;
+		max-height: @HalfLegalPortrait-Height;
+	}
+	&.HalfLegalLandscape {
+		min-width: @HalfLegalLandscape-Width;
+		max-width: @HalfLegalLandscape-Width;
+		min-height: @HalfLegalLandscape-Height;
+		max-height: @HalfLegalLandscape-Height;
+	}
+	&.LegalPortrait {
+		min-width: @LegalPortrait-Width;
+		max-width: @LegalPortrait-Width;
+		min-height: @LegalPortrait-Height;
+		max-height: @LegalPortrait-Height;
+	}
+	&.LegalLandscape {
+		min-width: @LegalLandscape-Width;
+		max-width: @LegalLandscape-Width;
+		min-height: @LegalLandscape-Height;
+		max-height: @LegalLandscape-Height;
+	}
 }
 /*Margins*/
 .textWholePage .marginBox {
@@ -258,6 +306,26 @@ preview.css.
 	}
 	.B5Portrait & {
 		.SetMarginBox(@B5Portrait-Width, @B5Portrait-Height);
+	}
+
+	.HalfLetterPortrait & {
+		.SetMarginBox(@HalfLetterPortrait-Width, @HalfLetterPortrait-Height);
+	}
+	.LetterPortrait & {
+		.SetMarginBox(@LetterPortrait-Width, @LetterPortrait-Height);
+	}
+	.LetterLandscape & {
+		.SetMarginBox(@LetterLandscape-Width, @LetterLandscape-Height);
+	}
+
+	.HalfLegalPortrait & {
+		.SetMarginBox(@HalfLegalPortrait-Width, @HalfLegalPortrait-Height);
+	}
+	.LegalPortrait & {
+		.SetMarginBox(@LegalPortrait-Width, @LegalPortrait-Height);
+	}
+	.LegalLandscape & {
+		.SetMarginBox(@LegalLandscape-Width, @LegalLandscape-Height);
 	}
 }
 

@@ -209,6 +209,54 @@ preview.css.
   min-height: 105mm;
   max-height: 105mm;
 }
+.bloom-page.HalfLetterPortrait {
+  min-width: 5.5in;
+  max-width: 5.5in;
+  min-height: 8.5in;
+  max-height: 8.5in;
+}
+.bloom-page.HalfLetterLandscape {
+  min-width: 8.5in;
+  max-width: 8.5in;
+  min-height: 5.5in;
+  max-height: 5.5in;
+}
+.bloom-page.LetterPortrait {
+  min-width: 8.5in;
+  max-width: 8.5in;
+  min-height: 11in;
+  max-height: 11in;
+}
+.bloom-page.LetterLandscape {
+  min-width: 11in;
+  max-width: 11in;
+  min-height: 8.5in;
+  max-height: 8.5in;
+}
+.bloom-page.HalfLegalPortrait {
+  min-width: 7in;
+  max-width: 7in;
+  min-height: 8.5in;
+  max-height: 8.5in;
+}
+.bloom-page.HalfLegalLandscape {
+  min-width: 8.5in;
+  max-width: 8.5in;
+  min-height: 7in;
+  max-height: 7in;
+}
+.bloom-page.LegalPortrait {
+  min-width: 8.5in;
+  max-width: 8.5in;
+  min-height: 14in;
+  max-height: 14in;
+}
+.bloom-page.LegalLandscape {
+  min-width: 14in;
+  max-width: 14in;
+  min-height: 8.5in;
+  max-height: 8.5in;
+}
 /*Margins*/
 .textWholePage .marginBox {
   position: absolute;
@@ -273,6 +321,54 @@ preview.css.
 .B5Portrait .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
   max-width: 136mm;
+}
+.HalfLetterPortrait .marginBox {
+  height: 7.31889764in;
+  width: 3.92519685in;
+}
+.HalfLetterPortrait .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 3.92519685in;
+}
+.LetterPortrait .marginBox {
+  height: 9.81889764in;
+  width: 6.92519685in;
+}
+.LetterPortrait .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 6.92519685in;
+}
+.LetterLandscape .marginBox {
+  height: 7.31889764in;
+  width: 9.42519685in;
+}
+.LetterLandscape .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 9.42519685in;
+}
+.HalfLegalPortrait .marginBox {
+  height: 7.31889764in;
+  width: 5.42519685in;
+}
+.HalfLegalPortrait .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 5.42519685in;
+}
+.LegalPortrait .marginBox {
+  height: 12.81889764in;
+  width: 6.92519685in;
+}
+.LegalPortrait .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 6.92519685in;
+}
+.LegalLandscape .marginBox {
+  height: 7.31889764in;
+  width: 12.42519685in;
+}
+.LegalLandscape .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+  max-width: 12.42519685in;
 }
 .publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {
   /* shifted margin */

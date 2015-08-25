@@ -104,18 +104,21 @@ namespace Bloom.Book
 						PageSizeName = "A5"
 					};
 			}
-			int startOfAlternativeName=-1;
-			if(nameLower.Contains("landscape"))
-				startOfAlternativeName = startOfOrientationName + "landscape".Length;
-			else
-				startOfAlternativeName = startOfOrientationName + "portrait".Length;
 
 			return new SizeAndOrientation()
 					{
 						IsLandScape = nameLower.Contains("landscape"),
-						PageSizeName = nameLower.Substring(0, startOfOrientationName).ToUpperFirstLetter(),
-						//AlternativeName = name.Substring(startOfAlternativeName, nameLower.Length - startOfAlternativeName)
+						PageSizeName = ExtractPageSizeName(name, startOfOrientationName),
 					};
+		}
+
+		private static string ExtractPageSizeName(string nameLower, int startOfOrientationName)
+		{
+			var name = nameLower.Substring(0, startOfOrientationName).ToUpperFirstLetter();
+			//these are needed so that "HalfLetter" doesn't come out "Halfletter"
+			name = name.Replace("letter", "Letter");
+			name = name.Replace("legal", "Legal");
+			return name;
 		}
 
 		public static void AddClassesForLayout(HtmlDom dom, Layout layout)
