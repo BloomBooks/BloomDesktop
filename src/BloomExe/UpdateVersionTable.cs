@@ -33,7 +33,7 @@ namespace Bloom
 				get
 				{
 					return Error != null &&
-					       Error.Status == WebExceptionStatus.Timeout || Error.Status == WebExceptionStatus.NameResolutionFailure;
+						(Error.Status == WebExceptionStatus.Timeout || Error.Status == WebExceptionStatus.NameResolutionFailure);
 				}
 			}
 		}
@@ -72,7 +72,7 @@ namespace Bloom
 						{
 							Logger.WriteEvent("***Error: UpdateVersionTable could not connect to the server");
 						}
-						return new UpdateVersionTable.UpdateTableLookupResult() {Error = e};
+						return new UpdateTableLookupResult() {Error = e};
 					}
 				}
 			}
@@ -81,25 +81,43 @@ namespace Bloom
 				RunningVersion = Assembly.GetExecutingAssembly().GetName().Version;
 			}
 
-			//NB Programmers: don't change this to some OS-specific line ending, this is  file read by both OS's. '\n' is common to files edited on linux and windows.
-			foreach (var line in TextContentsOfTable.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
+			var parsingErrorMsg = String.Empty;
+			try
 			{
-				if (line.TrimStart().StartsWith("#"))
-					continue; //comment
-
-				var parts = line.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
-				if (parts.Length != 3)
+				//NB Programmers: don't change this to some OS-specific line ending, this is  file read by both OS's. '\n' is common to files edited on linux and windows.
+				foreach (var line in TextContentsOfTable.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
 				{
+					if (line.TrimStart().StartsWith("#"))
+						continue; //comment
+
+					var parts = line.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+					if (parts.Length != 3)
 					Logger.WriteEvent("***Error: UpdateVersionTable could not parse line {0} of this updateTableContent:", line);
 					Logger.WriteEvent(TextContentsOfTable);
-					throw new ApplicationException("Bloom had trouble checking for updates (UpdateVersionTable)");
+					throw new ApplicationException("Could not parse a line of the UpdateVersionTable on "+URLOfTable+" '"+line+"'");
+					var lower = Version.Parse(parts[0]);
+					var upper = Version.Parse(parts[1]);
+					if (lower <= RunningVersion && upper >= RunningVersion)
+						return new UpdateTableLookupResult() { URL = parts[2].Trim() };
 				}
-				var lower = Version.Parse(parts[0]);
-				var upper = Version.Parse(parts[1]);
-				if (lower <= RunningVersion && upper >= RunningVersion)
-					return new UpdateVersionTable.UpdateTableLookupResult() {URL = parts[2].Trim()};
 			}
-			return  new UpdateVersionTable.UpdateTableLookupResult() {URL = String.Empty};
+			catch (ApplicationException e)
+			{
+				// BL-2654 Failure when reading upgrade table should not give a crash
+				// In this case, a line of the UpdateVersionTable was not parseable
+				// Put a message in the log and don't upgrade (and return a message that will get into a 'toast')
+				parsingErrorMsg = "Could not parse a line of the UpdateVersionTable" + e.Message;
+				Logger.WriteEvent(parsingErrorMsg);
+			}
+			catch (ArgumentException e)
+			{
+				// BL-2654 Failure when reading upgrade table should not give a crash
+				// In this case, a version number in the UpdateVersionTable was not parseable
+				// Put a message in the log and don't upgrade (and return a message that will get into a 'toast')
+				parsingErrorMsg = "Could not parse a version number in the UpdateVersionTable" + e.Message;
+				Logger.WriteEvent(parsingErrorMsg);
+			}
+			return new UpdateTableLookupResult() { URL = String.Empty, Error = new WebException(parsingErrorMsg) };
 		}
 
 		private string GetUrlOfTable()
