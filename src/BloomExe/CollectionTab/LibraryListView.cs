@@ -397,22 +397,22 @@ namespace Bloom.CollectionTab
 		{
 			collection.CollectionChanged += OnCollectionChanged;
 			bool loadedAtLeastOneBook = false;
-			foreach (Book.BookInfo bookInfo in collection.GetBookInfos())
+			foreach (var bookInfo in collection.GetBookInfos())
 			{
 				try
 				{
 					if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
 					{
 						loadedAtLeastOneBook = true;
-						AddOneBook(bookInfo, flowLayoutPanel, collection.Name.ToLowerInvariant() == "templates");
+						AddOneBook(bookInfo, flowLayoutPanel, collection.IsFactoryTemplates, collection.IsDownloaded);
 					}
 				}
 				catch (Exception error)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not load the book at " + bookInfo.FolderPath);
+					ErrorReport.NotifyUserOfProblem(error, "Could not load the book at " + bookInfo.FolderPath);
 				}
 			}
-			if (collection.Name == BookCollection.DownloadedBooksCollectionNameInEnglish)
+			if (collection.IsDownloaded)
 			{
 				_downloadedBookCollection = collection;
 				collection.FolderContentChanged += DownLoadedBooksChanged;
@@ -503,10 +503,10 @@ namespace Bloom.CollectionTab
 			get { return Parent.Parent.Parent.Parent != null; }
 		}
 
-		private void AddOneBook(BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, bool localizeTitle)
+		private void AddOneBook(BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, bool isFactoryTemplatesCollection, bool isFromBloomLibrary)
 		{
 			string title = bookInfo.QuickTitleUserDisplay;
-			if (localizeTitle)
+			if (isFactoryTemplatesCollection)
 				title = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.BookName." + title, title);
 
 			var button = new Button
@@ -519,7 +519,7 @@ namespace Bloom.CollectionTab
 				FlatStyle = FlatStyle.Flat,
 				ForeColor = Palette.TextAgainstDarkBackground,
 				UseMnemonic = false, //otherwise, it tries to interpret '&' as a shortcut
-				ContextMenuStrip = _bookContextMenu,
+				ContextMenuStrip = isFactoryTemplatesCollection ? null : (isFromBloomLibrary ? _bloomLibraryContextMenu : _bookContextMenu),
 				AutoSize = false,
 
 				Tag = bookInfo
@@ -1150,7 +1150,7 @@ namespace Bloom.CollectionTab
 			}
 
 			// directory for the new book
-			var newBookName = GetAvaialableDirectory(collectionDir, baseName, copyNum);
+			var newBookName = GetAvailableDirectory(collectionDir, baseName, copyNum);
 			var newBookDir = Path.Combine(collectionDir, newBookName);
 			Directory.CreateDirectory(newBookDir);
 
@@ -1182,7 +1182,7 @@ namespace Bloom.CollectionTab
 		/// <param name="baseName"></param>
 		/// <param name="copyNum"></param>
 		/// <returns></returns>
-		private static string GetAvaialableDirectory(string collectionDir, string baseName, int copyNum)
+		private static string GetAvailableDirectory(string collectionDir, string baseName, int copyNum)
 		{
 			string newName;
 			if (copyNum == 1)

@@ -5,9 +5,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
-#if !__MonoCS__
-using IWshRuntimeLibrary;
-#endif
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
 using File = System.IO.File;
@@ -189,7 +186,18 @@ namespace Bloom.Collection
 			set { throw new NotImplementedException(); }
 		}
 
-		public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
+		public const string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
+		private const string InstalledTemplatesCollectionNameInEnglish = "Templates";
+
+		public bool IsDownloaded { get { return Name == DownloadedBooksCollectionNameInEnglish; } }
+
+		public bool IsFactoryTemplates
+		{
+			get
+			{
+				return String.Equals(Name, InstalledTemplatesCollectionNameInEnglish, StringComparison.InvariantCultureIgnoreCase);
+			}
+		}
 
 		private FileSystemWatcher _watcher;
 		/// <summary>
