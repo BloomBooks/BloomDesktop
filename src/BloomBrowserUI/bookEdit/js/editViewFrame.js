@@ -133,7 +133,8 @@ function CreateAddPageDiv(templatesJSON) {
 
     var dialogContents = $('<div id="addPageConfig"/>').appendTo($('body'));
 
-    var html = "<iframe id=\"addPage_frame\" src=\"/bloom/pageChooser/page-chooser-main.htm\" scrolling=\"no\" style=\"width: 100%; height: 100%; border: none; margin: 0\"></iframe>";
+    // For some reason when the height is 100% we get an unwanted scroll bar on the far right.
+    var html = "<iframe id=\"addPage_frame\" src=\"/bloom/pageChooser/page-chooser-main.htm\" scrolling=\"no\" style=\"width: 100%; height: 99%; border: none; margin: 0\"></iframe>";
 
     dialogContents.append(html);
 

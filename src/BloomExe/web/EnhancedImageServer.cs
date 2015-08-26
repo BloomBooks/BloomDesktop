@@ -534,7 +534,7 @@ namespace Bloom.web
 				// but it has nothing to do with the actual file location.
 				if (localPath.StartsWith("OriginalImages/"))
 					possibleFullImagePath = localPath.Substring(15);
-				if (localPath.EndsWith(".gensvg"))
+				if (info.GetQueryString()["generateThumbnaiIfNecessary"] == "true")
 					return FindOrGenerateImage(info, localPath);
 				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{
@@ -562,18 +562,18 @@ namespace Bloom.web
 		}
 
 		/// <summary>
-		/// Requests for .gensvg files are potentially recursive in that we may have to navigate
+		/// Requests with ?generateThumbnaiIfNecessary=true are potentially recursive in that we may have to navigate
 		/// a browser to the template page in order to construct the thumbnail.
 		/// </summary>
 		/// <param name="context"></param>
 		/// <returns></returns>
 		protected override bool IsRecursiveRequestContext(HttpListenerContext context)
 		{
-			return base.IsRecursiveRequestContext(context) || context.Request.RawUrl.EndsWith(".gensvg");
+			return base.IsRecursiveRequestContext(context) || context.Request.QueryString["generateThumbnaiIfNecessary"] == "true";
 		}
 
 		/// <summary>
-		/// Currently used in the Add Page dialog, a path ending in .gensvg indicates a thumbnail for
+		/// Currently used in the Add Page dialog, a path with ?generateThumbnaiIfNecessary=true indicates a thumbnail for
 		/// a template page. Usually we expect that a file at the same path but with extension .svg will
 		/// be found and returned. Failing this we try for one ending in .png. If this still fails we
 		/// start a process to generate an image from the template page content.

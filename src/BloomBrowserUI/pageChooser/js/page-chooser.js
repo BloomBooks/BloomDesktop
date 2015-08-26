@@ -194,8 +194,8 @@ var PageChooser = (function () {
             // any changes to how we tweak the page label to get a file name
             // must also be made in EnhancedImageServer.FindOrGenerateImage().
             pageLabel = pageLabel.replace("&", "+"); //ampersands don't work in the svg file names, so we use "+" instead
-            // gensvg is a 'magic' extension which the Bloom fileserver understands. See EnhancedImageServer.FindOrGenerateImage.
-            $("img", currentGridItemHtml).attr("src", pageFolderUrl + "/template" + "/" + pageLabel + ".gensvg");
+            // May actually retrieve a png (possibly after generating it). See EnhancedImageServer.FindOrGenerateImage.
+            $("img", currentGridItemHtml).attr("src", pageFolderUrl + "/template" + "/" + pageLabel + ".svg?generateThumbnaiIfNecessary=true");
             $(".innerCollectionContainer", currentCollection).append(currentGridItemHtml);
         }); // each
         // once the template pages are installed, attach click handler to them.

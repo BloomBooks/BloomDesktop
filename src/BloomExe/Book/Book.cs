@@ -377,6 +377,8 @@ namespace Bloom.Book
 		/// an enlarged version of the page, we generate these at a higher resolution than usual.
 		/// Also, to make more realistic views of template pages we insert fake text wherever
 		/// there is an empty edit block.
+		///
+		/// The result is cached for possible future use so the caller should not dispose of it.
 		/// </summary>
 		/// <param name="page"></param>
 		/// <returns></returns>
@@ -385,12 +387,25 @@ namespace Bloom.Book
 			var pageDom = GetThumbnailXmlDocumentForPage(page);
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
 			{
-				BackgroundColor = Palette.TextAgainstDarkBackground,
-				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid,
-				CenterImageUsingTransparentPadding = true,
-				Width = 200,
-				Height = 200
+				BackgroundColor = Color.White,// matches the hand-made previews.
+				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.None, // allows the HTML to add its preferred border in the larger preview
+				CenterImageUsingTransparentPadding = true
 			};
+			// The actual page size is rather arbitrary, but we want the right ratio for A4.
+			// Using the actual A4 sizes in mm makes a big enough image to look good in the larger
+			// preview box on the right as well as giving exactly the ratio we want.
+			// We need to make the image the right shape to avoid some sort of shadow/box effects
+			// that I can't otherwise find a way to get rid of.
+			if (GetLayout().SizeAndOrientation.IsLandScape)
+			{
+				thumbnailOptions.Width = 297;
+				thumbnailOptions.Height = 210;
+			}
+			else
+			{
+				thumbnailOptions.Width = 210;
+				thumbnailOptions.Height = 297;
+			}
 			return _thumbnailProvider.GetThumbnail(page.Id, pageDom, thumbnailOptions);
 		}
 
