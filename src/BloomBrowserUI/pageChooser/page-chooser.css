@@ -118,7 +118,6 @@
   position: absolute;
   height: 100px;
   width: 100px;
-  background: url(transparent.gif);
 }
 .landscape .selectionOverlay {
   height: 70px;
