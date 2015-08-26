@@ -170,6 +170,10 @@ class PageChooser {
             .done(translation => {
                 pageButton.attr('value', translation);
             });
+
+        if (this._orientation === 'landscape') {
+            $("#mainContainer").addClass("landscape");
+        }
     } // LoadInstalledCollections
 
     loadCollection(pageFolderUrl, pageUrl, collectionHTML, gridItemHTML, lastPageAdded:string): void {
@@ -241,7 +245,9 @@ class PageChooser {
     // must also be made in EnhancedImageServer.FindOrGenerateImage().
     buildThumbSrcFilename(pageFolderUrl: string, pageLabel: string): string {
         var label = pageLabel.replace('&', '+'); //ampersands don't work in the svg file names, so we use "+" instead
-        return pageFolderUrl + '/template/' + label + (this._orientation === 'landscape' ? '-landscape' : '') + '.svg';
+        // ?generateThumbnaiIfNecessary=true triggers logic in EnhancedImageServer.FindOrGenerateImage.
+        // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
+        return pageFolderUrl + '/template/' + label + (this._orientation === 'landscape' ? '-landscape' : '') + '.svg?generateThumbnaiIfNecessary=true';
     }
 
     /**

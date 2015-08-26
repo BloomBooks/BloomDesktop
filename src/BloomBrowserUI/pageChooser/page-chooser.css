@@ -35,6 +35,10 @@
 #preview {
   width: 200px;
 }
+.landscape #preview {
+  width: unset;
+  height: 200px;
+}
 #previewCaption {
   font-weight: bold;
   text-align: center;
@@ -85,6 +89,11 @@
   width: 60px;
   margin-left: 20px;
 }
+.landscape .thumbnail {
+  width: unset;
+  height: 60px;
+  margin-left: 6px;
+}
 .gridItem .gridItemCaption {
   display: none;
   text-align: center;
@@ -110,6 +119,9 @@
   height: 100px;
   width: 100px;
   background: url(transparent.gif);
+}
+.landscape .selectionOverlay {
+  height: 70px;
 }
 #mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button {
   background: #e1e1e1 !important;

@@ -51,6 +51,13 @@ BODY {
 #preview {
 	width: 200px;
 }
+
+.landscape {
+    #preview {
+        width: unset;
+        height: 200px;
+    }
+}
 #previewCaption {
 	font-weight: bold;
 	text-align: center;
@@ -135,6 +142,14 @@ BODY {
 	//take the height proportionally, from the width
 	margin-left: 20px;//centers the thumbnail in the enclosing grid item
 }
+
+.landscape {
+    .thumbnail {
+        width:unset;
+        height: 60px;
+        margin-left: 6px;
+    }
+}
 .gridItem {
 	.gridItemCaption {
 		display: none; // The captions aren't really helping the user, just adding complexity
@@ -161,6 +176,12 @@ BODY {
 	height: 100px;
 	width: 100px;
 	background: url(transparent.gif);
+}
+
+.landscape {
+    .selectionOverlay {
+        height: 70px;
+    }
 }
 
 #mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button{

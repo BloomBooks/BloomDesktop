@@ -602,13 +602,16 @@ namespace Bloom.web
 			if (template == null)
 				return false; // paranoia
 			var caption = Path.GetFileNameWithoutExtension(path).Trim();
+			var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
+			if (isLandscape)
+				caption = caption.Substring(0, caption.Length - "-landscape".Length);
 			int dummy = 0;
 			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
 			var templatePage = template.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+") == caption);
 			if (templatePage == null)
 				templatePage = template.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 
-			Image image = template.GetThumbnailForPage(templatePage);
+			Image image = template.GetThumbnailForPage(templatePage, isLandscape);
 
 			// The clone here is an attempt to prevent an unexplained exception complaining that the source image for the bitmap is in use elsewhere.
 			using (Bitmap b = new Bitmap((Image)image.Clone()))
