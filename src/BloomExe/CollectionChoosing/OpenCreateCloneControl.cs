@@ -210,22 +210,29 @@ namespace Bloom.CollectionChoosing
 			SelectedPath = path;
 			if (!string.IsNullOrEmpty(path))
 			{
-				if (IsInASourceCollectionFolder(path))
-				{
-					var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InSourceCollectionMessage",
-						"This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.");
-					MessageBox.Show(msg);
-					return;
-				}
+				if (ReportIfInvalidCollectionToEdit(path)) return;
 				CheckForBeingInDropboxFolder(path);
 				_mruList.AddNewPath(path);
 				Invoke(DoneChoosingOrCreatingLibrary);
 			}
 		}
 
-		private bool IsInASourceCollectionFolder(string path)
+		public static bool ReportIfInvalidCollectionToEdit(string path)
 		{
-			return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory());
+			if (IsInvalidCollectionToEdit(path))
+			{
+				var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InSourceCollectionMessage",
+					"This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.");
+				MessageBox.Show(msg);
+				return true;
+			}
+			return false;
+		}
+
+		public static bool IsInvalidCollectionToEdit(string path)
+		{
+			return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory())
+				|| path.StartsWith(ProjectContext.FactoryCollectionsDirectory);
 		}
 
 		/// <summary>
