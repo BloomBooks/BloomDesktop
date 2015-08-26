@@ -1179,10 +1179,13 @@ namespace Bloom.Edit
 			get
 			{
 				dynamic addPageSettings = new ExpandoObject();
-				addPageSettings.templateBookFolderUrl = MassageUrlForJavascript(Path.GetDirectoryName(GetPathToCurrentTemplateHtml));
-				addPageSettings.templateBookUrl = MassageUrlForJavascript(GetPathToCurrentTemplateHtml);
 				addPageSettings.lastPageAdded = _lastPageAdded;
-				var settingsString = JsonConvert.SerializeObject(new [] { addPageSettings });
+				addPageSettings.orientation = CurrentBook.GetLayout().SizeAndOrientation.IsLandScape ? "landscape" : "portrait";
+				dynamic collection1 = new ExpandoObject();
+				collection1.templateBookFolderUrl = MassageUrlForJavascript(Path.GetDirectoryName(GetPathToCurrentTemplateHtml));
+				collection1.templateBookUrl = MassageUrlForJavascript(GetPathToCurrentTemplateHtml);
+				addPageSettings.collections = new [] { collection1 };
+				var settingsString = JsonConvert.SerializeObject(addPageSettings);
 				return settingsString;
 			}
 		}
