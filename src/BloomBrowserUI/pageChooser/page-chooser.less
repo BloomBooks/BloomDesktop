@@ -7,6 +7,10 @@
 @WindowsButton-BackgroundColor-Hover: #B0DEE4;
 @WindowsButton-Border: #ADADAD;
 @HighlightColor: rgba(176, 222, 228, 1);
+ // partly transparent to go on TOP of the page image but still let it show through.
+ // Intended to be similar to HighlightColor when over the default dialog background, but I haven't
+ // tried to figure out exactly what would achieve that.
+@TransparentHiglightColor: hsla(186.9, 49.1%, 65%, 0.45);
 
 BODY {
 	margin: 4px;
@@ -33,6 +37,7 @@ BODY {
 	order: 2;
 	height: auto;
 	min-width: 320px;
+    max-width: 370px; // in the standard dialog width, allows the other pane to be wide enough for 3 columns with scroll bar
 	padding-left: @PreviewPaneLeftPadding;
 
 	img{
@@ -45,6 +50,13 @@ BODY {
 }
 #preview {
 	width: 200px;
+}
+
+.landscape {
+    #preview {
+        width: unset;
+        height: 200px;
+    }
 }
 #previewCaption {
 	font-weight: bold;
@@ -85,8 +97,6 @@ BODY {
 //    flex-wrap: nowrap;
 //}
 .outerCollectionContainer {
-	flex: 1;
-	display: flex;
 	flex-direction: column;
 }
 .collection {
@@ -111,14 +121,14 @@ BODY {
 }
 
 .gridItem:hover {
-	background: @HighlightColor;
+    .selectionOverlay {
+        background: @TransparentHiglightColor;
+    }
 }
 .gridItem.ui-selected {
-	background: @HighlightColor;
-
-	.invisibleThumbCover {
-		//background: @HighlightColor;
-	}
+    .selectionOverlay {
+        background: @TransparentHiglightColor;
+    }
 }
 .thumbnail {
 	overflow: hidden;
@@ -131,6 +141,14 @@ BODY {
 	width: 60px;
 	//take the height proportionally, from the width
 	margin-left: 20px;//centers the thumbnail in the enclosing grid item
+}
+
+.landscape {
+    .thumbnail {
+        width:unset;
+        height: 60px;
+        margin-left: 6px;
+    }
 }
 .gridItem {
 	.gridItemCaption {
@@ -151,6 +169,18 @@ BODY {
 	height: 130px;
 	width: 100px;
 	background: url(transparent.gif);
+}
+.selectionOverlay {
+	z-index: 3;
+	position: absolute;
+	height: 100px;
+	width: 100px;
+}
+
+.landscape {
+    .selectionOverlay {
+        height: 70px;
+    }
 }
 
 #mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button{

@@ -1,4 +1,4 @@
-BODY {
+﻿BODY {
   margin: 4px;
 }
 #mainContainer {
@@ -23,6 +23,7 @@ BODY {
   order: 2;
   height: auto;
   min-width: 320px;
+  max-width: 370px;
   padding-left: 15px;
 }
 #singlePagePreview img {
@@ -33,6 +34,10 @@ BODY {
 }
 #preview {
   width: 200px;
+}
+.landscape #preview {
+  width: unset;
+  height: 200px;
 }
 #previewCaption {
   font-weight: bold;
@@ -48,8 +53,6 @@ BODY {
   margin-left: 15px;
 }
 .outerCollectionContainer {
-  flex: 1;
-  display: flex;
   flex-direction: column;
 }
 .collection {
@@ -71,11 +74,11 @@ BODY {
   width: 104px;
   display: inline-block;
 }
-.gridItem:hover {
-  background: #b0dee4;
+.gridItem:hover .selectionOverlay {
+  background: rgba(122, 199, 210, 0.45);
 }
-.gridItem.ui-selected {
-  background: #b0dee4;
+.gridItem.ui-selected .selectionOverlay {
+  background: rgba(122, 199, 210, 0.45);
 }
 .thumbnail {
   overflow: hidden;
@@ -85,6 +88,11 @@ BODY {
   border: 1px solid darkgray;
   width: 60px;
   margin-left: 20px;
+}
+.landscape .thumbnail {
+  width: unset;
+  height: 60px;
+  margin-left: 6px;
 }
 .gridItem .gridItemCaption {
   display: none;
@@ -104,6 +112,15 @@ BODY {
   height: 130px;
   width: 100px;
   background: url(transparent.gif);
+}
+.selectionOverlay {
+  z-index: 3;
+  position: absolute;
+  height: 100px;
+  width: 100px;
+}
+.landscape .selectionOverlay {
+  height: 70px;
 }
 #mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button {
   background: #e1e1e1 !important;
@@ -160,3 +177,4 @@ BODY {
   border: 5px solid #b0dee4;
   font-weight: bold;
 }
+/*# sourceMappingURL=page-chooser.css.map */

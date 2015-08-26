@@ -10,6 +10,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using System.IO;
+using System.Net;
 using Bloom.ImageProcessing;
 using BloomTemp;
 using L10NSharp;
@@ -255,23 +256,39 @@ namespace Bloom.web
 				return ProcessLevedRTInfo(info, localPath);
 			else if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
-#if __MonoCS__
-				// The JSON format may use a string like this to reference a local path.
-				// Try it without the leading marker.
-				var temp = localPath.Substring(10);
+				var temp = LocalHostPathToFilePath(localPath);
 				if (File.Exists(temp))
 					localPath = temp;
-#else
-				// project on network mapped drive like localhost\C$.
-				// URL was something like /bloom///localhost/C$/, but info.LocalPathWithoutQuery uses Uri.LocalPath
-				// which for some reason drops the needed leading slashes.
-				var temp = "//" + localPath;
-				if (File.Exists(temp))
-					localPath = temp;
-#endif
 			}
 
 			return ProcessContent(info, localPath);
+		}
+
+		/// <summary>
+		/// Adjust the 'localPath' obtained from a request in a platform-dependent way to a path
+		/// that can actually be used to retrieve a file (or test for its existence).
+		/// </summary>
+		/// <param name="localPath"></param>
+		/// <returns></returns>
+		private static string LocalHostPathToFilePath(string localPath)
+		{
+#if __MonoCS__
+			// The JSON format may use a string like this to reference a local path.
+			// Try it without the leading marker.
+			return localPath.Substring(10);
+#else
+			// project on network mapped drive like localhost\C$.
+			// URL was something like /bloom///localhost/C$/, but info.LocalPathWithoutQuery uses Uri.LocalPath
+			// which for some reason drops the needed leading slashes.
+			return "//" + localPath;
+#endif
+		}
+
+		private static string AdjustPossibleLocalHostPathToFilePath(string path)
+		{
+			if (!path.StartsWith("localhost/", StringComparison.InvariantCulture))
+				return path;
+			return LocalHostPathToFilePath(path);
 		}
 
 		/// <summary>
@@ -497,7 +514,7 @@ namespace Bloom.web
 			return true;
 		}
 
-		private static bool ProcessAnyFileContent(IRequestInfo info, string localPath)
+		private bool ProcessAnyFileContent(IRequestInfo info, string localPath)
 		{
 			string modPath = localPath;
 			string path = null;
@@ -517,6 +534,8 @@ namespace Bloom.web
 				// but it has nothing to do with the actual file location.
 				if (localPath.StartsWith("OriginalImages/"))
 					possibleFullImagePath = localPath.Substring(15);
+				if (info.GetQueryString()["generateThumbnaiIfNecessary"] == "true")
+					return FindOrGenerateImage(info, localPath);
 				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{
 					path = possibleFullImagePath;
@@ -540,6 +559,87 @@ namespace Bloom.web
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);
 			return true;
+		}
+
+		/// <summary>
+		/// Requests with ?generateThumbnaiIfNecessary=true are potentially recursive in that we may have to navigate
+		/// a browser to the template page in order to construct the thumbnail.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <returns></returns>
+		protected override bool IsRecursiveRequestContext(HttpListenerContext context)
+		{
+			return base.IsRecursiveRequestContext(context) || context.Request.QueryString["generateThumbnaiIfNecessary"] == "true";
+		}
+
+		/// <summary>
+		/// Currently used in the Add Page dialog, a path with ?generateThumbnaiIfNecessary=true indicates a thumbnail for
+		/// a template page. Usually we expect that a file at the same path but with extension .svg will
+		/// be found and returned. Failing this we try for one ending in .png. If this still fails we
+		/// start a process to generate an image from the template page content.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns>Should always return true, unless we really can't come up with an image at all.</returns>
+		private bool FindOrGenerateImage(IRequestInfo info, string path)
+		{
+			var localPath = AdjustPossibleLocalHostPathToFilePath(path);
+			var svgpath = Path.ChangeExtension(localPath, "svg");
+			if (File.Exists(svgpath))
+			{
+				ReplyWithFileContentAndType(info, svgpath);
+				return true;
+			}
+			var pngpath = Path.ChangeExtension(localPath, "png");
+			if (File.Exists(pngpath))
+			{
+				ReplyWithFileContentAndType(info, pngpath);
+				return true;
+			}
+			// We don't have an image; try to make one.
+			if (CurrentBook == null)
+				return false; // paranoia
+			var template = CurrentBook.FindTemplateBook();
+			if (template == null)
+				return false; // paranoia
+			var caption = Path.GetFileNameWithoutExtension(path).Trim();
+			var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
+			if (isLandscape)
+				caption = caption.Substring(0, caption.Length - "-landscape".Length);
+			int dummy = 0;
+			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
+			var templatePage = template.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+") == caption);
+			if (templatePage == null)
+				templatePage = template.GetPages().FirstOrDefault(); // may get something useful?? or throw??
+
+			Image image = template.GetThumbnailForPage(templatePage, isLandscape);
+
+			// The clone here is an attempt to prevent an unexplained exception complaining that the source image for the bitmap is in use elsewhere.
+			using (Bitmap b = new Bitmap((Image)image.Clone()))
+			{
+				try
+				{
+					{
+						Directory.CreateDirectory(Path.GetDirectoryName(pngpath));
+						b.Save(pngpath);
+					}
+					ReplyWithFileContentAndType(info, pngpath);
+				}
+				catch (Exception)
+				{
+					using (var file = new TempFile())
+					{
+						b.Save(file.Path);
+						ReplyWithFileContentAndType(info, file.Path);
+					}
+				}
+			}
+			return true; // We came up with some reply
+		}
+
+		private static void ReplyWithFileContentAndType(IRequestInfo info, string path)
+		{
+			info.ContentType = GetContentType(Path.GetExtension(path));
+			info.ReplyWithFileContent(path);
 		}
 
 		private bool ProcessCssFile(IRequestInfo info, string localPath)

@@ -371,6 +371,51 @@ namespace Bloom.Book
 			return _storage.MakeDomRelocatable(inputDom, _log);
 		}
 
+		///  <summary>
+		///  Currently used by the image server
+		///  to get thumbnails that are used in the add page dialog. Since this dialog can show
+		///  an enlarged version of the page, we generate these at a higher resolution than usual.
+		///  Also, to make more realistic views of template pages we insert fake text wherever
+		///  there is an empty edit block.
+		///
+		///  The result is cached for possible future use so the caller should not dispose of it.
+		///  </summary>
+		///  <param name="page"></param>
+		/// <param name="isLandscape"></param>
+		/// <returns></returns>
+		public Image GetThumbnailForPage(IPage page, bool isLandscape)
+		{
+			var pageDom = GetThumbnailXmlDocumentForPage(page);
+			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
+			{
+				BackgroundColor = Color.White,// matches the hand-made previews.
+				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.None, // allows the HTML to add its preferred border in the larger preview
+				CenterImageUsingTransparentPadding = true
+			};
+			var pageDiv = pageDom.RawDom.SafeSelectNodes("descendant-or-self::div[contains(@class,'bloom-page')]").Cast<XmlElement>().FirstOrDefault();
+			// The actual page size is rather arbitrary, but we want the right ratio for A4.
+			// Using the actual A4 sizes in mm makes a big enough image to look good in the larger
+			// preview box on the right as well as giving exactly the ratio we want.
+			// We need to make the image the right shape to avoid some sort of shadow/box effects
+			// that I can't otherwise find a way to get rid of.
+			if (isLandscape)
+			{
+				thumbnailOptions.Width = 297;
+				thumbnailOptions.Height = 210;
+				pageDiv.SetAttribute("class", pageDiv.Attributes["class"].Value.Replace("Portrait", "Landscape"));
+			}
+			else
+			{
+				thumbnailOptions.Width = 210;
+				thumbnailOptions.Height = 297;
+				// On the offchance someone makes a template with by-default-landscape pages...
+				pageDiv.SetAttribute("class", pageDiv.Attributes["class"].Value.Replace("Landscape", "Portrait"));
+			}
+			// In different books (or even the same one) in the same session we may have portrait and landscape
+			// versions of the same template page. So we must use different IDs.
+			return _thumbnailProvider.GetThumbnail(page.Id + (isLandscape ? "L" : ""), pageDom, thumbnailOptions);
+		}
+
 		public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
 		{
 			if(_log.ErrorEncountered)
@@ -386,6 +431,37 @@ namespace Bloom.Book
 
 			AddPreviewJScript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
 			return pageDom;
+		}
+
+		// Differs from GetPreviewXmlDocumentForPage() by not adding the three stylesheets
+		// adding them will full paths seems to be diastrous. I think cross-domain rules
+		// prevent them from being loaded, and so we lose the page size information, and the
+		// thumbs come out random sizes. Not sure why this isn't a problem in GetPreviewXmlDocumentForPage.
+		// Also, since this is used for thumbnails of template pages, we insert some arbitrary text
+		// into empty editable divs to give a better idea of what a typical page will look like.
+		HtmlDom GetThumbnailXmlDocumentForPage(IPage page)
+		{
+			if (_log.ErrorEncountered)
+			{
+				return GetErrorDom();
+			}
+			var pageDom = GetHtmlDomWithJustOnePage(page);
+			pageDom.SortStyleSheetLinks();
+			AddPreviewJScript(pageDom);
+			AddFillerTextToEmptyEditDivs(pageDom);
+			return pageDom;
+		}
+
+		private static void AddFillerTextToEmptyEditDivs(HtmlDom pageDom)
+		{
+			var placeHolderText =
+				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed porttitor ex at sapien accumsan convallis. Aenean varius nisi justo. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.";
+			var emptyDivs =
+				pageDom.RawDom.SafeSelectNodes("//div[@contenteditable='true' and string-length(normalize-space(text()))=0]");
+			if (emptyDivs.Count > 3)
+				placeHolderText = "Lorem";
+			foreach (XmlElement div in emptyDivs)
+				div.InnerText = placeHolderText;
 		}
 
 		public HtmlDom GetPreviewXmlDocumentForFirstPage()

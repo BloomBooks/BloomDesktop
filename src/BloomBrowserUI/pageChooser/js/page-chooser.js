@@ -149,6 +149,9 @@ var PageChooser = (function () {
             .done(function (translation) {
             pageButton.attr('value', translation);
         });
+        if (this._orientation === 'landscape') {
+            $("#mainContainer").addClass("landscape");
+        }
     }; // LoadInstalledCollections
     PageChooser.prototype.loadCollection = function (pageFolderUrl, pageUrl, collectionHTML, gridItemHTML, lastPageAdded) {
         var _this = this;
@@ -190,7 +193,7 @@ var PageChooser = (function () {
                 indexToSelect = index;
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
-            var pageLabel = $(".pageLabel", div).first().text();
+            var pageLabel = $(".pageLabel", div).first().text().trim();
             $(".gridItemCaption", currentGridItemHtml).first().text(pageLabel);
             $("img", currentGridItemHtml).attr("src", _this.buildThumbSrcFilename(pageFolderUrl, pageLabel));
             $(".innerCollectionContainer", currentCollection).append(currentGridItemHtml);
@@ -206,9 +209,13 @@ var PageChooser = (function () {
         }); // each
         return indexToSelect;
     }; // LoadPagesFromCollection
+    // any changes to how we tweak the page label to get a file name
+    // must also be made in EnhancedImageServer.FindOrGenerateImage().
     PageChooser.prototype.buildThumbSrcFilename = function (pageFolderUrl, pageLabel) {
         var label = pageLabel.replace('&', '+'); //ampersands don't work in the svg file names, so we use "+" instead
-        return pageFolderUrl + '/template/' + label + (this._orientation === 'landscape' ? '-landscape' : '') + '.svg';
+        // ?generateThumbnaiIfNecessary=true triggers logic in EnhancedImageServer.FindOrGenerateImage.
+        // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
+        return pageFolderUrl + '/template/' + label + (this._orientation === 'landscape' ? '-landscape' : '') + '.svg?generateThumbnaiIfNecessary=true';
     };
     /**
      * Fires an event for C# to handle
