@@ -51,10 +51,20 @@ namespace Bloom
 				{
 					try
 					{
-						Logger.WriteMinorEvent("Channel is '" + ApplicationUpdateSupport.ChannelName + "'");
-						Logger.WriteMinorEvent("UpdateVersionTable looking for UpdateVersionTable URL: " + GetUrlOfTable());
+						Logger.WriteEvent("Channel is '" + ApplicationUpdateSupport.ChannelName + "'");
+						Logger.WriteEvent("UpdateVersionTable looking for UpdateVersionTable URL: " + GetUrlOfTable());
 						TextContentsOfTable = client.DownloadString(GetUrlOfTable());
-						Logger.WriteMinorEvent("UpdateVersionTable contents are " + Environment.NewLine + TextContentsOfTable);
+						
+						//html may have javascript which has braces which will kill the string.format in WriteEvent
+						var safeContents = TextContentsOfTable.Replace("{","{{").Replace("}","}}");
+						Logger.WriteEvent("UpdateVersionTable contents are " + Environment.NewLine + safeContents);
+
+						//things like captive portals will return an html page rather than the text file what we asked for, if the user isn't 
+						//logged in.
+						if(TextContentsOfTable.ToLower().Contains("<html"))
+						{
+							return new UpdateTableLookupResult() { Error = new WebException("Connection did not allow check for update.") };
+						}
 					}
 					catch (WebException e)
 					{
@@ -91,11 +101,13 @@ namespace Bloom
 						continue; //comment
 
 					var parts = line.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-					if (parts.Length != 3)
-						throw new ApplicationException(line);
+					if(parts.Length != 3)
+						Logger.WriteEvent("***Error: UpdateVersionTable could not parse line {0} of this updateTableContent:", line);
+					Logger.WriteEvent(TextContentsOfTable);
+					throw new ApplicationException(line);
 					var lower = Version.Parse(parts[0]);
 					var upper = Version.Parse(parts[1]);
-					if (lower <= RunningVersion && upper >= RunningVersion)
+					if(lower <= RunningVersion && upper >= RunningVersion)
 						return new UpdateTableLookupResult() { URL = parts[2].Trim() };
 				}
 			}
@@ -115,7 +127,7 @@ namespace Bloom
 				parsingErrorMsg = "Could not parse a version number in the UpdateVersionTable" + e.Message;
 				Logger.WriteEvent(parsingErrorMsg);
 			}
-			return new UpdateTableLookupResult() { URL = String.Empty, Error = new WebException(parsingErrorMsg) };
+			return new UpdateTableLookupResult() { URL = String.Empty, Error = new WebException("Error parsing UpdateVersionTable.") };
 		}
 
 		private string GetUrlOfTable()
@@ -128,9 +140,9 @@ namespace Bloom
 			return
 				ex.Status == WebExceptionStatus.Timeout ||
 				ex.Status == WebExceptionStatus.NameResolutionFailure;
-				//I'm not sure if you'd ever get one of these?
-//				ex.Status == WebExceptionStatus.ReceiveFailure ||
-	//			ex.Status == WebExceptionStatus.ConnectFailure;
+			//I'm not sure if you'd ever get one of these?
+			//				ex.Status == WebExceptionStatus.ReceiveFailure ||
+			//			ex.Status == WebExceptionStatus.ConnectFailure;
 		}
 	}
 }
