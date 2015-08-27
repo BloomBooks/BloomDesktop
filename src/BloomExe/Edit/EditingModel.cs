@@ -979,6 +979,7 @@ namespace Bloom.Edit
 						Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
 						throw err;
 					}
+					CheckForBL2364();
 					//OK, looks safe, time to save.
 					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage);
 				}
@@ -992,6 +993,28 @@ namespace Bloom.Edit
 					_tasksToDoAfterSaving.RemoveAt(0);
 					task();
 				}
+			}
+		}
+
+		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
+		// to save is not in the book we're trying to save it into.
+		private void CheckForBL2364()
+		{
+			try
+			{
+				XmlElement divElement =
+					_domForCurrentPage.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
+				string pageDivId = divElement.GetAttribute("id");
+				if (pageDivId != _pageSelection.CurrentSelection.Id)
+					throw new ApplicationException(
+						"Bl-2634: id of _domForCurrentPage is not the same as ID of _pageSelection.CurrentSelection");
+			}
+			catch (Exception err)
+			{
+				if (err.StackTrace.Contains("DeletePage"))
+					Logger.WriteEvent("Trying to save a page while executing DeletePage");
+				Logger.WriteEvent("Error: SaveNow(): a mixup occurred in page IDs");
+				throw;
 			}
 		}
 
