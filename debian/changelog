@@ -1,3 +1,10 @@
+bloom-desktop-beta (3.3.3) stable; urgency=medium
+
+  * Add comment to rules and adjust FULL_BUILD_NUMBER to match this file.
+  * More bug fixes: see the source repository log on the Version3.3 branch.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Fri, 28 Aug 2015 14:14:22 -0500
+
 bloom-desktop-beta (3.3.2) stable; urgency=medium
 
   * Rename package to bloom-desktop-beta for public consumption.
