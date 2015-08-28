@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -53,7 +54,7 @@ namespace Bloom.CollectionTab
 		/// A stack would be better for updating "the thing I just changed", but we're using a queue at the moment simply because we
 		/// want you'd see at the top of the screen to update before what's at the bottom or offscreen
 		/// </summary>
-		private readonly ConcurrentQueue<ButtonInfo> _buttonsNeedingSlowUpdate;
+		private readonly ConcurrentQueue<ButtonRefreshInfo> _buttonsNeedingSlowUpdate;
 
 		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
@@ -65,7 +66,7 @@ namespace Bloom.CollectionTab
 			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
 			_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
 			_bookTransferrer = bookTransferrer;
-			_buttonsNeedingSlowUpdate = new ConcurrentQueue<ButtonInfo>();
+			_buttonsNeedingSlowUpdate = new ConcurrentQueue<ButtonRefreshInfo>();
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
 			_primaryCollectionFlow.HorizontalScroll.Visible = false;
@@ -92,19 +93,39 @@ namespace Bloom.CollectionTab
 			_showHistoryMenu.Visible = _showNotesMenu.Visible = Settings.Default.ShowSendReceive;
 
 			if(Settings.Default.ShowExperimentalCommands)
-				_settingsProtectionHelper.ManageComponent(_exportToXMLForInDesignToolStripMenuItem);//we are restriting it because it opens a folder from which the user could do damage
+				_settingsProtectionHelper.ManageComponent(_exportToXMLForInDesignToolStripMenuItem);//we are restricting it because it opens a folder from which the user could do damage
 			_exportToXMLForInDesignToolStripMenuItem.Visible = Settings.Default.ShowExperimentalCommands;
 
 			SetupBookDropdownIcon();
 			_bookContextMenu.Closed += _bookContextMenu_Closed;
+			_bookContextMenu.Opening += _bookContextMenu_Opening;
+		}
+
+		// adjust the context menu item visibility based on what sort of collection we're in
+		void _bookContextMenu_Opening(object sender, CancelEventArgs e)
+		{
+			var btn = (sender as ContextMenuStrip).SourceControl as Button;
+			var btnInfo = btn.Tag as BookButtonInfo;
+			if (btnInfo.IsVernacularBook)
+				return; // leave them all on
+			if (btnInfo.IsFactoryTemplate)
+				e.Cancel = true; // don't show the menu at all
+			foreach (ToolStripItem menuItem in (sender as ContextMenuStrip).Items)
+			{
+				if (menuItem == deleteMenuItem && btnInfo.IsBLibraryBook)
+					continue; // leave this one on for BloomLibrary books
+				if (menuItem == _openFolderOnDisk)
+					continue; // leave this one on (for both BloomLibrary and BloomPack books)
+				menuItem.Visible = false;
+			}
 		}
 
 		void _bookContextMenu_Closed(object sender, ToolStripDropDownClosedEventArgs e)
 		{
-			// make these controls visible again so they are available in the right-click menu
-			toolStripSeparator1.Visible = true;
-			_updateThumbnailMenu.Visible = true;
-			_updateFrontMatterToolStripMenu.Visible = true;
+			// Not sure which ones are visible at this point
+			// So make them all visible so they are available in the right-click menu
+			foreach (ToolStripItem menuItem in (sender as ContextMenuStrip).Items)
+				menuItem.Visible = true;
 		}
 
 		private void SetupBookDropdownIcon()
@@ -118,14 +139,14 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		void _bookTriangle_Click()
+		void _bookTriangle_Click(Button btn, Point clickLocation)
 		{
 			// hide these controls in the triangle menu
 			toolStripSeparator1.Visible = false;
 			_updateThumbnailMenu.Visible = false;
 			_updateFrontMatterToolStripMenu.Visible = false;
 
-			_bookContextMenu.Show(MousePosition);
+			btn.ContextMenuStrip.Show(btn, clickLocation);
 		}
 
 		private void OnExportToXmlForInDesign(object sender, EventArgs e)
@@ -324,12 +345,12 @@ namespace Bloom.CollectionTab
 		/// </summary>
 		private void ImproveAndRefreshBookButtons()
 		{
-			ButtonInfo buttonInfo;
-			if (!_buttonsNeedingSlowUpdate.TryDequeue(out buttonInfo))
+			ButtonRefreshInfo buttonRefreshInfo;
+			if (!_buttonsNeedingSlowUpdate.TryDequeue(out buttonRefreshInfo))
 				return;
 
-			Button button = buttonInfo.Button;
-			BookInfo bookInfo = button.Tag as BookInfo;
+			Button button = buttonRefreshInfo.Button;
+			BookInfo bookInfo = (button.Tag as BookButtonInfo).BookInfo;
 			Book.Book book;
 			try
 			{
@@ -365,7 +386,7 @@ namespace Bloom.CollectionTab
 					toolTip1.SetToolTip(button, bestTitle);
 				}
 			}
-			if (buttonInfo.ThumbnailRefreshNeeded)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
+			if (buttonRefreshInfo.ThumbnailRefreshNeeded)//!bookInfo.TryGetPremadeThumbnail(out unusedImage))
 				ScheduleRefreshOfOneThumbnail(book);
 		}
 
@@ -404,7 +425,7 @@ namespace Bloom.CollectionTab
 					if (!bookInfo.IsExperimental || Settings.Default.ShowExperimentalBooks)
 					{
 						loadedAtLeastOneBook = true;
-						AddOneBook(bookInfo, flowLayoutPanel, collection.IsFactoryTemplates, collection.IsDownloaded);
+						AddOneBook(bookInfo, flowLayoutPanel, collection);
 					}
 				}
 				catch (Exception error)
@@ -503,10 +524,10 @@ namespace Bloom.CollectionTab
 			get { return Parent.Parent.Parent.Parent != null; }
 		}
 
-		private void AddOneBook(BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, bool isFactoryTemplatesCollection, bool isFromBloomLibrary)
+		private void AddOneBook(BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, BookCollection collection)
 		{
 			string title = bookInfo.QuickTitleUserDisplay;
-			if (isFactoryTemplatesCollection)
+			if (collection.IsFactoryTemplates)
 				title = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.BookName." + title, title);
 
 			var button = new Button
@@ -519,10 +540,10 @@ namespace Bloom.CollectionTab
 				FlatStyle = FlatStyle.Flat,
 				ForeColor = Palette.TextAgainstDarkBackground,
 				UseMnemonic = false, //otherwise, it tries to interpret '&' as a shortcut
-				ContextMenuStrip = isFactoryTemplatesCollection ? null : (isFromBloomLibrary ? _bloomLibraryContextMenu : _bookContextMenu),
+				ContextMenuStrip = _bookContextMenu,
 				AutoSize = false,
 
-				Tag = bookInfo
+				Tag = new BookButtonInfo(bookInfo, collection, collection == _model.TheOneEditableCollection)
 			};
 
 			button.MouseDown += OnClickBook; //we need this for right-click menu selection, which needs to 1st select the book
@@ -556,7 +577,7 @@ namespace Bloom.CollectionTab
 				RefreshOneThumbnail(bookInfo,Resources.placeHolderBookThumbnail);
 				refreshThumbnail = true;
 			}
-			_buttonsNeedingSlowUpdate.Enqueue(new ButtonInfo(button, refreshThumbnail));
+			_buttonsNeedingSlowUpdate.Enqueue(new ButtonRefreshInfo(button, refreshThumbnail));
 		}
 
 		private string ShortenTitleIfNeeded(string title, Button button)
@@ -658,7 +679,7 @@ namespace Bloom.CollectionTab
 				MessageBox.Show(LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."));
 				return;
 			}
-			BookInfo bookInfo = thisBtn.Tag as BookInfo;
+			BookInfo bookInfo = (thisBtn.Tag as BookButtonInfo).BookInfo;
 			if (bookInfo == null)
 				return;
 
@@ -681,7 +702,7 @@ namespace Bloom.CollectionTab
 						var pt = thisBtn.PointToClient(MousePosition);
 						if ((pt.X > thisBtn.Width - 12) && (pt.Y > thisBtn.Height - 12))
 						{
-							_bookTriangle_Click();
+							_bookTriangle_Click(thisBtn, pt);
 						}
 					}
 					return; // already selected, nothing to do.
@@ -702,7 +723,7 @@ namespace Bloom.CollectionTab
 		{
 			foreach (var btn in AllBookButtons())
 			{
-				if (btn.Tag == bookInfo)
+				if ((btn.Tag as BookButtonInfo).BookInfo == bookInfo)
 				{
 					btn.Paint += btn_Paint;
 					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
@@ -759,13 +780,6 @@ namespace Bloom.CollectionTab
 
 		private Book.Book SelectedBook
 		{
-			set
-			{
-				foreach (var btn in AllBookButtons())
-				{
-					btn.BackColor = btn.Tag==value ? Color.DarkGray : _primaryCollectionFlow.BackColor;
-				}
-			}
 			get { return _bookSelection.CurrentSelection; }
 		}
 
@@ -773,7 +787,7 @@ namespace Bloom.CollectionTab
 		{
 			get
 			{
-				return AllBookButtons().FirstOrDefault(b => b.Tag == SelectedBook.BookInfo);
+				return AllBookButtons().FirstOrDefault(b => (b.Tag as BookButtonInfo).BookInfo == SelectedBook.BookInfo);
 			}
 		}
 
@@ -856,7 +870,7 @@ namespace Bloom.CollectionTab
 			// Eithe way, the basic idea is that books in the main collection you are now editing are always usable.
 			if (bookButton.Parent == _primaryCollectionFlow)
 				return true;
-			var bookInfo = (BookInfo) bookButton.Tag;
+			var bookInfo = (bookButton.Tag as BookButtonInfo).BookInfo;
 			return IsSuitableSourceForThisEditableCollection(bookInfo);
 		}
 
@@ -906,9 +920,9 @@ namespace Bloom.CollectionTab
 			return newBitmap;
 		}
 
-		private Button FindBookButton(Book.BookInfo bookInfo)
+		private Button FindBookButton(BookInfo bookInfo)
 		{
-			return AllBookButtons().FirstOrDefault(b => b.Tag == bookInfo);
+			return AllBookButtons().FirstOrDefault(b => (b.Tag as BookButtonInfo).BookInfo == bookInfo);
 		}
 
 		private IEnumerable<Button> AllBookButtons()
@@ -936,7 +950,7 @@ namespace Bloom.CollectionTab
 
 		private void deleteMenuItem_Click(object sender, EventArgs e)
 		{
-			var button = AllBookButtons().FirstOrDefault(b => b.Tag == SelectedBook.BookInfo);
+			var button = FindBookButton(SelectedBook.BookInfo);
 			if (_model.DeleteBook(SelectedBook))
 			{
 				Debug.Assert(button != null && _primaryCollectionFlow.Controls.Contains(button));
@@ -1097,9 +1111,9 @@ namespace Bloom.CollectionTab
 			_vernacularCollectionMenuStrip.Show(_menuTriangle, new Point(0, 0));
 		}
 
-		private class ButtonInfo
+		private class ButtonRefreshInfo
 		{
-			public ButtonInfo(Button button, bool thumbnailRefreshNeeded)
+			public ButtonRefreshInfo(Button button, bool thumbnailRefreshNeeded)
 			{
 				Button = button;
 				ThumbnailRefreshNeeded = thumbnailRefreshNeeded;
@@ -1167,7 +1181,7 @@ namespace Bloom.CollectionTab
 			LoadPrimaryCollectionButtons();
 
 			// select the new book
-			var bookInfo = AllBookButtons().Select(btn => btn.Tag as BookInfo).FirstOrDefault(info => info.FolderPath == newBookDir);
+			var bookInfo = AllBookButtons().Select(btn => (btn.Tag as BookButtonInfo).BookInfo).FirstOrDefault(info => info.FolderPath == newBookDir);
 			if (bookInfo != null)
 			{
 				SelectBook(bookInfo);
@@ -1208,6 +1222,29 @@ namespace Bloom.CollectionTab
 
 			foreach (var directory in Directory.GetDirectories(sourceDir))
 				CopyDirectory(directory, Path.Combine(targetDir, Path.GetFileName(directory)));
+		}
+	}
+
+	internal class BookButtonInfo
+	{
+		private readonly BookInfo _bookInfo;
+		internal BookInfo BookInfo { get { return _bookInfo; } }
+
+		private readonly BookCollection _collection;
+
+		// isVernacular meaning part of the current TheOneEditableCollection
+		private readonly bool _isVernacularBook;
+		internal bool IsVernacularBook { get { return _isVernacularBook; } }
+
+		internal bool IsBLibraryBook { get { return _collection.IsDownloaded; } }
+
+		internal bool IsFactoryTemplate { get { return _collection.IsFactoryTemplates; } }
+
+		public BookButtonInfo(BookInfo bookInfo, BookCollection collection, bool isVernacular)
+		{
+			_bookInfo = bookInfo;
+			_collection = collection;
+			_isVernacularBook = isVernacular;
 		}
 	}
 }

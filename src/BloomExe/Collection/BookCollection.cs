@@ -24,6 +24,7 @@ namespace Bloom.Collection
 
 		private readonly string _path;
 		private List<BookInfo> _bookInfos;
+		private string _factoryDir;
 
 		private readonly BookSelection _bookSelection;
 
@@ -191,13 +192,29 @@ namespace Bloom.Collection
 
 		public bool IsDownloaded { get { return Name == DownloadedBooksCollectionNameInEnglish; } }
 
-		public bool IsFactoryTemplates
+		private string FactoryDir
 		{
 			get
 			{
-				return String.Equals(Name, InstalledTemplatesCollectionNameInEnglish, StringComparison.InvariantCultureIgnoreCase);
+				if (String.IsNullOrEmpty(_factoryDir))
+				{
+					var basicBookDir = Path.GetDirectoryName(BloomFileLocator.GetFileDistributedWithApplication(
+						"factoryCollections",
+						InstalledTemplatesCollectionNameInEnglish,
+						"Basic Book",
+						"Basic Book.htm"));
+					if (String.IsNullOrEmpty(basicBookDir))
+						throw new ApplicationException("Basic Book template cannot be found!");
+					_factoryDir = basicBookDir.Substring(0, basicBookDir.IndexOf(InstalledTemplatesCollectionNameInEnglish));
+				}
+				return _factoryDir;
 			}
 		}
+
+		/// <summary>
+		/// This includes everything in "factoryCollections" (i.e. Templates folder AND Sample Shells:Vaccinations folder)
+		/// </summary>
+		public bool IsFactoryTemplates { get { return PathToDirectory.Contains(FactoryDir); } }
 
 		private FileSystemWatcher _watcher;
 		/// <summary>

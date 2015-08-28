@@ -91,7 +91,7 @@ namespace Bloom.CollectionTab
 				_bookCollections = new List<BookCollection>(GetBookCollectionsOnce());
 
 				//we want the templates to be second (after the vernacular collection) regardless of alphabetical sorting
-				var templates = _bookCollections.First(c => c.IsFactoryTemplates);
+				var templates = _bookCollections.First(c => c.Name.ToLowerInvariant() == "templates");
 				_bookCollections.Remove(templates);
 				_bookCollections.Insert(1,templates);
 			}
@@ -112,7 +112,7 @@ namespace Bloom.CollectionTab
 			get { return TheOneEditableCollection.GetBookInfos().Select(book => book.Title); }
 		}
 
-		private BookCollection TheOneEditableCollection
+		internal BookCollection TheOneEditableCollection
 		{
 			get { return GetBookCollections().First(c => c.Type == BookCollection.CollectionType.TheOneEditableCollection); }
 		}
