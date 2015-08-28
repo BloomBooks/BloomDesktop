@@ -734,6 +734,13 @@ namespace Bloom.Edit
 			}
 			using (var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
+				// Pass in the current GUI language.  We want only the main language part of the tag.
+				// (for example, "zh-Hans" should pass in as "zh".)
+				var lang = Settings.Default.UserInterfaceLanguage;
+				var idx = lang.IndexOfAny(new char[]{ '-', '_' });
+				if (idx > 0)
+					lang = lang.Substring(0, idx);
+				dlg.SearchLanguage = lang;
 				var result = dlg.ShowDialog();
 				// Check memory for the benefit of developers.  The user won't see anything.
 				Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen or canceled", false);
