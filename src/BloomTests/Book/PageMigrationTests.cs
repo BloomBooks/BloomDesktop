@@ -280,6 +280,89 @@ namespace BloomTests.Book
 			return dom;
 		}
 
+		[Test]
+		public void UpdatePageToTemplate_UpdatesPage()
+		{
+			SetDom(@"<div class='bloom-page' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='prevPage'>
+			   <div class='marginBox'>
+					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
+					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
+						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable BigWords-style bloom-content1' contenteditable='true' lang='en'>
+							Different text in first para.
+						</div>
+					</div>
+				</div>
+			</div>
+<div class='bloom-page' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
+			   <div class='marginBox'>
+					<div class='bloom-imageContainer bloom-leadingElement'><img data-license='cc-by-nc-sa' data-copyright='Copyright © 2012, LASI' style='width: 608px; height: 471px; margin-left: 199px; margin-top: 0px;' src='erjwx3bl.q3c.png' alt='This picture, erjwx3bl.q3c.png, is missing or was loading too slowly.' height='471' width='608'></img></div>
+					<div aria-describedby='qtip-1' data-hasqtip='true' class='bloom-translationGroup bloom-trailingElement normal-style'>
+						<div aria-describedby='qtip-0' data-hasqtip='true' class='bloom-editable BigWords-style bloom-content1' contenteditable='true' lang='en'>
+							There was an old man called Bilanga who was very tall and also not yet married.
+						</div>
+					</div>
+				</div>
+			</div>
+			");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			var newPageDom = MakeDom((@"<div class='A5Portrait bloom-page numberedPage customPage bloom-combinedPage' data-page='extra' id='newTemplate'>
+	  <div lang='en' class='pageLabel'>Picture in Middle</div>
+	  <div lang='en' class='pageDescription'></div>
+	  <div class='marginBox'>
+		<div class='split-pane horizontal-percent'>
+		  <div style='bottom: 76%' class='split-pane-component position-top'>
+			<div class='split-pane-component-inner'>
+			  <div class='bloom-translationGroup bloom-trailingElement normal-style'>
+				<div lang='z' contenteditable='true' class='bloom-content1 bloom-editable'>
+				</div>
+			  </div>
+			</div>
+		  </div>
+		  <div style='bottom: 76%' class='split-pane-divider horizontal-divider'></div>
+		  <!--NB: this split percent has to be the same as that used for upper!!!!!!-->
+		  <div style='height: 76%' class='split-pane-component position-bottom'>
+			<div class='split-pane-component-inner'>
+			  <div class='split-pane horizontal-percent'>
+				<div style='bottom: 30%' class='split-pane-component position-top'>
+				  <div class='split-pane-component-inner'>
+					<div class='bloom-imageContainer bloom-leadingElement'><img src='placeHolder.png' alt='Could not load the picture'/>
+					</div>
+				  </div>
+				</div>
+				<div style='bottom: 30%' class='split-pane-divider horizontal-divider'></div>
+				<!--NB: this split percent has to be the same as that used for upper!!!!!!-->
+				<div style='height: 30%' class='split-pane-component position-bottom'>
+				  <div class='split-pane-component-inner'>
+					<div class='bloom-translationGroup bloom-trailingElement normal-style'>
+					  <div lang='z' contenteditable='true' class='bloom-content1 bloom-editable'>
+					  </div>
+					</div>
+				  </div>
+				</div>
+				<div class='split-pane-resize-shim'></div>
+			  </div>
+			</div>
+		  </div>
+		  <div class='split-pane-resize-shim'></div>
+		</div>
+	  </div>
+	</div>"));
+			var page = (XmlElement) dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			var template = (XmlElement) newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
+
+			book.UpdatePageToTemplate(dom, template, "thePage");
+
+			var newPage = (XmlElement)dom.SafeSelectNodes(".//div[@id='thePage']")[0];
+			Assert.That(newPage.Attributes["class"].Value, Is.EqualTo("A5Portrait bloom-page numberedPage customPage bloom-combinedPage"));
+			Assert.That(newPage.Attributes["data-pagelineage"].Value, Is.EqualTo("newTemplate"));
+			// We kept the image
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//img[@data-license='cc-by-nc-sa' and @data-copyright='Copyright © 2012, LASI' and @src='erjwx3bl.q3c.png']", 1); // the one in the first page has slightly different attrs
+			CheckEditableText(newPage, "en", "There was an old man called Bilanga who was very tall and also not yet married.");
+			// We should have kept the second one in the new page even though we didn't put anything in it (and there is one in the first page, too).
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-translationGroup')]", 3);
+		}
+
 		// Enhance: if there are ever cases where there are multiple image containers to migrate, test this.
 		// Enhance: if there are ever cases where it is possible not to have exactly corresponding parent elements (e.g., migrating a page with
 		// one translation group to one with two), test this.
@@ -302,7 +385,7 @@ namespace BloomTests.Book
 
 		private void CheckEditableText(XmlElement page, string lang, string text, int groupIndex = 0)
 		{
-			var transGroup = (XmlElement)page.SafeSelectNodes("//div[contains(@class,'bloom-translationGroup')]")[groupIndex];
+			var transGroup = (XmlElement)page.SafeSelectNodes(".//div[contains(@class,'bloom-translationGroup')]")[groupIndex];
 			var editDiv = (XmlElement)transGroup.SafeSelectNodes("div[@lang='" + lang + "' and contains(@class,'bloom-editable')]")[0];
 			var actualText = editDiv.InnerXml;
 			Assert.That(actualText.Trim(), Is.EqualTo(text));

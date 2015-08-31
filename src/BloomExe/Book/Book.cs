@@ -850,10 +850,24 @@ namespace Bloom.Book
 			var bookPath = Path.Combine(rootFolder, updateTo.Path);
 			var templateDoc = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
 			var newChild = (XmlElement)templateDoc.SafeSelectNodes("//div[@id='" + updateTo.Guid + "']")[0];
-			var newPage = (XmlElement)page.OwnerDocument.ImportNode(newChild, true);
+			MigrateEditableData(page, newChild, lineage.Replace(originalTemplateGuid, updateTo.Guid));
+		}
+
+		/// <summary>
+		/// Replace page in its parent with an element which is a clone of template, but with the contents
+		/// of page transferred as far as possible. Retain the id of the page. Set its lineage to the supplied value
+		/// </summary>
+		/// <param name="page"></param>
+		/// <param name="template"></param>
+		/// <param name="lineage"></param>
+		/// <param name="originalTemplateGuid"></param>
+		/// <param name="updateTo"></param>
+		private static void MigrateEditableData(XmlElement page, XmlElement template, string lineage)
+		{
+			var newPage = (XmlElement) page.OwnerDocument.ImportNode(template, true);
 			page.ParentNode.ReplaceChild(newPage, page);
 			newPage.SetAttribute("id", page.Attributes["id"].Value);
-			newPage.SetAttribute("data-pagelineage", lineage.Replace(originalTemplateGuid, updateTo.Guid));
+			newPage.SetAttribute("data-pagelineage", lineage);
 			// migrate text
 			MigrateChildren(page, "bloom-translationGroup", newPage);
 			// migrate images
@@ -1109,6 +1123,20 @@ namespace Bloom.Book
 
 			//Likewise, the multilingual settings (e.g. bloom-bilingual) get messed up, so restore those
 			UpdateMultilingualSettings(bookDom);
+		}
+
+		public void UpdatePageToTemplate(XmlDocument bookDom, XmlElement templatePageDiv, string pageId)
+		{
+			var pageDiv = bookDom.SafeSelectNodes("//body/div[@id='" + pageId + "']").Cast<XmlElement>().FirstOrDefault();
+			if (pageDiv != null)
+			{
+				var idAttr = templatePageDiv.Attributes["id"];
+				var templateId = idAttr == null ? "" : idAttr.Value;
+				MigrateEditableData(pageDiv, templatePageDiv, templateId);
+				// not the same object as before; we need to update the new one.
+				pageDiv = bookDom.SafeSelectNodes("//body/div[@id='" + pageId + "']").Cast<XmlElement>().FirstOrDefault();
+				UpdateEditableAreasOfElement(pageDiv);
+			}
 		}
 
 		private static void UpdateDivInsidePage(int zeroBasedCount, XmlElement templateElement, XmlElement targetPage, IProgress progress)
@@ -2100,11 +2128,15 @@ namespace Bloom.Book
 			UpdateEditableAreasOfElement(OurHtmlDom);
 		}
 
+		public void UpdateEditableAreasOfElement(HtmlDom dom)
+		{
+			UpdateEditableAreasOfElement(dom.RawDom.DocumentElement);
+		}
 		/// <summary>
 		/// This is called both for the whole book, and for individual pages when the user uses Origami to make changes to the layout of the page
 		/// </summary>
 		/// <param name="elementToUpdate"></param>
-		public void UpdateEditableAreasOfElement(HtmlDom elementToUpdate)
+		public void UpdateEditableAreasOfElement(XmlElement elementToUpdate)
 		{
 			var language1Iso639Code = _collectionSettings.Language1Iso639Code;
 			var language2Iso639Code = _collectionSettings.Language2Iso639Code;

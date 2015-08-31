@@ -76,7 +76,6 @@ BODY {
 	max-height: 145px;
 	//width: 353px;
 	line-height: 1.2em;
-	height: 100px;
 	overflow: hidden;
 	//overflow-y: scroll   this is actually what we want, but it's always showing the scroll, so off for now
 	margin-right: 15px;
@@ -141,6 +140,10 @@ BODY {
 	width: 60px;
 	//take the height proportionally, from the width
 	margin-left: 20px;//centers the thumbnail in the enclosing grid item
+}
+
+.disabled .thumbnail {
+    opacity: 0.3;
 }
 
 .landscape {
@@ -241,4 +244,28 @@ BODY {
 	width: 200px;
 	border: 5px solid @HighlightColor;
 	font-weight: bold;
+    background-image:none;
+}
+
+#convertAnyway {
+    color:red;
+    visibility:hidden;
+    margin-left: 30px;
+    margin-right: 30px;
+}
+#convertLosesMaterial {
+    color:red;
+    visibility:hidden;
+    margin-left: 30px; // rather arbitrary. I'd like it to be left-aligned with the picture.
+    margin-right: 30px;
+}
+
+.willLoseData {
+    #convertAnyway {
+        visibility:visible;
+    }
+    #convertLosesMaterial {
+        visibility:visible;
+        margin-bottom:10px;
+    }
 }

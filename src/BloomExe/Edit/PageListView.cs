@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -32,24 +33,43 @@ namespace Bloom.Edit
 			_thumbNailList.PageSelectedChanged+=new EventHandler(OnPageSelectedChanged);
 			_thumbNailList.Isolator = isolator;
 			_thumbNailList.ControlKeyEvent = controlKeyEvent;
+			// First action determines whether the menu item is enabled, second performs it.
+			var menuItems = new List<Tuple<string, Func<IPage, bool>, Action<IPage>>>();
+			menuItems.Add(
+				Tuple.Create<string,  Func<IPage, bool>, Action<IPage>>(
+					LocalizationManager.GetString("EditTab._duplicatePageButton", "Duplicate Page"), // same ID as button in toolbar));
+					(page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
+					(page) => _model.DuplicatePage(page)));
+			menuItems.Add(
+				Tuple.Create<string,  Func<IPage, bool>, Action<IPage>>(
+					LocalizationManager.GetString("EditTab._deletePageButton", "Remove Page"),  // same ID as button in toolbar));
+					(page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
+					(page) =>
+					{
+						if (ConfirmRemovePageDialog.Confirm())
+							_model.DeletePage(page);
+					}));
+			menuItems.Add(
+				Tuple.Create<string,  Func<IPage, bool>, Action<IPage>>(
+					LocalizationManager.GetString("EditTab._chooseLayoutButton", "Choose Different Layout"),
+					(page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
+					(page) => _model.ChangePageLayout()));
+			// This adds the desired menu items to the Gecko context menu that happens when we right-click
 			_thumbNailList.ContextMenuProvider = args =>
 			{
 				var page = _thumbNailList.GetPageContaining(args.TargetNode);
 				if (page == null)
 					return; // no page-related commands if we didn't click on one.
-
-				var dupPage = LocalizationManager.GetString("EditTab._duplicatePageButton", "Duplicate Page"); // same ID as button in toolbar
-				var dupItem = new MenuItem(dupPage, (sender, eventArgs) => _model.DuplicatePage(page));
-				args.ContextMenu.MenuItems.Add(dupItem);
-				var removePage = LocalizationManager.GetString("EditTab._deletePageButton", "Remove Page"); // same ID as button in toolbar
-				var removeItem = new MenuItem(removePage, (sender, eventArgs) =>
+				foreach (var item in menuItems)
 				{
-					if (ConfirmRemovePageDialog.Confirm())
-					_model.DeletePage(page);
-				});
-				args.ContextMenu.MenuItems.Add(removeItem);
-				dupItem.Enabled = removeItem.Enabled = page != null && !page.Required && !_model.CurrentBook.LockedDown;
+					var menuItem = new MenuItem(item.Item1, (sender, eventArgs) => item.Item3(page));
+					args.ContextMenu.MenuItems.Add(menuItem);
+					menuItem.Enabled = item.Item2(page);
+				}
 			};
+			// This sets up the context menu items that will be shown when the user clicks the
+			// arrow in the thumbnail list.
+			_thumbNailList.ContextMenuItems = menuItems;
 		}
 
 		private void OnPageSelectedChanged(object page, EventArgs e)

@@ -652,6 +652,8 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
 			_view.AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
 			_view.AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
+			_view.AddMessageEventListener("chooseLayout", (id) => ChangePageLayoutBasedOnTemplate(id));
+
 		}
 
 
@@ -713,6 +715,22 @@ namespace Bloom.Edit
 				return true;
 			}
 			return false;
+		}
+
+		private void ChangePageLayoutBasedOnTemplate(string pageId)
+		{
+			SaveNow();
+
+			IPage page;
+			var dict = GetTemplatePagesForThisBook();
+			if (dict != null && dict.TryGetValue(pageId, out page))
+			{
+				var templatePage = page.GetDivNodeForThisPage();
+				var book = _pageSelection.CurrentSelection.Book;
+				book.UpdatePageToTemplate(book.RawDom, templatePage, _pageSelection.CurrentSelection.Id);
+				_lastPageAdded = pageId; // Review
+				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+			}
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
@@ -1195,22 +1213,23 @@ namespace Bloom.Edit
 		}
 
 		/// <summary>
-		/// Returns a json string that gives paths to our current TemplateBook
+		/// Returns a json string for initializing the AddPage dialog. It gives paths to our current TemplateBook
+		/// and specifies whether the dialog is to be used for adding pages or choosing a different layout.
 		/// </summary>
-		public string GetTemplateBookInfo
+		public string GetAddPageArguments(bool forChooseLayout)
 		{
-			get
-			{
-				dynamic addPageSettings = new ExpandoObject();
-				addPageSettings.lastPageAdded = _lastPageAdded;
-				addPageSettings.orientation = CurrentBook.GetLayout().SizeAndOrientation.IsLandScape ? "landscape" : "portrait";
-				dynamic collection1 = new ExpandoObject();
-				collection1.templateBookFolderUrl = MassageUrlForJavascript(Path.GetDirectoryName(GetPathToCurrentTemplateHtml));
-				collection1.templateBookUrl = MassageUrlForJavascript(GetPathToCurrentTemplateHtml);
-				addPageSettings.collections = new [] { collection1 };
-				var settingsString = JsonConvert.SerializeObject(addPageSettings);
-				return settingsString;
-			}
+			dynamic addPageSettings = new ExpandoObject();
+			addPageSettings.lastPageAdded = _lastPageAdded;
+			addPageSettings.orientation = CurrentBook.GetLayout().SizeAndOrientation.IsLandScape ? "landscape" : "portrait";
+			dynamic collection1 = new ExpandoObject();
+			collection1.templateBookFolderUrl = MassageUrlForJavascript(Path.GetDirectoryName(GetPathToCurrentTemplateHtml));
+			collection1.templateBookUrl = MassageUrlForJavascript(GetPathToCurrentTemplateHtml);
+			addPageSettings.collections = new[] {collection1};
+			addPageSettings.chooseLayout = forChooseLayout;
+			if (forChooseLayout)
+				addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor;
+			var settingsString = JsonConvert.SerializeObject(addPageSettings);
+			return settingsString;
 		}
 
 		public void ShowAddPageDialog()
@@ -1224,6 +1243,11 @@ namespace Bloom.Edit
 		{
 			var newUrl = URL_PREFIX + url;
 			return newUrl.Replace(':', '$').Replace('\\', '/');
+		}
+
+		internal void ChangePageLayout()
+		{
+			_view.ShowChangeLayoutDialog();
 		}
 	}
 

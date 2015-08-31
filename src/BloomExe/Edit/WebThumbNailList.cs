@@ -28,6 +28,11 @@ namespace Bloom.Edit
 		private int _verticalScrollDistance;
 		private static string _thumbnailInterval;
 
+		// A list of menu items that should be in both the web browser's right-click menu and
+		// the one we show ourselves when the arrow is clicked. The second item in the tuple
+		// determines whether the item should be enabled; the third performs the action.
+		internal List<Tuple<string, Func<IPage, bool>, Action<IPage>>> ContextMenuItems { get; set; }
+
 		public WebThumbNailList()
 		{
 			InitializeComponent();
@@ -141,6 +146,9 @@ namespace Bloom.Edit
 			if (classContent.Contains("gridSelected"))
 				return;
 			gridElt.SetAttribute("class", classContent + " gridSelected");
+			var menuElt = GetElementForMenuHolder();
+			menuElt.ParentElement.RemoveChild(menuElt);
+			gridElt.DOMElement.AppendChild(menuElt.DOMElement);
 		}
 
 		string ColorToHtmlCode(Color color)
@@ -280,6 +288,7 @@ namespace Bloom.Edit
 		{
 			_browser.AddMessageEventListener("gridClick", ItemClick);
 			_browser.AddMessageEventListener("gridReordered", GridReordered);
+			_browser.AddMessageEventListener("menuClicked", MenuClick);
 			SelectPage(_selectedPage);
 			_browser.VerticalScrollDistance = _verticalScrollDistance;
 		}
@@ -289,6 +298,23 @@ namespace Bloom.Edit
 			IPage page;
 			if (_pageMap.TryGetValue(s, out page))
 				InvokePageSelectedChanged(page);
+		}
+
+		private void MenuClick(string pageId)
+		{
+			IPage page;
+			var menu = new ContextMenuStrip();
+			if (!_pageMap.TryGetValue(pageId, out page))
+				return;
+			foreach (var item in ContextMenuItems)
+			{
+				var useItem = item; // for use in Click action (reference to loop variable has unpredictable results)
+				var menuItem = new ToolStripMenuItem(item.Item1);
+				menuItem.Click += (sender, args) => useItem.Item3(page);
+				menuItem.Enabled = item.Item2(page);
+				menu.Items.Add(menuItem);
+			}
+			menu.Show(MousePosition);
 		}
 
 		/// <summary>
@@ -437,6 +463,11 @@ namespace Bloom.Edit
 		private GeckoElement GetGridElementForPage(IPage page)
 		{
 			return _browser.WebBrowser.Document.GetElementById(GridId(page));
+		}
+
+		private GeckoElement GetElementForMenuHolder()
+		{
+			return _browser.WebBrowser.Document.GetElementById("menuIconHolder");
 		}
 
 		private GeckoNode GetFirstChildWithClass(GeckoElement parentElement, string targetClass)

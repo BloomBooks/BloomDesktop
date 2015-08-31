@@ -1056,7 +1056,14 @@ namespace Bloom.Edit
 //			if(_view == null || _inProcessOfDeleting || _addPageDialogShowing)
 //				return;
 			//_addPageDialogShowing = true;
-			var jsonTemplates = _model.GetTemplateBookInfo;
+			var jsonTemplates = _model.GetAddPageArguments(false);
+			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
+			RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
+		}
+
+		internal void ShowChangeLayoutDialog()
+		{
+			var jsonTemplates = _model.GetAddPageArguments(true);
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
 			RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
 		}
