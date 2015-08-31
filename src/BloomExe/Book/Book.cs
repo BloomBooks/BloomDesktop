@@ -16,6 +16,7 @@ using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.WebLibraryIntegration;
+using DesktopAnalytics;
 using L10NSharp;
 using MarkdownSharp;
 using Palaso.Code;
@@ -862,16 +863,19 @@ namespace Bloom.Book
 		/// <param name="lineage"></param>
 		/// <param name="originalTemplateGuid"></param>
 		/// <param name="updateTo"></param>
-		private static void MigrateEditableData(XmlElement page, XmlElement template, string lineage)
+		private static string MigrateEditableData(XmlElement page, XmlElement template, string lineage)
 		{
 			var newPage = (XmlElement) page.OwnerDocument.ImportNode(template, true);
 			page.ParentNode.ReplaceChild(newPage, page);
 			newPage.SetAttribute("id", page.Attributes["id"].Value);
+			var oldLineageAttr = page.Attributes["data-pagelineage"];
+			var oldLineage = oldLineageAttr == null ? "" : oldLineageAttr.Value;
 			newPage.SetAttribute("data-pagelineage", lineage);
 			// migrate text
 			MigrateChildren(page, "bloom-translationGroup", newPage);
 			// migrate images
 			MigrateChildren(page, "bloom-imageContainer", newPage);
+			return oldLineage;
 		}
 
 		/// <summary>
@@ -1132,10 +1136,14 @@ namespace Bloom.Book
 			{
 				var idAttr = templatePageDiv.Attributes["id"];
 				var templateId = idAttr == null ? "" : idAttr.Value;
-				MigrateEditableData(pageDiv, templatePageDiv, templateId);
+				var oldLineage = MigrateEditableData(pageDiv, templatePageDiv, templateId);
 				// not the same object as before; we need to update the new one.
 				pageDiv = bookDom.SafeSelectNodes("//body/div[@id='" + pageId + "']").Cast<XmlElement>().FirstOrDefault();
 				UpdateEditableAreasOfElement(pageDiv);
+				var props = new Dictionary<string, string>();
+				props["newLayout"] = templateId;
+				props["oldLineage"] = oldLineage;
+				Analytics.Track("Change Page Layout", props);
 			}
 		}
 
