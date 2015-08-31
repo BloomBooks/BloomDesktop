@@ -77,7 +77,7 @@ namespace Bloom.Collection
 				return;
 
 			Logger.WriteEvent("After BookStorage.DeleteBook({0})", bookInfo.FolderPath);
-			Debug.Assert(_bookInfos.Contains(bookInfo));
+			//Debug.Assert(_bookInfos.Contains(bookInfo)); this will occur if we delete a book from the BloomLibrary section
 			_bookInfos.Remove(bookInfo);
 
 			if (CollectionChanged != null)

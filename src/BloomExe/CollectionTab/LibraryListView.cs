@@ -723,9 +723,11 @@ namespace Bloom.CollectionTab
 		{
 			foreach (var btn in AllBookButtons())
 			{
-				if ((btn.Tag as BookButtonInfo).BookInfo == bookInfo)
+				var bookButtonInfo = btn.Tag as BookButtonInfo;
+				if (bookButtonInfo.BookInfo == bookInfo)
 				{
-					btn.Paint += btn_Paint;
+					// BL-2678 don't display menu triangle if there's no menu to display
+					if(!bookButtonInfo.IsFactoryTemplate) btn.Paint += btn_Paint;
 					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
 				}
 				else
@@ -953,10 +955,15 @@ namespace Bloom.CollectionTab
 			var button = FindBookButton(SelectedBook.BookInfo);
 			if (_model.DeleteBook(SelectedBook))
 			{
-				Debug.Assert(button != null && _primaryCollectionFlow.Controls.Contains(button));
-				if (button != null && _primaryCollectionFlow.Controls.Contains(button))
+				Debug.Assert(button != null);
+				if (button != null)
 				{
-					_primaryCollectionFlow.Controls.Remove(button);
+					// BL-2678 it must be in one or the other, but now it could be
+					// a book downloaded from BloomLibrary.org
+					if (_primaryCollectionFlow.Controls.Contains(button))
+						_primaryCollectionFlow.Controls.Remove(button);
+					else
+						_sourceBooksFlow.Controls.Remove(button);
 				}
 			}
 		}

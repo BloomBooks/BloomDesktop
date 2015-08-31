@@ -581,10 +581,16 @@ namespace Bloom.Book
 			return new HtmlDom(builder.ToString());
 		}
 
+		private bool IsDownloaded
+		{
+			get { return FolderPath.Contains(BookCollection.DownloadedBooksCollectionNameInEnglish); }
+		}
 
 		public virtual bool CanDelete
 		{
-			get { return IsEditable; }
+			// BL-2678: we want the user to be able to delete troublesome/no longer needed books
+			// downloaded from BloomLibrary.org
+			get { return IsEditable || IsDownloaded; }
 		}
 
 		public bool CanPublish
