@@ -722,7 +722,7 @@ class ReaderToolsModel {
           focusWords: cumulativeWords,
           previousWords: cumulativeWords,
           // libsynphony lowercases the text, so we must do the same with sight words.  (BL-2550)
-          sightWords: sightWords.join(' ').toLowerCase().split(' '),
+          sightWords: sightWords.join(' ').toLowerCase().split(/\s/),
           knownGraphemes: this.stageGraphemes
         });
 
