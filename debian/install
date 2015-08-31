@@ -1,6 +1,6 @@
-lib/dotnet/Chorus.exe.mdb usr/lib/bloom-desktop-beta/
-lib/dotnet/LibChorus.dll.mdb usr/lib/bloom-desktop-beta/
-lib/dotnet/Palaso.Media.dll.mdb usr/lib/bloom-desktop-beta/
-lib/dotnet/PalasoUIWindowsForms.GeckoBrowserAdapter.dll.mdb usr/lib/bloom-desktop-beta/
-lib/dotnet/PalasoUIWindowsForms.dll.mdb usr/lib/bloom-desktop-beta/
-lib/dotnet/SIL.Archiving.dll.mdb usr/lib/bloom-desktop-beta/
+lib/dotnet/Chorus.exe.mdb usr/lib/bloom-desktop-unstable/
+lib/dotnet/LibChorus.dll.mdb usr/lib/bloom-desktop-unstable/
+lib/dotnet/Palaso.Media.dll.mdb usr/lib/bloom-desktop-unstable/
+lib/dotnet/PalasoUIWindowsForms.GeckoBrowserAdapter.dll.mdb usr/lib/bloom-desktop-unstable/
+lib/dotnet/PalasoUIWindowsForms.dll.mdb usr/lib/bloom-desktop-unstable/
+lib/dotnet/SIL.Archiving.dll.mdb usr/lib/bloom-desktop-unstable/

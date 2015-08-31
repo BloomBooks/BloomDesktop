@@ -1,9 +1,9 @@
-bloom-desktop-beta (3.3.2) stable; urgency=medium
+bloom-desktop-unstable (3.4.0) stable; urgency=medium
 
-  * Rename package to bloom-desktop-beta for public consumption.
+  * Update to version 3.4 on the master (unstable) branch.
   * More bug fixes: see the source repository log for details.
 
- -- Stephen McConnel <stephen_mcconnel@sil.org>  Wed, 26 Aug 2015 14:13:06 -0500
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Mon, 31 Aug 2015 10:57:13 -0500
 
 bloom-desktop-unstable (3.3.1) stable; urgency=medium
 

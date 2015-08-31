@@ -1,7 +1,7 @@
 #!/bin/sh
 
-LIB=/usr/lib/bloom-desktop-beta
-SHARE=/usr/share/bloom-desktop-beta
+LIB=/usr/lib/bloom-desktop-unstable
+SHARE=/usr/share/bloom-desktop-unstable
 
 cd "$SHARE"
 RUNMODE=INSTALLED
