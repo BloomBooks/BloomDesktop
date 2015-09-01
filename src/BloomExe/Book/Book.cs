@@ -15,6 +15,7 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
+using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using MarkdownSharp;
 using Palaso.Code;
@@ -583,7 +584,7 @@ namespace Bloom.Book
 
 		private bool IsDownloaded
 		{
-			get { return FolderPath.Contains(BookCollection.DownloadedBooksCollectionNameInEnglish); }
+			get { return FolderPath.StartsWith(BookTransfer.DownloadFolder); }
 		}
 
 		public virtual bool CanDelete

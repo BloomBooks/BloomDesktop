@@ -35,7 +35,6 @@ namespace Bloom.CollectionTab
 		private Font _editableBookFont;
 		private Font _collectionBookFont;
 		private bool _thumbnailRefreshPending;
-		private BookTransfer _bookTransferrer;
 		private DateTime _lastClickTime;
 		private bool _primaryCollectionReloadPending;
 		private bool _disposed;
@@ -59,13 +58,12 @@ namespace Bloom.CollectionTab
 		private bool _alreadyReportedErrorDuringImproveAndRefreshBookButtons;
 
 		public LibraryListView(LibraryModel model, BookSelection bookSelection, SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent,
-			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory, BookTransfer bookTransferrer)
+			HistoryAndNotesDialog.Factory historyAndNotesDialogFactory)
 		{
 			_model = model;
 			_bookSelection = bookSelection;
 			localizationChangedEvent.Subscribe(unused=>LoadSourceCollectionButtons());
 			_historyAndNotesDialogFactory = historyAndNotesDialogFactory;
-			_bookTransferrer = bookTransferrer;
 			_buttonsNeedingSlowUpdate = new ConcurrentQueue<ButtonRefreshInfo>();
 			selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
 			InitializeComponent();
@@ -106,10 +104,13 @@ namespace Bloom.CollectionTab
 		{
 			var btn = (sender as ContextMenuStrip).SourceControl as Button;
 			var btnInfo = btn.Tag as BookButtonInfo;
-			if (btnInfo.IsVernacularBook)
+			if (btnInfo.IsEditable)
 				return; // leave them all on
 			if (btnInfo.IsFactoryTemplate)
+			{
 				e.Cancel = true; // don't show the menu at all
+				return;
+			}
 			foreach (ToolStripItem menuItem in (sender as ContextMenuStrip).Items)
 			{
 				if (menuItem == deleteMenuItem && btnInfo.IsBLibraryBook)
@@ -126,6 +127,12 @@ namespace Bloom.CollectionTab
 			// So make them all visible so they are available in the right-click menu
 			foreach (ToolStripItem menuItem in (sender as ContextMenuStrip).Items)
 				menuItem.Visible = true;
+		}
+
+		private static BookInfo GetBookInfoFromButton(Button bookButton)
+		{
+			var bookButtonInfo = bookButton.Tag as BookButtonInfo;
+			return bookButtonInfo == null ? null : bookButtonInfo.BookInfo;
 		}
 
 		private void SetupBookDropdownIcon()
@@ -349,8 +356,8 @@ namespace Bloom.CollectionTab
 			if (!_buttonsNeedingSlowUpdate.TryDequeue(out buttonRefreshInfo))
 				return;
 
-			Button button = buttonRefreshInfo.Button;
-			BookInfo bookInfo = (button.Tag as BookButtonInfo).BookInfo;
+			var button = buttonRefreshInfo.Button;
+			var bookInfo = GetBookInfoFromButton(button);
 			Book.Book book;
 			try
 			{
@@ -433,7 +440,7 @@ namespace Bloom.CollectionTab
 					ErrorReport.NotifyUserOfProblem(error, "Could not load the book at " + bookInfo.FolderPath);
 				}
 			}
-			if (collection.IsDownloaded)
+			if (collection.ContainsDownloadedBooks)
 			{
 				_downloadedBookCollection = collection;
 				collection.FolderContentChanged += DownLoadedBooksChanged;
@@ -527,7 +534,7 @@ namespace Bloom.CollectionTab
 		private void AddOneBook(BookInfo bookInfo, FlowLayoutPanel flowLayoutPanel, BookCollection collection)
 		{
 			string title = bookInfo.QuickTitleUserDisplay;
-			if (collection.IsFactoryTemplates)
+			if (collection.IsFactoryInstalled)
 				title = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.BookName." + title, title);
 
 			var button = new Button
@@ -679,7 +686,7 @@ namespace Bloom.CollectionTab
 				MessageBox.Show(LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."));
 				return;
 			}
-			BookInfo bookInfo = (thisBtn.Tag as BookButtonInfo).BookInfo;
+			var bookInfo = GetBookInfoFromButton(thisBtn);
 			if (bookInfo == null)
 				return;
 
@@ -789,7 +796,7 @@ namespace Bloom.CollectionTab
 		{
 			get
 			{
-				return AllBookButtons().FirstOrDefault(b => (b.Tag as BookButtonInfo).BookInfo == SelectedBook.BookInfo);
+				return AllBookButtons().FirstOrDefault(b => GetBookInfoFromButton(b) == SelectedBook.BookInfo);
 			}
 		}
 
@@ -869,10 +876,10 @@ namespace Bloom.CollectionTab
 			// but we don't have access to the collection at all the points where we need to evaluate this.
 			// Depending on the parent like this unfortunately means we can't use this method until the button
 			// has its parent.
-			// Eithe way, the basic idea is that books in the main collection you are now editing are always usable.
+			// Either way, the basic idea is that books in the main collection you are now editing are always usable.
 			if (bookButton.Parent == _primaryCollectionFlow)
 				return true;
-			var bookInfo = (bookButton.Tag as BookButtonInfo).BookInfo;
+			var bookInfo = GetBookInfoFromButton(bookButton);
 			return IsSuitableSourceForThisEditableCollection(bookInfo);
 		}
 
@@ -924,7 +931,7 @@ namespace Bloom.CollectionTab
 
 		private Button FindBookButton(BookInfo bookInfo)
 		{
-			return AllBookButtons().FirstOrDefault(b => (b.Tag as BookButtonInfo).BookInfo == bookInfo);
+			return AllBookButtons().FirstOrDefault(b => GetBookInfoFromButton(b) == bookInfo);
 		}
 
 		private IEnumerable<Button> AllBookButtons()
@@ -1188,7 +1195,7 @@ namespace Bloom.CollectionTab
 			LoadPrimaryCollectionButtons();
 
 			// select the new book
-			var bookInfo = AllBookButtons().Select(btn => (btn.Tag as BookButtonInfo).BookInfo).FirstOrDefault(info => info.FolderPath == newBookDir);
+			var bookInfo = AllBookButtons().Select(GetBookInfoFromButton).FirstOrDefault(info => info.FolderPath == newBookDir);
 			if (bookInfo != null)
 			{
 				SelectBook(bookInfo);
@@ -1239,19 +1246,16 @@ namespace Bloom.CollectionTab
 
 		private readonly BookCollection _collection;
 
-		// isVernacular meaning part of the current TheOneEditableCollection
-		private readonly bool _isVernacularBook;
-		internal bool IsVernacularBook { get { return _isVernacularBook; } }
+		internal bool IsEditable { get { return _bookInfo.IsEditable; } }
 
-		internal bool IsBLibraryBook { get { return _collection.IsDownloaded; } }
+		internal bool IsBLibraryBook { get { return _collection.ContainsDownloadedBooks; } }
 
-		internal bool IsFactoryTemplate { get { return _collection.IsFactoryTemplates; } }
+		internal bool IsFactoryTemplate { get { return _collection.IsFactoryInstalled; } }
 
 		public BookButtonInfo(BookInfo bookInfo, BookCollection collection, bool isVernacular)
 		{
 			_bookInfo = bookInfo;
 			_collection = collection;
-			_isVernacularBook = isVernacular;
 		}
 	}
 }

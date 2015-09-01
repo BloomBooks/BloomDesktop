@@ -188,33 +188,13 @@ namespace Bloom.Collection
 		}
 
 		public const string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
-		private const string InstalledTemplatesCollectionNameInEnglish = "Templates";
 
-		public bool IsDownloaded { get { return Name == DownloadedBooksCollectionNameInEnglish; } }
-
-		private string FactoryDir
-		{
-			get
-			{
-				if (String.IsNullOrEmpty(_factoryDir))
-				{
-					var basicBookDir = Path.GetDirectoryName(BloomFileLocator.GetFileDistributedWithApplication(
-						"factoryCollections",
-						InstalledTemplatesCollectionNameInEnglish,
-						"Basic Book",
-						"Basic Book.htm"));
-					if (String.IsNullOrEmpty(basicBookDir))
-						throw new ApplicationException("Basic Book template cannot be found!");
-					_factoryDir = basicBookDir.Substring(0, basicBookDir.IndexOf(InstalledTemplatesCollectionNameInEnglish));
-				}
-				return _factoryDir;
-			}
-		}
+		public bool ContainsDownloadedBooks { get { return Name == DownloadedBooksCollectionNameInEnglish; } }
 
 		/// <summary>
 		/// This includes everything in "factoryCollections" (i.e. Templates folder AND Sample Shells:Vaccinations folder)
 		/// </summary>
-		public bool IsFactoryTemplates { get { return PathToDirectory.Contains(FactoryDir); } }
+		public bool IsFactoryInstalled { get { return PathToDirectory.Contains(ProjectContext.FactoryCollectionsDirectory); } }
 
 		private FileSystemWatcher _watcher;
 		/// <summary>
