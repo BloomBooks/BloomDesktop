@@ -76,6 +76,10 @@
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
+    <Reference Include="DesktopAnalytics, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\DesktopAnalytics.1.1.11\lib\net40\DesktopAnalytics.dll</HintPath>
+    </Reference>
     <Reference Include="EasyHttp">
       <HintPath>..\..\packages\EasyHttp.1.6.29.0\lib\net40\EasyHttp.dll</HintPath>
     </Reference>
@@ -172,10 +176,6 @@
     <Reference Include="Analytics.NET">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Analytics.2.0.0\lib\Analytics.NET.dll</HintPath>
-    </Reference>
-    <Reference Include="DesktopAnalytics">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\DesktopAnalytics.1.1.3\lib\net40\DesktopAnalytics.dll</HintPath>
     </Reference>
     <Reference Include="YouTrackSharp">
       <HintPath>..\..\packages\YouTrackSharp.2.0.30.0\lib\net40\YouTrackSharp.dll</HintPath>
