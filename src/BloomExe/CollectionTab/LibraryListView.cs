@@ -99,16 +99,21 @@ namespace Bloom.CollectionTab
 			_bookContextMenu.Opening += _bookContextMenu_Opening;
 		}
 
-		// adjust the context menu item visibility based on what sort of collection we're in
-		void _bookContextMenu_Opening(object sender, CancelEventArgs e)
+		// BL-2678 Adjust the context menu item visibility based on what sort of collection we're in
+		// If we're in factory-installed templates or the sample shell, don't show a menu at all
+		// If we're in a book downloaded from BloomLibrary.org, only show "Open Folder on Disk" and "Delete"
+		// If we're in our one editable collection, show everything
+		// Otherwise (which should be bloompacks or other user-installed stuff not downloaded):
+		//   only show "Open Folder on Disk"
+		private void _bookContextMenu_Opening(object sender, CancelEventArgs e)
 		{
 			var btn = (sender as ContextMenuStrip).SourceControl as Button;
 			var btnInfo = btn.Tag as BookButtonInfo;
 			if (btnInfo.IsEditable)
 				return; // leave them all on
-			if (btnInfo.IsFactoryTemplate)
+			if (btnInfo.HasNoContextMenu)
 			{
-				e.Cancel = true; // don't show the menu at all
+				e.Cancel = true; // don't show the menu at all (but leave them visible for next time)
 				return;
 			}
 			foreach (ToolStripItem menuItem in (sender as ContextMenuStrip).Items)
@@ -121,7 +126,7 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		void _bookContextMenu_Closed(object sender, ToolStripDropDownClosedEventArgs e)
+		private static void _bookContextMenu_Closed(object sender, ToolStripDropDownClosedEventArgs e)
 		{
 			// Not sure which ones are visible at this point
 			// So make them all visible so they are available in the right-click menu
@@ -734,7 +739,7 @@ namespace Bloom.CollectionTab
 				if (bookButtonInfo.BookInfo == bookInfo)
 				{
 					// BL-2678 don't display menu triangle if there's no menu to display
-					if(!bookButtonInfo.IsFactoryTemplate) btn.Paint += btn_Paint;
+					if(!bookButtonInfo.HasNoContextMenu) btn.Paint += btn_Paint;
 					btn.FlatAppearance.BorderColor = Palette.TextAgainstDarkBackground;
 				}
 				else
@@ -1250,7 +1255,7 @@ namespace Bloom.CollectionTab
 
 		internal bool IsBLibraryBook { get { return _collection.ContainsDownloadedBooks; } }
 
-		internal bool IsFactoryTemplate { get { return _collection.IsFactoryInstalled; } }
+		internal bool HasNoContextMenu { get { return _collection.IsFactoryInstalled; } }
 
 		public BookButtonInfo(BookInfo bookInfo, BookCollection collection, bool isVernacular)
 		{
