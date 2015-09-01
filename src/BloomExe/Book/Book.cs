@@ -15,6 +15,7 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
+using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using MarkdownSharp;
 using Palaso.Code;
@@ -581,10 +582,16 @@ namespace Bloom.Book
 			return new HtmlDom(builder.ToString());
 		}
 
+		private bool IsDownloaded
+		{
+			get { return FolderPath.StartsWith(BookTransfer.DownloadFolder); }
+		}
 
 		public virtual bool CanDelete
 		{
-			get { return IsEditable; }
+			// BL-2678: we want the user to be able to delete troublesome/no longer needed books
+			// downloaded from BloomLibrary.org
+			get { return IsEditable || IsDownloaded; }
 		}
 
 		public bool CanPublish

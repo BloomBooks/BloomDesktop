@@ -390,7 +390,11 @@ namespace Bloom
 				}
 			}
 		}
-		private static string FactoryCollectionsDirectory
+
+		/// <summary>
+		/// Directory that contains both Templates and Sample Shells factory installed with Bloom
+		/// </summary>
+		public static string FactoryCollectionsDirectory
 		{
 			get { return FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"); }
 		}

@@ -3444,6 +3444,12 @@
         <seg>Wall Calendar</seg>
       </tuv>
     </tu>
+    <tu tuid="TemplateBooks.BookName.Vaccinations">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Vaccinations</seg>
+      </tuv>
+    </tu>
     <tu tuid="Topics.Agriculture">
       <note>shows in the topics chooser in the edit tab</note>
       <prop type="x-dynamic">true</prop>

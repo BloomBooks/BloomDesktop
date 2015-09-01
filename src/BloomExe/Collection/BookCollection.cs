@@ -5,9 +5,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
-#if !__MonoCS__
-using IWshRuntimeLibrary;
-#endif
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.FileSystem;
 using File = System.IO.File;
@@ -27,6 +24,7 @@ namespace Bloom.Collection
 
 		private readonly string _path;
 		private List<BookInfo> _bookInfos;
+		private string _factoryDir;
 
 		private readonly BookSelection _bookSelection;
 
@@ -79,7 +77,7 @@ namespace Bloom.Collection
 				return;
 
 			Logger.WriteEvent("After BookStorage.DeleteBook({0})", bookInfo.FolderPath);
-			Debug.Assert(_bookInfos.Contains(bookInfo));
+			//Debug.Assert(_bookInfos.Contains(bookInfo)); this will occur if we delete a book from the BloomLibrary section
 			_bookInfos.Remove(bookInfo);
 
 			if (CollectionChanged != null)
@@ -189,7 +187,14 @@ namespace Bloom.Collection
 			set { throw new NotImplementedException(); }
 		}
 
-		public static string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
+		public const string DownloadedBooksCollectionNameInEnglish = "Books From BloomLibrary.org";
+
+		public bool ContainsDownloadedBooks { get { return Name == DownloadedBooksCollectionNameInEnglish; } }
+
+		/// <summary>
+		/// This includes everything in "factoryCollections" (i.e. Templates folder AND Sample Shells:Vaccinations folder)
+		/// </summary>
+		public bool IsFactoryInstalled { get { return PathToDirectory.Contains(ProjectContext.FactoryCollectionsDirectory); } }
 
 		private FileSystemWatcher _watcher;
 		/// <summary>

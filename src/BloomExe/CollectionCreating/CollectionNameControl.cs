@@ -75,9 +75,7 @@ namespace Bloom.CollectionCreating
 				}
 
 				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_destinationDirectory, _collectionNameControl.Text);
-				if (DestinationAlreadyExists)
-					return false;
-				return true;
+				return !DestinationAlreadyExists && _collectionNameControl.Text.ToLowerInvariant() != "templates";
 		}
 
 		private bool DestinationAlreadyExists
