@@ -5,7 +5,7 @@
 	<PropertyGroup>
 		<RootDir Condition="'$(teamcity_version)' == '' Or '$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)\..</RootDir>
 		<RootDir Condition="'$(teamcity_version)' != '' And '$(OS)'=='Windows_NT'">$(teamcity_build_checkoutDir)</RootDir>
-		<Solution>Bloom VS2010.sln</Solution>
+		<Solution>Bloom.sln</Solution>
 		<!-- This controls the following things; the some of them pretty much have to match for Squirrel:
 		  - the nupkg ID (Bloom<channel>)
 		  - the name that occurs in the (Uninstall) Programs and Features control panel (Bloom <version> <channel>)
