@@ -190,8 +190,10 @@ var PageChooser = (function () {
         var okButtonLabelId = 'EditTab.AddPageDialog.AddPageButton';
         var okButtonLabelText = 'Add This Page';
         if (this._forChoosePage) {
-            okButtonLabelId = 'EditTab.AddPageDialog.ChangeLayoutButton';
+            okButtonLabelId = 'EditTab.AddPageDialog.ChooseLayoutButton';
             okButtonLabelText = 'Use This Layout';
+            this.setLocalizedText($('#convertAnywayCheckbox'), 'EditTab.AddPageDialog.', 'Continue anyway', 'ChooseLayoutContinueCheckbox');
+            this.setLocalizedText($('#convertLosesMaterial'), 'EditTab.AddPageDialog.', 'Converting to this layout will cause some content to be lost.', 'ChooseLayoutWillLoseData');
         }
         localizationManager.asyncGetText(okButtonLabelId, okButtonLabelText)
             .done(function (translation) {

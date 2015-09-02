@@ -162,7 +162,7 @@ function showAddPageDialog(templatesJSON) {
 
         var forChooseLayout = templatesJSON.chooseLayout;
         if (forChooseLayout) {
-            var title = parentElement.localizationManager.getText('EditTab.AddPageDialog.ChoosePageTitle', 'Choose Different Layout...');
+            var title = parentElement.localizationManager.getText('EditTab.AddPageDialog.ChooseLayoutTitle', 'Choose Different Layout...');
 
         } else {
             var title = parentElement.localizationManager.getText('EditTab.AddPageDialog.Title', 'Add Page...');
