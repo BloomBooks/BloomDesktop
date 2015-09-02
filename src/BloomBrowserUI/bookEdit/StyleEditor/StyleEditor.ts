@@ -522,7 +522,7 @@ class StyleEditor {
         // the user could actually modify a style and thus need the information.
         // More dangerous is using it in getCharTabDescription. But as that is launched by a later
         // async request, I think it should be OK.
-        iframeChannel.simpleAjaxGet('/bloom/authorMode', function (result) {
+        iframeChannel.simpleAjaxGet('/bloom/authorMode', function(result) {
             editor.authorMode = result == 'true';
         });
         editor.xmatterMode = this.IsPageXMatter(targetBox);
@@ -565,8 +565,16 @@ class StyleEditor {
         //    });
         //    return;
         //}
-        formatButton.click(function () {
-            iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function (fontData) {
+
+        // It is not reliable to attach the click handler directly, as in  $(#formatButton).click(...)
+        // I don't know why it doesn't work because even when it fails $(#formatButton).length is 1, so it seems to be
+        // finding the right element. But some of the time it doesn't work. See BL-2701. This rather awkard
+        // approach is the recommended way to make events fire for dynamically added elements.
+        // The .off prevents adding multiple event handlers as the parent box gains focus repeatedly.
+        // The namespace (".formatButton") in the event name prevents off from interfering with other click handlers.
+        $(targetBox).off('click.formatButton');
+        $(targetBox).on('click.formatButton', '#formatButton', function() {
+            iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function(fontData) {
                 editor.boxBeingEdited = targetBox;
                 // This line is needed inside the click function to keep from using a stale version of 'styleName'
                 // and chopping off 6 characters each time!
@@ -582,7 +590,7 @@ class StyleEditor {
                 if (editor.styles.indexOf(styleName) == -1) {
                     editor.styles.push(styleName);
                 }
-                editor.styles.sort(function (a: string, b: string) {
+                editor.styles.sort(function(a: string, b: string) {
                     return a.toLowerCase().localeCompare(b.toLowerCase());
                 });
 
@@ -638,7 +646,7 @@ class StyleEditor {
                                     + editor.makeDiv('border-gray-round', 'iconHtml', null, null, editor.makeDiv(null, 'iconBox bdRounded', 'border-color: gray', null, ''))))
                             + editor.makeDiv(null, 'mainBlock', null, null,
                                 editor.makeDiv(null, null, null, 'EditTab.Background', 'Background')
-                                    + editor.makeDiv(null, null, 'margin-top:-11px', null,
+                                + editor.makeDiv(null, null, 'margin-top:-11px', null,
                                     editor.makeDiv('background-none', 'icon16x16', null, null, editor.makeImage('grayX.png'))
                                     + editor.makeDiv('background-gray', 'iconHtml', null, null, editor.makeDiv(null, 'iconBack', 'background-color: ' + editor.preferredGray(), null, '')))))
                         + '<div class="format-toolbar-description" id="formatMoreDesc"></div>'
@@ -655,7 +663,7 @@ class StyleEditor {
                 $('body').after(html);
                 var toolbar = $('#format-toolbar');
                 toolbar.find('*[data-i18n]').localize();
-                toolbar.draggable({distance: 10, scroll: false, containment: $('html')});
+                toolbar.draggable({ distance: 10, scroll: false, containment: $('html') });
                 toolbar.draggable("disable"); // until after we make sure it's in the Viewport
                 toolbar.css('opacity', 1.0);
                 if (!noFormatChange) {
@@ -699,7 +707,7 @@ class StyleEditor {
                 toolbar.draggable("enable");
 
                 $('html').off('click.toolbar');
-                $('html').on("click.toolbar", function (event) {
+                $('html').on("click.toolbar", function(event) {
                     if (event.target != toolbar &&
                         toolbar.has(event.target).length === 0 &&
                         $(event.target.parent) != toolbar &&
@@ -710,7 +718,7 @@ class StyleEditor {
                         event.preventDefault();
                     }
                 });
-                toolbar.on("click.toolbar", function (event) {
+                toolbar.on("click.toolbar", function(event) {
                     // this stops an event inside the dialog from propagating to the html element, which would close the dialog
                     event.stopPropagation();
                 });
