@@ -727,7 +727,7 @@ namespace Bloom.Edit
 			{
 				var templatePage = page.GetDivNodeForThisPage();
 				var book = _pageSelection.CurrentSelection.Book;
-				book.UpdatePageToTemplate(book.RawDom, templatePage, _pageSelection.CurrentSelection.Id);
+				book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, _pageSelection.CurrentSelection.Id);
 				_lastPageAdded = pageId; // Review
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 			}

@@ -34,26 +34,26 @@ namespace Bloom.Edit
 			_thumbNailList.Isolator = isolator;
 			_thumbNailList.ControlKeyEvent = controlKeyEvent;
 			// First action determines whether the menu item is enabled, second performs it.
-			var menuItems = new List<Tuple<string, Func<IPage, bool>, Action<IPage>>>();
+			var menuItems = new List<WebThumbNailList.MenuItemSpec>();
 			menuItems.Add(
-				Tuple.Create<string,  Func<IPage, bool>, Action<IPage>>(
-					LocalizationManager.GetString("EditTab._duplicatePageButton", "Duplicate Page"), // same ID as button in toolbar));
-					(page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
-					(page) => _model.DuplicatePage(page)));
+				new WebThumbNailList.MenuItemSpec() {
+					Label = LocalizationManager.GetString("EditTab.DuplicatePageButton", "Duplicate Page"), // same ID as button in toolbar));
+					EnableFunction = (page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
+					ExecuteCommand = (page) => _model.DuplicatePage(page)});
 			menuItems.Add(
-				Tuple.Create<string,  Func<IPage, bool>, Action<IPage>>(
-					LocalizationManager.GetString("EditTab._deletePageButton", "Remove Page"),  // same ID as button in toolbar));
-					(page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
-					(page) =>
+				new WebThumbNailList.MenuItemSpec() {
+					Label = LocalizationManager.GetString("EditTab.DeletePageButton", "Remove Page"),  // same ID as button in toolbar));
+					EnableFunction = (page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
+					ExecuteCommand = (page) =>
 					{
 						if (ConfirmRemovePageDialog.Confirm())
 							_model.DeletePage(page);
-					}));
+					}});
 			menuItems.Add(
-				Tuple.Create<string,  Func<IPage, bool>, Action<IPage>>(
-					LocalizationManager.GetString("EditTab._chooseLayoutButton", "Choose Different Layout"),
-					(page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
-					(page) => _model.ChangePageLayout()));
+				new WebThumbNailList.MenuItemSpec() {
+					Label = LocalizationManager.GetString("EditTab.ChooseLayoutButton", "Choose Different Layout"),
+					EnableFunction = (page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
+					ExecuteCommand = (page) => _model.ChangePageLayout()});
 			// This adds the desired menu items to the Gecko context menu that happens when we right-click
 			_thumbNailList.ContextMenuProvider = args =>
 			{
@@ -62,9 +62,9 @@ namespace Bloom.Edit
 					return; // no page-related commands if we didn't click on one.
 				foreach (var item in menuItems)
 				{
-					var menuItem = new MenuItem(item.Item1, (sender, eventArgs) => item.Item3(page));
+					var menuItem = new MenuItem(item.Label, (sender, eventArgs) => item.ExecuteCommand(page));
 					args.ContextMenu.MenuItems.Add(menuItem);
-					menuItem.Enabled = item.Item2(page);
+					menuItem.Enabled = item.EnableFunction(page);
 				}
 			};
 			// This sets up the context menu items that will be shown when the user clicks the

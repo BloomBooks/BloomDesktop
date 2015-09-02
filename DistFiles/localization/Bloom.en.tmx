@@ -1719,35 +1719,40 @@
         <seg>You need to select some text before you can cut it</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton">
+    <tu tuid="EditTab.DeletePageButton">
       <tuv xml:lang="en">
         <seg>Remove\n  Page</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton.ToolTip">
+    <tu tuid="EditTab.DeletePageButton.ToolTip">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Remove this page from the book</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.DeletePageButton.ToolTipWhenDisabled">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>This page cannot be removed</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton">
+    <tu tuid="EditTab.ChooseLayoutButton">
+        <tuv xml:lang="en">
+            <seg>Choose Different Layout</seg>
+        </tuv>
+    </tu>
+    <tu tuid="EditTab.DuplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n   Page</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton.ToolTip">
+    <tu tuid="EditTab.DuplicatePageButton.ToolTip">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Insert a new page which is a duplicate of this one</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>This page cannot be duplicated</seg>

@@ -186,7 +186,7 @@
 			this._duplicatePageButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._duplicatePageButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._duplicatePageButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._duplicatePageButton, "EditTab._duplicatePageButton");
+			this._L10NSharpExtender.SetLocalizingId(this._duplicatePageButton, "EditTab.DuplicatePageButton");
 			this._duplicatePageButton.Location = new System.Drawing.Point(184, 0);
 			this._duplicatePageButton.Margin = new System.Windows.Forms.Padding(3, 3, 3, 1);
 			this._duplicatePageButton.Name = "_duplicatePageButton";
@@ -228,7 +228,7 @@
 			this._deletePageButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._deletePageButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._deletePageButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._deletePageButton, "EditTab._deletePageButton");
+			this._L10NSharpExtender.SetLocalizingId(this._deletePageButton, "EditTab.DeletePageButton");
 			this._deletePageButton.Location = new System.Drawing.Point(239, 0);
 			this._deletePageButton.Margin = new System.Windows.Forms.Padding(3, 3, 3, 1);
 			this._deletePageButton.Name = "_deletePageButton";

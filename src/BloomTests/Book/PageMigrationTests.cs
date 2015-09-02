@@ -348,13 +348,12 @@ namespace BloomTests.Book
 		</div>
 	  </div>
 	</div>"));
-			var page = (XmlElement) dom.SafeSelectNodes("//div[@id='thePage']")[0];
 			var template = (XmlElement) newPageDom.SafeSelectNodes("//div[@id='newTemplate']")[0];
 
-			book.UpdatePageToTemplate(dom, template, "thePage");
+			book.UpdatePageToTemplate(book.OurHtmlDom, template, "thePage");
 
 			var newPage = (XmlElement)dom.SafeSelectNodes(".//div[@id='thePage']")[0];
-			Assert.That(newPage.Attributes["class"].Value, Is.EqualTo("A5Portrait bloom-page numberedPage customPage bloom-combinedPage"));
+			Assert.That(newPage.Attributes["class"].Value, Is.EqualTo("A5Portrait bloom-page numberedPage customPage bloom-combinedPage bloom-monolingual"));
 			Assert.That(newPage.Attributes["data-pagelineage"].Value, Is.EqualTo("newTemplate"));
 			// We kept the image
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(".//img[@data-license='cc-by-nc-sa' and @data-copyright='Copyright © 2012, LASI' and @src='erjwx3bl.q3c.png']", 1); // the one in the first page has slightly different attrs

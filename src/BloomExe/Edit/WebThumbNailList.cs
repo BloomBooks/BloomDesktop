@@ -28,10 +28,18 @@ namespace Bloom.Edit
 		private int _verticalScrollDistance;
 		private static string _thumbnailInterval;
 
+		internal class MenuItemSpec
+		{
+			public string Label;
+			public Func<IPage, bool> EnableFunction;
+			public Action<IPage> ExecuteCommand;
+		}
+
+
 		// A list of menu items that should be in both the web browser's right-click menu and
 		// the one we show ourselves when the arrow is clicked. The second item in the tuple
 		// determines whether the item should be enabled; the third performs the action.
-		internal List<Tuple<string, Func<IPage, bool>, Action<IPage>>> ContextMenuItems { get; set; }
+		internal List<MenuItemSpec> ContextMenuItems { get; set; }
 
 		public WebThumbNailList()
 		{
@@ -309,9 +317,9 @@ namespace Bloom.Edit
 			foreach (var item in ContextMenuItems)
 			{
 				var useItem = item; // for use in Click action (reference to loop variable has unpredictable results)
-				var menuItem = new ToolStripMenuItem(item.Item1);
-				menuItem.Click += (sender, args) => useItem.Item3(page);
-				menuItem.Enabled = item.Item2(page);
+				var menuItem = new ToolStripMenuItem(item.Label);
+				menuItem.Click += (sender, args) => useItem.ExecuteCommand(page);
+				menuItem.Enabled = item.EnableFunction(page);
 				menu.Items.Add(menuItem);
 			}
 			menu.Show(MousePosition);
