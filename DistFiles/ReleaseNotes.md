@@ -1,4 +1,8 @@
-﻿## 3.3
+﻿## 3.4
+- If after creating a page you decide that you want a different layout than the one you original chose, you can now select "Change Layout" and choose a different one.
+- If you have the latest [Art Of Reading](http://bloomlibrary.org/#/artofreading) installed (version 3.1), then you can now search for pictures in one of: Arabic, Chinese, Bengali, English, French, Hindi, Indonesian, Portuguese, Spanish, Swahili, and Thai.
+
+## 3.3
 - All basic pages are now "customizable". That means you can change the relative size of elements on the page, for example making the picture bigger and the text area smaller. You can also click the "Change Layout" button to add new elements to the page.
 
 - When you select some text, Bloom now shows a small popup with buttons for bold, underline, and italic.
