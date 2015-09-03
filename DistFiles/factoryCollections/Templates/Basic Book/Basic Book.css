@@ -39,6 +39,43 @@ STARTLAYOUTS
 			   "SplitAcrossPages"
 			]
 		 }
+	  },
+	  {
+		 "LetterPortrait":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "LetterLandscape":{
+			"Styles":[
+			   "Default",
+			   "SideBySide",
+			   "SplitAcrossPages"
+			]
+		 }
+	  },
+	  {
+		 "HalfLetterPortrait":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "QuarterLetterPortrait":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "QuarterLetterLandscape":{
+			"Styles":[
+			   "Default"
+			]
+		 }
 	  }
    ]
 }
@@ -123,8 +160,11 @@ generic*/
   height: 100%;
   width: 100%;
   /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
+
   /*[disabled]position:relative;*/
+
   /*So instead, we're settling for starting the text part of the way down*/
+
   display: block !important;
   position: relative;
   left: 0;
@@ -235,8 +275,11 @@ generic*/
 .imageInMiddle.layout-style-SplitAcrossPages .bloom-translationGroup {
   width: 100%;
   /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
+
   /*[disabled]position:relative;*/
+
   /*So instead, we're settling for starting the text part of the way down*/
+
   display: block !important;
   position: relative;
   left: 0;
@@ -305,8 +348,11 @@ generic*/
   width: 100%;
   height: 100%;
   /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
+
   /*[disabled]position:relative;*/
+
   /*So instead, we're settling for starting the text part of the way down*/
+
   display: block !important;
   position: relative;
   left: 0;
@@ -372,6 +418,51 @@ in javascript. Search for 'bloom-centerContentVertically'.
   height: 55%;
 }
 .pictureAndWordPage.A4Landscape .bloom-content1 {
+  font-size: 600%;
+}
+.pictureAndWordPage.QuarterLetterPortrait .bloom-translationGroup {
+  height: 35%;
+}
+.pictureAndWordPage.QuarterLetterPortrait .bloom-imageContainer {
+  height: 62%;
+}
+.pictureAndWordPage.QuarterLetterPortrait .bloom-content1 {
+  font-size: 400%;
+}
+.pictureAndWordPage.QuarterLetterLandscape .bloom-translationGroup {
+  height: 42%;
+}
+.pictureAndWordPage.QuarterLetterLandscape .bloom-imageContainer {
+  height: 55%;
+}
+.pictureAndWordPage.QuarterLetterLandscape .bloom-content1 {
+  font-size: 600%;
+}
+.pictureAndWordPage.HalfLetterPortrait .bloom-translationGroup {
+  height: 35%;
+}
+.pictureAndWordPage.HalfLetterPortrait .bloom-imageContainer {
+  height: 62%;
+}
+.pictureAndWordPage.HalfLetterPortrait .bloom-content1 {
+  font-size: 400%;
+}
+.pictureAndWordPage.LetterPortrait .bloom-translationGroup {
+  height: 23%;
+}
+.pictureAndWordPage.LetterPortrait .bloom-imageContainer {
+  height: 74%;
+}
+.pictureAndWordPage.LetterPortrait .bloom-content1 {
+  font-size: 600%;
+}
+.pictureAndWordPage.LetterLandscape .bloom-translationGroup {
+  height: 42%;
+}
+.pictureAndWordPage.LetterLandscape .bloom-imageContainer {
+  height: 55%;
+}
+.pictureAndWordPage.LetterLandscape .bloom-content1 {
   font-size: 600%;
 }
 .pictureAndWordPage .bloom-translationGroup {

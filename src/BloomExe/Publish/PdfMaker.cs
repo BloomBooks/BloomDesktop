@@ -192,13 +192,19 @@ namespace Bloom.Publish
 					pageSize = PageSize.B4;
 					break;
 				case "Letter":
-					pageSize = PageSize.Letter;//TODO... what's reasonable?
+					pageSize = PageSize.Ledger;
 					break;
 				case "HalfLetter":
 					pageSize = PageSize.Letter;
 					break;
+				case "QuarterLetter":
+					pageSize = PageSize.Statement;	// ?? Wikipedia says HalfLetter is aka Statement
+					break;
 				case "Legal":
 					pageSize = PageSize.Legal;//TODO... what's reasonable?
+					break;
+				case "HalfLegal":
+					pageSize = PageSize.Legal;
 					break;
 				default:
 					throw new ApplicationException("PdfMaker.MakeBooklet() does not contain a map from " + incomingPaperSize + " to a PdfSharp paper size.");
@@ -219,11 +225,17 @@ namespace Bloom.Publish
 						// To keep the GUI simple, we assume that A6 page size for booklets
 						// implies 4up printing on A4 paper.  This feature was requested by
 						// https://jira.sil.org/browse/BL-1059 "A6 booklets should print 4
-						// to an A4 sheet".
+						// to an A4 sheet".  The same is done for QuarterLetter booklets
+						// printing on Letter size sheets.
 						if (incomingPaperSize == "A6")
 						{
 							method = new SideFold4UpBookletLayouter();
 							pageSize = PageSize.A4;
+						}
+						else if (incomingPaperSize == "QuarterLetter")
+						{
+							method = new SideFold4UpBookletLayouter();
+							pageSize = PageSize.Letter;
 						}
 						else
 						{

@@ -65,12 +65,14 @@ Need about 2% more space to draw the same text on a ine (can't tell if the font 
 Therefore, in the editMode.css, we repeat this, but with a 2% larger size.
 So if you change this, change it there. Note, this might not be the best long-term solution
 To handling the mis-match.*/
+
   font-size: 10pt;
 }
 /* gridItem means this is a page thumbnail */
 .gridItem .pageOverflows {
   background-image: url("/bloom/BloomBrowserUI/images/Attention.svg");
   /* red triangle with exclamation point */
+
   background-position: bottom;
   background-repeat: no-repeat;
   background-size: 70%;
@@ -82,6 +84,7 @@ DIV.ui-tooltip-content {
 }
 .uibloomSourceTextsBubble .ui-tooltip-content {
   /*This minimum height is for picture dictionary where the height of the target box is just one line high, not enough to show the language tabs at the top and then the content below*/
+
   min-height: 60px !important;
 }
 .bloom-imageContainer {
@@ -95,6 +98,7 @@ TEXTAREA,
 .bloom-editable {
   resize: none;
   /*don't show those cute little resize controls in Firefox 4 and greater*/
+
   overflow: visible;
   line-height: 1.5em;
   min-height: 1.8em;
@@ -107,6 +111,7 @@ TEXTAREA,
 TD {
   resize: none;
   /*don't show those cute little resize controls in Firefox 4 and greater*/
+
   overflow: visible;
   font-size: 143%;
   line-height: 1.5em;
@@ -127,6 +132,7 @@ DIV.bloom-page {
   /*This is a big help with htmltopdf, both for our errors and a legitimate problem, with the "just text" page in which
 the margin-top is calculated to center the text vertically, but htmltopdf then doesn't shrink the box as it should
 so it just heads down off the page, messing things up.*/
+
   overflow: hidden;
 }
 DIV#bloomDataDiv {
@@ -135,6 +141,7 @@ DIV#bloomDataDiv {
 @media screen {
   DIV.bloom-page {
     /*[disabled]border:1px solid #000000;*/
+  
   }
 }
 .centered {
@@ -209,6 +216,18 @@ preview.css.
   min-height: 105mm;
   max-height: 105mm;
 }
+.bloom-page.QuarterLetterPortrait {
+  min-width: 4.25in;
+  max-width: 4.25in;
+  min-height: 5.5in;
+  max-height: 5.5in;
+}
+.bloom-page.QuarterLetterLandscape {
+  min-width: 5.5in;
+  max-width: 5.5in;
+  min-height: 4.25in;
+  max-height: 4.25in;
+}
 .bloom-page.HalfLetterPortrait {
   min-width: 5.5in;
   max-width: 5.5in;
@@ -261,6 +280,7 @@ preview.css.
 .textWholePage .marginBox {
   position: absolute;
   /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
+
 }
 .marginBox {
   position: absolute;
@@ -272,6 +292,7 @@ preview.css.
 }
 .A4Portrait .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+
   max-width: 170mm;
 }
 .A4Landscape .marginBox {
@@ -280,6 +301,7 @@ preview.css.
 }
 .A4Landscape .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+
   max-width: 257mm;
 }
 .A5Portrait .marginBox {
@@ -288,6 +310,7 @@ preview.css.
 }
 .A5Portrait .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+
   max-width: 108mm;
 }
 .A5Landscape .marginBox {
@@ -296,6 +319,7 @@ preview.css.
 }
 .A5Landscape .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+
   max-width: 170mm;
 }
 .A6Portrait .marginBox {
@@ -304,6 +328,7 @@ preview.css.
 }
 .A6Portrait .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+
   max-width: 65mm;
 }
 .A6Landscape .marginBox {
@@ -312,6 +337,7 @@ preview.css.
 }
 .A6Landscape .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+
   max-width: 108mm;
 }
 .B5Portrait .marginBox {
@@ -320,74 +346,104 @@ preview.css.
 }
 .B5Portrait .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+
   max-width: 136mm;
 }
+.QuarterLetterPortrait .marginBox {
+  height: 4.318897637795276in;
+  width: 2.675196850393701in;
+}
+.QuarterLetterPortrait .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+
+  max-width: 2.675196850393701in;
+}
+.QuarterLetterLandscape .marginBox {
+  height: 3.068897637795276in;
+  width: 3.925196850393701in;
+}
+.QuarterLetterLandscape .marginBox IMG {
+  /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
+
+  max-width: 3.925196850393701in;
+}
 .HalfLetterPortrait .marginBox {
-  height: 7.31889764in;
-  width: 3.92519685in;
+  height: 7.318897637795276in;
+  width: 3.925196850393701in;
 }
 .HalfLetterPortrait .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
-  max-width: 3.92519685in;
+
+  max-width: 3.925196850393701in;
 }
 .LetterPortrait .marginBox {
-  height: 9.81889764in;
-  width: 6.92519685in;
+  height: 9.818897637795276in;
+  width: 6.925196850393701in;
 }
 .LetterPortrait .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
-  max-width: 6.92519685in;
+
+  max-width: 6.925196850393701in;
 }
 .LetterLandscape .marginBox {
-  height: 7.31889764in;
-  width: 9.42519685in;
+  height: 7.318897637795276in;
+  width: 9.4251968503937in;
 }
 .LetterLandscape .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
-  max-width: 9.42519685in;
+
+  max-width: 9.4251968503937in;
 }
 .HalfLegalPortrait .marginBox {
-  height: 7.31889764in;
-  width: 5.42519685in;
+  height: 7.318897637795276in;
+  width: 5.425196850393701in;
 }
 .HalfLegalPortrait .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
-  max-width: 5.42519685in;
+
+  max-width: 5.425196850393701in;
 }
 .LegalPortrait .marginBox {
-  height: 12.81889764in;
-  width: 6.92519685in;
+  height: 12.818897637795276in;
+  width: 6.925196850393701in;
 }
 .LegalPortrait .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
-  max-width: 6.92519685in;
+
+  max-width: 6.925196850393701in;
 }
 .LegalLandscape .marginBox {
-  height: 7.31889764in;
-  width: 12.42519685in;
+  height: 7.318897637795276in;
+  width: 12.4251968503937in;
 }
 .LegalLandscape .marginBox IMG {
   /* BL-1022, BL-2353 Keeps regular thumb images from going too wide */
-  max-width: 12.42519685in;
+
+  max-width: 12.4251968503937in;
 }
 .publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {
   /* shifted margin */
+
   left: 15mm;
 }
 .publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even) .marginBox {
   /* shifted margin */
+
   left: 25mm;
 }
 .calendarFold .marginBox {
   /* balanced margin*/
+
   left: 20mm;
 }
 .rightToLeft.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(odd) .marginBox {
   /* swap margins on right to left */
+
   left: 25mm;
 }
 .rightToLeft.publishMode:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover).bloom-page:nth-of-type(even) .marginBox {
   /* swap margins on right to left */
+
   left: 15mm;
 }
 body:not(.publishMode) .marginBox {
@@ -422,6 +478,7 @@ H2 {
 .customPage {
   /* This is in order to divide up the whole section in equal parts.
 		I'm not sure, though...it looks better when you first make the page. But it actually reduces the flexibility for the user a bit. Hmmm*/
+
 }
 .customPage .bloom-imageContainer {
   width: calc(100% - 1px);

@@ -41,6 +41,43 @@ STARTLAYOUTS
 			   "SplitAcrossPages"
 			]
 		 }
+	  },
+	  {
+		 "LetterPortrait":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "LetterLandscape":{
+			"Styles":[
+			   "Default",
+			   "SideBySide",
+			   "SplitAcrossPages"
+			]
+		 }
+	  },
+	  {
+		 "HalfLetterPortrait":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "QuarterLetterPortrait":{
+			"Styles":[
+			   "Default"
+			]
+		 }
+	  },
+	  {
+		 "QuarterLetterLandscape":{
+			"Styles":[
+			   "Default"
+			]
+		 }
 	  }
    ]
 }
@@ -426,6 +463,21 @@ in javascript. Search for 'bloom-centerContentVertically'.
 		.Setup(74%, 600%);
 	}
 	&.A4Landscape {
+		.Setup(55%, 600%);
+	}
+	&.QuarterLetterPortrait {
+		.Setup(62%, 400%);
+	}
+	&.QuarterLetterLandscape {
+		.Setup(55%, 600%);
+	}
+	&.HalfLetterPortrait {
+		.Setup(62%, 400%);
+	}
+	&.LetterPortrait {
+		.Setup(74%, 600%);
+	}
+	&.LetterLandscape {
 		.Setup(55%, 600%);
 	}
 

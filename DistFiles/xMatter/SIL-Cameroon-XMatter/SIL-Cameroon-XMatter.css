@@ -5,6 +5,7 @@
 .A4Portrait.outsideFrontCover .marginBox,
 .A4Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
   height: 272mm;
   left: 15mm;
   width: 180mm;
@@ -12,11 +13,13 @@
 .A4Portrait.outsideFrontCover .marginBox IMG,
 .A4Portrait.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
   max-width: 180mm;
 }
 .A4Landscape.outsideFrontCover .marginBox,
 .A4Landscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
   height: 185mm;
   left: 15mm;
   width: 267mm;
@@ -24,11 +27,13 @@
 .A4Landscape.outsideFrontCover .marginBox IMG,
 .A4Landscape.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
   max-width: 267mm;
 }
 .A5Portrait.outsideFrontCover .marginBox,
 .A5Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
   height: 185mm;
   left: 15mm;
   width: 118mm;
@@ -36,11 +41,13 @@
 .A5Portrait.outsideFrontCover .marginBox IMG,
 .A5Portrait.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
   max-width: 118mm;
 }
 .A5Landscape.outsideFrontCover .marginBox,
 .A5Landscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
   height: 123mm;
   left: 15mm;
   width: 180mm;
@@ -48,11 +55,13 @@
 .A5Landscape.outsideFrontCover .marginBox IMG,
 .A5Landscape.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
   max-width: 180mm;
 }
 .A6Portrait.outsideFrontCover .marginBox,
 .A6Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
   height: 123mm;
   left: 15mm;
   width: 75mm;
@@ -60,11 +69,13 @@
 .A6Portrait.outsideFrontCover .marginBox IMG,
 .A6Portrait.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
   max-width: 75mm;
 }
 .A6Landscape.outsideFrontCover .marginBox,
 .A6Landscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
   height: 80mm;
   left: 15mm;
   width: 118mm;
@@ -72,11 +83,13 @@
 .A6Landscape.outsideFrontCover .marginBox IMG,
 .A6Landscape.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
   max-width: 118mm;
 }
 .B5Portrait.outsideFrontCover .marginBox,
 .B5Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
   height: 225mm;
   left: 15mm;
   width: 146mm;
@@ -84,7 +97,92 @@
 .B5Portrait.outsideFrontCover .marginBox IMG,
 .B5Portrait.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
   max-width: 146mm;
+}
+.LetterPortrait.outsideFrontCover .marginBox,
+.LetterPortrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
+  height: 10.015748031496063in;
+  left: 15mm;
+  width: 7.318897637795276in;
+}
+.LetterPortrait.outsideFrontCover .marginBox IMG,
+.LetterPortrait.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
+  max-width: 7.318897637795276in;
+}
+.LetterLandscape.outsideFrontCover .marginBox,
+.LetterLandscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
+  height: 7.515748031496063in;
+  left: 15mm;
+  width: 9.818897637795276in;
+}
+.LetterLandscape.outsideFrontCover .marginBox IMG,
+.LetterLandscape.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
+  max-width: 9.818897637795276in;
+}
+.HalfLetterPortrait.outsideFrontCover .marginBox,
+.HalfLetterPortrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
+  height: 7.515748031496063in;
+  left: 15mm;
+  width: 4.318897637795276in;
+}
+.HalfLetterPortrait.outsideFrontCover .marginBox IMG,
+.HalfLetterPortrait.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
+  max-width: 4.318897637795276in;
+}
+.HalfLetterLandscape.outsideFrontCover .marginBox,
+.HalfLetterLandscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
+  height: 4.515748031496063in;
+  left: 15mm;
+  width: 7.318897637795276in;
+}
+.HalfLetterLandscape.outsideFrontCover .marginBox IMG,
+.HalfLetterLandscape.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
+  max-width: 7.318897637795276in;
+}
+.QuarterLetterPortrait.outsideFrontCover .marginBox,
+.QuarterLetterPortrait.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
+  height: 4.515748031496063in;
+  left: 15mm;
+  width: 3.068897637795276in;
+}
+.QuarterLetterPortrait.outsideFrontCover .marginBox IMG,
+.QuarterLetterPortrait.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
+  max-width: 3.068897637795276in;
+}
+.QuarterLetterLandscape.outsideFrontCover .marginBox,
+.QuarterLetterLandscape.outsideBackCover .marginBox {
+  /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+
+  height: 3.265748031496063in;
+  left: 15mm;
+  width: 4.318897637795276in;
+}
+.QuarterLetterLandscape.outsideFrontCover .marginBox IMG,
+.QuarterLetterLandscape.outsideBackCover .marginBox IMG {
+  /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+
+  max-width: 4.318897637795276in;
 }
 .insideFrontCover .bloom-content1 {
   display: inherit;
