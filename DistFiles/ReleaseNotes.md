@@ -1,5 +1,5 @@
 ﻿## 3.4
-- If after creating a page you decide that you want a different layout than the one you original chose, you can now select "Change Different Layout" and choose a different one.
+- If after creating a page you decide that you want a different layout than the one you original chose, you can now select "Choose Different Layout" and select a different one.
 - If you have the latest [Art Of Reading](http://bloomlibrary.org/#/artofreading) installed (version 3.1), then you can now search for pictures in one of: Arabic, Chinese, Bengali, English, French, Hindi, Indonesian, Portuguese, Spanish, Swahili, and Thai.
 - Various North American paper sizes are now supported.
 
