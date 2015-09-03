@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <!-- PageChooserMain - .jade file is the primary source; .html file is generated from .jade file-->
 <html>
   <head>
@@ -23,7 +23,8 @@
             <div class="innerCollectionContainer">
               <div class="gridItem">
                 <!-- this was used when we were using iframes to prevent messing with the underlying page items, could come back conceivably for pages that lack svg thumbnails-->
-                <div class="invisibleThumbCover"></div><div class="selectionOverlay"></div><img src="" class="thumbnail">
+                <div class="invisibleThumbCover"></div>
+                <div class="selectionOverlay"></div><img src="" class="thumbnail">
                 <div class="gridItemCaption">Page Title</div>
                 <div class="pageDescription"></div>
               </div>
@@ -34,6 +35,10 @@
       <div id="singlePagePreview"><img src="" id="preview">
         <div id="previewCaption" class="previewCaption"></div>
         <div id="previewDescriptionText" class="DescriptionText">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vel sodales justo.</div>
+        <div id="convertLosesMaterial">Converting to this layout will cause some content to be lost.</div>
+        <label id="convertAnyway">
+          <input type="checkbox" name="Continue" id="convertAnywayCheckbox">Continue anyway
+        </label>
         <input type="submit" value="Add Page" id="addPageButton" class="foo">
       </div>
     </div>

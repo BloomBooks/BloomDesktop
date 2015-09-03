@@ -160,7 +160,13 @@ function showAddPageDialog(templatesJSON) {
     }
     parentElement.localizationManager.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
 
-        var title = parentElement.localizationManager.getText('EditTab.AddPageDialog.Title', 'Add Page...');
+        var forChooseLayout = templatesJSON.chooseLayout;
+        if (forChooseLayout) {
+            var title = parentElement.localizationManager.getText('EditTab.AddPageDialog.ChooseLayoutTitle', 'Choose Different Layout...');
+
+        } else {
+            var title = parentElement.localizationManager.getText('EditTab.AddPageDialog.Title', 'Add Page...');
+        }
         var dialogContents = CreateAddPageDiv(templatesJSON);
 
         theDialog = $(dialogContents).dialog({

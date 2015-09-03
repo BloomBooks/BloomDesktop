@@ -247,6 +247,9 @@
     <Content Include="pageChooser\mixins\page-chooser-mixins.jade" />
     <Content Include="pageChooser\page-chooser-main.jade" />
     <Content Include="pageChooser\page-chooser.less" />
+    <Content Include="pageChooser\page-chooser.css.map">
+      <DependentUpon>page-chooser.css</DependentUpon>
+    </Content>
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

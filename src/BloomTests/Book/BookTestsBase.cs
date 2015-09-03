@@ -169,7 +169,12 @@ namespace BloomTests.Book
 
 		protected void SetDom(string bodyContents, string headContents = "")
 		{
-			_bookDom = new HtmlDom(@"<html ><head>" + headContents + "</head><body>" + bodyContents + "</body></html>");
+			_bookDom = MakeDom(bodyContents, headContents);
+		}
+
+		public static HtmlDom MakeDom(string bodyContents, string headContents="")
+		{
+			return new HtmlDom(@"<html ><head>" + headContents + "</head><body>" + bodyContents + "</body></html>");
 		}
 	}
 }

@@ -5,7 +5,8 @@
 <head>
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="bookEdit/editor/jquery.gridly.css" />
-    <link rel="stylesheet" type="text/css" href="BookPagesThumbnailList.css" />
+    <link rel="stylesheet" type="text/css" href="BookPagesThumbnailList.css"/>
+    <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css" />
     <script src="/bloom/bookEdit/editor/jquery-2.0.3.js" type="text/javascript"></script>
     <script type="text/javascript" src="/bloom/bookEdit/editor/jquery.gridly.js"></script>
     <script type="text/javascript" src="/bloom/lib/errorHandler.js"></script>
@@ -41,6 +42,11 @@
             // This timeout expires before the main page is displayed to the user, so we're using
             // thumbnailTimerInterval * 2 for the first interval to give the UI more time to catch up.
             setTimeout(loadNextThumbnail, thumbnailTimerInterval * 2);
+
+            jQuery('#menu').click(function (event) {
+                event.stopPropagation();
+                fireCSharpEvent("menuClicked", $(this).parent().parent().attr('id'));
+            });
         });
         function fireCSharpEvent(eventName, eventData) {
 
@@ -78,6 +84,9 @@
 <body id="body">
 <div class="gridly">
     <div class="gridItem placeholder" id="placeholder"></div>
+</div>
+<div id ="menuIconHolder" class="menuHolder">
+    <span id="menu" class="ui-icon ui-icon-triangle-1-s">menu</span>
 </div>
 </body>
 </html>

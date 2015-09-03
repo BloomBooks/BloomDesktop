@@ -16,6 +16,7 @@ using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.WebLibraryIntegration;
+using DesktopAnalytics;
 using L10NSharp;
 using MarkdownSharp;
 using Palaso.Code;
@@ -813,21 +814,6 @@ namespace Bloom.Book
 			}
 		}
 
-		private static Dictionary<string, string> _stylesToDefine;
-
-		private static Dictionary<string, string> StylesToDefine
-		{
-			get
-			{
-				if (_stylesToDefine == null)
-				{
-					_stylesToDefine = new Dictionary<string, string>();
-					_stylesToDefine["BigWords"] = ".BigWords-style { font-size: 45pt !important; text-align: center !important; }";
-				}
-				return _stylesToDefine;
-			}
-		}
-
 		/// <summary>
 		/// Bring the page up to date. Currently this is used to switch various old page types to new versions
 		/// based on Custom Page (so they can actually be customized).
@@ -850,82 +836,7 @@ namespace Bloom.Book
 			var bookPath = Path.Combine(rootFolder, updateTo.Path);
 			var templateDoc = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
 			var newChild = (XmlElement)templateDoc.SafeSelectNodes("//div[@id='" + updateTo.Guid + "']")[0];
-			var newPage = (XmlElement)page.OwnerDocument.ImportNode(newChild, true);
-			page.ParentNode.ReplaceChild(newPage, page);
-			newPage.SetAttribute("id", page.Attributes["id"].Value);
-			newPage.SetAttribute("data-pagelineage", lineage.Replace(originalTemplateGuid, updateTo.Guid));
-			// migrate text
-			MigrateChildren(page, "bloom-translationGroup", newPage);
-			// migrate images
-			MigrateChildren(page, "bloom-imageContainer", newPage);
-		}
-
-		/// <summary>
-		/// For each div in the page which has the specified class, find the corresponding div with that class in newPage,
-		/// and replace its contents with the contents of the source page.
-		/// Also inserts any needed styles we know about.
-		/// </summary>
-		/// <param name="page"></param>
-		/// <param name="parentClass"></param>
-		/// <param name="newPage"></param>
-		private static void MigrateChildren(XmlElement page, string parentClass, XmlElement newPage)
-		{
-			//the leading '.' here is needed because newPage is an element in a larger DOM, and we only want to search in this page
-			var xpath = ".//div[contains(concat(' ', @class, ' '), ' " + parentClass + " ')]";
-			var oldParents = page.SafeSelectNodes(xpath);
-			var newParents = newPage.SafeSelectNodes(xpath);
-			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
-			// thing to copy or where the numbers are not equal. It's just a precaution.
-			for (int i = 0; i < Math.Min(newParents.Count, oldParents.Count); i++)
-			{
-				var oldParent = (XmlElement) oldParents[i];
-				var newParent = (XmlElement) newParents[i];
-				foreach (var child in newParent.ChildNodes.Cast<XmlNode>().ToArray())
-					newParent.RemoveChild(child);
-				// apparently we are modifying the ChildNodes collection by removing the child from there to insert in the new location,
-				// which messes things up unless we make a copy of the collection.
-				foreach (XmlNode child in oldParent.ChildNodes.Cast<XmlNode>().ToArray())
-				{
-					newParent.AppendChild(child);
-					AddKnownStyleIfMissing(child);
-				}
-			}
-		}
-
-		private static void AddKnownStyleIfMissing(XmlNode child)
-		{
-			if (child.Attributes == null)
-				return; // e.g., whitespace
-			var classAttr = child.Attributes["class"];
-			if (classAttr == null)
-				return;
-			foreach (var style in classAttr.Value.Split(' ').Where(x => x.EndsWith("-style")))
-			{
-				var key = style.Substring(0, style.Length - ".style".Length);
-				string defaultDefn;
-				if (!StylesToDefine.TryGetValue(key, out defaultDefn))
-					continue; // I don't think there should be more than one -style item, but just in case...
-				// Todo: conditions...
-				var headElt = child.OwnerDocument.DocumentElement.ChildNodes.Cast<XmlNode>().First(x => x.Name == "head");
-				var userStyles =
-					headElt.SafeSelectNodes("./style[@type='text/css' and @title='userModifiedStyles']")
-						.Cast<XmlElement>()
-						.FirstOrDefault();
-				if (userStyles == null)
-				{
-					userStyles = child.OwnerDocument.CreateElement("style");
-					userStyles.SetAttribute("type", "text/css");
-					userStyles.SetAttribute("title", "userModifiedStyles");
-					userStyles.InnerText = defaultDefn;
-					headElt.AppendChild(userStyles);
-					continue;
-				}
-				var content = userStyles.InnerText;
-				var lookFor = new Regex("\\." + style + "\\s*{");
-				if (lookFor.IsMatch(content))
-					continue; // style already defined
-				userStyles.InnerText = content + " " + defaultDefn;
-			}
+			OurHtmlDom.MigrateEditableData(page, newChild, lineage.Replace(originalTemplateGuid, updateTo.Guid));
 		}
 
 		/// <summary>
@@ -1109,6 +1020,12 @@ namespace Bloom.Book
 
 			//Likewise, the multilingual settings (e.g. bloom-bilingual) get messed up, so restore those
 			UpdateMultilingualSettings(bookDom);
+		}
+
+		public void UpdatePageToTemplate(HtmlDom pageDom, XmlElement templatePageDiv, string pageId)
+		{
+			OurHtmlDom.UpdatePageToTemplate(pageDom, templatePageDiv, pageId);
+			UpdateEditableAreasOfElement(pageDom);
 		}
 
 		private static void UpdateDivInsidePage(int zeroBasedCount, XmlElement templateElement, XmlElement targetPage, IProgress progress)
@@ -2101,17 +2018,18 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// This is called both for the whole book, and for individual pages when the user uses Origami to make changes to the layout of the page
+		/// This is called both for the whole book, and for individual pages when the user uses Origami to make changes to the layout of the page.
+		/// It would be nicer in the HtmlDom, but it uses knowledge about the collection and book languages that the DOM doesn't have.
 		/// </summary>
 		/// <param name="elementToUpdate"></param>
-		public void UpdateEditableAreasOfElement(HtmlDom elementToUpdate)
+		public void UpdateEditableAreasOfElement(HtmlDom dom)
 		{
 			var language1Iso639Code = _collectionSettings.Language1Iso639Code;
 			var language2Iso639Code = _collectionSettings.Language2Iso639Code;
 			var language3Iso639Code = _collectionSettings.Language3Iso639Code;
 			var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2;
 			var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3;
-			foreach (XmlElement div in elementToUpdate.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
+			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				TranslationGroupManager.PrepareElementsInPageOrDocument(div, _collectionSettings);
 				TranslationGroupManager.UpdateContentLanguageClasses(div, _collectionSettings, language1Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);

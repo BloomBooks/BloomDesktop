@@ -30,6 +30,8 @@ var PageChooser = (function () {
             this._templateBookUrls = initializationObject["collections"];
             this._lastPageAdded = initializationObject["lastPageAdded"];
             this._orientation = initializationObject["orientation"];
+            this._forChoosePage = initializationObject["chooseLayout"];
+            this._currentPageLayout = initializationObject['currentLayout'];
         }
         else {
             console.log("Expected url in PageChooser ctor!");
@@ -57,7 +59,28 @@ var PageChooser = (function () {
         caption.attr("style", "display: block;");
         $("#preview").attr("src", $(this._selectedGridItem).find("img").first().attr("src"));
         this.setLocalizedText($('#previewDescriptionText'), 'TemplateBooks.PageDescription.', $(".pageDescription", this._selectedGridItem).text(), defaultCaptionText);
+        if (this._forChoosePage) {
+            var willLoseData = this.willLoseData();
+            if (willLoseData) {
+                $('#mainContainer').addClass("willLoseData");
+            }
+            else {
+                $('#mainContainer').removeClass("willLoseData");
+            }
+            $('#convertAnywayCheckbox').prop('checked', !willLoseData);
+            this.continueCheckBoxChanged(); // possibly redundant
+        }
     }; // thumbnailClickHandler
+    // Return true if choosing the current layout will cause loss of data
+    PageChooser.prototype.willLoseData = function () {
+        var selected = $(this._selectedGridItem);
+        var selectedEditableDivs = parseInt(selected.attr('data-textDivCount'));
+        var selectedPictures = parseInt(selected.attr('data-picureCount'));
+        var current = $(window.parent.document.getElementById('page').contentWindow.document);
+        var currentEditableDivs = current.find(".bloom-translationGroup").length;
+        var currentPictures = current.find(".bloom-imageContainer").length;
+        return selectedEditableDivs < currentEditableDivs || selectedPictures < currentPictures;
+    };
     // There's a bug deep in javascript that doesn't take into account the scrolling
     // of a div element before something inside it is clicked on.  The following code
     // detects whether the scrolling has changed since the last mouse click, and if so,
@@ -117,10 +140,26 @@ var PageChooser = (function () {
     PageChooser.prototype.addPageClickHandler = function () {
         if (this._selectedGridItem == undefined || this._templateBookUrls == undefined)
             return;
+        if (this._forChoosePage && !$('#convertAnywayCheckbox').is(':checked'))
+            return;
         this.fireCSharpEvent("setModalStateEvent", "false");
         var id = this._selectedGridItem.attr("data-pageId");
-        this.fireCSharpEvent("addPage", id);
+        if (this._forChoosePage) {
+            this.fireCSharpEvent("chooseLayout", id);
+        }
+        else {
+            this.fireCSharpEvent("addPage", id);
+        }
     }; // addPageClickHandler
+    PageChooser.prototype.continueCheckBoxChanged = function () {
+        if (!this._forChoosePage)
+            return;
+        var cb = $('#convertAnywayCheckbox');
+        var isCurrentSelectionOriginal = this._selectedGridItem.hasClass('disabled');
+        $('#addPageButton').prop('disabled', isCurrentSelectionOriginal || !cb.is(':checked'));
+    };
+    // This is the starting-point method that is invoked to initialize the dialog.
+    // At the point where it is called, the json parameters that control what will be displayed
     PageChooser.prototype.loadInstalledCollections = function () {
         var _this = this;
         // Save a reference to the scrolling div that contains the various page items.
@@ -144,8 +183,19 @@ var PageChooser = (function () {
         $("#addPageButton", document).button().click(function () {
             _this.addPageClickHandler();
         });
+        $("#convertAnywayCheckbox", document).button().change(function () {
+            _this.continueCheckBoxChanged();
+        });
         var pageButton = $("#addPageButton", document);
-        localizationManager.asyncGetText('EditTab.AddPageDialog.AddThisPageButton', 'Add This Page')
+        var okButtonLabelId = 'EditTab.AddPageDialog.AddPageButton';
+        var okButtonLabelText = 'Add This Page';
+        if (this._forChoosePage) {
+            okButtonLabelId = 'EditTab.AddPageDialog.ChooseLayoutButton';
+            okButtonLabelText = 'Use This Layout';
+            this.setLocalizedText($('#convertAnywayCheckbox'), 'EditTab.AddPageDialog.', 'Continue anyway', 'ChooseLayoutContinueCheckbox');
+            this.setLocalizedText($('#convertLosesMaterial'), 'EditTab.AddPageDialog.', 'Converting to this layout will cause some content to be lost.', 'ChooseLayoutWillLoseData');
+        }
+        localizationManager.asyncGetText(okButtonLabelId, okButtonLabelText)
             .done(function (translation) {
             pageButton.attr('value', translation);
         });
@@ -189,8 +239,12 @@ var PageChooser = (function () {
             var currentGridItemHtml = $(gridItemTemplate).clone();
             var currentId = $(div).attr("id");
             $(currentGridItemHtml).attr("data-pageId", currentId);
+            $(currentGridItemHtml).attr("data-textDivCount", $(div).find(".bloom-translationGroup").length);
+            $(currentGridItemHtml).attr("data-picureCount", $(div).find(".bloom-imageContainer").length);
             if (currentId === lastPageAdded)
                 indexToSelect = index;
+            if (currentId === _this._currentPageLayout)
+                $(currentGridItemHtml).addClass('disabled');
             var pageDescription = $(".pageDescription", div).first().text();
             $(".pageDescription", currentGridItemHtml).first().text(pageDescription);
             var pageLabel = $(".pageLabel", div).first().text().trim();
