@@ -1,4 +1,4 @@
-﻿BODY {
+BODY {
   background-color: #404040;
 }
 /* this is handy for debugging page numbering in the thumbnail list
@@ -20,6 +20,7 @@
   height: 65px;
   width: 47px;
   /* default = A5Portrait */
+
   transform-style: preserve-3d;
 }
 .pageContainer.A5Landscape {
@@ -49,6 +50,41 @@
 }
 .pageContainer.B5Portrait .bloom-page {
   transform: scale(0.06);
+}
+.pageContainer.LetterLandscape {
+  height: 47px;
+  width: 61px;
+}
+.pageContainer.LetterLandscape .bloom-page {
+  transform: scale(0.058);
+}
+.pageContainer.LetterPortrait {
+  height: 61px;
+  width: 47px;
+}
+.pageContainer.LetterPortrait .bloom-page {
+  transform: scale(0.058);
+}
+.pageContainer.HalfLetterPortrait {
+  height: 61px;
+  width: 47px;
+}
+.pageContainer.HalfLetterPortrait .bloom-page {
+  transform: scale(0.075);
+}
+.pageContainer.QuarterLetterLandscape {
+  height: 47px;
+  width: 61px;
+}
+.pageContainer.QuarterLetterLandscape .bloom-page {
+  transform: scale(0.115);
+}
+.pageContainer.QuarterLetterPortrait {
+  height: 61px;
+  width: 47px;
+}
+.pageContainer.QuarterLetterPortrait .bloom-page {
+  transform: scale(0.115);
 }
 .pageContainer .bloom-page {
   backface-visibility: hidden;
@@ -89,4 +125,3 @@
   bottom: 6px;
   right: 0;
 }
-/*# sourceMappingURL=BookPagesThumbnailList.css.map */

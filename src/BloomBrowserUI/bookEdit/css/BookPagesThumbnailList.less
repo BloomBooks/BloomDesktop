@@ -52,6 +52,41 @@ BODY {
             transform: scale(0.06);
         }
     }
+    &.LetterLandscape {
+        height: 47px;
+        width: 61px;
+        .bloom-page {
+            transform: scale(0.058);
+        }
+    }
+    &.LetterPortrait {
+        height: 61px;
+        width: 47px;
+        .bloom-page {
+            transform: scale(0.058);
+        }
+    }
+    &.HalfLetterPortrait {
+        height: 61px;
+        width: 47px;
+        .bloom-page {
+            transform: scale(0.075);
+        }
+    }
+    &.QuarterLetterLandscape {
+        height: 47px;
+        width: 61px;
+        .bloom-page {
+            transform: scale(0.115);
+        }
+    }
+    &.QuarterLetterPortrait {
+        height: 61px;
+        width: 47px;
+        .bloom-page {
+            transform: scale(0.115);
+        }
+    }
 
     //http://stackoverflow.com/questions/17824060/ios-safari-runs-out-of-memory-with-webkit-transform
     transform-style: preserve-3d;

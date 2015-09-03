@@ -214,6 +214,18 @@ preview.css.
 		min-height: @A6Landscape-Height;
 		max-height: @A6Landscape-Height;
 	}
+	&.QuarterLetterPortrait {
+		min-width: @QuarterLetterPortrait-Width;
+		max-width: @QuarterLetterPortrait-Width;
+		min-height: @QuarterLetterPortrait-Height;
+		max-height: @QuarterLetterPortrait-Height;
+	}
+	&.QuarterLetterLandscape {
+		min-width: @QuarterLetterLandscape-Width;
+		max-width: @QuarterLetterLandscape-Width;
+		min-height: @QuarterLetterLandscape-Height;
+		max-height: @QuarterLetterLandscape-Height;
+	}
 	&.HalfLetterPortrait {
 		min-width: @HalfLetterPortrait-Width;
 		max-width: @HalfLetterPortrait-Width;
@@ -308,6 +320,12 @@ preview.css.
 		.SetMarginBox(@B5Portrait-Width, @B5Portrait-Height);
 	}
 
+	.QuarterLetterPortrait & {
+		.SetMarginBox(@QuarterLetterPortrait-Width, @QuarterLetterPortrait-Height);
+	}
+	.QuarterLetterLandscape & {
+		.SetMarginBox(@QuarterLetterLandscape-Width, @QuarterLetterLandscape-Height);
+	}
 	.HalfLetterPortrait & {
 		.SetMarginBox(@HalfLetterPortrait-Width, @HalfLetterPortrait-Height);
 	}
