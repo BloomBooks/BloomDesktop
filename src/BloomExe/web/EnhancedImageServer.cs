@@ -262,12 +262,15 @@ namespace Bloom.web
 				if (File.Exists(temp))
 					localPath = temp;
 #else
-				// project on network mapped drive like localhost\C$.
-				// URL was something like /bloom///localhost/C$/, but info.LocalPathWithoutQuery uses Uri.LocalPath
-				// which for some reason drops the needed leading slashes.
-				var temp = "//" + localPath;
-				if (File.Exists(temp))
-					localPath = temp;
+			// URL was something like /bloom///localhost/C$/, but info.LocalPathWithoutQuery uses Uri.LocalPath
+			// which for some reason drops the leading slashes for a network mapped drive.
+			// network mapped drives don't work if the computer isn't on a network.
+			// So we'll change the localhost\C$ to C: (same for other letters)
+			var pathArray = localPath.Substring(10).ToCharArray();
+			if (pathArray[1] == '$' && pathArray[2] == '/' && pathArray[0] >= 'A' && pathArray[0] <= 'Z')
+				pathArray[1] = ':';
+			var path = new String(pathArray);
+			return path;
 #endif
 			}
 
