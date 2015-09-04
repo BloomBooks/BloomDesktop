@@ -52,6 +52,7 @@ namespace Bloom.Edit
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private Dictionary<string, IPage> _templatePagesDict;
 		private string _lastPageAdded;
+		internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
@@ -717,19 +718,29 @@ namespace Bloom.Edit
 			return false;
 		}
 
-		private void ChangePageLayoutBasedOnTemplate(string pageId)
+		private void ChangePageLayoutBasedOnTemplate(string layoutId)
 		{
 			SaveNow();
 
 			IPage page;
 			var dict = GetTemplatePagesForThisBook();
-			if (dict != null && dict.TryGetValue(pageId, out page))
+			if (dict != null && dict.TryGetValue(layoutId, out page))
 			{
 				var templatePage = page.GetDivNodeForThisPage();
 				var book = _pageSelection.CurrentSelection.Book;
-				book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, _pageSelection.CurrentSelection.Id);
-				_lastPageAdded = pageId; // Review
-				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+				var pageToChange = PageChangingLayout ?? _pageSelection.CurrentSelection;
+				book.UpdatePageToTemplate(book.OurHtmlDom, templatePage, pageToChange.Id);
+				_lastPageAdded = layoutId; // Review
+				// The Page objects are cached in the page list and may be used if we issue another
+				// change layout command. We must update their lineage so the right "current layout"
+				// will be shown if the user changes the layout of the same page again.
+				var pageChanged = pageToChange as Page;
+				if (pageChanged != null)
+					pageChanged.UpdateLineage(new[] {layoutId});
+				if (pageToChange.Id == _pageSelection.CurrentSelection.Id)
+					_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+				else
+					_pageSelection.SelectPage(pageToChange);
 			}
 		}
 
@@ -1216,7 +1227,8 @@ namespace Bloom.Edit
 		/// Returns a json string for initializing the AddPage dialog. It gives paths to our current TemplateBook
 		/// and specifies whether the dialog is to be used for adding pages or choosing a different layout.
 		/// </summary>
-		public string GetAddPageArguments(bool forChooseLayout)
+		/// <remarks>If forChooseLayout is true, page argument is required.</remarks>
+		public string GetAddPageArguments(bool forChooseLayout, IPage page = null)
 		{
 			dynamic addPageSettings = new ExpandoObject();
 			addPageSettings.lastPageAdded = _lastPageAdded;
@@ -1227,7 +1239,7 @@ namespace Bloom.Edit
 			addPageSettings.collections = new[] {collection1};
 			addPageSettings.chooseLayout = forChooseLayout;
 			if (forChooseLayout)
-				addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor;
+				addPageSettings.currentLayout = page.IdOfFirstAncestor;
 			var settingsString = JsonConvert.SerializeObject(addPageSettings);
 			return settingsString;
 		}
@@ -1245,9 +1257,10 @@ namespace Bloom.Edit
 			return newUrl.Replace(':', '$').Replace('\\', '/');
 		}
 
-		internal void ChangePageLayout()
+		internal void ChangePageLayout(IPage page)
 		{
-			_view.ShowChangeLayoutDialog();
+			PageChangingLayout = page;
+			_view.ShowChangeLayoutDialog(page);
 		}
 	}
 

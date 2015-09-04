@@ -53,7 +53,7 @@ namespace Bloom.Edit
 				new WebThumbNailList.MenuItemSpec() {
 					Label = LocalizationManager.GetString("EditTab.ChooseLayoutButton", "Choose Different Layout"),
 					EnableFunction = (page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
-					ExecuteCommand = (page) => _model.ChangePageLayout()});
+					ExecuteCommand = (page) => _model.ChangePageLayout(page)});
 			// This adds the desired menu items to the Gecko context menu that happens when we right-click
 			_thumbNailList.ContextMenuProvider = args =>
 			{
