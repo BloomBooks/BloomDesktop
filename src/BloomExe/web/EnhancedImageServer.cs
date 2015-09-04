@@ -269,8 +269,7 @@ namespace Bloom.web
 			var pathArray = localPath.Substring(10).ToCharArray();
 			if (pathArray[1] == '$' && pathArray[2] == '/' && pathArray[0] >= 'A' && pathArray[0] <= 'Z')
 				pathArray[1] = ':';
-			var path = new String(pathArray);
-			return path;
+			localPath = new String(pathArray);
 #endif
 			}
 
