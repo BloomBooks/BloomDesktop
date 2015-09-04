@@ -1,4 +1,4 @@
-﻿.bloom-frontMatter .pageLabel:after,
+.bloom-frontMatter .pageLabel:after,
 .bloom-backMatter .pageLabel:after {
   content: ": Factory Front/Back Matter";
 }
@@ -386,8 +386,8 @@
 .verso #versoLicenseAndCopyright img {
   width: 94px;
 }
-.credits .originalAcknowledgments .bloom-contentNational1,
-.verso .originalAcknowledgments .bloom-contentNational1 {
+.credits .originalAcknowledgments .bloom-content1,
+.verso .originalAcknowledgments .bloom-content1 {
   display: block !important;
   margin-bottom: 2em;
 }
@@ -478,4 +478,3 @@ BODY[bookcreationtype="translation"] .titlePage #funding .bloom-contentNational1
 .ISBNContainer .ISBNContainer SPAN {
   vertical-align: top;
 }
-/*# sourceMappingURL=Factory-XMatter.css.map */
