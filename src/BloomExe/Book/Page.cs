@@ -20,7 +20,7 @@ namespace Bloom.Book
 		bool IsBackMatter { get; }
 		string GetCaptionOrPageNumber(ref int pageNumber);
 		int GetIndex();
-		string IdOfFirstAncestor { get; }
+		string IdOfFirstAncestor { get;}
 	}
 
 	public class Page : IPage
@@ -181,6 +181,11 @@ namespace Bloom.Book
 		public string IdOfFirstAncestor
 		{
 			get { return _pageLineage.FirstOrDefault(); }
+		}
+
+		internal void UpdateLineage(string[] lineage)
+		{
+			_pageLineage = lineage;
 		}
 	}
 }
