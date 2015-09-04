@@ -1,4 +1,4 @@
-.bloom-frontMatter .pageLabel:after,
+﻿.bloom-frontMatter .pageLabel:after,
 .bloom-backMatter .pageLabel:after {
   content: ": unknown Front/Back Matter";
 }
@@ -215,18 +215,18 @@
 }
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
   order: 1;
-  display: inherit;
+  display: block;
   font-size: 120%;
   line-height: 1.7em;
   margin-bottom: 5px;
 }
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content3 {
-  display: inherit;
+  display: block;
   order: 2;
 }
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
   order: 0;
-  display: inherit;
+  display: block;
   font-size: 250%;
   line-height: 1.4em;
   margin-bottom: 5px;
@@ -478,3 +478,4 @@ BODY[bookcreationtype="translation"] .titlePage #funding .bloom-contentNational1
 .ISBNContainer .ISBNContainer SPAN {
   vertical-align: top;
 }
+/*# sourceMappingURL=bloom-xmatter-common.css.map */
