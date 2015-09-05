@@ -746,5 +746,24 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInN2' and @lang='es']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='somethingInV' and @lang='xyz']", 1);
 		}
+
+		/// <summary>
+		/// This is a regression test for bl-1210, where the translation-group for title would only
+		/// get bloom-editables with the *current* languages. The problem with that is that then the
+		/// source bubble didn't offer up the title in *other* languages.
+		/// </summary>
+		/* At the moment, it doesn't appear that we need BookStarter to deal with this.
+		Keeping this test in case we decide that it does
+		[Test]
+		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_CoverHasVariousBookTitles()
+		{
+			var source = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Sample Shells",
+																			"Vaccinations");
+
+			var path = GetPathToHtml(_starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path));
+
+			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//div[contains(@class,'outsideFrontCover')]//div[@data-book='bookTitle' and @lang='es' and text()]");
+			AssertThatXmlIn.HtmlFile(path).HasAtLeastOneMatchForXpath("//div[contains(@class,'outsideFrontCover')]//div[@data-book='bookTitle' and @lang='tpi' and text()]");
+		}*/
 	}
 }

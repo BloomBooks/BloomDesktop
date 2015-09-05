@@ -1,4 +1,4 @@
-/// <reference path="../../bookEdit/js/bloomSourceBubbles.ts" />
+/// <reference path="../../bookEdit/sourceBubbles/bloomSourceBubbles.ts" />
 /// <reference path="../../lib/jasmine/jasmine.d.ts"/>
 
 "use strict";

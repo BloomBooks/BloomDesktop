@@ -1,6 +1,6 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
-/// <reference path="bloomQtipUtils.ts" />
+/// <reference path="../js/bloomQtipUtils.ts" />
 /// <reference path="../StyleEditor/StyleEditor.ts" />
 
 interface qtipInterface extends JQuery {

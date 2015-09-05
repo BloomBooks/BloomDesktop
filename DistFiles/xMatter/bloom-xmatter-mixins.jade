@@ -97,9 +97,7 @@ mixin factoryStandard-outsideFrontCover
 		//- light of jade it is overly complicated.
 
 		+field-prototypeDeclaredExplicity.bookTitle
-			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style(data-book='bookTitle')
-
 
 		.bloom-imageContainer
 			img(src="placeHolder.png", data-book='coverImage')
@@ -133,7 +131,6 @@ mixin factoryStandard-titlePage
 	// TITLE PAGE
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(attributes, data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
 		+field-prototypeDeclaredExplicity#titlePageTitleBlock
-			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).Title-On-Title-Page-style(data-book='bookTitle')
 		+field-prototypeDeclaredExplicity#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}

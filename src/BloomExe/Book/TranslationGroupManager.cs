@@ -27,29 +27,59 @@ namespace Bloom.Book
 	public class TranslationGroupManager
 	{
 		/// <summary>
-		/// For each group of editable elements in the div which have lang attributes, make a new element
-		/// with the lang code of the vernacular.
-		/// Also enable/disable editting as warranted (e.g. in shell mode or not)
+		/// For each group of editable elements in the div which have lang attributes  (normally, a .bloom-translationGroup div),
+		/// make a new element with the lang code of the vernacular (normally, a .bloom-editable).
+		/// Also enable/disable editing as warranted (e.g. in shell mode or not)
 		/// </summary>
-		/// <param name="node"></param>
-		public static void PrepareElementsInPageOrDocument(XmlNode node, CollectionSettings collectionSettings)
+		public static void PrepareElementsInPageOrDocument(XmlNode pageOrDocumentNode, CollectionSettings collectionSettings)
 			//, bool inShellMode)
 		{
-			PrepareElementsOnPageOneLanguage(node, collectionSettings.Language1Iso639Code);
+			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language1Iso639Code);
 
 			//why do this? well, for bilingual/trilingual stuff (e.g., a picture dictionary)
-			PrepareElementsOnPageOneLanguage(node, collectionSettings.Language2Iso639Code);
+			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language2Iso639Code);
 
 			if (!string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
 			{
-				PrepareElementsOnPageOneLanguage(node, collectionSettings.Language3Iso639Code);
+				PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language3Iso639Code);
+			}
+
+
+		}
+
+		/// <summary>
+		/// Normally, the connection between bloom-translationGroups and the dataDiv is that each bloom-editable child
+		/// (which has an @lang) pulls the corresponding string from the dataDiv. This happens in BooData.
+		/// 
+		/// That works except in the case of xmatter which a) start empty and b) only normally get filled with 
+		/// .bloom-editable's for the current languages. Then, when bloom would normally show a source bubble listing
+		/// the string in other languages, well there's nothing to show (the bubble can't pull from dataDiv).
+		/// So our solution here is to pre-pack the translationGroup with bloom-editable's for each of the languages
+		/// in the data-div.
+		/// The original (an possibly only) instance of this is with book titles. See bl-1210.
+		/// </summary>
+		public static void PrepareDataBookTranslationGroups(XmlNode pageOrDocumentNode, IEnumerable<string> languageCodes )
+		{
+			//At first, I set out to select all translationGroups that have child .bloomEditables that have data-book attributes
+			//however this has implications on other fields, noticeably the acknowledgments. So in order to get this fixed
+			//and not open another can of worms, I've reduce the scope of this
+			//fix to just the bookTitle, so I'm going with findOnlyBookTitleFields for now
+			var findAllDataBookFields = "descendant-or-self::*[contains(@class,'bloom-translationGroup') and descendant::div[@data-book and contains(@class,'bloom-editable')]]";
+			var findOnlyBookTitleFields = "descendant-or-self::*[contains(@class,'bloom-translationGroup') and descendant::div[@data-book='bookTitle' and contains(@class,'bloom-editable')]]";
+			foreach (XmlElement groupElement in
+					pageOrDocumentNode.SafeSelectNodes(findOnlyBookTitleFields))
+			{
+				foreach (var lang in languageCodes)
+				{
+					MakeElementWithLanguageForOneGroup(groupElement, lang);
+				}
 			}
 		}
 
 
 		/// <summary>
 		/// This is used when a book is first created from a source; without it, if the shell maker left the book as trilingual when working on it,
-		/// then everytime someone created a new book based on it, it too would be trilingual.
+		/// then every time someone created a new book based on it, it too would be trilingual.
 		/// </summary>
 		public static void SetInitialMultilingualSetting(BookData bookData, int oneTwoOrThreeContentLanguages,
 			CollectionSettings collectionSettings)
