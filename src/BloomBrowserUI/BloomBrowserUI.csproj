@@ -21,22 +21,52 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="bookEdit\accordion\accordion.css" />
+    <Content Include="bookEdit\accordion\accordion.css">
+      <DependentUpon>accordion.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\accordion\Accordion.htm" />
     <Content Include="bookEdit\accordion\accordion.js" />
     <Content Include="bookEdit\accordion\DecodableRT\DecodableRT.htm" />
     <Content Include="bookEdit\accordion\LeveledRT\LeveledRT.htm" />
     <Content Include="bookEdit\accordion\PageElements\PageElements.htm" />
-    <Content Include="bookEdit\accordion\readerTools.css" />
+    <Content Include="bookEdit\accordion\readerTools.css">
+      <DependentUpon>readerTools.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\accordion\settings\Settings.htm" />
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.htm" />
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.js" />
+    <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.css">
+      <DependentUpon>TemplatePagesThumbnailList.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.htm" />
     <Content Include="bookEdit\bloomField\test.htm" />
     <Content Include="bookEdit\bloomField\bloomField.ts" />
-    <Content Include="bookEdit\css\origami.css" />
+    <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.min.css">
+      <DependentUpon>TemplatePagesThumbnailList.css</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\css\bloomDialog.css">
+      <DependentUpon>bloomDialog.less</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\css\bloomDialog.min.css">
+      <DependentUpon>bloomDialog.css</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\css\editMode.min.css">
+      <DependentUpon>editMode.css</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\css\editPaneGlobal.min.css">
+      <DependentUpon>editPaneGlobal.css</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\css\origami.css">
+      <DependentUpon>origami.less</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\css\origami.min.css">
+      <DependentUpon>origami.css</DependentUpon>
+    </Content>
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
     <Content Include="bookEdit\html\font-awesome\Readme.txt" />
@@ -55,9 +85,13 @@
     <Content Include="bookEdit\js\libsynphony\underscore_min_152.js" />
     <Content Include="bookEdit\js\libsynphony\xregexp-all-min.js" />
     <Content Include="bookEdit\js\origami.js" />
-    <Content Include="bookEdit\css\editMode.css" />
+    <Content Include="bookEdit\css\editMode.css">
+      <DependentUpon>editMode.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\css\editOriginalMode.css" />
-    <Content Include="bookEdit\css\editPaneGlobal.css" />
+    <Content Include="bookEdit\css\editPaneGlobal.css">
+      <DependentUpon>editPaneGlobal.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\css\editTranslationMode.css" />
     <Content Include="bookEdit\html\HtmlPage1.html" />
     <Content Include="bookEdit\html\topicDialog.htm" />
@@ -90,8 +124,16 @@
     <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbars.css" />
     <Content Include="bookEdit\js\toolbar\toolbar.d.ts" />
-    <Content Include="bookEdit\readerSetup\readerSetup.css" />
+    <Content Include="bookEdit\readerSetup\readerSetup.css">
+      <DependentUpon>readerSetup.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\readerSetup\ReaderSetup.htm" />
+    <Content Include="bookEdit\StyleEditor\StyleEditor.css">
+      <DependentUpon>StyleEditor.less</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\StyleEditor\StyleEditor.min.css">
+      <DependentUpon>StyleEditor.css</DependentUpon>
+    </Content>
     <Content Include="bookEdit\test\cSharpDependencyInjector.js" />
     <Content Include="bookEdit\test\interIframeChannelInitializer.js" />
     <Content Include="bookEdit\test\libsynphony\jquery.text-markup.test.js" />
@@ -102,6 +144,12 @@
     <Content Include="bookEdit\test\readerTools.Test.js" />
     <Content Include="bookEdit\test\readerTools_libSynphony.Test.js" />
     <Content Include="bookEdit\test\SynphonyApi.Test.js" />
+    <Content Include="bookEdit\TopicChooser\topicChooser.css">
+      <DependentUpon>topicChooser.less</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\TopicChooser\topicChooser.min.css">
+      <DependentUpon>topicChooser.css</DependentUpon>
+    </Content>
     <Content Include="bookLayout\.guidsForInstaller.xml" />
     <Content Include="bookLayout\collection styles override template.css" />
     <Content Include="bookLayout\languageDisplayTemplate.css" />
@@ -162,7 +210,9 @@
     <Content Include="pageChooser\js\page-chooser.js" />
     <Content Include="pageChooser\mixins\page-chooser-mixins.htm" />
     <Content Include="pageChooser\page-chooser-main.htm" />
-    <Content Include="pageChooser\page-chooser.css" />
+    <Content Include="pageChooser\page-chooser.css">
+      <DependentUpon>page-chooser.less</DependentUpon>
+    </Content>
     <Content Include="pageChooser\transparent.gif" />
     <Content Include="test\.guidsForInstaller.xml" />
     <Content Include="test\fixtures\basePage.css" />
@@ -247,9 +297,21 @@
     <Content Include="pageChooser\mixins\page-chooser-mixins.jade" />
     <Content Include="pageChooser\page-chooser-main.jade" />
     <Content Include="pageChooser\page-chooser.less" />
-    <Content Include="pageChooser\page-chooser.css.map">
-      <DependentUpon>page-chooser.css</DependentUpon>
+    <Content Include="bookEdit\css\editMode.less" />
+    <Content Include="bookEdit\css\bloomDialog.less" />
+    <Content Include="bookEdit\css\editPaneGlobal.less" />
+    <Content Include="bookEdit\css\qtipOverrides.less" />
+    <Content Include="bookEdit\css\tab.winclassic.less" />
+    <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.less" />
+    <Content Include="bookEdit\TopicChooser\topicChooser.less" />
+    <Content Include="bookEdit\readerSetup\readerSetup.less" />
+    <Content Include="bookEdit\accordion\readerTools.less" />
+    <Content Include="bookEdit\accordion\accordion.less" />
+    <None Include="compilerconfig.json" />
+    <Content Include="compilerconfig.json.defaults">
+      <DependentUpon>compilerconfig.json</DependentUpon>
     </Content>
+    <Content Include="packages.config" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -298,4 +360,11 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Import Project="..\..\packages\BuildWebCompiler.1.3.144\build\BuildWebCompiler.targets" Condition="Exists('..\..\packages\BuildWebCompiler.1.3.144\build\BuildWebCompiler.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\BuildWebCompiler.1.3.144\build\BuildWebCompiler.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\BuildWebCompiler.1.3.144\build\BuildWebCompiler.targets'))" />
+  </Target>
 </Project>
