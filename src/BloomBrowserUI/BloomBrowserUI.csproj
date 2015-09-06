@@ -46,27 +46,13 @@
     <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.htm" />
     <Content Include="bookEdit\bloomField\test.htm" />
     <Content Include="bookEdit\bloomField\bloomField.ts" />
-    <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.min.css">
-      <DependentUpon>TemplatePagesThumbnailList.css</DependentUpon>
-    </Content>
     <Content Include="bookEdit\css\bloomDialog.css">
       <DependentUpon>bloomDialog.less</DependentUpon>
-    </Content>
-    <Content Include="bookEdit\css\bloomDialog.min.css">
-      <DependentUpon>bloomDialog.css</DependentUpon>
-    </Content>
-    <Content Include="bookEdit\css\editMode.min.css">
-      <DependentUpon>editMode.css</DependentUpon>
-    </Content>
-    <Content Include="bookEdit\css\editPaneGlobal.min.css">
-      <DependentUpon>editPaneGlobal.css</DependentUpon>
     </Content>
     <Content Include="bookEdit\css\origami.css">
       <DependentUpon>origami.less</DependentUpon>
     </Content>
-    <Content Include="bookEdit\css\origami.min.css">
-      <DependentUpon>origami.css</DependentUpon>
-    </Content>
+    <None Include="bookEdit\sourceBubbles\sourceBubbles.less" />
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
     <Content Include="bookEdit\html\font-awesome\Readme.txt" />
@@ -128,6 +114,9 @@
       <DependentUpon>readerSetup.less</DependentUpon>
     </Content>
     <Content Include="bookEdit\readerSetup\ReaderSetup.htm" />
+    <Content Include="bookEdit\sourceBubbles\sourceBubbles.css">
+      <DependentUpon>sourceBubbles.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\StyleEditor\StyleEditor.css">
       <DependentUpon>StyleEditor.less</DependentUpon>
     </Content>
@@ -240,6 +229,7 @@
     <TypeScriptCompile Include="bookEdit\js\readerTools.ts" />
     <TypeScriptCompile Include="bookEdit\js\readerToolsModel.ts" />
     <TypeScriptCompile Include="bookEdit\js\synphonyApi.ts" />
+    <TypeScriptCompile Include="bookEdit\sourceBubbles\bloomSourceBubbles.ts" />
     <TypeScriptCompile Include="bookEdit\TopicChooser\TopicChooser.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />

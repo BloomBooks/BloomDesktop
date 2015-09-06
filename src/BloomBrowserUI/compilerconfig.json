@@ -86,5 +86,13 @@
       "enabled": false
     },
     "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/sourceBubbles/sourceBubbles.css",
+    "inputFile": "bookEdit/sourceBubbles/sourceBubbles.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
   }
 ]
