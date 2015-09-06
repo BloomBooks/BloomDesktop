@@ -1,5 +1,145 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
-/*+clearfix {*/
+.qtip-default {
+  color: #000000 !important;
+  border-radius: 5px;
+  background-color: #faf7cc !important;
+  border-color: #e0deb7 !important;
+}
+.uibloomSourceTextsBubble .qtip-content {
+  padding: 0 9px 9px !important;
+}
+.uibloomSourceTextsBubble .qtip-content:hover {
+  overflow: visible !important;
+}
+.ui-sourceTextsForBubble {
+  position: relative;
+  border-color: #e0deb7;
+}
+.ui-sourceTextsForBubble NAV {
+  display: block;
+  height: 34px;
+  margin: 0 -8px;
+  border-top-right-radius: 15px;
+  border-top-left-radius: 15px;
+}
+.ui-sourceTextsForBubble NAV > UL {
+  z-index: 1;
+  background-color: transparent;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  list-style: outside none none;
+  top: 1px;
+  line-height: 22px;
+}
+.ui-sourceTextsForBubble NAV > UL::after {
+  position: absolute;
+  content: "";
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid #faf7cc;
+  z-index: 2;
+}
+.ui-sourceTextsForBubble NAV > UL > LI {
+  font-size: 9pt;
+  height: 31px;
+  border-right: 1px solid #faf7cc;
+  border-top-right-radius: 6px;
+  float: left;
+  flex: 1 0 auto;
+  background-color: #e0deb7;
+}
+.ui-sourceTextsForBubble NAV > UL > LI:not(:first-child) {
+  border-left: 1px solid #faf7cc;
+  border-top-left-radius: 6px;
+}
+.ui-sourceTextsForBubble NAV > UL > LI:first-child {
+  border-top-left-radius: 15px;
+}
+.ui-sourceTextsForBubble NAV > UL > LI.active {
+  background-color: #faf7cc;
+  border-bottom-color: #faf7cc;
+  z-index: 3;
+}
+.ui-sourceTextsForBubble NAV > UL > LI A {
+  max-width: 79px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
+  padding: 5px;
+  outline: none;
+  text-decoration: none;
+  color: black;
+  font-family: Segoe UI, sans-serif;
+}
+.ui-sourceTextsForBubble NAV > UL > LI A.active {
+  font-weight: bold;
+}
+.ui-sourceTextsForBubble NAV > UL > LI A:hover {
+  text-decoration: underline;
+  background-color: #faf7cc transparent;
+}
+.ui-sourceTextsForBubble .source-text {
+  font-size: 10pt;
+  line-height: 1.5;
+  color: black;
+  padding-top: 4px;
+}
+.ui-sourceTextsForBubble .source-text.active {
+  overflow-y: hidden !important;
+}
+.ui-sourceTextsForBubble .source-text:lang(th),
+.ui-sourceTextsForBubble .source-text:lang(km),
+.ui-sourceTextsForBubble .source-text:lang(kjg),
+.ui-sourceTextsForBubble .source-text:lang(prt) {
+  font-size: 18pt;
+}
+.dropdown-list {
+  max-height: 200px;
+  overflow-y: auto;
+  text-align: left;
+  opacity: 1;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  margin-top: 2px;
+  white-space: nowrap;
+  border: 1px solid #faf7cc;
+  background-color: #e0deb7 !important;
+  top: 0;
+  font-size: 9pt;
+  z-index: 5;
+}
+.dropdown-list LI:hover {
+  background-color: #faf7cc;
+}
+.dropdown-menu {
+  width: 32px;
+  border: none !important;
+}
+.dropdown-menu:hover UL {
+  display: inline-block;
+}
+.dropdown-menu DIV {
+  margin: 4px 0 0 0;
+  display: block;
+}
+.dropdown-menu DIV::before {
+  content: "(";
+}
+.dropdown-menu DIV::after {
+  content: ")";
+}
+.dropdown-menu UL {
+  display: none;
+}
+.panel-container {
+  border: 1px solid black;
+  padding: 0 10px;
+}
 BODY {
   background-color: #363333;
 }
@@ -235,148 +375,6 @@ TEXTAREA.province {
   font-size: 8pt;
   margin-top: -8px;
   margin-right: 8px;
-}
-.uibloomSourceTextsBubble {
-  border-radius: 15px;
-  background-color: #ffffa5 !important;
-  border-color: #c0b9b9 !important;
-  border-width: 2px !important;
-}
-.uibloomSourceTextsBubble .qtip-content {
-  padding: 0 9px 9px !important;
-}
-.uibloomSourceTextsBubble .qtip-content:hover {
-  overflow: visible !important;
-}
-.ui-sourceTextsForBubble {
-  position: relative;
-  background-color: #ffffa5;
-}
-.ui-sourceTextsForBubble NAV {
-  display: block;
-  height: 34px;
-  margin: 0 -8px;
-  background-color: #ffffc3;
-  border-top-right-radius: 15px;
-  border-top-left-radius: 15px;
-}
-.ui-sourceTextsForBubble NAV > UL {
-  z-index: 1;
-  background-color: transparent;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  list-style: outside none none;
-  top: 1px;
-  line-height: 22px;
-}
-.ui-sourceTextsForBubble NAV > UL::after {
-  position: absolute;
-  content: "";
-  width: 100%;
-  bottom: 0;
-  left: 0;
-  border-bottom: 2px solid #c0b9b9;
-  z-index: 2;
-}
-.ui-sourceTextsForBubble NAV > UL > LI {
-  font-size: 9pt;
-  height: 31px;
-  border-right: 1px solid #c0b9b9;
-  border-top-right-radius: 6px;
-  float: left;
-  flex: none;
-  background-color: #ffffc3;
-}
-.ui-sourceTextsForBubble NAV > UL > LI:not(:first-child) {
-  border-left: 1px solid #c0b9b9;
-  border-top-left-radius: 6px;
-}
-.ui-sourceTextsForBubble NAV > UL > LI:first-child {
-  border-top-left-radius: 15px;
-}
-.ui-sourceTextsForBubble NAV > UL > LI.active {
-  background-color: #ffffa5;
-  border-bottom-color: #ffffa5;
-  z-index: 3;
-}
-.ui-sourceTextsForBubble NAV > UL > LI A {
-  max-width: 79px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  display: block;
-  padding: 5px;
-  outline: none;
-  text-decoration: none;
-  color: black;
-  font-family: Segoe UI, sans-serif;
-}
-.ui-sourceTextsForBubble NAV > UL > LI A.active {
-  font-weight: bold;
-}
-.ui-sourceTextsForBubble NAV > UL > LI A:hover {
-  text-decoration: underline;
-  background-color: #ffffa5 transparent;
-}
-.ui-sourceTextsForBubble .source-text {
-  font-size: 10pt;
-  line-height: 1.5;
-  color: black;
-  padding-top: 4px;
-}
-.ui-sourceTextsForBubble .source-text.active {
-  overflow-y: hidden !important;
-}
-.ui-sourceTextsForBubble .source-text:lang(th),
-.ui-sourceTextsForBubble .source-text:lang(km),
-.ui-sourceTextsForBubble .source-text:lang(kjg),
-.ui-sourceTextsForBubble .source-text:lang(prt) {
-  font-size: 18pt;
-}
-.dropdown-list {
-  max-height: 200px;
-  overflow-y: auto;
-  text-align: left;
-  opacity: 1;
-  margin: 0;
-  padding: 0;
-  position: relative;
-  margin-top: 2px;
-  white-space: nowrap;
-  border: 1px solid #c0b9b9;
-  background-color: #ffffc3 !important;
-  top: 0;
-  font-size: 9pt;
-  z-index: 5;
-}
-.dropdown-list LI:hover {
-  background-color: #ffffa5;
-}
-.dropdown-menu {
-  width: 32px;
-  border: none !important;
-}
-.dropdown-menu:hover UL {
-  display: inline-block;
-}
-.dropdown-menu DIV {
-  margin: 4px 0 0 0;
-  display: block;
-}
-.dropdown-menu DIV::before {
-  content: "(";
-}
-.dropdown-menu DIV::after {
-  content: ")";
-}
-.dropdown-menu UL {
-  display: none;
-}
-.panel-container {
-  border: 1px solid black;
-  padding: 0 10px;
 }
 DIV.textWholePage UL {
   /*+placement:displace 1px -37px;*/

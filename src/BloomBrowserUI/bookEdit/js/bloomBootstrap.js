@@ -18,7 +18,7 @@ var scripts = [
     'bookEdit/js/jquery.hotkeys.js',
     'bookEdit/js/BloomAccordion.js',
     'bookEdit/js/bloomQtipUtils.js',
-    'bookEdit/js/bloomSourceBubbles.js',
+    'bookEdit/sourceBubbles/bloomSourceBubbles.js',
     'bookEdit/js/bloomNotices.js',
     'bookEdit/js/bloomHintBubbles.js',
     'bookEdit/StyleEditor/StyleEditor.js',

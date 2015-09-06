@@ -1,0 +1,98 @@
+﻿[
+  {
+    "outputFile": "bookEdit/css/origami.css",
+    "inputFile": "bookEdit/css/origami.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/css/bloomDialog.css",
+    "inputFile": "bookEdit/css/bloomDialog.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/css/editPaneGlobal.css",
+    "inputFile": "bookEdit/css/editPaneGlobal.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/BookPagesThumbnailList/TemplatePagesThumbnailList.css",
+    "inputFile": "bookEdit/BookPagesThumbnailList/TemplatePagesThumbnailList.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/css/editMode.css",
+    "inputFile": "bookEdit/css/editMode.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/StyleEditor/StyleEditor.css",
+    "inputFile": "bookEdit/StyleEditor/StyleEditor.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/TopicChooser/topicChooser.css",
+    "inputFile": "bookEdit/TopicChooser/topicChooser.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/readerSetup/readerSetup.css",
+    "inputFile": "bookEdit/readerSetup/readerSetup.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/accordion/readerTools.css",
+    "inputFile": "bookEdit/accordion/readerTools.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/accordion/accordion.css",
+    "inputFile": "bookEdit/accordion/accordion.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "pageChooser/page-chooser.css",
+    "inputFile": "pageChooser/page-chooser.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/sourceBubbles/sourceBubbles.css",
+    "inputFile": "bookEdit/sourceBubbles/sourceBubbles.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  }
+]
