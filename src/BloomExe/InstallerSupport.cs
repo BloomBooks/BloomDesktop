@@ -12,6 +12,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
+using DesktopAnalytics;
 using L10NSharp;
 using Microsoft.Win32;
 using Palaso.PlatformUtilities;
@@ -80,6 +81,14 @@ namespace Bloom
 			if (args[0] == "--squirrel-uninstall")
 			{
 				RemoveBloomRegistryEntries();
+			}
+			if (args[0] == "--squirrel-updated")
+			{
+				var props = new Dictionary<string, string>();
+				if (args.Length > 1)
+					props["newVersion"] = args[1];
+				props["channel"] = ApplicationUpdateSupport.ChannelName;
+				Analytics.Track("Updated to new version", props);
 			}
 			switch (args[0])
 			{
