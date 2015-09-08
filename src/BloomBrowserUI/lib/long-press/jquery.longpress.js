@@ -7,6 +7,7 @@
  *  Modified Oct 2014 to work with editable divs also
  *  Modified August 2015 to remove arrow key feature, which was interfering with ckeditor (or vice-versa, really)
  *  Modified August 2015 to add instructions at the bottom
+ *  Modified September 2015 to set focus before selection in restoreCaretPosition()
  */
 
 ;(function ($, window, undefined) {
@@ -233,8 +234,12 @@
         if (isTextArea()) {
             setTextAreaCaretPosition(activeElement, textAreaCaretPosition);
         } else {
-            EditableDivUtils.makeSelectionIn(activeElement, storedOffset, null, true);
-            setFocusDelayed();
+            // If we make the selection before setting the focus, the selection
+            // ends up in the wrong place (BL-2717).
+            if (activeElement && typeof activeElement.focus != "undefined") {
+                activeElement.focus();
+                EditableDivUtils.makeSelectionIn(activeElement, storedOffset, null, true);
+            }
         }
     }
 
