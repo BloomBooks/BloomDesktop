@@ -687,6 +687,11 @@ namespace Bloom.Book
 									{
 										s = ""; //don't show it in N2, since it's the same as N1
 									}
+									// BL-2425 At some point the user deleted the text here in this language and hasn't
+									// added any new text, so don't copy in text from some other language
+									// even though this element is marked "bloom-copyFromOtherLanguageIfNecessary".
+									if (itemsToDelete.Contains(new Tuple<string, string>(key, lang)))
+										continue;
 									node.InnerXml = s;
 									//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
 								}

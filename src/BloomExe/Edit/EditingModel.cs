@@ -148,7 +148,7 @@ namespace Bloom.Edit
 				Application.Idle += ReactivateFormOnIdle;
 				//note: if they didn't actually change anything, Chorus is not going to actually do a checkin, so this
 				//won't polute the history
-				_sendReceiver.CheckInNow(string.Format("Edited '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay));
+				_sendReceiver.CheckInNow(string.Format("Edited '{0}'", CurrentBook.TitleBestForUserDisplay));
 
 			}
 		}
@@ -245,7 +245,7 @@ namespace Bloom.Edit
 
 		private void OnRelocatePage(RelocatePageInfo info)
 		{
-			info.Cancel = !_bookSelection.CurrentSelection.RelocatePage(info.Page, info.IndexOfPageAfterMove);
+			info.Cancel = !CurrentBook.RelocatePage(info.Page, info.IndexOfPageAfterMove);
 			if(!info.Cancel)
 			{
 				Analytics.Track("Relocate Page");
@@ -255,7 +255,7 @@ namespace Bloom.Edit
 
 		private void OnInsertTemplatePage(object sender, EventArgs e)
 		{
-			_bookSelection.CurrentSelection.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
+			CurrentBook.InsertPageAfter(DeterminePageWhichWouldPrecedeNextInsertion(), sender as Page);
 			_view.UpdatePageList(false);
 			//_pageSelection.SelectPage(newPage);
 			try
@@ -275,7 +275,7 @@ namespace Bloom.Edit
 
 		public bool HaveCurrentEditableBook
 		{
-			get { return _bookSelection.CurrentSelection != null; }
+			get { return CurrentBook != null; }
 		}
 
 		public Book.Book CurrentBook
@@ -329,16 +329,16 @@ namespace Bloom.Edit
 									{
 										IsRtl = _collectionSettings.IsLanguage1Rtl
 //					            		Selected =
-//					            			_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
+//					            			CurrentBook.MultilingualContentLanguage2 ==
 //					            			_librarySettings.Language2Iso639Code
 									};
 					_contentLanguages.Add(item2);
 					if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
 					{
 						//NB: this could be the 2nd language (when the national 1 language is not selected)
-//						bool selected = _bookSelection.CurrentSelection.MultilingualContentLanguage2 ==
+//						bool selected = CurrentBook.MultilingualContentLanguage2 ==
 //						                _librarySettings.Language3Iso639Code ||
-//						                _bookSelection.CurrentSelection.MultilingualContentLanguage3 ==
+//						                CurrentBook.MultilingualContentLanguage3 ==
 //						                _librarySettings.Language3Iso639Code;
 						var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
 														_collectionSettings.GetLanguage3Name("en"))
@@ -350,7 +350,7 @@ namespace Bloom.Edit
 				}
 				//update the selections
 				_contentLanguages.First(l => l.Iso639Code == _collectionSettings.Language2Iso639Code).Selected =
-					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.Language2Iso639Code;
+					CurrentBook.MultilingualContentLanguage2 ==_collectionSettings.Language2Iso639Code;
 
 				//the first language is always selected. This covers the common situation in shellbook collections where
 				//we have English as both the 1st and national language. https://jira.sil.org/browse/BL-756
@@ -363,8 +363,8 @@ namespace Bloom.Edit
 				if(contentLanguageMatchingNatLan2!=null)
 				{
 					contentLanguageMatchingNatLan2.Selected =
-					_bookSelection.CurrentSelection.MultilingualContentLanguage2 ==_collectionSettings.Language3Iso639Code
-					|| _bookSelection.CurrentSelection.MultilingualContentLanguage3 == _collectionSettings.Language3Iso639Code;
+					CurrentBook.MultilingualContentLanguage2 ==_collectionSettings.Language3Iso639Code
+					|| CurrentBook.MultilingualContentLanguage3 == _collectionSettings.Language3Iso639Code;
 				}
 
 
@@ -559,7 +559,7 @@ namespace Bloom.Edit
 
 		public void SetupServerWithCurrentPageIframeContents()
 		{
-			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			if (_currentPage != null)
 				_currentPage.Dispose();
@@ -698,7 +698,7 @@ namespace Bloom.Edit
 			if (_templatePagesDict != null)
 				return _templatePagesDict;
 
-			var templateBook = _bookSelection.CurrentSelection.FindTemplateBook();
+			var templateBook = CurrentBook.FindTemplateBook();
 			if (templateBook == null)
 				return null;
 			_templatePagesDict = templateBook.GetTemplatePagesIdDictionary();
@@ -772,7 +772,7 @@ namespace Bloom.Edit
 			// or set the proper classes on those editables to match the current multilingual settings.
 			// So after a change, this eventually gets called. We then ask the page's book to fix things
 			// up so that those boxes are ready to edit
-			_domForCurrentPage = _bookSelection.CurrentSelection.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
 			_currentlyDisplayedBook.UpdateEditableAreasOfElement(_domForCurrentPage);
 
 			//Enhance: Probably we could avoid having two saves, by determing what it is that they entail that is required.
@@ -782,7 +782,7 @@ namespace Bloom.Edit
 
 		private bool CannotSavePage()
 		{
-			var returnVal = _bookSelection == null || _bookSelection.CurrentSelection == null || _pageSelection.CurrentSelection == null ||
+			var returnVal = _bookSelection == null || CurrentBook == null || _pageSelection.CurrentSelection == null ||
 				_currentlyDisplayedBook == null;
 
 			if (returnVal)
@@ -979,7 +979,7 @@ namespace Bloom.Edit
 
 					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
 					//this old code:
-					//	_bookSelection.CurrentSelection.SavePage(_domForCurrentPage);
+					//	CurrentBook.SavePage(_domForCurrentPage);
 					//would some times ask book X to save a page from book Y.
 					//We could never reproduce it at will, so this is to help with that...
 					if(this._pageSelection.CurrentSelection.Book != _currentlyDisplayedBook)
@@ -1053,7 +1053,7 @@ namespace Bloom.Edit
 			{
 				Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
 				var editor = new PageEditingModel();
-				editor.ChangePicture(_bookSelection.CurrentSelection.FolderPath, img, imageInfo, progress);
+				editor.ChangePicture(CurrentBook.FolderPath, img, imageInfo, progress);
 
 				//we have to save so that when asked by the thumbnailer, the book will give the proper image
 				SaveNow();
@@ -1092,7 +1092,7 @@ namespace Bloom.Edit
 			if (_view != null)
 			{
 				var pagesStartingWithCurrentSelection =
-					_bookSelection.CurrentSelection.GetPages().SkipWhile(p => p.Id != _pageSelection.CurrentSelection.Id);
+					CurrentBook.GetPages().SkipWhile(p => p.Id != _pageSelection.CurrentSelection.Id);
 				var candidates = pagesStartingWithCurrentSelection.ToArray();
 				for (int i = 0; i < candidates.Length - 1; i++)
 				{
@@ -1101,17 +1101,17 @@ namespace Bloom.Edit
 						return candidates[i];
 					}
 				}
-				var pages = _bookSelection.CurrentSelection.GetPages();
+				var pages = CurrentBook.GetPages();
 				// ReSharper disable PossibleMultipleEnumeration
 				if (!pages.Any())
 				{
 					var exception = new ApplicationException(
 						string.Format(
-							@"_bookSelection.CurrentSelection.GetPages() gave no pages (BL-262 repro).
+							@"CurrentBook.GetPages() gave no pages (BL-262 repro).
 									  Book is '{0}'\r\nErrors known to book=[{1}]\r\n{2}\r\n{3}",
-							_bookSelection.CurrentSelection.TitleBestForUserDisplay,
-							_bookSelection.CurrentSelection.CheckForErrors(),
-							_bookSelection.CurrentSelection.RawDom.OuterXml,
+							CurrentBook.TitleBestForUserDisplay,
+							CurrentBook.CheckForErrors(),
+							CurrentBook.RawDom.OuterXml,
 							new StackTrace().ToString()));
 
 					ErrorReport.NotifyUserOfProblem(exception,
