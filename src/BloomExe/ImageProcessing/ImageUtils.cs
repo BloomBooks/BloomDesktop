@@ -16,6 +16,10 @@ namespace Bloom.ImageProcessing
 	{
 		public static bool AppearsToBeJpeg(PalasoImage imageInfo)
 		{
+			// A user experienced a crash due to a null object in this section of the code.
+			// I've added a couple of checks to prevent that kind of crash here.
+			if (imageInfo == null || imageInfo.Image == null)
+				return false;
 			/*
 			 * Note, each guid is VERY SIMILAR. The difference is only in the last 2 digits of the 1st group.
 			   Undefined  B96B3CA9
@@ -30,7 +34,7 @@ namespace Bloom.ImageProcessing
 				EXIF    B96B3CB2
 				Icon    B96B3CB5
 			 */
-			if(ImageFormat.Jpeg.Guid == imageInfo.Image.RawFormat.Guid)
+			if(imageInfo.Image.RawFormat != null && ImageFormat.Jpeg.Guid == imageInfo.Image.RawFormat.Guid)
 				return true;
 
 			if(ImageFormat.Jpeg.Equals(imageInfo.Image.PixelFormat))//review
