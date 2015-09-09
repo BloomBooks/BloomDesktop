@@ -88,7 +88,7 @@ namespace Bloom
 				if (args.Length > 1)
 					props["newVersion"] = args[1];
 				props["channel"] = ApplicationUpdateSupport.ChannelName;
-				Analytics.Track("Updated to new version", props);
+				Analytics.Track("Update Version", props);
 			}
 			switch (args[0])
 			{
