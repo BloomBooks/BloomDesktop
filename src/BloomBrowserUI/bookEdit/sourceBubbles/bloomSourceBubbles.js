@@ -30,6 +30,7 @@ var bloomSourceBubbles = (function () {
         // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
         // Also makes sure the tooltips are setup correctly.
         bloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(group, divForBubble);
+        bloomSourceBubbles.HideLabelsThatWouldBeUnderfoot(group);
     };
     // Cleans up a clone of the original translationGroup
     // and sets up the list items with anchors that will become the tabs to jump to linked source text
@@ -253,9 +254,9 @@ var bloomSourceBubbles = (function () {
             $this.qtip({
                 position: {
                     my: 'left top',
-                    at: 'top right',
+                    at: 'right top',
                     adjust: {
-                        x: 10,
+                        x: 0,
                         y: 0
                     }
                 },
@@ -319,6 +320,11 @@ var bloomSourceBubbles = (function () {
                 $tip.css('z-index', 15002);
                 $tip.removeClass('passive-bubble');
             }
+        });
+    };
+    bloomSourceBubbles.HideLabelsThatWouldBeUnderfoot = function (groupElement) {
+        $(groupElement).find("label.bubble").each(function (index, element) {
+            $(element).remove();
         });
     };
     return bloomSourceBubbles;

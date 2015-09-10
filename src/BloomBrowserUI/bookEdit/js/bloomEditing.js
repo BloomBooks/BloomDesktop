@@ -392,8 +392,6 @@ function SetupElements(container) {
         $(this).CenterVerticallyInParent();
     });
 
-    bloomHintBubbles.addHintBubbles(container);
-
     //html5 provides for a placeholder attribute, but not for contenteditable divs like we use.
     //So one of our foundational stylesheets looks for @data-placeholder and simulates the
     //@placeholder behavior.
@@ -554,6 +552,11 @@ function SetupElements(container) {
             }
         });
     }
+
+    //NB: this should be after the ProduceSourceBubbles(), so that it can remove labels that
+    //would otherwise be underfoot when we call this. This would happen with the Book Title
+    //when there are source languages to show
+    bloomHintBubbles.addHintBubbles(container);
 
     // Add overflow event handlers so that when a div is overfull,
     // we add the overflow class and it gets a red background or something
