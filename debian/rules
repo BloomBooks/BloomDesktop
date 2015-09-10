@@ -12,7 +12,9 @@ DESTDIR = debian/$(PACKAGE)
 LIB     = usr/lib/$(PACKAGE)
 SHARE   = usr/share/$(PACKAGE)
 
-FULL_BUILD_NUMBER ?= 0.0.1.0
+# NOTE: make the third (and fourth?) number match changelog if you are
+# building the package manually.
+FULL_BUILD_NUMBER ?= 0.0.3.0
 
 %:
 	dh $@ --with=cli --parallel

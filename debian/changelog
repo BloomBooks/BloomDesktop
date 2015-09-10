@@ -1,3 +1,9 @@
+bloom-desktop (3.2.3) stable; urgency=medium
+
+  * A couple more minor bug fixes.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Thu, 10 Sep 2015 10:06:31 -0500
+
 bloom-desktop (3.2.2) stable; urgency=medium
 
   * More bug fixes.
