@@ -51,6 +51,21 @@ namespace BloomTests.RuntimeImageProcessing
 			}
 		}
 
+		/// <summary>
+		/// Regression for BL-2720
+		/// </summary>
+		[Test]
+		public void GetImageWithEscapedSpaces_ReturnsImage()
+		{
+			using (var server = CreateImageServer())
+			using (var file = MakeTempImage("my cat.png"))
+			{
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + file.Path.Replace(" ","%20"));
+				server.MakeReply(transaction);
+				Assert.IsTrue(transaction.ReplyImagePath.Contains(".png"));
+			}
+		}
+
 		[Test]
 		public void GetFileName_FileNotExist_ReturnsCorrectName()
 		{
@@ -75,9 +90,17 @@ namespace BloomTests.RuntimeImageProcessing
 		{
 			return new ImageServer(new RuntimeImageProcessor(new BookRenamedEvent()));
 		}
-		private TempFile MakeTempImage()
+		private TempFile MakeTempImage(string fileName=null)
 		{
-			var file = TempFile.WithExtension(".png");
+			TempFile file;
+			if (fileName == null)
+			{
+				file = TempFile.WithExtension(".png");
+			}
+			else
+			{
+				file = TempFile.WithFilename(fileName);
+			}
 			File.Delete(file.Path);
 			using(var x = new Bitmap(100,100))
 			{
@@ -85,6 +108,7 @@ namespace BloomTests.RuntimeImageProcessing
 			}
 			return file;
 		}
+
 	}
 
 }
