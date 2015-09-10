@@ -98,6 +98,7 @@
     <Content Include="bookEdit\js\bloomEditing.js" />
     <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
     <TypeScriptCompile Include="bookEdit\js\BloomAccordion.ts" />
+    <TypeScriptCompile Include="bookEdit\js\bloomHintBubbles.ts" />
     <TypeScriptCompile Include="bookEdit\js\calledByCSharp.ts" />
     <TypeScriptCompile Include="bookEdit\js\directoryWatcher.ts" />
     <TypeScriptCompile Include="bookEdit\js\getIframeChannel.ts" />

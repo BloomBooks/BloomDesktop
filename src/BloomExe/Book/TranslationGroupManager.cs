@@ -43,13 +43,11 @@ namespace Bloom.Book
 			{
 				PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language3Iso639Code);
 			}
-
-
 		}
 
 		/// <summary>
 		/// Normally, the connection between bloom-translationGroups and the dataDiv is that each bloom-editable child
-		/// (which has an @lang) pulls the corresponding string from the dataDiv. This happens in BooData.
+		/// (which has an @lang) pulls the corresponding string from the dataDiv. This happens in BookData.
 		/// 
 		/// That works except in the case of xmatter which a) start empty and b) only normally get filled with 
 		/// .bloom-editable's for the current languages. Then, when bloom would normally show a source bubble listing
