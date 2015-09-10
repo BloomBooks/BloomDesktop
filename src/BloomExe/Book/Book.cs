@@ -916,6 +916,9 @@ namespace Bloom.Book
 			layout = Layout.FromDom(bookDOM, layout);
 				//this says, if you can't figure out the page size, use the one we got before we removed the xmatter
 			helper.InjectXMatter(_bookData.GetWritingSystemCodes(), layout);
+
+			var dataBookLangs = bookDOM.GatherDataBookLanguages();
+			TranslationGroupManager.PrepareDataBookTranslationGroups(RawDom, dataBookLangs);
 		}
 
 

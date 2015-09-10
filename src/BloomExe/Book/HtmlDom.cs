@@ -726,5 +726,19 @@ namespace Bloom.Book
 				node.Attributes["class"].Value = currentValue.Replace("origami-layout-mode", "");
 			}
 		}
+
+		/// <summary>
+		/// Gives all the unique language codes found in datadiv elements that have data-book
+		/// </summary>
+		/// <returns></returns>
+		public List<string> GatherDataBookLanguages()
+		{
+			var dataBookElements = RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book]");
+			return dataBookElements.Cast<XmlElement>()
+				.Select(node => node.GetOptionalStringAttribute("lang", null))
+				.Where(lang => !string.IsNullOrEmpty(lang) && (lang!="*" || lang!="z"))
+				.Distinct()
+				.ToList();
+		}
 	}
 }

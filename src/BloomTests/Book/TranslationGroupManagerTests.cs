@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.Collections.Generic;
+using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Moq;
@@ -328,6 +329,27 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']//p[not(contains(@class,'bloom-cloneToOtherLanguages'))]", 0); // get rid of all paragraphs, except for...
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']//p[contains(@class,'bloom-cloneToOtherLanguages')]", 1); // the one with "bloom-cloneToOtherLanguages"
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']/*[contains(text(),'Do copy me')]", 1);
+		}
+
+		[Test]
+		public void PrepareDataBookTranslationGroups_PlaceholdersCreatedAsNeeded()
+		{
+			var contents = @"<div class='bloom-page'>
+								<div class='bloom-translationGroup'>
+										<div class='bloom-editable' data-book='bookTitle' lang='en'>Some English</div>
+								</div>
+						</div>";
+			var dom = new XmlDocument();
+			dom.LoadXml(contents);
+
+			var languages = new string[] {"en","es","fr"};
+			TranslationGroupManager.PrepareDataBookTranslationGroups((XmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0], languages);
+
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div/div[contains(@class, 'bloom-editable')]", 3);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='fr']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='es']", 1);
+			//should touch the existing one
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en' and text()='Some English']", 1);
 		}
 	}
 }
