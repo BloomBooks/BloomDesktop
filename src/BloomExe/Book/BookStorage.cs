@@ -859,36 +859,57 @@ namespace Bloom.Book
 		}
 
 
-		private string SanitizeNameForFileSystem(string name)
+		internal static string SanitizeNameForFileSystem(string name)
 		{
-			foreach(char c in PathUtilities.GetInvalidOSIndependentFileNameChars())
+			name = RemoveDangerousCharacters(name);
+			if (name.Length == 0)
+			{
+				// The localized default book name could itself have dangerous characters.
+				name = RemoveDangerousCharacters(BookStarter.UntitledBookName);
+				if (name.Length == 0)
+					name = "Book";	// This should absolutely never be needed, but let's be paranoid.
+			}
+			const int MAX = 50;	//arbitrary
+			if (name.Length > MAX)
+				return name.Substring(0, MAX);
+			return name;
+		}
+
+		private static string RemoveDangerousCharacters(string name)
+		{
+			var dangerousCharacters = new List<char>();
+			dangerousCharacters.AddRange(PathUtilities.GetInvalidOSIndependentFileNameChars());
+			dangerousCharacters.Add('.');
+			foreach (char c in dangerousCharacters)
 			{
 				name = name.Replace(c, ' ');
 			}
-			name = name.Trim();
-			const int MAX = 50;//arbitrary
-			if(name.Length >MAX)
-				return name.Substring(0, MAX);
-			return name;
+			return name.Trim();
 		}
 
 		/// <summary>
 		/// if necessary, append a number to make the folder path unique
 		/// </summary>
-		/// <param name="folderPath"></param>
-		/// <returns></returns>
-		private string GetUniqueFolderPath(string folderPath)
+		private static string GetUniqueFolderPath(string folderPath)
+		{
+			var parent = Directory.GetParent(folderPath).FullName;
+			var name = GetUniqueFolderName(parent, Path.GetFileName(folderPath));
+			return Path.Combine(parent, name);
+		}
+
+		/// <summary>
+		/// if necessary, append a number to make the subfolder name unique within the given folder
+		/// </summary>
+		internal static string GetUniqueFolderName(string parentPath, string name)
 		{
 			int i = 0;
 			string suffix = "";
-			var parent = Directory.GetParent(folderPath).FullName;
-			var name = Path.GetFileName(folderPath);
-			while (Directory.Exists(Path.Combine(parent, name + suffix)))
+			while (Directory.Exists(Path.Combine(parentPath, name + suffix)))
 			{
 				++i;
-				suffix = i.ToString();
+				suffix = i.ToString(CultureInfo.InvariantCulture);
 			}
-			return Path.Combine(parent, name + suffix);
+			return name + suffix;
 		}
 	}
 

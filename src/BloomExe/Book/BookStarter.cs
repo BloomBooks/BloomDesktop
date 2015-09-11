@@ -422,26 +422,18 @@ namespace Bloom.Book
 
 		private string GetInitialName(string sourcePath, string parentCollectionPath)
 		{
-			var storage = _bookStorageFactory(sourcePath);
-			/* we're experimenting with doing away with defaultNameForDerivedBooks
-				var name = storage.Dom.GetMetaValue("defaultNameForDerivedBooks",  "Book");
-				if (name == "My Book") //some older stuff has this
-					name = "Book";
-			*/
-			var name = LocalizationManager.GetString("EditTab.NewBookName", "Book",
-					"Default file and folder name when you make a new book, but haven't give it a title yet.");
-
-			int i = 0;
-			string suffix = "";
-
-			while (Directory.Exists(Path.Combine(parentCollectionPath, name+suffix)))
-			{
-				++i;
-				suffix = i.ToString(CultureInfo.InvariantCulture);
-			}
-			return name+suffix;
+			var name = BookStorage.SanitizeNameForFileSystem(UntitledBookName);
+			return BookStorage.GetUniqueFolderName(parentCollectionPath, name);
 		}
 
+		public static string UntitledBookName
+		{
+			get
+			{
+				return LocalizationManager.GetString("EditTab.NewBookName", "Book",
+					"Default file and folder name when you make a new book, but haven't give it a title yet.");
+			}
+		}
 
 		private static void CopyFolder(string sourcePath, string destinationPath)
 		{
