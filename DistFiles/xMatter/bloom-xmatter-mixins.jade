@@ -90,13 +90,14 @@ mixin factoryStandard-outsideFrontCover
 	// FRONT COVER
 	+page-cover('Front Cover')(attributes, data-export='front-matter-cover').frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
 
-		//- enchance: could we 1) adjust stylesheet and 2) preserve bookTitle value to simplify this to
+		//- enhance: could we 1) adjust stylesheet and 2) preserve bookTitle value to simplify this to
 		//- 	+field-matter('bookTitle').Title-On-Cover-style
 		//- 		label.bubble Book title in {lang}
 		//- This current pattern is born of pre-jade days when it didn't matter much, but now in the
 		//- light of jade it is overly complicated.
 
 		+field-prototypeDeclaredExplicity.bookTitle
+			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style(data-book='bookTitle')
 
 		.bloom-imageContainer
@@ -131,6 +132,7 @@ mixin factoryStandard-titlePage
 	// TITLE PAGE
 	+page-xmatter('Title Page').titlePage.bloom-frontMatter(attributes, data-export='front-matter-title-page')#5dcd48df-e9ab-4a07-afd4-6a24d0398381
 		+field-prototypeDeclaredExplicity#titlePageTitleBlock
+			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).Title-On-Title-Page-style(data-book='bookTitle')
 		+field-prototypeDeclaredExplicity#originalContributions
 			label.bubble The contributions made by writers, illustrators, editors, etc., in {lang}
