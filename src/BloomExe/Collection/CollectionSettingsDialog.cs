@@ -296,7 +296,7 @@ namespace Bloom.Collection
 		/// </summary>
 		private void SetupXMatterList()
 		{
-			var packsToSkip = new string[] {"null", "bigbook", "SHRP"};
+			var packsToSkip = new string[] {"null", "bigbook", "SHRP", "SHARP", "ForUnitTest"};
 			_xmatterList.Items.Clear();
 			ListViewItem itemForFactoryDefault = null;
 			foreach(var pack in _xmatterPackFinder.All)
