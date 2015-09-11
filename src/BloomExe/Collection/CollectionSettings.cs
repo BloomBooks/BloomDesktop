@@ -44,7 +44,7 @@ namespace Bloom.Collection
 		/// </summary>
 		public CollectionSettings()
 		{
-			XMatterPackName = "Factory";
+			XMatterPackName = "Traditional";
 			Language2Iso639Code = "en";
 			AllowNewBooks = true;
 		}
