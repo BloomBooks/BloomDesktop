@@ -463,6 +463,20 @@
         <seg>Front/Back Matter Pack</seg>
       </tuv>
     </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Paper Saver">
+      <note>Name of a Front/Back Matter Pack that puts credits on the inside of the front cover</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Paper Saver</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Traditional">
+      <note>Name of the default Front/Back Matter Pack</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Traditional</seg>
+      </tuv>
+    </tu>
     <tu tuid="CollectionSettingsDialog.label5">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
