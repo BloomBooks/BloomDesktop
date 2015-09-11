@@ -14,6 +14,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using Microsoft.Win32;
+using Palaso.IO;
 using Palaso.PlatformUtilities;
 using Palaso.Reporting;
 using Squirrel;
@@ -125,27 +126,9 @@ namespace Bloom
 				// This will be done by the package installer.
 				return;
 			}
-			var installDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			if (installDir == null)
-				return;
 
-			var iconDir = Path.Combine(Path.Combine(installDir, "DistFiles"), "icons");
-			// Handle developer machines.
-			var last = Path.GetFileName(installDir).ToLowerInvariant();
-			if (last == "debug" || last == "release")
-			{
-				var parent = Path.GetDirectoryName(installDir);
-				if (parent != null)
-				{
-					last = Path.GetFileName(parent).ToLowerInvariant();
-					if (last == "output")
-					{
-						var grandparent = Path.GetDirectoryName(parent);
-						if (grandparent != null)
-							iconDir = Path.Combine(Path.Combine(grandparent, "DistFiles"), "icons");
-					}
-				}
-			}
+			var iconDir = FileLocator.GetDirectoryDistributedWithApplication("icons");
+
 			// This is what I (JohnT) think should make Bloom display the right icon for .BloomCollection files.
 			EnsureRegistryValue(@".BloomCollection\DefaultIcon", Path.Combine(iconDir, "BloomCollectionIcon.ico"));
 			EnsureRegistryValue(@".BloomPack\DefaultIcon", Path.Combine(iconDir, "BloomPack.ico"));
