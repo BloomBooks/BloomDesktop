@@ -214,7 +214,7 @@
             this._L10NSharpExtender.SetLocalizableToolTip(this._layoutChoices, null);
             this._L10NSharpExtender.SetLocalizationComment(this._layoutChoices, null);
             this._L10NSharpExtender.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
-            this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "._layoutChoices");
+			this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "LayoutChoices.A5Portrait");
             this._layoutChoices.Name = "_layoutChoices";
             this._layoutChoices.Size = new System.Drawing.Size(85, 19);
             this._layoutChoices.Text = "Page Layout";

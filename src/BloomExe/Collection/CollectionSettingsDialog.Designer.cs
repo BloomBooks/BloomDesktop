@@ -49,7 +49,6 @@ namespace Bloom.Collection
 			this._fontSettings2Link = new System.Windows.Forms.LinkLabel();
 			this._fontSettings1Link = new System.Windows.Forms.LinkLabel();
 			this._xmatterList = new System.Windows.Forms.ListView();
-			this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this._xmatterDescription = new System.Windows.Forms.TextBox();
 			this._fontComboLanguage3 = new System.Windows.Forms.ComboBox();
 			this._fontComboLanguage2 = new System.Windows.Forms.ComboBox();
@@ -335,7 +334,7 @@ namespace Bloom.Collection
 			// _xmatterList
 			// 
 			this._xmatterList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1});
+				new System.Windows.Forms.ColumnHeader() { Width = 250 } });
 			this._xmatterList.FullRowSelect = true;
 			this._xmatterList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
 			this._xmatterList.HideSelection = false;
@@ -347,13 +346,6 @@ namespace Bloom.Collection
 			this._xmatterList.UseCompatibleStateImageBehavior = false;
 			this._xmatterList.View = System.Windows.Forms.View.Details;
 			this._xmatterList.SelectedIndexChanged += new System.EventHandler(this._xmatterList_SelectedIndexChanged);
-			// 
-			// columnHeader1
-			// 
-			this._L10NSharpExtender.SetLocalizableToolTip(this.columnHeader1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this.columnHeader1, null);
-			this._L10NSharpExtender.SetLocalizingId(this.columnHeader1, "columnHeader1");
-			this.columnHeader1.Width = 250;
 			// 
 			// _xmatterDescription
 			// 
@@ -829,7 +821,6 @@ namespace Bloom.Collection
 		private Button _helpButton;
 		private TextBox _xmatterDescription;
 		private ListView _xmatterList;
-		private ColumnHeader columnHeader1;
 		private CheckBox _automaticallyUpdate;
 		private LinkLabel _fontSettings3Link;
 		private LinkLabel _fontSettings2Link;

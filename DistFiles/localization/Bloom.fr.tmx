@@ -308,6 +308,7 @@
       </tuv>
     </tu>
     <tu tuid="Book title in {lang}">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -1952,12 +1953,22 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Titre du livre en {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.AuthorIllustratorPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You may use this space for author/illustrator, or anything else.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>On peut utiliser cet endroit pour l'auteur ou l'illustrateur ou toute autre chose.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.CopyrightPrompt">
@@ -5741,6 +5752,7 @@
       </tuv>
     </tu>
     <tu tuid="You may use this space for author/illustrator, or anything else.">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>You may use this space for author/illustrator, or anything else.</seg>
