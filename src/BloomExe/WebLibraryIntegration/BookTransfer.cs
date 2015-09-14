@@ -662,6 +662,7 @@ namespace Bloom.WebLibraryIntegration
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
+			MakeThumbnail(book, 70, invokeTarget); // this is a sacrificial one to prime the pump, to fix BL-2673
 			MakeThumbnail(book, 70, invokeTarget);
 			MakeThumbnail(book, 256, invokeTarget);
 			var uploadPdfPath = UploadPdfPath(bookFolder);
