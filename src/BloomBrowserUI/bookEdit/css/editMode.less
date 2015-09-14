@@ -318,6 +318,13 @@ DIV.marginBox
 	border: none;
 }
 
+//BL-2512 when overflowing on pages where the text is allowed to run off the screen, the formatButton would not be visible/reachable, so you couldn't shrink the text
+//in response to the overflow situation.
+//So in this situation, we just show it at the top.
+.thisOverflowingParent #formatButton{
+  top: 0;
+}
+
 #formatButton
 {
 	overflow: hidden;
