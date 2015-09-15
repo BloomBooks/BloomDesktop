@@ -663,7 +663,7 @@ $(document).ready(function() {
     // but skip any element with class="bloom-userCannotModifyStyles"
     $('div.bloom-page').find('.bloom-content1[contenteditable="true"],.bloom-content2[contenteditable="true"],.bloom-content3[contenteditable="true"],.bloom-contentNational1[contenteditable="true"]').each(function() {
 
-        if (this.hasClass('bloom-userCannotModifyStyles'))
+        if ($(this).hasClass('bloom-userCannotModifyStyles'))
             return; // equivalent to 'continue'
         var ckedit = CKEDITOR.inline(this);
 
