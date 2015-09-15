@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.9.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.0.34.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.39.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.3.11.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -275,7 +275,6 @@
       </tuv>
     </tu>
     <tu tuid="LanguageLookup.CannotFindMyLanguage.LanguageLookup.CannotFindMyLanguageExplanation2">
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>This list should include all the ISO-639 languages, including all the alternative names known to ethnologue.com.\n\nIf necessary, use the "Unlisted Language" option, which will be selected for you now.</seg>
       </tuv>
@@ -325,6 +324,15 @@
         <seg>Code</seg>
       </tuv>
     </tu>
+    <tu tuid="LanguageLookup.CountryCount">
+      <note>Shown when there are multiple countries and it is just confusing to list them all.</note>
+      <tuv xml:lang="en">
+        <seg>{0} Countries</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>{0} pays</seg>
+      </tuv>
+    </tu>
     <tu tuid="LanguageLookup.CountryHeader">
       <tuv xml:lang="en">
         <seg>Country</seg>
@@ -350,6 +358,9 @@
       </tuv>
     </tu>
     <tu tuid="LanguageLookup.LookupISOControl._searchText">
+      <tuv xml:lang="en">
+        <seg>?</seg>
+      </tuv>
       <tuv xml:lang="fr">
         <seg>?</seg>
       </tuv>
@@ -393,6 +404,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Créateur: {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="MetadataDisplay.CreatorLabel">
+      <tuv xml:lang="en">
+        <seg>Creator</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Créateur</seg>
       </tuv>
     </tu>
     <tu tuid="MetadataDisplay.LicenseInfo">
@@ -519,7 +538,7 @@
       </tuv>
     </tu>
     <tu tuid="MetadataEditor.betterLinkLabel1">
-      <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere tha defines it.</note>
+      <note>The meaning of  "non-commercial" is vague but important. This hyperlink takes you somewhere that defines it.</note>
       <tuv xml:lang="en">
         <seg>more info</seg>
       </tuv>
@@ -553,7 +572,7 @@
     </tu>
     <tu tuid="SettingsProtection.LauncherButtonLabel">
       <tuv xml:lang="en">
-        <seg>Settings...</seg>
+        <seg>Settings Protection...</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Configuration...</seg>
@@ -686,6 +705,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Zone d'essai (Utilser cette zone de taper quelque chose pour tester votre clavier.)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Warning">
+      <tuv xml:lang="en">
+        <seg>Warning</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Avertissement</seg>
       </tuv>
     </tu>
   </body>

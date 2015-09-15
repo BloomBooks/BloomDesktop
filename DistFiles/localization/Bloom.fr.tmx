@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <tmx version="1.4">
-  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.31.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
-    <prop type="x-appversion">3.1.1348.0</prop>
+  <header srclang="fr" adminlang="en" creationtool="Palaso Localization Manager" creationtoolversion="2.0.39.0" segtype="block" datatype="unknown" o-tmf="PalasoTMXUtils">
+    <prop type="x-appversion">3.3.11.0</prop>
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
@@ -185,6 +185,22 @@
         <seg>Pour mettre plus d'information sur ce livre, vous pouvez utiliser cette page, qui est la quatrième de couverture.</seg>
       </tuv>
     </tu>
+    <tu tuid="BloomIntegrity.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Making PDF...</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Création de PDF...</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BloomIntegrityDialog.ReportProblem">
+      <tuv xml:lang="en">
+        <seg>Report Problem</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Signaler un problème</seg>
+      </tuv>
+    </tu>
     <tu tuid="BloomPackInstallDialog.BadCharsInFileName">
       <tuv xml:lang="en">
         <seg>Possibly this is an old BloomPack created before BloomPacks could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</seg>
@@ -300,6 +316,16 @@
         <seg>Titre du livre en {lang}</seg>
       </tuv>
     </tu>
+    <tu tuid="BookEditor.CharacterMap.Instructions">
+      <note>When you hold down a key, a popup appears that lets you choose a related character. These instructions are shown in that popup.</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>To select, use your mouse wheel or point at what you want, then release the key.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Utiliser la molette de la souris ou le curseur de la souris pour surligner le caractère souhaité, puis relâcher la touche.</seg>
+      </tuv>
+    </tu>
     <tu tuid="BookEditor.DefaultForText">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -334,6 +360,23 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Ce format s'applique à chaque texte en langue {0} avec le style '{1}'.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookEditor.FormattingDisabled">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sorry, Reader Templates do not allow changes to formatting.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Désolé, on ne peut pas modifer des modèles de livres de base ou de livres gradués.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="BookStorage.FolderMoved">
+      <tuv xml:lang="en">
+        <seg>It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Il semble qu'une partie du chemin vers le dossier de ce livre a été déplacée ou renommée. Ainsi, Bloom ne peut pas enregistrer les modifications apportées à cette page et dois maintenant terminer. Si vous n'avez rien renommé ou déplacé, veuillez cliquer sur Détails ci-dessous et signaler le problème aux développeurs.</seg>
       </tuv>
     </tu>
     <tu tuid="Click to choose topic">
@@ -727,6 +770,22 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Information du projet</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.Applying">
+      <tuv xml:lang="en">
+        <seg>Applying updates</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Application des mises à jour</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionTab.BookMenu.CopyBook">
+      <tuv xml:lang="en">
+        <seg>Copy Book</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Copier livre</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionTab.BookMenu.ExportDocMessage">
@@ -1138,6 +1197,7 @@
     </tu>
     <tu tuid="CollectionTab.hiddenBooksNotice">
       <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Where's the rest?</seg>
       </tuv>
@@ -1287,6 +1347,62 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Supprimer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.FileDialogTextFiles">
+      <tuv xml:lang="en">
+        <seg>Text files</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Fichiers texte</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.LetterWordReportLetters">
+      <tuv xml:lang="en">
+        <seg>Letters: {0}</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Lettres : {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.LetterWordReportMessage">
+      <tuv xml:lang="en">
+        <seg>The following is a generated report of the decodable stages for {0}.  You can make any changes you want to this file, but Bloom will not notice your changes.  It is just a report.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Voici un rapport généré des étapes de base pour {0}. Vous pouvez modifier ce fichier, mais Bloom ne prendra pas en compte vos modifications. Ce n'est qu'un rapport.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.LetterWordReportNewDecodableWords">
+      <tuv xml:lang="en">
+        <seg>New Decodable Words: {0}</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Nouveaux mots possibles à construire : {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.LetterWordReportSightWords">
+      <tuv xml:lang="en">
+        <seg>New Sight Words: {0}</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Nouveaux mots à vue : {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.LetterWordReportStage">
+      <tuv xml:lang="en">
+        <seg>Stage {0}</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Étape {0}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="DecodableReaderTool.LetterWordReportWordList">
+      <tuv xml:lang="en">
+        <seg>Complete Word List</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Liste complète de mots</seg>
       </tuv>
     </tu>
     <tu tuid="DecodableReaderTool.LettersInThisStage">
@@ -1553,6 +1669,15 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Édition</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.EditNotAllowed">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You cannot change these because this is not the original copy.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>On ne peut pas les modifier parce que ce n'est pas la copie originale.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.EditTabLabel">
@@ -1940,6 +2065,15 @@
         <seg>Modifier la mise en page</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.LeveledReaderTool.SentenceTooLong">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This sentence is too long for this level.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Cette phrase est trop longue pour ce niveau.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.NewBookName">
       <note>Default file and folder name when you make a new book, but haven't give it a title yet.</note>
       <tuv xml:lang="en">
@@ -1962,7 +2096,7 @@
         <seg>Pages</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Pages</seg>
+        <seg>Pages Modèles</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.PageSizeAndOrientation.Tooltip">
@@ -1980,6 +2114,15 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Position</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.ReadOnlyInEditMode">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You cannot put anything in there while making an original book.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>En faisant un livre original, on ne peut y mettre rien.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Spacing">
@@ -2072,15 +2215,7 @@
         <seg>Ajuster le format du style</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.TemplatePagesList.Heading">
-      <tuv xml:lang="en">
-        <seg>Template Pages</seg>
-      </tuv>
-      <tuv xml:lang="fr">
-        <seg>Pages Modèles</seg>
-      </tuv>
-    </tu>
-    <tu tuid="TemplateBooks.PageLabel.Alphabet">
+    <tu tuid="EditTab.ThumbnailCaptions.Alphabet">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Alphabet</seg>
@@ -2089,7 +2224,7 @@
         <seg>Alphabet</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Image">
+    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Image</seg>
@@ -2098,7 +2233,7 @@
         <seg>Texte et Image</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Picture">
+    <tu tuid="EditTab.ThumbnailCaptions.Basic Text &amp; Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Basic Text &amp; Picture</seg>
@@ -2107,7 +2242,7 @@
         <seg>Texte et Image</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Credits Page">
+    <tu tuid="EditTab.ThumbnailCaptions.Credits Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Credits Page</seg>
@@ -2116,7 +2251,7 @@
         <seg>Page de copyright</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Custom">
+    <tu tuid="EditTab.ThumbnailCaptions.Custom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Custom</seg>
@@ -2125,7 +2260,7 @@
         <seg>Personnalisé</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Day 1">
+    <tu tuid="EditTab.ThumbnailCaptions.Day 1">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 1</seg>
@@ -2134,7 +2269,7 @@
         <seg>Jour 1</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Day 2">
+    <tu tuid="EditTab.ThumbnailCaptions.Day 2">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 2</seg>
@@ -2143,7 +2278,7 @@
         <seg>Jour 2</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Day 3">
+    <tu tuid="EditTab.ThumbnailCaptions.Day 3">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 3</seg>
@@ -2152,7 +2287,7 @@
         <seg>Jour 3</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Day 4">
+    <tu tuid="EditTab.ThumbnailCaptions.Day 4">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 4</seg>
@@ -2161,7 +2296,7 @@
         <seg>Jour 4</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Day 5a">
+    <tu tuid="EditTab.ThumbnailCaptions.Day 5a">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 5a</seg>
@@ -2170,7 +2305,7 @@
         <seg>Jour 5a</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Day 5b">
+    <tu tuid="EditTab.ThumbnailCaptions.Day 5b">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Day 5b</seg>
@@ -2179,7 +2314,7 @@
         <seg>Jour 5b</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Front Cover">
+    <tu tuid="EditTab.ThumbnailCaptions.Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Front Cover</seg>
@@ -2188,7 +2323,7 @@
         <seg>1re de couverture</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Image On Bottom">
+    <tu tuid="EditTab.ThumbnailCaptions.Image On Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image On Bottom</seg>
@@ -2197,7 +2332,7 @@
         <seg>Image en bas</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Image in Middle">
+    <tu tuid="EditTab.ThumbnailCaptions.Image in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Image in Middle</seg>
@@ -2206,7 +2341,7 @@
         <seg>Image au milieu</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Inside Back Cover">
+    <tu tuid="EditTab.ThumbnailCaptions.Inside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Inside Back Cover</seg>
@@ -2215,7 +2350,7 @@
         <seg>3e de couverture</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Inside Front Cover">
+    <tu tuid="EditTab.ThumbnailCaptions.Inside Front Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Inside Front Cover</seg>
@@ -2224,7 +2359,7 @@
         <seg>2e de couverture</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Instructions">
+    <tu tuid="EditTab.ThumbnailCaptions.Instructions">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Instructions</seg>
@@ -2233,7 +2368,7 @@
         <seg>Instructions</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Just Text">
+    <tu tuid="EditTab.ThumbnailCaptions.Just Text">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just Text</seg>
@@ -2242,7 +2377,7 @@
         <seg>Texte uniquement</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Just a Picture">
+    <tu tuid="EditTab.ThumbnailCaptions.Just a Picture">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just a Picture</seg>
@@ -2251,7 +2386,7 @@
         <seg>Image uniquement</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Just an Image">
+    <tu tuid="EditTab.ThumbnailCaptions.Just an Image">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Just an Image</seg>
@@ -2260,7 +2395,7 @@
         <seg>Image uniquement</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Outside Back Cover">
+    <tu tuid="EditTab.ThumbnailCaptions.Outside Back Cover">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Outside Back Cover</seg>
@@ -2269,7 +2404,7 @@
         <seg>4e de couverture</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Picture &amp; Word">
+    <tu tuid="EditTab.ThumbnailCaptions.Picture &amp; Word">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture &amp; Word</seg>
@@ -2278,16 +2413,16 @@
         <seg>Image et mot</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Picture on Bottom">
+    <tu tuid="EditTab.ThumbnailCaptions.Picture On Bottom">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
-        <seg>Picture on Bottom</seg>
+        <seg>Image en bas</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Image en bas</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Picture in Middle">
+    <tu tuid="EditTab.ThumbnailCaptions.Picture in Middle">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Picture in Middle</seg>
@@ -2296,7 +2431,7 @@
         <seg>Image au milieu</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.This Page Is Intentionally Blank">
+    <tu tuid="EditTab.ThumbnailCaptions.This Page Is Intentionally Blank">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Page Is Intentionally Blank</seg>
@@ -2305,7 +2440,7 @@
         <seg>Cette page est intentionnellement vide</seg>
       </tuv>
     </tu>
-    <tu tuid="TemplateBooks.PageLabel.Title Page">
+    <tu tuid="EditTab.ThumbnailCaptions.Title Page">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Title Page</seg>
@@ -2479,6 +2614,15 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Ce livre exige '{0}' pour la couverture, les pages liminaires et les parties annexes, mais Bloom n'a pas pu le trouver sur cet ordinateur. Vous pouvez installer un BloomPack qui vous donnera '{0}', ou faire un autre choix pour la couverture, les pages liminaires et les parties annexes à partir de Configuration:Création de livre.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="ExperimentalNotice">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This page is an experimental prototype which may have many problems, for which we apologize.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Cette page est un prototype expérimental qui peut avoir beaucoup de problèmes, pour lesquels nous nous excusons.</seg>
       </tuv>
     </tu>
     <tu tuid="FirstTabLabel">
@@ -2734,7 +2878,7 @@
     <tu tuid="InDesignXmlInformationDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
-        <seg>Making PDF...</seg>
+        <seg>InDesign XML Information</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Format XML d'InDesign</seg>
@@ -3332,6 +3476,14 @@
         <seg>Bloom a détecté que cette collection se trouve dans votre dossier Dropbox. Cela peut provoquer des problèmes parce que Dropbox bloque parfois l'accès de ses propres fichiers à Bloom. Si vous avez des problèmes, on vous conseille de déplacer votre collection ailleurs ou désactiver Dropbox pendant l'utilisation de Bloom.</seg>
       </tuv>
     </tu>
+    <tu tuid="OpenCreateCloneControl.InSourceCollectionMessage">
+      <tuv xml:lang="en">
+        <seg>This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Cette collection fait partie de la zone "Sources de nouveaux livres" que se trouve en bas à gauche de l'onglet Collections. On ne peut pas la modifier.</seg>
+      </tuv>
+    </tu>
     <tu tuid="OpenCreateNewCollectionsDialog.Bloom Collections">
       <note>This shows in the file-open dialog that you use to open a different bloom collection</note>
       <tuv xml:lang="en">
@@ -3611,7 +3763,7 @@
         <seg>&amp;Save PDF...</seg>
       </tuv>
       <tuv xml:lang="fr">
-        <seg>Enregistrer PDF...</seg>
+        <seg>Enregi&amp;strer PDF...</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.ShowCropMarks">
@@ -3903,12 +4055,28 @@
         <seg>Préparation de l'image miniature...</seg>
       </tuv>
     </tu>
+    <tu tuid="PublishTab.Upload.NoLangsFound">
+      <tuv xml:lang="en">
+        <seg>(None found)</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>(Aucun trouvé)</seg>
+      </tuv>
+    </tu>
     <tu tuid="PublishTab.Upload.OldVersion">
       <tuv xml:lang="en">
         <seg>Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Désolé, cette version de Bloom Desktop n'est pas compatible avec la version actuelle de BloomLibrary.org. Veuillez mettre à niveau Bloom vers une version plus récente.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.Partial">
+      <tuv xml:lang="en">
+        <seg>(partial)</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>(partiel)</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.PleaseLogIn">
@@ -3974,6 +4142,14 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Afficher les conditions d'utilisation</seg>
+      </tuv>
+    </tu>
+    <tu tuid="PublishTab.Upload.TimeProblem">
+      <tuv xml:lang="en">
+        <seg>There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Il y avait un problème de téléchargement de votre livre. C'est probablement parce que votre ordinateur utilise un fuseau horaire incorrect ou l'heure de votre système est très bizzare. Voir http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html pour aide pour résoudre ce problème.</seg>
       </tuv>
     </tu>
     <tu tuid="PublishTab.Upload.Title">
@@ -4435,6 +4611,15 @@
         <seg>Supprimer l'étape {0}</seg>
       </tuv>
     </tu>
+    <tu tuid="ReaderSetup.RemoveWordList">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Remove from this stage</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Enlever de cette étape</seg>
+      </tuv>
+    </tu>
     <tu tuid="ReaderSetup.ReorderLevels">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -4885,6 +5070,38 @@
         <seg>Compression de livre en cours...</seg>
       </tuv>
     </tu>
+    <tu tuid="ReportProblemDialog.linkLabel1">
+      <tuv xml:lang="en">
+        <seg>Will not be private</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>L'information ne sera pas privée</seg>
+      </tuv>
+    </tu>
+    <tu tuid="SamplePrintNotification.IGetIt">
+      <tuv xml:lang="en">
+        <seg>I get it. Do not show this again.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Je comprends. Ne plus l'afficher.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="SamplePrintNotification.PleaseNotice">
+      <tuv xml:lang="en">
+        <seg>Please notice the sample printer settings below. Use them as a guide while you set up the printer.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Noter l'exemple de paramètres d'impression ci-dessous. L'utiliser comme guide pour configurer l'imprimante.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="SamplePrintNotification.WindowTitle">
+      <tuv xml:lang="en">
+        <seg>Sample Print Settings</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Exemple de Paramètres d'impression</seg>
+      </tuv>
+    </tu>
     <tu tuid="ScriptSettingsDialog.RightToLeftScriptCheckBox">
       <tuv xml:lang="en">
         <seg>This script is right to left</seg>
@@ -4916,6 +5133,60 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Envoyer/recevoir</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Basic Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Book</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Livre simple</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Big Book">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Big Book</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Grand livre</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Decodable Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Decodable Reader</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Livre de base</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Leveled Reader">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Leveled Reader</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Livre gradué</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Picture Dictionary">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture Dictionary</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Dictionnaire illustré</seg>
+      </tuv>
+    </tu>
+    <tu tuid="Template.Wall Calendar">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Wall Calendar</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Calendrier mural</seg>
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.BookName.Basic Book">
@@ -4970,6 +5241,258 @@
       </tuv>
       <tuv xml:lang="fr">
         <seg>Calendrier mural</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageDescription.Custom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A blank page that allows you to add items.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Une page vide qui permet l'ajout des éléments.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageDescription.Picture &amp; Word">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Page with a picture on top and a large, centered word below.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Une page avec une image au-dessus et un grand mot centré au-dessous.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Alphabet">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Alphabet</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Alphabet</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Image">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Text &amp; Image</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Texte et image</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Basic Text &amp; Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Basic Text &amp; Picture</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Texte et image</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Credits Page">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Credits Page</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Page de copyright</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Custom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Custom</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Personalisé</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 1">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 1</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Jour 1</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 2">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 2</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Jour 2</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 3">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 3</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Jour 3</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 4">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 4</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Jour 4</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 5a">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 5a</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Jour 5a</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Day 5b">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Day 5b</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Jour 5b</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Front Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Front Cover</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>1re de couverture</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Image On Bottom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Image On Bottom</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Image en bas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Image in Middle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Image in Middle</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Image au milieu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Inside Back Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Inside Back Cover</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>3e de couverture</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Inside Front Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Inside Front Cover</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>2e de couverture</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Instructions">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Instructions</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Instructions</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Just Text">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just Text</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Texte seulement</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Just a Picture">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just a Picture</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Image seulement</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Just an Image">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Just an Image</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Image seulement</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Outside Back Cover">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Outside Back Cover</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>4e de couverture</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Picture &amp; Word">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture &amp; Word</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Image et mot</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Picture in Middle">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture in Middle</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Image au milieu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Picture on Bottom">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Picture on Bottom</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Image en bas</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.This Page Is Intentionally Blank">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This Page Is Intentionally Blank</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Cette page est volontairement vierge</seg>
+      </tuv>
+    </tu>
+    <tu tuid="TemplateBooks.PageLabel.Title Page">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Title Page</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Page de titre</seg>
       </tuv>
     </tu>
     <tu tuid="Topics.Agriculture">
