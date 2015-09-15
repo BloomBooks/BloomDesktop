@@ -960,7 +960,7 @@ namespace Bloom.CollectionTab
 			}
 			catch (Exception error)
 			{
-				var msg = LocalizationManager.GetDynamicString("Bloom", "Errors.ErrorUpdating",
+				var msg = LocalizationManager.GetString("Errors.ErrorUpdating",
 					"There was a problem updating the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.");
 				ErrorReport.NotifyUserOfProblem(error, msg);
 			}
