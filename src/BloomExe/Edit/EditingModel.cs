@@ -15,6 +15,7 @@ using Bloom.ToPalaso.Experimental;
 using Bloom.web;
 using BloomTemp;
 using DesktopAnalytics;
+using Gecko;
 using L10NSharp;
 using Newtonsoft.Json;
 using Palaso.IO;
@@ -22,8 +23,7 @@ using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
-using Gecko;
-using Palaso.Xml;
+using Palaso.UI.WindowsForms.Reporting;
 
 namespace Bloom.Edit
 {
@@ -524,7 +524,7 @@ namespace Bloom.Edit
 			Logger.WriteMinorEvent("changing page selection");
 			Analytics.Track("Select Page");//not "edit page" because at the moment we don't have the capability of detecting that.
 			// Trace memory usage in case it may be useful
-			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "switched page in edit", true);
+			MemoryManagement.CheckMemory(false, "switched page in edit", true);
 
 			if (_view != null)
 			{
@@ -623,7 +623,7 @@ namespace Bloom.Edit
 		/// </summary>
 		internal void DocumentCompleted()
 		{
-			System.Windows.Forms.Application.Idle += OnIdleAfterDocumentSupposedlyCompleted;
+			Application.Idle += OnIdleAfterDocumentSupposedlyCompleted;
 		}
 
 		/// <summary>
@@ -636,7 +636,7 @@ namespace Bloom.Edit
 		/// <param name="e"></param>
 		void OnIdleAfterDocumentSupposedlyCompleted(object sender, EventArgs e)
 		{
-			System.Windows.Forms.Application.Idle -= OnIdleAfterDocumentSupposedlyCompleted;
+			Application.Idle -= OnIdleAfterDocumentSupposedlyCompleted;
 
 			//Work-around for BL-422: https://jira.sil.org/browse/BL-422
 			if (_currentlyDisplayedBook == null)
@@ -1131,7 +1131,7 @@ namespace Bloom.Edit
 
 			if (null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLowerInvariant() == name))
 			{
-				var s = L10NSharp.LocalizationManager.GetString("EditTab.FontMissing",
+				var s = LocalizationManager.GetString("EditTab.FontMissing",
 														   "The current selected " +
 														   "font is '{0}', but it is not installed on this computer. Some other font will be used.");
 				return string.Format(s, _collectionSettings.DefaultLanguage1FontName);
@@ -1215,7 +1215,7 @@ namespace Bloom.Edit
 
 		public void ShowAddPageDialog()
 		{
-			this._view.ShowAddPageDialog();
+			_view.ShowAddPageDialog();
 		}
 
 		private const string URL_PREFIX = "/bloom/localhost/";
