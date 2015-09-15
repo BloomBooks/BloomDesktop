@@ -15,7 +15,6 @@ namespace Bloom.Edit
 		private readonly EditingModel _model;
 		private bool _dontForwardSelectionEvent;
 		private IPage _pageWeThinkShouldBeSelected;
-		private Timer _addPageClickTimer;
 
 		public PageListView(PageSelection pageSelection,  RelocatePageEvent relocatePageEvent, EditingModel model,HtmlThumbNailer thumbnailProvider, NavigationIsolator isolator)
 		{
@@ -49,8 +48,6 @@ namespace Bloom.Edit
 				args.ContextMenu.MenuItems.Add(removeItem);
 				dupItem.Enabled = removeItem.Enabled = page != null && !page.Required && !_model.CurrentBook.LockedDown;
 			};
-			_addPageClickTimer = new Timer() {Enabled = false, Interval = 1000}; // one second timer to 'debounce' add page button
-			_addPageClickTimer.Tick += new EventHandler(OnAddPageTimerElapsed);
 		}
 
 		private void OnPageSelectedChanged(object page, EventArgs e)
@@ -145,30 +142,16 @@ namespace Bloom.Edit
 			set { _thumbNailList.Enabled = value; }
 		}
 
-		private void OnAddPageTimerElapsed(object sender, EventArgs e)
-		{
-			_processingAddPageClick = false;
-			_addPageClickTimer.Stop();
-		}
-
-		private void StartAddPageClickTimer()
-		{
-			_processingAddPageClick = true;
-			_addPageClickTimer.Start();
-		}
-
-		private bool _processingAddPageClick;
+		private DateTime _lastButtonClickedTime = DateTime.Now; // initially, instance creation time
 		private void _addPageButton_Click(object sender, EventArgs e)
 		{
-			if (_processingAddPageClick)
+			var currentTime = DateTime.Now;
+			if (_lastButtonClickedTime > currentTime.AddSeconds(-1))
 				return;
-			StartAddPageClickTimer();
+			_lastButtonClickedTime = currentTime;
 			if (_model.CanAddPages)
 			{
 				_model.ShowAddPageDialog();
-				// BL-2743 Make sure the dialog is actually showing before we allow another click
-				// (which will then be caught by the js and ignored)
-				//Application.DoEvents();
 			}
 			else
 			{
