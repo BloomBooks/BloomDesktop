@@ -4,9 +4,9 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.Properties;
 using L10NSharp;
 using Palaso.Reporting;
-using Palaso.UI.WindowsForms;
 
 namespace Bloom.Edit
 {
@@ -16,6 +16,7 @@ namespace Bloom.Edit
 		private readonly EditingModel _model;
 		private bool _dontForwardSelectionEvent;
 		private IPage _pageWeThinkShouldBeSelected;
+		private DateTime _lastButtonClickedTime = DateTime.Now; // initially, instance creation time
 
 		public PageListView(PageSelection pageSelection,  RelocatePageEvent relocatePageEvent, EditingModel model,
 			HtmlThumbNailer thumbnailProvider, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent)
@@ -98,8 +99,8 @@ namespace Bloom.Edit
 			//Whereas this class has an ImageNormal and ImageDisabled, in order to never be truly
 			//disabled, we don't use that. The button always thinks its in the "Normal" (enabled) state.
 			//But we switch its "normal" image and forecolor in order to get this "soft disabled" state
-			_addPageButton.ImageNormal = _model.CanAddPages ? global::Bloom.Properties.Resources.AddPageButton : global::Bloom.Properties.Resources.AddPageButtonDisabled;
-			_addPageButton.ForeColor = _model.CanAddPages ? Bloom.Palette.Blue : Color.FromArgb(87,87,87);
+			_addPageButton.ImageNormal = _model.CanAddPages ? Resources.AddPageButton : Resources.AddPageButtonDisabled;
+			_addPageButton.ForeColor = _model.CanAddPages ? Palette.Blue : Color.FromArgb(87,87,87);
 		}
 
 		public void SetBook(Book.Book book)//review: could do this instead by giving this class the bookselection object
@@ -166,6 +167,11 @@ namespace Bloom.Edit
 
 		private void _addPageButton_Click(object sender, EventArgs e)
 		{
+			// Turn double-click into a single-click
+			if (_lastButtonClickedTime > DateTime.Now.AddSeconds(-1))
+				return;
+			_lastButtonClickedTime = DateTime.Now;
+
 			if (_model.CanAddPages)
 			{
 				_model.ShowAddPageDialog();
@@ -173,7 +179,7 @@ namespace Bloom.Edit
 			else
 			{
 				// TODO: localize buttons
-				string message = "At this time, Bloom does not allow adding pages to a shell book.";
+				var message = "At this time, Bloom does not allow adding pages to a shell book.";
 				message = LocalizationManager.GetDynamicString("Bloom", "EditTab.DisabledAddPageMessage", message);
 				MessageBox.Show(message, "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information);
 			}

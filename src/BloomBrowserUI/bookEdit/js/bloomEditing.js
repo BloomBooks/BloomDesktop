@@ -660,8 +660,11 @@ $(document).ready(function() {
 
     // attach ckeditor to the contenteditable="true" class="bloom-content1"
     // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
+    // but skip any element with class="bloom-userCannotModifyStyles"
     $('div.bloom-page').find('.bloom-content1[contenteditable="true"],.bloom-content2[contenteditable="true"],.bloom-content3[contenteditable="true"],.bloom-contentNational1[contenteditable="true"]').each(function() {
 
+        if (this.hasClass('bloom-userCannotModifyStyles'))
+            return; // equivalent to 'continue'
         var ckedit = CKEDITOR.inline(this);
 
         // Record the div of the edit box for use later in positioning the format bar.
