@@ -15,6 +15,7 @@ namespace Bloom.Edit
 		private readonly EditingModel _model;
 		private bool _dontForwardSelectionEvent;
 		private IPage _pageWeThinkShouldBeSelected;
+		private DateTime _lastButtonClickedTime = DateTime.Now; // initially, instance creation time
 
 		public PageListView(PageSelection pageSelection,  RelocatePageEvent relocatePageEvent, EditingModel model,HtmlThumbNailer thumbnailProvider, NavigationIsolator isolator)
 		{
@@ -142,13 +143,13 @@ namespace Bloom.Edit
 			set { _thumbNailList.Enabled = value; }
 		}
 
-		private DateTime _lastButtonClickedTime = DateTime.Now; // initially, instance creation time
 		private void _addPageButton_Click(object sender, EventArgs e)
 		{
-			var currentTime = DateTime.Now;
-			if (_lastButtonClickedTime > currentTime.AddSeconds(-1))
+			// Turn double-click into a single-click
+			if (_lastButtonClickedTime > DateTime.Now.AddSeconds(-1))
 				return;
-			_lastButtonClickedTime = currentTime;
+			_lastButtonClickedTime = DateTime.Now;
+
 			if (_model.CanAddPages)
 			{
 				_model.ShowAddPageDialog();
