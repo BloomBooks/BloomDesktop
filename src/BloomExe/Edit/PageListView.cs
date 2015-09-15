@@ -147,22 +147,28 @@ namespace Bloom.Edit
 		{
 			if (_processingClickHandler)
 				return;
-			_processingClickHandler = true;
-			if (_model.CanAddPages)
+			try
 			{
-				_model.ShowAddPageDialog();
-				// BL-2743 Make sure the dialog is actually showing before we allow another click
-				// (which will then be caught by the js and ignored)
-				Application.DoEvents();
+				_processingClickHandler = true;
+				if (_model.CanAddPages)
+				{
+					_model.ShowAddPageDialog();
+					// BL-2743 Make sure the dialog is actually showing before we allow another click
+					// (which will then be caught by the js and ignored)
+					Application.DoEvents();
+				}
+				else
+				{
+					// TODO: localize buttons
+					string message = "At this time, Bloom does not allow adding pages to a shell book.";
+					message = LocalizationManager.GetDynamicString("Bloom", "EditTab.DisabledAddPageMessage", message);
+					MessageBox.Show(message, "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				}
 			}
-			else
+			finally
 			{
-				// TODO: localize buttons
-				string message = "At this time, Bloom does not allow adding pages to a shell book.";
-				message = LocalizationManager.GetDynamicString("Bloom", "EditTab.DisabledAddPageMessage", message);
-				MessageBox.Show(message, "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				_processingClickHandler = false;
 			}
-			_processingClickHandler = false;
 		}
 	}
 }
