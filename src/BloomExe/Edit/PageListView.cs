@@ -142,11 +142,18 @@ namespace Bloom.Edit
 			set { _thumbNailList.Enabled = value; }
 		}
 
+		private bool _processingClickHandler = false;
 		private void _addPageButton_Click(object sender, EventArgs e)
 		{
+			if (_processingClickHandler)
+				return;
+			_processingClickHandler = true;
 			if (_model.CanAddPages)
 			{
 				_model.ShowAddPageDialog();
+				// BL-2743 Make sure the dialog is actually showing before we allow another click
+				// (which will then be caught by the js and ignored)
+				Application.DoEvents();
 			}
 			else
 			{
@@ -155,6 +162,7 @@ namespace Bloom.Edit
 				message = LocalizationManager.GetDynamicString("Bloom", "EditTab.DisabledAddPageMessage", message);
 				MessageBox.Show(message, "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information);
 			}
+			_processingClickHandler = false;
 		}
 	}
 }
