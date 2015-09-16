@@ -12,7 +12,7 @@ namespace Bloom.Publish
 		{
 		   //for now we're not doing real extension dlls, just kind of faking it. So we will limit this load
 			//to books we know go with this currently "built-in" "extension" for SIL LEAD's SHRP Project.
-			return book.Title.Contains("Guide");
+			return book.CollectionSettings.CollectionName.Contains("Guide") || book.CollectionSettings.CollectionName.Contains("TG");
 		}
 
 		public static void UpdateBook(HtmlDom dom, string language1Iso639Code)

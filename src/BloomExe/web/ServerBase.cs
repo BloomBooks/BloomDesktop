@@ -349,7 +349,7 @@ namespace Bloom.web
 			var localPath = CorrectedLocalPath(info);
 			if (localPath.StartsWith(BloomUrlPrefix))
 				localPath = localPath.Substring(BloomUrlPrefix.Length);
-			if (!File.Exists(localPath) && localPath.Contains("?"))
+			if (localPath.Contains("?") && !File.Exists(localPath))
 			{
 				var idx = localPath.LastIndexOf("?", StringComparison.Ordinal);
 				var temp = localPath.Substring(0, idx);

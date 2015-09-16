@@ -429,9 +429,8 @@ namespace Bloom.Publish
 				BackgroundColor = Color.White,
 				BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.None,
 				CenterImageUsingTransparentPadding = false,
-				//210x147 is about what the TG's expect, but we're going to tripple that in case it makes for better printing
-				Height = 630,
-				Width = 441,
+				Height = height,
+				Width = width
 			};
 			dom.UseOriginalImages = true; // apparently these thumbnails can be big...anyway we want printable images.
 			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions,onReady, onError);
