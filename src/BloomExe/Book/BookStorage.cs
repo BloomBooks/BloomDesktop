@@ -879,11 +879,12 @@ namespace Bloom.Book
 		{
 			var dangerousCharacters = new List<char>();
 			dangerousCharacters.AddRange(PathUtilities.GetInvalidOSIndependentFileNameChars());
-			dangerousCharacters.Add('.');
+			//dangerousCharacters.Add('.'); Moved this to a trim because SHRP uses names like "SHRP 2.3" (term 2, week 3)
 			foreach (char c in dangerousCharacters)
 			{
 				name = name.Replace(c, ' ');
 			}
+			name = name.TrimStart(new [] {'.',' ','\t'});
 			return name.Trim();
 		}
 
