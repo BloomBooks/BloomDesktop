@@ -187,16 +187,20 @@ namespace Bloom.Book
 			//By far the largest number of books posted to bloomlibrary with this problem were Tok Pisin books, which actually just had
 			//an English word as their value for "topic", so there we just switch it over to English.
 			NamedMutliLingualValue topic;
-			if(_dataset.TextVariables.TryGetValue("topic", out topic))
+			if (!_dataset.TextVariables.TryGetValue("topic", out topic))
+				return;
+			var topicStrings = topic.TextAlternatives;
+			if (string.IsNullOrEmpty(topicStrings["en"] ) && topicStrings["tpi"] != null)
 			{
-				var topicStrings = topic.TextAlternatives;
-				if (string.IsNullOrEmpty(topicStrings["en"] ) && topicStrings["tpi"] != null)
-				{
-					topicStrings["en"] = topicStrings["tpi"];
+				topicStrings["en"] = topicStrings["tpi"];
 
-					topicStrings.RemoveLanguageForm(topicStrings.Find("tpi"));
-				}
+				topicStrings.RemoveLanguageForm(topicStrings.Find("tpi"));
 			}
+			// BL-2746 For awhile in v3.3, after the addition of ckeditor
+			// our topic string was getting wrapped in html paragraph markers
+			// If we find one of those, strip off the markers.
+			topicStrings["en"] = topicStrings["en"].Replace("<p>", "").Replace("</p>", "");
+			UpdateDomFromDataset(); // push migrated changes to book dom
 		}
 
 		private void UpdateCredits(BookInfo info)
