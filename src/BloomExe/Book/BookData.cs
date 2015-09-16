@@ -199,18 +199,7 @@ namespace Bloom.Book
 			// BL-2746 For awhile in v3.3, after the addition of ckeditor
 			// our topic string was getting wrapped in html paragraph markers
 			// If we find one of those, strip off the markers.
-			var englishString = topicStrings["en"];
-			if (String.IsNullOrEmpty(englishString) || !englishString.StartsWith("<p>"))
-				return;
-			const int LENGTH_TO_STRIP = 7; // length of "<p></p>"
-			if (englishString.Length > LENGTH_TO_STRIP)
-			{
-				topicStrings["en"] = englishString.Substring(3, englishString.Length - LENGTH_TO_STRIP);
-			}
-			else // this branch shouldn't actually be used, included for safety
-			{
-				topicStrings["en"] = String.Empty;
-			}
+			topicStrings["en"] = topicStrings["en"].Replace("<p>", "").Replace("</p>", "");
 			UpdateDomFromDataset(); // push migrated changes to book dom
 		}
 
