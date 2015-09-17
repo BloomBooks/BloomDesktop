@@ -73,6 +73,7 @@ namespace Bloom.Book
 			GetOrCreateDataDiv();
 			_dataset = GatherDataItemsFromCollectionSettings(_collectionSettings);
 			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
+			MigrateData(_dataset);
 		}
 
 		/// <summary>
@@ -429,6 +430,11 @@ namespace Bloom.Book
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
 			GatherDataItemsFromXElement(data, elementToReadFrom, itemsToDelete);
+
+			//REVIEW: this method, SynchronizeDataItemsFromContentsOfElement(), is confusing because it  is not static and yet it
+			//creates a new DataSet, ignoring its member variable _dataset. In MigrateData, we are changing things in the datadiv and
+			//want to both change the values in our _dataset but also have those changes pushed throughout the DOM via the following
+			//call to UpdateDomFromDataSet().
 
 			MigrateData(data);
 

@@ -604,9 +604,9 @@ namespace BloomTests.Book
 					</div>
                 </div>
 			 </body></html>");
-
 			var data = new BookData(bookDom, _collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='topic' and @lang='en']/p", 0);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='topic' and @lang='en' and text()='health']", 1);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='topic' and @lang='fr' and text()='santé']", 2);
 		}
