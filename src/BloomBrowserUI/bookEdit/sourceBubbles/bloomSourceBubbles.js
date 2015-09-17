@@ -70,6 +70,12 @@ var bloomSourceBubbles = (function () {
         divForBubble.find("*.bloom-content1, *.bloom-content2, *.bloom-content3").each(function () {
             $(this).remove();
         });
+        // BL-2734 Don't show national book title in bubble, since it's already visible on the page
+        divForBubble.find('*.bloom-contentNational1').each(function () {
+            if ($(this).attr('data-book') === 'bookTitle') {
+                $(this).remove();
+            }
+        });
         //in case some formatting didn't get cleaned up
         StyleEditor.CleanupElement(divForBubble);
         //if there are no languages to show in the bubble, bail out now

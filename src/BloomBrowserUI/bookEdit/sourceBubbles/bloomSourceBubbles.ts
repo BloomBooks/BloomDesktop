@@ -96,6 +96,13 @@ class bloomSourceBubbles {
             $(this).remove();
         });
 
+        // BL-2734 Don't show national book title in bubble, since it's already visible on the page
+        divForBubble.find('*.bloom-contentNational1').each(function () {
+            if ($(this).attr('data-book') === 'bookTitle') {
+                $(this).remove();
+            }
+        });
+
         //in case some formatting didn't get cleaned up
         StyleEditor.CleanupElement(divForBubble);
 
