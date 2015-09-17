@@ -1,7 +1,8 @@
 /// <reference path="../../bookEdit/sourceBubbles/bloomSourceBubbles.ts" />
+/// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="../../lib/jasmine/jasmine.d.ts"/>
 "use strict";
-describe("bloomSourceBubbles", function () {
+describe("SourceBubbles", function () {
     // reset fixture
     beforeEach(function () {
         $('body').html('');

@@ -380,7 +380,7 @@ class bloomSourceBubbles {
         });
     }
 
-    static HideLabelsThatWouldBeUnderfoot(groupElement: HTMLElement) {
+    private static HideLabelsThatWouldBeUnderfoot(groupElement: HTMLElement) {
         $(groupElement).find("label.bubble").each( (index, element) => {
             $(element).remove();
         });

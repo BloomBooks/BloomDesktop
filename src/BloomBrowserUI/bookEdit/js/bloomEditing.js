@@ -725,14 +725,17 @@ var pageSelectionChanging = function () {
     fireCSharpEditEvent('finishSavingPage', '');
 };
 
-function loadLongpressInstructions(jQuerySetOfMatchedElements)
-{
+function loadLongpressInstructions(jQuerySetOfMatchedElements) {
     getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
         if (response === 'Yes') {
-            localizationManager.asyncGetText('BookEditor.CharacterMap.Instructions',
-                "To select, use your mouse wheel or point at what you want, then release the key.")
-                .done(translation => jQuerySetOfMatchedElements
-                    .longPress({ instructions: "<div class='instructions'>" + translation + "</div>" }));
-        }
+            localizationManager.asyncGetText(
+                'BookEditor.CharacterMap.Instructions',
+                'To select, use your mouse wheel or point at what you want, then release the key.')
+            .done(function (translation) {
+                    jQuerySetOfMatchedElements.longPress(
+                        { instructions: "<div class='instructions'>" + translation + "</div>" }
+                    );
+            });
+        };
     });
 }
