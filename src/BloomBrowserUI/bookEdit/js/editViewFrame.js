@@ -159,7 +159,7 @@ function showAddPageDialog(templatesJSON) {
     }
     parentElement.localizationManager.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
 
-        var title = parentElement.localizationManager.getText('AddPageDialog.Title', 'Add Page...');
+        var title = parentElement.localizationManager.getText('EditTab.AddPageDialog.Title', 'Add Page...');
         var dialogContents = CreateAddPageDiv(templatesJSON);
 
         theDialog = $(dialogContents).dialog({
@@ -196,7 +196,7 @@ function showAddPageDialog(templatesJSON) {
 function getAddPageDialogLocalizedStrings() {
     // Without preloading these, they are not available when the dialog is created
     var pairs = {};
-    pairs['AddPageDialog.Title'] = 'Add Page...';
+    pairs['EditTab.AddPageDialog.Title'] = 'Add Page...';
     return pairs;
 }
 
