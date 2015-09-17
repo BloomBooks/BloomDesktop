@@ -425,10 +425,11 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css"));
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
-			pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
-
+			pageDom.RemoveModeStyleSheets();
+			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css" })
+			{
+				pageDom.AddStyleSheet(cssFileName);
+			}
 			pageDom.SortStyleSheetLinks();
 
 			AddPreviewJScript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
