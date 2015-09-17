@@ -117,7 +117,7 @@ class PageChooser {
             this.addPageClickHandler();
         });
         var pageButton = $("#addPageButton", document);
-        localizationManager.asyncGetText('AddPageDialog.AddPageButton', 'Add This Page')
+        localizationManager.asyncGetText('EditTab.AddPageDialog.AddThisPageButton', 'Add This Page')
             .done(translation => {
                 pageButton.attr('value', translation);
             });
