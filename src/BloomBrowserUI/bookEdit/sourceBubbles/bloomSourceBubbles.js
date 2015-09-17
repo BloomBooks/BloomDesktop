@@ -70,6 +70,12 @@ var bloomSourceBubbles = (function () {
         divForBubble.find("*.bloom-content1, *.bloom-content2, *.bloom-content3").each(function () {
             $(this).remove();
         });
+        // BL-2734 Don't show national book title in bubble, since it's already visible on the page
+        divForBubble.find('*.bloom-contentNational1').each(function () {
+            if ($(this).attr('data-book') === 'bookTitle') {
+                $(this).remove();
+            }
+        });
         //in case some formatting didn't get cleaned up
         StyleEditor.CleanupElement(divForBubble);
         //if there are no languages to show in the bubble, bail out now
@@ -107,7 +113,7 @@ var bloomSourceBubbles = (function () {
                 var languageName = localizationManager.getLanguageName(iso);
                 if (!languageName)
                     languageName = iso;
-                var shouldShowOnPage = (iso === vernacularLang) /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
+                var shouldShowOnPage = (iso === vernacularLang) || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
                 // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
                 if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
                     $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
