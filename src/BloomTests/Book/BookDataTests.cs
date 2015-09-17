@@ -590,7 +590,26 @@ namespace BloomTests.Book
 			Assert.AreEqual("health", data.GetVariableOrNull("topic", "en"));
 			Assert.IsNull(data.GetVariableOrNull("topic", "tpi"));
 		}
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_TopicHasParagraphElement_Removed()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='topic' lang='en'><p>health</p></div>
+						<div data-book='topic' lang='fr'><p>santé</p></div>
+				</div>
+				<div id='somePage'>
+                    <div data-book='topic' lang='fr'>
+                       <p>santé</p>
+					</div>
+                </div>
+			 </body></html>");
 
+			var data = new BookData(bookDom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='topic' and @lang='en' and text()='health']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='topic' and @lang='fr' and text()='santé']", 2);
+		}
 		private bool AndikaNewBasicIsInstalled()
 		{
 			const string fontToCheck = "andika new basic";

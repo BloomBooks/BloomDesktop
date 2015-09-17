@@ -73,7 +73,6 @@ namespace Bloom.Book
 			GetOrCreateDataDiv();
 			_dataset = GatherDataItemsFromCollectionSettings(_collectionSettings);
 			GatherDataItemsFromXElement(_dataset,_dom.RawDom);
-			MigrateData();
 		}
 
 		/// <summary>
@@ -180,22 +179,29 @@ namespace Bloom.Book
 			UpdateCredits(info);
 		}
 
-		private void MigrateData()
+		private void MigrateData(DataSet data)
 		{
 			//Until late in Bloom 3, we collected the topic in the National language, which is messy because then we would have to know how to 
 			//translate from all those languages to all other languages. Now, we just save English, and translate from English to whatever.
 			//By far the largest number of books posted to bloomlibrary with this problem were Tok Pisin books, which actually just had
 			//an English word as their value for "topic", so there we just switch it over to English.
 			NamedMutliLingualValue topic;
-			if(_dataset.TextVariables.TryGetValue("topic", out topic))
+			if (!data.TextVariables.TryGetValue("topic", out topic))
+				return;
+			var topicStrings = topic.TextAlternatives;
+			if (string.IsNullOrEmpty(topicStrings["en"] ) && topicStrings["tpi"] != null)
 			{
-				var topicStrings = topic.TextAlternatives;
-				if (string.IsNullOrEmpty(topicStrings["en"] ) && topicStrings["tpi"] != null)
-				{
-					topicStrings["en"] = topicStrings["tpi"];
+				topicStrings["en"] = topicStrings["tpi"];
 
-					topicStrings.RemoveLanguageForm(topicStrings.Find("tpi"));
-				}
+				topicStrings.RemoveLanguageForm(topicStrings.Find("tpi"));
+			}
+
+			// BL-2746 For awhile during th v3.3 beta period, after the addition of ckeditor
+			// our topic string was getting wrapped in html paragraph markers. There were a good
+			// number of beta testers, so we need to clean up that mess.
+			foreach (var languageForm in topicStrings.Forms)
+			{
+				topicStrings[languageForm.WritingSystemId] = languageForm.Form.Replace("<p>", "").Replace("</p>", "");
 			}
 		}
 
@@ -423,9 +429,14 @@ namespace Bloom.Book
 			// If we don't like that, we'd need to create an event to notice when field are changed.
 
 			GatherDataItemsFromXElement(data, elementToReadFrom, itemsToDelete);
-//            SendDataToDebugConsole(data);
+
+			MigrateData(data);
+
+			//            SendDataToDebugConsole(data);
 			UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
 
+			//REVIEW: the other methods here are, for some reason, acting on a local DataSet, "data". 
+			//But then this one is acting on the member variable. First Q: why is the rest of this method acting on a local variable dataset?
 			UpdateTitle();
 
 			return data;
