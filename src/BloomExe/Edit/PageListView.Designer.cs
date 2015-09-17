@@ -95,8 +95,8 @@
 			this._addPageButton.InnerBorderColor_Focus = System.Drawing.Color.LightBlue;
 			this._addPageButton.InnerBorderColor_MouseOver = System.Drawing.Color.Gold;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._addPageButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._addPageButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._addPageButton, "EditTab._undoButton");
+			this._L10NSharpExtender.SetLocalizationComment(this._addPageButton, "This is for the button that LAUNCHES the dialog, not the \"Add this page\" button that is IN the dialog.");
+			this._L10NSharpExtender.SetLocalizingId(this._addPageButton, "EditTab.AddPageDialog.AddPageButton");
 			this._addPageButton.Location = new System.Drawing.Point(23, 17);
 			this._addPageButton.Name = "_addPageButton";
 			this._addPageButton.OffsetPressedContent = true;
