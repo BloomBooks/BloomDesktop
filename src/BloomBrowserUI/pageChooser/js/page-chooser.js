@@ -187,7 +187,7 @@ var PageChooser = (function () {
             _this.continueCheckBoxChanged();
         });
         var pageButton = $("#addPageButton", document);
-        var okButtonLabelId = 'EditTab.AddPageDialog.AddPageButton';
+        var okButtonLabelId = 'EditTab.AddPageDialog.AddThisPageButton';
         var okButtonLabelText = 'Add This Page';
         if (this._forChoosePage) {
             okButtonLabelId = 'EditTab.AddPageDialog.ChooseLayoutButton';
