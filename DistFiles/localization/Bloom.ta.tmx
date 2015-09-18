@@ -1537,7 +1537,7 @@
         <seg>தலைப்பு பக்கம்</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._contentLanguagesDropdown">
+    <tu tuid="EditTab.ContentLanguagesDropdown">
       <tuv xml:lang="en">
         <seg>Multilingual Settings</seg>
       </tuv>
@@ -1545,7 +1545,7 @@
         <seg>பன்மொழி அமைப்புகள்</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton">
+    <tu tuid="EditTab.CopyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
       </tuv>
@@ -1553,7 +1553,7 @@
         <seg>நகல்</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton">
+    <tu tuid="EditTab.CutButton">
       <tuv xml:lang="en">
         <seg>Cut</seg>
       </tuv>
@@ -1561,7 +1561,7 @@
         <seg>வெட்டு</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton.ToolTip">
+    <tu tuid="EditTab.CutButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Cut (Ctrl-x)</seg>
       </tuv>
@@ -1569,7 +1569,7 @@
         <seg>(Ctrl-x) வெட்டு</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.CutButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>You need to select some text before you can cut it</seg>
       </tuv>
@@ -1577,7 +1577,7 @@
         <seg>நீங்கள் நீங்கள் அதை வெட்ட முடியும் முன் சில உரையை தேர்ந்தெடுக்க வேண்டும்</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton">
+    <tu tuid="EditTab.DeletePageButton">
       <tuv xml:lang="en">
         <seg>Remove\n  Page</seg>
       </tuv>
@@ -1585,7 +1585,7 @@
         <seg>நீக்கு \nபக்கம்</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton.ToolTip">
+    <tu tuid="EditTab.DeletePageButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Remove this page from the book</seg>
       </tuv>
@@ -1593,7 +1593,7 @@
         <seg>இப்பக்கம் கடைசியாக புத்தகத்தில் இருந்து அகற்று</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.DeletePageButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>This page cannot be removed</seg>
       </tuv>
@@ -1601,7 +1601,7 @@
         <seg>இப்பக்கம் கடைசியாக நீக்க முடியாது</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton">
+    <tu tuid="EditTab.DuplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n   Page</seg>
       </tuv>
@@ -1609,7 +1609,7 @@
         <seg>நகல் பக்கம்</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton.ToolTip">
+    <tu tuid="EditTab.DuplicatePageButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Insert a new page which is a duplicate of this one</seg>
       </tuv>
@@ -1617,7 +1617,7 @@
         <seg>இதை, பிரதி இது ஒரு புதிய பக்கத்தை செருகு</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>This page cannot be duplicated</seg>
       </tuv>
@@ -1625,7 +1625,7 @@
         <seg>இப்பக்கம் கடைசியாக படியெடுக்க இயலாது</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton">
+    <tu tuid="EditTab.PasteButton">
       <tuv xml:lang="en">
         <seg>Paste</seg>
       </tuv>
@@ -1633,7 +1633,7 @@
         <seg>ஒட்டு</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton.ToolTip">
+    <tu tuid="EditTab.PasteButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Paste (Ctrl+v)</seg>
       </tuv>
@@ -1641,7 +1641,7 @@
         <seg>ஒட்டு (Ctrl + v)</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.PasteButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>There is nothing on the Clipboard that you can paste here.</seg>
       </tuv>
@@ -1649,7 +1649,7 @@
         <seg>எதுவும் இல்லை என்று நீங்கள் இங்கே ஒட்டலாம் கிளிப்போர்டில்.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton">
+    <tu tuid="EditTab.UndoButton">
       <tuv xml:lang="en">
         <seg>Undo</seg>
       </tuv>
@@ -1657,7 +1657,7 @@
         <seg>செயல்தவிர்</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton.ToolTip">
+    <tu tuid="EditTab.UndoButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Undo (Ctrl+z)</seg>
       </tuv>
@@ -1665,7 +1665,7 @@
         <seg>(Ctrl + z) செயல்தவிர்</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.bilingual">
+    <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
         <seg>Two Languages</seg>
@@ -1674,7 +1674,7 @@
         <seg>இரண்டு மொழிகள்</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.copyImageIPMetdataQuestion">
+    <tu tuid="EditTab.CopyImageIPMetadataQuestion">
       <note>get this after you edit the metadata of an image</note>
       <tuv xml:lang="en">
         <seg>Copy this information to all other pictures in this book?</seg>
@@ -1683,7 +1683,7 @@
         <seg>அனைத்து மற்ற படங்கள் இந்த புத்தகத்தில் இந்த தகவலை நகலெடுக்க?</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+    <tu tuid="EditTab.LayoutInPublishTabOnlyNotice">
       <tuv xml:lang="en">
         <seg>This option is only available in the Publish tab.</seg>
       </tuv>
@@ -1691,7 +1691,7 @@
         <seg>இந்த விருப்பம் கிடைக்கத்தக்கதாய் மட்டும் வெளியிடு தாவலில்.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.monolingual">
+    <tu tuid="EditTab.Monolingual">
       <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       <tuv xml:lang="en">
         <seg>One Language</seg>
@@ -1700,7 +1700,7 @@
         <seg>ஒரு மொழி</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.noOtherLayouts">
+    <tu tuid="EditTab.NoOtherLayouts">
       <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
       <tuv xml:lang="en">
         <seg>There are no other layout options for this template.</seg>
@@ -1709,7 +1709,7 @@
         <seg>மற்ற வடிவமைப்பு விருப்பங்கள் இல்லை இந்த வார்ப்புருவிற்கு உள்ளன.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
+    <tu tuid="EditTab.TitleOfCopyIPToWholeBooksDialog">
       <tuv xml:lang="en">
         <seg>Picture Intellectual Property Information</seg>
       </tuv>
@@ -1717,7 +1717,7 @@
         <seg>படம் அறிவுசார் தகவல்</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.trilingual">
+    <tu tuid="EditTab.Trilingual">
       <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
       <tuv xml:lang="en">
         <seg>Three Languages</seg>

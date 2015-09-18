@@ -1701,44 +1701,42 @@
         <seg>Page with a picture on top and a large, centered word below.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._contentLanguagesDropdown">
+    <tu tuid="EditTab.ContentLanguagesDropdown">
       <tuv xml:lang="en">
         <seg>Multilingual Settings</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._contentLanguagesDropdown_ToolTip_">
+    <tu tuid="EditTab.ContentLanguagesDropdown.ToolTip">
       <tuv xml:lang="en">
         <seg>Choose language to make this a bilingual or trilingual book</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton">
+    <tu tuid="EditTab.CopyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton.ToolTip">
+    <tu tuid="EditTab.CopyButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Copy (Ctrl-c)</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.CopyButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>You need to select some text before you can copy it</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton">
+    <tu tuid="EditTab.CutButton">
       <tuv xml:lang="en">
         <seg>Cut</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton.ToolTip">
-      <prop type="x-nolongerused">true</prop>
+    <tu tuid="EditTab.CutButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Cut (Ctrl-x)</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton.ToolTipWhenDisabled">
-      <prop type="x-nolongerused">true</prop>
+    <tu tuid="EditTab.CutButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>You need to select some text before you can cut it</seg>
       </tuv>
@@ -1749,13 +1747,11 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.DeletePageButton.ToolTip">
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Remove this page from the book</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.DeletePageButton.ToolTipWhenDisabled">
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>This page cannot be removed</seg>
       </tuv>
@@ -1771,13 +1767,11 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.DuplicatePageButton.ToolTip">
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Insert a new page which is a duplicate of this one</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.DuplicatePageButton.ToolTipWhenDisabled">
-      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>This page cannot be duplicated</seg>
       </tuv>
@@ -1788,74 +1782,71 @@
         <seg>toolStrip1</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton">
+    <tu tuid="EditTab.PasteButton">
       <tuv xml:lang="en">
         <seg>Paste</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton.ToolTip">
-      <prop type="x-nolongerused">true</prop>
+    <tu tuid="EditTab.PasteButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Paste (Ctrl+v)</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton.ToolTipWhenDisabled">
-      <prop type="x-nolongerused">true</prop>
+    <tu tuid="EditTab.PasteButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>There is nothing on the Clipboard that you can paste here.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton">
+    <tu tuid="EditTab.UndoButton">
       <tuv xml:lang="en">
         <seg>Undo</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton.ToolTip">
-      <prop type="x-nolongerused">true</prop>
+    <tu tuid="EditTab.UndoButton.ToolTip">
       <tuv xml:lang="en">
         <seg>Undo (Ctrl+z)</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton.ToolTipWhenDisabled">
+    <tu tuid="EditTab.UndoButton.ToolTipWhenDisabled">
       <tuv xml:lang="en">
         <seg>There is nothing to undo</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.bilingual">
+    <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
         <seg>Two Languages</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.copyImageIPMetdataQuestion">
+    <tu tuid="EditTab.CopyImageIPMetadataQuestion">
       <note>get this after you edit the metadata of an image</note>
       <tuv xml:lang="en">
         <seg>Copy this information to all other pictures in this book?</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+    <tu tuid="EditTab.LayoutInPublishTabOnlyNotice">
       <tuv xml:lang="en">
         <seg>This option is only available in the Publish tab.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.monolingual">
+    <tu tuid="EditTab.Monolingual">
       <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       <tuv xml:lang="en">
         <seg>One Language</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.noOtherLayouts">
+    <tu tuid="EditTab.NoOtherLayouts">
       <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
       <tuv xml:lang="en">
         <seg>There are no other layout options for this template.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
+    <tu tuid="EditTab.TitleOfCopyIPToWholeBooksDialog">
       <tuv xml:lang="en">
         <seg>Picture Intellectual Property Information</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.trilingual">
+    <tu tuid="EditTab.Trilingual">
       <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
       <tuv xml:lang="en">
         <seg>Three Languages</seg>

@@ -2489,7 +2489,7 @@
         <seg>Page de titre</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._contentLanguagesDropdown">
+    <tu tuid="EditTab.ContentLanguagesDropdown">
       <tuv xml:lang="en">
         <seg>Multilingual Settings</seg>
       </tuv>
@@ -2497,7 +2497,7 @@
         <seg>Configuration multilingue</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._contentLanguagesDropdown_ToolTip_">
+    <tu tuid="EditTab.ContentLanguagesDropdown.ToolTip">
       <tuv xml:lang="en">
         <seg>Choose language to make this a bilingual or trilingual book</seg>
       </tuv>
@@ -2505,7 +2505,7 @@
         <seg>Choisir une langue pour en faire un livre bilingue ou trilingue</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton">
+    <tu tuid="EditTab.CopyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
       </tuv>
@@ -2513,7 +2513,23 @@
         <seg>Copier</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton">
+    <tu tuid="EditTab.CopyButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Copy (Ctrl-c)</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Copier (Ctrl-c)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CopyButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>You need to select some text before you can copy it</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Vous devez selectionner du texte avant de pouvoir le copier</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CutButton">
       <tuv xml:lang="en">
         <seg>Cut</seg>
       </tuv>
@@ -2521,7 +2537,7 @@
         <seg>Couper</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton">
+    <tu tuid="EditTab.DeletePageButton">
       <tuv xml:lang="en">
         <seg>Remove\n  Page</seg>
       </tuv>
@@ -2529,7 +2545,7 @@
         <seg>Supprimer\n  Page</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton">
+    <tu tuid="EditTab.DuplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n   Page</seg>
       </tuv>
@@ -2537,7 +2553,7 @@
         <seg>Dupliquer\n   Page</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._menusToolStrip">
+    <tu tuid="EditTab.MenusToolStrip">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>toolStrip1</seg>
@@ -2546,7 +2562,7 @@
         <seg>toolStrip1</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton">
+    <tu tuid="EditTab.PasteButton">
       <tuv xml:lang="en">
         <seg>Paste</seg>
       </tuv>
@@ -2554,7 +2570,7 @@
         <seg>Coller</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton">
+    <tu tuid="EditTab.UndoButton">
       <tuv xml:lang="en">
         <seg>Undo</seg>
       </tuv>
@@ -2562,7 +2578,7 @@
         <seg>Annuler</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.bilingual">
+    <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
         <seg>Two Languages</seg>
@@ -2571,7 +2587,7 @@
         <seg>Deux langues</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.copyImageIPMetdataQuestion">
+    <tu tuid="EditTab.CopyImageIPMetadataQuestion">
       <note>get this after you edit the metadata of an image</note>
       <tuv xml:lang="en">
         <seg>Copy this information to all other pictures in this book?</seg>
@@ -2580,7 +2596,7 @@
         <seg>Copier cette information vers toutes les autres images de ce livre ?</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+    <tu tuid="EditTab.LayoutInPublishTabOnlyNotice">
       <tuv xml:lang="en">
         <seg>This option is only available in the Publish tab.</seg>
       </tuv>
@@ -2588,7 +2604,7 @@
         <seg>Cette option n'est disponible que sur l'onglet Publier.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.monolingual">
+    <tu tuid="EditTab.Monolingual">
       <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       <tuv xml:lang="en">
         <seg>One Language</seg>
@@ -2597,7 +2613,7 @@
         <seg>Une langue</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.noOtherLayouts">
+    <tu tuid="EditTab.NoOtherLayouts">
       <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
       <tuv xml:lang="en">
         <seg>There are no other layout options for this template.</seg>
@@ -2606,7 +2622,7 @@
         <seg>Aucune autre mise en page n'existe pour ce modèle.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
+    <tu tuid="EditTab.TitleOfCopyIPToWholeBooksDialog">
       <tuv xml:lang="en">
         <seg>Picture Intellectual Property Information</seg>
       </tuv>
@@ -2614,7 +2630,7 @@
         <seg>Information de propriété intellectuelle de l'image</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.trilingual">
+    <tu tuid="EditTab.Trilingual">
       <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
       <tuv xml:lang="en">
         <seg>Three Languages</seg>
