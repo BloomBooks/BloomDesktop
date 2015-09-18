@@ -64,7 +64,7 @@ namespace Bloom.web
 			using (var fs = File.OpenRead(path))
 			{
 				_actualContext.Response.ContentLength64 = fs.Length;
-				_actualContext.Response.AppendHeader("PathOnDisk", path);//helps with debugging what file is being chosen
+				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));//helps with debugging what file is being chosen
 
 				// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
 				// to the OutputStream. It is normally used to check if the contents of the file have changed without taking the
