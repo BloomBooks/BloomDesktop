@@ -808,7 +808,7 @@
         <seg>optional</seg>
       </tuv>
     </tu>
-    <tu tuid="ConfiguringBookMessage">
+    <tu tuid="CollectionTab.ConfiguringBookMessage">
       <tuv xml:lang="en">
         <seg>Building...</seg>
       </tuv>
@@ -1882,7 +1882,7 @@
         <seg>This Book called for Front/Back Matter pack named '{0}', but Bloom couldn't find that on this computer. You can either install a BloomPack that will give you '{0}', or go to Settings:Book Making and change to another Front/Back Matter Pack.</seg>
       </tuv>
     </tu>
-    <tu tuid="ExperimentalNotice">
+    <tu tuid="EditTab.ExperimentalNotice">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This page is an experimental prototype which may have many problems, for which we apologize.</seg>
@@ -1974,12 +1974,12 @@
         <seg>Using Reader Templates </seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._makeASuggestionMenuItem">
+    <tu tuid="HelpMenu.MakeASuggestionMenuItem">
       <tuv xml:lang="en">
         <seg>Make a Suggestion</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._webSiteMenuItem">
+    <tu tuid="HelpMenu.WebSiteMenuItem">
       <tuv xml:lang="en">
         <seg>Web Site</seg>
       </tuv>

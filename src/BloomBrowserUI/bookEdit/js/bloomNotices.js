@@ -5,7 +5,7 @@ var bloomNotices = (function () {
     function bloomNotices() {
     }
     bloomNotices.addExperimentalNotice = function (container) {
-        var experimental = localizationManager.getText('ExperimentalNotice', 'This page is an experimental prototype which may have many problems, for which we apologize.');
+        var experimental = localizationManager.getText('EditTab.ExperimentalNotice', 'This page is an experimental prototype which may have many problems, for which we apologize.');
         $(container).find(".pictureDictionaryPage").each(function () {
             $(this).qtipSecondary({
                 content: "<div id='experimentNotice'><img src='/bloom/images/experiment.png'/>" + experimental + "<div/>",

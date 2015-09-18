@@ -282,7 +282,7 @@
 			this._makeASuggestionMenuItem.Image = global::Bloom.Properties.Resources.uservoice16x161;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._makeASuggestionMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._makeASuggestionMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._makeASuggestionMenuItem, "HelpMenu._makeASuggestionMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._makeASuggestionMenuItem, "HelpMenu.MakeASuggestionMenuItem");
 			this._makeASuggestionMenuItem.Name = "_makeASuggestionMenuItem";
 			this._makeASuggestionMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._makeASuggestionMenuItem.Text = "Make a Suggestion";
@@ -292,7 +292,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._webSiteMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._webSiteMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._webSiteMenuItem, "HelpMenu._webSiteMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._webSiteMenuItem, "HelpMenu.WebSiteMenuItem");
 			this._webSiteMenuItem.Name = "_webSiteMenuItem";
 			this._webSiteMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._webSiteMenuItem.Text = "Web Site";

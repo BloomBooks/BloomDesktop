@@ -1074,7 +1074,7 @@
         <seg>opcional</seg>
       </tuv>
     </tu>
-    <tu tuid="ConfiguringBookMessage">
+    <tu tuid="CollectionTab.ConfiguringBookMessage">
       <tuv xml:lang="en">
         <seg>Building...</seg>
       </tuv>
@@ -2528,7 +2528,7 @@
         <seg>Este libro utiliza el paquete de materia frontal/posterior nombrado '{0}', pero Bloom no pudo encontrarlo en esta computadora. Puede instalar un BloomPack que le dará '{0}', o ir a Configuración: Haciendo Libros y cambiar a otro paquete de materia frontal/posterior.</seg>
       </tuv>
     </tu>
-    <tu tuid="ExperimentalNotice">
+    <tu tuid="EditTab.ExperimentalNotice">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This page is an experimental prototype which may have many problems, for which we apologize.</seg>
@@ -2561,7 +2561,7 @@
         <seg>Utilizando plantillas de libros</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._makeASuggestionMenuItem">
+    <tu tuid="HelpMenu.MakeASuggestionMenuItem">
       <tuv xml:lang="en">
         <seg>Make a Suggestion</seg>
       </tuv>
@@ -2569,7 +2569,7 @@
         <seg>Hacer una sugerencia</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._webSiteMenuItem">
+    <tu tuid="HelpMenu.WebSiteMenuItem">
       <tuv xml:lang="en">
         <seg>Web Site</seg>
       </tuv>

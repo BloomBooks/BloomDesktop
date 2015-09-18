@@ -9,7 +9,7 @@ interface qtipInterface extends JQuery {
 
 class bloomNotices {
     public static addExperimentalNotice(container: HTMLElement): void {
-        var experimental = localizationManager.getText('ExperimentalNotice',
+        var experimental = localizationManager.getText('EditTab.ExperimentalNotice',
             'This page is an experimental prototype which may have many problems, for which we apologize.');
         $(container).find(".pictureDictionaryPage").each(function () {
             (<qtipInterface>$(this)).qtipSecondary({
