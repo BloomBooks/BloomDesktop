@@ -1,3 +1,10 @@
+bloom-desktop-beta (3.3.401) stable; urgency=medium
+
+  * Backport fix for redundant image filenames.
+  * Fix problem with hanging while loading preview images.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Fri, 18 Sep 2015 10:56:52 -0500
+
 bloom-desktop-beta (3.3.400) stable; urgency=medium
 
   * Update third version number to 400 range to help differentiate beta from
