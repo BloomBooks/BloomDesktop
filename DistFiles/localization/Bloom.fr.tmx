@@ -1524,6 +1524,34 @@
         <seg>Il y avait un problème de téléchargement du livre : quelque chose a pris trop de temps. Vous pouvez réessayer plus tard ou nous écrire à issues@bloomlibrary.org si vous ne pouvez pas le télécharger à partir de votre endroit.</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.AddPageDialog.AddPageButton">
+      <note>This is for the button that LAUNCHES the dialog, not the "Add this page" button that is IN the dialog.</note>
+      <tuv xml:lang="en">
+        <seg>Add Page</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ajouter une page</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.AddThisPageButton">
+      <note>This is for the button inside the dialog</note>
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add This Page</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ajouter cette page</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.AddPageDialog.Title">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Add Page...</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Ajouter des pages...</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.BackMatter.InsideBackCoverTextPrompt">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">

@@ -212,7 +212,7 @@ class PageChooser {
             this.continueCheckBoxChanged();
         });
         var pageButton = $("#addPageButton", document);
-        let okButtonLabelId = 'EditTab.AddPageDialog.AddPageButton';
+        let okButtonLabelId = 'EditTab.AddPageDialog.AddThisPageButton';
         let okButtonLabelText = 'Add This Page';
         if (this._forChoosePage) {
             okButtonLabelId = 'EditTab.AddPageDialog.ChooseLayoutButton';
