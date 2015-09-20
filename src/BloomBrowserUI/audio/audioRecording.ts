@@ -1,26 +1,103 @@
-﻿class audioRecording {
+﻿// This class supports creating audio recordings for talking books.
+// Things currently get started when the user selects the "record audio" item in
+// the right-click menu while editing. This invokes the static function recordAudio
+// in this file, which invokes audioRecording.startRecording. That code breaks the 
+// page's text into sentence-length spans (if not already done), makes sure each
+// has an id (preserving existing ones, and using guids for new ones). Then it
+// displays  a popup 'bubble' with controls for moving between sentences,
+// recording the current sentence, and playing it back. The audio files
+// are placed in a folder called 'audio' in the main book folder. Currently we
+// save both uncompressed .wav files and compressed .mp3 files for each segment.
+// One reason to keep the .wav files is that I don't think FF can play mp3s.
+// Currently the actual recording is done in C#, since I can't get audio
+// recording to work reliably in HTML using Gecko29. In JohnT's fork of Bloom,
+// there is a branch RecordAudioInBrowserSpike in which I attempted to do this.
+// It works sometimes, but often part or all of the recording is silence.
+// Things that still need doing:
+// - Add level meter
+// - Add control to choose recording device
+// - Start  recording on mouse down, stop on mouse up
+// - Change appearance of record button while recording
+// - Modify TeamCity build (make a new channel if we need an installer
+//   with this feature and are not merging yet) to add the naudio.dll
+//   dependency
+// - Do something about the Lame dependency...either bundle it somehow, or
+//   somewhere provide a link for downloading it. We have to pay a fee
+//   (see  http://www.mp3-tech.org/ in the games tab) if we distribute more
+//   5000 copies of a product that does MP3 encoding. Are we doing so if we
+//   just tell people to get the thing that LAME is distributing and use it?
+//   It may be necessary for us to track the number of installs that are
+//   mp3-encoding-capable, and pay the fee if we reach the limit. May also
+//   need legal advice on whether we meet the definition of interactive
+//   educational software. Do we have to get a license even if we aren't
+//   paying because we haven't distributed enough copies?
+// - Hide recording controls until LAME installed, or warn that it is not.
+// Other possible improvements:
+// - Highlight the "most probable" next button (i.e., record, then play, then next)
+// - Space key as alternative to record button
+// - Keyboard shortcut for Play and Next?
+// - Automatically move to next page when current one is done
+// - Automatically put initial selection on first unrecorded sentence
+//   (or maybe on the sentence they right-clicked?)
+// - Change appearance of Play button when no recording exists
+// - Make and user cleaner icons for buttons in bubble
+// - Hide source bubble when showing record one
+// - Some more obvious affordance for launching the Record feature
+// - Extract content of bubble HTML into its own file
+// - Figure out how to make TypeScript happy with various types
+//   it doens't know about.
+class audioRecording {
+
+    recording: boolean;
 
     nextSpan() {
         var current: JQuery = $('.ui-audioCurrent');
         var next: JQuery = current.nextAll('.audio-sentence').first();
-        if (next.length === 0) return; // next page??
-        current.removeClass('ui-audioCurrent');
-        next.addClass('ui-audioCurrent');
+        if (next.length === 0) return; // enhance: go to next page??
+        this.setCurrentSpan(current, next);
+    }
+
+    setCurrentSpan(current: JQuery, changeTo: JQuery) {
+        if (current)
+            current.removeClass('ui-audioCurrent');
+        changeTo.addClass('ui-audioCurrent');
+        var id = changeTo.attr("id");
+        var player = $('#player');
+        //  FF can't directly play mp3, try wav
+        player.attr('src','audio/'+ id + '.wav');
     }
 
     prevSpan() {
         var current: JQuery = $('.ui-audioCurrent');
         var prev: JQuery = current.prevAll('.audio-sentence').first();
         if (prev.length === 0) return;
-        current.removeClass('ui-audioCurrent');
-        prev.addClass('ui-audioCurrent');
+        this.setCurrentSpan(current, prev);
     }
+
+    // Todo: For HearThis compatibility, start on mouseDown and end on mouseUp.
+    recordCurrent() {
+        if (this.recording) {
+            this.recording = false;
+            this.fireCSharpEvent("endRecordAudio", "");           
+        } else {
+            this.recording = true;
+            var current: JQuery = $('.ui-audioCurrent');
+            var id = current.attr("id");
+            this.fireCSharpEvent("startRecordAudio", id);
+        }
+    }
+
+    playCurrent() {
+        document.getElementById('player').play();
+    }
+
     startRecording() {
         var editable = <qtipInterface>$('div.bloom-editable').first();
         var thisClass = this;
         // Makes rather blurry icons (have to scale by 3-5x to get useful size);
         // eventually we probably want our own icon files.
         var bubble = $("<div class='ui-audioTitle'>Record eBook audio</div>" +
+            "<audio id='player'></audio>" +
             "<div class=ui-audioBody>" +
                 "<span id='audio-prev' class='ui-icon ui-icon-triangle-1-w' >Prev</span >" +
                 "<span id='audio-record' class='ui-icon ui-icon-bullet icon-red'>Record</span>" +
@@ -78,35 +155,21 @@
                     $('#audio-prev').click(function () {
                         thisClass.prevSpan();
                     });
-                }
+                    $('#audio-record').click(function () {
+                        thisClass.recordCurrent();
+                    });
+                    $('#audio-play').click(function () {
+                        thisClass.playCurrent();
+                    });
+                    // I'm not sure why this has to be done inside show:, but if we do it below
+                    // addSentenceSpans below, something wipes out the src attr on the <audio>
+                    // element, and we can't play the first sound if any.
+                    var firstSentence = editable.find('span.audio-sentence').first();
+                    thisClass.setCurrentSpan($('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
             }
-            //hide: (hideEvents ? hideEventsStr : hideEvents),
-            //events: {
-            //    show: function (event, api) {
-            //        // don't need to do this if there is only one editable area
-            //        var $body: JQuery = $('body');
-            //        if ($body.find("*.bloom-translationGroup").not(".bloom-readOnlyInTranslationMode").length < 2)
-            //            return;
-
-            //        // BL-878: set the tool tips to not be larger than the text area so they don't overlap each other
-            //        var $tip = api.elements.tooltip;
-            //        var $div = $body.find('[aria-describedby="' + $tip.attr('id') + '"]');
-            //        var maxHeight = $div.height();
-            //        if ($tip.height() > maxHeight) {
-
-            //            // make sure to show a minimum size
-            //            if (maxHeight < 70) maxHeight = 70;
-
-            //            $tip.css('max-height', maxHeight);
-            //            $tip.addClass('passive-bubble');
-            //            $tip.attr('data-max-height', maxHeight)
-            //            }
-            //    },
-            //}
+            }
         });
         this.makeSentenceSpans(editable);
-        var firstSentence = editable.find('span.audio-sentence').first();
-        firstSentence.addClass('ui-audioCurrent');
     }
 
 
@@ -436,6 +499,12 @@
     // Clean up stuff audio recording leaves around that should not be saved.
     cleanupAudio() {
         $('span.ui-audioCurrent').removeClass('ui-audioCurrent');
+    }
+
+    fireCSharpEvent(eventName, eventData) {
+
+        var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
+        document.dispatchEvent(event);
     }
 }
 

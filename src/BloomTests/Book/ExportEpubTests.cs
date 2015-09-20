@@ -516,7 +516,7 @@ namespace BloomTests.Book
 					</div>");
 			var book = CreateBook();
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp4"));
-			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp4"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"));
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
@@ -550,10 +550,10 @@ namespace BloomTests.Book
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#a123']", mgr);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#a23']", mgr);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio/a123.mp4']", mgr);
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio/a23.mp4']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio/a23.mp3']", mgr);
 
 			GetZipEntry(zip, "content/audio/a123.mp4");
-			GetZipEntry(zip, "content/audio/a23.mp4");
+			GetZipEntry(zip, "content/audio/a23.mp3");
 		}
 
 		protected void MakeFakeAudio(string path)

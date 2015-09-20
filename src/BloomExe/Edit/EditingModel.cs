@@ -666,6 +666,27 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("setModalStateEvent", SetModalState);
 			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
+			_view.AddMessageEventListener("startRecordAudio", StartRecordAudio);
+			_view.AddMessageEventListener("endRecordAudio", EndRecordAudio);
+		}
+
+		AudioRecording _audioRecording = new AudioRecording();
+		/// <summary>
+		/// Start recording audio for the current segment (whose ID is the argument)
+		/// </summary>
+		/// <param name="segmentId"></param>
+		private void StartRecordAudio(string segmentId)
+		{
+			_audioRecording.Path = Path.Combine(_currentlyDisplayedBook.FolderPath, "audio", segmentId + ".wav");
+			_audioRecording.StartRecording();
+		}
+		/// <summary>
+		/// Stop recording and save the result.
+		/// </summary>
+		/// <param name="dummy"></param>
+		private void EndRecordAudio(string dummy)
+		{
+			_audioRecording.StopRecording();
 		}
 
 		private void RethinkPageAndReloadIt(string obj)

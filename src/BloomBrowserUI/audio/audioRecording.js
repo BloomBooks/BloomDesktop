@@ -1,3 +1,51 @@
+﻿// This class supports creating audio recordings for talking books.
+// Things currently get started when the user selects the "record audio" item in
+// the right-click menu while editing. This invokes the static function recordAudio
+// in this file, which invokes audioRecording.startRecording. That code breaks the
+// page's text into sentence-length spans (if not already done), makes sure each
+// has an id (preserving existing ones, and using guids for new ones). Then it
+// displays  a popup 'bubble' with controls for moving between sentences,
+// recording the current sentence, and playing it back. The audio files
+// are placed in a folder called 'audio' in the main book folder. Currently we
+// save both uncompressed .wav files and compressed .mp3 files for each segment.
+// One reason to keep the .wav files is that I don't think FF can play mp3s.
+// Currently the actual recording is done in C#, since I can't get audio
+// recording to work reliably in HTML using Gecko29. In JohnT's fork of Bloom,
+// there is a branch RecordAudioInBrowserSpike in which I attempted to do this.
+// It works sometimes, but often part or all of the recording is silence.
+// Things that still need doing:
+// - Add level meter
+// - Add control to choose recording device
+// - Start  recording on mouse down, stop on mouse up
+// - Change appearance of record button while recording
+// - Modify TeamCity build (make a new channel if we need an installer
+//   with this feature and are not merging yet) to add the naudio.dll
+//   dependency
+// - Do something about the Lame dependency...either bundle it somehow, or
+//   somewhere provide a link for downloading it. We have to pay a fee
+//   (see  http://www.mp3-tech.org/ in the games tab) if we distribute more
+//   5000 copies of a product that does MP3 encoding. Are we doing so if we
+//   just tell people to get the thing that LAME is distributing and use it?
+//   It may be necessary for us to track the number of installs that are
+//   mp3-encoding-capable, and pay the fee if we reach the limit. May also
+//   need legal advice on whether we meet the definition of interactive
+//   educational software. Do we have to get a license even if we aren't
+//   paying because we haven't distributed enough copies?
+// - Hide recording controls until LAME installed, or warn that it is not.
+// Other possible improvements:
+// - Highlight the "most probable" next button (i.e., record, then play, then next)
+// - Space key as alternative to record button
+// - Keyboard shortcut for Play and Next?
+// - Automatically move to next page when current one is done
+// - Automatically put initial selection on first unrecorded sentence
+//   (or maybe on the sentence they right-clicked?)
+// - Change appearance of Play button when no recording exists
+// - Make and user cleaner icons for buttons in bubble
+// - Hide source bubble when showing record one
+// - Some more obvious affordance for launching the Record feature
+// - Extract content of bubble HTML into its own file
+// - Figure out how to make TypeScript happy with various types
+//   it doens't know about.
 var audioRecording = (function () {
     function audioRecording() {
     }
@@ -5,24 +53,53 @@ var audioRecording = (function () {
         var current = $('.ui-audioCurrent');
         var next = current.nextAll('.audio-sentence').first();
         if (next.length === 0)
-            return; // next page??
-        current.removeClass('ui-audioCurrent');
-        next.addClass('ui-audioCurrent');
+            return;
+        this.setCurrentSpan(current, next);
     };
+
+    audioRecording.prototype.setCurrentSpan = function (current, changeTo) {
+        if (current)
+            current.removeClass('ui-audioCurrent');
+        changeTo.addClass('ui-audioCurrent');
+        var id = changeTo.attr("id");
+        var player = $('#player');
+
+        //  FF can't directly play mp3, try wav
+        player.attr('src', 'audio/' + id + '.wav');
+    };
+
     audioRecording.prototype.prevSpan = function () {
         var current = $('.ui-audioCurrent');
         var prev = current.prevAll('.audio-sentence').first();
         if (prev.length === 0)
             return;
-        current.removeClass('ui-audioCurrent');
-        prev.addClass('ui-audioCurrent');
+        this.setCurrentSpan(current, prev);
     };
+
+    // Todo: For HearThis compatibility, start on mouseDown and end on mouseUp.
+    audioRecording.prototype.recordCurrent = function () {
+        if (this.recording) {
+            this.recording = false;
+            this.fireCSharpEvent("endRecordAudio", "");
+        } else {
+            this.recording = true;
+            var current = $('.ui-audioCurrent');
+            var id = current.attr("id");
+            this.fireCSharpEvent("startRecordAudio", id);
+        }
+    };
+
+    audioRecording.prototype.playCurrent = function () {
+        document.getElementById('player').play();
+    };
+
     audioRecording.prototype.startRecording = function () {
         var editable = $('div.bloom-editable').first();
         var thisClass = this;
+
         // Makes rather blurry icons (have to scale by 3-5x to get useful size);
         // eventually we probably want our own icon files.
-        var bubble = $("<div class='ui-audioTitle'>Record eBook audio</div>" + "<div class=ui-audioBody>" + "<span id='audio-prev' class='ui-icon ui-icon-triangle-1-w' >Prev</span >" + "<span id='audio-record' class='ui-icon ui-icon-bullet icon-red'>Record</span>" + "<span id='audio-play' class='ui-icon ui-icon-play'>Play</span>" + "<span id='audio-next' class='ui-icon ui-icon-triangle-1-e'>N</span>" + "</div><div class='ui-audioFooter'>" + "<span id='audio-close' class='ui-icon ui-icon-close'>N</span>" + "</div>");
+        var bubble = $("<div class='ui-audioTitle'>Record eBook audio</div>" + "<audio id='player'></audio>" + "<div class=ui-audioBody>" + "<span id='audio-prev' class='ui-icon ui-icon-triangle-1-w' >Prev</span >" + "<span id='audio-record' class='ui-icon ui-icon-bullet icon-red'>Record</span>" + "<span id='audio-play' class='ui-icon ui-icon-play'>Play</span>" + "<span id='audio-next' class='ui-icon ui-icon-triangle-1-e'>N</span>" + "</div><div class='ui-audioFooter'>" + "<span id='audio-close' class='ui-icon ui-icon-close'>N</span>" + "</div>");
         bubble.css('z-index', 15003);
         editable.qtip({
             id: 'audio',
@@ -45,7 +122,7 @@ var audioRecording = (function () {
                     $('#qtip-audio').qtip('api').destroy();
                     var current = $('.ui-audioCurrent');
                     current.removeClass('ui-audioCurrent');
-                } // prevents it coming back on mouseenter Todo: remove highlights
+                }
             },
             style: {
                 tip: {
@@ -71,13 +148,24 @@ var audioRecording = (function () {
                     $('#audio-prev').click(function () {
                         thisClass.prevSpan();
                     });
+                    $('#audio-record').click(function () {
+                        thisClass.recordCurrent();
+                    });
+                    $('#audio-play').click(function () {
+                        thisClass.playCurrent();
+                    });
+
+                    // I'm not sure why this has to be done inside show:, but if we do it below
+                    // addSentenceSpans below, something wipes out the src attr on the <audio>
+                    // element, and we can't play the first sound if any.
+                    var firstSentence = editable.find('span.audio-sentence').first();
+                    thisClass.setCurrentSpan($('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
                 }
             }
         });
         this.makeSentenceSpans(editable);
-        var firstSentence = editable.find('span.audio-sentence').first();
-        firstSentence.addClass('ui-audioCurrent');
     };
+
     // from http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
     audioRecording.prototype.createUuid = function () {
         // http://www.ietf.org/rfc/rfc4122.txt
@@ -89,16 +177,20 @@ var audioRecording = (function () {
         s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
         s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
         s[8] = s[13] = s[18] = s[23] = "-";
+
         var uuid = s.join("");
         return uuid;
     };
+
     audioRecording.prototype.md5 = function (message) {
         var HEX_CHARS = '0123456789abcdef'.split('');
         var EXTRA = [128, 32768, 8388608, -2147483648];
         var blocks = [];
+
         var h0, h1, h2, h3, a, b, c, d, bc, da, code, first = true, end = false, index = 0, i, start = 0, bytes = 0, length = message.length;
         blocks[16] = 0;
         var SHIFT = [0, 8, 16, 24];
+
         do {
             blocks[0] = blocks[16];
             blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
@@ -106,17 +198,14 @@ var audioRecording = (function () {
                 code = message.charCodeAt(index);
                 if (code < 0x80) {
                     blocks[i >> 2] |= code << SHIFT[i++ & 3];
-                }
-                else if (code < 0x800) {
+                } else if (code < 0x800) {
                     blocks[i >> 2] |= (0xc0 | (code >> 6)) << SHIFT[i++ & 3];
                     blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-                }
-                else if (code < 0xd800 || code >= 0xe000) {
+                } else if (code < 0xd800 || code >= 0xe000) {
                     blocks[i >> 2] |= (0xe0 | (code >> 12)) << SHIFT[i++ & 3];
                     blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
                     blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-                }
-                else {
+                } else {
                     code = 0x10000 + (((code & 0x3ff) << 10) | (message.charCodeAt(++index) & 0x3ff));
                     blocks[i >> 2] |= (0xf0 | (code >> 18)) << SHIFT[i++ & 3];
                     blocks[i >> 2] |= (0x80 | ((code >> 12) & 0x3f)) << SHIFT[i++ & 3];
@@ -134,6 +223,7 @@ var audioRecording = (function () {
                 blocks[14] = bytes << 3;
                 end = true;
             }
+
             if (first) {
                 a = blocks[0] - 680876937;
                 a = (a << 7 | a >>> 25) - 271733879 << 0;
@@ -143,8 +233,7 @@ var audioRecording = (function () {
                 c = (c << 17 | c >>> 15) + d << 0;
                 b = (a ^ (c & (d ^ a))) + blocks[3] - 1316259209;
                 b = (b << 22 | b >>> 10) + c << 0;
-            }
-            else {
+            } else {
                 a = h0;
                 b = h1;
                 c = h2;
@@ -158,6 +247,7 @@ var audioRecording = (function () {
                 b += (a ^ (c & (d ^ a))) + blocks[3] - 1044525330;
                 b = (b << 22 | b >>> 10) + c << 0;
             }
+
             a += (d ^ (b & (c ^ d))) + blocks[4] - 176418897;
             a = (a << 7 | a >>> 25) + b << 0;
             d += (c ^ (a & (b ^ c))) + blocks[5] + 1200080426;
@@ -286,20 +376,21 @@ var audioRecording = (function () {
             c = (c << 15 | c >>> 17) + d << 0;
             b += (d ^ (c | ~a)) + blocks[9] - 343485551;
             b = (b << 21 | b >>> 11) + c << 0;
+
             if (first) {
                 h0 = a + 1732584193 << 0;
                 h1 = b - 271733879 << 0;
                 h2 = c - 1732584194 << 0;
                 h3 = d + 271733878 << 0;
                 first = false;
-            }
-            else {
+            } else {
                 h0 = h0 + a << 0;
                 h1 = h1 + b << 0;
                 h2 = h2 + c << 0;
                 h3 = h3 + d << 0;
             }
-        } while (!end);
+        } while(!end);
+
         var hex = HEX_CHARS[(h0 >> 4) & 0x0F] + HEX_CHARS[h0 & 0x0F];
         hex += HEX_CHARS[(h0 >> 12) & 0x0F] + HEX_CHARS[(h0 >> 8) & 0x0F];
         hex += HEX_CHARS[(h0 >> 20) & 0x0F] + HEX_CHARS[(h0 >> 16) & 0x0F];
@@ -318,6 +409,7 @@ var audioRecording = (function () {
         hex += HEX_CHARS[(h3 >> 28) & 0x0F] + HEX_CHARS[(h3 >> 24) & 0x0F];
         return hex;
     };
+
     audioRecording.prototype.makeSentenceSpans = function (div) {
         var markedSentences = div.find("span.audio-sentence");
         var reuse = [];
@@ -325,7 +417,9 @@ var audioRecording = (function () {
             reuse.push({ id: $(this).attr('id'), md5: $(this).attr('recordingmd5') });
             $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
         });
+
         var fragments = libsynphony.stringToSentences(div.html());
+
         for (var i = 0; i < fragments.length; i++) {
             var fragment = fragments[i];
             if (this.isRecordable(fragment)) {
@@ -342,11 +436,11 @@ var audioRecording = (function () {
         var newHtml = "";
         for (var i = 0; i < fragments.length; i++) {
             var fragment = fragments[i];
+
             if (!this.isRecordable(fragment)) {
                 // this is inter-sentence space (or white space before first sentence).
                 newHtml += fragment.text;
-            }
-            else {
+            } else {
                 var newId = null;
                 var newMd5 = '';
                 var reuseThis = fragment.match;
@@ -363,24 +457,35 @@ var audioRecording = (function () {
                 newHtml += '<span id= "' + newId + '" class="audio-sentence"' + newMd5 + '>' + fragment.text + '</span>';
             }
         }
+
         // set the html
         div.html(newHtml);
     };
+
     audioRecording.prototype.isRecordable = function (fragment) {
         if (fragment.isSpace)
-            return false; // this seems to be reliable
+            return false;
+
         // initial white-space fragments may currently be marked sentence
         var test = fragment.text.replace(/<br *[^>]*\/?>/g, " ");
         return !test.match(/^\s*$/);
     };
+
     // Clean up stuff audio recording leaves around that should not be saved.
     audioRecording.prototype.cleanupAudio = function () {
         $('span.ui-audioCurrent').removeClass('ui-audioCurrent');
     };
+
+    audioRecording.prototype.fireCSharpEvent = function (eventName, eventData) {
+        var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
+        document.dispatchEvent(event);
+    };
     return audioRecording;
 })();
+
 var audioRecorder;
 var libsynphony;
+
 // Get our instance created
 if (typeof ($) === "function") {
     // Running for real, and jquery properly loaded first
@@ -389,11 +494,13 @@ if (typeof ($) === "function") {
         libsynphony = new libSynphony();
     });
 }
+
 // Function called to start things going.
 // Called by 'calledByCSharp.recordAudio
 function recordAudio() {
     audioRecorder.startRecording();
 }
+
 function cleanupAudio() {
     audioRecorder.cleanupAudio();
 }

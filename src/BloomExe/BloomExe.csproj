@@ -96,6 +96,12 @@
       <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NAudio">
+      <HintPath>..\..\lib\dotnet\NAudio.dll</HintPath>
+    </Reference>
+    <Reference Include="Palaso.Media">
+      <HintPath>..\..\lib\dotnet\Palaso.Media.dll</HintPath>
+    </Reference>
     <Reference Include="PdfDroplet">
       <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
     </Reference>
@@ -226,6 +232,7 @@
     <Compile Include="Collection\ScriptSettingsDialog.Designer.cs">
       <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\AudioRecording.cs" />
     <Compile Include="Edit\ConfirmRemovePageDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -244,6 +251,7 @@
     <Compile Include="Edit\JpegWarningDialog.Designer.cs">
       <DependentUpon>JpegWarningDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\LameEncoder.cs" />
     <Compile Include="Edit\WebThumbNailList.cs">
       <SubType>UserControl</SubType>
     </Compile>
