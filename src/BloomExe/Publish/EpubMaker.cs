@@ -359,7 +359,7 @@ namespace Bloom.Publish
 		/// <summary>
 		/// Create an audio overlay for the page if appropriate.
 		/// We are looking for the page to contain spans with IDs. For each such ID X,
-		/// we look for a file _storage.FolderPath/audio/X.mp4.
+		/// we look for a file _storage.FolderPath/audio/X.mp{3,4}.
 		/// If we find at least one such file, we create pageDocName_overlay.smil
 		/// with appropriate contents to tell the reader how to read all such spans
 		/// aloud.
@@ -372,7 +372,8 @@ namespace Bloom.Publish
 			// todo: test case where an mp4 is missing.
 			var spansWithAudio =
 				spansWithIds.Where(
-					x => File.Exists(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(x.Attributes["id"].Value, "mp4"))));
+					x => File.Exists(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(x.Attributes["id"].Value, "mp3")))
+					|| File.Exists(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(x.Attributes["id"].Value, "mp4"))));
 			if (!spansWithAudio.Any())
 				return; // todo: test this case
 			var overlayName = GetOverlayName(pageDocName);
@@ -395,14 +396,17 @@ namespace Bloom.Publish
 			int index = 1;
 			foreach (var span in spansWithAudio)
 			{
+				var extension = "mp3";
+				if (!File.Exists(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(span.Attributes["id"].Value, "mp3"))))
+					extension = "mp4";
 				var spanId = span.Attributes["id"].Value;
 				seq.Add(new XElement(smil+"par",
 					new XAttribute("id", "s" + index++),
 					new XElement(smil + "text",
 						new XAttribute("src", pageDocName + "#" + spanId)),
 						new XElement(smil + "audio",
-							new XAttribute("src", "audio/" + spanId + ".mp4"))));
-				CopyFileToEpub(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(spanId, "mp4")));
+							new XAttribute("src", "audio/" + spanId + "." + extension))));
+				CopyFileToEpub(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(spanId, extension)));
 			}
 			var overlayPath = Path.Combine(_contentFolder, overlayName);
 			using (var writer = XmlWriter.Create(overlayPath))
@@ -939,7 +943,8 @@ namespace Bloom.Publish
 					return "application/smil+xml";
 				case "mp4":
 					return "audio/mp4";
-
+				case "mp3":
+					return "audio/mpeg";
 			}
 			throw new ApplicationException("unexpected file type in file " + item);
 		}
