@@ -763,6 +763,9 @@ namespace Bloom.Edit
 			{
 				if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
 					return;
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2776.
+				if (IsSameFile(imageElement, imageInfo))
+					return;
 				_model.ChangePicture(imageElement, imageInfo, new NullProgress());
 			}
 			catch (System.IO.IOException error)
@@ -777,6 +780,29 @@ namespace Bloom.Edit
 			{
 				ErrorReport.NotifyUserOfProblem(error, exceptionMsg);
 			}
+		}
+
+		/// <summary>
+		/// Check whether the new image file is the same as the one we already have chosen.
+		/// </summary>
+		/// <remarks>
+		/// If the user goes out of his way to choose the exact same picture file from the
+		/// original location again, a copy will still be created with a slightly revised
+		/// name.  This could be detected by comparing the basename, the file size, the
+		/// creation date, and then the actual bytes in the file, but that's fairly expensive
+		/// for a relatively uncommon occurrence.  We could perhaps use a tool to remove
+		/// unused picture files from a book's folder.
+		/// </remarks>
+		private bool IsSameFile(GeckoHtmlElement imageElement, PalasoImage imageInfo)
+		{
+			var src = imageElement.GetAttribute("src");
+			if (!String.IsNullOrEmpty(src))
+			{
+				var path = Path.Combine(_model.CurrentBook.FolderPath, src.Replace("%20", " "));
+				if (path == imageInfo.OriginalFilePath)
+					return true;
+			}
+			return false;
 		}
 
 		private bool ShouldBailOutBecauseUserAgreedNotToUseJpeg(PalasoImage imageInfo)
