@@ -465,7 +465,7 @@ namespace Bloom.web
 #if DEBUG
 					throw;
 #else				//just quietly report this
-					DesktopAnalytics.Analytics.ReportException(e, Program.GetProgramProperties());
+					DesktopAnalytics.Analytics.ReportException(e);
 #endif
 				}
 			}
