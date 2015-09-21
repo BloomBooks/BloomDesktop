@@ -50,21 +50,12 @@ STARTLAYOUTS
 	  {
 		 "LetterLandscape":{
 			"Styles":[
-			   "Default",
-			   "SideBySide",
-			   "SplitAcrossPages"
-			]
-		 }
-	  },
-	  {
-		 "HalfLetterPortrait":{
-			"Styles":[
 			   "Default"
 			]
 		 }
 	  },
 	  {
-		 "QuarterLetterPortrait":{
+		 "HalfLetterPortrait":{
 			"Styles":[
 			   "Default"
 			]
@@ -160,11 +151,8 @@ generic*/
   height: 100%;
   width: 100%;
   /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
-
   /*[disabled]position:relative;*/
-
   /*So instead, we're settling for starting the text part of the way down*/
-
   display: block !important;
   position: relative;
   left: 0;
@@ -275,11 +263,8 @@ generic*/
 .imageInMiddle.layout-style-SplitAcrossPages .bloom-translationGroup {
   width: 100%;
   /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
-
   /*[disabled]position:relative;*/
-
   /*So instead, we're settling for starting the text part of the way down*/
-
   display: block !important;
   position: relative;
   left: 0;
@@ -348,11 +333,8 @@ generic*/
   width: 100%;
   height: 100%;
   /*Note, this is supposed to respond to bloom-centerVertically, but it doesn't. The jscript for CenterVerticallyInParent() always things the block is as big as the marginbox, so it doesn't center it*/
-
   /*[disabled]position:relative;*/
-
   /*So instead, we're settling for starting the text part of the way down*/
-
   display: block !important;
   position: relative;
   left: 0;
