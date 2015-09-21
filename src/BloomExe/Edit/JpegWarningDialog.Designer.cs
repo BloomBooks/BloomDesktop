@@ -124,7 +124,7 @@
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
-			this._L10NSharpExtender.SetLocalizingId(this, "JpegWarningDialog.WindowTitle");
+			this._L10NSharpExtender.SetLocalizingId(this, "EditTab.JpegWarningDialog.WindowTitle");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "JpegWarningDialog";

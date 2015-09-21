@@ -132,7 +132,7 @@ namespace Bloom.Collection
 			this._removeLanguage3Link.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._removeLanguage3Link, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._removeLanguage3Link, null);
-			this._L10NSharpExtender.SetLocalizingId(this._removeLanguage3Link, "CollectionSettingsDialog.LanguageTab._removeLanguageLink");
+			this._L10NSharpExtender.SetLocalizingId(this._removeLanguage3Link, "CollectionSettingsDialog.LanguageTab.RemoveLanguageLink");
 			this._removeLanguage3Link.Location = new System.Drawing.Point(159, 243);
 			this._removeLanguage3Link.Name = "_removeLanguage3Link";
 			this._removeLanguage3Link.Size = new System.Drawing.Size(58, 19);
@@ -257,7 +257,7 @@ namespace Bloom.Collection
 			this._language1Label.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._language1Label, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._language1Label, null);
-			this._L10NSharpExtender.SetLocalizingId(this._language1Label, "CollectionSettingsDialog.LanguageTab._language1Label");
+			this._L10NSharpExtender.SetLocalizingId(this._language1Label, "CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel");
 			this._language1Label.Location = new System.Drawing.Point(26, 24);
 			this._language1Label.Name = "_language1Label";
 			this._language1Label.Size = new System.Drawing.Size(140, 19);
@@ -636,7 +636,7 @@ namespace Bloom.Collection
 			this._L10NSharpExtender.SetLocalizableToolTip(this._showSendReceive, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._showSendReceive, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._showSendReceive, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive");
+			this._L10NSharpExtender.SetLocalizingId(this._showSendReceive, "CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive");
 			this._showSendReceive.Location = new System.Drawing.Point(50, 78);
 			this._showSendReceive.Name = "_showSendReceive";
 			this._showSendReceive.Size = new System.Drawing.Size(291, 23);
@@ -683,7 +683,7 @@ namespace Bloom.Collection
 			this._restartReminder.ForeColor = System.Drawing.Color.Firebrick;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._restartReminder, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._restartReminder, null);
-			this._L10NSharpExtender.SetLocalizingId(this._restartReminder, "CollectionSettingsDialog._restartMessage");
+			this._L10NSharpExtender.SetLocalizingId(this._restartReminder, "CollectionSettingsDialog.RestartMessage");
 			this._restartReminder.Location = new System.Drawing.Point(273, 348);
 			this._restartReminder.MaximumSize = new System.Drawing.Size(380, 0);
 			this._restartReminder.Name = "_restartReminder";
