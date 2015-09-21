@@ -116,8 +116,13 @@ namespace Bloom
 				// so the user is not asked to register each independently.
 				RegistrationSettingsProvider.SetProductName("Bloom");
 #if DEBUG
-				using (new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), true))
+				Dictionary<string, string> propertiesThatGoWithEveryEvent = ErrorReport.GetStandardProperties();
+				propertiesThatGoWithEveryEvent.Remove("MachineName");
+				propertiesThatGoWithEveryEvent.Remove("UserName");
+				propertiesThatGoWithEveryEvent.Remove("UserDomainName");
+				propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
 
+				using (new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), propertiesThatGoWithEveryEvent, true))
 #else
 				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
@@ -125,7 +130,7 @@ namespace Bloom
 				var allowTracking = string.IsNullOrEmpty(feedbackSetting) || feedbackSetting.ToLowerInvariant() == "yes"
 					|| feedbackSetting.ToLowerInvariant() == "true";
 
-				using (new DesktopAnalytics.Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), allowTracking))
+				using (new DesktopAnalytics.Analytics("c8ndqrrl7f0twbf2s6cv", RegistrationDialog.GetAnalyticsUserInfo(), propertiesThatGoWithEveryEvent, allowTracking))
 
 #endif
 
@@ -835,7 +840,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			Palaso.Reporting.ErrorReport.AddStandardProperties();
 			Palaso.Reporting.ExceptionHandler.Init();
 
-			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception, Program.GetProgramProperties()));
+			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
 		}
 
 
@@ -1010,24 +1015,6 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 		public static BloomFileLocator OptimizedFileLocator
 		{
 			get { return _projectContext.OptimizedFileLocator; }
-		}
-
-		/// <summary>
-		/// Get the standard program properties for analytics crash reporting.
-		/// </summary>
-		public static Dictionary<string, string> GetProgramProperties()
-		{
-			var props = ErrorReport.GetStandardProperties();
-			// Sanitize user and specific machine information.  These aren't really needed
-			// for debugging analysis.
-			// (username can probably be derived from the CommandLine and CurrentDirectory,
-			// but why make it blatant to snoopers?)
-			props.Remove("MachineName");
-			props.Remove("UserName");
-			props.Remove("UserDomainName");
-			// Bloom specific information.
-			props.Add("Channel", ApplicationUpdateSupport.ChannelName);
-			return props;
 		}
 	}
 }
