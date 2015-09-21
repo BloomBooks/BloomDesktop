@@ -277,7 +277,7 @@ namespace Bloom.CollectionTab
 			if (!_model.ShowSourceCollections)
 			{
 				_sourceBooksFlow.Visible = false;
-				string lockNotice = L10NSharp.LocalizationManager.GetString("CollectionTab.bookSourcesLockNotice",
+				string lockNotice = LocalizationManager.GetString("CollectionTab.BookSourcesLockNotice",
 																			   "This collection is locked, so new books cannot be added/removed.");
 
 				var lockNoticeLabel = new Label()
@@ -299,9 +299,9 @@ namespace Bloom.CollectionTab
 			_sourceBooksFlow.Controls.Clear();
 			var bookSourcesHeader = new ListHeader() { ForeColor = Palette.TextAgainstDarkBackground, Width = 450 };
 
-			string shellSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.sourcesForNewShellsHeading",
+			string shellSourceHeading = LocalizationManager.GetString("CollectionTab.SourcesForNewShellsHeading",
 																				"Sources For New Shells");
-			string bookSourceHeading = L10NSharp.LocalizationManager.GetString("CollectionTab.bookSourceHeading",
+			string bookSourceHeading = LocalizationManager.GetString("CollectionTab.BookSourceHeading",
 																			   "Sources For New Books");
 			bookSourcesHeader.Label.Text = _model.IsShellProject ? shellSourceHeading : bookSourceHeading;
 			// Don't truncate the heading: see https://jira.sil.org/browse/BL-250.
@@ -452,7 +452,7 @@ namespace Bloom.CollectionTab
 				var bloomLibrayLink = new LinkLabel()
 				{
 					Text =
-						L10NSharp.LocalizationManager.GetString("CollectionTab.bloomLibraryLinkLabel",
+						LocalizationManager.GetString("CollectionTab.BloomLibraryLinkLabel",
 																"Get more source books at BloomLibrary.org",
 																"Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library"),
 					Width = 400,
@@ -687,7 +687,7 @@ namespace Bloom.CollectionTab
 
 			if (!IsUsableBook(thisBtn))
 			{
-				MessageBox.Show(LocalizationManager.GetString("CollectionTab.hiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."));
+				MessageBox.Show(LocalizationManager.GetString("CollectionTab.HiddenBookExplanationForSourceCollections", "Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell."));
 				return;
 			}
 			var bookInfo = GetBookInfoFromButton(thisBtn);

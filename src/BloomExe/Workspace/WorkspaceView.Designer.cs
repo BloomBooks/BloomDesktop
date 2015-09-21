@@ -189,7 +189,7 @@
 			this._documentationMenuItem.Image = global::Bloom.Properties.Resources.help24x24;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._documentationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._documentationMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._documentationMenuItem, "HelpMenu.documentationMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._documentationMenuItem, "HelpMenu.DocumentationMenuItem");
 			this._documentationMenuItem.Name = "_documentationMenuItem";
 			this._documentationMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._documentationMenuItem.Text = "Help. Lots of help!";
@@ -215,7 +215,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._releaseNotesMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._releaseNotesMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._releaseNotesMenuItem, "HelpMenu.releaseNotesMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._releaseNotesMenuItem, "HelpMenu.ReleaseNotesMenuItem");
 			this._releaseNotesMenuItem.Name = "_releaseNotesMenuItem";
 			this._releaseNotesMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._releaseNotesMenuItem.Text = "Release Notes...";
@@ -227,7 +227,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._keyBloomConceptsMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._keyBloomConceptsMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._keyBloomConceptsMenuItem, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._keyBloomConceptsMenuItem, "HelpMenu.keyBloomConceptsToolStripMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._keyBloomConceptsMenuItem, "HelpMenu.KeyBloomConceptsToolStripMenuItem");
 			this._keyBloomConceptsMenuItem.Name = "_keyBloomConceptsMenuItem";
 			this._keyBloomConceptsMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._keyBloomConceptsMenuItem.Text = "Key Bloom Concepts";
@@ -271,7 +271,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._reportAProblemMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._reportAProblemMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._reportAProblemMenuItem, "HelpMenu.reportAProblemToolStripMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._reportAProblemMenuItem, "HelpMenu.ReportAProblemToolStripMenuItem");
 			this._reportAProblemMenuItem.Name = "_reportAProblemMenuItem";
 			this._reportAProblemMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._reportAProblemMenuItem.Text = "Report a Problem...";
@@ -308,7 +308,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this._showLogMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._showLogMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._showLogMenuItem, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this._showLogMenuItem, "HelpMenu.showEventLogMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._showLogMenuItem, "HelpMenu.ShowEventLogMenuItem");
 			this._showLogMenuItem.Name = "_showLogMenuItem";
 			this._showLogMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._showLogMenuItem.Text = "Show Event Log";
@@ -323,7 +323,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._checkForNewVersionMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._checkForNewVersionMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._checkForNewVersionMenuItem, "HelpMenu.checkForNewVersionToolStripMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._checkForNewVersionMenuItem, "HelpMenu.CheckForNewVersionMenuItem");
 			this._checkForNewVersionMenuItem.Name = "_checkForNewVersionMenuItem";
 			this._checkForNewVersionMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._checkForNewVersionMenuItem.Text = "Check For New Version";
@@ -333,7 +333,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._registrationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._registrationMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._registrationMenuItem, "HelpMenu.registrationMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._registrationMenuItem, "HelpMenu.RegistrationMenuItem");
 			this._registrationMenuItem.Name = "_registrationMenuItem";
 			this._registrationMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._registrationMenuItem.Text = "Registration";
@@ -343,7 +343,7 @@
 			// 
 			this._L10NSharpExtender.SetLocalizableToolTip(this._aboutBloomMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._aboutBloomMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._aboutBloomMenuItem, "HelpMenu.creditsMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._aboutBloomMenuItem, "HelpMenu.CreditsMenuItem");
 			this._aboutBloomMenuItem.Name = "_aboutBloomMenuItem";
 			this._aboutBloomMenuItem.Size = new System.Drawing.Size(215, 22);
 			this._aboutBloomMenuItem.Text = "About Bloom";

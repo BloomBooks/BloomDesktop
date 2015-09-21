@@ -149,6 +149,7 @@
 			this._borderLabel.Name = "_borderLabel";
 			this._borderLabel.Size = new System.Drawing.Size(249, 22);
 			this._borderLabel.TabIndex = 7;
+			this._borderLabel.Visible = false;
 			// 
 			// _showPasswordCheckBox
 			// 
@@ -157,7 +158,7 @@
 			this._showPasswordCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._showPasswordCheckBox, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._showPasswordCheckBox, null);
-			this._L10NSharpExtender.SetLocalizingId(this._showPasswordCheckBox, "LoginDialog.showPassword");
+			this._L10NSharpExtender.SetLocalizingId(this._showPasswordCheckBox, "LoginDialog.ShowPassword");
 			this._showPasswordCheckBox.Location = new System.Drawing.Point(20, 105);
 			this._showPasswordCheckBox.Name = "_showPasswordCheckBox";
 			this._showPasswordCheckBox.Size = new System.Drawing.Size(102, 17);

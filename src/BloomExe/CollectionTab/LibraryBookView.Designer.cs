@@ -72,7 +72,7 @@
 			this._editBookButton.Image = global::Bloom.Properties.Resources.edit;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._editBookButton, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._editBookButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._editBookButton, "CollectionTab._editBookButton");
+			this._L10NSharpExtender.SetLocalizingId(this._editBookButton, "CollectionTab.EditBookButton");
 			this._editBookButton.Location = new System.Drawing.Point(12, 6);
 			this._editBookButton.Name = "_editBookButton";
 			this._editBookButton.Size = new System.Drawing.Size(170, 42);
