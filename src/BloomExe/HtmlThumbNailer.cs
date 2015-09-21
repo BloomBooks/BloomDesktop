@@ -253,7 +253,7 @@ namespace Bloom
 				//Debug.Fail("Reproduction of BL-524: Crash making thumbnail?");
 				//otherwise, don't tell the user, just log and send exception if they're online
 				Logger.WriteEvent("***Error making thumbnail, possible bl-524 reproduction, swallowed. "+ e.Message);
-				Analytics.ReportException(e, Program.GetProgramProperties());
+				Analytics.ReportException(e);
 				return new Size(0,0); // this tells the caller we failed
 			}
 

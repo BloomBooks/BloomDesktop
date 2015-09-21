@@ -163,7 +163,6 @@ namespace Bloom.CollectionTab
 
 		private void OnExportToXmlForInDesign(object sender, EventArgs e)
 		{
-
 			using(var d = new InDesignXmlInformationDialog())
 			{
 				d.ShowDialog();
@@ -183,7 +182,7 @@ namespace Bloom.CollectionTab
 					catch (Exception error)
 					{
 						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book to XML");
-						Analytics.ReportException(error, Program.GetProgramProperties());
+						Analytics.ReportException(error);
 					}
 				}
 			}
@@ -1103,12 +1102,12 @@ namespace Bloom.CollectionTab
 			catch (IOException error)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error.Message, "Could not export the book");
-				Analytics.ReportException(error, Program.GetProgramProperties());
+				Analytics.ReportException(error);
 			}
 			catch (Exception error)
 			{
 				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
-				Analytics.ReportException(error, Program.GetProgramProperties());
+				Analytics.ReportException(error);
 			}
 		}
 
