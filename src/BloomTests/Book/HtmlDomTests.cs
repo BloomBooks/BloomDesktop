@@ -6,6 +6,7 @@ using System.Xml;
 using NUnit.Framework;
 using Bloom.Book;
 using Palaso.TestUtilities;
+using Palaso.Xml;
 
 namespace BloomTests.Book
 {
@@ -156,6 +157,55 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[9][@href='../settingsCollectionStyles.css']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[10][@href='../customCollectionStyles.css']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[11][@href='customBookStyles.css']", 1);
+		}
+
+
+		[Test]
+		public void MergeClassesIntoNewPage_BothEmtpy()
+		{
+			AssertHasClases("", MergeClasses("","", new[] { "dropMe" }));
+		}
+		[Test]
+		public void MergeClassesIntoNewPage_TargetEmpty()
+		{
+			AssertHasClases("one two", MergeClasses("one two", "", new[] {"dropMe"}));
+		}
+		[Test]
+		public void MergeClassesIntoNewPage_SourceEmpty()
+		{
+			AssertHasClases("one two", MergeClasses("", "one two", new[] { "dropMe" }));
+		}
+		[Test]
+		public void MergeClassesIntoNewPage_SourceAllDroppable()
+		{
+			AssertHasClases("one two", MergeClasses("dropMe dropMe dropMe ", "one two", new[] { "dropMe" }));
+		}
+		[Test]
+		public void MergeClassesIntoNewPage_MergesAndDropsItemsInDropList()
+		{
+			AssertHasClases("one two three", MergeClasses("one drop two delete", "three", new[] { "drop","delete" }));
+		}
+
+		private void AssertHasClases(string expectedString, string actualString)
+		{
+			var expected = expectedString.Split(new[] { ' ' });
+			var actual = actualString.Split(new[] {' '});
+			Assert.AreEqual(expected.Length, actual.Length);
+			foreach (var e in expected)
+			{
+				Assert.IsTrue(actual.Contains(e));
+			}
+		}
+
+		private string MergeClasses(string sourceClasses, string targetClasses, string[] classesToDrop)
+		{
+			var sourceDom = new XmlDocument();
+			sourceDom.LoadXml(string.Format("<div class='{0}'/>", sourceClasses));
+			var targetDom = new XmlDocument();
+			targetDom.LoadXml(string.Format("<div class='{0}'/>", targetClasses));
+			var targetNode = (XmlElement)targetDom.SelectSingleNode("div");
+			HtmlDom.MergeClassesIntoNewPage((XmlElement)sourceDom.SelectSingleNode("div"), targetNode, classesToDrop);
+			return targetNode.GetStringAttribute("class");
 		}
 	}
 }

@@ -763,12 +763,16 @@ namespace Bloom.Book
 			GuidAndPath updateTo;
 			if (!PageMigrations.TryGetValue(originalTemplateGuid, out updateTo))
 				return; // Not one we want to migrate. Possibly already done, or one we don't want to convert, or created in the field...
+			var layoutOfThisBook = GetLayout();
 			var rootFolder = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections/Templates");
 			var bookPath = Path.Combine(rootFolder, updateTo.Path);
 			var templateDoc = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
 			var newChild = (XmlElement)templateDoc.SafeSelectNodes("//div[@id='" + updateTo.Guid + "']")[0];
 			var newPage = (XmlElement)page.OwnerDocument.ImportNode(newChild, true);
 			page.ParentNode.ReplaceChild(newPage, page);
+			var classesToDrop = new[] { "imageWholePage","imageOnTop","imageInMiddle","imageOnBottom","textWholePage","pictureAndWordPage" };
+            HtmlDom.MergeClassesIntoNewPage(page, newPage, classesToDrop);
+			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPage, layoutOfThisBook);
 			newPage.SetAttribute("id", page.Attributes["id"].Value);
 			newPage.SetAttribute("data-pagelineage", lineage.Replace(originalTemplateGuid, updateTo.Guid));
 			// migrate text

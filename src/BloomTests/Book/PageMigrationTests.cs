@@ -253,6 +253,80 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("html/head/style[@type='text/css' and @title='userModifiedStyles' and text()='.BigWords-style { font-size: 45pt !important; text-align: center !important; }']");
 		}
 
+		//regression: BL-2782
+		[Test]
+		public void BringPageUpToDateWithMigration_WasA4Landscape_StaysA4Landscape()
+		{
+			SetDom(@"<div class='bloom-page A4Landscape' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398385' id='thePage'>
+			   <div class='marginBox'>
+					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+				</div>
+			</div>
+			");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			book.BringPageUpToDate(page);
+
+			var updatedPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			Assert.IsTrue(updatedPage.OuterXml.Contains("A4Landscape"), "the old page was in A4Landscape, so the migrated page should be, too.");
+			Assert.IsFalse(updatedPage.OuterXml.Contains("A5Portrait"), "the old page was in A4Landscape, so the migrated page should not have some other size/orientation.");
+		}
+
+		[Test]
+		public void BringPageUpToDateWithMigration_PageHasClassWeDidNotThinkAbout_ClassIsRetained()
+		{
+			SetDom(@"<div class='bloom-page A4Landscape foobar' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398385' id='thePage'>
+			   <div class='marginBox'>
+					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+				</div>
+			</div>
+			");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			book.BringPageUpToDate(page);
+
+			var updatedPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			Assert.IsTrue(updatedPage.OuterXml.Contains("foobar"),"foobar, a class in the old page, should be added to the newly constructed page");
+		}
+
+		[Test]
+		public void BringPageUpToDateWithMigration_ClassInNewTemplatePage_ClassIsRetained()
+		{
+			SetDom(@"<div class='foobar' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398385' id='thePage'>
+			   <div class='marginBox'>
+					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+				</div>
+			</div>
+			");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			book.BringPageUpToDate(page);
+
+			var updatedPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			Assert.IsTrue(updatedPage.OuterXml.Contains("bloom-page"),"we expect that the new template page will have this class, which we've omitted from the old page");
+		}
+
+		[Test]
+		public void BringPageUpToDateWithMigration_OldPageHadBasicBookClassName_ClassIsRemoved()
+		{
+			SetDom(@"<div class='foobar imageOnTop' data-pagelineage='5dcd48df-e9ab-4a07-afd4-6a24d0398385' id='thePage'>
+			   <div class='marginBox'>
+					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+				</div>
+			</div>
+			");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			book.BringPageUpToDate(page);
+
+			var updatedPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			Assert.IsFalse(updatedPage.OuterXml.Contains("imageOnTop"), "imageOnTop refers to the old fixed-stylesheet way of showing pages");
+		}
+
 		// Common code for tests of adding needed styles. The main difference between the tests is the state of the stylesheet
 		// (if any) inserted by the modifyHead action.
 		private XmlDocument CreateAndMigrateBigWordsPage(Action<XmlElement> modifyHead)
