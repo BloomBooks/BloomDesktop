@@ -51,7 +51,7 @@ namespace Bloom.ImageProcessing
 		/// If the image has a filename, replaces any file with the same name.
 		/// </summary>
 		/// <returns>The name of the file, now in the book's folder.</returns>
-		public static string ProcessAndSaveImageIntoFolder(PalasoImage imageInfo, string bookFolderPath)
+		public static string ProcessAndSaveImageIntoFolder(PalasoImage imageInfo, string bookFolderPath, bool isSameFile)
 		{
 			LogMemoryUsage();
 			bool isEncodedAsJpeg = false;
@@ -59,7 +59,11 @@ namespace Bloom.ImageProcessing
 			{
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
 				var shouldConvertToJpeg = !isEncodedAsJpeg && ShouldChangeFormatToJpeg(imageInfo.Image);
-				var imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg || shouldConvertToJpeg);
+				string imageFileName;
+				if (isSameFile)
+					imageFileName = imageInfo.FileName;
+				else
+					imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg || shouldConvertToJpeg);
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
 				if (shouldConvertToJpeg)
 				{
