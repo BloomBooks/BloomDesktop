@@ -115,13 +115,13 @@ namespace Bloom
 				// Ensures that registration settings for all channels of Bloom are stored in a common place,
 				// so the user is not asked to register each independently.
 				RegistrationSettingsProvider.SetProductName("Bloom");
-#if DEBUG
+
 				Dictionary<string, string> propertiesThatGoWithEveryEvent = ErrorReport.GetStandardProperties();
 				propertiesThatGoWithEveryEvent.Remove("MachineName");
 				propertiesThatGoWithEveryEvent.Remove("UserName");
 				propertiesThatGoWithEveryEvent.Remove("UserDomainName");
 				propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
-
+#if DEBUG
 				using (new DesktopAnalytics.Analytics("sje2fq26wnnk8c2kzflf", RegistrationDialog.GetAnalyticsUserInfo(), propertiesThatGoWithEveryEvent, true))
 #else
 				string feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
