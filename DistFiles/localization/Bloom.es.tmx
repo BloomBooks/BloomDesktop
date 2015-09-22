@@ -2659,7 +2659,7 @@
         <seg>Videos de capacitación</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+    <tu tuid="PublishTab.InDesignDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
         <seg>InDesign XML Information</seg>
@@ -2668,7 +2668,7 @@
         <seg>Información XML de InDesign</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>
@@ -3341,7 +3341,7 @@
         <seg>¿Ha utilizado alguien el "Enviar/Recibir" para compartir una colección con usted?\nUtilice uno de estos botones rojos para copiar su colección a su computadora.\nDespués, utilice Enviar/Recibir para compartir su trabajo con ellos.</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+    <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
       <tuv xml:lang="en">
         <seg>Replace Existing</seg>
       </tuv>
@@ -3349,7 +3349,7 @@
         <seg>Reemplazar los existentes</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.WindowTitle">
+    <tu tuid="PublishTab.OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
       </tuv>
@@ -3365,7 +3365,7 @@
         <seg>Las páginas no pueden ser reordenadas cuando está traduciendo un libro</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatter">
+    <tu tuid="EditTab.PageList.CantMoveXMatter">
       <tuv xml:lang="en">
         <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
       </tuv>
@@ -3373,7 +3373,7 @@
         <seg>No se permite ese cambio. Páginas del material inicial y final deben permanecer donde están</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatterCaption">
+    <tu tuid="EditTab.PageList.CantMoveXMatterCaption">
       <tuv xml:lang="en">
         <seg>Invalid Move</seg>
       </tuv>
@@ -3381,7 +3381,7 @@
         <seg>Movimiento no válido</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.BadPdf">
+    <tu tuid="PublishTab.PdfMaker.BadPdf">
       <tuv xml:lang="en">
         <seg>Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</seg>
       </tuv>
@@ -3389,7 +3389,7 @@
         <seg>Bloom tenía un problema al realizar un PDF de este libro. Tal vez necesite ayuda técnica o si necesita contactar los desarrolladores. Pero aquí hay algunas cosas que puede probar:</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TryMoreMemory">
+    <tu tuid="PublishTab.PdfMaker.TryMoreMemory">
       <tuv xml:lang="en">
         <seg>Try doing this on a computer with more memory</seg>
       </tuv>
@@ -3397,7 +3397,7 @@
         <seg>Trate de hacer esto en una computadora con más memoria</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TryRestart">
+    <tu tuid="PublishTab.PdfMaker.TryRestart">
       <tuv xml:lang="en">
         <seg>Restart your computer and try this again right away</seg>
       </tuv>
@@ -3405,7 +3405,7 @@
         <seg>Reiniciar la computadora e inténtelo de nuevo</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TrySmallerImages">
+    <tu tuid="PublishTab.PdfMaker.TrySmallerImages">
       <tuv xml:lang="en">
         <seg>Replace large, high-resolution images in your document with lower-resolution ones</seg>
       </tuv>
@@ -5526,7 +5526,7 @@
         <seg>Historia tradicional</seg>
       </tuv>
     </tu>
-    <tu tuid="WallCalendar.TitleOfSetupDialog">
+    <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
       <note>This is the dialog used to set up the wall calendar</note>
       <tuv xml:lang="en">
         <seg>Setup</seg>

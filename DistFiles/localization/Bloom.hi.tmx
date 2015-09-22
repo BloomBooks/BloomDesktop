@@ -1834,7 +1834,7 @@
         <seg>प्रशिक्षण मैनुअल</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+    <tu tuid="PublishTab.InDesignDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
         <seg>InDesign XML Information</seg>
@@ -1843,7 +1843,7 @@
         <seg>इन डिज़ाइन  एक्स एम एल  सूचना</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>
@@ -2482,7 +2482,7 @@
         <seg>किसी और के एक संग्रह को आप के साथ साझा करने के लिए भेजें/प्राप्त करें इस्तेमाल किया है?\nये लाल बटन में से एक उनके संग्रह करने के लिए आपके कंप्यूटर की प्रतिलिपि का उपयोग करें।\nबाद में, वापस उन लोगों के साथ अपने काम साझा करने के लिए भेजें/प्राप्त करें का उपयोग करें।</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+    <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
       <tuv xml:lang="en">
         <seg>Replace Existing</seg>
       </tuv>
@@ -2490,7 +2490,7 @@
         <seg>मौजूदा एक की जगह</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.WindowTitle">
+    <tu tuid="PublishTab.OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
       </tuv>
@@ -2498,7 +2498,7 @@
         <seg>नोटिस</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatter">
+    <tu tuid="EditTab.PageList.CantMoveXMatter">
       <tuv xml:lang="en">
         <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
       </tuv>
@@ -2506,7 +2506,7 @@
         <seg>कि बदलाव की अनुमति नहीं है। बात के सामने और पीछे की बात पृष्ठों रहना चाहिए जहाँ वे हैं</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatterCaption">
+    <tu tuid="EditTab.PageList.CantMoveXMatterCaption">
       <tuv xml:lang="en">
         <seg>Invalid Move</seg>
       </tuv>
@@ -4028,7 +4028,7 @@
         <seg>पारंपरिक कहानी</seg>
       </tuv>
     </tu>
-    <tu tuid="WallCalendar.TitleOfSetupDialog">
+    <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
       <note>This is the dialog used to set up the wall calendar</note>
       <tuv xml:lang="en">
         <seg>Setup</seg>

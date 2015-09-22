@@ -1844,7 +1844,7 @@
         <seg>பயிற்சி கையேடு</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+    <tu tuid="PublishTab.InDesignDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
         <seg>InDesign XML Information</seg>
@@ -1853,7 +1853,7 @@
         <seg>இண்டிசைன் XML தகவல்</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>
@@ -2462,7 +2462,7 @@
         <seg>செய்துள்ளது வேறொருவர் பயன்படுத்த அனுப்பு/பெறு ஒரு தொகுப்பை உங்களுடன் பகிர?\nபயன்பாடு இந்த சிவப்பு பொத்தான்கள் அவர்களின் தொகுப்பு உங்கள் கணினியில் நகலெடுக்க ஒன்றை.\nபின்னர், அவர்களுடன் மீண்டும் உங்கள் பணி பகிர அனுப்பு/பெறு பயன்படுத்தவும்.</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+    <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
       <tuv xml:lang="en">
         <seg>Replace Existing</seg>
       </tuv>
@@ -2470,12 +2470,7 @@
         <seg>தற்போதுள்ள மாற்றிடு</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.ReplaceExistingButton_ToolTip_">
-      <tuv xml:lang="ta">
-        <seg>தற்போதுள்ள மாற்றிடு</seg>
-      </tuv>
-    </tu>
-    <tu tuid="OverwriteWarning.WindowTitle">
+    <tu tuid="PublishTab.OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
       </tuv>
@@ -2483,12 +2478,7 @@
         <seg>அறிவிப்பு</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.WindowTitle_ToolTip_">
-      <tuv xml:lang="ta">
-        <seg>அறிவிப்பு</seg>
-      </tuv>
-    </tu>
-    <tu tuid="PageList.CantMoveXMatter">
+    <tu tuid="EditTab.PageList.CantMoveXMatter">
       <tuv xml:lang="en">
         <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
       </tuv>
@@ -2496,7 +2486,7 @@
         <seg>அந்த மாற்றம் அனுமதிக்கப்படாது. அவை முன்னணியில் விவகாரம் மற்றும் பின் விவகாரத்தை பக்கங்கள் இருங்கள்</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatterCaption">
+    <tu tuid="EditTab.PageList.CantMoveXMatterCaption">
       <tuv xml:lang="en">
         <seg>Invalid Move</seg>
       </tuv>
@@ -4018,7 +4008,7 @@
         <seg>பாரம்பரிய கதை</seg>
       </tuv>
     </tu>
-    <tu tuid="WallCalendar.TitleOfSetupDialog">
+    <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
       <note>This is the dialog used to set up the wall calendar</note>
       <tuv xml:lang="en">
         <seg>Setup</seg>

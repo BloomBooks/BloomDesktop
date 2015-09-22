@@ -2032,7 +2032,7 @@
         <seg>แสดงบันทึกเหตุการณ์</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+    <tu tuid="PublishTab.InDesignDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
         <seg>InDesign XML Information</seg>
@@ -2041,7 +2041,7 @@
         <seg>InDesign XML ข้อมูล</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>
@@ -2631,7 +2631,7 @@
         <seg>มีคนอื่นที่ใช้ในการส่ง / รับCollectionที่จะแบ่งปันกับคุณ? \n ให้ใช้ปุ่มใดปุ่มหนึ่งสีแดงเหล่านี้เพื่อคัดลอกColletionของพวกเขาไปยังเครื่องคอมพิวเตอร์ของคุณ. \n ต่อมาใช้ส่ง / รับที่จะร่วมกันทำงานของคุณกลับมาพร้อมกับพวกเขา</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+    <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
       <tuv xml:lang="en">
         <seg>Replace Existing</seg>
       </tuv>
@@ -2639,7 +2639,7 @@
         <seg>แทนที่ที่มีอยู่</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.WindowTitle">
+    <tu tuid="PublishTab.OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
       </tuv>
@@ -2647,7 +2647,7 @@
         <seg>แจ้งให้ทราบ</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatter">
+    <tu tuid="EditTab.PageList.CantMoveXMatter">
       <tuv xml:lang="en">
         <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
       </tuv>
@@ -2655,7 +2655,7 @@
         <seg>การเปลี่ยนแปลงที่ไม่ได้รับอนุญาต.เรื่องหน้าและหน้าเรื่องกลับต้องอยู่ที่พวกเขาอยู่</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatterCaption">
+    <tu tuid="EditTab.PageList.CantMoveXMatterCaption">
       <tuv xml:lang="en">
         <seg>Invalid Move</seg>
       </tuv>
@@ -2663,7 +2663,7 @@
         <seg>ย้ายที่ไม่ถูกต้อง</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.BadPdf">
+    <tu tuid="PublishTab.PdfMaker.BadPdf">
       <tuv xml:lang="en">
         <seg>Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</seg>
       </tuv>
@@ -2671,7 +2671,7 @@
         <seg>"Bloom มีปัญหาการทำรูปแบบไฟล์ PDF ของหนังสือเล่มนี้\nคุณอาจต้องการความช่วยเหลือทางเทคนิคหรือการที่จะติดต่อนักพัฒนา แต่ที่นี่มีบางสิ่งที่คุณสามารถลอง:"</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TryMoreMemory">
+    <tu tuid="PublishTab.PdfMaker.TryMoreMemory">
       <tuv xml:lang="en">
         <seg>Try doing this on a computer with more memory</seg>
       </tuv>
@@ -2679,7 +2679,7 @@
         <seg>ลองทำเช่นนี้บนคอมพิวเตอร์ที่มี memory เพิ่มเติม</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TryRestart">
+    <tu tuid="PublishTab.PdfMaker.TryRestart">
       <tuv xml:lang="en">
         <seg>Restart your computer and try this again right away</seg>
       </tuv>
@@ -2687,7 +2687,7 @@
         <seg>เปิดคอมพิวเตอร์ของคุณใหม่และพยายามที่นี้อีกครั้งทันที</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TrySmallerImages">
+    <tu tuid="PublishTab.PdfMaker.TrySmallerImages">
       <tuv xml:lang="en">
         <seg>Replace large, high-resolution images in your document with lower-resolution ones</seg>
       </tuv>
@@ -4214,7 +4214,7 @@
         <seg>เรื่องแบบดั้งเดิม</seg>
       </tuv>
     </tu>
-    <tu tuid="WallCalendar.TitleOfSetupDialog">
+    <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
       <note>This is the dialog used to set up the wall calendar</note>
       <tuv xml:lang="en">
         <seg>Setup</seg>

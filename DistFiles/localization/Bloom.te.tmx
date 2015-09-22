@@ -1834,7 +1834,7 @@
         <seg>శిక్షణ మాన్యువల్</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+    <tu tuid="PublishTab.InDesignDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
         <seg>InDesign XML Information</seg>
@@ -1843,7 +1843,7 @@
         <seg>InDesign XML సమాచారం</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>
@@ -2482,7 +2482,7 @@
         <seg>ఎవరైనా else మీరు ఒక సేకరణ భాగస్వామ్యం పంపు / recieve ఉపయోగించింది?\n మీ కంప్యూటర్లో వారి సేకరణకు కాపీ ఈ ఎరుపు బటన్లు ఒకటి ఉపయోగించండి.\n తరువాత, వారితో తిరిగి మీ పని భాగస్వామ్యం స్వీకరించండి / పంపండి ఉపయోగించండి.</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+    <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
       <tuv xml:lang="en">
         <seg>Replace Existing</seg>
       </tuv>
@@ -2490,7 +2490,7 @@
         <seg>ఇప్పటికే భర్తీ</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.WindowTitle">
+    <tu tuid="PublishTab.OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
       </tuv>
@@ -2498,7 +2498,7 @@
         <seg>నోటీసు</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatter">
+    <tu tuid="EditTab.PageList.CantMoveXMatter">
       <tuv xml:lang="en">
         <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
       </tuv>
@@ -2506,7 +2506,7 @@
         <seg>ఆ మార్పు అనుమతి లేదు. వారు ఎక్కడ ఫ్రంట్ పదార్థం మరియు తిరిగి మేటర్ పేజీలు కొనసాగించాలి.</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatterCaption">
+    <tu tuid="EditTab.PageList.CantMoveXMatterCaption">
       <tuv xml:lang="en">
         <seg>Invalid Move</seg>
       </tuv>
@@ -4027,7 +4027,7 @@
         <seg>సంప్రదాయ కథ</seg>
       </tuv>
     </tu>
-    <tu tuid="WallCalendar.TitleOfSetupDialog">
+    <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
       <note>This is the dialog used to set up the wall calendar</note>
       <tuv xml:lang="en">
         <seg>Setup</seg>
