@@ -1,3 +1,10 @@
+bloom-desktop (3.3.3) stable; urgency=medium
+
+  * Upgrade Version 3.3 for Linux release candidate.
+  * Use new Desktop Analytics
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Tue, 22 Sep 2015 11:53:18 -0500
+
 bloom-desktop-beta (3.3.401) stable; urgency=medium
 
   * Backport fix for redundant image filenames.
