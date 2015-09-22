@@ -5,7 +5,7 @@
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
-    <tu tuid=".addMakeReaderTemplateBloomPackToolStripMenuItem">
+    <tu tuid="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Make Reader Template BloomPack...</seg>
       </tuv>
@@ -13,7 +13,7 @@
         <seg>制作读者模板Bloom群...</seg>
       </tuv>
     </tu>
-    <tu tuid=".advancedToolStripMenuItem">
+    <tu tuid="CollectionTab.AdvancedToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Advanced</seg>
       </tuv>
@@ -82,6 +82,7 @@
       </tuv>
     </tu>
     <tu tuid="Book title in {lang}">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -91,6 +92,7 @@
       </tuv>
     </tu>
     <tu tuid="Click to choose topic">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Click to choose topic</seg>
@@ -132,7 +134,7 @@
         <seg>操作大图像时请使用图像服务器，这样能减少内存用量。</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive">
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
       <tuv xml:lang="en">
         <seg>(Experimental) Show Send/Receive Controls</seg>
       </tuv>
@@ -243,7 +245,7 @@
         <seg>关于这些设备</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
       <tuv xml:lang="en">
         <seg>Vernacular Language</seg>
       </tuv>
@@ -267,7 +269,7 @@
         <seg>语言3（例如：区域语言）（可选）</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
       <tuv xml:lang="en">
         <seg>Remove</seg>
       </tuv>
@@ -333,7 +335,7 @@
         <seg>重新启动</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog._restartMessage">
+    <tu tuid="CollectionSettingsDialog.RestartMessage">
       <tuv xml:lang="en">
         <seg>Bloom will close and re-open this project with the new settings.</seg>
       </tuv>
@@ -349,7 +351,7 @@
         <seg>Bloom将以文字处理程序打开这HTML文件(Word 或是 LibreOffice)。请注意，你可以处理书里的文本或图像，但不一定能保存布局。</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
+    <tu tuid="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
       <tuv xml:lang="en">
         <seg>Update Book</seg>
       </tuv>
@@ -357,7 +359,7 @@
         <seg>更新书</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu._updateThumbnail">
+    <tu tuid="CollectionTab.BookMenu.UpdateThumbnail">
       <tuv xml:lang="en">
         <seg>Update Thumbnail</seg>
       </tuv>
@@ -365,7 +367,7 @@
         <seg>更新缩略图</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.deleteBook">
+    <tu tuid="CollectionTab.BookMenu.DeleteBook">
       <tuv xml:lang="en">
         <seg>Delete Book</seg>
       </tuv>
@@ -373,7 +375,7 @@
         <seg>删除书</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
+    <tu tuid="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
       <tuv xml:lang="en">
         <seg>Export to Word or LibreOffice...</seg>
       </tuv>
@@ -381,7 +383,7 @@
         <seg>导出到Word或LibreOffice...</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
+    <tu tuid="CollectionTab.BookMenu.ExportToXMLForInDesign">
       <tuv xml:lang="en">
         <seg>Export to XML for InDesign...</seg>
       </tuv>
@@ -462,7 +464,7 @@
         <seg>{0}书</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.ContextMenu._openFolderOnDisk">
+    <tu tuid="CollectionTab.ContextMenu.OpenFolderOnDisk">
       <tuv xml:lang="en">
         <seg>Open Folder on Disk</seg>
       </tuv>
@@ -558,7 +560,7 @@
         <seg>Zaza读者模板</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._editBookButton">
+    <tu tuid="CollectionTab.EditBookButton">
       <tuv xml:lang="en">
         <seg>Edit this book</seg>
       </tuv>
@@ -566,7 +568,7 @@
         <seg>编辑这本书</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._makeBloomPackButton">
+    <tu tuid="CollectionTab.MakeBloomPackButton">
       <tuv xml:lang="en">
         <seg>Make Bloom Pack</seg>
       </tuv>
@@ -574,7 +576,7 @@
         <seg>制作Bloom群</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkLabel">
+    <tu tuid="CollectionTab.BloomLibraryLinkLabel">
       <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
       <tuv xml:lang="en">
         <seg>Get more source books at BloomLibrary.org</seg>
@@ -583,7 +585,7 @@
         <seg>BloomLibrary.org里更多的源头书</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
+    <tu tuid="CollectionTab.BloomLibraryLinkVerificationCaption">
       <note>get this clicking on BloomLibrary.org link in source collection</note>
       <tuv xml:lang="en">
         <seg>Source Collection</seg>
@@ -592,7 +594,7 @@
         <seg>源头丛刊</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourceHeading">
+    <tu tuid="CollectionTab.BookSourceHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Books</seg>
       </tuv>
@@ -600,7 +602,7 @@
         <seg>新书源头</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourcesLockNotice">
+    <tu tuid="CollectionTab.BookSourcesLockNotice">
       <tuv xml:lang="en">
         <seg>This collection is locked, so new books cannot be added/removed.</seg>
       </tuv>
@@ -608,7 +610,7 @@
         <seg>这丛刊已锁，不能添加或删除书。</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
+    <tu tuid="CollectionTab.HiddenBookExplanationForSourceCollections">
       <tuv xml:lang="en">
         <seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
       </tuv>
@@ -618,6 +620,7 @@
     </tu>
     <tu tuid="CollectionTab.hiddenBooksNotice">
       <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Where's the rest?</seg>
       </tuv>
@@ -625,7 +628,8 @@
         <seg>其余的在那里？</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+    <tu tuid="CollectionTab.MoreLanguagesMenuItem">
+      <note>Brings up the localization dialog</note>
       <tuv xml:lang="en">
         <seg>More...</seg>
       </tuv>
@@ -633,7 +637,7 @@
         <seg>更多...</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.sourcesForNewShellsHeading">
+    <tu tuid="CollectionTab.SourcesForNewShellsHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Shells</seg>
       </tuv>
@@ -683,7 +687,7 @@
         <seg>可选</seg>
       </tuv>
     </tu>
-    <tu tuid="ConfiguringBookMessage">
+    <tu tuid="CollectionTab.ConfiguringBookMessage">
       <tuv xml:lang="en">
         <seg>Building...</seg>
       </tuv>
@@ -842,6 +846,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -1296,7 +1301,7 @@
         <seg>扉页</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._contentLanguagesDropdown">
+    <tu tuid="EditTab.ContentLanguagesDropdown">
       <tuv xml:lang="en">
         <seg>Multilingual Settings</seg>
       </tuv>
@@ -1304,7 +1309,7 @@
         <seg>多种语言设置</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton">
+    <tu tuid="EditTab.CopyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
       </tuv>
@@ -1312,7 +1317,7 @@
         <seg>副本</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton">
+    <tu tuid="EditTab.CutButton">
       <tuv xml:lang="en">
         <seg>Cut</seg>
       </tuv>
@@ -1320,7 +1325,7 @@
         <seg>剪切</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton">
+    <tu tuid="EditTab.DeletePageButton">
       <tuv xml:lang="en">
         <seg>Remove\n  Page</seg>
       </tuv>
@@ -1328,7 +1333,7 @@
         <seg>删除\n页</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton">
+    <tu tuid="EditTab.DuplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n   Page</seg>
       </tuv>
@@ -1336,7 +1341,7 @@
         <seg>复制\n页</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton">
+    <tu tuid="EditTab.PasteButton">
       <tuv xml:lang="en">
         <seg>Paste</seg>
       </tuv>
@@ -1344,7 +1349,7 @@
         <seg>粘贴</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton">
+    <tu tuid="EditTab.UndoButton">
       <tuv xml:lang="en">
         <seg>Undo</seg>
       </tuv>
@@ -1352,7 +1357,7 @@
         <seg>撤消</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.bilingual">
+    <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
         <seg>Two Languages</seg>
@@ -1361,7 +1366,7 @@
         <seg>两种语言</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.copyImageIPMetdataQuestion">
+    <tu tuid="EditTab.CopyImageIPMetadataQuestion">
       <note>get this after you edit the metadata of an image</note>
       <tuv xml:lang="en">
         <seg>Copy this information to all other pictures in this book?</seg>
@@ -1370,7 +1375,7 @@
         <seg>请问你要把这信息复制入这本书里所有图片吗？</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+    <tu tuid="EditTab.LayoutInPublishTabOnlyNotice">
       <tuv xml:lang="en">
         <seg>This option is only available in the Publish tab.</seg>
       </tuv>
@@ -1378,7 +1383,7 @@
         <seg>这选项只能在出版标签里用。</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.monolingual">
+    <tu tuid="EditTab.Monolingual">
       <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       <tuv xml:lang="en">
         <seg>One Language</seg>
@@ -1387,7 +1392,7 @@
         <seg>一种语言</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.noOtherLayouts">
+    <tu tuid="EditTab.NoOtherLayouts">
       <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
       <tuv xml:lang="en">
         <seg>There are no other layout options for this template.</seg>
@@ -1396,7 +1401,7 @@
         <seg>这模板没有其他的布局选项。</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
+    <tu tuid="EditTab.TitleOfCopyIPToWholeBooksDialog">
       <tuv xml:lang="en">
         <seg>Picture Intellectual Property Information</seg>
       </tuv>
@@ -1404,7 +1409,7 @@
         <seg>图片知识产权信息</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.trilingual">
+    <tu tuid="EditTab.Trilingual">
       <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
       <tuv xml:lang="en">
         <seg>Three Languages</seg>
@@ -1421,7 +1426,7 @@
         <seg>帮助</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._makeASuggestionMenuItem">
+    <tu tuid="HelpMenu.MakeASuggestionMenuItem">
       <tuv xml:lang="en">
         <seg>Make a Suggestion</seg>
       </tuv>
@@ -1429,7 +1434,7 @@
         <seg>提供意见</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._webSiteMenuItem">
+    <tu tuid="HelpMenu.WebSiteMenuItem">
       <tuv xml:lang="en">
         <seg>Web Site</seg>
       </tuv>
@@ -1437,7 +1442,7 @@
         <seg>网站</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
+    <tu tuid="HelpMenu.CheckForNewVersionMenuItem">
       <tuv xml:lang="en">
         <seg>Check For New Version</seg>
       </tuv>
@@ -1445,7 +1450,7 @@
         <seg>搜索新版本</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.creditsMenuItem">
+    <tu tuid="HelpMenu.CreditsMenuItem">
       <tuv xml:lang="en">
         <seg>About Bloom</seg>
       </tuv>
@@ -1454,7 +1459,7 @@
       </tuv>
     </tu>
 
-    <tu tuid="HelpMenu.documentationMenuItem">
+    <tu tuid="HelpMenu.DocumentationMenuItem">
       <tuv xml:lang="en">
         <seg>Documentation</seg>
       </tuv>
@@ -1462,7 +1467,7 @@
         <seg>文档</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.registrationMenuItem">
+    <tu tuid="HelpMenu.RegistrationMenuItem">
       <tuv xml:lang="en">
         <seg>Registration</seg>
       </tuv>
@@ -1470,7 +1475,7 @@
         <seg>登记</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.releaseNotesMenuItem">
+    <tu tuid="HelpMenu.ReleaseNotesMenuItem">
       <tuv xml:lang="en">
         <seg>Release Notes...</seg>
       </tuv>
@@ -1478,7 +1483,7 @@
         <seg>出版说明...</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.showEventLogMenuItem">
+    <tu tuid="HelpMenu.ShowEventLogMenuItem">
       <tuv xml:lang="en">
         <seg>Show Event Log</seg>
       </tuv>
@@ -1486,7 +1491,7 @@
         <seg>显示事件日志</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+    <tu tuid="PublishTab.InDesignDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
         <seg>InDesign XML Information</seg>
@@ -1495,7 +1500,7 @@
         <seg>InDesign XML 信息</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>
@@ -1757,7 +1762,7 @@
         <seg>标签3</seg>
       </tuv>
     </tu>
-    <tu tuid="LoginDialog.showPassword">
+    <tu tuid="LoginDialog.ShowPassword">
       <tuv xml:lang="en">
         <seg>&amp;Show Password</seg>
       </tuv>
@@ -2016,7 +2021,7 @@
         <seg>有人曾经以“发送/接收”与你分享丛刊吗？\n你可以其中的红按钮把他们的丛刊复制到你计算机上。\n之后，也以“发送/接受”与他们分享你的作品。</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+    <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
       <tuv xml:lang="en">
         <seg>Replace Existing</seg>
       </tuv>
@@ -2024,7 +2029,7 @@
         <seg>取代现有</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.WindowTitle">
+    <tu tuid="PublishTab.OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
       </tuv>
@@ -2032,7 +2037,7 @@
         <seg>通告</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatter">
+    <tu tuid="EditTab.PageList.CantMoveXMatter">
       <tuv xml:lang="en">
         <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
       </tuv>
@@ -2040,7 +2045,7 @@
         <seg>不能更改。前页与后页位子不能移。</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatterCaption">
+    <tu tuid="EditTab.PageList.CantMoveXMatterCaption">
       <tuv xml:lang="en">
         <seg>Invalid Move</seg>
       </tuv>
@@ -2608,7 +2613,7 @@
         <seg>正在上载{0}</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.ccLink">
+    <tu tuid="PublishTab.Upload.CcLink">
       <tuv xml:lang="en">
         <seg>CC-BY-NC</seg>
       </tuv>
@@ -2616,7 +2621,7 @@
         <seg>CC-BY-NC</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.loginLink">
+    <tu tuid="PublishTab.Upload.LoginLink">
       <tuv xml:lang="en">
         <seg>Log in to BloomLibrary.org</seg>
       </tuv>
@@ -2624,7 +2629,7 @@
         <seg>登录BloomLibrary.org</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.signupLink">
+    <tu tuid="PublishTab.Upload.SignupLink">
       <tuv xml:lang="en">
         <seg>Sign up for BloomLibrary.org</seg>
       </tuv>
@@ -3511,7 +3516,7 @@
         <seg>传统故事</seg>
       </tuv>
     </tu>
-    <tu tuid="WallCalendar.TitleOfSetupDialog">
+    <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
       <note>This is the dialog used to set up the wall calendar</note>
       <tuv xml:lang="en">
         <seg>Setup</seg>

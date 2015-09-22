@@ -139,6 +139,7 @@
       </tuv>
     </tu>
     <tu tuid="Book title in {lang}">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -175,6 +176,7 @@
       </tuv>
     </tu>
     <tu tuid="Click to choose topic">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Click to choose topic</seg>
@@ -216,7 +218,7 @@
         <seg>ກະລຸນາໃຊ້ Image Serverປະຕິບັດການຮູບພາບຂະຫນາດໃຫຍ່, ນີ້ສາມາດຫຼຸດຜ່ອນຄວາມຈໍາໄດ້.</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive">
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
       <tuv xml:lang="en">
         <seg>(Experimental) Show Send/Receive Controls</seg>
       </tuv>
@@ -317,7 +319,7 @@
         <seg>ການສ້າງຕັ້ງຂອງ ...</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
       <tuv xml:lang="en">
         <seg>Vernacular Language</seg>
       </tuv>
@@ -341,7 +343,7 @@
         <seg>ພາສາ 3 (ສໍາລັບການຍົກຕົວຢ່າງ, ພາສາຂອງພູມິພາກ) (ຖ້າມີ).</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
       <tuv xml:lang="en">
         <seg>Remove</seg>
       </tuv>
@@ -398,7 +400,7 @@
         <seg>ເປັນການເລີ່ມຕົ້ນໃຫມ່</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog._restartMessage">
+    <tu tuid="CollectionSettingsDialog.RestartMessage">
       <tuv xml:lang="en">
         <seg>Bloom will close and re-open this project with the new settings.</seg>
       </tuv>
@@ -414,7 +416,7 @@
         <seg>Bloom ແມ່ນ HTML ທີ່ເປີດແປນ (Word ຫຼື LibreOffice) ໃນໂຮງງານຜະລິດຄໍາຂອງທ່ານ. ສັງເກດວ່າທ່ານສາມາດຈັດການກັບການທັງຫມົດຂອງຫນັງສືຫຼືຮູບພາບ. ແຕ່ບໍ່ຈໍາເປັນຈະສາມາດເພື່ອຊ່ວຍປະຢັດຮູບແບບ.</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
+    <tu tuid="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
       <tuv xml:lang="en">
         <seg>Update Book</seg>
       </tuv>
@@ -422,7 +424,7 @@
         <seg>ປັບຂໍ້ມູນຫຼ້າສຸດ ປື້ມບັນ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu._updateThumbnail">
+    <tu tuid="CollectionTab.BookMenu.UpdateThumbnail">
       <tuv xml:lang="en">
         <seg>Update Thumbnail</seg>
       </tuv>
@@ -430,7 +432,7 @@
         <seg>ປັບຂໍ້ມູນຫຼ້າສຸດ Thumbnail</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.deleteBook">
+    <tu tuid="CollectionTab.BookMenu.DeleteBook">
       <tuv xml:lang="en">
         <seg>Delete Book</seg>
       </tuv>
@@ -438,7 +440,7 @@
         <seg>ລົບປື້ມບັນ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
+    <tu tuid="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
       <tuv xml:lang="en">
         <seg>Export to Word or LibreOffice...</seg>
       </tuv>
@@ -446,7 +448,7 @@
         <seg>ການສົ່ງອອກໄປ Word ຫຼື LibreOffice ...</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
+    <tu tuid="CollectionTab.BookMenu.ExportToXMLForInDesign">
       <tuv xml:lang="en">
         <seg>Export to XML for InDesign...</seg>
       </tuv>
@@ -527,7 +529,7 @@
         <seg>{0} ປື້ມບັນ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.ContextMenu._openFolderOnDisk">
+    <tu tuid="CollectionTab.ContextMenu.OpenFolderOnDisk">
       <tuv xml:lang="en">
         <seg>Open Folder on Disk</seg>
       </tuv>
@@ -612,7 +614,7 @@
         <seg>ແມ່ແບບ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._editBookButton">
+    <tu tuid="CollectionTab.EditBookButton">
       <tuv xml:lang="en">
         <seg>Edit this book</seg>
       </tuv>
@@ -620,7 +622,7 @@
         <seg>ເພື່ອແກ້ໄຂບັນຫານີ້</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._makeBloomPackButton">
+    <tu tuid="CollectionTab.MakeBloomPackButton">
       <tuv xml:lang="en">
         <seg>Make Bloom Pack</seg>
       </tuv>
@@ -628,7 +630,7 @@
         <seg>ເຮັດ Bloom Pack</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+    <tu tuid="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Make Reader Template Bloom Pack...</seg>
       </tuv>
@@ -636,7 +638,7 @@
         <seg>ເຮັດສັງລວມຕົ້ນແບບ  Bloom Pack …</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.advancedToolStripMenuItem">
+    <tu tuid="CollectionTab.AdvancedToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Advanced</seg>
       </tuv>
@@ -644,7 +646,7 @@
         <seg>ຄວາມຄືບຫນ້າ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkLabel">
+    <tu tuid="CollectionTab.BloomLibraryLinkLabel">
       <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
       <tuv xml:lang="en">
         <seg>Get more source books at BloomLibrary.org</seg>
@@ -653,7 +655,7 @@
         <seg>ໄດ້ຮັບຫນັງສືອື່ນໆ. ທີ່ BloomLibrary.org</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
+    <tu tuid="CollectionTab.BloomLibraryLinkVerificationCaption">
       <note>get this clicking on BloomLibrary.org link in source collection</note>
       <tuv xml:lang="en">
         <seg>Source Collection</seg>
@@ -662,7 +664,7 @@
         <seg>Source Collection</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourceHeading">
+    <tu tuid="CollectionTab.BookSourceHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Books</seg>
       </tuv>
@@ -670,7 +672,7 @@
         <seg>ແຫຼ່ງສໍາລັບການປື້ມບັນໃຫມ່</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourcesLockNotice">
+    <tu tuid="CollectionTab.BookSourcesLockNotice">
       <tuv xml:lang="en">
         <seg>This collection is locked, so new books cannot be added/removed.</seg>
       </tuv>
@@ -678,7 +680,7 @@
         <seg>ການເກັບກໍານີ້ແມ່ນມີຊາຍແດນຕິດ, ທ່ານບໍ່ສາມາດເພີ່ມຫຼືເອົາຫນັງສື.</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
+    <tu tuid="CollectionTab.HiddenBookExplanationForSourceCollections">
       <tuv xml:lang="en">
         <seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
       </tuv>
@@ -688,6 +690,7 @@
     </tu>
     <tu tuid="CollectionTab.hiddenBooksNotice">
       <note>Shown at the bottom of the list of books. User can click on it and get some explanation of why some books are hidden</note>
+      <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>Where's the rest?</seg>
       </tuv>
@@ -695,7 +698,8 @@
         <seg>ສ່ວນທີ່ເຫຼືອແມ່ນຢູ່ໃນ?</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+    <tu tuid="CollectionTab.MoreLanguagesMenuItem">
+      <note>Brings up the localization dialog</note>
       <tuv xml:lang="en">
         <seg>More...</seg>
       </tuv>
@@ -703,7 +707,7 @@
         <seg>ອື່ນ ໆ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.openCreateCollectionToolStripMenuItem">
+    <tu tuid="CollectionTab.OpenCreateCollectionMenuItem">
       <tuv xml:lang="en">
         <seg>Open or Create Another Collection</seg>
       </tuv>
@@ -711,7 +715,7 @@
         <seg>ເປີດຫລື ສ້າງCollection ອີກປະການຫນຶ່ງ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.sourcesForNewShellsHeading">
+    <tu tuid="CollectionTab.SourcesForNewShellsHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Shells</seg>
       </tuv>
@@ -805,7 +809,7 @@
         <seg>ທີ່ບໍ່ຈໍາເປັນ</seg>
       </tuv>
     </tu>
-    <tu tuid="ConfiguringBookMessage">
+    <tu tuid="CollectionTab.ConfiguringBookMessage">
       <tuv xml:lang="en">
         <seg>Building...</seg>
       </tuv>
@@ -1262,6 +1266,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -1806,7 +1811,7 @@
         <seg>ຫົວຫນ້າ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._contentLanguagesDropdown">
+    <tu tuid="EditTab.ContentLanguagesDropdown">
       <tuv xml:lang="en">
         <seg>Multilingual Settings</seg>
       </tuv>
@@ -1814,7 +1819,7 @@
         <seg>ການຕັ້ງຄ່າພາສາ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton">
+    <tu tuid="EditTab.CopyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
       </tuv>
@@ -1822,7 +1827,7 @@
         <seg>ກ່າຍ  </seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton">
+    <tu tuid="EditTab.CutButton">
       <tuv xml:lang="en">
         <seg>Cut</seg>
       </tuv>
@@ -1830,7 +1835,7 @@
         <seg>ຕັດ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton">
+    <tu tuid="EditTab.DeletePageButton">
       <tuv xml:lang="en">
         <seg>Remove\n  Page</seg>
       </tuv>
@@ -1838,7 +1843,7 @@
         <seg>ດຶງອອກຈາກ\n ຫນ້າ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton">
+    <tu tuid="EditTab.DuplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n   Page</seg>
       </tuv>
@@ -1846,7 +1851,7 @@
         <seg>ກົດ\n ຫນ້າ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton">
+    <tu tuid="EditTab.PasteButton">
       <tuv xml:lang="en">
         <seg>Paste</seg>
       </tuv>
@@ -1854,7 +1859,7 @@
         <seg>ວາງ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton">
+    <tu tuid="EditTab.UndoButton">
       <tuv xml:lang="en">
         <seg>Undo</seg>
       </tuv>
@@ -1862,7 +1867,7 @@
         <seg>ການແກ້ໄຂ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.bilingual">
+    <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
         <seg>Two Languages</seg>
@@ -1871,7 +1876,7 @@
         <seg>ສອງພາສາ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.copyImageIPMetdataQuestion">
+    <tu tuid="EditTab.CopyImageIPMetadataQuestion">
       <note>get this after you edit the metadata of an image</note>
       <tuv xml:lang="en">
         <seg>Copy this information to all other pictures in this book?</seg>
@@ -1880,7 +1885,7 @@
         <seg>ກ່າຍຂໍ້ມູນກັບຮູບພາບອື່ນໆທີ່ຢູ່ໃນຫນັງສືເຫຼັ້ມນີ້ໄດ້ຫຼືບໍ່?</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+    <tu tuid="EditTab.LayoutInPublishTabOnlyNotice">
       <tuv xml:lang="en">
         <seg>This option is only available in the Publish tab.</seg>
       </tuv>
@@ -1888,7 +1893,7 @@
         <seg>ຕົວເລືອກນີ້ແມ່ນມີພຽງແຕ່ມີຢູ່ໃນ ເຜີຍແຜ່ tab</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.monolingual">
+    <tu tuid="EditTab.Monolingual">
       <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       <tuv xml:lang="en">
         <seg>One Language</seg>
@@ -1897,7 +1902,7 @@
         <seg>ຫນຶ່ງພາສາ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.noOtherLayouts">
+    <tu tuid="EditTab.NoOtherLayouts">
       <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
       <tuv xml:lang="en">
         <seg>There are no other layout options for this template.</seg>
@@ -1906,7 +1911,7 @@
         <seg>ບໍ່ມີທາງເລືອກອື່ນສໍາລັບແມ່ແບບນີ້.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
+    <tu tuid="EditTab.TitleOfCopyIPToWholeBooksDialog">
       <tuv xml:lang="en">
         <seg>Picture Intellectual Property Information</seg>
       </tuv>
@@ -1914,7 +1919,7 @@
         <seg>ຮູບພາບຂອງຊັບສິນທາງປັນຍາ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.trilingual">
+    <tu tuid="EditTab.Trilingual">
       <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
       <tuv xml:lang="en">
         <seg>Three Languages</seg>
@@ -1947,7 +1952,7 @@
         <seg>ການນໍາໃຊ້ ຜູ້ອ່ານແມ່ແບບ</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._makeASuggestionMenuItem">
+    <tu tuid="HelpMenu.MakeASuggestionMenuItem">
       <tuv xml:lang="en">
         <seg>Make a Suggestion</seg>
       </tuv>
@@ -1955,7 +1960,7 @@
         <seg>ໃຫ້ຄໍາແນະນໍາ</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._webSiteMenuItem">
+    <tu tuid="HelpMenu.WebSiteMenuItem">
       <tuv xml:lang="en">
         <seg>Web Site</seg>
       </tuv>
@@ -1963,7 +1968,7 @@
         <seg>ເວັບໄຊທ໌</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
+    <tu tuid="HelpMenu.CheckForNewVersionMenuItem">
       <tuv xml:lang="en">
         <seg>Check For New Version</seg>
       </tuv>
@@ -1971,7 +1976,7 @@
         <seg>ກວດສອບການອອກສະບັບໃຫມ່</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.creditsMenuItem">
+    <tu tuid="HelpMenu.CreditsMenuItem">
       <tuv xml:lang="en">
         <seg>About Bloom</seg>
       </tuv>
@@ -1979,7 +1984,7 @@
         <seg>ກ່ຽວກັບ Bloom</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.documentationMenuItem">
+    <tu tuid="HelpMenu.DocumentationMenuItem">
       <tuv xml:lang="en">
         <seg>Documentation</seg>
       </tuv>
@@ -1987,7 +1992,7 @@
         <seg>ເອກະສານ</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.keyBloomConceptsToolStripMenuItem">
+    <tu tuid="HelpMenu.KeyBloomConceptsToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Key Bloom Concepts</seg>
       </tuv>
@@ -1995,7 +2000,7 @@
         <seg>ແນວຄວາມຄິດຕົ້ນຕໍຂອງBloom</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.registrationMenuItem">
+    <tu tuid="HelpMenu.RegistrationMenuItem">
       <tuv xml:lang="en">
         <seg>Registration</seg>
       </tuv>
@@ -2003,7 +2008,7 @@
         <seg>ການລົງທະບຽນ</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.releaseNotesMenuItem">
+    <tu tuid="HelpMenu.ReleaseNotesMenuItem">
       <tuv xml:lang="en">
         <seg>Release Notes...</seg>
       </tuv>
@@ -2011,7 +2016,7 @@
         <seg>Release ຫມາຍເຫດ ..</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.reportAProblemToolStripMenuItem">
+    <tu tuid="HelpMenu.ReportAProblemToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Report a Problem...</seg>
       </tuv>
@@ -2019,7 +2024,7 @@
         <seg>ລາຍງານບັນຫາ ...</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.showEventLogMenuItem">
+    <tu tuid="HelpMenu.ShowEventLogMenuItem">
       <tuv xml:lang="en">
         <seg>Show Event Log</seg>
       </tuv>
@@ -2027,7 +2032,7 @@
         <seg>ສະແດງໃຫ້ເຫັນເຫດການເຂົ້າສູ່ລະບົບ</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+    <tu tuid="PublishTab.InDesignDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
         <seg>InDesign XML Information</seg>
@@ -2036,7 +2041,7 @@
         <seg>InDesign XML ຂໍ້ມູນຂ່າວສານ</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>
@@ -2343,7 +2348,7 @@
         <seg>ການເຂົ້າເຖິງ BloomLibrary.org</seg>
       </tuv>
     </tu>
-    <tu tuid="LoginDialog.showPassword">
+    <tu tuid="LoginDialog.ShowPassword">
       <tuv xml:lang="en">
         <seg>&amp;Show Password</seg>
       </tuv>
@@ -2626,7 +2631,7 @@
         <seg>"ໄດ້ຜູ້ອື່ນນໍາໃຊ້ສົ່ງ / ຮັບທີ່ຈະແບ່ງປັນການເກັບກໍາຂອງທ່ານ? \n ການນໍາໃຊ້ຫນຶ່ງຂອງປຸ່ມສີແດງນີ້ເພື່ອສໍາເນົາເອົາການເກັບກໍາຂອງເຂົາເຈົ້າກັບຄອມພິວເຕີຂອງທ່ານ.\n\n ຕໍ່ມາ, ການນໍາໃຊ້ສົ່ງ / ຮັບການແບ່ງປັນວຽກງານຂອງທ່ານກັບຄືນໄປບ່ອນທີ່ມີໃຫ້ເຂົາເຈົ້າ."</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+    <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
       <tuv xml:lang="en">
         <seg>Replace Existing</seg>
       </tuv>
@@ -2634,7 +2639,7 @@
         <seg>ແທນທີ່ທີ່ມີຢູ່</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.WindowTitle">
+    <tu tuid="PublishTab.OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
       </tuv>
@@ -2642,7 +2647,7 @@
         <seg>ແຈ້ງການ</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatter">
+    <tu tuid="EditTab.PageList.CantMoveXMatter">
       <tuv xml:lang="en">
         <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
       </tuv>
@@ -2650,7 +2655,7 @@
         <seg>ການປ່ຽນແປງທີ່ບໍ່ໄດ້ຮັບອະນຸຍາດ. ເລື່ອງຫນ້າແລະຫນ້າເວັບທີ່ວ່າກັບຄືນໄປບ່ອນຕ້ອງຍັງມີບ່ອນທີ່ພວກເຂົາເຈົ້າມີ</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatterCaption">
+    <tu tuid="EditTab.PageList.CantMoveXMatterCaption">
       <tuv xml:lang="en">
         <seg>Invalid Move</seg>
       </tuv>
@@ -2658,7 +2663,7 @@
         <seg>ຍ້າຍທີ່ບໍ່ຖືກຕ້ອງ</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.BadPdf">
+    <tu tuid="PublishTab.PdfMaker.BadPdf">
       <tuv xml:lang="en">
         <seg>Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</seg>
       </tuv>
@@ -2666,7 +2671,7 @@
         <seg>"Bloom ມີບັນຫາເຮັດໃຫ້ PDF ຂອງຫນັງສືນີ້ໄດ້.\nທ່ານອາດຈະຕ້ອງການການຊ່ວຍເຫຼືອດ້ານວິຊາການຫຼືການຕິດຕໍ່ກັບການພັດທະນາ. ແຕ່ໃນທີ່ນີ້ມີບາງສິ່ງບາງຢ່າງທີ່ທ່ານສາມາດພະຍາຍາມ:"</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TryMoreMemory">
+    <tu tuid="PublishTab.PdfMaker.TryMoreMemory">
       <tuv xml:lang="en">
         <seg>Try doing this on a computer with more memory</seg>
       </tuv>
@@ -2674,7 +2679,7 @@
         <seg>ພະຍາຍາມດໍາເນີນການນີ້ກ່ຽວກັບຄອມພິວເຕີທີ່ memory ຫຼາຍ</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TryRestart">
+    <tu tuid="PublishTab.PdfMaker.TryRestart">
       <tuv xml:lang="en">
         <seg>Restart your computer and try this again right away</seg>
       </tuv>
@@ -2682,7 +2687,7 @@
         <seg>ເປີດຄອມພິວເຕີຂອງທ່ານໃຫມ່ແລະພະຍາຍາມອີກເທື່ອຫນຶ່ງໃນທັນທີ</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TrySmallerImages">
+    <tu tuid="PublishTab.PdfMaker.TrySmallerImages">
       <tuv xml:lang="en">
         <seg>Replace large, high-resolution images in your document with lower-resolution ones</seg>
       </tuv>
@@ -3250,7 +3255,7 @@
         <seg>ການອັບໂຫລດ {0}</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.ccLink">
+    <tu tuid="PublishTab.Upload.CcLink">
       <tuv xml:lang="en">
         <seg>CC-BY-NC</seg>
       </tuv>
@@ -3258,7 +3263,7 @@
         <seg>CC-BY-NC</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.loginLink">
+    <tu tuid="PublishTab.Upload.LoginLink">
       <tuv xml:lang="en">
         <seg>Log in to BloomLibrary.org</seg>
       </tuv>
@@ -3266,7 +3271,7 @@
         <seg>ເຂົ້າສູ່ລະບົບ BloomLibrary.org</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.signupLink">
+    <tu tuid="PublishTab.Upload.SignupLink">
       <tuv xml:lang="en">
         <seg>Sign up for BloomLibrary.org</seg>
       </tuv>
@@ -4209,7 +4214,7 @@
         <seg>ເລື່ອງປະເພນີ</seg>
       </tuv>
     </tu>
-    <tu tuid="WallCalendar.TitleOfSetupDialog">
+    <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
       <note>This is the dialog used to set up the wall calendar</note>
       <tuv xml:lang="en">
         <seg>Setup</seg>

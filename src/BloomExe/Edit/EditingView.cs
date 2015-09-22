@@ -533,7 +533,7 @@ namespace Bloom.Edit
 						editor.UpdateMetdataAttributesOnImgElement(imageElement, imageInfo);
 						SaveChangedImage(imageElement, imageInfo, "Bloom had a problem updating the image metadata");
 
-						var answer = MessageBox.Show(LocalizationManager.GetString("EditTab.copyImageIPMetdataQuestion","Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"), LocalizationManager.GetString("EditTab.titleOfCopyIPToWholeBooksDialog","Picture Intellectual Property Information"),  MessageBoxButtons.YesNo, MessageBoxIcon.Question,MessageBoxDefaultButton.Button2);
+						var answer = MessageBox.Show(LocalizationManager.GetString("EditTab.CopyImageIPMetadataQuestion","Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"), LocalizationManager.GetString("EditTab.TitleOfCopyIPToWholeBooksDialog","Picture Intellectual Property Information"),  MessageBoxButtons.YesNo, MessageBoxIcon.Question,MessageBoxDefaultButton.Button2);
 						if (answer == DialogResult.Yes)
 						{
 							Cursor = Cursors.WaitCursor;
@@ -826,6 +826,11 @@ namespace Bloom.Edit
 				_updatingDisplay = true;
 
 				_contentLanguagesDropdown.DropDownItems.Clear();
+				// L10NSharp doesn't do this automatically
+				_contentLanguagesDropdown.ToolTipText = LocalizationManager.GetString("EditTab.ContentLanguagesDropdown.ToolTip",
+					//_contentLanguagesDropdown.ToolTipText); doesn't work because the scanner needs literals
+					"Choose language to make this a bilingual or trilingual book");
+
 				foreach (var l in _model.ContentLanguages)
 				{
 					ToolStripMenuItem item = (ToolStripMenuItem) _contentLanguagesDropdown.DropDownItems.Add(l.ToString());
@@ -848,7 +853,7 @@ namespace Bloom.Edit
 					if (l.ElementDistribution == Book.Layout.ElementDistributionChoices.SplitAcrossPages)
 					{
 						item.Enabled = false;
-						item.ToolTipText = LocalizationManager.GetString("EditTab.layoutInPublishTabOnlyNotice","This option is only available in the Publish tab.");
+						item.ToolTipText = LocalizationManager.GetString("EditTab.LayoutInPublishTabOnlyNotice","This option is only available in the Publish tab.");
 					}
 					item.Text = text;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
@@ -856,7 +861,7 @@ namespace Bloom.Edit
 
 				if (layoutChoices.Count() < 2)
 				{
-					ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(LocalizationManager.GetString("EditTab.noOtherLayouts","There are no other layout options for this template.","Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice"));
+					ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(LocalizationManager.GetString("EditTab.NoOtherLayouts","There are no other layout options for this template.","Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice"));
 					item.Tag = null;
 					item.Enabled = false;
 				}
@@ -866,13 +871,13 @@ namespace Bloom.Edit
 				switch (_model.NumberOfDisplayedLanguages)
 				{
 					case 1:
-						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.monolingual", "One Language", "Shown in edit tab multilingualism chooser, for monolingual mode, one language per page");
+						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.Monolingual", "One Language", "Shown in edit tab multilingualism chooser, for monolingual mode, one language per page");
 						break;
 					case 2:
-						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.bilingual", "Two Languages", "Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page");
+						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.Bilingual", "Two Languages", "Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page");
 						break;
 					case 3:
-						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.trilingual", "Three Languages", "Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page");
+						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.Trilingual", "Three Languages", "Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page");
 						break;
 				}
 

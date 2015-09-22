@@ -92,7 +92,7 @@
             this._L10NSharpExtender.SetLocalizableToolTip(this._makeBloomPackButton, null);
             this._L10NSharpExtender.SetLocalizationComment(this._makeBloomPackButton, null);
             this._L10NSharpExtender.SetLocalizationPriority(this._makeBloomPackButton, L10NSharp.LocalizationPriority.Medium);
-            this._L10NSharpExtender.SetLocalizingId(this._makeBloomPackButton, "CollectionTab._makeBloomPackButton");
+            this._L10NSharpExtender.SetLocalizingId(this._makeBloomPackButton, "CollectionTab.MakeBloomPackButton");
             this._makeBloomPackButton.Name = "_makeBloomPackButton";
             this._makeBloomPackButton.Size = new System.Drawing.Size(106, 43);
             this._makeBloomPackButton.Text = "Make Bloom Pack";

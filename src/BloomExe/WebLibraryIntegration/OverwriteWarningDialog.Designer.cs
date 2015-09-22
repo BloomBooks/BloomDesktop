@@ -54,7 +54,7 @@
             this._replaceExistingButton.DialogResult = System.Windows.Forms.DialogResult.OK;
             this._L10NSharpExtender.SetLocalizableToolTip(this._replaceExistingButton, null);
             this._L10NSharpExtender.SetLocalizationComment(this._replaceExistingButton, null);
-            this._L10NSharpExtender.SetLocalizingId(this._replaceExistingButton, "OverwriteWarning.ReplaceExistingButton");
+            this._L10NSharpExtender.SetLocalizingId(this._replaceExistingButton, "PublishTab.OverwriteWarning.ReplaceExistingButton");
             this._replaceExistingButton.Location = new System.Drawing.Point(32, 127);
             this._replaceExistingButton.Name = "_replaceExistingButton";
             this._replaceExistingButton.Size = new System.Drawing.Size(126, 23);
@@ -79,7 +79,7 @@
             // _L10NSharpExtender
             // 
             this._L10NSharpExtender.LocalizationManagerId = "Bloom";
-            this._L10NSharpExtender.PrefixForNewItems = "OverwriteWarning";
+			this._L10NSharpExtender.PrefixForNewItems = "PublishTab.OverwriteWarning";
             // 
             // OverwriteWarningDialog
             // 
@@ -95,7 +95,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this._L10NSharpExtender.SetLocalizableToolTip(this, null);
             this._L10NSharpExtender.SetLocalizationComment(this, null);
-            this._L10NSharpExtender.SetLocalizingId(this, "OverwriteWarning.WindowTitle");
+			this._L10NSharpExtender.SetLocalizingId(this, "PublishTab.OverwriteWarning.WindowTitle");
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "OverwriteWarningDialog";
