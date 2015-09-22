@@ -7,14 +7,14 @@
 export MONO_PREFIX = /opt/mono-sil
 export BUILD = Release
 
-PACKAGE = bloom-desktop-beta
+PACKAGE = bloom-desktop
 DESTDIR = debian/$(PACKAGE)
 LIB     = usr/lib/$(PACKAGE)
 SHARE   = usr/share/$(PACKAGE)
 
 # NOTE: make the third (and fourth?) number match changelog if you are
 # building the package manually.
-FULL_BUILD_NUMBER ?= 0.0.401.0
+FULL_BUILD_NUMBER ?= 0.0.3.0
 
 %:
 	dh $@ --with=cli --parallel
