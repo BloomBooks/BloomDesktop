@@ -260,7 +260,7 @@ namespace Bloom.Publish
 			this._loginLink.Dock = System.Windows.Forms.DockStyle.Right;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._loginLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._loginLink, null);
-			this._L10NSharpExtender.SetLocalizingId(this._loginLink, "PublishTab.Upload.loginLink");
+			this._L10NSharpExtender.SetLocalizingId(this._loginLink, "PublishTab.Upload.LoginLink");
 			this._loginLink.Location = new System.Drawing.Point(475, 0);
 			this._loginLink.Name = "_loginLink";
 			this._loginLink.Size = new System.Drawing.Size(129, 13);
@@ -319,7 +319,7 @@ namespace Bloom.Publish
 			this._signUpLink.Dock = System.Windows.Forms.DockStyle.Right;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._signUpLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._signUpLink, null);
-			this._L10NSharpExtender.SetLocalizingId(this._signUpLink, "PublishTab.Upload.signupLink");
+			this._L10NSharpExtender.SetLocalizingId(this._signUpLink, "PublishTab.Upload.SignupLink");
 			this._signUpLink.Location = new System.Drawing.Point(465, 0);
 			this._signUpLink.Name = "_signUpLink";
 			this._signUpLink.Size = new System.Drawing.Size(139, 13);
@@ -362,7 +362,7 @@ namespace Bloom.Publish
 			this._creativeCommonsLink.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._creativeCommonsLink, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._creativeCommonsLink, null);
-			this._L10NSharpExtender.SetLocalizingId(this._creativeCommonsLink, "PublishTab.Upload.ccLink");
+			this._L10NSharpExtender.SetLocalizingId(this._creativeCommonsLink, "PublishTab.Upload.CcLink");
 			this._creativeCommonsLink.Location = new System.Drawing.Point(128, 0);
 			this._creativeCommonsLink.Name = "_creativeCommonsLink";
 			this._creativeCommonsLink.Size = new System.Drawing.Size(56, 13);

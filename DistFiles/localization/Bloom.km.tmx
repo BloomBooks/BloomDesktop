@@ -33,6 +33,7 @@
       </tuv>
     </tu>
     <tu tuid="Book title in {lang}">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -117,7 +118,7 @@
         <seg>ភាសា</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
       <tuv xml:lang="en">
         <seg>Vernacular Language</seg>
       </tuv>
@@ -125,7 +126,7 @@
         <seg>ភាសាត្រាប់</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
       <tuv xml:lang="en">
         <seg>Remove</seg>
       </tuv>
@@ -266,7 +267,7 @@
         <seg>ឯកសារគំរូ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._editBookButton">
+    <tu tuid="CollectionTab.EditBookButton">
       <tuv xml:lang="en">
         <seg>Edit this book</seg>
       </tuv>
@@ -274,7 +275,7 @@
         <seg>កែសៀវភៅនេះ</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+    <tu tuid="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Make Reader Template Bloom Pack...</seg>
       </tuv>
@@ -282,7 +283,7 @@
         <seg>ធ្វើកញ្ចប់ Bloom ឯកសារគំរូសម្រាប់អ្នកអាន…</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
+    <tu tuid="CollectionTab.BloomLibraryLinkVerificationCaption">
       <note>get this clicking on BloomLibrary.org link in source collection</note>
       <tuv xml:lang="en">
         <seg>Source Collection</seg>
@@ -291,7 +292,7 @@
         <seg>បណ្តុំប្រភព</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourceHeading">
+    <tu tuid="CollectionTab.BookSourceHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Books</seg>
       </tuv>
@@ -299,7 +300,8 @@
         <seg>ប្រភពនានាសម្រាប់សៀវភៅថ្មី</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+    <tu tuid="CollectionTab.MoreLanguagesMenuItem">
+      <note>Brings up the localization dialog</note>
       <tuv xml:lang="en">
         <seg>More...</seg>
       </tuv>
@@ -519,6 +521,7 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -714,7 +717,7 @@
         <seg>ទំព័រចំណងជើង</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton">
+    <tu tuid="EditTab.CopyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
       </tuv>
@@ -722,7 +725,7 @@
         <seg>ចម្លង</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton">
+    <tu tuid="EditTab.CutButton">
       <tuv xml:lang="en">
         <seg>Cut</seg>
       </tuv>
@@ -730,7 +733,7 @@
         <seg>កាត់</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton">
+    <tu tuid="EditTab.DeletePageButton">
       <tuv xml:lang="en">
         <seg>Remove\n  Page</seg>
       </tuv>
@@ -738,7 +741,7 @@
         <seg>ដកចេញទំព័រ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton">
+    <tu tuid="EditTab.DuplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n   Page</seg>
       </tuv>
@@ -746,7 +749,7 @@
         <seg>ទំព័រជាន់គ្នា</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton">
+    <tu tuid="EditTab.PasteButton">
       <tuv xml:lang="en">
         <seg>Paste</seg>
       </tuv>
@@ -754,7 +757,7 @@
         <seg>បិត</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton">
+    <tu tuid="EditTab.UndoButton">
       <tuv xml:lang="en">
         <seg>Undo</seg>
       </tuv>
@@ -762,7 +765,7 @@
         <seg>បកក្រោយ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.bilingual">
+    <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
         <seg>Two Languages</seg>
@@ -771,7 +774,7 @@
         <seg>ពីរភាសា</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.monolingual">
+    <tu tuid="EditTab.Monolingual">
       <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       <tuv xml:lang="en">
         <seg>One Language</seg>
@@ -780,7 +783,7 @@
         <seg>ភាសាមួយ</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.trilingual">
+    <tu tuid="EditTab.Trilingual">
       <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
       <tuv xml:lang="en">
         <seg>Three Languages</seg>
@@ -813,7 +816,7 @@
         <seg>ការប្រើឯកសារគំរូសម្រាប់អ្នកអាន</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
+    <tu tuid="HelpMenu.CheckForNewVersionMenuItem">
       <tuv xml:lang="en">
         <seg>Check For New Version</seg>
       </tuv>
@@ -821,7 +824,7 @@
         <seg>ពិនិត្យរកមើលកំណែថ្មី</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.creditsMenuItem">
+    <tu tuid="HelpMenu.CreditsMenuItem">
       <tuv xml:lang="en">
         <seg>About Bloom</seg>
       </tuv>
@@ -829,7 +832,7 @@
         <seg>អំពី Bloom</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>

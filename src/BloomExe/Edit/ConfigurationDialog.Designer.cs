@@ -96,7 +96,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, "This is the dialog used to set up the wall calendar");
 			this._L10NSharpExtender.SetLocalizationPriority(this, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this, "WallCalendar.TitleOfSetupDialog");
+			this._L10NSharpExtender.SetLocalizingId(this, "TemplateBooks.Wall Calendar.TitleOfSetupDialog");
 			this.MinimizeBox = false;
 			this.Name = "ConfigurationDialog";
 			this.ShowIcon = false;

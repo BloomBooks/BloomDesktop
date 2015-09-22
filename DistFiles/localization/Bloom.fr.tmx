@@ -308,6 +308,7 @@
       </tuv>
     </tu>
     <tu tuid="Book title in {lang}">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
@@ -380,6 +381,7 @@
       </tuv>
     </tu>
     <tu tuid="Click to choose topic">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Click to choose topic</seg>
@@ -438,7 +440,7 @@
         <seg>Utiliser 'Image Server' pour réduire l'usage de mémoire pour des images de grande taille.</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental._ShowSendReceive">
+    <tu tuid="CollectionSettingsDialog.AdvancedTab.Experimental.ShowSendReceive">
       <tuv xml:lang="en">
         <seg>(Experimental) Show Send/Receive Controls</seg>
       </tuv>
@@ -620,7 +622,7 @@
         <seg>À propos de cette configuration</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._language1Label">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.VernacularLanguageLabel">
       <tuv xml:lang="en">
         <seg>Vernacular Language</seg>
       </tuv>
@@ -644,7 +646,7 @@
         <seg>Langue 3 (e.g. Langue régionale)   (Facultative)</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog.LanguageTab._removeLanguageLink">
+    <tu tuid="CollectionSettingsDialog.LanguageTab.RemoveLanguageLink">
       <tuv xml:lang="en">
         <seg>Remove</seg>
       </tuv>
@@ -710,7 +712,7 @@
         <seg>Redémarrer</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionSettingsDialog._restartMessage">
+    <tu tuid="CollectionSettingsDialog.RestartMessage">
       <tuv xml:lang="en">
         <seg>Bloom will close and re-open this project with the new settings.</seg>
       </tuv>
@@ -796,7 +798,7 @@
         <seg>Bloom ouvrira maintenant ce document HTML dans votre logiciel de traitement de texte (normalement Word ou LibreOffice). On pourra travailler avec le texte et les images de ce livre, mais souvent ces logiciels ne conserve pas bien la mise en page, donc on n'espère pas beaucoup.</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu._updateFrontMatterToolStrip">
+    <tu tuid="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
       <tuv xml:lang="en">
         <seg>Update Book</seg>
       </tuv>
@@ -804,7 +806,7 @@
         <seg>Mettre à jour le livre</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu._updateThumbnail">
+    <tu tuid="CollectionTab.BookMenu.UpdateThumbnail">
       <tuv xml:lang="en">
         <seg>Update Thumbnail</seg>
       </tuv>
@@ -812,7 +814,7 @@
         <seg>Mettre à jour la miniature</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.deleteBook">
+    <tu tuid="CollectionTab.BookMenu.DeleteBook">
       <tuv xml:lang="en">
         <seg>Delete Book</seg>
       </tuv>
@@ -820,7 +822,7 @@
         <seg>Supprimer livre</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.exportToWordOrLibreOffice">
+    <tu tuid="CollectionTab.BookMenu.ExportToWordOrLibreOffice">
       <tuv xml:lang="en">
         <seg>Export to Word or LibreOffice...</seg>
       </tuv>
@@ -828,7 +830,7 @@
         <seg>Exporter vers Word ou LibreOffice...</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.BookMenu.exportToXMLForInDesign">
+    <tu tuid="CollectionTab.BookMenu.ExportToXMLForInDesign">
       <tuv xml:lang="en">
         <seg>Export to XML for InDesign...</seg>
       </tuv>
@@ -909,7 +911,7 @@
         <seg>Le livre '{0}'</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.ContextMenu._openFolderOnDisk">
+    <tu tuid="CollectionTab.ContextMenu.OpenFolderOnDisk">
       <tuv xml:lang="en">
         <seg>Open Folder on Disk</seg>
       </tuv>
@@ -1121,7 +1123,7 @@
         <seg>Créer un livre à partir de ce modèle</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._editBookButton">
+    <tu tuid="CollectionTab.EditBookButton">
       <tuv xml:lang="en">
         <seg>Edit this book</seg>
       </tuv>
@@ -1129,7 +1131,7 @@
         <seg>Éditer ce livre</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab._makeBloomPackButton">
+    <tu tuid="CollectionTab.MakeBloomPackButton">
       <tuv xml:lang="en">
         <seg>Make Bloom Pack</seg>
       </tuv>
@@ -1137,7 +1139,7 @@
         <seg>Créer BloomPack</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.addMakeReaderTemplateBloomPackToolStripMenuItem">
+    <tu tuid="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Make Reader Template Bloom Pack...</seg>
       </tuv>
@@ -1145,7 +1147,7 @@
         <seg>Créer BloomPack avec modèle de livres de base et de livres gradués</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.advancedToolStripMenuItem">
+    <tu tuid="CollectionTab.AdvancedToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Advanced</seg>
       </tuv>
@@ -1153,7 +1155,7 @@
         <seg>Avancé</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkLabel">
+    <tu tuid="CollectionTab.BloomLibraryLinkLabel">
       <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
       <tuv xml:lang="en">
         <seg>Get more source books at BloomLibrary.org</seg>
@@ -1162,7 +1164,7 @@
         <seg>Obtenir davantage de livres à BloomLibrary.org</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bloomLibraryLinkVerificationCaption">
+    <tu tuid="CollectionTab.BloomLibraryLinkVerificationCaption">
       <note>get this clicking on BloomLibrary.org link in source collection</note>
       <tuv xml:lang="en">
         <seg>Source Collection</seg>
@@ -1171,7 +1173,7 @@
         <seg>Collection source</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourceHeading">
+    <tu tuid="CollectionTab.BookSourceHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Books</seg>
       </tuv>
@@ -1179,7 +1181,7 @@
         <seg>Sources de nouveaux livres</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.bookSourcesLockNotice">
+    <tu tuid="CollectionTab.BookSourcesLockNotice">
       <tuv xml:lang="en">
         <seg>This collection is locked, so new books cannot be added/removed.</seg>
       </tuv>
@@ -1187,7 +1189,7 @@
         <seg>Cette collection est verrouillée, donc on ne peut pas ajouter ou supprimer des livres.</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.hiddenBookExplanationForSourceCollections">
+    <tu tuid="CollectionTab.HiddenBookExplanationForSourceCollections">
       <tuv xml:lang="en">
         <seg>Because this is a source collection, Bloom isn't offering any existing shells as sources for new shells. If you want to add a language to a shell, instead you need to edit the collection containing the shell, rather than making a copy of it. Also, the Wall Calendar currently can't be used to make a new Shell.</seg>
       </tuv>
@@ -1205,7 +1207,8 @@
         <seg>Et le reste ?</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.menuToBringUpLocalizationDialog">
+    <tu tuid="CollectionTab.MoreLanguagesMenuItem">
+      <note>Brings up the localization dialog</note>
       <tuv xml:lang="en">
         <seg>More...</seg>
       </tuv>
@@ -1213,7 +1216,7 @@
         <seg>Plus...</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.openCreateCollectionToolStripMenuItem">
+    <tu tuid="CollectionTab.OpenCreateCollectionMenuItem">
       <tuv xml:lang="en">
         <seg>Open or Create Another Collection</seg>
       </tuv>
@@ -1221,7 +1224,7 @@
         <seg>Ouvrir/créer une collection</seg>
       </tuv>
     </tu>
-    <tu tuid="CollectionTab.sourcesForNewShellsHeading">
+    <tu tuid="CollectionTab.SourcesForNewShellsHeading">
       <tuv xml:lang="en">
         <seg>Sources For New Shells</seg>
       </tuv>
@@ -1314,7 +1317,7 @@
         <seg>facultatif</seg>
       </tuv>
     </tu>
-    <tu tuid="ConfiguringBookMessage">
+    <tu tuid="CollectionTab.ConfiguringBookMessage">
       <tuv xml:lang="en">
         <seg>Building...</seg>
       </tuv>
@@ -1952,12 +1955,22 @@
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.BookTitlePrompt">
+      <note>Put {lang} in your translation, so it can be replaced by the language name.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Book title in {lang}</seg>
       </tuv>
       <tuv xml:lang="fr">
         <seg>Titre du livre en {lang}</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.FrontMatter.AuthorIllustratorPrompt">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>You may use this space for author/illustrator, or anything else.</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>On peut utiliser cet endroit pour l'auteur ou l'illustrateur ou toute autre chose.</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.FrontMatter.CopyrightPrompt">
@@ -2477,7 +2490,7 @@
         <seg>Page de titre</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._contentLanguagesDropdown">
+    <tu tuid="EditTab.ContentLanguagesDropdown">
       <tuv xml:lang="en">
         <seg>Multilingual Settings</seg>
       </tuv>
@@ -2485,7 +2498,7 @@
         <seg>Configuration multilingue</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._contentLanguagesDropdown_ToolTip_">
+    <tu tuid="EditTab.ContentLanguagesDropdown.ToolTip">
       <tuv xml:lang="en">
         <seg>Choose language to make this a bilingual or trilingual book</seg>
       </tuv>
@@ -2493,7 +2506,7 @@
         <seg>Choisir une langue pour en faire un livre bilingue ou trilingue</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._copyButton">
+    <tu tuid="EditTab.CopyButton">
       <tuv xml:lang="en">
         <seg>Copy</seg>
       </tuv>
@@ -2501,7 +2514,23 @@
         <seg>Copier</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._cutButton">
+    <tu tuid="EditTab.CopyButton.ToolTip">
+      <tuv xml:lang="en">
+        <seg>Copy (Ctrl-c)</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Copier (Ctrl-c)</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CopyButton.ToolTipWhenDisabled">
+      <tuv xml:lang="en">
+        <seg>You need to select some text before you can copy it</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Vous devez selectionner du texte avant de pouvoir le copier</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.CutButton">
       <tuv xml:lang="en">
         <seg>Cut</seg>
       </tuv>
@@ -2509,7 +2538,7 @@
         <seg>Couper</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._deletePageButton">
+    <tu tuid="EditTab.DeletePageButton">
       <tuv xml:lang="en">
         <seg>Remove\n  Page</seg>
       </tuv>
@@ -2517,7 +2546,7 @@
         <seg>Supprimer\n  Page</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._duplicatePageButton">
+    <tu tuid="EditTab.DuplicatePageButton">
       <tuv xml:lang="en">
         <seg>Duplicate\n   Page</seg>
       </tuv>
@@ -2525,7 +2554,7 @@
         <seg>Dupliquer\n   Page</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._menusToolStrip">
+    <tu tuid="EditTab.MenusToolStrip">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>toolStrip1</seg>
@@ -2534,7 +2563,7 @@
         <seg>toolStrip1</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._pasteButton">
+    <tu tuid="EditTab.PasteButton">
       <tuv xml:lang="en">
         <seg>Paste</seg>
       </tuv>
@@ -2542,7 +2571,7 @@
         <seg>Coller</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab._undoButton">
+    <tu tuid="EditTab.UndoButton">
       <tuv xml:lang="en">
         <seg>Undo</seg>
       </tuv>
@@ -2550,7 +2579,7 @@
         <seg>Annuler</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.bilingual">
+    <tu tuid="EditTab.Bilingual">
       <note>Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page</note>
       <tuv xml:lang="en">
         <seg>Two Languages</seg>
@@ -2559,7 +2588,7 @@
         <seg>Deux langues</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.copyImageIPMetdataQuestion">
+    <tu tuid="EditTab.CopyImageIPMetadataQuestion">
       <note>get this after you edit the metadata of an image</note>
       <tuv xml:lang="en">
         <seg>Copy this information to all other pictures in this book?</seg>
@@ -2568,7 +2597,7 @@
         <seg>Copier cette information vers toutes les autres images de ce livre ?</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.layoutInPublishTabOnlyNotice">
+    <tu tuid="EditTab.LayoutInPublishTabOnlyNotice">
       <tuv xml:lang="en">
         <seg>This option is only available in the Publish tab.</seg>
       </tuv>
@@ -2576,7 +2605,7 @@
         <seg>Cette option n'est disponible que sur l'onglet Publier.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.monolingual">
+    <tu tuid="EditTab.Monolingual">
       <note>Shown in edit tab multilingualism chooser, for monolingual mode, one language per page</note>
       <tuv xml:lang="en">
         <seg>One Language</seg>
@@ -2585,7 +2614,7 @@
         <seg>Une langue</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.noOtherLayouts">
+    <tu tuid="EditTab.NoOtherLayouts">
       <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
       <tuv xml:lang="en">
         <seg>There are no other layout options for this template.</seg>
@@ -2594,7 +2623,7 @@
         <seg>Aucune autre mise en page n'existe pour ce modèle.</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.titleOfCopyIPToWholeBooksDialog">
+    <tu tuid="EditTab.TitleOfCopyIPToWholeBooksDialog">
       <tuv xml:lang="en">
         <seg>Picture Intellectual Property Information</seg>
       </tuv>
@@ -2602,7 +2631,7 @@
         <seg>Information de propriété intellectuelle de l'image</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.trilingual">
+    <tu tuid="EditTab.Trilingual">
       <note>Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page</note>
       <tuv xml:lang="en">
         <seg>Three Languages</seg>
@@ -2644,7 +2673,7 @@
         <seg>Ce livre exige '{0}' pour la couverture, les pages liminaires et les parties annexes, mais Bloom n'a pas pu le trouver sur cet ordinateur. Vous pouvez installer un BloomPack qui vous donnera '{0}', ou faire un autre choix pour la couverture, les pages liminaires et les parties annexes à partir de Configuration:Création de livre.</seg>
       </tuv>
     </tu>
-    <tu tuid="ExperimentalNotice">
+    <tu tuid="EditTab.ExperimentalNotice">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This page is an experimental prototype which may have many problems, for which we apologize.</seg>
@@ -2779,7 +2808,7 @@
         <seg>Utilisation des modèles de livres gradués et de livres de base</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._makeASuggestionMenuItem">
+    <tu tuid="HelpMenu.MakeASuggestionMenuItem">
       <tuv xml:lang="en">
         <seg>Make a Suggestion</seg>
       </tuv>
@@ -2787,7 +2816,7 @@
         <seg>Faire une suggestion</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu._webSiteMenuItem">
+    <tu tuid="HelpMenu.WebSiteMenuItem">
       <tuv xml:lang="en">
         <seg>Web Site</seg>
       </tuv>
@@ -2804,7 +2833,7 @@
         <seg>Démonstration de fonctionnalités</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.checkForNewVersionToolStripMenuItem">
+    <tu tuid="HelpMenu.CheckForNewVersionMenuItem">
       <tuv xml:lang="en">
         <seg>Check For New Version</seg>
       </tuv>
@@ -2812,7 +2841,7 @@
         <seg>Rechercher une nouvelle version</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.creditsMenuItem">
+    <tu tuid="HelpMenu.CreditsMenuItem">
       <tuv xml:lang="en">
         <seg>About Bloom</seg>
       </tuv>
@@ -2829,7 +2858,7 @@
         <seg>Documentation détaillée de Bloom</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.documentationMenuItem">
+    <tu tuid="HelpMenu.DocumentationMenuItem">
       <tuv xml:lang="en">
         <seg>Help. Lots of help!</seg>
       </tuv>
@@ -2837,7 +2866,7 @@
         <seg>Documentation</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.keyBloomConceptsToolStripMenuItem">
+    <tu tuid="HelpMenu.KeyBloomConceptsToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Key Bloom Concepts</seg>
       </tuv>
@@ -2845,7 +2874,7 @@
         <seg>Concepts clés de Bloom</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.registrationMenuItem">
+    <tu tuid="HelpMenu.RegistrationMenuItem">
       <tuv xml:lang="en">
         <seg>Registration</seg>
       </tuv>
@@ -2853,7 +2882,7 @@
         <seg>Inscription</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.releaseNotesMenuItem">
+    <tu tuid="HelpMenu.ReleaseNotesMenuItem">
       <tuv xml:lang="en">
         <seg>Release Notes...</seg>
       </tuv>
@@ -2861,7 +2890,7 @@
         <seg>Description des fonctionnalités...</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.reportAProblemToolStripMenuItem">
+    <tu tuid="HelpMenu.ReportAProblemToolStripMenuItem">
       <tuv xml:lang="en">
         <seg>Report a Problem...</seg>
       </tuv>
@@ -2878,7 +2907,7 @@
         <seg>Instructions de livres canevas</seg>
       </tuv>
     </tu>
-    <tu tuid="HelpMenu.showEventLogMenuItem">
+    <tu tuid="HelpMenu.ShowEventLogMenuItem">
       <tuv xml:lang="en">
         <seg>Show Event Log</seg>
       </tuv>
@@ -2903,7 +2932,7 @@
         <seg>Vidéos de formation</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.WindowTitle">
+    <tu tuid="PublishTab.InDesignDialog.WindowTitle">
       <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
       <tuv xml:lang="en">
         <seg>InDesign XML Information</seg>
@@ -2912,7 +2941,7 @@
         <seg>Format XML d'InDesign</seg>
       </tuv>
     </tu>
-    <tu tuid="InDesignXmlInformationDialog.dontShowThisAgainButton">
+    <tu tuid="PublishTab.InDesignDialog.DontShowThisAgainButton">
       <tuv xml:lang="en">
         <seg>Don't Show This Again</seg>
       </tuv>
@@ -2928,7 +2957,7 @@
         <seg>Un composant de Bloom, GeckofxHtmlToPdf.exe, semble manquer. Cela empêche l'apérçu et l'impression. Parfois un logiciel antivirus peut le faire. Vous devrez peut-être de l'aide technique pour réparer l'installation de Bloom et éviter la suppression de ce fichier de nouveau.</seg>
       </tuv>
     </tu>
-    <tu tuid="JpegWarningDialog.WindowTitle">
+    <tu tuid="EditTab.JpegWarningDialog.WindowTitle">
       <tuv xml:lang="en">
         <seg>JPEG Warning</seg>
       </tuv>
@@ -3279,7 +3308,7 @@
         <seg>Se connecter à BloomLibrary.org</seg>
       </tuv>
     </tu>
-    <tu tuid="LoginDialog.showPassword">
+    <tu tuid="LoginDialog.ShowPassword">
       <tuv xml:lang="en">
         <seg>&amp;Show Password</seg>
       </tuv>
@@ -3586,7 +3615,7 @@
         <seg>Quelqu'un d'autre aurait-il déjà utilisé Envoyer/recevoir pour partager une collection avec vous ?\nVeuillez utiliser l'un de ces boutons rouges pour copier sa collection sur votre ordinateur\n.Ensuite, utiliser Envoyer/recevoir pour partager votre travail avec lui.</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.ReplaceExistingButton">
+    <tu tuid="PublishTab.OverwriteWarning.ReplaceExistingButton">
       <tuv xml:lang="en">
         <seg>Replace Existing</seg>
       </tuv>
@@ -3594,7 +3623,7 @@
         <seg>Remplacer l'existant</seg>
       </tuv>
     </tu>
-    <tu tuid="OverwriteWarning.WindowTitle">
+    <tu tuid="PublishTab.OverwriteWarning.WindowTitle">
       <tuv xml:lang="en">
         <seg>Notice</seg>
       </tuv>
@@ -3610,7 +3639,7 @@
         <seg>Lorsqu'on traduit un livre, on ne peut pas changer l'ordre des pages.</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatter">
+    <tu tuid="EditTab.PageList.CantMoveXMatter">
       <tuv xml:lang="en">
         <seg>That change is not allowed. Front matter and back matter pages must remain where they are</seg>
       </tuv>
@@ -3618,7 +3647,7 @@
         <seg>Changement interdit. Les pages liminaires et les parties annexes doivent rester là où elles sont.</seg>
       </tuv>
     </tu>
-    <tu tuid="PageList.CantMoveXMatterCaption">
+    <tu tuid="EditTab.PageList.CantMoveXMatterCaption">
       <tuv xml:lang="en">
         <seg>Invalid Move</seg>
       </tuv>
@@ -3626,7 +3655,7 @@
         <seg>Déplacement non valide</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.BadPdf">
+    <tu tuid="PublishTab.PdfMaker.BadPdf">
       <tuv xml:lang="en">
         <seg>Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</seg>
       </tuv>
@@ -3634,7 +3663,7 @@
         <seg>Bloom avait un problème en faisant un PDF de ce livre. Peut-être vous devez contacter les développeurs pour l'aide technique, mais voici ce que vous pouvez essayer :</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TryMoreMemory">
+    <tu tuid="PublishTab.PdfMaker.TryMoreMemory">
       <tuv xml:lang="en">
         <seg>Try doing this on a computer with more memory</seg>
       </tuv>
@@ -3642,7 +3671,7 @@
         <seg>Essayer de faire ceci sur un ordinateur avec plus de mémoire</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TryRestart">
+    <tu tuid="PublishTab.PdfMaker.TryRestart">
       <tuv xml:lang="en">
         <seg>Restart your computer and try this again right away</seg>
       </tuv>
@@ -3650,7 +3679,7 @@
         <seg>Redémarrer votre ordinateur et le réessayer tout de suite</seg>
       </tuv>
     </tu>
-    <tu tuid="PdfMaker.TrySmallerImages">
+    <tu tuid="PublishTab.PdfMaker.TrySmallerImages">
       <tuv xml:lang="en">
         <seg>Replace large, high-resolution images in your document with lower-resolution ones</seg>
       </tuv>
@@ -4253,7 +4282,7 @@
         <seg>Téléversement de {0}</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.ccLink">
+    <tu tuid="PublishTab.Upload.CcLink">
       <tuv xml:lang="en">
         <seg>CC-BY-NC</seg>
       </tuv>
@@ -4261,7 +4290,7 @@
         <seg>CC-BY-NC</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.loginLink">
+    <tu tuid="PublishTab.Upload.LoginLink">
       <tuv xml:lang="en">
         <seg>Log in to BloomLibrary.org</seg>
       </tuv>
@@ -4269,7 +4298,7 @@
         <seg>Se connecter à BloomLibrary.org</seg>
       </tuv>
     </tu>
-    <tu tuid="PublishTab.Upload.signupLink">
+    <tu tuid="PublishTab.Upload.SignupLink">
       <tuv xml:lang="en">
         <seg>Sign up for BloomLibrary.org</seg>
       </tuv>
@@ -5722,7 +5751,7 @@
         <seg>Histoire traditionnelle</seg>
       </tuv>
     </tu>
-    <tu tuid="WallCalendar.TitleOfSetupDialog">
+    <tu tuid="TemplateBooks.Wall Calendar.TitleOfSetupDialog">
       <note>This is the dialog used to set up the wall calendar</note>
       <tuv xml:lang="en">
         <seg>Setup</seg>
@@ -5741,6 +5770,7 @@
       </tuv>
     </tu>
     <tu tuid="You may use this space for author/illustrator, or anything else.">
+      <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>You may use this space for author/illustrator, or anything else.</seg>

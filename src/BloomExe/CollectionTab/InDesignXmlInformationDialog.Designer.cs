@@ -40,7 +40,7 @@
 			// _L10NSharpExtender
 			// 
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
-			this._L10NSharpExtender.PrefixForNewItems = "InDesignXmlInformationDialog";
+			this._L10NSharpExtender.PrefixForNewItems = "PublishTab.InDesignDialog";
 			// 
 			// button1
 			// 
@@ -82,7 +82,7 @@
 			this._L10NSharpExtender.SetLocalizableToolTip(this.dontShowThisAgainButton1, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.dontShowThisAgainButton1, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this.dontShowThisAgainButton1, L10NSharp.LocalizationPriority.Low);
-			this._L10NSharpExtender.SetLocalizingId(this.dontShowThisAgainButton1, "InDesignXmlInformationDialog.dontShowThisAgainButton");
+			this._L10NSharpExtender.SetLocalizingId(this.dontShowThisAgainButton1, "PublishTab.InDesignDialog.DontShowThisAgainButton");
 			this.dontShowThisAgainButton1.Location = new System.Drawing.Point(28, 207);
 			this.dontShowThisAgainButton1.Name = "dontShowThisAgainButton1";
 			this.dontShowThisAgainButton1.Size = new System.Drawing.Size(134, 17);
@@ -102,7 +102,7 @@
 			this.Controls.Add(this.dontShowThisAgainButton1);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, "This is the title of a dialog about exporting a Bloom book to the InDesign XML format");
-			this._L10NSharpExtender.SetLocalizingId(this, "InDesignXmlInformationDialog.WindowTitle");
+			this._L10NSharpExtender.SetLocalizingId(this, "PublishTab.InDesignDialog.WindowTitle");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "InDesignXmlInformationDialog";

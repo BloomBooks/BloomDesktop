@@ -66,7 +66,7 @@ namespace Bloom.Edit
 		{
 			using (var dlg = new ProgressDialogForeground())
 			{
-				dlg.Text = L10NSharp.LocalizationManager.GetString("ConfiguringBookMessage", "Building...");
+				dlg.Text = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfiguringBookMessage", "Building...");
 				dlg.ShowAndDoWork((progress) => ConfigureBookInternal(bookPath));
 			}
 		}

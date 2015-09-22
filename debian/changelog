@@ -1,3 +1,10 @@
+bloom-desktop-beta (3.4.402) stable; urgency=medium
+
+  * Upgrade Version 3.4 to being a beta.
+  * See the source repository log for changes the last three weeks.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Tue, 22 Sep 2015 11:43:42 -0500
+
 bloom-desktop-unstable (3.4.0) stable; urgency=medium
 
   * Update to version 3.4 on the master (unstable) branch.

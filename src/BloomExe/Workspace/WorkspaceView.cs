@@ -314,7 +314,7 @@ namespace Bloom.Workspace
 			}
 
 			_uiLanguageMenu.DropDownItems.Add(new ToolStripSeparator());
-			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.menuToBringUpLocalizationDialog","More..."));
+			var menu = _uiLanguageMenu.DropDownItems.Add(LocalizationManager.GetString("CollectionTab.MoreLanguagesMenuItem", "More..."));
 			menu.Click += new EventHandler((a, b) =>
 			{
 				_localizationManager.ShowLocalizationDialogBox(false);
