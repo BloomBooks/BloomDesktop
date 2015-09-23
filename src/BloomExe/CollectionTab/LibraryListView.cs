@@ -244,7 +244,11 @@ namespace Bloom.CollectionTab
 					}
 					break;
 				case ButtonManagementStage.ImproveAndRefresh:
-					ImproveAndRefreshBookButtons();
+					// GJM Sept 23 2015: BL-2778 Concern about memory leaks led to not updating thumbnails on
+					// source collections for new books. To undo, uncomment ImproveAndRefreshBookButtons()
+					// and comment out removing the event handler.
+					//ImproveAndRefreshBookButtons();
+					Application.Idle -= ManageButtonsAtIdleTime; // stop running to this to do nothing.
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
