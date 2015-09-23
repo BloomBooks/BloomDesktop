@@ -163,30 +163,30 @@ namespace BloomTests.Book
 		[Test]
 		public void MergeClassesIntoNewPage_BothEmtpy()
 		{
-			AssertHasClases("", MergeClasses("","", new[] { "dropMe" }));
+			AssertHasClasses("", MergeClasses("","", new[] { "dropMe" }));
 		}
 		[Test]
 		public void MergeClassesIntoNewPage_TargetEmpty()
 		{
-			AssertHasClases("one two", MergeClasses("one two", "", new[] {"dropMe"}));
+			AssertHasClasses("one two", MergeClasses("one two", "", new[] {"dropMe"}));
 		}
 		[Test]
 		public void MergeClassesIntoNewPage_SourceEmpty()
 		{
-			AssertHasClases("one two", MergeClasses("", "one two", new[] { "dropMe" }));
+			AssertHasClasses("one two", MergeClasses("", "one two", new[] { "dropMe" }));
 		}
 		[Test]
 		public void MergeClassesIntoNewPage_SourceAllDroppable()
 		{
-			AssertHasClases("one two", MergeClasses("dropMe dropMe dropMe ", "one two", new[] { "dropMe" }));
+			AssertHasClasses("one two", MergeClasses("dropMe dropMe dropMe ", "one two", new[] { "dropMe" }));
 		}
 		[Test]
 		public void MergeClassesIntoNewPage_MergesAndDropsItemsInDropList()
 		{
-			AssertHasClases("one two three", MergeClasses("one drop two delete", "three", new[] { "drop","delete" }));
+			AssertHasClasses("one two three", MergeClasses("one drop two delete", "three", new[] { "drop","delete" }));
 		}
 
-		private void AssertHasClases(string expectedString, string actualString)
+		private void AssertHasClasses(string expectedString, string actualString)
 		{
 			var expected = expectedString.Split(new[] { ' ' });
 			var actual = actualString.Split(new[] {' '});
