@@ -587,7 +587,7 @@ function attachEventHandlers() {
             var id = this.id.replace(/^use-/, '');
             var txtBox = document.getElementById('max-' + id);
             txtBox.disabled = !this.checked;
-            $('#levels-table').find('tbody tr.selected td.' + id).html(this.checked ? txtBox.value : '');
+            $('#levels-table').find('tbody tr.selected td.' + id).html(this.checked ? txtBox.value : '-');
         });
         levelDetail.find('.level-textbox').onOnce('keyup', function () {
             var id = this.id.replace(/^max-/, '');
