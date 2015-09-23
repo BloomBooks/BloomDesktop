@@ -19,6 +19,7 @@ using Microsoft.Win32;
 using Palaso.Code;
 using Palaso.IO;
 using Bloom.Collection;
+using Bloom.Edit;
 using Palaso.Reporting;
 using Palaso.Extensions;
 using RestSharp.Contrib;
@@ -498,6 +499,10 @@ namespace Bloom.web
 				case "authorMode":
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(AuthorMode ? "true" : "false");
+					return true;
+				case "audioDevices":
+					info.ContentType = "text/json";
+					info.WriteCompleteOutput(AudioRecording.AudioDevicesJson);
 					return true;
 				case "topics":
 					return GetTopicList(info);

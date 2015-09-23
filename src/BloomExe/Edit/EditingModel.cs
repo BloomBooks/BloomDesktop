@@ -664,6 +664,7 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("chooseLayout", (id) => ChangePageLayoutBasedOnTemplate(id));
 			_view.AddMessageEventListener("startRecordAudio", StartRecordAudio);
 			_view.AddMessageEventListener("endRecordAudio", EndRecordAudio);
+			_view.AddMessageEventListener("changeRecordingDevice", ChangeRecordingDevice);
 
 			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
 		}
@@ -772,6 +773,11 @@ namespace Bloom.Edit
 				else
 					_pageSelection.SelectPage(pageToChange);
 			}
+		}
+
+		private void ChangeRecordingDevice(string deviceName)
+		{
+			_audioRecording.ChangeRecordingDevice(deviceName);
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
