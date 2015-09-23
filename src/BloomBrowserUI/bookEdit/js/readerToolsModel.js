@@ -1,8 +1,6 @@
 /// <reference path="interIframeChannel.ts" />
 /// <reference path="getIframeChannel.ts" />
 /// <reference path="synphonyApi.ts" />
-/// <reference path="libsynphony/bloom_lib.d.ts" />
-/// <reference path="libsynphony/synphony.d.ts" />
 /// <reference path="libsynphony/jquery.text-markup.d.ts" />
 /// <reference path="jquery.div-columns.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
@@ -262,8 +260,6 @@ var ReaderToolsModel = (function () {
         else
             words = this.getStageWordsAndSightWords(this.stageNumber);
         resizeWordList(false);
-        // All cases use localeCompare for alphabetic sort. This is not ideal; it will use whatever
-        // locale the browser thinks is current. When we implement ldml-dependent sorting we can improve this.
         switch (this.sort) {
             case SortType.alphabetic:
                 words.sort(function (a, b) {
@@ -433,18 +429,14 @@ var ReaderToolsModel = (function () {
         var page = parent.window.document.getElementById('page');
         // this happens during unit testing
         if (!page) {
-            return $('.bloom-page')
-                .not('.bloom-frontMatter, .bloom-backMatter')
-                .find('.bloom-content1.bloom-editable');
+            return $('.bloom-page').not('.bloom-frontMatter, .bloom-backMatter').find('.bloom-content1.bloom-editable');
         }
         // if this is a cover page, return an empty set
         var cover = $('body', page.contentWindow.document).find('div.cover');
         if (cover['length'] > 0)
             return $();
         // not a cover page, return elements to check
-        return $('.bloom-page', page.contentWindow.document)
-            .not('.bloom-frontMatter, .bloom-backMatter')
-            .find('.bloom-content1.bloom-editable');
+        return $('.bloom-page', page.contentWindow.document).not('.bloom-frontMatter, .bloom-backMatter').find('.bloom-content1.bloom-editable');
     };
     ReaderToolsModel.prototype.doKeypressMarkup = function () {
         // BL-599: "Unresponsive script" while typing in text.
@@ -482,8 +474,6 @@ var ReaderToolsModel = (function () {
             var divBrCount = -1;
             if (current.nodeType !== 3) {
                 divBrCount = 0;
-                // endoffset counts the number of childNodes that the selection is after.
-                // We want to know how many <br> nodes are between it and the previous non-empty node.
                 for (var k = myRange.endOffset - 1; k >= 0; k--) {
                     if (current.childNodes[k].localName === 'br')
                         divBrCount++;
@@ -558,8 +548,10 @@ var ReaderToolsModel = (function () {
         var editableElements = ReaderToolsModel.getElementsToCheck();
         // qtips can be orphaned if the element they belong to is deleted
         // (and so the mouse can't move off their owning element, and they never go away).
+        // BL-2758 But if we're in a source collection we may have valid source bubbles,
+        // don't delete them!
         if (editableElements.length > 0)
-            $(editableElements[0]).closest('body').children('.qtip').remove();
+            $(editableElements[0]).closest('body').children('.qtip:not(".uibloomSourceTextsBubble")').remove();
         switch (this.currentMarkupType) {
             case MarkupType.Leveled:
                 if (editableElements.length > 0) {
