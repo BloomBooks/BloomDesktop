@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,7 @@ using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.UI.WindowsForms.Reporting;
+using Palaso.Media.Naudio;
 
 namespace Bloom.Edit
 {
@@ -662,6 +664,8 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("chooseLayout", (id) => ChangePageLayoutBasedOnTemplate(id));
 			_view.AddMessageEventListener("startRecordAudio", StartRecordAudio);
 			_view.AddMessageEventListener("endRecordAudio", EndRecordAudio);
+
+			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
 		}
 
 

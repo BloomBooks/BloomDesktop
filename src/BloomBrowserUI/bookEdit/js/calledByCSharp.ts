@@ -89,6 +89,14 @@ class CalledByCSharp {
         }
     }
 
+    setPeakLevel(level:string) {
+        var contentWindow = this.getPageContent();
+        if (!contentWindow) return;
+        if (typeof contentWindow['setPeakLevel'] === 'function') {
+            contentWindow['setPeakLevel'](level);
+        }
+    }
+
   removeSynphonyMarkup() {
 
     var page = this.getPageContent();
