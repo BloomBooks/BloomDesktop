@@ -601,5 +601,28 @@ namespace Bloom.Book
 				node.Attributes["class"].Value = currentValue.Replace("origami-layout-mode", "");
 			}
 		}
+
+		/// <summary>
+		/// Blindly merge the classes from the source into the target.
+		/// </summary>
+		/// <param name="sourcePage"></param>
+		/// <param name="targetPage"></param>
+		/// <param name="classesToDrop"></param>
+		public static void MergeClassesIntoNewPage(XmlElement sourcePage, XmlElement targetPage, string[] classesToDrop)
+		{
+			foreach (var c in GetClasses(sourcePage))
+			{
+				if(!classesToDrop.Contains(c))
+					AddClassIfMissing(targetPage, c);
+			}
+		}
+
+		private static IEnumerable<string> GetClasses(XmlElement element)
+		{
+			var classes = element.GetAttribute("class");
+			if (String.IsNullOrEmpty(classes))
+				return new string[] {};
+			return classes.SplitTrimmed(' ');
+		}
 	}
 }
