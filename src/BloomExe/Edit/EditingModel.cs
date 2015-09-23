@@ -670,6 +670,7 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
 			_view.AddMessageEventListener("startRecordAudio", StartRecordAudio);
 			_view.AddMessageEventListener("endRecordAudio", EndRecordAudio);
+			_view.AddMessageEventListener("changeRecordingDevice", ChangeRecordingDevice);
 
 			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
 		}
@@ -691,6 +692,11 @@ namespace Bloom.Edit
 		private void EndRecordAudio(string dummy)
 		{
 			_audioRecording.StopRecording();
+		}
+
+		private void ChangeRecordingDevice(string deviceName)
+		{
+			_audioRecording.ChangeRecordingDevice(deviceName);
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
