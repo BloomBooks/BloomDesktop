@@ -5,6 +5,8 @@ using Palaso.Progress;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.Xml;
 using Gecko;
+using System.IO;
+using Palaso.Network;
 
 namespace Bloom.Edit
 {
@@ -12,7 +14,8 @@ namespace Bloom.Edit
 	{
 		public void ChangePicture(string bookFolderPath, GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress)
 		{
-			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath);
+			var isSameFile = IsSameFilePath(bookFolderPath, img.GetAttribute("src"), imageInfo);
+			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath, isSameFile);
 			img.SetAttribute("src", imageFileName);
 			UpdateMetdataAttributesOnImgElement(img, imageInfo);
 		}
@@ -27,9 +30,33 @@ namespace Bloom.Edit
 			var matches = dom.SafeSelectNodes("//img[@id='" + imageId + "']");
 			XmlElement img = matches[0] as XmlElement;
 
-			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath);
+			var isSameFile = IsSameFilePath(bookFolderPath, img.GetAttribute("src"), imageInfo);
+			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath, isSameFile);
 			img.SetAttribute("src", imageFileName);
 
+		}
+
+		/// <summary>
+		/// Check whether the new image file is the same as the one we already have chosen.
+		/// (or at least the same pathname in the filesystem)
+		/// </summary>
+		/// <remarks>
+		/// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2776.
+		/// If the user goes out of his way to choose the exact same picture file from the
+		/// original location again, a copy will still be created with a slightly revised
+		/// name.  Cropping a picture also results in a new copy of the file with the
+		/// revised name.  We still need a tool to remove unused picture files from a
+		/// book's folder.  (ie, BL-2351)
+		/// </remarks>
+		private bool IsSameFilePath(string bookFolderPath, string src, PalasoImage imageInfo)
+		{
+			if (!String.IsNullOrEmpty(src))
+			{
+				var path = Path.Combine(bookFolderPath, HttpUtilityFromMono.UrlDecode(src));
+				if (path == imageInfo.OriginalFilePath)
+					return true;
+			}
+			return false;
 		}
 
 
