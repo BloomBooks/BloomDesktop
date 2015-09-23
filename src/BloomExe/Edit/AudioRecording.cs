@@ -43,6 +43,14 @@ namespace Bloom.Edit
 		/// </summary>
 		private readonly Timer _startRecordingTimer;
 
+		// This is a bit of a kludge. The server needs to be able to retrieve the data from AudioDevicesJson.
+		// It would be quite messy to give the image server access to the EditingModel which owns the instance of AudioRecording.
+		// However in practice (and very likely we would preserve this even if we had more than one book open at a time)
+		// there is only one current AudioRecording object supporting the one EditingModel. This variable keeps track
+		// of the one most recently created and uses it in the AudioDevicesJson method, which the server can therefore
+		// call directly since it is static.
+		private static AudioRecording CurrentRecording { get; set; }
+
 		public AudioRecording()
 		{
 			Recorder = new AudioRecorder(1);
@@ -53,7 +61,48 @@ namespace Bloom.Edit
 			_startRecordingTimer.Interval = 300; //  ms from click to actual recording
 			_startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
 			_backupPath = System.IO.Path.GetTempFileName();
+			CurrentRecording = this;
+		}
 
+		/// <summary>
+		/// Returns a json string like {"devices":["microphone", "Logitech Headset"], "productName":"Logitech Headset", "genericName":"Headset"},
+		/// except that in practice currrently the generic and product names are the same and not as helpful as the above.
+		/// Devices is a list of product names, the productName and genericName refer to the current selection (or will be null, if no current device).
+		/// </summary>
+		public static string AudioDevicesJson
+		{
+			get
+			{
+				var sb = new StringBuilder("{\"devices\":[");
+				bool first = true;
+				foreach (var device in RecordingDevice.Devices)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						sb.Append(",");
+					}
+					sb.Append("\"" + device.ProductName + "\"");
+
+				}
+				sb.Append("],\"productName\":");
+				if (CurrentRecording.RecordingDevice != null)
+					sb.Append("\"" + CurrentRecording.RecordingDevice.ProductName + "\"");
+				else
+					sb.Append("null");
+
+				sb.Append(",\"genericName\":");
+				if (CurrentRecording.RecordingDevice != null)
+					sb.Append("\"" + CurrentRecording.RecordingDevice.GenericName + "\"");
+				else
+					sb.Append("null");
+
+				sb.Append("}");
+				return sb.ToString();
+			}
 		}
 
 		public void BeginMonitoring()
@@ -224,6 +273,17 @@ namespace Bloom.Edit
 			MessageBox.Show(null,
 				LocalizationManager.GetString("AudioButtonsControl.NoMic", "This computer appears to have no sound recording device available. You will need one to record audio for a talking book."),
 				LocalizationManager.GetString("AudioButtonsControl.NoInput", "No input device"));
+		}
+
+		public void ChangeRecordingDevice(string deviceName)
+		{
+			foreach (var dev in RecordingDevice.Devices)
+			{
+				if (dev.ProductName == deviceName)
+				{
+					RecordingDevice = dev;
+				}
+			}
 		}
 	}
 }

@@ -22,4 +22,12 @@ body {
      
      span.ui-audioCurrent {background-color: violet }
      div.ui-audioMeter {float:right;position:absolute;top:10px;right:10px}
+
+     // hidden unless we need to choose between three or more input devices.
+     #audio-devlist {display:none;position:absolute;background-color:white; width:200px;
+                     li {min-height:20px; font-size:12px;
+                          &:hover {background-color:lightgray}
+                     }
+     }
+     #audio-input-dev  {margin-top: 5px; margin-left: 5px;}
 }
