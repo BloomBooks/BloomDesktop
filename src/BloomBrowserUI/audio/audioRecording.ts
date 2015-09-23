@@ -49,6 +49,9 @@
 class audioRecording {
 
     recording: boolean;
+    levelCanvas: HTMLCanvasElement;
+    levelCanvasWidth: number = 30;
+    levelCanvasHeight: number = 80;
 
     nextSpan() {
         var current: JQuery = $('.ui-audioCurrent');
@@ -105,7 +108,9 @@ class audioRecording {
                 "<span id='audio-next' class='ui-icon ui-icon-triangle-1-e'>N</span>" +
             "</div><div class='ui-audioFooter'>" +
                 "<span id='audio-close' class='ui-icon ui-icon-close'>N</span>" +
-            "</div>");
+            "</div>" +
+            "<div class='ui-audioMeter'><canvas id='audio-meter' width='"
+                + this.levelCanvasWidth + "' height='" + this.levelCanvasHeight + "'></canvas></div>");
         bubble.css('z-index', 15003);
         editable.qtip({
             id:'audio',
@@ -161,6 +166,10 @@ class audioRecording {
                     $('#audio-play').click(function () {
                         thisClass.playCurrent();
                     });
+                    // This is easier to do here than in setPeakLevel,
+                    // because it executes in the scope of the bubble
+                    // iframe where $('#audio-meter') works.
+                    thisClass.levelCanvas = $('#audio-meter').get()[0];
                     // I'm not sure why this has to be done inside show:, but if we do it below
                     // addSentenceSpans below, something wipes out the src attr on the <audio>
                     // element, and we can't play the first sound if any.
@@ -172,6 +181,38 @@ class audioRecording {
         this.makeSentenceSpans(editable);
     }
 
+    // This gets invoked (via a non-object method of the same name in this file,
+    // and one of the same name in CalledFromCSharp) when a C# event fires indicating
+    // that we should display a different peak level. It draws a series of bars
+    // (reminiscent of leds in a hardware level meter) within the canvas in the
+    //  top right of the bubble to indicate the current peak level.
+    setPeakLevel(level: string) {
+        var ctx = this.levelCanvas.getContext("2d");
+
+        // Erase the whole canvas
+        var height = this.levelCanvasHeight;
+        var width = this.levelCanvasWidth;
+        var recordQtipColor = '#363333'; // should match value in audioRecording.less
+        ctx.fillStyle = recordQtipColor;
+        ctx.fillRect(0, 0, width, height);
+
+        // Draw the appropriate number and color of bars
+        var gap = 2;
+        var barHeight = 4;
+        var interval = gap + barHeight;
+        var bars = Math.floor(height / interval);
+        var redBars = Math.max(Math.floor(bars / 10), 1);
+        var yellowBars = Math.max(Math.floor(bars / 5), 1);
+        var greenBars = bars - redBars - yellowBars;
+        var showBars = Math.floor(bars * parseFloat(level)) + 1;
+        ctx.fillStyle = "#00FF00";
+        for (var i = 0; i < showBars; i++) {
+            var bottom = height - interval * i;
+            if (i >= greenBars) ctx.fillStyle = "#FFFF00";
+            if (i >= greenBars + yellowBars) ctx.fillStyle = "#FF0000";
+            ctx.fillRect(gap, bottom - barHeight, width - gap - gap, barHeight);
+        }
+    }
 
     // from http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
     createUuid() {
@@ -529,4 +570,8 @@ function recordAudio() {
 
 function cleanupAudio() {
     audioRecorder.cleanupAudio();
+}
+
+function setPeakLevel(level:string) {
+    audioRecorder.setPeakLevel(level);
 }

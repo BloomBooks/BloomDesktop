@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,6 +23,7 @@ using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
+using Palaso.Media.Naudio;
 using Palaso.Xml;
 
 namespace Bloom.Edit
@@ -668,6 +670,8 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
 			_view.AddMessageEventListener("startRecordAudio", StartRecordAudio);
 			_view.AddMessageEventListener("endRecordAudio", EndRecordAudio);
+
+			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
 		}
 
 		AudioRecording _audioRecording = new AudioRecording();

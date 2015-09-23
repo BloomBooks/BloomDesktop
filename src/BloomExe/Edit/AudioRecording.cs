@@ -29,9 +29,10 @@ namespace Bloom.Edit
 		/// The file we want to record to
 		/// </summary>
 		public string Path { get; set; }
-		public AudioRecorder Recorder { get; set; } // Palaso component to do the actual recording.
+		public AudioRecorder Recorder { get; private set; } // Palaso component to do the actual recording.
 		private readonly string _backupPath; // If we are about to replace a recording, save the old one here; a temp file.
 		private DateTime _startRecording; // For tracking recording length.
+		public event EventHandler<PeakLevelEventArgs> PeakLevelChanged;
 		LameEncoder _mp3Encoder = new LameEncoder();
 		/// <summary>
 		/// This timer introduces a brief delay from the mouse click to actually starting to record.
@@ -45,12 +46,32 @@ namespace Bloom.Edit
 		public AudioRecording()
 		{
 			Recorder = new AudioRecorder(1);
+			Recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
+			BeginMonitoring();
 
 			_startRecordingTimer = new Timer();
 			_startRecordingTimer.Interval = 300; //  ms from click to actual recording
 			_startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
 			_backupPath = System.IO.Path.GetTempFileName();
 
+		}
+
+		public void BeginMonitoring()
+		{
+			if (!RecordingDevice.Devices.Contains(RecordingDevice))
+			{
+				RecordingDevice = RecordingDevice.Devices.FirstOrDefault();
+			}
+			if (RecordingDevice != null)
+			{
+				Recorder.BeginMonitoring();
+			}
+		}
+
+		private void SetPeakLevel(PeakLevelEventArgs args)
+		{
+			if (PeakLevelChanged != null)
+				PeakLevelChanged(this, args);
 		}
 
 		public void StopRecording()
