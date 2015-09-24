@@ -400,7 +400,8 @@ namespace Bloom.WebLibraryIntegration
 			using (var tempDestination = new TemporaryFolder("BDS_" + Guid.NewGuid()))
 			{
 				var tempDirectory = Path.Combine(tempDestination.FolderPath, bookFolderName);
-				downloadProgress.Invoke((Action)(() => { downloadProgress.ProgressRangeMaximum = totalItems; }));
+				if (downloadProgress != null)
+					downloadProgress.Invoke((Action)(() => { downloadProgress.ProgressRangeMaximum = totalItems; }));
 				int booksDownloaded = 0;
 				for (int i = 0; i < matching.S3Objects.Count; ++i)
 				{
@@ -419,7 +420,8 @@ namespace Bloom.WebLibraryIntegration
 					};
 					_transferUtility.Download(req);
 					++booksDownloaded;
-					downloadProgress.Invoke((Action)(() => { downloadProgress.Progress = booksDownloaded; }));
+					if (downloadProgress != null)
+						downloadProgress.Invoke((Action)(() => { downloadProgress.Progress = booksDownloaded; }));
 				}
 				var destinationPath = Path.Combine(pathToDestinationParentDirectory, bookFolderName);
 
