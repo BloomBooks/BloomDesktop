@@ -379,20 +379,34 @@ namespace Bloom
 
 		private void PasteFilteredText(bool removeSingleLineBreaks)
 		{
-			Debug.Assert(!InvokeRequired);
-
-			//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
-			var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
-
-			if (!string.IsNullOrEmpty(text))
+			//this prone to dying in System.Windows.Forms.Clipboard.SetText. E.g. bl-2787
+			try
 			{
-				if (removeSingleLineBreaks)
+
+				Debug.Assert(!InvokeRequired);
+
+				//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
+				var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
+
+				if (!string.IsNullOrEmpty(text))
 				{
-					text = text.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+					if (removeSingleLineBreaks)
+					{
+						text = text.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+					}
+					//setting clears other formats that might be on the clipboard, such as html
+					BloomClipboard.SetText(text, TextDataFormat.UnicodeText);
+					_browser.Paste();
 				}
-				//setting clears other formats that might be on the clipboard, such as html
-				BloomClipboard.SetText(text, TextDataFormat.UnicodeText);
-				_browser.Paste();
+
+			}
+			catch (Exception error)
+			{
+				Logger.WriteEvent("***Failed to paste in Browser.PasteFilteredText()");
+#if DEBUG
+				throw error;
+#endif
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem pasting from the clipboard.");
 			}
 		}
 
