@@ -1,8 +1,6 @@
 /// <reference path="interIframeChannel.ts" />
 /// <reference path="getIframeChannel.ts" />
 /// <reference path="synphonyApi.ts" />
-/// <reference path="libsynphony/bloom_lib.d.ts" />
-/// <reference path="libsynphony/synphony.d.ts" />
 /// <reference path="libsynphony/jquery.text-markup.d.ts" />
 /// <reference path="jquery.div-columns.ts" />
 /// <reference path="../../lib/jquery-ui.d.ts" />
@@ -671,8 +669,10 @@ class ReaderToolsModel {
 
     // qtips can be orphaned if the element they belong to is deleted
     // (and so the mouse can't move off their owning element, and they never go away).
+    // BL-2758 But if we're in a source collection we may have valid source bubbles,
+    // don't delete them!
     if (editableElements.length > 0)
-      $(editableElements[0]).closest('body').children('.qtip').remove();
+      $(editableElements[0]).closest('body').children('.qtip:not(".uibloomSourceTextsBubble")').remove();
 
     switch (this.currentMarkupType) {
       case MarkupType.Leveled:
