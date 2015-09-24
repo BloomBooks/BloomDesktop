@@ -122,3 +122,7 @@ DIV.wordAndPicture:nth-child(7)
 	right: 0px;
 	top: 490px;
 }
+
+.bloom-translationGroup .bloom-editable.bloom-content2, .bloom-translationGroup .bloom-editable.bloom-content3 {
+    margin-top: 0px; //override basePage
+}
