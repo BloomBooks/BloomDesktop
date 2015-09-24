@@ -122,7 +122,8 @@ namespace Bloom.Book
 				}
 			}
 			FixBookIdAndLineageIfNeeded();
-			_storage.Dom.RemoveExtraContentTypesMetas();
+			_storage.Dom.RemoveExtraBookTitles();
+            _storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
 		}
 

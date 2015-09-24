@@ -21,6 +21,7 @@ using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
 using Bloom.Workspace;
+using Palaso.Network;
 
 namespace Bloom.Edit
 {
@@ -510,7 +511,8 @@ namespace Bloom.Edit
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
-			string fileName = imageElement.GetAttribute("src").Replace("%20", " ");
+			var src = imageElement.GetAttribute("src");
+			string fileName = HttpUtilityFromMono.UrlDecode(src);
 
 			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
 			using (var imageInfo = PalasoImage.FromFile(path))
@@ -692,7 +694,8 @@ namespace Bloom.Edit
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
-			string currentPath = imageElement.GetAttribute("src").Replace("%20", " ");
+			var src = imageElement.GetAttribute ("src");
+			string currentPath = HttpUtilityFromMono.UrlDecode(src);
 
 			if (!CheckIfLockedAndWarn(currentPath))
 				return;
