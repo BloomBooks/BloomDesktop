@@ -184,31 +184,39 @@ namespace Bloom
 
 		private static async void InitiateSquirrelNotifyUpdatesAvailable(string updateUrl, Action<string> restartBloom)
 		{
-			if (OkToInitiateUpdateManager)
+			try
 			{
-				UpdateInfo info;
-				ArrangeToDisposeSquirrelManagerOnExit();
-				using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName))
+				if (OkToInitiateUpdateManager)
 				{
-					// At this point the method returns(!) and no longer blocks anything.
-					info = await _bloomUpdateManager.CheckForUpdate();
+					UpdateInfo info;
+					ArrangeToDisposeSquirrelManagerOnExit();
+					using (_bloomUpdateManager = new UpdateManager(updateUrl, Application.ProductName))
+					{
+						// At this point the method returns(!) and no longer blocks anything.
+						info = await _bloomUpdateManager.CheckForUpdate();
+					}
+					// Since this is in the async method _after_ the await we know the CheckForUpdate has finished.
+					_bloomUpdateManager = null;
+					if (NoUpdatesAvailable(info))
+					{
+						Palaso.Reporting.Logger.WriteEvent("Squirrel: No updateavailable.");
+						return; // none available.
+					}
+					var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available.");
+					var action = LocalizationManager.GetString("CollectionTab.UpdateNow", "Update Now");
+					Palaso.Reporting.Logger.WriteEvent("Squirrel: Notifying that an update is available");
+					// Unfortunately, there's no good time to dispose of this object...according to its own comments
+					// it's not even safe to close it. It moves itself out of sight eventually if ignored.
+					var notifier = new ToastNotifier();
+					notifier.Image.Image = Resources.Bloom.ToBitmap();
+					notifier.ToastClicked += (sender, args) => CheckForASquirrelUpdate(BloomUpdateMessageVerbosity.Verbose, restartBloom, true);
+					notifier.Show(msg, action, 10);
 				}
-				// Since this is in the async method _after_ the await we know the CheckForUpdate has finished.
-				_bloomUpdateManager = null;
-				if (NoUpdatesAvailable(info))
-				{
-					Palaso.Reporting.Logger.WriteEvent("Squirrel: No updateavailable.");
-					return; // none available.
-				}
-				var msg = LocalizationManager.GetString("CollectionTab.UpdatesAvailable", "A new version of Bloom is available.");
-				var action = LocalizationManager.GetString("CollectionTab.UpdateNow", "Update Now");
-				Palaso.Reporting.Logger.WriteEvent("Squirrel: Notifying that an update is available");
-				// Unfortunately, there's no good time to dispose of this object...according to its own comments
-				// it's not even safe to close it. It moves itself out of sight eventually if ignored.
-				var notifier = new ToastNotifier();
-				notifier.Image.Image = Resources.Bloom.ToBitmap();
-				notifier.ToastClicked += (sender, args) => CheckForASquirrelUpdate(BloomUpdateMessageVerbosity.Verbose, restartBloom, true);
-				notifier.Show(msg, action, 10);
+			}
+			catch (System.Net.WebException e)
+			{
+				Palaso.Reporting.Logger.WriteEvent("Squirrel: Network unreliable - " + e.Message);
+				return;
 			}
 		}
 
