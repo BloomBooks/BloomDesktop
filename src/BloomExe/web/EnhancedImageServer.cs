@@ -362,7 +362,23 @@ namespace Bloom.web
 			Console.Out.WriteLine(errorMsg);
 
 			if (popUpErrors)
+			{
+				// On Linux at least, displaying the dialog on a thread that is not the main GUI
+				// thread causes a crash with a segmentation violation.  So we try to display on
+				// the main thread.
+				var forms = Application.OpenForms;
+				for (int i = 0; i < forms.Count; ++i)
+				{
+					var s = forms [i] as Bloom.Shell;
+					if (s != null && s.InvokeRequired)
+					{
+						var d = new Shell.NotifyTheUserOfProblem(ErrorReport.NotifyUserOfProblem);
+						s.Invoke(d, new object[] { errorMsg, new object[]{} });
+						return;
+					}
+				}
 				ErrorReport.NotifyUserOfProblem(errorMsg);
+			}
 		}
 
 		private bool ProcessI18N(string localPath, IRequestInfo info)

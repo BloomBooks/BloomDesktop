@@ -22,6 +22,8 @@ namespace Bloom
 		private readonly ControlKeyEvent _controlKeyEvent;
 		private readonly WorkspaceView _workspaceView;
 
+		public delegate void NotifyTheUserOfProblem(string message, params object[] args);
+
 		// This is needed because on Linux the ResizeEnd event is firing before the Load event handler is
 		// finished, overwriting the saved RestoreBounds before they are applied.
 		private bool _finishedLoading;
