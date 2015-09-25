@@ -14,7 +14,6 @@
 // there is a branch RecordAudioInBrowserSpike in which I attempted to do this.
 // It works sometimes, but often part or all of the recording is silence.
 // Things that still need doing:
-// - Start  recording on mouse down, stop on mouse up
 // - Change appearance of record button while recording
 // - Modify TeamCity build (make a new channel if we need an installer
 //   with this feature and are not merging yet) to add the naudio.dll
@@ -68,7 +67,7 @@ class audioRecording {
         var id = changeTo.attr("id");
         var player = $('#player');
         //  FF can't directly play mp3, try wav
-        player.attr('src','audio/'+ id + '.wav');
+        player.attr('src', 'audio/' + id + '.wav');
     }
 
     prevSpan() {
@@ -79,16 +78,16 @@ class audioRecording {
     }
 
     // Todo: For HearThis compatibility, start on mouseDown and end on mouseUp.
-    recordCurrent() {
-        if (this.recording) {
-            this.recording = false;
-            this.fireCSharpEvent("endRecordAudio", "");           
-        } else {
-            this.recording = true;
-            var current: JQuery = $('.ui-audioCurrent');
-            var id = current.attr("id");
-            this.fireCSharpEvent("startRecordAudio", id);
-        }
+    endRecordCurrent() {
+        this.recording = false;
+        this.fireCSharpEvent("endRecordAudio", "");
+    }
+
+    startRecordCurrent() {
+        this.recording = true;
+        var current: JQuery = $('.ui-audioCurrent');
+        var id = current.attr("id");
+        this.fireCSharpEvent("startRecordAudio", id);
     }
 
     playCurrent() {
@@ -226,8 +225,10 @@ class audioRecording {
                     $('#audio-prev').click(function () {
                         thisClass.prevSpan();
                     });
-                    $('#audio-record').click(function () {
-                        thisClass.recordCurrent();
+                    $('#audio-record').mousedown(function () {
+                        thisClass.startRecordCurrent();
+                    }).mouseup(function() {
+                        thisClass.endRecordCurrent();
                     });
                     $('#audio-play').click(function () {
                         thisClass.playCurrent();
