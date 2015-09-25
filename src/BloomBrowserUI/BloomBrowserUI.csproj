@@ -56,6 +56,8 @@
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
     <Content Include="bookEdit\html\font-awesome\Readme.txt" />
+    <Content Include="bookEdit\img\ChangeImage.svg" />
+    <Content Include="bookEdit\img\CutCopyPaste.svg" />
     <Content Include="bookEdit\img\dragHandle.png" />
     <Content Include="bookEdit\img\FontSizeLetter.svg" />
     <Content Include="bookEdit\img\LineSpacing.png" />
