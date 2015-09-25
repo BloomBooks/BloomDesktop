@@ -362,7 +362,7 @@ namespace Bloom.web
 			Console.Out.WriteLine(errorMsg);
 
 			if (popUpErrors)
-				ErrorReport.NotifyUserOfProblem(errorMsg);
+				Shell.DisplayProblemToUser(errorMsg);
 		}
 
 		private bool ProcessI18N(string localPath, IRequestInfo info)

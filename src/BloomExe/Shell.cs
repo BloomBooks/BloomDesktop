@@ -311,5 +311,30 @@ namespace Bloom
 			}
 			return base.ProcessCmdKey(ref msg, keyData);
 		}
+
+		private delegate void NotifyTheUserOfProblem(string message, params object[] args);
+		/// <summary>
+		/// Display a dialog box that reports a problem to the user.
+		/// </summary>
+		/// <remarks>
+		/// On Linux at least, displaying a dialog on a thread that is not the main GUI
+		/// thread causes a crash with a segmentation violation.  So we try to display on
+		/// the main thread.
+		/// </remarks>
+		public static void DisplayProblemToUser(string message, params object[] args)
+		{
+			var forms = Application.OpenForms;
+			for (int i = 0; i < forms.Count; ++i)
+			{
+				var s = forms [i] as Bloom.Shell;
+				if (s != null && s.InvokeRequired)
+				{
+					var d = new Shell.NotifyTheUserOfProblem(Palaso.Reporting.ErrorReport.NotifyUserOfProblem);
+					s.Invoke(d, new object[] { message, args });
+					return;
+				}
+			}
+			Palaso.Reporting.ErrorReport.NotifyUserOfProblem(message, args);
+		}
 	}
 }
