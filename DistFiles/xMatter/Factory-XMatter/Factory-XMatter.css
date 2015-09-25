@@ -360,8 +360,8 @@
 .verso #versoLicenseAndCopyright img {
   width: 94px;
 }
-.credits .originalAcknowledgments .bloom-contentNational1,
-.verso .originalAcknowledgments .bloom-contentNational1 {
+.credits .originalAcknowledgments .bloom-content1,
+.verso .originalAcknowledgments .bloom-content1 {
   display: block !important;
   margin-bottom: 2em;
 }
