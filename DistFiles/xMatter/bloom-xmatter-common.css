@@ -1,11 +1,10 @@
-﻿.bloom-frontMatter .pageLabel:after,
+.bloom-frontMatter .pageLabel:after,
 .bloom-backMatter .pageLabel:after {
   content: ": unknown Front/Back Matter";
 }
 .A4Portrait.outsideFrontCover .marginBox,
 .A4Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
   height: 272mm;
   left: 15mm;
   width: 180mm;
@@ -13,13 +12,11 @@
 .A4Portrait.outsideFrontCover .marginBox IMG,
 .A4Portrait.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
   max-width: 180mm;
 }
 .A4Landscape.outsideFrontCover .marginBox,
 .A4Landscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
   height: 185mm;
   left: 15mm;
   width: 267mm;
@@ -27,13 +24,11 @@
 .A4Landscape.outsideFrontCover .marginBox IMG,
 .A4Landscape.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
   max-width: 267mm;
 }
 .A5Portrait.outsideFrontCover .marginBox,
 .A5Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
   height: 185mm;
   left: 15mm;
   width: 118mm;
@@ -41,13 +36,11 @@
 .A5Portrait.outsideFrontCover .marginBox IMG,
 .A5Portrait.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
   max-width: 118mm;
 }
 .A5Landscape.outsideFrontCover .marginBox,
 .A5Landscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
   height: 123mm;
   left: 15mm;
   width: 180mm;
@@ -55,13 +48,11 @@
 .A5Landscape.outsideFrontCover .marginBox IMG,
 .A5Landscape.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
   max-width: 180mm;
 }
 .A6Portrait.outsideFrontCover .marginBox,
 .A6Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
   height: 123mm;
   left: 15mm;
   width: 75mm;
@@ -69,13 +60,11 @@
 .A6Portrait.outsideFrontCover .marginBox IMG,
 .A6Portrait.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
   max-width: 75mm;
 }
 .A6Landscape.outsideFrontCover .marginBox,
 .A6Landscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
   height: 80mm;
   left: 15mm;
   width: 118mm;
@@ -83,13 +72,11 @@
 .A6Landscape.outsideFrontCover .marginBox IMG,
 .A6Landscape.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
   max-width: 118mm;
 }
 .B5Portrait.outsideFrontCover .marginBox,
 .B5Portrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
   height: 225mm;
   left: 15mm;
   width: 146mm;
@@ -97,92 +84,79 @@
 .B5Portrait.outsideFrontCover .marginBox IMG,
 .B5Portrait.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
   max-width: 146mm;
 }
 .LetterPortrait.outsideFrontCover .marginBox,
 .LetterPortrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
-  height: 10.015748031496063in;
+  height: 10.01574803in;
   left: 15mm;
-  width: 7.318897637795276in;
+  width: 7.31889764in;
 }
 .LetterPortrait.outsideFrontCover .marginBox IMG,
 .LetterPortrait.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
-  max-width: 7.318897637795276in;
+  max-width: 7.31889764in;
 }
 .LetterLandscape.outsideFrontCover .marginBox,
 .LetterLandscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
-  height: 7.515748031496063in;
+  height: 7.51574803in;
   left: 15mm;
-  width: 9.818897637795276in;
+  width: 9.81889764in;
 }
 .LetterLandscape.outsideFrontCover .marginBox IMG,
 .LetterLandscape.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
-  max-width: 9.818897637795276in;
+  max-width: 9.81889764in;
 }
 .HalfLetterPortrait.outsideFrontCover .marginBox,
 .HalfLetterPortrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
-  height: 7.515748031496063in;
+  height: 7.51574803in;
   left: 15mm;
-  width: 4.318897637795276in;
+  width: 4.31889764in;
 }
 .HalfLetterPortrait.outsideFrontCover .marginBox IMG,
 .HalfLetterPortrait.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
-  max-width: 4.318897637795276in;
+  max-width: 4.31889764in;
 }
 .HalfLetterLandscape.outsideFrontCover .marginBox,
 .HalfLetterLandscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
-  height: 4.515748031496063in;
+  height: 4.51574803in;
   left: 15mm;
-  width: 7.318897637795276in;
+  width: 7.31889764in;
 }
 .HalfLetterLandscape.outsideFrontCover .marginBox IMG,
 .HalfLetterLandscape.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
-  max-width: 7.318897637795276in;
+  max-width: 7.31889764in;
 }
 .QuarterLetterPortrait.outsideFrontCover .marginBox,
 .QuarterLetterPortrait.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
-  height: 4.515748031496063in;
+  height: 4.51574803in;
   left: 15mm;
-  width: 3.068897637795276in;
+  width: 3.06889764in;
 }
 .QuarterLetterPortrait.outsideFrontCover .marginBox IMG,
 .QuarterLetterPortrait.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
-  max-width: 3.068897637795276in;
+  max-width: 3.06889764in;
 }
 .QuarterLetterLandscape.outsideFrontCover .marginBox,
 .QuarterLetterLandscape.outsideBackCover .marginBox {
   /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-
-  height: 3.265748031496063in;
+  height: 3.26574803in;
   left: 15mm;
-  width: 4.318897637795276in;
+  width: 4.31889764in;
 }
 .QuarterLetterLandscape.outsideFrontCover .marginBox IMG,
 .QuarterLetterLandscape.outsideBackCover .marginBox IMG {
   /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-
-  max-width: 4.318897637795276in;
+  max-width: 4.31889764in;
 }
 .insideFrontCover .bloom-content1 {
   display: inherit;
@@ -349,56 +323,56 @@
   left: 0;
   height: 20px;
 }
-.credits .marginBox,
-.verso .marginBox {
+.credits .Credits-Page-style {
   font-size: 10pt;
+  line-height: 1.4em;
 }
-.credits .marginBox .bloom-editable,
-.verso .marginBox .bloom-editable {
-  font-size: 10pt;
-}
-.credits .bloom-editable,
-.verso .bloom-editable {
-  min-height: 5em;
-  line-height: normal;
-}
-.credits .licenseAndCopyrightBlock,
-.verso .licenseAndCopyrightBlock,
-.credits #versoLicenseAndCopyright,
-.verso #versoLicenseAndCopyright {
+.credits .licenseAndCopyrightBlock {
   min-height: 60px;
 }
-.credits .licenseAndCopyrightBlock .copyright,
-.verso .licenseAndCopyrightBlock .copyright,
-.credits #versoLicenseAndCopyright .copyright,
-.verso #versoLicenseAndCopyright .copyright {
+.credits .licenseAndCopyrightBlock .copyright {
   margin-bottom: 2em;
 }
-.credits .licenseAndCopyrightBlock .licenseBlock,
-.verso .licenseAndCopyrightBlock .licenseBlock,
-.credits #versoLicenseAndCopyright .licenseBlock,
-.verso #versoLicenseAndCopyright .licenseBlock {
+.credits .licenseAndCopyrightBlock .licenseBlock {
   margin-bottom: 2em;
 }
-.credits .licenseAndCopyrightBlock img,
-.verso .licenseAndCopyrightBlock img,
-.credits #versoLicenseAndCopyright img,
-.verso #versoLicenseAndCopyright img {
+.credits .licenseAndCopyrightBlock img {
   width: 94px;
 }
-.credits .originalAcknowledgments .bloom-contentNational1,
-.verso .originalAcknowledgments .bloom-contentNational1 {
+.credits .originalAcknowledgments .bloom-contentNational1 {
   display: block !important;
   margin-bottom: 2em;
 }
-.credits .versionAcknowledgments,
-.verso .versionAcknowledgments {
+.credits .versionAcknowledgments {
   display: block !important;
   height: auto;
 }
-.credits .licenseUrl,
-.verso .licenseUrl {
+.credits .licenseUrl {
   display: none;
+}
+.credits.A6Landscape img,
+.credits.A6Portrait img,
+.credits.QuarterLetterLandscape img,
+.credits.QuarterLetterPortrait img {
+  width: 65px;
+}
+.credits.A6Landscape .copyright,
+.credits.A6Portrait .copyright,
+.credits.QuarterLetterLandscape .copyright,
+.credits.QuarterLetterPortrait .copyright,
+.credits.A6Landscape .ISBNContainer,
+.credits.A6Portrait .ISBNContainer,
+.credits.QuarterLetterLandscape .ISBNContainer,
+.credits.QuarterLetterPortrait .ISBNContainer,
+.credits.A6Landscape .licenseBlock,
+.credits.A6Portrait .licenseBlock,
+.credits.QuarterLetterLandscape .licenseBlock,
+.credits.QuarterLetterPortrait .licenseBlock,
+.credits.A6Landscape .originalAcknowledgments .bloom-contentNational1,
+.credits.A6Portrait .originalAcknowledgments .bloom-contentNational1,
+.credits.QuarterLetterLandscape .originalAcknowledgments .bloom-contentNational1,
+.credits.QuarterLetterPortrait .originalAcknowledgments .bloom-contentNational1 {
+  margin-bottom: 0.5em;
 }
 BODY[bookcreationtype="original"] .titlePage #originalContributions .bloom-content1 {
   display: inherit;
@@ -478,4 +452,3 @@ BODY[bookcreationtype="translation"] .titlePage #funding .bloom-contentNational1
 .ISBNContainer .ISBNContainer SPAN {
   vertical-align: top;
 }
-/*# sourceMappingURL=bloom-xmatter-common.css.map */

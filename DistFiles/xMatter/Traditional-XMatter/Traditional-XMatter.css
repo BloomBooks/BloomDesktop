@@ -323,56 +323,56 @@
   left: 0;
   height: 20px;
 }
-.credits .marginBox,
-.verso .marginBox {
+.credits .Credits-Page-style {
   font-size: 10pt;
+  line-height: 1.4em;
 }
-.credits .marginBox .bloom-editable,
-.verso .marginBox .bloom-editable {
-  font-size: 10pt;
-}
-.credits .bloom-editable,
-.verso .bloom-editable {
-  min-height: 5em;
-  line-height: normal;
-}
-.credits .licenseAndCopyrightBlock,
-.verso .licenseAndCopyrightBlock,
-.credits #versoLicenseAndCopyright,
-.verso #versoLicenseAndCopyright {
+.credits .licenseAndCopyrightBlock {
   min-height: 60px;
 }
-.credits .licenseAndCopyrightBlock .copyright,
-.verso .licenseAndCopyrightBlock .copyright,
-.credits #versoLicenseAndCopyright .copyright,
-.verso #versoLicenseAndCopyright .copyright {
+.credits .licenseAndCopyrightBlock .copyright {
   margin-bottom: 2em;
 }
-.credits .licenseAndCopyrightBlock .licenseBlock,
-.verso .licenseAndCopyrightBlock .licenseBlock,
-.credits #versoLicenseAndCopyright .licenseBlock,
-.verso #versoLicenseAndCopyright .licenseBlock {
+.credits .licenseAndCopyrightBlock .licenseBlock {
   margin-bottom: 2em;
 }
-.credits .licenseAndCopyrightBlock img,
-.verso .licenseAndCopyrightBlock img,
-.credits #versoLicenseAndCopyright img,
-.verso #versoLicenseAndCopyright img {
+.credits .licenseAndCopyrightBlock img {
   width: 94px;
 }
-.credits .originalAcknowledgments .bloom-contentNational1,
-.verso .originalAcknowledgments .bloom-contentNational1 {
+.credits .originalAcknowledgments .bloom-contentNational1 {
   display: block !important;
   margin-bottom: 2em;
 }
-.credits .versionAcknowledgments,
-.verso .versionAcknowledgments {
+.credits .versionAcknowledgments {
   display: block !important;
   height: auto;
 }
-.credits .licenseUrl,
-.verso .licenseUrl {
+.credits .licenseUrl {
   display: none;
+}
+.credits.A6Landscape img,
+.credits.A6Portrait img,
+.credits.QuarterLetterLandscape img,
+.credits.QuarterLetterPortrait img {
+  width: 65px;
+}
+.credits.A6Landscape .copyright,
+.credits.A6Portrait .copyright,
+.credits.QuarterLetterLandscape .copyright,
+.credits.QuarterLetterPortrait .copyright,
+.credits.A6Landscape .ISBNContainer,
+.credits.A6Portrait .ISBNContainer,
+.credits.QuarterLetterLandscape .ISBNContainer,
+.credits.QuarterLetterPortrait .ISBNContainer,
+.credits.A6Landscape .licenseBlock,
+.credits.A6Portrait .licenseBlock,
+.credits.QuarterLetterLandscape .licenseBlock,
+.credits.QuarterLetterPortrait .licenseBlock,
+.credits.A6Landscape .originalAcknowledgments .bloom-contentNational1,
+.credits.A6Portrait .originalAcknowledgments .bloom-contentNational1,
+.credits.QuarterLetterLandscape .originalAcknowledgments .bloom-contentNational1,
+.credits.QuarterLetterPortrait .originalAcknowledgments .bloom-contentNational1 {
+  margin-bottom: 0.5em;
 }
 BODY[bookcreationtype="original"] .titlePage #originalContributions .bloom-content1 {
   display: inherit;

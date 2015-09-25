@@ -9,72 +9,71 @@
     }
 }
 
-
 @BottomMargin-SmallerForCover: 10mm;
 //normally the marginBox sizing is done by the basePage, but for the front and back cover, we want to cheat to have
 //a smaller bottom margin, since there is no page number
-   .outsideFrontCover .marginBox, .outsideBackCover .marginBox {
-      .SetMarginBoxCover(@PageHeight, @PageWidth) {
-          /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
-          height: @PageHeight - (@MarginTop + @BottomMargin-SmallerForCover);
-         //Just center the margin box, (for now, we're ignoring the binding) 
-          left: @MarginOuter;
-          width:  @PageWidth - (2 * @MarginOuter);
-          IMG { /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
-              max-width: @PageWidth - (2 * @MarginOuter);
-          }
-      }
-      .A4Portrait& {
-          .SetMarginBoxCover(@A4Portrait-Height, @A4Portrait-Width);
-      }
-      .A4Landscape& {
-          .SetMarginBoxCover(@A4Landscape-Height,@A4Landscape-Width);
-      }
-      .A5Portrait& {
-          .SetMarginBoxCover(@A5Portrait-Height, @A5Portrait-Width);
-      }
-      .A5Landscape& {
-          .SetMarginBoxCover(@A5Landscape-Height,@A5Landscape-Width);
-      }
-      .A6Portrait& {
-          .SetMarginBoxCover(@A6Portrait-Height, @A6Portrait-Width);
-      }
-      .A6Landscape& {
-          .SetMarginBoxCover(@A6Landscape-Height,@A6Landscape-Width);
-      }
-      .B5Portrait& {
-          .SetMarginBoxCover(@B5Portrait-Height, @B5Portrait-Width);
-      }
-       .LetterPortrait& {
-           .SetMarginBoxCover(@LetterPortrait-Height, @LetterPortrait-Width);
-       }
-       .LetterLandscape& {
-           .SetMarginBoxCover(@LetterLandscape-Height,@LetterLandscape-Width);
-       }
-       .HalfLetterPortrait& {
-           .SetMarginBoxCover(@HalfLetterPortrait-Height, @HalfLetterPortrait-Width);
-       }
-       .HalfLetterLandscape& {
-           .SetMarginBoxCover(@HalfLetterLandscape-Height,@HalfLetterLandscape-Width);
-       }
-       .QuarterLetterPortrait& {
-           .SetMarginBoxCover(@QuarterLetterPortrait-Height, @QuarterLetterPortrait-Width);
-       }
-       .QuarterLetterLandscape& {
-           .SetMarginBoxCover(@QuarterLetterLandscape-Height,@QuarterLetterLandscape-Width);
-       }
-  }
-
-
+.outsideFrontCover .marginBox, .outsideBackCover .marginBox {
+    .SetMarginBoxCover(@PageHeight, @PageWidth) {
+        /*There's no page number on the cover, so we might as well have a the bottom stuff closer to the bottom*/
+        height: @PageHeight - (@MarginTop + @BottomMargin-SmallerForCover);
+        //Just center the margin box, (for now, we're ignoring the binding)
+        left: @MarginOuter;
+        width: @PageWidth - (2 * @MarginOuter);
+        IMG {
+            /* BL-2353 Keeps XMatter thumb images from going too wide (or too small) */
+            max-width: @PageWidth - (2 * @MarginOuter);
+        }
+    }
+    .A4Portrait& {
+        .SetMarginBoxCover(@A4Portrait-Height, @A4Portrait-Width);
+    }
+    .A4Landscape& {
+        .SetMarginBoxCover(@A4Landscape-Height, @A4Landscape-Width);
+    }
+    .A5Portrait& {
+        .SetMarginBoxCover(@A5Portrait-Height, @A5Portrait-Width);
+    }
+    .A5Landscape& {
+        .SetMarginBoxCover(@A5Landscape-Height, @A5Landscape-Width);
+    }
+    .A6Portrait& {
+        .SetMarginBoxCover(@A6Portrait-Height, @A6Portrait-Width);
+    }
+    .A6Landscape& {
+        .SetMarginBoxCover(@A6Landscape-Height, @A6Landscape-Width);
+    }
+    .B5Portrait& {
+        .SetMarginBoxCover(@B5Portrait-Height, @B5Portrait-Width);
+    }
+    .LetterPortrait& {
+        .SetMarginBoxCover(@LetterPortrait-Height, @LetterPortrait-Width);
+    }
+    .LetterLandscape& {
+        .SetMarginBoxCover(@LetterLandscape-Height, @LetterLandscape-Width);
+    }
+    .HalfLetterPortrait& {
+        .SetMarginBoxCover(@HalfLetterPortrait-Height, @HalfLetterPortrait-Width);
+    }
+    .HalfLetterLandscape& {
+        .SetMarginBoxCover(@HalfLetterLandscape-Height, @HalfLetterLandscape-Width);
+    }
+    .QuarterLetterPortrait& {
+        .SetMarginBoxCover(@QuarterLetterPortrait-Height, @QuarterLetterPortrait-Width);
+    }
+    .QuarterLetterLandscape& {
+        .SetMarginBoxCover(@QuarterLetterLandscape-Height, @QuarterLetterLandscape-Width);
+    }
+}
 
 .insideFrontCover {
-    .bloom-content1{
+    .bloom-content1 {
         display: inherit;
     }
     .bloom-editable {
         height: 100%;
     }
 }
+
 .iso693Code * {
     display: inline;
 }
@@ -83,13 +82,13 @@
     text-align: center;
 }
 
-.frontCover{
+.frontCover {
     @BottomRowHeight: 20px;
     @MarginBetweenMinorItems: 5px;
     @MarginBetweenMajorItems: 15px;
 
-    .marginBox{
-        display:flex;
+    .marginBox {
+        display: flex;
         flex-direction: column;
     }
     // This gives AuthorIllustrator, LanguageName and Topic all the same styling
@@ -135,7 +134,7 @@
             }
         }
     }
-    .placeholder,.bloom-imageContainer {
+    .placeholder, .bloom-imageContainer {
         order: 1;
         flex: 1 1 auto;
         margin-top: @MarginBetweenMajorItems;
@@ -173,7 +172,7 @@
         }
 
         .coverBottomBookTopic {
-            .bloom-editable{
+            .bloom-editable {
                 margin-top: 0;
             }
             .bloom-contentNational2 {
@@ -234,7 +233,6 @@
             line-height: 1.4em; //1.4em is the minimum to show ทไปทั่วพื้  without clipping. (Which we don't really *have* to support by default; the user could change the line-height.)
             margin-bottom: @MarginBetweenMinorItems;
         }
-
 
         margin-bottom: @MarginBetweenMajorItems;
     }
@@ -298,32 +296,20 @@
 }
 
 //note that we allow ".verso" for historical reasons (verso means something like "backside of title page") but we can
-//put the credits page anywhere. If you remove ".verso", old books will be messed up until they get
-//an "update book" operation
-.credits, .verso {
-    //also called the "credits" page.
-    .marginBox {
-        // these extra levels are to increase our specificity score :-)
+//put the credits page anywhere.
+.credits {
+    .Credits-Page-style {
         font-size: 10pt;
-        .bloom-editable {
-            // these extra levels are to increase our specificity score :-)
-            font-size: 10pt;
-        }
-    }
-    .bloom-editable {
-        min-height: 5em;
-        line-height: normal;
+        //min-height: 5em;
+        line-height: 1.4em; // supports ไปทั่วพื้ ที่นั่ ชื่ ปู ช้ต่างป
     }
 
-    //the #versoLicenseAndCopyright is here to support books prior to Jan 2015, until they get a "book update"
-    //we moved away from "verso" because "credits" is more accurate; this page isn't always on the back of
-    //the title page, which is what "verso" means.
-    .licenseAndCopyrightBlock, #versoLicenseAndCopyright{
+    .licenseAndCopyrightBlock {
         min-height: 60px;
         .copyright {
             margin-bottom: @MarginBetweenBlocks;
         }
-        .licenseBlock{
+        .licenseBlock {
             margin-bottom: @MarginBetweenBlocks;
         }
         img {
@@ -341,12 +327,24 @@
         display: block !important;
         margin-bottom: @MarginBetweenBlocks;
     }
-    .versionAcknowledgments{
+    .versionAcknowledgments {
         display: block !important;
         height: auto;
     }
     .licenseUrl {
         display: none;
+    }
+
+    @MarginBetweenBlocks_SmallPaper: .5em;
+    &.A6Landscape, &.A6Portrait, &.QuarterLetterLandscape, &.QuarterLetterPortrait {
+        img {width: 65px};
+
+        .copyright, .ISBNContainer, .licenseBlock, .originalAcknowledgments .bloom-contentNational1{
+            margin-bottom: @MarginBetweenBlocks_SmallPaper;
+        }
+        //.licenseAndCopyrightBlock {
+        //    .licenseBlock{margin-bottom: 1em;}
+        //}
     }
 }
 
@@ -443,11 +441,9 @@ BODY[bookcreationtype="translation"] {
     }
 }
 
-
 .insideBackCover .bloom-editable {
     height: 100%;
 }
-
 
 .outsideBackCover .bloom-editable {
     height: 100%;
