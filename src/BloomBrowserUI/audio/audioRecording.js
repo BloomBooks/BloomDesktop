@@ -14,7 +14,6 @@
 // there is a branch RecordAudioInBrowserSpike in which I attempted to do this.
 // It works sometimes, but often part or all of the recording is silence.
 // Things that still need doing:
-// - Start  recording on mouse down, stop on mouse up
 // - Change appearance of record button while recording
 // - Modify TeamCity build (make a new channel if we need an installer
 //   with this feature and are not merging yet) to add the naudio.dll
@@ -80,16 +79,16 @@ var audioRecording = (function () {
     };
 
     // Todo: For HearThis compatibility, start on mouseDown and end on mouseUp.
-    audioRecording.prototype.recordCurrent = function () {
-        if (this.recording) {
-            this.recording = false;
-            this.fireCSharpEvent("endRecordAudio", "");
-        } else {
-            this.recording = true;
-            var current = $('.ui-audioCurrent');
-            var id = current.attr("id");
-            this.fireCSharpEvent("startRecordAudio", id);
-        }
+    audioRecording.prototype.endRecordCurrent = function () {
+        this.recording = false;
+        this.fireCSharpEvent("endRecordAudio", "");
+    };
+
+    audioRecording.prototype.startRecordCurrent = function () {
+        this.recording = true;
+        var current = $('.ui-audioCurrent');
+        var id = current.attr("id");
+        this.fireCSharpEvent("startRecordAudio", id);
     };
 
     audioRecording.prototype.playCurrent = function () {
@@ -217,8 +216,10 @@ var audioRecording = (function () {
                     $('#audio-prev').click(function () {
                         thisClass.prevSpan();
                     });
-                    $('#audio-record').click(function () {
-                        thisClass.recordCurrent();
+                    $('#audio-record').mousedown(function () {
+                        thisClass.startRecordCurrent();
+                    }).mouseup(function () {
+                        thisClass.endRecordCurrent();
                     });
                     $('#audio-play').click(function () {
                         thisClass.playCurrent();
