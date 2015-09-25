@@ -58,34 +58,36 @@ function SetupImage(image) {
 //the img to fit the available space
 function SetupImageContainer(containerDiv) {
     $(containerDiv).mouseenter(function () {
-        var img = $(this).find('img');
+        var $this = $(this);
+        var img = $this.find('img');
 
-        var buttonModifier = "largeImageButton";
-        if ($(this).height() < 95) {
-            buttonModifier = 'smallImageButton';
+        var buttonModifier = '';
+        if ($this.height() < 95 || $this.width() < 172) {
+            buttonModifier = 'smallButton';
         }
-        $(this).prepend('<button class="pasteImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
-        $(this).prepend('<button class="changeImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.ChangeImage") + '"></button>');
+        $this.prepend('<button class="pasteImageButton imageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
+        $this.prepend('<button class="changeImageButton imageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.ChangeImage") + '"></button>');
 
         SetImageTooltip(containerDiv, img);
 
         if (CreditsAreRelevantForImage(img)) {
-            $(this).prepend('<button class="editMetadataButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.EditMetadata") + '"></button>');
+            $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.EditMetadata") + '"></button>');
         }
 
-        $(this).addClass('hoverUp');
+        $this.addClass('hoverUp');
     })
     .mouseleave(function () {
-        $(this).removeClass('hoverUp');
-        $(this).find(".changeImageButton").each(function () {
-            $(this).remove()
+        var $this = $(this);
+        $this.removeClass('hoverUp');
+        $this.find('.changeImageButton').each(function () {
+            $(this).remove();
         });
-        $(this).find(".pasteImageButton").each(function () {
-            $(this).remove()
+        $this.find('.pasteImageButton').each(function () {
+            $(this).remove();
         });
-        $(this).find(".editMetadataButton").each(function () {
+        $this.find('.editMetadataButton').each(function () {
             if (!$(this).hasClass('imgMetadataProblem')) {
-                $(this).remove()
+                $(this).remove();
             }
         });
     });
