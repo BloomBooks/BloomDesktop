@@ -722,7 +722,7 @@ namespace Bloom.Book
 				documentPath = Path.Combine(_folderPath, fileName);
 				if(!File.Exists(documentPath))
 				{
-					Logger.WriteEvent("BookStorage.Update() Copying missing file {0} to {1}", factoryPath, documentPath);
+					Logger.WriteMinorEvent("BookStorage.Update() Copying missing file {0} to {1}", factoryPath, documentPath);
 					File.Copy(factoryPath, documentPath);
 					return;
 				}
@@ -738,7 +738,7 @@ namespace Bloom.Book
 					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
 					return;
 				}
-				Logger.WriteEvent("BookStorage.Update() Updating file {0} to {1}", factoryPath, documentPath);
+				Logger.WriteMinorEvent("BookStorage.Update() Updating file {0} to {1}", factoryPath, documentPath);
 
 				File.Copy(factoryPath, documentPath, true);
 				//if the source was locked, don't copy the lock over
