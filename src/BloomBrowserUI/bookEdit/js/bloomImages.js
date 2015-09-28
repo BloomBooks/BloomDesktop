@@ -58,7 +58,7 @@ function SetButtonModifier(container) {
     var buttonModifier = '';
     var $container = $(container);
     if ($container.height() < 95 || $container.width() < 172) {
-        buttonModifier = 'smallImageButton';
+        buttonModifier = 'smallButton';
     }
     return buttonModifier;
 }
@@ -72,13 +72,21 @@ function SetupImageContainer(containerDiv) {
 
         var buttonModifier = SetButtonModifier($this);
 
-        $this.prepend('<button class="pasteImageButton disabled imageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
-        $this.prepend('<button class="changeImageButton imageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.ChangeImage") + '"></button>');
+        if (buttonModifier !== 'smallButton') {
+            $this.prepend('<button class="miniButton cutButton disabled" title="' +
+                localizationManager.getText('EditTab.Image.CutImage') + '"></button>');
+            $this.prepend('<button class="miniButton copyButton disabled" title="' +
+                localizationManager.getText('EditTab.Image.CopyImage') + '"></button>');
+        }
+        $this.prepend('<button class="pasteImageButton imageButton ' + buttonModifier +
+            '" title="' + localizationManager.getText('EditTab.Image.PasteImage') + '"></button>');
+        $this.prepend('<button class="changeImageButton imageButton ' + buttonModifier +
+            '" title="' + localizationManager.getText('EditTab.Image.ChangeImage') + '"></button>');
 
         SetImageTooltip(containerDiv, img);
 
         if (CreditsAreRelevantForImage(img)) {
-            $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.EditMetadata") + '"></button>');
+            $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' + localizationManager.getText('EditTab.Image.EditMetadata') + '"></button>');
         }
 
         $this.addClass('hoverUp');
@@ -90,6 +98,9 @@ function SetupImageContainer(containerDiv) {
             $(this).remove();
         });
         $this.find('.pasteImageButton').each(function () {
+            $(this).remove();
+        });
+        $this.find('.miniButton').each(function() {
             $(this).remove();
         });
         $this.find('.editMetadataButton').each(function () {

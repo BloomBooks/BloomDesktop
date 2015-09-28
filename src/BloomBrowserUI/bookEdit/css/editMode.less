@@ -116,11 +116,7 @@ BUTTON.imageButton {
 	    right: 0;
 	    bottom: 0;
 	    background-color: @PasteImageButtonColor;
-	    background-image: url("../img/CutCopyPaste.svg");
-        &.disabled {
-            background-image: url("../img/CutCopyDisabled.svg");
-            background-position: center center;
-        }
+	    background-image: url("../img/pasteButton.svg");
     }
     &.editMetadataButton {
         left: 0;
@@ -141,6 +137,35 @@ BUTTON.editMetadataButton.imgMetadataProblem
 	background-position: left center;
 	border: none;
     background-repeat: no-repeat;
+    pointer-events: none;
+}
+BUTTON.miniButton {
+    width: 20px;
+    height: 18px;
+    right: 60px;
+    border: none;
+    position: absolute;
+    background-position: left center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: transparent;
+    z-index: 120;
+    &.cutButton {
+	    background-image: url("../img/cut.svg");
+        bottom: 27px;
+        &.disabled {
+    	    background-image: url("../img/cutGrey.svg");
+            pointer-events: none;
+        }
+    }
+    &.copyButton {
+	    background-image: url("../img/copy.svg");
+        bottom: 6px;
+        &.disabled {
+    	    background-image: url("../img/copyGrey.svg");
+            pointer-events: none;
+        }
+    }
 }
 BUTTON.deleteButton
 {

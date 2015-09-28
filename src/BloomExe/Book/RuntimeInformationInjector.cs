@@ -221,6 +221,8 @@ namespace Bloom.Book
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.ChangeImage", "Change Image");
 			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.EditMetadata",
 				"Edit Image Credits, Copyright, & License");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.CopyImage", "Copy Image");
+			AddTranslationToDictionaryUsingKey(d, "EditTab.Image.CutImage", "Cut Image");
 
 			// tool tips for style editor
 			AddTranslationToDictionaryUsingKey(d, "BookEditor.FontSizeTip",

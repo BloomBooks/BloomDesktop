@@ -1278,6 +1278,18 @@
         <seg>Paste Image</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.Image.CutImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Cut Image</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.CopyImage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Copy Image</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.ImageChangeWarning">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
