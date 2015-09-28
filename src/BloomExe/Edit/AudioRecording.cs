@@ -240,6 +240,7 @@ namespace Bloom.Edit
 		{
 			_startRecordingTimer.Stop();
 			Debug.WriteLine("Start recording");
+			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path)); // make sure audio directory exists
 			Recorder.BeginRecording(Path);
 		}
 
