@@ -56,7 +56,7 @@ namespace BloomTests.ImageProcessing
 			var image = PalasoImage.FromFile(inputPath);
 			using(var folder = new TemporaryFolder())
 			{
-				var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path);
+				var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path, false);
 				Assert.AreEqual(expectedOutputFormat == ImageFormat.Jpeg ? ".jpg" : ".png", Path.GetExtension(fileName));
 				var outputPath = folder.Combine(fileName);
 				using (var img = Image.FromFile(outputPath))
