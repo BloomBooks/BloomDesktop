@@ -433,6 +433,27 @@ namespace Bloom.Book
 			return _dom.SafeSelectNodes("//head/meta[@name='" + name + "']").Count > 0;
 		}
 
+		/// <summary>
+		/// Fix BL-2789, where Tok Pisin and Indonesian would show up in the source bubble for book titles, 
+		/// saying the equivalent of "new book" in each language. BasicBook doesn't have that anymore,
+		/// but this cleans it up in books made from old shells.
+		/// </summary>
+		public void RemoveExtraBookTitles()
+		{ 
+			//NB: here we're just keeping it simple, not even making sure, for example, that 
+			//"Nupela Book" is in a Tok Pisin div. If it was in English, we'd zap it as well.
+			//This xpath will collect up both divs in the data-div, and also copies of this
+			//that may be in a bloom-translationGroup in the cover and title pages.
+			var genericBookNames = new[] { "Basic Book", "Nupela Book", "Buku Dasar" };
+			foreach (XmlElement n in _dom.SafeSelectNodes("//*[@data-book='bookTitle']"))
+			{
+				if (genericBookNames.Contains(n.InnerText.Trim()))
+				{
+					n.ParentNode.RemoveChild(n);
+				}				
+			}
+		}
+
 		public void RemoveExtraContentTypesMetas()
 		{
 			bool first=true;
