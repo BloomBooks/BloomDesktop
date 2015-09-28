@@ -240,6 +240,10 @@ BUTTON.imageButton.pasteImageButton {
   background-color: #0c8597;
   background-image: url("../img/CutCopyPaste.svg");
 }
+BUTTON.imageButton.pasteImageButton.disabled {
+  background-image: url("../img/CutCopyDisabled.svg");
+  background-position: center center;
+}
 BUTTON.imageButton.editMetadataButton {
   left: 0;
   top: 0;
@@ -254,8 +258,9 @@ BUTTON.editMetadataButton.imgMetadataProblem {
   background-image: url("../img/imageMissingMetaData.svg") !important;
   background: transparent;
   background-size: contain;
-  background-position: 5px 0px;
+  background-position: left center;
   border: none;
+  background-repeat: no-repeat;
 }
 BUTTON.deleteButton {
   position: absolute;

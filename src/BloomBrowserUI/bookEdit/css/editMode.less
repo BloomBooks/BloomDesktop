@@ -111,12 +111,16 @@ BUTTON.imageButton {
 	    top: 0;
 	    background-color: @ChangeImageButtonColor;
 	    background-image: url("../img/ChangeImage.svg");
-   }
+    }
     &.pasteImageButton {
 	    right: 0;
 	    bottom: 0;
 	    background-color: @PasteImageButtonColor;
 	    background-image: url("../img/CutCopyPaste.svg");
+        &.disabled {
+            background-image: url("../img/CutCopyDisabled.svg");
+            background-position: center center;
+        }
     }
     &.editMetadataButton {
         left: 0;
@@ -134,8 +138,9 @@ BUTTON.editMetadataButton.imgMetadataProblem
 	background-image: url("../img/imageMissingMetaData.svg") !important;
 	background: transparent;
 	background-size: contain;
-	background-position: 5px 0px;
+	background-position: left center;
 	border: none;
+    background-repeat: no-repeat;
 }
 BUTTON.deleteButton
 {
