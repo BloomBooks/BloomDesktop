@@ -54,6 +54,15 @@ function SetupImage(image) {
     });
 }
 
+function SetButtonModifier(container) {
+    var buttonModifier = '';
+    var $container = $(container);
+    if ($container.height() < 95 || $container.width() < 172) {
+        buttonModifier = 'smallImageButton';
+    }
+    return buttonModifier;
+}
+
 //Bloom "imageContainer"s are <div>'s with wrap an <img>, and automatically proportionally resize
 //the img to fit the available space
 function SetupImageContainer(containerDiv) {
@@ -61,11 +70,9 @@ function SetupImageContainer(containerDiv) {
         var $this = $(this);
         var img = $this.find('img');
 
-        var buttonModifier = '';
-        if ($this.height() < 95 || $this.width() < 172) {
-            buttonModifier = 'smallButton';
-        }
-        $this.prepend('<button class="pasteImageButton imageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
+        var buttonModifier = SetButtonModifier($this);
+
+        $this.prepend('<button class="pasteImageButton disabled imageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
         $this.prepend('<button class="changeImageButton imageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.ChangeImage") + '"></button>');
 
         SetImageTooltip(containerDiv, img);
@@ -140,19 +147,16 @@ function SetOverlayForImagesWithoutMetadata(container) {
 function UpdateOverlay(container, img) {
 
     $(container).find(".imgMetadataProblem").each(function () {
-        $(this).remove()
+        $(this).remove();
     });
 
     //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
     var copyright = $(img).attr('data-copyright');
-    if (!copyright || copyright.length == 0) {
+    if (!copyright || copyright.length === 0) {
 
-        var buttonModifier = "largeImageButton";
-        if ($(container).height() < 80) {
-            buttonModifier = 'smallImageButton';
-        }
+        var buttonModifier = SetButtonModifier(container);
 
-        $(container).prepend("<button class='editMetadataButton imgMetadataProblem " + buttonModifier + "' title='Image is missing information on Credits, Copyright, or License'></button>");
+        $(container).prepend("<button class='editMetadataButton imageButton imgMetadataProblem " + buttonModifier + "' title='Image is missing information on Credits, Copyright, or License'></button>");
     }
 }
 
