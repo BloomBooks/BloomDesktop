@@ -350,10 +350,10 @@
 .credits .licenseUrl {
   display: none;
 }
-.credits.A6Landscape img,
-.credits.A6Portrait img,
-.credits.QuarterLetterLandscape img,
-.credits.QuarterLetterPortrait img {
+.credits.A6Landscape .licenseImage,
+.credits.A6Portrait .licenseImage,
+.credits.QuarterLetterLandscape .licenseImage,
+.credits.QuarterLetterPortrait .licenseImage {
   width: 65px;
 }
 .credits.A6Landscape .copyright,
