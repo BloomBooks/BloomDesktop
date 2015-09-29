@@ -55,7 +55,8 @@ class audioRecording {
 
     nextSpan() {
         var current: JQuery = $('.ui-audioCurrent');
-        var next: JQuery = current.nextAll('.audio-sentence').first();
+        var audioElts = $('.audio-sentence');
+        var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
         if (next.length === 0) return; // enhance: go to next page??
         this.setCurrentSpan(current, next);
     }
@@ -72,7 +73,10 @@ class audioRecording {
 
     prevSpan() {
         var current: JQuery = $('.ui-audioCurrent');
-        var prev: JQuery = current.prevAll('.audio-sentence').first();
+        var audioElts = $('.audio-sentence');
+        var currentIndex = audioElts.index(current);
+        if (currentIndex === 0) return;
+        var prev: JQuery = audioElts.eq(currentIndex - 1);
         if (prev.length === 0) return;
         this.setCurrentSpan(current, prev);
     }
