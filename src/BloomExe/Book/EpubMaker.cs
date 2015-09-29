@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
@@ -130,7 +131,7 @@ namespace Bloom.Book
 					var srcAttr = img.Attributes["src"];
 					if (srcAttr == null)
 						continue; // hug?
-					var imgName = srcAttr.Value;
+					var imgName = WebUtility.UrlDecode(srcAttr.Value);
 					if (string.IsNullOrEmpty(imgName))
 						continue;
 					// Images are always directly in the folder
@@ -754,10 +755,13 @@ namespace Bloom.Book
 					var elt = node as XmlElement;
 					if (elt == null)
 						continue;
-					var oldName = elt.Attributes[attr].Value;
+					// These attribute SHOULD contain URLs, so it should be necessary to decode them
+					// to get actual file names, if there are any special characters involved.
+					var oldName = WebUtility.UrlDecode(elt.Attributes[attr].Value);
+
 					string newName;
 					if (_mapChangedFileNames.TryGetValue(oldName, out newName))
-						elt.SetAttribute(attr, newName);
+						elt.SetAttribute(attr, WebUtility.UrlEncode(newName));
 				}
 			}
 		}

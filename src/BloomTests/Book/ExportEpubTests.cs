@@ -32,7 +32,7 @@ namespace BloomTests.Book
 								<div lang = '*'>more text</div>
 							</div>
 							<div><img src='myImage.png'></img></div>
-							<div><img src='my image.png'></img></div>
+							<div><img src='my%20image.png'></img></div>
 						</div>
 					</div>",
 						   @"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
