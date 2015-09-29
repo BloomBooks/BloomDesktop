@@ -53,7 +53,8 @@ var audioRecording = (function () {
     }
     audioRecording.prototype.nextSpan = function () {
         var current = $('.ui-audioCurrent');
-        var next = current.nextAll('.audio-sentence').first();
+        var audioElts = $('.audio-sentence');
+        var next = audioElts.eq(audioElts.index(current) + 1);
         if (next.length === 0)
             return; // enhance: go to next page??
         this.setCurrentSpan(current, next);
@@ -69,7 +70,11 @@ var audioRecording = (function () {
     };
     audioRecording.prototype.prevSpan = function () {
         var current = $('.ui-audioCurrent');
-        var prev = current.prevAll('.audio-sentence').first();
+        var audioElts = $('.audio-sentence');
+        var currentIndex = audioElts.index(current);
+        if (currentIndex === 0)
+            return;
+        var prev = audioElts.eq(currentIndex - 1);
         if (prev.length === 0)
             return;
         this.setCurrentSpan(current, prev);
