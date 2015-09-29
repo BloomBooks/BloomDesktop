@@ -248,6 +248,24 @@ namespace Bloom.Book
 				rootElt.WriteTo(writer);
 		}
 
+		private string AudioPathForId(string id)
+		{
+			var root = Path.Combine(_storage.FolderPath, "audio");
+			var extensions = new [] {"mp3", "mp4"}; // .ogg,, .wav, ...?
+			var fileNames = new List<string>(new [] {id});
+			if (id.StartsWith("i") && id.Length > 1 && Char.IsDigit(id[1]))
+				fileNames.Add(id.Substring(1)); // probably an ID where we prepended 'i';  look for that option too
+			foreach (var name in fileNames)
+			{
+				foreach (var ext in extensions)
+				{
+					var path = Path.Combine(root, Path.ChangeExtension(name, ext));
+					if (File.Exists(path))
+						return path;
+				}
+			}
+			return null;
+		}
 		/// <summary>
 		/// Create an audio overlay for the page if appropriate.
 		/// We are looking for the page to contain spans with IDs. For each such ID X,
@@ -263,9 +281,7 @@ namespace Bloom.Book
 			var spansWithIds = pageDom.RawDom.SafeSelectNodes("//span[@id]").Cast<XmlElement>();
 			// todo: test case where an mp4 is missing.
 			var spansWithAudio =
-				spansWithIds.Where(
-					x => File.Exists(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(x.Attributes["id"].Value, "mp3")))
-					|| File.Exists(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(x.Attributes["id"].Value, "mp4"))));
+				spansWithIds.Where(x =>AudioPathForId(x.Attributes["id"].Value) != null);
 			if (!spansWithAudio.Any())
 				return; // todo: test this case
 			var overlayName = GetOverlayName(pageDocName);
@@ -288,17 +304,15 @@ namespace Bloom.Book
 			int index = 1;
 			foreach (var span in spansWithAudio)
 			{
-				var extension = "mp3";
-				if (!File.Exists(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(span.Attributes["id"].Value, "mp3"))))
-					extension = "mp4";
 				var spanId = span.Attributes["id"].Value;
+				var path = AudioPathForId(spanId);
 				seq.Add(new XElement(smil+"par",
 					new XAttribute("id", "s" + index++),
 					new XElement(smil + "text",
 						new XAttribute("src", pageDocName + "#" + spanId)),
 						new XElement(smil + "audio",
-							new XAttribute("src", "audio/" + spanId + "." + extension))));
-				CopyFileToEpub(Path.Combine(_storage.FolderPath, "audio", Path.ChangeExtension(spanId, extension)));
+							new XAttribute("src", "audio/" + Path.GetFileName(path)))));
+				CopyFileToEpub(path);
 			}
 			var overlayPath = Path.Combine(_contentFolder, overlayName);
 			using (var writer = XmlWriter.Create(overlayPath))
