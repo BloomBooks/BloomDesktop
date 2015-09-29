@@ -282,7 +282,8 @@ namespace Bloom.web
 			// network mapped drives don't work if the computer isn't on a network.
 			// So we'll change the localhost\C$ to C: (same for other letters)
 			var pathArray = localPath.Substring(10).ToCharArray();
-			if (pathArray[1] == '$' && pathArray[2] == '/' && pathArray[0] >= 'A' && pathArray[0] <= 'Z')
+			var drive = char.ToUpper(pathArray[0]);
+			if (pathArray[1] == '$' && pathArray[2] == '/' && drive >= 'A' && drive <= 'Z')
 				pathArray[1] = ':';
 			return new String(pathArray);
 #endif
