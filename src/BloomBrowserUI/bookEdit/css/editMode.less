@@ -150,7 +150,10 @@ BUTTON.miniButton {
     background-size: contain;
     background-color: transparent;
     z-index: 120;
-    &.cutButton {
+    &:hover {
+        border: 1px inset @ImageButtonBorder;
+    }
+    &.cutImageButton {
 	    background-image: url("../img/cut.svg");
         bottom: 27px;
         &.disabled {
@@ -158,7 +161,7 @@ BUTTON.miniButton {
             pointer-events: none;
         }
     }
-    &.copyButton {
+    &.copyImageButton {
 	    background-image: url("../img/copy.svg");
         bottom: 6px;
         &.disabled {

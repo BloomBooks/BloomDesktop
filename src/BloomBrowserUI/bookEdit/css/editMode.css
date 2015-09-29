@@ -271,19 +271,22 @@ BUTTON.miniButton {
   background-color: transparent;
   z-index: 120;
 }
-BUTTON.miniButton.cutButton {
+BUTTON.miniButton:hover {
+  border: 1px inset #716666;
+}
+BUTTON.miniButton.cutImageButton {
   background-image: url("../img/cut.svg");
   bottom: 27px;
 }
-BUTTON.miniButton.cutButton.disabled {
+BUTTON.miniButton.cutImageButton.disabled {
   background-image: url("../img/cutGrey.svg");
   pointer-events: none;
 }
-BUTTON.miniButton.copyButton {
+BUTTON.miniButton.copyImageButton {
   background-image: url("../img/copy.svg");
   bottom: 6px;
 }
-BUTTON.miniButton.copyButton.disabled {
+BUTTON.miniButton.copyImageButton.disabled {
   background-image: url("../img/copyGrey.svg");
   pointer-events: none;
 }
