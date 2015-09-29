@@ -73,9 +73,9 @@ function SetupImageContainer(containerDiv) {
         var buttonModifier = SetButtonModifier($this);
 
         if (buttonModifier !== 'smallButton') {
-            $this.prepend('<button class="miniButton cutButton disabled" title="' +
+            $this.prepend('<button class="miniButton cutImageButton disabled" title="' +
                 localizationManager.getText('EditTab.Image.CutImage') + '"></button>');
-            $this.prepend('<button class="miniButton copyButton disabled" title="' +
+            $this.prepend('<button class="miniButton copyImageButton disabled" title="' +
                 localizationManager.getText('EditTab.Image.CopyImage') + '"></button>');
         }
         $this.prepend('<button class="pasteImageButton imageButton ' + buttonModifier +
@@ -85,8 +85,12 @@ function SetupImageContainer(containerDiv) {
 
         SetImageTooltip(containerDiv, img);
 
-        if (CreditsAreRelevantForImage(img)) {
-            $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' + localizationManager.getText('EditTab.Image.EditMetadata') + '"></button>');
+        if (IsImageReal(img)) {
+            $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' +
+                localizationManager.getText('EditTab.Image.EditMetadata') + '"></button>');
+            $this.find('.miniButton').each(function() {
+                $(this).removeClass('disabled');
+            });
         }
 
         $this.addClass('hoverUp');
@@ -129,8 +133,11 @@ function getFileLengthString(bytes) {
     }
 }
 
-
-function CreditsAreRelevantForImage(img) {
+// IsImageReal returns true if the img tag refers to a non-placeholder image
+// If the image is a placeholder:
+// - we don't want to offer to edit placeholder credits
+// - we don't want to activate the minibuttons for cut/copy
+function IsImageReal(img) {
     return $(img).attr('src').toLowerCase().indexOf('placeholder') == -1; //don't offer to edit placeholder credits
 }
 
@@ -139,7 +146,7 @@ function CreditsAreRelevantForImage(img) {
 function SetOverlayForImagesWithoutMetadata(container) {
     $(container).find(".bloom-imageContainer").each(function () {
         var img = $(this).find('img');
-        if (!CreditsAreRelevantForImage(img)) {
+        if (!IsImageReal(img)) {
             return;
         }
         var container = $(this);
