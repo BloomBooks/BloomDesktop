@@ -262,6 +262,7 @@ namespace Bloom.Publish
 		{
 			if (_model == null || _model.BookSelection.CurrentSelection==null)
 				return;
+			_epubRadio.Visible = Settings.Default.ShowExperimentalCommands;
 
 			_layoutChoices.Text = _model.PageLayout.ToString();
 
