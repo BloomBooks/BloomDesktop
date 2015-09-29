@@ -1,7 +1,7 @@
 ﻿// This class supports creating audio recordings for talking books.
 // Things currently get started when the user selects the "record audio" item in
 // the right-click menu while editing. This invokes the static function recordAudio
-// in this file, which invokes audioRecording.startRecording. That code breaks the 
+// in this file, which invokes audioRecording.startRecording. That code breaks the
 // page's text into sentence-length spans (if not already done), makes sure each
 // has an id (preserving existing ones, and using guids for new ones). Then it
 // displays  a popup 'bubble' with controls for moving between sentences,
@@ -566,15 +566,32 @@ class audioRecording {
             });
     }
 
-    makeSentenceSpans(div: JQuery) {
-        var markedSentences = div.find("span.audio-sentence");
+    makeSentenceSpans(root: JQuery) {
+        var children = root.children();
+        var processedChild: boolean = false;
+        for (var i = 0; i < children.length; i++) {
+            var child: HTMLElement = children[i];
+            var name = child.nodeName.toLowerCase();
+            // Review: is there a better way to pick out the elements that can occur within content elements?
+            if (name != 'span' && name != 'br' && name != 'i' && name != 'b' && name != 'u') {
+                processedChild = true;
+                this.makeSentenceSpans($(child));
+            }
+        }
+        if (!processedChild) // root is a leaf; process its actual content
+            this.makeSentenceSpansLeaf(root);
+        // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
+    }
+
+    makeSentenceSpansLeaf(elt: JQuery) {
+        var markedSentences = elt.find("span.audio-sentence");
         var reuse = [];
         markedSentences.each(function(index) {
             reuse.push({ id: $(this).attr('id'), md5: $(this).attr('recordingmd5') });
             $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
         });
 
-        var fragments: textFragment[] = libsynphony.stringToSentences(div.html());
+        var fragments: textFragment[] = libsynphony.stringToSentences(elt.html());
 
         for (var i = 0; i < fragments.length; i++) {
             var fragment = fragments[i];
@@ -614,7 +631,7 @@ class audioRecording {
         }
 
         // set the html
-        div.html(newHtml);
+        elt.html(newHtml);
     }
 
     isRecordable(fragment: textFragment):Boolean {
