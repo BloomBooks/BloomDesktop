@@ -239,6 +239,9 @@ DIV.hoverUp {
   background-image: url("../img/pasteButton.svg");
   background-position: right center;
 }
+.imageButton.pasteImageButton.smallButton {
+  background-position: center center;
+}
 .imageButton.editMetadataButton {
   left: 0;
   top: 0;
