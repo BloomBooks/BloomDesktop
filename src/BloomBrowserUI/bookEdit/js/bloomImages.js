@@ -54,10 +54,12 @@ function SetupImage(image) {
     });
 }
 
-function SetButtonModifier(container) {
+function GetButtonModifier(container) {
     var buttonModifier = '';
+    var imageButtonWidth = 87;
+    var imageButtonHeight = 52;
     var $container = $(container);
-    if ($container.height() < 95 || $container.width() < 172) {
+    if ($container.height() < imageButtonHeight * 2 || $container.width() < imageButtonWidth * 2) {
         buttonModifier = 'smallButton';
     }
     return buttonModifier;
@@ -70,7 +72,7 @@ function SetupImageContainer(containerDiv) {
         var $this = $(this);
         var img = $this.find('img');
 
-        var buttonModifier = SetButtonModifier($this);
+        var buttonModifier = GetButtonModifier($this);
 
         if (buttonModifier !== 'smallButton') {
             $this.prepend('<button class="miniButton cutImageButton disabled" title="' +
@@ -138,7 +140,7 @@ function getFileLengthString(bytes) {
 // - we don't want to offer to edit placeholder credits
 // - we don't want to activate the minibuttons for cut/copy
 function IsImageReal(img) {
-    return $(img).attr('src').toLowerCase().indexOf('placeholder') == -1; //don't offer to edit placeholder credits
+    return $(img).attr('src').toLowerCase().indexOf('placeholder') == -1;
 }
 
 //While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
@@ -172,7 +174,7 @@ function UpdateOverlay(container, img) {
     var copyright = $(img).attr('data-copyright');
     if (!copyright || copyright.length === 0) {
 
-        var buttonModifier = SetButtonModifier(container);
+        var buttonModifier = GetButtonModifier(container);
 
         $(container).prepend("<button class='editMetadataButton imageButton imgMetadataProblem " + buttonModifier + "' title='Image is missing information on Credits, Copyright, or License'></button>");
     }

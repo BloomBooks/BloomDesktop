@@ -122,24 +122,26 @@ namespace Bloom.Workspace
 			if (dataObject == null)
 				return null;
 
-			var formatsAvailable = dataObject.GetFormats();
-			PalasoImage image = null;
 			var textData = String.Empty;
-			if (formatsAvailable.Contains(DataFormats.UnicodeText))
+			if (dataObject.GetDataPresent(DataFormats.UnicodeText))
 				textData = dataObject.GetData(DataFormats.UnicodeText) as String;
 			if (Clipboard.ContainsImage())
 			{
-				image = PalasoImage.FromImage(Clipboard.GetImage());
-				if (String.IsNullOrEmpty(textData))
+				PalasoImage image = null;
+				var haveFileUrl = false;
+				try
 				{
-					return image;
+					image = PalasoImage.FromImage(Clipboard.GetImage()); // this method won't copy any metadata
+					haveFileUrl = !String.IsNullOrEmpty(textData) && File.Exists(textData);
 				}
-				// we have an image on the clipboard, we also have text
-				// if the text is a valid url to an image file, use that to create a PalasoImage
-				if (File.Exists(textData))
+				catch (Exception e)
 				{
-					return PalasoImage.FromFile(textData);
+					Console.WriteLine(e);
 				}
+				// If we have an image on the clipboard, and we also have text that is a valid url to an image file,
+				// use the url to create a PalasoImage (which will pull in any metadata associated with the image too.
+				return !haveFileUrl ? image : PalasoImage.FromFile(textData);
+
 			}
 			// the ContainsImage() returns false when copying an PNG from MS Word
 			// so here we explicitly ask for a PNG and see if we can convert it.
