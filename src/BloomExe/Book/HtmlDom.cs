@@ -784,5 +784,47 @@ namespace Bloom.Book
 				return new string[] {};
 			return classes.SplitTrimmed(' ');
 		}
+		/// <summary>
+		/// modify all images on the page so that if the browser fails to load the image, it will
+		/// execute a function whose body is handlerJs.
+		/// For example, handlerJs might contain location.reload(true) to force a Refresh
+		/// that will hopefully succeed.
+		/// </summary>
+		/// <param name="handlerJs"></param>
+		public void AddImageErrorHandler(string handlerJs)
+		{
+			var images = SafeSelectNodes("//img[@src]");
+			var jsBldr = new StringBuilder();
+			foreach (XmlElement image in images)
+			{
+				var src = image.Attributes["src"].Value;
+				// We remove the source attribute so that the image will not attempt to load until the JS
+				// we add restores it...which happens AFTER we attach the error handler.
+				// Without this precaution a failure might be missed before we get around to attaching the
+				// handler.
+				image.RemoveAttribute("src");
+				var idAttr = image.Attributes["id"];
+				string id;
+				if (idAttr == null)
+				{
+					id = Guid.NewGuid().ToString();
+					image.SetAttribute("id", id);
+				}
+				else
+				{
+					id = idAttr.Value;
+				}
+				// Don't assume the page has JQuery.
+				//jsBldr.Append("$('#" + id + "').on('error', function() {" + handlerJs + "}).attr('src', '" + src + "');");
+				jsBldr.Append("document.getElementById('" + id + "').addEventListener('error', function() {" + handlerJs + "}); document.getElementById('" + id + "').setAttribute('src', '" + src + "');\n");
+			}
+			var script = RawDom.CreateElement("script");
+			script.InnerText = jsBldr.ToString();
+			// Note that the script must go at the end of the body, so that the elements it wants to find
+			// will be parsed before the javascript executes and looks for them. I'm deliberately NOT using
+			// anything like an onload event, because I want this to execute before the C# code gets notified
+			// that the document is ready.
+			RawDom.GetElementsByTagName("body").Cast<XmlElement>().First().AppendChild(script);
+		}
 	}
 }
