@@ -786,7 +786,6 @@ namespace Bloom.Book
 				fileName = fileName + fix;
 				dstPath = Path.Combine(_contentFolder, fileName);
 			}
-			fileName = fileName.Replace("/", "_");
 			if (originalFileName != fileName)
 				_mapChangedFileNames[originalFileName] = fileName;
 			Directory.CreateDirectory(Path.GetDirectoryName(dstPath));
@@ -919,6 +918,7 @@ namespace Bloom.Book
 			// Attempt to use file name as ID for recognizability
 			// Remove spaces which are illegal in XML IDs.
 			// Add initial letter to avoid starting with digit
+			// Todo: various less likely illegal ID characters should be dealt with eventually.
 			id = "f" + Path.GetFileNameWithoutExtension(item).Replace(" ", "");
 			var idOriginal = id;
 			for (int i = 1; _idsUsed.Contains(id.ToLowerInvariant()); i++)
