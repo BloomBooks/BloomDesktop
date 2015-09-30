@@ -352,6 +352,8 @@ namespace Bloom.Edit
 				var lang2 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _collectionSettings.Language2Iso639Code);
 				if (lang2 != null)
 					lang2.Selected = CurrentBook.MultilingualContentLanguage2 == _collectionSettings.Language2Iso639Code;
+				else
+					Logger.WriteEvent("Found no Lang2 in ContentLanguages; count= " + _contentLanguages.Count);
 
 				//the first language is always selected. This covers the common situation in shellbook collections where
 				//we have English as both the 1st and national language. https://jira.sil.org/browse/BL-756
