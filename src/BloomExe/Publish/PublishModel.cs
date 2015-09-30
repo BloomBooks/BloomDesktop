@@ -258,7 +258,11 @@ namespace Bloom.Publish
 
 		public bool ShowBookletOption
 		{
-			get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }
+			get
+			{
+				return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
+				       BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.PageSizeName != "Letter";
+			}
 		}
 
 		public bool ShowCoverOption

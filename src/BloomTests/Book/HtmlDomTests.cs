@@ -207,5 +207,34 @@ namespace BloomTests.Book
 			HtmlDom.MergeClassesIntoNewPage((XmlElement)sourceDom.SelectSingleNode("div"), targetNode, classesToDrop);
 			return targetNode.GetStringAttribute("class");
 		}
+
+		[Test]
+		public void RemoveExtraBookTitles_BookTitlesThatAreJustGeneric_Removed()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='en'>something unique</div>
+						<div data-book='bookTitle' lang='id'>Buku Dasar</div>
+						<div data-book='bookTitle' lang='tpi'>Nupela Book</div>
+				</div>
+				<div id='somePage'>
+					<div class='bloom-translationGroup bookTitle'>
+						<div class='bloom-editable' data-book='bookTitle' lang='tpi'>
+							<p>Nupela Book<br/></p>
+						</div>
+						<div class='bloom-editable' data-book='bookTitle' lang='id'>
+							<p>Buku Dasar</p>
+						</div>
+						<div class='bloom-editable' data-book='bookTitle'>
+							<p>something unique<br/></p>
+						</div>
+					</div>
+				</div>
+			 </body></html>");
+			bookDom.RemoveExtraBookTitles();
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='en' and text()='something unique']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='id']", 0);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='tpi']", 0);
+		}
 	}
 }

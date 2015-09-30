@@ -168,13 +168,18 @@ namespace Bloom.Publish
 			// We choose not to remember the last state this tab might have been in.
 			// Also since we don't know if the pdf is out of date, we assume it is, and don't show the prior pdf.
 			// SetModelFromButtons takes care of both of these things for the model
-			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked = _simpleAllPagesRadio.Checked = _uploadRadio.Checked = false;
+			ClearRadioButtons();
 			SetModelFromButtons();
 			_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
 
 			UpdateDisplay();
 
 			_activated = true;
+		}
+
+		private void ClearRadioButtons()
+		{
+			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked = _simpleAllPagesRadio.Checked = _uploadRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -298,7 +303,9 @@ namespace Bloom.Publish
 			var item = (ToolStripMenuItem)sender;
 			_model.PageLayout = ((Layout)item.Tag);
 			_layoutChoices.Text = _model.PageLayout.ToString();
-			ControlsChanged();
+			ClearRadioButtons();
+			UpdateDisplay();
+			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
 		}
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
