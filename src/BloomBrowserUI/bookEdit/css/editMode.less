@@ -89,16 +89,14 @@ DIV.hoverUp
 {
 	background-color: @ImageHoverOverlay;
 }
-BUTTON.imageButton {
+.imageButton {
 	width: 87px;
 	height: 52px;
-	border-radius: 3px;
 	z-index: 100;
     position: absolute;
 	background-repeat: no-repeat;
     background-size: contain;
     background-position: center center;
-	border: 2px outset @ImageButtonBorder;
     &.smallButton {
 	    width: 50%;
 	    height: 50%;
@@ -110,34 +108,37 @@ BUTTON.imageButton {
 	    right: 0;
 	    top: 0;
 	    background-color: @ChangeImageButtonColor;
-	    background-image: url("../img/ChangeImage.svg");
+	    background-image: url("../img/changeButton.svg");
     }
     &.pasteImageButton {
 	    right: 0;
 	    bottom: 0;
 	    background-color: @PasteImageButtonColor;
 	    background-image: url("../img/pasteButton.svg");
+        background-position: right center;
     }
     &.editMetadataButton {
         left: 0;
 	    top: 0;
-	    z-index: 120;
         background-image: url("../img/imageMetaDataButton.svg") !important;
 	    background-color: @MetadataButtonColor;
-    }
-    &:hover {
-        border: inset @ImageButtonBorder;
+        &.imgMetadataProblem {
+            background-color: transparent;
+            background-image: url("../img/imageMissingMetaData.svg") !important;
+            border: none;
+        }
     }
 }
-BUTTON.editMetadataButton.imgMetadataProblem
-{
-	background-image: url("../img/imageMissingMetaData.svg") !important;
-	background: transparent;
-	background-size: contain;
-	background-position: left center;
-	border: none;
-    background-repeat: no-repeat;
-    pointer-events: none;
+.hoverUp .imageButton {
+   	border: 2px outset @ImageButtonBorder !important;
+	border-radius: 3px !important;
+    &:hover {
+        border: inset @ImageButtonBorder !important;
+    }
+    &.editMetadataButton {
+        background-image: none;
+        background-color: @MetadataButtonColor !important;
+    }
 }
 BUTTON.miniButton {
     width: 20px;

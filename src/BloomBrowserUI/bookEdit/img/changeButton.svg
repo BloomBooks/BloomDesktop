@@ -9,14 +9,14 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="92"
-   height="52.91"
-   id="svg3227"
+   width="69.816788"
+   height="64.22052"
+   id="svg3003"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="ChangeImage.svg">
+   sodipodi:docname="changeButton.svg">
   <defs
-     id="defs3229" />
+     id="defs3005" />
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -24,23 +24,23 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="45.12849"
-     inkscape:cy="43.209887"
+     inkscape:zoom="2.8"
+     inkscape:cx="28.638658"
+     inkscape:cy="26.527458"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="876"
-     inkscape:window-height="677"
-     inkscape:window-x="104"
-     inkscape:window-y="104"
+     inkscape:window-width="962"
+     inkscape:window-height="662"
+     inkscape:window-x="78"
+     inkscape:window-y="78"
      inkscape:window-maximized="0"
-     fit-margin-top="0"
-     fit-margin-left="0"
-     fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-top="5"
+     fit-margin-left="5"
+     fit-margin-right="5"
+     fit-margin-bottom="5" />
   <metadata
-     id="metadata3232">
+     id="metadata3008">
     <rdf:RDF>
       <cc:Work
          rdf:about="">
@@ -55,17 +55,10 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-68.09365,-417.34)">
-    <rect
-       style="fill:#96668f;fill-opacity:1;fill-rule:nonzero;stroke:#c4c0c0;stroke-width:1.55536795;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
-       id="rect4480"
-       width="90.413361"
-       height="51.360016"
-       x="68.873543"
-       y="418.11075" />
+     transform="translate(-346.36135,-494.66913)">
     <g
        id="g3916"
-       transform="matrix(2.0799299,0,0,2.0799299,-77.072325,-1725.1558)"
+       transform="matrix(2.6329259,0,0,2.6339014,138.75258,-2220.9864)"
        inkscape:export-filename="C:\dev\Bloom\DistFiles\root\changeImageButtonSmall.png"
        inkscape:export-xdpi="38.779999"
        inkscape:export-ydpi="38.779999">
