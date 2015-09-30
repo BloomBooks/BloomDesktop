@@ -777,13 +777,15 @@ namespace BloomTests.Publish
 			XNamespace ns = doc.Root.Attribute("xmlns").Value;
 			var packageFile = doc.Root.Element(ns + "rootfiles").Element(ns + "rootfile").Attribute("full-path").Value;
 			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
-			var packageData = StripXmlHeader(GetZipContent(zip, packageFile)).Replace("application/smil", "application^slash^smil");
+			var packageData = StripXmlHeader(GetZipContent(zip, packageFile)).Replace("application/smil", "application^slash^smil").Replace("audio/", "audio^slash^");
 			var packageDoc = XDocument.Parse(packageData);
 			XNamespace opf = "http://www.idpf.org/2007/opf";
 
 			var assertManifest = AssertThatXmlIn.String(packageData);
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fa23' and @href='audio^slash^a23.mp3' and @media-type='audio^slash^mpeg']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fa123' and @href='audio^slash^a123.mp4' and @media-type='audio^slash^mp4']");
 
 			var smilData = StripXmlHeader(GetZipContent(zip, "content/1_overlay.smil"));
 			var mgr = new XmlNamespaceManager(new NameTable());
