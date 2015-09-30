@@ -56,11 +56,15 @@
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
     <Content Include="bookEdit\html\font-awesome\Readme.txt" />
-    <Content Include="bookEdit\img\ChangeImage.svg" />
-    <Content Include="bookEdit\img\CutCopyPaste.svg" />
+    <Content Include="bookEdit\img\changeButton.svg" />
+    <Content Include="bookEdit\img\copy.svg" />
+    <Content Include="bookEdit\img\copyGrey.svg" />
+    <Content Include="bookEdit\img\cut.svg" />
+    <Content Include="bookEdit\img\cutGrey.svg" />
     <Content Include="bookEdit\img\dragHandle.png" />
     <Content Include="bookEdit\img\FontSizeLetter.svg" />
     <Content Include="bookEdit\img\LineSpacing.png" />
+    <Content Include="bookEdit\img\pasteButton.svg" />
     <Content Include="bookEdit\img\WordSpacing.png" />
     <Content Include="bookEdit\js\bloomImages.js" />
     <Content Include="bookEdit\js\BloomToolbox.js" />

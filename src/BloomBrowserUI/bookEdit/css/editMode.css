@@ -210,54 +210,56 @@ DIV.readOnlyInTranslationMode {
 DIV.hoverUp {
   background-color: #d5d5e4;
 }
-BUTTON.imageButton {
+.imageButton {
   width: 87px;
   height: 52px;
-  border-radius: 3px;
   z-index: 100;
   position: absolute;
   background-repeat: no-repeat;
   background-size: contain;
   background-position: center center;
-  border: 2px outset #716666;
 }
-BUTTON.imageButton.smallButton {
+.imageButton.smallButton {
   width: 50%;
   height: 50%;
   max-height: 52px;
   max-width: 87px;
   border-style: none;
 }
-BUTTON.imageButton.changeImageButton {
+.imageButton.changeImageButton {
   right: 0;
   top: 0;
   background-color: #96668f;
-  background-image: url("../img/ChangeImage.svg");
+  background-image: url("../img/changeButton.svg");
 }
-BUTTON.imageButton.pasteImageButton {
+.imageButton.pasteImageButton {
   right: 0;
   bottom: 0;
   background-color: #0c8597;
   background-image: url("../img/pasteButton.svg");
+  background-position: right center;
 }
-BUTTON.imageButton.editMetadataButton {
+.imageButton.editMetadataButton {
   left: 0;
   top: 0;
-  z-index: 120;
   background-image: url("../img/imageMetaDataButton.svg") !important;
   background-color: #3a7f62;
 }
-BUTTON.imageButton:hover {
-  border: inset #716666;
-}
-BUTTON.editMetadataButton.imgMetadataProblem {
+.imageButton.editMetadataButton.imgMetadataProblem {
+  background-color: transparent;
   background-image: url("../img/imageMissingMetaData.svg") !important;
-  background: transparent;
-  background-size: contain;
-  background-position: left center;
   border: none;
-  background-repeat: no-repeat;
-  pointer-events: none;
+}
+.hoverUp .imageButton {
+  border: 2px outset #716666 !important;
+  border-radius: 3px !important;
+}
+.hoverUp .imageButton:hover {
+  border: inset #716666 !important;
+}
+.hoverUp .imageButton.editMetadataButton {
+  background-image: none;
+  background-color: #3a7f62 !important;
 }
 BUTTON.miniButton {
   width: 20px;
