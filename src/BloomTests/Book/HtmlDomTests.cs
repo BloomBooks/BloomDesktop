@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Bloom;
 using NUnit.Framework;
 using Bloom.Book;
 using Palaso.TestUtilities;
@@ -185,6 +186,29 @@ namespace BloomTests.Book
 		{
 			AssertHasClasses("one two three", MergeClasses("one drop two delete", "three", new[] { "drop","delete" }));
 		}
+		[Test]
+		public void GetImageElementUrl_ElementIsImg_ReturnsSrc()
+		{
+			var element = MakeElement("<img src='test%20me'/>");
+			Assert.AreEqual("test%20me", HtmlDom.GetImageElementUrl(element).UrlEncoded);
+		}
+		[Test]
+		public void GetImageElementUrl_ElementIsDivWithBackgroundImage_ReturnsUrl()
+		{
+			var element = MakeElement("<div style='background-image:url(\"test%20me\")'/>");
+            Assert.AreEqual("test%20me", HtmlDom.GetImageElementUrl(element).UrlEncoded);
+
+			//stress the regex a bit
+			element = MakeElement("<div style=\" background-image : URL(\'test%20me\')\"/>");
+			Assert.AreEqual("test%20me", HtmlDom.GetImageElementUrl(element).UrlEncoded, "Query was too restrictive somehow");
+		}
+
+		private ElementProxy MakeElement(string xml)
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml(xml);
+			return new ElementProxy(dom.DocumentElement);
+		}
 
 		private void AssertHasClasses(string expectedString, string actualString)
 		{
@@ -235,6 +259,72 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='en' and text()='something unique']", 1);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='id']", 0);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='tpi']", 0);
+		}
+		
+		[Test]
+		public void SetImageElementUrl_GivenImg_SetsSrc()
+		{
+			var img = MakeElement("<img src='old.png'/>");
+			HtmlDom.SetImageElementUrl(img, UrlPathString.CreateFromUrlEncodedString("test%20me"));
+			Assert.AreEqual("test%20me",img.GetAttribute("src"));
+			Assert.AreEqual("", img.GetAttribute("style"));
+		}
+		[Test]
+		public void SetImageElementUrl_GivenDiv_SetsStyle()
+		{
+			var div = MakeElement("<div style=\" background-image : URL(\'old.png\')\"/>");
+			HtmlDom.SetImageElementUrl(div, UrlPathString.CreateFromUrlEncodedString("test%20me"));
+			Assert.AreEqual("background-image:url(\'test%20me\')", div.GetAttribute("style"));
+			Assert.AreEqual("", div.GetAttribute("src"));
+		}
+
+		[Test]
+		public void SelectChildImgAndBackgroundImageElements()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<div><foo/><img/><div style=\"color:red;\">hello</div><div style=\" background-image : URL(\'old.png\')\"/></div>");
+			var elements = HtmlDom.SelectChildImgAndBackgroundImageElements(dom.DocumentElement);
+			Assert.AreEqual(2,elements.Count);
+		}
+
+		[Test]
+		public void GetIsImgOrSomethingWithBackgroundImage_NoBackgroundImageProperty_False()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<div style=\"color:red;\"></div>");
+			Assert.IsFalse(HtmlDom.GetIsImgOrSomethingWithBackgroundImage(dom.DocumentElement));
+		}
+		[Test]
+		public void GetIsImgOrSomethingWithBackgroundImage_HasBackgroundImageProperty_True()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<div style=\" background-image : URL(\'old.png\')\"></div>");
+			Assert.IsTrue(HtmlDom.GetIsImgOrSomethingWithBackgroundImage(dom.DocumentElement));
+
+			dom.LoadXml("<div style=\'background-image:url( \"old.png\" )\'></div>");
+			Assert.IsTrue(HtmlDom.GetIsImgOrSomethingWithBackgroundImage(dom.DocumentElement), "Regex needs work?");
+		}
+
+		[Test]
+		public void GetIsImgOrSomethingWithBackgroundImage_Img_True()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><img/></body></html>");
+			Assert.IsTrue(HtmlDom.GetIsImgOrSomethingWithBackgroundImage(dom.SelectNodes("//img")[0] as XmlElement));
+		}
+		[Test]
+		public void GetIsImgOrSomethingWithBackgroundImage_ImgIsSybling_False()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><img/><foo/></body></html>");
+			Assert.IsFalse(HtmlDom.GetIsImgOrSomethingWithBackgroundImage(dom.SelectNodes("//foo")[0] as XmlElement));
+		}
+		[Test]
+		public void GetIsImgOrSomethingWithBackgroundImage_ImgIsChild_False()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><div><img/></div></body></html>");
+			Assert.IsFalse(HtmlDom.GetIsImgOrSomethingWithBackgroundImage(dom.SelectNodes("//div")[0] as XmlElement));
 		}
 	}
 }
