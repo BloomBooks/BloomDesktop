@@ -139,6 +139,81 @@ namespace BloomTests.Book
 			Assert.That(fontCssData, Is.StringContaining("@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:italic; src:url(AndikaNewBasic-BI.ttf) format('opentype');}"));
 		}
 
+		/// <summary>
+		/// Motivated by "El Nino" from bloom library, which (to defeat caching?) has such a query param in one of its src attrs.
+		/// </summary>
+		[Test]
+		public void ImageSrcQuery_IsIgnored()
+		{
+			SetDom(@"<div class='bloom-page'>
+						<div id='somewrapper'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
+									This is some text
+								</div>
+								<div lang = '*'>more text</div>
+							</div>
+							<div><img src='myImage.png?1023456'></img></div>
+						</div>
+					</div>",
+						   @"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
+							<link rel='stylesheet' href='../customCollectionStyles.css'/>
+							<link rel='stylesheet' href='customBookStyles.css'/>");
+			var book = CreateBook();
+
+			CreateCommonCssFiles(book);
+
+			// These two names are especially interesting because they differ by case and also white space.
+			// The case difference is not important to the Windows file system.
+			// The white space must be removed to make an XML ID.
+			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("myImage.png"));
+			var epubFolder = new TemporaryFolder();
+			var epubName = "output.epub";
+			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
+			using (var maker = new EpubMakerAdjusted(book))
+				maker.SaveEpub(epubPath);
+			Assert.That(File.Exists(epubPath));
+			var zip = new ZipFile(epubPath);
+
+			// Every epub must have a mimetype at the root
+			GetZipContent(zip, "mimetype");
+
+			// Every epub must have a "META-INF/container.xml." (case matters). Most things we could check about its content
+			// would be redundant with the code that produces it, but we can at least verify that it is valid
+			// XML and points us at the rootfile (open package format) file.
+			var containerData = GetZipContent(zip, "META-INF/container.xml");
+			var doc = XDocument.Parse(containerData);
+			XNamespace ns = doc.Root.Attribute("xmlns").Value;
+			var packageFile = doc.Root.Element(ns + "rootfiles").Element(ns + "rootfile").Attribute("full-path").Value;
+
+			// That gives us a path to the main package file, typically content.opf
+			var packageData = StripXmlHeader(GetZipContent(zip, packageFile));
+			var toCheck = AssertThatXmlIn.String(packageData);
+			var mgr = new XmlNamespaceManager(toCheck.NameTable);
+			mgr.AddNamespace("dc", "http://purl.org/dc/elements/1.1/");
+			mgr.AddNamespace("opf", "http://www.idpf.org/2007/opf");
+			toCheck.HasAtLeastOneMatchForXpath("package[@version='3.0']");
+			toCheck.HasAtLeastOneMatchForXpath("package[@unique-identifier]");
+
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
+
+			var packageDoc = XDocument.Parse(packageData);
+			XNamespace opf = "http://www.idpf.org/2007/opf";
+			// Some attempt at validating that we actually included the images in the zip.
+			// Enhance: This undesirably depends on the exact order of items in the manifest.
+			var image1 = packageDoc.Root.Element(opf + "manifest").Elements(opf + "item").ToArray()[0].Attribute("href").Value;
+			GetZipEntry(zip, Path.GetDirectoryName(packageFile) + "/" + image1);
+
+			var page1 = packageDoc.Root.Element(opf + "manifest").Elements(opf + "item").ToArray()[1].Attribute("href").Value;
+			// Names in package file are relative to its folder.
+			var page1Data = GetZipContent(zip, Path.GetDirectoryName(packageFile) + "/" + page1);
+			XNamespace xhtml = "http://www.w3.org/1999/xhtml";
+			var mgr2 = new XmlNamespaceManager(new NameTable());
+			mgr2.AddNamespace("xhtml", "http://www.w3.org/1999/xhtml");
+
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//img[@src='myImage.png']");
+		}
+
 		// Set up some typical CSS files we DO want to include, even in 'unpaginated' mode
 		private static void CreateCommonCssFiles(Bloom.Book.Book book)
 		{

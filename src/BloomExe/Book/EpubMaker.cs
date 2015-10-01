@@ -158,7 +158,7 @@ namespace Bloom.Book
 					// src should be a url, so any special characters should be encoded.
 					// I'm not sure the rest of the program is doing this entirely right yet,
 					// but at least this handles %20, which definitely is used.
-					var imgName = WebUtility.UrlDecode(srcAttr.Value);
+					var imgName = StripQuery(WebUtility.UrlDecode(srcAttr.Value));
 					if (string.IsNullOrEmpty(imgName))
 						continue;
 					// Images are always directly in the folder
@@ -272,6 +272,14 @@ namespace Bloom.Book
 			}
 			using (var writer = XmlWriter.Create(manifestPath))
 				rootElt.WriteTo(writer);
+		}
+
+		private static string StripQuery(string url)
+		{
+			var index = url.IndexOf('?');
+			if (index >= 0)
+				url = url.Substring(0, index);
+			return url;
 		}
 
 		// Combines staging and finishing (currently just used in tests).
@@ -773,8 +781,14 @@ namespace Bloom.Book
 					// to get actual file names, if there are any special characters involved.
 					var oldName = WebUtility.UrlDecode(elt.Attributes[attr].Value);
 
+					var fileName = attr == "src" ? StripQuery(oldName) : oldName;
+
 					string newName;
-					if (_mapChangedFileNames.TryGetValue(oldName, out newName))
+					if (!_mapChangedFileNames.TryGetValue(fileName, out newName))
+					{
+						newName = fileName;
+					}
+					if (oldName != newName)
 						elt.SetAttribute(attr, WebUtility.UrlEncode(newName));
 				}
 			}
