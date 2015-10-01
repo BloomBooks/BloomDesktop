@@ -1,39 +1,30 @@
 ﻿using System;
-using System.Xml;
+using System.IO;
+using Bloom.Book;
 using Bloom.ImageProcessing;
+using Palaso.Network;
 using Palaso.Progress;
 using Palaso.UI.WindowsForms.ImageToolbox;
-using Palaso.Xml;
-using Gecko;
-using System.IO;
-using Palaso.Network;
 
 namespace Bloom.Edit
 {
 	public class PageEditingModel
 	{
-		public void ChangePicture(string bookFolderPath, GeckoHtmlElement img, PalasoImage imageInfo, IProgress progress)
-		{
-			var isSameFile = IsSameFilePath(bookFolderPath, img.GetAttribute("src"), imageInfo);
-			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath, isSameFile);
-			img.SetAttribute("src", imageFileName);
-			UpdateMetdataAttributesOnImgElement(img, imageInfo);
-		}
-
-
 		/// <summary>
-		/// for testing.... todo: maybe they should test ProcessAndSaveImageIntoFolder() directly, instead
+		/// 
 		/// </summary>
-		public void ChangePicture(string bookFolderPath, XmlDocument dom, string imageId, PalasoImage imageInfo)
+		/// <param name="bookFolderPath"></param>
+		/// <param name="imgOrDivWithBackgroundImage">Can be an XmlElement (during testing)</param>
+		/// <param name="imageInfo"></param>
+		/// <param name="progress"></param>
+		public void ChangePicture(string bookFolderPath, ElementProxy imgOrDivWithBackgroundImage, PalasoImage imageInfo,
+			IProgress progress)
 		{
-
-			var matches = dom.SafeSelectNodes("//img[@id='" + imageId + "']");
-			XmlElement img = matches[0] as XmlElement;
-
-			var isSameFile = IsSameFilePath(bookFolderPath, img.GetAttribute("src"), imageInfo);
+			var isSameFile = IsSameFilePath(bookFolderPath, HtmlDom.GetImageElementUrl(imgOrDivWithBackgroundImage).UrlEncoded, imageInfo);
 			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath, isSameFile);
-			img.SetAttribute("src", imageFileName);
-
+			HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage,
+				UrlPathString.CreateFromUnencodedString(imageFileName));
+			UpdateMetadataAttributesOnImage(imgOrDivWithBackgroundImage, imageInfo);
 		}
 
 		/// <summary>
@@ -59,26 +50,16 @@ namespace Bloom.Edit
 			return false;
 		}
 
-
-
-
-		public void UpdateMetdataAttributesOnImgElement(GeckoHtmlElement img, PalasoImage imageInfo)
-		{
-			UpdateMetadataAttributesOnImage(img, imageInfo);
-
-			img.Click(); //wake up javascript to update overlays
-		}
-
-		public static void UpdateMetadataAttributesOnImage(GeckoElement img, PalasoImage imageInfo)
+		public static void UpdateMetadataAttributesOnImage(ElementProxy imgOrDivWithBackgroundImage, PalasoImage imageInfo)
 		{
 			//see also Book.UpdateMetadataAttributesOnImage(), which does the same thing but on the document itself, not the browser dom
-			img.SetAttribute("data-copyright",
+			imgOrDivWithBackgroundImage.SetAttribute("data-copyright",
 							 String.IsNullOrEmpty(imageInfo.Metadata.CopyrightNotice) ? "" : imageInfo.Metadata.CopyrightNotice);
 
-			img.SetAttribute("data-creator", String.IsNullOrEmpty(imageInfo.Metadata.Creator) ? "" : imageInfo.Metadata.Creator);
+			imgOrDivWithBackgroundImage.SetAttribute("data-creator", String.IsNullOrEmpty(imageInfo.Metadata.Creator) ? "" : imageInfo.Metadata.Creator);
 
 
-			img.SetAttribute("data-license", imageInfo.Metadata.License == null ? "" : imageInfo.Metadata.License.ToString());
+			imgOrDivWithBackgroundImage.SetAttribute("data-license", imageInfo.Metadata.License == null ? "" : imageInfo.Metadata.License.ToString());
 		}
 
 		/*

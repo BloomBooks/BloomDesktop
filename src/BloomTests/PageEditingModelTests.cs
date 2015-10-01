@@ -6,11 +6,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Bloom;
+using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
+using Gecko;
 using NUnit.Framework;
 using Palaso.TestUtilities;
 using Palaso.UI.WindowsForms.ImageToolbox;
+using RestSharp.Contrib;
 
 namespace BloomTests
 {
@@ -25,14 +29,14 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
-			var model = new PageEditingModel();
+			
 			using (var src = new TemporaryFolder("bloom pictures test source"))
 			using (var dest = new TemporaryFolder("bloom picture tests dest"))
 			{
 				var newImagePath = src.Combine("new.png");
 				using (var original = MakeSamplePngImage(newImagePath))
 				{
-					model.ChangePicture(dest.Path, dom, "two", original);
+					ChangePicture(dest.Path, dom, "two", original);
 					Assert.IsTrue(File.Exists(dest.Combine("new.png")));
 					AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.png']", 1);
 				}
@@ -51,7 +55,7 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
-			var model = new PageEditingModel();
+			
 			using (var src = new TemporaryFolder("bloom pictures test source"))
 			using (var dest = new TemporaryFolder("bloom picture tests dest"))
 			{
@@ -60,7 +64,7 @@ namespace BloomTests
 				{
 					var destDogImagePath = dest.Combine("dog.png");
 					File.WriteAllText(destDogImagePath, "old dog");
-					model.ChangePicture(dest.Path, dom, "two", original);
+					ChangePicture(dest.Path, dom, "two", original);
 					Assert.IsTrue(ImageUtils.GetImageFromFile(destDogImagePath).Width == kSampleImageDimension);
 				}
 			}
@@ -98,12 +102,12 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
-			var model = new PageEditingModel();
+			
 			using (var src = new TemporaryFolder("bloom pictures test source"))
 			using (var dest = new TemporaryFolder("bloom picture tests dest"))
 			using (var original = MakeSampleTifImage(src.Combine("new.tif")))
 			{
-				model.ChangePicture(dest.Path, dom, "two", original);
+				ChangePicture(dest.Path, dom, "two", original);
 				Assert.IsTrue(File.Exists(dest.Combine("new.png")));
 				AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.png']", 1);
 				using (var converted = Image.FromFile(dest.Combine("new.png")))
@@ -118,12 +122,12 @@ namespace BloomTests
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml("<html><body><div/><div><img id='one'/><img id='two' src='old.png'/></div></body></html>");
-			var model = new PageEditingModel();
+			
 			using (var src = new TemporaryFolder("bloom pictures test source"))
 			using (var dest = new TemporaryFolder("bloom picture tests dest"))
 			using (var original = MakeSampleJpegImage(src.Combine("new.jpg")))
 			{
-				model.ChangePicture(dest.Path, dom, "two", original);
+				ChangePicture(dest.Path, dom, "two", original);
 				Assert.IsTrue(File.Exists(dest.Combine("new.jpg")));
 				AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//img[@id='two' and @src='new.jpg']", 1);
 				using (var converted = Image.FromFile(dest.Combine("new.jpg")))
@@ -132,6 +136,21 @@ namespace BloomTests
 				}
 			}
 
+		}
+		[Test]
+		public void ChangePicture_ElementIsDivWithBackgroundImage_Changes()
+		{
+			var dom = new XmlDocument();
+			dom.LoadXml("<html><body><div id='one' style='background-image:url(\"old.png\")'></div></body></html>");
+			
+			using (var src = new TemporaryFolder("bloom pictures test source"))
+			using (var dest = new TemporaryFolder("bloom picture tests dest"))
+			using (var original = MakeSampleJpegImage(src.Combine("new.jpg")))
+			{
+				ChangePicture(dest.Path, dom, "one", original);
+				Assert.IsTrue(File.Exists(dest.Combine("new.jpg")));
+				AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='one' and @style=\"background-image:url(\'new.jpg\')\"]", 1);
+			}
 		}
 		/* abandoned this feature for now, as I realized we don't need it. But maybe some day.
 		[Test]
@@ -143,5 +162,13 @@ namespace BloomTests
 			model.PreserveClassAttributeOfElement(dom.DocumentElement, "<div id='foo' class='new'></div>");
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath(@"//div[@id='foo' and @class='new']", 1);
 		}*/
+
+		public void ChangePicture(string bookFolderPath, XmlDocument dom, string imageId, PalasoImage imageInfo)
+		{
+			var model = new PageEditingModel();
+			var node = (XmlElement) dom.SelectSingleNode("//*[@id='" + imageId + "']");
+			model.ChangePicture(bookFolderPath, new ElementProxy(node), imageInfo, null);
+		}
+
 	}
 }

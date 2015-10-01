@@ -220,25 +220,23 @@ namespace Bloom.Edit
 			_pageMap.Clear();
 			foreach (var page in pages)
 			{
-				var node = page.GetDivNodeForThisPage();
-				if (node == null)
+				var pageElement = page.GetDivNodeForThisPage();
+				if (pageElement == null)
 					continue; // or crash? How can this happen?
 				result.Add(page);
-				var pageThumbnail = pageDoc.ImportNode(node, true);
+				var pageElementForThumbnail = pageDoc.ImportNode(pageElement, true) as XmlElement;
 
 				// BL-1112: Reduce size of images in page thumbnails.
 				// We are setting the src to empty so that we can use JavaScript to request the thumbnails
 				// in a controlled manner that should reduce the likelihood of not receiving the image quickly
 				// enough and displaying the alt text rather than the image.
-				var imgNodes = pageThumbnail.SelectNodes(".//img");
+				var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(pageElementForThumbnail);
 				if (imgNodes != null)
 				{
-					foreach (XmlNode imgNode in imgNodes)
+					foreach (XmlElement imgNode in imgNodes)
 					{
-						var attr = pageDoc.CreateAttribute("thumb-src");
-						attr.Value = imgNode.Attributes["src"].Value;
-						imgNode.Attributes.Append(attr);
-						imgNode.Attributes["src"].Value = "";
+						imgNode.SetAttribute("thumb-src", HtmlDom.GetImageElementUrl(imgNode).UrlEncoded);
+						HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUrlEncodedString(""));
 					}
 				}
 
@@ -254,7 +252,7 @@ namespace Bloom.Edit
 				//have something to give a border to when this page is selected
 				var pageContainer = pageDoc.CreateElement("div");
 				pageContainer.SetAttribute("class", PageContainerClass);
-				pageContainer.AppendChild(pageThumbnail);
+				pageContainer.AppendChild(pageElementForThumbnail);
 
 				/* And here it gets fragile (for not).
 					The nature of how we're doing the thumbnails (relying on scaling) seems to mess up
@@ -263,7 +261,7 @@ namespace Bloom.Edit
 					moment, we assign appropriate sizes, by hand. We rely on c# code to add these
 					classes, since we can't write a rule in css3 that peeks into a child attribute.
 				*/
-				var pageClasses = pageThumbnail.GetStringAttribute("class").Split(new[] {' '});
+				var pageClasses = pageElementForThumbnail.GetStringAttribute("class").Split(new[] {' '});
 				var cssClass = pageClasses.FirstOrDefault(c => c.ToLowerInvariant().EndsWith("portrait") || c.ToLower().EndsWith("landscape"));
 				if (!string.IsNullOrEmpty(cssClass))
 					pageContainer.SetAttribute("class", "pageContainer " + cssClass);

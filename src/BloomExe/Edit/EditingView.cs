@@ -511,8 +511,7 @@ namespace Bloom.Edit
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
-			var src = imageElement.GetAttribute("src");
-			string fileName = HttpUtilityFromMono.UrlDecode(src);
+			string fileName = HtmlDom.GetImageElementUrl(imageElement).NotEncoded;
 
 			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
 			using (var imageInfo = PalasoImage.FromFile(path))
@@ -531,8 +530,8 @@ namespace Bloom.Edit
 						imageInfo.Metadata = dlg.Metadata;
 						imageInfo.Metadata.StoreAsExemplar(Metadata.FileCategory.Image);
 						//update so any overlays on the image are brought up to data
-						var editor = new PageEditingModel();
-						editor.UpdateMetdataAttributesOnImgElement(imageElement, imageInfo);
+						PageEditingModel.UpdateMetadataAttributesOnImage(new ElementProxy(imageElement), imageInfo);
+						imageElement.Click(); //wake up javascript to update overlays
 						SaveChangedImage(imageElement, imageInfo, "Bloom had a problem updating the image metadata");
 
 						var answer = MessageBox.Show(LocalizationManager.GetString("EditTab.CopyImageIPMetadataQuestion","Copy this information to all other pictures in this book?", "get this after you edit the metadata of an image"), LocalizationManager.GetString("EditTab.TitleOfCopyIPToWholeBooksDialog","Picture Intellectual Property Information"),  MessageBoxButtons.YesNo, MessageBoxIcon.Question,MessageBoxDefaultButton.Button2);
@@ -652,12 +651,15 @@ namespace Bloom.Edit
 
 		private static GeckoHtmlElement GetImageNode(DomEventArgs ge)
 		{
-			GeckoHtmlElement imageElement = null;
 			var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
-			foreach (var n in target.Parent.ChildNodes)
+			var imageContainer = target.Parent;
+			if (imageContainer.OuterHtml.Contains("background-image"))
+				return imageContainer; // using a background-image instead of child <img> element
+			foreach (var n in imageContainer.ChildNodes)
 			{
-				imageElement = n as GeckoHtmlElement;
-				if (imageElement != null && imageElement.TagName.ToLowerInvariant() == "img")
+				var imageElement = n as GeckoHtmlElement;
+				if (imageElement != null && ( imageElement.TagName.ToLowerInvariant() == "img") ||
+												imageElement.OuterHtml.Contains("background-image"))
 				{
 					return imageElement;
 				}
