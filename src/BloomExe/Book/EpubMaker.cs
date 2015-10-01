@@ -141,6 +141,7 @@ namespace Bloom.Book
 				pageDom.AddPublishClassToBody();
 
 				MakeCssLinksAppropriateForEpub(pageDom);
+				RemoveBloomUiElements(pageDom);
 				RemoveSpuriousLinks(pageDom);
 				RemoveScripts(pageDom);
 				FixIllegalIds(pageDom);
@@ -150,7 +151,7 @@ namespace Bloom.Book
 				var pageDocName = pageIndex + ".xhtml";
 
 				// Manifest has to include all referenced files
-				foreach (XmlElement img in pageDom.SafeSelectNodes("//img"))
+				foreach (XmlElement img in pageDom.SafeSelectNodes("//img").Cast<XmlElement>().ToList())
 				{
 					var srcAttr = img.Attributes["src"];
 					if (srcAttr == null)
@@ -163,7 +164,10 @@ namespace Bloom.Book
 						continue;
 					// Images are always directly in the folder
 					var srcPath = Path.Combine(Book.FolderPath, imgName);
-					CopyFileToEpub(srcPath);
+					if (File.Exists(srcPath))
+						CopyFileToEpub(srcPath);
+					else
+						img.ParentNode.RemoveChild(img);
 				}
 
 				_manifestItems.Add(pageDocName);
@@ -931,6 +935,21 @@ namespace Bloom.Book
 				if (elt == null)
 					continue;
 				elt.RemoveAttribute("lang");
+			}
+		}
+
+		/// <summary>
+		/// Remove anything that has class bloom-ui
+		/// </summary>
+		/// <param name="pageDom"></param>
+		private void RemoveBloomUiElements(HtmlDom pageDom)
+		{
+			foreach (var node in pageDom.RawDom.SafeSelectNodes("//*[contains(@class,'bloom-ui')]").Cast<XmlNode>().ToList())
+			{
+				var elt = node as XmlElement;
+				if (elt == null)
+					continue;
+				elt.ParentNode.RemoveChild(elt);
 			}
 		}
 
