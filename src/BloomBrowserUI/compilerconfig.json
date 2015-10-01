@@ -94,5 +94,9 @@
       "enabled": false
     },
     "sourceMap": true
+  },
+  {
+    "outputFile": "bookLayout/basePage.css",
+    "inputFile": "bookLayout/basePage.less"
   }
 ]
