@@ -548,7 +548,9 @@ namespace Bloom.Book
 		/// will work better. We calculate it based on the page sizes and margins in
 		/// BasePage.less and commonMixins.less. The page size definitions are unlikely
 		/// to change, but change might be needed here if there is a change to the main
-		/// .marginBox rule in basePage.less
+		/// .marginBox rule in basePage.less.
+		/// To partly accommodate origami pages, we adjust for parent divs with an explict
+		/// style setting the percent width.
 		/// </summary>
 		/// <param name="pageDom"></param>
 		private void FixPictureSizes(HtmlDom pageDom)
@@ -558,11 +560,30 @@ namespace Bloom.Book
 			foreach (XmlElement img in pageDom.RawDom.SafeSelectNodes("//img"))
 			{
 				var marginBox = img.ParentNode.ParentNode as XmlElement;
+				var mulitplier = 1.0;
 				// For now we only attempt to adjust pictures contained in the marginBox.
 				// To do better than this we will probably need to actually load the HTML into
 				// a browser; even then it will be complex.
 				while (marginBox != null && !HasClass(marginBox, "marginBox"))
+				{
+					// 'marginBox' is not yet the margin box...it is some parent div.
+					// If it has an explicit percent width style, adjust for this.
+					var styleAttr = marginBox.Attributes["style"];
+					if (styleAttr != null)
+					{
+						var style = styleAttr.Value;
+						var match = new Regex("width:\\s*(\\d+(\\.\\d+)?)%").Match(style);
+						if (match.Success)
+						{
+							double percent;
+							if (Double.TryParse(match.Groups[1].Value, out percent))
+							{
+								mulitplier *= percent/100;
+							}
+						}
+					}
 					marginBox = marginBox.ParentNode as XmlElement;
+				}
 				if (marginBox == null)
 					continue;
 				var page = marginBox.ParentNode as XmlElement;
@@ -632,7 +653,7 @@ namespace Bloom.Book
 				// We want to take something like 'width:334px; height:220px; margin-left: 34px; margin-top: 0px;'
 				// and change it to something like 'width:75%; height:auto; margin-left: 10%; margin-top: 0px;'
 				// This first pass deals with width.
-				if (ConvertStyleFromPxToPercent("width", pageWidthMm, ref imgStyle)) continue;
+				if (ConvertStyleFromPxToPercent("width", pageWidthMm, mulitplier, ref imgStyle)) continue;
 
 				// Now change height to auto, to preserve aspect ratio
 				imgStyle = new Regex("height:\\s*\\d+px").Replace(imgStyle, "height:auto");
@@ -640,14 +661,14 @@ namespace Bloom.Book
 					imgStyle = "height:auto; " + imgStyle;
 
 				// Similarly fix indent
-				ConvertStyleFromPxToPercent("margin-left", pageWidthMm, ref imgStyle);
+				ConvertStyleFromPxToPercent("margin-left", pageWidthMm, mulitplier, ref imgStyle);
 
 				img.SetAttribute("style", imgStyle);
 			}
 		}
 
 		// Returns true if we don't find the expected style
-		private static bool ConvertStyleFromPxToPercent(string stylename, double pageWidthMm, ref string imgStyle)
+		private static bool ConvertStyleFromPxToPercent(string stylename, double pageWidthMm, double multiplier, ref string imgStyle)
 		{
 			var match = new Regex("(.*" + stylename + ":\\s*)(\\d+)px(.*)").Match(imgStyle);
 			if (!match.Success)
@@ -656,8 +677,9 @@ namespace Bloom.Book
 			var widthInch = widthPx/96.0; // in print a CSS px is exactly 1/96 inch
 			const int marginBoxMarginMm = 40; // see basePage.less SetMarginBox.
 			var marginBoxWidthInch = (pageWidthMm - marginBoxMarginMm)/mmPerInch;
+			var parentBoxWidthInch = marginBoxWidthInch*multiplier; // parent box is smaller by net effect of parents with %width styles
 			// 1/10 percent is close enough and more readable/testable than arbitrary precision; make a string with one decimal
-			var newWidth = (Math.Round(widthInch/marginBoxWidthInch*1000)/10).ToString("F1");
+			var newWidth = (Math.Round(widthInch/parentBoxWidthInch*1000)/10).ToString("F1");
 			imgStyle = match.Groups[1] + newWidth  + "%" + match.Groups[3];
 			return false;
 		}
