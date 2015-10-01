@@ -1059,7 +1059,7 @@ namespace Bloom.Edit
 			{
 				Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
 				var editor = new PageEditingModel();
-				editor.ChangePicture(CurrentBook.FolderPath, img, imageInfo, progress);
+				editor.ChangePicture(CurrentBook.FolderPath, new ElementProxy(img), imageInfo, progress);
 
 				//we have to save so that when asked by the thumbnailer, the book will give the proper image
 				SaveNow();

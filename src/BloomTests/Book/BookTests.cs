@@ -637,7 +637,8 @@ namespace BloomTests.Book
 		/// regression test... when we rebuild the xmatter, we also need to update the html attributes that let us
 		/// know the state of the image metadata without having to open the image up (slow).
 		/// </summary>
-		[Test, Ignore("breaks on team city for some reason")]
+		[Test]
+		[Category("SkipOnTeamCity")]
 		public void BringBookUpToDate_CoverImageHasMetaData_HtmlForCoverPageHasMetaDataAttributes()
 		{
 			_bookDom = new HtmlDom(@"
@@ -654,7 +655,7 @@ namespace BloomTests.Book
 			MakeSamplePngImageWithMetadata(imagePath);
 
 			book.BringBookUpToDate(new NullProgress());
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']",1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[@data-book='coverImage' and @data-creator='joe']",1);
 		}
 
 		private TempFile MakeTempImage(string name)
@@ -689,10 +690,12 @@ namespace BloomTests.Book
 
 			//book.BringBookUpToDate(new NullProgress());
 			var dom = book.GetPreviewHtmlFileForWholeBook();
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//img[@src='theCover.png']", 1);
+			
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[@style=\"background-image:url('theCover.png')\"]", 1);
 		}
 
-		[Test, Ignore("breaks on team city for some reason")]
+		[Test]
+		[Category("SkipOnTeamCity")]
 		public void UpdateImgMetdataAttributesToMatchImage_HtmlForImgGetsMetaDataAttributes()
 		{
 			_bookDom = new HtmlDom(@"
@@ -713,7 +716,7 @@ namespace BloomTests.Book
 			MakeSamplePngImageWithMetadata(imagePath);
 
 			book.BringBookUpToDate(new NullProgress());
-			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div/div/div/img[@data-creator='joe']", 1);
+			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//*[@src='test.png' and @data-creator='joe']", 1);
 		}
 
 		[Test]
