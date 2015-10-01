@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Xsl;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Bloom.Collection;
 using DesktopAnalytics;
+using Gecko;
 using Palaso.Extensions;
 using Palaso.Reporting;
 using Palaso.Xml;
@@ -791,8 +794,7 @@ namespace Bloom.Book
 				return new string[] {};
 			return classes.SplitTrimmed(' ');
 		}
-
-		/// <summary>
+				/// <summary>
 		/// Find the first child of parent that has the specified class as (one of) its classes.
 		/// </summary>
 		/// <param name="parent"></param>
@@ -837,6 +839,75 @@ namespace Bloom.Book
 					result.Add(name);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Gets the url for the image, either from an img element or any other element that has 
+		/// an inline style with background-image set.
+		/// </summary>
+		public static UrlPathString GetImageElementUrl(GeckoHtmlElement imageElement)
+		{
+			return GetImageElementUrl(new ElementProxy(imageElement));
+		}
+
+		/// <summary>
+		/// Gets the url for the image, either from an img element or any other element that has 
+		/// an inline style with background-image set.
+		/// </summary>
+		public static UrlPathString GetImageElementUrl(XmlElement imageElement)
+		{
+			return GetImageElementUrl(new ElementProxy(imageElement));
+		}
+
+		/// <summary>
+		/// Gets the url for the image, either from an img element or any other element that has 
+		/// an inline style with background-image set.
+		/// </summary>
+		public static UrlPathString GetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage)
+		{
+			if (imgOrDivWithBackgroundImage.Name.ToLower() == "img")
+			{
+				var src = imgOrDivWithBackgroundImage.GetAttribute("src");
+                return UrlPathString.CreateFromUrlEncodedString(src);
+			}
+			else
+			{
+				var styleRule = imgOrDivWithBackgroundImage.GetAttribute("style") ?? "";
+				var regex = new Regex("url\\((.*)\\)", RegexOptions.IgnoreCase);
+				var match = regex.Match(styleRule);
+				if (match.Groups.Count == 2)
+				{
+					return UrlPathString.CreateFromUrlEncodedString(match.Groups[1].Value.Trim(new[] {'\'', '"'}));
+				}
+			}
+			return null;
+		}
+
+
+		/// <summary>
+		/// Sets the url attribute either of an img (the src attribute) 
+		/// or a div with an inline style with an background-image rule
+		/// </summary>
+		public static void SetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage, UrlPathString url)
+		{
+			if (imgOrDivWithBackgroundImage.Name.ToLower() == "img")
+			{
+				imgOrDivWithBackgroundImage.SetAttribute( "src", url.UrlEncoded);
+			}
+			else
+			{
+				imgOrDivWithBackgroundImage.SetAttribute("style", string.Format("background-image:url('{0}')", url.UrlEncoded));
+			} 
+		}
+
+		public static XmlNodeList SelectChildImgAndBackgroundImageElements(XmlElement element)
+		{
+			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
+		}
+
+		public static bool GetIsImgOrSomethingWithBackgroundImage(XmlElement element)
+		{
+			return element.SelectNodes("self::img | self::*[contains(@style,'background-image')]").Count == 1;
 		}
 	}
 }
