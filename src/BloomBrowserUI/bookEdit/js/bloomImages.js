@@ -59,6 +59,8 @@ function SetupImage(image) {
 function SetupImageContainer(containerDiv) {
     $(containerDiv).mouseenter(function () {
         var img = $(this).find('img');
+            if (img == null) //TODO check for bloom-backgroundImage to make sure this isn't just a case of a missing <img>
+                img = containerDiv; //using a backgroundImage
 
         var buttonModifier = "largeImageButton";
         if ($(this).height() < 95) {
@@ -92,7 +94,7 @@ function SetupImageContainer(containerDiv) {
 }
 
 function SetImageTooltip(container, img) {
-    getIframeChannel().simpleAjaxGet('/bloom/imageInfo?image=' + $(img).attr('src'), function (response) {
+    getIframeChannel().simpleAjaxGet('/bloom/imageInfo?image=' + GetRawImageUrl(img), function (response) {
         var info = response.name + "\n"
                 + getFileLengthString(response.bytes) + "\n"
                 + response.width + " x " + response.height;
@@ -111,43 +113,66 @@ function getFileLengthString(bytes) {
 
 
 function CreditsAreRelevantForImage(img) {
-    return $(img).attr('src').toLowerCase().indexOf('placeholder') == -1; //don't offer to edit placeholder credits
+    return GetRawImageUrl(img).toLowerCase().indexOf('placeholder') == -1; //don't offer to edit placeholder credits
+}
+
+// Gets the src attribute out of images, and the background-image:url() of everything else
+function GetRawImageUrl(imgOrDivWithBackgroundImage) {
+    if ($(imgOrDivWithBackgroundImage).hasAttr("src")) {
+        return $(imgOrDivWithBackgroundImage).attr("src");
+    }
+    //handle divs with background-image in an inline style attribute
+    if ($(imgOrDivWithBackgroundImage).hasAttr("style")) {
+        var style = $(imgOrDivWithBackgroundImage).attr("style");
+        // see http://stackoverflow.com/questions/9723889/regex-to-match-urls-in-inline-styles-div-style-url
+        //var result = (/url\(\s*(['"]?)(.*?)\1\s*\)/.exec(style) || [])[2];
+        return (/url\s*\(\s*(['"]?)(.*?)\1\s*\)/.exec(style) || [])[2];
+    }
+    return "";
 }
 
 //While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
 // so that we can easily & quickly get to the here.
 function SetOverlayForImagesWithoutMetadata(container) {
+    $(container).find("*[style*='background-image']").each(function () {
+        SetOverlayForImagesWithoutMetadataInner(this, this);
+    });
+
+    //Do the same for any img elements inside
     $(container).find(".bloom-imageContainer").each(function () {
         var img = $(this).find('img');
-        if (!CreditsAreRelevantForImage(img)) {
-            return;
-        }
-        var container = $(this);
+        SetOverlayForImagesWithoutMetadataInner($(img).parent(), img);
+    });
+}
 
+function SetOverlayForImagesWithoutMetadataInner(container, img) {
+     if (!CreditsAreRelevantForImage(img)) {
+        return;
+    }
+
+    UpdateOverlay(container, img);
+
+    //and if the bloom program changes these values (i.e. the user changes them using bloom), I
+    //haven't figured out a way (apart from polling) to know that. So for now I'm using a hack
+    //where Bloom calls click() on the image when it wants an update, and we detect that here.
+    $(img).click(function () {
         UpdateOverlay(container, img);
-
-        //and if the bloom program changes these values (i.e. the user changes them using bloom), I
-        //haven't figured out a way (apart from polling) to know that. So for now I'm using a hack
-        //where Bloom calls click() on the image when it wants an update, and we detect that here.
-        $(img).click(function () {
-            UpdateOverlay(container, img);
-        });
     });
 }
 
 function UpdateOverlay(container, img) {
 
-    $(container).find(".imgMetadataProblem").each(function () {
-        $(this).remove()
+    $(container).find("button.imgMetadataProblem").each(function () {
+        $(this).remove();
     });
 
     //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
     var copyright = $(img).attr('data-copyright');
-    if (!copyright || copyright.length == 0) {
+    if (!copyright || copyright.length === 0) {
 
         var buttonModifier = "largeImageButton";
         if ($(container).height() < 80) {
-            buttonModifier = 'smallImageButton';
+            buttonModifier = "smallImageButton";
         }
 
         $(container).prepend("<button class='editMetadataButton imgMetadataProblem " + buttonModifier + "' title='Image is missing information on Credits, Copyright, or License'></button>");
@@ -158,8 +183,8 @@ function UpdateOverlay(container, img) {
 // to indicate that it might not be missing, just didn't load (this happens on slow machines)
 // TODO: internationalize
 function SetAlternateTextOnImages(element) {
-    if ($(element).attr('src').length > 0) { //don't show this on the empty license image when we don't know the license yet
-        var nameWithoutQueryString = $(element).attr('src').split("?")[0];
+    if (GetRawImageUrl(element).length > 0) { //don't show this on the empty license image when we don't know the license yet
+        var nameWithoutQueryString = GetRawImageUrl(element).split("?")[0];
         $(element).attr('alt', 'This picture, ' + nameWithoutQueryString + ', is missing or was loading too slowly.');
     } else {
         $(element).attr('alt', '');//don't be tempted to show something like a '?' unless you fix the result when you have a custom book license on top of that '?'

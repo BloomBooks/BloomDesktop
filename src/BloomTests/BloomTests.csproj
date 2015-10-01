@@ -169,6 +169,7 @@
     <Compile Include="CollectionTab\LibraryModelTests.cs" />
     <Compile Include="CollectionTab\TestLibraryModel.cs" />
     <Compile Include="Collection\BloomPackInstallerTests.cs" />
+    <Compile Include="ImageUpdaterTests.cs" />
     <Compile Include="HelpLauncherTests.cs" />
     <Compile Include="Chorus\MergingTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
