@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
+using Bloom.Publish;
 using BloomTemp;
 using Palaso.IO;
 using Palaso.Xml;
@@ -35,18 +36,13 @@ namespace Bloom.Book
 			internal set
 			{
 				_book = value;
-				// Should we just use Book.Storage wherever we use this, now it is public?
-				// Or would it be better to put methods on Book itself for the various things we need
-				// from its storage for this special task?
-				// For now it seems simplest to keep this as the one place that knows how to get
-				// the storage from the book. If we decide Storage should be more private but
-				// this class still needs it we can set this variable some other way.
-				_storage = _book.Storage;
 			}
 		}
 
 		private Book _book;
-		private IBookStorage _storage;
+		// This is a shorthand for _book.Storage. Since that is something of an implementation secret of Book,
+		// it also provides a safe place for us to make changes if we ever need to get the Storage some other way.
+		private IBookStorage Storage {get { return _book.Storage; } }
 		// Keeps track of IDs that have been used in the manifest. These are generated to roughly match file
 		// names, but the algorithm could pathologically produce duplicates, so we guard against this.
 		private HashSet<string> _idsUsed = new HashSet<string>();
@@ -83,15 +79,6 @@ namespace Bloom.Book
 		/// </summary>
 		public bool Unpaginated { get; set; }
 
-		public EpubMaker(Book book) : this()
-		{
-			Book = book;
-			_storage = Book.Storage;
-		}
-
-		public EpubMaker()
-		{ }
-
 		/// <summary>
 		/// Generate all the files we will zip into the epub for the current book into the StagingFolder.
 		/// It is required that the parent of the StagingFolder is a temporary folder into which we can
@@ -121,88 +108,11 @@ namespace Bloom.Book
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
 				++pageIndex;
-				var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
-				pageDom.RemoveModeStyleSheets();
-				if (Unpaginated)
-				{
-					RemoveRegularStylesheets(pageDom);
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"epubUnpaginated.css").ToLocalhost());
-				}
-				else
-				{
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
-				}
-
-				RemoveUnwantedContent(pageDom);
-
-				pageDom.SortStyleSheetLinks();
-				pageDom.AddPublishClassToBody();
-
-				MakeCssLinksAppropriateForEpub(pageDom);
-				RemoveBloomUiElements(pageDom);
-				RemoveSpuriousLinks(pageDom);
-				RemoveScripts(pageDom);
-				FixIllegalIds(pageDom);
-				FixPictureSizes(pageDom);
-				// Since we only allow one htm file in a book folder, I don't think there is any
-				// way this name can clash with anything else.
-				var pageDocName = pageIndex + ".xhtml";
-
-				// Manifest has to include all referenced files
-				foreach (XmlElement img in pageDom.SafeSelectNodes("//img").Cast<XmlElement>().ToList())
-				{
-					var srcAttr = img.Attributes["src"];
-					if (srcAttr == null)
-						continue; // very weird, but all we can do is ignore it.
-					// src should be a url, so any special characters should be encoded.
-					// I'm not sure the rest of the program is doing this entirely right yet,
-					// but at least this handles %20, which definitely is used.
-					var imgName = StripQuery(WebUtility.UrlDecode(srcAttr.Value));
-					if (string.IsNullOrEmpty(imgName))
-						continue;
-					// Images are always directly in the folder
-					var srcPath = Path.Combine(Book.FolderPath, imgName);
-					if (File.Exists(srcPath))
-						CopyFileToEpub(srcPath);
-					else
-						img.ParentNode.RemoveChild(img);
-				}
-
-				_manifestItems.Add(pageDocName);
-				_spineItems.Add(pageDocName);
-
+				var pageDom = MakePageFile(pageElement, pageIndex, firstContentPageIndex);
 				// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
 				//to look at those stylesheets on the first page
 				if (pageIndex == 1)
-				{
-					_coverPage = pageDocName;
-					//css
-					foreach (XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
-					{
-						var href = Path.Combine(Book.FolderPath, link.GetAttribute("href"));
-						var name = Path.GetFileName(href);
-
-						var fl = Book.Storage.GetFileLocator();
-						//var path = this.GetFileLocator().LocateFileWithThrow(name);
-						var path = fl.LocateFileWithThrow(name);
-						CopyFileToEpub(path);
-					}
-				}
-				if (pageIndex == firstContentPageIndex)
-					_firstContentPageItem = pageDocName;
-
-				RearrangeImageOnTop(pageDom);
-
-				FixChangedFileNames(pageDom);
-				// Do this AFTER we copy the CSS files, this file is generated in place just for the epub.
-				pageDom.AddStyleSheet("fonts.css"); // enhance: could omit if we don't embed any
-
-				// epub validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
-				pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-				File.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
-
+					CopyStyleSheets(pageDom);
 			}
 
 			const string coverPageImageFile = "thumbnail-256.png";
@@ -226,6 +136,11 @@ namespace Bloom.Book
 					</rootfiles>
 					</container>");
 
+			MakeManifest(coverPageImageFile);
+		}
+
+		private void MakeManifest(string coverPageImageFile)
+		{
 			// content.opf: contains primarily the manifest, listing all the content files of the epub.
 			var manifestPath = Path.Combine(_contentFolder, "content.opf");
 			XNamespace opf = "http://www.idpf.org/2007/opf";
@@ -244,7 +159,7 @@ namespace Bloom.Book
 					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
 				new XElement(opf + "meta",
 					new XAttribute("property", "dcterms:modified"),
-					new FileInfo(_storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z")); // like 2012-03-20T11:37:00Z
+					new FileInfo(Storage.FolderPath).LastWriteTimeUtc.ToString("s") + "Z")); // like 2012-03-20T11:37:00Z
 			rootElt.Add(metadataElt);
 
 			var manifestElt = new XElement(opf + "manifest");
@@ -263,6 +178,11 @@ namespace Bloom.Book
 					itemElt.SetAttributeValue("properties", "cover-image");
 				manifestElt.Add(itemElt);
 			}
+			MakeSpine(opf, rootElt, manifestPath);
+		}
+
+		private void MakeSpine(XNamespace opf, XElement rootElt, string manifestPath)
+		{
 			// Generate the spine, which indicates the top-level readable content in order.
 			// These IDs must match the corresponding ones in the manifest, since the spine
 			// doesn't indicate where to actually find the content.
@@ -276,6 +196,97 @@ namespace Bloom.Book
 			}
 			using (var writer = XmlWriter.Create(manifestPath))
 				rootElt.WriteTo(writer);
+		}
+
+		private void CopyStyleSheets(HtmlDom pageDom)
+		{
+			foreach (XmlElement link in pageDom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var href = Path.Combine(Book.FolderPath, link.GetAttribute("href"));
+				var name = Path.GetFileName(href);
+				if (name == "fonts.css")
+					continue; // generated file for this book, already copied to output.
+
+				var fl = Storage.GetFileLocator();
+				//var path = this.GetFileLocator().LocateFileWithThrow(name);
+				var path = fl.LocateFileWithThrow(name);
+				CopyFileToEpub(path);
+			}
+		}
+
+		private HtmlDom MakePageFile(XmlElement pageElement, int pageIndex, int firstContentPageIndex)
+		{
+			var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
+			pageDom.RemoveModeStyleSheets();
+			if (Unpaginated)
+			{
+				RemoveRegularStylesheets(pageDom);
+				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"epubUnpaginated.css").ToLocalhost());
+			}
+			else
+			{
+				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
+				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
+				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
+			}
+
+			RemoveUnwantedContent(pageDom);
+
+			pageDom.SortStyleSheetLinks();
+			pageDom.AddPublishClassToBody();
+
+			MakeCssLinksAppropriateForEpub(pageDom);
+			RemoveBloomUiElements(pageDom);
+			RemoveSpuriousLinks(pageDom);
+			RemoveScripts(pageDom);
+			FixIllegalIds(pageDom);
+			FixPictureSizes(pageDom);
+			// Since we only allow one htm file in a book folder, I don't think there is any
+			// way this name can clash with anything else.
+			var pageDocName = pageIndex + ".xhtml";
+			if (pageIndex == 1)
+				_coverPage = pageDocName;
+
+			CopyImages(pageDom);
+
+			_manifestItems.Add(pageDocName);
+			_spineItems.Add(pageDocName);
+
+			if (pageIndex == firstContentPageIndex)
+				_firstContentPageItem = pageDocName;
+
+			RearrangeImageOnTop(pageDom);
+
+			FixChangedFileNames(pageDom);
+			pageDom.AddStyleSheet("fonts.css"); // enhance: could omit if we don't embed any
+
+			// epub validator requires HTML to use namespace. Do this last to avoid (possibly?) messing up our xpaths.
+			pageDom.RawDom.DocumentElement.SetAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+			File.WriteAllText(Path.Combine(_contentFolder, pageDocName), pageDom.RawDom.OuterXml);
+			return pageDom;
+		}
+
+		private void CopyImages(HtmlDom pageDom)
+		{
+// Manifest has to include all referenced files
+			foreach (XmlElement img in pageDom.SafeSelectNodes("//img").Cast<XmlElement>().ToList())
+			{
+				var srcAttr = img.Attributes["src"];
+				if (srcAttr == null)
+					continue; // very weird, but all we can do is ignore it.
+				// src should be a url, so any special characters should be encoded.
+				// I'm not sure the rest of the program is doing this entirely right yet,
+				// but at least this handles %20, which definitely is used.
+				var imgName = StripQuery(WebUtility.UrlDecode(srcAttr.Value));
+				if (string.IsNullOrEmpty(imgName))
+					continue;
+				// Images are always directly in the folder
+				var srcPath = Path.Combine(Book.FolderPath, imgName);
+				if (File.Exists(srcPath))
+					CopyFileToEpub(srcPath);
+				else
+					img.ParentNode.RemoveChild(img);
+			}
 		}
 
 		private static string StripQuery(string url)
@@ -320,16 +331,16 @@ namespace Bloom.Book
 			if (marginBox == null)
 				return;
 			var page = (XmlElement) marginBox.ParentNode;
-			var pageClass = " " + AttrVal(page, "class") + " ";
+			var pageClass = " " + HtmlDom.AttrVal(page, "class") + " ";
 			if (!pageClass.Contains(" bloom-page ") || !pageClass.Contains(" imageOnTop ")
 				|| (!pageClass.Contains(" bloom-bilingual ") && !pageClass.Contains(" .bloom-trilingual ")))
 				return; // not the kind of page we want to fix, or not bilingual mode
-			var imageContainer = FindChildWithClass(marginBox, "bloom-imageContainer");
-			var transGroup = FindChildWithClass(marginBox, "bloom-translationGroup");
+			var imageContainer = HtmlDom.FindChildWithClass(marginBox, "bloom-imageContainer");
+			var transGroup = HtmlDom.FindChildWithClass(marginBox, "bloom-translationGroup");
 			if (imageContainer == null || transGroup == null)
 				return;
-			var content1 = FindChildWithClass(transGroup, "bloom-content1");
-			var content2 = FindChildWithClass(transGroup, "bloom-content2");
+			var content1 = HtmlDom.FindChildWithClass(transGroup, "bloom-content1");
+			var content2 = HtmlDom.FindChildWithClass(transGroup, "bloom-content2");
 			if (content1 == null || content2 == null)
 				return;
 			var dup = (XmlElement)transGroup.CloneNode(false);
@@ -341,32 +352,13 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Find the first child of parent that has the specified class as (one of) its classes.
-		/// </summary>
-		/// <param name="parent"></param>
-		/// <param name="classVal"></param>
-		/// <returns></returns>
-		XmlElement FindChildWithClass(XmlElement parent, string classVal)
-		{
-			foreach (var node in parent.ChildNodes)
-			{
-				var elt = node as XmlElement;
-				if (elt == null)
-					continue;
-				var eltClass = " " + AttrVal(elt, "class") + " ";
-				if (eltClass.Contains(" " + classVal + " "))
-					return elt;
-			}
-			return null;
-		}
-
-		/// <summary>
 		/// Try to embed the fonts we need.
 		/// </summary>
 		private void EmbedFonts()
 		{
 			var fontsWanted = GetFontsUsed();
-			var filesToEmbed = fontsWanted.SelectMany(GetFilesForFont).ToArray();
+			var fontFileFinder = new FontFileFinder();
+			var filesToEmbed = fontsWanted.SelectMany(fontFileFinder.GetFilesForFont).ToArray();
 			foreach (var file in filesToEmbed)
 			{
 				CopyFileToEpub(file);
@@ -374,8 +366,8 @@ namespace Bloom.Book
 			var sb = new StringBuilder();
 			foreach (var font in fontsWanted)
 			{
-				FontGroup group;
-				if (_fontNameToFiles.TryGetValue(font, out group))
+				var group = fontFileFinder.GetGroupForFont(font);
+				if (group != null)
 				{
 					AddFontFace(sb, font, "normal", "normal", group.Normal);
 					AddFontFace(sb, font, "bold", "normal", group.Bold);
@@ -406,151 +398,31 @@ namespace Bloom.Book
 		private IEnumerable<string> GetFontsUsed()
 		{
 			var result = new HashSet<string>();
-			var findFF = new Regex("font-family:\\s*(['\"])([^'\"]*)\\1");
 			foreach (var ss in Directory.GetFiles(Book.FolderPath, "*.css"))
 			{
 				var root = File.ReadAllText(ss, Encoding.UTF8);
-				foreach (Match match in findFF.Matches(root))
-				{
-					result.Add(match.Groups[2].Value);
-				}
+				FindFontsUsedInCss(root, result);
 			}
 			return result;
 		}
 
-		/// <summary>
-		/// Set of up to four files useful for a given font name
-		/// </summary>
-		class FontGroup : IEnumerable<string>
+		internal static void FindFontsUsedInCss(string cssContent, HashSet<string> result)
 		{
-			public string Normal;
-			public string Bold;
-			public string Italic;
-			public string BoldItalic;
-
-			public void Add(GlyphTypeface gtf, string path)
+			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
+			foreach (Match match in findFF.Matches(cssContent))
 			{
-				if (Normal == null)
-					Normal = path;
-				if (gtf.Style == System.Windows.FontStyles.Italic)
+				foreach (var family in match.Groups[1].Value.Split(','))
 				{
-					if (isBoldFont(gtf))
-						BoldItalic = path;
-					else
-						Italic = path;
+					var name = family.Trim();
+					// Strip matched quotes
+					if (name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
+						name = name.Substring(1, name.Length - 2);
+					result.Add(name);
 				}
-				else
-				{
-					if (isBoldFont(gtf))
-						Bold = path;
-					else
-						Normal = path;
-				}
-			}
-
-			private static bool isBoldFont(GlyphTypeface gtf)
-			{
-				return gtf.Weight.ToOpenTypeWeight() > 600;
-			}
-
-			public IEnumerator<string> GetEnumerator()
-			{
-				if (Normal != null)
-					yield return Normal;
-				if (Bold != null)
-					yield return Bold;
-				if (Italic != null)
-					yield return Italic;
-				if (BoldItalic != null)
-					yield return BoldItalic;
-			}
-
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
 			}
 		}
 
-		Dictionary<string, FontGroup> _fontNameToFiles;
 
-		/// <summary>
-		/// This is really hard. We somehow need to figure out what font file(s) are used for a particular font.
-		/// http://stackoverflow.com/questions/16769758/get-a-font-filename-based-on-the-font-handle-hfont
-		/// has some ideas; the result would be Windows-specific. And at some point we should ideally consider
-		/// what faces are needed.
-		/// For now we use brute force.
-		/// 'Andika New Basic' -> AndikaNewBasic-{R,B,I,BI}.ttf
-		/// Arial -> arial.ttf/ariali.ttf/arialbd.ttf/arialbi.ttf
-		/// 'Charis SIL' -> CharisSIL{R,B,I,BI}.ttf (note: no hyphen)
-		/// Doulos SIL -> DoulosSILR
-		/// </summary>
-		/// <param name="fontName"></param>
-		/// <returns>enumeration of file paths (possibly none) that contain data for the specified font name, and which
-		/// (as far as we can tell) we are allowed to embed.</returns>
-		private IEnumerable<string> GetFilesForFont(string fontName)
-		{
-			// Review Linux: very likely something here is not portable.
-			if (_fontNameToFiles == null)
-			{
-				_fontNameToFiles = new Dictionary<string, FontGroup>();
-				foreach (var fontFile in Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Fonts)))
-				{
-					// Epub only understands these types, so skip anything else.
-					switch (Path.GetExtension(fontFile))
-					{
-						case ".ttf":
-						case ".otf":
-						case ".woff":
-							break;
-						default:
-							continue;
-					}
-					GlyphTypeface gtf;
-					try
-					{
-						gtf = new GlyphTypeface(new Uri("file:///" + fontFile));
-					}
-					catch (Exception)
-					{
-						continue; // file is somehow corrupt or not really a font file? Just ignore it.
-					}
-					switch (gtf.EmbeddingRights)
-					{
-						case FontEmbeddingRight.Editable:
-						case FontEmbeddingRight.EditableButNoSubsetting:
-						case FontEmbeddingRight.Installable:
-						case FontEmbeddingRight.InstallableButNoSubsetting:
-						case FontEmbeddingRight.PreviewAndPrint:
-						case FontEmbeddingRight.PreviewAndPrintButNoSubsetting:
-							break;
-						default:
-							continue; // not allowed to embed (enhance: warn user?)
-					}
-					var fc = new PrivateFontCollection();
-					try
-					{
-						fc.AddFontFile(fontFile);
-					}
-					catch (FileNotFoundException)
-					{
-						continue; // not sure how this can happen but I've seen it.
-					}
-					var name = fc.Families[0].Name;
-					// If you care about bold, italic, etc, you can filter here.
-					FontGroup files;
-					if (!_fontNameToFiles.TryGetValue(name, out files))
-					{
-						files = new FontGroup();
-						_fontNameToFiles[name] = files;
-					}
-					files.Add(gtf, fontFile);
-				}
-			}
-			FontGroup result;
-			if (!_fontNameToFiles.TryGetValue(fontName, out result))
-				return new string[0];
-			return result;
-		}
 
 		const double mmPerInch = 25.4;
 
@@ -603,7 +475,7 @@ namespace Bloom.Book
 					continue; // or return? marginBox should be child of page!
 				if (firstTime)
 				{
-					var pageClass = AttrVal(page, "class").Split().FirstOrDefault(c => c.Contains("Portrait") || c.Contains("Landscape"));
+					var pageClass = HtmlDom.AttrVal(page, "class").Split().FirstOrDefault(c => c.Contains("Portrait") || c.Contains("Landscape"));
 					// This calculation unfortunately duplicates information from basePage.less.
 					const int A4Width = 210;
 					const int A4Height = 297;
@@ -661,7 +533,7 @@ namespace Bloom.Book
 					}
 					firstTime = false;
 				}
-				var imgStyle = AttrVal(img, "style");
+				var imgStyle = HtmlDom.AttrVal(img, "style");
 				// We want to take something like 'width:334px; height:220px; margin-left: 34px; margin-top: 0px;'
 				// and change it to something like 'width:75%; height:auto; margin-left: 10%; margin-top: 0px;'
 				// This first pass deals with width.
@@ -694,14 +566,6 @@ namespace Bloom.Book
 			var newWidth = (Math.Round(widthInch/parentBoxWidthInch*1000)/10).ToString("F1");
 			imgStyle = match.Groups[1] + newWidth  + "%" + match.Groups[3];
 			return false;
-		}
-
-		string AttrVal(XmlElement elt, string name)
-		{
-			var attr = elt.Attributes[name];
-			if (attr == null)
-				return "";
-			return attr.Value;
 		}
 
 		/// <summary>
@@ -1014,9 +878,9 @@ namespace Bloom.Book
 
 		private HtmlDom GetEpubFriendlyHtmlDomForPage(XmlElement page)
 		{
-			var headXml = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
+			var headXml = Storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head").OuterXml;
 			var dom = new HtmlDom(@"<html>" + headXml + "<body></body></html>");
-			dom = _storage.MakeDomRelocatable(dom);
+			dom = Storage.MakeDomRelocatable(dom);
 			var body = dom.RawDom.SelectSingleNodeHonoringDefaultNS("//body");
 			var pageDom = dom.RawDom.ImportNode(page, true);
 			body.AppendChild(pageDom);
