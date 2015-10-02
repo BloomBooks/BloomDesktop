@@ -383,6 +383,10 @@ namespace Bloom.Edit
 
 			if (_model.HaveCurrentEditableBook)
 			{
+#if MEMORYCHECK
+				// Check memory for the benefit of developers.
+				Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - about to change the page", false);
+#endif
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
 				_model.SetupServerWithCurrentPageIframeContents();
 				HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
@@ -413,6 +417,10 @@ namespace Bloom.Edit
 			_browser1.WebBrowser.DocumentCompleted -= WebBrowser_ReadyStateChanged;
 			ChangingPages = false;
 			_model.DocumentCompleted();
+#if MEMORYCHECK
+			// Check memory for the benefit of developers.
+			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - page change completed", false);
+#endif
 		}
 
 		public void AddMessageEventListener(string eventName, Action<string> action)
