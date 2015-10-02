@@ -527,11 +527,7 @@ namespace Bloom.Publish
 				{
 					_lastDirectory = Path.GetDirectoryName(dlg.FileName);
 					_epubMaker.FinishEpub(dlg.FileName);
-					//Analytics.Track("Save PDF", new Dictionary<string, string>()
-					//		{
-					//			{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},
-					//			{"Layout", PageLayout.ToString()}
-					//		});
+					Analytics.Track("Save Epub");
 				}
 			}
 		}

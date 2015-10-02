@@ -195,7 +195,7 @@
     <Compile Include="Book\BookInfo.cs" />
     <Compile Include="Book\BookServer.cs" />
     <Compile Include="Book\CurrentEditableCollectionSelection.cs" />
-    <Compile Include="Book\EpubMaker.cs" />
+    <Compile Include="Publish\EpubMaker.cs" />
     <Compile Include="Book\RuntimeInformationInjector.cs" />
     <Compile Include="Book\HtmlDom.cs" />
     <Compile Include="Book\BookData.cs" />
@@ -335,6 +335,8 @@
     <Compile Include="Publish\EpubView.Designer.cs">
       <DependentUpon>EpubView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Publish\FontFileFinder.cs" />
+    <Compile Include="Publish\FontGroup.cs" />
     <Compile Include="Publish\MakePdfUsingGeckofxHtmlToPdfProgram.cs" />
     <Compile Include="Publish\PdfViewer.cs">
       <SubType>UserControl</SubType>

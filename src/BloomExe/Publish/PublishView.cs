@@ -32,7 +32,6 @@ namespace Bloom.Publish
 		private EpubView _epubPreviewControl;
 		private Browser _epubPreviewBrowser;
 		private NavigationIsolator _isolator;
-		private string _originalSaveText;
 
 		public delegate PublishView Factory();//autofac uses this
 
@@ -47,8 +46,6 @@ namespace Bloom.Publish
 
 			if (this.DesignMode)
 				return;
-
-			_originalSaveText = _saveButton.Text;
 
 			_model = model;
 			_model.View = this;
@@ -133,7 +130,7 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_bookletCoverRadio, "PublishTab.CoverOnlyRadio");
 			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
-			LocalizeSuperToolTip(_epubRadio, "PublishTab.EpubButton");
+			LocalizeSuperToolTip(_epubRadio, "PublishTab.EpubRadio");
 		}
 
 		private void LocalizeSuperToolTip(Control controlThatHasSuperTooltipAttached, string l10nIdOfControl)
@@ -336,9 +333,9 @@ namespace Bloom.Publish
 				Controls.Remove(_epubPreviewControl);
 			}
 			if (displayMode == PublishModel.DisplayModes.Epub)
-				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveEpub", "&Save EPUB");
+				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveEpub", "&Save EPUB...");
 			else
-				_saveButton.Text = _originalSaveText;
+				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveButton", "&Save PDF...");
 			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.Epub)
 				_pdfViewer.Visible = true;
 			switch (displayMode)

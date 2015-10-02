@@ -791,5 +791,36 @@ namespace Bloom.Book
 				return new string[] {};
 			return classes.SplitTrimmed(' ');
 		}
+
+		/// <summary>
+		/// Find the first child of parent that has the specified class as (one of) its classes.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="classVal"></param>
+		/// <returns></returns>
+		public static XmlElement FindChildWithClass(XmlElement parent, string classVal)
+		{
+			// Can probably be done with xpath ./*[contains(concat(" ", normalize-space(@class), " "), " classVal ")]
+			// (plus something to get the first one).
+			// But I'm more confident of this version and suspect it might be faster for such a simple case.
+			foreach (var node in parent.ChildNodes)
+			{
+				var elt = node as XmlElement;
+				if (elt == null)
+					continue;
+				var eltClass = " " + AttrVal(elt, "class") + " ";
+				if (eltClass.Contains(" " + classVal + " "))
+					return elt;
+			}
+			return null;
+		}
+
+		public static string AttrVal(XmlElement elt, string name)
+		{
+			var attr = elt.Attributes[name];
+			if (attr == null)
+				return "";
+			return attr.Value;
+		}
 	}
 }
