@@ -183,6 +183,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AboutMemory.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutMemory.Designer.cs">
+      <DependentUpon>AboutMemory.cs</DependentUpon>
+    </Compile>
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="Book\BookInfo.cs" />
@@ -605,6 +611,9 @@
       <DependentUpon>WorkspaceView.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AboutMemory.resx">
+      <DependentUpon>AboutMemory.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Browser.resx">
       <DependentUpon>Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
