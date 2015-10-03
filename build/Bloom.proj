@@ -49,6 +49,7 @@
 	<Import Project="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.Targets"/>
 	<UsingTask TaskName="WebDownload" AssemblyFile="$(MSBuildCommunityTasksPath)/MSBuild.Community.Tasks.dll"/>
 	<Import Project=".\Snowcode.S3BuildPublisher.Tasks.Targets" Condition="'$(OS)'=='Windows_NT'"/>
+	<Import Project="NuGet.targets"/>
 
   <PropertyGroup>
 	<AccessKey>AKIAJ24BTPKNQCTQ3WQQ</AccessKey> <!-- This is for JohnThomson, a user who can upload to our libraries; override with /p:AccessKey=; used by ConfigureS3 target-->
@@ -110,7 +111,7 @@
 			 ReplacementText ='AssemblyProduct("Bloom$(channel)")' />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="SetAssemblyVersion">
+  <Target Name="Build" DependsOnTargets="SetAssemblyVersion,RestorePackages">
 	<MSBuild Projects="$(RootDir)/$(Solution)"
 			 Targets="Rebuild"
 			 Properties="Configuration=$(Configuration)" />
