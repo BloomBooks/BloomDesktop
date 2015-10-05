@@ -387,12 +387,6 @@
     <Compile Include="Collection\BloomPack\BloomPackInstallDialog.Designer.cs">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="HtmlLabel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="HtmlLabel.Designer.cs">
-      <DependentUpon>HtmlLabel.cs</DependentUpon>
-    </Compile>
     <Compile Include="ImageProcessing\RuntimeImageProcessor.cs" />
     <Compile Include="CollectionTab\IBloomTabArea.cs" />
     <Compile Include="CollectionTab\ListHeader.cs">
@@ -685,9 +679,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\ProgressDialogBackground.resx">
       <DependentUpon>ProgressDialogBackground.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="HtmlLabel.resx">
-      <DependentUpon>HtmlLabel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\ListHeader.resx">
       <DependentUpon>ListHeader.cs</DependentUpon>
