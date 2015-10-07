@@ -32,8 +32,6 @@ namespace Bloom
 		private readonly NavigationIsolator _isolator;
 		private Color _backgroundColorOfResult;
 		private static HtmlThumbNailer _theOnlyOneAllowed;
-		// A flag that is set while navigating to a page if the browser detects that loading an image has failed.
-		bool _imageFailed;
 
 		/// <summary>
 		/// This controls helps to call geckofx methods on the correct thread (UI thread).
@@ -310,37 +308,16 @@ namespace Bloom
 		/// <param name="browser"></param>
 		/// <param name="thumbnail"></param>
 		/// <returns></returns>
-		/// <remarks>Adds error-handling code to the order's document. I don't like this, but don't see a good way
-		/// to avoid it.</remarks>
 		private bool CreateThumbNail(ThumbnailOrder order, GeckoWebBrowser browser, out Image thumbnail)
 		{
 			// runs on threadpool thread
 			thumbnail = null;
-			// Modify the document to request notification if an error occurs loading images.
-			// We don't really know why image loading sometimes fails but have observed missing
-			// images in thumbnails (BL-2673). It may be to with some random delay on slower
-			// computers (e.g., garbage collection, or another process stealing the CPU).
-			// Detecting this and retrying may help.
-			order.Document.AddImageErrorHandler(
-				"var event = new MessageEvent('imageFailed', { 'view': window, 'bubbles': true, 'cancelable': true }); document.dispatchEvent(event);");
 			using (var temp = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(order.Document))
 			{
 				order.Done = false;
 				browser.Tag = order;
-				for (int i = 0; i < 5; i++) // arbitrarily we will have five tries at getting a good thumb with all images.
-				{
-					// This flag may get set during navigation if the browser detects a failure to load an image.
-					_imageFailed = false;
-					if (!OpenTempFileInBrowser(browser, temp.Key))
-						return false; // Some other navigation in progress, we've had it.
-					if (!_imageFailed)
-						break; // loaded without problems
-					// otherwise try again, up to the specified number of times. Some image failed
-					// to load, so we won't have a good thumbnail.
-				}
-				// Review: should we do anything if image loading failed every time??
-				// Returning false produces no thumbnail at all; one lacking the image is probably better.
-				// Or, we could throw, and fail the upload or whatever wants the thumbnail.
+				if (!OpenTempFileInBrowser(browser, temp.Key))
+					return false;
 
 				var browserSize = SetWidthAndHeight(browser);
 				if (browserSize.Height == 0) //happens when we run into the as-yet-unreproduced-or-fixed bl-254
@@ -517,21 +494,8 @@ namespace Bloom
 			var browser = new OffScreenGeckoWebBrowser();
 #endif
 			browser.CreateControl();
-			DoTrivialNavigation(browser); // trigger and wait for navigation so we can attach event
-			browser.AddMessageEventListener("imageFailed", x => _imageFailed = true);
 			browser.DocumentCompleted += _browser_OnDocumentCompleted;
 			return browser;
-		}
-
-		// Navigate to the most trivial possible document so we get a document loaded event and
-		// can attach our event handler.
-		private void DoTrivialNavigation(GeckoWebBrowser browser)
-		{
-			browser.Navigate("about:blank");
-			var _finishedTrivialNavigation = false;
-			browser.DocumentCompleted += (sender, args) => _finishedTrivialNavigation = true;
-			while (!_finishedTrivialNavigation)
-				Application.DoEvents(); // to allow browser to do the navigation.
 		}
 
 		private Image MakeThumbNail(Image bmp, ThumbnailOptions options)
