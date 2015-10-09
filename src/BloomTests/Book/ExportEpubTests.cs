@@ -428,7 +428,7 @@ namespace BloomTests.Book
 			var mgr = new XmlNamespaceManager(new NameTable());
 			mgr.AddNamespace("xhtml", "http://www.w3.org/1999/xhtml");
 			AssertThatXmlIn.String(page1Data).HasNoMatchForXpath("//xhtml:head/xhtml:link[@href='basePage.css']", mgr);
-			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//head/link[@href='epubUnpaginated.css']");
+			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//head/link[@href='baseEpub.css']");
 			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='settingsCollectionStyles.css']", mgr);
 			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customCollectionStyles.css']", mgr);
 			AssertThatXmlIn.String(page1Data).HasAtLeastOneMatchForXpath("//xhtml:link[@rel='stylesheet' and @href='customBookStyles.css']", mgr);

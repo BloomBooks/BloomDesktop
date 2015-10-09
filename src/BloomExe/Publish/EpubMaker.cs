@@ -221,10 +221,13 @@ namespace Bloom.Book
 			if (Unpaginated)
 			{
 				RemoveRegularStylesheets(pageDom);
-				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"epubUnpaginated.css").ToLocalhost());
+				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"baseEpub.css").ToLocalhost());
 			}
 			else
 			{
+				// Review: this branch is not currently used. Very likely we need SOME different stylesheets
+				// from the printed book, possibly including baseEpub.css, if it's even possible to make
+				// useful fixed-layout books out of Bloom books that will work with current readers.
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));

@@ -96,8 +96,8 @@
     "sourceMap": true
   },
   {
-    "outputFile": "epub/epubUnpaginated.css",
-    "inputFile": "epub/epubUnpaginated.less"
+    "outputFile": "epub/baseEpub.css",
+    "inputFile": "epub/baseEpub.less"
   },
   {
     "outputFile": "bookLayout/CommonBasePageEpub.css",
