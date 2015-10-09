@@ -163,9 +163,9 @@
     <Content Include="browserBasedCollectionView\library.js" />
     <Content Include="collection\.guidsForInstaller.xml" />
     <Content Include="collection\thumbnail.css" />
-    <Content Include="epub\epubUnpaginated.css" />
-    <Content Include="epub\epubUnpaginated.min.css">
-      <DependentUpon>epubUnpaginated.css</DependentUpon>
+    <Content Include="epub\baseEpub.css" />
+    <Content Include="epub\baseEpub.min.css">
+      <DependentUpon>baseEpub.css</DependentUpon>
     </Content>
     <Content Include="images\.guidsForInstaller.xml" />
     <Content Include="images\a5Portrait.svg" />
@@ -317,8 +317,8 @@
       <DependentUpon>compilerconfig.json</DependentUpon>
     </Content>
     <Content Include="packages.config" />
-    <Content Include="epub\epubUnpaginated.css.map" />
-    <Content Include="epub\epubUnpaginated.less" />
+    <Content Include="epub\baseEpub.css.map" />
+    <Content Include="epub\baseEpub.less" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
