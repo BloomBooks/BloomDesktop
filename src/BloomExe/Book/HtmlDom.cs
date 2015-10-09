@@ -808,19 +808,35 @@ namespace Bloom.Book
 				var elt = node as XmlElement;
 				if (elt == null)
 					continue;
-				var eltClass = " " + AttrVal(elt, "class") + " ";
+				var eltClass = " " + GetAttributeValue(elt, "class") + " ";
 				if (eltClass.Contains(" " + classVal + " "))
 					return elt;
 			}
 			return null;
 		}
 
-		public static string AttrVal(XmlElement elt, string name)
+		public static string GetAttributeValue(XmlElement elt, string name)
 		{
 			var attr = elt.Attributes[name];
 			if (attr == null)
 				return "";
 			return attr.Value;
+		}
+
+		internal static void FindFontsUsedInCss(string cssContent, HashSet<string> result)
+		{
+			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
+			foreach (Match match in findFF.Matches(cssContent))
+			{
+				foreach (var family in match.Groups[1].Value.Split(','))
+				{
+					var name = family.Trim();
+					// Strip matched quotes
+					if (name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
+						name = name.Substring(1, name.Length - 2);
+					result.Add(name);
+				}
+			}
 		}
 	}
 }

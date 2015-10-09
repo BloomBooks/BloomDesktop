@@ -359,14 +359,11 @@
 			this._saveButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._saveButton.ForeColor = System.Drawing.Color.Black;
 			this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._saveButton, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._saveButton, null);
-			this._L10NSharpExtender.SetLocalizingId(this._saveButton, "PublishTab.SaveButton");
 			this._saveButton.Location = new System.Drawing.Point(139, 0);
 			this._saveButton.Name = "_saveButton";
 			this._saveButton.Size = new System.Drawing.Size(185, 71);
 			this._saveButton.TabIndex = 15;
-			this._saveButton.Text = "&Save PDF...";
+			this._saveButton.Text = "Save stub";
 			this._saveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._saveButton.UseVisualStyleBackColor = false;
 			this._saveButton.Click += new System.EventHandler(this.OnSave_Click);
