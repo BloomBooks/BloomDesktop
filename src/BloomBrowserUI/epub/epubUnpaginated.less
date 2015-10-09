@@ -1,40 +1,29 @@
 ﻿// This stylesheet is a minimal set designed to make our epubs look as much as possible like the printed books,
-// while not locking down things that depend on a specific page size. Many things are copied from basePage.less.
-body {
-  // Defaults from basePage.less that are appropriate for a less structured e-book to help it look as similar as possible.
-  // Depending somewhat on the reader (and possibly its option settings), it should still be possible for
-  // individual elements and collection settings to override these.
-  line-height: 1.5;
-  font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
-}
-.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
-  order: 0;
-  font-size: 250%;
-  line-height: 1.4em;
-  margin-bottom: 5px;
+// while not locking down things that depend on a specific page size.
+// The remaining rules are things that wound up slightly different from the printed book rules
+// for reasons which I mostly don't remember; unfortunately, the experiments leading to the
+// final epub PR were spread out over a long period.
+@import "../bookLayout/CommonBasePageEpub.less";
+@import "../../../DistFiles/xMatter/BloomXMatterEpubCommon.less";
+
+.frontCover {
+    .bloom-translationGroup.bookTitle {
+        .bloom-editable {
+            // Main book stylesheet has justify-content: center, because it is using flexbox
+            text-align: center;
+        }
+    }
 }
 
-.frontCover .bloom-translationGroup.bookTitle .bloom-editable {
-  height: auto;
-  justify-content: center;
-}
-
-.Title-On-Cover-style {
-  text-align: center;
-}
-
-.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
-  order: 1;
-  font-size: 120%;
-  line-height: 1.7em;
-  margin-bottom: 5px;
-}
-
-.credits .licenseAndCopyrightBlock img,
-.verso .licenseAndCopyrightBlock img,
-.credits #versoLicenseAndCopyright img,
-.verso #versoLicenseAndCopyright img {
-  height: 31px;
+.credits {
+    .licenseAndCopyrightBlock {
+        img {
+            // creative commons license image. Book stylesheet has width:94px.
+            // Don't know why epub should be different.
+            //height: 31px;
+            width: 94px;
+        }
+    }
 }
 
 div.bloom-editable {

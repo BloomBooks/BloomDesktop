@@ -94,5 +94,17 @@
       "enabled": false
     },
     "sourceMap": true
+  },
+  {
+    "outputFile": "epub/epubUnpaginated.css",
+    "inputFile": "epub/epubUnpaginated.less"
+  },
+  {
+    "outputFile": "bookLayout/CommonBasePageEpub.css",
+    "inputFile": "bookLayout/CommonBasePageEpub.less"
+  },
+  {
+    "outputFile": "bookLayout/basePage.css",
+    "inputFile": "bookLayout/basePage.less"
   }
 ]
