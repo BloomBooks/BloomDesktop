@@ -258,8 +258,6 @@ namespace Bloom.Book
 			if (pageIndex == firstContentPageIndex)
 				_firstContentPageItem = pageDocName;
 
-			RearrangeImageOnTop(pageDom);
-
 			FixChangedFileNames(pageDom);
 			pageDom.AddStyleSheet("fonts.css"); // enhance: could omit if we don't embed any
 
@@ -319,39 +317,6 @@ namespace Bloom.Book
 			foreach (var dir in Directory.GetDirectories(StagingDirectory))
 				zip.AddDirectory(dir);
 			zip.Save();
-		}
-
-		/// <summary>
-		/// Bloom uses tricky styles to re-arrange the elements on a basic book's Basic Text and Picture page.
-		/// We want things to come out in the right order with a simple stylesheet.
-		/// This is mostly obsolete, since basic books are now being converted to use an origami-derived page
-		/// instead of this.
-		/// </summary>
-		/// <param name="pageDom"></param>
-		private void RearrangeImageOnTop(HtmlDom pageDom)
-		{
-			var marginBox = pageDom.SafeSelectNodes("//div[@class='marginBox']").Cast<XmlElement>().FirstOrDefault();
-			if (marginBox == null)
-				return;
-			var page = (XmlElement) marginBox.ParentNode;
-			var pageClass = " " + HtmlDom.GetAttributeValue(page, "class") + " ";
-			if (!pageClass.Contains(" bloom-page ") || !pageClass.Contains(" imageOnTop ")
-				|| (!pageClass.Contains(" bloom-bilingual ") && !pageClass.Contains(" .bloom-trilingual ")))
-				return; // not the kind of page we want to fix, or not bilingual mode
-			var imageContainer = HtmlDom.FindChildWithClass(marginBox, "bloom-imageContainer");
-			var transGroup = HtmlDom.FindChildWithClass(marginBox, "bloom-translationGroup");
-			if (imageContainer == null || transGroup == null)
-				return;
-			var content1 = HtmlDom.FindChildWithClass(transGroup, "bloom-content1");
-			var content2 = HtmlDom.FindChildWithClass(transGroup, "bloom-content2");
-			if (content1 == null || content2 == null)
-				return;
-			var dup = (XmlElement)transGroup.CloneNode(false);
-			marginBox.InsertBefore(dup, imageContainer);
-			transGroup.RemoveChild(content1);
-			dup.AppendChild(content1);
-			if (dup.Attributes["id"] != null)
-				dup.RemoveAttribute("id");
 		}
 
 		/// <summary>
