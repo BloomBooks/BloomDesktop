@@ -1,3 +1,28 @@
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
+  font-size: 120%;
+  line-height: 1.7em;
+  margin-bottom: 5px;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
+  font-size: 250%;
+  line-height: 1.4em;
+  margin-bottom: 5px;
+}
+.Title-On-Cover-style {
+  text-align: center;
+}
+.credits .licenseAndCopyrightBlock {
+  min-height: 60px;
+}
+.credits .licenseAndCopyrightBlock .copyright {
+  margin-bottom: 2em;
+}
+.credits .licenseAndCopyrightBlock .licenseBlock {
+  margin-bottom: 2em;
+}
+.credits .licenseAndCopyrightBlock img {
+  width: 94px;
+}
 .bloom-frontMatter .pageLabel:after,
 .bloom-backMatter .pageLabel:after {
   content: ": Factory Front/Back Matter";
@@ -167,9 +192,6 @@
 .iso693Code * {
   display: inline;
 }
-.Title-On-Cover-style {
-  text-align: center;
-}
 .frontCover .marginBox {
   display: flex;
   flex-direction: column;
@@ -190,9 +212,6 @@
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
   order: 1;
   display: block;
-  font-size: 120%;
-  line-height: 1.7em;
-  margin-bottom: 5px;
 }
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content3 {
   display: block;
@@ -201,9 +220,6 @@
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
   order: 0;
   display: block;
-  font-size: 250%;
-  line-height: 1.4em;
-  margin-bottom: 5px;
 }
 .frontCover .placeholder,
 .frontCover .bloom-imageContainer {

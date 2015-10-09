@@ -141,7 +141,16 @@
       <DependentUpon>topicChooser.css</DependentUpon>
     </Content>
     <Content Include="bookLayout\.guidsForInstaller.xml" />
+    <Content Include="bookLayout\basePage.min.css">
+      <DependentUpon>basePage.css</DependentUpon>
+    </Content>
     <Content Include="bookLayout\collection styles override template.css" />
+    <Content Include="bookLayout\CommonBasePageEpub.css">
+      <DependentUpon>CommonBasePageEpub.less</DependentUpon>
+    </Content>
+    <Content Include="bookLayout\CommonBasePageEpub.min.css">
+      <DependentUpon>CommonBasePageEpub.css</DependentUpon>
+    </Content>
     <Content Include="bookLayout\languageDisplayTemplate.css" />
     <Content Include="bookPreview\css\.guidsForInstaller.xml" />
     <Content Include="bookPreview\css\previewMode.css" />
@@ -155,6 +164,9 @@
     <Content Include="collection\.guidsForInstaller.xml" />
     <Content Include="collection\thumbnail.css" />
     <Content Include="epub\epubUnpaginated.css" />
+    <Content Include="epub\epubUnpaginated.min.css">
+      <DependentUpon>epubUnpaginated.css</DependentUpon>
+    </Content>
     <Content Include="images\.guidsForInstaller.xml" />
     <Content Include="images\a5Portrait.svg" />
     <Content Include="images\experiment.png" />
@@ -299,6 +311,7 @@
     <Content Include="bookEdit\readerSetup\readerSetup.less" />
     <Content Include="bookEdit\accordion\readerTools.less" />
     <Content Include="bookEdit\accordion\accordion.less" />
+    <Content Include="bookLayout\CommonBasePageEpub.less" />
     <None Include="compilerconfig.json" />
     <Content Include="compilerconfig.json.defaults">
       <DependentUpon>compilerconfig.json</DependentUpon>
