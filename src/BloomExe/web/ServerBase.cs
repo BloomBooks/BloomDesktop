@@ -297,6 +297,11 @@ namespace Bloom.web
 		/// <returns></returns>
 		protected virtual bool ProcessRequest(IRequestInfo info)
 		{
+#if MEMORYCHECK
+			// Check memory for the benefit of developers.  (Also see all requests as a side benefit.)
+			var debugMsg = String.Format("ServerBase.ProcessRequest(\"{0}\"", info.RawUrl);
+			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, debugMsg, false);
+#endif
 			// process request for directory index
 			var requestedPath = GetLocalPathWithoutQuery(info);
 			if (info.RawUrl.EndsWith("/") && (Directory.Exists(requestedPath)))
