@@ -334,7 +334,7 @@ namespace Bloom.Book
 			if (marginBox == null)
 				return;
 			var page = (XmlElement) marginBox.ParentNode;
-			var pageClass = " " + HtmlDom.AttrVal(page, "class") + " ";
+			var pageClass = " " + HtmlDom.GetAttributeValue(page, "class") + " ";
 			if (!pageClass.Contains(" bloom-page ") || !pageClass.Contains(" imageOnTop ")
 				|| (!pageClass.Contains(" bloom-bilingual ") && !pageClass.Contains(" .bloom-trilingual ")))
 				return; // not the kind of page we want to fix, or not bilingual mode
@@ -404,28 +404,10 @@ namespace Bloom.Book
 			foreach (var ss in Directory.GetFiles(Book.FolderPath, "*.css"))
 			{
 				var root = File.ReadAllText(ss, Encoding.UTF8);
-				FindFontsUsedInCss(root, result);
+				HtmlDom.FindFontsUsedInCss(root, result);
 			}
 			return result;
 		}
-
-		internal static void FindFontsUsedInCss(string cssContent, HashSet<string> result)
-		{
-			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
-			foreach (Match match in findFF.Matches(cssContent))
-			{
-				foreach (var family in match.Groups[1].Value.Split(','))
-				{
-					var name = family.Trim();
-					// Strip matched quotes
-					if (name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
-						name = name.Substring(1, name.Length - 2);
-					result.Add(name);
-				}
-			}
-		}
-
-
 
 		const double mmPerInch = 25.4;
 
@@ -478,7 +460,7 @@ namespace Bloom.Book
 					continue; // or return? marginBox should be child of page!
 				if (firstTime)
 				{
-					var pageClass = HtmlDom.AttrVal(page, "class").Split().FirstOrDefault(c => c.Contains("Portrait") || c.Contains("Landscape"));
+					var pageClass = HtmlDom.GetAttributeValue(page, "class").Split().FirstOrDefault(c => c.Contains("Portrait") || c.Contains("Landscape"));
 					// This calculation unfortunately duplicates information from basePage.less.
 					const int A4Width = 210;
 					const int A4Height = 297;
@@ -536,7 +518,7 @@ namespace Bloom.Book
 					}
 					firstTime = false;
 				}
-				var imgStyle = HtmlDom.AttrVal(img, "style");
+				var imgStyle = HtmlDom.GetAttributeValue(img, "style");
 				// We want to take something like 'width:334px; height:220px; margin-left: 34px; margin-top: 0px;'
 				// and change it to something like 'width:75%; height:auto; margin-left: 10%; margin-top: 0px;'
 				// This first pass deals with width.
@@ -660,7 +642,7 @@ namespace Bloom.Book
 						newName = fileName;
 					}
 					if (oldName != newName)
-						elt.SetAttribute(attr, WebUtility.UrlEncode(newName));
+						elt.SetAttribute(attr, Uri.EscapeDataString(newName));
 				}
 			}
 		}

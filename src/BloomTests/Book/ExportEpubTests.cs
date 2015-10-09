@@ -647,7 +647,7 @@ namespace BloomTests.Book
 		public void FindFontsUsedInCss_FindsSimpleFontFamily()
 		{
 			var results = new HashSet<string>();
-			EpubMaker.FindFontsUsedInCss("body {font-family:Arial}", results);
+			HtmlDom.FindFontsUsedInCss("body {font-family:Arial}", results);
 			Assert.That(results, Has.Count.EqualTo(1));
 			Assert.That(results.Contains("Arial"));
 		}
@@ -656,8 +656,8 @@ namespace BloomTests.Book
 		public void FindFontsUsedInCss_FindsQuotedFontFamily()
 		{
 			var results = new HashSet<string>();
-			EpubMaker.FindFontsUsedInCss("body {font-family:'Times New Roman'}", results);
-			EpubMaker.FindFontsUsedInCss("body {font-family:\"Andika New Basic\"}", results);
+			HtmlDom.FindFontsUsedInCss("body {font-family:'Times New Roman'}", results);
+			HtmlDom.FindFontsUsedInCss("body {font-family:\"Andika New Basic\"}", results);
 			Assert.That(results, Has.Count.EqualTo(2));
 			Assert.That(results.Contains("Times New Roman"));
 			Assert.That(results.Contains("Andika New Basic"));
@@ -667,7 +667,7 @@ namespace BloomTests.Book
 		public void FindFontsUsedInCss_FindsMultipleFontFamilies()
 		{
 			var results = new HashSet<string>();
-			EpubMaker.FindFontsUsedInCss("body {font-family: 'Times New Roman', Arial,\"Andika New Basic\";}", results);
+			HtmlDom.FindFontsUsedInCss("body {font-family: 'Times New Roman', Arial,\"Andika New Basic\";}", results);
 			Assert.That(results, Has.Count.EqualTo(3));
 			Assert.That(results.Contains("Times New Roman"));
 			Assert.That(results.Contains("Andika New Basic"));
