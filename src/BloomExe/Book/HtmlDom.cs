@@ -296,11 +296,18 @@ namespace Bloom.Book
 		/// </summary>
 		public void RemoveFileProtocolFromStyleSheetLinks()
 		{
-			List<XmlElement> links = new List<XmlElement>();
 			foreach (XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
-				var linke = link.GetAttribute("href");
-				link.SetAttribute("href", linke.Replace("file:///", "").Replace("file://", ""));
+				var href = link.GetAttribute("href");
+				link.SetAttribute("href", href.Replace("file:///", "").Replace("file://", ""));
+			}
+		}
+		public void RemoveDirectorySpecificationFromStyleSheetLinks()
+		{
+			foreach(XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var href = link.GetAttribute("href");
+				link.SetAttribute("href", Path.GetFileName(href));
 			}
 		}
 
@@ -783,6 +790,53 @@ namespace Bloom.Book
 			if (String.IsNullOrEmpty(classes))
 				return new string[] {};
 			return classes.SplitTrimmed(' ');
+		}
+
+		/// <summary>
+		/// Find the first child of parent that has the specified class as (one of) its classes.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="classVal"></param>
+		/// <returns></returns>
+		public static XmlElement FindChildWithClass(XmlElement parent, string classVal)
+		{
+			// Can probably be done with xpath ./*[contains(concat(" ", normalize-space(@class), " "), " classVal ")]
+			// (plus something to get the first one).
+			// But I'm more confident of this version and suspect it might be faster for such a simple case.
+			foreach (var node in parent.ChildNodes)
+			{
+				var elt = node as XmlElement;
+				if (elt == null)
+					continue;
+				var eltClass = " " + GetAttributeValue(elt, "class") + " ";
+				if (eltClass.Contains(" " + classVal + " "))
+					return elt;
+			}
+			return null;
+		}
+
+		public static string GetAttributeValue(XmlElement elt, string name)
+		{
+			var attr = elt.Attributes[name];
+			if (attr == null)
+				return "";
+			return attr.Value;
+		}
+
+		public static void FindFontsUsedInCss(string cssContent, HashSet<string> result)
+		{
+			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
+			foreach (Match match in findFF.Matches(cssContent))
+			{
+				foreach (var family in match.Groups[1].Value.Split(','))
+				{
+					var name = family.Trim();
+					// Strip matched quotes
+					if (name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
+						name = name.Substring(1, name.Length - 2);
+					result.Add(name);
+				}
+			}
 		}
 	}
 }

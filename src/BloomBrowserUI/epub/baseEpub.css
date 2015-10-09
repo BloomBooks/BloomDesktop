@@ -1,0 +1,49 @@
+﻿body {
+  line-height: 1.5;
+  font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
+  font-size: 120%;
+  line-height: 1.7em;
+  margin-bottom: 5px;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-content1 {
+  font-size: 250%;
+  line-height: 1.4em;
+  margin-bottom: 5px;
+}
+.Title-On-Cover-style {
+  text-align: center;
+}
+.credits .licenseAndCopyrightBlock {
+  min-height: 60px;
+}
+.credits .licenseAndCopyrightBlock .copyright {
+  margin-bottom: 2em;
+}
+.credits .licenseAndCopyrightBlock .licenseBlock {
+  margin-bottom: 2em;
+}
+.credits .licenseAndCopyrightBlock img {
+  width: 94px;
+}
+.frontCover .bloom-translationGroup.bookTitle .bloom-editable {
+  text-align: center;
+}
+.credits .licenseAndCopyrightBlock img {
+  width: 94px;
+}
+div.bloom-editable {
+  margin-bottom: 0.6em;
+}
+.pictureAndWordPage .bloom-content1 {
+  font-size: 400%;
+}
+.pictureAndWordPage .bloom-content2,
+.pictureAndWordPage .bloom-content3 {
+  font-size: 200%;
+}
+.pictureAndWordPage .bloom-translationGroup {
+  text-align: center;
+  padding-top: 10px;
+}

@@ -29,4 +29,5 @@
 *.bmml -whitespace
 *.DotSettings -whitespace
 *.mdpolicy -whitespace
+src/BloomBrowserUI/compilerconfig.json -whitespace
 changelog -whitespace
