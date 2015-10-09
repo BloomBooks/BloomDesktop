@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
@@ -607,7 +608,7 @@ namespace Bloom.Book
 						newName = fileName;
 					}
 					if (oldName != newName)
-						elt.SetAttribute(attr, Uri.EscapeDataString(newName));
+						elt.SetAttribute(attr, HttpUtility.UrlPathEncode(newName)); // Supposedly deprecated, but we need space->%20, not +
 				}
 			}
 		}

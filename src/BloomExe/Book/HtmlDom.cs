@@ -823,7 +823,7 @@ namespace Bloom.Book
 			return attr.Value;
 		}
 
-		internal static void FindFontsUsedInCss(string cssContent, HashSet<string> result)
+		public static void FindFontsUsedInCss(string cssContent, HashSet<string> result)
 		{
 			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
 			foreach (Match match in findFF.Matches(cssContent))
