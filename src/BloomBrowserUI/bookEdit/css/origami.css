@@ -1,4 +1,4 @@
-﻿/*!
+/*!
 
 Split Pane v0.4.0
 
@@ -128,7 +128,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 .split-pane.vertical-percent > .vertical-divider:hover,
 .origami-layout-mode .split-pane.vertical-percent > .vertical-divider,
 .vertical-divider.dragged {
-  border-right-color: #e48c84 !important;
+  border-right-color: #E48C84 !important;
 }
 .split-pane.horizontal-percent > .horizontal-divider {
   bottom: 50%;
@@ -138,7 +138,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 .split-pane.horizontal-percent > .horizontal-divider:hover,
 .origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
 .horizontal-divider.dragged {
-  border-bottom-color: #e48c84 !important;
+  border-bottom-color: #E48C84 !important;
 }
 .origami-toggle {
   position: absolute;
@@ -178,7 +178,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 .origami-buttons .button:hover,
 .origami-buttons .button:focus {
   color: white;
-  background-color: #e48c84;
+  background-color: #E48C84;
 }
 .origami-buttons {
   position: absolute;
@@ -265,9 +265,8 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 }
 .selector-links,
 .selector-links a {
-  color: #e48c84;
+  color: #E48C84;
 }
 .selector-links div {
   display: inline;
 }
-/*# sourceMappingURL=origami.css.map */

@@ -1,13 +1,13 @@
-﻿/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 .qtip-default {
   background-color: #faf7cc !important;
-  border-color: #e0deb7 !important;
+  border-color: #E0DEB7 !important;
   color: black !important;
   border-radius: 5px;
 }
 .uibloomSourceTextsBubble {
   background-color: #faf7cc !important;
-  border-color: #e0deb7 !important;
+  border-color: #E0DEB7 !important;
   border-width: 2px !important;
 }
 .uibloomSourceTextsBubble .qtip-content {
@@ -18,7 +18,7 @@
 }
 .ui-sourceTextsForBubble {
   position: relative;
-  border-color: #e0deb7;
+  border-color: #E0DEB7;
 }
 .ui-sourceTextsForBubble NAV {
   display: block;
@@ -54,7 +54,7 @@
   border-top-right-radius: 6px;
   float: left;
   flex: 1 0 auto;
-  background-color: #e0deb7;
+  background-color: #E0DEB7;
 }
 .ui-sourceTextsForBubble NAV > UL > LI:not(:first-child) {
   border-left: 1px solid #faf7cc;
@@ -113,7 +113,7 @@
   margin-top: 2px;
   white-space: nowrap;
   border: 1px solid #faf7cc;
-  background-color: #e0deb7 !important;
+  background-color: #E0DEB7 !important;
   top: 0;
   font-size: 9pt;
   z-index: 5;
@@ -205,7 +205,7 @@ DIV.page.coverColor {
 }
 /*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
 DIV.readOnlyInTranslationMode {
-  border: thin solid #c0b9b9;
+  border: thin solid #C0B9B9;
 }
 DIV.hoverUp {
   background-color: #d5d5e4;

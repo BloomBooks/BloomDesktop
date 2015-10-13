@@ -20,7 +20,6 @@ BODY {
   height: 65px;
   width: 47px;
   /* default = A5Portrait */
-
   transform-style: preserve-3d;
 }
 .pageContainer.A5Landscape {
