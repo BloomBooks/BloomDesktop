@@ -23,7 +23,7 @@ namespace Bloom
 		{
 			InitializeComponent();
 			_browser1.Isolator = isolator;
-			_browser1.ContextMenuProvider = x => {};
+			_browser1.ContextMenuProvider = x => { return true; }; // replace standard menu commands with none
 			FirstLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory";
 			SecondLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs";
 		}
