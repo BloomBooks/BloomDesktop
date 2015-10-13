@@ -49,7 +49,7 @@ BODY {
 	}
 }
 #preview {
-	width: 200px;
+  max-height: 232px;
 }
 
 .landscape {
@@ -73,11 +73,11 @@ BODY {
 
 .DescriptionText {
 	white-space: normal;
-	max-height: 145px;
-	//width: 353px;
+	max-height: 119px;
 	line-height: 1.5em;
 	overflow: hidden;
-	//overflow-y: scroll   this is actually what we want, but it's always showing the scroll, so off for now
+  text-overflow: ellipsis;
+	overflow-y: auto ;
 	margin-right: @PreviewPaneLeftPadding;
 	margin-left: @PreviewPaneLeftPadding;
 }

@@ -296,11 +296,18 @@ namespace Bloom.Book
 		/// </summary>
 		public void RemoveFileProtocolFromStyleSheetLinks()
 		{
-			List<XmlElement> links = new List<XmlElement>();
 			foreach (XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
-				var linke = link.GetAttribute("href");
-				link.SetAttribute("href", linke.Replace("file:///", "").Replace("file://", ""));
+				var href = link.GetAttribute("href");
+				link.SetAttribute("href", href.Replace("file:///", "").Replace("file://", ""));
+			}
+		}
+		public void RemoveDirectorySpecificationFromStyleSheetLinks()
+		{
+			foreach(XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var href = link.GetAttribute("href");
+				link.SetAttribute("href", Path.GetFileName(href));
 			}
 		}
 
@@ -784,47 +791,52 @@ namespace Bloom.Book
 				return new string[] {};
 			return classes.SplitTrimmed(' ');
 		}
+
 		/// <summary>
-		/// modify all images on the page so that if the browser fails to load the image, it will
-		/// execute a function whose body is handlerJs.
-		/// For example, handlerJs might contain location.reload(true) to force a Refresh
-		/// that will hopefully succeed.
+		/// Find the first child of parent that has the specified class as (one of) its classes.
 		/// </summary>
-		/// <param name="handlerJs"></param>
-		public void AddImageErrorHandler(string handlerJs)
+		/// <param name="parent"></param>
+		/// <param name="classVal"></param>
+		/// <returns></returns>
+		public static XmlElement FindChildWithClass(XmlElement parent, string classVal)
 		{
-			var images = SafeSelectNodes("//img[@src]");
-			var jsBldr = new StringBuilder();
-			foreach (XmlElement image in images)
+			// Can probably be done with xpath ./*[contains(concat(" ", normalize-space(@class), " "), " classVal ")]
+			// (plus something to get the first one).
+			// But I'm more confident of this version and suspect it might be faster for such a simple case.
+			foreach (var node in parent.ChildNodes)
 			{
-				var src = image.Attributes["src"].Value;
-				// We remove the source attribute so that the image will not attempt to load until the JS
-				// we add restores it...which happens AFTER we attach the error handler.
-				// Without this precaution a failure might be missed before we get around to attaching the
-				// handler.
-				image.RemoveAttribute("src");
-				var idAttr = image.Attributes["id"];
-				string id;
-				if (idAttr == null)
-				{
-					id = Guid.NewGuid().ToString();
-					image.SetAttribute("id", id);
-				}
-				else
-				{
-					id = idAttr.Value;
-				}
-				// Don't assume the page has JQuery.
-				//jsBldr.Append("$('#" + id + "').on('error', function() {" + handlerJs + "}).attr('src', '" + src + "');");
-				jsBldr.Append("document.getElementById('" + id + "').addEventListener('error', function() {" + handlerJs + "}); document.getElementById('" + id + "').setAttribute('src', '" + src + "');\n");
+				var elt = node as XmlElement;
+				if (elt == null)
+					continue;
+				var eltClass = " " + GetAttributeValue(elt, "class") + " ";
+				if (eltClass.Contains(" " + classVal + " "))
+					return elt;
 			}
-			var script = RawDom.CreateElement("script");
-			script.InnerText = jsBldr.ToString();
-			// Note that the script must go at the end of the body, so that the elements it wants to find
-			// will be parsed before the javascript executes and looks for them. I'm deliberately NOT using
-			// anything like an onload event, because I want this to execute before the C# code gets notified
-			// that the document is ready.
-			RawDom.GetElementsByTagName("body").Cast<XmlElement>().First().AppendChild(script);
+			return null;
+		}
+
+		public static string GetAttributeValue(XmlElement elt, string name)
+		{
+			var attr = elt.Attributes[name];
+			if (attr == null)
+				return "";
+			return attr.Value;
+		}
+
+		public static void FindFontsUsedInCss(string cssContent, HashSet<string> result)
+		{
+			var findFF = new Regex("font-family:\\s*([^;}]*)[;}]");
+			foreach (Match match in findFF.Matches(cssContent))
+			{
+				foreach (var family in match.Groups[1].Value.Split(','))
+				{
+					var name = family.Trim();
+					// Strip matched quotes
+					if (name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
+						name = name.Substring(1, name.Length - 2);
+					result.Add(name);
+				}
+			}
 		}
 	}
 }

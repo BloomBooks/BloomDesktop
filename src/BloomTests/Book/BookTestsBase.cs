@@ -64,6 +64,7 @@ namespace BloomTests.Book
 			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
 			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplayTemplate.css")).Returns(root.CombineForPath("bookLayout", "languageDisplayTemplate.css"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplay.css")).Returns(root.CombineForPath(_tempFolder.Path, "languageDisplay.css"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("origami.css")).Returns("../notareallocation/origami.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("editMode.css")).Returns("../notareallocation/editMode.css");
@@ -73,6 +74,10 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateFileWithThrow("basePage.css")).Returns("../notareallocation/basePage.css");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomBootstrap.js")).Returns("../notareallocation/bloomBootstrap.js");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("bloomPreviewBootstrap.js")).Returns("../notareallocation/bloomPreviewBootstrap.js");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("baseEpub.css")).Returns("../notareallocation/baseEpub.css");
+			_fileLocator.Setup(x => x.LocateFileWithThrow("customBookStyles.css")).Returns(Path.Combine(_tempFolder.Path, "customBookStyles.css"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("settingsCollectionStyles.css")).Returns(Path.Combine(_testFolder.Path, "settingsCollectionStyles.css"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("customCollectionStyles.css")).Returns(Path.Combine(_testFolder.Path, "customCollectionStyles.css"));
 
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateDirectoryWithThrow("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));

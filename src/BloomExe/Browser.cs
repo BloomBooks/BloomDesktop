@@ -432,8 +432,23 @@ namespace Bloom
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
 			e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)", new EventHandler(OnOpenPageInSystemBrowser));
+#if DEBUG
+			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
+#endif
 
 			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
+		}
+
+		private void OnOpenAboutMemory(object sender, EventArgs e)
+		{
+			var form = new AboutMemory(Isolator);
+			form.Text = "Bloom Browser Memory Diagnostics (\"about:memory\")";
+			form.FirstLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory for a basic explanation.";
+			form.FirstLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory";
+			form.SecondLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs for more details.";
+			form.SecondLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs";
+			form.Navigate("about:memory");
+			form.Show();	// NOT Modal!
 		}
 
 		public void OnGetTroubleShootingInformation(object sender, EventArgs e)

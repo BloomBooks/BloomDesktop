@@ -1,7 +1,7 @@
 @import "../less/common-mixins.less";
+@import "BloomXMatterEpubCommon.less";
 
 @XMatterPackName: "unknown";
-@MarginBetweenBlocks: 2em;
 
 .bloom-frontMatter, .bloom-backMatter {
     .pageLabel:after {
@@ -78,13 +78,8 @@
     display: inline;
 }
 
-.Title-On-Cover-style {
-    text-align: center;
-}
-
 .frontCover {
     @BottomRowHeight: 20px;
-    @MarginBetweenMinorItems: 5px;
     @MarginBetweenMajorItems: 15px;
 
     .marginBox {
@@ -113,9 +108,6 @@
                 //NB: we show the national language even if this is a monolingual book
                 order: 1;
                 display: block; // don't want to inherit flex (BL-2681), but need to override display:none for inactive languages
-                font-size: 120%;
-                line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnท             line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnทไปทั่วพื้ ช้ต่างปู" as a test
-                margin-bottom: @MarginBetweenMinorItems;
             }
             //...but we show the regional language only if the book is tri-lingual,
             //   which we can tell because Bloom will stick a "bloom-content3" on the appropriate element
@@ -128,9 +120,6 @@
                 //main title
                 order: 0;
                 display: block; // don't want to inherit flex (BL-2681), but need to override display:none for inactive languages
-                font-size: 250%;
-                line-height: 1.4em; //1.4em is the minimum to show ทไปทั่วพื้  without clipping. (Which we don't really *have* to support by default; the user could change the line-height.)
-                margin-bottom: @MarginBetweenMinorItems;
             }
         }
     }
@@ -302,25 +291,6 @@
         font-size: 10pt;
         //min-height: 5em;
         line-height: 1.4em; // supports ไปทั่วพื้ ที่นั่ ชื่ ปู ช้ต่างป
-    }
-
-    .licenseAndCopyrightBlock {
-        min-height: 60px;
-        .copyright {
-            margin-bottom: @MarginBetweenBlocks;
-        }
-        .licenseBlock {
-            margin-bottom: @MarginBetweenBlocks;
-        }
-        img {
-            // creative commons license image
-
-            //note, if this is 93 or less, then FF29 (used to at least bloom 3.3) cuts off the right edge.
-            //It was fine if you zoomed in, fine in a more modern FF, fine in PDF, etc.
-            //I have tried changing a dozen different properties, including the image-rendering, and the
-            // only thing that helped was to make it a bit larger
-            width: 94px;
-        }
     }
 
     .originalAcknowledgments .bloom-contentNational1 {
