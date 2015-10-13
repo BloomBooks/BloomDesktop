@@ -114,52 +114,7 @@ namespace Bloom.Publish
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
 				++pageIndex;
-				var pageDom = GetEpubFriendlyHtmlDomForPage(pageElement);
-				pageDom.RemoveModeStyleSheets();
-				if (Unpaginated)
-				{
-					RemoveRegularStylesheets(pageDom);
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"epubUnpaginated.css").ToLocalhost());
-				}
-				else
-				{
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
-					pageDom.AddStyleSheet(_storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
-				}
-
-				RemoveUnwantedContent(pageDom);
-
-				pageDom.SortStyleSheetLinks();
-				pageDom.AddPublishClassToBody();
-
-				MakeCssLinksAppropriateForEpub(pageDom);
-				RemoveSpuriousLinks(pageDom);
-				RemoveScripts(pageDom);
-				FixIllegalIds(pageDom);
-				FixPictureSizes(pageDom);
-				// Since we only allow one htm file in a book folder, I don't think there is any
-				// way this name can clash with anything else.
-				var pageDocName = pageIndex + ".xhtml";
-
-				// Manifest has to include all referenced files
-				foreach (XmlElement img in pageDom.SafeSelectNodes("//img"))
-				{
-					var srcAttr = img.Attributes["src"];
-					if (srcAttr == null)
-						continue; // hug?
-					var imgName = srcAttr.Value;
-					if (string.IsNullOrEmpty(imgName))
-						continue;
-					// Images are always directly in the folder
-					var srcPath = Path.Combine(Book.FolderPath, imgName);
-					CopyFileToEpub(srcPath);
-				}
-
-				_manifestItems.Add(pageDocName);
-				_spineItems.Add(pageDocName);
-				AddAudioOverlay(pageDom, pageDocName);
-
+				var pageDom = MakePageFile(pageElement, pageIndex, firstContentPageIndex);
 				// for now, at least, all Bloom book pages currently have the same stylesheets, so we only neeed
 				//to look at those stylesheets on the first page
 				if (pageIndex == 1)
@@ -241,6 +196,84 @@ namespace Bloom.Publish
 			MakeSpine(opf, rootElt, manifestPath);
 		}
 
+		private string AudioPathForId(string id)
+		{
+			var root = Path.Combine(Storage.FolderPath, "audio");
+			var extensions = new [] {"mp3", "mp4"}; // .ogg,, .wav, ...?
+			var fileNames = new List<string>(new [] {id});
+			if (id.StartsWith("i") && id.Length > 1 && Char.IsDigit(id[1]))
+				fileNames.Add(id.Substring(1)); // probably an ID where we prepended 'i';  look for that option too
+			foreach (var name in fileNames)
+			{
+				foreach (var ext in extensions)
+				{
+					var path = Path.Combine(root, Path.ChangeExtension(name, ext));
+					if (File.Exists(path))
+						return path;
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Create an audio overlay for the page if appropriate.
+		/// We are looking for the page to contain spans with IDs. For each such ID X,
+		/// we look for a file _storage.FolderPath/audio/X.mp{3,4}.
+		/// If we find at least one such file, we create pageDocName_overlay.smil
+		/// with appropriate contents to tell the reader how to read all such spans
+		/// aloud.
+		/// </summary>
+		/// <param name="pageDom"></param>
+		/// <param name="pageDocName"></param>
+		private void AddAudioOverlay(HtmlDom pageDom, string pageDocName)
+		{
+			var spansWithIds = pageDom.RawDom.SafeSelectNodes("//span[@id]").Cast<XmlElement>();
+			// todo: test case where an mp4 is missing.
+			var spansWithAudio =
+				spansWithIds.Where(x =>AudioPathForId(x.Attributes["id"].Value) != null);
+			if (!spansWithAudio.Any())
+				return; // todo: test this case
+			var overlayName = GetOverlayName(pageDocName);
+			_manifestItems.Add(overlayName);
+			string smilNamespace = "http://www.w3.org/ns/SMIL";
+			XNamespace smil = smilNamespace;
+			string epubNamespace = "http://www.idpf.org/2007/ops";
+			XNamespace epub = epubNamespace;
+			var seq = new XElement(smil+"seq",
+				new XAttribute("id", "id1"), // all <seq> I've seen have this, not sure whether necessary
+				new XAttribute(epub + "textref", pageDocName),
+				new XAttribute(epub + "type", "bodymatter chapter") // only type I've encountered
+				);
+			var root = new XElement(smil + "smil",
+				new XAttribute( "xmlns", smilNamespace),
+				new XAttribute(XNamespace.Xmlns + "epub", epubNamespace),
+				new XAttribute("version", "3.0"),
+				new XElement(smil + "body",
+					seq));
+			int index = 1;
+			foreach (var span in spansWithAudio)
+			{
+				var spanId = span.Attributes["id"].Value;
+				var path = AudioPathForId(spanId);
+				seq.Add(new XElement(smil+"par",
+					new XAttribute("id", "s" + index++),
+					new XElement(smil + "text",
+						new XAttribute("src", pageDocName + "#" + spanId)),
+						new XElement(smil + "audio",
+							new XAttribute("src", "audio/" + Path.GetFileName(path)))));
+				CopyFileToEpub(path);
+			}
+			var overlayPath = Path.Combine(_contentFolder, overlayName);
+			using (var writer = XmlWriter.Create(overlayPath))
+				root.WriteTo(writer);
+
+		}
+
+		private static string GetOverlayName(string pageDocName)
+		{
+			return Path.ChangeExtension(Path.GetFileNameWithoutExtension(pageDocName) + "_overlay", "smil");
+		}
+
 		private void MakeSpine(XNamespace opf, XElement rootElt, string manifestPath)
 		{
 			// Generate the spine, which indicates the top-level readable content in order.
@@ -314,6 +347,7 @@ namespace Bloom.Publish
 
 			_manifestItems.Add(pageDocName);
 			_spineItems.Add(pageDocName);
+			AddAudioOverlay(pageDom, pageDocName);
 
 			if (pageIndex == firstContentPageIndex)
 				_firstContentPageItem = pageDocName;
@@ -356,83 +390,6 @@ namespace Bloom.Publish
 		}
 
 		// Combines staging and finishing (currently just used in tests).
-		private string AudioPathForId(string id)
-		{
-			var root = Path.Combine(_storage.FolderPath, "audio");
-			var extensions = new [] {"mp3", "mp4"}; // .ogg,, .wav, ...?
-			var fileNames = new List<string>(new [] {id});
-			if (id.StartsWith("i") && id.Length > 1 && Char.IsDigit(id[1]))
-				fileNames.Add(id.Substring(1)); // probably an ID where we prepended 'i';  look for that option too
-			foreach (var name in fileNames)
-			{
-				foreach (var ext in extensions)
-				{
-					var path = Path.Combine(root, Path.ChangeExtension(name, ext));
-					if (File.Exists(path))
-						return path;
-				}
-			}
-			return null;
-		}
-		/// <summary>
-		/// Create an audio overlay for the page if appropriate.
-		/// We are looking for the page to contain spans with IDs. For each such ID X,
-		/// we look for a file _storage.FolderPath/audio/X.mp{3,4}.
-		/// If we find at least one such file, we create pageDocName_overlay.smil
-		/// with appropriate contents to tell the reader how to read all such spans
-		/// aloud.
-		/// </summary>
-		/// <param name="pageDom"></param>
-		/// <param name="pageDocName"></param>
-		private void AddAudioOverlay(HtmlDom pageDom, string pageDocName)
-		{
-			var spansWithIds = pageDom.RawDom.SafeSelectNodes("//span[@id]").Cast<XmlElement>();
-			// todo: test case where an mp4 is missing.
-			var spansWithAudio =
-				spansWithIds.Where(x =>AudioPathForId(x.Attributes["id"].Value) != null);
-			if (!spansWithAudio.Any())
-				return; // todo: test this case
-			var overlayName = GetOverlayName(pageDocName);
-			_manifestItems.Add(overlayName);
-			string smilNamespace = "http://www.w3.org/ns/SMIL";
-			XNamespace smil = smilNamespace;
-			string epubNamespace = "http://www.idpf.org/2007/ops";
-			XNamespace epub = epubNamespace;
-			var seq = new XElement(smil+"seq",
-				new XAttribute("id", "id1"), // all <seq> I've seen have this, not sure whether necessary
-				new XAttribute(epub + "textref", pageDocName),
-				new XAttribute(epub + "type", "bodymatter chapter") // only type I've encountered
-				);
-			var root = new XElement(smil + "smil",
-				new XAttribute( "xmlns", smilNamespace),
-				new XAttribute(XNamespace.Xmlns + "epub", epubNamespace),
-				new XAttribute("version", "3.0"),
-				new XElement(smil + "body",
-					seq));
-			int index = 1;
-			foreach (var span in spansWithAudio)
-			{
-				var spanId = span.Attributes["id"].Value;
-				var path = AudioPathForId(spanId);
-				seq.Add(new XElement(smil+"par",
-					new XAttribute("id", "s" + index++),
-					new XElement(smil + "text",
-						new XAttribute("src", pageDocName + "#" + spanId)),
-						new XElement(smil + "audio",
-							new XAttribute("src", "audio/" + Path.GetFileName(path)))));
-				CopyFileToEpub(path);
-			}
-			var overlayPath = Path.Combine(_contentFolder, overlayName);
-			using (var writer = XmlWriter.Create(overlayPath))
-				root.WriteTo(writer);
-
-		}
-
-		private static string GetOverlayName(string pageDocName)
-		{
-			return Path.ChangeExtension(Path.GetFileNameWithoutExtension(pageDocName) + "_overlay", "smil");
-		}
-
 		public void SaveEpub(string destinationEpubPath)
 		{
 			StageEpub();
@@ -754,8 +711,8 @@ namespace Bloom.Publish
 				return; // File already present, must be used more than once.
 			// Validator warns against spaces in filenames.
 			string originalFileName;
-			if (srcPath.StartsWith(_storage.FolderPath))
-				originalFileName = srcPath.Substring(_storage.FolderPath.Length + 1).Replace("\\", "/"); // allows keeping folder structure
+			if (srcPath.StartsWith(Storage.FolderPath))
+				originalFileName = srcPath.Substring(Storage.FolderPath.Length + 1).Replace("\\", "/"); // allows keeping folder structure
 			else
 				originalFileName = Path.GetFileName(srcPath); // probably can't happen, but in case, put at root.
 			string fileName = originalFileName.Replace(" ", "_");
