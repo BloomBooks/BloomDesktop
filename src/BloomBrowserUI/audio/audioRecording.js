@@ -79,10 +79,17 @@ var audioRecording = (function () {
             return;
         this.setCurrentSpan(current, prev);
     };
-    // Todo: For HearThis compatibility, start on mouseDown and end on mouseUp.
     audioRecording.prototype.endRecordCurrent = function () {
         this.recording = false;
         this.fireCSharpEvent("endRecordAudio", "");
+        // The player should already be set to play back the audio we just recorded.
+        // However, if no such file previously existed, it seems Gecko caches this
+        // fact and does not notice that the file has been created. Changing src
+        // to something else and back fixes this.
+        var player = $('#player');
+        var src = player.attr('src');
+        player.attr('src', '');
+        player.attr('src', src);
     };
     audioRecording.prototype.startRecordCurrent = function () {
         this.recording = true;
@@ -615,7 +622,10 @@ var audioRecording = (function () {
         $('span.ui-audioCurrent').removeClass('ui-audioCurrent');
     };
     audioRecording.prototype.fireCSharpEvent = function (eventName, eventData) {
-        var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
+        // Note: other implementations of fireCSharpEvent have 'view':'window', but the TS compiler does
+        // not like this. It seems to work fine without it, and I don't know why we had it, so I am just
+        // leaving it out.
+        var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
         document.dispatchEvent(event);
     };
     return audioRecording;

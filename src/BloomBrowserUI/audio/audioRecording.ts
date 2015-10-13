@@ -81,10 +81,17 @@ class audioRecording {
         this.setCurrentSpan(current, prev);
     }
 
-    // Todo: For HearThis compatibility, start on mouseDown and end on mouseUp.
     endRecordCurrent() {
         this.recording = false;
         this.fireCSharpEvent("endRecordAudio", "");
+        // The player should already be set to play back the audio we just recorded.
+        // However, if no such file previously existed, it seems Gecko caches this
+        // fact and does not notice that the file has been created. Changing src
+        // to something else and back fixes this.
+        var player = $('#player');
+        var src = player.attr('src');
+        player.attr('src', '');
+        player.attr('src', src);
     }
 
     startRecordCurrent() {
@@ -95,7 +102,7 @@ class audioRecording {
     }
 
     playCurrent() {
-        document.getElementById('player').play();
+        (<HTMLMediaElement>document.getElementById('player')).play();
     }
 
     selectInputDevice() {
@@ -200,7 +207,7 @@ class audioRecording {
             hide: {
                 event: false, // works somehow with content.title.button to make close button work
                 effect: function() {
-                    (<qtipInterface>$('#qtip-audio')).qtip('api').destroy();
+                    (<any>(<qtipInterface>$('#qtip-audio')).qtip('api')).destroy();
                     var current: JQuery = $('.ui-audioCurrent');
                     current.removeClass('ui-audioCurrent');
                 } // prevents it coming back on mouseenter Todo: remove highlights
@@ -651,8 +658,10 @@ class audioRecording {
     }
 
     fireCSharpEvent(eventName, eventData) {
-
-        var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
+        // Note: other implementations of fireCSharpEvent have 'view':'window', but the TS compiler does
+        // not like this. It seems to work fine without it, and I don't know why we had it, so I am just
+        // leaving it out.
+        var event = new MessageEvent(eventName, {'bubbles': true, 'cancelable': true, 'data': eventData });
         document.dispatchEvent(event);
     }
 }
