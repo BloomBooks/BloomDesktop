@@ -525,12 +525,29 @@ namespace Bloom.Edit
 			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
 			using (var imageInfo = PalasoImage.FromFile(path))
 			{
-				bool looksOfficial = imageInfo.Metadata != null && !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
-				if (looksOfficial)
+				var hasMetadata = !(imageInfo.Metadata == null || imageInfo.Metadata.IsEmpty);
+				if (hasMetadata)
 				{
-					MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
-					return;
+					// If we have metadata with an official collectionUri or we are translating a shell
+					// just give a summary of the metadata
+					var looksOfficial = !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
+					if (looksOfficial || !_model.CanEditCopyrightAndLicense)
+					{
+						MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
+						return;
+					}
 				}
+				else
+				{
+					// If we don't have metadata, but we are translating a shell
+					// don't allow the metadata to be edited
+					if (!_model.CanEditCopyrightAndLicense)
+					{
+						MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright", "Sorry, the copyright and license for this book cannot be changed."));
+						return;
+					}
+				}
+				// Otherwise, bring up the dialog to edit the metadata
 				Logger.WriteEvent("Showing Metadata Editor For Image");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(imageInfo.Metadata))
 				{
