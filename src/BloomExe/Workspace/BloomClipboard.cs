@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace Bloom.Workspace
@@ -76,6 +77,7 @@ namespace Bloom.Workspace
 
 		public static void CopyImageToClipboard(PalasoImage image)
 		{
+			// N.B.: PalasoImage does not handle .svg files
 			if(image == null)
 				return;
 			// Review: Someone who knows how needs to fill in the Mono section
@@ -105,6 +107,7 @@ namespace Bloom.Workspace
 
 		public static PalasoImage GetImageFromClipboard()
 		{
+			// N.B.: PalasoImage does not handle .svg files
 #if __MonoCS__
 			if (GtkUtils.GtkClipboard.ContainsImage())
 				return PalasoImage.FromImage(GtkUtils.GtkClipboard.GetImage());
@@ -133,15 +136,16 @@ namespace Bloom.Workspace
 				{
 					image = PalasoImage.FromImage(Clipboard.GetImage()); // this method won't copy any metadata
 					haveFileUrl = !String.IsNullOrEmpty(textData) && File.Exists(textData);
+
+					// If we have an image on the clipboard, and we also have text that is a valid url to an image file,
+					// use the url to create a PalasoImage (which will pull in any metadata associated with the image too.
+					return !haveFileUrl ? image : PalasoImage.FromFile(textData);
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine(e);
+					Logger.WriteEvent("BloomClipboard.GetImageFromClipboard() failed with message " + e.Message);
+					return image; // at worst, we should return null; if FromFile() failed, we return an image
 				}
-				// If we have an image on the clipboard, and we also have text that is a valid url to an image file,
-				// use the url to create a PalasoImage (which will pull in any metadata associated with the image too.
-				return !haveFileUrl ? image : PalasoImage.FromFile(textData);
-
 			}
 			// the ContainsImage() returns false when copying an PNG from MS Word
 			// so here we explicitly ask for a PNG and see if we can convert it.
