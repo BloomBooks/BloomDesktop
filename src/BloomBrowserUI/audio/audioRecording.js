@@ -58,6 +58,7 @@ var audioRecording = (function () {
         if (next.length === 0)
             return; // enhance: go to next page??
         this.setCurrentSpan(current, next);
+        this.setStatus('record', 'expected');
     };
     audioRecording.prototype.setCurrentSpan = function (current, changeTo) {
         if (current)
@@ -67,6 +68,11 @@ var audioRecording = (function () {
         var player = $('#player');
         //  FF can't directly play mp3, try wav
         player.attr('src', 'audio/' + id + '.wav');
+        var audioElts = $('.audio-sentence');
+        var index = audioElts.index(changeTo);
+        this.setStatus('prev', index === 0 ? 'disabled' : 'enabled');
+        this.setStatus('next', index === audioElts.length - 1 ? 'disabled' : 'enabled');
+        this.setStatus('play', 'enabled'); // Todo: disabled if recording does not exist.
     };
     audioRecording.prototype.prevSpan = function () {
         var current = $('.ui-audioCurrent');
@@ -90,15 +96,44 @@ var audioRecording = (function () {
         var src = player.attr('src');
         player.attr('src', '');
         player.attr('src', src);
+        this.setStatus('record', 'enabled');
+        this.setStatus('play', 'expected');
     };
     audioRecording.prototype.startRecordCurrent = function () {
         this.recording = true;
         var current = $('.ui-audioCurrent');
         var id = current.attr("id");
         this.fireCSharpEvent("startRecordAudio", id);
+        this.setStatus('record', 'active');
     };
     audioRecording.prototype.playCurrent = function () {
         document.getElementById('player').play();
+        this.setStatus('play', 'active');
+        this.setStatus('record', 'enabled');
+    };
+    audioRecording.prototype.playEnded = function () {
+        this.setStatus('play', 'enabled'); // no longer 'expected'
+        if ($('#audio-next').hasClass('enabled')) {
+            this.setStatus('next', 'expected');
+        }
+    };
+    audioRecording.prototype.setStatus = function (which, to) {
+        $('#audio-' + which).removeClass('expected').removeClass('disabled').removeClass('enabled').removeClass('active').addClass(to);
+        if (to === 'expected') {
+            var tags = ['record', 'play', 'next'];
+            for (var i = 0; i < tags.length; i++) {
+                var tag = tags[i];
+                if (tag === which) {
+                    $('#audio-' + tag + '-label').addClass('expected');
+                }
+                else {
+                    $('#audio-' + tag + '-label').removeClass('expected');
+                }
+            }
+        }
+    };
+    audioRecording.prototype.cantPlay = function () {
+        this.setStatus('play', 'disabled');
     };
     audioRecording.prototype.selectInputDevice = function () {
         var thisClass = this;
@@ -163,20 +198,28 @@ var audioRecording = (function () {
             devButton.attr('title', deviceName);
         });
     };
+    audioRecording.prototype.wrapButton = function (which, status, text) {
+        return "<div id='audio-" + which + "-wrapper' class='button-label-wrapper'>" +
+            "<div>" +
+            "<button id='audio-" + which + "' class='ui-audio-button ui-button " + status + "'/>" +
+            "<span id='audio-" + which + "-label' class='audio-label'>" + text + "</span>" +
+            "</div>" +
+            "</div>";
+    };
     audioRecording.prototype.startRecording = function () {
         var editable = $('div.bloom-editable').first();
         var thisClass = this;
         // Makes rather blurry icons (have to scale by 3-5x to get useful size);
         // eventually we probably want our own icon files.
-        var bubble = $("<div class='ui-audioTitle'>Record eBook audio</div>" +
+        var bubble = $("<div class='ui-audioTitle'>Talking Book Audio</div>" +
             "<audio id='player'></audio>" +
             "<div class=ui-audioBody>" +
-            "<span id='audio-prev' class='ui-icon ui-icon-triangle-1-w' >Prev</span >" +
-            "<span id='audio-record' class='ui-icon ui-icon-bullet icon-red'>Record</span>" +
-            "<span id='audio-play' class='ui-icon ui-icon-play'>Play</span>" +
-            "<span id='audio-next' class='ui-icon ui-icon-triangle-1-e'>N</span>" +
+            this.wrapButton('prev', 'disabled', '') +
+            this.wrapButton('record', 'expected', '1) Rec') +
+            this.wrapButton('play', 'enabled', '2) Check') +
+            this.wrapButton('next', 'enabled', '3) Next') +
             "</div><div class='ui-audioFooter'>" +
-            "<span id='audio-close' class='ui-icon ui-icon-close'>N</span>" +
+            //"<span id='audio-close' class='ui-icon ui-icon-close'>N</span>" +
             "</div>" +
             "<div class='ui-audioMeter'><canvas id='audio-meter' width='" +
             this.levelCanvasWidth + "' height='" + this.levelCanvasHeight + "'></canvas>" +
@@ -240,9 +283,16 @@ var audioRecording = (function () {
                     $('#audio-play').click(function () {
                         thisClass.playCurrent();
                     });
+                    $('#player').bind('error', function () {
+                        thisClass.cantPlay();
+                    });
+                    $('#player').bind('ended', function () {
+                        thisClass.playEnded();
+                    });
                     $('#audio-input-dev').click(function () {
                         thisClass.selectInputDevice();
                     });
+                    thisClass.setStatus('record', 'expected');
                     // This is easier to do here than in setPeakLevel,
                     // because it executes in the scope of the bubble
                     // iframe where $('#audio-meter') works.
@@ -268,7 +318,7 @@ var audioRecording = (function () {
         // Erase the whole canvas
         var height = this.levelCanvasHeight;
         var width = this.levelCanvasWidth;
-        var recordQtipColor = '#363333'; // should match value in audioRecording.less
+        var recordQtipColor = '#faf7cc'; // should match value in audioRecording.less
         ctx.fillStyle = recordQtipColor;
         ctx.fillRect(0, 0, width, height);
         // Draw the appropriate number and color of bars
@@ -280,11 +330,11 @@ var audioRecording = (function () {
         var yellowBars = Math.max(Math.floor(bars / 5), 1);
         var greenBars = bars - redBars - yellowBars;
         var showBars = Math.floor(bars * parseFloat(level)) + 1;
-        ctx.fillStyle = "#00FF00";
+        ctx.fillStyle = '#0C8597'; // should match recordQtipForeground; or "#00FF00"; green
         for (var i = 0; i < showBars; i++) {
             var bottom = height - interval * i;
             if (i >= greenBars)
-                ctx.fillStyle = "#FFFF00";
+                ctx.fillStyle = '96668f'; //or "#FFFF00"; yellow
             if (i >= greenBars + yellowBars)
                 ctx.fillStyle = "#FF0000";
             ctx.fillRect(gap, bottom - barHeight, width - gap - gap, barHeight);
