@@ -1,0 +1,75 @@
+.marginBox {
+  display: flex;
+  flex-direction: column;
+}
+.bloom-translationGroup {
+  flex: 0 0 auto;
+}
+.problemSet {
+  max-height: 100%;
+}
+.problem {
+  padding-bottom: 10px;
+  border-bottom: solid thin black;
+  margin-top: 10px;
+}
+.imageRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 80%;
+  overflow: hidden;
+}
+.imageRow .bloom-imageContainer {
+  flex: 1 1 auto;
+  max-width: 50%;
+  max-height: 99%;
+  min-height: 99%;
+  height: 99%;
+}
+.numberRow {
+  height: 44px;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  bottom: -7px;
+  margin-left: 6%;
+  padding-right: 5px;
+}
+.numberRow .bloom-editable {
+  min-height: unset !important;
+  display: block !important;
+  text-align: center;
+  line-height: 1em;
+}
+.numberRow > .bloom-editable {
+  min-width: 20%;
+}
+.numberRow .equals {
+  line-height: 1em;
+  min-width: 29px;
+  text-align: center;
+}
+.numberRow .equals:before {
+  content: '=';
+}
+.numberRow .fillInBox {
+  flex: 0 0 auto;
+  border: thin solid black;
+  border-radius: 12px;
+  width: 61px;
+  height: 61px;
+  z-index: 1000;
+  position: relative;
+  bottom: 18px;
+}
+.oneProblem .imageRow,
+.twoProblems .imageRow {
+  height: 200px;
+}
+.threeProblems .imageRow {
+  height: 145px;
+}
+.fourProblems .imageRow {
+  height: 90px;
+}
