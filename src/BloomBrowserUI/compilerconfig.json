@@ -107,4 +107,9 @@
     "outputFile": "bookLayout/basePage.css",
     "inputFile": "bookLayout/basePage.less"
   }
+  ,
+  {
+    "outputFile": "audio/audioRecording.css",
+    "inputFile": "audio/audioRecording.less"
+  }
 ]
