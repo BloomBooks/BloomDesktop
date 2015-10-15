@@ -111,7 +111,7 @@
 			 ReplacementText ='AssemblyProduct("Bloom$(channel)")' />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="SetAssemblyVersion,RestorePackages">
+  <Target Name="Build" DependsOnTargets="SetAssemblyVersion;RestorePackages">
 	<MSBuild Projects="$(RootDir)/$(Solution)"
 			 Targets="Rebuild"
 			 Properties="Configuration=$(Configuration)" />
