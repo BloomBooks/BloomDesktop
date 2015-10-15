@@ -1,3 +1,4 @@
+using System;
 using System.Xml;
 using Gecko;
 using Palaso.Code;
@@ -73,6 +74,25 @@ namespace Bloom
 			{
 				return _xmlElement.GetAttribute(attributeName);
 			}
+		}
+
+		public override bool Equals(object obj)
+		{
+			throw new NotImplementedException();
+		}
+		protected bool Equals(UrlPathString other)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static bool operator ==(ElementProxy a, ElementProxy b)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static bool operator !=(ElementProxy a, ElementProxy b)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

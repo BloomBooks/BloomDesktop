@@ -10,22 +10,13 @@ namespace Bloom
 	/// </summary>
 	public class UrlPathString
 	{
-		protected bool Equals(UrlPathString other)
-		{
-			return string.Equals(_notEncoded, other._notEncoded);
-		}
-
-		public override int GetHashCode()
-		{
-			return (_notEncoded != null ? _notEncoded.GetHashCode() : 0);
-		}
-
 		private readonly string _notEncoded;
 
 		public static UrlPathString CreateFromUrlEncodedString(string encoded)
 		{
 			return new UrlPathString(HttpUtility.UrlDecode(encoded));
 		}
+
 		public static UrlPathString CreateFromUnencodedString(string unencoded)
 		{
 			unencoded = unencoded.Trim();
@@ -35,11 +26,7 @@ namespace Bloom
 			// Assuming that was done for a good reason, that behavior is
 			// formalized here. It would seem to be a small risk (makes it
 			// impossible to have, say "%20" in your actual file name)
-			if (unencoded != HttpUtility.UrlPathEncode(unencoded))
-			{
-				Debug.Fail("The string appears to already be encoded.");
-				unencoded = HttpUtility.UrlDecode(unencoded);
-			}
+			unencoded = HttpUtility.UrlDecode(unencoded);
 			return new UrlPathString(unencoded);
 		}
 
@@ -47,6 +34,7 @@ namespace Bloom
 		{
 			get { return HttpUtility.UrlPathEncode(_notEncoded); }
 		}
+
 		public string NotEncoded
 		{
 			get { return _notEncoded; }
@@ -63,6 +51,38 @@ namespace Bloom
 			if (x == null)
 				return false;
 			return this.NotEncoded == x.NotEncoded;
+		}
+		protected bool Equals(UrlPathString other)
+		{
+			return string.Equals(_notEncoded, other._notEncoded);
+		}
+
+		public static bool operator ==(UrlPathString a, UrlPathString b)
+		{
+			// If both are null, or both are same instance, return true.
+			if (System.Object.ReferenceEquals(a, b))
+			{
+				return true;
+			}
+
+			// If one is null, but not both, return false.
+			if (((object)a == null) || ((object)b == null))
+			{
+				return false;
+			}
+
+			// Return true if the fields match:
+			return a.NotEncoded == b.NotEncoded;
+		}
+
+		public static bool operator !=(UrlPathString a, UrlPathString b)
+		{
+			return !(a == b);
+		}
+
+		public override int GetHashCode()
+		{
+			return (_notEncoded != null ? _notEncoded.GetHashCode() : 0);
 		}
 	}
 }
