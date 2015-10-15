@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.IO;
+using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace Bloom.Workspace
@@ -73,8 +75,39 @@ namespace Bloom.Workspace
 #endif
 		}
 
+		public static void CopyImageToClipboard(PalasoImage image)
+		{
+			// N.B.: PalasoImage does not handle .svg files
+			if(image == null)
+				return;
+			// Review: Someone who knows how needs to fill in the Mono section
+#if __MonoCS__
+#else
+			if (image.Image == null)
+			{
+				if (String.IsNullOrEmpty(image.OriginalFilePath))
+					return;
+				// no image, but a path
+				Clipboard.SetFileDropList(new StringCollection() {image.OriginalFilePath});
+			}
+			else
+			{
+				if (String.IsNullOrEmpty(image.OriginalFilePath))
+					Clipboard.SetImage(image.Image);
+				else
+				{
+					IDataObject clips = new DataObject();
+					clips.SetData(DataFormats.UnicodeText, image.OriginalFilePath);
+					clips.SetData(DataFormats.Bitmap, image.Image);
+					Clipboard.SetDataObject(clips);
+				}
+			}
+#endif
+		}
+
 		public static PalasoImage GetImageFromClipboard()
 		{
+			// N.B.: PalasoImage does not handle .svg files
 #if __MonoCS__
 			if (GtkUtils.GtkClipboard.ContainsImage())
 				return PalasoImage.FromImage(GtkUtils.GtkClipboard.GetImage());
@@ -88,15 +121,32 @@ namespace Bloom.Workspace
 
 			return null;
 #else
-			if (Clipboard.ContainsImage())
-			{
-				return PalasoImage.FromImage(Clipboard.GetImage());
-			}
-
 			var dataObject = Clipboard.GetDataObject();
 			if (dataObject == null)
 				return null;
 
+			var textData = String.Empty;
+			if (dataObject.GetDataPresent(DataFormats.UnicodeText))
+				textData = dataObject.GetData(DataFormats.UnicodeText) as String;
+			if (Clipboard.ContainsImage())
+			{
+				PalasoImage image = null;
+				var haveFileUrl = false;
+				try
+				{
+					image = PalasoImage.FromImage(Clipboard.GetImage()); // this method won't copy any metadata
+					haveFileUrl = !String.IsNullOrEmpty(textData) && File.Exists(textData);
+
+					// If we have an image on the clipboard, and we also have text that is a valid url to an image file,
+					// use the url to create a PalasoImage (which will pull in any metadata associated with the image too.
+					return !haveFileUrl ? image : PalasoImage.FromFile(textData);
+				}
+				catch (Exception e)
+				{
+					Logger.WriteEvent("BloomClipboard.GetImageFromClipboard() failed with message " + e.Message);
+					return image; // at worst, we should return null; if FromFile() failed, we return an image
+				}
+			}
 			// the ContainsImage() returns false when copying an PNG from MS Word
 			// so here we explicitly ask for a PNG and see if we can convert it.
 			if (dataObject.GetDataPresent("PNG"))
