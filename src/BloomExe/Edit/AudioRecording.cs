@@ -67,7 +67,8 @@ namespace Bloom.Edit
 		/// <summary>
 		/// Returns a json string like {"devices":["microphone", "Logitech Headset"], "productName":"Logitech Headset", "genericName":"Headset"},
 		/// except that in practice currrently the generic and product names are the same and not as helpful as the above.
-		/// Devices is a list of product names, the productName and genericName refer to the current selection (or will be null, if no current device).
+		/// Devices is a list of product names (of available recording devices), the productName and genericName refer to the
+		/// current selection (or will be null, if no current device).
 		/// </summary>
 		public static string AudioDevicesJson
 		{
@@ -86,7 +87,6 @@ namespace Bloom.Edit
 						sb.Append(",");
 					}
 					sb.Append("\"" + device.ProductName + "\"");
-
 				}
 				sb.Append("],\"productName\":");
 				if (CurrentRecording.RecordingDevice != null)
@@ -139,7 +139,7 @@ namespace Bloom.Edit
 			}
 			catch (Exception)
 			{
-				//swallow it review: initial reason is that they didn't hold it down long enough, could detect and give message
+				//swallow it. One reason (based on HearThis comment) is that they didn't hold it down long enough, we detect this below.
 			}
 			if (DateTime.Now - _startRecording < TimeSpan.FromSeconds(0.5))
 				WarnPressTooShort();
@@ -209,11 +209,7 @@ namespace Bloom.Edit
 				//DesktopAnalytics.Analytics.Track("Recording clip", ContextForAnalytics);
 			}
 			_startRecording = DateTime.Now;
-			//_startDelayTimer.Enabled = true;
-			//_startDelayTimer.Start();
 			_startRecordingTimer.Start();
-			//_recordButton.ImagePressed = Resources.recordActive;
-			//_recordButton.Waiting = true;
 			UpdateDisplay();
 			return true;
 		}
@@ -228,9 +224,7 @@ namespace Bloom.Edit
 		}
 
 		/// <summary>
-		/// Todo: communicate with HTML:
-		/// - if we are recording, the record button should change appearance (not red) and the play button should be disabled
-		/// - possibly this has some responsibility for disabling the play button if there is no recording for the current segment.
+		/// This is a placeholder method in case we need to communicate further with HTML to update the display during recording
 		/// </summary>
 		public void UpdateDisplay()
 		{

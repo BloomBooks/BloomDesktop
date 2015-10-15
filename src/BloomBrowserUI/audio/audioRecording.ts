@@ -185,7 +185,7 @@ class audioRecording {
 
             // This seems a reasonable default to suggest what needs to be connected
             // if nothing is. It's also the default if we don't recognize anything significant in the name.
-            var imageName = 'Microphone.png';
+            var imageName = 'Microphone.svg';
             if (genericName !== null) {
                 if (genericName.indexOf('Internal') >= 0 || genericName.indexOf('Array') >= 0) imageName = 'Computer.png';
                 else if (genericName.indexOf('USB Audio Device') >= 0 || genericName.indexOf('Headse') >= 0) imageName = 'HeadSet.png';
@@ -631,9 +631,16 @@ class audioRecording {
             });
     }
 
+    // We want to make out of each sentence in root a span which has a unique ID.
+    // If the text is already so marked up, we want to keep the existing ids
+    // AND the recordingID checksum attribute (if any) that indicates what
+    // version of the text was last recorded.
+    // makeSentenceLeaf does this for roots which don't have children (except a few
+    // special cases); this root method scans down and does it for each such child
+    // in a root (possibly the root itself, if it has no children).
     makeSentenceSpans(root: JQuery) {
         var children = root.children();
-        var processedChild: boolean = false;
+        var processedChild: boolean = false; // Did we find a significant child?
         for (var i = 0; i < children.length; i++) {
             var child: HTMLElement = children[i];
             var name = child.nodeName.toLowerCase();
@@ -648,9 +655,13 @@ class audioRecording {
         // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
     }
 
+    // The goal for existing markup is that if any existing audio-sentence span has an md5 that matches the content of a
+    // current sentence, we want to preserve the association between that content and ID (and possibly recording).
+    // Where there aren't exact matches, but there are existing audio-sentence spans, we keep the ids as far as possible,
+    // just using the original order, since it is possible we have a match and only spelling or punctuation changed.
     makeSentenceSpansLeaf(elt: JQuery) {
         var markedSentences = elt.find("span.audio-sentence");
-        var reuse = [];
+        var reuse = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
         markedSentences.each(function(index) {
             reuse.push({ id: $(this).attr('id'), md5: $(this).attr('recordingmd5') });
             $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
@@ -658,19 +669,22 @@ class audioRecording {
 
         var fragments: textFragment[] = libsynphony.stringToSentences(elt.html());
 
+        // If any new sentence has an md5 that matches a saved one, attatch that id/md5 pair to that fragment.
         for (var i = 0; i < fragments.length; i++) {
             var fragment = fragments[i];
             if (this.isRecordable(fragment)) {
                 var currentMd5 = this.md5(fragment.text);
                 for (var j = 0; j < reuse.length; j++) {
                     if (currentMd5 === reuse[j].md5) {
-                        fragment.match = reuse[j];
+                        fragment.matchingAudioSpan = reuse[j];
                         reuse.splice(j, 1); // don't reuse again
                         break;
                     }
                 }
             }
         }
+
+        // Assemble the new HTML, reusing old IDs where possible and generating new ones where needed.
         var newHtml = "";
         for (var i = 0; i < fragments.length; i++) {
             var fragment = fragments[i];
@@ -681,7 +695,7 @@ class audioRecording {
             } else {
                 var newId: string = null;
                 var newMd5: string = '';
-                var reuseThis = fragment.match;
+                var reuseThis = fragment.matchingAudioSpan;
                 if (!reuseThis && reuse.length > 0) {
                     reuseThis = reuse[0]; // use first if none matches (preserves order at least)
                     reuse.splice(0, 1);

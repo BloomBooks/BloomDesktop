@@ -91,7 +91,7 @@ namespace Bloom.Edit
 			{
 				var recordItem = new MenuItem("record audio", (sender, eventArgs) => RecordAudio());
 				args.ContextMenu.MenuItems.Add(recordItem);
-				return false;
+				return false; // Also show standard menu options
 			};
 		}
 
