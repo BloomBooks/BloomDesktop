@@ -128,8 +128,7 @@ var PageChooser = (function () {
     PageChooser.prototype.setLocalizedText = function (elt, idPrefix, defaultText, id) {
         if (id === void 0) { id = defaultText; }
         if (defaultText) {
-            localizationManager.asyncGetText(idPrefix + id, defaultText)
-                .done(function (translation) {
+            localizationManager.asyncGetText(idPrefix + id, defaultText).done(function (translation) {
                 elt.text(translation);
             });
         }
@@ -154,8 +153,8 @@ var PageChooser = (function () {
     PageChooser.prototype.continueCheckBoxChanged = function () {
         if (!this._forChoosePage)
             return;
-        var cb = $('#convertAnywayCheckbox');
-        var isCurrentSelectionOriginal = this._selectedGridItem.hasClass('disabled');
+        let cb = $('#convertAnywayCheckbox');
+        let isCurrentSelectionOriginal = this._selectedGridItem.hasClass('disabled');
         $('#addPageButton').prop('disabled', isCurrentSelectionOriginal || !cb.is(':checked'));
     };
     // This is the starting-point method that is invoked to initialize the dialog.
@@ -187,16 +186,15 @@ var PageChooser = (function () {
             _this.continueCheckBoxChanged();
         });
         var pageButton = $("#addPageButton", document);
-        var okButtonLabelId = 'EditTab.AddPageDialog.AddThisPageButton';
-        var okButtonLabelText = 'Add This Page';
+        let okButtonLabelId = 'EditTab.AddPageDialog.AddThisPageButton';
+        let okButtonLabelText = 'Add This Page';
         if (this._forChoosePage) {
             okButtonLabelId = 'EditTab.AddPageDialog.ChooseLayoutButton';
             okButtonLabelText = 'Use This Layout';
             this.setLocalizedText($('#convertAnywayCheckbox'), 'EditTab.AddPageDialog.', 'Continue anyway', 'ChooseLayoutContinueCheckbox');
             this.setLocalizedText($('#convertLosesMaterial'), 'EditTab.AddPageDialog.', 'Converting to this layout will cause some content to be lost.', 'ChooseLayoutWillLoseData');
         }
-        localizationManager.asyncGetText(okButtonLabelId, okButtonLabelText)
-            .done(function (translation) {
+        localizationManager.asyncGetText(okButtonLabelId, okButtonLabelText).done(function (translation) {
             pageButton.attr('value', translation);
         });
         if (this._orientation === 'landscape') {
@@ -215,13 +213,13 @@ var PageChooser = (function () {
             $(".outerCollectionContainer", document).append(collectionToAdd);
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
-            var pages = $(pageData).filter(".bloom-page[id]");
+            //var pages = $( pageData).filter('.bloom-page[id]').filter('[data-page="extra"]');
+            var pages = $(pageData).filter('.bloom-page[id]');
             _this._indexOfPageToSelect = _this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
             _this.thumbnailClickHandler($(".invisibleThumbCover").eq(_this._indexOfPageToSelect), null);
         }, "html");
         request.fail(function (jqXHR, textStatus, errorThrown) {
-            console.log("There was a problem reading: " + pageUrl + " see documentation on : " +
-                jqXHR.status + " " + textStatus + " " + errorThrown);
+            console.log("There was a problem reading: " + pageUrl + " see documentation on : " + jqXHR.status + " " + textStatus + " " + errorThrown);
         });
     }; // LoadCollection
     PageChooser.prototype.loadPagesFromCollection = function (currentCollection, pageArray, gridItemTemplate, pageFolderUrl, pageUrl, lastPageAdded) {
