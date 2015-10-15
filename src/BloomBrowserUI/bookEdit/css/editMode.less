@@ -75,115 +75,107 @@ DIV.page.coverColor
 }
 /*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
 @MediumGray: #C0B9B9;
+@ImageHoverOverlay: #D5D5E4;
+@ImageButtonBorder: #716666;
+@ChangeImageButtonColor: #96668F;
+@PasteImageButtonColor: #0C8597;
+@MetadataButtonColor: #3A7F62;
+
 DIV.readOnlyInTranslationMode
 {
 	border: thin solid @MediumGray;
 }
 DIV.hoverUp
 {
-	background-color: #D5D5E4;
+	background-color: @ImageHoverOverlay;
 }
-BUTTON.smallImageButton
-{
-	width: 50%;
-	height: 50%;
-	/*+border-radius:0;*/
-	-moz-border-radius: 0;
-	-webkit-border-radius: 0;
-	-khtml-border-radius: 0;
-	border-radius: 0;
-	border-radius: 0 0 0 0;
-	z-index: 100;
-	background-repeat: no-repeat;
-	border-style: none !important;
-	background-size: contain !important;
-}
-BUTTON.largeImageButton
-{
-	width: 70px;
+.imageButton {
+	width: 87px;
 	height: 52px;
-	/*+border-radius:3px;*/
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	-khtml-border-radius: 3px;
-	border-radius: 3px;
 	z-index: 100;
+    position: absolute;
 	background-repeat: no-repeat;
-	background-position: 12px 4px;
-	border: 2px outset #716666;
+    background-size: contain;
+    background-position: center center;
+    &.smallButton {
+	    width: 50%;
+	    height: 50%;
+        max-height: 52px;
+        max-width: 87px;
+        border-style: none;
+    }
+    &.changeImageButton {
+	    right: 0;
+	    top: 0;
+	    background-color: @ChangeImageButtonColor;
+	    background-image: url("../img/changeButton.svg");
+    }
+    &.pasteImageButton {
+	    right: 0;
+	    bottom: 0;
+	    background-color: @PasteImageButtonColor;
+	    background-image: url("../img/pasteButton.svg");
+        background-position: right center;
+        &.smallButton {
+            background-position: center center;
+        }
+    }
+    &.editMetadataButton {
+        left: 0;
+	    top: 0;
+        background-image: url("../img/imageMetaDataButton.svg") !important;
+	    background-color: @MetadataButtonColor;
+        &.imgMetadataProblem {
+            background-color: transparent;
+            background-image: url("../img/imageMissingMetaData.svg") !important;
+            border: none;
+        }
+    }
 }
-BUTTON.pasteImageButton.smallImageButton
-{
-	background-image: url("../img/pasteImageButtonSmall.png") !important;
-	background-position: 67% 28% !important;
+.hoverUp .imageButton {
+   	border: 2px outset @ImageButtonBorder !important;
+	border-radius: 3px !important;
+    &:hover {
+        border: inset @ImageButtonBorder !important;
+    }
+    &.editMetadataButton {
+        background-image: none;
+        background-color: @MetadataButtonColor !important;
+    }
 }
-BUTTON.pasteImageButton.largeImageButton
-{
-	background-image: url("../img/pasteImageButtonLarge.png") !important;
-}
-BUTTON.changeImageButton.smallImageButton
-{
-	background-image: url("../img/changeImageButtonSmall.png");
-	background-position: 63% 27% !important;
-}
-BUTTON.changeImageButton.largeImageButton
-{
-	background-image: url("../img/changeImageButtonLarge.png") !important;
-}
-BUTTON.changeImageButton
-{
-	/*+placement:anchor-top-right 0px 0px;*/
-	position: absolute;
-	right: 0px;
-	top: 0px;
-	/*[disabled]background-position:13px 3px;*/
-	background-color: #96668F;
-}
-BUTTON.pasteImageButton
-{
-	/*+placement:anchor-bottom-right 0px 0px;*/
-	position: absolute;
-	right: 0px;
-	bottom: 0px;
-	/*[disabled]background-position:13px 3px;*/
-	background-color: #0C8597;
-}
-BUTTON.editMetadataButton
-{
-	background-image: url("../img/imageMetaDataButton.svg") !important;
-	background-size: contain;
-	background-position: 5px 0px;
-	/*[disabled]width:70px;*/
-	/*[disabled]height:52px;*/
-	background-repeat: no-repeat !important;
-	/*+placement:anchor-top-left 0px 0px;*/
-	position: absolute;
-	left: 0px;
-	top: 0px;
-	z-index: 1000;
-}
-BUTTON.editMetadataButton.smallImageButton
-{
-	background-position: 0 0 !important;
-}
-BUTTON.editMetadataButton.imgMetadataProblem
-{
-	background-image: url("../img/imageMissingMetaData.svg") !important;
-	background: transparent;
-	background-size: contain;
-	background-position: 5px 0px;
-	border: none;
-}
-.hoverUp BUTTON.editMetadataButton
-{
-	background: #3A7F62;
-	background-size: contain;
-	background-position: 5px 0px;
-	border: 2px outset #716666;
+BUTTON.miniButton {
+    width: 20px;
+    height: 18px;
+    right: 60px;
+    border: none;
+    position: absolute;
+    background-position: left center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: transparent;
+    z-index: 120;
+    &:hover {
+        border: 1px inset @ImageButtonBorder;
+    }
+    &.cutImageButton {
+	    background-image: url("../img/cut.svg");
+        bottom: 27px;
+        &.disabled {
+    	    background-image: url("../img/cutGrey.svg");
+            pointer-events: none;
+        }
+    }
+    &.copyImageButton {
+	    background-image: url("../img/copy.svg");
+        bottom: 6px;
+        &.disabled {
+    	    background-image: url("../img/copyGrey.svg");
+            pointer-events: none;
+        }
+    }
 }
 BUTTON.deleteButton
 {
-	/*+placement:anchor-bottom-left;*/
 	position: absolute;
 	left: 0;
 	bottom: 0;
@@ -191,7 +183,6 @@ BUTTON.deleteButton
 	width: 40px;
 	height: 40px;
 	z-index: 100;
-	/*[disabled]background-position:13px 3px;*/
 }
 /*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
 .moveButtonIcon

@@ -54,38 +54,64 @@ function SetupImage(image) {
     });
 }
 
+function GetButtonModifier(container) {
+    var buttonModifier = '';
+    var imageButtonWidth = 87;
+    var imageButtonHeight = 52;
+    var $container = $(container);
+    if ($container.height() < imageButtonHeight * 2 || $container.width() < imageButtonWidth * 2) {
+        buttonModifier = 'smallButton';
+    }
+    return buttonModifier;
+}
+
 //Bloom "imageContainer"s are <div>'s with wrap an <img>, and automatically proportionally resize
 //the img to fit the available space
 function SetupImageContainer(containerDiv) {
     $(containerDiv).mouseenter(function () {
-        var img = $(this).find('img');
+        var $this = $(this);
+        var img = $this.find('img');
 
-        var buttonModifier = "largeImageButton";
-        if ($(this).height() < 95) {
-            buttonModifier = 'smallImageButton';
+        var buttonModifier = GetButtonModifier($this);
+
+        if (buttonModifier !== 'smallButton') {
+            $this.prepend('<button class="miniButton cutImageButton disabled" title="' +
+                localizationManager.getText('EditTab.Image.CutImage') + '"></button>');
+            $this.prepend('<button class="miniButton copyImageButton disabled" title="' +
+                localizationManager.getText('EditTab.Image.CopyImage') + '"></button>');
         }
-        $(this).prepend('<button class="pasteImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.PasteImage") + '"></button>');
-        $(this).prepend('<button class="changeImageButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.ChangeImage") + '"></button>');
+        $this.prepend('<button class="pasteImageButton imageButton ' + buttonModifier +
+            '" title="' + localizationManager.getText('EditTab.Image.PasteImage') + '"></button>');
+        $this.prepend('<button class="changeImageButton imageButton ' + buttonModifier +
+            '" title="' + localizationManager.getText('EditTab.Image.ChangeImage') + '"></button>');
 
         SetImageTooltip(containerDiv, img);
 
-        if (CreditsAreRelevantForImage(img)) {
-            $(this).prepend('<button class="editMetadataButton ' + buttonModifier + '" title="' + localizationManager.getText("EditTab.Image.EditMetadata") + '"></button>');
+        if (IsImageReal(img)) {
+            $this.prepend('<button class="editMetadataButton imageButton ' + buttonModifier + '" title="' +
+                localizationManager.getText('EditTab.Image.EditMetadata') + '"></button>');
+            $this.find('.miniButton').each(function() {
+                $(this).removeClass('disabled');
+            });
         }
 
-        $(this).addClass('hoverUp');
+        $this.addClass('hoverUp');
     })
     .mouseleave(function () {
-        $(this).removeClass('hoverUp');
-        $(this).find(".changeImageButton").each(function () {
-            $(this).remove()
+        var $this = $(this);
+        $this.removeClass('hoverUp');
+        $this.find('.changeImageButton').each(function () {
+            $(this).remove();
         });
-        $(this).find(".pasteImageButton").each(function () {
-            $(this).remove()
+        $this.find('.pasteImageButton').each(function () {
+            $(this).remove();
         });
-        $(this).find(".editMetadataButton").each(function () {
+        $this.find('.miniButton').each(function() {
+            $(this).remove();
+        });
+        $this.find('.editMetadataButton').each(function () {
             if (!$(this).hasClass('imgMetadataProblem')) {
-                $(this).remove()
+                $(this).remove();
             }
         });
     });
@@ -93,9 +119,12 @@ function SetupImageContainer(containerDiv) {
 
 function SetImageTooltip(container, img) {
     getIframeChannel().simpleAjaxGet('/bloom/imageInfo?image=' + $(img).attr('src'), function (response) {
+        const kBrowserDpi = 96; // this appears to be constant even on higher dpi screens. See http://www.w3.org/TR/css3-values/#absolute-lengths
+        var dpi = Math.round(response.width / ($(img).width() / kBrowserDpi));
         var info = response.name + "\n"
                 + getFileLengthString(response.bytes) + "\n"
-                + response.width + " x " + response.height;
+                + response.width + " x " + response.height + "\n"
+                + dpi + " dpi";
         container.title = info;
         });
 }
@@ -109,9 +138,12 @@ function getFileLengthString(bytes) {
     }
 }
 
-
-function CreditsAreRelevantForImage(img) {
-    return $(img).attr('src').toLowerCase().indexOf('placeholder') == -1; //don't offer to edit placeholder credits
+// IsImageReal returns true if the img tag refers to a non-placeholder image
+// If the image is a placeholder:
+// - we don't want to offer to edit placeholder credits
+// - we don't want to activate the minibuttons for cut/copy
+function IsImageReal(img) {
+    return $(img).attr('src').toLowerCase().indexOf('placeholder') == -1;
 }
 
 //While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
@@ -119,7 +151,7 @@ function CreditsAreRelevantForImage(img) {
 function SetOverlayForImagesWithoutMetadata(container) {
     $(container).find(".bloom-imageContainer").each(function () {
         var img = $(this).find('img');
-        if (!CreditsAreRelevantForImage(img)) {
+        if (!IsImageReal(img)) {
             return;
         }
         var container = $(this);
@@ -138,19 +170,16 @@ function SetOverlayForImagesWithoutMetadata(container) {
 function UpdateOverlay(container, img) {
 
     $(container).find(".imgMetadataProblem").each(function () {
-        $(this).remove()
+        $(this).remove();
     });
 
     //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
     var copyright = $(img).attr('data-copyright');
-    if (!copyright || copyright.length == 0) {
+    if (!copyright || copyright.length === 0) {
 
-        var buttonModifier = "largeImageButton";
-        if ($(container).height() < 80) {
-            buttonModifier = 'smallImageButton';
-        }
+        var buttonModifier = GetButtonModifier(container);
 
-        $(container).prepend("<button class='editMetadataButton imgMetadataProblem " + buttonModifier + "' title='Image is missing information on Credits, Copyright, or License'></button>");
+        $(container).prepend("<button class='editMetadataButton imageButton imgMetadataProblem " + buttonModifier + "' title='Image is missing information on Credits, Copyright, or License'></button>");
     }
 }
 

@@ -40,7 +40,7 @@ namespace Bloom.CollectionCreating
 			this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
             this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
             this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
-			this._welcomeHtml = new Bloom.HtmlLabel();
+			this._welcomeHtml = new Palaso.UI.WindowsForms.Widgets.HtmlLabel();
 			this.kindOfCollectionControl1 = new Bloom.CollectionCreating.KindOfCollectionControl();
 			this._vernacularLanguageIdControl = new Bloom.CollectionCreating.LanguageIdControl();
 			this._languageLocationControl = new Bloom.CollectionCreating.LanguageLocationControl();
@@ -239,6 +239,6 @@ namespace Bloom.CollectionCreating
 		private LanguageLocationControl _languageLocationControl;
 		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
         private Bloom.Wizard.WizardAdapterPage _welcomePage;
-		private HtmlLabel _welcomeHtml;
+		private Palaso.UI.WindowsForms.Widgets.HtmlLabel _welcomeHtml;
 	}
 }

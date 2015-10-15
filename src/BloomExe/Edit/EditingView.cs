@@ -21,6 +21,7 @@ using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
 using Bloom.Workspace;
+using Palaso.IO;
 using Palaso.Network;
 
 namespace Bloom.Edit
@@ -456,6 +457,10 @@ namespace Bloom.Edit
 				OnChangeImage(ge);
 			if (target.ClassName.Contains("pasteImageButton"))
 				OnPasteImage(ge);
+			if (target.ClassName.Contains("cutImageButton"))
+				OnCutImage(ge);
+			if (target.ClassName.Contains("copyImageButton"))
+				OnCopyImage(ge);
 			if (target.ClassName.Contains("editMetadataButton"))
 				OnEditImageMetdata(ge);
 
@@ -525,12 +530,29 @@ namespace Bloom.Edit
 			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
 			using (var imageInfo = PalasoImage.FromFile(path))
 			{
-				bool looksOfficial = imageInfo.Metadata != null && !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
-				if (looksOfficial)
+				var hasMetadata = !(imageInfo.Metadata == null || imageInfo.Metadata.IsEmpty);
+				if (hasMetadata)
 				{
-					MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
-					return;
+					// If we have metadata with an official collectionUri or we are translating a shell
+					// just give a summary of the metadata
+					var looksOfficial = !string.IsNullOrEmpty(imageInfo.Metadata.CollectionUri);
+					if (looksOfficial || !_model.CanEditCopyrightAndLicense)
+					{
+						MessageBox.Show(imageInfo.Metadata.GetSummaryParagraph("en"));
+						return;
+					}
 				}
+				else
+				{
+					// If we don't have metadata, but we are translating a shell
+					// don't allow the metadata to be edited
+					if (!_model.CanEditCopyrightAndLicense)
+					{
+						MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright", "Sorry, the copyright and license for this book cannot be changed."));
+						return;
+					}
+				}
+				// Otherwise, bring up the dialog to edit the metadata
 				Logger.WriteEvent("Showing Metadata Editor For Image");
 				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(imageInfo.Metadata))
 				{
@@ -565,6 +587,36 @@ namespace Bloom.Edit
 
 			//_model.SaveNow();
 			//doesn't work: _browser1.WebBrowser.Reload();
+		}
+
+		private void OnCutImage(DomEventArgs ge)
+		{
+			// NB: bloomImages.js contains code that prevents us arriving here
+			// if our image is simply the placeholder flower
+			if (!_model.CanChangeImages())
+			{
+				MessageBox.Show(
+					LocalizationManager.GetString("EditTab.CantPasteImageLocked", "Sorry, this book is locked down so that images cannot be changed."));
+				return;
+			}
+
+			var bookFolderPath = _model.CurrentBook.FolderPath;
+
+			if (CopyImageToClipboard(ge, bookFolderPath)) // returns 'true' if successful
+			{
+				// Replace current image with placeHolder.png
+				var path = Path.Combine(bookFolderPath, "placeHolder.png");
+				var palasoImage = PalasoImage.FromFile(path);
+				_model.ChangePicture(GetImageNode(ge), palasoImage, new NullProgress());
+			}
+		}
+
+		private void OnCopyImage(DomEventArgs ge)
+		{
+			// NB: bloomImages.js contains code that prevents us arriving here
+			// if our image is simply the placeholder flower
+
+			CopyImageToClipboard(ge, _model.CurrentBook.FolderPath);
 		}
 
 		private void OnPasteImage(DomEventArgs ge)
@@ -657,14 +709,36 @@ namespace Bloom.Edit
 			return BloomClipboard.GetImageFromClipboard();
 		}
 
+		private static bool CopyImageToClipboard(DomEventArgs ge, string bookFolderPath)
+		{
+			var imageElement = GetImageNode(ge);
+			if (imageElement != null)
+			{
+				var source = imageElement.GetAttribute("src");
+				if (String.IsNullOrEmpty(source))
+					return false;
+
+				var path = Path.Combine(bookFolderPath, HttpUtilityFromMono.UrlDecode(source));
+				try
+				{
+					var image = PalasoImage.FromFile(path);
+					BloomClipboard.CopyImageToClipboard(image);
+					return true;
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e);
+				}
+			}
+			return false;
+		}
 
 		private static GeckoHtmlElement GetImageNode(DomEventArgs ge)
 		{
-			GeckoHtmlElement imageElement = null;
 			var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
-			foreach (var n in target.Parent.ChildNodes)
+			foreach (var node in target.Parent.ChildNodes)
 			{
-				imageElement = n as GeckoHtmlElement;
+				var imageElement = node as GeckoHtmlElement;
 				if (imageElement != null && imageElement.TagName.ToLowerInvariant() == "img")
 				{
 					return imageElement;
