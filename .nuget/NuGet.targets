@@ -6,6 +6,9 @@
 		<!-- Enable the restore command to run before builds -->
 		<RestorePackages Condition="  '$(RestorePackages)' == '' ">true</RestorePackages>
 
+		<!-- Property that enables building a package from a project -->
+		<BuildPackage Condition=" '$(BuildPackage)' == '' ">false</BuildPackage>
+
 		<!-- Determines if package restore consent is required to restore packages -->
 		<RequireRestoreConsent Condition=" '$(RequireRestoreConsent)' != 'false' ">false</RequireRestoreConsent>
 
@@ -14,7 +17,7 @@
 	</PropertyGroup>
 
 	<ItemGroup Condition=" '$(PackageSources)' == '' ">
-		<!-- Package sources used to restore packages. -->
+		<!-- Package sources used to restore packages. By default, registered sources under %APPDATA%\NuGet\NuGet.Config will be used -->
 		<!-- The official NuGet package source (https://nuget.org/api/v2/) will be excluded if package sources are specified and it does not appear in the list -->
 		<PackageSource Include="http://nuget.org/api/v2/" />
 		<PackageSource Include="http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/" />
@@ -22,40 +25,74 @@
 
 	<PropertyGroup>
 		<NuGetToolsPath>$(MSBuildThisFileDirectory)</NuGetToolsPath>
-		<PackagesConfig>$(ProjectDir)packages.config</PackagesConfig>
+		<PackagesConfig Condition="'$(OS)'=='Windows_NT'">$(ProjectDir)packages.config</PackagesConfig>
+		<PackagesConfig Condition="'$(OS)'!='Windows_NT'">$(ProjectDir)/packages.config</PackagesConfig>
+	</PropertyGroup>
 
+	<PropertyGroup>
 		<!-- NuGet command -->
 		<NuGetExePath Condition=" '$(NuGetExePath)' == '' ">$(NuGetToolsPath)/NuGet.exe</NuGetExePath>
-
 		<PackageSources Condition=" $(PackageSources) == '' ">@(PackageSource)</PackageSources>
 
 		<NuGetCommand Condition=" '$(OS)' == 'Windows_NT'">"$(NuGetExePath)"</NuGetCommand>
 		<NuGetCommand Condition=" '$(OS)' != 'Windows_NT' ">mono --runtime=v4.0.30319 $(NuGetExePath)</NuGetCommand>
+
+		<PackageOutputDir Condition="$(PackageOutputDir) == ''">$(TargetDir).Trim('\\', '/')</PackageOutputDir>
+
+		<RequireConsentSwitch Condition=" $(RequireRestoreConsent) == 'true' ">-RequireConsent</RequireConsentSwitch>
+		<NonInteractiveSwitch Condition=" '$(VisualStudioVersion)' != '' AND '$(OS)' == 'Windows_NT' ">-NonInteractive</NonInteractiveSwitch>
+
+		<!-- Commands -->
+		<RestoreCommand>$(NuGetCommand) install "$(PackagesConfig)" -source "$(PackageSources)" $(NonInteractiveSwitch) $(RequireConsentSwitch) -solutionDirectory "$(SolutionDir)."</RestoreCommand>
+		<BuildCommand>$(NuGetCommand) pack "$(ProjectPath)" -Properties Configuration=$(Configuration) $(NonInteractiveSwitch) -OutputDirectory "$(PackageOutputDir)" -symbols</BuildCommand>
+
+		<!-- We need to ensure packages are restored prior to assembly resolve -->
+		<BuildDependsOn Condition="$(RestorePackages) == 'true'">
+			RestorePackages;
+			$(BuildDependsOn);
+		</BuildDependsOn>
+
+		<!-- Make the build depend on restore packages -->
+		<BuildDependsOn Condition="$(BuildPackage) == 'true'">
+			$(BuildDependsOn);
+			BuildPackage;
+		</BuildDependsOn>
 	</PropertyGroup>
 
 	<Target Name="CheckPrerequisites">
 		<!-- Raise an error if we're unable to locate nuget.exe  -->
-		<Error Condition="'$(DownloadNuGetExe)' != 'true' AND !Exists('$(NuGetExePath)')"
-			Text="Unable to locate '$(NuGetExePath)'" />
+		<Error Condition="'$(DownloadNuGetExe)' != 'true' AND !Exists('$(NuGetExePath)')" Text="Unable to locate '$(NuGetExePath)'" />
 		<!--
 		Take advantage of MsBuild's build dependency tracking to make sure that we only ever download nuget.exe once.
 		This effectively acts as a lock that makes sure that the download operation will only happen once and all
 		parallel builds will have to wait for it to complete.
 		-->
-		<MsBuild Targets="_DownloadNuGet" Projects="$(MSBuildThisFileFullPath)"
-			Properties="Configuration=NOT_IMPORTANT;DownloadNuGetExe=$(DownloadNuGetExe)" />
+		<MsBuild Targets="_DownloadNuGet" Projects="$(MSBuildThisFileFullPath)" Properties="Configuration=NOT_IMPORTANT;DownloadNuGetExe=$(DownloadNuGetExe)" />
 	</Target>
 
 	<Target Name="_DownloadNuGet" Condition=" '$(DownloadNuGetExe)' == 'true' AND !Exists('$(NuGetExePath)')">
-		<DownloadNuGet OutputFilename="$(NuGetExePath)"
-			Condition="'$(OS)' == 'Windows_NT'" />
-		<Exec Command="wget http://nuget.org/NuGet.exe || curl -O -L http://nuget.org/NuGet.exe"
-			WorkingDirectory="$(NuGetToolsPath)"
+		<DownloadNuGet OutputFilename="$(NuGetExePath)" Condition="'$(OS)' == 'Windows_NT'" />
+		<Exec Command="wget https://nuget.org/NuGet.exe" WorkingDirectory="$(NuGetToolsPath)"
 			Condition="'$(OS)' != 'Windows_NT'" />
 	</Target>
 
 	<Target Name="RestorePackages" DependsOnTargets="CheckPrerequisites">
-		<Exec Command='$(NuGetCommand) restore "$(SolutionPath)"'/>
+		<Message Text="PackagesConfig=$(PackagesConfig)"/>
+		<Exec Command="$(RestoreCommand)"
+			  Condition="'$(OS)' != 'Windows_NT' And Exists('$(PackagesConfig)')" />
+
+		<Exec Command="$(RestoreCommand)"
+			  LogStandardErrorAsError="true"
+			  Condition="'$(OS)' == 'Windows_NT' And Exists('$(PackagesConfig)')" />
+	</Target>
+
+	<Target Name="BuildPackage" DependsOnTargets="CheckPrerequisites">
+		<Exec Command="$(BuildCommand)"
+			  Condition=" '$(OS)' != 'Windows_NT' " />
+
+		<Exec Command="$(BuildCommand)"
+			  LogStandardErrorAsError="true"
+			  Condition=" '$(OS)' == 'Windows_NT' " />
 	</Target>
 
 	<UsingTask TaskName="DownloadNuGet" TaskFactory="CodeTaskFactory"
@@ -78,7 +115,7 @@
 
 					Log.LogMessage("Downloading latest version of NuGet.exe...");
 					WebClient webClient = new WebClient();
-					webClient.DownloadFile("http://nuget.org/nuget.exe", OutputFilename);
+					webClient.DownloadFile("https://nuget.org/nuget.exe", OutputFilename);
 
 					return true;
 				}
