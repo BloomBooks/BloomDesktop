@@ -10,6 +10,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Windows.Forms;
 using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
@@ -117,6 +118,9 @@ namespace Bloom.Book
 			}
 
 			const string coverPageImageFile = "thumbnail-256.png";
+			// This thumbnail is otherwise only made when uploading, so it may be out of date.
+			// Just remake it every time.
+			Book.MakeThumbnailOfCover(256, Form.ActiveForm);
 			CopyFileToEpub(Path.Combine(Book.FolderPath, coverPageImageFile));
 
 			EmbedFonts(); // must call after copying stylesheets

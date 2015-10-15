@@ -8,7 +8,9 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Web;
+using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -282,6 +284,42 @@ namespace Bloom.Book
 			{
 				callback(Resources.Error70x70);
 				Debug.Fail(err.Message);
+			}
+		}
+
+		public void MakeThumbnailOfCover(int height, Control invokeTarget)
+		{
+			bool done = false;
+			string error = null;
+
+			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions()
+			{
+				CenterImageUsingTransparentPadding = false,
+				//since this is destined for HTML, it's much easier to handle if there is no pre-padding
+
+				Height = height,
+				Width = -1,
+				FileName = "thumbnail-" + height + ".png"
+			};
+
+			RebuildThumbNailAsync(options, (info, image) => done = true,
+				(info, ex) =>
+				{
+					done = true;
+					throw ex;
+				});
+			var giveUpTime = DateTime.Now.AddSeconds(15);
+			while (!done && DateTime.Now < giveUpTime)
+			{
+				Thread.Sleep(100);
+				Application.DoEvents();
+				// In the context of bulk upload, when a model dialog is the only window, apparently Application.Idle is never invoked.
+				// So we need a trick to allow the thumbnailer to actually make some progress, since it usually works while idle.
+				_thumbnailProvider.Advance(invokeTarget);
+			}
+			if (!done)
+			{
+				throw new ApplicationException(string.Format("Gave up waiting for the {0} to be created. This usually means Bloom is busy making thumbnails for other things. Wait a bit, and try again.", options.FileName));
 			}
 		}
 
