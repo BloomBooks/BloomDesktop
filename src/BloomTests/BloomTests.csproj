@@ -181,8 +181,8 @@
     <Compile Include="PageEditingModelTests.cs" />
     <Compile Include="PageSelectionTests.cs" />
     <Compile Include="Book\PageTests.cs" />
-    <Compile Include="ElementProxyTests.cs" />
     <Compile Include="UrlPathStringTests.cs" />
+    <Compile Include="ElementProxyTests.cs" />
     <Compile Include="ProblemReporterDialogTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PdfMakerTests.cs" />

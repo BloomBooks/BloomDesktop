@@ -282,14 +282,6 @@ namespace Bloom.Publish
 			get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }
 		}
 
-		public override bool Equals(object obj)
-		{
-			if (obj == null)
-				return false;
-
-			var m = (PublishModel)obj ;
-			return m.BookletPortion == BookletPortion && m.PageLayout == PageLayout;
-		}
 
 		public void Save()
 		{
