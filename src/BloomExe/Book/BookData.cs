@@ -546,7 +546,7 @@ namespace Bloom.Book
 					}
 
 					string value;
-					if (HtmlDom.GetIsImgOrSomethingWithBackgroundImage(node))
+					if (HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
 					{
 						value = HtmlDom.GetImageElementUrl(new ElementProxy(node)).UrlEncoded;
 					}
@@ -692,7 +692,7 @@ namespace Bloom.Book
 							//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
 						}
 					}
-					else if (!HtmlDom.GetIsImgOrSomethingWithBackgroundImage(node))
+					else if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
 					{
 						// See whether we need to delete something
 						var lang = node.GetOptionalStringAttribute("lang", "*");
@@ -728,7 +728,7 @@ namespace Bloom.Book
 		/// <returns>true if this node is an image holder of some sort.</returns>
 		private bool UpdateImageFromDataSet(DataSet data, XmlElement node, string key)
 		{
-			if (!HtmlDom.GetIsImgOrSomethingWithBackgroundImage(node))
+			if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
 				return false;
 
 			var newImageUrl = UrlPathString.CreateFromUrlEncodedString(data.TextVariables[key].TextAlternatives.GetFirstAlternative());

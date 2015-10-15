@@ -1,50 +1,65 @@
 // Copyright (c) 2015 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
-using System.Xml;
 using Bloom;
 using NUnit.Framework;
 
 namespace BloomTests
 {
 	[TestFixture]
-	public class ElementProxyTests
+	public class UrlPathStringTests
 	{
-
-		/* Note, the whole purpose of the ElementProxy class is to work around the difficulty of producing
-			GeckoHtmlElements in unit tests. So we're not going to test those code paths here, either, sigh. */
-
-
 		[Test]
-		public void GetString_XmlElementHasAttribute()
+		public void UrlEncoded_toUrlEncoded_Retained()
 		{
-			Assert.AreEqual("foo", MakeElement("<div id='foo'/>").GetAttribute("id"));
+			Assert.AreEqual("test%20me", UrlPathString.CreateFromUrlEncodedString("test%20me").UrlEncoded);
 		}
 		[Test]
-		public void GetString_XmlElementMissingAttribute_GivesEmptyString()
+		public void UrlEncoded_toUnencoded_Correct()
 		{
-			Assert.AreEqual("", MakeElement("<div id='foo'/>").GetAttribute("blah"));
+			Assert.AreEqual("test me", UrlPathString.CreateFromUrlEncodedString("test%20me").NotEncoded);
 		}
-
 		[Test]
-		public void SetString_CanReturnIt()
+		public void Unencoded_toUrlEncoded_Correct()
 		{
-			var e = MakeElement("<div id='foo'/>");
-			e.SetAttribute("id", "foo");
-            Assert.AreEqual("foo", e.GetAttribute("id"));
+			Assert.AreEqual("test%20me", UrlPathString.CreateFromUrlEncodedString("test me").UrlEncoded);
 		}
-
 		[Test]
-		public void Class_ReturnsSameCase()
-		{
-			Assert.AreEqual("Img", MakeElement("<Img id='foo'/>").Name,"should be same case because that's what XmlElement.Name does.");
+		public void Unencoded_toUnencoded_Correct()
+		{ 
+			Assert.AreEqual("test me", UrlPathString.CreateFromUnencodedString("test me").NotEncoded);
 		}
 
-		private ElementProxy MakeElement(string xml)
+		//make sure we don't double-encode
+		[Test]
+		public void CreateFromUnencodedString_StringWasAlreadyEncode_Adapts()
 		{
-			var dom = new XmlDocument();
-			dom.LoadXml(xml);
-			return new ElementProxy(dom.DocumentElement);
+			Assert.AreEqual("test me", UrlPathString.CreateFromUnencodedString("test%20me").NotEncoded);
+		}
+		[Test]
+		public void Equals_AreEqual_True()
+		{
+			Assert.IsTrue(UrlPathString.CreateFromUrlEncodedString("test me").Equals(UrlPathString.CreateFromUrlEncodedString("test " + "me")));
+		}
+		[Test]
+		public void Equals_AreNotEqual_False()
+		{
+			Assert.IsFalse(UrlPathString.CreateFromUrlEncodedString("test me").Equals(UrlPathString.CreateFromUrlEncodedString("test him")));
+		}
+		[Test]
+		public void EqualityOperator_AreEqual_True()
+		{
+			Assert.IsTrue(UrlPathString.CreateFromUrlEncodedString("test me") == UrlPathString.CreateFromUrlEncodedString("test "+"me"));
+		}
+		[Test]
+		public void EqualityOperator_AreNotEqual_False()
+		{
+			Assert.IsFalse(UrlPathString.CreateFromUrlEncodedString("test me") == UrlPathString.CreateFromUrlEncodedString("different"));
+		}
+		[Test]
+		public void EqualityOperator_OneIsNull_False()
+		{
+			Assert.IsFalse(UrlPathString.CreateFromUrlEncodedString("test me") == null);
 		}
 	}
 }

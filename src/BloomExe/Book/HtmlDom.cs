@@ -873,14 +873,18 @@ namespace Bloom.Book
 			else
 			{
 				var styleRule = imgOrDivWithBackgroundImage.GetAttribute("style") ?? "";
-				var regex = new Regex("url\\((.*)\\)", RegexOptions.IgnoreCase);
+				var regex = new Regex("background-image\\s*:\\s*url\\((.*)\\)", RegexOptions.IgnoreCase);
 				var match = regex.Match(styleRule);
 				if (match.Groups.Count == 2)
 				{
 					return UrlPathString.CreateFromUrlEncodedString(match.Groups[1].Value.Trim(new[] {'\'', '"'}));
 				}
 			}
-			return null;
+			//we choose to return this instead of null to reduce errors created by things like 
+			// HtmlDom.GetImageElementUrl(element).UrlEncoded. If we just returned null, that has to be written
+			// as something that checks for null, like:
+			//  var url = HtmlDom.GetImageElementUrl(element). if(url!=null) url.UrlEncoded
+			return UrlPathString.CreateFromUnencodedString("");
 		}
 
 
@@ -905,7 +909,7 @@ namespace Bloom.Book
 			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
 		}
 
-		public static bool GetIsImgOrSomethingWithBackgroundImage(XmlElement element)
+		public static bool IsImgOrSomethingWithBackgroundImage(XmlElement element)
 		{
 			return element.SelectNodes("self::img | self::*[contains(@style,'background-image')]").Count == 1;
 		}
