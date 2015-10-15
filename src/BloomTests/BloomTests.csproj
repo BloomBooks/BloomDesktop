@@ -170,7 +170,6 @@
     <Compile Include="CollectionTab\LibraryModelTests.cs" />
     <Compile Include="CollectionTab\TestLibraryModel.cs" />
     <Compile Include="Collection\BloomPackInstallerTests.cs" />
-    <Compile Include="Edit\BloomClipboardTests.cs" />
     <Compile Include="HelpLauncherTests.cs" />
     <Compile Include="Chorus\MergingTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
@@ -182,6 +181,8 @@
     <Compile Include="PageEditingModelTests.cs" />
     <Compile Include="PageSelectionTests.cs" />
     <Compile Include="Book\PageTests.cs" />
+    <Compile Include="ElementProxyTests.cs" />
+    <Compile Include="UrlPathStringTests.cs" />
     <Compile Include="ProblemReporterDialogTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PdfMakerTests.cs" />

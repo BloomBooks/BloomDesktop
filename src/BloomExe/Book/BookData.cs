@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Windows.Forms.VisualStyles;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.Collection;
@@ -16,7 +12,6 @@ using Palaso.Code;
 using Palaso.Text;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.Xml;
-using RestSharp;
 
 namespace Bloom.Book
 {
@@ -25,7 +20,7 @@ namespace Bloom.Book
 	/// </summary>
 	/// <remarks>
 	/// At the beginning of the document, we have a special div for holding book-wide data.
-	/// It may hosts all maner of data about the book, including copyright, what languages are currently visible, etc.Here's a sample of a simple one:
+	/// It may hosts all manner of data about the book, including copyright, what languages are currently visible, etc.Here's a sample of a simple one:
 	/*<div id="bloomDataDiv">
 			  <div data-book="bookTitle" lang="en">Awito Builds a toilet</div>
 			  <div data-book="bookTitle" lang="tpi">Awito i wokim haus</div>
@@ -550,14 +545,16 @@ namespace Bloom.Book
 						isCollectionValue = true;
 					}
 
-					string value = node.InnerXml.Trim(); //may contain formatting
-					if (node.Name.ToLowerInvariant() == "img")
+					string value;
+					if (HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
 					{
-						value = node.GetAttribute("src");
-						//Make the name of the image safe for showing up in raw html (not just in the relatively safe confines of the src attribut),
-						//becuase it's going to show up between <div> tags.  E.g. "Land & Water.png" as the cover page used to kill us.
-						value = WebUtility.HtmlEncode(WebUtility.HtmlDecode(value));
+						value = HtmlDom.GetImageElementUrl(new ElementProxy(node)).UrlEncoded;
 					}
+					else
+					{
+						value = node.InnerXml.Trim(); //may contain formatting
+					}
+
 					string lang = node.GetOptionalStringAttribute("lang", "*");
 					if (lang == "") //the above doesn't stop a "" from getting through
 						lang = "*";
@@ -619,106 +616,91 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Where, for example, somewhere on a page something has data-book='foo' lan='fr',
+		/// Where, for example, somewhere on a page something has data-book='foo' lang='fr',
 		/// we set the value of that element to French subvalue of the data item 'foo', if we have one.
 		/// </summary>
 		private void UpdateDomFromDataSet(DataSet data, string elementName,XmlDocument targetDom, HashSet<Tuple<string, string>> itemsToDelete)
 		{
-			UpdateTopicInLanguageOfCover(data); //reveiw
+			UpdateTopicInLanguageOfCover(data);
 			try
 			{
-				string query = String.Format("//{0}[(@data-book or @data-collection or @data-library)]", elementName);
-				XmlNodeList nodesOfInterest = targetDom.SafeSelectNodes(query);
+				var query = String.Format("//{0}[(@data-book or @data-collection or @data-library)]", elementName);
+				var nodesOfInterest = targetDom.SafeSelectNodes(query);
 
 				foreach (XmlElement node in nodesOfInterest)
 				{
-					string key = node.GetAttribute("data-book").Trim();
-					if (key == String.Empty)
+					var key = node.GetAttribute("data-book").Trim();
+					if (key == string.Empty)
 					{
 						key = node.GetAttribute("data-collection").Trim();
 						if (key == string.Empty)
 						{
-							key = node.GetAttribute("data-library").Trim();
-							//"library" is the old name for what is now "collection"
+							key = node.GetAttribute("data-library").Trim(); //"library" is the old name for what is now "collection"
 						}
 					}
 
-					if (!String.IsNullOrEmpty(key))
+					if (string.IsNullOrEmpty(key)) continue;
+
+					if (data.TextVariables.ContainsKey(key))
 					{
-						if (data.TextVariables.ContainsKey(key))
+						if (UpdateImageFromDataSet(data, node, key)) continue;
+
+						var lang = node.GetOptionalStringAttribute("lang", "*");
+						if (lang == "N1" || lang == "N2" || lang == "V")
+							lang = data.WritingSystemAliases[lang];
+
+						//							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
+						//							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
+						//							{
+						//								//no text forms == desire to remove it. THe multitextbase prohibits empty strings, so this is the best we can do: completly remove the item.
+						//								targetDom.RemoveChild(node);
+						//							}
+						//							else
+						if (!string.IsNullOrEmpty(lang)) //if we don't even have this language specified (e.g. no national language), the  give up
 						{
-							if (node.Name.ToLowerInvariant() == "img")
+							//Ideally, we have this string, in this desired language.
+							var s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[] {lang, "*"});
+
+							//But if not, maybe we should copy one in from another national language
+							if (string.IsNullOrEmpty(s))
+								s = PossiblyCopyFromAnotherLanguage(node, lang, data, key);
+
+							//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it right.
+							//The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
+							//the gather page was gathering no values for those alternatives (why not), and so GetBestAlternativeSTring
+							//was giving "", which we then used to remove our nice values.
+							//REVIEW: what affect will this have in other pages, other circumstances. Will it make it impossible to clear a value?
+							//Hoping not, as we are differentiating between "" and just not being in the multitext at all.
+							//don't overwrite a datadiv alternative with empty just becuase this page has no value for it.
+							if (s == "" && !data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
+								continue;
+
+							//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
+							if (data.WritingSystemAliases.Count != 0 && lang == data.WritingSystemAliases["N2"] &&
+							    s ==
+							    data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[]
+							    {
+								    data.
+									    WritingSystemAliases
+									    ["N1"]
+								    , "*"
+							    }))
 							{
-								string imageName =
-									WebUtility.HtmlDecode(data.TextVariables[key].TextAlternatives.GetFirstAlternative());
-								string oldImageName = WebUtility.HtmlDecode(node.GetAttribute("src"));
-								node.SetAttribute("src", imageName);
-								if (oldImageName != imageName)
-								{
-									Guard.AgainstNull(_updateImgNode, "_updateImgNode");
-									_updateImgNode(node);
-								}
+								s = ""; //don't show it in N2, since it's the same as N1
 							}
-							else
-							{
-								string lang = node.GetOptionalStringAttribute("lang", "*");
-								if (lang == "N1" || lang == "N2" || lang == "V")
-									lang = data.WritingSystemAliases[lang];
-
-								//							//see comment later about the inability to clear a value. TODO: when we re-write Bloom, make sure this is possible
-								//							if(data.TextVariables[key].TextAlternatives.Forms.Length==0)
-								//							{
-								//								//no text forms == desire to remove it. THe multitextbase prohibits empty strings, so this is the best we can do: completly remove the item.
-								//								targetDom.RemoveChild(node);
-								//							}
-								//							else
-								if (!String.IsNullOrEmpty(lang)) //if we don't even have this language specified (e.g. no national language), the  give up
-								{
-									//Ideally, we have this string, in this desired language.
-									string s = data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[] {lang, "*"});
-
-									//But if not, maybe we should copy one in from another national language
-									if (string.IsNullOrEmpty(s))
-										s = PossiblyCopyFromAnotherLanguage(node, lang, data, key);
-
-									//NB: this was the focus of a multi-hour bug search, and it's not clear that I got it right.
-									//The problem is that the title page has N1 and n2 alternatives for title, the cover may not.
-									//the gather page was gathering no values for those alternatives (why not), and so GetBestAlternativeSTring
-									//was giving "", which we then used to remove our nice values.
-									//REVIEW: what affect will this have in other pages, other circumstances. Will it make it impossible to clear a value?
-									//Hoping not, as we are differentiating between "" and just not being in the multitext at all.
-									//don't overwrite a datadiv alternative with empty just becuase this page has no value for it.
-									if (s == "" && !data.TextVariables[key].TextAlternatives.ContainsAlternative(lang))
-										continue;
-
-									//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
-									if (data.WritingSystemAliases.Count != 0 && lang == data.WritingSystemAliases["N2"] &&
-										s ==
-										data.TextVariables[key].TextAlternatives.GetBestAlternativeString(new[]
-										{
-											data.
-												WritingSystemAliases
-												["N1"]
-											, "*"
-										}))
-									{
-										s = ""; //don't show it in N2, since it's the same as N1
-									}
-									node.InnerXml = s;
-									//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
-								}
-							}
+							node.InnerXml = s;
+							//meaning, we'll take "*" if you have it but not the exact choice. * is used for languageName, at least in dec 2011
 						}
-						else if (node.Name.ToLowerInvariant() != "img")
+					}
+					else if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
+					{
+						// See whether we need to delete something
+						var lang = node.GetOptionalStringAttribute("lang", "*");
+						if (lang == "N1" || lang == "N2" || lang == "V")
+							lang = data.WritingSystemAliases[lang];
+						if (itemsToDelete.Contains(Tuple.Create(key, lang)))
 						{
-							// See whether we need to delete something
-							string lang = node.GetOptionalStringAttribute("lang", "*");
-							if (lang == "N1" || lang == "N2" || lang == "V")
-								lang = data.WritingSystemAliases[lang];
-							if (itemsToDelete.Contains(Tuple.Create(key, lang)))
-							{
-								node.InnerXml = ""; // a later process may remove node altogether.
-							}
+							node.InnerXml = ""; // a later process may remove node altogether.
 						}
 					}
 				}
@@ -729,6 +711,37 @@ namespace Bloom.Book
 					"Error in UpdateDomFromDataSet(," + elementName + "). RawDom was:\r\n" +
 					targetDom.OuterXml, error);
 			}
+		}
+
+		/// <summary>
+		/// Given a node in the content section of the book that has a data-book attribute, see 
+		/// if this node holds an image and if so, look up the url of the image from the supplied
+		/// dataset and stick it in there. Handle both img elements and divs that have a
+		/// background-image in an inline style attribute.
+		/// 
+		/// At the time of this writing, the only image that is handled here is the cover page.
+		/// The URLs of images in the content of the book are not known to the data-div.
+		/// But each time the book is loaded up, we collect up data from the xmatter and stick
+		/// it in the data-div(in the DOM) / dataSet (in an object here in code), stick in a
+		/// blank xmatter, then push the values back into the xmatter.
+		/// </summary>
+		/// <returns>true if this node is an image holder of some sort.</returns>
+		private bool UpdateImageFromDataSet(DataSet data, XmlElement node, string key)
+		{
+			if (!HtmlDom.IsImgOrSomethingWithBackgroundImage(node))
+				return false;
+
+			var newImageUrl = UrlPathString.CreateFromUrlEncodedString(data.TextVariables[key].TextAlternatives.GetFirstAlternative());
+			var oldImageUrl = HtmlDom.GetImageElementUrl(node);
+			var imgOrDivWithBackgroundImage = new ElementProxy(node);
+			HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage,newImageUrl);
+
+			if (!newImageUrl.Equals(oldImageUrl))
+			{
+				Guard.AgainstNull(_updateImgNode, "_updateImgNode");
+				_updateImgNode(node);
+			}
+			return true;
 		}
 
 		/// <summary>

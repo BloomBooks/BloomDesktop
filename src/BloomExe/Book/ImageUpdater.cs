@@ -66,8 +66,9 @@ namespace Bloom.Book
 		public static void UpdateImgMetdataAttributesToMatchImage(string folderPath, XmlElement imgElement, IProgress progress, Metadata metadata)
 		{
 			//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
-			var fileName = imgElement.GetOptionalStringAttribute("src", string.Empty);
-			var end = fileName.IndexOf('?');
+			var url = HtmlDom.GetImageElementUrl(new ElementProxy(imgElement));
+			var end = url.NotEncoded.IndexOf('?');
+			string fileName = url.NotEncoded;
 			if (end > 0)
 			{
 				fileName = fileName.Substring(0, end);
@@ -81,7 +82,6 @@ namespace Bloom.Book
 				return; // they have bigger problems, which aren't appropriate to deal with here.
 			}
 
-			fileName = HttpUtilityFromMono.UrlDecode(fileName);
 			if (metadata == null)
 			{
 				progress.WriteStatus("Reading metadata from " + fileName);
@@ -119,7 +119,7 @@ namespace Bloom.Book
 			//Update the html attributes which echo some of it, and is used by javascript to overlay displays related to
 			//whether the info is there or missing or whatever.
 
-			var imgElements = dom.SafeSelectNodes("//img");
+			var imgElements = HtmlDom.SelectChildImgAndBackgroundImageElements(dom.RawDom.DocumentElement);
 			int completed = 0;
 			foreach (XmlElement img in imgElements)
 			{
