@@ -241,7 +241,8 @@ class PageChooser {
             $( ".outerCollectionContainer", document).append(collectionToAdd);
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
-            var pages = $( pageData).filter( ".bloom-page[id]" );
+            //var pages = $( pageData).filter('.bloom-page[id]').filter('[data-page="extra"]');
+            var pages = $(pageData).filter('.bloom-page[id]');
             this._indexOfPageToSelect = this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
             this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect), null);
         });
