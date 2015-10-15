@@ -571,7 +571,7 @@ class ReaderToolsModel {
 
       var selection: Selection = page.contentWindow.getSelection();
       var current: Node = selection.anchorNode;
-      var active: HTMLDivElement = $(selection.anchorNode).closest('div').get(0);
+      var active = <HTMLDivElement>$(selection.anchorNode).closest('div').get(0);
       if (!active || selection.rangeCount > 1 || (selection.rangeCount == 1 && !selection.getRangeAt(0).collapsed)) {
         return; // don't even try to adjust markup while there is some complex selection
       }

@@ -51,7 +51,7 @@ class interIframeChannel {
   /**
   * Gets the data and returns a promise
   */
-  asyncGet(url: string, dataValue?: any): JQueryPromise{
+  asyncGet(url: string, dataValue?: any): JQueryPromise<any>{
 
       // We are calling encodeURIComponent() if dataValue is a string.
       // NOTE: We are encoding every string, so the caller should NOT encode the string.
@@ -61,7 +61,7 @@ class interIframeChannel {
       var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'GET', url: url };
       if (dataValue) ajaxSettings['data'] = dataValue ;
 
-      return $.ajax(ajaxSettings).promise();
+      return $.ajax(ajaxSettings);
   }
 
   /*

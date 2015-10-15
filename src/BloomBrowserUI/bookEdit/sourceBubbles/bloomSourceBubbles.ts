@@ -375,7 +375,7 @@ class bloomSourceBubbles {
             });
 
             // show the full tip, if needed
-            var tipId = event.target.parentNode.getAttribute('aria-describedby');
+            var tipId = (<Element>event.target.parentNode).getAttribute('aria-describedby');
             var $tip = $body.find('#' + tipId);
             var maxHeight = $tip.attr('data-max-height');
 

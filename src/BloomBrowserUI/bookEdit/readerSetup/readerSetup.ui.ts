@@ -193,7 +193,7 @@ function selectStage(tr: HTMLTableRowElement): void {
 
 function requestWordsForSelectedStage():void {
 
-  var tr: HTMLTableRowElement = $('#stages-table').find('tbody tr.selected').get(0);
+    var tr = <HTMLTableRowElement>$('#stages-table').find('tbody tr.selected').get(0);
 
   desiredGPCs = ((<HTMLTableCellElement>tr.cells[1]).innerHTML).split(' ');
   previousGPCs = $.makeArray($(tr).prevAll().map(function() {
@@ -258,7 +258,7 @@ function selectLetters(tr: HTMLTableRowElement) {
   // letters in the current stage
   var stage_letters: string[] = (<HTMLTableCellElement>tr.cells[1]).innerHTML.split(' ');
   var current: JQuery = letters.filter(function(index, element) {
-    return stage_letters.indexOf(element.innerHTML) > -1;
+    return stage_letters.indexOf((<HTMLElement>element).innerHTML) > -1;
   });
 
   // letters in previous stages
@@ -266,7 +266,7 @@ function selectLetters(tr: HTMLTableRowElement) {
     return (<HTMLTableCellElement>this.cells[1]).innerHTML.split(' ');
   }));
   var previous = letters.filter(function(index, element) {
-    return stage_letters.indexOf(element.innerHTML) > -1;
+      return stage_letters.indexOf((<HTMLElement>element).innerHTML) > -1;
   });
 
   // show current and previous letters

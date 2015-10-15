@@ -32,7 +32,8 @@ var interIframeChannel = (function () {
         var ajaxSettings = { type: 'GET', url: url };
         if (dataValue)
             ajaxSettings['data'] = { data: dataValue };
-        $.ajax(ajaxSettings).done(function (data) {
+        $.ajax(ajaxSettings)
+            .done(function (data) {
             callback(data);
         });
     };
@@ -47,7 +48,7 @@ var interIframeChannel = (function () {
         var ajaxSettings = { type: 'GET', url: url };
         if (dataValue)
             ajaxSettings['data'] = dataValue;
-        return $.ajax(ajaxSettings).promise();
+        return $.ajax(ajaxSettings);
     };
     /*
      * This will earn you the following message in the console:
@@ -75,7 +76,8 @@ var interIframeChannel = (function () {
         var ajaxSettings = { type: 'GET', url: url };
         if (dataValue)
             ajaxSettings['data'] = { data: dataValue };
-        $.ajax(ajaxSettings).done(function (data) {
+        $.ajax(ajaxSettings)
+            .done(function (data) {
             callback(data, callbackParam);
         });
     };
@@ -89,7 +91,8 @@ var interIframeChannel = (function () {
         var ajaxSettings = { type: 'POST', url: url };
         if (dataValue)
             ajaxSettings['data'] = { data: dataValue };
-        $.ajax(ajaxSettings).done(function (data) {
+        $.ajax(ajaxSettings)
+            .done(function (data) {
             callback(data);
         });
     };
