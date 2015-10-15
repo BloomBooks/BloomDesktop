@@ -67,9 +67,7 @@ function process_UI_Message(event) {
                     firstLevel.click(); // select the first level
             }
             // handle the beforeActivate event
-            tabs.on('tabsbeforeactivate', function (event, ui) {
-                tabBeforeActivate(ui);
-            });
+            tabs.on('tabsbeforeactivate', function (event, ui) { tabBeforeActivate(ui); });
             return;
         case 'Font':
             var style = document.createElement('style');
@@ -79,6 +77,7 @@ function process_UI_Message(event) {
             return;
         case 'Help':
             var helpFile;
+            //noinspection JSJQueryEfficiency
             switch ($('#dlstabs').tabs('option', 'active')) {
                 case 0:
                     helpFile = '/Tasks/Edit_tasks/Decodable_Reader_Tool/Letters_tab.htm';
@@ -105,9 +104,7 @@ function process_UI_Message(event) {
  */
 function displayLetters() {
     var letters = cleanSpaceDelimitedList(document.getElementById('dls_letters').value.trim()).split(' ');
-    letters = letters.filter(function (n) {
-        return n !== '';
-    });
+    letters = letters.filter(function (n) { return n !== ''; });
     // If there are no letters, skip updating the contents of #setup-selected-letters. This leaves it showing the
     // message in the original file, which encourages users to set up an alphabet.
     if (letters.length === 0)
@@ -307,9 +304,7 @@ function displayWordsForSelectedStage(wordsStr) {
         }
     });
     // sort the list
-    words = _.sortBy(words, function (w) {
-        return w.Name;
-    });
+    words = _.sortBy(words, function (w) { return w.Name; });
     var result = '';
     var longestWord = '';
     var longestWordLength = 0;
@@ -505,10 +500,7 @@ function storeThingsToRemember() {
     // remove html and split into array
     var vals = val.replace(/<li contenteditable="true">/g, '').replace(/<br>/g, '').split('</li>');
     // remove blank lines
-    vals = vals.filter(function (e) {
-        var x = e.trim();
-        return (x.length > 0 && x !== '&nbsp;');
-    });
+    vals = vals.filter(function (e) { var x = e.trim(); return (x.length > 0 && x !== '&nbsp;'); });
     // store
     $('#levels-table').find('tbody tr.selected td:nth-child(6)').html(vals.join('\n'));
 }
@@ -618,9 +610,7 @@ function attachEventHandlers() {
             anchor.attr('title', title);
             anchor.show();
         });
-        allowedDiv.onOnce('mouseleave', function () {
-            $(this).find('a').hide();
-        });
+        allowedDiv.onOnce('mouseleave', function () { $(this).find('a').hide(); });
     }
 }
 function setAllowedWordsFile(fileName) {

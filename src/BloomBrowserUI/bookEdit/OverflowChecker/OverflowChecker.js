@@ -65,7 +65,8 @@ var OverflowChecker = (function () {
         //In the Headers of the Term Intro of the SHRP C1 P3 Pupil's book, scrollHeight = clientHeight + 6!!! Sigh.
         // the focussedBorderFudgeFactor takes care of 2 pixels, this adds one more.
         var shortBoxFudgeFactor = 4;
-        return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + shortBoxFudgeFactor || element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor;
+        return element.scrollHeight > element.clientHeight + focusedBorderFudgeFactor + shortBoxFudgeFactor ||
+            element.scrollWidth > element.clientWidth + focusedBorderFudgeFactor;
     };
     // Actual testable determination of Type II overflow or not
     // 'public' for testing (2 types of overflow are defined in MarkOverflowInternal below)
@@ -95,7 +96,7 @@ var OverflowChecker = (function () {
                 return currentAncestor[0];
             }
             if (currentAncestor.hasClass('marginBox')) {
-                break;
+                break; // Don't check anything outside of marginBox
             }
         }
         return null;

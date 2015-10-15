@@ -85,7 +85,8 @@ function loadReaderSetupData(jsonData) {
 }
 function saveClicked() {
     // update more words
-    if ((document.getElementById('dls_more_words').value !== previousMoreWords) || (parseInt($('input[name="words-or-letters"]:checked').val()) != 0)) {
+    if ((document.getElementById('dls_more_words').value !== previousMoreWords)
+        || (parseInt($('input[name="words-or-letters"]:checked').val()) != 0)) {
         var accordion = accordionWindow();
         // save the changes and update lists
         saveChangedSettings(function () {
@@ -120,9 +121,7 @@ function getChangedSettings() {
     // remove duplicates from the more words list
     var moreWords = _.uniq((document.getElementById('dls_more_words').value).split("\n"));
     // remove empty lines from the more words list
-    moreWords = _.filter(moreWords, function (a) {
-        return a.trim() !== '';
-    });
+    moreWords = _.filter(moreWords, function (a) { return a.trim() !== ''; });
     s.moreWords = moreWords.join(' ');
     s.useAllowedWords = parseInt($('input[name="words-or-letters"]:checked').val());
     // stages

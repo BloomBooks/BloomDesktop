@@ -244,7 +244,7 @@ class PageChooser {
             var pages = $( pageData).filter( ".bloom-page[id]" );
             this._indexOfPageToSelect = this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
             this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect), null);
-        }, "html");
+        });
         request.fail( function(jqXHR, textStatus, errorThrown) {
             console.log("There was a problem reading: " + pageUrl + " see documentation on : " +
                 jqXHR.status + " " + textStatus + " " + errorThrown);

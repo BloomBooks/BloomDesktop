@@ -30,9 +30,7 @@ var BloomField = (function () {
             BloomField.MakeTabEnterTabElement(bloomEditableDiv);
             BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
             $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
-            $(bloomEditableDiv).click(function () {
-                BloomField.ProcessClick;
-            });
+            $(bloomEditableDiv).click(function () { BloomField.ProcessClick; });
             $(bloomEditableDiv).blur(function () {
                 BloomField.ModifyForParagraphMode(this);
             });
@@ -169,7 +167,7 @@ var BloomField = (function () {
         //of the paragraph, because that's the case where FF will try and remove the  P and move it into the
         //preceding div.
         $(field).keydown(function (e) {
-            if (e.which == 8) {
+            if (e.which == 8 /* backspace*/) {
                 var sel = window.getSelection();
                 //Are we at the start of a paragraph with nothing selected?
                 if (sel.anchorOffset == 0 && sel.isCollapsed) {
@@ -197,7 +195,7 @@ var BloomField = (function () {
                 var sel = window.getSelection();
                 if (sel.anchorNode === this) {
                     e.preventDefault();
-                    BloomField.MoveCursorToEdgeOfField(this, leftArrowPressed ? 0 /* start */ : 1 /* end */);
+                    BloomField.MoveCursorToEdgeOfField(this, leftArrowPressed ? CursorPosition.start : CursorPosition.end);
                 }
             }
         });
@@ -251,20 +249,21 @@ var BloomField = (function () {
         }
     };
     BloomField.RequiresParagraphs = function (field) {
-        return $(field).closest('.bloom-requiresParagraphs').length > 0 || ($(field).css('border-top-style') === 'dashed');
+        return $(field).closest('.bloom-requiresParagraphs').length > 0
+            || ($(field).css('border-top-style') === 'dashed');
     };
     BloomField.HandleFieldFocus = function (field) {
-        BloomField.MoveCursorToEdgeOfField(field, 0 /* start */);
+        BloomField.MoveCursorToEdgeOfField(field, CursorPosition.start);
     };
     BloomField.MoveCursorToEdgeOfField = function (field, position) {
         var range = document.createRange();
-        if (position === 0 /* start */) {
+        if (position === CursorPosition.start) {
             range.selectNodeContents($(field).find('p').first()[0]);
         }
         else {
             range.selectNodeContents($(field).find('p').last()[0]);
         }
-        range.collapse(position === 0 /* start */); //true puts it at the start
+        range.collapse(position === CursorPosition.start); //true puts it at the start
         var sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
@@ -277,7 +276,7 @@ var BloomField = (function () {
                 BloomField.ModifyForParagraphMode(this);
                 // Now put the cursor in the paragraph, *after* the character they may have just typed or the
                 // text they just pasted.
-                BloomField.MoveCursorToEdgeOfField(field, 1 /* end */);
+                BloomField.MoveCursorToEdgeOfField(field, CursorPosition.end);
             }
         });
     };
@@ -351,7 +350,12 @@ var BloomField = (function () {
                 // if we've typed a backspace, delete, or arrow key, don't do it and call this method again next time.
                 // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2274.
                 if (typeof event.charCode == "number" && event.charCode == 0) {
-                    doNotDeleteOrMove = (event.keyCode == 8 || event.keyCode == 46 || event.keyCode == 37 || event.keyCode == 38 || event.keyCode == 39 || event.keyCode == 40);
+                    doNotDeleteOrMove = (event.keyCode == 8 /*backspace*/ ||
+                        event.keyCode == 46 /*delete*/ ||
+                        event.keyCode == 37 /*left arrow*/ ||
+                        event.keyCode == 38 /*up arrow*/ ||
+                        event.keyCode == 39 /*right arrow*/ ||
+                        event.keyCode == 40 /*down arrow*/);
                 }
                 if (doNotDeleteOrMove) {
                     event.stopImmediatePropagation();
@@ -364,7 +368,7 @@ var BloomField = (function () {
                     //But BL-952 showed that without it, we actually somehow end up selecting the format gear icon as well
                     selection.deleteFromDocument();
                 }
-            }
+            } //if we're at position 1 in the text, then we're just to the right of the character we want to replace
             else if (selection.anchorOffset === 1) {
                 selection.modify("extend", "backward", "character");
             }

@@ -158,7 +158,7 @@ class LocalizationManager {
      *          $(this).text(translation);
      *      });
     */
-    asyncGetTextInLang(id: string, englishText: string, langId: string, ...args): JQueryPromise {
+    asyncGetTextInLang(id: string, englishText: string, langId: string, ...args): JQueryPromise<any> {
         return this.asyncGetTextInLangCommon(id, englishText, langId, false, args);
     }
     /* Returns a promise to get the translation in the current UI language.  If the translation isn't present in the
@@ -176,15 +176,15 @@ class LocalizationManager {
      *          $(this).text(translation);
      *      });
     */
-    asyncGetText(id: string, englishText: string, ...args): JQueryPromise {
+    asyncGetText(id: string, englishText: string, ...args): JQueryPromise<any> {
         return this.asyncGetTextInLangCommon(id, englishText, "UI", true, args);
     }
 
-    asyncGetTextInLangCommon(id: string, englishText: string, langId: string, englishDefault: boolean, args): JQueryPromise {
+    asyncGetTextInLangCommon(id: string, englishText: string, langId: string, englishDefault: boolean, args): JQueryPromise<any> {
         // We already get a promise from the async call, and could just return that.
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
-        var deferred = new $.Deferred();
+        var deferred = $.Deferred();
         var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
         //when the async call comes back, we massage the text
         promise.done(text => {

@@ -218,7 +218,7 @@ var PageChooser = (function () {
             var pages = $(pageData).filter(".bloom-page[id]");
             _this._indexOfPageToSelect = _this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
             _this.thumbnailClickHandler($(".invisibleThumbCover").eq(_this._indexOfPageToSelect), null);
-        }, "html");
+        });
         request.fail(function (jqXHR, textStatus, errorThrown) {
             console.log("There was a problem reading: " + pageUrl + " see documentation on : " +
                 jqXHR.status + " " + textStatus + " " + errorThrown);
