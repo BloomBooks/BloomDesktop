@@ -93,9 +93,12 @@ function SetupImageContainer(containerDiv) {
 
 function SetImageTooltip(container, img) {
     getIframeChannel().simpleAjaxGet('/bloom/imageInfo?image=' + $(img).attr('src'), function (response) {
+        const kBrowserDpi = 96; // this appears to be constant even on higher dpi screens. See http://www.w3.org/TR/css3-values/#absolute-lengths
+        var dpi = Math.round(response.width / ($(img).width() / kBrowserDpi));
         var info = response.name + "\n"
                 + getFileLengthString(response.bytes) + "\n"
-                + response.width + " x " + response.height;
+                + response.width + " x " + response.height + "\n"
+                + dpi + " dpi";
         container.title = info;
         });
 }
