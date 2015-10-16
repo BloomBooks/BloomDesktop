@@ -176,8 +176,8 @@ class PageChooser {
 
     continueCheckBoxChanged(): void {
         if (!this._forChoosePage) return;
-        let cb = $('#convertAnywayCheckbox');
-        let isCurrentSelectionOriginal = this._selectedGridItem.hasClass('disabled');
+        var cb = $('#convertAnywayCheckbox');
+        var isCurrentSelectionOriginal = this._selectedGridItem.hasClass('disabled');
         $('#addPageButton').prop('disabled', isCurrentSelectionOriginal || !cb.is(':checked'));
     }
 
@@ -212,8 +212,8 @@ class PageChooser {
             this.continueCheckBoxChanged();
         });
         var pageButton = $("#addPageButton", document);
-        let okButtonLabelId = 'EditTab.AddPageDialog.AddThisPageButton';
-        let okButtonLabelText = 'Add This Page';
+        var okButtonLabelId = 'EditTab.AddPageDialog.AddThisPageButton';
+        var okButtonLabelText = 'Add This Page';
         if (this._forChoosePage) {
             okButtonLabelId = 'EditTab.AddPageDialog.ChooseLayoutButton';
             okButtonLabelText = 'Use This Layout';
@@ -241,7 +241,7 @@ class PageChooser {
             $( ".outerCollectionContainer", document).append(collectionToAdd);
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
-            var pages = $( pageData).filter( ".bloom-page[id]" );
+            var pages = $( pageData).filter('.bloom-page[id]').filter('[data-page="extra"]');
             this._indexOfPageToSelect = this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
             this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect), null);
         });
