@@ -46,14 +46,15 @@
 // - Extract content of bubble HTML into its own file
 // - Figure out how to make TypeScript happy with various types
 //   it doens't know about.
-class audioRecording {
+class AudioRecording {
 
     recording: boolean;
     levelCanvas: HTMLCanvasElement;
-    levelCanvasWidth: number = 30;
+    levelCanvasWidth: number = 15;
     levelCanvasHeight: number = 80;
+    hiddenSourceBubbles: JQuery;
 
-    nextSpan() {
+    moveToNextSpan() {
         var current: JQuery = $('.ui-audioCurrent');
         var audioElts = $('.audio-sentence');
         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
@@ -77,7 +78,7 @@ class audioRecording {
         this.setStatus('play', 'enabled'); // Todo: disabled if recording does not exist.
     }
 
-    prevSpan() {
+    moveToPrevSpan() {
         var current: JQuery = $('.ui-audioCurrent');
         var audioElts = $('.audio-sentence');
         var currentIndex = audioElts.index(current);
@@ -203,11 +204,16 @@ class audioRecording {
         });
     }
 
-    wrapButton(which: string, status: string, text: string) {
-        return "<div id='audio-" + which + "-wrapper' class='button-label-wrapper'>" +
+    // Each 'button' in the main list has an actual button (with an image), and in most cases some text below.
+    // It seems to require two divs around the button and span to arrange the button and text vertically
+    // and the row of buttons horizontally. This method generates whatever we decide is needed for each
+    // group, parameterized by the identifier of which button and the text to go below it.
+    // (Note that the full button ID is audio- plus the ID passed in; it is used in other element IDs too.)
+    makeHtmlForOneButtonGroup(buttonId: string, initialStatusClass: string, buttonLabel: string) {
+        return "<div id='audio-" + buttonId + "-wrapper' class='button-label-wrapper'>" +
             "<div>" +
-            "<button id='audio-" + which + "' class='ui-audio-button ui-button " + status + "'/>" +
-            "<span id='audio-" + which + "-label' class='audio-label'>" + text + "</span>" +
+            "<button id='audio-" + buttonId + "' class='ui-audio-button ui-button " + initialStatusClass + "'/>" +
+            "<span id='audio-" + buttonId + "-label' class='audio-label'>" + buttonLabel + "</span>" +
             "</div>" +
             "</div>";
     }
@@ -215,21 +221,21 @@ class audioRecording {
     startRecording() {
         var editable = <qtipInterface>$('div.bloom-editable').first();
         var thisClass = this;
-        // Makes rather blurry icons (have to scale by 3-5x to get useful size);
-        // eventually we probably want our own icon files.
+        this.hiddenSourceBubbles = $('.uibloomSourceTextsBubble');
+        this.hiddenSourceBubbles.hide();
         var bubble = $("<div class='ui-audioTitle'>Talking Book Audio</div>" +
             "<audio id='player'></audio>" +
             "<div class=ui-audioBody>" +
-            this.wrapButton('prev', 'disabled', '') +
-            this.wrapButton('record', 'expected', '1) Rec') +
-            this.wrapButton('play', 'enabled', '2) Check') +
-            this.wrapButton('next', 'enabled', '3) Next') +
+            this.makeHtmlForOneButtonGroup('prev', 'disabled', '') +
+            this.makeHtmlForOneButtonGroup('record', 'expected', '1) Rec') +
+            this.makeHtmlForOneButtonGroup('play', 'enabled', '2) Check') +
+            this.makeHtmlForOneButtonGroup('next', 'enabled', '3) Next') +
            "</div><div class='ui-audioFooter'>" +
                 //"<span id='audio-close' class='ui-icon ui-icon-close'>N</span>" +
             "</div>" +
             "<div class='ui-audioMeter'><canvas id='audio-meter' width='" +
                 this.levelCanvasWidth + "' height='" + this.levelCanvasHeight + "'></canvas>" +
-            "<div><img id='audio-input-dev' src='http://localhost:8089/bloom/audio/Microphone.png' height='20' width='20' alt='mic'>" +
+            "<div><img id='audio-input-dev' src='' height='15' width='15' alt='mic'>" +
             "</div>" +
             "<ul id='audio-devlist'></ul>" +
             "</div>");
@@ -260,27 +266,25 @@ class audioRecording {
             },
             style: {
                 tip: {
-                    tip: {
-                        corner: true,
-                        width: 10,
-                        height: 10,
-                        mimic: 'left center',
-                        offset: 20
-                    },
-                    classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
+                    corner: true,
+                    width: 10,
+                    height: 10,
+                    mimic: 'left center',
+                    offset: 20
                 },
                 classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
             },
             events: {
                 show: function(event, api) {
                     $('#audio-close').click(function () {
+                        thisClass.hiddenSourceBubbles.show();
                         api.hide();
                     });
                     $('#audio-next').click(function () {
-                        thisClass.nextSpan();
+                        thisClass.moveToNextSpan();
                     });
                     $('#audio-prev').click(function () {
-                        thisClass.prevSpan();
+                        thisClass.moveToPrevSpan();
                     });
                     $('#audio-record').mousedown(function () {
                         thisClass.startRecordCurrent();
@@ -742,7 +746,7 @@ if (typeof ($) === "function") {
 
     // Running for real, and jquery properly loaded first
     $(document).ready(function () {
-        audioRecorder = new audioRecording();
+        audioRecorder = new AudioRecording();
         libsynphony = new libSynphony();
     });
 }

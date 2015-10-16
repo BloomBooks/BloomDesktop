@@ -2,9 +2,6 @@
   background-color: #faf7cc !important;
   border-color: #0C8597 !important;
 }
-body .icon-red {
-  background-image: url(images/ui-icons_a83300_256x240.png);
-}
 body #qtip-audio .ui-icon {
   display: inline-block;
 }
@@ -12,7 +9,7 @@ body div.ui-audioTitle {
   color: #0C8597;
   font-size: larger;
   margin-top: 5px;
-  text-align: center;
+  font-size: large;
 }
 body div.ui-audioBody {
   margin-top: 30px;
@@ -90,13 +87,13 @@ body div.ui-audioFooter {
   margin-bottom: 5px;
 }
 body span.ui-audioCurrent {
-  background-color: violet;
+  background-color: #faf7cc;
 }
 body div.ui-audioMeter {
   float: right;
   position: absolute;
-  top: 10px;
-  right: 10px;
+  bottom: 5px;
+  right: 5px;
 }
 body #audio-devlist {
   display: none;
@@ -112,6 +109,6 @@ body #audio-devlist li:hover {
   background-color: lightgray;
 }
 body #audio-input-dev {
-  margin-top: 5px;
-  margin-left: 5px;
+  margin-top: 2px;
+  width: 15px;
 }
