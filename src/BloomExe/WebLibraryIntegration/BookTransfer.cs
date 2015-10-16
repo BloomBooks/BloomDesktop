@@ -33,16 +33,16 @@ namespace Bloom.WebLibraryIntegration
 	{
 		private BloomParseClient _parseClient;
 		private BloomS3Client _s3Client;
-		private readonly HtmlThumbNailer _htmlThumbnailer;
+		private readonly BookThumbNailer _thumbnailer;
 		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
 
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
-		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, BookDownloadStartingEvent bookDownloadStartingEvent)
+		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, BookThumbNailer htmlThumbnailer, BookDownloadStartingEvent bookDownloadStartingEvent)
 		{
 			this._parseClient = bloomParseClient;
 			this._s3Client = bloomS3Client;
-			_htmlThumbnailer = htmlThumbnailer;
+			_thumbnailer = htmlThumbnailer;
 			_bookDownloadStartingEvent = bookDownloadStartingEvent;
 		}
 
@@ -626,7 +626,7 @@ namespace Bloom.WebLibraryIntegration
 						bookSelection);
 					currentEditableCollectionSelection.SelectCollection(collection);
 				}
-				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _htmlThumbnailer);
+				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _thumbnailer);
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null);
 				string dummy;
@@ -662,9 +662,9 @@ namespace Bloom.WebLibraryIntegration
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
-			MakeThumbnail(book, 70, invokeTarget); // this is a sacrificial one to prime the pump, to fix BL-2673
-			MakeThumbnail(book, 70, invokeTarget);
-			MakeThumbnail(book, 256, invokeTarget);
+			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget); // this is a sacrificial one to prime the pump, to fix BL-2673
+			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget);
+			_thumbnailer.MakeThumbnailOfCover(book, 256, invokeTarget);
 			var uploadPdfPath = UploadPdfPath(bookFolder);
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
@@ -686,42 +686,6 @@ namespace Bloom.WebLibraryIntegration
 			// Do NOT use ChangeExtension here. If the folder name has a period (e.g.: "Look at the sky. What do you see")
 			// ChangeExtension will strip of the last sentence, which is not what we want (and not what BloomLibrary expects).
 			return Path.Combine(bookFolder, Path.GetFileName(bookFolder) + ".pdf");
-		}
-
-		void MakeThumbnail(Book.Book book, int height, Control invokeTarget)
-		{
-			bool done = false;
-			string error = null;
-
-			HtmlThumbNailer.ThumbnailOptions options = new HtmlThumbNailer.ThumbnailOptions()
-			{
-				CenterImageUsingTransparentPadding = false,
-				//since this is destined for HTML, it's much easier to handle if there is no pre-padding
-
-				Height=height,
-				Width =-1,
-				FileName = "thumbnail-"+height+".png"
-			};
-
-			book.RebuildThumbNailAsync(options, (info, image) => done = true,
-				(info, ex) =>
-				{
-					done = true;
-					throw ex;
-				});
-			var giveUpTime = DateTime.Now.AddSeconds(15);
-			while (!done && DateTime.Now < giveUpTime)
-			{
-				Thread.Sleep(100);
-				Application.DoEvents();
-				// In the context of bulk upload, when a model dialog is the only window, apparently Application.Idle is never invoked.
-				// So we need a trick to allow the thumbnailer to actually make some progress, since it usually works while idle.
-				this._htmlThumbnailer.Advance(invokeTarget);
-			}
-			if (!done)
-			{
-				throw new ApplicationException(string.Format("Gave up waiting for the {0} to be created. This usually means Bloom is busy making thumbnails for other things. Wait a bit, and try again.", options.FileName));
-			}
 		}
 
 		internal bool IsThisVersionAllowedToUpload()

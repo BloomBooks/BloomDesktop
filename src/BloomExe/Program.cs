@@ -181,7 +181,7 @@ namespace Bloom
 							Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 							LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-								_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
+								_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent())/*not hooked to anything*/;
 							transfer.HandleBloomBookOrder(args[0]);
 							PathToBookDownloadedAtStartup = transfer.LastBookDownloadedPath;
 
@@ -227,7 +227,7 @@ namespace Bloom
 							Browser.SetUpXulRunner();
 								Browser.XulRunnerShutdown += OnXulRunnerShutdown;
 							var transfer = new BookTransfer(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
-								_applicationContainer.HtmlThumbnailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
+								_applicationContainer.BookThumbNailer, new BookDownloadStartingEvent()) /*not hooked to anything*/;
 							transfer.UploadFolder(args[1], _applicationContainer);
 							return;
 						}

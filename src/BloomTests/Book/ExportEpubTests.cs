@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using Bloom;
 using Bloom.Book;
 using BloomTemp;
 using ICSharpCode.SharpZipLib.Zip;
@@ -50,7 +51,7 @@ namespace BloomTests.Book
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 				maker.SaveEpub(epubPath);
 			Assert.That(File.Exists(epubPath));
 			var zip = new ZipFile(epubPath);
@@ -139,6 +140,11 @@ namespace BloomTests.Book
 			Assert.That(fontCssData, Is.StringContaining("@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:italic; src:url(AndikaNewBasic-BI.ttf) format('opentype');}"));
 		}
 
+		private EpubMakerAdjusted CreateEpubMaker(Bloom.Book.Book book)
+		{
+			return new EpubMakerAdjusted(book, new BookThumbNailer(_thumbnailer.Object));
+		}
+
 		/// <summary>
 		/// Motivated by "El Nino" from bloom library, which (to defeat caching?) has such a query param in one of its src attrs.
 		/// </summary>
@@ -167,7 +173,7 @@ namespace BloomTests.Book
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 				maker.SaveEpub(epubPath);
 			Assert.That(File.Exists(epubPath));
 			var zip = new ZipFile(epubPath);
@@ -241,7 +247,7 @@ namespace BloomTests.Book
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 				maker.SaveEpub(epubPath);
 			Assert.That(File.Exists(epubPath));
 			var zip = new ZipFile(epubPath);
@@ -311,7 +317,7 @@ namespace BloomTests.Book
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 				maker.SaveEpub(epubPath);
 			Assert.That(File.Exists(epubPath));
 			var zip = new ZipFile(epubPath);
@@ -395,7 +401,7 @@ namespace BloomTests.Book
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 			{
 				maker.Unpaginated = true;
 				maker.SaveEpub(epubPath);
@@ -458,7 +464,7 @@ namespace BloomTests.Book
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 				maker.SaveEpub(epubPath);
 			Assert.That(File.Exists(epubPath));
 			var zip = new ZipFile(epubPath);
@@ -534,7 +540,7 @@ namespace BloomTests.Book
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 				maker.SaveEpub(epubPath);
 			Assert.That(File.Exists(epubPath));
 			var zip = new ZipFile(epubPath);
@@ -622,7 +628,7 @@ namespace BloomTests.Book
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 				maker.SaveEpub(epubPath);
 			Assert.That(File.Exists(epubPath));
 			var zip = new ZipFile(epubPath);
@@ -694,7 +700,7 @@ namespace BloomTests.Book
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 				maker.SaveEpub(epubPath);
 			Assert.That(File.Exists(epubPath));
 			var zip = new ZipFile(epubPath);
@@ -768,7 +774,7 @@ namespace BloomTests.Book
 
 	class EpubMakerAdjusted : EpubMaker
 	{
-		public EpubMakerAdjusted(Bloom.Book.Book book) : base()
+		public EpubMakerAdjusted(Bloom.Book.Book book, BookThumbNailer thumbNailer) : base(thumbNailer)
 		{
 			this.Book = book;
 		}

@@ -192,6 +192,7 @@
     </Compile>
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
+    <Compile Include="BookThumbNailer.cs" />
     <Compile Include="Book\BookInfo.cs" />
     <Compile Include="Book\BookServer.cs" />
     <Compile Include="Book\CurrentEditableCollectionSelection.cs" />

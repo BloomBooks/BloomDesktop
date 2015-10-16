@@ -157,7 +157,7 @@ namespace Bloom
 							new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(),
 								c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(),
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
-								c.Resolve<CurrentEditableCollectionSelection>())).InstancePerLifetimeScope();
+								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>())).InstancePerLifetimeScope();
 
 					// Keep in sync with OptimizedFileLocator: it wants to return the object created here.
 					builder.Register<IChangeableFileLocator>(
@@ -223,7 +223,7 @@ namespace Bloom
 //				}
 //				else
 //				{
-					_httpServer = new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent));
+					_httpServer = new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent), parentContainer.Resolve<BookThumbNailer>());
 //				}
 					builder.Register((c => _httpServer)).AsSelf().SingleInstance();
 
