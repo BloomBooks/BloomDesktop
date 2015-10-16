@@ -97,14 +97,26 @@
   },
   {
     "outputFile": "epub/baseEpub.css",
-    "inputFile": "epub/baseEpub.less"
+    "inputFile": "epub/baseEpub.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
   },
   {
     "outputFile": "bookLayout/CommonBasePageEpub.css",
-    "inputFile": "bookLayout/CommonBasePageEpub.less"
-  },
+    "inputFile": "bookLayout/CommonBasePageEpub.less",
+     "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+ },
   {
     "outputFile": "bookLayout/basePage.css",
-    "inputFile": "bookLayout/basePage.less"
+    "inputFile": "bookLayout/basePage.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
   }
 ]

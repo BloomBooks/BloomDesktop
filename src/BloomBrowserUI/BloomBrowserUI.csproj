@@ -99,7 +99,6 @@
     <Content Include="bookEdit\img\moveDivButton.png" />
     <Content Include="bookEdit\img\pasteImageButtonLarge.png" />
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
-    <Content Include="bookEdit\js\toolbar\jquery.d.ts" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
     <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
@@ -127,9 +126,6 @@
     <Content Include="bookEdit\StyleEditor\StyleEditor.css">
       <DependentUpon>StyleEditor.less</DependentUpon>
     </Content>
-    <Content Include="bookEdit\StyleEditor\StyleEditor.min.css">
-      <DependentUpon>StyleEditor.css</DependentUpon>
-    </Content>
     <Content Include="bookEdit\test\cSharpDependencyInjector.js" />
     <Content Include="bookEdit\test\interIframeChannelInitializer.js" />
     <Content Include="bookEdit\test\libsynphony\jquery.text-markup.test.js" />
@@ -142,9 +138,6 @@
     <Content Include="bookEdit\test\SynphonyApi.Test.js" />
     <Content Include="bookEdit\TopicChooser\topicChooser.css">
       <DependentUpon>topicChooser.less</DependentUpon>
-    </Content>
-    <Content Include="bookEdit\TopicChooser\topicChooser.min.css">
-      <DependentUpon>topicChooser.css</DependentUpon>
     </Content>
     <Content Include="bookLayout\.guidsForInstaller.xml" />
     <Content Include="bookLayout\basePage.min.css">
@@ -323,7 +316,6 @@
       <DependentUpon>compilerconfig.json</DependentUpon>
     </Content>
     <Content Include="packages.config" />
-    <Content Include="epub\baseEpub.css.map" />
     <Content Include="epub\baseEpub.less" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
