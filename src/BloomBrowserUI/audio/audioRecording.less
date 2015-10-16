@@ -7,12 +7,9 @@ body {
         background-color: @recordQtipColor !important;
         border-color: @recordQtipForeground !important; // important to overcome .uibloomSourceTextsBubble
      }
-    .icon-red {
-        background-image: url(images/ui-icons_a83300_256x240.png)
-    }
     #qtip-audio .ui-icon {display:inline-block }
 
-    div.ui-audioTitle {color: @recordQtipForeground; font-size:larger; margin-top: 5px; text-align:center}
+    div.ui-audioTitle {color: @recordQtipForeground; font-size:larger; margin-top: 5px; font-size:large;}
 
     div.ui-audioBody {margin-top: 30px; margin-bottom: 15px}
     button.ui-audio-button {height:40px; width: 40px; border:none; background-size:contain;background-color:transparent;background-repeat:no-repeat;display:block;margin-bottom:5px;}
@@ -38,8 +35,8 @@ body {
    
     div.ui-audioFooter {margin-top: 30px; margin-bottom: 5px}
      
-    span.ui-audioCurrent {background-color: violet }
-    div.ui-audioMeter {float:right;position:absolute;top:10px;right:10px}
+    span.ui-audioCurrent {background-color: @recordQtipColor }
+    div.ui-audioMeter {float:right;position:absolute;bottom:5px;right:5px}
 
      // hidden unless we need to choose between three or more input devices.
      #audio-devlist {display:none;position:absolute;background-color:white; width:200px;
@@ -47,5 +44,5 @@ body {
                           &:hover {background-color:lightgray}
                      }
      }
-     #audio-input-dev  {margin-top: 5px; margin-left: 5px;}
+     #audio-input-dev  {margin-top: 2px; width:15px;}
 }

@@ -35,6 +35,7 @@ var scripts = [
     'lib/long-press/jquery.mousewheel.js',
     'lib/jquery.alphanum.js',
     'lib/long-press/jquery.longpress.js',
+    // synphony stuff is currently needed just to support finding sentences in audioRecording.
     'bookEdit/js/libsynphony/xregexp-all-min.js',
     'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
     'bookEdit/js/libsynphony/synphony_lib.js',
