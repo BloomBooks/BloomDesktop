@@ -38,6 +38,7 @@ namespace Bloom.web
 		private bool _sampleTextsChanged = true;
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
 		private BloomFileLocator _fileLocator;
+		private readonly BookThumbNailer _thumbNailer;
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -47,8 +48,10 @@ namespace Bloom.web
 		internal EnhancedImageServer() : base( new RuntimeImageProcessor(new BookRenamedEvent()))
 		{ }
 
-		public EnhancedImageServer(RuntimeImageProcessor cache): base(cache)
-		{ }
+		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer): base(cache)
+		{
+			_thumbNailer = thumbNailer;
+		}
 
 		/// <summary>
 		/// This constructor is used for unit testing
@@ -642,7 +645,7 @@ namespace Bloom.web
 			if (templatePage == null)
 				templatePage = template.GetPages().FirstOrDefault(); // may get something useful?? or throw??
 
-			Image image = template.GetThumbnailForPage(templatePage, isLandscape);
+			Image image = _thumbNailer.GetThumbnailForPage(template, templatePage, isLandscape);
 
 			// The clone here is an attempt to prevent an unexplained exception complaining that the source image for the bitmap is in use elsewhere.
 			using (Bitmap b = new Bitmap((Image)image.Clone()))

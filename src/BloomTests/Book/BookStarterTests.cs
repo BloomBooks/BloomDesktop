@@ -127,7 +127,7 @@ namespace BloomTests.Book
 				});
 			var server = new BookServer((bookInfo, storage) =>
 			{
-				return new Bloom.Book.Book(bookInfo, storage, null, collectionSettings, null,
+				return new Bloom.Book.Book(bookInfo, storage, null, collectionSettings,
 					new PageSelection(),
 					new PageListChangedEvent(), new BookRefreshEvent());
 			}, path => new BookStorage(path, _fileLocator, null, collectionSettings), () => _starter, null);

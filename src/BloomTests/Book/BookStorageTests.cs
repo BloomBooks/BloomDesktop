@@ -215,7 +215,7 @@ namespace BloomTests.Book
 		public void BringBookUpToDate_ConvertsTagsToJsonWithExpectedDefaults()
 		{
 			var storage = GetInitialStorage();
-			var locator = (FileLocator)storage.GetFileLocator();
+			var locator = (FileLocator) storage.GetFileLocator();
 			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
 			locator.AddPath(root.CombineForPath("bookLayout"));
 			var folder = storage.FolderPath;
@@ -229,25 +229,19 @@ namespace BloomTests.Book
 					Language2Iso639Code = "en",
 					Language3Iso639Code = "fr"
 				});
-			// We can't use a Moq here (at least with Moq 4.2.1409.1722) for HtmlThumbNailer since
-			// that doesn't call Dispose, causing other tests to fail.
-			// using (var htmlThumbNailer = new Moq.Mock<HtmlThumbNailer>(new object[] { new NavigationIsolator() }).Object)
-			using (var htmlThumbNailer = new HtmlThumbNailer(new NavigationIsolator()))
-			{
-				var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
-					collectionSettings,
-					htmlThumbNailer, new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
+			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
+				collectionSettings,
+				new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
 
-				book.BringBookUpToDate(new NullProgress());
+			book.BringBookUpToDate(new NullProgress());
 
-				Assert.That(!File.Exists(tagsPath), "The tags.txt file should have been removed");
-				// BL-2163, we are no longer migrating suitableForMakingShells
-				Assert.That(storage.MetaData.IsSuitableForMakingShells, Is.False);
-				Assert.That(storage.MetaData.IsFolio, Is.True);
-				Assert.That(storage.MetaData.IsExperimental, Is.True);
-				Assert.That(storage.MetaData.BookletMakingIsAppropriate, Is.True);
-				Assert.That(storage.MetaData.AllowUploading, Is.True);
-			}
+			Assert.That(!File.Exists(tagsPath), "The tags.txt file should have been removed");
+			// BL-2163, we are no longer migrating suitableForMakingShells
+			Assert.That(storage.MetaData.IsSuitableForMakingShells, Is.False);
+			Assert.That(storage.MetaData.IsFolio, Is.True);
+			Assert.That(storage.MetaData.IsExperimental, Is.True);
+			Assert.That(storage.MetaData.BookletMakingIsAppropriate, Is.True);
+			Assert.That(storage.MetaData.AllowUploading, Is.True);
 		}
 
 		[Test]

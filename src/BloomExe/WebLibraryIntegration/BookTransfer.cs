@@ -33,16 +33,16 @@ namespace Bloom.WebLibraryIntegration
 	{
 		private BloomParseClient _parseClient;
 		private BloomS3Client _s3Client;
-		private readonly HtmlThumbNailer _htmlThumbnailer;
+		private readonly BookThumbNailer _thumbnailer;
 		private readonly BookDownloadStartingEvent _bookDownloadStartingEvent;
 
 		public event EventHandler<BookDownloadedEventArgs> BookDownLoaded;
 
-		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, HtmlThumbNailer htmlThumbnailer, BookDownloadStartingEvent bookDownloadStartingEvent)
+		public BookTransfer(BloomParseClient bloomParseClient, BloomS3Client bloomS3Client, BookThumbNailer htmlThumbnailer, BookDownloadStartingEvent bookDownloadStartingEvent)
 		{
 			this._parseClient = bloomParseClient;
 			this._s3Client = bloomS3Client;
-			_htmlThumbnailer = htmlThumbnailer;
+			_thumbnailer = htmlThumbnailer;
 			_bookDownloadStartingEvent = bookDownloadStartingEvent;
 		}
 
@@ -626,7 +626,7 @@ namespace Bloom.WebLibraryIntegration
 						bookSelection);
 					currentEditableCollectionSelection.SelectCollection(collection);
 				}
-				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _htmlThumbnailer);
+				var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, null, server, _thumbnailer);
 				publishModel.PageLayout = book.GetLayout();
 				var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), this, null, null);
 				string dummy;
@@ -662,9 +662,9 @@ namespace Bloom.WebLibraryIntegration
 			book.BookInfo.Save();
 			progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingThumbnail", "Making thumbnail image..."));
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
-			book.MakeThumbnailOfCover(70, invokeTarget); // this is a sacrificial one to prime the pump, to fix BL-2673
-			book.MakeThumbnailOfCover(70, invokeTarget);
-			book.MakeThumbnailOfCover(256, invokeTarget);
+			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget); // this is a sacrificial one to prime the pump, to fix BL-2673
+			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget);
+			_thumbnailer.MakeThumbnailOfCover(book, 256, invokeTarget);
 			var uploadPdfPath = UploadPdfPath(bookFolder);
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
