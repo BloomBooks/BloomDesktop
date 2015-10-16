@@ -170,6 +170,7 @@
     <Compile Include="CollectionTab\LibraryModelTests.cs" />
     <Compile Include="CollectionTab\TestLibraryModel.cs" />
     <Compile Include="Collection\BloomPackInstallerTests.cs" />
+    <Compile Include="Edit\BloomClipboardTests.cs" />
     <Compile Include="HelpLauncherTests.cs" />
     <Compile Include="Chorus\MergingTests.cs" />
     <Compile Include="Edit\ConfiguratorTest.cs" />
