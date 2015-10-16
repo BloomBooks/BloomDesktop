@@ -24,12 +24,12 @@ class TopicChooser {
                 at: 'top',
                 of: $('.bloom-page')
             },
-            buttons: {
-                "OK": {
+            buttons: [
+                {
                     id: "OKButton",
                     text: "OK",
                     width: 100,
-                    click: function () {
+                    click: function() {
                         var t = $("ol#topicList li.ui-selected");
                         //set or clear the topic variable in our data-div
                         if (t.length) {
@@ -44,8 +44,8 @@ class TopicChooser {
 
                             //for translation convenience, we use "NoTopic" as the key during UI. But when storing, it's cleaner to just save empty string if we don't have a topic
                             if (key == "NoTopic") {
-                                 //this will clear all of them, for everylanguage
-                                 $("div[data-book='topic']").text("");
+                                //this will clear all of them, for everylanguage
+                                $("div[data-book='topic']").text("");
                             } else {
                                 $(englishDiv).text(key);
 
@@ -60,7 +60,7 @@ class TopicChooser {
                         $(this).dialog("close");
                     }
                 }
-            }
+            ]
         });
 
         //make a double click on an item close the dialog

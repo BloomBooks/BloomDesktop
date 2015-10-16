@@ -682,8 +682,10 @@ class StyleEditor {
                         if (!editor.xmatterMode) {
                             $('#styleSelect').change(function() { editor.selectStyle(); });
                             (<alphanumInterface>$('#style-select-input')).alphanum({ allowSpace: false, preventLeadingNumeric: true });
-                            $('#style-select-input').on('input', function() { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
-                            $('#style-select-input').get(0).trimNotification = function() { editor.styleStateChange('invalid-characters'); }
+                            $('#style-select-input').on('input', function () { editor.styleInputChanged(); }); // not .change(), only fires on loss of focus
+                            // Here I'm taking advantage of JS by pushing an extra field into an object whose declaration does not allow it,
+                            // so typescript checking just has to be worked around. This enables a hack in jquery.alphanum.js.
+                            (<any>$('#style-select-input').get(0)).trimNotification = function() { editor.styleStateChange('invalid-characters'); }
                             $('#show-createStyle').click(function(event) {
                                 event.preventDefault();
                                 editor.showCreateStyle();
@@ -708,9 +710,9 @@ class StyleEditor {
 
                 $('html').off('click.toolbar');
                 $('html').on("click.toolbar", function(event) {
-                    if (event.target != toolbar &&
+                    if (event.target !== toolbar.get(0) &&
                         toolbar.has(event.target).length === 0 &&
-                        $(event.target.parent) != toolbar &&
+                        $(event.target).parent() !== toolbar &&
                         toolbar.has(event.target).length === 0 &&
                         toolbar.is(":visible")) {
                         toolbar.remove();
@@ -803,7 +805,7 @@ class StyleEditor {
         if(newState == 'enteringStyle' && $('#style-select-input').val()) {
             $('#create-button').removeAttr('disabled');
         } else {
-            $('#create-button').attr('disabled', true);
+            $('#create-button').attr('disabled', 'true');
         }
         this.stateChange("style-group", newState);
     }
@@ -1190,7 +1192,7 @@ class StyleEditor {
         var current = this.getFormatValues();
         this.ignoreControlChanges = true;
         $('#font-select').val(current.fontName);
-        $('#size-select').val(current.ptSize);
+        $('#size-select').val(current.ptSize.toString());
         $('#line-height-select').val(current.lineHeight);
         $('#word-space-select').val(current.wordSpacing);
         var buttonIds = this.getButtonIds();

@@ -113,7 +113,7 @@ var bloomSourceBubbles = (function () {
                 var languageName = localizationManager.getLanguageName(iso);
                 if (!languageName)
                     languageName = iso;
-                var shouldShowOnPage = (iso === vernacularLang) || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
+                var shouldShowOnPage = (iso === vernacularLang) /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
                 // in translation mode, don't include the vernacular in the tabs, because the tabs are being moved to the bubble
                 if (iso !== "z" && (shellEditingMode || !shouldShowOnPage)) {
                     $(list).append('<li id="' + iso + '"><a class="sourceTextTab" href="#' + iso + '">' + languageName + '</a></li>');
@@ -300,7 +300,7 @@ var bloomSourceBubbles = (function () {
                             $tip.addClass('passive-bubble');
                             $tip.attr('data-max-height', maxHeight);
                         }
-                    }
+                    },
                 }
             });
             bloomSourceBubbles.SetupTooltips($this);

@@ -477,3 +477,8 @@ h2 {
 .customPage .split-pane-component {
   min-height: 1.5em;
 }
+.bloom-backgroundImage {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}

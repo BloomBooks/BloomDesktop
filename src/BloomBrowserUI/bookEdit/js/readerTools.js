@@ -131,12 +131,8 @@ function initializeDecodableRT() {
     $(window).resize(function () {
         resizeWordList(false);
     });
-    setTimeout(function () {
-        resizeWordList();
-    }, 200);
-    setTimeout(function () {
-        $.divsToColumns('letter');
-    }, 100);
+    setTimeout(function () { resizeWordList(); }, 200);
+    setTimeout(function () { $.divsToColumns('letter'); }, 100);
 }
 function initializeLeveledRT() {
     // load synphony settings
@@ -199,9 +195,7 @@ function initializeSynphony(settingsFileContent) {
  * @param textsList List of file names delimited by \r
  */
 function setTextsList(textsList) {
-    model.texts = textsList.split(/\r/).filter(function (e) {
-        return e ? true : false;
-    });
+    model.texts = textsList.split(/\r/).filter(function (e) { return e ? true : false; });
     model.getNextSampleFile();
 }
 function setDefaultFont(fontName) {
@@ -300,8 +294,6 @@ function resizeWordList(startTimeout) {
         }
     }
     if (startTimeout)
-        setTimeout(function () {
-            resizeWordList();
-        }, 500);
+        setTimeout(function () { resizeWordList(); }, 500);
 }
 //# sourceMappingURL=readerTools.js.map

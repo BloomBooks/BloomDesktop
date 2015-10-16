@@ -53,9 +53,7 @@ var DirectoryWatcher = (function () {
     DirectoryWatcher.prototype.restartTimer = function (self) {
         if (self.run === true) {
             if (self.refreshInterval > 0) {
-                setTimeout(function () {
-                    self.checkNow(self);
-                }, self.refreshInterval * 1000);
+                setTimeout(function () { self.checkNow(self); }, self.refreshInterval * 1000);
             }
         }
     };
@@ -70,7 +68,8 @@ var DirectoryWatcher = (function () {
         if (postKeyValueDataObject)
             ajaxSettings['data'] = postKeyValueDataObject;
         // we are expecting the value returned in 'data' to be either 'yes' or 'no'
-        $.ajax(ajaxSettings).done(function (data) {
+        $.ajax(ajaxSettings)
+            .done(function (data) {
             self.ifChangedFireEvents(data, self);
         });
     };
