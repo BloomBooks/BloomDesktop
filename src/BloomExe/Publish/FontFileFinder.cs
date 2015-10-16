@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#if !__MonoCS__
 using System.Windows.Media;
+#endif
 
 namespace Bloom.Publish
 {
@@ -44,7 +46,11 @@ namespace Bloom.Publish
 
 		public FontGroup GetGroupForFont(string fontName)
 		{
-		// Review Linux: very likely something here is not portable.
+#if __MonoCS__
+			// Need something totally different for Linux: System.Windows.Media does not
+			// exist in Mono 3.4.
+			return null;
+#else
 			if (FontNameToFiles == null)
 			{
 				FontNameToFiles = new Dictionary<string, FontGroup>();
@@ -104,6 +110,7 @@ namespace Bloom.Publish
 			FontGroup result;
 			FontNameToFiles.TryGetValue(fontName, out result);
 			return result;
+#endif
 		}
 	}
 }

@@ -10,7 +10,9 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+#if !__MonoCS__
 using System.Windows.Media;
+#endif
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.Publish;
