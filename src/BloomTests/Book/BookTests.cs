@@ -149,7 +149,7 @@ namespace BloomTests.Book
 				Language1Iso639Code = "th", Language2Iso639Code = "fr", Language3Iso639Code = "es" });
 			var book =  new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
 				_collectionSettings,
-				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+				_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 
 			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code);
 

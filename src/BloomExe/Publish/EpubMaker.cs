@@ -71,6 +71,7 @@ namespace Bloom.Book
 		// readium HTML.
 		private TemporaryFolder _stagingFolder;
 		public string StagingDirectory { get; private set; }
+		private BookThumbNailer _thumbNailer;
 
 		/// <summary>
 		/// Set to true for unpaginated output. This is something of a misnomer...any better ideas?
@@ -80,6 +81,11 @@ namespace Bloom.Book
 		/// add more if needed.
 		/// </summary>
 		public bool Unpaginated { get; set; }
+
+		public EpubMaker(BookThumbNailer thumbNailer)
+		{
+			_thumbNailer = thumbNailer;
+		}
 
 		/// <summary>
 		/// Generate all the files we will zip into the epub for the current book into the StagingFolder.
@@ -120,7 +126,7 @@ namespace Bloom.Book
 			const string coverPageImageFile = "thumbnail-256.png";
 			// This thumbnail is otherwise only made when uploading, so it may be out of date.
 			// Just remake it every time.
-			Book.MakeThumbnailOfCover(256, Form.ActiveForm);
+			_thumbNailer.MakeThumbnailOfCover(Book, 256, Form.ActiveForm);
 			CopyFileToEpub(Path.Combine(Book.FolderPath, coverPageImageFile));
 
 			EmbedFonts(); // must call after copying stylesheets

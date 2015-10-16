@@ -42,12 +42,6 @@ namespace Bloom.Book
 			get { return _canDelete; }
 		}
 
-
-		public override void GetThumbNailOfBookCoverAsync(HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Image> callback, Action<Exception> errorCallback)
-		{
-			callback(Resources.Error70x70);
-		}
-
 		public HtmlDom GetEditableHtmlDomForPage(IPage page)
 		{
 			return GetErrorDOM();
