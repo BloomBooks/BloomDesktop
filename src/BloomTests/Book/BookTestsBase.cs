@@ -119,7 +119,7 @@ namespace BloomTests.Book
 			_collectionSettings = collectionSettings;
 			return new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
 				_collectionSettings,
-				_thumbnailer.Object, _pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+				_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 		}
 
 		protected virtual Bloom.Book.Book CreateBook()

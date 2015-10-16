@@ -23,16 +23,14 @@ namespace Bloom.web
 		private readonly CollectionSettings _collectionSettings;
 		private readonly BookCollection _booksInProjectLibrary;
 		private readonly SourceCollectionsList _sourceCollectionsesList;
-		private readonly HtmlThumbNailer _thumbNailer;
 
 		public BloomServer(CollectionSettings collectionSettings, BookCollection booksInProjectLibrary,
-						   SourceCollectionsList sourceCollectionsesList, HtmlThumbNailer thumbNailer)
-			:base(new RuntimeImageProcessor(new BookRenamedEvent()))
+						   SourceCollectionsList sourceCollectionsesList, BookThumbNailer thumbNailer)
+			:base(new RuntimeImageProcessor(new BookRenamedEvent()), thumbNailer)
 		{
 			_collectionSettings = collectionSettings;
 			_booksInProjectLibrary = booksInProjectLibrary;
 			_sourceCollectionsesList = sourceCollectionsesList;
-			_thumbNailer = thumbNailer;
 		}
 
 		protected override bool ProcessRequest(IRequestInfo info)

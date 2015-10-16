@@ -63,11 +63,11 @@ namespace Bloom.Publish
 		private readonly CurrentEditableCollectionSelection _currentBookCollectionSelection;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly BookServer _bookServer;
-		private readonly HtmlThumbNailer _htmlThumbNailer;
+		private readonly BookThumbNailer _thumbNailer;
 		private string _lastDirectory;
 
 		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings,
-			BookServer bookServer, HtmlThumbNailer htmlThumbNailer)
+			BookServer bookServer, BookThumbNailer thumbNailer)
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
@@ -76,7 +76,7 @@ namespace Bloom.Publish
 			ShowCropMarks=false;
 			_collectionSettings = collectionSettings;
 			_bookServer = bookServer;
-			_htmlThumbNailer = htmlThumbNailer;
+			_thumbNailer = thumbNailer;
 			bookSelection.SelectionChanged += new EventHandler(OnBookSelectionChanged);
 			//we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
 		}
@@ -452,7 +452,7 @@ namespace Bloom.Publish
 				Width = width
 			};
 			dom.UseOriginalImages = true; // apparently these thumbnails can be big...anyway we want printable images.
-			_htmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions,onReady, onError);
+			_thumbNailer.HtmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions,onReady, onError);
 		}
 
 		public IEnumerable<ToolStripItem> GetExtensionMenuItems()
@@ -495,7 +495,7 @@ namespace Bloom.Publish
 		internal void StageEpub()
 		{
 			if (_epubMaker == null)
-				_epubMaker = new EpubMaker();
+				_epubMaker = new EpubMaker(_thumbNailer);
 			_epubMaker.Book = BookSelection.CurrentSelection;
 
 			_epubMaker.Unpaginated = true; // Enhance: UI?

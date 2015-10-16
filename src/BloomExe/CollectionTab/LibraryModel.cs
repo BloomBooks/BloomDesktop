@@ -37,6 +37,7 @@ namespace Bloom.CollectionTab
 		private readonly BookServer _bookServer;
 		private readonly CurrentEditableCollectionSelection _currentEditableCollectionSelection;
 		private List<BookCollection> _bookCollections;
+		private readonly BookThumbNailer _thumbNailer;
 
 		public LibraryModel(string pathToLibrary, CollectionSettings collectionSettings,
 			SendReceiver sendReceiver,
@@ -46,7 +47,8 @@ namespace Bloom.CollectionTab
 			EditBookCommand editBookCommand,
 			CreateFromSourceBookCommand createFromSourceBookCommand,
 			BookServer bookServer,
-			CurrentEditableCollectionSelection currentEditableCollectionSelection)
+			CurrentEditableCollectionSelection currentEditableCollectionSelection,
+			BookThumbNailer thumbNailer)
 		{
 			_bookSelection = bookSelection;
 			_pathToLibrary = pathToLibrary;
@@ -57,6 +59,7 @@ namespace Bloom.CollectionTab
 			_editBookCommand = editBookCommand;
 			_bookServer = bookServer;
 			_currentEditableCollectionSelection = currentEditableCollectionSelection;
+			_thumbNailer = thumbNailer;
 
 			createFromSourceBookCommand.Subscribe(CreateFromSourceBook);
 		}
@@ -238,7 +241,7 @@ namespace Bloom.CollectionTab
 
 		public void UpdateThumbnailAsync(Book.Book book, HtmlThumbNailer.ThumbnailOptions thumbnailOptions, Action<Book.BookInfo, Image> callback, Action<Book.BookInfo, Exception> errorCallback)
 		{
-			book.RebuildThumbNailAsync(thumbnailOptions, callback, errorCallback);
+			_thumbNailer.RebuildThumbNailAsync(book, thumbnailOptions, callback, errorCallback);
 		}
 
 		public void MakeBloomPack(string path, bool forReaderTools = false)
