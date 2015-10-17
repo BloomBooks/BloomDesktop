@@ -162,7 +162,14 @@ function GetRawImageUrl(imgOrDivWithBackgroundImage) {
     }
     return "";
 }
-
+function SetImageElementUrl(imgOrDivWithBackgroundImage, url) {
+    if (imgOrDivWithBackgroundImage.tagName.toLowerCase() === "img") {
+        imgOrDivWithBackgroundImage.src = url;
+    }
+    else {
+        imgOrDivWithBackgroundImage.style = "background-image:url('"+url+"')";
+    } 
+}
 //While the actual metadata is embedded in the images (Bloom/palaso does that), Bloom sticks some metadata in data-* attributes
 // so that we can easily & quickly get to the here.
 function SetOverlayForImagesWithoutMetadata(container) {
