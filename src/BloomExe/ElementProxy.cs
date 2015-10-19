@@ -51,7 +51,7 @@ namespace Bloom
 			{
 				if (_xmlElement == null)
 				{
-					return _geckoElement.ClassName;
+					return _geckoElement.NodeName;
 				}
 				else
 				{
