@@ -741,8 +741,8 @@ namespace Bloom.Edit
 			foreach (var node in imageContainer.ChildNodes)
 			{
 				var imageElement = node as GeckoHtmlElement;
-				if (imageElement != null && ( imageElement.TagName.ToLowerInvariant() == "img") ||
-												imageElement.OuterHtml.Contains("background-image"))
+				if (imageElement != null && ( imageElement.TagName.ToLowerInvariant() == "img" ||
+												imageElement.OuterHtml.Contains("background-image")))
 				{
 					return imageElement;
 				}
