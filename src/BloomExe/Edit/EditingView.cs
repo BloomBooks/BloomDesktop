@@ -779,8 +779,7 @@ namespace Bloom.Edit
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
-			var src = imageElement.GetAttribute ("src");
-			string currentPath = HttpUtilityFromMono.UrlDecode(src);
+			string currentPath = HtmlDom.GetImageElementUrl(imageElement).NotEncoded;
 
 			if (!CheckIfLockedAndWarn(currentPath))
 				return;
