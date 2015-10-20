@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
@@ -330,7 +331,32 @@ namespace Bloom.web
 					{
 						result.width = img.Width;
 						result.height = img.Height;
-					}
+						switch (img.PixelFormat)
+						{
+							case PixelFormat.Format32bppArgb:
+							case PixelFormat.Format32bppRgb:
+							case PixelFormat.Format32bppPArgb:
+								result.bitDepth = "32";
+								break;
+							case PixelFormat.Format24bppRgb:
+								result.bitDepth = "24";
+								break;
+							case PixelFormat.Format16bppArgb1555:
+							case PixelFormat.Format16bppGrayScale:
+								result.bitDepth = "16";
+								break;
+							case PixelFormat.Format8bppIndexed:
+								result.bitDepth = "8";
+								break;
+							case PixelFormat.Format1bppIndexed:
+								result.bitDepth = "1";
+								break;
+							default:
+								result.bitDepth = "unknown";
+                                break;
+						}
+                    }
+					
 					info.WriteCompleteOutput(Newtonsoft.Json.JsonConvert.SerializeObject(result));
 					return true;
 				}

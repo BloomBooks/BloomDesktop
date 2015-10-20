@@ -71,7 +71,7 @@ function SetupImageContainer(containerDiv) {
     $(containerDiv).mouseenter(function () {
         var $this = $(this);
         var img = $this.find('img');
-        if (img == null) //TODO check for bloom-backgroundImage to make sure this isn't just a case of a missing <img>
+        if (img.length == 0) //TODO check for bloom-backgroundImage to make sure this isn't just a case of a missing <img>
                 img = containerDiv; //using a backgroundImage
 
         var buttonModifier = GetButtonModifier($this);
@@ -123,10 +123,11 @@ function SetImageTooltip(container, img) {
   getIframeChannel().simpleAjaxGet('/bloom/imageInfo?image=' + GetRawImageUrl(img), function (response) {
         const kBrowserDpi = 96; // this appears to be constant even on higher dpi screens. See http://www.w3.org/TR/css3-values/#absolute-lengths
         var dpi = Math.round(response.width / ($(img).width() / kBrowserDpi));
-        var info = response.name + "\n"
-                + getFileLengthString(response.bytes) + "\n"
-                + response.width + " x " + response.height + "\n"
-                + dpi + " dpi";
+      var info = response.name + "\n"
+          + getFileLengthString(response.bytes) + "\n"
+          + response.width + " x " + response.height + "\n"
+          + dpi + " DPI (should be 300-600)\n"
+          + "Bit Depth: " + response.bitDepth.toString();
         container.title = info;
         });
 }
