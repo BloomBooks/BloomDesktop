@@ -713,11 +713,11 @@ namespace Bloom.Edit
 			var imageElement = GetImageNode(ge);
 			if (imageElement != null)
 			{
-				var source = imageElement.GetAttribute("src");
-				if (String.IsNullOrEmpty(source))
+				var url = HtmlDom.GetImageElementUrl(imageElement);
+				if (String.IsNullOrEmpty(url.NotEncoded))
 					return false;
 
-				var path = Path.Combine(bookFolderPath, HttpUtilityFromMono.UrlDecode(source));
+				var path = Path.Combine(bookFolderPath, url.NotEncoded);
 				try
 				{
 					var image = PalasoImage.FromFile(path);
