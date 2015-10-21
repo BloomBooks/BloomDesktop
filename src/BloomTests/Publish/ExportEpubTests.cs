@@ -9,12 +9,14 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom;
 using Bloom.Book;
+using Bloom.Publish;
 using BloomTemp;
+using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using Palaso.Extensions;
 
-namespace BloomTests.Book
+namespace BloomTests.Publish
 {
 	[TestFixture]
 	public class ExportEpubTests : BookTestsBase

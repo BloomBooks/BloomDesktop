@@ -2,3 +2,9 @@
   line-height: 1.5;
   font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
 }
+.bloom-backgroundImage {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkNvbW1vbkJhc2VQYWdlRXB1Yi5sZXNzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0MsZ0JBQUE7RUFDQSxhQUFhLDRCQUE0QixnQkFBZ0IsaUJBQWlCLHNCQUFzQix5QkFBaEc7O0FBR0Q7RUFDRSx3QkFBQTtFQUNBLDRCQUFBO0VBQ0EsMkJBQUEiLCJmaWxlIjoidW5kZWZpbmVkIn0= */

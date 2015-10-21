@@ -2,6 +2,11 @@
   line-height: 1.5;
   font-family: "Andika New Basic", Andika, "Andika Basic", "Gentium Basic", "Gentium Book Basic", "Doulous SIL", Sans-Serif;
 }
+.bloom-backgroundImage {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
   font-size: 120%;
   line-height: 1.7em;
@@ -47,3 +52,7 @@ div.bloom-editable {
   text-align: center;
   padding-top: 10px;
 }
+.bloom-backgroundImage {
+  height: 300px;
+}
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlg6L2Rldi9iMzUvc3JjL0Jsb29tQnJvd3NlclVJL2Jvb2tMYXlvdXQvQ29tbW9uQmFzZVBhZ2VFcHViLmxlc3MiLCJYOi9kZXYvYjM1L0Rpc3RGaWxlcy94TWF0dGVyL0Jsb29tWE1hdHRlckVwdWJDb21tb24ubGVzcyIsImJhc2VFcHViLmxlc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7RUFDQyxnQkFBQTtFQUNBLGFBQWEsNEJBQTRCLGdCQUFnQixpQkFBaUIsc0JBQXNCLHlCQUFoRzs7QUFHRDtFQUNFLHdCQUFBO0VBQ0EsNEJBQUE7RUFDQSwyQkFBQTs7QUNDVSxXQUhSLHdCQUF1QixVQUNuQixnQkFFSztFQUVHLGVBQUE7RUFDQSxrQkFBQTtFQUNBLGtCQUFBOztBQUVKLFdBVFIsd0JBQXVCLFVBQ25CLGdCQVFLO0VBRUcsZUFBQTtFQUNBLGtCQUFBO0VBQ0Esa0JBQUE7O0FBTWhCO0VBQ0ksa0JBQUE7O0FBRUosUUFDSTtFQUNJLGdCQUFBOztBQUZSLFFBQ0ksMEJBRUk7RUFDSSxrQkFBQTs7QUFKWixRQUNJLDBCQUtJO0VBQ0ksa0JBQUE7O0FBUFosUUFDSSwwQkFRSTtFQU9JLFdBQUE7O0FDcENaLFdBQ0ksd0JBQXVCLFVBQ25CO0VBRUksa0JBQUE7O0FBS1osUUFDSSwwQkFDSTtFQUlJLFdBQUE7O0FBS1osR0FBRztFQUNDLG9CQUFBOztBQUdKLG1CQUNLO0VBQWlCLGVBQUE7O0FBRHRCLG1CQUVLO0FBRkwsbUJBRXNCO0VBQWlCLGVBQUE7O0FBRnZDLG1CQUdLO0VBQ0gsa0JBQUE7RUFDQSxpQkFBQTs7QUFJRjtFQUNFLGFBQUEiLCJmaWxlIjoidW5kZWZpbmVkIn0= */

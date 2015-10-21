@@ -494,10 +494,14 @@ namespace Bloom.Publish
 
 		internal void StageEpub()
 		{
-			if (_epubMaker == null)
-				_epubMaker = new EpubMaker(_thumbNailer);
+			if (_epubMaker != null)
+			{
+				//it has state that we don't want to reuse, so make a new one
+				_epubMaker.Dispose();
+				_epubMaker = null;
+			}
+			_epubMaker = new EpubMaker(_thumbNailer);
 			_epubMaker.Book = BookSelection.CurrentSelection;
-
 			_epubMaker.Unpaginated = true; // Enhance: UI?
 			_epubMaker.StageEpub();
 		}

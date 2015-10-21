@@ -1,9 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -13,12 +9,11 @@ using System.Web;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
-using Bloom.Publish;
+using Bloom.Book;
 using BloomTemp;
-using Palaso.IO;
 using Palaso.Xml;
 
-namespace Bloom.Book
+namespace Bloom.Publish
 {
 	/// <summary>
 	/// This class handles the process of creating an epub out of a bloom book.
@@ -28,7 +23,7 @@ namespace Bloom.Book
 	/// </summary>
 	public class EpubMaker : IDisposable
 	{
-		public Book Book
+		public Book.Book Book
 		{
 			get
 			{
@@ -40,7 +35,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private Book _book;
+		private Book.Book _book;
 		// This is a shorthand for _book.Storage. Since that is something of an implementation secret of Book,
 		// it also provides a safe place for us to make changes if we ever need to get the Storage some other way.
 		private IBookStorage Storage {get { return _book.Storage; } }
@@ -95,7 +90,11 @@ namespace Bloom.Book
 		{
 			if (_stagingFolder != null)
 				_stagingFolder.Dispose();
-			_stagingFolder = new TemporaryFolder("Epub export");
+			var epubExport = "Epub export";
+			//I (JH) kept having trouble making epubs because this kept getting locked.
+			Palaso.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), epubExport));
+
+			_stagingFolder = new TemporaryFolder(epubExport);
 			// The readium control remembers the current page for each book.
 			// So it is useful to have a unique name for each one.
 			// However, it needs to be something we can put in a URL without complications,
@@ -279,20 +278,17 @@ namespace Bloom.Book
 
 		private void CopyImages(HtmlDom pageDom)
 		{
-// Manifest has to include all referenced files
-			foreach (XmlElement img in pageDom.SafeSelectNodes("//img").Cast<XmlElement>().ToList())
+			// Manifest has to include all referenced files
+			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
 			{
-				var srcAttr = img.Attributes["src"];
-				if (srcAttr == null)
+				var url = HtmlDom.GetImageElementUrl(img);
+				if (url == null || url.NotEncoded=="")
 					continue; // very weird, but all we can do is ignore it.
-				// src should be a url, so any special characters should be encoded.
-				// I'm not sure the rest of the program is doing this entirely right yet,
-				// but at least this handles %20, which definitely is used.
-				var imgName = StripQuery(WebUtility.UrlDecode(srcAttr.Value));
-				if (string.IsNullOrEmpty(imgName))
+				var filename = StripQuery(url.NotEncoded);
+				if (string.IsNullOrEmpty(filename))
 					continue;
 				// Images are always directly in the folder
-				var srcPath = Path.Combine(Book.FolderPath, imgName);
+				var srcPath = Path.Combine(Book.FolderPath, filename);
 				if (File.Exists(srcPath))
 					CopyFileToEpub(srcPath);
 				else
@@ -401,18 +397,18 @@ namespace Bloom.Book
 		{
 			bool firstTime = true;
 			double pageWidthMm = 210; // assume A5 Portrait if not specified
-			foreach (XmlElement img in pageDom.RawDom.SafeSelectNodes("//img"))
+			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
 			{
-				var marginBox = img.ParentNode.ParentNode as XmlElement;
+				var parent = img.ParentNode.ParentNode as XmlElement;
 				var mulitplier = 1.0;
 				// For now we only attempt to adjust pictures contained in the marginBox.
 				// To do better than this we will probably need to actually load the HTML into
 				// a browser; even then it will be complex.
-				while (marginBox != null && !HasClass(marginBox, "marginBox"))
+				while (parent != null && !HasClass(parent, "marginBox"))
 				{
 					// 'marginBox' is not yet the margin box...it is some parent div.
 					// If it has an explicit percent width style, adjust for this.
-					var styleAttr = marginBox.Attributes["style"];
+					var styleAttr = parent.Attributes["style"];
 					if (styleAttr != null)
 					{
 						var style = styleAttr.Value;
@@ -426,11 +422,11 @@ namespace Bloom.Book
 							}
 						}
 					}
-					marginBox = marginBox.ParentNode as XmlElement;
+					parent = parent.ParentNode as XmlElement;
 				}
-				if (marginBox == null)
+				if (parent == null)
 					continue;
-				var page = marginBox.ParentNode as XmlElement;
+				var page = parent.ParentNode as XmlElement;
 				if (!HasClass(page, "bloom-page"))
 					continue; // or return? marginBox should be child of page!
 				if (firstTime)
