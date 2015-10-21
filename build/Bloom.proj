@@ -91,7 +91,7 @@
 	  </CreateProperty>
 	  <!-- Z drive is set up for data shared by all build agents on TeamCity. If running on a dev machine,
 	  you should set your preferred release folder from the command line, usually /p:SquirrelReleaseFolder=<root>/output/installer-->
-	  <CreateProperty Value="Z:\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
+	  <CreateProperty Value="\\bob.psonet\buildshare\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
 		  <Output PropertyName="SquirrelReleaseFolder" TaskParameter="Value"/>
 	  </CreateProperty>
 	<Message Text="Version: $(Version)" Importance="high"/>
