@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#if !__MonoCS__
 using System.Windows.Media;
+#endif
 
 namespace Bloom.Publish
 {
@@ -18,6 +20,9 @@ namespace Bloom.Publish
 		public string Italic;
 		public string BoldItalic;
 
+#if __MonoCS__
+		// Mono doesn't have the System.Windows.Media namespace.
+#else
 		public void Add(GlyphTypeface gtf, string path)
 		{
 			if (Normal == null)
@@ -42,6 +47,7 @@ namespace Bloom.Publish
 		{
 			return gtf.Weight.ToOpenTypeWeight() > 600;
 		}
+#endif
 
 		public IEnumerator<string> GetEnumerator()
 		{

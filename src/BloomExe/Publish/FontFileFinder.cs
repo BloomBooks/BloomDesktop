@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#if !__MonoCS__
 using System.Windows.Media;
+#endif
 
 namespace Bloom.Publish
 {
@@ -60,6 +62,9 @@ namespace Bloom.Publish
 						default:
 							continue;
 					}
+#if __MonoCS__
+					// Mono doesn't have the System.Windows.Media namespace.
+#else
 					GlyphTypeface gtf;
 					try
 					{
@@ -81,6 +86,7 @@ namespace Bloom.Publish
 						default:
 							continue; // not allowed to embed (enhance: warn user?)
 					}
+#endif
 					var fc = new PrivateFontCollection();
 					try
 					{
@@ -98,7 +104,11 @@ namespace Bloom.Publish
 						files = new FontGroup();
 						FontNameToFiles[name] = files;
 					}
+#if __MonoCS__
+					// Mono doesn't have the System.Windows.Media namespace.
+#else
 					files.Add(gtf, fontFile);
+#endif
 				}
 			}
 			FontGroup result;
