@@ -1,7 +1,7 @@
 describe("audio recording tests", function() {
     it("inserts sentence spans with ids and class when none exist", function() {
         var div = $("<div>This is a sentence. This is another</div>");
-        var recording = new audioRecording();
+        var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
         expect(spans.length).toBe(2);
@@ -14,7 +14,7 @@ describe("audio recording tests", function() {
     });
     it("retains matching sentence spans with same ids.keeps md5s and adds missing ones", function() {
         var div = $('<div><span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> This is another</div>');
-        var recording = new audioRecording();
+        var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
         expect(spans.length).toBe(2);
@@ -29,7 +29,7 @@ describe("audio recording tests", function() {
     });
     it("retains markup within sentences", function() {
         var div = $('<div><span id="abc" class="audio-sentence">This <b>is</b> a sentence.</span> This <i>is</i> another</div>');
-        var recording = new audioRecording();
+        var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
         var spans = div.find("span");
@@ -39,7 +39,7 @@ describe("audio recording tests", function() {
     });
     it("keeps id with unchanged recorded sentence when new inserted before", function(){
         var div = $('<div>This is a new sentence. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span></div>');
-        var recording = new audioRecording();
+        var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
         expect(spans.length).toBe(2);
@@ -54,7 +54,7 @@ describe("audio recording tests", function() {
     });
     it("keeps ids and md5s when inserted between", function(){
         var div = $('<div><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first sentence.</span> This is inserted. <span id="abc" recordingmd5="d15ba5f31fa7c797c093931328581664" class="audio-sentence">This is a sentence.</span> Inserted after.</div>');
-        var recording = new audioRecording();
+        var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
         expect(spans.length).toBe(4);
@@ -80,7 +80,7 @@ describe("audio recording tests", function() {
             <br class=''></br>\
             <br></br>\
             Long dispela taim i gat wanpela bikpela taun i gat planti manmeri. Nem bilong dispela taun em Nineveh.</div>");
-        var recording = new audioRecording();
+        var recording = new AudioRecording();
         recording.makeSentenceSpans(div);
         var spans = div.find("span");
         expect(spans.length).toBe(2);
