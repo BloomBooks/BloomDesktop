@@ -166,9 +166,9 @@ namespace Bloom.Edit
 			if (Recorder.RecordingState == RecordingState.RequestedStop)
 			{
 				MessageBox.Show(
-					LocalizationManager.GetString("AudioButtonsControl.BadState",
+					LocalizationManager.GetString("EditTab.AudioControl.BadState",
 						"Bloom recording is in an unusual state, possibly caused by unplugging a microphone. You will need to restart."),
-					LocalizationManager.GetString("AudioButtonsControl.BadStateCaption", "Cannot record"));
+					LocalizationManager.GetString("EditTab.AudioControl.BadStateCaption", "Cannot record"));
 			}
 			//if (!_recordButton.Enabled)
 			//	return false; //could be fired by keyboard
@@ -240,9 +240,9 @@ namespace Bloom.Edit
 
 		private void WarnPressTooShort()
 		{
-			MessageBox.Show(null, LocalizationManager.GetString("AudioButtonsControl.PleaseHold",
+			MessageBox.Show(null, LocalizationManager.GetString("EditTab.AudioControl.PleaseHold",
 				"Please hold the record button down until you have finished recording", "Appears when the button is pressed very briefly"),
-				 LocalizationManager.GetString("AudioButtonsControl.PressToRecord", "Press to record", "Caption for PleaseHold message"));
+				 LocalizationManager.GetString("EditTab.AudioControl.PressToRecord", "Press to record", "Caption for PleaseHold message"));
 			// If we had a prior recording, restore it...button press may have been a mistake.
 			if (File.Exists(_backupPath))
 			{
@@ -266,8 +266,8 @@ namespace Bloom.Edit
 		internal void ReportNoMicrophone()
 		{
 			MessageBox.Show(null,
-				LocalizationManager.GetString("AudioButtonsControl.NoMic", "This computer appears to have no sound recording device available. You will need one to record audio for a talking book."),
-				LocalizationManager.GetString("AudioButtonsControl.NoInput", "No input device"));
+				LocalizationManager.GetString("EditTab.AudioControl.NoMic", "This computer appears to have no sound recording device available. You will need one to record audio for a talking book."),
+				LocalizationManager.GetString("EditTab.AudioControl.NoInput", "No input device"));
 		}
 
 		public void ChangeRecordingDevice(string deviceName)

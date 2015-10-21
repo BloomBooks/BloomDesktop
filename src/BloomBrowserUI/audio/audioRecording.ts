@@ -14,7 +14,6 @@
 // there is a branch RecordAudioInBrowserSpike in which I attempted to do this.
 // It works sometimes, but often part or all of the recording is silence.
 // Things that still need doing:
-// - Change appearance of record button while recording
 // - Modify TeamCity build (make a new channel if we need an installer
 //   with this feature and are not merging yet) to add the naudio.dll
 //   dependency
@@ -33,19 +32,20 @@
 // - Notice when a new input device is connected and automatically select it
 //   (cf Palaso.Media.NAudio.RecordingDeviceIndicator)
 // - Update the input device display when the current device is unplugged and a new choice made.
-// - Highlight the "most probable" next button (i.e., record, then play, then next)
 // - Space key as alternative to record button
 // - Keyboard shortcut for Play and Next?
 // - Automatically move to next page when current one is done
 // - Automatically put initial selection on first unrecorded sentence
 //   (or maybe on the sentence they right-clicked?)
-// - Change appearance of Play button when no recording exists
-// - Make and use cleaner icons for buttons in bubble
-// - Hide source bubble when showing record one
 // - Some more obvious affordance for launching the Record feature
-// - Extract content of bubble HTML into its own file
-// - Figure out how to make TypeScript happy with various types
-//   it doens't know about.
+// - Extract content of bubble HTML into its own file?
+
+enum Status {
+    Disabled, // Can't use button now (e.g., Play when there is no recording)
+    Enabled, // Can use now, not the most likely thing to do next
+    Expected, // The most likely/appropriate button to use next (e.g., Play right after recording)
+    Active // Button now active (Play while playing; Record while held down)
+};
 class AudioRecording {
 
     recording: boolean;
@@ -53,17 +53,18 @@ class AudioRecording {
     levelCanvasWidth: number = 15;
     levelCanvasHeight: number = 80;
     hiddenSourceBubbles: JQuery;
+    audioDevicesUrl = 'http://localhost:8089/bloom/audioDevices';
 
-    moveToNextSpan() {
+    private moveToNextSpan(): void {
         var current: JQuery = $('.ui-audioCurrent');
         var audioElts = $('.audio-sentence');
         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
         if (next.length === 0) return; // enhance: go to next page??
         this.setCurrentSpan(current, next);
-        this.setStatus('record', 'expected');
+        this.setStatus('record', Status.Expected);
     }
 
-    setCurrentSpan(current: JQuery, changeTo: JQuery) {
+    private setCurrentSpan(current: JQuery, changeTo: JQuery): void {
         if (current)
             current.removeClass('ui-audioCurrent');
         changeTo.addClass('ui-audioCurrent');
@@ -73,12 +74,12 @@ class AudioRecording {
         player.attr('src', 'audio/' + id + '.wav');
         var audioElts = $('.audio-sentence');
         var index = audioElts.index(changeTo);
-        this.setStatus('prev', index === 0 ? 'disabled' : 'enabled');
-        this.setStatus('next', index === audioElts.length - 1 ? 'disabled' : 'enabled');
-        this.setStatus('play', 'enabled'); // Todo: disabled if recording does not exist.
+        this.setStatus('prev', index === 0 ? Status.Disabled : Status.Enabled);
+        this.setStatus('next', index === audioElts.length - 1 ? Status.Disabled : Status.Enabled);
+        this.setStatus('play', Status.Enabled); // Todo: disabled if recording does not exist.
     }
 
-    moveToPrevSpan() {
+    private moveToPrevSpan(): void {
         var current: JQuery = $('.ui-audioCurrent');
         var audioElts = $('.audio-sentence');
         var currentIndex = audioElts.index(current);
@@ -88,7 +89,7 @@ class AudioRecording {
         this.setCurrentSpan(current, prev);
     }
 
-    endRecordCurrent() {
+    private endRecordCurrent(): void {
         this.recording = false;
         this.fireCSharpEvent("endRecordAudio", "");
         // The player should already be set to play back the audio we just recorded.
@@ -99,34 +100,34 @@ class AudioRecording {
         var src = player.attr('src');
         player.attr('src', '');
         player.attr('src', src);
-        this.setStatus('record', 'enabled');
-        this.setStatus('play', 'expected');
+        this.setStatus('record', Status.Enabled);
+        this.setStatus('play', Status.Expected);
     }
 
-    startRecordCurrent() {
+    private startRecordCurrent(): void {
         this.recording = true;
         var current: JQuery = $('.ui-audioCurrent');
         var id = current.attr("id");
         this.fireCSharpEvent("startRecordAudio", id);
-        this.setStatus('record', 'active');
+        this.setStatus('record', Status.Active);
     }
 
-    playCurrent() {
+    private playCurrent(): void {
         (<HTMLMediaElement>document.getElementById('player')).play();
-        this.setStatus('play', 'active');
-        this.setStatus('record', 'enabled');
+        this.setStatus('play', Status.Active);
+        this.setStatus('record', Status.Enabled);
     }
 
-    playEnded() {
-        this.setStatus('play', 'enabled'); // no longer 'expected'
+    private playEnded(): void {
+        this.setStatus('play', Status.Enabled); // no longer 'expected'
         if ($('#audio-next').hasClass('enabled')) {
-            this.setStatus('next', 'expected');
+            this.setStatus('next', Status.Expected);
         }
     }
 
-    setStatus(which: string, to: string) {
-        $('#audio-' + which).removeClass('expected').removeClass('disabled').removeClass('enabled').removeClass('active').addClass(to);
-        if (to === 'expected') {
+    private setStatus(which: string, to: Status): void {
+        $('#audio-' + which).removeClass('expected').removeClass('disabled').removeClass('enabled').removeClass('active').addClass(Status[to].toLowerCase());
+        if (to === Status.Expected) {
             var tags = ['record', 'play', 'next'];
             for (var i = 0; i < tags.length; i++) {
                 var tag = tags[i];
@@ -139,13 +140,13 @@ class AudioRecording {
         }
     }
 
-    cantPlay() {
-        this.setStatus('play', 'disabled');
+    private cantPlay(): void {
+        this.setStatus('play', Status.Disabled);
     }
 
-    selectInputDevice() {
+    private selectInputDevice(): void {
         var thisClass = this;
-        this.simpleAjaxGet('http://localhost:8089/bloom/audioDevices', function (data) {
+        this.simpleAjaxGet(this.audioDevicesUrl, function (data) {
             // Retrieves JSON generated by AudioRecording.AudioDevicesJson
             // Something like {"devices":["microphone", "Logitech Headset"], "productName":"Logitech Headset", "genericName":"Headset" },
             // except that in practice currrently the generic and product names are the same and not as helpful as the above.
@@ -175,8 +176,8 @@ class AudioRecording {
         });
     }
 
-    updateInputDeviceDisplay() {
-        this.simpleAjaxGet('http://localhost:8089/bloom/audioDevices', function (data) {
+    private updateInputDeviceDisplay(): void {
+        this.simpleAjaxGet(this.audioDevicesUrl, function (data) {
             // See selectInputDevice for what is retrieved.
             var genericName = data.genericName;
             var deviceName = data.productName;
@@ -209,7 +210,7 @@ class AudioRecording {
     // and the row of buttons horizontally. This method generates whatever we decide is needed for each
     // group, parameterized by the identifier of which button and the text to go below it.
     // (Note that the full button ID is audio- plus the ID passed in; it is used in other element IDs too.)
-    makeHtmlForOneButtonGroup(buttonId: string, initialStatusClass: string, buttonLabel: string) {
+    private makeHtmlForOneButtonGroup(buttonId: string, initialStatusClass: string, buttonLabel: string): string {
         return "<div id='audio-" + buttonId + "-wrapper' class='button-label-wrapper'>" +
             "<div>" +
             "<button id='audio-" + buttonId + "' class='ui-audio-button ui-button " + initialStatusClass + "'/>" +
@@ -218,8 +219,8 @@ class AudioRecording {
             "</div>";
     }
 
-    startRecording() {
-        var editable = <qtipInterface>$('div.bloom-editable').first();
+    public startRecording(): void {
+        var editable = <qtipInterface>$('div.bloom-editable');
         var thisClass = this;
         this.hiddenSourceBubbles = $('.uibloomSourceTextsBubble');
         this.hiddenSourceBubbles.hide();
@@ -304,7 +305,7 @@ class AudioRecording {
                     $('#audio-input-dev').click(function () {
                         thisClass.selectInputDevice();
                     });
-                    thisClass.setStatus('record', 'expected');
+                    thisClass.setStatus('record', Status.Expected);
 
                     // This is easier to do here than in setPeakLevel,
                     // because it executes in the scope of the bubble
@@ -327,7 +328,7 @@ class AudioRecording {
     // that we should display a different peak level. It draws a series of bars
     // (reminiscent of leds in a hardware level meter) within the canvas in the
     //  top right of the bubble to indicate the current peak level.
-    setPeakLevel(level: string) {
+    public setPeakLevel(level: string): void {
         var ctx = this.levelCanvas.getContext("2d");
 
         // Erase the whole canvas
@@ -356,7 +357,7 @@ class AudioRecording {
     }
 
     // from http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-    createUuid() {
+    private createUuid(): string {
         // http://www.ietf.org/rfc/rfc4122.txt
         var s = [];
         var hexDigits = "0123456789abcdef";
@@ -371,7 +372,7 @@ class AudioRecording {
         return uuid;
     }
 
-    md5(message) {
+    private md5(message): string {
         var HEX_CHARS = '0123456789abcdef'.split('');
         var EXTRA = [128, 32768, 8388608, -2147483648];
         var blocks = [];
@@ -626,7 +627,7 @@ class AudioRecording {
  * @param {Function} callback Function to call when the ajax request returns
   * NOTE: If dataValue is a string, it must NOT be URI encoded.
  */
-    simpleAjaxGet(url: string, callback: any): void {
+    private simpleAjaxGet(url: string, callback: any): void {
         var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'GET', url: url };
 
         $.ajax(ajaxSettings)
@@ -642,7 +643,7 @@ class AudioRecording {
     // makeSentenceLeaf does this for roots which don't have children (except a few
     // special cases); this root method scans down and does it for each such child
     // in a root (possibly the root itself, if it has no children).
-    makeSentenceSpans(root: JQuery) {
+    private makeSentenceSpans(root: JQuery): void {
         var children = root.children();
         var processedChild: boolean = false; // Did we find a significant child?
         for (var i = 0; i < children.length; i++) {
@@ -663,7 +664,7 @@ class AudioRecording {
     // current sentence, we want to preserve the association between that content and ID (and possibly recording).
     // Where there aren't exact matches, but there are existing audio-sentence spans, we keep the ids as far as possible,
     // just using the original order, since it is possible we have a match and only spelling or punctuation changed.
-    makeSentenceSpansLeaf(elt: JQuery) {
+    private makeSentenceSpansLeaf(elt: JQuery): void {
         var markedSentences = elt.find("span.audio-sentence");
         var reuse = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
         markedSentences.each(function(index) {
@@ -717,7 +718,7 @@ class AudioRecording {
         elt.html(newHtml);
     }
 
-    isRecordable(fragment: textFragment):Boolean {
+    private isRecordable(fragment: textFragment): Boolean {
         if (fragment.isSpace) return false; // this seems to be reliable
         // initial white-space fragments may currently be marked sentence
         var test = fragment.text.replace(/<br *[^>]*\/?>/g, " ");
@@ -725,11 +726,11 @@ class AudioRecording {
     }
 
     // Clean up stuff audio recording leaves around that should not be saved.
-    cleanupAudio() {
+    public cleanupAudio(): void {
         $('span.ui-audioCurrent').removeClass('ui-audioCurrent');
     }
 
-    fireCSharpEvent(eventName, eventData) {
+    private fireCSharpEvent(eventName, eventData): void {
         // Note: other implementations of fireCSharpEvent have 'view':'window', but the TS compiler does
         // not like this. It seems to work fine without it, and I don't know why we had it, so I am just
         // leaving it out.

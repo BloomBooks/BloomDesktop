@@ -14,7 +14,6 @@
 // there is a branch RecordAudioInBrowserSpike in which I attempted to do this.
 // It works sometimes, but often part or all of the recording is silence.
 // Things that still need doing:
-// - Change appearance of record button while recording
 // - Modify TeamCity build (make a new channel if we need an installer
 //   with this feature and are not merging yet) to add the naudio.dll
 //   dependency
@@ -33,23 +32,26 @@
 // - Notice when a new input device is connected and automatically select it
 //   (cf Palaso.Media.NAudio.RecordingDeviceIndicator)
 // - Update the input device display when the current device is unplugged and a new choice made.
-// - Highlight the "most probable" next button (i.e., record, then play, then next)
 // - Space key as alternative to record button
 // - Keyboard shortcut for Play and Next?
 // - Automatically move to next page when current one is done
 // - Automatically put initial selection on first unrecorded sentence
 //   (or maybe on the sentence they right-clicked?)
-// - Change appearance of Play button when no recording exists
-// - Make and use cleaner icons for buttons in bubble
-// - Hide source bubble when showing record one
 // - Some more obvious affordance for launching the Record feature
-// - Extract content of bubble HTML into its own file
-// - Figure out how to make TypeScript happy with various types
-//   it doens't know about.
+// - Extract content of bubble HTML into its own file?
+var Status;
+(function (Status) {
+    Status[Status["Disabled"] = 0] = "Disabled";
+    Status[Status["Enabled"] = 1] = "Enabled";
+    Status[Status["Expected"] = 2] = "Expected";
+    Status[Status["Active"] = 3] = "Active"; // Button now active (Play while playing; Record while held down)
+})(Status || (Status = {}));
+;
 var AudioRecording = (function () {
     function AudioRecording() {
         this.levelCanvasWidth = 15;
         this.levelCanvasHeight = 80;
+        this.audioDevicesUrl = 'http://localhost:8089/bloom/audioDevices';
     }
     AudioRecording.prototype.moveToNextSpan = function () {
         var current = $('.ui-audioCurrent');
@@ -58,7 +60,7 @@ var AudioRecording = (function () {
         if (next.length === 0)
             return; // enhance: go to next page??
         this.setCurrentSpan(current, next);
-        this.setStatus('record', 'expected');
+        this.setStatus('record', Status.Expected);
     };
     AudioRecording.prototype.setCurrentSpan = function (current, changeTo) {
         if (current)
@@ -70,9 +72,9 @@ var AudioRecording = (function () {
         player.attr('src', 'audio/' + id + '.wav');
         var audioElts = $('.audio-sentence');
         var index = audioElts.index(changeTo);
-        this.setStatus('prev', index === 0 ? 'disabled' : 'enabled');
-        this.setStatus('next', index === audioElts.length - 1 ? 'disabled' : 'enabled');
-        this.setStatus('play', 'enabled'); // Todo: disabled if recording does not exist.
+        this.setStatus('prev', index === 0 ? Status.Disabled : Status.Enabled);
+        this.setStatus('next', index === audioElts.length - 1 ? Status.Disabled : Status.Enabled);
+        this.setStatus('play', Status.Enabled); // Todo: disabled if recording does not exist.
     };
     AudioRecording.prototype.moveToPrevSpan = function () {
         var current = $('.ui-audioCurrent');
@@ -96,30 +98,30 @@ var AudioRecording = (function () {
         var src = player.attr('src');
         player.attr('src', '');
         player.attr('src', src);
-        this.setStatus('record', 'enabled');
-        this.setStatus('play', 'expected');
+        this.setStatus('record', Status.Enabled);
+        this.setStatus('play', Status.Expected);
     };
     AudioRecording.prototype.startRecordCurrent = function () {
         this.recording = true;
         var current = $('.ui-audioCurrent');
         var id = current.attr("id");
         this.fireCSharpEvent("startRecordAudio", id);
-        this.setStatus('record', 'active');
+        this.setStatus('record', Status.Active);
     };
     AudioRecording.prototype.playCurrent = function () {
         document.getElementById('player').play();
-        this.setStatus('play', 'active');
-        this.setStatus('record', 'enabled');
+        this.setStatus('play', Status.Active);
+        this.setStatus('record', Status.Enabled);
     };
     AudioRecording.prototype.playEnded = function () {
-        this.setStatus('play', 'enabled'); // no longer 'expected'
+        this.setStatus('play', Status.Enabled); // no longer 'expected'
         if ($('#audio-next').hasClass('enabled')) {
-            this.setStatus('next', 'expected');
+            this.setStatus('next', Status.Expected);
         }
     };
     AudioRecording.prototype.setStatus = function (which, to) {
-        $('#audio-' + which).removeClass('expected').removeClass('disabled').removeClass('enabled').removeClass('active').addClass(to);
-        if (to === 'expected') {
+        $('#audio-' + which).removeClass('expected').removeClass('disabled').removeClass('enabled').removeClass('active').addClass(Status[to].toLowerCase());
+        if (to === Status.Expected) {
             var tags = ['record', 'play', 'next'];
             for (var i = 0; i < tags.length; i++) {
                 var tag = tags[i];
@@ -133,11 +135,11 @@ var AudioRecording = (function () {
         }
     };
     AudioRecording.prototype.cantPlay = function () {
-        this.setStatus('play', 'disabled');
+        this.setStatus('play', Status.Disabled);
     };
     AudioRecording.prototype.selectInputDevice = function () {
         var thisClass = this;
-        this.simpleAjaxGet('http://localhost:8089/bloom/audioDevices', function (data) {
+        this.simpleAjaxGet(this.audioDevicesUrl, function (data) {
             // Retrieves JSON generated by AudioRecording.AudioDevicesJson
             // Something like {"devices":["microphone", "Logitech Headset"], "productName":"Logitech Headset", "genericName":"Headset" },
             // except that in practice currrently the generic and product names are the same and not as helpful as the above.
@@ -168,7 +170,7 @@ var AudioRecording = (function () {
         });
     };
     AudioRecording.prototype.updateInputDeviceDisplay = function () {
-        this.simpleAjaxGet('http://localhost:8089/bloom/audioDevices', function (data) {
+        this.simpleAjaxGet(this.audioDevicesUrl, function (data) {
             // See selectInputDevice for what is retrieved.
             var genericName = data.genericName;
             var deviceName = data.productName;
@@ -212,7 +214,7 @@ var AudioRecording = (function () {
             "</div>";
     };
     AudioRecording.prototype.startRecording = function () {
-        var editable = $('div.bloom-editable').first();
+        var editable = $('div.bloom-editable');
         var thisClass = this;
         this.hiddenSourceBubbles = $('.uibloomSourceTextsBubble');
         this.hiddenSourceBubbles.hide();
@@ -295,7 +297,7 @@ var AudioRecording = (function () {
                     $('#audio-input-dev').click(function () {
                         thisClass.selectInputDevice();
                     });
-                    thisClass.setStatus('record', 'expected');
+                    thisClass.setStatus('record', Status.Expected);
                     // This is easier to do here than in setPeakLevel,
                     // because it executes in the scope of the bubble
                     // iframe where $('#audio-meter') works.
