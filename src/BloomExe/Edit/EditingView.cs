@@ -605,8 +605,10 @@ namespace Bloom.Edit
 			{
 				// Replace current image with placeHolder.png
 				var path = Path.Combine(bookFolderPath, "placeHolder.png");
-				var palasoImage = PalasoImage.FromFile(path);
-				_model.ChangePicture(GetImageNode(ge), palasoImage, new NullProgress());
+				using (var palasoImage = PalasoImage.FromFile(path))
+				{
+					_model.ChangePicture(GetImageNode(ge), palasoImage, new NullProgress());
+				}
 			}
 		}
 
@@ -637,8 +639,7 @@ namespace Bloom.Edit
 						LocalizationManager.GetString("EditTab.NoImageFoundOnClipboard","Before you can paste an image, copy one onto your 'clipboard', from another program."));
 					return;
 				}
-
-
+				
 				var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
 				if (target.ClassName.Contains("licenseImage"))
 					return;
@@ -720,13 +721,16 @@ namespace Bloom.Edit
 				var path = Path.Combine(bookFolderPath, url.NotEncoded);
 				try
 				{
-					var image = PalasoImage.FromFile(path);
-					BloomClipboard.CopyImageToClipboard(image);
+					using (var image = PalasoImage.FromFile(path))
+					{
+						BloomClipboard.CopyImageToClipboard(image);
+					}
 					return true;
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine(e);
+					Debug.Fail(e.Message);
+					Logger.WriteEvent("CopyImageToClipboard:"+ e.Message);
 				}
 			}
 			return false;

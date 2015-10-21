@@ -99,7 +99,8 @@ namespace Bloom.Workspace
 					IDataObject clips = new DataObject();
 					clips.SetData(DataFormats.UnicodeText, image.OriginalFilePath);
 					clips.SetData(DataFormats.Bitmap, image.Image);
-					Clipboard.SetDataObject(clips);
+					// true here means that the image should remain on the clipboard if Bloom quits
+					Clipboard.SetDataObject(clips,true);
 				}
 			}
 #endif
@@ -130,21 +131,29 @@ namespace Bloom.Workspace
 				textData = dataObject.GetData(DataFormats.UnicodeText) as String;
 			if (Clipboard.ContainsImage())
 			{
-				PalasoImage image = null;
-				var haveFileUrl = false;
+				PalasoImage plainImage = null;
 				try
 				{
-					image = PalasoImage.FromImage(Clipboard.GetImage()); // this method won't copy any metadata
-					haveFileUrl = !String.IsNullOrEmpty(textData) && File.Exists(textData);
+					plainImage = PalasoImage.FromImage(Clipboard.GetImage()); // this method won't copy any metadata
+					var haveFileUrl = !String.IsNullOrEmpty(textData) && File.Exists(textData);
 
 					// If we have an image on the clipboard, and we also have text that is a valid url to an image file,
-					// use the url to create a PalasoImage (which will pull in any metadata associated with the image too.
-					return !haveFileUrl ? image : PalasoImage.FromFile(textData);
+					// use the url to create a PalasoImage (which will pull in any metadata associated with the image too)
+					if (haveFileUrl)
+					{
+						var imageWithPathAndMaybeMetadata = PalasoImage.FromFile(textData);
+						plainImage.Dispose();//important: don't do this until we've successfully created the imageWithPathAndMaybeMetadata
+						return imageWithPathAndMaybeMetadata;
+					}
+					else
+					{
+						return plainImage;
+					}
 				}
 				catch (Exception e)
 				{
 					Logger.WriteEvent("BloomClipboard.GetImageFromClipboard() failed with message " + e.Message);
-					return image; // at worst, we should return null; if FromFile() failed, we return an image
+					return plainImage; // at worst, we should return null; if FromFile() failed, we return an image
 				}
 			}
 			// the ContainsImage() returns false when copying an PNG from MS Word
