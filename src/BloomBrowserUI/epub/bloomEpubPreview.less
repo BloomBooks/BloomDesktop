@@ -1,0 +1,95 @@
+body {
+	background-color: #808080;
+}
+/*#device-outer {
+  margin: auto;
+  width: 349px;
+  height: 457px;
+  padding-top: 35px;
+  padding-left: 27px;
+  background-color: #333;
+  border-radius: 25px;
+}
+#device-inner {
+  margin: 0px auto;
+  background-color: #FFF;
+  height: calc(100% - 49px);
+  width: calc(100% - 49px);
+*/ 
+* {
+    box-sizing: border-box;
+    position: relative;
+}
+/*#instructions:before{
+  background-image: url("../epub/experimentalEpubNotice.svg");
+  background-repeat: no-repeat;
+   padding-top: 131px;
+  content:''
+}*/
+#instructions{
+  background-image: url("../epub/madBloomScientist.svg");
+  background-repeat: no-repeat;
+  font-family:"Segoe UI";
+  position: absolute;
+  top:10px;
+  left: 50px;
+  width: 217px;
+  padding-top: 131px;
+  display: block;
+}
+#device {
+    margin-left: 300px;
+    height: 469px;
+    width: 248px;
+    padding-left: 30px;
+    padding-top: 72px;
+    padding-bottom: 18px;
+    //border: 5px solid white;
+    border-radius: 38px;
+    background-color: #404040;
+    box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.1);
+}
+
+//The speaker is a "before" rule
+@SpeakerLength : 80px;
+#device:before {
+    width: @SpeakerLength;
+    height: 10px;
+    top: 35px;
+    left: calc(~"50% - "@SpeakerLength - 39px);
+    border-radius: 10px;
+    background-color: @LightGrey;
+}
+@CircleDiameter: 40px;
+@LightGrey: #575757;
+
+//the bottom button is the "after" rule
+#device:after {
+    width: @CircleDiameter;
+    height: @CircleDiameter;
+    border-radius: 50%;
+    border: solid 5px @LightGrey;
+    left: calc(~"50% - "@CircleDiameter - 16px);
+    bottom: 10px;
+}
+#device:before, #device:after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+
+}
+
+iframe {
+	//background-color: white; 
+  margin:auto;
+  height: ~"calc(100% - 51px)";
+  width: ~"calc(100% - 30px)";
+  border: none;
+}
+
+.ui-resizable-se {
+    width: 50px;
+    height: 50px;
+    right: -20px;
+    bottom: -20px;
+}

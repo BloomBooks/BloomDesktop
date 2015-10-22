@@ -1,19 +1,84 @@
-body {
-	background-color: #808080;
+﻿body {
+  background-color: #808080;
 }
-#container {
+/*#device-outer {
   margin: auto;
   width: 349px;
-  background-image: url("smartphone16x9.svg");
-  background-repeat: no-repeat;
   height: 457px;
-  background-size: contain;
   padding-top: 35px;
   padding-left: 27px;
+  background-color: #333;
+  border-radius: 25px;
+}
+#device-inner {
+  margin: 0px auto;
+  background-color: #FFF;
+  height: calc(100% - 49px);
+  width: calc(100% - 49px);
+*/
+* {
+  box-sizing: border-box;
+  position: relative;
+}
+/*#instructions:before{
+  background-image: url("../epub/experimentalEpubNotice.svg");
+  background-repeat: no-repeat;
+   padding-top: 131px;
+  content:''
+}*/
+#instructions {
+  background-image: url("../epub/madBloomScientist.svg");
+  background-repeat: no-repeat;
+  font-family: "Segoe UI";
+  position: absolute;
+  top: 10px;
+  left: 50px;
+  width: 217px;
+  padding-top: 131px;
+  display: block;
+}
+#device {
+  margin-left: 300px;
+  height: 469px;
+  width: 248px;
+  padding-left: 30px;
+  padding-top: 72px;
+  padding-bottom: 18px;
+  border-radius: 38px;
+  background-color: #404040;
+  box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.1);
+}
+#device:before {
+  width: 80px;
+  height: 10px;
+  top: 35px;
+  left: calc(50% -  41px);
+  border-radius: 10px;
+  background-color: #575757;
+}
+#device:after {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: solid 5px #575757;
+  left: calc(50% -  24px);
+  bottom: 10px;
+}
+#device:before,
+#device:after {
+  content: '';
+  position: absolute;
+  z-index: 2;
 }
 iframe {
-	background-color: white; 
-margin:auto;
-width:225px;
-height:400px;
+  margin: auto;
+  height: calc(100% - 51px);
+  width: calc(100% - 30px);
+  border: none;
+}
+.ui-resizable-se {
+  width: 50px;
+  height: 50px;
+  right: -20px;
+  bottom: -20px;
 }

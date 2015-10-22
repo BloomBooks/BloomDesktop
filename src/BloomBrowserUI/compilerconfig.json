@@ -106,11 +106,11 @@
   {
     "outputFile": "bookLayout/CommonBasePageEpub.css",
     "inputFile": "bookLayout/CommonBasePageEpub.less",
-     "minify": {
+    "minify": {
       "enabled": false
     },
     "sourceMap": true
- },
+  },
   {
     "outputFile": "bookLayout/basePage.css",
     "inputFile": "bookLayout/basePage.less",
@@ -118,6 +118,13 @@
       "enabled": false
     },
     "sourceMap": true
+  },
+  {
+    "outputFile": "Readium/bloomEpubPreview.css",
+    "inputFile": "epub/bloomEpubPreview.less",
+    "minify": {
+      "enabled": false
+    }
   }
   ,
   {
