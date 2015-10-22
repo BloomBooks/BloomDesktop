@@ -53,7 +53,7 @@ class AudioRecording {
     levelCanvasWidth: number = 15;
     levelCanvasHeight: number = 80;
     hiddenSourceBubbles: JQuery;
-    audioDevicesUrl = 'http://localhost:8089/bloom/audioDevices';
+    audioDevicesUrl = '/bloom/audioDevices';
 
     private moveToNextSpan(): void {
         var current: JQuery = $('.ui-audioCurrent');
@@ -90,6 +90,7 @@ class AudioRecording {
     }
 
     private endRecordCurrent(): void {
+        if (!this.recording) return; // sometimes we get bounce?
         this.recording = false;
         this.fireCSharpEvent("endRecordAudio", "");
         // The player should already be set to play back the audio we just recorded.
@@ -276,25 +277,30 @@ class AudioRecording {
                 classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
             },
             events: {
-                show: function(event, api) {
-                    $('#audio-close').click(function () {
+                show: function (event, api) {
+                    // I've sometimes observed events like click being handled repeatedly for a single click.
+                    // Adding thse .off calls seems to help...it's as if something causes this show event to happen
+                    // more than once so the event handlers were being added repeatedly, but I haven't caught
+                    // that actually happening. However, the off() calls seem to prevent it.
+                    $('#audio-close').off().click(function () {
                         thisClass.hiddenSourceBubbles.show();
                         api.hide();
                     });
-                    $('#audio-next').click(function () {
+                    $('#audio-next').off().click(function () {
                         thisClass.moveToNextSpan();
                     });
-                    $('#audio-prev').click(function () {
+                    $('#audio-prev').off().click(function () {
                         thisClass.moveToPrevSpan();
                     });
-                    $('#audio-record').mousedown(function () {
+                    $('#audio-record').off().mousedown(function () {
                         thisClass.startRecordCurrent();
                     }).mouseup(function() {
                         thisClass.endRecordCurrent();
                     });
-                    $('#audio-play').click(function() {
+                    $('#audio-play').off().click(function() {
                         thisClass.playCurrent();
                     });
+                    $('#player').off();
                     $('#player').bind('error', function () {
                         thisClass.cantPlay();
                     });
@@ -302,7 +308,7 @@ class AudioRecording {
                     $('#player').bind('ended', function () {
                         thisClass.playEnded();
                     });
-                    $('#audio-input-dev').click(function () {
+                    $('#audio-input-dev').off().click(function () {
                         thisClass.selectInputDevice();
                     });
                     thisClass.setStatus('record', Status.Expected);
@@ -709,7 +715,10 @@ class AudioRecording {
                     newId = reuseThis.id;
                     newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
                 }
-                if (!newId) newId = this.createUuid();
+                if (!newId) {
+                    newId = this.createUuid();
+                    if (/^\d/.test(newId)) newId = 'i' + newId; // valid ID in XHTML can't start with digit
+                }
                 newHtml += '<span id= "' + newId + '" class="audio-sentence"' + newMd5 + '>' + fragment.text + '</span>';
             }
         }
@@ -722,6 +731,8 @@ class AudioRecording {
         if (fragment.isSpace) return false; // this seems to be reliable
         // initial white-space fragments may currently be marked sentence
         var test = fragment.text.replace(/<br *[^>]*\/?>/g, " ");
+        // and some may contain only nbsp
+        test = test.replace("&nbsp;", " ");
         return !test.match(/^\s*$/);
     }
 
