@@ -1,0 +1,19 @@
+body {
+	background-color: #808080;
+}
+#container {
+  margin: auto;
+  width: 349px;
+  background-image: url("smartphone16x9.svg");
+  background-repeat: no-repeat;
+  height: 457px;
+  background-size: contain;
+  padding-top: 35px;
+  padding-left: 27px;
+}
+iframe {
+	background-color: white; 
+margin:auto;
+width:225px;
+height:400px;
+}
