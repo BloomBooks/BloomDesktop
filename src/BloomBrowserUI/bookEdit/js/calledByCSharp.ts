@@ -73,6 +73,30 @@ class CalledByCSharp {
       contentWindow['SetCopyrightAndLicense'](contents);
   }
 
+    recordAudio() {
+      var contentWindow = this.getPageContent();
+        if (!contentWindow) return;
+        if (typeof contentWindow['recordAudio'] === 'function') {
+            contentWindow['recordAudio']();
+        }
+    }
+
+    cleanupAudio() {
+        var contentWindow = this.getPageContent();
+        if (!contentWindow) return;
+        if (typeof contentWindow['cleanupAudio'] === 'function') {
+            contentWindow['cleanupAudio']();
+        }
+    }
+
+    setPeakLevel(level:string) {
+        var contentWindow = this.getPageContent();
+        if (!contentWindow) return;
+        if (typeof contentWindow['setPeakLevel'] === 'function') {
+            contentWindow['setPeakLevel'](level);
+        }
+    }
+
   removeSynphonyMarkup() {
 
     var page = this.getPageContent();

@@ -83,20 +83,20 @@ namespace BloomTests.Publish
 			toCheck.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='dcterms:modified']");
 
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml']");
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fmy_image' and @href='my_image.png']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='myImage' and @href='myImage.png']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='my_image' and @href='my_image.png']");
 			toCheck.HasAtLeastOneMatchForXpath("package/spine/itemref[@idref='f1']");
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='nav']");
 			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='cover-image']");
 
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fsettingsCollectionStyles' and @href='settingsCollectionStyles.css']");
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fcustomCollectionStyles' and @href='customCollectionStyles.css']");
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fcustomBookStyles' and @href='customBookStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='settingsCollectionStyles' and @href='settingsCollectionStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customCollectionStyles' and @href='customCollectionStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customBookStyles' and @href='customBookStyles.css']");
 
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fAndikaNewBasic-R' and @href='AndikaNewBasic-R.ttf']");
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fAndikaNewBasic-B' and @href='AndikaNewBasic-B.ttf']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-R' and @href='AndikaNewBasic-R.ttf']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-B' and @href='AndikaNewBasic-B.ttf']");
 			// It should include italic and BI too...though eventually it may get smarter and figure they are not used...but I think this is enough to test
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='ffonts' and @href='fonts.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fonts' and @href='fonts.css']");
 
 			var packageDoc = XDocument.Parse(packageData);
 			XNamespace opf = "http://www.idpf.org/2007/opf";
@@ -145,6 +145,86 @@ namespace BloomTests.Publish
 		private EpubMakerAdjusted CreateEpubMaker(Bloom.Book.Book book)
 		{
 			return new EpubMakerAdjusted(book, new BookThumbNailer(_thumbnailer.Object));
+		}
+
+		[Test]
+		public void Missing_Audio_Ignored()
+		{
+			// Similar input as the basic SaveAudio, (also verifies that IDs are really adjusted), but this time we don't create one of the expected audio files.
+			SetDom(@"<div class='bloom-page'>
+						<div id='somewrapper'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
+									This is some text
+								</div>
+								<div lang = '*'>more text</div>
+							</div>
+							<div><img src='1my$Image.png'></img></div>
+							<div><img src='my%20image.png'></img></div>
+						</div>
+					</div>",
+						   @"<link rel='stylesheet' href='../settingsCollectionStyles.css'/>
+							<link rel='stylesheet' href='../customCollectionStyles.css'/>
+							<link rel='stylesheet' href='customBookStyles.css'/>");
+			var book = CreateBook();
+
+			CreateCommonCssFiles(book);
+
+			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("1my$Image.png"));
+			var epubFolder = new TemporaryFolder();
+			var epubName = "output.epub";
+			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
+			using (var maker = new EpubMakerAdjusted(book))
+				maker.SaveEpub(epubPath);
+			Assert.That(File.Exists(epubPath));
+			var zip = new ZipFile(epubPath);
+
+			// Every epub must have a mimetype at the root
+			GetZipContent(zip, "mimetype");
+
+			// Every epub must have a "META-INF/container.xml." (case matters). Most things we could check about its content
+			// would be redundant with the code that produces it, but we can at least verify that it is valid
+			// XML and points us at the rootfile (open package format) file.
+			var containerData = GetZipContent(zip, "META-INF/container.xml");
+			var doc = XDocument.Parse(containerData);
+			XNamespace ns = doc.Root.Attribute("xmlns").Value;
+			var packageFile = doc.Root.Element(ns + "rootfiles").Element(ns + "rootfile").Attribute("full-path").Value;
+
+			// That gives us a path to the main package file, typically content.opf
+			var packageData = StripXmlHeader(GetZipContent(zip, packageFile));
+			var toCheck = AssertThatXmlIn.String(packageData);
+			var mgr = new XmlNamespaceManager(toCheck.NameTable);
+			mgr.AddNamespace("dc", "http://purl.org/dc/elements/1.1/");
+			mgr.AddNamespace("opf", "http://www.idpf.org/2007/opf");
+			toCheck.HasAtLeastOneMatchForXpath("package[@version='3.0']");
+			toCheck.HasAtLeastOneMatchForXpath("package[@unique-identifier]");
+			toCheck.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:title", mgr);
+			toCheck.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:language", mgr);
+			toCheck.HasAtLeastOneMatchForXpath("opf:package/opf:metadata/dc:identifier", mgr);
+			toCheck.HasAtLeastOneMatchForXpath("package/metadata/meta[@property='dcterms:modified']");
+
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1my_Image' and @href='1my$Image.png']");
+			toCheck.HasNoMatchForXpath("package/manifest/item[@id='my_image']");
+			toCheck.HasAtLeastOneMatchForXpath("package/spine/itemref[@idref='f1']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='nav']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@properties='cover-image']");
+
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='settingsCollectionStyles' and @href='settingsCollectionStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customCollectionStyles' and @href='customCollectionStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customBookStyles' and @href='customBookStyles.css']");
+
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-R' and @href='AndikaNewBasic-R.ttf']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-B' and @href='AndikaNewBasic-B.ttf']");
+			// It should include italic and BI too...though eventually it may get smarter and figure they are not used...but I think this is enough to test
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fonts' and @href='fonts.css']");
+
+			var packageDoc = XDocument.Parse(packageData);
+			XNamespace opf = "http://www.idpf.org/2007/opf";
+			// Some attempt at validating that we actually included the images in the zip.
+			// Enhance: This undesirably depends on the exact order of items in the manifest.
+			var image1 = packageDoc.Root.Element(opf + "manifest").Elements(opf + "item").ToArray()[0].Attribute("href").Value;
+			GetZipEntry(zip, Path.GetDirectoryName(packageFile) + "/" + image1);
 		}
 
 		/// <summary>
@@ -200,7 +280,7 @@ namespace BloomTests.Publish
 			toCheck.HasAtLeastOneMatchForXpath("package[@version='3.0']");
 			toCheck.HasAtLeastOneMatchForXpath("package[@unique-identifier]");
 
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fmyImage' and @href='myImage.png']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='myImage' and @href='myImage.png']");
 
 			var packageDoc = XDocument.Parse(packageData);
 			XNamespace opf = "http://www.idpf.org/2007/opf";
@@ -421,9 +501,9 @@ namespace BloomTests.Publish
 
 			// should not strip out these three css files.
 			var toCheck = AssertThatXmlIn.String(packageData);
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fsettingsCollectionStyles' and @href='settingsCollectionStyles.css']");
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fcustomCollectionStyles' and @href='customCollectionStyles.css']");
-			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fcustomBookStyles' and @href='customBookStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='settingsCollectionStyles' and @href='settingsCollectionStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customCollectionStyles' and @href='customCollectionStyles.css']");
+			toCheck.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customBookStyles' and @href='customBookStyles.css']");
 
 			var packageDoc = XDocument.Parse(packageData);
 			XNamespace opf = "http://www.idpf.org/2007/opf";
@@ -746,6 +826,127 @@ namespace BloomTests.Publish
 				+ "%; height:auto; margin-left: " + picIndentPercent.ToString("F1") + "%; margin-top: 0px;']", mgr);
 		}
 
+		[Test]
+		public void BookWithAudio_ProducesOverlay()
+		{
+			SetDom(@"<div class='bloom-page A5Portrait'>
+						<div id='somewrapper' class='marginBox'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+								<div aria-describedby='qtip-1' class='bloom-editable' lang='xyz'>
+									<span id='a123'>This is some text.</span><span id='a23'>Another sentence</span>
+								</div>
+								<div lang = '*'>more text</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp4"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"));
+			var epubFolder = new TemporaryFolder();
+			var epubName = "output.epub";
+			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
+			using (var maker = new EpubMakerAdjusted(book))
+				maker.SaveEpub(epubPath);
+			Assert.That(File.Exists(epubPath));
+			var zip = new ZipFile(epubPath);
+
+			// Every epub must have a mimetype at the root
+			GetZipContent(zip, "mimetype");
+
+			var containerData = GetZipContent(zip, "META-INF/container.xml");
+			var doc = XDocument.Parse(containerData);
+			XNamespace ns = doc.Root.Attribute("xmlns").Value;
+			var packageFile = doc.Root.Element(ns + "rootfiles").Element(ns + "rootfile").Attribute("full-path").Value;
+			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
+			var packageData = StripXmlHeader(GetZipContent(zip, packageFile)).Replace("application/smil", "application^slash^smil").Replace("audio/", "audio^slash^");
+			var packageDoc = XDocument.Parse(packageData);
+			XNamespace opf = "http://www.idpf.org/2007/opf";
+
+			var assertManifest = AssertThatXmlIn.String(packageData);
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='a23' and @href='audio^slash^a23.mp3' and @media-type='audio^slash^mpeg']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='a123' and @href='audio^slash^a123.mp4' and @media-type='audio^slash^mp4']");
+
+			var smilData = StripXmlHeader(GetZipContent(zip, "content/1_overlay.smil"));
+			var mgr = new XmlNamespaceManager(new NameTable());
+			mgr.AddNamespace("smil", "http://www.w3.org/ns/SMIL");
+			mgr.AddNamespace("epub", "http://www.idpf.org/2007/ops");
+			var assertSmil = AssertThatXmlIn.String(smilData);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#a123']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#a23']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio/a123.mp4']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio/a23.mp3']", mgr);
+
+			GetZipEntry(zip, "content/audio/a123.mp4");
+			GetZipEntry(zip, "content/audio/a23.mp3");
+		}
+
+		/// <summary>
+		/// There's some special-case code for Ids that start with digits that we test here.
+		/// </summary>
+		[Test]
+		public void AudioWithParagraphsAndRealGuids_ProducesOverlay()
+		{
+			SetDom(@"<div class='bloom-page A5Portrait'>
+						<div id='somewrapper' class='marginBox'>
+							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
+								<div aria-describedby='qtip-1' class='bloom-editable' lang='xyz'>
+									<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2c'>This is some text.</span><span id='0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>
+								</div>
+								<div lang = '*'>more text</div>
+							</div>
+						</div>
+					</div>");
+			var book = CreateBook();
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "0d8e9910-dfa3-4376-9373-a869e109b763.mp3"));
+			var epubFolder = new TemporaryFolder();
+			var epubName = "output.epub";
+			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
+			using (var maker = new EpubMakerAdjusted(book))
+				maker.SaveEpub(epubPath);
+			Assert.That(File.Exists(epubPath));
+			var zip = new ZipFile(epubPath);
+
+			// Every epub must have a mimetype at the root
+			GetZipContent(zip, "mimetype");
+
+			var containerData = GetZipContent(zip, "META-INF/container.xml");
+			var doc = XDocument.Parse(containerData);
+			XNamespace ns = doc.Root.Attribute("xmlns").Value;
+			var packageFile = doc.Root.Element(ns + "rootfiles").Element(ns + "rootfile").Attribute("full-path").Value;
+			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
+			var packageData = StripXmlHeader(GetZipContent(zip, packageFile)).Replace("application/smil", "application^slash^smil");
+			var packageDoc = XDocument.Parse(packageData);
+			XNamespace opf = "http://www.idpf.org/2007/opf";
+
+			var assertManifest = AssertThatXmlIn.String(packageData);
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
+
+			var smilData = StripXmlHeader(GetZipContent(zip, "content/1_overlay.smil"));
+			var mgr = new XmlNamespaceManager(new NameTable());
+			mgr.AddNamespace("smil", "http://www.w3.org/ns/SMIL");
+			mgr.AddNamespace("epub", "http://www.idpf.org/2007/ops");
+			var assertSmil = AssertThatXmlIn.String(smilData);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio/0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", mgr);
+
+			GetZipEntry(zip, "content/audio/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4");
+			GetZipEntry(zip, "content/audio/0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
+		}
+
+		protected void MakeFakeAudio(string path)
+		{
+			Directory.CreateDirectory(Path.GetDirectoryName(path));
+			File.WriteAllText(path, "fake audio");
+		}
+
 		private string GetZipContent(ZipFile zip, string path)
 		{
 			var entry = GetZipEntry(zip, path);
@@ -771,6 +972,21 @@ namespace BloomTests.Publish
 			return data;
 		}
 
+		[TestCase("abc", ExpectedResult = "abc")]
+		[TestCase("123", ExpectedResult = "f123")]
+		[TestCase("123 abc", ExpectedResult = "f123abc")]
+		[TestCase("x*y", ExpectedResult = "x_y")]
+		[TestCase("x:y", ExpectedResult = "x:y")]
+		[TestCase("*edf", ExpectedResult = "_edf")]
+		[TestCase("a\u0300z", ExpectedResult = "a\u0300z")] // valid mid character
+		[TestCase("\u0300z", ExpectedResult = "f\u0300z")] // invalid start character
+		[TestCase("a\u037Ez", ExpectedResult = "a_z")] // high-range invalid
+		[TestCase("-abc", ExpectedResult = "f-abc")]
+		[Test]
+		public string ToValidXmlId(string input)
+		{
+			return EpubMaker.ToValidXmlId(input);
+		}
 
 	}
 

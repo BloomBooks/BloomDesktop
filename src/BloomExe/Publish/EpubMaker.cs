@@ -185,9 +185,90 @@ namespace Bloom.Publish
 					itemElt.SetAttributeValue("properties", "nav");
 				if (item == coverPageImageFile)
 					itemElt.SetAttributeValue("properties", "cover-image");
+				if (Path.GetExtension(item).ToLowerInvariant() == ".xhtml")
+				{
+					var overlay = GetOverlayName(item);
+					if (_manifestItems.Contains(overlay))
+						itemElt.SetAttributeValue("media-overlay", GetIdOfFile(overlay));
+				}
 				manifestElt.Add(itemElt);
 			}
 			MakeSpine(opf, rootElt, manifestPath);
+		}
+
+		private string AudioPathForId(string id)
+		{
+			var root = Path.Combine(Storage.FolderPath, "audio");
+			var extensions = new [] {"mp3", "mp4"}; // .ogg,, .wav, ...?
+			var fileNames = new List<string>(new [] {id});
+			foreach (var name in fileNames)
+			{
+				foreach (var ext in extensions)
+				{
+					var path = Path.Combine(root, Path.ChangeExtension(name, ext));
+					if (File.Exists(path))
+						return path;
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Create an audio overlay for the page if appropriate.
+		/// We are looking for the page to contain spans with IDs. For each such ID X,
+		/// we look for a file _storage.FolderPath/audio/X.mp{3,4}.
+		/// If we find at least one such file, we create pageDocName_overlay.smil
+		/// with appropriate contents to tell the reader how to read all such spans
+		/// aloud.
+		/// </summary>
+		/// <param name="pageDom"></param>
+		/// <param name="pageDocName"></param>
+		private void AddAudioOverlay(HtmlDom pageDom, string pageDocName)
+		{
+			var spansWithIds = pageDom.RawDom.SafeSelectNodes(".//span[@id]").Cast<XmlElement>();
+			var spansWithAudio =
+				spansWithIds.Where(x =>AudioPathForId(x.Attributes["id"].Value) != null);
+			if (!spansWithAudio.Any())
+				return; // todo: test this case
+			var overlayName = GetOverlayName(pageDocName);
+			_manifestItems.Add(overlayName);
+			string smilNamespace = "http://www.w3.org/ns/SMIL";
+			XNamespace smil = smilNamespace;
+			string epubNamespace = "http://www.idpf.org/2007/ops";
+			XNamespace epub = epubNamespace;
+			var seq = new XElement(smil+"seq",
+				new XAttribute("id", "id1"), // all <seq> I've seen have this, not sure whether necessary
+				new XAttribute(epub + "textref", pageDocName),
+				new XAttribute(epub + "type", "bodymatter chapter") // only type I've encountered
+				);
+			var root = new XElement(smil + "smil",
+				new XAttribute( "xmlns", smilNamespace),
+				new XAttribute(XNamespace.Xmlns + "epub", epubNamespace),
+				new XAttribute("version", "3.0"),
+				new XElement(smil + "body",
+					seq));
+			int index = 1;
+			foreach (var span in spansWithAudio)
+			{
+				var spanId = span.Attributes["id"].Value;
+				var path = AudioPathForId(spanId);
+				seq.Add(new XElement(smil+"par",
+					new XAttribute("id", "s" + index++),
+					new XElement(smil + "text",
+						new XAttribute("src", pageDocName + "#" + spanId)),
+						new XElement(smil + "audio",
+							new XAttribute("src", "audio/" + Path.GetFileName(path)))));
+				CopyFileToEpub(path);
+			}
+			var overlayPath = Path.Combine(_contentFolder, overlayName);
+			using (var writer = XmlWriter.Create(overlayPath))
+				root.WriteTo(writer);
+
+		}
+
+		private static string GetOverlayName(string pageDocName)
+		{
+			return Path.ChangeExtension(Path.GetFileNameWithoutExtension(pageDocName) + "_overlay", "smil");
 		}
 
 		private void MakeSpine(XNamespace opf, XElement rootElt, string manifestPath)
@@ -263,6 +344,7 @@ namespace Bloom.Publish
 
 			_manifestItems.Add(pageDocName);
 			_spineItems.Add(pageDocName);
+			AddAudioOverlay(pageDom, pageDocName);
 
 			if (pageIndex == firstContentPageIndex)
 				_firstContentPageItem = pageDocName;
@@ -625,7 +707,11 @@ namespace Bloom.Publish
 			if (_mapSrcPathToDestFileName.ContainsKey(srcPath))
 				return; // File already present, must be used more than once.
 			// Validator warns against spaces in filenames.
-			var originalFileName = Path.GetFileName(srcPath);
+			string originalFileName;
+			if (srcPath.StartsWith(Storage.FolderPath))
+				originalFileName = srcPath.Substring(Storage.FolderPath.Length + 1).Replace("\\", "/"); // allows keeping folder structure
+			else
+				originalFileName = Path.GetFileName(srcPath); // probably can't happen, but in case, put at root.
 			string fileName = originalFileName.Replace(" ", "_");
 			var dstPath = Path.Combine(_contentFolder, fileName);
 			// We deleted the root directory at the start, so if the file is already
@@ -638,6 +724,7 @@ namespace Bloom.Publish
 			}
 			if (originalFileName != fileName)
 				_mapChangedFileNames[originalFileName] = fileName;
+			Directory.CreateDirectory(Path.GetDirectoryName(dstPath));
 			CopyFile(srcPath, dstPath);
 			_manifestItems.Add(fileName);
 			_mapSrcPathToDestFileName[srcPath] = fileName;
@@ -784,10 +871,7 @@ namespace Bloom.Publish
 			string id;
 			if (_mapItemToId.TryGetValue(item, out id))
 				return id;
-			// Attempt to use file name as ID for recognizability
-			// Remove spaces which are illegal in XML IDs.
-			// Add initial letter to avoid starting with digit
-			id = "f" + Path.GetFileNameWithoutExtension(item).Replace(" ", "");
+			id = ToValidXmlId(Path.GetFileNameWithoutExtension(item));
 			var idOriginal = id;
 			for (int i = 1; _idsUsed.Contains(id.ToLowerInvariant()); i++)
 			{
@@ -798,6 +882,30 @@ namespace Bloom.Publish
 			_mapItemToId[item] = id;
 
 			return id;
+		}
+
+		/// <summary>
+		/// Given a filename, attempt to make a valid XML ID that is as similar as possible.
+		/// - if it's OK don't change it
+		/// - if it contains spaces remove them
+		/// - if it starts with an invalid character add an initial 'f'
+		/// - change other invalid characters to underlines
+		/// We do this because epub technically uses XHTML and therefore follows XML rules.
+		/// I doubt most readers care but validators do and we would like our ebooks to validate.
+		/// </summary>
+		/// <param name="item"></param>
+		/// <returns></returns>
+		internal static string ToValidXmlId(string item)
+		{
+			string output = item.Replace(" ", "");
+			// This conforms to http://www.w3.org/TR/REC-xml/#NT-Name except that we don't handle valid characters above FFFF.
+			string validStartRanges =
+				":A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD";
+			string validChars = validStartRanges + "\\-.0-9\u00b7\u0300-\u036F\u203F-\u2040";
+			output = Regex.Replace(output, "[^" + validChars + "]", "_");
+			if (!new Regex("^[" + validStartRanges + "]").IsMatch(output))
+				return "f" +output;
+			return output;
 		}
 
 		private object GetMediaType(string item)
@@ -819,7 +927,12 @@ namespace Bloom.Publish
 				case "ttf":
 				case "otf":
 					return "application/font-sfnt"; // http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts
-
+				case "smil":
+					return "application/smil+xml";
+				case "mp4":
+					return "audio/mp4";
+				case "mp3":
+					return "audio/mpeg";
 			}
 			throw new ApplicationException("unexpected file type in file " + item);
 		}

@@ -82,6 +82,23 @@ namespace Bloom.Edit
 
 			//we're giving it to the parent control through the TopBarControls property
 			Controls.Remove(_topBarPanel);
+			SetupBrowserContextMenu();
+		}
+
+		private void SetupBrowserContextMenu()
+		{
+			_browser1.ContextMenuProvider = args =>
+			{
+				var recordItem = new MenuItem("record audio", (sender, eventArgs) => RecordAudio());
+				args.ContextMenu.MenuItems.Add(recordItem);
+				return false; // Also show standard menu options
+			};
+		}
+
+		private object RecordAudio()
+		{
+			_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.recordAudio(); }");
+			return null;
 		}
 
 		private void HandleControlKeyEvent(object keyData)
@@ -90,6 +107,12 @@ namespace Bloom.Edit
 			{
 				_model.HandleAddNewPageKeystroke(null);
 			}
+		}
+
+		internal void SetPeakLevel(string level)
+		{
+			if (this.IsHandleCreated)
+				Invoke((Action) (() =>_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.setPeakLevel(" + level + "); }")));
 		}
 
 #if TooExpensive
@@ -896,7 +919,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
-			RunJavaScript("if (calledByCSharp) { calledByCSharp.removeSynphonyMarkup(); }");
+			RunJavaScript("if (calledByCSharp) { calledByCSharp.removeSynphonyMarkup(); calledByCSharp.cleanupAudio(); }");
 			_browser1.ReadEditableAreasNow();
 		}
 

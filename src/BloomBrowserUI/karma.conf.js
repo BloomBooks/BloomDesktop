@@ -40,6 +40,7 @@ module.exports = function (config) {
             '**/StyleEditor/StyleEditor.js',
             '**/OverflowChecker/OverflowChecker.js',
             '**/sourceBubbles/bloomSourceBubbles.js',
+            '**/audio/audioRecording.js',
             // as long as the test filename is in the test/specs folder, it will be included in the test run
             'test/specs/**/*.js',
 

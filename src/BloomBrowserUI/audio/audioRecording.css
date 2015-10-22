@@ -1,0 +1,114 @@
+﻿body #qtip-audio {
+  background-color: #faf7cc !important;
+  border-color: #0C8597 !important;
+}
+body #qtip-audio .ui-icon {
+  display: inline-block;
+}
+body div.ui-audioTitle {
+  color: #0C8597;
+  font-size: larger;
+  margin-top: 5px;
+  font-size: large;
+}
+body div.ui-audioBody {
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+body button.ui-audio-button {
+  height: 40px;
+  width: 40px;
+  border: none;
+  background-size: contain;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  display: block;
+  margin-bottom: 5px;
+}
+body button#audio-prev {
+  height: 20px;
+  width: 20px;
+}
+body button#audio-record.enabled {
+  background-image: url(audio/record_enabled.svg);
+}
+body button#audio-record.expected {
+  background-image: url(audio/record_expected.svg);
+}
+body button#audio-record.disabled {
+  background-image: url(audio/record_disabled.svg);
+}
+body button#audio-record.active {
+  background-image: url(audio/record_active.svg);
+}
+body button#audio-play.enabled {
+  background-image: url(audio/play_enabled.svg);
+}
+body button#audio-play.expected {
+  background-image: url(audio/play_expected.svg);
+}
+body button#audio-play.disabled {
+  background-image: url(audio/play_disabled.svg);
+}
+body button#audio-play.active {
+  background-image: url(audio/play_active.svg);
+}
+body button#audio-next.enabled {
+  background-image: url(audio/next_enabled.svg);
+}
+body button#audio-next.expected {
+  background-image: url(audio/next_expected.svg);
+}
+body button#audio-next.disabled {
+  background-image: url(audio/next_disabled.svg);
+}
+body button#audio-prev.enabled {
+  background-image: url(audio/prev_enabled.svg);
+}
+body button#audio-prev.disabled {
+  background-image: url(audio/prev_disabled.svg);
+}
+body div.button-label-wrapper {
+  display: inline-block;
+  margin-left: 20px;
+}
+body span.audio-label {
+  font-size: x-small;
+  color: #0C8597;
+}
+body span.audio-label.expected {
+  color: #96668f;
+}
+body button#audio-prev {
+  margin-bottom: 25px;
+}
+body div.ui-audioFooter {
+  margin-top: 30px;
+  margin-bottom: 5px;
+}
+body span.ui-audioCurrent {
+  background-color: #faf7cc;
+}
+body div.ui-audioMeter {
+  float: right;
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
+body #audio-devlist {
+  display: none;
+  position: absolute;
+  background-color: white;
+  width: 200px;
+}
+body #audio-devlist li {
+  min-height: 20px;
+  font-size: 12px;
+}
+body #audio-devlist li:hover {
+  background-color: lightgray;
+}
+body #audio-input-dev {
+  margin-top: 2px;
+  width: 15px;
+}

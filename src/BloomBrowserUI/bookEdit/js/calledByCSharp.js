@@ -61,6 +61,30 @@ var CalledByCSharp = (function () {
         if (typeof contentWindow['SetCopyrightAndLicense'] === 'function')
             contentWindow['SetCopyrightAndLicense'](contents);
     };
+    CalledByCSharp.prototype.recordAudio = function () {
+        var contentWindow = this.getPageContent();
+        if (!contentWindow)
+            return;
+        if (typeof contentWindow['recordAudio'] === 'function') {
+            contentWindow['recordAudio']();
+        }
+    };
+    CalledByCSharp.prototype.cleanupAudio = function () {
+        var contentWindow = this.getPageContent();
+        if (!contentWindow)
+            return;
+        if (typeof contentWindow['cleanupAudio'] === 'function') {
+            contentWindow['cleanupAudio']();
+        }
+    };
+    CalledByCSharp.prototype.setPeakLevel = function (level) {
+        var contentWindow = this.getPageContent();
+        if (!contentWindow)
+            return;
+        if (typeof contentWindow['setPeakLevel'] === 'function') {
+            contentWindow['setPeakLevel'](level);
+        }
+    };
     CalledByCSharp.prototype.removeSynphonyMarkup = function () {
         var page = this.getPageContent();
         if (!page)

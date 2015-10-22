@@ -119,4 +119,9 @@
     },
     "sourceMap": true
   }
+  ,
+  {
+    "outputFile": "audio/audioRecording.css",
+    "inputFile": "audio/audioRecording.less"
+  }
 ]

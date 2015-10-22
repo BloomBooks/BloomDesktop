@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,7 @@ using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.UI.WindowsForms.Reporting;
+using Palaso.Media.Naudio;
 
 namespace Bloom.Edit
 {
@@ -660,7 +662,11 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
 			_view.AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
 			_view.AddMessageEventListener("chooseLayout", (id) => ChangePageLayoutBasedOnTemplate(id));
+			_view.AddMessageEventListener("startRecordAudio", StartRecordAudio);
+			_view.AddMessageEventListener("endRecordAudio", EndRecordAudio);
+			_view.AddMessageEventListener("changeRecordingDevice", ChangeRecordingDevice);
 
+			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
 		}
 
 
@@ -697,6 +703,25 @@ namespace Bloom.Edit
 			//there was some error figuring out a default page, let's just let the user choose what they want
 			if(this._view!=null)
 				this._view.ShowAddPageDialog();
+		}
+
+		AudioRecording _audioRecording = new AudioRecording();
+		/// <summary>
+		/// Start recording audio for the current segment (whose ID is the argument)
+		/// </summary>
+		/// <param name="segmentId"></param>
+		private void StartRecordAudio(string segmentId)
+		{
+			_audioRecording.Path = Path.Combine(_currentlyDisplayedBook.FolderPath, "audio", segmentId + ".wav");
+			_audioRecording.StartRecording();
+		}
+		/// <summary>
+		/// Stop recording and save the result.
+		/// </summary>
+		/// <param name="dummy"></param>
+		private void EndRecordAudio(string dummy)
+		{
+			_audioRecording.StopRecording();
 		}
 
 		private Dictionary<string, IPage> GetTemplatePagesForThisBook()
@@ -748,6 +773,11 @@ namespace Bloom.Edit
 				else
 					_pageSelection.SelectPage(pageToChange);
 			}
+		}
+
+		private void ChangeRecordingDevice(string deviceName)
+		{
+			_audioRecording.ChangeRecordingDevice(deviceName);
 		}
 
 		private void RethinkPageAndReloadIt(string obj)
