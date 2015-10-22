@@ -463,9 +463,11 @@ namespace Bloom.Publish
 			// if we modified it to have localhost: links to the JS and CSS. Haven't tried this yet. The current
 			// approach at least works.
 			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
-			var rootPath = Path.Combine(tempFolder, "readium-cloudreader.htm");
+			
+			var rootPath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
+			File.WriteAllText(rootPath,string.Format("<html><head><link rel='stylesheet' type='text/css' href='bloomEpubPreview.css'></head>" +
+													 "<body><div id='container'><iframe src='readium-cloudreader.htm?epub={0}'></iframe></div></body></html>", Path.GetFileName(_model.StagingDirectory)));
 			var localPath = rootPath.ToLocalhost();
-			localPath += "?epub=" +Path.GetFileName(_model.StagingDirectory);
 			_epubPreviewBrowser.Navigate(localPath, false);
 		}
 

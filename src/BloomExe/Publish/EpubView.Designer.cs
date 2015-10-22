@@ -54,6 +54,7 @@
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(448, 100);
 			this.panel1.TabIndex = 1;
+			this.panel1.Visible = false;
 			// 
 			// label1
 			// 
@@ -63,9 +64,6 @@
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(430, 69);
 			this.label1.TabIndex = 1;
-			this.label1.Text = "The preview below shows roughly what this book will look like as an epub. Results" +
-    " will vary from one reader to another. Click Help for more information. Click Sa" +
-    "ve (above) to create an epub.";
 			// 
 			// EpubView
 			// 
