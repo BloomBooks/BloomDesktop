@@ -51,7 +51,7 @@ var AudioRecording = (function () {
     function AudioRecording() {
         this.levelCanvasWidth = 15;
         this.levelCanvasHeight = 80;
-        this.audioDevicesUrl = 'http://localhost:8089/bloom/audioDevices';
+        this.audioDevicesUrl = '/bloom/audioDevices';
     }
     AudioRecording.prototype.moveToNextSpan = function () {
         var current = $('.ui-audioCurrent');
@@ -88,6 +88,8 @@ var AudioRecording = (function () {
         this.setCurrentSpan(current, prev);
     };
     AudioRecording.prototype.endRecordCurrent = function () {
+        if (!this.recording)
+            return; // sometimes we get bounce?
         this.recording = false;
         this.fireCSharpEvent("endRecordAudio", "");
         // The player should already be set to play back the audio we just recorded.
@@ -270,31 +272,36 @@ var AudioRecording = (function () {
             },
             events: {
                 show: function (event, api) {
-                    $('#audio-close').click(function () {
+                    // I've sometimes observed events like click being handled repeatedly for a single click.
+                    // Adding thse .off calls seems to help...it's as if something causes this show event to happen
+                    // more than once so the event handlers were being added repeatedly, but I haven't caught
+                    // that actually happening. However, the off() calls seem to prevent it.
+                    $('#audio-close').off().click(function () {
                         thisClass.hiddenSourceBubbles.show();
                         api.hide();
                     });
-                    $('#audio-next').click(function () {
+                    $('#audio-next').off().click(function () {
                         thisClass.moveToNextSpan();
                     });
-                    $('#audio-prev').click(function () {
+                    $('#audio-prev').off().click(function () {
                         thisClass.moveToPrevSpan();
                     });
-                    $('#audio-record').mousedown(function () {
+                    $('#audio-record').off().mousedown(function () {
                         thisClass.startRecordCurrent();
                     }).mouseup(function () {
                         thisClass.endRecordCurrent();
                     });
-                    $('#audio-play').click(function () {
+                    $('#audio-play').off().click(function () {
                         thisClass.playCurrent();
                     });
+                    $('#player').off();
                     $('#player').bind('error', function () {
                         thisClass.cantPlay();
                     });
                     $('#player').bind('ended', function () {
                         thisClass.playEnded();
                     });
-                    $('#audio-input-dev').click(function () {
+                    $('#audio-input-dev').off().click(function () {
                         thisClass.selectInputDevice();
                     });
                     thisClass.setStatus('record', Status.Expected);
@@ -670,8 +677,11 @@ var AudioRecording = (function () {
                     newId = reuseThis.id;
                     newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
                 }
-                if (!newId)
+                if (!newId) {
                     newId = this.createUuid();
+                    if (/^\d/.test(newId))
+                        newId = 'i' + newId; // valid ID in XHTML can't start with digit
+                }
                 newHtml += '<span id= "' + newId + '" class="audio-sentence"' + newMd5 + '>' + fragment.text + '</span>';
             }
         }
@@ -683,6 +693,8 @@ var AudioRecording = (function () {
             return false; // this seems to be reliable
         // initial white-space fragments may currently be marked sentence
         var test = fragment.text.replace(/<br *[^>]*\/?>/g, " ");
+        // and some may contain only nbsp
+        test = test.replace("&nbsp;", " ");
         return !test.match(/^\s*$/);
     };
     // Clean up stuff audio recording leaves around that should not be saved.

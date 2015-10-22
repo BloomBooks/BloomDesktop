@@ -41,7 +41,7 @@ namespace Bloom.Edit
 		{
 			if (string.IsNullOrEmpty(LocateAndRememberLAMEPath()))
 			{
-				message = LocalizationManager.GetString("PublishTab.EpubNeedsLame", "To Make talking books, first install \"Lame For Audacity\", if it is legal in your country.  Google \"Lame For Audacity\" to get an up-to-date link", "");
+				message = LocalizationManager.GetString("PublishTab.EpubNeedsLame", "To make talking books, first install \"Lame For Audacity\", if it is legal in your country.  Google \"Lame For Audacity\" to get an up-to-date link", "");
 				return false;
 			}
 			message = "";
