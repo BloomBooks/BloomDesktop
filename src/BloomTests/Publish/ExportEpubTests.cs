@@ -174,7 +174,7 @@ namespace BloomTests.Publish
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 				maker.SaveEpub(epubPath);
 			Assert.That(File.Exists(epubPath));
 			var zip = new ZipFile(epubPath);
@@ -845,7 +845,7 @@ namespace BloomTests.Publish
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 				maker.SaveEpub(epubPath);
 			Assert.That(File.Exists(epubPath));
 			var zip = new ZipFile(epubPath);
@@ -893,7 +893,7 @@ namespace BloomTests.Publish
 						<div id='somewrapper' class='marginBox'>
 							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
 								<div aria-describedby='qtip-1' class='bloom-editable' lang='xyz'>
-									<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2c'>This is some text.</span><span id='0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>
+									<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2c'>This is some text.</span><span id='i0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>
 								</div>
 								<div lang = '*'>more text</div>
 							</div>
@@ -901,11 +901,11 @@ namespace BloomTests.Publish
 					</div>");
 			var book = CreateBook();
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4"));
-			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "0d8e9910-dfa3-4376-9373-a869e109b763.mp3"));
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b763.mp3"));
 			var epubFolder = new TemporaryFolder();
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
-			using (var maker = new EpubMakerAdjusted(book))
+			using (var maker = CreateEpubMaker(book))
 				maker.SaveEpub(epubPath);
 			Assert.That(File.Exists(epubPath));
 			var zip = new ZipFile(epubPath);
@@ -935,10 +935,10 @@ namespace BloomTests.Publish
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", mgr);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", mgr);
 			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4']", mgr);
-			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio/0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio/i0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", mgr);
 
 			GetZipEntry(zip, "content/audio/e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4");
-			GetZipEntry(zip, "content/audio/0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
+			GetZipEntry(zip, "content/audio/i0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
 		}
 
 		protected void MakeFakeAudio(string path)
