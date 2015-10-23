@@ -222,6 +222,10 @@ class AudioRecording {
 
     public startRecording(): void {
         var editable = <qtipInterface>$('div.bloom-editable');
+        this.makeSentenceSpans(editable);
+        // For displaying the qtip, restrict the editable divs to the ones that have
+        // audio sentences.
+        editable = <qtipInterface>$('span.audio-sentence').parents('div.bloom-editable');
         var thisClass = this;
         this.hiddenSourceBubbles = $('.uibloomSourceTextsBubble');
         this.hiddenSourceBubbles.hide();
@@ -326,7 +330,6 @@ class AudioRecording {
             }
             }
         });
-        this.makeSentenceSpans(editable);
     }
 
     // This gets invoked (via a non-object method of the same name in this file,

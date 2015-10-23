@@ -217,6 +217,10 @@ var AudioRecording = (function () {
     };
     AudioRecording.prototype.startRecording = function () {
         var editable = $('div.bloom-editable');
+        this.makeSentenceSpans(editable);
+        // For displaying the qtip, restrict the editable divs to the ones that have
+        // audio sentences.
+        editable = $('span.audio-sentence').parents('div.bloom-editable');
         var thisClass = this;
         this.hiddenSourceBubbles = $('.uibloomSourceTextsBubble');
         this.hiddenSourceBubbles.hide();
@@ -318,7 +322,6 @@ var AudioRecording = (function () {
                 }
             }
         });
-        this.makeSentenceSpans(editable);
     };
     // This gets invoked (via a non-object method of the same name in this file,
     // and one of the same name in CalledFromCSharp) when a C# event fires indicating
