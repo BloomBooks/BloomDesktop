@@ -26,13 +26,17 @@ namespace BloomTests.Edit
 		public void ClipboardRoundTripWorks_Png()
 		{
 			var imagePath = GetPathToImage("LineSpacing.png");
-			var image = PalasoImage.FromFile(imagePath);
-			BloomClipboard.CopyImageToClipboard(image);
-			var resultingImage = BloomClipboard.GetImageFromClipboard();
-			// There is no working PalasoImage.Equals(), so just try a few properties
-			Assert.AreEqual(image.FileName, resultingImage.FileName);
-			Assert.AreEqual(image.Image.Size, resultingImage.Image.Size);
-			Assert.AreEqual(image.Image.Flags, resultingImage.Image.Flags);
+			using (var image = PalasoImage.FromFile(imagePath))
+			{
+				BloomClipboard.CopyImageToClipboard(image);
+				using (var resultingImage = BloomClipboard.GetImageFromClipboard())
+				{
+					// There is no working PalasoImage.Equals(), so just try a few properties
+					Assert.AreEqual(image.FileName, resultingImage.FileName);
+					Assert.AreEqual(image.Image.Size, resultingImage.Image.Size);
+					Assert.AreEqual(image.Image.Flags, resultingImage.Image.Flags);
+				}
+			}
 		}
 
 		[Test]
@@ -40,13 +44,17 @@ namespace BloomTests.Edit
 		public void ClipboardRoundTripWorks_Bmp()
 		{
 			var imagePath = GetPathToImage("PasteHS.bmp");
-			var image = PalasoImage.FromFile(imagePath);
-			BloomClipboard.CopyImageToClipboard(image);
-			var resultingImage = BloomClipboard.GetImageFromClipboard();
-			// There is no working PalasoImage.Equals(), so just try a few properties
-			Assert.AreEqual(image.FileName, resultingImage.FileName);
-			Assert.AreEqual(image.Image.Size, resultingImage.Image.Size);
-			Assert.AreEqual(image.Image.Flags, resultingImage.Image.Flags);
+			using (var image = PalasoImage.FromFile(imagePath))
+			{
+				BloomClipboard.CopyImageToClipboard(image);
+				using (var resultingImage = BloomClipboard.GetImageFromClipboard())
+				{
+					// There is no working PalasoImage.Equals(), so just try a few properties
+					Assert.AreEqual(image.FileName, resultingImage.FileName);
+					Assert.AreEqual(image.Image.Size, resultingImage.Image.Size);
+					Assert.AreEqual(image.Image.Flags, resultingImage.Image.Flags);
+				}
+			}
 		}
 
 		[Test]
@@ -54,16 +62,20 @@ namespace BloomTests.Edit
 		public void ClipboardRoundTripWorks_GetsExistingMetadata()
 		{
 			var imagePath = GetPathToImage("AOR_EAG00864.png");
-			var image = PalasoImage.FromFile(imagePath);
-			var preCopyLicense = image.Metadata.License.Token;
-			var preCopyCollectionUri = image.Metadata.CollectionUri;
-			BloomClipboard.CopyImageToClipboard(image);
-			var resultingImage = BloomClipboard.GetImageFromClipboard();
-			// Test that the same metadata came through
-			Assert.IsTrue(resultingImage.Metadata.IsMinimallyComplete);
-			Assert.AreEqual(preCopyLicense, resultingImage.Metadata.License.Token);
-			Assert.AreEqual(preCopyCollectionUri, resultingImage.Metadata.CollectionUri);
-			Assert.AreEqual(image.Image.Flags, resultingImage.Image.Flags);
+			using (var image = PalasoImage.FromFile(imagePath))
+			{
+				var preCopyLicense = image.Metadata.License.Token;
+				var preCopyCollectionUri = image.Metadata.CollectionUri;
+				BloomClipboard.CopyImageToClipboard(image);
+				using (var resultingImage = BloomClipboard.GetImageFromClipboard())
+				{
+					// Test that the same metadata came through
+					Assert.IsTrue(resultingImage.Metadata.IsMinimallyComplete);
+					Assert.AreEqual(preCopyLicense, resultingImage.Metadata.License.Token);
+					Assert.AreEqual(preCopyCollectionUri, resultingImage.Metadata.CollectionUri);
+					Assert.AreEqual(image.Image.Flags, resultingImage.Image.Flags);
+				}
+			}
 		}
 	}
 }
