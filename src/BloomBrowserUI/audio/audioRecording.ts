@@ -687,7 +687,9 @@ class AudioRecording {
                 var currentMd5 = this.md5(fragment.text);
                 for (var j = 0; j < reuse.length; j++) {
                     if (currentMd5 === reuse[j].md5) {
-                        fragment.matchingAudioSpan = reuse[j];
+                        // It's convenient here (very locally) to add a field to fragment which is not part
+                        // of its spec in libsynphony.
+                        (<any>fragment).matchingAudioSpan = reuse[j];
                         reuse.splice(j, 1); // don't reuse again
                         break;
                     }
@@ -706,7 +708,7 @@ class AudioRecording {
             } else {
                 var newId: string = null;
                 var newMd5: string = '';
-                var reuseThis = fragment.matchingAudioSpan;
+                var reuseThis = (<any>fragment).matchingAudioSpan;
                 if (!reuseThis && reuse.length > 0) {
                     reuseThis = reuse[0]; // use first if none matches (preserves order at least)
                     reuse.splice(0, 1);

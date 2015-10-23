@@ -650,6 +650,8 @@ var AudioRecording = (function () {
                 var currentMd5 = this.md5(fragment.text);
                 for (var j = 0; j < reuse.length; j++) {
                     if (currentMd5 === reuse[j].md5) {
+                        // It's convenient here (very locally) to add a field to fragment which is not part
+                        // of its spec in libsynphony.
                         fragment.matchingAudioSpan = reuse[j];
                         reuse.splice(j, 1); // don't reuse again
                         break;
