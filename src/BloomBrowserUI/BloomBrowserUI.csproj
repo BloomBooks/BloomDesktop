@@ -161,6 +161,7 @@
     <Content Include="collection\.guidsForInstaller.xml" />
     <Content Include="collection\thumbnail.css" />
     <Content Include="epub\baseEpub.css" />
+    <Content Include="epub\bloomEpubPreview.htm" />
     <Content Include="images\.guidsForInstaller.xml" />
     <Content Include="images\a5Portrait.svg" />
     <Content Include="images\experiment.png" />
@@ -211,6 +212,7 @@
       <DependentUpon>page-chooser.less</DependentUpon>
     </Content>
     <Content Include="pageChooser\transparent.gif" />
+    <Content Include="Readium\bloomEpubPreview.css" />
     <Content Include="test\.guidsForInstaller.xml" />
     <Content Include="test\fixtures\basePage.css" />
     <Content Include="test\fixtures\OverflowTestPage.htm" />
@@ -316,6 +318,7 @@
     </Content>
     <Content Include="packages.config" />
     <Content Include="epub\baseEpub.less" />
+    <Content Include="epub\bloomEpubPreview.less" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>

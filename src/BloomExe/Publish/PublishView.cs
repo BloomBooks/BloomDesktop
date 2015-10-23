@@ -432,6 +432,8 @@ namespace Bloom.Publish
 
 		private void SetupEpubControl()
 		{
+			Cursor =Cursors.WaitCursor;
+			_model.StageEpub();
 			if (_epubPreviewControl == null)
 			{
 				_epubPreviewControl = new EpubView();
@@ -451,7 +453,7 @@ namespace Bloom.Publish
 			_epubPreviewControl.BackColor = saveBackGround; // keep own color.
 			// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
 			_epubPreviewControl.BringToFront();
-			_model.StageEpub();
+			
 			var root = _model.BookSelection.CurrentSelection.GetFileLocator().LocateDirectoryWithThrow("Readium");
 			var tempFolder = Path.GetDirectoryName(_model.StagingDirectory);
 			// This is kludge. I hope it can be improved. To make a preview we currently need all the Readium
@@ -464,11 +466,12 @@ namespace Bloom.Publish
 			// approach at least works.
 			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
 			
-			var rootPath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
-			File.WriteAllText(rootPath,string.Format("<html><head><link rel='stylesheet' type='text/css' href='bloomEpubPreview.css'></head>" +
-													 "<body><div id='container'><iframe src='readium-cloudreader.htm?epub={0}'></iframe></div></body></html>", Path.GetFileName(_model.StagingDirectory)));
-			var localPath = rootPath.ToLocalhost();
-			_epubPreviewBrowser.Navigate(localPath, false);
+			var previewHtmlTemplatePath = BloomFileLocator.GetFileDistributedWithApplication(false,"BloomBrowserUI","epub","bloomEpubPreview.htm");
+			var htmlContents = File.ReadAllText(previewHtmlTemplatePath).Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory));
+			var previewHtmlInstancePath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
+			File.WriteAllText(previewHtmlInstancePath, htmlContents);
+			_epubPreviewBrowser.Navigate(previewHtmlInstancePath.ToLocalhost(), false);
+			Cursor = Cursors.Default;
 		}
 
 		private void OnBookletRadioChanged(object sender, EventArgs e)
