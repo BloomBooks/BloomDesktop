@@ -217,6 +217,10 @@ var AudioRecording = (function () {
     };
     AudioRecording.prototype.startRecording = function () {
         var editable = $('div.bloom-editable');
+        this.makeSentenceSpans(editable);
+        // For displaying the qtip, restrict the editable divs to the ones that have
+        // audio sentences.
+        editable = $('span.audio-sentence').parents('div.bloom-editable');
         var thisClass = this;
         this.hiddenSourceBubbles = $('.uibloomSourceTextsBubble');
         this.hiddenSourceBubbles.hide();
@@ -318,7 +322,6 @@ var AudioRecording = (function () {
                 }
             }
         });
-        this.makeSentenceSpans(editable);
     };
     // This gets invoked (via a non-object method of the same name in this file,
     // and one of the same name in CalledFromCSharp) when a C# event fires indicating
@@ -650,6 +653,8 @@ var AudioRecording = (function () {
                 var currentMd5 = this.md5(fragment.text);
                 for (var j = 0; j < reuse.length; j++) {
                     if (currentMd5 === reuse[j].md5) {
+                        // It's convenient here (very locally) to add a field to fragment which is not part
+                        // of its spec in libsynphony.
                         fragment.matchingAudioSpan = reuse[j];
                         reuse.splice(j, 1); // don't reuse again
                         break;
