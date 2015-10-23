@@ -226,6 +226,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Edit\BloomClipboardTestImages\AOR_EAG00864.png" />
     <Content Include="Edit\BloomClipboardTestImages\LineSpacing.png" />
     <Content Include="Edit\BloomClipboardTestImages\PasteHS.bmp" />
   </ItemGroup>
