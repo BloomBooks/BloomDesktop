@@ -1093,6 +1093,7 @@ namespace Bloom.Edit
 
 				//we have to save so that when asked by the thumbnailer, the book will give the proper image
 				SaveNow();
+				CurrentBook.Storage.CleanupUnusedImageFiles();
 				//but then, we need the non-cleaned version back there
 				_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 

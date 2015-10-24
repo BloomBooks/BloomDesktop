@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using System.Xml;
@@ -14,6 +16,7 @@ using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
+using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace BloomTests.Book
 {
@@ -62,6 +65,52 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 		}
 
+
+		[Test]
+		public  void CleanupUnusedImageFiles_BookHadUnusedImages_ImagesRemoved()
+		{
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page'><div class='marginBox'>" +
+					"<div style='background-image:url(\"keepme.png\")'></div>" +
+					"<img src='keepme2.png'></img>" +
+					"</div></div></body></html>");
+			var keepName = Environment.OSVersion.Platform == PlatformID.Win32NT ? "KeEpMe.pNg" : "keepme.png";
+			var keepNameImg = Environment.OSVersion.Platform == PlatformID.Win32NT ? "KeEpMe2.pNg" : "keepme2.png";
+			var keepTempDiv = MakeSamplePngImage(Path.Combine(_folder.Path, keepName));
+            var keepTempImg = MakeSamplePngImage(Path.Combine(_folder.Path, keepNameImg));
+			var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
+			storage.CleanupUnusedImageFiles();
+			Assert.IsTrue(File.Exists(keepTempDiv.Path));
+			Assert.IsTrue(File.Exists(keepTempImg.Path));
+			Assert.IsFalse(File.Exists(dropmeTemp.Path));
+		}
+
+		[Test]
+		public void CleanupUnusedImageFiles_UnusedImageIsLocked_NotException()
+		{
+			var storage = GetInitialStorageWithCustomHtml("<html><body><div class='bloom-page'><div class='marginBox'></div></body></html>");
+			var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
+			//make it undelete-able
+			using (Image.FromFile(dropmeTemp.Path))
+			{
+				storage.CleanupUnusedImageFiles();
+			}
+		}
+		[Test]
+		public void Save_BookHasMissingImages_NoCrash()
+		{
+			var storage = GetInitialStorageWithCustomHtml("<html><body><div class='bloom-page'><div class='marginBox'><img src='keepme.png'></img></div></div></body></html>");
+			storage.Save();
+		}
+		private TempFile MakeSamplePngImage(string name)
+		{
+			var temp = TempFile.WithFilename(name);
+			var x = new Bitmap(10, 10);
+			x.Save(temp.Path, ImageFormat.Png);
+			x.Dispose();
+			return temp;
+		}
 		//
 		//        [Test]
 		//        public void Delete_IsDeleted()

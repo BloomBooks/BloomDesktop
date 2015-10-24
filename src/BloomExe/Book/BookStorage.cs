@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security;
@@ -49,8 +50,8 @@ namespace Bloom.Book
 		void UpdateBookFileAndFolderName(CollectionSettings settings);
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
-
-		BookInfo MetaData { get; set; }
+		void CleanupUnusedImageFiles();
+        BookInfo MetaData { get; set; }
 	}
 
 	public class BookStorage : IBookStorage
@@ -246,6 +247,52 @@ namespace Bloom.Book
 			MetaData.Save();
 		}
 
+		/// <summary>
+		/// Compare the images we find in the top level of the book folder to those referenced
+		/// in the dom, and remove any unreferenced on
+		/// </summary>
+		public void CleanupUnusedImageFiles()
+		{
+			//Collect up all the image files in our book's directory
+			var imageFiles = new List<string>();
+			var imageExtentions = new HashSet<string>(new []{".jpg",".png",".svg"});
+			foreach (var path in Directory.EnumerateFiles(this._folderPath).Where(
+				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
+			{
+				imageFiles.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
+			}
+			//Remove each image actually in use from that list
+			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(Dom.RawDom.DocumentElement))
+			{
+				imageFiles.Remove(   //Remove just returns false if it's not in there, which is fine
+					GetNormalizedPathForOS(HtmlDom.GetImageElementUrl(img).NotEncoded));
+			}
+			//Delete any files still in the list
+			foreach (var fileName in imageFiles)
+			{
+				var path = Path.Combine(_folderPath, fileName);
+				try
+				{
+					Debug.WriteLine("Removed unused image: "+path);
+					Logger.WriteEvent("Removed unused image: " + path);
+					File.Delete(path);
+				}
+				catch (Exception)
+				{
+					Debug.WriteLine("Could not remove unused image: " + path);
+					Logger.WriteEvent("Could not remove unused  image: " + path);
+					//It's not worth bothering the user about, we'll get it someday.
+					//We're not even doing a Debug.Fail because that makes it harder to unit test this condition.
+				}		
+			}
+		}
+
+		private string GetNormalizedPathForOS(string path)
+		{
+			return Environment.OSVersion.Platform == PlatformID.Win32NT
+						? path.ToLowerInvariant()
+						: path;
+		}
 		private void AssertIsAlreadyInitialized()
 		{
 			if (_dom == null)
@@ -624,6 +671,8 @@ namespace Bloom.Book
 				Dom.UpdatePageDivs();
 
 				UpdateSupportFiles();
+
+				CleanupUnusedImageFiles();
 			}
 		}
 
