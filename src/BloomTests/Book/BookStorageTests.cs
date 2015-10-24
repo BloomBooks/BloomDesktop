@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Threading;
-using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
@@ -16,7 +14,6 @@ using Palaso.IO;
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.TestUtilities;
-using Palaso.UI.WindowsForms.ImageToolbox;
 
 namespace BloomTests.Book
 {
@@ -86,6 +83,35 @@ namespace BloomTests.Book
 			Assert.IsFalse(File.Exists(dropmeTemp.Path));
 		}
 
+		[Test]
+		public void CleanupUnusedImageFiles_ImageHasQuery_ImagesNotRemoved()
+		{
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page'><div class='marginBox'>" +
+					"<img src='keepme.png?1234'></img>" +
+					"</div></div></body></html>");
+			var keepTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "keepme.png"));
+			storage.CleanupUnusedImageFiles();
+			Assert.IsTrue(File.Exists(keepTemp.Path));
+		}
+		[Test]
+		public void CleanupUnusedImageFiles_ThumbnailsAndPlaceholdersNotRemoved()
+		{
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page'><div class='marginBox'>" +
+					"</div></div></body></html>");
+			var p1 = MakeSamplePngImage(Path.Combine(_folder.Path, "thumbnail.png"));
+			var p2 = MakeSamplePngImage(Path.Combine(_folder.Path, "thumbnail88.png"));
+			var p3 = MakeSamplePngImage(Path.Combine(_folder.Path, "placeholder.png"));
+			var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
+			storage.CleanupUnusedImageFiles();
+			Assert.IsTrue(File.Exists(p1.Path));
+			Assert.IsTrue(File.Exists(p2.Path));
+			Assert.IsTrue(File.Exists(p3.Path));
+			Assert.IsFalse(File.Exists(dropmeTemp.Path));
+		}
 		[Test]
 		public void CleanupUnusedImageFiles_UnusedImageIsLocked_NotException()
 		{
@@ -278,7 +304,7 @@ namespace BloomTests.Book
 					Language2Iso639Code = "en",
 					Language3Iso639Code = "fr"
 				});
-			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
+			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Mock<ITemplateFinder>().Object,
 				collectionSettings,
 				new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
 

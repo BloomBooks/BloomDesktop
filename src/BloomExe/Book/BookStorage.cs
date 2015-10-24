@@ -256,16 +256,20 @@ namespace Bloom.Book
 			//Collect up all the image files in our book's directory
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{".jpg",".png",".svg"});
+			var ignoredFilenameStarts = new HashSet<string>(new [] {"thumbnail","placeholder"});
 			foreach (var path in Directory.EnumerateFiles(this._folderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
-			{
+			{ 
+				var filename = Path.GetFileName(path);
+				if (ignoredFilenameStarts.Any(s=>filename.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)))
+					continue;
 				imageFiles.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
 			}
 			//Remove each image actually in use from that list
 			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(Dom.RawDom.DocumentElement))
 			{
-				imageFiles.Remove(   //Remove just returns false if it's not in there, which is fine
-					GetNormalizedPathForOS(HtmlDom.GetImageElementUrl(img).NotEncoded));
+				var path = GetNormalizedPathForOS(HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded);
+				imageFiles.Remove(path);   //Remove just returns false if it's not in there, which is fine
 			}
 			//Delete any files still in the list
 			foreach (var fileName in imageFiles)
@@ -286,6 +290,9 @@ namespace Bloom.Book
 				}		
 			}
 		}
+
+
+		
 
 		private string GetNormalizedPathForOS(string path)
 		{
