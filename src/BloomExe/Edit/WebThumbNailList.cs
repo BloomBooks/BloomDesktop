@@ -230,15 +230,7 @@ namespace Bloom.Edit
 				// We are setting the src to empty so that we can use JavaScript to request the thumbnails
 				// in a controlled manner that should reduce the likelihood of not receiving the image quickly
 				// enough and displaying the alt text rather than the image.
-				var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(pageElementForThumbnail);
-				if (imgNodes != null)
-				{
-					foreach (XmlElement imgNode in imgNodes)
-					{
-						imgNode.SetAttribute("thumb-src", HtmlDom.GetImageElementUrl(imgNode).UrlEncoded);
-						HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUrlEncodedString(""));
-					}
-				}
+				DelayAllImageNodes(pageElementForThumbnail);
 
 				var cellDiv = pageDoc.CreateElement("div");
 				cellDiv.SetAttribute("class", ClassForGridItem);
@@ -283,6 +275,31 @@ namespace Bloom.Edit
 			_verticalScrollDistance = _browser.VerticalScrollDistance;
 			_browser.Navigate(dom);
 			return result;
+		}
+
+		private static void DelayAllImageNodes(XmlElement pageElementForThumbnail)
+		{
+			var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(pageElementForThumbnail);
+			if (imgNodes != null)
+			{
+				foreach (XmlElement imgNode in imgNodes)
+				{
+					imgNode.SetAttribute("thumb-src", HtmlDom.GetImageElementUrl(imgNode).UrlEncoded);
+					HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUrlEncodedString(""));
+				}
+			}
+		}
+
+		private static void MarkImageNodesForThumbnail(XmlElement pageElementForThumbnail)
+		{
+			var imgNodes = HtmlDom.SelectChildImgAndBackgroundImageElements(pageElementForThumbnail);
+			if (imgNodes != null)
+			{
+				foreach (XmlElement imgNode in imgNodes)
+				{
+					imgNode.SetAttribute("src", HtmlDom.GetImageElementUrl(imgNode).UrlEncoded+"?thumbnail=1");
+				}
+			}
 		}
 
 		private static string GridId(IPage page)
@@ -463,7 +480,13 @@ namespace Bloom.Edit
 				Debug.Fail("Can't update page...missing page element");
 				return; // for end user we just won't update the thumbnail.
 			}
-			pageContainerElt.ReplaceChild(MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, page.GetDivNodeForThisPage()), pageElt);
+			var divNodeForThisPage = page.GetDivNodeForThisPage();
+			//clone so we can modify it for thumbnailing without messing up the version we will save
+			divNodeForThisPage = divNodeForThisPage.CloneNode(true) as XmlElement;
+			MarkImageNodesForThumbnail(divNodeForThisPage);
+			var geckoNode = MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, divNodeForThisPage);
+			pageContainerElt.ReplaceChild(geckoNode, pageElt);
+			//pageElt.Dispose();
 		}
 
 		private GeckoElement GetGridElementForPage(IPage page)
