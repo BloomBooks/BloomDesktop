@@ -23,6 +23,7 @@ using Palaso.UI.WindowsForms.Reporting;
 using Palaso.UI.WindowsForms.UniqueToken;
 using System.Linq;
 using Bloom.MiscUI;
+using Palaso.UI.WindowsForms.HtmlBrowser;
 
 namespace Bloom
 {
@@ -64,6 +65,8 @@ namespace Bloom
 			{
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
+
+				XWebBrowser.DefaultBrowserType = XWebBrowser.BrowserType.GeckoFx;
 
 				var args = args1;
 
