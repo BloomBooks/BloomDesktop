@@ -1,4 +1,15 @@
-﻿## 3.4
+﻿## 3.5
+- You can now copy and cut images
+- You can now hover over an image to get its dimensions, dots-per-inch, and color depth
+- Bloom uses less memory when you have very large image files
+- Books no longer acquire files for images that you aren't using anymore
+- Fixed problem where black and white (1 bit) images were converted to 32 bit.
+- New Arithmetic Template
+- Better error report when the operating system blocks Bloom from touching a file due to weird file permissions
+- New experimental EPUB option in Publish Tab
+- New experimental Talking Book recording/publishing
+
+## 3.4
 - If after creating a page you decide that you want a different layout than the one you original chose, you can now select "Choose Different Layout" and select a different one.
 - If you have the latest [Art Of Reading](http://bloomlibrary.org/#/artofreading) installed (version 3.1), then you can now search for pictures in one of: Arabic, Chinese, Bengali, English, French, Hindi, Indonesian, Portuguese, Spanish, Swahili, and Thai.
 - Bloom now supports Letter, HalfLetter, and QuarterLetter (North American) paper sizes.
