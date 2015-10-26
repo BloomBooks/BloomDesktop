@@ -313,9 +313,6 @@
       <DependentUpon>compilerconfig.json</DependentUpon>
     </Content>
     <Content Include="audio\audioRecording.less" />
-    <Content Include="audio\audioRecording.css.map">
-      <DependentUpon>audioRecording.css</DependentUpon>
-    </Content>
     <Content Include="packages.config" />
     <Content Include="epub\baseEpub.less" />
     <Content Include="epub\bloomEpubPreview.less" />

@@ -62,6 +62,9 @@ function GetButtonModifier(container) {
     if ($container.height() < imageButtonHeight * 2 || $container.width() < imageButtonWidth * 2) {
         buttonModifier = 'smallButton';
     }
+    if ($container.height() < imageButtonHeight * 2 || $container.width() < imageButtonWidth) {
+        buttonModifier += ' verySmallButton';
+    }
     return buttonModifier;
 }
 
@@ -71,12 +74,12 @@ function SetupImageContainer(containerDiv) {
     $(containerDiv).mouseenter(function () {
         var $this = $(this);
         var img = $this.find('img');
-        if (img.length == 0) //TODO check for bloom-backgroundImage to make sure this isn't just a case of a missing <img>
+        if (img.length === 0) //TODO check for bloom-backgroundImage to make sure this isn't just a case of a missing <img>
                 img = containerDiv; //using a backgroundImage
 
         var buttonModifier = GetButtonModifier($this);
 
-        if (buttonModifier !== 'smallButton') {
+        if (buttonModifier !== 'smallButton verySmallButton') {
             $this.prepend('<button class="miniButton cutImageButton disabled" title="' +
                 localizationManager.getText('EditTab.Image.CutImage') + '"></button>');
             $this.prepend('<button class="miniButton copyImageButton disabled" title="' +
