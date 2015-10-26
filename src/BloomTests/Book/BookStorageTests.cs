@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
-using System.Threading;
-using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
@@ -62,6 +62,81 @@ namespace BloomTests.Book
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'preview')]", 1);
 		}
 
+
+		[Test]
+		public  void CleanupUnusedImageFiles_BookHadUnusedImages_ImagesRemoved()
+		{
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page'><div class='marginBox'>" +
+					"<div style='background-image:url(\"keepme.png\")'></div>" +
+					"<img src='keepme2.png'></img>" +
+					"</div></div></body></html>");
+			var keepName = Environment.OSVersion.Platform == PlatformID.Win32NT ? "KeEpMe.pNg" : "keepme.png";
+			var keepNameImg = Environment.OSVersion.Platform == PlatformID.Win32NT ? "KeEpMe2.pNg" : "keepme2.png";
+			var keepTempDiv = MakeSamplePngImage(Path.Combine(_folder.Path, keepName));
+            var keepTempImg = MakeSamplePngImage(Path.Combine(_folder.Path, keepNameImg));
+			var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
+			storage.CleanupUnusedImageFiles();
+			Assert.IsTrue(File.Exists(keepTempDiv.Path));
+			Assert.IsTrue(File.Exists(keepTempImg.Path));
+			Assert.IsFalse(File.Exists(dropmeTemp.Path));
+		}
+
+		[Test]
+		public void CleanupUnusedImageFiles_ImageHasQuery_ImagesNotRemoved()
+		{
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page'><div class='marginBox'>" +
+					"<img src='keepme.png?1234'></img>" +
+					"</div></div></body></html>");
+			var keepTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "keepme.png"));
+			storage.CleanupUnusedImageFiles();
+			Assert.IsTrue(File.Exists(keepTemp.Path));
+		}
+		[Test]
+		public void CleanupUnusedImageFiles_ThumbnailsAndPlaceholdersNotRemoved()
+		{
+			var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body><div class='bloom-page'><div class='marginBox'>" +
+					"</div></div></body></html>");
+			var p1 = MakeSamplePngImage(Path.Combine(_folder.Path, "thumbnail.png"));
+			var p2 = MakeSamplePngImage(Path.Combine(_folder.Path, "thumbnail88.png"));
+			var p3 = MakeSamplePngImage(Path.Combine(_folder.Path, "placeholder.png"));
+			var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
+			storage.CleanupUnusedImageFiles();
+			Assert.IsTrue(File.Exists(p1.Path));
+			Assert.IsTrue(File.Exists(p2.Path));
+			Assert.IsTrue(File.Exists(p3.Path));
+			Assert.IsFalse(File.Exists(dropmeTemp.Path));
+		}
+		[Test]
+		public void CleanupUnusedImageFiles_UnusedImageIsLocked_NotException()
+		{
+			var storage = GetInitialStorageWithCustomHtml("<html><body><div class='bloom-page'><div class='marginBox'></div></body></html>");
+			var dropmeTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "dropme.png"));
+			//make it undelete-able
+			using (Image.FromFile(dropmeTemp.Path))
+			{
+				storage.CleanupUnusedImageFiles();
+			}
+		}
+		[Test]
+		public void Save_BookHasMissingImages_NoCrash()
+		{
+			var storage = GetInitialStorageWithCustomHtml("<html><body><div class='bloom-page'><div class='marginBox'><img src='keepme.png'></img></div></div></body></html>");
+			storage.Save();
+		}
+		private TempFile MakeSamplePngImage(string name)
+		{
+			var temp = TempFile.WithFilename(name);
+			var x = new Bitmap(10, 10);
+			x.Save(temp.Path, ImageFormat.Png);
+			x.Dispose();
+			return temp;
+		}
 		//
 		//        [Test]
 		//        public void Delete_IsDeleted()
@@ -229,7 +304,7 @@ namespace BloomTests.Book
 					Language2Iso639Code = "en",
 					Language3Iso639Code = "fr"
 				});
-			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Moq.Mock<ITemplateFinder>().Object,
+			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Mock<ITemplateFinder>().Object,
 				collectionSettings,
 				new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
 

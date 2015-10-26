@@ -30,6 +30,17 @@ namespace BloomTests
 			Assert.AreEqual("test me", UrlPathString.CreateFromUnencodedString("test me").NotEncoded);
 		}
 
+		[Test]
+		public void PathOnly_HasQuery_StripsQuery()
+		{
+			Assert.AreEqual("test me", UrlPathString.CreateFromUnencodedString("test%20me?12345").PathOnly.NotEncoded);
+
+		}
+		[Test]
+		public void PathOnly_HasNoQuery_ReturnsAll()
+		{
+			Assert.AreEqual("test me", UrlPathString.CreateFromUnencodedString("test%20me").PathOnly.NotEncoded);
+		}
 		//make sure we don't double-encode
 		[Test]
 		public void CreateFromUnencodedString_StringWasAlreadyEncode_Adapts()

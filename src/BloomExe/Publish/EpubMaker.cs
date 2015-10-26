@@ -366,7 +366,7 @@ namespace Bloom.Publish
 				var url = HtmlDom.GetImageElementUrl(img);
 				if (url == null || url.NotEncoded=="")
 					continue; // very weird, but all we can do is ignore it.
-				var filename = StripQuery(url.NotEncoded);
+				var filename = url.PathOnly.NotEncoded;
 				if (string.IsNullOrEmpty(filename))
 					continue;
 				// Images are always directly in the folder
@@ -380,10 +380,7 @@ namespace Bloom.Publish
 
 		private static string StripQuery(string url)
 		{
-			var index = url.IndexOf('?');
-			if (index >= 0)
-				url = url.Substring(0, index);
-			return url;
+			return url.Split('?')[0];
 		}
 
 		// Combines staging and finishing (currently just used in tests).

@@ -40,6 +40,17 @@ namespace Bloom
 			get { return _notEncoded; }
 		}
 
+		/// <summary>
+		/// Gives the portion of the path up to and not including the query portion of the url
+		/// </summary>
+		public UrlPathString PathOnly
+		{
+			get
+			{
+				return CreateFromUrlEncodedString(_notEncoded.Split('?')[0]);
+			}
+		}
+
 		private UrlPathString(string notEncodedString)
 		{
 			_notEncoded = notEncodedString;
