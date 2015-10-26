@@ -13,7 +13,7 @@ namespace BloomTests
 	{
 		class ProblemReporterDialogDouble: ProblemReporterDialog
 		{
-			public ProblemReporterDialogDouble(): base(null, null)
+			public ProblemReporterDialogDouble()
 			{
 				Success = true;
 				_youTrackProjectKey = "AUT";

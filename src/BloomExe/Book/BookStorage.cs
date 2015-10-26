@@ -8,6 +8,7 @@ using System.Net;
 using System.Reflection;
 using System.Security;
 using System.Text;
+using System.Web;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
@@ -34,7 +35,8 @@ namespace Bloom.Book
 		bool TryGetPremadeThumbnail(string fileName, out Image image);
 		//bool DeleteBook();
 		bool RemoveBookThumbnail(string fileName);
-		string ErrorMessages { get; }
+		string ErrorMessagesHtml { get; }
+		string GetBrokenBookRecommendationHtml();
 
 		// REQUIRE INTIALIZATION (AVOID UNLESS USER IS WORKING WITH THIS BOOK SPECIFICALLY)
 		bool GetLooksOk();
@@ -77,6 +79,7 @@ namespace Bloom.Book
 		private static bool _alreadyNotifiedAboutOneFailedCopy;
 		private HtmlDom _dom; //never remove the readonly: this is shared by others
 		private BookInfo _metaData;
+		private bool _errorAlreadyContainsInstructions;
 		public event EventHandler FolderPathChanged;
 
 		public BookInfo MetaData
@@ -147,7 +150,7 @@ namespace Bloom.Book
 			return true;
 		}
 
-		public string ErrorMessages { get; private set; }
+		public string ErrorMessagesHtml { get; private set; }
 
 		/// <summary>
 		/// this is a method because it wasn't clear if we will eventually generate it on the fly (book paths do change as they are renamed)
@@ -181,10 +184,8 @@ namespace Bloom.Book
 			}
 		}
 
-		public static string GetMessageIfVersionIsIncompatibleWithThisBloom(HtmlDom dom)
+		public static string GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(HtmlDom dom,string path)
 		{
-			//var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));//with throw if there are errors
-
 			var versionString = dom.GetMetaValue("BloomFormatVersion", "").Trim();
 			if (string.IsNullOrEmpty(versionString))
 				return "";// "This file lacks the following required element: <meta name='BloomFormatVersion' content='x.y'>";
@@ -194,19 +195,25 @@ namespace Bloom.Book
 				return "This file claims a version number that isn't really a number: " + versionString;
 
 			if (versionFloat > float.Parse(kBloomFormatVersion, CultureInfo.InvariantCulture))
-				return string.Format("This book or template was made with a newer version of Bloom. Download the latest version of Bloom from bloomlibrary.org (format {0} vs. {1})", versionString, kBloomFormatVersion);
+			{
+				var msg = LocalizationManager.GetString("Errors.NeedNewerVersion",
+					"{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}","{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.");
+				msg = string.Format(msg, path,"<a href='http://bloomlibrary.org'>BloomLibrary.org</a>");
+				msg += string.Format(". (Format {0} vs. {1})",versionString, kBloomFormatVersion);
+				return msg;
+			}
 
 			return null;
 		}
 
 		public bool GetLooksOk()
 		{
-			return File.Exists(PathToExistingHtml) && string.IsNullOrEmpty(ErrorMessages);
+			return File.Exists(PathToExistingHtml) && string.IsNullOrEmpty(ErrorMessagesHtml);
 		}
 
 		public void Save()
 		{
-			if (!string.IsNullOrEmpty(ErrorMessages))
+			if (!string.IsNullOrEmpty(ErrorMessagesHtml))
 			{
 				return; //too dangerous to try and save
 			}
@@ -364,6 +371,8 @@ namespace Bloom.Book
 
 		public string GetValidateErrors()
 		{
+			if (!string.IsNullOrEmpty(ErrorMessagesHtml))
+				return "";
 			if (!Directory.Exists(_folderPath))
 			{
 				return "The directory (" + _folderPath + ") could not be found.";
@@ -531,7 +540,7 @@ namespace Bloom.Book
 		private static string ValidateBook(HtmlDom dom, string path)
 		{
 			Debug.WriteLine(string.Format("ValidateBook({0})", path));
-			var msg= GetMessageIfVersionIsIncompatibleWithThisBloom(dom);
+			var msg= GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(dom,path);
 			return !string.IsNullOrEmpty(msg) ? msg : dom.ValidateBook(path);
 		}
 
@@ -574,15 +583,25 @@ namespace Bloom.Book
 				{
 					xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(PathToExistingHtml, false);
 				}
-
-				catch(Exception error)
+				catch (UnauthorizedAccessException error)
 				{
-					ErrorReport.NotifyUserOfProblem(error, "Bloom had trouble reading in the book in " + _folderPath);
-					ErrorMessages = error.Message;
+					var message = LocalizationManager.GetString("Errors.DeniedAccess",
+						"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
+					message += Environment.NewLine + error.Message;
+					ErrorMessagesHtml = WebUtility.HtmlEncode(message);
+					Logger.WriteEvent("*** ERROR: " + message);
+					_errorAlreadyContainsInstructions = true;
 					return;
 				}
-				
-				
+				catch (Exception error)
+				{
+					ErrorMessagesHtml = WebUtility.HtmlEncode(error.Message);
+					Logger.WriteEvent("*** ERROR in " + PathToExistingHtml);
+					Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
+					return;
+				}
+
+
 				_dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 				_dom.RawDom.PreserveWhitespace = true;
@@ -597,23 +616,24 @@ namespace Bloom.Book
 				//I assume the following will never trigger (I also note that the dom isn't even loaded):
 
 
-				if (!string.IsNullOrEmpty(ErrorMessages))
+				if (!string.IsNullOrEmpty(ErrorMessagesHtml))
 				{
 					_dom.RawDom.LoadXml(
 						"<html><body>There is a problem with the html structure of this book which will require expert help.</body></html>");
 					Logger.WriteEvent(
 						"{0}: There is a problem with the html structure of this book which will require expert help: {1}",
-						PathToExistingHtml, ErrorMessages);
+						PathToExistingHtml, ErrorMessagesHtml);
 				}
 					//The following is a patch pushed out on the 25th build after 1.0 was released in order to give us a bit of backwards version protection (I should have done this originally and in a less kludgy fashion than I'm forced to do now)
 				else
 				{
-					var incompatibleVersionMessage = GetMessageIfVersionIsIncompatibleWithThisBloom(Dom);
+					var incompatibleVersionMessage = GetHtmlMessageIfVersionIsIncompatibleWithThisBloom(Dom,this.PathToExistingHtml);
 					if (!string.IsNullOrWhiteSpace(incompatibleVersionMessage))
 					{
-						_dom.RawDom.LoadXml(
-							"<html><body style='background-color: white'><p/><p/><p/>" + WebUtility.HtmlEncode(incompatibleVersionMessage) + "</body></html>");
-						Logger.WriteEvent(PathToExistingHtml + " " + incompatibleVersionMessage);
+						ErrorMessagesHtml = incompatibleVersionMessage;
+						Logger.WriteEvent("*** ERROR: " + incompatibleVersionMessage);
+						_errorAlreadyContainsInstructions = true;
+						return;
 					}
 					else
 					{
@@ -661,7 +681,7 @@ namespace Bloom.Book
 			}
 			catch (Exception error)
 			{
-				ErrorMessages = error.Message;
+				ErrorMessagesHtml = WebUtility.HtmlEncode(error.Message);
 			}
 		}
 
@@ -912,6 +932,18 @@ namespace Bloom.Book
 			}
 			return name + suffix;
 		}
-	}
 
+		public string GetBrokenBookRecommendationHtml()
+		{
+			string s = "";
+			if (!this._errorAlreadyContainsInstructions)
+			{
+				s = "<p>" + LocalizationManager.GetString("Errors.BookProblem",
+					"Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.")
+				+ "</p>";
+			}
+			return s + "<p>" + ErrorMessagesHtml + "</p>";
+		}
+
+	}
 }

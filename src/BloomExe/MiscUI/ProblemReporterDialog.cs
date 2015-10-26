@@ -30,7 +30,7 @@ namespace Bloom.MiscUI
 
 		protected enum State { WaitingForSubmission, ZippingUpBook, Submitting, CouldNotAutomaticallySubmit, Success }
 
-		private readonly BookSelection _bookSelection;
+		public Book.Book Book;
 		private Bitmap _screenshot;
 		protected State _state;
 		private string _emailableReportFilePath;
@@ -43,14 +43,24 @@ namespace Bloom.MiscUI
 		private string _youTrackIssueId = "unknown";
 		private dynamic _youTrackIssue;
 
+		public ProblemReporterDialog()
+			: this(null)
+		{ }
+
 		public ProblemReporterDialog(Control targetOfScreenshot, BookSelection bookSelection)
+			: this(targetOfScreenshot)
+		{
+			Book = bookSelection.CurrentSelection;
+		}
+
+		public ProblemReporterDialog(Control targetOfScreenshot)
 		{
 			// Haven't tried https here, as we're not using it for live YouTrack. Someday we may want to.
 			// If so, check Linux, as we had problems there with the old Jira reporting. Until
 			// then we use the unsecured URL.
 			YouTrackUrl = "http://issues.bloomlibrary.org";
 			Summary = "User Problem Report {0}";
-            _bookSelection = bookSelection;
+
 
 			InitializeComponent();
 
@@ -81,23 +91,15 @@ namespace Bloom.MiscUI
 
 			_screenshotHolder.Image = _screenshot;
 
-			if (bookSelection != null && bookSelection.CurrentSelection != null)
-			{
-				_includeBook.Checked = false;
-				_includeBook.Text = String.Format(_includeBook.Text, bookSelection.CurrentSelection.TitleBestForUserDisplay);
-				const int maxIncludeBookLabelLength = 40;
-				if (_includeBook.Text.Length > maxIncludeBookLabelLength)
-				{
-					_includeBook.Text = _includeBook.Text.Substring(0, maxIncludeBookLabelLength);
-				}
-			}
-			else
-			{
-				_includeBook.Visible = false;
-			}
+		
 			ChangeState(State.WaitingForSubmission);
 		}
 
+		public void SetDefaultIncludeBookSetting(bool include)
+		{
+			_includeBook.Checked = include;
+			UpdateDisplay();
+		}
 		public string Description
 		{
 			get { return _description.Text; }
@@ -164,7 +166,19 @@ namespace Bloom.MiscUI
 
 		protected virtual void UpdateDisplay()
 		{
-			if(!string.IsNullOrWhiteSpace(_email.Text.Trim()))
+			_includeBook.Visible = Book !=null;
+			if (Book != null)
+			{
+				_includeBook.Text = String.Format(_includeBook.Text, Book.TitleBestForUserDisplay);
+				const int maxIncludeBookLabelLength = 40;
+				if (_includeBook.Text.Length > maxIncludeBookLabelLength)
+				{
+					_includeBook.Text = _includeBook.Text.Substring(0, maxIncludeBookLabelLength);
+				}
+			}
+
+		
+			if (!string.IsNullOrWhiteSpace(_email.Text.Trim()))
 			{
 				_email.ForeColor = IsLegalEmail(_email.Text) ? Color.Black : Color.Red;
 			}
@@ -310,10 +324,19 @@ namespace Bloom.MiscUI
 					ChangeState(State.ZippingUpBook);
 					using (var bookZip = TempFile.WithExtension(".zip"))
 					{
-						var zip = new BloomZipFile(bookZip.Path);
-						zip.AddDirectory(_bookSelection.CurrentSelection.FolderPath);
-						zip.Save();
-						AddAttachment(bookZip.Path);
+						try
+						{
+							var zip = new BloomZipFile(bookZip.Path);
+
+							zip.AddDirectory(Book.FolderPath);
+							zip.Save();
+							AddAttachment(bookZip.Path);
+						}
+						catch (Exception error)
+						{
+							bookZip.Detach();
+                            Logger.WriteEvent("*** Error as ProblemReporterDialog attempted to zip up the book. "+error.Message);
+						}
 					}
 				}
 
@@ -378,7 +401,7 @@ namespace Bloom.MiscUI
 
 				if (_includeBook.Checked)
 				{
-					zip.AddDirectory(_bookSelection.CurrentSelection.FolderPath);
+					zip.AddDirectory(Book.FolderPath);
 				}
 			}
 			if (_includeScreenshot.Checked)

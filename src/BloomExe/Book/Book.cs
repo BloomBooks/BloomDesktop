@@ -57,7 +57,11 @@ namespace Bloom.Book
 
 		public event EventHandler ContentsChanged;
 
-		private IProgress _log = new StringBuilderProgress();
+		//nb: it looks like nothing is currently writing to it.
+		//Instead, the code is currently writing to the global application Logger.
+		//Should we remove this, or return some errant code to using it instead of Logger?
+		private readonly IProgress _log = new StringBuilderProgress();
+
 		private bool _haveCheckedForErrorsAtLeastOnce;
 		private readonly BookData _bookData;
 
@@ -102,7 +106,7 @@ namespace Bloom.Book
 
 			InjectStringListingActiveLanguagesOfBook(); 
 
-			if (IsEditable && !HasFatalError)
+			if (!HasFatalError && IsEditable)
 			{
 				_bookData.SynchronizeDataItemsThroughoutDOM();
 
@@ -469,41 +473,23 @@ namespace Bloom.Book
 
 		public virtual string StoragePageFolder { get { return _storage.FolderPath; } }
 
-		private string GetGenericBrokenBookRecommendationString()
-		{
-			return LocalizationManager.GetString("Errors.BrokenBook",
-				"Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong. Consider using the 'Report a Problem' command under the 'Help' menu.");
-		}
-		
-		private HtmlDom GetPageListingErrorsWithBook(string contents)
+		private HtmlDom GetErrorDom(string extraMessages="")
 		{
 			var builder = new StringBuilder();
 			builder.Append("<html><body style='font-family:arial,sans'>");
 
-			builder.AppendLine("<p>" + GetGenericBrokenBookRecommendationString() + "</p>");
+			builder.AppendLine(_storage.GetBrokenBookRecommendationHtml());
 
-			builder.AppendFormat("<p>" + _storage.ErrorMessages + "</p>");
-			
-			foreach (var line in contents.Split(new []{'\n'}))
-			{
-				builder.AppendFormat("<li>{0}</li>\n", WebUtility.HtmlEncode(line));
-			}
-			builder.Append("</body></html>");
-			return new HtmlDom(builder.ToString());
-		}
+			builder.Append(((StringBuilderProgress) _log).Text);//review: is this ever non-empty?
 
-		private HtmlDom GetErrorDom()
-		{
-			var builder = new StringBuilder();
-			builder.Append("<html><body style='font-family:arial,sans'>");
-			
-			builder.AppendLine(GetGenericBrokenBookRecommendationString());
+			builder.Append("<p>"+ WebUtility.HtmlEncode(extraMessages)+"</p>");
 
-			builder.AppendFormat("<p>" + _storage.ErrorMessages + "</p>");
-
-			builder.Append(((StringBuilderProgress)_log).Text);
+			var message = LocalizationManager.GetString("Errors.ReportThisProblemButton", "Report this problem to Bloom Support");
+			builder.AppendFormat(
+				"<input type='button' value='"+message+"' href='ReportProblem'></input>");
 
 			builder.Append("</body></html>");
+			
 			return new HtmlDom(builder.ToString());
 		}
 
@@ -634,7 +620,7 @@ namespace Bloom.Book
 			}
 			if (!_storage.GetLooksOk())
 			{
-				return GetPageListingErrorsWithBook(_storage.GetValidateErrors());
+				return GetErrorDom(_storage.GetValidateErrors());
 			}
 			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "origami.css");
 			AddCreationTypeAttribute(previewDom);
@@ -1148,7 +1134,7 @@ namespace Bloom.Book
 
 		public virtual bool HasFatalError
 		{
-			get { return _log.ErrorEncountered || !string.IsNullOrEmpty(_storage.ErrorMessages); }
+			get { return _log.ErrorEncountered || !string.IsNullOrEmpty(_storage.ErrorMessagesHtml); }
 		}
 
 
