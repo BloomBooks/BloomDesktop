@@ -297,7 +297,8 @@ namespace Bloom.Edit
 			{
 				foreach (XmlElement imgNode in imgNodes)
 				{
-					imgNode.SetAttribute("src", HtmlDom.GetImageElementUrl(imgNode).UrlEncoded+"?thumbnail=1");
+					var url = HtmlDom.GetImageElementUrl(imgNode).UrlEncoded + "?thumbnail=1";
+					HtmlDom.SetImageElementUrl(new ElementProxy(imgNode), UrlPathString.CreateFromUrlEncodedString(url));
 				}
 			}
 		}
