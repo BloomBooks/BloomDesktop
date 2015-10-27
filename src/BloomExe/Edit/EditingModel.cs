@@ -25,7 +25,10 @@ using Palaso.Reporting;
 using Palaso.UI.WindowsForms.ClearShare;
 using Palaso.UI.WindowsForms.ImageToolbox;
 using Palaso.UI.WindowsForms.Reporting;
+#if __MonoCS__
+#else
 using Palaso.Media.Naudio;
+#endif
 
 namespace Bloom.Edit
 {
@@ -666,7 +669,10 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("endRecordAudio", EndRecordAudio);
 			_view.AddMessageEventListener("changeRecordingDevice", ChangeRecordingDevice);
 
+#if __MonoCS__
+#else
 			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
+#endif
 		}
 
 
