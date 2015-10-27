@@ -265,12 +265,20 @@ namespace Bloom.Book
 					continue;
 				imageFiles.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
 			}
-			//Remove each image actually in use from that list
-			foreach (XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(Dom.RawDom.DocumentElement))
+			//Remove from that list each image actually in use
+			var toRemove = (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(Dom.RawDom.DocumentElement)
+							select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).ToList();
+
+			//also, remove from the doomed list anything referenced in the datadiv that looks like an image
+			//This saves us from deleting, for example, cover page images if this is called before the front-matter
+			//has been applied to the document.
+			toRemove.AddRange(from XmlElement coverImage in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
+							  select coverImage.InnerText.Trim());
+			foreach (var fileName in toRemove)
 			{
-				var path = GetNormalizedPathForOS(HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded);
-				imageFiles.Remove(path);   //Remove just returns false if it's not in there, which is fine
+				imageFiles.Remove(GetNormalizedPathForOS(fileName));   //Remove just returns false if it's not in there, which is fine
 			}
+
 			//Delete any files still in the list
 			foreach (var fileName in imageFiles)
 			{

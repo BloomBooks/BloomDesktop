@@ -96,6 +96,22 @@ namespace BloomTests.Book
 			Assert.IsTrue(File.Exists(keepTemp.Path));
 		}
 		[Test]
+		public void CleanupUnusedImageFiles_ImageOnlyReferencedInDataDiv_ImageNotRemoved()
+		{
+			 var storage =
+				GetInitialStorageWithCustomHtml(
+					"<html><body>"+
+					"<div id ='bloomDataDiv'><div data-book='coverImage'>keepme.png</div>"+
+					"<div data-book='coverImage'> keepme.jpg </div></div>" +
+					"<div class='bloom-page'><div class='marginBox'>" +
+					"</div></div></body></html>");
+			var keepTemp = MakeSamplePngImage(Path.Combine(_folder.Path, "keepme.png"));
+			var keepTempJPG = MakeSamplePngImage(Path.Combine(_folder.Path, "keepme.jpg"));
+			storage.CleanupUnusedImageFiles();
+			Assert.IsTrue(File.Exists(keepTemp.Path));
+			Assert.IsTrue(File.Exists(keepTempJPG.Path));
+		}
+		[Test]
 		public void CleanupUnusedImageFiles_ThumbnailsAndPlaceholdersNotRemoved()
 		{
 			var storage =
