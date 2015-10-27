@@ -59,11 +59,15 @@ function GetButtonModifier(container) {
     var imageButtonWidth = 87;
     var imageButtonHeight = 52;
     var $container = $(container);
-    if ($container.height() < imageButtonHeight * 2 || $container.width() < imageButtonWidth * 2) {
-        buttonModifier = 'smallButton';
+    if ($container.height() < imageButtonHeight * 2) {
+        buttonModifier = 'smallButtonHeight';
     }
-    if ($container.height() < imageButtonHeight * 2 || $container.width() < imageButtonWidth) {
-        buttonModifier += ' verySmallButton';
+    if ($container.width() < imageButtonWidth * 2) {
+        buttonModifier += ' smallButtonWidth';
+
+    }
+    if ($container.width() < imageButtonWidth) {
+        buttonModifier += ' verySmallButtons';
     }
     return buttonModifier;
 }
@@ -79,12 +83,10 @@ function SetupImageContainer(containerDiv) {
 
         var buttonModifier = GetButtonModifier($this);
 
-        if (buttonModifier !== 'smallButton verySmallButton') {
-            $this.prepend('<button class="miniButton cutImageButton disabled" title="' +
-                localizationManager.getText('EditTab.Image.CutImage') + '"></button>');
-            $this.prepend('<button class="miniButton copyImageButton disabled" title="' +
-                localizationManager.getText('EditTab.Image.CopyImage') + '"></button>');
-        }
+        $this.prepend('<button class="miniButton cutImageButton disabled '+ buttonModifier + '" title="' +
+            localizationManager.getText('EditTab.Image.CutImage') + '"></button>');
+        $this.prepend('<button class="miniButton copyImageButton disabled ' + buttonModifier + '" title="' +
+            localizationManager.getText('EditTab.Image.CopyImage') + '"></button>');
         $this.prepend('<button class="pasteImageButton imageButton ' + buttonModifier +
             '" title="' + localizationManager.getText('EditTab.Image.PasteImage') + '"></button>');
         $this.prepend('<button class="changeImageButton imageButton ' + buttonModifier +

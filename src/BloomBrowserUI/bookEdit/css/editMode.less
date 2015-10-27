@@ -97,11 +97,14 @@ DIV.hoverUp
 	background-repeat: no-repeat;
     background-size: contain;
     background-position: center center;
-    &.smallButton {
+    &.smallButtonWidth {
 	    width: 50%;
+        max-width: 87px;
+        border-style: none;
+    }
+    &.smallButtonHeight {
 	    height: 50%;
         max-height: 52px;
-        max-width: 87px;
         border-style: none;
     }
     &.changeImageButton {
@@ -116,11 +119,11 @@ DIV.hoverUp
 	    background-color: @PasteImageButtonColor;
 	    background-image: url("../img/pasteButton.svg");
         background-position: right center;
-        &.smallButton {
-            width: 87px !important;
-            &.verySmallButton {
-                background-position: center center;
+        &.smallButtonWidth {
+            width: 87px;
+            &.verySmallButtons {
                 width: 98%;
+                background-size: 60%;
             }
         }
     }
@@ -161,12 +164,24 @@ BUTTON.miniButton {
     &:hover {
         border: 1px inset @ImageButtonBorder;
     }
+    &.verySmallButtons {
+        right: 60%;
+    }
+    &.smallButtonHeight {
+        height: 15%;
+    }
+    &.verySmallButtons {
+        width: 30%;
+    }
     &.cutImageButton {
 	    background-image: url("../img/cut.svg");
         bottom: 27px;
         &.disabled {
     	    background-image: url("../img/cutGrey.svg");
             pointer-events: none;
+        }
+        &.smallButtonHeight {
+            bottom: 26%;
         }
     }
     &.copyImageButton {
@@ -175,6 +190,9 @@ BUTTON.miniButton {
         &.disabled {
     	    background-image: url("../img/copyGrey.svg");
             pointer-events: none;
+        }
+        &.smallButtonHeight {
+            bottom: 4%;
         }
     }
 }
