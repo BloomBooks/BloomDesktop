@@ -2,8 +2,8 @@
 - You can now copy and cut images
 - You can now hover over an image to get its dimensions, dots-per-inch, and color depth
 - Bloom uses less memory when you have very large image files
-- Books no longer acquire files for images that you aren't using anymore
-- Fixed problem where black and white (1 bit) images were converted to 32 bit.
+- Book folders no longer accumulate files for images that you aren't using anymore
+- Fixed problem where black and white (1 bit) images were converted to 32 bit
 - New Arithmetic Template
 - Better error report when the operating system blocks Bloom from touching a file due to weird file permissions
 - New experimental EPUB option in Publish Tab
