@@ -803,6 +803,13 @@ namespace Bloom.Edit
 
 		private void OnChangeImage(DomEventArgs ge)
 		{
+			if (!_model.CanChangeImages())
+			{
+				MessageBox.Show(
+					LocalizationManager.GetString("EditTab.CantPasteImageLocked", "Sorry, this book is locked down so that images cannot be changed."));
+				return;
+			}
+
 			var imageElement = GetImageNode(ge);
 			if (imageElement == null)
 				return;
