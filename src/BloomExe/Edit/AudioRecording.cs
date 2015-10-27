@@ -7,7 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using L10NSharp;
+#if __MonoCS__
+#else
 using Palaso.Media.Naudio;
+#endif
 using Palaso.Progress;
 using Palaso.Reporting;
 using Palaso.UI.WindowsForms.Widgets;
@@ -29,10 +32,16 @@ namespace Bloom.Edit
 		/// The file we want to record to
 		/// </summary>
 		public string Path { get; set; }
+#if __MonoCS__
+#else
 		public AudioRecorder Recorder { get; private set; } // Palaso component to do the actual recording.
+#endif
 		private readonly string _backupPath; // If we are about to replace a recording, save the old one here; a temp file.
 		private DateTime _startRecording; // For tracking recording length.
+#if __MonoCS__
+#else
 		public event EventHandler<PeakLevelEventArgs> PeakLevelChanged;
+#endif
 		LameEncoder _mp3Encoder = new LameEncoder();
 		/// <summary>
 		/// This timer introduces a brief delay from the mouse click to actually starting to record.
@@ -53,8 +62,11 @@ namespace Bloom.Edit
 
 		public AudioRecording()
 		{
+#if __MonoCS__
+#else
 			Recorder = new AudioRecorder(1);
 			Recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
+#endif
 			BeginMonitoring();
 
 			_startRecordingTimer = new Timer();
@@ -74,6 +86,9 @@ namespace Bloom.Edit
 		{
 			get
 			{
+#if __MonoCS__
+				return String.Empty;
+#else
 				var sb = new StringBuilder("{\"devices\":[");
 				bool first = true;
 				foreach (var device in RecordingDevice.Devices)
@@ -102,11 +117,14 @@ namespace Bloom.Edit
 
 				sb.Append("}");
 				return sb.ToString();
+#endif
 			}
 		}
 
 		public void BeginMonitoring()
 		{
+#if __MonoCS__
+#else
 			if (!RecordingDevice.Devices.Contains(RecordingDevice))
 			{
 				RecordingDevice = RecordingDevice.Devices.FirstOrDefault();
@@ -115,16 +133,22 @@ namespace Bloom.Edit
 			{
 				Recorder.BeginMonitoring();
 			}
+#endif
 		}
 
+#if __MonoCS__
+#else
 		private void SetPeakLevel(PeakLevelEventArgs args)
 		{
 			if (PeakLevelChanged != null)
 				PeakLevelChanged(this, args);
 		}
+#endif
 
 		public void StopRecording()
 		{
+#if __MonoCS__
+#else
 			if (Recorder.RecordingState != RecordingState.Recording)
 			{
 				WarnPressTooShort();
@@ -150,6 +174,7 @@ namespace Bloom.Edit
 				// is required for epub. The wav file is a better permanent record of the recording; also,
 				// it is used for playback.
 			}
+#endif
 		}
 
 		public void StartRecording()
@@ -163,6 +188,10 @@ namespace Bloom.Edit
 		/// <returns>true if the recording started successfully</returns>
 		private bool TryStartRecord()
 		{
+#if __MonoCS__
+			MessageBox.Show("Recording does not yet work on Linux", "Cannot record");
+			return false;
+#else
 			if (Recorder.RecordingState == RecordingState.RequestedStop)
 			{
 				MessageBox.Show(
@@ -212,14 +241,19 @@ namespace Bloom.Edit
 			_startRecordingTimer.Start();
 			UpdateDisplay();
 			return true;
+#endif
 		}
 
 		public bool Recording
 		{
 			get
 			{
+#if __MonoCS__
+				return false;
+#else
 				return Recorder.RecordingState == RecordingState.Recording ||
 					   Recorder.RecordingState == RecordingState.RequestedStop;
+#endif
 			}
 		}
 
@@ -232,10 +266,13 @@ namespace Bloom.Edit
 
 		private void OnStartRecordingTimer_Elapsed(object sender, EventArgs e)
 		{
+#if __MonoCS__
+#else
 			_startRecordingTimer.Stop();
 			Debug.WriteLine("Start recording");
 			Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path)); // make sure audio directory exists
 			Recorder.BeginRecording(Path);
+#endif
 		}
 
 		private void WarnPressTooShort()
@@ -257,11 +294,14 @@ namespace Bloom.Edit
 			}
 		}
 
+#if __MonoCS__
+#else
 		public RecordingDevice RecordingDevice
 		{
 			get { return Recorder.SelectedDevice; }
 			set { Recorder.SelectedDevice = value; }
 		}
+#endif
 
 		internal void ReportNoMicrophone()
 		{
@@ -272,6 +312,8 @@ namespace Bloom.Edit
 
 		public void ChangeRecordingDevice(string deviceName)
 		{
+#if __MonoCS__
+#else
 			foreach (var dev in RecordingDevice.Devices)
 			{
 				if (dev.ProductName == deviceName)
@@ -279,6 +321,7 @@ namespace Bloom.Edit
 					RecordingDevice = dev;
 				}
 			}
+#endif
 		}
 	}
 }
