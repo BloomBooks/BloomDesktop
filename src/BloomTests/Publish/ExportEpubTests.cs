@@ -19,6 +19,7 @@ using Palaso.Extensions;
 namespace BloomTests.Publish
 {
 	[TestFixture]
+	[Platform(Exclude = "Linux", Reason = "Linux code not yet available.")]
 	public class ExportEpubTests : BookTestsBase
 	{
 		private readonly XNamespace _xhtml = "http://www.w3.org/1999/xhtml";
