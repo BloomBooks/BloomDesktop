@@ -279,8 +279,8 @@ namespace Bloom.Book
 			//also, remove from the doomed list anything referenced in the datadiv that looks like an image
 			//This saves us from deleting, for example, cover page images if this is called before the front-matter
 			//has been applied to the document.
-			toRemove.AddRange(from XmlElement coverImage in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
-							  select coverImage.InnerText.Trim());
+			toRemove.AddRange(from XmlElement dataDivImage in Dom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]")
+							  select UrlPathString.CreateFromUrlEncodedString(dataDivImage.InnerText.Trim()).PathOnly.NotEncoded);
 			foreach (var fileName in toRemove)
 			{
 				imageFiles.Remove(GetNormalizedPathForOS(fileName));   //Remove just returns false if it's not in there, which is fine
