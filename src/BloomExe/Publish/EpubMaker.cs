@@ -709,8 +709,8 @@ namespace Bloom.Publish
 				originalFileName = srcPath.Substring(Storage.FolderPath.Length + 1).Replace("\\", "/"); // allows keeping folder structure
 			else
 				originalFileName = Path.GetFileName(srcPath); // probably can't happen, but in case, put at root.
-			string fileName = originalFileName.Replace(" ", "_");
-			var dstPath = Path.Combine(_contentFolder, fileName);
+			string fileName = originalFileName;
+            var dstPath = Path.Combine(_contentFolder, fileName);
 			// We deleted the root directory at the start, so if the file is already
 			// there it is a clash, either multiple sources for files with the same name,
 			// or produced by replacing spaces, or something. Come up with a similar unique name.
