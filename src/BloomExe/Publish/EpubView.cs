@@ -12,7 +12,7 @@ namespace Bloom.Publish
 {
 	/// <summary>
 	/// This class implements the panel that appears in the Publish tab when the Epub button is selected.
-	/// See EpubView.SetupEpubControl for initialization. In addition to the controls created in
+	/// See PublishView.SetupEpubControl for initialization. In addition to the controls created in
 	/// InitializeComponent, this control normally has a browser displaying the book preview which occupies
 	/// the remaining space. Since this is not a standard control it is easier to create it and insert
 	/// it when needed, especially since the PublishView needs to manipulate it.

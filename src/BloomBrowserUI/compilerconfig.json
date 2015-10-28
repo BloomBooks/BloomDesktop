@@ -124,11 +124,16 @@
     "inputFile": "epub/bloomEpubPreview.less",
     "minify": {
       "enabled": false
-    }
+    },
+    "sourceMap": true
   }
   ,
   {
     "outputFile": "audio/audioRecording.css",
-    "inputFile": "audio/audioRecording.less"
+    "inputFile": "audio/audioRecording.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
   }
 ]
