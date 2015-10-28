@@ -47,6 +47,11 @@ class CalledByCSharp {
     contentWindow['pageSelectionChanging']();
   }
 
+  cleanupPageUponDeparture() {
+      var contentWindow = this.getPageContent();
+      contentWindow['cleanupPageUponDeparture']();
+  }
+
   loadReaderToolSettings(settings: string, bookFontName: string) {
 
     var contentWindow = this.getAccordionContent();
