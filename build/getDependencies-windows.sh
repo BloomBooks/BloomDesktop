@@ -76,7 +76,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
 #     revision: latest.lastSuccessful
-#     paths: {"geckofx.zip!**"=>"lib/dotnet", "optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "*.chm"=>"DistFiles", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build"}
+#     paths: {"optipng-0.7.4-win32/optipng.exe"=>"DistFiles", "*.chm"=>"DistFiles", "connections.dll"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build", "MSBuild.Community.Tasks.Targets"=>"build"}
 # [1] build: LibSynphony (bt394)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt394
@@ -112,41 +112,48 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 #     revision: latest.lastSuccessful
 #     paths: {"policy_9_0_Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "Vulcan.Uczniowie.HelpProvider.dll"=>"output/release", "Microsoft_VC90_CRT_x86.msm"=>"build\\ChorusInstallerStuff", "ChorusMergeModule.msm"=>"build\\ChorusInstallerStuff", "*.exe"=>"lib/dotnet", "*.dll"=>"lib/dotnet", "Mercurial.zip!**"=>".", "MercurialExtensions/**"=>"MercurialExtensions"}
 #     VCS: https://github.com/sillsdev/chorus.git [master]
-# [6] build: XulRunner29-win32 (bt400)
+# [6] build: geckofx29-win32-continuous (bt399)
+#     project: GeckoFx
+#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt399
+#     clean: false
+#     revision: latest.lastSuccessful
+#     paths: {"Geckofx-Core.dll"=>"lib/dotnet", "Geckofx-Core.dll.config"=>"lib/dotnet", "Geckofx-Core.pdb"=>"lib/dotnet", "Geckofx-Winforms.dll"=>"lib/dotnet", "Geckofx-Winforms.pdb"=>"lib/dotnet"}
+#     VCS: https://bitbucket.org/geckofx/geckofx-29.0 [default]
+# [7] build: XulRunner29-win32 (bt400)
 #     project: GeckoFx
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt400
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"xulrunner-29.0.1.en-US.win32.zip!**"=>"lib"}
-# [7] build: GeckofxHtmlToPdf-Win32-continuous (bt463)
+# [8] build: GeckofxHtmlToPdf-Win32-continuous (bt463)
 #     project: GeckofxHtmlToPdf
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt463
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
 #     VCS: https://github.com/hatton/geckofxHtmlToPdf [refs/heads/master]
-# [8] build: NAudio continuous (bt402)
+# [9] build: NAudio continuous (bt402)
 #     project: NAudio
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt402
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"NAudio.dll"=>"lib/dotnet"}
 #     VCS: https://hg.codeplex.com/forks/tombogle/supportlargewavfiles2 []
-# [9] build: PdfDroplet-Win-Dev-Continuous (bt54)
+# [10] build: PdfDroplet-Win-Dev-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt54
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
 #     VCS: http://bitbucket.org/hatton/pdfdroplet [default]
-# [10] build: TidyManaged-master-win32-continuous (bt349)
+# [11] build: TidyManaged-master-win32-continuous (bt349)
 #     project: TidyManaged
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt349
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
-# [11] build: palaso-win32-master-nostrongname Continuous (bt436)
+# [12] build: palaso-win32-master-nostrongname Continuous (bt436)
 #     project: libpalaso
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt436
 #     clean: false
@@ -171,7 +178,6 @@ mkdir -p ../src/BloomBrowserUI/bookEdit/js/libsynphony
 mkdir -p ../src/BloomBrowserUI/bookEdit/test/libsynphony
 
 # download artifact dependencies
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/geckofx.zip ../Downloads/geckofx.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/optipng-0.7.4-win32/optipng.exe ../DistFiles/optipng.exe
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
@@ -238,6 +244,11 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/MercurialExtensions/fixutf8/win32helper.py ../MercurialExtensions/fixutf8/win32helper.py
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/MercurialExtensions/fixutf8/win32helper.pyc ../MercurialExtensions/fixutf8/win32helper.pyc
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt437/latest.lastSuccessful/MercurialExtensions/fixutf8/win32helper.pyo ../MercurialExtensions/fixutf8/win32helper.pyo
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt399/latest.lastSuccessful/Geckofx-Core.dll ../lib/dotnet/Geckofx-Core.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt399/latest.lastSuccessful/Geckofx-Core.dll.config ../lib/dotnet/Geckofx-Core.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt399/latest.lastSuccessful/Geckofx-Core.pdb ../lib/dotnet/Geckofx-Core.pdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt399/latest.lastSuccessful/Geckofx-Winforms.dll ../lib/dotnet/Geckofx-Winforms.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt399/latest.lastSuccessful/Geckofx-Winforms.pdb ../lib/dotnet/Geckofx-Winforms.pdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt400/latest.lastSuccessful/xulrunner-29.0.1.en-US.win32.zip ../Downloads/xulrunner-29.0.1.en-US.win32.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
@@ -301,7 +312,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/irrKlang.NET4.dll?branch=%3Cdefault%3E ../lib/dotnet/irrKlang.NET4.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt436/latest.lastSuccessful/taglib-sharp.dll?branch=%3Cdefault%3E ../lib/dotnet/taglib-sharp.dll
 # extract downloaded zip files
-unzip -uqo ../Downloads/geckofx.zip -d ../lib/dotnet
 unzip -uqo ../Downloads/libsynphony-js.zip -d ../src/BloomBrowserUI/bookEdit/js/libsynphony
 unzip -uqo ../Downloads/libsynphony-test-js.zip -d ../src/BloomBrowserUI/bookEdit/test/libsynphony
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d ../DistFiles/pdf
