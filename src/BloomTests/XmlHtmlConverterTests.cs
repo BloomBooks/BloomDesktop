@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom;
 using NUnit.Framework;
@@ -138,6 +140,26 @@ namespace BloomTests
 		}
 
 		[Test]
+		public void SaveAsHTM_HasEmptyParagraphs_RetainsEmptyParagraphs()
+		{
+			var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p><p/>";
+			var dom = new XmlDocument();
+			dom.LoadXml("<!DOCTYPE html><html><body>" +
+				pattern +
+				"</body></html>");
+			using (var temp = new TempFile())
+			{
+				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+				var r = new Regex("<p");				
+				var text = File.ReadAllText(temp.Path);
+				var matches = r.Matches(text);
+				Assert.AreEqual(6, matches.Count,text);
+				//this one also exercises XmlHtmlConverter.GetXmlDomFromHtmlFile, so we're not really testing anymore
+				AssertThatXmlIn.HtmlFile(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//p", 6);
+			}			
+		}
+
+		[Test]
 		public void GetXmlDomFromHtml_HasBrTags_TagsNotDoubled()
 		{
 			const string html = "<!DOCTYPE html><html><head></head><body><div><br></br></div></body></html>";
@@ -172,6 +194,17 @@ namespace BloomTests
 			const string html = @"<!DOCTYPE html><html><head></head><body><div><p>one <b>two</b> <i>three</i> <strong>four</strong> <em>five</em> <u>six</u> seven</p></div></body></html>";
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
 			Assert.That(dom.InnerXml, Is.StringContaining(@"<p>one <b>two</b> <i>three</i> <strong>four</strong> <em>five</em> <u>six</u> seven</p>"));
+		}
+
+		[Test]
+		public void GetXmlDomFromHtml_HasEmptyParagraphs_RetainsEmptyParagraphs()
+		{
+			var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p>";
+			var html = "<!DOCTYPE html><html><body>"+
+				pattern + 
+				"</body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//p", 5);
 		}
 
 		[Test]

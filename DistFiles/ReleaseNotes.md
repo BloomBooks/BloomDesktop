@@ -2,6 +2,7 @@
 - If after creating a page you decide that you want a different layout than the one you original chose, you can now select "Choose Different Layout" and select a different one.
 - If you have the latest [Art Of Reading](http://bloomlibrary.org/#/artofreading) installed (version 3.1), then you can now search for pictures in one of: Arabic, Chinese, Bengali, English, French, Hindi, Indonesian, Portuguese, Spanish, Swahili, and Thai.
 - Bloom now supports Letter, HalfLetter, and QuarterLetter (North American) paper sizes.
+- Fixed Problem where blank lines were removed.
 - Dozens of Fixes.
 
 ## 3.3
@@ -16,6 +17,7 @@
 - Books now default license to CC-BY (requested by All Children Reading).
 
 - Books made from Leveled Reader template delivered via Leveled Reader Bloom Pack now have all the formatting locked down, preventing writers from altering the font, size, or spacing of the text (requested by All Children Reading).
+
 
 ## 3.2
 
