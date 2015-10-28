@@ -78,7 +78,7 @@ namespace Bloom.MiscUI
 				dlg.markDownTextBox1.MarkDownText = message;
 				dlg.ShowDialog();
 			}
-			using(var dlg = new ProblemReporterDialog(null, null))
+			using(var dlg = new ProblemReporterDialog())
 			{
 				dlg.Summary = "Bloom Integrity Check Failed: {0}";
 				dlg.Description = "Please answer any of these questions that you understand:"

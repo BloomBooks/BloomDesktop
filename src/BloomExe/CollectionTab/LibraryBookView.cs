@@ -3,9 +3,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using Bloom.Book;
+using Bloom.MiscUI;
 using Bloom.SendReceive;
 using Bloom.web;
 using Gecko;
+using Gecko.DOM;
 
 namespace Bloom.CollectionTab
 {
@@ -182,11 +184,47 @@ namespace Bloom.CollectionTab
 			var ge = e as DomEventArgs;
 			var target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
 			var anchor = target as Gecko.DOM.GeckoAnchorElement;
-			if (anchor != null && anchor.Href != "" && anchor.Href != "#")
+			if (GetAnchorHref(e) != "" && GetAnchorHref(e) != "#")
 			{
 				_readmeBrowser.HandleLinkClick(anchor, ge, _bookSelection.CurrentSelection.FolderPath);
 			}
 		}
 
+		/// <summary>
+		/// Support the "Report a Problem" button when it shows up in the preview window as part of
+		/// a page reporting that we can't open the book for some reason.
+		/// </summary>
+		private void _previewBrowser_OnBrowserClick(object sender, EventArgs e)
+		{
+			if (GetAnchorHref(e).EndsWith("ReportProblem"))
+			{
+				using (var dlg = new ProblemReporterDialog(null,_bookSelection))
+				{
+					dlg.SetDefaultIncludeBookSetting(true);
+					dlg.Description =
+						"This book had a problem. Please tell us anything that might be helpful in diagnosing the problem here:" +
+						Environment.NewLine;
+                   
+					try
+					{
+						dlg.Description += Environment.NewLine + Environment.NewLine + Environment.NewLine;
+						dlg.Description+=_bookSelection.CurrentSelection.Storage.ErrorMessagesHtml;
+					}
+					catch (Exception)
+					{
+						//no use chasing errors generated getting error info
+					}
+					
+                    dlg.ShowDialog();
+				}
+			}
+		}
+
+		private static string GetAnchorHref(EventArgs e)
+		{
+			var element = (GeckoHtmlElement) (e as DomEventArgs).Target.CastToGeckoElement();
+			//nb: it might not be an actual anchor; could be an input-button that we've stuck href on
+			return element == null ? "" : element.GetAttribute("href");
+		}
 	}
 }

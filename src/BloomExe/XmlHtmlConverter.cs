@@ -74,7 +74,7 @@ namespace Bloom
 					var errors = tidy.CleanAndRepair();
 					if (!string.IsNullOrEmpty(errors))
 					{
-						throw new ApplicationException(string.Format("{0}{2}{2}{1}", errors, content, Environment.NewLine));
+						throw new ApplicationException(errors);
 					}
 					var newContents = tidy.Save();
 					try
