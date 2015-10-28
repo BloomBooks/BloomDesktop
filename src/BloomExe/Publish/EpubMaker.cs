@@ -673,27 +673,22 @@ namespace Bloom.Publish
 
 		private void FixChangedFileNames(HtmlDom pageDom)
 		{
-			foreach (var attr in new[] {"src", "href"})
+			//NB: the original version of this was also concerned with hrefs. Since Bloom doesn't support making
+			//links and there were no unit tests covering it, I decided to drop that support for now.
+
+			foreach (XmlElement element in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
 			{
-				foreach (var node in pageDom.RawDom.SafeSelectNodes("//*[@" + attr + "]"))
+				//notice, we're stripping off the query. I (JH) don't know why that is needed, but there is an uncommented
+				//unit test that verifies it's happening, so we do it.
+				var path = HtmlDom.GetImageElementUrl(element).PathOnly.NotEncoded;
+
+				string modifiedPath;
+				if (_mapChangedFileNames.TryGetValue(path, out modifiedPath))
 				{
-					var elt = node as XmlElement;
-					if (elt == null)
-						continue;
-					// These attribute SHOULD contain URLs, so it should be necessary to decode them
-					// to get actual file names, if there are any special characters involved.
-					var oldName = WebUtility.UrlDecode(elt.Attributes[attr].Value);
-
-					var fileName = attr == "src" ? StripQuery(oldName) : oldName;
-
-					string newName;
-					if (!_mapChangedFileNames.TryGetValue(fileName, out newName))
-					{
-						newName = fileName;
-					}
-					if (oldName != newName)
-						elt.SetAttribute(attr, HttpUtility.UrlPathEncode(newName)); // Supposedly deprecated, but we need space->%20, not +
+					path = modifiedPath;
 				}
+				//here we're either setting the same path, the same but stripped of a query, or a modified
+				HtmlDom.SetImageElementUrl(new ElementProxy(element), UrlPathString.CreateFromUnencodedString(path));
 			}
 		}
 
@@ -709,8 +704,8 @@ namespace Bloom.Publish
 				originalFileName = srcPath.Substring(Storage.FolderPath.Length + 1).Replace("\\", "/"); // allows keeping folder structure
 			else
 				originalFileName = Path.GetFileName(srcPath); // probably can't happen, but in case, put at root.
-			string fileName = originalFileName;
-            var dstPath = Path.Combine(_contentFolder, fileName);
+			var fileName = originalFileName.Replace(" ", "_");
+			var dstPath = Path.Combine(_contentFolder, fileName);
 			// We deleted the root directory at the start, so if the file is already
 			// there it is a clash, either multiple sources for files with the same name,
 			// or produced by replacing spaces, or something. Come up with a similar unique name.
