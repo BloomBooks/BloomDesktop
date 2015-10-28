@@ -53,7 +53,15 @@ namespace BloomTests.Book
 			GetInitialStorageWithCustomHtml("<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
 			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//link[contains(@href, 'Basic Book')]", 1);
 		}
-
+		[Test]
+		public void Save_HasEmptyParagraphs_RetainsEmptyParagraphs()
+		{
+			var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p>";
+			GetInitialStorageWithCustomHtml("<html><body><div class='bloom-page'><div class='bloom-translationGroup'><div class='bloom-editable'>" +
+				pattern +
+				"</div></div></div></body></html>");
+			AssertThatXmlIn.HtmlFile(_bookPath).HasSpecifiedNumberOfMatchesForXpath("//p", 5);
+		}
 		[Test]
 		public void Save_BookHadEditStyleSheet_NowHasPreviewAndBase()
 		{
