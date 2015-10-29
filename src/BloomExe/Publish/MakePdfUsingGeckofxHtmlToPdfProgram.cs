@@ -119,8 +119,8 @@ namespace Bloom.Publish
 			if (res.DidTimeOut || !File.Exists (outputPdfPath))
 			{
 #if DEBUG
-				Console.WriteLine(@"PDF generation failed: res.StandardOutput =");
-				Console.WriteLine(res.StandardOutput);
+				Debug.WriteLine(@"PDF generation failed: res.StandardOutput =");
+				Debug.WriteLine(res.StandardOutput);
 #endif
 				var msg = L10NSharp.LocalizationManager.GetDynamicString(@"Bloom", @"MakePDF.Failed",
 					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: GeckofxHtmlToPdf (command line) did not produce the expected document.",
