@@ -517,19 +517,6 @@ namespace Bloom.Publish
 			ControlsChanged();
 		}
 
-		private void OnShowCropMarks_CheckedChanged(object sender, EventArgs e)
-		{
-			if (!_activated)
-				return;
-
-			var oldSetting = _model.ShowCropMarks;
-			SetModelFromButtons();
-			if (oldSetting == _model.ShowCropMarks)
-				return; // no changes detected
-
-			ControlsChanged();
-		}
-
 		private void ControlsChanged()
 		{
 			if (IsMakingPdf || _model.BookletPortion == PublishModel.BookletPortions.None)

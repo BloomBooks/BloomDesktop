@@ -6,17 +6,24 @@
      @MarginBetweenMinorItems: 5px;
     .bloom-translationGroup.bookTitle {
         .bloom-editable {
-            //NB: THe order here is important. bloom-content1 should be last so that if a box is *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections), we want the  bloom-content1 rule to win.
+            //NB: THe order here is important. bloom-content1 should be last so that if a box is
+            // *both* bloom-contentNational1 and bloom-content1 (as is the default case for source collections),
+            // we want the bloom-content1 rule to win.
             &.bloom-contentNational1 {
                 //NB: we show the national language even if this is a monolingual book
                 font-size: 120%;
-                line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnท             line-height: 1.7em; //I don't know why the line-height here has to be bigger than for the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnทไปทั่วพื้ ช้ต่างปู" as a test
+                //I don't know why the line-height here has to be bigger than for
+                // the larger font of the content1. I am using "ÊȘ ȭ,dấu huyềnทไปทั่วพื้ ช้ต่างปู" as a test.
+                line-height: 1.7em;
                 margin-bottom: @MarginBetweenMinorItems;
             }
             &.bloom-content1 {
                 //main title
                 font-size: 250%;
-                line-height: 1.4em; //1.4em is the minimum to show ทไปทั่วพื้  without clipping. (Which we don't really *have* to support by default; the user could change the line-height.)
+                // 1.4em is the minimum to show ทไปทั่วพื้ without clipping.
+                // Which, by the way, we don't really *have* to support by default;
+                // the user could change the line-height.
+                line-height: 1.4em;
                 margin-bottom: @MarginBetweenMinorItems;
             }
         }
