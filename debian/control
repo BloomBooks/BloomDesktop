@@ -8,7 +8,7 @@ Vcs-Browser: https://github.com/BloomBooks/BloomDesktop
 Standards-Version: 3.9.5
 Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
  wget, unzip, desktop-file-utils,
- optipng,
+ optipng, libsndfile1,
  mono-sil, libgdiplus-sil, geckofx29,
  libenchant-dev, libxklavier-dev, libdconf-dev,
  libicu-dev,
@@ -20,7 +20,7 @@ Depends: ${shlibs:Depends}, ${cli:Depends}, ${misc:Depends},
  mono-sil, libgdiplus-sil, geckofx29, gtklp,
  chmsee, libtidy5,
  fonts-sil-andika-new-basic,
- optipng,
+ optipng, libsndfile1,
  wmctrl
 Suggests: art-of-reading
 Replaces: bloom-desktop, bloom-desktop-beta
