@@ -44,7 +44,7 @@ override_dh_auto_install:
 	cd $(DESTDIR)/$(LIB) && rm AxInterop* BloomTests* Interop* Moq* nunit*
 	# Install data files
 	cp -r DistFiles $(DESTDIR)/$(LIB)/
-	rm -rf $(DESTDIR)/$(LIB)/DistFiles/Andika
+	rm -rf $(DESTDIR)/$(LIB)/DistFiles/AndikaNewBasic
 	chmod -R a+rX,og-w $(DESTDIR)/$(LIB)/DistFiles
 	# Install browser support files
 	cp -r src/BloomBrowserUI $(DESTDIR)/$(LIB)/
