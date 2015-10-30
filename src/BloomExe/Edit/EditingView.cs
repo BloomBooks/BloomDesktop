@@ -21,8 +21,6 @@ using Palaso.UI.WindowsForms.ImageToolbox;
 using Gecko;
 using TempFile = Palaso.IO.TempFile;
 using Bloom.Workspace;
-using Palaso.IO;
-using Palaso.Network;
 
 namespace Bloom.Edit
 {
@@ -522,14 +520,9 @@ namespace Bloom.Edit
 					ge.Handled = false; //let gecko handle it
 					return;
 				}
-				else
-				{
-					ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
-					ge.Handled = true;
-				}
-
+				ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
+				ge.Handled = true;
 			}
-//			if (ge.Target.ClassName.Contains("bloom-metaData") || (ge.Target.ParentElement!=null && ge.Target.ParentElement.ClassName.Contains("bloom-metaData")))
 		}
 
 
@@ -932,12 +925,12 @@ namespace Bloom.Edit
 
 		private void _copyButton_Click(object sender, EventArgs e)
 		{
-			_copyCommand.Execute();
+			ExecuteCommandSafely(_copyCommand);
 		}
 
 		private void _pasteButton_Click(object sender, EventArgs e)
 		{
-			_pasteCommand.Execute();
+			ExecuteCommandSafely(_pasteCommand);
 		}
 
 		public void UpdateDisplay()
@@ -1104,12 +1097,24 @@ namespace Bloom.Edit
 
 		private void _cutButton_Click(object sender, EventArgs e)
 		{
-			_cutCommand.Execute();
+			ExecuteCommandSafely(_cutCommand);
 		}
 
 		private void _undoButton_Click(object sender, EventArgs e)
 		{
-			_undoCommand.Execute();
+			ExecuteCommandSafely(_undoCommand);
+		}
+
+		private void ExecuteCommandSafely(Command cmdObject)
+		{
+			try
+			{
+				cmdObject.Execute();
+			}
+			catch (Exception error)
+			{
+				ErrorReport.NotifyUserOfProblem(error, LocalizationManager.GetString("Errors.SomethingWentWrong", "Sorry, something went wrong."));
+			}
 		}
 
 		public void ClearOutDisplay()
@@ -1122,13 +1127,13 @@ namespace Bloom.Edit
 		{
 			if (ConfirmRemovePageDialog.Confirm())
 			{
-				_deletePageCommand.Execute();
+				ExecuteCommandSafely(_deletePageCommand);
 			}
 		}
 
 		private void _duplicatePageButton_Click(object sender, EventArgs e)
 		{
-			_duplicatePageCommand.Execute();
+			ExecuteCommandSafely(_duplicatePageCommand);
 		}
 
 		protected override void OnLoad(EventArgs e)
