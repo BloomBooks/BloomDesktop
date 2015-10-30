@@ -332,6 +332,28 @@ namespace Bloom.MiscUI
 							zip.Save();
 							AddAttachment(bookZip.Path);
 						}
+						catch (InvalidRequestException e)
+						{
+							// We get this rather unspecific exception (with the even more unhelpful message 'NoContent') if the attachment is too large.
+							// There might of course be other reasons.
+							bookZip.Detach();
+							var attachmentLength = new FileInfo(bookZip.Path).Length;
+							try
+							{
+								_issueManagement.UpdateIssue(_youTrackIssueId, _youTrackIssue.Summary, _youTrackIssue.Description
+									+ "\nGot exception: " + e.Message + " trying to attach book file: " + Book.FolderPath + " of size " + attachmentLength);
+							}
+							catch (Exception error)
+							{
+								Logger.WriteEvent("*** Error as ProblemReporterDialog attempted to add warning to issue. " + error.Message);
+							}
+							if (attachmentLength > 10485760) // This is the limit as of October 20, 3015 (see http://issues.bloomlibrary.org/youtrack/admin/settings)
+							{
+								var msg = LocalizationManager.GetString("ReportProblemDialog.FileTooLarge",
+									"Unfortunately, {0} is too large to upload. If we need the book in order to work on your problem we will contact you.");
+								MessageBox.Show(string.Format(msg, Path.GetFileName(Book.FolderPath)));
+							}
+						}
 						catch (Exception error)
 						{
 							bookZip.Detach();
