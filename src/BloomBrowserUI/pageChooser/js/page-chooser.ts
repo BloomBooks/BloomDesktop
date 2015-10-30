@@ -32,7 +32,7 @@ class PageChooser {
     private _indexOfPageToSelect: number;
     private _scrollingDiv: JQuery;
     private _scrollTopOfTheScrollingDiv: number;
-    private _forChoosePage: boolean;
+    private _forChooseLayout: boolean;
     private _currentPageLayout: string;
 
     constructor(initializationJsonString: string) {
@@ -47,7 +47,7 @@ class PageChooser {
             this._templateBookUrls = initializationObject["collections"];
             this._lastPageAdded = initializationObject["lastPageAdded"];
             this._orientation = initializationObject["orientation"];
-            this._forChoosePage = initializationObject["chooseLayout"];
+            this._forChooseLayout = initializationObject["chooseLayout"];
             this._currentPageLayout = initializationObject['currentLayout'];
         } else {
             console.log("Expected url in PageChooser ctor!");
@@ -78,7 +78,7 @@ class PageChooser {
         caption.attr("style", "display: block;");
         $("#preview").attr("src", $(this._selectedGridItem).find("img").first().attr("src"));
         this.setLocalizedText($('#previewDescriptionText'), 'TemplateBooks.PageDescription.', $(".pageDescription", this._selectedGridItem).text(), defaultCaptionText);
-        if (this._forChoosePage) {
+        if (this._forChooseLayout) {
             var willLoseData = this.willLoseData();
             if (willLoseData) {
                 $('#mainContainer').addClass("willLoseData");
@@ -163,10 +163,10 @@ class PageChooser {
 
     addPageClickHandler() : void {
         if (this._selectedGridItem == undefined || this._templateBookUrls == undefined) return;
-        if (this._forChoosePage && !$('#convertAnywayCheckbox').is(':checked')) return;
+        if (this._forChooseLayout && !$('#convertAnywayCheckbox').is(':checked')) return;
         this.fireCSharpEvent("setModalStateEvent", "false");
         var id = this._selectedGridItem.attr("data-pageId");
-        if (this._forChoosePage) {
+        if (this._forChooseLayout) {
             this.fireCSharpEvent("chooseLayout", id);
 
         } else {
@@ -175,7 +175,7 @@ class PageChooser {
     } // addPageClickHandler
 
     continueCheckBoxChanged(): void {
-        if (!this._forChoosePage) return;
+        if (!this._forChooseLayout) return;
         var cb = $('#convertAnywayCheckbox');
         var isCurrentSelectionOriginal = this._selectedGridItem.hasClass('disabled');
         $('#addPageButton').prop('disabled', isCurrentSelectionOriginal || !cb.is(':checked'));
@@ -214,7 +214,7 @@ class PageChooser {
         var pageButton = $("#addPageButton", document);
         var okButtonLabelId = 'EditTab.AddPageDialog.AddThisPageButton';
         var okButtonLabelText = 'Add This Page';
-        if (this._forChoosePage) {
+        if (this._forChooseLayout) {
             okButtonLabelId = 'EditTab.AddPageDialog.ChooseLayoutButton';
             okButtonLabelText = 'Use This Layout';
             this.setLocalizedText($('#convertAnywayCheckbox'),'EditTab.AddPageDialog.', 'Continue anyway','ChooseLayoutContinueCheckbox')
@@ -241,7 +241,11 @@ class PageChooser {
             $( ".outerCollectionContainer", document).append(collectionToAdd);
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
-            var pages = $( pageData).filter('.bloom-page[id]').filter('[data-page="extra"]');
+            var pages = $(pageData).filter('.bloom-page[id]').filter('[data-page="extra"]');
+            if (this._forChooseLayout) {
+               // This filters out the (empty) custom page, which is currently never a useful layout change, since all data would be lost.
+               pages = pages.not('.bloom-page[id="5dcd48df-e9ab-4a07-afd4-6a24d0398386"]');
+            }
             this._indexOfPageToSelect = this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
             this.thumbnailClickHandler($(".invisibleThumbCover").eq(this._indexOfPageToSelect), null);
         });

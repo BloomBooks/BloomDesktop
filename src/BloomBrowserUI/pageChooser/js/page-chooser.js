@@ -30,7 +30,7 @@ var PageChooser = (function () {
             this._templateBookUrls = initializationObject["collections"];
             this._lastPageAdded = initializationObject["lastPageAdded"];
             this._orientation = initializationObject["orientation"];
-            this._forChoosePage = initializationObject["chooseLayout"];
+            this._forChooseLayout = initializationObject["chooseLayout"];
             this._currentPageLayout = initializationObject['currentLayout'];
         }
         else {
@@ -59,7 +59,7 @@ var PageChooser = (function () {
         caption.attr("style", "display: block;");
         $("#preview").attr("src", $(this._selectedGridItem).find("img").first().attr("src"));
         this.setLocalizedText($('#previewDescriptionText'), 'TemplateBooks.PageDescription.', $(".pageDescription", this._selectedGridItem).text(), defaultCaptionText);
-        if (this._forChoosePage) {
+        if (this._forChooseLayout) {
             var willLoseData = this.willLoseData();
             if (willLoseData) {
                 $('#mainContainer').addClass("willLoseData");
@@ -140,11 +140,11 @@ var PageChooser = (function () {
     PageChooser.prototype.addPageClickHandler = function () {
         if (this._selectedGridItem == undefined || this._templateBookUrls == undefined)
             return;
-        if (this._forChoosePage && !$('#convertAnywayCheckbox').is(':checked'))
+        if (this._forChooseLayout && !$('#convertAnywayCheckbox').is(':checked'))
             return;
         this.fireCSharpEvent("setModalStateEvent", "false");
         var id = this._selectedGridItem.attr("data-pageId");
-        if (this._forChoosePage) {
+        if (this._forChooseLayout) {
             this.fireCSharpEvent("chooseLayout", id);
         }
         else {
@@ -152,7 +152,7 @@ var PageChooser = (function () {
         }
     }; // addPageClickHandler
     PageChooser.prototype.continueCheckBoxChanged = function () {
-        if (!this._forChoosePage)
+        if (!this._forChooseLayout)
             return;
         var cb = $('#convertAnywayCheckbox');
         var isCurrentSelectionOriginal = this._selectedGridItem.hasClass('disabled');
@@ -189,7 +189,7 @@ var PageChooser = (function () {
         var pageButton = $("#addPageButton", document);
         var okButtonLabelId = 'EditTab.AddPageDialog.AddThisPageButton';
         var okButtonLabelText = 'Add This Page';
-        if (this._forChoosePage) {
+        if (this._forChooseLayout) {
             okButtonLabelId = 'EditTab.AddPageDialog.ChooseLayoutButton';
             okButtonLabelText = 'Use This Layout';
             this.setLocalizedText($('#convertAnywayCheckbox'), 'EditTab.AddPageDialog.', 'Continue anyway', 'ChooseLayoutContinueCheckbox');
@@ -216,6 +216,10 @@ var PageChooser = (function () {
             // Grab all pages in this collection
             // N.B. normal selector syntax or .find() WON'T work here because pageData is not yet part of the DOM!
             var pages = $(pageData).filter('.bloom-page[id]').filter('[data-page="extra"]');
+            if (_this._forChooseLayout) {
+                // This filters out the (empty) custom page, which is currently never a useful layout change, since all data would be lost.
+                pages = pages.not('.bloom-page[id="5dcd48df-e9ab-4a07-afd4-6a24d0398386"]');
+            }
             _this._indexOfPageToSelect = _this.loadPagesFromCollection(collectionToAdd, pages, gridItemHTML, pageFolderUrl, pageUrl, lastPageAdded);
             _this.thumbnailClickHandler($(".invisibleThumbCover").eq(_this._indexOfPageToSelect), null);
         });
