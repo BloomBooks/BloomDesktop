@@ -26,7 +26,11 @@ namespace Bloom.MiscUI
 			var errors = new StringBuilder();
 			var files = new[] { "Bloom.chm", "PdfDroplet.exe", "Chorus.exe", "GeckofxHtmlToPdf.exe", "optipng.exe" };
 
-			var dirs = new[] { "AndikaNewBasic", "factoryCollections", "localization", "xMatter", "xslts" };
+			string[] dirs;
+			if (Palaso.PlatformUtilities.Platform.IsWindows)
+				dirs = new[] { "AndikaNewBasic", "factoryCollections", "localization", "xMatter", "xslts" };
+			else
+				dirs = new[] { "factoryCollections", "localization", "xMatter", "xslts" };
 
 			foreach(var fileName in files)
 			{
