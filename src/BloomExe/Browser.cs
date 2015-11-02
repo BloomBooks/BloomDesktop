@@ -419,20 +419,23 @@ namespace Bloom
 
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
+			MenuItem FFMenuItem = null;
 			Debug.Assert(!InvokeRequired);
 			if (ContextMenuProvider != null)
 			{
-#if DEBUG
-				e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)", new EventHandler(OnOpenPageInSystemBrowser));
-#endif
-				if (ContextMenuProvider(e))
-					return; // only the provider's items
+				var replacesStdMenu = ContextMenuProvider(e);
+				FFMenuItem = e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)",
+					new EventHandler(OnOpenPageInSystemBrowser));
 
+				if (replacesStdMenu)
+					return; // only the provider's items
 			}
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", new EventHandler(OnOpenPageInStylizer));
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
-			e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)", new EventHandler(OnOpenPageInSystemBrowser));
+			if(FFMenuItem == null)
+				e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)",
+					new EventHandler(OnOpenPageInSystemBrowser));
 #if DEBUG
 			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
 #endif
