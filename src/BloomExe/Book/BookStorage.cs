@@ -621,7 +621,18 @@ namespace Bloom.Book
 			//the fileLocator we get doesn't know anything about this particular book.
 			_fileLocator.AddPath(_folderPath);
 			RequireThat.Directory(_folderPath).Exists();
-			if (!File.Exists(PathToExistingHtml))
+			string pathToExistingHtml;
+			try
+			{
+				pathToExistingHtml = PathToExistingHtml;
+			}
+            catch (UnauthorizedAccessException error)
+			{
+				ProcessAccessDeniedError(error);
+				return;
+			}
+		
+			if (!File.Exists(pathToExistingHtml))
 			{
 				var files = new List<string>(Directory.GetFiles(_folderPath));
 				var b = new StringBuilder();
@@ -647,12 +658,7 @@ namespace Bloom.Book
 				}
 				catch (UnauthorizedAccessException error)
 				{
-					var message = LocalizationManager.GetString("Errors.DeniedAccess",
-						"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
-					message += Environment.NewLine + error.Message;
-					ErrorMessagesHtml = WebUtility.HtmlEncode(message);
-					Logger.WriteEvent("*** ERROR: " + message);
-					_errorAlreadyContainsInstructions = true;
+					ProcessAccessDeniedError(error);
 					return;
 				}
 				catch (Exception error)
@@ -709,6 +715,16 @@ namespace Bloom.Book
 
 				CleanupUnusedImageFiles();
 			}
+		}
+
+		private void ProcessAccessDeniedError(UnauthorizedAccessException error)
+		{
+			var message = LocalizationManager.GetString("Errors.DeniedAccess",
+				"Your computer denied Bloom access to the book. You may need technical help in setting the operating system permissions for this file.");
+			message += Environment.NewLine + error.Message;
+			ErrorMessagesHtml = WebUtility.HtmlEncode(message);
+			Logger.WriteEvent("*** ERROR: " + message);
+			_errorAlreadyContainsInstructions = true;
 		}
 
 		/// <summary>
