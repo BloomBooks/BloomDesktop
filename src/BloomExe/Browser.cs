@@ -411,7 +411,7 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// This Fucnction will be passed a GeckoContextMenuEventArgs to which appropriate menu items
+		/// This Function will be passed a GeckoContextMenuEventArgs to which appropriate menu items
 		/// can be added. If it returns true these are in place of our standard extensions; if false, the
 		/// standard ones will follow whatever it adds.
 		/// </summary>
@@ -422,7 +422,6 @@ namespace Bloom
 			Debug.Assert(!InvokeRequired);
 			if (ContextMenuProvider != null)
 			{
-				ContextMenuProvider(e);
 #if DEBUG
 				e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)", new EventHandler(OnOpenPageInSystemBrowser));
 #endif
