@@ -9,7 +9,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.Serialization;
-using Amazon.CloudFront.Model;
 using Bloom.Book;
 using Bloom.ToPalaso;
 using L10NSharp;
@@ -132,7 +131,7 @@ namespace Bloom.Collection
 				case 3:
 					return IsLanguage3Rtl;
 				default:
-					throw new InvalidArgumentException("The language number is not valid.");
+					throw new ArgumentException("The language number is not valid.");
 			}
 		}
 
@@ -150,7 +149,7 @@ namespace Bloom.Collection
 					IsLanguage3Rtl = isRtl;
 					break;
 				default:
-					throw new InvalidArgumentException("The language number is not valid.");
+					throw new ArgumentException("The language number is not valid.");
 			}
 		}
 
@@ -169,7 +168,7 @@ namespace Bloom.Collection
 				case 3:
 					return Language3LineHeight;
 				default:
-					throw new InvalidArgumentException("The language number is not valid.");
+					throw new ArgumentException("The language number is not valid.");
 			}
 		}
 
@@ -187,7 +186,7 @@ namespace Bloom.Collection
 					Language3LineHeight = lineHeight;
 					break;
 				default:
-					throw new InvalidArgumentException("The language number is not valid.");
+					throw new ArgumentException("The language number is not valid.");
 			}
 		}
 
