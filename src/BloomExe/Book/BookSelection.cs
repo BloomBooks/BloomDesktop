@@ -1,6 +1,6 @@
 using System.Drawing.Imaging;
-using Palaso.Extensions;
-using Palaso.UI.WindowsForms.ClearShare;
+using SIL.Extensions;
+using SIL.Windows.Forms.ClearShare;
 using System;
 using System.IO;
 

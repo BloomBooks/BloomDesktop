@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom;
 using NUnit.Framework;
-using Palaso.IO;
+using SIL.IO;
 
 namespace BloomTests
 {

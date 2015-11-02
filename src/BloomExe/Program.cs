@@ -16,14 +16,14 @@ using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using Gecko;
 using L10NSharp;
-using Palaso.IO;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.Registration;
-using Palaso.UI.WindowsForms.Reporting;
-using Palaso.UI.WindowsForms.UniqueToken;
+using SIL.IO;
+using SIL.Reporting;
+using SIL.Windows.Forms.Registration;
+using SIL.Windows.Forms.Reporting;
+using SIL.Windows.Forms.UniqueToken;
 using System.Linq;
 using Bloom.MiscUI;
-using Palaso.UI.WindowsForms.HtmlBrowser;
+using SIL.Windows.Forms.HtmlBrowser;
 
 namespace Bloom
 {
@@ -70,7 +70,7 @@ namespace Bloom
 
 				var args = args1;
 
-				if (Palaso.PlatformUtilities.Platform.IsWindows)
+				if (SIL.PlatformUtilities.Platform.IsWindows)
 				{
 					OldVersionCheck();
 				}
@@ -259,12 +259,12 @@ namespace Bloom
 							}
 							catch (ApplicationException error)
 							{
-								Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
+								SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, error.Message);
 								Environment.Exit(-1);
 							}
 							catch (Exception error)
 							{
-								Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+								SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
 									"Bloom could not finish renaming your collection folder. Restart your computer and try again.");
 								Environment.Exit(-1);
 							}
@@ -294,7 +294,7 @@ namespace Bloom
 			finally
 			{
 				// Check memory one final time for the benefit of developers.  The user won't see anything.
-				Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
+				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
 				if (!skipReleaseToken)
 					UniqueToken.ReleaseToken();
 			}
@@ -620,8 +620,8 @@ namespace Bloom
 				_projectContext = null;
 			}
 
-			Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
-				new Palaso.Reporting.ShowAlwaysPolicy(), error,
+			SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+				new SIL.Reporting.ShowAlwaysPolicy(), error,
 				"{0} had a problem loading the {1} project. Please report this problem to the developers by clicking 'Details' below.",
 				Application.ProductName, Path.GetFileNameWithoutExtension(projectPath));
 		}
@@ -682,7 +682,7 @@ namespace Bloom
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"There was a problem backing up your work to the SendReceive repository on this computer.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,"There was a problem backing up your work to the SendReceive repository on this computer.");
 			}
 
 			_projectContext.Dispose();
@@ -847,9 +847,9 @@ Our issue-tracking system is searchable by anyone. Search engines (like Google) 
 
 Anyone looking specifically at our issue tracking system can read what you sent us. So if you have something private to say, please send it to one of the developers privately with a note that you don't want the issue in our issue tracking system. If need be, we'll make some kind of sanitized place-holder for your issue so that we don't lose it.
 ";
-			Palaso.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
-			Palaso.Reporting.ErrorReport.AddStandardProperties();
-			Palaso.Reporting.ExceptionHandler.Init();
+			SIL.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
+			SIL.Reporting.ErrorReport.AddStandardProperties();
+			SIL.Reporting.ExceptionHandler.Init();
 
 			ExceptionHandler.AddDelegate((w,e) => DesktopAnalytics.Analytics.ReportException(e.Exception));
 		}
@@ -900,7 +900,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 					{
 					}
 
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 						"This beta version of Bloom is now over 90 days old. If possible, please get a new version at bloomlibrary.org.");
 			}
 
@@ -911,7 +911,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 		/// </summary>
 		private static void CheckLinuxFileAssociations()
 		{
-			if (!Palaso.PlatformUtilities.Platform.IsLinux)
+			if (!SIL.PlatformUtilities.Platform.IsLinux)
 				return;
 
 			// on Linux, Environment.SpecialFolder.LocalApplicationData defaults to ~/.local/share
@@ -1007,7 +1007,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			var bloomProcessCount = Process.GetProcesses().Count(p => p.ProcessName.ToLowerInvariant().Contains("bloom"));
 
 			// This is your count on Windows.
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			if (SIL.PlatformUtilities.Platform.IsWindows)
 				return bloomProcessCount;
 
 			// On Linux, the process name is usually "mono-sgen" or something similar, but not all processes

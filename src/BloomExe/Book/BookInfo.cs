@@ -12,8 +12,8 @@ using Bloom.ImageProcessing;
 using Bloom.ToPalaso;
 using L10NSharp;
 using Newtonsoft.Json;
-using Palaso.Extensions;
-using Palaso.Reporting;
+using SIL.Extensions;
+using SIL.Reporting;
 
 namespace Bloom.Book
 {

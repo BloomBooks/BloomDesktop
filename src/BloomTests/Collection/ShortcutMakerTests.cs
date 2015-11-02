@@ -3,8 +3,8 @@
 using System.IO;
 using Bloom.Collection;
 using NUnit.Framework;
-using Palaso.IO;
-using Palaso.PlatformUtilities;
+using SIL.IO;
+using SIL.PlatformUtilities;
 using Bloom;
 
 namespace BloomTests.Collection
@@ -15,8 +15,8 @@ namespace BloomTests.Collection
 		[Test]
 		public void CreateDirectoryShortcut()
 		{
-			using (var targetPath = new Palaso.TestUtilities.TemporaryFolder(Path.GetRandomFileName()))
-			using (var directory = new Palaso.TestUtilities.TemporaryFolder(Path.GetRandomFileName()))
+			using (var targetPath = new SIL.TestUtilities.TemporaryFolder(Path.GetRandomFileName()))
+			using (var directory = new SIL.TestUtilities.TemporaryFolder(Path.GetRandomFileName()))
 			{
 				ShortcutMaker.CreateDirectoryShortcut(targetPath.Path, directory.Path);
 
@@ -29,10 +29,10 @@ namespace BloomTests.Collection
 		[Test]
 		public void CreateDirectoryShortcut_FileExists()
 		{
-			using (var targetPath = new Palaso.TestUtilities.TemporaryFolder(Path.GetRandomFileName()))
-			using (var directory = new Palaso.TestUtilities.TemporaryFolder(Path.GetRandomFileName()))
+			using (var targetPath = new SIL.TestUtilities.TemporaryFolder(Path.GetRandomFileName()))
+			using (var directory = new SIL.TestUtilities.TemporaryFolder(Path.GetRandomFileName()))
 			{
-				var existingDestination = new Palaso.TestUtilities.TempFileFromFolder(directory,
+				var existingDestination = new SIL.TestUtilities.TempFileFromFolder(directory,
 					Path.GetFileName(targetPath.Path) + ".lnk", string.Empty);
 
 				ShortcutMaker.CreateDirectoryShortcut(targetPath.Path, directory.Path);

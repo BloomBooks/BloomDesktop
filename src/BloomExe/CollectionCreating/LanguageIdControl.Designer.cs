@@ -31,7 +31,7 @@ namespace Bloom.CollectionCreating
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			this._lookupISOControl = new Palaso.UI.WindowsForms.WritingSystems.LookupISOControl();
+			this._lookupISOControl = new SIL.Windows.Forms.WritingSystems.LanguageLookupControl();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
@@ -40,8 +40,6 @@ namespace Bloom.CollectionCreating
 			// 
 			this._lookupISOControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-			this._lookupISOControl.ISOCode = "";
-			this._lookupISOControl.LanguageInfo = null;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._lookupISOControl, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._lookupISOControl, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._lookupISOControl, L10NSharp.LocalizationPriority.NotLocalizable);
@@ -75,7 +73,7 @@ namespace Bloom.CollectionCreating
 
 		#endregion
 
-		private Palaso.UI.WindowsForms.WritingSystems.LookupISOControl _lookupISOControl;
+		private SIL.Windows.Forms.WritingSystems.LanguageLookupControl _lookupISOControl;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }

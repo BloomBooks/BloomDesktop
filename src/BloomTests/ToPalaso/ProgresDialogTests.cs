@@ -1,7 +1,7 @@
 ﻿using Bloom.Edit;
 using Bloom.ToPalaso;
 using NUnit.Framework;
-using Palaso.CommandLineProcessing;
+using SIL.CommandLineProcessing;
 
 namespace BloomTests.ToPalaso
 {

@@ -10,8 +10,8 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.Workspace;
-using Palaso.Extensions;
-using Palaso.UI.WindowsForms.PortableSettingsProvider;
+using SIL.Extensions;
+using SIL.Windows.Forms.PortableSettingsProvider;
 
 namespace Bloom
 {
@@ -120,7 +120,7 @@ namespace Bloom
 				}
 				catch (Exception error)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
 						"Sorry, Bloom failed to even prepare for the rename of the project to '{0}'", _nameToChangeCollectionUponClosing);
 				}
 			}
@@ -147,7 +147,7 @@ namespace Bloom
 			var asm = Assembly.GetExecutingAssembly();
 			var ver = asm.GetName().Version;
 			var file = asm.CodeBase.Replace("file://", string.Empty);
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			if (SIL.PlatformUtilities.Platform.IsWindows)
 				file = file.TrimStart('/');
 			var fi = new FileInfo(file);
 
@@ -329,12 +329,12 @@ namespace Bloom
 				var s = forms [i] as Bloom.Shell;
 				if (s != null && s.InvokeRequired)
 				{
-					var d = new Shell.NotifyTheUserOfProblem(Palaso.Reporting.ErrorReport.NotifyUserOfProblem);
+					var d = new Shell.NotifyTheUserOfProblem(SIL.Reporting.ErrorReport.NotifyUserOfProblem);
 					s.Invoke(d, new object[] { message, args });
 					return;
 				}
 			}
-			Palaso.Reporting.ErrorReport.NotifyUserOfProblem(message, args);
+			SIL.Reporting.ErrorReport.NotifyUserOfProblem(message, args);
 		}
 	}
 }

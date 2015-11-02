@@ -4,9 +4,9 @@ using Bloom.Book;
 using Bloom.Collection;
 using Moq;
 using NUnit.Framework;
-using Palaso.Reporting;
-using Palaso.TestUtilities;
-using Palaso.Xml;
+using SIL.Reporting;
+using SIL.TestUtilities;
+using SIL.Xml;
 
 namespace BloomTests.Book
 {

@@ -22,7 +22,7 @@ namespace Bloom.Registration
 				return;
 
 			_registrationIsOptional = registrationIsOptional;
-			_hadEmailAlready = !string.IsNullOrWhiteSpace(Palaso.UI.WindowsForms.Registration.Registration.Default.Email);
+			_hadEmailAlready = !string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email);
 
 			_cancelButton.Visible = _registrationIsOptional;
 
@@ -87,40 +87,40 @@ namespace Bloom.Registration
 			{
 				_haveRegisteredLaunch=true;
 
-				if (Palaso.UI.WindowsForms.Registration.Registration.Default.NeedUpgrade)
+				if (SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade)
 				{
 					//see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
-					Palaso.UI.WindowsForms.Registration.Registration.Default.Upgrade();
-					Palaso.UI.WindowsForms.Registration.Registration.Default.NeedUpgrade = false;
-					Palaso.UI.WindowsForms.Registration.Registration.Default.Save();
+					SIL.Windows.Forms.Registration.Registration.Default.Upgrade();
+					SIL.Windows.Forms.Registration.Registration.Default.NeedUpgrade = false;
+					SIL.Windows.Forms.Registration.Registration.Default.Save();
 				}
 
-				Palaso.UI.WindowsForms.Registration.Registration.Default.LaunchCount++;
-				Palaso.UI.WindowsForms.Registration.Registration.Default.Save();
+				SIL.Windows.Forms.Registration.Registration.Default.LaunchCount++;
+				SIL.Windows.Forms.Registration.Registration.Default.Save();
 			}
 
-			return Palaso.UI.WindowsForms.Registration.Registration.Default.LaunchCount > 2 &&
+			return SIL.Windows.Forms.Registration.Registration.Default.LaunchCount > 2 &&
 				   (
-					   string.IsNullOrWhiteSpace(Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName) ||
-					   string.IsNullOrWhiteSpace(Palaso.UI.WindowsForms.Registration.Registration.Default.Surname) ||
-					   string.IsNullOrWhiteSpace(Palaso.UI.WindowsForms.Registration.Registration.Default.Organization) ||
-					   string.IsNullOrWhiteSpace(Palaso.UI.WindowsForms.Registration.Registration.Default.Email)
+					   string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.FirstName) ||
+					   string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Surname) ||
+					   string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Organization) ||
+					   string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email)
 				   );
 		}
 
 		private void SaveAndSendIfPossible()
 		{
-			Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName = _firstName.Text;
-			Palaso.UI.WindowsForms.Registration.Registration.Default.Surname = _surname.Text;
-			Palaso.UI.WindowsForms.Registration.Registration.Default.Organization = _organization.Text;
-			Palaso.UI.WindowsForms.Registration.Registration.Default.Email = _email.Text;
-			Palaso.UI.WindowsForms.Registration.Registration.Default.HowUsing = _howAreYouUsing.Text;
-			Palaso.UI.WindowsForms.Registration.Registration.Default.Save();
+			SIL.Windows.Forms.Registration.Registration.Default.FirstName = _firstName.Text;
+			SIL.Windows.Forms.Registration.Registration.Default.Surname = _surname.Text;
+			SIL.Windows.Forms.Registration.Registration.Default.Organization = _organization.Text;
+			SIL.Windows.Forms.Registration.Registration.Default.Email = _email.Text;
+			SIL.Windows.Forms.Registration.Registration.Default.HowUsing = _howAreYouUsing.Text;
+			SIL.Windows.Forms.Registration.Registration.Default.Save();
 			try
 			{
 				DesktopAnalytics.Analytics.IdentifyUpdate(GetAnalyticsUserInfo());
 
-				if (!_hadEmailAlready && !string.IsNullOrWhiteSpace(Palaso.UI.WindowsForms.Registration.Registration.Default.Email))
+				if (!_hadEmailAlready && !string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email))
 				{
 					DesktopAnalytics.Analytics.Track("Register");
 				}
@@ -139,23 +139,23 @@ namespace Bloom.Registration
 		{
 			UserInfo userInfo = new UserInfo()
 				{
-					FirstName = Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName,
-					LastName = Palaso.UI.WindowsForms.Registration.Registration.Default.Surname,
-					Email = Palaso.UI.WindowsForms.Registration.Registration.Default.Email,
+					FirstName = SIL.Windows.Forms.Registration.Registration.Default.FirstName,
+					LastName = SIL.Windows.Forms.Registration.Registration.Default.Surname,
+					Email = SIL.Windows.Forms.Registration.Registration.Default.Email,
 					UILanguageCode = Settings.Default.UserInterfaceLanguage
 				};
-			userInfo.OtherProperties.Add("Organization", Palaso.UI.WindowsForms.Registration.Registration.Default.Organization);
-			userInfo.OtherProperties.Add("HowUsing", Palaso.UI.WindowsForms.Registration.Registration.Default.HowUsing);
+			userInfo.OtherProperties.Add("Organization", SIL.Windows.Forms.Registration.Registration.Default.Organization);
+			userInfo.OtherProperties.Add("HowUsing", SIL.Windows.Forms.Registration.Registration.Default.HowUsing);
 			return userInfo;
 		}
 
 		private void RegistrationDialog_Load(object sender, EventArgs e)
 		{
-			_firstName.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName;
-			_surname.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.Surname;
-			_organization.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.Organization;
-			_email.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.Email;
-			_howAreYouUsing.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.HowUsing;
+			_firstName.Text = SIL.Windows.Forms.Registration.Registration.Default.FirstName;
+			_surname.Text = SIL.Windows.Forms.Registration.Registration.Default.Surname;
+			_organization.Text = SIL.Windows.Forms.Registration.Registration.Default.Organization;
+			_email.Text = SIL.Windows.Forms.Registration.Registration.Default.Email;
+			_howAreYouUsing.Text = SIL.Windows.Forms.Registration.Registration.Default.HowUsing;
 			UpdateDisplay();
 			//only need to do this now
 			_email.TextChanged += new System.EventHandler(this.OnTextChanged);

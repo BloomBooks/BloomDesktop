@@ -4,8 +4,8 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Palaso.IO;
-using Palaso.Xml;
+using SIL.IO;
+using SIL.Xml;
 using TidyManaged;
 
 namespace Bloom

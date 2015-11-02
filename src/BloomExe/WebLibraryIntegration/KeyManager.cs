@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Palaso.Extensions;
-using Palaso.IO;
+using SIL.Extensions;
+using SIL.IO;
 
 namespace Bloom.WebLibraryIntegration
 {

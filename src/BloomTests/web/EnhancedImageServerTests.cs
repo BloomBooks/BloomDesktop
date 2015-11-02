@@ -9,12 +9,12 @@ using Bloom.Collection;
 using BloomTemp;
 using L10NSharp;
 using NUnit.Framework;
-using Palaso.IO;
+using SIL.IO;
 using Bloom;
 using Bloom.ImageProcessing;
 using Bloom.web;
-using Palaso.Reporting;
-using TemporaryFolder = Palaso.TestUtilities.TemporaryFolder;
+using SIL.Reporting;
+using TemporaryFolder = SIL.TestUtilities.TemporaryFolder;
 
 namespace BloomTests.web
 {

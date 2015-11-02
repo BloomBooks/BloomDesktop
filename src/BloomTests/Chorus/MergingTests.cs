@@ -5,9 +5,9 @@ using Chorus.merge;
 using Chorus.merge.xml.generic;
 using LibChorus.TestUtilities;
 using NUnit.Framework;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.TestUtilities;
+using SIL.IO;
+using SIL.Progress;
+using SIL.TestUtilities;
 
 namespace BloomTests.Chorus
 {

@@ -8,12 +8,12 @@ using System.Windows.Forms;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Newtonsoft.Json.Linq;
-using Palaso.Code;
-using Palaso.Extensions;
+using SIL.Code;
+using SIL.Extensions;
 using Gecko;
-using Palaso.IO;
-using Palaso.Reporting;
-using Palaso.Xml;
+using SIL.IO;
+using SIL.Reporting;
+using SIL.Xml;
 
 namespace Bloom.Edit
 {

@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Xml;
 using Bloom.Collection;
-using Palaso.Linq;
-using Palaso.Xml;
+using SIL.Linq;
+using SIL.Xml;
 
 namespace Bloom.Book
 {

@@ -21,14 +21,14 @@ using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using L10NSharp;
 using MarkdownSharp;
-using Palaso.Code;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.Text;
-using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.Xml;
+using SIL.Code;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Text;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Xml;
 using Image = System.Drawing.Image;
 
 namespace Bloom.Book
@@ -1636,7 +1636,7 @@ namespace Bloom.Book
 			catch (Exception error)
 			{
 				var msg = LocalizationManager.GetString("Errors.CouldNotSavePage", "Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, msg);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, msg);
 			}
 		}
 
@@ -1777,7 +1777,7 @@ namespace Bloom.Book
 			//whereas the base is to our embedded server during editing, it's to the file folder
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
 
-			var pathSafeForWkHtml2Pdf = Palaso.IO.FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
+			var pathSafeForWkHtml2Pdf = SIL.IO.FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
 			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf);
 
 			switch (bookletPortion)

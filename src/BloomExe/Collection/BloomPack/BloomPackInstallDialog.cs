@@ -5,7 +5,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Linq;
 using ICSharpCode.SharpZipLib.Zip;
-using Palaso.Reporting;
+using SIL.Reporting;
 
 namespace Bloom.Collection.BloomPack
 {

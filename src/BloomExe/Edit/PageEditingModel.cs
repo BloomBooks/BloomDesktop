@@ -2,9 +2,9 @@
 using System.IO;
 using Bloom.Book;
 using Bloom.ImageProcessing;
-using Palaso.Network;
-using Palaso.Progress;
-using Palaso.UI.WindowsForms.ImageToolbox;
+using SIL.Network;
+using SIL.Progress;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace Bloom.Edit
 {

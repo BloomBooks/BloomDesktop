@@ -30,7 +30,7 @@ namespace Bloom.Publish
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			this._problemLabel = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+			this._problemLabel = new SIL.Windows.Forms.Widgets.BetterLabel();
 			this._problemPicture = new System.Windows.Forms.PictureBox();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._problemPicture)).BeginInit();
@@ -96,7 +96,7 @@ namespace Bloom.Publish
 
 		#endregion
 
-		private Palaso.UI.WindowsForms.Widgets.BetterLabel _problemLabel;
+		private SIL.Windows.Forms.Widgets.BetterLabel _problemLabel;
 		private System.Windows.Forms.PictureBox _problemPicture;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}

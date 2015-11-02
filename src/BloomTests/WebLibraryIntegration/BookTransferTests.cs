@@ -9,9 +9,9 @@ using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using L10NSharp;
 using NUnit.Framework;
-using Palaso.Extensions;
-using Palaso.Progress;
-using Palaso.UI.WindowsForms.ImageToolbox;
+using SIL.Extensions;
+using SIL.Progress;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace BloomTests.WebLibraryIntegration
 {
@@ -109,7 +109,7 @@ namespace BloomTests.WebLibraryIntegration
 			Login();
 			//HashSet<string> notifications = new HashSet<string>();
 
-			var progress = new Palaso.Progress.StringBuilderProgress();
+			var progress = new SIL.Progress.StringBuilderProgress();
 			var s3Id = _transfer.UploadBook(originalBookFolder,progress);
 
 			var uploadMessages = progress.Text.Split(new string[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);

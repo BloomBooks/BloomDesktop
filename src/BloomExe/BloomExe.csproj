@@ -111,9 +111,6 @@
     <Reference Include="NAudio">
       <HintPath>..\..\lib\dotnet\NAudio.dll</HintPath>
     </Reference>
-    <Reference Include="Palaso.Media">
-      <HintPath>..\..\lib\dotnet\Palaso.Media.dll</HintPath>
-    </Reference>
     <Reference Include="PdfDroplet">
       <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
     </Reference>
@@ -124,6 +121,24 @@
     <Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\RestSharp.105.0.1\lib\net4-client\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Core">
+      <HintPath>..\..\lib\dotnet\SIL.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Media">
+      <HintPath>..\..\lib\dotnet\SIL.Media.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Windows.Forms">
+      <HintPath>..\..\lib\dotnet\SIL.Windows.Forms.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Windows.Forms.Keyboarding">
+      <HintPath>..\..\lib\dotnet\SIL.Windows.Forms.Keyboarding.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Windows.Forms.WritingSystems">
+      <HintPath>..\..\lib\dotnet\SIL.Windows.Forms.WritingSystems.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.WritingSystems">
+      <HintPath>..\..\lib\dotnet\SIL.WritingSystems.dll</HintPath>
     </Reference>
     <Reference Include="Splat">
       <HintPath>..\..\packages\Splat.1.5.1\lib\Net45\Splat.dll</HintPath>
@@ -151,12 +166,6 @@
     </Reference>
     <Reference Include="Interop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
-    </Reference>
-    <Reference Include="Palaso">
-      <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
-    </Reference>
-    <Reference Include="PalasoUIWindowsForms">
-      <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
     </Reference>
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
@@ -1154,7 +1163,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     <RemoteDebugFiles Include="..\..\remoteDebugging\**" />
   </ItemGroup>
   <ItemGroup>
-    <GeckoBrowserAdapter Include="..\..\lib\dotnet\PalasoUIWindowsForms.GeckoBrowserAdapter.dll" />
+    <GeckoBrowserAdapter Include="..\..\lib\dotnet\SIL.Windows.Forms.GeckoBrowserAdapter.dll" />
   </ItemGroup>
   <ItemGroup>
     <GeckofxHtmlToPdf Include="..\..\lib\dotnet\GeckofxHtmlToPdf.exe" />

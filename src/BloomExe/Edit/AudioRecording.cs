@@ -9,11 +9,11 @@ using System.Windows.Forms;
 using L10NSharp;
 #if __MonoCS__
 #else
-using Palaso.Media.Naudio;
+using SIL.Media.Naudio;
 #endif
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.Widgets;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Windows.Forms.Widgets;
 // Note: it is for the benefit of this component that Bloom references NAudio. We don't use it directly,
 // but Palaso.Media does, and we need to make sure it gets copied to our output.
 

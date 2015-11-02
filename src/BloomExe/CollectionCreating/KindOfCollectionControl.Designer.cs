@@ -33,9 +33,9 @@
 			this._radioSourceCollection = new System.Windows.Forms.RadioButton();
 			this._radioNormalVernacularCollection = new System.Windows.Forms.RadioButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-			this._sourceCollectionDescription = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-			this._exisitingCollectionDescription = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+			this.betterLabel1 = new SIL.Windows.Forms.Widgets.BetterLabel();
+			this._sourceCollectionDescription = new SIL.Windows.Forms.Widgets.BetterLabel();
+			this._exisitingCollectionDescription = new SIL.Windows.Forms.Widgets.BetterLabel();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -164,8 +164,8 @@
 		public System.Windows.Forms.RadioButton _radioSourceCollection;
         public System.Windows.Forms.RadioButton _radioNormalVernacularCollection;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
-		private Palaso.UI.WindowsForms.Widgets.BetterLabel _sourceCollectionDescription;
-		private Palaso.UI.WindowsForms.Widgets.BetterLabel _exisitingCollectionDescription;
+		private SIL.Windows.Forms.Widgets.BetterLabel betterLabel1;
+		private SIL.Windows.Forms.Widgets.BetterLabel _sourceCollectionDescription;
+		private SIL.Windows.Forms.Widgets.BetterLabel _exisitingCollectionDescription;
     }
 }

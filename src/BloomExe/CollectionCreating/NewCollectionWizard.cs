@@ -9,8 +9,8 @@ using Bloom.Collection;
 using Bloom.Properties;
 using DesktopAnalytics;
 using L10NSharp;
-using Palaso.Extensions;
-using Palaso.Reporting;
+using SIL.Extensions;
+using SIL.Reporting;
 
 namespace Bloom.CollectionCreating
 {

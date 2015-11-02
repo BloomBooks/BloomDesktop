@@ -8,8 +8,8 @@ using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
 using Chorus.UI.Clone;
-using Palaso.UI.WindowsForms.Extensions;
-using Palaso.i18n;
+using SIL.Windows.Forms.Extensions;
+using SIL.i18n;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -164,7 +164,7 @@ namespace Bloom.CollectionChoosing
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom ran into a problem:\r\n{0}",
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom ran into a problem:\r\n{0}",
 																 error.Message);
 			}
 		}
@@ -267,7 +267,7 @@ namespace Bloom.CollectionChoosing
 					// but Dropbox places its .dropbox folder in the user's home directory so we need to strip
 					// one directory level from that return value.
 					var baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-					if (Palaso.PlatformUtilities.Platform.IsWindows)
+					if (SIL.PlatformUtilities.Platform.IsWindows)
 						dropboxInfoFile = Path.Combine(baseFolder, @"Dropbox\info.json");
 					else
 						dropboxInfoFile = Path.Combine(Path.GetDirectoryName(baseFolder), @".dropbox/info.json");
@@ -280,7 +280,7 @@ namespace Bloom.CollectionChoosing
 					foreach (Match match in matches)
 					{
 						var folder = match.Groups[1].Value;
-						if (Palaso.PlatformUtilities.Platform.IsWindows)
+						if (SIL.PlatformUtilities.Platform.IsWindows)
 						{
 							folder = folder.Replace("\\\\", "\\");
 							folder = folder.ToLowerInvariant();
@@ -292,7 +292,7 @@ namespace Bloom.CollectionChoosing
 				if (_dropboxFolders.Count == 0)
 					return; // User appears to not have Dropbox installed
 
-				if (Palaso.PlatformUtilities.Platform.IsWindows)
+				if (SIL.PlatformUtilities.Platform.IsWindows)
 					path = path.ToLowerInvariant(); // We do a case-insensitive compare on Windows.
 
 				foreach (var folder in _dropboxFolders)
@@ -310,9 +310,9 @@ namespace Bloom.CollectionChoosing
 			catch (Exception e)
 			{
 				// To help fix BL-1246, we enable this:
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
 					"For some reason Bloom could not check your Dropbox settings. This should not cause you any problems, but please report it so we can fix it.");
-				Palaso.Reporting.Logger.WriteEvent("*** In CheckForBeingInDropboxFolder(), got "+e.Message+Environment.NewLine+e.StackTrace);
+				SIL.Reporting.Logger.WriteEvent("*** In CheckForBeingInDropboxFolder(), got "+e.Message+Environment.NewLine+e.StackTrace);
 				Debug.Fail(e.Message);
 			}
 		}

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using L10NSharp;
-using Palaso.IO;
+using SIL.IO;
 
 namespace Bloom.ToPalaso
 {
@@ -22,7 +22,7 @@ namespace Bloom.ToPalaso
 			// This is not needed on Linux - fonts should be installed by adding a package
 			// dependency, in this case fonts-sil-andika, or by installing that particular
 			// package.
-			if (!Palaso.PlatformUtilities.Platform.IsWindows)
+			if (!SIL.PlatformUtilities.Platform.IsWindows)
 				return false;
 
 			var sourcePath = FileLocator.GetDirectoryDistributedWithApplication(sourceFolder);
@@ -53,7 +53,7 @@ namespace Bloom.ToPalaso
 			// We probably want to ignore anything else that can go wrong with trying to install the fonts.
 			catch (Exception e)
 			{
-				Palaso.Reporting.Logger.WriteEvent("**** Error trying to install font: " + e.Message);
+				SIL.Reporting.Logger.WriteEvent("**** Error trying to install font: " + e.Message);
 				Debug.Fail(e.Message);
 			}
 

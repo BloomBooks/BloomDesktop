@@ -3,7 +3,7 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using NUnit.Framework;
-using Palaso.Xml;
+using SIL.Xml;
 
 namespace BloomTests.Book
 {
