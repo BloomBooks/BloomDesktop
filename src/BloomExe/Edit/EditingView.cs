@@ -87,7 +87,7 @@ namespace Bloom.Edit
 		{
 			_browser1.ContextMenuProvider = args =>
 			{
-				var recordItem = new MenuItem("record audio", (sender, eventArgs) => RecordAudio());
+				var recordItem = new MenuItem("Record Audio (experimental)", (sender, eventArgs) => RecordAudio());
 				args.ContextMenu.MenuItems.Add(recordItem);
 				return false; // Also show standard menu options
 			};
