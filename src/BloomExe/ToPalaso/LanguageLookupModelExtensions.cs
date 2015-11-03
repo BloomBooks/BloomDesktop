@@ -8,7 +8,7 @@ using SIL.WritingSystems;
 
 namespace Bloom.ToPalaso
 {
-	public static class LookupIsoCodeModelExtensions
+	public static class LanguageLookupModelExtensions
 	{
 		/// <summary>
 		/// A smarter way to get a name for an iso code. Currently StandardSubtags.RegisteredLanguages.TryGet does not find
