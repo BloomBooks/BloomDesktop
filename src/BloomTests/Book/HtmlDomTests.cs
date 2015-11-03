@@ -249,12 +249,12 @@ namespace BloomTests.Book
 				<div id='bloomDataDiv'>
 						<div data-book='bookTitle' lang='en'>something unique</div>
 						<div data-book='bookTitle' lang='id'>Buku Dasar</div>
-						<div data-book='bookTitle' lang='tpi'>Nupela Book</div>
+						<div data-book='bookTitle' lang='tpi'>Nupela Buk</div>
 				</div>
 				<div id='somePage'>
 					<div class='bloom-translationGroup bookTitle'>
 						<div class='bloom-editable' data-book='bookTitle' lang='tpi'>
-							<p>Nupela Book<br/></p>
+							<p>Nupela Buk<br/></p>
 						</div>
 						<div class='bloom-editable' data-book='bookTitle' lang='id'>
 							<p>Buku Dasar</p>
