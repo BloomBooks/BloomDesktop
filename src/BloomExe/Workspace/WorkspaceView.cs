@@ -21,10 +21,10 @@ using Chorus;
 using Chorus.UI.Sync;
 using L10NSharp;
 using Messir.Windows.Forms;
-using Palaso.IO;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.ReleaseNotes;
-using Palaso.UI.WindowsForms.SettingProtection;
+using SIL.IO;
+using SIL.Reporting;
+using SIL.Windows.Forms.ReleaseNotes;
+using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.Workspace
 {
@@ -90,7 +90,7 @@ namespace Bloom.Workspace
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
 
-			_checkForNewVersionMenuItem.Visible = Palaso.PlatformUtilities.Platform.IsWindows;
+			_checkForNewVersionMenuItem.Visible = SIL.PlatformUtilities.Platform.IsWindows;
 
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 
@@ -164,7 +164,7 @@ namespace Bloom.Workspace
 				SelectPage(_collectionView);
 //			}
 
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
 				// Without this adjustment, we lose some controls on smaller resolutions.
 				AdjustToolPanelLocation(true);
@@ -398,7 +398,7 @@ namespace Bloom.Workspace
 		{
 			CurrentTabView = view as IBloomTabArea;
 			// Warn the user if we're starting to use too much memory.
-			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "switched page in workspace", true);
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "switched page in workspace", true);
 
 			if(_previouslySelectedControl !=null)
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
@@ -410,7 +410,7 @@ namespace Bloom.Workspace
 
 			_panelHoldingToolStrip.BackColor = CurrentTabView.TopBarControl.BackColor = _tabStrip.BackColor;
 
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
 				BackgroundColorsForLinux(CurrentTabView);
 			}
@@ -476,7 +476,7 @@ namespace Bloom.Workspace
 			{
 				path = FileLocator.GetFileDistributedWithApplication(false,"infoPages","aboutBox.htm");
 			}
-			using(var dlg = new Palaso.UI.WindowsForms.SIL.SILAboutBox(path))
+			using(var dlg = new SIL.Windows.Forms.Miscellaneous.SILAboutBox(path))
 			{
 				dlg.ShowDialog();
 			}
@@ -557,7 +557,7 @@ namespace Bloom.Workspace
 				var dy = g.DpiY;
 				if(dx!=96 || dy!=96)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 						"The \"text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Possibly books won't lay out correctly. If this is a problem, change the DPI back to 96 (the default on most computers), using the 'Display' Control Panel.", dx);
 				}
 			}
@@ -636,7 +636,7 @@ namespace Bloom.Workspace
 		private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
 		{
 			var path = FileLocator.GetFileDistributedWithApplication(false,"infoPages", "TrainingVideos-en.md");
-			//enhance: change the name of this class in Palaso to just "MarkDownDialog"
+			//enhance: change the name of this class in libpalaso to just "MarkDownDialog"
 			using(var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.Bloom, path))
 			{
 				dlg.Text = LocalizationManager.GetString("HelpMenu.trainingVideos", "Training Videos");

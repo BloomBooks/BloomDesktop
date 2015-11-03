@@ -12,8 +12,8 @@ using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Gecko;
 using NUnit.Framework;
-using Palaso.TestUtilities;
-using Palaso.UI.WindowsForms.ImageToolbox;
+using SIL.TestUtilities;
+using SIL.Windows.Forms.ImageToolbox;
 using RestSharp.Contrib;
 
 namespace BloomTests

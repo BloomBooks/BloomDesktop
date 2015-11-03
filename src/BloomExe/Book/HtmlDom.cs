@@ -11,9 +11,9 @@ using System.Text.RegularExpressions;
 using Bloom.Collection;
 using DesktopAnalytics;
 using Gecko;
-using Palaso.Extensions;
-using Palaso.Reporting;
-using Palaso.Xml;
+using SIL.Extensions;
+using SIL.Reporting;
+using SIL.Xml;
 
 namespace Bloom.Book
 {

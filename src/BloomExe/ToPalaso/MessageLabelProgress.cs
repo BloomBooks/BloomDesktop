@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
-using Palaso.Progress;
+using SIL.Progress;
 
 namespace Bloom.ToPalaso
 {

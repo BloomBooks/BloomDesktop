@@ -1,6 +1,6 @@
 ﻿using System.Xml;
 using Bloom.Book;
-using Palaso.Xml;
+using SIL.Xml;
 
 namespace Bloom.Publish
 {

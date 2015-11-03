@@ -7,8 +7,8 @@ using Bloom.Edit;
 using Bloom.web;
 using Moq;
 using NUnit.Framework;
-using Palaso.IO;
-using Palaso.TestUtilities;
+using SIL.IO;
+using SIL.TestUtilities;
 
 namespace BloomTests.web
 {

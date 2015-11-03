@@ -3,9 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.PlatformUtilities;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.PlatformUtilities;
 
 namespace Bloom.MiscUI
 {
@@ -27,7 +27,7 @@ namespace Bloom.MiscUI
 			var files = new[] { "Bloom.chm", "PdfDroplet.exe", "Chorus.exe", "GeckofxHtmlToPdf.exe", "optipng.exe" };
 
 			string[] dirs;
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			if (SIL.PlatformUtilities.Platform.IsWindows)
 				dirs = new[] { "AndikaNewBasic", "factoryCollections", "localization", "xMatter", "xslts" };
 			else
 				dirs = new[] { "factoryCollections", "localization", "xMatter", "xslts" };

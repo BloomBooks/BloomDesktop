@@ -82,7 +82,7 @@ namespace Bloom.CollectionTab
 			{
 				var msg = L10NSharp.LocalizationManager.GetString("Errors.ErrorSelecting",
 					"There was a problem selecting the book.  Restarting Bloom may fix the problem.  If not, please click the 'Details' button and report the problem to the Bloom Developers.");
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, msg);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, msg);
 			}
 		}
 
@@ -152,7 +152,7 @@ namespace Bloom.CollectionTab
 				}
 				catch(Exception error)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom could not add that book to the library.");
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,"Bloom could not add that book to the library.");
 				}
 			}
 		}

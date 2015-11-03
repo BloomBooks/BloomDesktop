@@ -4,7 +4,7 @@ using System.Text;
 using Bloom;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
-using Palaso.IO;
+using SIL.IO;
 
 namespace BloomTests
 {

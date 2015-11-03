@@ -77,7 +77,7 @@
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
     <Reference Include="DesktopAnalytics, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DesktopAnalytics.1.2.0\lib\net40\DesktopAnalytics.dll</HintPath>
+      <HintPath>..\..\packages\DesktopAnalytics.1.2.1\lib\net40\DesktopAnalytics.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EasyHttp">
@@ -111,8 +111,9 @@
     <Reference Include="NAudio">
       <HintPath>..\..\lib\dotnet\NAudio.dll</HintPath>
     </Reference>
-    <Reference Include="Palaso.Media">
-      <HintPath>..\..\lib\dotnet\Palaso.Media.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="PdfDroplet">
       <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
@@ -124,6 +125,24 @@
     <Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\RestSharp.105.0.1\lib\net4-client\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Core">
+      <HintPath>..\..\lib\dotnet\SIL.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Media">
+      <HintPath>..\..\lib\dotnet\SIL.Media.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Windows.Forms">
+      <HintPath>..\..\lib\dotnet\SIL.Windows.Forms.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Windows.Forms.Keyboarding">
+      <HintPath>..\..\lib\dotnet\SIL.Windows.Forms.Keyboarding.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.Windows.Forms.WritingSystems">
+      <HintPath>..\..\lib\dotnet\SIL.Windows.Forms.WritingSystems.dll</HintPath>
+    </Reference>
+    <Reference Include="SIL.WritingSystems">
+      <HintPath>..\..\lib\dotnet\SIL.WritingSystems.dll</HintPath>
     </Reference>
     <Reference Include="Splat">
       <HintPath>..\..\packages\Splat.1.5.1\lib\Net45\Splat.dll</HintPath>
@@ -152,17 +171,8 @@
     <Reference Include="Interop.AcroPDFLib">
       <HintPath>..\..\lib\dotnet\Interop.AcroPDFLib.dll</HintPath>
     </Reference>
-    <Reference Include="Palaso">
-      <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
-    </Reference>
-    <Reference Include="PalasoUIWindowsForms">
-      <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
-    </Reference>
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Geckofx-Core, Version=29.0.8.0, Culture=neutral" Condition="'$(OS)'!='Windows_NT'">
       <SpecificVersion>False</SpecificVersion>
@@ -1154,7 +1164,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     <RemoteDebugFiles Include="..\..\remoteDebugging\**" />
   </ItemGroup>
   <ItemGroup>
-    <GeckoBrowserAdapter Include="..\..\lib\dotnet\PalasoUIWindowsForms.GeckoBrowserAdapter.dll" />
+    <GeckoBrowserAdapter Include="..\..\lib\dotnet\SIL.Windows.Forms.GeckoBrowserAdapter.dll" />
   </ItemGroup>
   <ItemGroup>
     <GeckofxHtmlToPdf Include="..\..\lib\dotnet\GeckofxHtmlToPdf.exe" />

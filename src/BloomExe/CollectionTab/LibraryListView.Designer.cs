@@ -59,7 +59,7 @@ namespace Bloom.CollectionTab
 			this.pretendLabel = new System.Windows.Forms.Label();
 			this.label9 = new System.Windows.Forms.Label();
 			this._dividerPanel = new System.Windows.Forms.Panel();
-			this._settingsProtectionHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
+			this._settingsProtectionHelper = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
 			this._copyBook = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this._bookContextMenu.SuspendLayout();
@@ -660,7 +660,7 @@ namespace Bloom.CollectionTab
 		private System.Windows.Forms.Label label9;
 		private System.Windows.Forms.Panel _dividerPanel;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper _settingsProtectionHelper;
+		private SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper _settingsProtectionHelper;
 		private System.Windows.Forms.ContextMenuStrip _sourcePaneMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
 		private System.Windows.Forms.ContextMenuStrip _vernacularCollectionMenuStrip;

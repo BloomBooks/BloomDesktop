@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using NUnit.Framework;
-using Palaso.Xml;
+using SIL.Xml;
 
 namespace BloomTests.Book
 {

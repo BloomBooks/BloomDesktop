@@ -32,7 +32,7 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InDesignXmlInformationDialog));
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this.button1 = new System.Windows.Forms.Button();
-			this.htmlLabel1 = new Palaso.UI.WindowsForms.Widgets.HtmlLabel();
+			this.htmlLabel1 = new SIL.Windows.Forms.Widgets.HtmlLabel();
 			this.dontShowThisAgainButton1 = new Bloom.MiscUI.DontShowThisAgainButton();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
@@ -117,7 +117,7 @@
 
 		private MiscUI.DontShowThisAgainButton dontShowThisAgainButton1;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private Palaso.UI.WindowsForms.Widgets.HtmlLabel htmlLabel1;
+		private SIL.Windows.Forms.Widgets.HtmlLabel htmlLabel1;
 		private System.Windows.Forms.Button button1;
 	}
 }

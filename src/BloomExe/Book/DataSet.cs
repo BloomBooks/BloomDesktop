@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Palaso.Text;
+using SIL.Text;
 
 namespace Bloom.Book
 {

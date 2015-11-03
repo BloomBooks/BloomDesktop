@@ -4,15 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using Palaso.CommandLineProcessing;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Network;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.ImageToolbox;
-using Palaso.Xml;
+using SIL.CommandLineProcessing;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Network;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Windows.Forms.ImageToolbox;
+using SIL.Xml;
 
 namespace Bloom.Book
 {

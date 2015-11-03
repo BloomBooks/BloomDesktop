@@ -9,9 +9,9 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
 using L10NSharp;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Reporting;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Reporting;
 using YouTrackSharp.Infrastructure;
 using YouTrackSharp.Issues;
 
@@ -85,9 +85,9 @@ namespace Bloom.MiscUI
 				_includeScreenshot.Checked = false;
 			}
 
-			_email.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.Email;
-			_name.Text = (Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName + " " +
-						 Palaso.UI.WindowsForms.Registration.Registration.Default.Surname).Trim();
+			_email.Text = SIL.Windows.Forms.Registration.Registration.Default.Email;
+			_name.Text = (SIL.Windows.Forms.Registration.Registration.Default.FirstName + " " +
+						 SIL.Windows.Forms.Registration.Registration.Default.Surname).Trim();
 
 			_screenshotHolder.Image = _screenshot;
 

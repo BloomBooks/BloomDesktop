@@ -10,8 +10,8 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Gecko;
-using Palaso.UI.WindowsForms.Reporting;
-using Palaso.Xml;
+using SIL.Windows.Forms.Reporting;
+using SIL.Xml;
 using L10NSharp;
 
 namespace Bloom.Edit
@@ -207,7 +207,7 @@ namespace Bloom.Edit
 			var pageDoc = dom.RawDom;
 
 			// BL-987: Add styles to optimize performance on Linux
-			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
 				var style = pageDoc.CreateElement("style");
 				style.InnerXml = "img { image-rendering: optimizeSpeed; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }";

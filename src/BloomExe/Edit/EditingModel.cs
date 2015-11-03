@@ -19,15 +19,15 @@ using DesktopAnalytics;
 using Gecko;
 using L10NSharp;
 using Newtonsoft.Json;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.ImageToolbox;
-using Palaso.UI.WindowsForms.Reporting;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Windows.Forms.ImageToolbox;
+using SIL.Windows.Forms.Reporting;
 #if __MonoCS__
 #else
-using Palaso.Media.Naudio;
+using SIL.Media.Naudio;
 #endif
 
 namespace Bloom.Edit

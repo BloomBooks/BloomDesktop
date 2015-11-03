@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
 using Fleck;
-using Palaso.Reporting;
+using SIL.Reporting;
 
 namespace Bloom.web
 {

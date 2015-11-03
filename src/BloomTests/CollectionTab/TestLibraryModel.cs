@@ -4,7 +4,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using ICSharpCode.SharpZipLib.Zip;
-using Palaso.TestUtilities;
+using SIL.TestUtilities;
 
 namespace BloomTests.CollectionTab
 {

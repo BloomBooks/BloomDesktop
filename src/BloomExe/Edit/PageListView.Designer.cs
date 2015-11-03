@@ -34,7 +34,7 @@
 			this._pageThumbnails = new System.Windows.Forms.ImageList(this.components);
 			this._pagesLabel = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._addPageButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
+			this._addPageButton = new SIL.Windows.Forms.Widgets.BitmapButton();
 			this._pageControlsPanel = new System.Windows.Forms.Panel();
 			this._thumbNailList = new Bloom.Edit.WebThumbNailList();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -164,6 +164,6 @@
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private WebThumbNailList _thumbNailList;
 		internal System.Windows.Forms.Panel _pageControlsPanel;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _addPageButton;
+		private SIL.Windows.Forms.Widgets.BitmapButton _addPageButton;
 	}
 }

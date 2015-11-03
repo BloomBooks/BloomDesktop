@@ -1,7 +1,7 @@
 ﻿using Bloom.Workspace;
 using NUnit.Framework;
-using Palaso.IO;
-using Palaso.UI.WindowsForms.ImageToolbox;
+using SIL.IO;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace BloomTests.Edit
 {

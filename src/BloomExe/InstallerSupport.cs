@@ -15,9 +15,9 @@ using Bloom.Workspace;
 using DesktopAnalytics;
 using L10NSharp;
 using Microsoft.Win32;
-using Palaso.IO;
-using Palaso.PlatformUtilities;
-using Palaso.Reporting;
+using SIL.IO;
+using SIL.PlatformUtilities;
+using SIL.Reporting;
 using Squirrel;
 
 namespace Bloom

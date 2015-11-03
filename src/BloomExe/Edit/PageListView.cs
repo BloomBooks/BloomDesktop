@@ -6,7 +6,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
 using L10NSharp;
-using Palaso.Reporting;
+using SIL.Reporting;
 
 namespace Bloom.Edit
 {

@@ -5,8 +5,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.FileSystem;
+using SIL.Reporting;
+using SIL.Windows.Forms.FileSystem;
 using File = System.IO.File;
 
 namespace Bloom.Collection

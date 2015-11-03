@@ -18,8 +18,8 @@ using Bloom.web;
 using Gecko;
 using Gecko.DOM;
 using Gecko.Events;
-using Palaso.IO;
-using Palaso.Reporting;
+using SIL.IO;
+using SIL.Reporting;
 using Bloom.Workspace;
 
 namespace Bloom
@@ -370,7 +370,7 @@ namespace Bloom
 			// On Windows, Form.ProcessCmdKey (intercepted in Shell) seems to get ctrl messages even when the browser
 			// has focus.  But on Mono, it doesn't.  So we just do the same thing as that Shell.ProcessCmdKey function
 			// does, which is to raise this event.
-			if (Palaso.PlatformUtilities.Platform.IsMono && ControlKeyEvent != null && e.CtrlKey && e.KeyChar == 'n')
+			if (SIL.PlatformUtilities.Platform.IsMono && ControlKeyEvent != null && e.CtrlKey && e.KeyChar == 'n')
 			{
 				Keys keyData = Keys.Control | Keys.N;
 				ControlKeyEvent.Raise(keyData);
@@ -406,7 +406,7 @@ namespace Bloom
 #if DEBUG
 				throw error;
 #endif
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem pasting from the clipboard.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem pasting from the clipboard.");
 			}
 		}
 
@@ -490,7 +490,7 @@ namespace Bloom
 		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-			bool isWindows = Palaso.PlatformUtilities.Platform.IsWindows;
+			bool isWindows = SIL.PlatformUtilities.Platform.IsWindows;
 			string genericError = "Something went wrong trying to open this page in ";
 			try
 			{
@@ -800,7 +800,7 @@ namespace Bloom
 				var thisPageId = browserPageId["id"];
 				if(expectedPageId != thisPageId)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom encountered an error saving that page (unexpected page id)");
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom encountered an error saving that page (unexpected page id)");
 					return;
 				}
 				_pageEditDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;

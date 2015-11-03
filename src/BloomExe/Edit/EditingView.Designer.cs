@@ -52,17 +52,17 @@
 			System.Drawing.Imaging.ImageAttributes imageAttributes6 = new System.Drawing.Imaging.ImageAttributes();
 			this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
 			this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
-			this.settingsLauncherHelper1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
+			this.settingsLauncherHelper1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._splitContainer1 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._splitContainer2 = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._topBarPanel = new System.Windows.Forms.Panel();
-			this._duplicatePageButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
-			this._deletePageButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
-			this._undoButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
-			this._cutButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
-			this._pasteButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
-			this._copyButton = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
+			this._duplicatePageButton = new SIL.Windows.Forms.Widgets.BitmapButton();
+			this._deletePageButton = new SIL.Windows.Forms.Widgets.BitmapButton();
+			this._undoButton = new SIL.Windows.Forms.Widgets.BitmapButton();
+			this._cutButton = new SIL.Windows.Forms.Widgets.BitmapButton();
+			this._pasteButton = new SIL.Windows.Forms.Widgets.BitmapButton();
+			this._copyButton = new SIL.Windows.Forms.Widgets.BitmapButton();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
@@ -539,18 +539,18 @@
         private System.Windows.Forms.Timer _editButtonsUpdateTimer;
 		private System.Windows.Forms.Timer _handleMessageTimer;
 		private System.Windows.Forms.Panel _topBarPanel;
-		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper settingsLauncherHelper1;
+		private SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper settingsLauncherHelper1;
 		private System.Windows.Forms.ToolStrip _menusToolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _contentLanguagesDropdown;
 		private System.Windows.Forms.ToolStripDropDownButton _layoutChoices;
 		private ToPalaso.BetterToolTip _betterToolTip1;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _copyButton;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _pasteButton;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _cutButton;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _undoButton;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton _deletePageButton;
+		private SIL.Windows.Forms.Widgets.BitmapButton _copyButton;
+		private SIL.Windows.Forms.Widgets.BitmapButton _pasteButton;
+		private SIL.Windows.Forms.Widgets.BitmapButton _cutButton;
+		private SIL.Windows.Forms.Widgets.BitmapButton _undoButton;
+		private SIL.Windows.Forms.Widgets.BitmapButton _deletePageButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-        private Palaso.UI.WindowsForms.Widgets.BitmapButton _duplicatePageButton;
+        private SIL.Windows.Forms.Widgets.BitmapButton _duplicatePageButton;
 
 
     }

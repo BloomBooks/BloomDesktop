@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using L10NSharp;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.Xml;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Xml;
 
 namespace Bloom.Book
 {

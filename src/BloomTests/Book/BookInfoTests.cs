@@ -2,7 +2,7 @@
 using System.IO;
 using Bloom.Book;
 using NUnit.Framework;
-using Palaso.TestUtilities;
+using SIL.TestUtilities;
 
 namespace BloomTests.Book
 {

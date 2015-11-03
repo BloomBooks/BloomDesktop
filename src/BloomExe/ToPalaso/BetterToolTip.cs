@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using L10NSharp;
 using L10NSharp.UI;
-using Palaso.Code;
+using SIL.Code;
 
 namespace Bloom.ToPalaso
 {

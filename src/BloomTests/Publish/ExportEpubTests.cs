@@ -14,7 +14,7 @@ using BloomTemp;
 using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
-using Palaso.Extensions;
+using SIL.Extensions;
 
 namespace BloomTests.Publish
 {

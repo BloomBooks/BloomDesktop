@@ -2,8 +2,8 @@
 using System.IO;
 using System.Linq;
 using Bloom.web;
-using Palaso.IO;
-using Palaso.Reporting;
+using SIL.IO;
+using SIL.Reporting;
 using Bloom.Properties;
 
 namespace Bloom.ImageProcessing
@@ -64,7 +64,7 @@ namespace Bloom.ImageProcessing
 					"What can you do?{0}" +
 					"Click OK, then exit Bloom and restart your computer.{0}" +
 					"If the problem keeps happening, click 'Details' and report the problem to the developers.", Environment.NewLine,
-					Palaso.PlatformUtilities.Platform.IsWindows ? "Windows" : "Linux");
+					SIL.PlatformUtilities.Platform.IsWindows ? "Windows" : "Linux");
 			}
 		}
 

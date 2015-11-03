@@ -7,10 +7,10 @@ using System.Linq;
 using System.Xml;
 using Bloom.Collection;
 using L10NSharp;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Reporting;
-using Palaso.Xml;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Reporting;
+using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -87,7 +87,7 @@ namespace Bloom.Book
 				return candidates.First();
 			else
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 					"There should only be a single htm file in each folder ({0}). [not counting configuration.htm]", folder);
 				throw new ApplicationException();
 			}
