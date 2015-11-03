@@ -166,11 +166,13 @@ namespace Bloom.Collection
 				//at this point, we don't let them customize the national languages
 				dlg.ShowDesiredLanguageNameField = potentiallyCustomName != null;
 
-				dlg.SelectedLanguage = new LanguageInfo() { LanguageTag = iso639Code};
-				if(!string.IsNullOrEmpty(potentiallyCustomName))
+				var language = new LanguageInfo() { LanguageTag = iso639Code};
+				if (!string.IsNullOrEmpty(potentiallyCustomName))
 				{
-					dlg.SelectedLanguage.DesiredName = potentiallyCustomName;
+					language.DesiredName = potentiallyCustomName; // to be noticed, must set before dlg.SelectedLanguage
 				}
+				dlg.SelectedLanguage = language;
+				dlg.SearchText = iso639Code;
 
 				if (DialogResult.OK != dlg.ShowDialog())
 				{
