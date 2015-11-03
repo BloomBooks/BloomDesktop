@@ -10,7 +10,7 @@ using SIL.Windows.Forms.WritingSystems;
 namespace BloomTests.ToPalaso
 {
 	[TestFixture]
-	public class LookupIsoCodeModelExtensionsTests
+	public class LanguageLookupModelExtensionsTests
 	{
 		/// <summary>
 		/// This is the one the extension was made for, finds a name that matches only by 3-letter code

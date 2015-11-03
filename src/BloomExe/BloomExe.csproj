@@ -399,7 +399,7 @@
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>
     </Compile>
     <Compile Include="ToPalaso\FontInstaller.cs" />
-    <Compile Include="ToPalaso\LookupIsoCodeModelExtensions.cs" />
+    <Compile Include="ToPalaso\LanguageLookupModelExtensions.cs" />
     <Compile Include="ToPalaso\MessageLabelProgress.cs">
       <SubType>Component</SubType>
     </Compile>
