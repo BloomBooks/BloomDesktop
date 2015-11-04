@@ -725,6 +725,21 @@ var pageSelectionChanging = function () {
     fireCSharpEditEvent('finishSavingPage', '');
 };
 
+// This is invoked from C# when we are about to leave a page (often right after the previous
+// method for changing pages).  It is mainly to clean things up so that garbage collection
+// won't lose multiple megabytes of data that both the DOM (C++) and Javascript subsystems
+// think the other is still using.
+var disconnectForGarbageCollection = function () {
+    // disconnect all event handlers
+    find().off();
+    var page = $('.bloom-page');
+    // blow away any img elements to ensure their data disappears.
+    // (the whole document is being replaced, and this happens after it's been saved to a file)
+    page.find('img').each(function() { $(this).setAttribute("src", ""); });
+    page.find('img').each(function () { $(this).remove(); });
+    $('[style*=".background-image"]').each(function () { $(this).remove(); });
+};
+
 function loadLongpressInstructions(jQuerySetOfMatchedElements) {
     getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
         if (response === 'Yes') {

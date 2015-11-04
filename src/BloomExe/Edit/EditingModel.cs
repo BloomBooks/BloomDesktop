@@ -63,6 +63,8 @@ namespace Bloom.Edit
 		private bool _inProcessOfSaving;
 		private List<Action> _tasksToDoAfterSaving = new List<Action>();
 
+		readonly List<string> _activeStandardListeners = new List<string>();
+
 		//public event EventHandler UpdatePageList;
 
 		public delegate EditingModel Factory();//autofac uses this
@@ -144,6 +146,7 @@ namespace Bloom.Edit
 			if (details.From == _view)
 			{
 				SaveNow();
+				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.disconnectForGarbageCollection(); }");
 				// This bizarre behavior prevents BL-2313 and related problems.
 				// For some reason I cannot discover, switching tabs when focus is in the Browser window
 				// causes Bloom to get deactivated, which prevents various controls from working.
@@ -528,6 +531,7 @@ namespace Bloom.Edit
 			{
 				_view.ChangingPages = true;
 				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.pageSelectionChanging();}");
+				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.disconnectForGarbageCollection(); }");
 			}
 		}
 
@@ -658,21 +662,45 @@ namespace Bloom.Edit
 				Logger.WriteEvent("BL-422 happened just now (currentlyDisplayedBook was null in OnIdleAfterDocumentSupposedlyCompleted).");
 				return;
 			}
-			// listen for events raised by javascript
-			_view.AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
-			_view.AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
-			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
-			_view.AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
-			_view.AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
-			_view.AddMessageEventListener("chooseLayout", (id) => ChangePageLayoutBasedOnTemplate(id));
-			_view.AddMessageEventListener("startRecordAudio", StartRecordAudio);
-			_view.AddMessageEventListener("endRecordAudio", EndRecordAudio);
-			_view.AddMessageEventListener("changeRecordingDevice", ChangeRecordingDevice);
-
+			AddStandardEventListeners();
 #if __MonoCS__
 #else
 			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
 #endif
+		}
+
+		/// <summary>
+		/// listen for these events raised by javascript.
+		/// </summary>
+		internal void AddStandardEventListeners()
+		{
+			AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
+			AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
+			AddMessageEventListener("finishSavingPage", FinishSavingPage);
+			AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
+			AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
+			AddMessageEventListener("chooseLayout", (id) => ChangePageLayoutBasedOnTemplate(id));
+			AddMessageEventListener("startRecordAudio", StartRecordAudio);
+			AddMessageEventListener("endRecordAudio", EndRecordAudio);
+			AddMessageEventListener("changeRecordingDevice", ChangeRecordingDevice);
+		}
+
+		private void AddMessageEventListener(string name, Action<string> listener)
+		{
+			_activeStandardListeners.Add(name);
+			_view.AddMessageEventListener(name, listener);
+		}
+
+		/// <summary>
+		/// stop listening for these events raised by javascript.
+		/// </summary>
+		internal void RemoveStandardEventListeners()
+		{
+			foreach (var name in _activeStandardListeners)
+			{
+				_view.RemoveMessageEventListener(name);
+			}
+			_activeStandardListeners.Clear();
 		}
 
 
