@@ -7,8 +7,8 @@ using System.Xml;
 using Bloom.Collection;
 using Bloom.ReaderTools;
 using Newtonsoft.Json;
-using Palaso.Xml;
-using Palaso.IO;
+using SIL.Xml;
+using SIL.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
@@ -333,7 +333,7 @@ namespace Bloom.web
 			PathUtilities.OpenDirectoryInExplorer(path);
 
 			// BL-673: Make sure the folder comes to the front in Linux
-			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
 				// allow the external process to execute
 				Thread.Sleep(100);

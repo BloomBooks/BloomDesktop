@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
-using Palaso.TestUtilities;
+using SIL.TestUtilities;
 
 namespace BloomTests.CollectionTab
 {

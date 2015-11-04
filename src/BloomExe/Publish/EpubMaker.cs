@@ -11,7 +11,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom.Book;
 using BloomTemp;
-using Palaso.Xml;
+using SIL.Xml;
 
 namespace Bloom.Publish
 {
@@ -92,7 +92,7 @@ namespace Bloom.Publish
 				_stagingFolder.Dispose();
 			var epubExport = "Epub export";
 			//I (JH) kept having trouble making epubs because this kept getting locked.
-			Palaso.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), epubExport));
+			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), epubExport));
 
 			_stagingFolder = new TemporaryFolder(epubExport);
 			// The readium control remembers the current page for each book.

@@ -8,7 +8,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Publish;
 using NUnit.Framework;
-using Palaso.IO;
+using SIL.IO;
 using Bloom;
 
 //we have this "SetupFixture" which calls Browser.SetUpXulRunner(). I think Eberhard added it, but there is no comment saying what

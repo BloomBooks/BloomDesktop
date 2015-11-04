@@ -15,8 +15,8 @@ using DesktopAnalytics;
 using Gecko;
 using Gecko.Events;
 using Gecko.Utils;
-using Palaso.Code;
-using Palaso.Reporting;
+using SIL.Code;
+using SIL.Reporting;
 using Bloom.Book;
 using Bloom.Properties;
 using BloomTemp;
@@ -634,6 +634,7 @@ namespace Bloom
 						}
 					}
 				}
+				image.Dispose();
 			}
 		}
 

@@ -9,9 +9,9 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
 using L10NSharp;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Reporting;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Reporting;
 using YouTrackSharp.Infrastructure;
 using YouTrackSharp.Issues;
 
@@ -85,9 +85,9 @@ namespace Bloom.MiscUI
 				_includeScreenshot.Checked = false;
 			}
 
-			_email.Text = Palaso.UI.WindowsForms.Registration.Registration.Default.Email;
-			_name.Text = (Palaso.UI.WindowsForms.Registration.Registration.Default.FirstName + " " +
-						 Palaso.UI.WindowsForms.Registration.Registration.Default.Surname).Trim();
+			_email.Text = SIL.Windows.Forms.Registration.Registration.Default.Email;
+			_name.Text = (SIL.Windows.Forms.Registration.Registration.Default.FirstName + " " +
+						 SIL.Windows.Forms.Registration.Registration.Default.Surname).Trim();
 
 			_screenshotHolder.Image = _screenshot;
 
@@ -326,15 +326,44 @@ namespace Bloom.MiscUI
 					{
 						try
 						{
-							var zip = new BloomZipFile(bookZip.Path);
+							try
+							{
+								var zip = new BloomZipFile(bookZip.Path);
+								zip.AddDirectory(Book.FolderPath);
+								zip.Save();
 
-							zip.AddDirectory(Book.FolderPath);
-							zip.Save();
+							}
+							catch (Exception)
+							{
+								// if an error happens in the zipper, the zip file stays locked, so we just leak it
+								bookZip.Detach();
+								throw;
+							}
 							AddAttachment(bookZip.Path);
+						}
+						catch (InvalidRequestException e)
+						{
+							// We get this rather unspecific exception (with the even more unhelpful message 'NoContent') if the attachment is too large.
+							// There might of course be other reasons.
+							var attachmentLength = new FileInfo(bookZip.Path).Length;
+							try
+							{
+								_issueManagement.UpdateIssue(_youTrackIssueId, _youTrackIssue.Summary, _youTrackIssue.Description
+									+ "\nGot exception: " + e.Message + " trying to attach book file: " + Book.FolderPath + " of size " + attachmentLength);
+							}
+							catch (Exception error)
+							{
+								Logger.WriteEvent("*** Error as ProblemReporterDialog attempted to add warning to issue. " + error.Message);
+							}
+							if (attachmentLength > 10485760) // This is the limit as of October 20, 3015 (see http://issues.bloomlibrary.org/youtrack/admin/settings)
+							{
+								var msg = LocalizationManager.GetString("ReportProblemDialog.FileTooLarge",
+									"Unfortunately, {0} is too large to upload. If we need the book in order to work on your problem we will contact you.");
+								MessageBox.Show(string.Format(msg, Path.GetFileName(Book.FolderPath)));
+							}
 						}
 						catch (Exception error)
 						{
-							bookZip.Detach();
                             Logger.WriteEvent("*** Error as ProblemReporterDialog attempted to zip up the book. "+error.Message);
 						}
 					}

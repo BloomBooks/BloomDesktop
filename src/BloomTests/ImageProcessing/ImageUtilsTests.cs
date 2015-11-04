@@ -8,8 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Bloom.ImageProcessing;
 using NUnit.Framework;
-using Palaso.TestUtilities;
-using Palaso.UI.WindowsForms.ImageToolbox;
+using SIL.TestUtilities;
+using SIL.Windows.Forms.ImageToolbox;
 
 namespace BloomTests.ImageProcessing
 {
@@ -21,14 +21,14 @@ namespace BloomTests.ImageProcessing
 		[Test]
 		public void ShouldChangeFormatToJpeg_Photo_True()
 		{
-			var path = Palaso.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "man.jpg");
+			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "man.jpg");
 			Assert.IsTrue(ImageUtils.ShouldChangeFormatToJpeg(ImageUtils.GetImageFromFile(path)));
 		}
 
 		[Test]
 		public void ShouldChangeFormatToJpeg_OneColor_False()
 		{
-			var path = Palaso.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
+			var path = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
 			Assert.IsFalse(ImageUtils.ShouldChangeFormatToJpeg(ImageUtils.GetImageFromFile(path)));
 		}
 
@@ -52,7 +52,7 @@ namespace BloomTests.ImageProcessing
 
 		private static void ProcessAndSaveImageIntoFolder_AndTestResults(string testImageName, ImageFormat expectedOutputFormat)
 		{
-			var inputPath = Palaso.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, testImageName);
+			var inputPath = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, testImageName);
 			var image = PalasoImage.FromFile(inputPath);
 			using(var folder = new TemporaryFolder())
 			{

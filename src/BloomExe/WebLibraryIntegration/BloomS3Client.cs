@@ -10,11 +10,11 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
-using Palaso.Code;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.Progress;
+using SIL.Code;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Windows.Forms.Progress;
 using RestSharp.Contrib;
 
 namespace Bloom.WebLibraryIntegration

@@ -11,9 +11,9 @@ using System.Text.RegularExpressions;
 using Bloom.Collection;
 using DesktopAnalytics;
 using Gecko;
-using Palaso.Extensions;
-using Palaso.Reporting;
-using Palaso.Xml;
+using SIL.Extensions;
+using SIL.Reporting;
+using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -454,7 +454,7 @@ namespace Bloom.Book
 			//"Nupela Book" is in a Tok Pisin div. If it was in English, we'd zap it as well.
 			//This xpath will collect up both divs in the data-div, and also copies of this
 			//that may be in a bloom-translationGroup in the cover and title pages.
-			var genericBookNames = new[] { "Basic Book", "Nupela Book", "Buku Dasar" };
+			var genericBookNames = new[] { "Basic Book", "Nupela Buk", "Buku Dasar" };
 			foreach (XmlElement n in _dom.SafeSelectNodes("//*[@data-book='bookTitle']"))
 			{
 				if (genericBookNames.Contains(n.InnerText.Trim()))

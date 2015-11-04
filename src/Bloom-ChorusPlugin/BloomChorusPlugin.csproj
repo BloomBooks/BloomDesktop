@@ -61,6 +61,9 @@
     <Reference Include="Autofac.Configuration">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
     </Reference>
+    <Reference Include="SIL.Core">
+      <HintPath>..\..\lib\dotnet\SIL.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -73,9 +76,6 @@
     </Reference>
     <Reference Include="LibChorus">
       <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
-    </Reference>
-    <Reference Include="Palaso">
-      <HintPath>..\..\lib\dotnet\Palaso.dll</HintPath>
     </Reference>
     <Reference Include="PalasoUIWindowsForms">
       <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>

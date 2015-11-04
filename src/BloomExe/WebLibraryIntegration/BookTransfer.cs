@@ -16,11 +16,11 @@ using Bloom.Properties;
 using Bloom.Publish;
 using DesktopAnalytics;
 using L10NSharp;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Network;
-using Palaso.Progress;
-using Palaso.UI.WindowsForms.Progress;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Network;
+using SIL.Progress;
+using SIL.Windows.Forms.Progress;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -73,7 +73,7 @@ namespace Bloom.WebLibraryIntegration
 #if DEBUG
 				if (decoded.StartsWith(("BloomLibraryBooks")))
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 					"The book is from bloomlibrary.org, but you are running the DEBUG version of Bloom, which can only use dev.bloomlibrary.org.");
 				}
 				else
@@ -84,7 +84,7 @@ namespace Bloom.WebLibraryIntegration
 #else
 				if (decoded.StartsWith(("BloomLibraryBooks-Sandbox")))
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 						"The book is from the testing version of the bloomlibrary, but you are running the RELEASE version of Bloom. The RELEASE build cannot use the 'dev.bloomlibrary.org' site. If you need to do that for testing purposes, set the windows Environment variable 'BloomSandbox' to 'true'.", decoded);
 				}
 				else
@@ -156,7 +156,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private static void DisplayProblem(Exception e, string message)
 		{
-			var action = new Action(() => Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, message));
+			var action = new Action(() => SIL.Reporting.ErrorReport.NotifyUserOfProblem(e, message));
 				var shellWindow = ShellWindow;
 				if (shellWindow != null)
 					shellWindow.Invoke(action);
@@ -212,7 +212,7 @@ namespace Bloom.WebLibraryIntegration
 				if (_progressDialog.ProgressStateResult != null &&
 					_progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
 				{
-						Palaso.Reporting.ErrorReport.ReportFatalException(
+						SIL.Reporting.ErrorReport.ReportFatalException(
 							_progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
 					}
 				}
@@ -534,7 +534,7 @@ namespace Bloom.WebLibraryIntegration
 		{
 			if (!LogIn(Settings.Default.WebUserId, Settings.Default.WebPassword))
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Could not log you in using user='" + Settings.Default.WebUserId + "' and pwd='" + Settings.Default.WebPassword+"'."+System.Environment.NewLine+
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem("Could not log you in using user='" + Settings.Default.WebUserId + "' and pwd='" + Settings.Default.WebPassword+"'."+System.Environment.NewLine+
 					"For some reason, from the command line, we cannot get these credentials out of Settings.Default. However if you place your command line arguments in the properties of the project in visual studio and run from there, it works. If you are already doing that and get this message, then try running Bloom normally (gui), go to publish, and make sure you are logged in. Then quit and try this again.");
 				return;
 			}

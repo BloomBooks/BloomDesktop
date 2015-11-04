@@ -5,8 +5,8 @@ using Bloom;
 using Bloom.ImageProcessing;
 using Bloom.web;
 using NUnit.Framework;
-using Palaso.IO;
-using Palaso.TestUtilities;
+using SIL.IO;
+using SIL.TestUtilities;
 
 namespace BloomTests.RuntimeImageProcessing
 {

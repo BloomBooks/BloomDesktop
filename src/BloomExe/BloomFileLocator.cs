@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Bloom.Book;
 using Bloom.Collection;
-using Palaso.IO;
+using SIL.IO;
 
 namespace Bloom
 {

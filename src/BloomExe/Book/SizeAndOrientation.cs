@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using Newtonsoft.Json;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Xml;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Xml;
 
 namespace Bloom.Book
 {

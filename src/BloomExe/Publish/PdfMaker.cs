@@ -9,10 +9,10 @@ using Bloom.Edit;
 using Bloom.ToPalaso;
 using Bloom.Workspace;
 using L10NSharp;
-using Palaso.Code;
-using Palaso.CommandLineProcessing;
-using Palaso.IO;
-using Palaso.Progress;
+using SIL.Code;
+using SIL.CommandLineProcessing;
+using SIL.IO;
+using SIL.Progress;
 using PdfDroplet.LayoutMethods;
 using PdfSharp;
 using PdfSharp.Drawing;
@@ -96,7 +96,7 @@ namespace Bloom.Publish
 				// externalIDs dictionary in PdfImportedObjectTable, and eventually a new exception trying
 				// to look up an object ID at line 121 of that class. We catch that exception here and
 				// suggest possible actions the user can take until we find a better solution.
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
 					LocalizationManager.GetString("PublishTab.PdfMaker.BadPdf", "Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:")
 						+ Environment.NewLine + "- "
 						+ LocalizationManager.GetString("PublishTab.PdfMaker.TryRestart", "Restart your computer and try this again right away")

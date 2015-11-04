@@ -9,11 +9,11 @@ using Bloom.Collection;
 using Bloom.Publish;
 using Moq;
 using NUnit.Framework;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.Xml;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Xml;
 using System;
 
 namespace BloomTests.Book

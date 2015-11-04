@@ -3,8 +3,8 @@ using System.Windows.Forms;
 using Bloom.Properties;
 using Chorus;
 using Chorus.UI.Sync;
-using Palaso.Code;
-using Palaso.Reporting;
+using SIL.Code;
+using SIL.Reporting;
 
 namespace Bloom.SendReceive
 {
@@ -77,7 +77,7 @@ namespace Bloom.SendReceive
 														// TODO: there is an error here somewhere... BL-284, where hg complains that .../my book.htm isn't there.
 														// Maybe it got renamed on another thread or something....?
 														_getFormWithContextForInvokingErrorDialogs().BeginInvoke(new Action(() =>
-																													   Palaso.Reporting.ErrorReport.NotifyUserOfProblem
+																													   SIL.Reporting.ErrorReport.NotifyUserOfProblem
 																														(result.ErrorEncountered,
 																														 "Error while creating a milestone in the local Send/Receive repository")))
 															;
@@ -124,7 +124,7 @@ namespace Bloom.SendReceive
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.Logger.WriteEvent("Error while storing history in repository: {0}", error.Message);
+				SIL.Reporting.Logger.WriteEvent("Error while storing history in repository: {0}", error.Message);
 				//TODO we need some passive way indicating the health of the backup system
 			}
 		}

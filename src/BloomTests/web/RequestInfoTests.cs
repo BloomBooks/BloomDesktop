@@ -2,7 +2,7 @@
 using System.Text;
 using Bloom.web;
 using NUnit.Framework;
-using Palaso.IO;
+using SIL.IO;
 
 namespace BloomTests.web
 {

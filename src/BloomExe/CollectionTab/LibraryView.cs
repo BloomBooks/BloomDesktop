@@ -4,7 +4,7 @@ using Bloom.Properties;
 using Bloom.SendReceive;
 using Bloom.Workspace;
 using L10NSharp;
-using Palaso.Reporting;
+using SIL.Reporting;
 using System.Drawing;
 
 namespace Bloom.CollectionTab
@@ -47,7 +47,7 @@ namespace Bloom.CollectionTab
 			else
 				_sendReceiveButton.Enabled = false;
 
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
 				BackgroundColorsForLinux();
 			}

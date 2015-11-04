@@ -127,7 +127,7 @@ namespace Bloom.Workspace
 				return;
 			}
 
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			if (SIL.PlatformUtilities.Platform.IsWindows)
 			{
 				base.OnRenderToolStripBackground(e);
 				return;
@@ -335,7 +335,7 @@ namespace Bloom.Workspace
 			if (btn != null)
 			{
 				// adjust the image position up for Linux
-				if (Palaso.PlatformUtilities.Platform.IsLinux)
+				if (SIL.PlatformUtilities.Platform.IsLinux)
 				{
 					if (e.ToolStrip.Orientation == Orientation.Horizontal)
 						rect.Offset(0, -4);
@@ -371,7 +371,7 @@ namespace Bloom.Workspace
 
 			// adjust the text position up for Linux
 			var rect = e.TextRectangle;
-			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			if (SIL.PlatformUtilities.Platform.IsLinux)
 				rect.Offset(0, -2);
 			else
 				rect.Offset(0, 8); // hatton for bloom lower is better

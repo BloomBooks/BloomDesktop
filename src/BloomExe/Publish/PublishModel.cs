@@ -14,7 +14,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.web;
 using DesktopAnalytics;
-using Palaso.IO;
+using SIL.IO;
 using PdfDroplet.LayoutMethods;
 
 namespace Bloom.Publish
@@ -119,19 +119,19 @@ namespace Bloom.Publish
 						layoutMethod = BookSelection.CurrentSelection.GetDefaultBookletLayout();
 
 					// Check memory for the benefit of developers.  The user won't see anything.
-					Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
+					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
 					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
 						PageLayout.SizeAndOrientation.IsLandScape, LayoutPagesForRightToLeft,
 						layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 					// Warn the user if we're starting to use too much memory.
-					Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
+					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
 				}
 			}
 			catch (Exception e)
 			{
 				//we can't safely do any ui-related work from this thread, like putting up a dialog
 				doWorkEventArgs.Result = e;
-				//                Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
+				//                SIL.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
 				//                SetDisplayMode(DisplayModes.WaitForUserToChooseSomething);
 				//                return;
 			}
@@ -293,7 +293,7 @@ namespace Bloom.Publish
 				}
 				catch (Exception err)
 				{
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the epub.  {0}", err.Message);
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the epub.  {0}", err.Message);
 				}
 				return;
 			}
@@ -303,7 +303,7 @@ namespace Bloom.Publish
 
 				if (string.IsNullOrEmpty(_lastDirectory) || !Directory.Exists(_lastDirectory))
 				{
-					var drives = Palaso.UsbDrive.UsbDriveInfo.GetDrives();
+					var drives = SIL.UsbDrive.UsbDriveInfo.GetDrives();
 					if (drives != null && drives.Count > 0)
 					{
 						_lastDirectory = drives[0].RootDirectory.FullName;
@@ -350,7 +350,7 @@ namespace Bloom.Publish
 			}
 			catch (Exception err)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the PDF.  {0}", err.Message);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the PDF.  {0}", err.Message);
 			}
 		}
 
@@ -376,7 +376,7 @@ namespace Bloom.Publish
 //			System.Diagnostics.Process.Start(tempHtml.Path);
 
 			var htmlFilePath = MakeFinalHtmlForPdfMaker().Key;
-			if (Palaso.PlatformUtilities.Platform.IsWindows)
+			if (SIL.PlatformUtilities.Platform.IsWindows)
 				Process.Start("Firefox.exe", '"' + htmlFilePath + '"');
 			else
 				Process.Start("xdg-open", '"' + htmlFilePath + '"');

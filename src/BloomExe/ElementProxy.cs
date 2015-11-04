@@ -1,7 +1,7 @@
 using System;
 using System.Xml;
 using Gecko;
-using Palaso.Code;
+using SIL.Code;
 
 namespace Bloom
 {

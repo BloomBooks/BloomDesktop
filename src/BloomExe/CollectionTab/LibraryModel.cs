@@ -16,12 +16,12 @@ using Bloom.ToPalaso.Experimental;
 using DesktopAnalytics;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms;
-using Palaso.Xml;
-using Palaso.UI.WindowsForms.FileSystem;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Windows.Forms;
+using SIL.Xml;
+using SIL.Windows.Forms.FileSystem;
 
 namespace Bloom.CollectionTab
 {
@@ -540,7 +540,7 @@ namespace Bloom.CollectionTab
 			}
 			catch (Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
 					"Bloom ran into an error while creating that book. (Sorry!)");
 			}
 

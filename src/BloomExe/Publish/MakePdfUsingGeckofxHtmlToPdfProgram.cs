@@ -9,10 +9,10 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.ToPalaso;
 using L10NSharp;
-using Palaso.CommandLineProcessing;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.PlatformUtilities;
+using SIL.CommandLineProcessing;
+using SIL.IO;
+using SIL.Progress;
+using SIL.PlatformUtilities;
 using System.Text;
 
 namespace Bloom.Publish

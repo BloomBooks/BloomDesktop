@@ -8,10 +8,10 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom.Collection;
 using L10NSharp;
-using Palaso.Code;
-using Palaso.Text;
-using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.Xml;
+using SIL.Code;
+using SIL.Text;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Xml;
 
 namespace Bloom.Book
 {

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading;
 using System.Windows.Forms;
-using Palaso.Progress;
+using SIL.Progress;
 
 
 namespace Bloom.ToPalaso.Experimental
 {
 	/// <summary>
-	/// A Palaso.IProgress-compatible progress dialog which keeps the work in the foreground, using
+	/// A SIL.IProgress-compatible progress dialog which keeps the work in the foreground, using
 	/// the progress calls by the worker to keep the UI alive. This has the advantage that any
 	/// errors raised by the worker don't need special handling.
 	///
@@ -37,7 +37,7 @@ namespace Bloom.ToPalaso.Experimental
 			ShowDialog();
 			if (Progress.ErrorEncountered)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("There was a problem performing that operation.\r\n\r\n"+stringProgress.Text);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem("There was a problem performing that operation.\r\n\r\n"+stringProgress.Text);
 			}
 
 		}

@@ -14,7 +14,7 @@ using BloomTemp;
 using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
-using Palaso.Extensions;
+using SIL.Extensions;
 
 namespace BloomTests.Publish
 {
@@ -51,7 +51,7 @@ namespace BloomTests.Publish
 			// The white space must be removed to make an XML ID.
 			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("myImage.png"));
 			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("my image.png"));
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("SaveEpub");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -172,7 +172,7 @@ namespace BloomTests.Publish
 			CreateCommonCssFiles(book);
 
 			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("1my$Image.png"));
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("Missing_Audio_Ignored");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -253,7 +253,7 @@ namespace BloomTests.Publish
 			CreateCommonCssFiles(book);
 
 			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("myImage.png"));
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("ImageSrcQuery_IsIgnored");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -327,7 +327,7 @@ namespace BloomTests.Publish
 
 			// In this test we deliberately do NOT create the image that the source calls for.
 			//MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("myImage.png"));
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("ImageMissing_IsRemoved");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -397,7 +397,7 @@ namespace BloomTests.Publish
 
 			// Even though the image exists we should not use it.
 			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("myImage.png"));
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("BloomUi_IsRemoved");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -481,7 +481,7 @@ namespace BloomTests.Publish
 							<link rel='stylesheet' href='customBookStyles.css'/>");
 			var book = CreateBook();
 			CreateCommonCssFiles(book);
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("UnpaginatedOutout_UsesSpecialStylesheets");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -544,7 +544,7 @@ namespace BloomTests.Publish
 						</div>
 					</div>");
 			var book = CreateBook();
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("DisplayNone_IsRemoved");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -620,7 +620,7 @@ namespace BloomTests.Publish
 						</div>
 					</div>");
 			var book = CreateBook();
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("National1_InXMatter_IsNotRemoved");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -708,7 +708,7 @@ namespace BloomTests.Publish
 			var book = CreateBook();
 			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("image1.png"));
 			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("image2.png"));
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("ImageStyles_ConvertedToPercent");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -780,7 +780,7 @@ namespace BloomTests.Publish
 					</div>");
 			var book = CreateBook();
 			MakeSamplePngImageWithMetadata(book.FolderPath.CombineForPath("image1.png"));
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("ImageStyles_PercentsAdjustForContainingPercentDivs");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -843,7 +843,7 @@ namespace BloomTests.Publish
 			var book = CreateBook();
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a123.mp4"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "a23.mp3"));
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("BookWithAudio_ProducesOverlay");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -903,7 +903,7 @@ namespace BloomTests.Publish
 			var book = CreateBook();
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b763.mp3"));
-			var epubFolder = new TemporaryFolder();
+			var epubFolder = new TemporaryFolder("AudioWithParagraphsAndRealGuids_ProducesOverlay");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))

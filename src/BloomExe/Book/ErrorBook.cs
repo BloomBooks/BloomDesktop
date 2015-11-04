@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Bloom.Properties;
-using Palaso.Reporting;
+using SIL.Reporting;
 
 namespace Bloom.Book
 {

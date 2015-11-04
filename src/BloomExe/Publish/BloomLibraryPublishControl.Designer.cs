@@ -56,7 +56,7 @@ namespace Bloom.Publish
 			this.label10 = new System.Windows.Forms.Label();
 			this.label11 = new System.Windows.Forms.Label();
 			this._optional1 = new System.Windows.Forms.Label();
-			this._progressBox = new Palaso.UI.WindowsForms.Progress.LogBox();
+			this._progressBox = new SIL.Windows.Forms.Progress.LogBox();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1a = new System.Windows.Forms.Panel();
 			this.panel2 = new System.Windows.Forms.Panel();
@@ -646,7 +646,7 @@ namespace Bloom.Publish
 		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.Label label10;
 		private System.Windows.Forms.Label _optional1;
-		private Palaso.UI.WindowsForms.Progress.LogBox _progressBox;
+		private SIL.Windows.Forms.Progress.LogBox _progressBox;
 		private System.Windows.Forms.Panel panel1a;
 		private System.Windows.Forms.Panel panel2;
 		private System.Windows.Forms.Label label11;

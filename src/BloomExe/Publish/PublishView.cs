@@ -13,9 +13,9 @@ using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using DesktopAnalytics;
 using L10NSharp;
-using Palaso.Reporting;
+using SIL.Reporting;
 using Gecko;
-using Palaso.IO;
+using SIL.IO;
 using System.Drawing;
 
 namespace Bloom.Publish
@@ -56,7 +56,7 @@ namespace Bloom.Publish
 			// BL-625: With mono, if a RadioButton group has its AutoCheck properties set to true, the default RadioButton.OnEnter
 			//         event checks to make sure one of the RadioButtons is checked. If none are checked, the one the mouse pointer
 			//         is over is checked, causing the CheckChanged event to fire.
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 				SetAutoCheck(false);
 
 			//NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
@@ -80,7 +80,7 @@ namespace Bloom.Publish
 //			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
 //        	tableLayoutPanel1.Controls.Add(linkLabel);
 //#endif
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
 				BackgroundColorsForLinux();
 			}
@@ -480,7 +480,7 @@ namespace Bloom.Publish
 				return;
 
 			// BL-625: One of the RadioButtons is now checked, so it is safe to re-enable AutoCheck.
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 				SetAutoCheck(true);
 
 			var oldPortion = _model.BookletPortion;
@@ -593,7 +593,7 @@ namespace Bloom.Publish
 			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
 				_model.PageLayout.SizeAndOrientation + "-" + (isBooklet() ? "Booklet-" : ""));
 			string printSettingsSampleName = null;
-			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
 				printSettingsSampleName = printSettingsSamplePrefix + "Linux-" + LocalizationManager.UILanguageId + ".png";
 				if (!File.Exists(printSettingsSampleName))

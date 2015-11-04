@@ -54,7 +54,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		private void RegisterForBloomUrlProtocol()
 		{
-			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
 				// This will be done by the package installer.
 				// To manually install it:

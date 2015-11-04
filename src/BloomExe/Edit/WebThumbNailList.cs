@@ -10,8 +10,8 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Gecko;
-using Palaso.UI.WindowsForms.Reporting;
-using Palaso.Xml;
+using SIL.Windows.Forms.Reporting;
+using SIL.Xml;
 using L10NSharp;
 
 namespace Bloom.Edit
@@ -189,6 +189,7 @@ namespace Bloom.Edit
 
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
 		{
+			RemoveThumbnailListeners();
 			var result = new List<IPage>();
 			var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
 			if (firstRealPage == null)
@@ -207,7 +208,7 @@ namespace Bloom.Edit
 			var pageDoc = dom.RawDom;
 
 			// BL-987: Add styles to optimize performance on Linux
-			if (Palaso.PlatformUtilities.Platform.IsLinux)
+			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
 				var style = pageDoc.CreateElement("style");
 				style.InnerXml = "img { image-rendering: optimizeSpeed; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }";
@@ -310,11 +311,23 @@ namespace Bloom.Edit
 
 		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
 		{
+			AddThumbnailListeners();
+			SelectPage(_selectedPage);
+			_browser.VerticalScrollDistance = _verticalScrollDistance;
+		}
+
+		private void AddThumbnailListeners()
+		{
 			_browser.AddMessageEventListener("gridClick", ItemClick);
 			_browser.AddMessageEventListener("gridReordered", GridReordered);
 			_browser.AddMessageEventListener("menuClicked", MenuClick);
-			SelectPage(_selectedPage);
-			_browser.VerticalScrollDistance = _verticalScrollDistance;
+		}
+
+		private void RemoveThumbnailListeners()
+		{
+			_browser.RemoveMessageEventListener("gridClick");
+			_browser.RemoveMessageEventListener("gridReordered");
+			_browser.RemoveMessageEventListener("menuClicked");
 		}
 
 		private void ItemClick(string s)
@@ -481,13 +494,17 @@ namespace Bloom.Edit
 				Debug.Fail("Can't update page...missing page element");
 				return; // for end user we just won't update the thumbnail.
 			}
+			// Remove listeners so that garbage collection resulting from the Dispose has a better
+			// chance to work (without entanglements between javascript and mozilla's DOM memory).
+			RemoveThumbnailListeners();
 			var divNodeForThisPage = page.GetDivNodeForThisPage();
 			//clone so we can modify it for thumbnailing without messing up the version we will save
 			divNodeForThisPage = divNodeForThisPage.CloneNode(true) as XmlElement;
 			MarkImageNodesForThumbnail(divNodeForThisPage);
 			var geckoNode = MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, divNodeForThisPage);
 			pageContainerElt.ReplaceChild(geckoNode, pageElt);
-			//pageElt.Dispose();
+			pageElt.Dispose();
+			AddThumbnailListeners();
 		}
 
 		private GeckoElement GetGridElementForPage(IPage page)

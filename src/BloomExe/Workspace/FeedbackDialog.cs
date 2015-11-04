@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows.Forms;
-using Palaso.IO;
+using SIL.IO;
 
 namespace Bloom.Workspace
 {

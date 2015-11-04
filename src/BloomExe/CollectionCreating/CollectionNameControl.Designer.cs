@@ -30,8 +30,8 @@
 		{
             this.components = new System.ComponentModel.Container();
             this._collectionNameControl = new System.Windows.Forms.TextBox();
-            this._exampleText = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
-			this.htmlLabel1 = new Palaso.UI.WindowsForms.Widgets.HtmlLabel();
+            this._exampleText = new SIL.Windows.Forms.Widgets.BetterLabel();
+			this.htmlLabel1 = new SIL.Windows.Forms.Widgets.HtmlLabel();
             this._nameCollectionLabel = new System.Windows.Forms.Label();
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -133,8 +133,8 @@
 		#endregion
 
 		protected System.Windows.Forms.TextBox _collectionNameControl;
-		private Palaso.UI.WindowsForms.Widgets.BetterLabel _exampleText;
-		private Palaso.UI.WindowsForms.Widgets.HtmlLabel htmlLabel1;
+		private SIL.Windows.Forms.Widgets.BetterLabel _exampleText;
+		private SIL.Windows.Forms.Widgets.HtmlLabel htmlLabel1;
 		private System.Windows.Forms.Label _nameCollectionLabel;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
