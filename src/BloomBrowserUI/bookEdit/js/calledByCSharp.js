@@ -41,10 +41,6 @@ var CalledByCSharp = (function () {
         var contentWindow = this.getPageContent();
         contentWindow['pageSelectionChanging']();
     };
-    CalledByCSharp.prototype.disconnectForGarbageCollection = function () {
-        var contentWindow = this.getPageContent();
-        contentWindow['disconnectForGarbageCollection']();
-    };
     CalledByCSharp.prototype.loadReaderToolSettings = function (settings, bookFontName) {
         var contentWindow = this.getAccordionContent();
         if (!contentWindow)

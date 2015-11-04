@@ -634,7 +634,6 @@ namespace Bloom
 						}
 					}
 				}
-				image.Dispose();
 			}
 		}
 

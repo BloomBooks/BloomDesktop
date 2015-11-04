@@ -189,7 +189,6 @@ namespace Bloom.Edit
 
 		private List<IPage> UpdateItems(IEnumerable<IPage> pages)
 		{
-			RemoveThumbnailListeners();
 			var result = new List<IPage>();
 			var firstRealPage = pages.FirstOrDefault(p => p.Book != null);
 			if (firstRealPage == null)
@@ -311,23 +310,11 @@ namespace Bloom.Edit
 
 		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
 		{
-			AddThumbnailListeners();
-			SelectPage(_selectedPage);
-			_browser.VerticalScrollDistance = _verticalScrollDistance;
-		}
-
-		private void AddThumbnailListeners()
-		{
 			_browser.AddMessageEventListener("gridClick", ItemClick);
 			_browser.AddMessageEventListener("gridReordered", GridReordered);
 			_browser.AddMessageEventListener("menuClicked", MenuClick);
-		}
-
-		private void RemoveThumbnailListeners()
-		{
-			_browser.RemoveMessageEventListener("gridClick");
-			_browser.RemoveMessageEventListener("gridReordered");
-			_browser.RemoveMessageEventListener("menuClicked");
+			SelectPage(_selectedPage);
+			_browser.VerticalScrollDistance = _verticalScrollDistance;
 		}
 
 		private void ItemClick(string s)
@@ -494,17 +481,13 @@ namespace Bloom.Edit
 				Debug.Fail("Can't update page...missing page element");
 				return; // for end user we just won't update the thumbnail.
 			}
-			// Remove listeners so that garbage collection resulting from the Dispose has a better
-			// chance to work (without entanglements between javascript and mozilla's DOM memory).
-			RemoveThumbnailListeners();
 			var divNodeForThisPage = page.GetDivNodeForThisPage();
 			//clone so we can modify it for thumbnailing without messing up the version we will save
 			divNodeForThisPage = divNodeForThisPage.CloneNode(true) as XmlElement;
 			MarkImageNodesForThumbnail(divNodeForThisPage);
 			var geckoNode = MakeGeckoNodeFromXmlNode(_browser.WebBrowser.Document, divNodeForThisPage);
 			pageContainerElt.ReplaceChild(geckoNode, pageElt);
-			pageElt.Dispose();
-			AddThumbnailListeners();
+			//pageElt.Dispose();
 		}
 
 		private GeckoElement GetGridElementForPage(IPage page)

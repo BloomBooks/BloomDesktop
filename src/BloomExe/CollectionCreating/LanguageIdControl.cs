@@ -14,7 +14,7 @@ namespace Bloom.CollectionCreating
 		public LanguageIdControl()
 		{
 			InitializeComponent();
-			_lookupISOControl.SelectedLanguage = null;
+			_lookupISOControl.SelectedLanguage.LanguageTag = string.Empty;
 		}
 
 		private void OnLookupISOControlReadinessChanged(object sender, EventArgs e)

@@ -132,35 +132,9 @@ namespace Bloom
 			// See http://kb.mozillazine.org/About:config_entries, http://www.davidtan.org/tips-reduce-firefox-memory-cache-usage
 			// and http://forums.macrumors.com/showthread.php?t=1838393.
 			GeckoPreferences.User["memory.free_dirty_pages"] = true;
-			GeckoPreferences.User["browser.sessionhistory.max_entries"] = 0;
+			GeckoPreferences.User["browser.sessionhistory.max_entries"] = 1;
 			GeckoPreferences.User["browser.sessionhistory.max_total_viewers"] = 0;
 			GeckoPreferences.User["browser.cache.memory.enable"] = false;
-
-			// Some more settings that can help to reduce memory consumption.
-			// (Tested in switching pages in the Edit tool.  These definitely reduce consumption in that test.)
-			// See http://www.instantfundas.com/2013/03/how-to-keep-firefox-from-using-too-much.html
-			// and http://kb.mozillazine.org/Memory_Leak.
-			// maximum amount of memory used to cache decoded images
-			GeckoPreferences.User["image.mem.max_decoded_image_kb"] = 40960;        // 40MB (default = 256000 == 250MB)
-			// maximum amount of memory used by javascript
-			GeckoPreferences.User["javascript.options.mem.max"] = 40960;            // 40MB (default = -1 == automatic)
-			// memory usage at which javascript starts garbage collecting
-			GeckoPreferences.User["javascript.options.mem.high_water_mark"] = 20;   // 20MB (default = 128 == 128MB)
-			// SurfaceCache is an imagelib-global service that allows caching of temporary
-			// surfaces. Surfaces normally expire from the cache automatically if they go
-			// too long without being accessed.
-			GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 40960;    // 40MB (default = 102400 == 100MB)
-			GeckoPreferences.User["image.mem.surfacecache.min_expiration_ms"] = 500;    // 500ms (default = 60000 == 60sec)
-
-			// maximum amount of memory for the browser cache (probably redundant with browser.cache.memory.enable above, but doesn't hurt)
-			GeckoPreferences.User["browser.cache.memory.capacity"] = 0;             // 0 disables feature
-
-			// do these do anything?
-			//GeckoPreferences.User["javascript.options.mem.gc_frequency"] = 5;	// seconds?
-			//GeckoPreferences.User["dom.caches.enabled"] = false;
-			//GeckoPreferences.User["browser.sessionstore.max_tabs_undo"] = 0;	// (default = 10)
-			//GeckoPreferences.User["network.http.use-cache"] = false;
-
 			// These settings prevent a problem where the gecko instance running the add page dialog
 			// would request several images at once, but we were not able to generate the image
 			// because we could not make additional requests of the localhost server, since some limit
@@ -462,14 +436,11 @@ namespace Bloom
 			e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)", new EventHandler(OnOpenPageInSystemBrowser));
 #if DEBUG
 			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
-			e.ContextMenu.MenuItems.Add("Open about:config window", OnOpenAboutConfig);
-			e.ContextMenu.MenuItems.Add("Open about:cache window", OnOpenAboutCache);
 #endif
 
 			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
 		}
 
-#if DEBUG
 		private void OnOpenAboutMemory(object sender, EventArgs e)
 		{
 			var form = new AboutMemory(Isolator);
@@ -481,31 +452,6 @@ namespace Bloom
 			form.Navigate("about:memory");
 			form.Show();	// NOT Modal!
 		}
-
-		private void OnOpenAboutConfig(object sender, EventArgs e)
-		{
-			var form = new AboutMemory(Isolator);
-			form.Text = "Bloom Browser Internal Configuration Settings (\"about:config\")";
-			form.FirstLinkMessage = "See http://kb.mozillazine.org/About:config_entries for a basic explanation.";
-			form.FirstLinkUrl = "http://kb.mozillazine.org/About:config_entries";
-			form.SecondLinkMessage = null;
-			form.SecondLinkUrl = null;
-			form.Navigate("about:config");
-			form.Show();    // NOT Modal!
-		}
-
-		private void OnOpenAboutCache(object sender, EventArgs e)
-		{
-			var form = new AboutMemory(Isolator);
-			form.Text = "Bloom Browser Internal Cache Status (\"about:cache?storage=&context=\")";
-			form.FirstLinkMessage = "See http://kb.mozillazine.org/Browser.cache.memory.capacity for a basic explanation.";
-			form.FirstLinkUrl = "http://kb.mozillazine.org/Browser.cache.memory.capacity";
-			form.SecondLinkMessage = null;
-			form.SecondLinkUrl = null;
-			form.Navigate("about:cache?storage=&context=");
-			form.Show();    // NOT Modal!
-		}
-#endif
 
 		public void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{
@@ -1014,7 +960,6 @@ namespace Bloom
 
 		/// <summary>
 		/// Only the first call per browser per event name takes effect.
-		/// (Unless RemoveMessageEventListener is called explicitly for the event name.)
 		/// </summary>
 		/// <param name="eventName"></param>
 		/// <param name="action"></param>
@@ -1027,18 +972,6 @@ namespace Bloom
 			_knownEvents.Add(eventName);
 		}
 
-		/// <summary>
-		/// Remove a previously installed event handler.
-		/// </summary>
-		/// <param name="eventName"></param>
-		public void RemoveMessageEventListener(string eventName)
-		{
-			if (_browser != null)
-			{
-				_browser.RemoveMessageEventListener(eventName);
-				_knownEvents.Remove(eventName);
-			}
-		}
 
 		/* snippets
 		 *

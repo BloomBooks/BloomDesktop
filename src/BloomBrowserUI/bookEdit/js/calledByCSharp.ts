@@ -47,11 +47,6 @@ class CalledByCSharp {
     contentWindow['pageSelectionChanging']();
   }
 
-  disconnectForGarbageCollection() {
-      var contentWindow = this.getPageContent();
-      contentWindow['disconnectForGarbageCollection']();
-  }
-
   loadReaderToolSettings(settings: string, bookFontName: string) {
 
     var contentWindow = this.getAccordionContent();
