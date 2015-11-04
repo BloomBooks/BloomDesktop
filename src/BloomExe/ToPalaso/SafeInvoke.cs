@@ -79,7 +79,7 @@ namespace Bloom.ToPalaso
 		/// if something goes wrong, which is appropriate for 
 		/// many background-->foreground ui tasks, like refreshing.
 		/// </summary>
-		public static void InvokeIfPosssible(string nameForErrorReporting, Control control, bool forceSynchronous, Action action)
+		public static void InvokeIfPossible(string nameForErrorReporting, Control control, bool forceSynchronous, Action action)
 		{
 			Invoke(nameForErrorReporting, control, forceSynchronous, false, action);
 		}

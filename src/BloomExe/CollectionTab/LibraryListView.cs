@@ -488,7 +488,7 @@ namespace Bloom.CollectionTab
 		/// <param name="eventArgs"></param>
 		private void DownLoadedBooksChanged(object sender, ProjectChangedEventArgs eventArgs)
 		{
-			SafeInvoke.InvokeIfPosssible("LibraryListView update downloaded books",this,true,(Action) (() =>
+			SafeInvoke.InvokeIfPossible("LibraryListView update downloaded books",this,true,(Action) (() =>
 			{
 				// We may notice a change to the downloaded books directory before the other Bloom instance has finished
 				// copying the new book there. Finishing should not take long, because the download is done...at worst
