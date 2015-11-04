@@ -230,6 +230,7 @@
     <Compile Include="Book\DataSet.cs" />
     <Compile Include="Book\StyleSheetLinkSorter.cs" />
     <Compile Include="Book\TranslationGroupManager.cs" />
+    <Compile Include="ToPalaso\SafeInvoke.cs" />
     <Compile Include="UrlPathString.cs" />
     <Compile Include="Book\UserPrefs.cs" />
     <Compile Include="Book\XMatterHelper.cs" />
