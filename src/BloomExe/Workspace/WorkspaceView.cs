@@ -636,7 +636,7 @@ namespace Bloom.Workspace
 		private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
 		{
 			var path = FileLocator.GetFileDistributedWithApplication(false,"infoPages", "TrainingVideos-en.md");
-			//enhance: change the name of this class in libpalaso to just "MarkDownDialog"
+			//enhance: change the name of this class in SIL.Windows.Forms to just "MarkDownDialog"
 			using(var dlg = new ShowReleaseNotesDialog(global::Bloom.Properties.Resources.Bloom, path))
 			{
 				dlg.Text = LocalizationManager.GetString("HelpMenu.trainingVideos", "Training Videos");
