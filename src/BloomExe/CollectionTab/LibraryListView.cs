@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using DesktopAnalytics;
@@ -487,7 +488,7 @@ namespace Bloom.CollectionTab
 		/// <param name="eventArgs"></param>
 		private void DownLoadedBooksChanged(object sender, ProjectChangedEventArgs eventArgs)
 		{
-			Invoke((Action) (() =>
+			SafeInvoke.InvokeIfPosssible("LibraryListView update downloaded books",this,true,(Action) (() =>
 			{
 				// We may notice a change to the downloaded books directory before the other Bloom instance has finished
 				// copying the new book there. Finishing should not take long, because the download is done...at worst
