@@ -55,13 +55,13 @@ fi
 copy_wget() {
 echo "wget: $2 <= $1"
 f1=$(basename $1)
-d1=$(dirname $1)
 f2=$(basename $2)
-d2=$(dirname $2)
-cd $d2
+cd $(dirname $2)
 wget -q -L -N $1
 # wget has no true equivalent of curl's -o option.
-if [ "$f1" != "$f2" ]; then mv $f1 $f2; fi
+# Different versions of wget handle (or not) % escaping differently.
+# A URL query is the only reason why $f1 and $f2 should differ.
+if [ "$f1" != "$f2" ]; then mv $f2\?* $f2; fi
 cd -
 }
 
