@@ -98,8 +98,8 @@ namespace Bloom.MiscUI
 								  + "The following information is for Bloom developers to see just what is and isn't missing:"
 								  + Environment.NewLine + Environment.NewLine
 								  + errors.ToString()
-								  + Environment.NewLine + Environment.NewLine
 								  + GetDirectoryListing(FileLocator.DirectoryOfTheApplicationExecutable)
+								  + Environment.NewLine + Environment.NewLine
 								  + "Detected Antivirus Program(s): " + InstalledAntivirusPrograms();
 
 #if !__MonoCS__
@@ -150,7 +150,7 @@ namespace Bloom.MiscUI
 			{
 				foreach(var f in Directory.GetFiles(directory))
 				{
-					builder.AppendLine(f.Substring(rootDirectoryLength, f.Length - rootDirectoryLength));
+					builder.AppendLine(Path.GetFileName(f));
 				}
 			}
 			catch(Exception error)
@@ -159,16 +159,18 @@ namespace Bloom.MiscUI
 			}
 			try
 			{
-				//If we let this box get to full, the user can't type into it (BL-2575). So we clip the tree on some big directories:
+				//If we let this box get too full, the user can't type into it (BL-2575). So we clip the tree on some big directories:
+				// The problem reappeared on Linux (BL-2895), so we avoid redundant printing of subdirectory paths in the filenames.
 				string[] bigDirectoriesToSkip = new string[] { "pdf", "Mercurial", "BloomBrowserUI" };
 				foreach(var d in Directory.GetDirectories(directory))
 				{
 					if(bigDirectoriesToSkip.Contains(Path.GetFileName(d)))
 					{
-						builder.AppendLine(d.Substring(rootDirectoryLength, d.Length - rootDirectoryLength) + " (will not list contents)");
+						builder.AppendLine(d + " (will not list contents)");
 					}
 					else
 					{
+						builder.AppendLine(d + " contains these files:");
 						GetDirectoryListing(rootDirectoryLength, d, builder);
 					}
 				}
