@@ -73,6 +73,14 @@
     <Reference Include="Autofac.Configuration">
       <HintPath>..\..\packages\Autofac.2.6.3.862\lib\NET35\Autofac.Configuration.dll</HintPath>
     </Reference>
+    <Reference Include="AWSSDK.Core, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\AWSSDK.Core.3.1.3.3\lib\net45\AWSSDK.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AWSSDK.S3, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\AWSSDK.S3.3.1.3.4\lib\net45\AWSSDK.S3.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Chorus">
       <HintPath>..\..\lib\dotnet\Chorus.exe</HintPath>
     </Reference>
@@ -187,9 +195,6 @@
     </Reference>
     <Reference Include="Geckofx-Winforms" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\Geckofx-Winforms.dll</HintPath>
-    </Reference>
-    <Reference Include="AWSSDK">
-      <HintPath>..\..\packages\AWSSDK.xplatform.2.3.6.0\lib\net35\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="GtkUtils" Condition="'$(OS)'!='Windows_NT'">
       <HintPath>..\..\lib\dotnet\GtkUtils.dll</HintPath>

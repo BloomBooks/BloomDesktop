@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Security;
 using System.Text;
-using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
@@ -46,7 +45,7 @@ namespace Bloom.WebLibraryIntegration
 					s3config.ProxyCredentials = new NetworkCredential(proxy.Username, proxy.Password);
 			}
 
-			_amazonS3 = AWSClientFactory.CreateAmazonS3Client(KeyManager.S3AccessKey,
+			_amazonS3 = new AmazonS3Client(KeyManager.S3AccessKey,
 				KeyManager.S3SecretAccessKey, s3config);
 			Guard.AgainstNull(_amazonS3, "Connection to AWS");
 			_transferUtility = new TransferUtility(_amazonS3);
