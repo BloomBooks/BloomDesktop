@@ -450,8 +450,9 @@ namespace Bloom
 			if (ContextMenuProvider != null)
 			{
 				var replacesStdMenu = ContextMenuProvider(e);
-				FFMenuItem = e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)",
-					new EventHandler(OnOpenPageInSystemBrowser));
+#if DEBUG
+				FFMenuItem = AddOpenPageInFFItem(e);
+#endif
 
 				if (replacesStdMenu)
 					return; // only the provider's items
@@ -460,18 +461,28 @@ namespace Bloom
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
 			if(FFMenuItem == null)
-				e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)",
-					new EventHandler(OnOpenPageInSystemBrowser));
+				AddOpenPageInFFItem(e);
 #if DEBUG
-			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
-			e.ContextMenu.MenuItems.Add("Open about:config window", OnOpenAboutConfig);
-			e.ContextMenu.MenuItems.Add("Open about:cache window", OnOpenAboutCache);
+			AddOtherMenuItemsForDebugging(e);
 #endif
 
 			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
 		}
 
+		private MenuItem AddOpenPageInFFItem(GeckoContextMenuEventArgs e)
+		{
+			return e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)",
+					new EventHandler(OnOpenPageInSystemBrowser));
+		}
+
 #if DEBUG
+		private void AddOtherMenuItemsForDebugging(GeckoContextMenuEventArgs e)
+		{
+			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
+			e.ContextMenu.MenuItems.Add("Open about:config window", OnOpenAboutConfig);
+			e.ContextMenu.MenuItems.Add("Open about:cache window", OnOpenAboutCache);
+		}
+
 		private void OnOpenAboutMemory(object sender, EventArgs e)
 		{
 			var form = new AboutMemory(Isolator);
