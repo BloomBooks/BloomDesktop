@@ -262,8 +262,8 @@ namespace Bloom.Book
 		{
 			//Collect up all the image files in our book's directory
 			var imageFiles = new List<string>();
-			var imageExtentions = new HashSet<string>(new []{".jpg",".png",".svg"});
-			var ignoredFilenameStarts = new HashSet<string>(new [] {"thumbnail","placeholder"});
+			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });
+			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "placeholder", "license" });
 			foreach (var path in Directory.EnumerateFiles(this._folderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 			{ 
@@ -274,7 +274,7 @@ namespace Bloom.Book
 			}
 			//Remove from that list each image actually in use
 			var toRemove = (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(Dom.RawDom.DocumentElement)
-							select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).ToList();
+							select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
 
 			//also, remove from the doomed list anything referenced in the datadiv that looks like an image
 			//This saves us from deleting, for example, cover page images if this is called before the front-matter
@@ -306,21 +306,18 @@ namespace Bloom.Book
 			}
 		}
 
-
-		
-
 		private string GetNormalizedPathForOS(string path)
 		{
 			return Environment.OSVersion.Platform == PlatformID.Win32NT
 						? path.ToLowerInvariant()
 						: path;
 		}
+
 		private void AssertIsAlreadyInitialized()
 		{
 			if (_dom == null)
 				throw new ApplicationException("BookStorage was at a place that should have been initialized earlier, but wasn't.");
 		}
-
 
 		public string SaveHtml(HtmlDom dom)
 		{
