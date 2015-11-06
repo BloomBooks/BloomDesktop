@@ -437,7 +437,7 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// This Fucnction will be passed a GeckoContextMenuEventArgs to which appropriate menu items
+		/// This Function will be passed a GeckoContextMenuEventArgs to which appropriate menu items
 		/// can be added. If it returns true these are in place of our standard extensions; if false, the
 		/// standard ones will follow whatever it adds.
 		/// </summary>
@@ -445,31 +445,44 @@ namespace Bloom
 
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
+			MenuItem FFMenuItem = null;
 			Debug.Assert(!InvokeRequired);
 			if (ContextMenuProvider != null)
 			{
-				ContextMenuProvider(e);
+				var replacesStdMenu = ContextMenuProvider(e);
 #if DEBUG
-				e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)", new EventHandler(OnOpenPageInSystemBrowser));
+				FFMenuItem = AddOpenPageInFFItem(e);
 #endif
-				if (ContextMenuProvider(e))
-					return; // only the provider's items
 
+				if (replacesStdMenu)
+					return; // only the provider's items
 			}
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", new EventHandler(OnOpenPageInStylizer));
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());
 
-			e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)", new EventHandler(OnOpenPageInSystemBrowser));
+			if(FFMenuItem == null)
+				AddOpenPageInFFItem(e);
 #if DEBUG
-			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
-			e.ContextMenu.MenuItems.Add("Open about:config window", OnOpenAboutConfig);
-			e.ContextMenu.MenuItems.Add("Open about:cache window", OnOpenAboutCache);
+			AddOtherMenuItemsForDebugging(e);
 #endif
 
 			e.ContextMenu.MenuItems.Add("Copy Troubleshooting Information", new EventHandler(OnGetTroubleShootingInformation));
 		}
 
+		private MenuItem AddOpenPageInFFItem(GeckoContextMenuEventArgs e)
+		{
+			return e.ContextMenu.MenuItems.Add("Open Page in Firefox (which must be in the PATH environment variable)",
+					new EventHandler(OnOpenPageInSystemBrowser));
+		}
+
 #if DEBUG
+		private void AddOtherMenuItemsForDebugging(GeckoContextMenuEventArgs e)
+		{
+			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
+			e.ContextMenu.MenuItems.Add("Open about:config window", OnOpenAboutConfig);
+			e.ContextMenu.MenuItems.Add("Open about:cache window", OnOpenAboutCache);
+		}
+
 		private void OnOpenAboutMemory(object sender, EventArgs e)
 		{
 			var form = new AboutMemory(Isolator);
