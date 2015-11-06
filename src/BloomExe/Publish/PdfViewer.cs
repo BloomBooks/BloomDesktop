@@ -15,7 +15,7 @@ using L10NSharp;
 using IWshRuntimeLibrary;
 #endif
 using Microsoft.Win32;
-using Palaso.IO;
+using SIL.IO;
 
 namespace Bloom.Publish
 {
@@ -117,7 +117,7 @@ namespace Bloom.Publish
 			// https://jira.sil.org/browse/BL-951 for a description of the buggy program
 			// behavior without this hack.
 			var file = pdfFile;
-			if (Palaso.PlatformUtilities.Platform.IsUnix)
+			if (SIL.PlatformUtilities.Platform.IsUnix)
 				file = file.EscapeCharsForHttp().EscapeCharsForHttp();
 			var url = string.Format("{0}{1}?file=/bloom/{2}",
 				Bloom.web.ServerBase.PathEndingInSlash,

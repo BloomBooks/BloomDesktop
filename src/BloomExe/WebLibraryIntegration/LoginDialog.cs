@@ -6,8 +6,8 @@ using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.Publish;
 using L10NSharp;
-using Palaso.Code;
-using Palaso.Reporting;
+using SIL.Code;
+using SIL.Reporting;
 
 namespace Bloom.WebLibraryIntegration
 {

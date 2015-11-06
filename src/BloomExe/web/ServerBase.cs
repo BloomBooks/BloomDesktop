@@ -9,8 +9,8 @@ using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 using L10NSharp;
-using Palaso.Code;
-using Palaso.Reporting;
+using SIL.Code;
+using SIL.Reporting;
 using ThreadState = System.Threading.ThreadState;
 
 
@@ -116,7 +116,7 @@ namespace Bloom.web
 			}
 			catch (Exception)
 			{
-				if (!Palaso.PlatformUtilities.Platform.IsWindows) throw;
+				if (!SIL.PlatformUtilities.Platform.IsWindows) throw;
 
 				AddUrlAccessControlEntry();
 				TryStart();
@@ -300,7 +300,7 @@ namespace Bloom.web
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.  (Also see all requests as a side benefit.)
 			var debugMsg = String.Format("ServerBase.ProcessRequest(\"{0}\"", info.RawUrl);
-			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, debugMsg, false);
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, debugMsg, false);
 #endif
 			// process request for directory index
 			var requestedPath = GetLocalPathWithoutQuery(info);

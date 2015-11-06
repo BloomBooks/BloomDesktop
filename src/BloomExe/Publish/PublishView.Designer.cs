@@ -29,16 +29,16 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper5 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper();
-			Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo superToolTipInfo5 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo();
-			Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper();
-			Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo superToolTipInfo1 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo();
-			Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper4 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper();
-			Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo superToolTipInfo4 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo();
-			Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper2 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper();
-			Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo superToolTipInfo2 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo();
-			Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper3 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfoWrapper();
-			Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo superToolTipInfo3 = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper5 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo5 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper1 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo1 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper4 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo4 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper2 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo2 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper3 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo3 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			this._loadTimer = new System.Windows.Forms.Timer(this.components);
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
@@ -59,7 +59,7 @@
 			this._simpleAllPagesRadio = new System.Windows.Forms.RadioButton();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._pdfViewer = new Bloom.Publish.PdfViewer();
-			this._superToolTip = new Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip(this.components);
+			this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
 			this._workingIndicator.SuspendLayout();
 			this._topBarPanel.SuspendLayout();
 			this.tableLayoutPanel1.SuspendLayout();
@@ -448,7 +448,7 @@
 		private System.Windows.Forms.RadioButton _bookletBodyRadio;
 		private System.Windows.Forms.ToolStrip _menusToolStrip;
 		private System.Windows.Forms.ToolStripDropDownButton _layoutChoices;
-		private Palaso.UI.WindowsForms.SuperToolTip.SuperToolTip _superToolTip;
+		private SIL.Windows.Forms.SuperToolTip.SuperToolTip _superToolTip;
 		private System.Windows.Forms.RadioButton _uploadRadio;
 		private System.Windows.Forms.ToolStripMenuItem _openPDF;
         private System.Windows.Forms.Label label1;

@@ -15,9 +15,9 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.web;
 using Chorus;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Reporting;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom
 {
@@ -129,7 +129,7 @@ namespace Bloom
 					{
 #if USING_CHORUS
 #if !DEBUG
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
 						"There was a problem loading the Chorus Send/Receive system for this collection. Bloom will try to limp along, but you'll need technical help to resolve this. If you have no other choice, find this folder: {0}, move it somewhere safe, and restart Bloom.", Path.GetDirectoryName(projectSettingsPath).CombineForPath(".hg"));
 #endif
 					//swallow for develoeprs, because this happens if you don't have the Mercurial and "Mercurial Extensions" folders in the root, and our
@@ -518,11 +518,11 @@ namespace Bloom
 			}
 			catch (ApplicationException e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), e.Message);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), e.Message);
 			}
 			catch (Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
 					"Could not add a link for this shell library in the user collections directory");
 			}
 

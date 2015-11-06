@@ -35,7 +35,7 @@
             this._countryLabel = new System.Windows.Forms.Label();
             this._districtLabel = new System.Windows.Forms.Label();
             this._provinceLabel = new System.Windows.Forms.Label();
-            this.betterLabel1 = new Palaso.UI.WindowsForms.Widgets.BetterLabel();
+            this.betterLabel1 = new SIL.Windows.Forms.Widgets.BetterLabel();
             this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this.SuspendLayout();
@@ -174,7 +174,7 @@
 		private System.Windows.Forms.Label _countryLabel;
 		private System.Windows.Forms.Label _districtLabel;
 		private System.Windows.Forms.Label _provinceLabel;
-		private Palaso.UI.WindowsForms.Widgets.BetterLabel betterLabel1;
+		private SIL.Windows.Forms.Widgets.BetterLabel betterLabel1;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }

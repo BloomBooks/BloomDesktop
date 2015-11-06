@@ -16,12 +16,12 @@ using Bloom.ImageProcessing;
 using BloomTemp;
 using L10NSharp;
 using Microsoft.Win32;
-using Palaso.Code;
-using Palaso.IO;
+using SIL.Code;
+using SIL.IO;
 using Bloom.Collection;
 using Bloom.Edit;
-using Palaso.Reporting;
-using Palaso.Extensions;
+using SIL.Reporting;
+using SIL.Extensions;
 using RestSharp.Contrib;
 
 namespace Bloom.web
@@ -240,13 +240,13 @@ namespace Bloom.web
 			{
 				var usingIP = false;
 
-				if (Palaso.PlatformUtilities.Platform.IsWindows)
+				if (SIL.PlatformUtilities.Platform.IsWindows)
 				{
 					// In order to detect an input processor, we need to execute this on the main UI thread.
 					var frm = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 					if (frm != null)
 					{
-						usingIP = Palaso.UI.WindowsForms.Keyboarding.KeyboardController.IsFormUsingInputProcessor(frm);
+						usingIP = SIL.Windows.Forms.Keyboarding.KeyboardController.IsFormUsingInputProcessor(frm);
 					}
 				}
 
@@ -434,7 +434,7 @@ namespace Bloom.web
 				var cleanUrl = url.Replace("\\", "/"); // allows jump to file to work
 
 				string browser = string.Empty;
-				if (Palaso.PlatformUtilities.Platform.IsLinux)
+				if (SIL.PlatformUtilities.Platform.IsLinux)
 				{
 					// REVIEW: This opens HTML files in the browser. Do we have any non-html
 					// files that this code needs to open in the browser? Currently they get

@@ -12,8 +12,8 @@ using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
-using Palaso.IO;
-using Palaso.UI.WindowsForms.ClearShare;
+using SIL.IO;
+using SIL.Windows.Forms.ClearShare;
 
 namespace Bloom.Publish
 {
@@ -131,7 +131,7 @@ namespace Bloom.Publish
 			}
 			catch (Exception e)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
 					LocalizationManager.GetString("PublishTab.Upload.LoginFailure",
 						"Bloom could not log in to BloomLibrary.org using your saved credentials. Please check your network connection."));
 			}

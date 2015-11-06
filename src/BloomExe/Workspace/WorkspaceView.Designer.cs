@@ -30,7 +30,7 @@
         {
 			this.components = new System.ComponentModel.Container();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this._settingsLauncherHelper = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper(this.components);
+			this._settingsLauncherHelper = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
 			this._containerPanel = new System.Windows.Forms.Panel();
 			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._panelHoldingToolStrip = new System.Windows.Forms.Panel();
@@ -497,7 +497,7 @@
         #endregion
 
 		private System.Windows.Forms.ToolTip toolTip1;
-		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionHelper _settingsLauncherHelper;
+		private SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper _settingsLauncherHelper;
 		private System.Windows.Forms.Panel _containerPanel;
 		private System.Windows.Forms.Panel _toolSpecificPanel;
 		private System.Windows.Forms.Panel _panelHoldingToolStrip;

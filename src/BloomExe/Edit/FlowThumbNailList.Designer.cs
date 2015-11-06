@@ -32,7 +32,7 @@
 			System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
 			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			this.button5 = new System.Windows.Forms.Button();
-			this.bitmapButton1 = new Palaso.UI.WindowsForms.Widgets.BitmapButton();
+			this.bitmapButton1 = new SIL.Windows.Forms.Widgets.BitmapButton();
 			this.flowLayoutPanel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -117,7 +117,7 @@
 
 		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
 		private System.Windows.Forms.Button button5;
-		private Palaso.UI.WindowsForms.Widgets.BitmapButton bitmapButton1;
+		private SIL.Windows.Forms.Widgets.BitmapButton bitmapButton1;
 
 	}
 }

@@ -13,10 +13,10 @@ using Amazon.CloudFront.Model;
 using Bloom.Book;
 using Bloom.ToPalaso;
 using L10NSharp;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms.WritingSystems;
-using Palaso.WritingSystems;
-using Palaso.Extensions;
+using SIL.Reporting;
+using SIL.Windows.Forms.WritingSystems;
+using SIL.WritingSystems;
+using SIL.Extensions;
 
 namespace Bloom.Collection
 {
@@ -36,7 +36,7 @@ namespace Bloom.Collection
 
 		public const string ReaderToolsSettingsPrefix = "ReaderToolsSettings-";
 		private string _language1Iso639Code;
-		private LookupIsoCodeModel _lookupIsoCode = new LookupIsoCodeModel();
+		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
 		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
 
 		/// <summary>
@@ -335,7 +335,7 @@ namespace Bloom.Collection
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom was unable to update this file: {0}",path);
 			}
 		}
 
@@ -383,7 +383,7 @@ namespace Bloom.Collection
 			catch (Exception e)
 			{
 				ApplicationException a = new ApplicationException(File.ReadAllText(SettingsFilePath), e);
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
 																 "There was an error reading the library settings file.  Please report this error to the developers. To get access to your books, you should make a new library, then copy your book folders from this broken library into the new one, then run Bloom again.");
 				throw;
 			}
@@ -659,12 +659,12 @@ namespace Bloom.Collection
 				if (code != Language1Iso639Code)
 					_lookupIsoCode.GetBestLanguageName(code, out name);
 				string ethCode;
-				var data = _lookupIsoCode.GetExactLanguageMatch(code);
-				if (data == null)
+				LanguageSubtag data;
+				if (!StandardSubtags.RegisteredLanguages.TryGet(code.ToLowerInvariant(), out data))
 					ethCode = code;
 				else
 				{
-					ethCode = data.ISO3Code;
+					ethCode = data.Iso3Code;
 					if (string.IsNullOrEmpty(ethCode))
 						ethCode = code;
 				}

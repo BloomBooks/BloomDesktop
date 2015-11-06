@@ -11,16 +11,17 @@ using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.web;
 using L10NSharp;
-using Palaso.Extensions;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.UI.WindowsForms;
-using Palaso.UI.WindowsForms.ClearShare;
-using Palaso.UI.WindowsForms.ImageGallery;
-using Palaso.UI.WindowsForms.ImageToolbox;
+using SIL.Extensions;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Windows.Forms;
+using SIL.Windows.Forms.ClearShare;
+using SIL.Windows.Forms.ImageGallery;
+using SIL.Windows.Forms.ImageToolbox;
 using Gecko;
-using TempFile = Palaso.IO.TempFile;
+using TempFile = SIL.IO.TempFile;
 using Bloom.Workspace;
+using SIL.Windows.Forms.Widgets;
 
 namespace Bloom.Edit
 {
@@ -67,7 +68,7 @@ namespace Bloom.Edit
 
 			_browser1.ControlKeyEvent = controlKeyEvent;
 
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
 				RepositionButtonsForMono();
 				BackgroundColorsForLinux();
@@ -235,7 +236,7 @@ namespace Bloom.Edit
 				}
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
-				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
+				using (var dlg = new SIL.Windows.Forms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
 				{
 					dlg.ShowCreator = false;
 					if (DialogResult.OK == dlg.ShowDialog())
@@ -252,7 +253,7 @@ namespace Bloom.Edit
 //#if DEBUG
 //				throw;
 //#endif
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
 			}
 		}
 
@@ -364,7 +365,7 @@ namespace Bloom.Edit
 			var fontMessage = _model.GetFontAvailabilityMessage();
 			if (!string.IsNullOrEmpty(fontMessage))
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(),
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(),
 					fontMessage);
 			}
 		}
@@ -391,6 +392,7 @@ namespace Bloom.Edit
 			}
 			else
 			{
+				RemoveMessageEventListener("setModalStateEvent");
 				Application.Idle -= new EventHandler(VisibleNowAddSlowContents); //make sure
 				_browser1.Navigate("about:blank", false); //so we don't see the old one for moment, the next time we open this tab
 			}
@@ -407,12 +409,13 @@ namespace Bloom.Edit
 			{
 #if MEMORYCHECK
 				// Check memory for the benefit of developers.
-				Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - about to change the page", false);
+				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - about to change the page", false);
 #endif
 				_pageListView.SelectThumbnailWithoutSendingEvent(page);
 				_model.SetupServerWithCurrentPageIframeContents();
 				HtmlDom domForCurrentPage = _model.GetXmlDocumentForCurrentPage();
 				var dom = _model.GetXmlDocumentForEditScreenWebPage();
+				_model.RemoveStandardEventListeners();
 				_browser1.Focus();
 				_browser1.Navigate(dom, domForCurrentPage);
 				_pageListView.Focus();
@@ -441,13 +444,18 @@ namespace Bloom.Edit
 			_model.DocumentCompleted();
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.
-			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - page change completed", false);
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "EditingView - page change completed", false);
 #endif
 		}
 
 		public void AddMessageEventListener(string eventName, Action<string> action)
 		{
 			_browser1.AddMessageEventListener(eventName, action);
+		}
+
+		public void RemoveMessageEventListener(string eventName)
+		{
+			_browser1.RemoveMessageEventListener(eventName);
 		}
 
 		public void UpdatePageList(bool emptyThumbnailCache)
@@ -569,7 +577,7 @@ namespace Bloom.Edit
 				}
 				// Otherwise, bring up the dialog to edit the metadata
 				Logger.WriteEvent("Showing Metadata Editor For Image");
-				using (var dlg = new Palaso.UI.WindowsForms.ClearShare.WinFormsUI.MetadataEditorDialog(imageInfo.Metadata))
+				using (var dlg = new SIL.Windows.Forms.ClearShare.WinFormsUI.MetadataEditorDialog(imageInfo.Metadata))
 				{
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
@@ -710,7 +718,7 @@ namespace Bloom.Edit
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "The program had trouble getting an image from the clipboard.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "The program had trouble getting an image from the clipboard.");
 			}
 			finally
 			{
@@ -833,7 +841,7 @@ namespace Bloom.Edit
 			}
 			Logger.WriteEvent("Showing ImageToolboxDialog Editor Dialog");
 			// Check memory for the benefit of developers.  The user won't see anything.
-			Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "about to choose picture", false);
+			SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to choose picture", false);
 			// Deep in the ImageToolboxDialog, when the user asks to see images from the ArtOfReading,
 			// We need to use the Gecko version of the thumbnail viewer, since the original ListView
 			// one has a sticky scroll bar in applications that are using Gecko.  On Linux, we also
@@ -841,8 +849,8 @@ namespace Bloom.Edit
 			// text box totally freezes the system if the user is using LinuxMint/cinnamon (ie, Wasta).
 			// See https://jira.sil.org/browse/BL-1147.
 			ThumbnailViewer.UseWebViewer = true;
-			if (Palaso.PlatformUtilities.Platform.IsUnix &&
-				!(Palaso.PlatformUtilities.Platform.IsWasta || Palaso.PlatformUtilities.Platform.IsCinnamon))
+			if (SIL.PlatformUtilities.Platform.IsUnix &&
+				!(SIL.PlatformUtilities.Platform.IsWasta || SIL.PlatformUtilities.Platform.IsCinnamon))
 			{
 				TextInputBox.UseWebTextBox = true;
 			}
@@ -857,13 +865,13 @@ namespace Bloom.Edit
 				dlg.SearchLanguage = lang;
 				var result = dlg.ShowDialog();
 				// Check memory for the benefit of developers.  The user won't see anything.
-				Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen or canceled", false);
+				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen or canceled", false);
 				if (DialogResult.OK == result)
 				{
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					SaveChangedImage(imageElement, dlg.ImageInfo, "Bloom had a problem including that image");
 					// Warn the user if we're starting to use too much memory.
-					Palaso.UI.WindowsForms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen and saved", true);
+					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen and saved", true);
 				}
 			}
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
@@ -1002,7 +1010,7 @@ namespace Bloom.Edit
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem updating the edit display.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem updating the edit display.");
 			}
 			finally
 			{

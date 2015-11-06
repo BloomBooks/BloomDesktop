@@ -15,11 +15,11 @@ using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using L10NSharp;
-using Palaso.Code;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.Xml;
+using SIL.Code;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.Xml;
 
 namespace Bloom.Book
 {
@@ -95,7 +95,7 @@ namespace Bloom.Book
 		}
 
 
-		public BookStorage(string folderPath, Palaso.IO.IChangeableFileLocator baseFileLocator,
+		public BookStorage(string folderPath, SIL.IO.IChangeableFileLocator baseFileLocator,
 						   BookRenamedEvent bookRenamedEvent, CollectionSettings collectionSettings)
 		{
 			_folderPath = folderPath;
@@ -241,7 +241,7 @@ namespace Bloom.Book
 					File.ReadAllText(badFilePath));
 				var ex = new XmlSyntaxException(errors);
 
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(ex, "Before saving, Bloom did an integrity check of your book, and found something wrong. This doesn't mean your work is lost, but it does mean that there is a bug in the system or templates somewhere, and the developers need to find and fix the problem (and your book).  Please click the 'Details' button and send this report to the developers.  Bloom has saved the bad version of this book as " + badFilePath + ".  Bloom will now exit, and your book will probably not have this recent damage.  If you are willing, please try to do the same steps again, so that you can report exactly how to make it happen.");
 				Process.GetCurrentProcess().Kill();
 			}
 			else
@@ -371,7 +371,7 @@ namespace Bloom.Book
 			{
 				var msg = LocalizationManager.GetString("BookStorage.FolderMoved",
 					"It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please click Details below and report the problem to the developers.");
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 					new ApplicationException(
 						string.Format(
 							"In SetBookName('{0}'), BookStorage thinks the existing folder is '{1}', but that does not exist. (ref bl-290)",
@@ -405,7 +405,7 @@ namespace Bloom.Book
 				Logger.WriteEvent("Renaming folder from '{0}' to '{1}'", FolderPath, newFolderPath);
 
 				//This one can't handle network paths and isn't necessary, since we know these are on the same volume:
-				//Palaso.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
+				//SIL.IO.DirectoryUtilities.MoveDirectorySafely(FolderPath, newFolderPath);
 				Directory.Move(FolderPath, newFolderPath);
 
 				_fileLocator.RemovePath(FolderPath);
@@ -558,7 +558,7 @@ namespace Bloom.Book
 			{
 				//in version 1.012 I got this because I had tried to delete the folder on disk that had a book
 				//open in Bloom.
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem("There's a problem; Bloom can't save this book. Did you perhaps delete or rename the folder that this book is (was) in?");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem("There's a problem; Bloom can't save this book. Did you perhaps delete or rename the folder that this book is (was) in?");
 				throw new ApplicationException(string.Format("In FindBookHtmlInFolder('{0}'), the folder does not exist. (ref bl-291)", folderPath));
 			}
 
@@ -782,7 +782,7 @@ namespace Bloom.Book
 
 			// do not attempt to copy files to the installation directory
 			var targetDirInfo = new DirectoryInfo(_folderPath);
-			if (Palaso.PlatformUtilities.Platform.IsMono)
+			if (SIL.PlatformUtilities.Platform.IsMono)
 			{
 				// do not attempt to copy files to the "/usr" directory
 				if (targetDirInfo.FullName.StartsWith("/usr")) return;
@@ -835,7 +835,7 @@ namespace Bloom.Book
 				{
 					var msg = string.Format("Could not update one of the support files in this document ({0}) because the destination was marked ReadOnly.", documentPath);
 					Logger.WriteEvent(msg);
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(msg);
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(msg);
 					return;
 				}
 				Logger.WriteMinorEvent("BookStorage.Update() Updating file {0} to {1}", factoryPath, documentPath);
@@ -855,7 +855,7 @@ namespace Bloom.Book
 				if(_alreadyNotifiedAboutOneFailedCopy)
 					return;//don't keep bugging them
 				_alreadyNotifiedAboutOneFailedCopy = true;
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(e,
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
 					"Could not update one of the support files in this document ({0} to {1}). This is normally because the folder is 'locked' or the file is marked 'read only'.", documentPath, factoryPath);
 			}
 		}

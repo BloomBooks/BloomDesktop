@@ -7,10 +7,10 @@ using Chorus.FileTypeHanders;
 using Chorus.VcsDrivers.Mercurial;
 using Chorus.merge;
 using Chorus.merge.xml.generic;
-using Palaso.Code;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Xml;
+using SIL.Code;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Xml;
 
 namespace Bloom_ChorusPlugin
 {

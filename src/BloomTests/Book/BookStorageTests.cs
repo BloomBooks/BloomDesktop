@@ -9,11 +9,11 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Moq;
 using NUnit.Framework;
-using Palaso.Extensions;
-using Palaso.IO;
-using Palaso.Progress;
-using Palaso.Reporting;
-using Palaso.TestUtilities;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Progress;
+using SIL.Reporting;
+using SIL.TestUtilities;
 
 namespace BloomTests.Book
 {

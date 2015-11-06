@@ -10,8 +10,8 @@ using System.Text;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
-using Palaso.IO;
-using Palaso.Reporting;
+using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.web
 {

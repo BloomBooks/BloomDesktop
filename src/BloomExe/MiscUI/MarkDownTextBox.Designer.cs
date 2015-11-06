@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this._htmlLabel = new Palaso.UI.WindowsForms.Widgets.HtmlLabel();
+			this._htmlLabel = new SIL.Windows.Forms.Widgets.HtmlLabel();
 			this.SuspendLayout();
 			// 
 			// _htmlLabel
@@ -56,6 +56,6 @@
 
 		#endregion
 
-		private Palaso.UI.WindowsForms.Widgets.HtmlLabel _htmlLabel;
+		private SIL.Windows.Forms.Widgets.HtmlLabel _htmlLabel;
 	}
 }

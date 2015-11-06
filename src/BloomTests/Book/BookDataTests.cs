@@ -6,10 +6,10 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
-using Palaso.Extensions;
-using Palaso.Reporting;
-using Palaso.TestUtilities;
-using Palaso.UI.WindowsForms.ClearShare;
+using SIL.Extensions;
+using SIL.Reporting;
+using SIL.TestUtilities;
+using SIL.Windows.Forms.ClearShare;
 
 namespace BloomTests.Book
 {

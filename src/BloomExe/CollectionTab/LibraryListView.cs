@@ -12,12 +12,13 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using DesktopAnalytics;
-using Palaso.Reporting;
+using SIL.Reporting;
 using L10NSharp;
-using Palaso.IO;
+using SIL.IO;
 
 namespace Bloom.CollectionTab
 {
@@ -181,7 +182,7 @@ namespace Bloom.CollectionTab
 					}
 					catch (Exception error)
 					{
-						Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book to XML");
+						SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book to XML");
 						Analytics.ReportException(error);
 					}
 				}
@@ -380,7 +381,7 @@ namespace Bloom.CollectionTab
 				if (!_alreadyReportedErrorDuringImproveAndRefreshBookButtons)
 				{
 					_alreadyReportedErrorDuringImproveAndRefreshBookButtons = true;
-					Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at {0}. \r\n\r\nClick the 'Details' button for more information.\r\n\r\nThis error may effect other books, but this is the only notice you will receive.\r\n\r\nSee 'Help:Show Event Log' for any further errors.", bookInfo.FolderPath);
+					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem with the book at {0}. \r\n\r\nClick the 'Details' button for more information.\r\n\r\nThis error may effect other books, but this is the only notice you will receive.\r\n\r\nSee 'Help:Show Event Log' for any further errors.", bookInfo.FolderPath);
 				}
 				return;
 			}
@@ -487,7 +488,7 @@ namespace Bloom.CollectionTab
 		/// <param name="eventArgs"></param>
 		private void DownLoadedBooksChanged(object sender, ProjectChangedEventArgs eventArgs)
 		{
-			Invoke((Action) (() =>
+			SafeInvoke.InvokeIfPossible("LibraryListView update downloaded books",this,true,(Action) (() =>
 			{
 				// We may notice a change to the downloaded books directory before the other Bloom instance has finished
 				// copying the new book there. Finishing should not take long, because the download is done...at worst
@@ -729,7 +730,7 @@ namespace Bloom.CollectionTab
 				if (error.Source == "Autofac" && error.InnerException != null)
 					error = error.InnerException;
 
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
 			}
 			SelectBook(bookInfo);
 		}
@@ -791,7 +792,7 @@ namespace Bloom.CollectionTab
 				if (error.Source == "Autofac" && error.InnerException != null)
 					error = error.InnerException;
 
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom cannot display that book.");
 			}
 		}
 
@@ -1105,12 +1106,12 @@ namespace Bloom.CollectionTab
 			}
 			catch (IOException error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error.Message, "Could not export the book");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error.Message, "Could not export the book");
 				Analytics.ReportException(error);
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
 				Analytics.ReportException(error);
 			}
 		}

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 using Chorus.merge.xml.generic;
-using Palaso.Code;
+using SIL.Code;
 
 namespace Bloom_ChorusPlugin
 {

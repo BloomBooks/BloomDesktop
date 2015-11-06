@@ -5,10 +5,10 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Palaso.Progress;
-using Palaso.UI.WindowsForms.ImageToolbox;
-using Logger = Palaso.Reporting.Logger;
-using TempFile = Palaso.IO.TempFile;
+using SIL.Progress;
+using SIL.Windows.Forms.ImageToolbox;
+using Logger = SIL.Reporting.Logger;
+using TempFile = SIL.IO.TempFile;
 
 namespace Bloom.ImageProcessing
 {
@@ -85,7 +85,7 @@ namespace Bloom.ImageProcessing
 					using (var tmp = new TempFile())
 					{
 						image.Save(tmp.Path, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
-						Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tmp.Path, destinationPath, null);
+						SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tmp.Path, destinationPath, null);
 					}
 
 				}
@@ -261,7 +261,7 @@ namespace Bloom.ImageProcessing
 					parameters.Param[0] = new EncoderParameter(encoder, 100L);
 					safetyImage.Save(tempPath.Path, jpgEncoder, parameters);
 				}
-				Palaso.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath.Path, destinationPath, null);
+				SIL.IO.FileUtils.ReplaceFileWithUserInteractionIfNeeded(tempPath.Path, destinationPath, null);
 			}
 		}
 

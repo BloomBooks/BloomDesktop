@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using L10NSharp;
-using Palaso.CommandLineProcessing;
-using Palaso.Progress;
+using SIL.CommandLineProcessing;
+using SIL.Progress;
 
 namespace Bloom.Edit
 {

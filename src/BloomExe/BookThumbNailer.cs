@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
-using Palaso.Xml;
+using SIL.Xml;
 
 namespace Bloom
 {

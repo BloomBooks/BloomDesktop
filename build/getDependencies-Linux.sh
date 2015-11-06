@@ -54,10 +54,14 @@ fi
 
 copy_wget() {
 echo "wget: $2 <= $1"
-f=$(basename $2)
-d=$(dirname $2)
-cd $d
-wget --no-cache -q -L -N $1 -O $f
+f1=$(basename $1)
+f2=$(basename $2)
+cd $(dirname $2)
+wget -q -L -N $1
+# wget has no true equivalent of curl's -o option.
+# Different versions of wget handle (or not) % escaping differently.
+# A URL query is the only reason why $f1 and $f2 should differ.
+if [ "$f1" != "$f2" ]; then mv $f2\?* $f2; fi
 cd -
 }
 
@@ -71,7 +75,7 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 # URL: http://build.palaso.org/viewType.html?buildTypeId=bt403
 # VCS: git://github.com/BloomBooks/BloomDesktop.git [master]
 # dependencies:
-# [0] build: bloom-3.-win32-static-dependencies (bt396)
+# [0] build: bloom-win32-static-dependencies (bt396)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=bt396
 #     clean: false
@@ -253,31 +257,47 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/L10NSharp.dll?branch=%3Cdefault%3E ../lib/dotnet/L10NSharp.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/NDesk.DBus.dll?branch=%3Cdefault%3E ../lib/dotnet/NDesk.DBus.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/NDesk.DBus.dll.config?branch=%3Cdefault%3E ../lib/dotnet/NDesk.DBus.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Newtonsoft.Json.dll?branch=%3Cdefault%3E ../lib/dotnet/Newtonsoft.Json.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.BuildTasks.dll?branch=%3Cdefault%3E ../lib/dotnet/Palaso.BuildTasks.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.DictionaryServices.dll?branch=%3Cdefault%3E ../lib/dotnet/Palaso.DictionaryServices.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.DictionaryServices.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/Palaso.DictionaryServices.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.Lift.dll?branch=%3Cdefault%3E ../lib/dotnet/Palaso.Lift.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.Lift.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/Palaso.Lift.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.Media.dll?branch=%3Cdefault%3E ../lib/dotnet/Palaso.Media.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.Media.dll.config?branch=%3Cdefault%3E ../lib/dotnet/Palaso.Media.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.Media.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/Palaso.Media.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.TestUtilities.dll?branch=%3Cdefault%3E ../lib/dotnet/Palaso.TestUtilities.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.TestUtilities.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/Palaso.TestUtilities.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.Tests.dll?branch=%3Cdefault%3E ../lib/dotnet/Palaso.Tests.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.Tests.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/Palaso.Tests.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.dll?branch=%3Cdefault%3E ../lib/dotnet/Palaso.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.dll.config?branch=%3Cdefault%3E ../lib/dotnet/Palaso.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Palaso.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/Palaso.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/PalasoUIWindowsForms.GeckoBrowserAdapter.dll?branch=%3Cdefault%3E ../lib/dotnet/PalasoUIWindowsForms.GeckoBrowserAdapter.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/PalasoUIWindowsForms.GeckoBrowserAdapter.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/PalasoUIWindowsForms.GeckoBrowserAdapter.dll.mdb
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/PalasoUIWindowsForms.dll?branch=%3Cdefault%3E ../lib/dotnet/PalasoUIWindowsForms.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/PalasoUIWindowsForms.dll.config?branch=%3Cdefault%3E ../lib/dotnet/PalasoUIWindowsForms.dll.config
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/PalasoUIWindowsForms.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/PalasoUIWindowsForms.dll.mdb
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Archiving.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Archiving.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Archiving.dll.config?branch=%3Cdefault%3E ../lib/dotnet/SIL.Archiving.dll.config
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Archiving.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Archiving.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Core.Tests.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Core.Tests.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Core.Tests.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Core.Tests.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Core.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Core.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Core.dll.config?branch=%3Cdefault%3E ../lib/dotnet/SIL.Core.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Core.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Core.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.DictionaryServices.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.DictionaryServices.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.DictionaryServices.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.DictionaryServices.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Lexicon.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Lexicon.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Lexicon.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Lexicon.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Lift.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Lift.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Lift.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Lift.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Media.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Media.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Media.dll.config?branch=%3Cdefault%3E ../lib/dotnet/SIL.Media.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Media.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Media.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Scripture.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Scripture.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Scripture.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Scripture.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.TestUtilities.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.TestUtilities.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.TestUtilities.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.TestUtilities.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.GeckoBrowserAdapter.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.GeckoBrowserAdapter.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.GeckoBrowserAdapter.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.Keyboarding.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.Keyboarding.dll.config?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.Keyboarding.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.Keyboarding.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.Scripture.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.Scripture.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.Scripture.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.Scripture.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.WritingSystems.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.WritingSystems.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.WritingSystems.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.WritingSystems.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.dll.config?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.dll.config
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.Windows.Forms.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.Windows.Forms.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.WritingSystems.Tests.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.WritingSystems.Tests.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.WritingSystems.Tests.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.WritingSystems.Tests.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.WritingSystems.dll?branch=%3Cdefault%3E ../lib/dotnet/SIL.WritingSystems.dll
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/SIL.WritingSystems.dll.mdb?branch=%3Cdefault%3E ../lib/dotnet/SIL.WritingSystems.dll.mdb
+copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/Spart.dll?branch=%3Cdefault%3E ../lib/dotnet/Spart.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/ibusdotnet.dll?branch=%3Cdefault%3E ../lib/dotnet/ibusdotnet.dll
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/irrKlang.NET4.dll?branch=%3Cdefault%3E ../lib/dotnet/irrKlang.NET4.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/taglib-sharp.dll?branch=%3Cdefault%3E ../lib/dotnet/taglib-sharp.dll
 # extract downloaded zip files
 unzip -uqo ../Downloads/libsynphony-js.zip -d ../src/BloomBrowserUI/bookEdit/js/libsynphony

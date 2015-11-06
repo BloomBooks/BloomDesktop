@@ -36,7 +36,6 @@
 			this.label2 = new System.Windows.Forms.Label();
 			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			this._shortVersionLabel = new System.Windows.Forms.Label();
-			this.label1 = new System.Windows.Forms.Label();
 			this.pictureBox2 = new System.Windows.Forms.PictureBox();
 			this._channelLabel = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -124,18 +123,6 @@
 			this._shortVersionLabel.Text = "19.8.710";
 			this._shortVersionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
-			// label1
-			// 
-			this.label1.Anchor = System.Windows.Forms.AnchorStyles.None;
-			this.label1.AutoSize = true;
-			this.label1.Font = new System.Drawing.Font("Segoe UI", 9F);
-			this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(67)))), ((int)(((byte)(143)))), ((int)(((byte)(189)))));
-			this.label1.Location = new System.Drawing.Point(326, 64);
-			this.label1.Margin = new System.Windows.Forms.Padding(0, 0, 0, 4);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(0, 15);
-			this.label1.TabIndex = 23;
-			// 
 			// pictureBox2
 			// 
 			this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -169,7 +156,6 @@
 			this.ControlBox = false;
 			this.Controls.Add(this._channelLabel);
 			this.Controls.Add(this.pictureBox2);
-			this.Controls.Add(this.label1);
 			this.Controls.Add(this.flowLayoutPanel1);
 			this.Controls.Add(this.pictureBox1);
 			this.Controls.Add(this.label2);
@@ -201,7 +187,6 @@
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
 		private System.Windows.Forms.Label _shortVersionLabel;
-		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.PictureBox pictureBox2;
 		private System.Windows.Forms.Label _channelLabel;
     }

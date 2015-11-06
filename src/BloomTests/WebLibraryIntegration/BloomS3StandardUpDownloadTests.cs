@@ -4,7 +4,7 @@ using System.Linq;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using NUnit.Framework;
-using Palaso.Progress;
+using SIL.Progress;
 
 namespace BloomTests.WebLibraryIntegration
 {

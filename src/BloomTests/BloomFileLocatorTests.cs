@@ -7,8 +7,8 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using NUnit.Framework;
-using Palaso.IO;
-using Palaso.TestUtilities;
+using SIL.IO;
+using SIL.TestUtilities;
 
 namespace BloomTests
 {

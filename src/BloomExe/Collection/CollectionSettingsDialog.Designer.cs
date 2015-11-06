@@ -76,7 +76,7 @@ namespace Bloom.Collection
 			this._restartReminder = new System.Windows.Forms.Label();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._cancelButton = new System.Windows.Forms.Button();
-			this.settingsProtectionLauncherButton1 = new Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton();
+			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this._tab.SuspendLayout();
@@ -800,7 +800,7 @@ namespace Bloom.Collection
 		private System.Windows.Forms.Label _provinceLabel;
 		private System.Windows.Forms.LinkLabel _removeLanguage3Link;
 		private System.Windows.Forms.Label _restartReminder;
-		private Palaso.UI.WindowsForms.SettingProtection.SettingsProtectionLauncherButton settingsProtectionLauncherButton1;
+		private SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton settingsProtectionLauncherButton1;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.TabPage tabPage4;
 		private System.Windows.Forms.CheckBox _useImageServer;

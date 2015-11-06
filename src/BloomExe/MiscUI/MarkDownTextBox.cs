@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Gecko;
 using MarkdownSharp;
-using Palaso.UI.WindowsForms.Extensions;
+using SIL.Windows.Forms.Extensions;
 
 namespace Bloom.MiscUI
 {
