@@ -262,12 +262,10 @@
 	<Target Name="UploadCore">
 		<Message Text="Attempting rsync of $(SquirrelInstallerFileName)" Importance="high"/>
 
-		<!--Kludge, but S3BuildPublisher needs this file in the build folder-->
-		<Copy SourceFiles="../output/$(Configuration)/AWSSDK.dll"  DestinationFiles="./AWSSDK.dll"/>
-
 		<!-- The way the web site generates the list of old installers requires that they be the only files in the
 		destination folder. For now I'm keeping them out of the actual installers folder that the web site uses.
 		When we're ready to go live with squirrel we can change this target folder or the web site.-->
+		<!--Note: S3BuildPublisher needs AWSSDK.dll it its own folder, so TeamCity should do that. Do it youself if you want to build locally-->
 		<S3BuildPublisher
 		EncryptionContainerName ="$(Key)"
 		SourceFiles="$(SquirrelReleaseFolder)/$(SquirrelInstallerFileName)"
