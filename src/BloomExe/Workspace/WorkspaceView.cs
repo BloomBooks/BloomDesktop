@@ -528,7 +528,7 @@ namespace Bloom.Workspace
 
 		private void WorkspaceView_Resize(object sender, EventArgs e)
 		{
-			if (this.ParentForm.WindowState != FormWindowState.Minimized)
+			if (this.ParentForm != null && this.ParentForm.WindowState != FormWindowState.Minimized)
 			{
 				AdjustTabStripDisplayForScreenSize();
 			}
