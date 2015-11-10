@@ -84,7 +84,6 @@ namespace BloomTests.Book
 			Assert.AreEqual("peace", textarea2.InnerText);
 		}
 
-
 		[Test]
 		public void UpdateTextsNewlyChangedToRequiresParagraph_HasOneBR()
 		{
@@ -164,8 +163,6 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai']", 1);
 		}
 
-
-
 		[Test]
 		public void SavePage_ChangeMade_StorageToldToSave()
 		{
@@ -188,8 +185,6 @@ namespace BloomTests.Book
 
 			Assert.AreEqual("changed.png", imgInStorage.GetAttribute("src"));
 		}
-
-
 
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaOfFirstTwin_StorageUpdated()
@@ -217,7 +212,6 @@ namespace BloomTests.Book
 			Assert.AreEqual("changed", vernacularTextNodesInStorage.Item(0).InnerText, "the value didn't get copied to  the storage dom");
 			Assert.AreEqual("original2", vernacularTextNodesInStorage.Item(1).InnerText, "the second copy of this page should not have been changed");
 		}
-
 
 		[Test]
 		public void SavePage_ChangeMadeToTextAreaOfSecondTwin_StorageUpdated()
@@ -345,7 +339,6 @@ namespace BloomTests.Book
 			Assert.AreEqual("bloom-page A5Portrait", GetPageFromBookDom(book, 1).GetStringAttribute("class"));
 		}
 
-
 		[Test]
 		public void InsertPageAfter_SourcePageHasLineage_GetsLineageOfSourcePlusItsAncestor()
 		{
@@ -404,18 +397,48 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page')]", expectedCount);
 		}
 
-//
-//        [Test]
-//        public void DeletePage_RaisesDeletedEvent()
-//        {
-//            var book = CreateBook();
-//            bool gotEvent=false;
-//            book.PageDeleted+=new EventHandler((x,y)=>gotEvent=true);
-//            var original = book.GetPages().Count();
-//            Page existingPage = book.GetPages().Last();
-//            book.DeletePage(existingPage);
-//            Assert.IsTrue(gotEvent);
-//        }
+		[Test]
+		public void PrepareForEditing_CustomLicenseNotDiscarded()
+		{
+			SetDom(@"<div id='bloomDataDiv'>
+						<div data-book='copyright' lang='*'>
+							Copyright © 2015, me
+						</div>
+						<div data-book='licenseNotes' lang='en'>
+							Custom license info
+						</div>
+					</div>");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			book.PrepareForEditing();
+			var copyright = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='marginBox']//div[@data-book='copyright']").InnerText;
+			var licenseBlock = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='licenseBlock']");
+			var licenseImage = licenseBlock.SelectSingleNode("img");
+			var licenseUrl = licenseBlock.SelectSingleNode("div[@data-book='licenseUrl']").InnerText;
+			var licenseDescription = licenseBlock.SelectSingleNode("div[@data-book='licenseDescription']").InnerText;
+			var licenseNotes = licenseBlock.SelectSingleNode("div[@data-book='licenseNotes']").InnerText;
+			// Check that updated dom has the right license contents on the Credits page
+			// Check that data-div hasn't been contaminated with non-custom license stuff
+			Assert.AreEqual("Copyright © 2015, me", copyright);
+			Assert.AreEqual("Custom license info", licenseNotes);
+			Assert.IsEmpty(licenseUrl);
+			Assert.IsEmpty(licenseDescription);
+			Assert.IsEmpty(licenseImage.Attributes["src"].Value);
+			Assert.IsNull(licenseImage.Attributes["alt"]);
+		}
+
+		//
+		//        [Test]
+		//        public void DeletePage_RaisesDeletedEvent()
+		//        {
+		//            var book = CreateBook();
+		//            bool gotEvent=false;
+		//            book.PageDeleted+=new EventHandler((x,y)=>gotEvent=true);
+		//            var original = book.GetPages().Count();
+		//            Page existingPage = book.GetPages().Last();
+		//            book.DeletePage(existingPage);
+		//            Assert.IsTrue(gotEvent);
+		//        }
 
 		[Test]
 		public void DuplicatePage()
