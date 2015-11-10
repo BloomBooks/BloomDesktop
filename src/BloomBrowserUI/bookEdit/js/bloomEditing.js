@@ -731,7 +731,7 @@ var pageSelectionChanging = function () {
 // think the other is still using.
 var disconnectForGarbageCollection = function () {
     // disconnect all event handlers
-    //find().off();  TODO: This causes a Find dialog box to appear
+    $.find().off();
 
     var page = $('.bloom-page');
     // blow away any img elements to ensure their data disappears.
