@@ -808,7 +808,7 @@ namespace Bloom
 										   "Palaso", "Palaso", /*review: this is just bloom's version*/Application.ProductVersion,
 										   installedStringFileFolder,
 											"SIL/Bloom",
-											Resources.Bloom, "issues@bloomlibrary.org", "Palaso.UI");
+											Resources.Bloom, "issues@bloomlibrary.org", "SIL");
 
 				Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
 			}
