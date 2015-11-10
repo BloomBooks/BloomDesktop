@@ -550,6 +550,9 @@ namespace Bloom.Edit
 				return;
 			string fileName = HtmlDom.GetImageElementUrl(imageElement).NotEncoded;
 
+			//enhance: this all could be done without loading the image into memory
+			//could just deal with the metadata
+			//e.g., var metadata = Metadata.FromFile(path)
 			var path = Path.Combine(_model.CurrentBook.FolderPath, fileName);
 			using (var imageInfo = PalasoImage.FromFile(path))
 			{
