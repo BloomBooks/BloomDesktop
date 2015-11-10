@@ -30,11 +30,7 @@ namespace Bloom.Book
 			{
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / imgElements.Count());
 				progress.WriteStatus("Copying to " + Path.GetFileName(path));
-				using (var image = PalasoImage.FromFile(path))
-				{
-					image.Metadata = metadata;
-					image.SaveUpdatedMetadataIfItMakesSense();
-				}
+				metadata.Write(path);
 				++completed;
 			}
 
@@ -95,10 +91,7 @@ namespace Bloom.Book
 					//Debug.Fail(" (Debug only) Image " + path + " is missing");
 					return;
 				}
-				using (var image = PalasoImage.FromFile(path))
-				{
-					metadata = image.Metadata;
-				}
+				metadata = Metadata.FromFile(path);
 			}
 
 			progress.WriteStatus("Writing metadata to HTML for " + fileName);
