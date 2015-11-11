@@ -84,3 +84,16 @@
 .fourProblems .imageRow {
     height: 90px;
 }
+
+//the header text needs some special care in this flex environment, when multilingual. See BL-2884.
+.marginBox > .bloom-translationGroup {
+    display: flex;
+    flex-direction: column;// show multiple language side-by-side
+    .bloom-editable {
+        margin-top: 0; //don't want any of these to have top margins, because they are side-by-side
+        margin-left: 10px; //all but the first want a small horizontal margin
+    }
+    .bloom-editable:first-child{
+        margin-left: 0px;
+    }
+}

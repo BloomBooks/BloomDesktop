@@ -109,3 +109,14 @@
 .fourProblems .imageRow {
   height: 90px;
 }
+.marginBox > .bloom-translationGroup {
+  display: flex;
+  flex-direction: column;
+}
+.marginBox > .bloom-translationGroup .bloom-editable {
+  margin-top: 0;
+  margin-left: 10px;
+}
+.marginBox > .bloom-translationGroup .bloom-editable:first-child {
+  margin-left: 0px;
+}
