@@ -779,6 +779,16 @@ namespace Bloom.Book
 			//hack
 			if(bookDOM == OurHtmlDom)//we already have a data for this
 			{
+				// BL-2790 The only time we get to this point appears to be when we are coming from
+				// PrepareForEditing(). If we are preparing to edit the book, and we have a custom license,
+				// we've just clobbered most of the evidence for that by replacing the xmatter with a default license.
+				// Fortunately, at this point we still have an absence of licenseUrl in bloomDataDiv that will
+				// tell us we have a custom license so we can remove the default stuff from the Credits page.
+				if (_bookData.DataDivHasCustomLicense)
+				{
+					RemoveDefaultLicenseFromDom(OurHtmlDom);
+				}
+
 				_bookData.SynchronizeDataItemsThroughoutDOM();
 
 				// I think we should only mess with tags if we are updating the book for real.
@@ -816,6 +826,25 @@ namespace Bloom.Book
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
+		}
+
+		private void RemoveDefaultLicenseFromDom(HtmlDom dom)
+		{
+			var licenseBlock = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='licenseBlock']");
+			// licenseBlock.RemoveAll() does too much here
+			var licenseImage = licenseBlock.SelectSingleNode("img");
+			if (licenseImage != null)
+			{
+				if (licenseImage.Attributes["alt"] != null)
+					licenseImage.Attributes["alt"].Value = string.Empty;
+				licenseImage.Attributes["src"].Value = string.Empty;
+			}
+			var licenseUrl = licenseBlock.SelectSingleNode("div[@data-book='licenseUrl']");
+			if (licenseUrl != null)
+				licenseUrl.InnerText = string.Empty;
+			var licenseDesc = licenseBlock.SelectSingleNode("div[@data-book='licenseDescription']");
+			if(licenseDesc != null)
+				licenseDesc.InnerText = string.Empty;
 		}
 
 		private void BringXmatterHtmlUpToDate(HtmlDom bookDOM)

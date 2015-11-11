@@ -1019,6 +1019,14 @@ namespace Bloom.Book
 			}
 		}
 
+		internal bool DataDivHasCustomLicense
+		{
+			get
+			{
+				var url = _dataDiv.SelectSingleNode("div[@data-book='licenseUrl']");
+				return url == null;
+			}
+		}
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
