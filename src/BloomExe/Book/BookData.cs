@@ -1028,6 +1028,25 @@ namespace Bloom.Book
 			}
 		}
 
+		internal void RemoveDefaultLicenseFromDom(HtmlDom dom)
+		{
+			var licenseBlock = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='licenseBlock']");
+			// licenseBlock.RemoveAll() does too much here
+			var licenseImage = licenseBlock.SelectSingleNode("img");
+			if (licenseImage != null)
+			{
+				if (licenseImage.Attributes["alt"] != null)
+					licenseImage.Attributes["alt"].Value = string.Empty;
+				licenseImage.Attributes["src"].Value = string.Empty;
+			}
+			var licenseUrl = licenseBlock.SelectSingleNode("div[@data-book='licenseUrl']");
+			if (licenseUrl != null)
+				licenseUrl.InnerText = string.Empty;
+			var licenseDesc = licenseBlock.SelectSingleNode("div[@data-book='licenseDescription']");
+			if (licenseDesc != null)
+				licenseDesc.InnerText = string.Empty;
+		}
+
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
 			if (language2Code == _collectionSettings.Language1Iso639Code) //can't have the vernacular twice

@@ -786,7 +786,7 @@ namespace Bloom.Book
 				// tell us we have a custom license so we can remove the default stuff from the Credits page.
 				if (_bookData.DataDivHasCustomLicense)
 				{
-					RemoveDefaultLicenseFromDom(OurHtmlDom);
+					_bookData.RemoveDefaultLicenseFromDom(OurHtmlDom);
 				}
 
 				_bookData.SynchronizeDataItemsThroughoutDOM();
@@ -826,25 +826,6 @@ namespace Bloom.Book
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
-		}
-
-		private void RemoveDefaultLicenseFromDom(HtmlDom dom)
-		{
-			var licenseBlock = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='licenseBlock']");
-			// licenseBlock.RemoveAll() does too much here
-			var licenseImage = licenseBlock.SelectSingleNode("img");
-			if (licenseImage != null)
-			{
-				if (licenseImage.Attributes["alt"] != null)
-					licenseImage.Attributes["alt"].Value = string.Empty;
-				licenseImage.Attributes["src"].Value = string.Empty;
-			}
-			var licenseUrl = licenseBlock.SelectSingleNode("div[@data-book='licenseUrl']");
-			if (licenseUrl != null)
-				licenseUrl.InnerText = string.Empty;
-			var licenseDesc = licenseBlock.SelectSingleNode("div[@data-book='licenseDescription']");
-			if(licenseDesc != null)
-				licenseDesc.InnerText = string.Empty;
 		}
 
 		private void BringXmatterHtmlUpToDate(HtmlDom bookDOM)
