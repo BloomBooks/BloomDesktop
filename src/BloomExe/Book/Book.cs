@@ -779,16 +779,6 @@ namespace Bloom.Book
 			//hack
 			if(bookDOM == OurHtmlDom)//we already have a data for this
 			{
-				// BL-2790 The only time we get to this point appears to be when we are coming from
-				// PrepareForEditing(). If we are preparing to edit the book, and we have a custom license,
-				// we've just clobbered most of the evidence for that by replacing the xmatter with a default license.
-				// Fortunately, at this point we still have an absence of licenseUrl in bloomDataDiv that will
-				// tell us we have a custom license so we can remove the default stuff from the Credits page.
-				if (_bookData.DataDivHasCustomLicense)
-				{
-					_bookData.RemoveDefaultLicenseFromDom(OurHtmlDom);
-				}
-
 				_bookData.SynchronizeDataItemsThroughoutDOM();
 
 				// I think we should only mess with tags if we are updating the book for real.
