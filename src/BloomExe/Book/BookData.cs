@@ -1019,7 +1019,6 @@ namespace Bloom.Book
 			}
 		}
 
-
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
 			if (language2Code == _collectionSettings.Language1Iso639Code) //can't have the vernacular twice
