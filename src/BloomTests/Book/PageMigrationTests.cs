@@ -327,6 +327,52 @@ namespace BloomTests.Book
 			Assert.IsFalse(updatedPage.OuterXml.Contains("imageOnTop"), "imageOnTop refers to the old fixed-stylesheet way of showing pages");
 		}
 
+		
+		/// <summary>
+		/// this is a regression test, from BL-2887
+		/// </summary>
+		[Test]
+		public void BringPageUpToDateWithMigration_SourceHasNoDataPage_DoesNotAcquireDataPageFromTemplate()
+		{
+			//the  data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' here tells us we came from
+			//an old template page and triggers migration to its current equivalent
+			SetDom(@"<div class='imageOnTop'  data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
+			   <div class='marginBox'>
+					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+				</div>
+			</div>
+			");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			book.BringPageUpToDate(page);
+			//The source template page has data-page='extra', but the migrated page *must not* have this.
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@id='thePage' and @data-page='extra']");
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@id='thePage' and @data-page]");
+		}
+
+		/// <summary>
+		/// this is a regression test, from BL-2887
+		/// </summary>
+		[Test]
+		public void BringPageUpToDateWithMigration_SourceHasEmptyDataPage_DoesNotAcquireDataPageFromTemplate()
+		{
+			//the  data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' here tells us we came from
+			//an old template page and triggers migration to its current equivalent
+			SetDom(@"<div class='imageOnTop'  data-page='' data-pagelineage='FD115DFF-0415-4444-8E76-3D2A18DBBD27' id='thePage'>
+			   <div class='marginBox'>
+					<div class='bloom-imageContainer bloom-leadingElement'><img src='erjwx3bl.q3c.png'></img></div>
+				</div>
+			</div>
+			");
+			var book = CreateBook();
+			var dom = book.RawDom;
+			var page = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
+			book.BringPageUpToDate(page);
+			//The source template page has data-page='extra', but the migrated page *must not* have this.
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@id='thePage' and @data-page='extra']");
+			AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[@id='thePage' and @data-page]");
+		}
 		// Common code for tests of adding needed styles. The main difference between the tests is the state of the stylesheet
 		// (if any) inserted by the modifyHead action.
 		private XmlDocument CreateAndMigrateBigWordsPage(Action<XmlElement> modifyHead)

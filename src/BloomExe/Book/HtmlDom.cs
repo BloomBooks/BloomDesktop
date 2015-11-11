@@ -603,6 +603,18 @@ namespace Bloom.Book
 			var oldLineageAttr = page.Attributes["data-pagelineage"];
 			var oldLineage = oldLineageAttr == null ? "" : oldLineageAttr.Value;
 			newPage.SetAttribute("data-pagelineage", lineage);
+
+			//preserve the data-page attribute of the old page, which will normally be empty or missing
+			var dataPageValue = page.GetAttribute("data-page");
+			if (string.IsNullOrEmpty(dataPageValue))
+			{
+				newPage.RemoveAttribute("data-page");
+			}
+			else
+			{
+				newPage.SetAttribute("data-page", dataPageValue); //the template has these as 
+			}
+
 			// migrate text
 			MigrateChildren(page, "bloom-translationGroup", newPage);
 			// migrate images
