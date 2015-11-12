@@ -11,8 +11,12 @@ var bloomNotices = (function () {
                 content: "<div id='experimentNotice'><img src='/bloom/images/experiment.png'/>" + experimental + "<div/>",
                 show: { ready: true },
                 hide: false,
-                position: { at: 'right top', my: 'left top' },
-                style: { classes: 'ui-tooltip-red', tip: { corner: false } }
+                position: { at: 'right top',
+                    my: 'left top'
+                },
+                style: { classes: 'ui-tooltip-red',
+                    tip: { corner: false }
+                }
             });
         });
     };
@@ -28,7 +32,9 @@ var bloomNotices = (function () {
                 var whatToSay = $(this).attr("data-hint"); //don't use .data(), as that will trip over any } in the hint and try to interpret it as json
                 whatToSay = localizationManager.getLocalizedHint(whatToSay, $(this)) + " <br/>" + whyDisabled;
                 var theClasses = 'ui-tooltip-shadow ui-tooltip-red';
-                var pos = { at: 'right center', my: 'left center' };
+                var pos = { at: 'right center',
+                    my: 'left center'
+                };
                 $(this).qtip({
                     content: whatToSay,
                     position: pos,

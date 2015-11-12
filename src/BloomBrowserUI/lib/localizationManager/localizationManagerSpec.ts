@@ -1,5 +1,4 @@
 /// <reference path="localizationManager.ts" />
-/// <reference path="../jquery.d.ts" />
 /// <reference path="../jasmine/jasmine.d.ts"/>
 
 /*

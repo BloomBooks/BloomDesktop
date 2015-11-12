@@ -55,6 +55,7 @@
     <Content Include="bookEdit\css\origami.css">
       <DependentUpon>origami.less</DependentUpon>
     </Content>
+    <Content Include="bookEdit\js\readerToolsBootstrap.js" />
     <None Include="bookEdit\sourceBubbles\sourceBubbles.less" />
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
@@ -108,8 +109,12 @@
     <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
     <TypeScriptCompile Include="bookEdit\js\BloomAccordion.ts" />
     <TypeScriptCompile Include="bookEdit\js\bloomHintBubbles.ts" />
+    <TypeScriptCompile Include="bookEdit\js\bloomNotices.ts" />
+    <TypeScriptCompile Include="bookEdit\js\bloomQtipUtils.ts" />
     <TypeScriptCompile Include="bookEdit\js\calledByCSharp.ts" />
+    <TypeScriptCompile Include="bookEdit\js\collectionSettings.d.ts" />
     <TypeScriptCompile Include="bookEdit\js\directoryWatcher.ts" />
+    <TypeScriptCompile Include="bookEdit\js\editableDivUtils.ts" />
     <TypeScriptCompile Include="bookEdit\js\getIframeChannel.ts" />
     <TypeScriptCompile Include="bookEdit\js\interIframeChannel.ts" />
     <TypeScriptCompile Include="bookEdit\js\jquery.div-columns.ts" />
@@ -120,6 +125,7 @@
     <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbars.css" />
     <Content Include="bookEdit\js\toolbar\toolbar.d.ts" />
+    <Content Include="bookEdit\OverflowChecker\OverflowChecker.js" />
     <Content Include="bookEdit\readerSetup\readerSetup.css">
       <DependentUpon>readerSetup.less</DependentUpon>
     </Content>
@@ -239,6 +245,7 @@
     <TypeScriptCompile Include="bookEdit\js\readerTools.ts" />
     <TypeScriptCompile Include="bookEdit\js\readerToolsModel.ts" />
     <TypeScriptCompile Include="bookEdit\js\synphonyApi.ts" />
+    <TypeScriptCompile Include="bookEdit\OverflowChecker\OverflowChecker.ts" />
     <TypeScriptCompile Include="bookEdit\sourceBubbles\bloomSourceBubbles.ts" />
     <TypeScriptCompile Include="bookEdit\TopicChooser\TopicChooser.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
