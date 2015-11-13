@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Bloom;
-using Chorus.FileTypeHandlers.html;
+using Chorus.FileTypeHanders.html;
 using Chorus.merge;
 using Chorus.merge.xml.generic;
 using LibChorus.TestUtilities;
