@@ -211,7 +211,7 @@ function AddLanguageTags(container) {
         if (isTranslationMode && $this.hasClass('bloom-readOnlyInTranslationMode')) {
             return;
         }
-        if (!isTranslationMode && $this.hasClass('bloom-readOnlyInEditMode')) {
+        if (!isTranslationMode && $this.hasClass('bloom-readOnlyInAuthorMode')) {
             return;
         }
 
@@ -665,6 +665,10 @@ $(document).ready(function() {
 
         if ($(this).hasClass('bloom-userCannotModifyStyles'))
             return; // equivalent to 'continue'
+
+        if ($(this).css('cursor') == 'not-allowed')
+            return;
+
         var ckedit = CKEDITOR.inline(this);
 
         // Record the div of the edit box for use later in positioning the format bar.

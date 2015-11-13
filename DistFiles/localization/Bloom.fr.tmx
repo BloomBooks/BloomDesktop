@@ -2157,7 +2157,7 @@
         <seg>Position</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.ReadOnlyInEditMode">
+    <tu tuid="EditTab.ReadOnlyInAuthorMode">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>You cannot put anything in there while making an original book.</seg>
