@@ -164,7 +164,7 @@ namespace Bloom.Collection
 			using (var dlg = new LanguageLookupDialog())
 			{
 				//at this point, we don't let them customize the national languages
-				dlg.ShowDesiredLanguageNameField = potentiallyCustomName != null;
+				dlg.IsDesiredLanguageNameFieldVisible = potentiallyCustomName != null;
 
 				var language = new LanguageInfo() { LanguageTag = iso639Code};
 				if (!string.IsNullOrEmpty(potentiallyCustomName))
