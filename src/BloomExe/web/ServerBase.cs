@@ -340,12 +340,12 @@ namespace Bloom.web
 		{
 			// Note that LocalPathWithoutQuery removes all % escaping from the URL.
 			var result = info.LocalPathWithoutQuery;
-			if (info.RawUrl.StartsWith(BloomUrlPrefix + "//"))
-			{
-				// for some reason Url.LocalPath strips out two of the three slashes that we get
-				// with network drive paths when we stick /bloom/ in front of a path like //mydrive/myfolder/...
-				result = BloomUrlPrefix + "//" + result.Substring(BloomUrlPrefix.Length);
-			}
+			// for some reason Url.LocalPath strips out two of the three slashes that we get
+			// with network drive paths when we stick /bloom/ (or /bloom/something/) in front
+			// of a path like //mydrive/myfolder/...
+			var idx = info.RawUrl.IndexOf("///");
+			if (idx > 0 && result.StartsWith(BloomUrlPrefix))
+				return result.Substring(0, idx) + "//" + result.Substring(idx);
 			return result;
 		}
 
