@@ -522,11 +522,15 @@ namespace BloomTests.Publish
 		}
 
 		/// <summary>
-		/// Content whose display properties resolves to display:None should be removed.
-		/// 13 Nov '15 GJM: Added test for stripping out pageDescription div.
+		/// Test that content that shouldn't show up in the epub gets removed.
+		/// -- display: none
+		/// -- pageDescription
+		/// -- pageLabel
+		/// -- label elements
+		/// -- bubbles
 		/// </summary>
 		[Test]
-		public void DisplayNone_IsRemoved()
+		public void InvisibleAndUnwantedContentRemoved()
 		{
 			SetDom(@"<div class='bloom-page'>
 						<div id='somewrapper'>
@@ -546,7 +550,7 @@ namespace BloomTests.Publish
 						</div>
 					</div>");
 			var book = CreateBook();
-			var epubFolder = new TemporaryFolder("DisplayNone_IsRemoved");
+			var epubFolder = new TemporaryFolder("InvisibleAndUnwantedContentRemoved");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
