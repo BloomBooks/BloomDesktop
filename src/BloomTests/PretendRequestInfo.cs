@@ -28,7 +28,7 @@ namespace Bloom.web
 				url = EnhancedImageServer.SimulateJavaScriptHandlingOfHtml(url);
 
 			// Reducing the /// emulates a behavior of the real HttpListener
-			LocalPathWithoutQuery = RawUrl.Replace("/bloom/OriginalImages///", "/bloom/OriginalImages/").Replace("/bloom///", "/bloom/").UnescapeCharsForHttp();
+			LocalPathWithoutQuery = url.Replace("http://localhost:8089", "").Replace("/bloom/OriginalImages///", "/bloom/OriginalImages/").Replace("/bloom///", "/bloom/").UnescapeCharsForHttp();
 		}
 
 		public string LocalPathWithoutQuery { get; set; }
