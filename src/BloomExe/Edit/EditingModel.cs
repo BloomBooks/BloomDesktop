@@ -676,6 +676,7 @@ namespace Bloom.Edit
 		{
 			AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
 			AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
+			AddMessageEventListener("setTopic", SetTopic);
 			AddMessageEventListener("finishSavingPage", FinishSavingPage);
 			AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
 			AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
@@ -812,6 +813,15 @@ namespace Bloom.Edit
 		private void ChangeRecordingDevice(string deviceName)
 		{
 			_audioRecording.ChangeRecordingDevice(deviceName);
+		}
+
+		//invoked from TopicChooser.ts
+		private void SetTopic(string englishTopicAsKey)
+		{
+			//make the change in the data div
+			_currentlyDisplayedBook.SetTopic(englishTopicAsKey);
+			//reflect that change on this page
+			RethinkPageAndReloadIt(null);
 		}
 
 		private void RethinkPageAndReloadIt(string obj)

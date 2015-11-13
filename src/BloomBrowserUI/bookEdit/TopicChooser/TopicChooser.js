@@ -28,30 +28,16 @@ var TopicChooser = (function () {
                     width: 100,
                     click: function () {
                         var t = $("ol#topicList li.ui-selected");
-                        //set or clear the topic variable in our data-div
+                        //set or clear the topic variable in our 
                         if (t.length) {
                             var key = t[0].dataset['key'];
-                            var translationGroup = $("div[data-book='topic']").parent();
-                            var englishDiv = translationGroup.find("[lang='en']")[0];
-                            if (!englishDiv) {
-                                englishDiv = translationGroup.find("div[data-book='topic']")[0];
-                                $(englishDiv).clone().attr("lang", "en");
-                                $(englishDiv).appendTo($(translationGroup));
-                            }
-                            //for translation convenience, we use "NoTopic" as the key during UI. But when storing, it's cleaner to just save empty string if we don't have a topic
-                            if (key == "NoTopic") {
-                                //this will clear all of them, for everylanguage
-                                $("div[data-book='topic']").text("");
-                            }
-                            else {
-                                $(englishDiv).text(key);
-                                //NB: when the nationalLanguage1 is also English, this won't do anything, but that's ok because we set the element to the key which is the same as its
-                                //English, at least today. If that changes in the future, we'd need to put the "key" somewhere other than in the text of the English element
-                                localizationManager.asyncGetTextInLang("Topics." + key, key, "N1")
-                                    .done(function (topicInNatLang1) {
-                                    $("div[data-book='topic']").filter(".bloom-contentNational1").text(topicInNatLang1);
-                                });
-                            }
+                            //notice here that we are not changing the topic on the page.
+                            //Doing so here would mean duplicating the logic we have to have
+                            //in c# anyhow. Instead, we are doing more of a react-style
+                            //thing here where the UI raises an event requesting a change
+                            //to the model, and then let that propagate back down to the
+                            //ui (that is, the html on the page).
+                            TopicChooser.fireCSharpEvent('setTopic', key);
                         }
                         $(this).dialog("close");
                     }
@@ -63,6 +49,10 @@ var TopicChooser = (function () {
             var x = dlg.dialog("option", "buttons");
             x['OK'].apply(dlg);
         });
+    };
+    TopicChooser.fireCSharpEvent = function (eventName, eventData) {
+        var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
+        document.dispatchEvent(event);
     };
     TopicChooser.createTopicDialogDiv = function (currentTopicKey) {
         // if it's already there, remove it
