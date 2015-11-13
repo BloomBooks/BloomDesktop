@@ -99,6 +99,26 @@
   position: relative;
   bottom: 18px;
 }
+.oneProblem .marginBox > .bloom-translationGroup,
+.twoProblems .marginBox > .bloom-translationGroup,
+.threeProblems .marginBox > .bloom-translationGroup,
+.fourProblems .marginBox > .bloom-translationGroup {
+  display: flex;
+  flex-direction: row;
+}
+.oneProblem .marginBox > .bloom-translationGroup .bloom-editable,
+.twoProblems .marginBox > .bloom-translationGroup .bloom-editable,
+.threeProblems .marginBox > .bloom-translationGroup .bloom-editable,
+.fourProblems .marginBox > .bloom-translationGroup .bloom-editable {
+  margin-top: 0;
+  margin-left: 10px;
+}
+.oneProblem .marginBox > .bloom-translationGroup .bloom-editable:first-child,
+.twoProblems .marginBox > .bloom-translationGroup .bloom-editable:first-child,
+.threeProblems .marginBox > .bloom-translationGroup .bloom-editable:first-child,
+.fourProblems .marginBox > .bloom-translationGroup .bloom-editable:first-child {
+  margin-left: 0px;
+}
 .oneProblem .imageRow,
 .twoProblems .imageRow {
   height: 200px;
@@ -108,15 +128,4 @@
 }
 .fourProblems .imageRow {
   height: 90px;
-}
-.marginBox > .bloom-translationGroup {
-  display: flex;
-  flex-direction: column;
-}
-.marginBox > .bloom-translationGroup .bloom-editable {
-  margin-top: 0;
-  margin-left: 10px;
-}
-.marginBox > .bloom-translationGroup .bloom-editable:first-child {
-  margin-left: 0px;
 }
