@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom;
@@ -524,14 +522,22 @@ namespace BloomTests.Publish
 		}
 
 		/// <summary>
-		/// Content whose display properties resolves to display:None should be removed.
+		/// Test that content that shouldn't show up in the epub gets removed.
+		/// -- display: none
+		/// -- pageDescription
+		/// -- pageLabel
+		/// -- label elements
+		/// -- bubbles
 		/// </summary>
 		[Test]
-		public void DisplayNone_IsRemoved()
+		public void InvisibleAndUnwantedContentRemoved()
 		{
 			SetDom(@"<div class='bloom-page'>
 						<div id='somewrapper'>
 							<div class='pageLabel' lang = 'en'>Front Cover</div>
+							<div class='pageDescription' lang='en'>
+								Page with a picture on top and a large, centered word below.
+							</div>
 							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
 								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
 									English text should only display when that language is active.
@@ -544,7 +550,7 @@ namespace BloomTests.Publish
 						</div>
 					</div>");
 			var book = CreateBook();
-			var epubFolder = new TemporaryFolder("DisplayNone_IsRemoved");
+			var epubFolder = new TemporaryFolder("InvisibleAndUnwantedContentRemoved");
 			var epubName = "output.epub";
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
@@ -575,6 +581,7 @@ namespace BloomTests.Publish
 			mgr.AddNamespace("xhtml", "http://www.w3.org/1999/xhtml");
 			var assertPage1 = AssertThatXmlIn.String(page1Data);
 			assertPage1.HasAtLeastOneMatchForXpath("//xhtml:div[@lang='xyz']", mgr);
+			assertPage1.HasNoMatchForXpath("//xhtml:div[@class='pageDescription']", mgr);
 			assertPage1.HasNoMatchForXpath("//xhtml:div[@lang='en']", mgr); // one language by default
 			assertPage1.HasNoMatchForXpath("//xhtml:div[@lang='fr']", mgr);
 			assertPage1.HasNoMatchForXpath("//xhtml:div[@lang='de']", mgr);
@@ -596,7 +603,6 @@ namespace BloomTests.Publish
 			Assert.That(attr, Is.Not.Null);
 			Assert.That(attr.Value, Is.EqualTo(val));
 		}
-
 
 		/// <summary>
 		/// Content whose display properties resolves to display:None should be removed.

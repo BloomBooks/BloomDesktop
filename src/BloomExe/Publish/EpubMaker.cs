@@ -629,10 +629,12 @@ namespace Bloom.Publish
 				if (HasClass(elt, "bubble"))
 					elt.ParentNode.RemoveChild(elt);
 			}
-			// Remove page labels
+			// Remove page labels and descriptions
 			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//div").Cast<XmlElement>().ToArray())
 			{
 				if (HasClass(elt, "pageLabel"))
+					elt.ParentNode.RemoveChild(elt);
+				if (HasClass(elt, "pageDescription"))
 					elt.ParentNode.RemoveChild(elt);
 			}
 		}
