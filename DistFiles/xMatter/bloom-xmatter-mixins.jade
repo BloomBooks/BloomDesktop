@@ -60,13 +60,13 @@ mixin field-acknowledgments-originalVersion
 
 mixin block-licenseAndCopyright
 	.bloom-metaData.licenseAndCopyrightBlock(data-functiononhintclick="bookMetadataEditor",data-hint="Click to Edit Copyright & License")
-		.copyright(data-book="copyright", lang="*").Credits-Page-style
+		.copyright(data-derived="copyright", lang="*").Credits-Page-style
 			{copyright}
 		.licenseBlock
-			img.licenseImage(src="license.png" data-book="licenseImage")
-			.licenseUrl(data-book="licenseUrl", lang="en") http://creativecommons.org/licenses/by/4.0/
-			.licenseDescription(data-book="licenseDescription",lang="en").Credits-Page-style You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
-			.licenseNotes(data-book="licenseNotes", lang="en").Credits-Page-style
+			img.licenseImage(src="license.png" data-derived="licenseImage")
+			.licenseUrl(data-derived="licenseUrl", lang="en") http://creativecommons.org/licenses/by/4.0/
+			.licenseDescription(data-derived="licenseDescription",lang="en").Credits-Page-style You are free to make commercial use of this work. You may adapt and add to this work. You must keep the copyright and credits for authors, illustrators, etc.
+			.licenseNotes(data-derived="licenseNotes", lang="en").Credits-Page-style
 				{License Notes}
 
 

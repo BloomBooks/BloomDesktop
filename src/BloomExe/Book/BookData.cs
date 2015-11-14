@@ -303,6 +303,63 @@ namespace Bloom.Book
 			topicPageElement.InnerText = bestTranslation;
 		}
 
+
+		/// <summary>
+		/// As with topics, we never read the copyright license from the page, we just generate them from the bloomDataDiv
+		/// </summary>
+		private void SetUpDisplayOfCopyrightAndLicenseInBook(DataSet data)
+		{
+			//first, set up a CC default if this is a new book.
+			var copyright = GetLanguageNeutralStringOrEmpty(data, "copyright");
+			var licenseUrl = GetLanguageNeutralStringOrEmpty(data, "licenseUrl");
+			var licenseNotes = GetLanguageNeutralStringOrEmpty(data, "licenseNotes");
+			if (copyright == "" && licenseUrl == "" && licenseNotes == "")
+			{
+				PushBookMetadataIntoDataSet(data,new Metadata()
+				{
+					CopyrightNotice = "",
+					License = new CreativeCommonsLicense(true,true, CreativeCommonsLicense.DerivativeRules.Derivatives)
+				});
+			}
+
+			CopyToPage(data, "copyright");
+			CopyToPage(data, "licenseUrl");
+			CopyToPage(data, "licenseDescription");
+			CopyToPage(data, "licenseNotes");
+			CopyToPage(data, "licenseImage", "src");
+		}
+
+		private void CopyToPage(DataSet data, string key, string valueAttribute=null)
+		{
+			var target = this._dom.SelectSingleNode("//*[@data-derived='"+key+"']");
+			if (target == null)
+			{
+				return;
+			}
+			//clear out what's there now
+			target.RemoveAttribute("lang");
+			target.InnerText = "";
+
+			if (string.IsNullOrEmpty(valueAttribute))
+			{
+				target.InnerText = GetLanguageNeutralStringOrEmpty(data, key);
+			}
+			else
+			{
+				target.SetAttribute(valueAttribute, GetLanguageNeutralStringOrEmpty(data, key));
+			}
+		}
+
+		private static string GetLanguageNeutralStringOrEmpty(DataSet data, string key)
+		{
+			NamedMutliLingualValue v;
+			if (data.TextVariables.TryGetValue(key, out v))
+			{
+				return v.TextAlternatives.GetBestAlternativeString(new[] {"*", "en"});
+			}
+			return String.Empty;;
+		}
+
 		private void UpdateIsbn(BookInfo info)
 		{
 			if (info == null)
@@ -469,7 +526,8 @@ namespace Bloom.Book
 			//But then this one is acting on the member variable. First Q: why is the rest of this method acting on a local variable dataset?
 			UpdateTitle();
 			SetUpDisplayOfTopicInBook(_dataset);
-			return data;
+			SetUpDisplayOfCopyrightAndLicenseInBook(_dataset);
+            return data;
 		}
 
 		private static DataSet GatherDataItemsFromCollectionSettings(CollectionSettings collectionSettings)
@@ -844,19 +902,24 @@ namespace Bloom.Book
 			return null;
 		}
 
-
-
 		public void SetLicenseMetdata(Metadata metadata)
 		{
 			var data = GatherDataItemsFromCollectionSettings(_collectionSettings);
+			PushBookMetadataIntoDataSet(data, metadata);
+			SetUpDisplayOfCopyrightAndLicenseInBook(data);
+		}
+
+		private void PushBookMetadataIntoDataSet(DataSet data, Metadata metadata)
+		{
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
-			GatherDataItemsFromXElement(data,  _dom.RawDom, itemsToDelete);
+			GatherDataItemsFromXElement(data, _dom.RawDom, itemsToDelete);
 
 			string copyright = WebUtility.HtmlEncode(metadata.CopyrightNotice);
 			data.UpdateLanguageString("copyright", copyright, "*", false);
 
 			string idOfLanguageUsed;
-			string description = metadata.License.GetDescription(_collectionSettings.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed);
+			string description = metadata.License.GetDescription(_collectionSettings.LicenseDescriptionLanguagePriorities,
+				out idOfLanguageUsed);
 			// Don't really have a description for custom license, it returns the RightsStatement for the sake of having something.
 			// However, we're already showing that in licenseNotes; if we use it for description too we get duplicate (BL-2198).
 			if (metadata.License is CustomLicense)
@@ -871,17 +934,6 @@ namespace Bloom.Book
 
 			string licenseImageName = metadata.License.GetImage() == null ? "" : "license.png";
 			data.UpdateGenericLanguageString("licenseImage", licenseImageName, false);
-
-
-			UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
-
-			//UpdateDomFromDataSet() is not able to remove items yet, so we do it explicity
-
-			RemoveDataDivElementIfEmptyValue("licenseDescription", description);
-			RemoveDataDivElementIfEmptyValue("licenseImage", licenseImageName);
-			RemoveDataDivElementIfEmptyValue("licenseUrl", licenseUrl);
-			RemoveDataDivElementIfEmptyValue("copyright", copyright);
-			RemoveDataDivElementIfEmptyValue("licenseNotes", licenseNotes);
 		}
 
 		private void RemoveDataDivElementIfEmptyValue(string key, string value)
@@ -1077,5 +1129,6 @@ namespace Bloom.Book
 //        {
 //            return from v in this._dataset.TextVariables where v.Value.IsCollectionValue select v;
 //        }
+
 	}
 }
