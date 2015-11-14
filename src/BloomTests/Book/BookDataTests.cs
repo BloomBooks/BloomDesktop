@@ -20,6 +20,7 @@ namespace BloomTests.Book
 	{
 		private CollectionSettings _collectionSettings;
 		private LocalizationManager _localizationManager;
+		private LocalizationManager _palasoLocalizationManager;
 
 		[SetUp]
 		public void Setup()
@@ -36,12 +37,15 @@ namespace BloomTests.Book
 			var localizationDirectory = FileLocator.GetDirectoryDistributedWithApplication("localization");
 			_localizationManager = LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom",
 				null, "", new string[] {});
+			_palasoLocalizationManager = LocalizationManager.Create("fr", "Palaso","Palaso", "1.0.0", localizationDirectory, "SIL/Palaso",
+				null, "", new string[] { });
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
 			_localizationManager.Dispose();
+			_palasoLocalizationManager.Dispose();
 		}
 
 		[Test]
@@ -881,7 +885,6 @@ namespace BloomTests.Book
 
 		#endregion
 
-		#region Copying data across languages, where it seems the lesser of two evils
 
 //		[Test]
 //		public void SynchronizeDataItemsThroughoutDOM_EnglishTitleButNoVernacular_DoesNotCopyInEnglish()
@@ -1022,6 +1025,148 @@ namespace BloomTests.Book
 			Assert.AreEqual("", vernacularContributions.InnerText, "Should not copy Edolo into Vernacualr Contributions. Only national language fields get this treatment");
 		}
 
-		#endregion
+//		[Test]
+//		public void PrepareForEditing_CustomLicenseNotDiscarded()
+//		{
+//			SetDom(@"<div id='bloomDataDiv'>
+//						<div data-book='copyright' lang='*'>
+//							Copyright © 2015, me
+//						</div>
+//						<div data-book='licenseNotes' lang='en'>
+//							Custom license info
+//						</div>
+//					</div>");
+//			var book = CreateBook();
+//			var dom = book.RawDom;
+//			book.PrepareForEditing();
+//			var copyright = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='marginBox']//div[@data-book='copyright']").InnerText;
+//			var licenseBlock = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='licenseBlock']");
+//			var licenseImage = licenseBlock.SelectSingleNode("img");
+//			var licenseUrl = licenseBlock.SelectSingleNode("div[@data-book='licenseUrl']").InnerText;
+//			var licenseDescription = licenseBlock.SelectSingleNode("div[@data-book='licenseDescription']").InnerText;
+//			var licenseNotes = licenseBlock.SelectSingleNode("div[@data-book='licenseNotes']").InnerText;
+//			// Check that updated dom has the right license contents on the Credits page
+//			// Check that data-div hasn't been contaminated with non-custom license stuff
+//			Assert.AreEqual("Copyright © 2015, me", copyright);
+//			Assert.AreEqual("Custom license info", licenseNotes);
+//			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='licenseBlock']/div[@data-book='licenseUrl' and text()='']", 1);
+//			Assert.IsEmpty(licenseDescription);
+//			Assert.IsEmpty(licenseImage.Attributes["src"].Value);
+//			Assert.IsNull(licenseImage.Attributes["alt"]);
+//		}
+
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_NewBook_SetsDefaultLicense()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+				</div>
+					<div id='test'>
+						<div data-derived = 'copyright' lang='en'></div>
+						<img src='license.png' data-derived='licenseImage'/>
+						<div data-derived = 'licenseUrl' lang='en'></div>
+						<div data-derived='licenseDescription' lang='en'></div>
+						<div data-derived='licenseNotes' lang='en'></div>
+					</div>
+				</body></html>");
+
+			var data = new BookData(dom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='test']/div[@data-derived='licenseUrl' and text()='http://creativecommons.org/licenses/by/4.0/']", 1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='test']/img[@data-derived='licenseImage' and @src='license.png']", 1);
+		}
+
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_VariousLicenseUrlScenarios()
+		{
+			TestLicenseHandling("copyright", null);
+			TestLicenseHandling("copyright", "");
+			TestLicenseHandling("copyright", "copyright correct, 1996");
+
+			TestLicenseHandling("licenseUrl", null);
+			TestLicenseHandling("licenseUrl","");
+			TestLicenseHandling("licenseUrl", "example.com");
+
+			TestLicenseHandling("licenseNotes", null);
+			TestLicenseHandling("licenseNotes", "");
+			TestLicenseHandling("licenseNotes", "some notes");
+
+			TestLicenseHandling("licenseDescription", null);
+			TestLicenseHandling("licenseDescription", "");
+			TestLicenseHandling("licenseDescription", "some description");
+
+			TestLicenseHandling("licenseImage", null, tag: "img", valueAttribute: "src");
+			TestLicenseHandling("licenseImage", "", tag: "img", valueAttribute: "src");
+			TestLicenseHandling("licenseImage", "something.png", tag:"img", valueAttribute:"src");
+
+			//TODO: translate license like we do topic, with an ordered list of preferred languages
+		}
+
+		/// <summary>
+		/// Start out with an html with a bloomDataDiv describe by the parameters, then run it through the derivation of 
+		/// elements, then check to see that we got the expected result
+		/// </summary>
+		/// <param name="key">the data key. E.g. 'licenseDescription'</param>
+		/// <param name="dataDivValue">if null, then the element should not be present at all in the bloomDataDiv of the incoming html</param>
+		/// <param name="tag">defaults to div, for img we pass in "img"</param>
+		/// <param name="valueAttribute"></param>
+		/// <param name="lang1"></param>
+		/// <param name="lang2"></param>
+		/// <param name="lang3"></param>
+		/// <param name="description"></param>
+		private void TestLicenseHandling(string key, string dataDivValue, string tag="div", string valueAttribute=null, string lang1="en", string lang2="", string lang3="", string description=null)
+		{
+			if (description == null)
+				description = string.Format("{0} should be '{1}'", key, dataDivValue);
+
+			_collectionSettings.Language1Iso639Code = lang1;
+			_collectionSettings.Language2Iso639Code = lang2;
+			_collectionSettings.Language3Iso639Code = lang3;
+
+			var existingLicenseBlockOnPage = @"<div id='test'>
+						<div data-derived = 'copyright' lang='en'>Wrong Copyright</div>
+						<img src='license.png' data-derived='licenseImage'/>
+						<div data-derived = 'licenseUrl' lang='en'>Boilerplate.com</div>
+						<div data-derived='licenseDescription' lang='en'>BoilerPlateDescription</div>
+						<div data-derived='licenseNotes' lang='en'>BoilerPlateNotes</div>
+					</div>";
+
+			string html= "<html><body><div id='bloomDataDiv'>";
+			if (dataDivValue != null) //we want this even if it is empty, just not null
+			{
+				if(valueAttribute==null)
+					html += string.Format("<{0} data-book='{1}' lang='en'>{2}</{0}>",tag,key,dataDivValue);
+				else
+				{
+					html += string.Format("<{0} data-book='{1}' {2}='{3}'></{0}>", tag, key, valueAttribute, dataDivValue);
+				}
+			}
+			html += "</div>";//end of datadiv
+			html += existingLicenseBlockOnPage;
+			html += "</body></html>";
+			var bookDom = new HtmlDom(html);
+
+			var data = new BookData(bookDom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			string valuePredicate;
+			if (key == "licenseImage")
+			{
+				valuePredicate = string.IsNullOrEmpty(dataDivValue) ? "@src=''" : "@src='" + dataDivValue + "'";
+			}
+			else
+			{
+				valuePredicate = string.IsNullOrEmpty(dataDivValue) ? "(text()='' or not(text()))" : "text()='" + dataDivValue + "'";
+			}
+			var xpath = "//div[@id='test']/*[@data-derived='" + key + "' and " + valuePredicate + "]";
+			try
+			{
+				AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(xpath, 1);
+			}
+			catch (NUnit.Framework.AssertionException)
+			{
+				Console.WriteLine("xpath was:" + xpath);
+				Assert.Fail(description);
+			}
+		}
 	}
 }

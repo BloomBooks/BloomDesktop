@@ -397,37 +397,6 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(result).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-page')]", expectedCount);
 		}
 
-		[Test]
-		[Ignore("Until someone has time to figure out the best way to solve this.")]
-		public void PrepareForEditing_CustomLicenseNotDiscarded()
-		{
-			SetDom(@"<div id='bloomDataDiv'>
-						<div data-book='copyright' lang='*'>
-							Copyright © 2015, me
-						</div>
-						<div data-book='licenseNotes' lang='en'>
-							Custom license info
-						</div>
-					</div>");
-			var book = CreateBook();
-			var dom = book.RawDom;
-			book.PrepareForEditing();
-			var copyright = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='marginBox']//div[@data-book='copyright']").InnerText;
-			var licenseBlock = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='licenseBlock']");
-			var licenseImage = licenseBlock.SelectSingleNode("img");
-			var licenseUrl = licenseBlock.SelectSingleNode("div[@data-book='licenseUrl']").InnerText;
-			var licenseDescription = licenseBlock.SelectSingleNode("div[@data-book='licenseDescription']").InnerText;
-			var licenseNotes = licenseBlock.SelectSingleNode("div[@data-book='licenseNotes']").InnerText;
-			// Check that updated dom has the right license contents on the Credits page
-			// Check that data-div hasn't been contaminated with non-custom license stuff
-			Assert.AreEqual("Copyright © 2015, me", copyright);
-			Assert.AreEqual("Custom license info", licenseNotes);
-			Assert.IsEmpty(licenseUrl);
-			Assert.IsEmpty(licenseDescription);
-			Assert.IsEmpty(licenseImage.Attributes["src"].Value);
-			Assert.IsNull(licenseImage.Attributes["alt"]);
-		}
-
 		//
 		//        [Test]
 		//        public void DeletePage_RaisesDeletedEvent()
