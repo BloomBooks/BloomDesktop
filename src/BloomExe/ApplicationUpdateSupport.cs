@@ -164,17 +164,22 @@ namespace Bloom
 				{
 					return ChannelNameForUnitTests;
 				}
-				if (SIL.PlatformUtilities.Platform.IsUnix)
+				var path = Assembly.GetEntryAssembly().ManifestModule.FullyQualifiedName;
+				// Use a very specific channel name on developer machines based on build configuration.
+				if (path.Replace('\\','/').EndsWith("/output/Debug/Bloom.exe"))
+					return "Developer/Debug";       // verifies this code is running on a developer machine.
+				if (path.Replace('\\', '/').EndsWith("/output/Release/Bloom.exe"))
+					return "Developer/Release";       // verifies this code is running on a developer machine.
+				if (Platform.IsUnix)
 				{
-					// The package name and the specific directories where the program is
-					// installed reflect the status ("channel") of the program on Linux.
-					var path = Assembly.GetEntryAssembly().ManifestModule.FullyQualifiedName;
-					if (path.Contains("-testing/") || path.Contains("-alpha/"))
-						return "Alpha";
-					if (path.Contains("-unstable/") || path.Contains ("-beta/"))
-						return "Beta";
-					if (path.EndsWith("/output/Debug/Bloom.exe"))
-						return "Debug";		// verifies this code is working on developer machines.
+					// The package name and the specific directories where the program is installed reflect
+					// the status ("channel") of the program on Linux.  Use this package name on Linux to
+					// help screen shots clarify immediately which Linux package is being used.  (and to help
+					// testers remember?)
+					if (path.Contains("/bloom-desktop-unstable/"))
+						return "bloom-desktop-unstable";
+					if (path.Contains ("/bloom-desktop-beta/"))
+						return "bloom-desktop-beta";
 					return "Release";
 				}
 				var s = Assembly.GetEntryAssembly().ManifestModule.Name.Replace("bloom", "").Replace("Bloom", "").Replace(".exe", "").Trim();

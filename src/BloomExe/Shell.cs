@@ -130,15 +130,14 @@ namespace Bloom
 
 		public void SetWindowText(string bookName)
 		{
-			//string formattedText = string.Format("{0} - Bloom {1} Built on {2}", _workspaceView.Text, GetShortVersionInfo(), GetBuiltOnDate());
-
-			//enhance: above, I have removed the BuildDate portion of the window title. See BL-2852.
-			//With the switch to squirrel/nuget, all the file dates are the installed/updated date, not the build
-			//date. The one file that has the correct date stamp is the .nupkg, but that would take some work to get at...
-			//there may be easier ways to pass this info, e.g. writing out a text file the contains the date during
-			//build. In any case, when we revist this, let's only do it for alpha a beta. It looks odd to have that in 
-			//release builds, and doesn't add much since there are few of them.
+			// Let's only mark the window text for Alpha and Beta releases. It looks odd to have that in 
+			// release builds, and doesn't add much since we can treat Release builds as the unmarked case.
+			// Note that developer builds now have a special "channel" marking as well to differentiate them
+			// from true Release builds in screen shots.
 			var formattedText = string.Format("{0} - Bloom {1}", _workspaceView.Text, GetShortVersionInfo());
+			var channel = ApplicationUpdateSupport.ChannelName;
+			if (channel.ToLowerInvariant() != "release")
+				formattedText = string.Format("{0} {1}", formattedText, channel);
 			if (bookName != null)
 			{
 				formattedText = string.Format("{0} - {1}", bookName, formattedText);
