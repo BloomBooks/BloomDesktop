@@ -52,11 +52,15 @@
     <Content Include="bookEdit\css\bloomDialog.css">
       <DependentUpon>bloomDialog.less</DependentUpon>
     </Content>
+    <Content Include="bookEdit\css\BookPagesThumbnailList.css" />
     <Content Include="bookEdit\css\origami.css">
       <DependentUpon>origami.less</DependentUpon>
     </Content>
+    <Content Include="bookEdit\css\qtipOverrides.css">
+      <DependentUpon>qtipOverrides.less</DependentUpon>
+    </Content>
     <Content Include="bookEdit\js\readerToolsBootstrap.js" />
-    <None Include="bookEdit\sourceBubbles\sourceBubbles.less" />
+    <Content Include="bookEdit\css\BookPagesThumbnailList.less" />
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
     <Content Include="bookEdit\html\font-awesome\Readme.txt" />
@@ -130,6 +134,7 @@
       <DependentUpon>readerSetup.less</DependentUpon>
     </Content>
     <Content Include="bookEdit\readerSetup\ReaderSetup.htm" />
+    <Content Include="bookEdit\sourceBubbles\bloomSourceBubbles.js" />
     <Content Include="bookEdit\sourceBubbles\sourceBubbles.css">
       <DependentUpon>sourceBubbles.less</DependentUpon>
     </Content>
@@ -299,6 +304,7 @@
     <Content Include="bookEdit\css\origami.less" />
     <Content Include="bookEdit\html\font-awesome\fonts\fontawesome-webfont.woff" />
     <Content Include="bookEdit\StyleEditor\StyleEditor.less" />
+    <Content Include="bookEdit\sourceBubbles\sourceBubbles.less" />
     <Content Include="bookLayout\basePage.less" />
     <Content Include="pageChooser\blank-preview.jade" />
     <Content Include="pageChooser\mixins\page-chooser-mixins.jade" />

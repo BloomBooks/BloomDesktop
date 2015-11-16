@@ -9,26 +9,37 @@
 	background-color: @BubbleBackground !important;
 	border-color: @BubbleBorder !important;
 	color: @BubbleTextColor !important;
-  border-radius: 5px;
+    border-radius: 5px;
 }
+
+// Clarification (since somehow we have two very similar class names for two different purposes):
+// This class marks the actual qtip class itself to let us know this qtip is for a translation bubble
 .uibloomSourceTextsBubble {
-	// The "!important"s in here are needed to override qtip's defaults
+    z-index: 15002 !important; // important needed here and below because of importing this into editMode
+    &.passive-bubble {
+        z-index: 15001 !important;
+        .qtip-content {
+            padding-bottom: 0 !important;
+        }
+    }
 	
+	// The "!important"s in here are needed to override qtip's defaults
 	background-color: @BubbleBackground !important;
 	border-color: @BubbleBorder !important;
 	border-width: 2px !important;
 	.qtip-content {
 		padding: 0 9px 9px !important; // even up space around source bubbles
 		// Qtip defaults to overflow: hidden, which masks the extra language dropdown
-		&:hover {
-			overflow: visible !important;
-		}
+		overflow: visible !important;
 	}
 }
 
+// This class marks the div that contains all the source texts for the bubble (in perhaps several languages)
+// including the tab links at the top (those are inside the NAV element).
 .ui-sourceTextsForBubble {
 	position: relative;
 	border-color: @BubbleBorder;
+    max-height: inherit;
 	NAV {
 		display: block;
 		height: 34px;

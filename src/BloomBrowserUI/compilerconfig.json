@@ -126,11 +126,18 @@
       "enabled": false
     },
     "sourceMap": true
-  }
-  ,
+  },
   {
     "outputFile": "audio/audioRecording.css",
     "inputFile": "audio/audioRecording.less",
+    "minify": {
+      "enabled": false
+    },
+    "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/css/qtipOverrides.css",
+    "inputFile": "bookEdit/css/qtipOverrides.less",
     "minify": {
       "enabled": false
     },

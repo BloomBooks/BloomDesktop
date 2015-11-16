@@ -350,9 +350,9 @@ class bloomSourceBubbles {
 
                             $tip.css('max-height', maxHeight);
                             $tip.addClass('passive-bubble');
-                            $tip.attr('data-max-height', maxHeight)
+                            $tip.attr('data-max-height', maxHeight);
                         }
-                    },
+                    }
                 }
             });
 
@@ -367,22 +367,21 @@ class bloomSourceBubbles {
 
             // reset tool tips that may be expanded
             var $body = $('body');
-            $body.find('.qtip[data-max-height]').each(function(idx, obj) {
+            $body.find('.qtip').each(function(idx, obj) {
                 var $thisTip = $(obj);
-                $thisTip.css('max-height', parseInt($thisTip.attr('data-max-height')));
-                $thisTip.css('z-index', 15001);
                 $thisTip.addClass('passive-bubble');
+                var maxHeight = $thisTip.attr('data-max-height');
+                if(maxHeight)
+                    $thisTip.css('max-height', parseInt($thisTip.attr('data-max-height')));
             });
 
             // show the full tip, if needed
             var tipId = (<Element>event.target.parentNode).getAttribute('aria-describedby');
             var $tip = $body.find('#' + tipId);
+            $tip.removeClass('passive-bubble');
             var maxHeight = $tip.attr('data-max-height');
-
             if (maxHeight) {
                 $tip.css('max-height', '');
-                $tip.css('z-index', 15002);
-                $tip.removeClass('passive-bubble');
             }
         });
     }
