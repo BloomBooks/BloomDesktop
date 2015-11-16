@@ -613,7 +613,7 @@ namespace BloomTests.Book
 		{
 			TestTopicHandling("Health", "fr", "Santé", "fr", "en", null, "Should use lang1");
 			TestTopicHandling("Health", "fr", "Santé", "x", "fr", null, "Should use lang2");
-			TestTopicHandling("Health", "fr", "Santé", "x", "y", "fr", "Should use lang2");
+			TestTopicHandling("Health", "fr", "Santé", "x", "y", "fr", "Should use lang3");
 			TestTopicHandling("Health", "en", "Health", "x", "y", "z", "Should use English");
 			TestTopicHandling("Health", "en", "Health", "en", "fr", "es", "Should use lang1");
 			TestTopicHandling("NoTopic", "", "", "en", "fr", "es", "'No Topic' should give no @lang and no text");

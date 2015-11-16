@@ -194,6 +194,14 @@ namespace Bloom.Book
 				topicStrings.RemoveLanguageForm(topicStrings.Find("tpi"));
 			}
 
+			// BL-2746 For awhile during the v3.3 beta period, after the addition of ckeditor
+			// our topic string was getting wrapped in html paragraph markers. There were a good
+			// number of beta testers, so we need to clean up that mess.
+			topicStrings.Forms
+				.ForEach(
+					languageForm =>
+						topicStrings[languageForm.WritingSystemId] = languageForm.Form.Replace("<p>", "").Replace("</p>", ""));
+
 			if (!string.IsNullOrEmpty(topicStrings["en"]))
 			{
 				//starting with 3.5, we only store the English key in the datadiv.
@@ -204,14 +212,6 @@ namespace Bloom.Book
 				_dom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='topic' and not(@lang='en')]")
 					.Cast<XmlElement>()
 					.ForEach(e => e.ParentNode.RemoveChild(e));
-
-				// BL-2746 For awhile during the v3.3 beta period, after the addition of ckeditor
-				// our topic string was getting wrapped in html paragraph markers. There were a good
-				// number of beta testers, so we need to clean up that mess.
-				topicStrings.Forms
-					.ForEach(
-						languageForm =>
-							topicStrings[languageForm.WritingSystemId] = languageForm.Form.Replace("<p>", "").Replace("</p>", ""));
 			}
 		}
 
@@ -259,7 +259,8 @@ namespace Bloom.Book
 			topicPageElement.InnerText = "";
 
 			NamedMutliLingualValue topicData;
-			//if we have no topic element in the data-div, clear it out from the page
+			//if we have no topic element in the data-div, just leave now, 
+			//leaving the field in the page with an empty text.
 			if (!data.TextVariables.TryGetValue("topic", out topicData))
 				return;
 

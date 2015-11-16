@@ -31,7 +31,7 @@ class TopicChooser {
                     width: 100,
                     click() {
                         var t = $("ol#topicList li.ui-selected");
-                        //set or clear the topic variable in our 
+                        //Ask the Model to set or clear the topic variable
                         if (t.length) {
                             var key = t[0].dataset['key'];
                             //notice here that we are not changing the topic on the page.
