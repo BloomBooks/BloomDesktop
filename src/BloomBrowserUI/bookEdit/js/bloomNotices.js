@@ -22,11 +22,11 @@ var bloomNotices = (function () {
     };
     bloomNotices.addEditingNotAllowedMessages = function (container) {
         var notAllowed = localizationManager.getText('EditTab.EditNotAllowed', 'You cannot change these because this is not the original copy.');
-        var readOnly = localizationManager.getText('EditTab.ReadOnlyInEditMode', 'You cannot put anything in there while making an original book.');
+        var readOnly = localizationManager.getText('EditTab.ReadOnlyInAuthorMode', 'You cannot put anything in there while making an original book.');
         $(container).find('*[data-hint]').each(function () {
             if ($(this).css('cursor') == 'not-allowed') {
                 var whyDisabled = notAllowed;
-                if ($(this).hasClass('bloom-readOnlyInEditMode')) {
+                if ($(this).hasClass('bloom-ReadOnlyInAuthorMode')) {
                     whyDisabled = readOnly;
                 }
                 var whatToSay = $(this).attr("data-hint"); //don't use .data(), as that will trip over any } in the hint and try to interpret it as json
