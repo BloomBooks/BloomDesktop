@@ -612,7 +612,7 @@ namespace Bloom.Book
 			}
 			else
 			{
-				newPage.SetAttribute("data-page", dataPageValue); //the template has these as 
+				newPage.SetAttribute("data-page", dataPageValue); //the template has these as data-page='extra'
 			}
 
 			// migrate text
