@@ -34,7 +34,6 @@ textarea { resize: none; }
   border: 1px solid #bbb;
   padding: 1px;
   overflow: auto;
-  height: 330px;
   width: 100%;
   margin-top: 1px;
   margin-right: 0;
@@ -166,7 +165,20 @@ table.hide-fourth-column {
   th:nth-child(4), td:nth-child(4) { display: none; }
 }
 
-#more-words-div, #more-words-div { margin-bottom: 8px; }
+
+.reader-setup-flex-container {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+.reader-setup-flex-top-section {
+  flex: 0 1 content;
+}
+.reader-setup-flex-bottom-section {
+  flex: 1 1;
+}
+
+#more-words-div { margin-bottom: 8px; }
 
 #setup-stage-words-file {
   a.blue-link {
