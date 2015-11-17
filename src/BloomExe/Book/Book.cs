@@ -2053,17 +2053,6 @@ namespace Bloom.Book
 			XmlHtmlConverter.GetXmlDomFromHtmlFile(_storage.PathToExistingHtml,true).Save(path);
 		}
 
-		/// <summary>
-		/// public for use in external scripts that set up pre-packaged books/collections
-		/// </summary>
-		/// <param name="key"></param>
-		/// <param name="value"></param>
-		/// <param name="libaryValue"></param>
-		public void SetDataItem(string key, string value, string languageCode)
-		{
-			_bookData.Set(key, value,languageCode);
-		}
-
 		public void Save()
 		{
 			Guard.Against(Type != Book.BookType.Publication, "Tried to save a non-editable book.");
@@ -2095,5 +2084,15 @@ namespace Bloom.Book
 		}
 
 		internal IBookStorage Storage {get { return _storage; }}
+
+		/// <summary>
+		/// This gets called as a result of a UI action. It sets the new topic in our data, 
+		/// but doesn't do anything related to how it is displayed on the page.
+		/// The way to think about this is that we're aiming for a more react™-style flow.
+		/// </summary>
+		public void SetTopic(string englishTopicAsKey)
+		{
+			_bookData.Set("topic",englishTopicAsKey,"en");
+		}
 	}
 }

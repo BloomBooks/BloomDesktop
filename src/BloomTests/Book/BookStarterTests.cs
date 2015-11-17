@@ -203,7 +203,7 @@ namespace BloomTests.Book
 		public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasCorrectTopicOnCover()
 		{
 			AssertThatXmlIn.HtmlFile(GetNewVaccinationsBookPath()).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[contains(@class,'cover')]//*[@data-book='topic' and text()='Health']", 1);
+				"//div[contains(@class,'cover')]//*[@data-derived='topic' and text()='Health']", 1);
 		}
 
 

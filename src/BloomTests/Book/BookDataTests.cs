@@ -5,8 +5,10 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using L10NSharp;
 using NUnit.Framework;
 using SIL.Extensions;
+using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ClearShare;
@@ -17,14 +19,29 @@ namespace BloomTests.Book
 	public sealed class BookDataTests
 	{
 		private CollectionSettings _collectionSettings;
+		private LocalizationManager _localizationManager;
 
 		[SetUp]
 		public void Setup()
 		{
-			_collectionSettings = new CollectionSettings(new NewCollectionSettings() {
+			_collectionSettings = new CollectionSettings(new NewCollectionSettings()
+			{
 				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(new TemporaryFolder("BookDataTests").Path, "test"),
-				Language1Iso639Code = "xyz", Language2Iso639Code = "en", Language3Iso639Code = "fr" });
+				Language1Iso639Code = "xyz",
+				Language2Iso639Code = "en",
+				Language3Iso639Code = "fr"
+			});
 			ErrorReport.IsOkToInteractWithUser = false;
+
+			var localizationDirectory = FileLocator.GetDirectoryDistributedWithApplication("localization");
+			_localizationManager = LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom",
+				null, "", new string[] {});
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			_localizationManager.Dispose();
 		}
 
 		[Test]
@@ -590,25 +607,87 @@ namespace BloomTests.Book
 			Assert.AreEqual("health", data.GetVariableOrNull("topic", "en"));
 			Assert.IsNull(data.GetVariableOrNull("topic", "tpi"));
 		}
+
 		[Test]
-		public void SynchronizeDataItemsThroughoutDOM_TopicHasParagraphElement_Removed()
+		public void SynchronizeDataItemsThroughoutDOM_VariousTopicScenarios()
 		{
-			var bookDom = new HtmlDom(@"<html ><head></head><body>
+			TestTopicHandling("Health", "fr", "Santé", "fr", "en", null, "Should use lang1");
+			TestTopicHandling("Health", "fr", "Santé", "x", "fr", null, "Should use lang2");
+			TestTopicHandling("Health", "fr", "Santé", "x", "y", "fr", "Should use lang3");
+			TestTopicHandling("Health", "en", "Health", "x", "y", "z", "Should use English");
+			TestTopicHandling("Health", "en", "Health", "en", "fr", "es", "Should use lang1");
+			TestTopicHandling("NoTopic", "", "", "en", "fr", "es", "'No Topic' should give no @lang and no text");
+			TestTopicHandling("Bogus", "en", "Bogus", "z", "fr", "es", "Unrecognized topic should give topic in English");
+		}
+		private void TestTopicHandling(string topicKey, string expectedLanguage, string expectedTranslation, string lang1, string lang2, string lang3, string description)
+		{
+			_collectionSettings.Language1Iso639Code = lang1;
+			_collectionSettings.Language2Iso639Code = lang2;
+			_collectionSettings.Language3Iso639Code = lang3;
+
+			var bookDom = new HtmlDom(@"<html><body>
 				<div id='bloomDataDiv'>
-						<div data-book='topic' lang='en'><p>health</p></div>
-						<div data-book='topic' lang='fr'><p>santé</p></div>
+						<div data-book='topic' lang='en'>"+topicKey+@"</div>
 				</div>
 				<div id='somePage'>
-                    <div data-book='topic' lang='fr'>
-                       <p>santé</p>
+                    <div id='test' data-derived='topic'>
 					</div>
                 </div>
 			 </body></html>");
 			var data = new BookData(bookDom, _collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
-			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='topic' and @lang='en']/p", 0);
-			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='topic' and @lang='en' and text()='health']", 1);
-			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='topic' and @lang='fr' and text()='santé']", 2);
+			try
+			{
+				if (string.IsNullOrEmpty(expectedLanguage))
+				{
+					AssertThatXmlIn.Dom(bookDom.RawDom)
+						.HasSpecifiedNumberOfMatchesForXpath(
+							"//div[@id='test' and @data-derived='topic' and not(@lang) and text()='" + expectedTranslation + "']", 1);
+				}
+				else
+				{
+					AssertThatXmlIn.Dom(bookDom.RawDom)
+						.HasSpecifiedNumberOfMatchesForXpath(
+							"//div[@id='test' and @data-derived='topic' and @lang='" + expectedLanguage + "' and text()='" +
+							expectedTranslation + "']", 1);
+				}
+			}
+			catch (Exception)
+			{
+				Assert.Fail(description);
+			}
+			
+		}
+
+		/// <summary>
+		/// we use English as the one and only "key" language for topics in the datadiv
+		/// </summary>
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_HasMultipleTopicItems_RemovesAllButEnglish()
+		{
+			var bookDom = new HtmlDom(@"<html><body>
+				<div id='bloomDataDiv'>
+						<div data-book='topic' lang='en'>Health</div>
+						<div data-book='topic' lang='fr'>Santé</div>
+				</div>
+			 </body></html>");
+			var data = new BookData(bookDom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='topic' and @lang='fr']");
+		}
+
+		[Test]
+		public void SynchronizeDataItemsThroughoutDOM_TopicHasParagraphElement_Removed()
+		{
+			var bookDom = new HtmlDom(@"<html><body>
+				<div id='bloomDataDiv'>
+						<div data-book='topic' lang='en'><p>Health</p></div>
+				</div>
+			 </body></html>");
+			var data = new BookData(bookDom, _collectionSettings, null);
+			data.SynchronizeDataItemsThroughoutDOM();
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-derived='topic' and @lang='en']/p", 0);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='topic' and @lang='en' and text()='Health']", 1);
 		}
 		private bool AndikaNewBasicIsInstalled()
 		{

@@ -956,7 +956,7 @@ namespace BloomTests.Book
 				</head>
 				<body>
 					<div class='bloom-page' id='guid3'>
-						<div lang='en' data-book='topic'>original</div>
+						<div lang='en' data-derived='topic'>original</div>
 					</div>
 				</body></html>");
 

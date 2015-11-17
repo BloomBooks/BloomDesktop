@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Xml;
@@ -9,6 +10,8 @@ using System.Xml.Linq;
 using Bloom.Collection;
 using L10NSharp;
 using SIL.Code;
+using SIL.Extensions;
+using SIL.Linq;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
@@ -171,7 +174,6 @@ namespace Bloom.Book
 
 			UpdateTitle(info);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
 			UpdateIsbn(info);
-			UpdateTags(info);
 			UpdateCredits(info);
 		}
 
@@ -192,12 +194,24 @@ namespace Bloom.Book
 				topicStrings.RemoveLanguageForm(topicStrings.Find("tpi"));
 			}
 
-			// BL-2746 For awhile during th v3.3 beta period, after the addition of ckeditor
+			// BL-2746 For awhile during the v3.3 beta period, after the addition of ckeditor
 			// our topic string was getting wrapped in html paragraph markers. There were a good
 			// number of beta testers, so we need to clean up that mess.
-			foreach (var languageForm in topicStrings.Forms)
+			topicStrings.Forms
+				.ForEach(
+					languageForm =>
+						topicStrings[languageForm.WritingSystemId] = languageForm.Form.Replace("<p>", "").Replace("</p>", ""));
+
+			if (!string.IsNullOrEmpty(topicStrings["en"]))
 			{
-				topicStrings[languageForm.WritingSystemId] = languageForm.Form.Replace("<p>", "").Replace("</p>", "");
+				//starting with 3.5, we only store the English key in the datadiv.
+				topicStrings.Forms
+					.Where(lf => lf.WritingSystemId != "en")
+					.ForEach(lf => topicStrings.RemoveLanguageForm(lf));
+
+				_dom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='topic' and not(@lang='en')]")
+					.Cast<XmlElement>()
+					.ForEach(e => e.ParentNode.RemoveChild(e));
 			}
 		}
 
@@ -216,30 +230,77 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// grabs the english (which serves as the 'key') from the datadiv and then adds or updates
-		/// the equivalent for the current cover language
+		/// Topics are uni-directional value, react™-style. The UI tells the book to change the topic
+		/// key, and then eventually the page/book is re-evaluated and the appropriate topic is displayed
+		/// on the page.
+		/// To differentiate from fields with @data-book, which are two-way, the topic on the page instead
+		/// has a @data-derived attribute (in the data-div, it is still a data-book... perhaps that too could
+		/// change to something like data-book-source, but it's not clear to me yet, so.. not yet). 
+		/// When the topic is changed, the javascript sends c# a message with the new English Key for the topic is set in the data-div,
+		/// and then the page is re-computed. That leads to this method, which grabs the 
+		/// english topic (which serves as the 'key') from the datadiv. It then finds the placeholder
+		/// for the topic and fills it with the best translation it can find.
 		/// </summary>
-		/// <param name="data"></param>
-		private void UpdateTopicInLanguageOfCover(DataSet data)
+		private void SetUpDisplayOfTopicInBook(DataSet data)
 		{
-			NamedMutliLingualValue topicData;
-			if(data.TextVariables.TryGetValue("topic", out topicData))
+			var topicPageElement = this._dom.SelectSingleNode("//div[@data-derived='topic']");
+			if (topicPageElement == null)
 			{
-				//we use English as the "key" for topics.
-				var englishTopic = topicData.TextAlternatives.GetExactAlternative("en");
-				if (string.IsNullOrEmpty(englishTopic))
+				//old-style. here we don't have the data-derived, so we need to avoid picking from the datadiv
+				topicPageElement = this._dom.SelectSingleNode("//div[not(id='bloomDataDiv')]//div[@data-book='topic']");
+				if (topicPageElement == null)
+				{
+					//most unit tests do not have complete books, so this not surprising. It just means we don't have anything to do
 					return;
-				string langOfTopicToShowOnCover = _collectionSettings.Language2Iso639Code;
-				var id = "Topics." + englishTopic;
-
-				string s = "";
-				
-				var bestTranslation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishTopic, "this is a book topic", langOfTopicToShowOnCover);;
-				//NB: in a unit test environment, GetDynamicStringOrEnglish is going to give us the id back, which is annoying.
-				if (bestTranslation == id)
-					bestTranslation = englishTopic;
-				data.AddLanguageString("topic", bestTranslation, langOfTopicToShowOnCover, false);
+				}
 			}
+			//clear it out what's there now
+			topicPageElement.RemoveAttribute("lang");
+			topicPageElement.InnerText = "";
+
+			NamedMutliLingualValue topicData;
+			//if we have no topic element in the data-div, just leave now, 
+			//leaving the field in the page with an empty text.
+			if (!data.TextVariables.TryGetValue("topic", out topicData))
+				return;
+
+			//we use English as the "key" for topics.
+			var englishTopic = topicData.TextAlternatives.GetExactAlternative("en");
+
+			//if we have no topic, just clear it out from the page
+			if (string.IsNullOrEmpty(englishTopic) || englishTopic == "NoTopic")
+				return;
+
+			var stringId = "Topics." + englishTopic;
+
+			//get the topic in the most prominent language for which we have a translation
+			var langOfTopicToShowOnCover = _collectionSettings.Language1Iso639Code;
+			if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.Language1Iso639Code))
+			{
+				langOfTopicToShowOnCover = _collectionSettings.Language1Iso639Code;
+			}
+			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.Language2Iso639Code))
+			{
+				langOfTopicToShowOnCover = _collectionSettings.Language2Iso639Code;
+			}
+			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.Language3Iso639Code))
+			{
+				langOfTopicToShowOnCover = _collectionSettings.Language3Iso639Code;
+			}
+			else 
+			{
+				langOfTopicToShowOnCover = "en";
+			}
+
+			var bestTranslation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", stringId, englishTopic,
+				"this is a book topic", langOfTopicToShowOnCover);
+			
+			//NB: in a unit test environment, GetDynamicStringOrEnglish is going to give us the id back, which is annoying.
+			if (bestTranslation == stringId)
+				bestTranslation = englishTopic;
+
+			topicPageElement.SetAttribute("lang", langOfTopicToShowOnCover);
+			topicPageElement.InnerText = bestTranslation;
 		}
 
 		private void UpdateIsbn(BookInfo info)
@@ -255,38 +316,6 @@ namespace Bloom.Book
 			}
 			info.Isbn = isbn ?? "";
 		}
-
-		// For now, when there is no UI for multiple tags, we make Tags a single item, the book topic.
-		// It's not clear what we will want to do when the topic changes and there is a UI for (possibly multiple) tags.
-		// Very likely we still want to add the new topic (if it is not already present).
-		// Should we still remove the old one?
-		private void UpdateTags(BookInfo info)
-		{
-			if (info == null)
-				return;
-
-			NamedMutliLingualValue tagData;
-			string tag = null;
-			if (_dataset.TextVariables.TryGetValue("topic", out tagData))
-			{
-				tag = tagData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
-			}
-
-			if (tag == null)
-				return;
-
-			// In case we're running localized, for now we'd like to record in the metadata the original English tag.
-			// This allows the book to be found by this tag in the current, non-localized version of bloom library.
-			// Eventually it will make it easier, we think, to implement localization of bloom library.
-			string originalTag;
-			if (RuntimeInformationInjector.TopicReversal == null ||
-				!RuntimeInformationInjector.TopicReversal.TryGetValue(tag, out originalTag))
-			{
-				originalTag = tag; // just use it unmodified if we don't have anything
-			}
-			info.TagsList = originalTag;
-		}
-
 
 		/// <summary>
 		///
@@ -439,7 +468,7 @@ namespace Bloom.Book
 			//REVIEW: the other methods here are, for some reason, acting on a local DataSet, "data". 
 			//But then this one is acting on the member variable. First Q: why is the rest of this method acting on a local variable dataset?
 			UpdateTitle();
-
+			SetUpDisplayOfTopicInBook(_dataset);
 			return data;
 		}
 
@@ -621,7 +650,6 @@ namespace Bloom.Book
 		/// </summary>
 		private void UpdateDomFromDataSet(DataSet data, string elementName,XmlDocument targetDom, HashSet<Tuple<string, string>> itemsToDelete)
 		{
-			UpdateTopicInLanguageOfCover(data);
 			try
 			{
 				var query = String.Format("//{0}[(@data-book or @data-collection or @data-library)]", elementName);
