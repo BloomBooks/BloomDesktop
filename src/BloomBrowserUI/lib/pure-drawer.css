@@ -36,7 +36,7 @@ body {
 }
 
 .pure-toggle:focus ~ .pure-toggle-label {
-  border-color: #ffffff; /* JohnT: was 1fc08e; color of ring when closed */
+  border-color: transparent; /* JohnT: was 1fc08e; color of ring when closed */
   color: #ff0000; /* JohnT: was 1fc08e; no effect found*/
 }
 
@@ -45,13 +45,13 @@ body {
   cursor: pointer;
   display: block;
   position: fixed;
-  top: 5px; /* JohnT: was 15 */
+  top: 3px; /* JohnT: was 15 */
   z-index: 99;
   color: #ff0000; /* JohnT: was 5d809d; no effect found*/
   width: 20px; /* JohnT: was 70; these two control overall size of control box. */
   height: 20px; /* JohnT: was 70 */
   transition: all 400ms ease-in-out;
-  border: 2px solid #ddd; /* JohnT: was 5d809d; initial color of the ring */
+  border: 2px solid transparent; /* JohnT: was 5d809d; initial color of the ring */
   border-radius: 50%;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -60,7 +60,7 @@ body {
 }
 
 .pure-toggle-label:hover {
-  border-color: #ffffff; /* JohnT: was #1fc08e; the color the circle goes when hovering before clicked*/
+  border-color: transparent; /* JohnT: was #1fc08e; the color the circle goes when hovering before clicked*/
   color: #ff0000; /* JohnT: was 1fc08e; no effect found */
 }
 
@@ -90,11 +90,11 @@ body {
 }
 
 .pure-toggle-label .pure-toggle-icon:before {
-  transform: translate3d(-50%, -4px, 0); /* JohnT: was 14 (also on next line); positions top line */
+  transform: translate3d(-50%, -6px, 0); /* JohnT: was 14 (also on next line); positions top line */
 }
 
 .pure-toggle-label .pure-toggle-icon:after {
-  transform: translate3d(-50%, 2px, 0); /* JohnT: was 10 (also on next line); positions bottom line.*/
+  transform: translate3d(-50%, 4px, 0); /* JohnT: was 10 (also on next line); positions bottom line.*/
 }
 
 .pure-toggle-label[data-toggle-label='left'] {
@@ -103,7 +103,7 @@ body {
 }
 
 .pure-toggle-label[data-toggle-label='right'] {
-  right: 10px; /* JohnT: was 28; position of icon on screen  */
+  right: 4px; /* JohnT: was 28; position of icon on screen  */
   left: auto;
 }
 
@@ -122,7 +122,7 @@ body {
 .pure-toggle[data-toggle='left']:checked ~ .pure-toggle-label[data-toggle-label='left'],
 .pure-toggle[data-toggle='right']:checked ~ .pure-toggle-label[data-toggle-label='right'],
 .pure-toggle[data-toggle='top']:checked ~ .pure-toggle-label[data-toggle-label='top'] {
-  border-color: #ffffff; /* JohnT: was  #1fc08e; the color of the ring after clicking*/
+  border-color: transparent; /* JohnT: was  #1fc08e; the color of the ring after clicking*/
   color: #ff0000; /* JohnT: was 1fc08e; no effect found*/
 }
 
@@ -163,7 +163,7 @@ body {
   z-index: 1;
   height: 100%;
   visibility: hidden;
-  background-color: #374c5d;
+  background-color: #333333 /* JohnT: was 374c5d; background for above the accordion when open; should match color set in jquery .ui-widget-content */;
   transition-property: all;
   transition-duration: 500ms;
   transition-timing-function: ease-out;
