@@ -942,42 +942,7 @@ namespace BloomTests.Book
 			book.Save();
 			Assert.That(_metadata.Isbn, Is.EqualTo(""));
 		}
-
-		[Test]
-		public void Save_UpdatesMetadataTags()
-		{
-			_bookDom = new HtmlDom(
-				@"<html>
-				<head>
-					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
-				   <title>Test Shell</title>
-					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
-					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
-				</head>
-				<body>
-					<div class='bloom-page' id='guid3'>
-						<div lang='en' data-derived='topic'>original</div>
-					</div>
-				</body></html>");
-
-			var book = CreateBook();
-			
-			var topicElt = _bookDom.SelectSingleNode("//div/div[@data-book='topic' and @lang='en']");
-			topicElt.InnerText = "Animal stories";
-			book.Save();
-			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
-
-			// We'd like to check what happens when it is edited again.
-			// Problem is, the first save has created a BloomDataDiv which comes before the div we are modifying and
-			// has the old value. (This isn't a problem editing the real topic area because editing happens on a
-			// cut-down document that only has one page and thus no data-div.)
-			var datadiv = _bookDom.SelectSingleNode("//div[@id='bloomDataDiv']");
-			datadiv.ParentNode.RemoveChild(datadiv);
-			topicElt.InnerText = "Science";
-			book.Save();
-			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
-		}
-
+		
 		[Test]
 		public void Save_UpdatesAllTitles()
 		{
