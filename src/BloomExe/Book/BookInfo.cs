@@ -349,6 +349,7 @@ namespace Bloom.Book
 			set { MetaData.CurrentTool = value; }
 		}
 
+		// Whether we should allow the reader tools initially. (Was, whether to show at all. As of BL-2907, they are always an option).
 		public bool ReaderToolsAvailable
 		{
 			get { return MetaData.ReaderToolsAvailable; }
