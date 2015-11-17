@@ -34,7 +34,6 @@ textarea { resize: none; }
   border: 1px solid #bbb;
   padding: 1px;
   overflow: auto;
-  height: 330px;
   width: 100%;
   margin-top: 1px;
   margin-right: 0;
@@ -166,7 +165,27 @@ table.hide-fourth-column {
   th:nth-child(4), td:nth-child(4) { display: none; }
 }
 
-#more-words-div, #more-words-div { margin-bottom: 8px; }
+// flex-column marks a container which is expected to have as direct children a flex-column-fixed-row
+// and a flex-column-expanding-row.  The flex-column-fixed-row is just big enough to hold its content;
+// the flex-column-expanding-row fills the rest of the available space (as flex-column fills the
+// space its parent makes available).
+//
+// This has not been tried beyond one flex-column-fixed-row and one flex-column-expanding-row inside
+// a flex-column, but multiple occurrences should work.  We are nesting a flex-column inside a
+// flex-column-expanding-row, and that does work.
+.flex-column {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+.flex-column-fixed-row {
+  flex: 0 1 content;
+}
+.flex-column-expanding-row {
+  flex: 1 1;
+}
+
+#more-words-div { margin-bottom: 8px; }
 
 #setup-stage-words-file {
   a.blue-link {
