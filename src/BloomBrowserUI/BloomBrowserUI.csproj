@@ -34,6 +34,7 @@
     </Content>
     <Content Include="bookEdit\accordion\Accordion.htm" />
     <Content Include="bookEdit\accordion\accordion.js" />
+    <Content Include="bookEdit\accordion\AudioRecordingTool\AudioRecordingTool.htm" />
     <Content Include="bookEdit\accordion\DecodableRT\DecodableRT.htm" />
     <Content Include="bookEdit\accordion\LeveledRT\LeveledRT.htm" />
     <Content Include="bookEdit\accordion\PageElements\PageElements.htm" />
@@ -61,6 +62,8 @@
     </Content>
     <Content Include="bookEdit\js\readerToolsBootstrap.js" />
     <Content Include="bookEdit\css\BookPagesThumbnailList.less" />
+    <Content Include="bookEdit\accordion\AudioRecordingTool\AudioRecordingTool.jade" />
+    <None Include="bookEdit\sourceBubbles\sourceBubbles.less" />
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
     <Content Include="bookEdit\html\font-awesome\Readme.txt" />
