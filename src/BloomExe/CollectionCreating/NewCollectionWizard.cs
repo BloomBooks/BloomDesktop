@@ -149,11 +149,9 @@ namespace Bloom.CollectionCreating
 				var sanitizedCollectionName = tentativeCollectionName.SanitizePath('.');
 				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(DefaultParentDirectoryForCollections, sanitizedCollectionName);
 
-				_languageLocationPage.NextPage = DefaultCollectionPathWouldHaveProblems || (tentativeCollectionName != sanitizedCollectionName)
-					//go ahead to the language location page for now,
-					//but then divert to the page we use for fixing up the name
-					? _collectionNamePage
-					: _finishPage;
+				// An earlier version went direct to finish if the proposed name was OK (unless DefaultCollectionPathWouldHaveProblems || (tentativeCollectionName != sanitizedCollectionName))
+				// but per BL-2649 we now want to always let the user check the name.
+				_languageLocationPage.NextPage = _collectionNamePage;
 			}
 		}
 
