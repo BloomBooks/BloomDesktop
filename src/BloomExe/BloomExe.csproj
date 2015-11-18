@@ -222,6 +222,12 @@
     <Compile Include="Book\BookServer.cs" />
     <Compile Include="Book\CurrentEditableCollectionSelection.cs" />
     <Compile Include="ElementProxy.cs" />
+    <Compile Include="MiscUI\LanguageFontDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MiscUI\LanguageFontDetails.Designer.cs">
+      <DependentUpon>LanguageFontDetails.cs</DependentUpon>
+    </Compile>
     <Compile Include="Publish\EpubMaker.cs" />
     <Compile Include="Book\RuntimeInformationInjector.cs" />
     <Compile Include="Book\HtmlDom.cs" />
@@ -682,6 +688,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\BloomIntegrityDialog.resx">
       <DependentUpon>BloomIntegrityDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MiscUI\LanguageFontDetails.resx">
+      <DependentUpon>LanguageFontDetails.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\MarkDownTextBox.resx">
       <DependentUpon>MarkDownTextBox.cs</DependentUpon>
