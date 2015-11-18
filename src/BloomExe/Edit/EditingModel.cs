@@ -875,20 +875,18 @@ namespace Bloom.Edit
 
 			switch (args[0])
 			{
-				case "showPE":
-					UpdateActiveToolSetting("pageElements", args[1] == "1");
-					return;
-
+				case "showART":
 				case "showDRT":
-					UpdateActiveToolSetting("decodableReader", args[1] == "1");
+				case "showLRT":
+					UpdateActiveToolSetting(AccordionCatalog.GetToolNameFromCheckbox(args[0]), args[1] == "1");
 					return;
 
-				case "showLRT":
-					UpdateActiveToolSetting("leveledReader", args[1] == "1");
-					return;
+				//case "showPE":
+				//	UpdateActiveToolSetting("pageElements", args[1] == "1");
+				//	return;
 
 				case "current":
-					_currentlyDisplayedBook.BookInfo.CurrentTool = AccordionDirectoryNameToToolName(args[1]);
+					_currentlyDisplayedBook.BookInfo.CurrentTool = AccordionCatalog.GetToolNameFromDirectory(args[1]);
 					return;
 
 				case "state":
@@ -917,41 +915,6 @@ namespace Bloom.Edit
 				item.Enabled = enabled;
 		}
 
-		private static string AccordionToolNameToDirectoryName(string toolName)
-		{
-			switch (toolName)
-			{
-				case "pageElements":
-					return "PageElements";
-
-				case "decodableReader":
-					return "DecodableRT";
-
-				case "leveledReader":
-					return "LeveledRT";
-			}
-
-			return string.Empty;
-		}
-
-		private static string AccordionDirectoryNameToToolName(string directoryName)
-		{
-			switch (directoryName)
-			{
-				case "PageElements":
-					return "pageElements";
-
-				case "DecodableRT":
-					return "decodableReader";
-
-				case "LeveledRT":
-					return "leveledReader";
-			}
-
-			return string.Empty;
-		}
-
-
 		private string MakeAccordionContent()
 		{
 			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "Accordion.htm");
@@ -964,15 +927,12 @@ namespace Bloom.Edit
 
 			var settings = new Dictionary<string, object>
 			{
-				{"current", AccordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool)}
+				{"current", AccordionCatalog.GetDirectoryFromToolName(_currentlyDisplayedBook.BookInfo.CurrentTool)}
 			};
 
-			var decodableTool = tools.FirstOrDefault(t => t.Name == "decodableReader");
-			if (decodableTool != null && !string.IsNullOrEmpty(decodableTool.State))
-				settings.Add("decodableState", decodableTool.State);
-			var leveledTool = tools.FirstOrDefault(t => t.Name == "leveledReader");
-			if (leveledTool != null && !string.IsNullOrEmpty(leveledTool.State))
-				settings.Add("leveledState", leveledTool.State);
+			RetrieveToolSettings(tools, "audioRecording", settings);
+			RetrieveToolSettings(tools, "decodableReader", settings);
+			RetrieveToolSettings(tools, "leveledReader", settings);
 
 			var settingsStr = JsonConvert.SerializeObject(settings);
 			settingsStr = String.Format("function GetAccordionSettings() {{ return {0};}}", settingsStr) +
@@ -988,17 +948,9 @@ namespace Bloom.Edit
 			// get additional tabs to load
 			var checkedBoxes = new List<string>();
 
-			if (tools.Any(t => t.Name == "decodableReader"))
-			{
-				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "DecodableRT", "DecodableRT.htm")));
-				checkedBoxes.Add("showDRT");
-			}
-
-			if (tools.Any(t => t.Name == "leveledReader"))
-			{
-				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "LeveledRT", "LeveledRT.htm")));
-				checkedBoxes.Add("showLRT");
-			}
+			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "decodableReader");
+			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "leveledReader");
+			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "audioRecording");
 
 			// Load settings into the accordion panel
 			AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "settings", "Settings.htm")));
@@ -1011,6 +963,25 @@ namespace Bloom.Edit
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForAccordion.RawDom);
 			return TempFileUtils.CreateHtml5StringFromXml(domForAccordion.RawDom);
+		}
+
+		private void RetrieveToolSettings(List<AccordionTool> toolList, string toolName, Dictionary<string, object> settingsObject)
+		{
+			var toolObject = toolList.FirstOrDefault(t => t.Name == toolName);
+			if (toolObject != null && !string.IsNullOrEmpty(toolObject.State))
+				settingsObject.Add(AccordionCatalog.GetStateKeyFromToolName(toolObject.Name), toolObject.State);
+		}
+
+		private void LoadPanelIntoAccordionIfAvailable(HtmlDom domForAccordion, List<AccordionTool> toolList, List<string> checkedBoxes, string toolName)
+		{
+			if (toolList.Any(t => t.Name == toolName))
+			{
+				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(
+					_accordionFolder,
+					AccordionCatalog.GetDirectoryFromToolName(toolName),
+					AccordionCatalog.GetDirectoryFromToolName(toolName) + ".htm")));
+				checkedBoxes.Add(AccordionCatalog.GetCheckboxFromToolName(toolName));
+			}
 		}
 
 		/// <summary>Loads the requested panel into the accordion</summary>

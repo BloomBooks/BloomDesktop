@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Bloom.Book;
+using Bloom.Edit;
 using NUnit.Framework;
 using SIL.TestUtilities;
 
