@@ -1044,6 +1044,7 @@ namespace Bloom.Edit
 					_inProcessOfSaving = true;
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
+					SaveAccordionState();
 
 					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
 					//this old code:
@@ -1091,6 +1092,22 @@ namespace Bloom.Edit
 					task();
 				}
 			}
+		}
+
+		/// <summary>
+		/// Saves stuff (currently just the visibility of the accordion) which is best read from the state of the HTML
+		/// </summary>
+		void SaveAccordionState()
+		{
+			var checkbox = _view.GetShowAccordionCheckbox();
+			if (checkbox == null)
+			{
+				Debug.Fail("Unexpectedly the accordion checkbox could not be found to read its state");
+				return; // In production if we can't find the current state just leave it unchanged.
+			}
+			var showAccordion = checkbox.Checked;
+			_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable = showAccordion;
+			_currentlyDisplayedBook.BookInfo.Save();
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
