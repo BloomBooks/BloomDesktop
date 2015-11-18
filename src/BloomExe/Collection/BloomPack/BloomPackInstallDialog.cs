@@ -120,10 +120,17 @@ namespace Bloom.Collection.BloomPack
 						_message.Text = msg;
 						pictureBox1.Image = _errorImage.Image;
 						_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton", "&Cancel");
+						_okButton.Enabled = true;
 						return null;
 					}
 					rootDirectory = parts[0];
 				}
+			}
+			catch (Exception ex)
+			{
+				// Report a corrupt file instead of crashing.  See http://issues.bloomlibrary.org/youtrack/issue/BL-2485.
+				ReportErrorUnzippingBloomPack();
+				return null;
 			}
 			finally
 			{
@@ -131,6 +138,19 @@ namespace Bloom.Collection.BloomPack
 					zip.Close();
 			}
 			return rootDirectory;
+		}
+
+		/// <summary>
+		/// Report a corrupt Bloom Pack file.
+		/// </summary>
+		private void ReportErrorUnzippingBloomPack()
+		{
+			string msg = L10NSharp.LocalizationManager.GetString("BloomPackInstallDialog.CorruptBloomPack",
+				"This BloomPack appears to be incomplete or corrupt.");
+			_message.Text = msg;
+			pictureBox1.Image = _errorImage.Image;
+			_okButton.Text = L10NSharp.LocalizationManager.GetString("Common.CancelButton", "&Cancel");
+			_okButton.Enabled = true;
 		}
 
 		private void _backgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
@@ -166,6 +186,12 @@ namespace Bloom.Collection.BloomPack
 						ICSharpCode.SharpZipLib.Core.StreamUtils.Copy(instream, writer, buffer);
 					}
 				}
+			}
+			catch (Exception ex)
+			{
+				// Report a corrupt file instead of crashing.  See http://issues.bloomlibrary.org/youtrack/issue/BL-2485.
+				ReportErrorUnzippingBloomPack();
+				return;
 			}
 			finally
 			{
