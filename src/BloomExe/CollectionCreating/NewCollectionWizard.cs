@@ -96,6 +96,8 @@ namespace Bloom.CollectionCreating
 																			"Collection Name Problem");
 			this._languageLocationPage.Text = LocalizationManager.GetString("NewCollectionWizard.LocationPage",
 																			"Give Language Location");
+			this._languageFontPage.Text = LocalizationManager.GetString("NewCollectionWizard.FontAndScriptPage",
+																		"Font and Script");
 			this._vernacularLanguagePage.Text = LocalizationManager.GetString("NewCollectionWizard.ChooseLanguagePage",
 																			  "Choose the Main Language For This Collection");
 			this._finishPage.Text = LocalizationManager.GetString("NewCollectionWizard.FinishPage",
@@ -190,6 +192,17 @@ namespace Bloom.CollectionCreating
 		{
 			DialogResult = DialogResult.OK;
 
+			// Collect the data from the Font and Script page.
+			_collectionInfo.DefaultLanguage1FontName = _fontDetails.SelectedFont;
+			_collectionInfo.Language1LineHeight = new decimal(0);
+			if (_fontDetails.ExtraLineHeight)
+			{
+				double height;
+				if (double.TryParse(_fontDetails.LineHeight, out height))
+					_collectionInfo.Language1LineHeight = new decimal(height);
+			}
+			_collectionInfo.IsLanguage1Rtl = _fontDetails.RightToLeft;
+
 			//this both saves a step for the country with the most languages, but also helps get the order between en and tpi to what will be most useful
 			if (_collectionInfo.Country == "Papua New Guinea")
 			{
@@ -202,6 +215,7 @@ namespace Bloom.CollectionCreating
 				Analytics.Track("Created New Source Collection");
 			else
 				Analytics.Track("Create New Vernacular Collection",new Dictionary<string, string>() { { "Country", _collectionInfo.Country } });
+
 			Close();
 		}
 
