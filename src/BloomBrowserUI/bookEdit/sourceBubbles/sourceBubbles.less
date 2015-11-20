@@ -1,4 +1,5 @@
-﻿@BubbleBorder:#E0DEB7;// #faf7cc;//#e0e5a3; //#F1D031 ;//#96668F;
+﻿// This file gets imported by editMode.less
+@BubbleBorder:#E0DEB7;// #faf7cc;//#e0e5a3; //#F1D031 ;//#96668F;
 @BubbleBackground:#faf7cc;// #ffd1a4;//#faffbb;//#FFFFA3 ;//#B57BAD;
 @TabColor: @BubbleBorder;
 @TabBorder: @BubbleBackground;
@@ -9,26 +10,41 @@
 	background-color: @BubbleBackground !important;
 	border-color: @BubbleBorder !important;
 	color: @BubbleTextColor !important;
-  border-radius: 5px;
+    border-radius: 5px;
 }
+
+// Clarification (since somehow we have two very similar class names for two different purposes):
+// This class marks the actual qtip class itself to let us know this qtip is for a translation bubble
 .uibloomSourceTextsBubble {
-	// The "!important"s in here are needed to override qtip's defaults
+    // important needed here and below because of importing this into editMode
+    // somehow this file and editMode rules compete? Not sure why this file AND editMode are both
+    // active in the browser.
+    // Enhance: some more work could be done to determine why this is.
+    z-index: 15002 !important;
+    &.passive-bubble {
+        z-index: 15001 !important;
+        .qtip-content {
+            padding-bottom: 0 !important;
+        }
+    }
 	
+	// The "!important"s in here are needed to override qtip's defaults
 	background-color: @BubbleBackground !important;
 	border-color: @BubbleBorder !important;
 	border-width: 2px !important;
 	.qtip-content {
 		padding: 0 9px 9px !important; // even up space around source bubbles
 		// Qtip defaults to overflow: hidden, which masks the extra language dropdown
-		&:hover {
-			overflow: visible !important;
-		}
+		overflow: visible !important;
 	}
 }
 
+// This class marks the div that contains all the source texts for the bubble (in perhaps several languages)
+// including the tab links at the top (those are inside the NAV element).
 .ui-sourceTextsForBubble {
 	position: relative;
 	border-color: @BubbleBorder;
+    max-height: inherit;
 	NAV {
 		display: block;
 		height: 34px;
