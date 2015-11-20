@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace Bloom
@@ -18,7 +19,7 @@ namespace Bloom
 			return new UrlPathString(HttpUtility.UrlDecode(encoded));
 		}
 
-		public static UrlPathString CreateFromUnencodedString(string unencoded)
+		public static UrlPathString CreateFromUnencodedString(string unencoded, bool strictlyTreatAsEncoded=false)
 		{
 			unencoded = unencoded.Trim();
 
@@ -28,12 +29,12 @@ namespace Bloom
 			// formalized here. It would seem to be a small risk (makes it
 			// impossible to have, say "%20" in your actual file name).
 			// However, a '+' in the name is much more likely, and so blindly
-			// re-encoding is a problem. Not clear what's best, so at the moment
-			// I'm going with detecting %20 an only encoding if we see that.
+			// re-encoding is a problem. So the algorithm is that if the
+			// symbol is ambiguous (like '+'), assume it is unencoded (because that's
+			// the name of the method) but if it's obviously encoded, then
+			// encode it.
 			
-			// space % !	#	$	&	'	(	)	*	+	,	/	:	;	=	?	@	[	]
-			if ("%20 %21 %23 %24 %25 %26 %27 %28 %29 %2A %2B %2C %2F %3A %3B %3D %3F %40 %5B %5D".Split(' ')
-				.Any(s=>unencoded.Contains(s)))
+			if(!strictlyTreatAsEncoded && Regex.IsMatch(unencoded,"%[A-Fa-f0-9]{2}"))
 					unencoded = HttpUtility.UrlDecode(unencoded);
 			return new UrlPathString(unencoded);
 		}
@@ -55,7 +56,10 @@ namespace Bloom
 		{
 			get
 			{
-				return CreateFromUnencodedString(_notEncoded.Split('?')[0]);
+				//the 'true' here is to prevent us from getting a string with the instruction
+				//to be strict about assuming it is unencoded, and then accidentally re-unencoding
+				//it against that previous instruction, when we spil out the paths.
+				return CreateFromUnencodedString(_notEncoded.Split('?')[0], true);
 			}
 		}
 

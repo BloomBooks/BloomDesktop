@@ -54,7 +54,17 @@ namespace BloomTests
 		{
 			Assert.AreEqual("test+me", UrlPathString.CreateFromUnencodedString("test+me").PathOnly.NotEncoded);
 		}
-
+		[Test]
+		public void PathOnly_LooksEncodedButSetStrictlyTreatAsEncodedTrue_RoundTrips()
+		{
+			//this checks that PathOnly doesn't do processing in ambiguous mode, undoing the information we gave it to be strict
+			Assert.AreEqual("test%20me", UrlPathString.CreateFromUnencodedString("test%20me", true).PathOnly.NotEncoded);
+		}
+		[Test]
+		public void CreateFromUnencodedString_LooksEncodedButSetStrictlyTreatAsEncodedTrue_RoundTrips()
+		{
+			Assert.AreEqual("test%20me", UrlPathString.CreateFromUnencodedString("test%20me", true).NotEncoded);
+		}
 		//make sure we don't double-encode
 		[Test]
 		public void CreateFromUnencodedString_ObviousStringWasAlreadyEncoded_Adapts()
