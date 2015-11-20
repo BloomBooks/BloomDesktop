@@ -1,4 +1,5 @@
-﻿@BubbleBorder:#E0DEB7;// #faf7cc;//#e0e5a3; //#F1D031 ;//#96668F;
+﻿// This file gets imported by editMode.less
+@BubbleBorder:#E0DEB7;// #faf7cc;//#e0e5a3; //#F1D031 ;//#96668F;
 @BubbleBackground:#faf7cc;// #ffd1a4;//#faffbb;//#FFFFA3 ;//#B57BAD;
 @TabColor: @BubbleBorder;
 @TabBorder: @BubbleBackground;
@@ -15,7 +16,11 @@
 // Clarification (since somehow we have two very similar class names for two different purposes):
 // This class marks the actual qtip class itself to let us know this qtip is for a translation bubble
 .uibloomSourceTextsBubble {
-    z-index: 15002 !important; // important needed here and below because of importing this into editMode
+    // important needed here and below because of importing this into editMode
+    // somehow this file and editMode rules compete? Not sure why this file AND editMode are both
+    // active in the browser.
+    // Enhance: some more work could be done to determine why this is.
+    z-index: 15002 !important;
     &.passive-bubble {
         z-index: 15001 !important;
         .qtip-content {

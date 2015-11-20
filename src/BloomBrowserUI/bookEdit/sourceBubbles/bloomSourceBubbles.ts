@@ -372,7 +372,7 @@ class bloomSourceBubbles {
                 $thisTip.addClass('passive-bubble');
                 var maxHeight = $thisTip.attr('data-max-height');
                 if(maxHeight)
-                    $thisTip.css('max-height', parseInt($thisTip.attr('data-max-height')));
+                    $thisTip.css('max-height', parseInt(maxHeight));
             });
 
             // show the full tip, if needed
