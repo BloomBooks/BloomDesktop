@@ -32,7 +32,7 @@ namespace Bloom
 			// re-encoding is a problem. So the algorithm is that if the
 			// symbol is ambiguous (like '+'), assume it is unencoded (because that's
 			// the name of the method) but if it's obviously encoded, then
-			// encode it.
+			// decode it.
 			
 			if(!strictlyTreatAsEncoded && Regex.IsMatch(unencoded,"%[A-Fa-f0-9]{2}"))
 					unencoded = HttpUtility.UrlDecode(unencoded);
