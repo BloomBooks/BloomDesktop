@@ -10,6 +10,12 @@ namespace BloomTests
 	public class UrlPathStringTests
 	{
 		[Test]
+		public void UrlEncodedWithPlus_toUrlEncoded_Retained()
+		{
+			//sometimes things encode a space a '+' instead of %20
+			Assert.AreEqual("test%20me", UrlPathString.CreateFromUrlEncodedString("test+me").UrlEncoded);
+		}
+		[Test]
 		public void UrlEncoded_toUrlEncoded_Retained()
 		{
 			Assert.AreEqual("test%20me", UrlPathString.CreateFromUrlEncodedString("test%20me").UrlEncoded);
@@ -24,6 +30,7 @@ namespace BloomTests
 		{
 			Assert.AreEqual("test%20me", UrlPathString.CreateFromUrlEncodedString("test me").UrlEncoded);
 		}
+
 		[Test]
 		public void Unencoded_toUnencoded_Correct()
 		{ 
@@ -41,12 +48,40 @@ namespace BloomTests
 		{
 			Assert.AreEqual("test me", UrlPathString.CreateFromUnencodedString("test%20me").PathOnly.NotEncoded);
 		}
+
+		[Test]
+		public void PathOnly_AmbiguousInput_RoundTrips()
+		{
+			Assert.AreEqual("test+me", UrlPathString.CreateFromUnencodedString("test+me").PathOnly.NotEncoded);
+		}
+		[Test]
+		public void PathOnly_LooksEncodedButSetStrictlyTreatAsEncodedTrue_RoundTrips()
+		{
+			//this checks that PathOnly doesn't do processing in ambiguous mode, undoing the information we gave it to be strict
+			Assert.AreEqual("test%20me", UrlPathString.CreateFromUnencodedString("test%20me", true).PathOnly.NotEncoded);
+		}
+		[Test]
+		public void CreateFromUnencodedString_LooksEncodedButSetStrictlyTreatAsEncodedTrue_RoundTrips()
+		{
+			Assert.AreEqual("test%20me", UrlPathString.CreateFromUnencodedString("test%20me", true).NotEncoded);
+		}
 		//make sure we don't double-encode
 		[Test]
-		public void CreateFromUnencodedString_StringWasAlreadyEncode_Adapts()
+		public void CreateFromUnencodedString_ObviousStringWasAlreadyEncoded_Adapts()
 		{
 			Assert.AreEqual("test me", UrlPathString.CreateFromUnencodedString("test%20me").NotEncoded);
+			Assert.AreEqual("test%me", UrlPathString.CreateFromUnencodedString("test%25me").NotEncoded);
+			Assert.AreEqual("John&John", UrlPathString.CreateFromUnencodedString("John%26John").NotEncoded);
 		}
+
+		//note however that a + sign is really ambiguous, and we've decided that since the method name
+		//says that the input is unencoded, we should then assume it is really a plus sign.
+		[Test]
+		public void UnencodedWithPlus_roundTripable()
+		{
+			Assert.AreEqual("test+me", UrlPathString.CreateFromUnencodedString("test+me").NotEncoded);
+		}
+
 		[Test]
 		public void Equals_AreEqual_True()
 		{

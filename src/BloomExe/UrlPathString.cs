@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace Bloom
@@ -17,7 +19,7 @@ namespace Bloom
 			return new UrlPathString(HttpUtility.UrlDecode(encoded));
 		}
 
-		public static UrlPathString CreateFromUnencodedString(string unencoded)
+		public static UrlPathString CreateFromUnencodedString(string unencoded, bool strictlyTreatAsEncoded=false)
 		{
 			unencoded = unencoded.Trim();
 
@@ -25,8 +27,15 @@ namespace Bloom
 			// essentially didn't trust that the string was already decoded.
 			// Assuming that was done for a good reason, that behavior is
 			// formalized here. It would seem to be a small risk (makes it
-			// impossible to have, say "%20" in your actual file name)
-			unencoded = HttpUtility.UrlDecode(unencoded);
+			// impossible to have, say "%20" in your actual file name).
+			// However, a '+' in the name is much more likely, and so blindly
+			// re-encoding is a problem. So the algorithm is that if the
+			// symbol is ambiguous (like '+'), assume it is unencoded (because that's
+			// the name of the method) but if it's obviously encoded, then
+			// decode it.
+			
+			if(!strictlyTreatAsEncoded && Regex.IsMatch(unencoded,"%[A-Fa-f0-9]{2}"))
+					unencoded = HttpUtility.UrlDecode(unencoded);
 			return new UrlPathString(unencoded);
 		}
 
@@ -47,7 +56,10 @@ namespace Bloom
 		{
 			get
 			{
-				return CreateFromUrlEncodedString(_notEncoded.Split('?')[0]);
+				//the 'true' here is to prevent us from getting a string with the instruction
+				//to be strict about assuming it is unencoded, and then accidentally re-unencoding
+				//it against that previous instruction, when we spil out the paths.
+				return CreateFromUnencodedString(_notEncoded.Split('?')[0], true);
 			}
 		}
 
