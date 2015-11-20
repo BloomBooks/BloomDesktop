@@ -189,6 +189,20 @@ namespace BloomTests.Book
 			Assert.AreEqual("test%20me", HtmlDom.GetImageElementUrl(element).UrlEncoded);
 		}
 		[Test]
+		[Ignore("Does not currently work...not sure how to make it right.")]
+		public void GetImageElementUrl_ElementIsImgWithPercent2B_ReturnsSrc()
+		{
+			var element = MakeElement("<img src='test%2bme'/>");
+			Assert.AreEqual("test%2bme", HtmlDom.GetImageElementUrl(element).UrlEncoded);
+		}
+		[Test]
+		[Ignore("Does not currently work...not sure how to make it right.")]
+		public void GetImageElementUrl_ElementIsImgWithPlus_ReturnsSrc()
+		{
+			var element = MakeElement("<img src='test+me'/>");
+			Assert.AreEqual("test+me", HtmlDom.GetImageElementUrl(element).UrlEncoded);
+		}
+		[Test]
 		public void GetImageElementUrl_ElementIsDivWithBackgroundImage_ReturnsUrl()
 		{
 			var element = MakeElement("<div style='font-face:url(\"somefont\"); background-image:url(\"test%20me\")'/>");

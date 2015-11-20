@@ -30,6 +30,17 @@ namespace Bloom
 			return new UrlPathString(unencoded);
 		}
 
+		/// <summary>
+		/// This one believes the caller when they say the input is unencoded.
+		/// </summary>
+		/// <param name="unencoded"></param>
+		/// <returns></returns>
+		internal static UrlPathString CreateFromReallyUnencodedString(string unencoded)
+		{
+			unencoded = unencoded.Trim();
+			return new UrlPathString(unencoded);
+		}
+
 		public string UrlEncoded
 		{
 			get { return HttpUtility.UrlPathEncode(_notEncoded); }
@@ -47,7 +58,7 @@ namespace Bloom
 		{
 			get
 			{
-				return CreateFromUrlEncodedString(_notEncoded.Split('?')[0]);
+				return CreateFromReallyUnencodedString(_notEncoded.Split('?')[0]);
 			}
 		}
 
