@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Web;
 
@@ -25,8 +26,15 @@ namespace Bloom
 			// essentially didn't trust that the string was already decoded.
 			// Assuming that was done for a good reason, that behavior is
 			// formalized here. It would seem to be a small risk (makes it
-			// impossible to have, say "%20" in your actual file name)
-			unencoded = HttpUtility.UrlDecode(unencoded);
+			// impossible to have, say "%20" in your actual file name).
+			// However, a '+' in the name is much more likely, and so blindly
+			// re-encoding is a problem. Not clear what's best, so at the moment
+			// I'm going with detecting %20 an only encoding if we see that.
+			
+			// space % !	#	$	&	'	(	)	*	+	,	/	:	;	=	?	@	[	]
+			if ("%20 %21 %23 %24 %25 %26 %27 %28 %29 %2A %2B %2C %2F %3A %3B %3D %3F %40 %5B %5D".Split(' ')
+				.Any(s=>unencoded.Contains(s)))
+					unencoded = HttpUtility.UrlDecode(unencoded);
 			return new UrlPathString(unencoded);
 		}
 
@@ -47,7 +55,7 @@ namespace Bloom
 		{
 			get
 			{
-				return CreateFromUrlEncodedString(_notEncoded.Split('?')[0]);
+				return CreateFromUnencodedString(_notEncoded.Split('?')[0]);
 			}
 		}
 
