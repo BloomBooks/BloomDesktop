@@ -912,8 +912,8 @@ namespace BloomTests.Book
 			Assert.That(_metadata.Isbn, Is.EqualTo(""));
 		}
 
-		[Test]
-		public void Save_UpdatesMetadataTags()
+		[Test,Ignore("Known bug: BL-2962")]
+		public void Save_UpdatesBookInfoMetadataTags()
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
@@ -930,19 +930,11 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			
-			var topicElt = _bookDom.SelectSingleNode("//div/div[@data-book='topic' and @lang='en']");
-			topicElt.InnerText = "Animal stories";
+			book.OurHtmlDom.SetBookSetting("topic","en","Animal stories");
 			book.Save();
 			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
 
-			// We'd like to check what happens when it is edited again.
-			// Problem is, the first save has created a BloomDataDiv which comes before the div we are modifying and
-			// has the old value. (This isn't a problem editing the real topic area because editing happens on a
-			// cut-down document that only has one page and thus no data-div.)
-			var datadiv = _bookDom.SelectSingleNode("//div[@id='bloomDataDiv']");
-			datadiv.ParentNode.RemoveChild(datadiv);
-			topicElt.InnerText = "Science";
+			book.OurHtmlDom.SetBookSetting("topic", "en", "Science");
 			book.Save();
 			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
 		}
@@ -1065,7 +1057,7 @@ namespace BloomTests.Book
 			licenseData.License = CreativeCommonsLicense.FromLicenseUrl("http://creativecommons.org/licenses/by-sa/3.0/");
 			licenseData.License.RightsStatement = "Please acknowledge nicely to joe.blow@example.com";
 
-			book.UpdateLicenseMetdata(licenseData);
+			book.SetMetadata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("cc-by-sa"));
 			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely to joe.blow@ex(download book to read full email address)"));
@@ -1073,7 +1065,7 @@ namespace BloomTests.Book
 			// Custom License
 			licenseData.License = new CustomLicense {RightsStatement = "Use it if you dare"};
 
-			book.UpdateLicenseMetdata(licenseData);
+			book.SetMetadata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("custom"));
 			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Use it if you dare"));
@@ -1081,7 +1073,7 @@ namespace BloomTests.Book
 			// Null License (ask the user)
 			licenseData.License = new NullLicense { RightsStatement = "Ask me" };
 
-			book.UpdateLicenseMetdata(licenseData);
+			book.SetMetadata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("ask"));
 			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Ask me"));

@@ -299,26 +299,11 @@ namespace Bloom.Book
 
 		private void RemoveDataDivElement(XmlNode dom, string key)
 		{
-			var dataDiv = GetOrCreateDataDiv(dom);
+			var dataDiv = HtmlDom.GetOrCreateDataDiv(dom);
 			foreach (XmlNode e in dataDiv.SafeSelectNodes(string.Format("div[@data-book='{0}']", key)))
 			{
 				dataDiv.RemoveChild(e);
 			}
-		}
-
-		private XmlElement GetOrCreateDataDiv(XmlNode dom)
-		{
-			var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
-			if (dataDiv == null)
-			{
-				XmlDocument doc = dom as XmlDocument;
-				if (doc == null)
-					doc = dom.OwnerDocument;
-				dataDiv = doc.CreateElement("div");
-				dataDiv.SetAttribute("id", "bloomDataDiv");
-				dom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
-			}
-			return dataDiv;
 		}
 
 		private void UpdateEditabilityMetadata(BookStorage storage)
