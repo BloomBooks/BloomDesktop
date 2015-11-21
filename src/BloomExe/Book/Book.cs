@@ -8,17 +8,13 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Web;
-using System.Windows.Forms;
 using System.Xml;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
-using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.WebLibraryIntegration;
-using DesktopAnalytics;
 using L10NSharp;
 using MarkdownSharp;
 using SIL.Code;
@@ -29,7 +25,6 @@ using SIL.Reporting;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
-using Image = System.Drawing.Image;
 
 namespace Bloom.Book
 {
@@ -109,7 +104,6 @@ namespace Bloom.Book
 			if (!HasFatalError && IsEditable)
 			{
 				_bookData.SynchronizeDataItemsThroughoutDOM();
-				_storage.UpdateBookLicenseIcon(GetLicenseMetadata());
 
 				WriteLanguageDisplayStyleSheet(); //NB: if you try to do this on a file that's in program files, access will be denied
 				OurHtmlDom.AddStyleSheet(@"languageDisplay.css");
@@ -655,7 +649,7 @@ namespace Bloom.Book
 		{
 			_pagesCache = null;
 			BringBookUpToDate(OurHtmlDom, progress);
-			if (Type == Book.BookType.Publication)
+			if (Type == BookType.Publication)
 			{
 				ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(FolderPath, OurHtmlDom, progress);
 				UpdatePageFromFactoryTemplates(OurHtmlDom, progress);
@@ -789,15 +783,14 @@ namespace Bloom.Book
 					ConvertTagsToMetaData(oldTagsPath, BookInfo);
 					File.Delete(oldTagsPath);
 				}
-				// get any license info into the json
-				var metadata = GetLicenseMetadata();
-				UpdateLicenseMetdata(metadata);
 			}
 			else //used for making a preview dom
 			{
 				var bd = new BookData(bookDOM, _collectionSettings, UpdateImageMetadataAttributes);
 				bd.SynchronizeDataItemsThroughoutDOM();
 			}
+			// get any license info into the json
+			BookCopyrightAndLicense.SetMetadata(GetLicenseMetadata(), bookDOM, FolderPath, CollectionSettings);
 
 			bookDOM.RemoveMetaElement("bloomBookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
 			bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
@@ -1608,7 +1601,7 @@ namespace Bloom.Book
 
 				HtmlDom.ProcessPageAfterEditing(page, divElement);
 
-				_bookData.SuckInDataFromEditedDom(editedPageDom);//this will do an updatetitle
+				_bookData.SuckInDataFromEditedDom(editedPageDom); //this will do an updatetitle
 				// When the user edits the styles on a page, the new or modified rules show up in a <style/> element with title "userModifiedStyles". Here we copy that over to the book DOM.
 				var userModifiedStyles = editedPageDom.SelectSingleNode("html/head/style[@title='userModifiedStyles']");
 				if (userModifiedStyles != null)
@@ -1616,19 +1609,10 @@ namespace Bloom.Book
 					GetOrCreateUserModifiedStyleElementFromStorage().InnerXml = userModifiedStyles.InnerXml;
 					Debug.WriteLine("Incoming User Modified Styles:   " + userModifiedStyles.OuterXml);
 				}
-				//Debug.WriteLine("User Modified Styles:   " + GetOrCreateUserModifiedStyleElementFromStorage().OuterXml);
-				try
-				{
-					Save();
-				}
-				catch (Exception error)
-				{
-					ErrorReport.NotifyUserOfProblem(error, "There was a problem saving");
-				}
+				Save();
 
 				_storage.UpdateBookFileAndFolderName(_collectionSettings);
 				//review used to have   UpdateBookFolderAndFileNames(data);
-
 
 				//Enhance: if this is only used to re-show the thumbnail, why not limit it to if this is the cover page?
 				//e.g., look for the class "cover"
@@ -1636,8 +1620,9 @@ namespace Bloom.Book
 			}
 			catch (Exception error)
 			{
-				var msg = LocalizationManager.GetString("Errors.CouldNotSavePage", "Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, msg);
+				var msg = LocalizationManager.GetString("Errors.CouldNotSavePage",
+					"Bloom had trouble saving a page. Please click Details below and report this to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!");
+				ErrorReport.NotifyUserOfProblem(error, msg);
 			}
 		}
 
@@ -1778,7 +1763,7 @@ namespace Bloom.Book
 			//whereas the base is to our embedded server during editing, it's to the file folder
 			//when we make a PDF, because we wan the PDF to use the original hi-res versions
 
-			var pathSafeForWkHtml2Pdf = SIL.IO.FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
+			var pathSafeForWkHtml2Pdf = FileUtils.MakePathSafeFromEncodingProblems(FolderPath);
 			BookStorage.SetBaseForRelativePaths(printingDom, pathSafeForWkHtml2Pdf);
 
 			switch (bookletPortion)
@@ -2014,35 +1999,13 @@ namespace Bloom.Book
 
 		public Metadata GetLicenseMetadata()
 		{
-			return _bookData.GetLicenseMetadata();
+			return BookCopyrightAndLicense.GetMetadata(OurHtmlDom);
 		}
 
-		public void UpdateLicenseMetdata(Metadata metadata)
+		public void SetMetadata(Metadata metadata)
 		{
-			_bookData.SetLicenseMetdata(metadata);
-			BookInfo.License = metadata.License.Token;
-			BookInfo.Copyright = metadata.CopyrightNotice;
-			// obfuscate any emails in the license notes.
-			var notes = metadata.License.RightsStatement;
-			if (notes != null)
-			{
-				// recommended at http://www.regular-expressions.info/email.html.
-				// This purposely does not handle non-ascii emails, or ones with special characters, which he says few servers will handle anyway.
-				// It is also not picky about exactly valid top-level domains (or country codes), and will exclude the rare 'museum' top-level domain.
-				// There are several more complex options we could use there. Just be sure to add () around the bit up to (and including) the @,
-				// and another pair around the rest.
-				var regex = new Regex("\\b([A-Z0-9._%+-]+@)([A-Z0-9.-]+.[A-Z]{2,4})\\b", RegexOptions.IgnoreCase);
-				// We keep the existing email up to 2 characters after the @, and replace the rest with a message.
-				// Not making the message localizable as yet, since the web site isn't, and I'm not sure what we would need
-				// to put to make it so. A fixed string seems more likely to be something we can replace with a localized version,
-				// in the language of the web site user rather than the language of the uploader.
-				notes = regex.Replace(notes,
-					new MatchEvaluator(
-						m =>
-							m.Groups[1].Value + m.Groups[2].Value.Substring(0, 2) +
-							"(download book to read full email address)"));
-				BookInfo.LicenseNotes = notes;
-			}
+			BookCopyrightAndLicense.SetMetadata(metadata, OurHtmlDom, FolderPath, CollectionSettings);
+			BookInfo.SetLicenseAndCopyrightMetadata(metadata);
 		}
 
 		public void SetTitle(string name)
@@ -2057,7 +2020,7 @@ namespace Bloom.Book
 
 		public void Save()
 		{
-			Guard.Against(Type != Book.BookType.Publication, "Tried to save a non-editable book.");
+			Guard.Against(Type != BookType.Publication, "Tried to save a non-editable book.");
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
 			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
 			_storage.Save();

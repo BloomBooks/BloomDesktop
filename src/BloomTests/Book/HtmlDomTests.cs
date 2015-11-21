@@ -348,5 +348,103 @@ namespace BloomTests.Book
 			dom.LoadXml("<html><body><div><img/></div></body></html>");
 			Assert.IsFalse(HtmlDom.IsImgOrSomethingWithBackgroundImage(dom.SelectNodes("//div")[0] as XmlElement));
 		}
+		[Test]
+		public void RemoveBookSetting_TwoVariationsWereThere_BothRemoved()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='leaveMe' lang='en'>something unique</div>
+						<div data-book='removeMe' lang='id'>Buku Dasar</div>
+						<div data-book='removeMe' lang='tpi'>Nupela Buk</div>
+				</div>
+			 </body></html>");
+			bookDom.RemoveBookSetting("removeMe");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='removeMe']", 0);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='leaveMe']", 1);
+		}
+		[Test]
+		public void RemoveBookSetting_NoneThere_NothingHappens()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='leaveMe' lang='en'>something unique</div>
+				</div>
+			 </body></html>");
+			bookDom.RemoveBookSetting("foobar");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='leaveMe']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book]", 1);
+		}
+		[Test]
+		public void GetBookSetting_TwoVariationsWereThere_ReturnsBoth()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='leaveMe' lang='en'>something unique</div>
+						<div data-book='getMe' lang='id'>Buku</div>
+						<div data-book='getMe' lang='tpi'>Buk</div>
+				</div>
+			 </body></html>");
+			var result = bookDom.GetBookSetting("getMe");
+			Assert.AreEqual(2,result.Count);
+			Assert.AreEqual("Buk", result["tpi"]);
+			Assert.AreEqual("Buku", result["id"]);
+		}
+		[Test]
+		public void GetBookSetting_NotThere_ReturnsEmptyMultistring()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+				</div>
+			 </body></html>");
+			var result = bookDom.GetBookSetting("getMe");
+			Assert.AreEqual(0, result.Count);
+		}
+		[Test]
+		public void SetBookSetting_WasMissingCompletely_DataDivHasNewString()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+				</div>
+			 </body></html>");
+			bookDom.SetBookSetting("foo","xyz","hello");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='xyz' and text()='hello']", 1);
+		}
+		[Test]
+		public void SetBookSetting_NoDataDivYet_SettingAdded()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+			 </body></html>");
+			bookDom.SetBookSetting("foo", "xyz", "hello");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//body/div[@id='bloomDataDiv']/div[@data-book='foo' and @lang='xyz' and text()='hello']", 1);
+		}
+		[Test]
+		public void SetBookSetting_HadADifferentValueCompletely_NewValue()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='foo' lang='en'>blah</div>
+					<div data-book='foo' lang='xyz'>boo</div>
+				</div>
+			 </body></html>");
+			bookDom.SetBookSetting("foo", "xyz", "hello");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='xyz' and text()='hello']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='en' and text()='blah']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']", 2);
+		}
+		[Test]
+		public void SetBookSetting_AddANewVariationToAnExistingKey_Added()
+		{
+			var bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='foo' lang='en'>English</div>
+					<div data-book='foo' lang='id'>Indonesian</div>
+				</div>
+			 </body></html>");
+			bookDom.SetBookSetting("foo", "fr", "French");
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='id' and text()='Indonesian']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='en' and text()='English']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo' and @lang='fr' and text()='French']", 1);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='foo']", 3);
+		}
 	}
 }

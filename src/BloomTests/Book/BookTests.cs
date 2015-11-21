@@ -912,7 +912,33 @@ namespace BloomTests.Book
 			Assert.That(_metadata.Isbn, Is.EqualTo(""));
 		}
 		
-		[Test]
+		[Test,Ignore("Known bug: BL-2962")]
+		public void Save_UpdatesBookInfoMetadataTags()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page' id='guid3'>
+						<div lang='en' data-derived='topic'>original</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+			book.OurHtmlDom.SetBookSetting("topic","en","Animal stories");
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
+
+			book.OurHtmlDom.SetBookSetting("topic", "en", "Science");
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
+		}
+		
 		public void Save_UpdatesAllTitles()
 		{
 			_bookDom = new HtmlDom(
@@ -1030,7 +1056,7 @@ namespace BloomTests.Book
 			licenseData.License = CreativeCommonsLicense.FromLicenseUrl("http://creativecommons.org/licenses/by-sa/3.0/");
 			licenseData.License.RightsStatement = "Please acknowledge nicely to joe.blow@example.com";
 
-			book.UpdateLicenseMetdata(licenseData);
+			book.SetMetadata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("cc-by-sa"));
 			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Please acknowledge nicely to joe.blow@ex(download book to read full email address)"));
@@ -1038,7 +1064,7 @@ namespace BloomTests.Book
 			// Custom License
 			licenseData.License = new CustomLicense {RightsStatement = "Use it if you dare"};
 
-			book.UpdateLicenseMetdata(licenseData);
+			book.SetMetadata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("custom"));
 			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Use it if you dare"));
@@ -1046,7 +1072,7 @@ namespace BloomTests.Book
 			// Null License (ask the user)
 			licenseData.License = new NullLicense { RightsStatement = "Ask me" };
 
-			book.UpdateLicenseMetdata(licenseData);
+			book.SetMetadata(licenseData);
 
 			Assert.That(_metadata.License, Is.EqualTo("ask"));
 			Assert.That(_metadata.LicenseNotes, Is.EqualTo("Ask me"));
