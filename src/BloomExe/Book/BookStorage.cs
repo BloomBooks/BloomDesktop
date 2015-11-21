@@ -56,7 +56,6 @@ namespace Bloom.Book
 		IFileLocator GetFileLocator();
 		event EventHandler FolderPathChanged;
 		void CleanupUnusedImageFiles();
-		void UpdateBookLicenseIcon(Metadata metadata);
         BookInfo MetaData { get; set; }
 	}
 
@@ -1025,37 +1024,5 @@ namespace Bloom.Book
 			}
 			return s + "<p>" + ErrorMessagesHtml + "</p>";
 		}
-
-		/// <summary>
-		/// The default license (established in jade/html) is now CC-BY.  This requires a license
-		/// image file to display correctly.  So we create one if it's needed.  (We also remove
-		/// one that's not needed, but that's just for completeness.)  Note that the default
-		/// license affects all books that have not been given an explicit license, not just
-		/// newly created books.
-		/// </summary>
-		public void UpdateBookLicenseIcon(Metadata metadata)
-		{
-			if (metadata != null && metadata.License != null)
-			{
-				var licenseImage = metadata.License.GetImage();
-				string imagePath = FolderPath.CombineForPath("license.png");
-				if (licenseImage != null)
-				{
-					if (!File.Exists(imagePath))
-					{
-						using (Stream fs = new FileStream(imagePath, FileMode.Create))
-						{
-							licenseImage.Save(fs, ImageFormat.Png);
-						}
-					}
-				}
-				else
-				{
-					if (File.Exists(imagePath))
-						File.Delete(imagePath);
-				}
-			}
-		}
-
 	}
 }
