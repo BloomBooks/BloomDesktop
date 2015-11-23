@@ -68,3 +68,10 @@ div.checkbox-label {
 .ui-accordion h3[data-panelId="LeveledRT"] span.ui-accordion-header-icon {
 	background-image:url('/bloom/images/steps-white.png') !important;
 }
+
+// Dialogs launched from the accordion need to be in front of everything,
+// and so does the backdrop used to dim and disable the stuff behind the dialog.
+// In particular they need to be in front of the pure-drawer stuff (1-99).
+.ui-dialog, .ui-widget-overlay {
+  z-index: 20000;
+}
