@@ -580,10 +580,11 @@ namespace Bloom.Edit
 				_currentPage.Dispose();
 			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 
-			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
+			// Enhance JohnT: Can we somehow have a much simpler accordion content until the user displays it?
+			//if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
 				_server.AccordionContent = MakeAccordionContent();
-			else
-				_server.AccordionContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
+			//else
+			//	_server.AccordionContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 
 			_server.CurrentBook = _currentlyDisplayedBook;
 			_server.AuthorMode = CanAddPages;
@@ -614,19 +615,16 @@ namespace Bloom.Edit
 			var frameText = File.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 
-			// only show the accordion when the template enables it
-			var css_class = dom.Body.GetAttributeNode("class");
-
-			if (css_class == null)
-			{
-				css_class = dom.Body.OwnerDocument.CreateAttribute("class");
-				dom.Body.Attributes.Append(css_class);
-			}
 
 			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
-				css_class.Value = "accordion";
-			else
-				css_class.Value = "no-accordion";
+			{
+				// Make the accordion initially visible.
+				// What we have to do to accomplish this is pretty non-intutive. It's a consequence of the way
+				// the pure-drawer CSS achieves the open/close effect. This input is a check-box, so clicking it
+				// changes the state of things in a way that all the other CSS can depend on.
+				var accordionCheckBox = dom.SelectSingleNode("//input[@id='pure-toggle-right']");
+				accordionCheckBox.SetAttribute("checked", "true");
+			}
 
 			return dom;
 		}
@@ -1056,6 +1054,7 @@ namespace Bloom.Edit
 					_inProcessOfSaving = true;
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
+					SaveAccordionState();
 
 					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
 					//this old code:
@@ -1103,6 +1102,22 @@ namespace Bloom.Edit
 					task();
 				}
 			}
+		}
+
+		/// <summary>
+		/// Saves stuff (currently just the visibility of the accordion) which is best read from the state of the HTML
+		/// </summary>
+		void SaveAccordionState()
+		{
+			var checkbox = _view.GetShowAccordionCheckbox();
+			if (checkbox == null)
+			{
+				Debug.Fail("Unexpectedly the accordion checkbox could not be found to read its state");
+				return; // In production if we can't find the current state just leave it unchanged.
+			}
+			var showAccordion = checkbox.Checked;
+			_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable = showAccordion;
+			_currentlyDisplayedBook.BookInfo.Save();
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying

@@ -21,6 +21,7 @@ using SIL.Windows.Forms.ImageToolbox;
 using Gecko;
 using TempFile = SIL.IO.TempFile;
 using Bloom.Workspace;
+using Gecko.DOM;
 using SIL.Windows.Forms.Widgets;
 
 namespace Bloom.Edit
@@ -932,6 +933,11 @@ namespace Bloom.Edit
 		{
 			RunJavaScript("if (calledByCSharp) { calledByCSharp.removeSynphonyMarkup(); calledByCSharp.cleanupAudio(); }");
 			_browser1.ReadEditableAreasNow();
+		}
+
+		public GeckoInputElement GetShowAccordionCheckbox()
+		{
+			return _browser1.WebBrowser.Window.Document.GetElementById("pure-toggle-right") as GeckoInputElement;
 		}
 
 		private void _copyButton_Click(object sender, EventArgs e)

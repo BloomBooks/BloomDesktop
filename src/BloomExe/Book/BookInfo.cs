@@ -52,16 +52,6 @@ namespace Bloom.Book
 				}
 			}
 
-			// should the accordion be enabled?
-			if ((_metadata != null) && (_metadata.Tools != null))
-			{
-				if (!_metadata.ReaderToolsAvailable)
-				{
-					if (_metadata.Tools.Any(t => t.Enabled))
-						_metadata.ReaderToolsAvailable = true;
-				}
-			}
-
 			//TODO
 			Type = Book.BookType.Publication;
 			IsEditable = isEditable;
@@ -349,6 +339,7 @@ namespace Bloom.Book
 			set { MetaData.CurrentTool = value; }
 		}
 
+		// Whether we should allow the reader tools initially. (Was, whether to show at all. As of BL-2907, they are always an option).
 		public bool ReaderToolsAvailable
 		{
 			get { return MetaData.ReaderToolsAvailable; }
