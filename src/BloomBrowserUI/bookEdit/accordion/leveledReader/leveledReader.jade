@@ -2,8 +2,8 @@ html
 	head
 
 	body
-		h3(data-panelId='leveledReader', data-markuptype='2', data-order='20', data-i18n='Accordion.LeveledReaderTool') Leveled Reader Tool
-		div(data-panelId='leveledReader')
+		h3(data-panelId='leveledReaderTool', data-markuptype='2', data-order='20', data-i18n='Accordion.LeveledReaderTool') Leveled Reader Tool
+		div(data-panelId='leveledReaderTool')
 			#setupStages
 				img#leveled-edit(src='/bloom/images/edit-white.png')
 				span.setup.noSelect
@@ -72,5 +72,5 @@ html
 			script(type='text/javascript').
 				$(document).ready(function() {
 					// this timeout is different than the decodableReader timeout to prevent initializing synphony twice
-					setTimeout(initializeLeveledReader, 200);
+					setTimeout(initializeLeveledReaderTool, 200);
 				});

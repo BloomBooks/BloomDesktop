@@ -10,17 +10,20 @@
             var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById('page');
             if (!page) return; // unit testing?
             if (this.checked) {
-                (<any>page.contentWindow).recordAudio();
+                (<any>page.contentWindow).showRecordingTools();
             } else {
-                (<any>page.contentWindow).hideAudio();
+                (<any>page.contentWindow).hideRecordingTools();
             }
         });
     });
 }
 
+// Wish this was also called showRecordingTools. But the compiler claims it is a conflict with the top-level
+// function by that name in audioRecording.ts. I don't think both are loaded into the same frame, so it should
+// be OK. But maybe it is safer this way anyway.
 function showRecordingControls() {
     (<HTMLInputElement>$('#showRecordingTools').get(0)).checked = true;
     var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById('page');
     if (!page) return; // unit testing?
-    (<any>page.contentWindow).recordAudio();
+    (<any>page.contentWindow).showRecordingTools();
 }

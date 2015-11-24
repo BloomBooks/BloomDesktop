@@ -58,7 +58,6 @@ namespace Bloom.Edit
 		private Dictionary<string, IPage> _templatePagesDict;
 		private string _lastPageAdded;
 		internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
-		private bool _showRecordingtools;
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
@@ -666,13 +665,8 @@ namespace Bloom.Edit
 #else
 			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
 #endif
-			// Does not work, because changing the state of the check box by javascript does not trigger the change function.
-			//var recordingCheckBox = _view.GetShowRecordingToolsCheckbox();
-			//if (recordingCheckBox != null)
-			//	recordingCheckBox.Checked = _showRecordingtools;
-
-			if (_showRecordingtools)
-				_view.ShowRecordingControls();
+			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)
+				tool.RestoreSettings(_view);
 		}
 
 		/// <summary>
@@ -921,9 +915,11 @@ namespace Bloom.Edit
 			var item = tools.FirstOrDefault(t => t.Name == toolName);
 
 			if (item == null)
-				tools.Add(new AccordionTool() { Name = toolName, Enabled = enabled });
-			else
-				item.Enabled = enabled;
+			{
+				item = AccordionTool.WithName(toolName);
+				tools.Add(item);
+			}
+			item.Enabled = enabled;
 		}
 
 		private string MakeAccordionContent()
@@ -980,7 +976,7 @@ namespace Bloom.Edit
 		{
 			var toolObject = toolList.FirstOrDefault(t => t.Name == toolName);
 			if (toolObject != null && !string.IsNullOrEmpty(toolObject.State))
-				settingsObject.Add(toolObject.Name + "State", toolObject.State);
+				settingsObject.Add(toolObject.StateName, toolObject.State);
 		}
 
 		private void LoadPanelIntoAccordionIfAvailable(HtmlDom domForAccordion, List<AccordionTool> toolList, List<string> checkedBoxes, string toolName)
@@ -1103,8 +1099,8 @@ namespace Bloom.Edit
 			_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable = showAccordion;
 			_currentlyDisplayedBook.BookInfo.Save();
 
-			var recordingCheckBox = _view.GetShowRecordingToolsCheckbox();
-			_showRecordingtools = recordingCheckBox != null && recordingCheckBox.Checked;
+			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)
+				tool.SaveSettings(_view);
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying

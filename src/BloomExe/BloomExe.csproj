@@ -222,6 +222,9 @@
     <Compile Include="Book\BookServer.cs" />
     <Compile Include="Book\CurrentEditableCollectionSelection.cs" />
     <Compile Include="Edit\AccordionTool.cs" />
+    <Compile Include="Edit\DecodableReaderTool.cs" />
+    <Compile Include="Edit\LeveledReaderTool.cs" />
+    <Compile Include="Edit\TalkingBookTool.cs" />
     <Compile Include="ElementProxy.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
       <SubType>UserControl</SubType>

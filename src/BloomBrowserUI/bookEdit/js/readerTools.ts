@@ -144,7 +144,7 @@ function setupReaderKeyAndFocusHandlers(container: HTMLElement, model: ReaderToo
   });
 }
 
-function initializeDecodableReader(): void {
+function initializeDecodableReaderTool(): void {
 
   // load synphony settings
   loadSynphonySettings();
@@ -181,7 +181,7 @@ function initializeDecodableReader(): void {
   setTimeout(function() { $.divsToColumns('letter'); }, 100);
 }
 
-function initializeLeveledReader(): void {
+function initializeLeveledReaderTool(): void {
 
   // load synphony settings
   loadSynphonySettings();
@@ -347,7 +347,7 @@ function loadExternalLink(url: string): void {
  */
 function resizeWordList(startTimeout: boolean = true): void {
 
-  var div: JQuery = $('body').find('div[data-panelId="decodableReader"]');
+  var div: JQuery = $('body').find('div[data-panelId="decodableReaderTool"]');
   if (div.length === 0) return; // if not found, the tool was closed
 
   var wordList: JQuery = div.find('#wordList');

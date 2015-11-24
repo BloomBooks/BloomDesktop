@@ -89,6 +89,14 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void MetaData_WithUnknownTool_DiscardsIt()
+		{
+			var json = "{ \"bookInstanceId\":\"bee9496b-00c2-42f2-83c5-7e2f61f50a33\",\"tools\":[{\"name\":\"decodableReader\",\"enabled\":true,\"state\":\"stage:1;sort:alphabetic\"},{\"name\":\"leveledReader\",\"enabled\":true,\"state\":\"1\"},{\"name\":\"talkingBook\",\"enabled\":true,\"state\":null}, {\"name\":\"rubbish\",\"enabled\":true,\"state\":null}],\"currentTool\":\"leveledReaderTool\",\"readerToolsAvailable\":true}";
+			var metadata = BookMetaData.FromString(json);
+			Assert.That(metadata.Tools, Has.Count.EqualTo(3)); // Unknown tool should not show up.
+		}
+
+		[Test]
 		public void WebDataJson_IncludesCorrectFields()
 		{
 			var meta = new BookMetaData()
@@ -112,7 +120,7 @@ namespace BloomTests.Book
 				BookletMakingIsAppropriate = false, PageCount=7,
 				LanguageTableReferences = new [] {new ParseDotComObjectPointer() { ClassName = "Language", ObjectId = "23456" }},
 				Uploader = new ParseDotComObjectPointer() { ClassName="User", ObjectId = "12345"},
-				Tools = new List<AccordionTool>(new [] {new AccordionTool() {Name="Decodable"}}),
+				Tools = new List<AccordionTool>(new [] {new DecodableReaderTool()}),
 				AllowUploadingToBloomLibrary = false
 			};
 			var result = meta.WebDataJson;

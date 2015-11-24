@@ -1,7 +1,7 @@
-﻿// This class supports creating audio recordings for talking books.
+// This class supports creating audio recordings for talking books.
 // Things currently get started when the user selects the "record audio" item in
-// the right-click menu while editing. This invokes the static function recordAudio
-// in this file, which invokes audioRecording.startRecording. That code breaks the
+// the right-click menu while editing. This invokes the static function showRecordingTools
+// in this file, which invokes audioRecording.showRecordingTools. That code breaks the
 // page's text into sentence-length spans (if not already done), makes sure each
 // has an id (preserving existing ones, and using guids for new ones). Then it
 // displays  a popup 'bubble' with controls for moving between sentences,
@@ -39,33 +39,30 @@
 //   (or maybe on the sentence they right-clicked?)
 // - Some more obvious affordance for launching the Record feature
 // - Extract content of bubble HTML into its own file?
-
-enum Status {
-    Disabled, // Can't use button now (e.g., Play when there is no recording)
-    Enabled, // Can use now, not the most likely thing to do next
-    Expected, // The most likely/appropriate button to use next (e.g., Play right after recording)
-    Active // Button now active (Play while playing; Record while held down)
-};
-class AudioRecording {
-
-    recording: boolean;
-    levelCanvas: HTMLCanvasElement;
-    levelCanvasWidth: number = 15;
-    levelCanvasHeight: number = 80;
-    hiddenSourceBubbles: JQuery;
-    audioDevicesUrl = '/bloom/audioDevices';
-    api:any; // the api object we get from the show event after launching the bubble dialog.
-
-    private moveToNextSpan(): void {
-        var current: JQuery = $('.ui-audioCurrent');
+var Status;
+(function (Status) {
+    Status[Status["Disabled"] = 0] = "Disabled";
+    Status[Status["Enabled"] = 1] = "Enabled";
+    Status[Status["Expected"] = 2] = "Expected";
+    Status[Status["Active"] = 3] = "Active"; // Button now active (Play while playing; Record while held down)
+})(Status || (Status = {}));
+;
+var AudioRecording = (function () {
+    function AudioRecording() {
+        this.levelCanvasWidth = 15;
+        this.levelCanvasHeight = 80;
+        this.audioDevicesUrl = '/bloom/audioDevices';
+    }
+    AudioRecording.prototype.moveToNextSpan = function () {
+        var current = $('.ui-audioCurrent');
         var audioElts = $('.audio-sentence');
-        var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
-        if (next.length === 0) return; // enhance: go to next page??
+        var next = audioElts.eq(audioElts.index(current) + 1);
+        if (next.length === 0)
+            return; // enhance: go to next page??
         this.setCurrentSpan(current, next);
         this.setStatus('record', Status.Expected);
-    }
-
-    private setCurrentSpan(current: JQuery, changeTo: JQuery): void {
+    };
+    AudioRecording.prototype.setCurrentSpan = function (current, changeTo) {
         if (current)
             current.removeClass('ui-audioCurrent');
         changeTo.addClass('ui-audioCurrent');
@@ -78,20 +75,21 @@ class AudioRecording {
         this.setStatus('prev', index === 0 ? Status.Disabled : Status.Enabled);
         this.setStatus('next', index === audioElts.length - 1 ? Status.Disabled : Status.Enabled);
         this.setStatus('play', Status.Enabled); // Todo: disabled if recording does not exist.
-    }
-
-    private moveToPrevSpan(): void {
-        var current: JQuery = $('.ui-audioCurrent');
+    };
+    AudioRecording.prototype.moveToPrevSpan = function () {
+        var current = $('.ui-audioCurrent');
         var audioElts = $('.audio-sentence');
         var currentIndex = audioElts.index(current);
-        if (currentIndex === 0) return;
-        var prev: JQuery = audioElts.eq(currentIndex - 1);
-        if (prev.length === 0) return;
+        if (currentIndex === 0)
+            return;
+        var prev = audioElts.eq(currentIndex - 1);
+        if (prev.length === 0)
+            return;
         this.setCurrentSpan(current, prev);
-    }
-
-    private endRecordCurrent(): void {
-        if (!this.recording) return; // sometimes we get bounce?
+    };
+    AudioRecording.prototype.endRecordCurrent = function () {
+        if (!this.recording)
+            return; // sometimes we get bounce?
         this.recording = false;
         this.fireCSharpEvent("endRecordAudio", "");
         // The player should already be set to play back the audio we just recorded.
@@ -104,30 +102,26 @@ class AudioRecording {
         player.attr('src', src);
         this.setStatus('record', Status.Enabled);
         this.setStatus('play', Status.Expected);
-    }
-
-    private startRecordCurrent(): void {
+    };
+    AudioRecording.prototype.startRecordCurrent = function () {
         this.recording = true;
-        var current: JQuery = $('.ui-audioCurrent');
+        var current = $('.ui-audioCurrent');
         var id = current.attr("id");
         this.fireCSharpEvent("startRecordAudio", id);
         this.setStatus('record', Status.Active);
-    }
-
-    private playCurrent(): void {
-        (<HTMLMediaElement>document.getElementById('player')).play();
+    };
+    AudioRecording.prototype.playCurrent = function () {
+        document.getElementById('player').play();
         this.setStatus('play', Status.Active);
         this.setStatus('record', Status.Enabled);
-    }
-
-    private playEnded(): void {
+    };
+    AudioRecording.prototype.playEnded = function () {
         this.setStatus('play', Status.Enabled); // no longer 'expected'
         if ($('#audio-next').hasClass('enabled')) {
             this.setStatus('next', Status.Expected);
         }
-    }
-
-    private setStatus(which: string, to: Status): void {
+    };
+    AudioRecording.prototype.setStatus = function (which, to) {
         $('#audio-' + which).removeClass('expected').removeClass('disabled').removeClass('enabled').removeClass('active').addClass(Status[to].toLowerCase());
         if (to === Status.Expected) {
             var tags = ['record', 'play', 'next'];
@@ -135,24 +129,24 @@ class AudioRecording {
                 var tag = tags[i];
                 if (tag === which) {
                     $('#audio-' + tag + '-label').addClass('expected');
-                } else {
+                }
+                else {
                     $('#audio-' + tag + '-label').removeClass('expected');
                 }
             }
         }
-    }
-
-    private cantPlay(): void {
+    };
+    AudioRecording.prototype.cantPlay = function () {
         this.setStatus('play', Status.Disabled);
-    }
-
-    private selectInputDevice(): void {
+    };
+    AudioRecording.prototype.selectInputDevice = function () {
         var thisClass = this;
         this.simpleAjaxGet(this.audioDevicesUrl, function (data) {
             // Retrieves JSON generated by AudioRecording.AudioDevicesJson
             // Something like {"devices":["microphone", "Logitech Headset"], "productName":"Logitech Headset", "genericName":"Headset" },
             // except that in practice currrently the generic and product names are the same and not as helpful as the above.
-            if (data.devices.length <= 1) return; // no change is possible.
+            if (data.devices.length <= 1)
+                return; // no change is possible.
             if (data.devices.length == 2) {
                 // Just toggle between them
                 var newDev = (data.devices[0] == data.productName) ? data.devices[1] : data.devices[0];
@@ -165,20 +159,19 @@ class AudioRecording {
             for (var i = 0; i < data.devices.length; i++) {
                 devList.append('<li>' + data.devices[i] + '</li>');
             }
-            devList.one("click", function(event) {
-                    devList.hide();
+            devList.one("click", function (event) {
+                devList.hide();
                 thisClass.fireCSharpEvent('changeRecordingDevice', $(event.target).text());
                 thisClass.updateInputDeviceDisplay();
-                })
+            })
                 .show().position({
-                    my: "right bottom",
-                    at: "right top",
-                    of: $('#audio-input-dev')
-                });
+                my: "right bottom",
+                at: "right top",
+                of: $('#audio-input-dev')
+            });
         });
-    }
-
-    private updateInputDeviceDisplay(): void {
+    };
+    AudioRecording.prototype.updateInputDeviceDisplay = function () {
         this.simpleAjaxGet(this.audioDevicesUrl, function (data) {
             // See selectInputDevice for what is retrieved.
             var genericName = data.genericName;
@@ -186,17 +179,20 @@ class AudioRecording {
             // The following logic is adapted from Palaso.Media.RecordingDeviceIndicator.UpdateDisplay()
             // Mods: checking for "Headse" is motivated by JohnT's Logitech Headset, which comes up as "Microphone (Logitech USB Headse".
             // checking for "Array" is motivated by JohnT's dell laptop, where the internal microphone comes up as "Microphone Array (2 RealTek Hi".
-
             // This seems a reasonable default to suggest what needs to be connected
             // if nothing is. It's also the default if we don't recognize anything significant in the name.
             var imageName = 'Microphone.svg';
             if (genericName !== null) {
-                if (genericName.indexOf('Internal') >= 0 || genericName.indexOf('Array') >= 0) imageName = 'Computer.png';
-                else if (genericName.indexOf('USB Audio Device') >= 0 || genericName.indexOf('Headse') >= 0) imageName = 'HeadSet.png';
-
-                if (deviceName.indexOf('ZOOM') >= 0) imageName = 'Recorder.png';
-                else if (deviceName.indexOf('Plantronics') >= 0 || deviceName.indexOf('Andrea') >= 0 || deviceName.indexOf('Microphone (VXi X200') >= 0) imageName = 'HeadSet.png';
-                else if (deviceName.indexOf('Line') >= 0) imageName = 'ExternalAudioDevice.png';
+                if (genericName.indexOf('Internal') >= 0 || genericName.indexOf('Array') >= 0)
+                    imageName = 'Computer.png';
+                else if (genericName.indexOf('USB Audio Device') >= 0 || genericName.indexOf('Headse') >= 0)
+                    imageName = 'HeadSet.png';
+                if (deviceName.indexOf('ZOOM') >= 0)
+                    imageName = 'Recorder.png';
+                else if (deviceName.indexOf('Plantronics') >= 0 || deviceName.indexOf('Andrea') >= 0 || deviceName.indexOf('Microphone (VXi X200') >= 0)
+                    imageName = 'HeadSet.png';
+                else if (deviceName.indexOf('Line') >= 0)
+                    imageName = 'ExternalAudioDevice.png';
             }
             var devButton = $('#audio-input-dev');
             var src = devButton.attr('src');
@@ -205,28 +201,26 @@ class AudioRecording {
             devButton.attr('src', newSrc);
             devButton.attr('title', deviceName);
         });
-    }
-
+    };
     // Each 'button' in the main list has an actual button (with an image), and in most cases some text below.
     // It seems to require two divs around the button and span to arrange the button and text vertically
     // and the row of buttons horizontally. This method generates whatever we decide is needed for each
     // group, parameterized by the identifier of which button and the text to go below it.
     // (Note that the full button ID is audio- plus the ID passed in; it is used in other element IDs too.)
-    private makeHtmlForOneButtonGroup(buttonId: string, initialStatusClass: string, buttonLabel: string): string {
+    AudioRecording.prototype.makeHtmlForOneButtonGroup = function (buttonId, initialStatusClass, buttonLabel) {
         return "<div id='audio-" + buttonId + "-wrapper' class='button-label-wrapper'>" +
             "<div>" +
             "<button id='audio-" + buttonId + "' class='ui-audio-button ui-button " + initialStatusClass + "'/>" +
             "<span id='audio-" + buttonId + "-label' class='audio-label'>" + buttonLabel + "</span>" +
             "</div>" +
             "</div>";
-    }
-
-    public startRecording(): void {
-        var editable = <qtipInterface>$('div.bloom-editable');
+    };
+    AudioRecording.prototype.showRecordingTools = function () {
+        var editable = $('div.bloom-editable');
         this.makeSentenceSpans(editable);
         // For displaying the qtip, restrict the editable divs to the ones that have
         // audio sentences.
-        editable = <qtipInterface>$('span.audio-sentence').parents('div.bloom-editable');
+        editable = $('span.audio-sentence').parents('div.bloom-editable');
         var thisClass = this;
         this.hiddenSourceBubbles = $('.uibloomSourceTextsBubble');
         this.hiddenSourceBubbles.hide();
@@ -237,18 +231,18 @@ class AudioRecording {
             this.makeHtmlForOneButtonGroup('record', 'expected', '1) Rec') +
             this.makeHtmlForOneButtonGroup('play', 'enabled', '2) Check') +
             this.makeHtmlForOneButtonGroup('next', 'enabled', '3) Next') +
-           "</div><div class='ui-audioFooter'>" +
-                //"<span id='audio-close' class='ui-icon ui-icon-close'>N</span>" +
+            "</div><div class='ui-audioFooter'>" +
+            //"<span id='audio-close' class='ui-icon ui-icon-close'>N</span>" +
             "</div>" +
             "<div class='ui-audioMeter'><canvas id='audio-meter' width='" +
-                this.levelCanvasWidth + "' height='" + this.levelCanvasHeight + "'></canvas>" +
+            this.levelCanvasWidth + "' height='" + this.levelCanvasHeight + "'></canvas>" +
             "<div><img id='audio-input-dev' src='' height='15' width='15' alt='mic'>" +
             "</div>" +
             "<ul id='audio-devlist'></ul>" +
             "</div>");
         bubble.css('z-index', 15003);
         editable.qtip({
-            id:'audio',
+            id: 'audio',
             position: {
                 my: 'left top',
                 at: 'top right',
@@ -259,15 +253,14 @@ class AudioRecording {
             },
             //content: { text: bubble, title: { text: "Record for read-aloud", button: true } },
             content: bubble,
-
             show: {
                 ready: true
             },
             hide: {
-                event: false, // works somehow with content.title.button to make close button work
-                effect: function() {
-                    (<any>(<qtipInterface>$('#qtip-audio')).qtip('api')).destroy();
-                    var current: JQuery = $('.ui-audioCurrent');
+                event: false,
+                effect: function () {
+                    $('#qtip-audio').qtip('api').destroy();
+                    var current = $('.ui-audioCurrent');
                     current.removeClass('ui-audioCurrent');
                 } // prevents it coming back on mouseenter Todo: remove highlights
             },
@@ -288,36 +281,18 @@ class AudioRecording {
                     // Adding thse .off calls seems to help...it's as if something causes this show event to happen
                     // more than once so the event handlers were being added repeatedly, but I haven't caught
                     // that actually happening. However, the off() calls seem to prevent it.
-                    $('#audio-close').off().click(function () {
-                        thisClass.hideAudio();
-                    });
+                    $('#audio-close').off().click(function (e) { return thisClass.hideRecordingTools(); });
                     $('#audio-next').off().click(function () {
                         thisClass.moveToNextSpan();
                     });
-                    $('#audio-prev').off().click(function () {
-                        thisClass.moveToPrevSpan();
-                    });
-                    $('#audio-record').off().mousedown(function () {
-                        thisClass.startRecordCurrent();
-                    }).mouseup(function() {
-                        thisClass.endRecordCurrent();
-                    });
-                    $('#audio-play').off().click(function() {
-                        thisClass.playCurrent();
-                    });
+                    $('#audio-prev').off().click(function (e) { return thisClass.moveToPrevSpan(); });
+                    $('#audio-record').off().mousedown(function (e) { return thisClass.startRecordCurrent(); }).mouseup(function (e) { return thisClass.endRecordCurrent(); });
+                    $('#audio-play').off().click(function (e) { return thisClass.playCurrent(); });
                     $('#player').off();
-                    $('#player').bind('error', function () {
-                        thisClass.cantPlay();
-                    });
-
-                    $('#player').bind('ended', function () {
-                        thisClass.playEnded();
-                    });
-                    $('#audio-input-dev').off().click(function () {
-                        thisClass.selectInputDevice();
-                    });
+                    $('#player').bind('error', function (e) { return thisClass.cantPlay(); });
+                    $('#player').bind('ended', function (e) { return thisClass.playEnded(); });
+                    $('#audio-input-dev').off().click(function (e) { return thisClass.selectInputDevice(); });
                     thisClass.setStatus('record', Status.Expected);
-
                     // This is easier to do here than in setPeakLevel,
                     // because it executes in the scope of the bubble
                     // iframe where $('#audio-meter') works.
@@ -328,31 +303,27 @@ class AudioRecording {
                     var firstSentence = editable.find('span.audio-sentence').first();
                     thisClass.setCurrentSpan($('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
                     thisClass.updateInputDeviceDisplay();
-            }
+                }
             }
         });
-    }
-
-    public hideAudio() {
+    };
+    AudioRecording.prototype.hideRecordingTools = function () {
         this.hiddenSourceBubbles.show();
         this.api.hide();
-    }
-
+    };
     // This gets invoked (via a non-object method of the same name in this file,
     // and one of the same name in CalledFromCSharp) when a C# event fires indicating
     // that we should display a different peak level. It draws a series of bars
     // (reminiscent of leds in a hardware level meter) within the canvas in the
     //  top right of the bubble to indicate the current peak level.
-    public setPeakLevel(level: string): void {
+    AudioRecording.prototype.setPeakLevel = function (level) {
         var ctx = this.levelCanvas.getContext("2d");
-
         // Erase the whole canvas
         var height = this.levelCanvasHeight;
         var width = this.levelCanvasWidth;
         var recordQtipColor = '#faf7cc'; // should match value in audioRecording.less
         ctx.fillStyle = recordQtipColor;
         ctx.fillRect(0, 0, width, height);
-
         // Draw the appropriate number and color of bars
         var gap = 2;
         var barHeight = 4;
@@ -365,72 +336,55 @@ class AudioRecording {
         ctx.fillStyle = '#0C8597'; // should match recordQtipForeground; or "#00FF00"; green
         for (var i = 0; i < showBars; i++) {
             var bottom = height - interval * i;
-            if (i >= greenBars) ctx.fillStyle = '96668f';//or "#FFFF00"; yellow
-            if (i >= greenBars + yellowBars) ctx.fillStyle = "#FF0000";
+            if (i >= greenBars)
+                ctx.fillStyle = '96668f'; //or "#FFFF00"; yellow
+            if (i >= greenBars + yellowBars)
+                ctx.fillStyle = "#FF0000";
             ctx.fillRect(gap, bottom - barHeight, width - gap - gap, barHeight);
         }
-    }
-
+    };
     // from http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-    private createUuid(): string {
+    AudioRecording.prototype.createUuid = function () {
         // http://www.ietf.org/rfc/rfc4122.txt
         var s = [];
         var hexDigits = "0123456789abcdef";
         for (var i = 0; i < 36; i++) {
             s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
         }
-        s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
-        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
+        s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
         s[8] = s[13] = s[18] = s[23] = "-";
-
         var uuid = s.join("");
         return uuid;
-    }
-
-    private md5(message): string {
+    };
+    AudioRecording.prototype.md5 = function (message) {
         var HEX_CHARS = '0123456789abcdef'.split('');
         var EXTRA = [128, 32768, 8388608, -2147483648];
         var blocks = [];
-
-        var h0,
-            h1,
-            h2,
-            h3,
-            a,
-            b,
-            c,
-            d,
-            bc,
-            da,
-            code,
-            first = true,
-            end = false,
-            index = 0,
-            i,
-            start = 0,
-            bytes = 0,
-            length = message.length;
+        var h0, h1, h2, h3, a, b, c, d, bc, da, code, first = true, end = false, index = 0, i, start = 0, bytes = 0, length = message.length;
         blocks[16] = 0;
         var SHIFT = [0, 8, 16, 24];
-
         do {
             blocks[0] = blocks[16];
             blocks[16] = blocks[1] = blocks[2] = blocks[3] =
                 blocks[4] = blocks[5] = blocks[6] = blocks[7] =
-                blocks[8] = blocks[9] = blocks[10] = blocks[11] =
-                blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+                    blocks[8] = blocks[9] = blocks[10] = blocks[11] =
+                        blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
             for (i = start; index < length && i < 64; ++index) {
                 code = message.charCodeAt(index);
                 if (code < 0x80) {
                     blocks[i >> 2] |= code << SHIFT[i++ & 3];
-                } else if (code < 0x800) {
+                }
+                else if (code < 0x800) {
                     blocks[i >> 2] |= (0xc0 | (code >> 6)) << SHIFT[i++ & 3];
                     blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-                } else if (code < 0xd800 || code >= 0xe000) {
+                }
+                else if (code < 0xd800 || code >= 0xe000) {
                     blocks[i >> 2] |= (0xe0 | (code >> 12)) << SHIFT[i++ & 3];
                     blocks[i >> 2] |= (0x80 | ((code >> 6) & 0x3f)) << SHIFT[i++ & 3];
                     blocks[i >> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
-                } else {
+                }
+                else {
                     code = 0x10000 + (((code & 0x3ff) << 10) | (message.charCodeAt(++index) & 0x3ff));
                     blocks[i >> 2] |= (0xf0 | (code >> 18)) << SHIFT[i++ & 3];
                     blocks[i >> 2] |= (0x80 | ((code >> 12) & 0x3f)) << SHIFT[i++ & 3];
@@ -448,7 +402,6 @@ class AudioRecording {
                 blocks[14] = bytes << 3;
                 end = true;
             }
-
             if (first) {
                 a = blocks[0] - 680876937;
                 a = (a << 7 | a >>> 25) - 271733879 << 0;
@@ -458,7 +411,8 @@ class AudioRecording {
                 c = (c << 17 | c >>> 15) + d << 0;
                 b = (a ^ (c & (d ^ a))) + blocks[3] - 1316259209;
                 b = (b << 22 | b >>> 10) + c << 0;
-            } else {
+            }
+            else {
                 a = h0;
                 b = h1;
                 c = h2;
@@ -472,7 +426,6 @@ class AudioRecording {
                 b += (a ^ (c & (d ^ a))) + blocks[3] - 1044525330;
                 b = (b << 22 | b >>> 10) + c << 0;
             }
-
             a += (d ^ (b & (c ^ d))) + blocks[4] - 176418897;
             a = (a << 7 | a >>> 25) + b << 0;
             d += (c ^ (a & (b ^ c))) + blocks[5] + 1200080426;
@@ -601,21 +554,20 @@ class AudioRecording {
             c = (c << 15 | c >>> 17) + d << 0;
             b += (d ^ (c | ~a)) + blocks[9] - 343485551;
             b = (b << 21 | b >>> 11) + c << 0;
-
             if (first) {
                 h0 = a + 1732584193 << 0;
                 h1 = b - 271733879 << 0;
                 h2 = c - 1732584194 << 0;
                 h3 = d + 271733878 << 0;
                 first = false;
-            } else {
+            }
+            else {
                 h0 = h0 + a << 0;
                 h1 = h1 + b << 0;
                 h2 = h2 + c << 0;
                 h3 = h3 + d << 0;
             }
         } while (!end);
-
         var hex = HEX_CHARS[(h0 >> 4) & 0x0F] + HEX_CHARS[h0 & 0x0F];
         hex += HEX_CHARS[(h0 >> 12) & 0x0F] + HEX_CHARS[(h0 >> 8) & 0x0F];
         hex += HEX_CHARS[(h0 >> 20) & 0x0F] + HEX_CHARS[(h0 >> 16) & 0x0F];
@@ -633,24 +585,20 @@ class AudioRecording {
         hex += HEX_CHARS[(h3 >> 20) & 0x0F] + HEX_CHARS[(h3 >> 16) & 0x0F];
         hex += HEX_CHARS[(h3 >> 28) & 0x0F] + HEX_CHARS[(h3 >> 24) & 0x0F];
         return hex;
-
-    }
-
+    };
     /**
  * Retrieve data from localhost. A similar but more complex version is in interIframeChannel.ts
  * @param {String} url The URL to request
  * @param {Function} callback Function to call when the ajax request returns
   * NOTE: If dataValue is a string, it must NOT be URI encoded.
  */
-    private simpleAjaxGet(url: string, callback: any): void {
-        var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'GET', url: url };
-
+    AudioRecording.prototype.simpleAjaxGet = function (url, callback) {
+        var ajaxSettings = { type: 'GET', url: url };
         $.ajax(ajaxSettings)
             .done(function (data) {
-                callback(data);
-            });
-    }
-
+            callback(data);
+        });
+    };
     // We want to make out of each sentence in root a span which has a unique ID.
     // If the text is already so marked up, we want to keep the existing ids
     // AND the recordingID checksum attribute (if any) that indicates what
@@ -658,11 +606,11 @@ class AudioRecording {
     // makeSentenceLeaf does this for roots which don't have children (except a few
     // special cases); this root method scans down and does it for each such child
     // in a root (possibly the root itself, if it has no children).
-    private makeSentenceSpans(root: JQuery): void {
+    AudioRecording.prototype.makeSentenceSpans = function (root) {
         var children = root.children();
-        var processedChild: boolean = false; // Did we find a significant child?
+        var processedChild = false; // Did we find a significant child?
         for (var i = 0; i < children.length; i++) {
-            var child: HTMLElement = children[i];
+            var child = children[i];
             var name = child.nodeName.toLowerCase();
             // Review: is there a better way to pick out the elements that can occur within content elements?
             if (name != 'span' && name != 'br' && name != 'i' && name != 'b' && name != 'u') {
@@ -670,25 +618,22 @@ class AudioRecording {
                 this.makeSentenceSpans($(child));
             }
         }
-        if (!processedChild) // root is a leaf; process its actual content
+        if (!processedChild)
             this.makeSentenceSpansLeaf(root);
         // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
-    }
-
+    };
     // The goal for existing markup is that if any existing audio-sentence span has an md5 that matches the content of a
     // current sentence, we want to preserve the association between that content and ID (and possibly recording).
     // Where there aren't exact matches, but there are existing audio-sentence spans, we keep the ids as far as possible,
     // just using the original order, since it is possible we have a match and only spelling or punctuation changed.
-    private makeSentenceSpansLeaf(elt: JQuery): void {
+    AudioRecording.prototype.makeSentenceSpansLeaf = function (elt) {
         var markedSentences = elt.find("span.audio-sentence");
         var reuse = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
-        markedSentences.each(function(index) {
+        markedSentences.each(function (index) {
             reuse.push({ id: $(this).attr('id'), md5: $(this).attr('recordingmd5') });
             $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
         });
-
-        var fragments: textFragment[] = libsynphony.stringToSentences(elt.html());
-
+        var fragments = libsynphony.stringToSentences(elt.html());
         // If any new sentence has an md5 that matches a saved one, attatch that id/md5 pair to that fragment.
         for (var i = 0; i < fragments.length; i++) {
             var fragment = fragments[i];
@@ -698,96 +643,88 @@ class AudioRecording {
                     if (currentMd5 === reuse[j].md5) {
                         // It's convenient here (very locally) to add a field to fragment which is not part
                         // of its spec in libsynphony.
-                        (<any>fragment).matchingAudioSpan = reuse[j];
+                        fragment.matchingAudioSpan = reuse[j];
                         reuse.splice(j, 1); // don't reuse again
                         break;
                     }
                 }
             }
         }
-
         // Assemble the new HTML, reusing old IDs where possible and generating new ones where needed.
         var newHtml = "";
         for (var i = 0; i < fragments.length; i++) {
             var fragment = fragments[i];
-
             if (!this.isRecordable(fragment)) {
                 // this is inter-sentence space (or white space before first sentence).
                 newHtml += fragment.text;
-            } else {
-                var newId: string = null;
-                var newMd5: string = '';
-                var reuseThis = (<any>fragment).matchingAudioSpan;
+            }
+            else {
+                var newId = null;
+                var newMd5 = '';
+                var reuseThis = fragment.matchingAudioSpan;
                 if (!reuseThis && reuse.length > 0) {
                     reuseThis = reuse[0]; // use first if none matches (preserves order at least)
                     reuse.splice(0, 1);
                 }
-                if (reuseThis) { // SOMETHING remains we can reuse
+                if (reuseThis) {
                     newId = reuseThis.id;
                     newMd5 = ' recordingmd5="' + reuseThis.md5 + '"';
                 }
                 if (!newId) {
                     newId = this.createUuid();
-                    if (/^\d/.test(newId)) newId = 'i' + newId; // valid ID in XHTML can't start with digit
+                    if (/^\d/.test(newId))
+                        newId = 'i' + newId; // valid ID in XHTML can't start with digit
                 }
                 newHtml += '<span id= "' + newId + '" class="audio-sentence"' + newMd5 + '>' + fragment.text + '</span>';
             }
         }
-
         // set the html
         elt.html(newHtml);
-    }
-
-    private isRecordable(fragment: textFragment): Boolean {
-        if (fragment.isSpace) return false; // this seems to be reliable
+    };
+    AudioRecording.prototype.isRecordable = function (fragment) {
+        if (fragment.isSpace)
+            return false; // this seems to be reliable
         // initial white-space fragments may currently be marked sentence
         var test = fragment.text.replace(/<br *[^>]*\/?>/g, " ");
         // and some may contain only nbsp
         test = test.replace("&nbsp;", " ");
         return !test.match(/^\s*$/);
-    }
-
+    };
     // Clean up stuff audio recording leaves around that should not be saved.
-    public cleanupAudio(): void {
+    AudioRecording.prototype.cleanupAudio = function () {
         $('span.ui-audioCurrent').removeClass('ui-audioCurrent');
-    }
-
-    private fireCSharpEvent(eventName, eventData): void {
+    };
+    AudioRecording.prototype.fireCSharpEvent = function (eventName, eventData) {
         // Note: other implementations of fireCSharpEvent have 'view':'window', but the TS compiler does
         // not like this. It seems to work fine without it, and I don't know why we had it, so I am just
         // leaving it out.
-        var event = new MessageEvent(eventName, {'bubbles': true, 'cancelable': true, 'data': eventData });
+        var event = new MessageEvent(eventName, { 'bubbles': true, 'cancelable': true, 'data': eventData });
         document.dispatchEvent(event);
-    }
-}
-
+    };
+    return AudioRecording;
+})();
 var audioRecorder;
-var libsynphony: libSynphony;
-
+var libsynphony;
 // Get our instance created
 if (typeof ($) === "function") {
-
     // Running for real, and jquery properly loaded first
     $(document).ready(function () {
         audioRecorder = new AudioRecording();
         libsynphony = new libSynphony();
     });
 }
-
 // Function called to start things going.
-// Called by 'calledByCSharp.recordAudio
-function recordAudio() {
-    audioRecorder.startRecording();
+// Called by code in talkingBooks.ts
+function showRecordingTools() {
+    audioRecorder.showRecordingTools();
 }
-
-function hideAudio() {
-    audioRecorder.hideAudio();
+function hideRecordingTools() {
+    audioRecorder.hideRecordingTools();
 }
-
 function cleanupAudio() {
     audioRecorder.cleanupAudio();
 }
-
-function setPeakLevel(level:string) {
+function setPeakLevel(level) {
     audioRecorder.setPeakLevel(level);
 }
+//# sourceMappingURL=audioRecording.js.map

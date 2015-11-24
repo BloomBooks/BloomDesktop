@@ -90,11 +90,6 @@ namespace Bloom.Edit
 			// currently nothing to do.
 		}
 
-		internal void ShowRecordingControls()
-		{
-			_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.showRecordingControls(); }");
-		}
-
 		private void HandleControlKeyEvent(object keyData)
 		{
 			if(_visible && (Keys)keyData == (Keys.Control | Keys.N))
@@ -934,11 +929,7 @@ namespace Bloom.Edit
 			return _browser1.WebBrowser.Window.Document.GetElementById("pure-toggle-right") as GeckoInputElement;
 		}
 
-		public GeckoInputElement GetShowRecordingToolsCheckbox()
-		{
-			var accordion = _browser1.WebBrowser.Window.Document.GetElementById("accordion") as GeckoIFrameElement;
-			return accordion.ContentDocument.GetElementById("showRecordingTools") as GeckoInputElement;
-		}
+		public Browser Browser {  get { return _browser1; } }
 
 		private void _copyButton_Click(object sender, EventArgs e)
 		{

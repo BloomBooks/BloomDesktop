@@ -10,19 +10,22 @@ if (typeof ($) === "function") {
             if (!page)
                 return; // unit testing?
             if (this.checked) {
-                page.contentWindow.recordAudio();
+                page.contentWindow.showRecordingTools();
             }
             else {
-                page.contentWindow.hideAudio();
+                page.contentWindow.hideRecordingTools();
             }
         });
     });
 }
+// Wish this was also called showRecordingTools. But the compiler claims it is a conflict with the top-level
+// function by that name in audioRecording.ts. I don't think both are loaded into the same frame, so it should
+// be OK. But maybe it is safer this way anyway.
 function showRecordingControls() {
     $('#showRecordingTools').get(0).checked = true;
     var page = parent.window.document.getElementById('page');
     if (!page)
         return; // unit testing?
-    page.contentWindow.recordAudio();
+    page.contentWindow.showRecordingTools();
 }
 //# sourceMappingURL=talkingBook.js.map

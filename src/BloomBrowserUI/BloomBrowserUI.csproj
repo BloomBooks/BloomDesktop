@@ -29,14 +29,11 @@
     <Content Include="bookEdit\accordion\accordion.css">
       <DependentUpon>accordion.less</DependentUpon>
     </Content>
-    <Content Include="audio\audioRecording.css">
-      <DependentUpon>audioRecording.less</DependentUpon>
-    </Content>
     <Content Include="bookEdit\accordion\Accordion.htm" />
     <Content Include="bookEdit\accordion\accordion.js" />
     <Content Include="bookEdit\accordion\AudioRecordingTool\AudioRecordingTool.htm" />
-    <Content Include="bookEdit\accordion\DecodableRT\DecodableRT.htm" />
-    <Content Include="bookEdit\accordion\LeveledRT\LeveledRT.htm" />
+    <Content Include="bookEdit\accordion\decodableReader\decodableReader.htm" />
+    <Content Include="bookEdit\accordion\leveledReader\leveledReader.htm" />
     <Content Include="bookEdit\accordion\PageElements\PageElements.htm" />
     <Content Include="bookEdit\accordion\readerTools.css">
       <DependentUpon>readerTools.less</DependentUpon>
@@ -65,6 +62,9 @@
     <Content Include="bookEdit\css\BookPagesThumbnailList.less" />
     <Content Include="bookEdit\accordion\AudioRecordingTool\AudioRecordingTool.jade" />
     <Content Include="bookEdit\accordion\talkingBook\talkingBook.jade" />
+    <Content Include="bookEdit\accordion\talkingBook\audioRecording.less" />
+    <Content Include="bookEdit\accordion\decodableReader\decodableReader.jade" />
+    <Content Include="bookEdit\accordion\leveledReader\leveledReader.jade" />
     <None Include="bookEdit\sourceBubbles\sourceBubbles.less" />
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
@@ -114,7 +114,7 @@
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
-    <TypeScriptCompile Include="audio\audioRecording.ts" />
+    <TypeScriptCompile Include="bookEdit\accordion\talkingBook\audioRecording.ts" />
     <TypeScriptCompile Include="bookEdit\accordion\talkingBook\talkingBook.ts" />
     <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
     <TypeScriptCompile Include="bookEdit\js\BloomAccordion.ts" />
@@ -302,8 +302,6 @@
     <Content Include="bookEdit\ReaderToolsTests.jstd" />
     <Content Include="bookEdit\SynphonyApiTests.jstd" />
     <Content Include="bookEdit\accordion\Accordion.jade" />
-    <Content Include="bookEdit\accordion\DecodableRT\DecodableRT.jade" />
-    <Content Include="bookEdit\accordion\LeveledRT\LeveledRT.jade" />
     <Content Include="bookEdit\accordion\PageElements\PageElements.jade" />
     <Content Include="bookEdit\accordion\settings\Settings.jade" />
     <Content Include="bookEdit\readerSetup\ReaderSetup.jade" />
@@ -331,7 +329,6 @@
     <Content Include="compilerconfig.json.defaults">
       <DependentUpon>compilerconfig.json</DependentUpon>
     </Content>
-    <Content Include="audio\audioRecording.less" />
     <Content Include="packages.config" />
     <Content Include="epub\baseEpub.less" />
     <Content Include="epub\bloomEpubPreview.less" />

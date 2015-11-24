@@ -386,7 +386,10 @@ namespace Bloom.Book
 		}
 		public static BookMetaData FromString(string input)
 		{
-			return JsonConvert.DeserializeObject<BookMetaData>(input);
+			var result = JsonConvert.DeserializeObject<BookMetaData>(input);
+			foreach (var tool in result.Tools.Where(t => t is UnknownTool).ToArray())
+				result.Tools.Remove(tool);
+			return result;
 		}
 
 		public static BookMetaData FromFolder(string bookFolderPath)
@@ -588,7 +591,7 @@ namespace Bloom.Book
 
 		/// <summary>These panels are being displayed in the accordion for this book</summary>
 		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
-		[JsonProperty("tools")]
+		[JsonProperty("tools",ItemConverterType = typeof(AccordionToolConverter))]
 		public List<AccordionTool> Tools { get; set; }
 
 		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]

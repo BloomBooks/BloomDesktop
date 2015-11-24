@@ -40,7 +40,7 @@ var scripts = [
     'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
     'bookEdit/js/libsynphony/synphony_lib.js',
     'bookEdit/js/libsynphony/bloom_lib.js',
-    'audio/audioRecording.js'
+    'bookEdit/accordion/talkingBook/audioRecording.js'
 ];
 
 var styleSheets = [
@@ -54,7 +54,7 @@ var styleSheets = [
     'bookEdit/StyleEditor/StyleEditor.css',
     'bookEdit/css/bloomDialog.css',
     'lib/long-press/longpress.css',
-    'audio/audioRecording.css'
+    'bookEdit/accordion/talkingBook/audioRecording.css'
 ];
 
 for (var i = 0; i < scripts.length; i++) {

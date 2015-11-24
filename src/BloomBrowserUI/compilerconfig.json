@@ -128,8 +128,8 @@
     "sourceMap": true
   },
   {
-    "outputFile": "audio/audioRecording.css",
-    "inputFile": "audio/audioRecording.less",
+    "outputFile": "bookEdit/accordion/talkingBook/audioRecording.css",
+    "inputFile": "bookEdit/accordion/talkingBook/audioRecording.less",
     "minify": {
       "enabled": false
     },
