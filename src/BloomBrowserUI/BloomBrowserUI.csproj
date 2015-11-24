@@ -42,6 +42,7 @@
       <DependentUpon>readerTools.less</DependentUpon>
     </Content>
     <Content Include="bookEdit\accordion\settings\Settings.htm" />
+    <Content Include="bookEdit\accordion\talkingBook\talkingBook.htm" />
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.htm" />
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.js" />
     <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.css">
@@ -63,6 +64,7 @@
     <Content Include="bookEdit\js\readerToolsBootstrap.js" />
     <Content Include="bookEdit\css\BookPagesThumbnailList.less" />
     <Content Include="bookEdit\accordion\AudioRecordingTool\AudioRecordingTool.jade" />
+    <Content Include="bookEdit\accordion\talkingBook\talkingBook.jade" />
     <None Include="bookEdit\sourceBubbles\sourceBubbles.less" />
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
@@ -113,6 +115,7 @@
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
     <TypeScriptCompile Include="audio\audioRecording.ts" />
+    <TypeScriptCompile Include="bookEdit\accordion\talkingBook\talkingBook.ts" />
     <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
     <TypeScriptCompile Include="bookEdit\js\BloomAccordion.ts" />
     <TypeScriptCompile Include="bookEdit\js\bloomHintBubbles.ts" />

@@ -2,8 +2,8 @@ html
 	head
 
 	body
-		h3(data-panelId='DecodableRT', data-markuptype='1', data-order='10', data-i18n='Accordion.DecodableReaderTool') Decodable Reader Tool
-		div(data-panelId='DecodableRT')
+		h3(data-panelId='decodableReader', data-markuptype='1', data-order='10', data-i18n='Accordion.DecodableReaderTool') Decodable Reader Tool
+		div(data-panelId='decodableReader')
 			#setupStages
 				img#decodable-edit(src='/bloom/images/edit-white.png')
 				span.setup.noSelect
@@ -48,5 +48,5 @@ html
 			script(type='text/javascript').
 				$(document).ready(function() {
 					// this timeout is different than the LeveledRT timeout to prevent initializing synphony twice
-					setTimeout(initializeDecodableRT, 100);
+					setTimeout(initializeDecodableReader, 100);
 				});

@@ -78,11 +78,11 @@ class CalledByCSharp {
       contentWindow['SetCopyrightAndLicense'](contents);
   }
 
-    recordAudio() {
-      var contentWindow = this.getPageContent();
+    showRecordingControls() {
+      var contentWindow = this.getAccordionContent();
         if (!contentWindow) return;
-        if (typeof contentWindow['recordAudio'] === 'function') {
-            contentWindow['recordAudio']();
+        if (typeof contentWindow['showRecordingControls'] === 'function') {
+            contentWindow['showRecordingControls']();
         }
     }
 

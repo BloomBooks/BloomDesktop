@@ -107,7 +107,7 @@ function setupReaderKeyAndFocusHandlers(container, model) {
         }
     });
 }
-function initializeDecodableRT() {
+function initializeDecodableReader() {
     // load synphony settings
     loadSynphonySettings();
     // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
@@ -134,7 +134,7 @@ function initializeDecodableRT() {
     setTimeout(function () { resizeWordList(); }, 200);
     setTimeout(function () { $.divsToColumns('letter'); }, 100);
 }
-function initializeLeveledRT() {
+function initializeLeveledReader() {
     // load synphony settings
     loadSynphonySettings();
     $('#incLevel').onOnce('click.readerTools', function () {
@@ -266,7 +266,7 @@ function loadExternalLink(url) {
  */
 function resizeWordList(startTimeout) {
     if (startTimeout === void 0) { startTimeout = true; }
-    var div = $('body').find('div[data-panelId="DecodableRT"]');
+    var div = $('body').find('div[data-panelId="decodableReader"]');
     if (div.length === 0)
         return; // if not found, the tool was closed
     var wordList = div.find('#wordList');

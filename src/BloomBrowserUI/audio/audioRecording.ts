@@ -54,6 +54,7 @@ class AudioRecording {
     levelCanvasHeight: number = 80;
     hiddenSourceBubbles: JQuery;
     audioDevicesUrl = '/bloom/audioDevices';
+    api:any; // the api object we get from the show event after launching the bubble dialog.
 
     private moveToNextSpan(): void {
         var current: JQuery = $('.ui-audioCurrent');
@@ -282,13 +283,13 @@ class AudioRecording {
             },
             events: {
                 show: function (event, api) {
+                    thisClass.api = api;
                     // I've sometimes observed events like click being handled repeatedly for a single click.
                     // Adding thse .off calls seems to help...it's as if something causes this show event to happen
                     // more than once so the event handlers were being added repeatedly, but I haven't caught
                     // that actually happening. However, the off() calls seem to prevent it.
                     $('#audio-close').off().click(function () {
-                        thisClass.hiddenSourceBubbles.show();
-                        api.hide();
+                        thisClass.hideAudio();
                     });
                     $('#audio-next').off().click(function () {
                         thisClass.moveToNextSpan();
@@ -330,6 +331,11 @@ class AudioRecording {
             }
             }
         });
+    }
+
+    public hideAudio() {
+        this.hiddenSourceBubbles.show();
+        this.api.hide();
     }
 
     // This gets invoked (via a non-object method of the same name in this file,
@@ -772,6 +778,10 @@ if (typeof ($) === "function") {
 // Called by 'calledByCSharp.recordAudio
 function recordAudio() {
     audioRecorder.startRecording();
+}
+
+function hideAudio() {
+    audioRecorder.hideAudio();
 }
 
 function cleanupAudio() {

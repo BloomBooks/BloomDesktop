@@ -87,18 +87,12 @@ namespace Bloom.Edit
 
 		private void SetupBrowserContextMenu()
 		{
-			_browser1.ContextMenuProvider = args =>
-			{
-				var recordItem = new MenuItem("Record Audio (experimental)", (sender, eventArgs) => RecordAudio());
-				args.ContextMenu.MenuItems.Add(recordItem);
-				return false; // Also show standard menu options
-			};
+			// currently nothing to do.
 		}
 
-		private object RecordAudio()
+		internal void ShowRecordingControls()
 		{
-			_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.recordAudio(); }");
-			return null;
+			_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.showRecordingControls(); }");
 		}
 
 		private void HandleControlKeyEvent(object keyData)
@@ -938,6 +932,12 @@ namespace Bloom.Edit
 		public GeckoInputElement GetShowAccordionCheckbox()
 		{
 			return _browser1.WebBrowser.Window.Document.GetElementById("pure-toggle-right") as GeckoInputElement;
+		}
+
+		public GeckoInputElement GetShowRecordingToolsCheckbox()
+		{
+			var accordion = _browser1.WebBrowser.Window.Document.GetElementById("accordion") as GeckoIFrameElement;
+			return accordion.ContentDocument.GetElementById("showRecordingTools") as GeckoInputElement;
 		}
 
 		private void _copyButton_Click(object sender, EventArgs e)

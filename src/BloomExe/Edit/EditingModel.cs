@@ -58,6 +58,7 @@ namespace Bloom.Edit
 		private Dictionary<string, IPage> _templatePagesDict;
 		private string _lastPageAdded;
 		internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
+		private bool _showRecordingtools;
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
@@ -665,6 +666,13 @@ namespace Bloom.Edit
 #else
 			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
 #endif
+			// Does not work, because changing the state of the check box by javascript does not trigger the change function.
+			//var recordingCheckBox = _view.GetShowRecordingToolsCheckbox();
+			//if (recordingCheckBox != null)
+			//	recordingCheckBox.Checked = _showRecordingtools;
+
+			if (_showRecordingtools)
+				_view.ShowRecordingControls();
 		}
 
 		/// <summary>
@@ -869,24 +877,27 @@ namespace Bloom.Edit
 			return returnVal;
 		}
 
+		/// <summary>
+		/// Used to save various settings relating to the toolbox. Passed a string which is typically two or three elements
+		/// divided by a tab.
+		/// - may be passed 'active' followed by the ID of one of the check boxes that indicates whether the DR, LR, or TB tools are
+		/// in use, followed by "1" if it is used, or "0" if not. These IDs are arranged to be the tool name followed by "Check".
+		/// - may be passed 'current' followed by the name of one of the toolbox tools
+		/// - may be passed 'state' followed by the name of one of the tools and its current state string.
+		/// </summary>
+		/// <param name="data"></param>
 		private void SaveAccordionSettings(string data)
 		{
 			var args = data.Split(new[] { '\t' });
 
 			switch (args[0])
 			{
-				case "showART":
-				case "showDRT":
-				case "showLRT":
-					UpdateActiveToolSetting(AccordionCatalog.GetToolNameFromCheckbox(args[0]), args[1] == "1");
+				case "active":
+					UpdateActiveToolSetting(args[1].Substring(0, args[1].Length - "Check".Length), args[2] == "1");
 					return;
 
-				//case "showPE":
-				//	UpdateActiveToolSetting("pageElements", args[1] == "1");
-				//	return;
-
 				case "current":
-					_currentlyDisplayedBook.BookInfo.CurrentTool = AccordionCatalog.GetToolNameFromDirectory(args[1]);
+					_currentlyDisplayedBook.BookInfo.CurrentTool = args[1];
 					return;
 
 				case "state":
@@ -927,10 +938,10 @@ namespace Bloom.Edit
 
 			var settings = new Dictionary<string, object>
 			{
-				{"current", AccordionCatalog.GetDirectoryFromToolName(_currentlyDisplayedBook.BookInfo.CurrentTool)}
+				{"current", _currentlyDisplayedBook.BookInfo.CurrentTool}
 			};
 
-			RetrieveToolSettings(tools, "audioRecording", settings);
+			RetrieveToolSettings(tools, "talkingBook", settings);
 			RetrieveToolSettings(tools, "decodableReader", settings);
 			RetrieveToolSettings(tools, "leveledReader", settings);
 
@@ -950,7 +961,7 @@ namespace Bloom.Edit
 
 			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "decodableReader");
 			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "leveledReader");
-			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "audioRecording");
+			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "talkingBook");
 
 			// Load settings into the accordion panel
 			AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "settings", "Settings.htm")));
@@ -969,18 +980,20 @@ namespace Bloom.Edit
 		{
 			var toolObject = toolList.FirstOrDefault(t => t.Name == toolName);
 			if (toolObject != null && !string.IsNullOrEmpty(toolObject.State))
-				settingsObject.Add(AccordionCatalog.GetStateKeyFromToolName(toolObject.Name), toolObject.State);
+				settingsObject.Add(toolObject.Name + "State", toolObject.State);
 		}
 
 		private void LoadPanelIntoAccordionIfAvailable(HtmlDom domForAccordion, List<AccordionTool> toolList, List<string> checkedBoxes, string toolName)
 		{
 			if (toolList.Any(t => t.Name == toolName))
 			{
+				// For all the toolbox tools, the tool name is used as the name of both the folder where the
+				// assets for that tool are kept, and the name of the main htm file that represents the tool.
 				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(
 					_accordionFolder,
-					AccordionCatalog.GetDirectoryFromToolName(toolName),
-					AccordionCatalog.GetDirectoryFromToolName(toolName) + ".htm")));
-				checkedBoxes.Add(AccordionCatalog.GetCheckboxFromToolName(toolName));
+					toolName,
+					toolName + ".htm")));
+				checkedBoxes.Add(toolName + "Check");
 			}
 		}
 
@@ -1089,6 +1102,9 @@ namespace Bloom.Edit
 			var showAccordion = checkbox.Checked;
 			_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable = showAccordion;
 			_currentlyDisplayedBook.BookInfo.Save();
+
+			var recordingCheckBox = _view.GetShowRecordingToolsCheckbox();
+			_showRecordingtools = recordingCheckBox != null && recordingCheckBox.Checked;
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying

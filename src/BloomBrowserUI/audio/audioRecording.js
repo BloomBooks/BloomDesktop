@@ -276,13 +276,13 @@ var AudioRecording = (function () {
             },
             events: {
                 show: function (event, api) {
+                    thisClass.api = api;
                     // I've sometimes observed events like click being handled repeatedly for a single click.
                     // Adding thse .off calls seems to help...it's as if something causes this show event to happen
                     // more than once so the event handlers were being added repeatedly, but I haven't caught
                     // that actually happening. However, the off() calls seem to prevent it.
                     $('#audio-close').off().click(function () {
-                        thisClass.hiddenSourceBubbles.show();
-                        api.hide();
+                        thisClass.hideAudio();
                     });
                     $('#audio-next').off().click(function () {
                         thisClass.moveToNextSpan();
@@ -322,6 +322,10 @@ var AudioRecording = (function () {
                 }
             }
         });
+    };
+    AudioRecording.prototype.hideAudio = function () {
+        this.hiddenSourceBubbles.show();
+        this.api.hide();
     };
     // This gets invoked (via a non-object method of the same name in this file,
     // and one of the same name in CalledFromCSharp) when a C# event fires indicating
@@ -729,6 +733,9 @@ if (typeof ($) === "function") {
 // Called by 'calledByCSharp.recordAudio
 function recordAudio() {
     audioRecorder.startRecording();
+}
+function hideAudio() {
+    audioRecorder.hideAudio();
 }
 function cleanupAudio() {
     audioRecorder.cleanupAudio();
