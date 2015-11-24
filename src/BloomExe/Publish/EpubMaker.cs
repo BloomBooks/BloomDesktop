@@ -690,8 +690,9 @@ namespace Bloom.Publish
 				{
 					path = modifiedPath;
 				}
-				//here we're either setting the same path, the same but stripped of a query, or a modified
-				HtmlDom.SetImageElementUrl(new ElementProxy(element), UrlPathString.CreateFromReallyUnencodedString(path));
+				// here we're either setting the same path, the same but stripped of a query, or a modified one.
+				// In call cases, it really, truly is unencoded, so make sure the path doesn't do any more unencoding.
+				HtmlDom.SetImageElementUrl(new ElementProxy(element), UrlPathString.CreateFromUnencodedString(path, true));
 			}
 		}
 

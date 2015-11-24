@@ -32,7 +32,7 @@ namespace BloomTests.Publish
 		{
 			if (outputImageName == null)
 				outputImageName = firstImageFileName;
-		SetDom(@"<div class='bloom-page'>
+			SetDom(@"<div class='bloom-page'>
 						<div id='somewrapper'>
 							<div id='test' class='bloom-translationGroup bloom-requiresParagraphs' lang=''>
 								<div aria-describedby='qtip-1' class='bloom-editable' lang='en'>
