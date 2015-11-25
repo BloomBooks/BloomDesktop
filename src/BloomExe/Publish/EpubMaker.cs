@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -11,6 +12,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Bloom.Book;
 using BloomTemp;
+using SIL.IO;
 using SIL.Xml;
 
 namespace Bloom.Publish
@@ -88,8 +90,7 @@ namespace Bloom.Publish
 		/// </summary>
 		public void StageEpub()
 		{
-			if (_stagingFolder != null)
-				_stagingFolder.Dispose();
+			Debug.Assert(_stagingFolder == null, "EpubMaker should only be used once");
 			var epubExport = "Epub export";
 			//I (JH) kept having trouble making epubs because this kept getting locked.
 			SIL.IO.DirectoryUtilities.DeleteDirectoryRobust(Path.Combine(Path.GetTempPath(), epubExport));
@@ -100,8 +101,6 @@ namespace Bloom.Publish
 			// However, it needs to be something we can put in a URL without complications,
 			// so a guid is better than say the book's own folder name.
 			StagingDirectory = Path.Combine(_stagingFolder.FolderPath, _book.ID);
-			if (Directory.Exists(StagingDirectory))
-				Directory.Delete(StagingDirectory, true);
 			// in case of previous versions // Enhance: delete when done? Generate new name if conflict?
 			var contentFolderName = "content";
 			_contentFolder = Path.Combine(StagingDirectory, contentFolderName);
@@ -229,7 +228,7 @@ namespace Bloom.Publish
 			var spansWithAudio =
 				spansWithIds.Where(x =>AudioPathForId(x.Attributes["id"].Value) != null);
 			if (!spansWithAudio.Any())
-				return; // todo: test this case
+				return;
 			var overlayName = GetOverlayName(pageDocName);
 			_manifestItems.Add(overlayName);
 			string smilNamespace = "http://www.w3.org/ns/SMIL";
@@ -252,13 +251,16 @@ namespace Bloom.Publish
 			{
 				var spanId = span.Attributes["id"].Value;
 				var path = AudioPathForId(spanId);
+				var epubPath = CopyFileToEpub(path);
 				seq.Add(new XElement(smil+"par",
 					new XAttribute("id", "s" + index++),
 					new XElement(smil + "text",
 						new XAttribute("src", pageDocName + "#" + spanId)),
 						new XElement(smil + "audio",
-							new XAttribute("src", "audio/" + Path.GetFileName(path)))));
-				CopyFileToEpub(path);
+							// Note that we don't need to preserve any audio/ in the path.
+							// We now mangle file names so as to replace any / (with _2f) so all files
+							// are at the top level in the epub. Makes one less complication for readers.
+							new XAttribute("src", Path.GetFileName(epubPath)))));
 			}
 			var overlayPath = Path.Combine(_contentFolder, overlayName);
 			using (var writer = XmlWriter.Create(overlayPath))
@@ -366,6 +368,9 @@ namespace Bloom.Publish
 				var url = HtmlDom.GetImageElementUrl(img);
 				if (url == null || url.NotEncoded=="")
 					continue; // very weird, but all we can do is ignore it.
+				// Notice that we use only the path part of the url. For some unknown reason, some bloom books
+				// (e.g., El Nino in the library) have a query in some image sources, and at least some epub readers
+				// can't cope with it.
 				var filename = url.PathOnly.NotEncoded;
 				if (string.IsNullOrEmpty(filename))
 					continue;
@@ -376,11 +381,6 @@ namespace Bloom.Publish
 				else
 					img.ParentNode.RemoveChild(img);
 			}
-		}
-
-		private static string StripQuery(string url)
-		{
-			return url.Split('?')[0];
 		}
 
 		// Combines staging and finishing (currently just used in tests).
@@ -432,7 +432,7 @@ namespace Bloom.Publish
 			_manifestItems.Add("fonts.css");
 		}
 
-		void AddFontFace(StringBuilder sb, string name, string weight, string style, string path)
+		internal static void AddFontFace(StringBuilder sb, string name, string weight, string style, string path)
 		{
 			if (path == null)
 				return;
@@ -680,8 +680,9 @@ namespace Bloom.Publish
 
 			foreach (XmlElement element in HtmlDom.SelectChildImgAndBackgroundImageElements(pageDom.RawDom.DocumentElement))
 			{
-				//notice, we're stripping off the query. I (JH) don't know why that is needed, but there is an uncommented
-				//unit test that verifies it's happening, so we do it.
+				// Notice that we use only the path part of the url. For some unknown reason, some bloom books
+				// (e.g., El Nino in the library) have a query in some image sources, and at least some epub readers
+				// can't cope with it.
 				var path = HtmlDom.GetImageElementUrl(element).PathOnly.NotEncoded;
 
 				string modifiedPath;
@@ -689,31 +690,44 @@ namespace Bloom.Publish
 				{
 					path = modifiedPath;
 				}
-				//here we're either setting the same path, the same but stripped of a query, or a modified
-				HtmlDom.SetImageElementUrl(new ElementProxy(element), UrlPathString.CreateFromUnencodedString(path));
+				// here we're either setting the same path, the same but stripped of a query, or a modified one.
+				// In call cases, it really, truly is unencoded, so make sure the path doesn't do any more unencoding.
+				HtmlDom.SetImageElementUrl(new ElementProxy(element), UrlPathString.CreateFromUnencodedString(path, true));
 			}
 		}
 
 		// Copy a file to the appropriate place in the epub staging area, and note
-		// that it is a necessary manifest item.
-		private void CopyFileToEpub(string srcPath)
+		// that it is a necessary manifest item. Return the path of the copied file
+		// (which may be different in various ways from the original; we suppress various dubious
+		// characters and return something that doesn't depend on url decoding.
+		private string CopyFileToEpub(string srcPath)
 		{
-			if (_mapSrcPathToDestFileName.ContainsKey(srcPath))
-				return; // File already present, must be used more than once.
-			// Validator warns against spaces in filenames.
+			string existingFile;
+			if (_mapSrcPathToDestFileName.TryGetValue(srcPath, out existingFile))
+				return existingFile; // File already present, must be used more than once.
 			string originalFileName;
 			if (srcPath.StartsWith(Storage.FolderPath))
 				originalFileName = srcPath.Substring(Storage.FolderPath.Length + 1).Replace("\\", "/"); // allows keeping folder structure
 			else
 				originalFileName = Path.GetFileName(srcPath); // probably can't happen, but in case, put at root.
-			var fileName = originalFileName.Replace(" ", "_");
+			// Validator warns against spaces in filenames. + and % and &<> are problematic because to get the real
+			// file name it is necessary to use just the right decoding process. Some clients may do this
+			// right but if we substitute them we can be sure things are fine.
+			// I'm deliberately not using UrlPathString here because it doesn't correctly encode a lot of Ascii characters like =$&<>
+			// which are technically not valid in hrefs
+			var encoded =
+				HttpUtility.UrlEncode(
+					originalFileName.Replace("+", "_").Replace(" ", "_").Replace("&", "_").Replace("<", "_").Replace(">", "_"));
+			var fileName = encoded.Replace("%", "_");
 			var dstPath = Path.Combine(_contentFolder, fileName);
 			// We deleted the root directory at the start, so if the file is already
 			// there it is a clash, either multiple sources for files with the same name,
 			// or produced by replacing spaces, or something. Come up with a similar unique name.
 			for (int fix = 1; File.Exists(dstPath); fix++)
 			{
-				fileName = fileName + fix;
+				var fileNameWithoutExtension = Path.Combine(Path.GetDirectoryName(fileName),
+					Path.GetFileNameWithoutExtension(fileName));
+				fileName = Path.ChangeExtension(fileNameWithoutExtension + fix, Path.GetExtension(fileName));
 				dstPath = Path.Combine(_contentFolder, fileName);
 			}
 			if (originalFileName != fileName)
@@ -722,6 +736,7 @@ namespace Bloom.Publish
 			CopyFile(srcPath, dstPath);
 			_manifestItems.Add(fileName);
 			_mapSrcPathToDestFileName[srcPath] = fileName;
+			return dstPath;
 		}
 
 		/// <summary>
@@ -738,11 +753,10 @@ namespace Bloom.Publish
 		// I don't think we actually use these IDs in the epub so maybe we should just remove them?
 		private void FixIllegalIds(HtmlDom pageDom)
 		{
-			foreach (var node in pageDom.RawDom.SafeSelectNodes("//*[@id]"))
+			// Xpath results are things that have an id attribute, so MUST be XmlElements (though the signature
+			// of SafeSelectNodes allows other XmlNode types).
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@id]"))
 			{
-				var elt = node as XmlElement;
-				if (elt == null)
-					continue;
 				var id = elt.Attributes["id"].Value;
 				var first = id[0];
 				if (first >= '0' && first <= '9')
@@ -796,11 +810,8 @@ namespace Bloom.Publish
 		/// <param name="pageDom"></param>
 		private void RemoveScripts(HtmlDom pageDom)
 		{
-			foreach (var node in pageDom.RawDom.SafeSelectNodes("//script").Cast<XmlNode>().ToArray())
+			foreach (var elt in pageDom.RawDom.SafeSelectNodes("//script").Cast<XmlElement>().ToArray())
 			{
-				var elt = node as XmlElement;
-				if (elt == null)
-					continue;
 				elt.ParentNode.RemoveChild(elt);
 			}
 		}
@@ -813,28 +824,19 @@ namespace Bloom.Publish
 		{
 			// The validator has complained about area-describedby where the id is not found.
 			// I don't think we will do qtips at all in books so let's just remove these altogether for now.
-			foreach (var node in pageDom.RawDom.SafeSelectNodes("//*[@aria-describedby]"))
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@aria-describedby]"))
 			{
-				var elt = node as XmlElement;
-				if (elt == null)
-					continue;
 				elt.RemoveAttribute("aria-describedby");
 			}
 
 			// Validator doesn't like empty lang attributes, and they don't convey anything useful, so remove.
-			foreach (var node in pageDom.RawDom.SafeSelectNodes("//*[@lang='']"))
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='']"))
 			{
-				var elt = node as XmlElement;
-				if (elt == null)
-					continue;
 				elt.RemoveAttribute("lang");
 			}
 			// Validator doesn't like '*' as value of lang attributes, and they don't convey anything useful, so remove.
-			foreach (var node in pageDom.RawDom.SafeSelectNodes("//*[@lang='*']"))
+			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@lang='*']"))
 			{
-				var elt = node as XmlElement;
-				if (elt == null)
-					continue;
 				elt.RemoveAttribute("lang");
 			}
 		}
@@ -845,11 +847,8 @@ namespace Bloom.Publish
 		/// <param name="pageDom"></param>
 		private void RemoveBloomUiElements(HtmlDom pageDom)
 		{
-			foreach (var node in pageDom.RawDom.SafeSelectNodes("//*[contains(@class,'bloom-ui')]").Cast<XmlNode>().ToList())
+			foreach (var elt in pageDom.RawDom.SafeSelectNodes("//*[contains(@class,'bloom-ui')]").Cast<XmlElement>().ToList())
 			{
-				var elt = node as XmlElement;
-				if (elt == null)
-					continue;
 				elt.ParentNode.RemoveChild(elt);
 			}
 		}
