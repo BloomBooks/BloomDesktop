@@ -824,7 +824,6 @@ namespace Bloom.Publish
 		{
 			// The validator has complained about area-describedby where the id is not found.
 			// I don't think we will do qtips at all in books so let's just remove these altogether for now.
-			// (In all these loops, we coerce the nodes returned to XmlElements, which must be valid because the nodes have an attribute.)
 			foreach (XmlElement elt in pageDom.RawDom.SafeSelectNodes("//*[@aria-describedby]"))
 			{
 				elt.RemoveAttribute("aria-describedby");
