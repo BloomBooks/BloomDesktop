@@ -65,12 +65,12 @@ var CalledByCSharp = (function () {
         if (typeof contentWindow['SetCopyrightAndLicense'] === 'function')
             contentWindow['SetCopyrightAndLicense'](contents);
     };
-    CalledByCSharp.prototype.showRecordingControls = function () {
+    CalledByCSharp.prototype.showTalkingBookTool = function () {
         var contentWindow = this.getAccordionContent();
         if (!contentWindow)
             return;
-        if (typeof contentWindow['showRecordingControls'] === 'function') {
-            contentWindow['showRecordingControls']();
+        if (typeof contentWindow['showTalkingBookTool'] === 'function') {
+            contentWindow['showTalkingBookTool']();
         }
     };
     CalledByCSharp.prototype.cleanupAudio = function () {

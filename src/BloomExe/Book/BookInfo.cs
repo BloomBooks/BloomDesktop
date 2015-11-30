@@ -387,8 +387,11 @@ namespace Bloom.Book
 		public static BookMetaData FromString(string input)
 		{
 			var result = JsonConvert.DeserializeObject<BookMetaData>(input);
-			foreach (var tool in result.Tools.Where(t => t is UnknownTool).ToArray())
-				result.Tools.Remove(tool);
+			if (result.Tools != null)
+			{
+				foreach (var tool in result.Tools.Where(t => t is UnknownTool).ToArray())
+					result.Tools.Remove(tool);
+			}
 			return result;
 		}
 

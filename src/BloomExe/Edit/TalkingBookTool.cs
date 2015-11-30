@@ -10,17 +10,16 @@ namespace Bloom.Edit
 	class TalkingBookTool : AccordionTool
 	{
 		private bool _showRecordingtools;
-		public const string TBName = "talkingBook";
-		public override string Name { get { return TBName; } }
+		public const string ToolId = "talkingBook";  // Avoid changing value; see AccordionToo.JsonToolId
+		public override string JsonToolId { get { return ToolId; } }
 
-		internal override void SaveSettings(EditingView _view)
+		internal override void SaveSettings(ElementProxy toolbox)
 		{
-			base.SaveSettings(_view);
-			var accordion = _view.Browser.WebBrowser.Window.Document.GetElementById("accordion") as GeckoIFrameElement;
-			if (accordion == null)
+			base.SaveSettings(toolbox);
+			if (toolbox == null)
 				return;
-			var recordingCheckBox = accordion.ContentDocument.GetElementById("showRecordingTools") as GeckoInputElement;
-			_showRecordingtools = recordingCheckBox != null && recordingCheckBox.Checked;
+
+			_showRecordingtools = toolbox.GetElementById("showRecordingTools").Checked;
 		}
 
 		internal override void RestoreSettings(EditingView _view)
@@ -31,7 +30,7 @@ namespace Bloom.Edit
 			//if (recordingCheckBox != null)
 			//	recordingCheckBox.Checked = _showRecordingtools;
 			if (_showRecordingtools)
-				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.showRecordingControls(); }");
+				_view.RunJavaScript("if (calledByCSharp) { calledByCSharp.showTalkingBookTool(); }");
 		}
 	}
 }

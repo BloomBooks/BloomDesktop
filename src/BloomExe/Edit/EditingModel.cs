@@ -903,7 +903,7 @@ namespace Bloom.Edit
 		private void UpdateToolState(string toolName, string state)
 		{
 			var tools = _currentlyDisplayedBook.BookInfo.Tools;
-			var item = tools.FirstOrDefault(t => t.Name == toolName);
+			var item = tools.FirstOrDefault(t => t.JsonToolId == toolName);
 
 			if (item != null)
 				item.State = state;
@@ -912,11 +912,11 @@ namespace Bloom.Edit
 		private void UpdateActiveToolSetting(string toolName, bool enabled)
 		{
 			var tools = _currentlyDisplayedBook.BookInfo.Tools;
-			var item = tools.FirstOrDefault(t => t.Name == toolName);
+			var item = tools.FirstOrDefault(t => t.JsonToolId == toolName);
 
 			if (item == null)
 			{
-				item = AccordionTool.WithName(toolName);
+				item = AccordionTool.CreateForJsonToolId(toolName);
 				tools.Add(item);
 			}
 			item.Enabled = enabled;
@@ -974,14 +974,14 @@ namespace Bloom.Edit
 
 		private void RetrieveToolSettings(List<AccordionTool> toolList, string toolName, Dictionary<string, object> settingsObject)
 		{
-			var toolObject = toolList.FirstOrDefault(t => t.Name == toolName);
+			var toolObject = toolList.FirstOrDefault(t => t.JsonToolId == toolName);
 			if (toolObject != null && !string.IsNullOrEmpty(toolObject.State))
 				settingsObject.Add(toolObject.StateName, toolObject.State);
 		}
 
 		private void LoadPanelIntoAccordionIfAvailable(HtmlDom domForAccordion, List<AccordionTool> toolList, List<string> checkedBoxes, string toolName)
 		{
-			if (toolList.Any(t => t.Name == toolName))
+			if (toolList.Any(t => t.JsonToolId == toolName))
 			{
 				// For all the toolbox tools, the tool name is used as the name of both the folder where the
 				// assets for that tool are kept, and the name of the main htm file that represents the tool.
@@ -1100,7 +1100,7 @@ namespace Bloom.Edit
 			_currentlyDisplayedBook.BookInfo.Save();
 
 			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)
-				tool.SaveSettings(_view);
+				tool.SaveSettings(_view.ToolBoxElement);
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying

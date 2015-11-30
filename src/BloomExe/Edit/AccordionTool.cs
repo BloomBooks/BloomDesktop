@@ -18,8 +18,17 @@ namespace Bloom.Edit
 	/// </summary>
 	public abstract class AccordionTool
 	{
+		/// <summary>
+		/// This is the id used to identify the tool in the meta.json file that accompanies the book.
+		/// These files are included in the books in BloomLibrary, which means that it is likely both
+		/// that current Bloom versions will see old meta.json, and more dangerously, older Bloom
+		/// versions will see new meta.json as people publish books using a newer version of the tool.
+		/// Older versions cope with unknown names, but they will not display the correct tool if they
+		/// see an unrecognized name for a tool they know about; therefore, the actual names used for
+		/// existing tools should be changed only with care and for very good reason.
+		/// </summary>
 		[JsonProperty("name")]
-		public abstract string Name { get; }
+		public abstract string JsonToolId { get; }
 
 		[JsonProperty("enabled")]
 		public bool Enabled { get; set; }
@@ -31,13 +40,13 @@ namespace Bloom.Edit
 		[JsonProperty("state")]
 		public string State { get; set; }
 
-		public static AccordionTool WithName(string name)
+		public static AccordionTool CreateForJsonToolId(string name)
 		{
 			switch (name)
 			{
-				case DecodableReaderTool.DRName: return new DecodableReaderTool();
-				case LeveledReaderTool.LRName: return new LeveledReaderTool();
-				case TalkingBookTool.TBName: return new TalkingBookTool();
+				case DecodableReaderTool.ToolId: return new DecodableReaderTool();
+				case LeveledReaderTool.ToolId: return new LeveledReaderTool();
+				case TalkingBookTool.ToolId: return new TalkingBookTool();
 			}
 			throw new ArgumentException("Unexpected tool name");
 		}
@@ -48,12 +57,12 @@ namespace Bloom.Edit
 		/// </summary>
 		internal string StateName
 		{
-			get { return Name + "State"; }
+			get { return JsonToolId + "State"; }
 		}
 
 		// May be overridden to save some information about the tool state during page save.
 		// Default does nothing.
-		internal virtual void SaveSettings(EditingView _view)
+		internal virtual void SaveSettings(ElementProxy toolbox)
 		{ }
 
 		// May be overridden to restore the tool state during page initialization.
@@ -67,7 +76,7 @@ namespace Bloom.Edit
 	/// </summary>
 	public class UnknownTool : AccordionTool
 	{
-		public override string Name { get { return "unknownTool"; } }
+		public override string JsonToolId { get { return "unknownTool"; } }
 	}
 
 	/// <summary>
@@ -92,11 +101,11 @@ namespace Bloom.Edit
 			JObject item = JObject.Load(reader);
 			switch ((string)item["name"])
 			{
-				case DecodableReaderTool.DRName:
+				case DecodableReaderTool.ToolId:
 					return item.ToObject<DecodableReaderTool>();
-				case LeveledReaderTool.LRName:
+				case LeveledReaderTool.ToolId:
 					return item.ToObject<LeveledReaderTool>();
-				case TalkingBookTool.TBName:
+				case TalkingBookTool.ToolId:
 					return item.ToObject<TalkingBookTool>();
 			}
 			// At this point we are either encountering a meta.json that has been modified by hand,

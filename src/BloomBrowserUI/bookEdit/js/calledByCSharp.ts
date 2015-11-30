@@ -78,11 +78,11 @@ class CalledByCSharp {
       contentWindow['SetCopyrightAndLicense'](contents);
   }
 
-    showRecordingControls() {
+  showTalkingBookTool() {
       var contentWindow = this.getAccordionContent();
         if (!contentWindow) return;
-        if (typeof contentWindow['showRecordingControls'] === 'function') {
-            contentWindow['showRecordingControls']();
+        if (typeof contentWindow['showTalkingBookTool'] === 'function') {
+            contentWindow['showTalkingBookTool']();
         }
     }
 

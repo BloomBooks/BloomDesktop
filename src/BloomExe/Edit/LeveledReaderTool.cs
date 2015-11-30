@@ -8,7 +8,7 @@ namespace Bloom.Edit
 {
 	class LeveledReaderTool : AccordionTool
 	{
-		public const string LRName = "leveledReader";
-		public override string Name { get { return LRName; } }
+		public const string ToolId = "leveledReader";  // Avoid changing value; see AccordionToo.JsonToolId
+		public override string JsonToolId { get { return ToolId; } }
 	}
 }

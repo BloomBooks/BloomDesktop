@@ -1,6 +1,7 @@
 using System;
 using System.Xml;
 using Gecko;
+using Gecko.DOM;
 using SIL.Code;
 
 namespace Bloom
@@ -76,9 +77,18 @@ namespace Bloom
 			}
 		}
 
+		public override int GetHashCode()
+		{
+			if (_xmlElement == null)
+				return _geckoElement.GetHashCode();
+			else
+				return _xmlElement.GetHashCode();
+		}
+
 		public override bool Equals(object obj)
 		{
-			throw new NotImplementedException();
+			var otherProxy = obj as ElementProxy;
+			return this == otherProxy;
 		}
 		protected bool Equals(UrlPathString other)
 		{
@@ -87,12 +97,62 @@ namespace Bloom
 
 		public static bool operator ==(ElementProxy a, ElementProxy b)
 		{
-			throw new NotImplementedException();
+			if (object.ReferenceEquals(a, null))
+				return object.ReferenceEquals(b, null);
+			if (object.ReferenceEquals(b, null))
+				return false;
+			return a._xmlElement == b._xmlElement && a._geckoElement == b._geckoElement;
 		}
 
 		public static bool operator !=(ElementProxy a, ElementProxy b)
 		{
-			throw new NotImplementedException();
+			return !(a == b);
+		}
+
+		/// <summary>
+		/// Get the element with the specified ID. Note that it may be anywhere in the containing document,
+		/// not necessarily a child of the recipient element.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		public ElementProxy GetElementById(string id)
+		{
+			if (_xmlElement == null)
+			{
+				var result = _geckoElement.OwnerDocument.GetElementById(id) as GeckoHtmlElement;
+				if (result == null)
+					return null;
+				return new ElementProxy(result);
+			}
+			else
+			{
+				var result =_xmlElement.OwnerDocument.GetElementById(id);
+				if (result == null)
+					return null;
+				return new ElementProxy(result);
+			}
+		}
+
+		/// <summary>
+		/// Return true if the element is a proxy for an input element that is checked.
+		/// </summary>
+		public bool Checked
+		{
+			get
+			{
+				if (_xmlElement == null)
+				{
+					var input = _geckoElement as GeckoInputElement;
+					if (input == null)
+						return false;
+					return input.Checked;
+				}
+				else
+				{
+					return _xmlElement.Name == "input" &&  _xmlElement.GetAttribute("checked") != null;
+				}
+
+			}
 		}
 	}
 }

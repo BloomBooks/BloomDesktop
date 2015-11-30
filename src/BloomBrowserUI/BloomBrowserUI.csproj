@@ -31,7 +31,6 @@
     </Content>
     <Content Include="bookEdit\accordion\Accordion.htm" />
     <Content Include="bookEdit\accordion\accordion.js" />
-    <Content Include="bookEdit\accordion\AudioRecordingTool\AudioRecordingTool.htm" />
     <Content Include="bookEdit\accordion\decodableReader\decodableReader.htm" />
     <Content Include="bookEdit\accordion\leveledReader\leveledReader.htm" />
     <Content Include="bookEdit\accordion\PageElements\PageElements.htm" />
@@ -60,7 +59,6 @@
     </Content>
     <Content Include="bookEdit\js\readerToolsBootstrap.js" />
     <Content Include="bookEdit\css\BookPagesThumbnailList.less" />
-    <Content Include="bookEdit\accordion\AudioRecordingTool\AudioRecordingTool.jade" />
     <Content Include="bookEdit\accordion\talkingBook\talkingBook.jade" />
     <Content Include="bookEdit\accordion\talkingBook\audioRecording.less" />
     <Content Include="bookEdit\accordion\decodableReader\decodableReader.jade" />

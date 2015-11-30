@@ -8,7 +8,7 @@ namespace Bloom.Edit
 {
 	class DecodableReaderTool : AccordionTool
 	{
-		public const string DRName = "decodableReader";
-		public override string Name { get { return DRName; } }
+		public const string ToolId = "decodableReader"; // Avoid changing value; see AccordionToo.JsonToolId
+		public override string JsonToolId { get { return ToolId; } }
 	}
 }

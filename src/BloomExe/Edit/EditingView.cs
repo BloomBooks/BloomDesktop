@@ -929,7 +929,19 @@ namespace Bloom.Edit
 			return _browser1.WebBrowser.Window.Document.GetElementById("pure-toggle-right") as GeckoInputElement;
 		}
 
-		public Browser Browser {  get { return _browser1; } }
+		/// <summary>
+		/// Return the HTML element that represents the body of the toolbox
+		/// </summary>
+		public ElementProxy ToolBoxElement
+		{
+			get
+			{
+				var toolboxFrame = _browser1.WebBrowser.Window.Document.GetElementById("accordion") as GeckoIFrameElement;
+				if (toolboxFrame == null)
+					return null;
+				return new ElementProxy(toolboxFrame.ContentDocument.Body);
+			}
+		}
 
 		private void _copyButton_Click(object sender, EventArgs e)
 		{
