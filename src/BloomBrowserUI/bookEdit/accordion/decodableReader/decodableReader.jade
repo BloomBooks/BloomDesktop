@@ -2,8 +2,9 @@ html
 	head
 
 	body
-		h3(data-panelId='DecodableRT', data-markuptype='1', data-order='10', data-i18n='Accordion.DecodableReaderTool') Decodable Reader Tool
-		div(data-panelId='DecodableRT')
+		// markuptype refers to which kind of synphony markup is displayed in the panel. See ReaderToolsModel.setMarkupType and the MarkupType enumeration.
+		h3(data-panelId='decodableReaderTool', data-markuptype='1', data-order='10', data-i18n='Accordion.DecodableReaderTool') Decodable Reader Tool
+		div(data-panelId='decodableReaderTool')
 			#setupStages
 				img#decodable-edit(src='/bloom/images/edit-white.png')
 				span.setup.noSelect
@@ -48,5 +49,5 @@ html
 			script(type='text/javascript').
 				$(document).ready(function() {
 					// this timeout is different than the LeveledRT timeout to prevent initializing synphony twice
-					setTimeout(initializeDecodableRT, 100);
+					setTimeout(initializeDecodableReaderTool, 100);
 				});

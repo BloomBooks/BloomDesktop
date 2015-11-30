@@ -665,6 +665,8 @@ namespace Bloom.Edit
 #else
 			_audioRecording.PeakLevelChanged += (s, args) => _view.SetPeakLevel(args.Level.ToString(CultureInfo.InvariantCulture));
 #endif
+			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)
+				tool.RestoreSettings(_view);
 		}
 
 		/// <summary>
@@ -869,26 +871,27 @@ namespace Bloom.Edit
 			return returnVal;
 		}
 
+		/// <summary>
+		/// Used to save various settings relating to the toolbox. Passed a string which is typically two or three elements
+		/// divided by a tab.
+		/// - may be passed 'active' followed by the ID of one of the check boxes that indicates whether the DR, LR, or TB tools are
+		/// in use, followed by "1" if it is used, or "0" if not. These IDs are arranged to be the tool name followed by "Check".
+		/// - may be passed 'current' followed by the name of one of the toolbox tools
+		/// - may be passed 'state' followed by the name of one of the tools and its current state string.
+		/// </summary>
+		/// <param name="data"></param>
 		private void SaveAccordionSettings(string data)
 		{
 			var args = data.Split(new[] { '\t' });
 
 			switch (args[0])
 			{
-				case "showPE":
-					UpdateActiveToolSetting("pageElements", args[1] == "1");
-					return;
-
-				case "showDRT":
-					UpdateActiveToolSetting("decodableReader", args[1] == "1");
-					return;
-
-				case "showLRT":
-					UpdateActiveToolSetting("leveledReader", args[1] == "1");
+				case "active":
+					UpdateActiveToolSetting(args[1].Substring(0, args[1].Length - "Check".Length), args[2] == "1");
 					return;
 
 				case "current":
-					_currentlyDisplayedBook.BookInfo.CurrentTool = AccordionDirectoryNameToToolName(args[1]);
+					_currentlyDisplayedBook.BookInfo.CurrentTool = args[1];
 					return;
 
 				case "state":
@@ -900,7 +903,7 @@ namespace Bloom.Edit
 		private void UpdateToolState(string toolName, string state)
 		{
 			var tools = _currentlyDisplayedBook.BookInfo.Tools;
-			var item = tools.FirstOrDefault(t => t.Name == toolName);
+			var item = tools.FirstOrDefault(t => t.JsonToolId == toolName);
 
 			if (item != null)
 				item.State = state;
@@ -909,48 +912,15 @@ namespace Bloom.Edit
 		private void UpdateActiveToolSetting(string toolName, bool enabled)
 		{
 			var tools = _currentlyDisplayedBook.BookInfo.Tools;
-			var item = tools.FirstOrDefault(t => t.Name == toolName);
+			var item = tools.FirstOrDefault(t => t.JsonToolId == toolName);
 
 			if (item == null)
-				tools.Add(new AccordionTool() { Name = toolName, Enabled = enabled });
-			else
-				item.Enabled = enabled;
-		}
-
-		private static string AccordionToolNameToDirectoryName(string toolName)
-		{
-			switch (toolName)
 			{
-				case "pageElements":
-					return "PageElements";
-
-				case "decodableReader":
-					return "DecodableRT";
-
-				case "leveledReader":
-					return "LeveledRT";
+				item = AccordionTool.CreateFromJsonToolId(toolName);
+				tools.Add(item);
 			}
-
-			return string.Empty;
+			item.Enabled = enabled;
 		}
-
-		private static string AccordionDirectoryNameToToolName(string directoryName)
-		{
-			switch (directoryName)
-			{
-				case "PageElements":
-					return "pageElements";
-
-				case "DecodableRT":
-					return "decodableReader";
-
-				case "LeveledRT":
-					return "leveledReader";
-			}
-
-			return string.Empty;
-		}
-
 
 		private string MakeAccordionContent()
 		{
@@ -964,15 +934,12 @@ namespace Bloom.Edit
 
 			var settings = new Dictionary<string, object>
 			{
-				{"current", AccordionToolNameToDirectoryName(_currentlyDisplayedBook.BookInfo.CurrentTool)}
+				{"current", _currentlyDisplayedBook.BookInfo.CurrentTool}
 			};
 
-			var decodableTool = tools.FirstOrDefault(t => t.Name == "decodableReader");
-			if (decodableTool != null && !string.IsNullOrEmpty(decodableTool.State))
-				settings.Add("decodableState", decodableTool.State);
-			var leveledTool = tools.FirstOrDefault(t => t.Name == "leveledReader");
-			if (leveledTool != null && !string.IsNullOrEmpty(leveledTool.State))
-				settings.Add("leveledState", leveledTool.State);
+			RetrieveToolSettings(tools, "talkingBook", settings);
+			RetrieveToolSettings(tools, "decodableReader", settings);
+			RetrieveToolSettings(tools, "leveledReader", settings);
 
 			var settingsStr = JsonConvert.SerializeObject(settings);
 			settingsStr = String.Format("function GetAccordionSettings() {{ return {0};}}", settingsStr) +
@@ -988,17 +955,9 @@ namespace Bloom.Edit
 			// get additional tabs to load
 			var checkedBoxes = new List<string>();
 
-			if (tools.Any(t => t.Name == "decodableReader"))
-			{
-				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "DecodableRT", "DecodableRT.htm")));
-				checkedBoxes.Add("showDRT");
-			}
-
-			if (tools.Any(t => t.Name == "leveledReader"))
-			{
-				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "LeveledRT", "LeveledRT.htm")));
-				checkedBoxes.Add("showLRT");
-			}
+			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "decodableReader");
+			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "leveledReader");
+			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "talkingBook");
 
 			// Load settings into the accordion panel
 			AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "settings", "Settings.htm")));
@@ -1011,6 +970,27 @@ namespace Bloom.Edit
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForAccordion.RawDom);
 			return TempFileUtils.CreateHtml5StringFromXml(domForAccordion.RawDom);
+		}
+
+		private void RetrieveToolSettings(List<AccordionTool> toolList, string toolName, Dictionary<string, object> settingsObject)
+		{
+			var toolObject = toolList.FirstOrDefault(t => t.JsonToolId == toolName);
+			if (toolObject != null && !string.IsNullOrEmpty(toolObject.State))
+				settingsObject.Add(toolObject.StateName, toolObject.State);
+		}
+
+		private void LoadPanelIntoAccordionIfAvailable(HtmlDom domForAccordion, List<AccordionTool> toolList, List<string> checkedBoxes, string toolName)
+		{
+			if (toolList.Any(t => t.JsonToolId == toolName))
+			{
+				// For all the toolbox tools, the tool name is used as the name of both the folder where the
+				// assets for that tool are kept, and the name of the main htm file that represents the tool.
+				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(
+					_accordionFolder,
+					toolName,
+					toolName + ".htm")));
+				checkedBoxes.Add(toolName + "Check");
+			}
 		}
 
 		/// <summary>Loads the requested panel into the accordion</summary>
@@ -1118,6 +1098,9 @@ namespace Bloom.Edit
 			var showAccordion = checkbox.Checked;
 			_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable = showAccordion;
 			_currentlyDisplayedBook.BookInfo.Save();
+
+			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)
+				tool.SaveSettings(_view.ToolBoxElement);
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
