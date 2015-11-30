@@ -40,9 +40,9 @@ namespace Bloom.Edit
 		[JsonProperty("state")]
 		public string State { get; set; }
 
-		public static AccordionTool CreateForJsonToolId(string name)
+		public static AccordionTool CreateFromJsonToolId(string jsonToolId)
 		{
-			switch (name)
+			switch (jsonToolId)
 			{
 				case DecodableReaderTool.ToolId: return new DecodableReaderTool();
 				case LeveledReaderTool.ToolId: return new LeveledReaderTool();

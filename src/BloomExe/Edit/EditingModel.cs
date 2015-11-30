@@ -916,7 +916,7 @@ namespace Bloom.Edit
 
 			if (item == null)
 			{
-				item = AccordionTool.CreateForJsonToolId(toolName);
+				item = AccordionTool.CreateFromJsonToolId(toolName);
 				tools.Add(item);
 			}
 			item.Enabled = enabled;
