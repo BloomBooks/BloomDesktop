@@ -11,7 +11,7 @@ function AddToolbox(container) {
             accept: function () { return true; },
             drop: function (event, ui) {
                 //is it being dragged in from a toolbox, or just moved around inside the page?
-                if ($(ui.draggable).hasClass('widgetInToolbox')) {
+                if ($(ui.draggable).hasClass('widgetInPageDragToolbox')) {
 
                     //review: since we already did a clone during the tearoff, why clone again?
                     var $x = $($(ui.draggable).clone()[0]);
@@ -25,16 +25,16 @@ function AddToolbox(container) {
                         SetupImageContainer($x);
                     }
 
-                    //review: this find() implies that the draggable thing isn't necesarily the widgetInToolbox. Why not?
-                    //                    $(this).find('.widgetInToolbox')
+                    //review: this find() implies that the draggable thing isn't necesarily the widgetInPageDragToolbox. Why not?
+                    //                    $(this).find('.widgetInPageDragToolbox')
                     //                            .removeAttr("style")
                     //                            .draggable({ containment: "parent" })
-                    //                            .removeClass("widgetInToolbox")
+                    //                            .removeClass("widgetInPageDragToolbox")
                     //                            .SetupResizableElement(this)
                     //                            .SetupDeletable(this);
                     $x.removeAttr("style");
                     $x.draggable({ containment: "parent" });
-                    $x.removeClass("widgetInToolbox");
+                    $x.removeClass("widgetInPageDragToolbox");
                     SetupResizableElement($x);
                     SetupDeletable($x);
 
@@ -43,21 +43,21 @@ function AddToolbox(container) {
             }
         });
         var lang1ISO = GetSettings().languageForNewTextBoxes;
-        var heading1CenteredWidget = '<div class="heading1-style centered widgetInToolbox"  data-classesafterdrop="bloom-translationGroup heading1-style centered bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '">Heading 1 Centered</div></div>';
-        var heading2LeftWidget = '<div class="heading2-style widgetInToolbox"  data-classesafterdrop="bloom-translationGroup heading2-style  bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '">Heading 2, Left</div></div>';
-        var fieldWidget = '<div class="widgetInToolbox" data-classesafterdrop="bloom-translationGroup bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '"> A block of normal text.</div></div>';
-        // old one: var imageWidget = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable widgetInToolbox"><img src="placeHolder.png"></div>';
-        var imageWidget = '<div class="widgetInToolbox " data-classesafterdrop="bloom-imageContainer  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeHolder.png"></div>';
+        var heading1CenteredWidget = '<div class="heading1-style centered widgetInPageDragToolbox"  data-classesafterdrop="bloom-translationGroup heading1-style centered bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '">Heading 1 Centered</div></div>';
+        var heading2LeftWidget = '<div class="heading2-style widgetInPageDragToolbox"  data-classesafterdrop="bloom-translationGroup heading2-style  bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '">Heading 2, Left</div></div>';
+        var fieldWidget = '<div class="widgetInPageDragToolbox" data-classesafterdrop="bloom-translationGroup bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '"> A block of normal text.</div></div>';
+        // old one: var imageWidget = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable widgetInPageDragToolbox"><img src="placeHolder.png"></div>';
+        var imageWidget = '<div class="widgetInPageDragToolbox " data-classesafterdrop="bloom-imageContainer  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeHolder.png"></div>';
 
-        var toolbox = $(this).parent().append("<div id='toolbox'><h3>Page Elements</h3><ul class='toolbox'><li>" + heading1CenteredWidget + "</li><li>" + heading2LeftWidget + "</li><li>" + fieldWidget + "</li><li>" + imageWidget + "</li></ul></div>");
+        var toolbox = $(this).parent().append("<div id='pagedragtoolbox'><h3>Page Elements</h3><ul class='pagedragtoolbox'><li>" + heading1CenteredWidget + "</li><li>" + heading2LeftWidget + "</li><li>" + fieldWidget + "</li><li>" + imageWidget + "</li></ul></div>");
 
 
-        toolbox.find('.widgetInToolbox').each(function () {
+        toolbox.find('.widgetInPageDragToolbox').each(function () {
             $(this).draggable({
                 //note: this is just used for drawing what you drag around..
                 //it isn't what the droppable is actually given. For that, look in the 'drop' item of the droppable() call above.
                 helper: function (event) {
-                    var tearOff = $(this).clone(); //.removeClass('widgetInToolbox');//by removing this, we show it with the actual size it will be when dropped
+                    var tearOff = $(this).clone(); //.removeClass('widgetInPageDragToolbox');//by removing this, we show it with the actual size it will be when dropped
                     return tearOff;
                 }
             });
