@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bloom.Edit
 {
-	class DecodableReaderTool : AccordionTool
+	class DecodableReaderTool : ToolboxTool
 	{
 		public const string ToolId = "decodableReader"; // Avoid changing value; see AccordionToo.JsonToolId
 		public override string JsonToolId { get { return ToolId; } }

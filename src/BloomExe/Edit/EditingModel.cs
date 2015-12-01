@@ -916,7 +916,7 @@ namespace Bloom.Edit
 
 			if (item == null)
 			{
-				item = AccordionTool.CreateFromJsonToolId(toolName);
+				item = ToolboxTool.CreateFromJsonToolId(toolName);
 				tools.Add(item);
 			}
 			item.Enabled = enabled;
@@ -972,14 +972,14 @@ namespace Bloom.Edit
 			return TempFileUtils.CreateHtml5StringFromXml(domForAccordion.RawDom);
 		}
 
-		private void RetrieveToolSettings(List<AccordionTool> toolList, string toolName, Dictionary<string, object> settingsObject)
+		private void RetrieveToolSettings(List<ToolboxTool> toolList, string toolName, Dictionary<string, object> settingsObject)
 		{
 			var toolObject = toolList.FirstOrDefault(t => t.JsonToolId == toolName);
 			if (toolObject != null && !string.IsNullOrEmpty(toolObject.State))
 				settingsObject.Add(toolObject.StateName, toolObject.State);
 		}
 
-		private void LoadPanelIntoAccordionIfAvailable(HtmlDom domForAccordion, List<AccordionTool> toolList, List<string> checkedBoxes, string toolName)
+		private void LoadPanelIntoAccordionIfAvailable(HtmlDom domForAccordion, List<ToolboxTool> toolList, List<string> checkedBoxes, string toolName)
 		{
 			if (toolList.Any(t => t.JsonToolId == toolName))
 			{

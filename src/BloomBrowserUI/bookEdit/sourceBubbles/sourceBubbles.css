@@ -1,13 +1,13 @@
 ﻿.qtip-default {
   background-color: #faf7cc !important;
-  border-color: #e0deb7 !important;
+  border-color: #E0DEB7 !important;
   color: black !important;
   border-radius: 5px;
 }
 .uibloomSourceTextsBubble {
   z-index: 15002 !important;
   background-color: #faf7cc !important;
-  border-color: #e0deb7 !important;
+  border-color: #E0DEB7 !important;
   border-width: 2px !important;
 }
 .uibloomSourceTextsBubble.passive-bubble {
@@ -22,7 +22,7 @@
 }
 .ui-sourceTextsForBubble {
   position: relative;
-  border-color: #e0deb7;
+  border-color: #E0DEB7;
   max-height: inherit;
 }
 .ui-sourceTextsForBubble NAV {
@@ -59,7 +59,7 @@
   border-top-right-radius: 6px;
   float: left;
   flex: 1 0 auto;
-  background-color: #e0deb7;
+  background-color: #E0DEB7;
 }
 .ui-sourceTextsForBubble NAV > UL > LI:not(:first-child) {
   border-left: 1px solid #faf7cc;
@@ -118,7 +118,7 @@
   margin-top: 2px;
   white-space: nowrap;
   border: 1px solid #faf7cc;
-  background-color: #e0deb7 !important;
+  background-color: #E0DEB7 !important;
   top: 0;
   font-size: 9pt;
   z-index: 5;

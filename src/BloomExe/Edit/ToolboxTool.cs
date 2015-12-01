@@ -16,7 +16,7 @@ namespace Bloom.Edit
 	/// Note that the values of the Name field are used in the json and therefore cannot readily be changed.
 	/// (Migration would handle a change going forward, but older Blooms would lose the data at best.)
 	/// </summary>
-	public abstract class AccordionTool
+	public abstract class ToolboxTool
 	{
 		/// <summary>
 		/// This is the id used to identify the tool in the meta.json file that accompanies the book.
@@ -40,7 +40,7 @@ namespace Bloom.Edit
 		[JsonProperty("state")]
 		public string State { get; set; }
 
-		public static AccordionTool CreateFromJsonToolId(string jsonToolId)
+		public static ToolboxTool CreateFromJsonToolId(string jsonToolId)
 		{
 			switch (jsonToolId)
 			{
@@ -74,7 +74,7 @@ namespace Bloom.Edit
 	/// <summary>
 	/// This gives us something to return if we encounter an unknown tool name when deserializing.
 	/// </summary>
-	public class UnknownTool : AccordionTool
+	public class UnknownTool : ToolboxTool
 	{
 		public override string JsonToolId { get { return "unknownTool"; } }
 	}
@@ -88,7 +88,7 @@ namespace Bloom.Edit
 	{
 		public override bool CanConvert(Type objectType)
 		{
-			return typeof(AccordionTool).IsAssignableFrom(objectType);
+			return typeof(ToolboxTool).IsAssignableFrom(objectType);
 		}
 
 		// Default writing is fine.

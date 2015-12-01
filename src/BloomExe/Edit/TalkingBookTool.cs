@@ -7,7 +7,7 @@ using Gecko.DOM;
 
 namespace Bloom.Edit
 {
-	class TalkingBookTool : AccordionTool
+	class TalkingBookTool : ToolboxTool
 	{
 		private bool _showRecordingtools;
 		public const string ToolId = "talkingBook";  // Avoid changing value; see AccordionToo.JsonToolId
