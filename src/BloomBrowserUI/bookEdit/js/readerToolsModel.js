@@ -8,6 +8,7 @@
 /// <reference path="directoryWatcher.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
+/// <reference path="../toolbox/toolbox.ts" />
 var iframeChannel = getIframeChannel();
 var model;
 var SortType = {

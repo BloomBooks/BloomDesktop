@@ -3,8 +3,6 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="readerSettings.ts" />
 
-declare function fireCSharpToolboxEvent(eventName: string, eventData: any);
-
 class SynphonyApi {
 
   stages: ReaderStage[] = [];

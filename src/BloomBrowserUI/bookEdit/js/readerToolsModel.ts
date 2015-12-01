@@ -8,6 +8,7 @@
 /// <reference path="directoryWatcher.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
+/// <reference path="../toolbox/toolbox.ts" />
 
 var iframeChannel = getIframeChannel();
 
@@ -37,8 +38,6 @@ class DRTState {
   level: number = 1;
   markupType: number = MarkupType.Decodable;
 }
-
-declare function fireCSharpToolboxEvent(eventName: string, eventData: string);
 
 interface ReaderToolsWindow extends Window {
   model: ReaderToolsModel;

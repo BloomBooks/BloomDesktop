@@ -623,7 +623,8 @@ namespace Bloom.Edit
 				// the pure-drawer CSS achieves the open/close effect. This input is a check-box, so clicking it
 				// changes the state of things in a way that all the other CSS can depend on.
 				var toolboxCheckBox = dom.SelectSingleNode("//input[@id='pure-toggle-right']");
-				toolboxCheckBox.SetAttribute("checked", "true");
+				if (toolboxCheckBox != null)
+					toolboxCheckBox.SetAttribute("checked", "true");
 			}
 
 			return dom;

@@ -34,7 +34,6 @@
       <DependentUpon>toolbox.less</DependentUpon>
     </Content>
     <Content Include="bookEdit\toolbox\toolbox.htm" />
-    <Content Include="bookEdit\toolbox\toolbox.js" />
     <Content Include="bookEdit\toolbox\decodableReader\decodableReader.htm" />
     <Content Include="bookEdit\toolbox\leveledReader\leveledReader.htm" />
     <Content Include="bookEdit\toolbox\PageElements\PageElements.htm" />
@@ -117,6 +116,8 @@
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
     <TypeScriptCompile Include="bookEdit\js\BloomToolbox.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\decodableReader.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\leveledReader\leveledReader.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\talkingBook\audioRecording.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\talkingBook\talkingBook.ts" />
     <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
@@ -260,6 +261,7 @@
     <TypeScriptCompile Include="bookEdit\js\synphonyApi.ts" />
     <TypeScriptCompile Include="bookEdit\OverflowChecker\OverflowChecker.ts" />
     <TypeScriptCompile Include="bookEdit\sourceBubbles\bloomSourceBubbles.ts" />
+    <Content Include="bookEdit\toolbox\toolbox.ts" />
     <TypeScriptCompile Include="bookEdit\TopicChooser\TopicChooser.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
     <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />
