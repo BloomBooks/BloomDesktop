@@ -1,4 +1,7 @@
-﻿## 3.5
+﻿## 3.6
+- You can now hide or show the toolbox (with tools for decodable and leveled readers) in any book
+- Talking book recording is now controlled from a panel in the toolbox
+## 3.5
 - You can now copy and cut images
 - You can now hover over an image to get its dimensions, dots-per-inch, and color depth
 - Bloom uses less memory when you have very large image files
