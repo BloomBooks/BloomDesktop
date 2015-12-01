@@ -3,7 +3,7 @@
 /// <reference path="../../lib/jquery.d.ts" />
 /// <reference path="readerSettings.ts" />
 
-declare function fireCSharpAccordionEvent(eventName: string, eventData: any);
+declare function fireCSharpToolboxEvent(eventName: string, eventData: any);
 
 class SynphonyApi {
 

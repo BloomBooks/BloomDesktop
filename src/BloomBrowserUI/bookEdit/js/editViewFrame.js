@@ -14,14 +14,14 @@ function CreateConfigDiv(title) {
 
 function showSetupDialog(showWhat) {
 
-    var accordion = document.getElementById('accordion').contentWindow;
-    accordion.localizationManager.loadStrings(getSettingsDialogLocalizedStrings(), null, function() {
+    var toolbox = document.getElementById('toolbox').contentWindow;
+    toolbox.localizationManager.loadStrings(getSettingsDialogLocalizedStrings(), null, function() {
 
         var title;
         if (showWhat == 'stages')
-            title = accordion.localizationManager.getText('ReaderSetup.SetUpDecodableReaderTool', 'Set up Decodable Reader Tool');
+            title = toolbox.localizationManager.getText('ReaderSetup.SetUpDecodableReaderTool', 'Set up Decodable Reader Tool');
         else
-            title = accordion.localizationManager.getText('ReaderSetup.SetUpLeveledReaderTool', 'Set up Leveled Reader Tool');
+            title = toolbox.localizationManager.getText('ReaderSetup.SetUpLeveledReaderTool', 'Set up Leveled Reader Tool');
 
         var dialogContents = CreateConfigDiv(title);
 
@@ -31,7 +31,7 @@ function showSetupDialog(showWhat) {
         h = size[0];
         w = size[1];
 
-        accordion.model.setupType = showWhat;
+        toolbox.model.setupType = showWhat;
 
         $(dialogContents).dialog({
             autoOpen: "true",
@@ -39,21 +39,21 @@ function showSetupDialog(showWhat) {
             buttons: {
                 Help: {
                     // For consistency, I would have made this 'Common.Help', but we already had 'HelpMenu.Help Menu' translated
-                    text: accordion.localizationManager.getText('HelpMenu.Help Menu', 'Help'),
+                    text: toolbox.localizationManager.getText('HelpMenu.Help Menu', 'Help'),
                     class: 'left-button',
                     click: function() {
                         document.getElementById('settings_frame').contentWindow.postMessage('Help', '*');
                     }
                 },
                 OK: {
-                    text: accordion.localizationManager.getText('Common.OK', 'OK'),
+                    text: toolbox.localizationManager.getText('Common.OK', 'OK'),
                     click: function () {
                         document.getElementById('settings_frame').contentWindow.postMessage('OK', '*');
                     }
                 },
 
                 Cancel: {
-                    text: accordion.localizationManager.getText('Common.Cancel', 'Cancel'),
+                    text: toolbox.localizationManager.getText('Common.Cancel', 'Cancel'),
                     click: function () {
                         $(this).dialog("close");
                     }
@@ -112,7 +112,7 @@ function getSettingsDialogLocalizedStrings() {
  */
 function initializeReaderSetupDialog() {
 
-    var model = document.getElementById('accordion').contentWindow.model;
+    var model = document.getElementById('toolbox').contentWindow.model;
 
     var sourceMsg = 'Data\n' +  JSON.stringify(model.getSynphony().source);
     var fontMsg = 'Font\n' +  model.fontName;

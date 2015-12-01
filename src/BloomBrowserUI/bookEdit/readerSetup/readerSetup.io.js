@@ -4,9 +4,9 @@
 /// <reference path="readerSetup.ui.ts" />
 var previousMoreWords;
 window.addEventListener('message', process_IO_Message, false);
-function accordionWindow() {
+function toolboxWindow() {
     if (window.parent)
-        return window.parent.document.getElementById('accordion').contentWindow;
+        return window.parent.document.getElementById('toolbox').contentWindow;
 }
 function process_IO_Message(event) {
     var params = event.data.split("\n");
@@ -16,7 +16,7 @@ function process_IO_Message(event) {
             return;
         case 'Data':
             loadReaderSetupData(params[1]);
-            accordionWindow().postMessage('SetupType', '*');
+            toolboxWindow().postMessage('SetupType', '*');
             return;
         default:
     }
@@ -87,11 +87,11 @@ function saveClicked() {
     // update more words
     if ((document.getElementById('dls_more_words').value !== previousMoreWords)
         || (parseInt($('input[name="words-or-letters"]:checked').val()) != 0)) {
-        var accordion = accordionWindow();
+        var toolbox = toolboxWindow();
         // save the changes and update lists
         saveChangedSettings(function () {
-            if (typeof accordion['readerSampleFilesChanged'] === 'function')
-                accordion['readerSampleFilesChanged']();
+            if (typeof toolbox['readerSampleFilesChanged'] === 'function')
+                toolbox['readerSampleFilesChanged']();
             parent.window['closeSetupDialog']();
         });
     }
@@ -108,7 +108,7 @@ function saveChangedSettings(callback) {
     var s = getChangedSettings();
     // send to parent
     var settingsStr = JSON.stringify(s, ReaderSettingsReplacer);
-    accordionWindow().postMessage('Refresh\n' + settingsStr, '*');
+    toolboxWindow().postMessage('Refresh\n' + settingsStr, '*');
     // save now
     if (callback)
         getIframeChannel().simpleAjaxPost('/bloom/readers/saveReaderToolSettings', callback, settingsStr);

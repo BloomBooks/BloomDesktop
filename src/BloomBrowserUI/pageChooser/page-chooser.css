@@ -127,14 +127,14 @@
   height: 70px;
 }
 #mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button {
-  background: #e1e1e1 !important;
+  background: #E1E1E1 !important;
   color: black;
-  border: #adadad solid thin;
+  border: #ADADAD solid thin;
   font-size: 10pt;
   margin-left: 10px;
 }
 #mainContainer div.ui-dialog div.ui-dialog-buttonset button.ui-button:hover {
-  background: #b0dee4 !important;
+  background: #B0DEE4 !important;
   color: black;
 }
 #mainContainer .ui-dialog-buttonpane {
@@ -143,7 +143,7 @@
 #mainContainer div.ui-dialog div.ui-dialog-content,
 .ui-dialog .ui-dialog-buttonpane,
 .bloomDialogContainer {
-  background-color: #f0f0f0 !important;
+  background-color: #F0F0F0 !important;
 }
 #mainContainer div.ui-dialog div.ui-dialog-titlebar {
   border: none;

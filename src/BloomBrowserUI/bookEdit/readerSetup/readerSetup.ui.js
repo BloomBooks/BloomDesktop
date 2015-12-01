@@ -176,9 +176,9 @@ function requestWordsForSelectedStage() {
     sightWords = _.compact(sightWords);
     var useSampleWords = $('input[name="words-or-letters"]:checked').val() === '1';
     if (useSampleWords)
-        accordionWindow().postMessage('Words\n' + tr.cells[0].innerHTML, '*');
+        toolboxWindow().postMessage('Words\n' + tr.cells[0].innerHTML, '*');
     else
-        accordionWindow().postMessage('Words\n' + knownGPCS, '*');
+        toolboxWindow().postMessage('Words\n' + knownGPCS, '*');
 }
 /**
  * Update the stage when a letter is selected or unselected.
@@ -372,10 +372,10 @@ function tabBeforeActivate(ui) {
             // remember the new list of more words
             previousMoreWords = document.getElementById('dls_more_words').value;
             // save the changes and update lists
-            var accordion = accordionWindow();
+            var toolbox = toolboxWindow();
             saveChangedSettings(function () {
-                if (typeof accordion['readerSampleFilesChanged'] === 'function')
-                    accordion['readerSampleFilesChanged']();
+                if (typeof toolbox['readerSampleFilesChanged'] === 'function')
+                    toolbox['readerSampleFilesChanged']();
             });
         }
     }
@@ -690,7 +690,7 @@ function setWordContainerHeight() {
 function finishInitializing() {
     $('#stages-table').find('tbody').sortable({ stop: updateStageNumbers });
     $('#levels-table').find('tbody').sortable({ stop: updateLevelNumbers });
-    accordionWindow().postMessage('Texts', '*');
+    toolboxWindow().postMessage('Texts', '*');
     setWordContainerHeight();
 }
 /**
@@ -698,17 +698,17 @@ function finishInitializing() {
  * has changed.
  */
 function wordListChangedCallback() {
-    var accordion = accordionWindow();
-    if (!accordion)
+    var toolbox = toolboxWindow();
+    if (!toolbox)
         return;
-    accordion.postMessage('Texts', '*');
+    toolbox.postMessage('Texts', '*');
     requestWordsForSelectedStage();
 }
 $(document).ready(function () {
     attachEventHandlers();
     $('body').find('*[data-i18n]').localize(finishInitializing);
-    var accordion = accordionWindow();
-    accordion['addWordListChangedListener']('wordListChanged.ReaderSetup', wordListChangedCallback);
+    var toolbox = toolboxWindow();
+    toolbox['addWordListChangedListener']('wordListChanged.ReaderSetup', wordListChangedCallback);
     // found solution to longpress access here:
     // http://stackoverflow.com/questions/3032770/execute-javascript-function-in-a-another-iframe-when-parent-is-from-different-do
     var pageIframe = parent.frames['page'];

@@ -38,7 +38,7 @@ class DRTState {
   markupType: number = MarkupType.Decodable;
 }
 
-declare function fireCSharpAccordionEvent(eventName: string, eventData: string);
+declare function fireCSharpToolboxEvent(eventName: string, eventData: string);
 
 interface ReaderToolsWindow extends Window {
   model: ReaderToolsModel;
@@ -1083,15 +1083,15 @@ class ReaderToolsModel {
     }
 
     // inform the user if the list was truncated
-    var accordion: Document = iframeChannel.getAccordionWindow().document;
-    var msgDiv: JQuery = $(accordion).find('#allowed-word-list-truncated');
+    var toolbox: Document = iframeChannel.getToolboxWindow().document;
+    var msgDiv: JQuery = $(toolbox).find('#allowed-word-list-truncated');
 
     // if the list was truncated, show the message
     if (words.length < model.maxAllowedWords) {
       msgDiv.html('');
     }
     else {
-      msgDiv.html(SimpleDotNetFormat($(accordion).find('#allowed_word_list_truncated_text').html(), [model.maxAllowedWords.toLocaleString()]));
+      msgDiv.html(SimpleDotNetFormat($(toolbox).find('#allowed_word_list_truncated_text').html(), [model.maxAllowedWords.toLocaleString()]));
     }
 
     return returnVal;
@@ -1100,27 +1100,27 @@ class ReaderToolsModel {
   saveState(): void {
 
     // this is needed for unit testing
-    var accordion = $('#accordion');
-    if (typeof accordion.accordion !== 'function') return;
+    var toolbox = $('#toolbox');
+    if (typeof toolbox.accordion !== 'function') return;
 
     // this is also needed for unit testing
-    var active = accordion.accordion('option', 'active');
+    var active = toolbox.accordion('option', 'active');
     if (isNaN(active)) return;
 
     var state = new DRTState();
     state.stage = this.stageNumber;
     state.level = this.levelNumber;
     state.markupType = this.currentMarkupType;
-    fireCSharpAccordionEvent('saveAccordionSettingsEvent', "state\tdecodableReader\t" + "stage:" + this.stageNumber + ";sort:" + this.sort);
-    fireCSharpAccordionEvent('saveAccordionSettingsEvent', "state\tleveledReader\t" + this.levelNumber);
+    fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tdecodableReader\t" + "stage:" + this.stageNumber + ";sort:" + this.sort);
+    fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tleveledReader\t" + this.levelNumber);
     libsynphony.dbSet('drt_state', state);
   }
 
   restoreState(): void {
 
     // this is needed for unit testing
-    var accordion = $('#accordion');
-    if (typeof accordion.accordion !== 'function') return;
+    var toolbox = $('#toolbox');
+    if (typeof toolbox.accordion !== 'function') return;
 
     var state = libsynphony.dbGet('drt_state');
     if (!state) state = new DRTState();

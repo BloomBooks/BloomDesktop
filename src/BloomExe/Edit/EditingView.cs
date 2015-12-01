@@ -502,7 +502,7 @@ namespace Bloom.Edit
 
 				if (anchor.Href.ToLowerInvariant().StartsWith("http")) //will cover https also
 				{
-					// do not open in external browser if localhost...except for some links in the accordion
+					// do not open in external browser if localhost...except for some links in the toolbox
 					if (anchor.Href.ToLowerInvariant().StartsWith(ServerBase.PathEndingInSlash))
 					{
 						ge.Handled = false; // let gecko handle it
@@ -924,7 +924,7 @@ namespace Bloom.Edit
 			_browser1.ReadEditableAreasNow();
 		}
 
-		public GeckoInputElement GetShowAccordionCheckbox()
+		public GeckoInputElement GetShowToolboxCheckbox()
 		{
 			return _browser1.WebBrowser.Window.Document.GetElementById("pure-toggle-right") as GeckoInputElement;
 		}
@@ -936,7 +936,7 @@ namespace Bloom.Edit
 		{
 			get
 			{
-				var toolboxFrame = _browser1.WebBrowser.Window.Document.GetElementById("accordion") as GeckoIFrameElement;
+				var toolboxFrame = _browser1.WebBrowser.Window.Document.GetElementById("toolbox") as GeckoIFrameElement;
 				if (toolboxFrame == null)
 					return null;
 				return new ElementProxy(toolboxFrame.ContentDocument.Body);

@@ -320,12 +320,12 @@ namespace Bloom.Book
 			}
 		}
 
-		public List<AccordionTool> Tools
+		public List<ToolboxTool> Tools
 		{
 			get
 			{
 				if (MetaData.Tools == null)
-					MetaData.Tools = new List<AccordionTool>();
+					MetaData.Tools = new List<ToolboxTool>();
 				return MetaData.Tools;
 			}
 			set { MetaData.Tools = value; }
@@ -592,10 +592,10 @@ namespace Bloom.Book
 		[JsonProperty("uploader")]
 		public ParseDotComObjectPointer Uploader { get; set; }
 
-		/// <summary>These panels are being displayed in the accordion for this book</summary>
+		/// <summary>These panels are being displayed in the toolbox for this book</summary>
 		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
-		[JsonProperty("tools",ItemConverterType = typeof(AccordionToolConverter))]
-		public List<AccordionTool> Tools { get; set; }
+		[JsonProperty("tools",ItemConverterType = typeof(ToolboxToolConverter))]
+		public List<ToolboxTool> Tools { get; set; }
 
 		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
 		public string CurrentTool { get; set; }

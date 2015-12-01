@@ -127,7 +127,7 @@ function initializeDecodableReaderTool() {
         model.sortByFrequency();
     });
     model.updateControlContents();
-    $("#accordion").accordion("refresh");
+    $("#toolbox").accordion("refresh");
     $(window).resize(function () {
         resizeWordList(false);
     });
@@ -144,7 +144,7 @@ function initializeLeveledReaderTool() {
         model.decrementLevel();
     });
     model.updateControlContents();
-    $("#accordion").accordion("refresh");
+    $("#toolbox").accordion("refresh");
 }
 if (typeof ($) === "function") {
     // Running for real, and jquery properly loaded first
@@ -174,7 +174,7 @@ function initializeSynphony(settingsFileContent) {
     model.restoreState();
     model.updateControlContents();
     // change markup based on visible options
-    $('#accordion').onOnce('accordionactivate.readerTools', function (event, ui) {
+    $('#toolbox').onOnce('accordionactivate.readerTools', function (event, ui) {
         model.setMarkupType(ui.newHeader.data('markuptype'));
     });
     // set up a DirectoryWatcher on the Sample Texts directory

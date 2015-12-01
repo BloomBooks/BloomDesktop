@@ -133,7 +133,7 @@ class interIframeChannel {
     return (<HTMLIFrameElement>document.getElementById('page')).contentWindow;
   }
 
-  getAccordionWindow(): Window {
-    return (<HTMLIFrameElement>document.getElementById('accordion')).contentWindow;
+  getToolboxWindow(): Window {
+    return (<HTMLIFrameElement>document.getElementById('toolbox')).contentWindow;
   }
 }

@@ -16,7 +16,7 @@ var scripts = [
     'lib/toastr.min.js',
     'bookEdit/js/editableDivUtils.js',
     'bookEdit/js/jquery.hotkeys.js',
-    'bookEdit/js/BloomAccordion.js',
+    'bookEdit/js/BloomToolbox.js',
     'bookEdit/js/bloomQtipUtils.js',
     'bookEdit/sourceBubbles/bloomSourceBubbles.js',
     'bookEdit/js/bloomNotices.js',
@@ -40,7 +40,7 @@ var scripts = [
     'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
     'bookEdit/js/libsynphony/synphony_lib.js',
     'bookEdit/js/libsynphony/bloom_lib.js',
-    'bookEdit/accordion/talkingBook/audioRecording.js'
+    'bookEdit/toolbox/talkingBook/audioRecording.js'
 ];
 
 var styleSheets = [
@@ -54,7 +54,7 @@ var styleSheets = [
     'bookEdit/StyleEditor/StyleEditor.css',
     'bookEdit/css/bloomDialog.css',
     'lib/long-press/longpress.css',
-    'bookEdit/accordion/talkingBook/audioRecording.css'
+    'bookEdit/toolbox/talkingBook/audioRecording.css'
 ];
 
 for (var i = 0; i < scripts.length; i++) {

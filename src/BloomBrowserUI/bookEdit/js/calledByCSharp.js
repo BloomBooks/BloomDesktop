@@ -3,8 +3,8 @@ var CalledByCSharp = (function () {
     function CalledByCSharp() {
     }
     CalledByCSharp.prototype.handleUndo = function () {
-        // Stuff "in the accordion" (not clear what that means) gets its own undo handling
-        var contentWindow = this.getAccordionContent();
+        // Stuff "in the toolbox" (not clear what that means) gets its own undo handling
+        var contentWindow = this.getToolboxContent();
         if (contentWindow && contentWindow.model && contentWindow.model.shouldHandleUndo()) {
             contentWindow.model.undo();
         } // elsewhere, we try to ask ckEditor to undo, else just the document
@@ -25,7 +25,7 @@ var CalledByCSharp = (function () {
         }
     };
     CalledByCSharp.prototype.canUndo = function () {
-        var contentWindow = this.getAccordionContent();
+        var contentWindow = this.getToolboxContent();
         if (contentWindow && contentWindow.model && contentWindow.model.shouldHandleUndo()) {
             return contentWindow.model.canUndo();
         }
@@ -46,17 +46,17 @@ var CalledByCSharp = (function () {
         contentWindow['disconnectForGarbageCollection']();
     };
     CalledByCSharp.prototype.loadReaderToolSettings = function (settings, bookFontName) {
-        var contentWindow = this.getAccordionContent();
+        var contentWindow = this.getToolboxContent();
         if (!contentWindow)
             return;
         if (typeof contentWindow['initializeSynphony'] === 'function')
             contentWindow['initializeSynphony'](settings, bookFontName);
     };
     CalledByCSharp.prototype.setSampleTextsList = function (fileList) {
-        this.invokeAccordionWithOneParameter('setTextsList', fileList);
+        this.invokeToolboxWithOneParameter('setTextsList', fileList);
     };
     CalledByCSharp.prototype.setSampleFileContents = function (fileContents) {
-        this.invokeAccordionWithOneParameter('setSampleFileContents', fileContents);
+        this.invokeToolboxWithOneParameter('setSampleFileContents', fileContents);
     };
     CalledByCSharp.prototype.setCopyrightAndLicense = function (contents) {
         var contentWindow = this.getPageContent();
@@ -66,7 +66,7 @@ var CalledByCSharp = (function () {
             contentWindow['SetCopyrightAndLicense'](contents);
     };
     CalledByCSharp.prototype.showTalkingBookTool = function () {
-        var contentWindow = this.getAccordionContent();
+        var contentWindow = this.getToolboxContent();
         if (!contentWindow)
             return;
         if (typeof contentWindow['showTalkingBookTool'] === 'function') {
@@ -96,8 +96,8 @@ var CalledByCSharp = (function () {
         if ((typeof page['jQuery'] !== 'undefined') && (page['jQuery'].fn.removeSynphonyMarkup))
             page['jQuery']('.bloom-content1').removeSynphonyMarkup();
     };
-    CalledByCSharp.prototype.invokeAccordionWithOneParameter = function (functionName, value) {
-        var contentWindow = this.getAccordionContent();
+    CalledByCSharp.prototype.invokeToolboxWithOneParameter = function (functionName, value) {
+        var contentWindow = this.getToolboxContent();
         if (!contentWindow)
             return;
         if (typeof contentWindow[functionName] === 'function')
@@ -107,9 +107,9 @@ var CalledByCSharp = (function () {
         var page = document.getElementById('page');
         return (page) ? page.contentWindow : null;
     };
-    CalledByCSharp.prototype.getAccordionContent = function () {
-        var accordion = document.getElementById('accordion');
-        return (accordion) ? accordion.contentWindow : null;
+    CalledByCSharp.prototype.getToolboxContent = function () {
+        var toolbox = document.getElementById('toolbox');
+        return (toolbox) ? toolbox.contentWindow : null;
     };
     return CalledByCSharp;
 })();

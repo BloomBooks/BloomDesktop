@@ -7,9 +7,9 @@ var previousMoreWords: string;
 
 window.addEventListener('message', process_IO_Message, false);
 
-function accordionWindow(): Window {
+function toolboxWindow(): Window {
   if (window.parent)
-    return (<HTMLIFrameElement>window.parent.document.getElementById('accordion')).contentWindow;
+    return (<HTMLIFrameElement>window.parent.document.getElementById('toolbox')).contentWindow;
 }
 
 function process_IO_Message(event: MessageEvent): void {
@@ -23,7 +23,7 @@ function process_IO_Message(event: MessageEvent): void {
 
     case 'Data':
       loadReaderSetupData(params[1]);
-      accordionWindow().postMessage('SetupType', '*');
+      toolboxWindow().postMessage('SetupType', '*');
       return;
 
     default:
@@ -96,12 +96,12 @@ function saveClicked(): void {
   if (((<HTMLInputElement>document.getElementById('dls_more_words')).value !== previousMoreWords)
     || (parseInt($('input[name="words-or-letters"]:checked').val()) != 0)) {
 
-    var accordion = accordionWindow();
+    var toolbox = toolboxWindow();
 
     // save the changes and update lists
     saveChangedSettings(function() {
-      if (typeof accordion['readerSampleFilesChanged'] === 'function')
-        accordion['readerSampleFilesChanged']();
+      if (typeof toolbox['readerSampleFilesChanged'] === 'function')
+        toolbox['readerSampleFilesChanged']();
       parent.window['closeSetupDialog']();
     });
   }
@@ -121,7 +121,7 @@ function saveChangedSettings(callback?: Function): void {
 
   // send to parent
   var settingsStr = JSON.stringify(s, ReaderSettingsReplacer);
-  accordionWindow().postMessage('Refresh\n' + settingsStr, '*');
+  toolboxWindow().postMessage('Refresh\n' + settingsStr, '*');
 
   // save now
   if (callback)

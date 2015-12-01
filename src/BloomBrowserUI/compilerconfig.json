@@ -64,16 +64,16 @@
     "sourceMap": true
   },
   {
-    "outputFile": "bookEdit/accordion/readerTools.css",
-    "inputFile": "bookEdit/accordion/readerTools.less",
+    "outputFile": "bookEdit/toolbox/readerTools.css",
+    "inputFile": "bookEdit/toolbox/readerTools.less",
     "minify": {
       "enabled": false
     },
     "sourceMap": true
   },
   {
-    "outputFile": "bookEdit/accordion/accordion.css",
-    "inputFile": "bookEdit/accordion/accordion.less",
+    "outputFile": "bookEdit/toolbox/toolbox.css",
+    "inputFile": "bookEdit/toolbox/toolbox.less",
     "minify": {
       "enabled": false
     },
@@ -128,8 +128,8 @@
     "sourceMap": true
   },
   {
-    "outputFile": "bookEdit/accordion/talkingBook/audioRecording.css",
-    "inputFile": "bookEdit/accordion/talkingBook/audioRecording.less",
+    "outputFile": "bookEdit/toolbox/talkingBook/audioRecording.css",
+    "inputFile": "bookEdit/toolbox/talkingBook/audioRecording.less",
     "minify": {
       "enabled": false
     },

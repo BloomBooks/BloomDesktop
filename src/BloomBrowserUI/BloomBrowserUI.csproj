@@ -26,19 +26,23 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="bookEdit\accordion\accordion.css">
-      <DependentUpon>accordion.less</DependentUpon>
+    <Content Include="bookEdit\js\BloomToolbox.js" />
+    <Content Include="bookEdit\toolbox\talkingBook\audioRecording.css">
+      <DependentUpon>audioRecording.less</DependentUpon>
     </Content>
-    <Content Include="bookEdit\accordion\Accordion.htm" />
-    <Content Include="bookEdit\accordion\accordion.js" />
-    <Content Include="bookEdit\accordion\decodableReader\decodableReader.htm" />
-    <Content Include="bookEdit\accordion\leveledReader\leveledReader.htm" />
-    <Content Include="bookEdit\accordion\PageElements\PageElements.htm" />
-    <Content Include="bookEdit\accordion\readerTools.css">
+    <Content Include="bookEdit\toolbox\toolbox.css">
+      <DependentUpon>toolbox.less</DependentUpon>
+    </Content>
+    <Content Include="bookEdit\toolbox\toolbox.htm" />
+    <Content Include="bookEdit\toolbox\toolbox.js" />
+    <Content Include="bookEdit\toolbox\decodableReader\decodableReader.htm" />
+    <Content Include="bookEdit\toolbox\leveledReader\leveledReader.htm" />
+    <Content Include="bookEdit\toolbox\PageElements\PageElements.htm" />
+    <Content Include="bookEdit\toolbox\readerTools.css">
       <DependentUpon>readerTools.less</DependentUpon>
     </Content>
-    <Content Include="bookEdit\accordion\settings\Settings.htm" />
-    <Content Include="bookEdit\accordion\talkingBook\talkingBook.htm" />
+    <Content Include="bookEdit\toolbox\settings\Settings.htm" />
+    <Content Include="bookEdit\toolbox\talkingBook\talkingBook.htm" />
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.htm" />
     <Content Include="bookEdit\BookPagesThumbnailList\BookPagesThumbnailList.js" />
     <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.css">
@@ -59,10 +63,10 @@
     </Content>
     <Content Include="bookEdit\js\readerToolsBootstrap.js" />
     <Content Include="bookEdit\css\BookPagesThumbnailList.less" />
-    <Content Include="bookEdit\accordion\talkingBook\talkingBook.jade" />
-    <Content Include="bookEdit\accordion\talkingBook\audioRecording.less" />
-    <Content Include="bookEdit\accordion\decodableReader\decodableReader.jade" />
-    <Content Include="bookEdit\accordion\leveledReader\leveledReader.jade" />
+    <Content Include="bookEdit\toolbox\talkingBook\talkingBook.jade" />
+    <Content Include="bookEdit\toolbox\talkingBook\audioRecording.less" />
+    <Content Include="bookEdit\toolbox\decodableReader\decodableReader.jade" />
+    <Content Include="bookEdit\toolbox\leveledReader\leveledReader.jade" />
     <None Include="bookEdit\sourceBubbles\sourceBubbles.less" />
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
@@ -78,7 +82,7 @@
     <Content Include="bookEdit\img\pasteButton.svg" />
     <Content Include="bookEdit\img\WordSpacing.png" />
     <Content Include="bookEdit\js\bloomImages.js" />
-    <Content Include="bookEdit\js\BloomToolbox.js" />
+    <Content Include="bookEdit\js\pageDragToolbox.js" />
     <Content Include="bookEdit\js\editViewFrame.js" />
     <Content Include="bookEdit\js\jquery.hotkeys.js" />
     <Content Include="bookEdit\js\libsynphony\bloom_lib.js" />
@@ -112,10 +116,10 @@
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
-    <TypeScriptCompile Include="bookEdit\accordion\talkingBook\audioRecording.ts" />
-    <TypeScriptCompile Include="bookEdit\accordion\talkingBook\talkingBook.ts" />
+    <TypeScriptCompile Include="bookEdit\js\BloomToolbox.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\talkingBook\audioRecording.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\talkingBook\talkingBook.ts" />
     <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
-    <TypeScriptCompile Include="bookEdit\js\BloomAccordion.ts" />
     <TypeScriptCompile Include="bookEdit\js\bloomHintBubbles.ts" />
     <TypeScriptCompile Include="bookEdit\js\bloomNotices.ts" />
     <TypeScriptCompile Include="bookEdit\js\bloomQtipUtils.ts" />
@@ -299,9 +303,9 @@
     <Content Include="bookEdit\LibSynphonyTests.jstd" />
     <Content Include="bookEdit\ReaderToolsTests.jstd" />
     <Content Include="bookEdit\SynphonyApiTests.jstd" />
-    <Content Include="bookEdit\accordion\Accordion.jade" />
-    <Content Include="bookEdit\accordion\PageElements\PageElements.jade" />
-    <Content Include="bookEdit\accordion\settings\Settings.jade" />
+    <Content Include="bookEdit\toolbox\toolbox.jade" />
+    <Content Include="bookEdit\toolbox\PageElements\PageElements.jade" />
+    <Content Include="bookEdit\toolbox\settings\Settings.jade" />
     <Content Include="bookEdit\readerSetup\ReaderSetup.jade" />
     <Content Include="bookEdit\css\origami.less" />
     <Content Include="bookEdit\html\font-awesome\fonts\fontawesome-webfont.woff" />
@@ -320,8 +324,8 @@
     <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.less" />
     <Content Include="bookEdit\TopicChooser\topicChooser.less" />
     <Content Include="bookEdit\readerSetup\readerSetup.less" />
-    <Content Include="bookEdit\accordion\readerTools.less" />
-    <Content Include="bookEdit\accordion\accordion.less" />
+    <Content Include="bookEdit\toolbox\readerTools.less" />
+    <Content Include="bookEdit\toolbox\toolbox.less" />
     <Content Include="bookLayout\CommonBasePageEpub.less" />
     <None Include="compilerconfig.json" />
     <Content Include="compilerconfig.json.defaults">

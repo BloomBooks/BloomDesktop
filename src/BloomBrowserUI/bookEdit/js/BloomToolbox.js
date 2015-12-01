@@ -1,79 +1,16 @@
-﻿//Makes a toolbox off to the side (implemented using qtip), with elements that can be dragged
-//onto the page.
-//This was an experiment that, at least so far, we have not gone forward with. It was used by the "Template Maker" template.
-//We could end up using this kind of UI someday, thus it is preserved in the code base for now.
-
-
-function AddToolbox(container) {
-    $(container).find('div.bloom-page.bloom-enablePageCustomization').each(function () {
-        $(this).find('.marginBox').droppable({
-            hoverClass: "ui-state-hover",
-            accept: function () { return true; },
-            drop: function (event, ui) {
-                //is it being dragged in from a toolbox, or just moved around inside the page?
-                if ($(ui.draggable).hasClass('widgetInToolbox')) {
-
-                    //review: since we already did a clone during the tearoff, why clone again?
-                    var $x = $($(ui.draggable).clone()[0]);
-                    // $x.text("");
-
-                    //we need different behavior when it is in the toolbox vs. once it is live
-                    $x.attr("class", $x.data("classesafterdrop"));
-                    $x.removeAttr("classesafterdrop");
-
-                    if ($x.hasClass('bloom-imageContainer')) {
-                        SetupImageContainer($x);
-                    }
-
-                    //review: this find() implies that the draggable thing isn't necesarily the widgetInToolbox. Why not?
-                    //                    $(this).find('.widgetInToolbox')
-                    //                            .removeAttr("style")
-                    //                            .draggable({ containment: "parent" })
-                    //                            .removeClass("widgetInToolbox")
-                    //                            .SetupResizableElement(this)
-                    //                            .SetupDeletable(this);
-                    $x.removeAttr("style");
-                    $x.draggable({ containment: "parent" });
-                    $x.removeClass("widgetInToolbox");
-                    SetupResizableElement($x);
-                    SetupDeletable($x);
-
-                    $(this).append($x);
-                }
-            }
+/// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../lib/jquery-ui.d.ts" />
+var BloomToolbox = (function () {
+    function BloomToolbox() {
+        $("#toolbox").accordion({
+            heightStyle: "fill"
         });
-        var lang1ISO = GetSettings().languageForNewTextBoxes;
-        var heading1CenteredWidget = '<div class="heading1-style centered widgetInToolbox"  data-classesafterdrop="bloom-translationGroup heading1-style centered bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '">Heading 1 Centered</div></div>';
-        var heading2LeftWidget = '<div class="heading2-style widgetInToolbox"  data-classesafterdrop="bloom-translationGroup heading2-style  bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '">Heading 2, Left</div></div>';
-        var fieldWidget = '<div class="widgetInToolbox" data-classesafterdrop="bloom-translationGroup bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' + lang1ISO + '"> A block of normal text.</div></div>';
-        // old one: var imageWidget = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable widgetInToolbox"><img src="placeHolder.png"></div>';
-        var imageWidget = '<div class="widgetInToolbox " data-classesafterdrop="bloom-imageContainer  bloom-resizable bloom-draggable  bloom-deletable"><img src="placeHolder.png"></div>';
-
-        var toolbox = $(this).parent().append("<div id='toolbox'><h3>Page Elements</h3><ul class='toolbox'><li>" + heading1CenteredWidget + "</li><li>" + heading2LeftWidget + "</li><li>" + fieldWidget + "</li><li>" + imageWidget + "</li></ul></div>");
-
-
-        toolbox.find('.widgetInToolbox').each(function () {
-            $(this).draggable({
-                //note: this is just used for drawing what you drag around..
-                //it isn't what the droppable is actually given. For that, look in the 'drop' item of the droppable() call above.
-                helper: function (event) {
-                    var tearOff = $(this).clone(); //.removeClass('widgetInToolbox');//by removing this, we show it with the actual size it will be when dropped
-                    return tearOff;
-                }
-            });
-        });
-        $(this).qtipSecondary({
-            content: "<div id='experimentNotice'><img src='/bloom/images/experiment.png'/>This is an experimental prototype of template-making within Bloom itself. Much more work is needed before it is ready for real work, so don't bother reporting problems with it yet. The Trello board is <a href='https://trello.com/board/bloom-custom-template-dev/4fb2501b34909fbe417a7b7d'>here</a></b></div>",
-            show: { ready: true },
-            hide: false,
-            position: {
-                at: 'right top',
-                my: 'left top'
-            },
-            style: {
-                classes: 'ui-tooltip-red',
-                tip: { corner: false }
-            }
-        });
-    })
-}
+    }
+    BloomToolbox.Resize = function () {
+        $("#toolbox").accordion("refresh");
+        //var myHeight = $(document).find(".toolboxRoot").innerHeight();
+        //console.log("Refreshed toolbox to: "+myHeight);
+    };
+    return BloomToolbox;
+})();
+//# sourceMappingURL=BloomToolbox.js.map

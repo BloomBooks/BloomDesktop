@@ -12,7 +12,7 @@ var showingPanel = false;
  * @param {String} eventName
  * @param {String} eventData
  */
-function fireCSharpAccordionEvent(eventName, eventData) {
+function fireCSharpToolboxEvent(eventName, eventData) {
 
     var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
     document.dispatchEvent(event);
@@ -29,7 +29,7 @@ function showOrHidePanel_click(chkbox) {
     if (chkbox.innerHTML === '') {
 
         chkbox.innerHTML = checkMarkString;
-        fireCSharpAccordionEvent('saveAccordionSettingsEvent', "active\t" + chkbox.id + "\t1");
+        fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t1");
         if (panel) {
             showingPanel = true;
             requestPanel(chkbox.id, panel);
@@ -37,18 +37,18 @@ function showOrHidePanel_click(chkbox) {
     }
     else {
         chkbox.innerHTML = '';
-        fireCSharpAccordionEvent('saveAccordionSettingsEvent', "active\t" + chkbox.id + "\t0");
+        fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t0");
         $('*[data-panelId]').filter(function() { return $(this).attr('data-panelId') === panel; }).remove();
     }
 
-    resizeAccordion();
+    resizeToolbox();
 }
 
 /**
 * Called by C# to restore user settings
 * @param {String} settings
 */
-function restoreAccordionSettings(settings) {
+function restoreToolboxSettings(settings) {
 
     var opts = settings;
     var currentPanel = opts['current'] || '';
@@ -90,12 +90,12 @@ function setCurrentPanel(currentPanel) {
 
     // NOTE: panels without a "data-panelId" attribute (such as the More panel) cannot be the "currentPanel."
     var idx = '0';
-    var accordion = $('#accordion');
+    var toolbox = $('#toolbox');
 
     if (currentPanel) {
 
         // find the index of the panel whose "data-panelId" attribute equals the value of "currentPanel"
-        accordion.find('> h3').each(function() {
+        toolbox.find('> h3').each(function() {
             if ($(this).attr('data-panelId') === currentPanel) {
 
                 // the index is the last segment of the element id
@@ -115,27 +115,27 @@ function setCurrentPanel(currentPanel) {
     }
 
     // turn off animation
-    var ani = accordion.accordion('option', 'animate');
-    accordion.accordion('option', 'animate', false);
+    var ani = toolbox.accordion('option', 'animate');
+    toolbox.accordion('option', 'animate', false);
 
     // the index must be passed as an int, a string will not work
-    accordion.accordion('option', 'active', parseInt(idx));
+    toolbox.accordion('option', 'active', parseInt(idx));
 
     // turn animation back on
-    accordion.accordion('option', 'animate', ani);
+    toolbox.accordion('option', 'animate', ani);
 
     // when a panel is activated, save its data-panelId so state can be restored when Bloom is restarted.
-    accordion.onOnce('accordionactivate.accordion', function(event, ui) {
+    toolbox.onOnce('accordionactivate.toolbox', function (event, ui) {
 
         if (ui.newHeader.attr('data-panelId'))
-            fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
+            fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
         else
-            fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t");
+            fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t");
     });
 }
 
 /**
- * Requests a panel from localhost and loads it into the accordion.
+ * Requests a panel from localhost and loads it into the toolbox.
  * @param {String} checkBoxId
  * @param {String} panelId
  * @param {Function} loadNextCallback
@@ -148,12 +148,12 @@ function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPane
     if (chkBox) {
         chkBox.innerHTML = checkMarkString;
 
-        var panelUrl = '/bloom/bookEdit/accordion/' + panelId + '/' + panelId + '.htm';
+        var panelUrl = '/bloom/bookEdit/toolbox/' + panelId + '/' + panelId + '.htm';
         var ajaxSettings = {type: 'GET', url: panelUrl};
 
         $.ajax(ajaxSettings)
             .done(function (data) {
-                loadAccordionPanel(data, panelId);
+                loadToolboxPanel(data, panelId);
                 if (typeof loadNextCallback === 'function')
                     loadNextCallback(panels, currentPanel);
             });
@@ -161,32 +161,32 @@ function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPane
 }
 
 var resizeTimer;
-function resizeAccordion() {
+function resizeToolbox() {
     var windowHeight = $(window).height();
-    var root = $(".accordionRoot");
-    // Set accordion container height to fit in new window size
-    // Then accordion Resize() will adjust it to fit the container
-    root.height(windowHeight - 25); // 25 is the top: value set for div.accordionRoot in accordion.less
-    BloomAccordion.Resize();
+    var root = $(".toolboxRoot");
+    // Set toolbox container height to fit in new window size
+    // Then toolbox Resize() will adjust it to fit the container
+    root.height(windowHeight - 25); // 25 is the top: value set for div.toolboxRoot in toolbox.less
+    BloomToolbox.Resize();
 }
 
 /**
- * Adds one panel to the accordion
+ * Adds one panel to the toolbox
  * @param {String} newContent
  * @param {String} panelId
  */
-function loadAccordionPanel(newContent, panelId) {
+function loadToolboxPanel(newContent, panelId) {
     var parts = $($.parseHTML(newContent, document, true));
 
     parts.filter('*[data-i18n]').localize();
     parts.find('*[data-i18n]').localize();
 
-    var accordion = $('#accordion');
+    var toolbox = $('#toolbox');
 
     // expect parts to have 2 items, an h3 and a div
     if (parts.length < 2) return;
 
-    // get the accordion panel tab/button
+    // get the toolbox panel tab/button
     var tab = parts.filter('h3').first();
 
     // Get the order. If no order, set to top (zero)
@@ -198,41 +198,41 @@ function loadAccordionPanel(newContent, panelId) {
 
     // Where to insert the new panel?
     // NOTE: there will always be at least one panel, the "More..." panel, so there will always be at least one panel
-    // in the accordion. And the "More..." panel will have the highest order so it is always at the bottom of the stack.
-    var insertBefore = accordion.children().filter(function() { return $(this).data('order') > order; }).first();
+    // in the toolbox. And the "More..." panel will have the highest order so it is always at the bottom of the stack.
+    var insertBefore = toolbox.children().filter(function() { return $(this).data('order') > order; }).first();
 
     // Insert now.
     tab.insertBefore(insertBefore);
     div.insertBefore(insertBefore);
 
-    accordion.accordion('refresh');
+    toolbox.accordion('refresh');
 
     // if requested, open the panel that was just inserted
     if (showingPanel) {
         showingPanel = false;
         var id = tab.attr('id');
         id = parseInt(id.substr(id.lastIndexOf('_')));
-        accordion.accordion('option', 'active', id);
+        toolbox.accordion('option', 'active', id);
 
         // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
-        accordion.onOnce('accordionactivate.accordion', function(event, ui) {
+        toolbox.onOnce('accordionactivate.toolbox', function (event, ui) {
 
             if (ui.newHeader.attr('data-panelId'))
-                fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
+                fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
             else
-                fireCSharpAccordionEvent('saveAccordionSettingsEvent', "current\t");
+                fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t");
         });
     }
 }
 
 $(document).ready(function () {
-    new BloomAccordion(); // have to create this somewhere to get it initialized.
-    resizeAccordion(); // Make sure it gets run once, at least.
+    new BloomToolbox(); // have to create this somewhere to get it initialized.
+    resizeToolbox(); // Make sure it gets run once, at least.
     $('body').find('*[data-i18n]').localize(); // run localization
 
-    // Now bind the window's resize function to the accordion resizer
+    // Now bind the window's resize function to the toolbox resizer
     $(window).bind('resize', function () {
         clearTimeout(resizeTimer); // resizeTimer variable is defined outside of ready function
-        resizeTimer = setTimeout(resizeAccordion, 100);
+        resizeTimer = setTimeout(resizeToolbox, 100);
     });
 });

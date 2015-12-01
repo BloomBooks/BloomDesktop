@@ -3,8 +3,8 @@
 class CalledByCSharp {
 
   handleUndo(): void {
-    // Stuff "in the accordion" (not clear what that means) gets its own undo handling
-    var contentWindow = this.getAccordionContent();
+    // Stuff "in the toolbox" (not clear what that means) gets its own undo handling
+    var contentWindow = this.getToolboxContent();
     if (contentWindow && contentWindow.model && contentWindow.model.shouldHandleUndo()) {
           contentWindow.model.undo();
     } // elsewhere, we try to ask ckEditor to undo, else just the document
@@ -27,7 +27,7 @@ class CalledByCSharp {
  }
 
   canUndo(): string {
-    var contentWindow = this.getAccordionContent();
+    var contentWindow = this.getToolboxContent();
     if (contentWindow && contentWindow.model && contentWindow.model.shouldHandleUndo()) {
           return contentWindow.model.canUndo();
     }
@@ -54,7 +54,7 @@ class CalledByCSharp {
 
   loadReaderToolSettings(settings: string, bookFontName: string) {
 
-    var contentWindow = this.getAccordionContent();
+    var contentWindow = this.getToolboxContent();
     if (!contentWindow) return;
 
     if (typeof contentWindow['initializeSynphony'] === 'function')
@@ -62,11 +62,11 @@ class CalledByCSharp {
   }
 
   setSampleTextsList(fileList: string) {
-    this.invokeAccordionWithOneParameter('setTextsList', fileList);
+    this.invokeToolboxWithOneParameter('setTextsList', fileList);
   }
 
   setSampleFileContents(fileContents: string) {
-    this.invokeAccordionWithOneParameter('setSampleFileContents', fileContents);
+    this.invokeToolboxWithOneParameter('setSampleFileContents', fileContents);
   }
 
   setCopyrightAndLicense(contents) {
@@ -79,7 +79,7 @@ class CalledByCSharp {
   }
 
   showTalkingBookTool() {
-      var contentWindow = this.getAccordionContent();
+      var contentWindow = this.getToolboxContent();
         if (!contentWindow) return;
         if (typeof contentWindow['showTalkingBookTool'] === 'function') {
             contentWindow['showTalkingBookTool']();
@@ -111,9 +111,9 @@ class CalledByCSharp {
       page['jQuery']('.bloom-content1').removeSynphonyMarkup();
   }
 
-  invokeAccordionWithOneParameter(functionName: string, value: string) {
+  invokeToolboxWithOneParameter(functionName: string, value: string) {
 
-    var contentWindow = this.getAccordionContent();
+    var contentWindow = this.getToolboxContent();
     if (!contentWindow) return;
 
     if (typeof contentWindow[functionName] === 'function')
@@ -125,8 +125,8 @@ class CalledByCSharp {
     return (page) ? page.contentWindow : null;
   }
 
-  getAccordionContent(): ReaderToolsWindow {
-    var accordion = <HTMLIFrameElement>document.getElementById('accordion');
-    return (accordion) ? <ReaderToolsWindow>accordion.contentWindow : null;
+  getToolboxContent(): ReaderToolsWindow {
+    var toolbox = <HTMLIFrameElement>document.getElementById('toolbox');
+    return (toolbox) ? <ReaderToolsWindow>toolbox.contentWindow : null;
   }
 }

@@ -4,7 +4,7 @@ html
 		meta(charset='UTF-8')
 		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css', type='text/css')
-		link(rel='stylesheet', href='/bloom/bookEdit/accordion/accordion.css', type='text/css')
+		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/toolbox.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/pageChooser/page-chooser.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/bookEdit/bloomDialog.css', type='text/css')
@@ -24,18 +24,18 @@ html
 				interIframeChannel = new interIframeChannel();
 				// {simulatedPageFileInBookFolder} is replaced by EditingModel.GetXmlDocumentForEditScreenWebPage().
 				document.getElementById('page').src = '{simulatedPageFileInBookFolder}';
-				document.getElementById('accordion').src = '/bloom/accordionContent';
+				document.getElementById('toolbox').src = '/bloom/toolboxContent';
 			});
 		style.
 			html, body, #left, #right { margin: 0; padding: 0; border: 0 none; height:100%}
 			body { overflow:hidden }
-			.accordion #left { margin-right: 200px;}
-			.accordion #right { width: 200px; float: right;}
-			.no-accordion #left { width: 100%;}
-			.no-accordion #right { display: none;}
-	body.no-accordion
+			.toolbox #left { margin-right: 200px;}
+			.toolbox #right { width: 200px; float: right;}
+			.no-toolbox #left { width: 100%;}
+			.no-toolbox #right { display: none;}
+	body.no-toolbox
 		#right
-			iframe#accordion(width='100%', height='100%', src='') .
+			iframe#toolbox(width='100%', height='100%', src='') .
 				Your browser does not support iframes.
 		#left
 			iframe#page(width='100%', height='100%', src='') .

@@ -22,7 +22,7 @@ function ForCodeInspection_UnusedFunctions() {
     // don't actually do anything
     if (1 === 1)
         return;
-    window.restoreAccordionSettings('');
+    window.restoreToolboxSettings('');
     var x = model.fontName;
     var calledByCSharpObj = new CalledByCSharp();
     calledByCSharpObj.removeSynphonyMarkup();
