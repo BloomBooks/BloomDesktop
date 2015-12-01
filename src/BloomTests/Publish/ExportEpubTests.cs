@@ -42,8 +42,7 @@ namespace BloomTests.Publish
 			// The white space must be removed to make an XML ID.
 			var book = SetupBook("This is some text", "en", "my_Image", "my%20image");
 			MakeImageFiles(book, "my_Image", "my image");
-			var folderName = "SaveEpub" + "output";
-			MakeEpub("output", folderName, book);
+			MakeEpub("output", "HandlesWhiteSpaceInImageNames", book);
 			CheckBasicsInManifest("my_Image", "my_image1");
 			CheckBasicsInPage("my_Image", "my_image1");
 			CheckNavPage();
@@ -59,8 +58,7 @@ namespace BloomTests.Publish
 			string outputImageName = "_e0_b8_9b_e0_b8_b9_e0_b8_81_e0_b8_b1_e0_b8_9a_e0_b8_a1_e0_b8_94";
 			var book = SetupBook("This is some text", "en", "ปูกับมด", "my%20image");
 			MakeImageFiles(book, "ปูกับมด", "my image");
-			var folderName = "SaveEpub" + "ปูกับมด";
-			MakeEpub("ปูกับมด", folderName, book);
+			MakeEpub("ปูกับมด", "HandlesNonRomanFileNames", book);
 			CheckBasicsInManifest(outputImageName, "my_image");
 			CheckBasicsInPage(outputImageName, "my_image");
 			CheckNavPage();
@@ -339,7 +337,7 @@ namespace BloomTests.Publish
 							</div>
 						</div>
 					</div>");
-			MakeEpub("output", "ImageSrcQuery_IsIgnored", book);
+			MakeEpub("output", "HandlesMultiplePages", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 
@@ -582,7 +580,7 @@ namespace BloomTests.Publish
 								</div>
 							</div>");
 			MakeImageFiles(book, "image1");
-			MakeEpub("output", "ImageStyles_ConvertedToPercent_SpecialCases", book);
+			MakeEpub("output", "ImageStyles_PercentsAdjustForContainingPercentDivs", book);
 			CheckBasicsInManifest("image1");
 			CheckBasicsInPage("image1");
 
@@ -642,7 +640,7 @@ namespace BloomTests.Publish
 			var book = SetupBook("<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2c'>This is some text.</span><span id='i0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>", "xyz");
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.mp4"));
 			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "i0d8e9910-dfa3-4376-9373-a869e109b763.mp3"));
-			MakeEpub("output", "BookWithAudio_ProducesOverlay", book);
+			MakeEpub("output", "AudioWithParagraphsAndRealGuids_ProducesOverlay", book);
 			CheckBasicsInManifest();
 			CheckBasicsInPage();
 			CheckNavPage();
