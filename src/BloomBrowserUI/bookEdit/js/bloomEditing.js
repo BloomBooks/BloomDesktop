@@ -287,11 +287,11 @@ $.fn.hasAttr = function (name) {
 
 function getReaderToolsModel() {
     // I (GJM) tried to define this is readerTools.ts, but it wasn't loaded if no reader tools were active!
-    var accordion = parent.window.document.getElementById("accordion");
+    var toolbox = parent.window.document.getElementById("toolbox");
 
-    // accordion will be undefined during unit testing
-    if (accordion)
-        return accordion.contentWindow['model'];
+    // toolbox will be undefined during unit testing
+    if (toolbox)
+        return toolbox.contentWindow['model'];
 }
 
 // Originally, all this code was in document.load and the selectors were acting

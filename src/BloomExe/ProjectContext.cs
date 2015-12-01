@@ -282,7 +282,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html/font-awesome/css");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/accordion");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/readerSetup");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/StyleEditor");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/TopicChooser");
@@ -302,7 +302,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/long-press");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/split-pane");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/lib/ckeditor/skins/icy_orange");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/accordion/talkingBook");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox/talkingBook");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("xMatter");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/epub");

@@ -270,7 +270,7 @@ namespace BloomTests.Book
 			var scriptNodes = dom.SafeSelectNodes("//script");
 			// JohnT: as of 25 November 2015, the five are:
 			// - bloomBootstrap.js
-			// - readerToolsBootstrap.js (this is the newest...because the accordion is now always available, BL-2970. Perhaps should be rolled into bloomBootstrap.js?
+			// - readerToolsBootstrap.js (this is the newest...because the toolbox is now always available, BL-2970. Perhaps should be rolled into bloomBootstrap.js?
 			// - a literal script which calls 'localize' on each element that has data-i18N
 			// - a literal script which defines a function GetInlineDictionary to return a localization dictionary
 			// - a literal script which defines a GetSettings function, which returns info about languages and collection type.

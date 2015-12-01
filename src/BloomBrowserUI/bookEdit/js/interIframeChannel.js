@@ -110,8 +110,8 @@ var interIframeChannel = (function () {
     interIframeChannel.prototype.getPageWindow = function () {
         return document.getElementById('page').contentWindow;
     };
-    interIframeChannel.prototype.getAccordionWindow = function () {
-        return document.getElementById('accordion').contentWindow;
+    interIframeChannel.prototype.getToolboxWindow = function () {
+        return document.getElementById('toolbox').contentWindow;
     };
     return interIframeChannel;
 })();

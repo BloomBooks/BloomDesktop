@@ -10,9 +10,9 @@ namespace Bloom.Edit
 	/// page when the user expands it. There is a subclass for each tool.
 	/// These objects are serialized as part of the meta.json file representing the state of a book.
 	/// The State field is persisted in this way; it is also passed in to the JavaScript that manages
-	/// the accordion. New fields and properties should be kept non-public or marked with an
+	/// the toolbox. New fields and properties should be kept non-public or marked with an
 	/// appropriate attribute if they should NOT be persisted in JSON.
-	/// New subclasses will typically require a new case in WithName and also in AccordionToolConverter.ReadJson.
+	/// New subclasses will typically require a new case in WithName and also in ToolboxToolConverter.ReadJson.
 	/// Note that the values of the Name field are used in the json and therefore cannot readily be changed.
 	/// (Migration would handle a change going forward, but older Blooms would lose the data at best.)
 	/// </summary>
@@ -84,7 +84,7 @@ namespace Bloom.Edit
 	/// It allows us to deserialize a sequence of polymorphic tools, creating the
 	/// right subclass for each based on the name.
 	/// </summary>
-	public class AccordionToolConverter : JsonConverter
+	public class ToolboxToolConverter : JsonConverter
 	{
 		public override bool CanConvert(Type objectType)
 		{

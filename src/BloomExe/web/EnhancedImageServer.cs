@@ -72,7 +72,7 @@ namespace Bloom.web
 		private object SyncObj = new object();
 
 		public string CurrentPageContent { get; set; }
-		public string AccordionContent { get; set; }
+		public string ToolboxContent { get; set; }
 		public bool AuthorMode { get; set; }
 
 		/// <summary>
@@ -487,9 +487,9 @@ namespace Bloom.web
 					info.ContentType = "text/html";
 					info.WriteCompleteOutput(CurrentPageContent ?? "");
 					return true;
-				case "accordionContent":
+				case "toolboxContent":
 					info.ContentType = "text/html";
-					info.WriteCompleteOutput(AccordionContent ?? "");
+					info.WriteCompleteOutput(ToolboxContent ?? "");
 					return true;
 				case "availableFontNames":
 					var list = new List<string>(Browser.NamesOfFontsThatBrowserCanRender());

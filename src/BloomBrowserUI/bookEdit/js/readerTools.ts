@@ -72,7 +72,7 @@ function processDLRMessage(event: MessageEvent): void {
       model.setMarkupType(parseInt(params[1]));
       return;
 
-    case 'Qtips': // request from accordion to add qtips to marked-up spans
+    case 'Qtips': // request from toolbox to add qtips to marked-up spans
       // We could make separate messages for these...
       markDecodableStatus();
       markLeveledStatus();
@@ -171,7 +171,7 @@ function initializeDecodableReaderTool(): void {
   });
 
   model.updateControlContents();
-  $("#accordion").accordion("refresh");
+  $("#toolbox").accordion("refresh");
 
   $(window).resize(function() {
     resizeWordList(false);
@@ -195,7 +195,7 @@ function initializeLeveledReaderTool(): void {
   });
 
   model.updateControlContents();
-  $("#accordion").accordion("refresh");
+  $("#toolbox").accordion("refresh");
 }
 
 if (typeof ($) === "function") {
@@ -233,7 +233,7 @@ function initializeSynphony(settingsFileContent: string): void {
   model.updateControlContents();
 
   // change markup based on visible options
-  $('#accordion').onOnce('accordionactivate.readerTools', function(event, ui) {
+  $('#toolbox').onOnce('accordionactivate.readerTools', function(event, ui) {
     model.setMarkupType(ui.newHeader.data('markuptype'));
   } );
 

@@ -10,7 +10,7 @@ namespace Bloom.Edit
 	class TalkingBookTool : ToolboxTool
 	{
 		private bool _showRecordingtools;
-		public const string ToolId = "talkingBook";  // Avoid changing value; see AccordionToo.JsonToolId
+		public const string ToolId = "talkingBook";  // Avoid changing value; see ToolboxTool.JsonToolId
 		public override string JsonToolId { get { return ToolId; } }
 
 		internal override void SaveSettings(ElementProxy toolbox)

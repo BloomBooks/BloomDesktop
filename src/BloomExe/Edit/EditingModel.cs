@@ -52,7 +52,7 @@ namespace Bloom.Edit
 		private List<ContentLanguage> _contentLanguages;
 		private IPage _previouslySelectedPage;
 		private bool _inProcessOfDeleting;
-		private string _accordionFolder;
+		private string _toolboxFolder;
 		private EnhancedImageServer _server;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private Dictionary<string, IPage> _templatePagesDict;
@@ -580,11 +580,11 @@ namespace Bloom.Edit
 				_currentPage.Dispose();
 			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 
-			// Enhance JohnT: Can we somehow have a much simpler accordion content until the user displays it?
+			// Enhance JohnT: Can we somehow have a much simpler toolbox content until the user displays it?
 			//if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
-				_server.AccordionContent = MakeAccordionContent();
+				_server.ToolboxContent = MakeToolboxContent();
 			//else
-			//	_server.AccordionContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
+			//	_server.ToolboxContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 
 			_server.CurrentBook = _currentlyDisplayedBook;
 			_server.AuthorMode = CanAddPages;
@@ -618,12 +618,12 @@ namespace Bloom.Edit
 
 			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
 			{
-				// Make the accordion initially visible.
+				// Make the toolbox initially visible.
 				// What we have to do to accomplish this is pretty non-intutive. It's a consequence of the way
 				// the pure-drawer CSS achieves the open/close effect. This input is a check-box, so clicking it
 				// changes the state of things in a way that all the other CSS can depend on.
-				var accordionCheckBox = dom.SelectSingleNode("//input[@id='pure-toggle-right']");
-				accordionCheckBox.SetAttribute("checked", "true");
+				var toolboxCheckBox = dom.SelectSingleNode("//input[@id='pure-toggle-right']");
+				toolboxCheckBox.SetAttribute("checked", "true");
 			}
 
 			return dom;
@@ -643,8 +643,8 @@ namespace Bloom.Edit
 		/// <summary>
 		/// For some reason, we need to call this code OnIdle.
 		/// We couldn't figure out the timing any other way.
-		/// Otherwise, sometimes the calledByCSharp object doesn't exist; then we don't call restoreAccordionSettings.
-		/// If we don't call restoreAccordionSettings, then the more panel stays open without the checkboxes checked.
+		/// Otherwise, sometimes the calledByCSharp object doesn't exist; then we don't call restoreToolboxSettings.
+		/// If we don't call restoreToolboxSettings, then the more panel stays open without the checkboxes checked.
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
@@ -674,7 +674,7 @@ namespace Bloom.Edit
 		/// </summary>
 		internal void AddStandardEventListeners()
 		{
-			AddMessageEventListener("saveAccordionSettingsEvent", SaveAccordionSettings);
+			AddMessageEventListener("saveToolboxSettingsEvent", SaveToolboxSettings);
 			AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			AddMessageEventListener("setTopic", SetTopic);
 			AddMessageEventListener("finishSavingPage", FinishSavingPage);
@@ -880,7 +880,7 @@ namespace Bloom.Edit
 		/// - may be passed 'state' followed by the name of one of the tools and its current state string.
 		/// </summary>
 		/// <param name="data"></param>
-		private void SaveAccordionSettings(string data)
+		private void SaveToolboxSettings(string data)
 		{
 			var args = data.Split(new[] { '\t' });
 
@@ -922,12 +922,12 @@ namespace Bloom.Edit
 			item.Enabled = enabled;
 		}
 
-		private string MakeAccordionContent()
+		private string MakeToolboxContent()
 		{
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/accordion", "Accordion.htm");
-			_accordionFolder = Path.GetDirectoryName(path);
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox", "Toolbox.htm");
+			_toolboxFolder = Path.GetDirectoryName(path);
 
-			var domForAccordion = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
+			var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 
 			// embed settings on the page
 			var tools = _currentlyDisplayedBook.BookInfo.Tools.Where(t => t.Enabled == true).ToList();
@@ -942,34 +942,34 @@ namespace Bloom.Edit
 			RetrieveToolSettings(tools, "leveledReader", settings);
 
 			var settingsStr = JsonConvert.SerializeObject(settings);
-			settingsStr = String.Format("function GetAccordionSettings() {{ return {0};}}", settingsStr) +
-				"\n$(document).ready(function() { restoreAccordionSettings(GetAccordionSettings()); });";
+			settingsStr = String.Format("function GetToolboxSettings() {{ return {0};}}", settingsStr) +
+				"\n$(document).ready(function() { restoreToolboxSettings(GetToolboxSettings()); });";
 
-			var scriptElement = domForAccordion.RawDom.CreateElement("script");
+			var scriptElement = domForToolbox.RawDom.CreateElement("script");
 			scriptElement.SetAttribute("type", "text/javascript");
 			scriptElement.SetAttribute("id", "ui-accordionSettings");
 			scriptElement.InnerText = settingsStr;
 
-			domForAccordion.Head.InsertAfter(scriptElement, domForAccordion.Head.LastChild);
+			domForToolbox.Head.InsertAfter(scriptElement, domForToolbox.Head.LastChild);
 
 			// get additional tabs to load
 			var checkedBoxes = new List<string>();
 
-			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "decodableReader");
-			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "leveledReader");
-			LoadPanelIntoAccordionIfAvailable(domForAccordion, tools, checkedBoxes, "talkingBook");
+			LoadPanelIntoToolboxIfAvailable(domForToolbox, tools, checkedBoxes, "decodableReader");
+			LoadPanelIntoToolboxIfAvailable(domForToolbox, tools, checkedBoxes, "leveledReader");
+			LoadPanelIntoToolboxIfAvailable(domForToolbox, tools, checkedBoxes, "talkingBook");
 
-			// Load settings into the accordion panel
-			AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(_accordionFolder, "settings", "Settings.htm")));
+			// Load settings into the toolbox panel
+			AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(_toolboxFolder, "settings", "Settings.htm")));
 
 			// check the appropriate boxes
 			foreach (var checkBoxId in checkedBoxes)
 			{
-				domForAccordion.Body.SelectSingleNode("//div[@id='" + checkBoxId + "']").InnerXml = "&#10004;";
+				domForToolbox.Body.SelectSingleNode("//div[@id='" + checkBoxId + "']").InnerXml = "&#10004;";
 			}
 
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForAccordion.RawDom);
-			return TempFileUtils.CreateHtml5StringFromXml(domForAccordion.RawDom);
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForToolbox.RawDom);
+			return TempFileUtils.CreateHtml5StringFromXml(domForToolbox.RawDom);
 		}
 
 		private void RetrieveToolSettings(List<ToolboxTool> toolList, string toolName, Dictionary<string, object> settingsObject)
@@ -979,26 +979,26 @@ namespace Bloom.Edit
 				settingsObject.Add(toolObject.StateName, toolObject.State);
 		}
 
-		private void LoadPanelIntoAccordionIfAvailable(HtmlDom domForAccordion, List<ToolboxTool> toolList, List<string> checkedBoxes, string toolName)
+		private void LoadPanelIntoToolboxIfAvailable(HtmlDom domForToolbox, List<ToolboxTool> toolList, List<string> checkedBoxes, string toolName)
 		{
 			if (toolList.Any(t => t.JsonToolId == toolName))
 			{
 				// For all the toolbox tools, the tool name is used as the name of both the folder where the
 				// assets for that tool are kept, and the name of the main htm file that represents the tool.
-				AppendAccordionPanel(domForAccordion, FileLocator.GetFileDistributedWithApplication(Path.Combine(
-					_accordionFolder,
+				AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(
+					_toolboxFolder,
 					toolName,
 					toolName + ".htm")));
 				checkedBoxes.Add(toolName + "Check");
 			}
 		}
 
-		/// <summary>Loads the requested panel into the accordion</summary>
-		private void AppendAccordionPanel(HtmlDom domForAccordion, string fileName)
+		/// <summary>Loads the requested panel into the toolbox</summary>
+		private void AppendToolboxPanel(HtmlDom domForToolbox, string fileName)
 		{
-			var accordion = domForAccordion.Body.SelectSingleNode("//div[@id='accordion']");
+			var toolbox = domForToolbox.Body.SelectSingleNode("//div[@id='toolbox']");
 			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(fileName));
-			AppendAllChildren(subPanelDom.Body, accordion);
+			AppendAllChildren(subPanelDom.Body, toolbox);
 		}
 
 		void AppendAllChildren(XmlNode source, XmlNode dest)
@@ -1034,7 +1034,7 @@ namespace Bloom.Edit
 					_inProcessOfSaving = true;
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
-					SaveAccordionState();
+					SaveToolboxState();
 
 					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
 					//this old code:
@@ -1085,18 +1085,18 @@ namespace Bloom.Edit
 		}
 
 		/// <summary>
-		/// Saves stuff (currently just the visibility of the accordion) which is best read from the state of the HTML
+		/// Saves stuff (currently just the visibility of the toolbox) which is best read from the state of the HTML
 		/// </summary>
-		void SaveAccordionState()
+		void SaveToolboxState()
 		{
-			var checkbox = _view.GetShowAccordionCheckbox();
+			var checkbox = _view.GetShowToolboxCheckbox();
 			if (checkbox == null)
 			{
-				Debug.Fail("Unexpectedly the accordion checkbox could not be found to read its state");
+				Debug.Fail("Unexpectedly the toolbox checkbox could not be found to read its state");
 				return; // In production if we can't find the current state just leave it unchanged.
 			}
-			var showAccordion = checkbox.Checked;
-			_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable = showAccordion;
+			var showToolbox = checkbox.Checked;
+			_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable = showToolbox;
 			_currentlyDisplayedBook.BookInfo.Save();
 
 			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)

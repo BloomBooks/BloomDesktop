@@ -8,7 +8,7 @@ namespace Bloom.Edit
 {
 	class DecodableReaderTool : ToolboxTool
 	{
-		public const string ToolId = "decodableReader"; // Avoid changing value; see AccordionToo.JsonToolId
+		public const string ToolId = "decodableReader"; // Avoid changing value; see ToolboxTool.JsonToolId
 		public override string JsonToolId { get { return ToolId; } }
 	}
 }

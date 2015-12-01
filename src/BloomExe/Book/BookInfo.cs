@@ -592,9 +592,9 @@ namespace Bloom.Book
 		[JsonProperty("uploader")]
 		public ParseDotComObjectPointer Uploader { get; set; }
 
-		/// <summary>These panels are being displayed in the accordion for this book</summary>
+		/// <summary>These panels are being displayed in the toolbox for this book</summary>
 		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
-		[JsonProperty("tools",ItemConverterType = typeof(AccordionToolConverter))]
+		[JsonProperty("tools",ItemConverterType = typeof(ToolboxToolConverter))]
 		public List<ToolboxTool> Tools { get; set; }
 
 		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]

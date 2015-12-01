@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css" type="text/css">
     <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css" type="text/css">
-    <link rel="stylesheet" href="/bloom/bookEdit/accordion/accordion.css" type="text/css">
+    <link rel="stylesheet" href="/bloom/bookEdit/toolbox/toolbox.css" type="text/css">
     <link rel="stylesheet" href="/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css" type="text/css">
     <link rel="stylesheet" href="/bloom/pageChooser/page-chooser.css" type="text/css">
     <link rel="stylesheet" href="/bloom/bookEdit/bloomDialog.css" type="text/css">
@@ -25,7 +25,7 @@
        interIframeChannel = new interIframeChannel();
        // {simulatedPageFileInBookFolder} is replaced by EditingModel.GetXmlDocumentForEditScreenWebPage().
        document.getElementById('page').src = '{simulatedPageFileInBookFolder}';
-       document.getElementById('accordion').src = '/bloom/accordionContent';
+       document.getElementById('toolbox').src = '/bloom/toolboxContent';
       });
     </script>
     <style>
@@ -35,12 +35,12 @@
       div#frameWrap { padding-right: 35px;height: 100%;background-color: #333333;}
       /* These rules achieve a change in the width of the frame I added just inside the pure-pusher
           (the main content of the pure-drawer system) when the check-box is checked. The second line
-          gives it more padding (to leave room for the accordion) when the pure pusher container is
+          gives it more padding (to leave room for the toolbox) when the pure pusher container is
           a sibling of the checked pure-toggle input. The first line makes it change smoothly
           when the check box is clicked.
           There's probably a more elegant way of making this a new 'effect' option for pure-drawer
           but I wanted to keep the changes to that as simple as possible.
-          Padding works better than margin because it keeps the area 'under' the accordion dark
+          Padding works better than margin because it keeps the area 'under' the toolbox dark
           so it is less noticeable when the two animations are not perfectly in sync.
       */
       [data-effect='pure-effect-slide'] div#frameWrap {transition-duration: 500ms;}
@@ -49,7 +49,7 @@
     </style>
   </head>
 <body>
-  <!-- All the pure- stuff here is the required framework for pure-drawer to make the accordion appear and disappear
+  <!-- All the pure- stuff here is the required framework for pure-drawer to make the toolbox appear and disappear
   based on the litle control in the top right. Note particularly that C# code is aware of the pure-toggle-right input,
   and it has to come first because various css rules depend on things being a following-sibling.-->
   <div class="pure-container" data-effect="pure-effect-slide">
@@ -57,7 +57,7 @@
     <label class="pure-toggle-label" for="pure-toggle-right" data-toggle-label="right"><span class="pure-toggle-icon"></span></label>
     <nav class="pure-drawer" data-position="right">
         <div id="right">
-            <iframe id="accordion" width="100%" height="100%" src="">Your browser does not support iframes.</iframe>
+            <iframe id="toolbox" width="100%" height="100%" src="">Your browser does not support iframes.</iframe>
         </div>
     </nav>
     <div class="pure-pusher-container">

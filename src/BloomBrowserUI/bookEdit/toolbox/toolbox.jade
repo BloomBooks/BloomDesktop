@@ -1,14 +1,14 @@
 html
 	head
 		meta(charset='UTF-8')
-		title Content of the Accordion view (far right pane in book edit)
+		title Content of the Toolbox view (far right pane in book edit)
 		link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css')
 		script(src='/bloom/lib/jquery-1.10.1.js')
 		script(src='/bloom/lib/jquery-ui-1.10.3.custom.min.js')
 		script(src='/bloom/lib/localizationManager/localizationManager.js')
 		script(src='/bloom/lib/jquery.i18n.custom.js')
 		script(src='/bloom/lib/errorHandler.js')
-		script(src='/bloom/bookEdit/js/BloomAccordion.js')
+		script(src='/bloom/bookEdit/js/BloomToolbox.js')
 		script(src='/bloom/bookEdit/js/directoryWatcher.js')
 		script(src='/bloom/bookEdit/js/editableDivUtils.js')
 		script(src='/bloom/bookEdit/js/libsynphony/underscore_min_152.js')
@@ -23,18 +23,18 @@ html
 		script(src='/bloom/bookEdit/js/readerSettings.js')
 		script(src='/bloom/bookEdit/js/readerToolsModel.js')
 		script(src='/bloom/bookEdit/js/readerTools.js')
-		script(src='/bloom/bookEdit/accordion/accordion.js')
-		script(src='/bloom/bookEdit/accordion/talkingBook/talkingBook.js')
-		script(src='/bloom/bookEdit/accordion/talkingBook/audioRecording.js')
+		script(src='/bloom/bookEdit/toolbox/toolbox.js')
+		script(src='/bloom/bookEdit/toolbox/talkingBook/talkingBook.js')
+		script(src='/bloom/bookEdit/toolbox/talkingBook/audioRecording.js')
 		link(rel='stylesheet', href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css')
-		link(rel='stylesheet', href='/bloom/bookEdit/accordion/accordion.css')
-		link(rel='stylesheet', href='/bloom/bookEdit/accordion/readerTools.css')
-		link(rel='stylesheet', href='/bloom/bookEdit/accordion/talkingBook/audioRecording.css')
-		// not sure we need all three qtip files are needed. qtips are only in the accordion so far.
+		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/toolbox.css')
+		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/readerTools.css')
+		link(rel='stylesheet', href='/bloom/bookEdit/toolbox/talkingBook/audioRecording.css')
+		// not sure we need all three qtip files are needed. qtips are only in the toolbox so far.
 		// Something is needed so that $(...).qtip works when manipulating the main page DOM.
 		script(src='/bloom/lib/jquery.qtip.js')
 		script(src='/bloom/lib/jquery.qtipSecondary.js')
 		link(rel='stylesheet', href='/bloom/lib/jquery.qtip.css')
 	body
-		.accordionRoot
-			#accordion
+		.toolboxRoot
+			#toolbox

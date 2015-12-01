@@ -56,7 +56,7 @@ module.exports = function (config) {
             'bookEdit/js/synphonyApi.js',
             'bookEdit/js/readerToolsModel.js',
             'bookEdit/js/*.js',
-            'bookEdit/accordion/accordion.js',
+            'bookEdit/toolbox/toolbox.js',
             'bookEdit/test/*.js',
             'bookEdit/test/libsynphony/*.test.js'
         ],

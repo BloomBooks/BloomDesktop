@@ -128,7 +128,7 @@ Version 3.1 was a disciplined sustained & effort to improve hundreds of "little 
 - Pasted images are now named "image 1", "image 2", etc., instead of having random names.
 - Vaccninations book had lost its Creative Commons license image.
 - Fixed problem with saving meta data into certain jpeg images.
-- [Decodable Reader] If you change the letters of a stage then close the dialog by clicking "OK", the accordion tool doesn't update to show the new letters
+- [Decodable Reader] If you change the letters of a stage then close the dialog by clicking "OK", the toolbox tool doesn't update to show the new letters
 - [Decodable Reader] If a letter is in a letter combination in current the stage, DR should not automatically allow its consituent letters
 - Bloom's feature of making white transparent makes pdfs look awful in some previewers.
 - Calendar Title Page font-changing widget in "Funding" box is non-functional
