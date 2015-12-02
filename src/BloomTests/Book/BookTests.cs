@@ -853,25 +853,7 @@ namespace BloomTests.Book
 			Assert.That(_metadata.Title, Is.EqualTo("changed & <mangled>"));
 		}
 
-		[Test]
-		public void Save_UpdatesBookInfoMetadataTags()
-		{
-			_bookDom = new HtmlDom(
-				@"<html><body>
-					<div class='bloom-page' id='guid3'>
-						<div lang='en' data-derived='topic'>original</div>
-					</div>
-				</body></html>");
 
-			var book = CreateBook();
-			book.OurHtmlDom.SetBookSetting("topic", "en", "Animal stories");
-			book.Save();
-			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
-
-			book.OurHtmlDom.SetBookSetting("topic", "en", "Science");
-			book.Save();
-			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
-		}
 		[Test]
 		public void Save_UpdatesMetadataCreditsRemovingBreaks()
 		{
@@ -929,33 +911,6 @@ namespace BloomTests.Book
 			book.SavePage(dom);
 			book.Save();
 			Assert.That(_metadata.Isbn, Is.EqualTo(""));
-		}
-		
-		[Test,Ignore("Known bug: BL-2962")]
-		public void Save_UpdatesBookInfoMetadataTags()
-		{
-			_bookDom = new HtmlDom(
-				@"<html>
-				<head>
-					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
-				   <title>Test Shell</title>
-					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
-					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
-				</head>
-				<body>
-					<div class='bloom-page' id='guid3'>
-						<div lang='en' data-derived='topic'>original</div>
-					</div>
-				</body></html>");
-
-			var book = CreateBook();
-			book.OurHtmlDom.SetBookSetting("topic","en","Animal stories");
-			book.Save();
-			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
-
-			book.OurHtmlDom.SetBookSetting("topic", "en", "Science");
-			book.Save();
-			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
 		}
 		
 		public void Save_UpdatesAllTitles()

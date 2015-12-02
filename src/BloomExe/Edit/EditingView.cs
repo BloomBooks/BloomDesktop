@@ -787,22 +787,38 @@ namespace Bloom.Edit
 			}
 			using (var dlg = new ImageToolboxDialog(imageInfo, null))
 			{
-				// Pass in the current GUI language.  We want only the main language part of the tag.
-				// (for example, "zh-Hans" should pass in as "zh".)
-				var lang = Settings.Default.UserInterfaceLanguage;
-				var idx = lang.IndexOfAny(new char[]{ '-', '_' });
-				if (idx > 0)
-					lang = lang.Substring(0, idx);
-				dlg.SearchLanguage = lang;
+				var searchLanguage = Settings.Default.ImageSearchLanguage;
+				if (String.IsNullOrWhiteSpace(searchLanguage))
+				{
+					// Pass in the current UI language.  We want only the main language part of the tag.
+					// (for example, "zh-Hans" should pass in as "zh".)
+					searchLanguage = Settings.Default.UserInterfaceLanguage;
+					var idx = searchLanguage.IndexOfAny(new char[] {'-', '_'});
+					if (idx > 0)
+						searchLanguage = searchLanguage.Substring(0, idx);
+				}
+
+				dlg.SearchLanguage = searchLanguage;
 				var result = dlg.ShowDialog();
 				// Check memory for the benefit of developers.  The user won't see anything.
 				SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen or canceled", false);
-				if (DialogResult.OK == result)
+				if (DialogResult.OK == result && dlg.ImageInfo != null)
 				{
 					// var path = MakePngOrJpgTempFileForImage(dlg.ImageInfo.Image);
 					SaveChangedImage(imageElement, dlg.ImageInfo, "Bloom had a problem including that image");
 					// Warn the user if we're starting to use too much memory.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "picture chosen and saved", true);
+				}
+
+				// If the user changed the search language for art of reading, remember their change. But if they didn't
+				// touch it, don't remember it. Instead, let it continue to track the UI language so that if
+				// they are new and just haven't got around to setting the main UI Language,
+				// AOR can automatically start using that when they do.
+				if (searchLanguage != dlg.SearchLanguage)
+				{
+					//store their language selection even if they hit "cancel"
+					Settings.Default.ImageSearchLanguage = dlg.SearchLanguage;
+					Settings.Default.Save();
 				}
 			}
 			Logger.WriteMinorEvent("Emerged from ImageToolboxDialog Editor Dialog");
