@@ -14,6 +14,8 @@ interface ITabModel {
     restoreSettings(settings:string);
 }
 
+// Array of models, typically one for each tab. The code for each tab inserts an appropriate model
+// into this array in order to be interact with the overall toolbox code.
 var tabModels = [];
 
 /**
@@ -156,7 +158,7 @@ function resizeToolbox() {
     // Set toolbox container height to fit in new window size
     // Then toolbox Resize() will adjust it to fit the container
     root.height(windowHeight - 25); // 25 is the top: value set for div.toolboxRoot in toolbox.less
-    BloomToolbox.Resize();
+    $("#toolbox").accordion("refresh");
 }
 
 /**
@@ -215,7 +217,9 @@ function loadToolboxPanel(newContent, panelId) {
 }
 
 $(document).ready(function () {
-    new BloomToolbox(); // have to create this somewhere to get it initialized.
+    $("#toolbox").accordion({
+        heightStyle: "fill"
+    });
     resizeToolbox(); // Make sure it gets run once, at least.
     $('body').find('*[data-i18n]').localize(); // run localization
 

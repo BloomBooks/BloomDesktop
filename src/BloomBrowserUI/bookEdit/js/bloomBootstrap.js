@@ -16,7 +16,6 @@ var scripts = [
     'lib/toastr.min.js',
     'bookEdit/js/editableDivUtils.js',
     'bookEdit/js/jquery.hotkeys.js',
-    'bookEdit/js/BloomToolbox.js',
     'bookEdit/js/bloomQtipUtils.js',
     'bookEdit/sourceBubbles/bloomSourceBubbles.js',
     'bookEdit/js/bloomNotices.js',
