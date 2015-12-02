@@ -10,6 +10,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.ImageProcessing;
 using System.Text.RegularExpressions;
+using Bloom.Edit;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
