@@ -291,10 +291,6 @@ namespace Bloom.Book
 		{
 			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
 			dom.AddJavascriptFile("bookEdit/js/bloomBootstrap.js".ToLocalhost());
-
-			// Enhance JT: can we somehow not add this unless/until the user displays the toolbox?
-			//if (BookInfo.ReaderToolsAvailable)
-			dom.AddJavascriptFile("bookEdit/toolbox/decodableReader/readerToolsBootstrap.js".ToLocalhost());
 		}
 
 

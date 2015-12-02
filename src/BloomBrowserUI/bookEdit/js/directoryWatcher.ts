@@ -1,5 +1,4 @@
 /// <reference path="../../lib/jquery.d.ts" />
-/// <reference path="libsynphony/underscore-1.5.2.d.ts" />
 
 /**
  * Implements a simple directory watcher in javascript. The localhost is listening for requests that begin with this

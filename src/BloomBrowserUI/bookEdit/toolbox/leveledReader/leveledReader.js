@@ -11,6 +11,7 @@ var LeveledReaderModel = (function () {
             libsynphony.dbSet('drt_state', state);
         }
     };
+    LeveledReaderModel.prototype.configureElements = function (container) { };
     return LeveledReaderModel;
 })();
 tabModels.push(new LeveledReaderModel());

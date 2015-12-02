@@ -26,7 +26,6 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="bookEdit\js\BloomToolbox.js" />
     <Content Include="bookEdit\toolbox\ReadMe.txt" />
     <Content Include="bookEdit\toolbox\talkingBook\audioRecording.css">
       <DependentUpon>audioRecording.less</DependentUpon>
@@ -84,12 +83,6 @@
     <Content Include="bookEdit\js\pageDragToolbox.js" />
     <Content Include="bookEdit\js\editViewFrame.js" />
     <Content Include="bookEdit\js\jquery.hotkeys.js" />
-    <Content Include="bookEdit\js\libsynphony\bloom_lib.js" />
-    <Content Include="bookEdit\js\libsynphony\bloom_xregexp_categories.js" />
-    <Content Include="bookEdit\js\libsynphony\jquery.text-markup.js" />
-    <Content Include="bookEdit\js\libsynphony\synphony_lib.js" />
-    <Content Include="bookEdit\js\libsynphony\underscore_min_152.js" />
-    <Content Include="bookEdit\js\libsynphony\xregexp-all-min.js" />
     <Content Include="bookEdit\js\origami.js" />
     <Content Include="bookEdit\css\editMode.css">
       <DependentUpon>editMode.less</DependentUpon>
@@ -115,7 +108,6 @@
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
-    <TypeScriptCompile Include="bookEdit\js\BloomToolbox.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\decodableReader.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerSettings.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerTools.ts" />
@@ -135,7 +127,6 @@
     <TypeScriptCompile Include="bookEdit\js\getIframeChannel.ts" />
     <TypeScriptCompile Include="bookEdit\js\interIframeChannel.ts" />
     <TypeScriptCompile Include="bookEdit\js\jquery.div-columns.ts" />
-    <TypeScriptCompile Include="bookEdit\js\libsynphony\underscore-1.5.2.d.ts" />
     <Content Include="bookEdit\js\toolbar\bootstrap.icons.css" />
     <Content Include="bookEdit\js\toolbar\glyphicons-halflings.png" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />

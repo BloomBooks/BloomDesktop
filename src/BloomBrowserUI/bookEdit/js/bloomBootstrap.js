@@ -35,10 +35,10 @@ var scripts = [
     'lib/jquery.alphanum.js',
     'lib/long-press/jquery.longpress.js',
     // synphony stuff is currently needed just to support finding sentences in audioRecording.
-    'bookEdit/js/libsynphony/xregexp-all-min.js',
-    'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
-    'bookEdit/js/libsynphony/synphony_lib.js',
-    'bookEdit/js/libsynphony/bloom_lib.js',
+    'bookEdit/toolbox/decodableReader/libsynphony/xregexp-all-min.js',
+    'bookEdit/toolbox/decodableReader/libsynphony/bloom_xregexp_categories.js',
+    'bookEdit/toolbox/decodableReader/libsynphony/synphony_lib.js',
+    'bookEdit/toolbox/decodableReader/libsynphony/bloom_lib.js',
     'bookEdit/toolbox/talkingBook/audioRecording.js'
 ];
 

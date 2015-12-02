@@ -1,12 +1,25 @@
 /// <reference path="../../lib/jquery-ui.d.ts" />
-/// <reference path="../js/synphonyApi.ts" />
-/// <reference path="../js/readerToolsModel.ts" />
+/// <reference path="decodableReader/synphonyApi.ts" />
+/// <reference path="decodableReader/readerToolsModel.ts" />
 /**
  * The html code for a check mark character
  * @type String
  */
 var checkMarkString = '&#10004;';
 var showingPanel = false;
+// Class that represents the whole toolbox. Gradually we will move more functionality in here.
+var ToolBox = (function () {
+    function ToolBox() {
+    }
+    ToolBox.prototype.toolboxIsShowing = function () { return showingPanel; };
+    ToolBox.prototype.configureElementsForTools = function (container) {
+        for (var i = 0; i < tabModels.length; i++) {
+            tabModels[i].configureElements(container);
+        }
+    };
+    return ToolBox;
+})();
+var toolbox = new ToolBox();
 // Array of models, typically one for each tab. The code for each tab inserts an appropriate model
 // into this array in order to be interact with the overall toolbox code.
 var tabModels = [];

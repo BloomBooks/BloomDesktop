@@ -9,6 +9,8 @@ class LeveledReaderModel implements ITabModel {
             libsynphony.dbSet('drt_state', state);
         }
     }
+
+    configureElements(container: HTMLElement) {}
 }
 
 tabModels.push(new LeveledReaderModel());

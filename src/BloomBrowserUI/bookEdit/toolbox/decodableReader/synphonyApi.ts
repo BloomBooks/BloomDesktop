@@ -1,6 +1,6 @@
 /// <reference path="libsynphony/synphony.d.ts" />
 /// <reference path="libsynphony/underscore-1.5.2.d.ts" />
-/// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../../lib/jquery.d.ts" />
 /// <reference path="readerSettings.ts" />
 
 class SynphonyApi {

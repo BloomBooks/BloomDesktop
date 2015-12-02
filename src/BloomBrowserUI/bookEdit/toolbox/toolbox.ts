@@ -11,12 +11,25 @@ var checkMarkString = '&#10004;';
 var showingPanel = false;
 
 interface ITabModel {
-    restoreSettings(settings:string);
+    restoreSettings(settings: string);
+    configureElements(container: HTMLElement);
 }
+
+// Class that represents the whole toolbox. Gradually we will move more functionality in here.
+class ToolBox {
+    toolboxIsShowing() { return showingPanel; }
+    configureElementsForTools(container: HTMLElement) {
+        for (var i = 0; i < tabModels.length; i++) {
+            tabModels[i].configureElements(container);
+        }
+    }
+}
+
+var toolbox = new ToolBox();
 
 // Array of models, typically one for each tab. The code for each tab inserts an appropriate model
 // into this array in order to be interact with the overall toolbox code.
-var tabModels = [];
+var tabModels : ITabModel[] = [];
 
 /**
  * Fires an event for C# to handle

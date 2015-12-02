@@ -47,12 +47,12 @@ module.exports = function (config) {
             'lib/**/*Spec.js',
 
             // synphony files
-            'bookEdit/js/libsynphony/underscore_min_152.js',
-            'bookEdit/js/libsynphony/xregexp-all-min.js',
-            'bookEdit/js/libsynphony/synphony_lib.js',
-            'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
-            'bookEdit/js/libsynphony/bloom_lib.js',
-            'bookEdit/js/libsynphony/jquery.text-markup.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/underscore_min_152.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/xregexp-all-min.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/synphony_lib.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/bloom_xregexp_categories.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/bloom_lib.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/jquery.text-markup.js',
             'bookEdit/toolbox/decodableReader/synphonyApi.js',
             'bookEdit/toolbox/decodableReader/readerToolsModel.js',
             'bookEdit/js/*.js',
