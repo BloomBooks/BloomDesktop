@@ -218,12 +218,7 @@ namespace Bloom.Edit
 				}
 
 				_model.SaveNow();//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
-				Metadata metadata = _model.CurrentBook.GetLicenseMetadata();
-				if (metadata.License is NullLicense && string.IsNullOrWhiteSpace(metadata.CopyrightNotice))
-				{
-					//looks like the first time. Nudge them with a nice default license.
-					metadata.License = new CreativeCommonsLicense(true, true, CreativeCommonsLicense.DerivativeRules.Derivatives);
-				}
+				var metadata = _model.CurrentBook.GetLicenseMetadata();
 
 				Logger.WriteEvent("Showing Metadata Editor Dialog");
 				using (var dlg = new SIL.Windows.Forms.ClearShare.WinFormsUI.MetadataEditorDialog(metadata))
@@ -231,87 +226,20 @@ namespace Bloom.Edit
 					dlg.ShowCreator = false;
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
-						ChangeBookMetadata(dlg.Metadata);
+						_model.ChangeBookLicenseMetaData(dlg.Metadata);
 					}
 				}
 				Logger.WriteMinorEvent("Emerged from Metadata Editor Dialog");
 			}
 			catch (Exception error)
 			{
-// Throwing this exception is causing it to be swallowed.  It results in the web browser just showing a blank white page, but no
-// message is displayed and no exception is caught by the debugger.
-//#if DEBUG
-//				throw;
-//#endif
+				// Throwing this exception is causing it to be swallowed.  It results in the web browser just showing a blank white page, but no
+				// message is displayed and no exception is caught by the debugger.
+				//#if DEBUG
+				//				throw;
+				//#endif
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
 			}
-		}
-
-		private void ChangeBookMetadata(Metadata metadata)
-		{
-			string imagePath = _model.CurrentBook.FolderPath.CombineForPath("license.png");
-			if (File.Exists(imagePath))
-				File.Delete(imagePath);
-			Image licenseImage = metadata.License.GetImage();
-
-			if (licenseImage != null)
-			{
-				// BL-2444: Image.Save(imagePath) was crashing with a GDI+ exception on some books with odd but valid titles.  My guess
-				// is that the GDI+ methods for saving to disk are not handling the odd paths correctly whereas the FileStream object
-				// seems to be able to properly open and write to these paths.  The specific directory name that brought this problem
-				// out into the open is "Testing char. , ;   '   ` ~ ! @ # $ % ^ &   ( ) _".  Bloom was able to create this directory
-				// without raising an exception, and is able to open the book, insert new pages, edit and save text.
-				using (Stream fs = new FileStream(imagePath, FileMode.Create))
-				{
-					licenseImage.Save(fs, ImageFormat.Png);
-				}
-			}
-			else if (File.Exists(imagePath))
-			{
-				File.Delete(imagePath);
-			}
-
-			// Both LicenseNotes and Copyright By could have user-entered html characters that need escaping.
-			var copyright = metadata.CopyrightNotice;
-			metadata.CopyrightNotice = copyright;
-			//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-			//note that the only way currently to recognize a custom license is that RightsStatement is non-empty while description is empty
-			var rights = metadata.License.RightsStatement;
-			metadata.License.RightsStatement = rights;
-
-			// BL-1179: For a Custom license, GetDescription just returns the RightsStatement in language "und"; don't duplicate it.
-			string description = string.Empty;
-			if (!(metadata.License is CustomLicense))
-			{
-				string idOfLanguageUsed;
-				description = metadata.License.GetDescription(_model.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed).Replace("'", "\\'");
-			}
-
-			string licenseImageName = licenseImage == null ? string.Empty : "license.png";
-			string result =
-				string.Format(
-					"{{ copyright: '{0}', licenseImage: '{1}', licenseUrl: '{2}',  licenseNotes: '{3}', licenseDescription: '{4}' }}",
-					MakeJavaScriptContent(metadata.CopyrightNotice),
-					licenseImageName,
-					metadata.License.Url, MakeJavaScriptContent(rights), description);
-			_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.setCopyrightAndLicense(" + result + "); }");
-
-			//ok, so the the dom for *that page* is updated, but if the page doesn't display some of those values, they won't get
-			//back to the data div in the actual html file even when the page is read and saved, because individual pages don't
-			//have the data div.
-			_model.CurrentBook.UpdateLicenseMetdata(metadata);
-			_model.SaveNow();
-			_model.RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let' redraw everything
-		}
-
-		// Make a string which, when compiled as a JavaScript literal embedded in single quotes, will produce the original.
-		private string MakeJavaScriptContent(string input)
-		{
-			if (input == null)
-				return "";
-			// Order is important here...we do NOT want to double the backslash we insert before a single quote.
-			// Review: is the NewLine replace safe for Linux?
-			return input.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\r", "\\r").Replace("\n", "\\n");
 		}
 
 		private void SetupThumnailLists()

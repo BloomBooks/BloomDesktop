@@ -1341,6 +1341,12 @@ namespace Bloom.Edit
 			PageChangingLayout = page;
 			_view.ShowChangeLayoutDialog(page);
 		}
+
+		public void ChangeBookLicenseMetaData(Metadata metadata)
+		{
+			CurrentBook.SetMetadata(metadata);
+			RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
+		}
 	}
 
 	public class TemplateInsertionCommand

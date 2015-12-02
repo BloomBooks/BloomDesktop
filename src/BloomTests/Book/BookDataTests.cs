@@ -20,6 +20,7 @@ namespace BloomTests.Book
 	{
 		private CollectionSettings _collectionSettings;
 		private LocalizationManager _localizationManager;
+		private LocalizationManager _palasoLocalizationManager;
 
 		[SetUp]
 		public void Setup()
@@ -36,12 +37,15 @@ namespace BloomTests.Book
 			var localizationDirectory = FileLocator.GetDirectoryDistributedWithApplication("localization");
 			_localizationManager = LocalizationManager.Create("fr", "Bloom", "Bloom", "1.0.0", localizationDirectory, "SIL/Bloom",
 				null, "", new string[] {});
+			_palasoLocalizationManager = LocalizationManager.Create("fr", "Palaso","Palaso", "1.0.0", localizationDirectory, "SIL/Palaso",
+				null, "", new string[] { });
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
 			_localizationManager.Dispose();
+			_palasoLocalizationManager.Dispose();
 		}
 
 		[Test]
@@ -839,49 +843,6 @@ namespace BloomTests.Book
 
 		#endregion
 
-		#region Metadata
-		[Test]
-		public void GetLicenseMetadata_HasCustomLicense_RightsStatementContainsCustom()
-		{
-			string dataDivContent= @"<div lang='en' data-book='licenseNotes'>my custom</div>
-					<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
-			Assert.AreEqual("my custom", GetMetadata(dataDivContent).License.RightsStatement);
-		}
-		[Test]
-		public void GetLicenseMetadata_HasCCLicenseURL_ConvertedToFulCCLicenseObject()
-		{
-			//nb: the real testing is done on the palaso class that does the reading, this is just a quick sanity check
-			string dataDivContent = @"<div lang='en' data-book='licenseUrl'>http://creativecommons.org/licenses/by-nc-sa/3.0/</div>";
-			var creativeCommonsLicense = (CreativeCommonsLicense) (GetMetadata(dataDivContent).License);
-			Assert.IsTrue(creativeCommonsLicense.AttributionRequired);
-			Assert.IsFalse(creativeCommonsLicense.CommercialUseAllowed);
-			Assert.IsTrue(creativeCommonsLicense.DerivativeRule== CreativeCommonsLicense.DerivativeRules.DerivativesWithShareAndShareAlike);
-		}
-		[Test]
-		public void GetLicenseMetadata_NullLicense_()
-		{
-			//nb: the real testing is done on the palaso class that does the reading, this is just a quick sanity check
-			string dataDivContent = @"<div lang='en' data-book='licenseDescription'>This could say anthing</div>";
-			Assert.IsTrue(GetMetadata(dataDivContent).License is NullLicense);
-		}
-
-		[Test]
-		public void GetLicenseMetadata_HasSymbolInCopyright_FullCopyrightStatmentAcquired()
-		{
-			string dataDivContent = @"<div data-book='copyright' class='bloom-content1'>Copyright © 2012, test</div>";
-			Assert.AreEqual("Copyright © 2012, test", GetMetadata(dataDivContent).CopyrightNotice);
-		}
-
-		private static Metadata GetMetadata(string dataDivContent)
-		{
-			var dom = new HtmlDom(@"<html><head><div id='bloomDataDiv'>" + dataDivContent + "</div></head><body></body></html>");
-			var data = new BookData(dom, new CollectionSettings(), null);
-			return data.GetLicenseMetadata();
-		}
-
-		#endregion
-
-		#region Copying data across languages, where it seems the lesser of two evils
 
 //		[Test]
 //		public void SynchronizeDataItemsThroughoutDOM_EnglishTitleButNoVernacular_DoesNotCopyInEnglish()
@@ -1022,6 +983,35 @@ namespace BloomTests.Book
 			Assert.AreEqual("", vernacularContributions.InnerText, "Should not copy Edolo into Vernacualr Contributions. Only national language fields get this treatment");
 		}
 
-		#endregion
+//		[Test]
+//		public void PrepareForEditing_CustomLicenseNotDiscarded()
+//		{
+//			SetDom(@"<div id='bloomDataDiv'>
+//						<div data-book='copyright' lang='*'>
+//							Copyright © 2015, me
+//						</div>
+//						<div data-book='licenseNotes' lang='en'>
+//							Custom license info
+//						</div>
+//					</div>");
+//			var book = CreateBook();
+//			var dom = book.RawDom;
+//			book.PrepareForEditing();
+//			var copyright = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='marginBox']//div[@data-book='copyright']").InnerText;
+//			var licenseBlock = dom.SelectSingleNodeHonoringDefaultNS("//div[@class='licenseBlock']");
+//			var licenseImage = licenseBlock.SelectSingleNode("img");
+//			var licenseUrl = licenseBlock.SelectSingleNode("div[@data-book='licenseUrl']").InnerText;
+//			var licenseDescription = licenseBlock.SelectSingleNode("div[@data-book='licenseDescription']").InnerText;
+//			var licenseNotes = licenseBlock.SelectSingleNode("div[@data-book='licenseNotes']").InnerText;
+//			// Check that updated dom has the right license contents on the Credits page
+//			// Check that data-div hasn't been contaminated with non-custom license stuff
+//			Assert.AreEqual("Copyright © 2015, me", copyright);
+//			Assert.AreEqual("Custom license info", licenseNotes);
+//			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='licenseBlock']/div[@data-book='licenseUrl' and text()='']", 1);
+//			Assert.IsEmpty(licenseDescription);
+//			Assert.IsEmpty(licenseImage.Attributes["src"].Value);
+//			Assert.IsNull(licenseImage.Attributes["alt"]);
+//		}
+
 	}
 }

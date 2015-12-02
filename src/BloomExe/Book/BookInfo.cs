@@ -5,13 +5,16 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
-using Bloom.Edit;
+using System.Windows.Forms;
 using Bloom.ImageProcessing;
+using System.Text.RegularExpressions;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.Reporting;
+using SIL.Windows.Forms.ClearShare;
 
 namespace Bloom.Book
 {
@@ -32,7 +35,7 @@ namespace Bloom.Book
 		{
 			FolderPath = folderPath;
 
-			//NB: This was coded in an unfornate way such that touching almost any property causes a new metadata to be quitely created.
+			//NB: This was coded in an unfortunate way such that touching almost any property causes a new metadata to be quietly created.
 			//So It's vital that we not touch properties that could create a blank metadata, before attempting to load the existing one.
 			
 			var jsonPath = MetaDataPath;
@@ -78,7 +81,7 @@ namespace Bloom.Book
 		//affected collections.
 		public void FixDefaultsIfAppropriate()
 		{
-			if (System.Environment.GetEnvironmentVariable("FixBloomMetaInfo") != "true")
+			if (Environment.GetEnvironmentVariable("FixBloomMetaInfo") != "true")
 				return;
 			MetaData.AllowUploadingToBloomLibrary = true;
 			MetaData.BookletMakingIsAppropriate = true;
@@ -352,6 +355,33 @@ namespace Bloom.Book
 				//If you make changes/additions here, also synchronize with the bloomlibrary source in services.js
 
 				return new[] { "Agriculture", "Animal Stories", "Business", "Culture", "Community Living", "Dictionary", "Environment", "Fiction", "Health", "How To", "Math", "Non Fiction", "Spiritual", "Personal Development", "Primer", "Science", "Story Book", "Traditional Story" };
+			}
+		}
+
+		public void SetLicenseAndCopyrightMetadata(Metadata metadata)
+		{
+			License = metadata.License.Token;
+			Copyright = metadata.CopyrightNotice;
+			// obfuscate any emails in the license notes.
+			var notes = metadata.License.RightsStatement;
+			if (notes != null)
+			{
+				// recommended at http://www.regular-expressions.info/email.html.
+				// This purposely does not handle non-ascii emails, or ones with special characters, which he says few servers will handle anyway.
+				// It is also not picky about exactly valid top-level domains (or country codes), and will exclude the rare 'museum' top-level domain.
+				// There are several more complex options we could use there. Just be sure to add () around the bit up to (and including) the @,
+				// and another pair around the rest.
+				var regex = new Regex("\\b([A-Z0-9._%+-]+@)([A-Z0-9.-]+.[A-Z]{2,4})\\b", RegexOptions.IgnoreCase);
+				// We keep the existing email up to 2 characters after the @, and replace the rest with a message.
+				// Not making the message localizable as yet, since the web site isn't, and I'm not sure what we would need
+				// to put to make it so. A fixed string seems more likely to be something we can replace with a localized version,
+				// in the language of the web site user rather than the language of the uploader.
+				notes = regex.Replace(notes,
+					new MatchEvaluator(
+						m =>
+							m.Groups[1].Value + m.Groups[2].Value.Substring(0, 2) +
+							"(download book to read full email address)"));
+				LicenseNotes = notes;
 			}
 		}
 	}

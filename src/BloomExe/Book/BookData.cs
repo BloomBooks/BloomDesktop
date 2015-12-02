@@ -3,17 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Bloom.Collection;
 using L10NSharp;
 using SIL.Code;
-using SIL.Extensions;
 using SIL.Linq;
 using SIL.Text;
-using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -303,6 +300,8 @@ namespace Bloom.Book
 			topicPageElement.InnerText = bestTranslation;
 		}
 
+
+		
 		private void UpdateIsbn(BookInfo info)
 		{
 			if (info == null)
@@ -469,7 +468,7 @@ namespace Bloom.Book
 			//But then this one is acting on the member variable. First Q: why is the rest of this method acting on a local variable dataset?
 			UpdateTitle();
 			SetUpDisplayOfTopicInBook(_dataset);
-			return data;
+            return data;
 		}
 
 		private static DataSet GatherDataItemsFromCollectionSettings(CollectionSettings collectionSettings)
@@ -843,46 +842,7 @@ namespace Bloom.Book
 			}
 			return null;
 		}
-
-
-
-		public void SetLicenseMetdata(Metadata metadata)
-		{
-			var data = GatherDataItemsFromCollectionSettings(_collectionSettings);
-			var itemsToDelete = new HashSet<Tuple<string, string>>();
-			GatherDataItemsFromXElement(data,  _dom.RawDom, itemsToDelete);
-
-			string copyright = WebUtility.HtmlEncode(metadata.CopyrightNotice);
-			data.UpdateLanguageString("copyright", copyright, "*", false);
-
-			string idOfLanguageUsed;
-			string description = metadata.License.GetDescription(_collectionSettings.LicenseDescriptionLanguagePriorities, out idOfLanguageUsed);
-			// Don't really have a description for custom license, it returns the RightsStatement for the sake of having something.
-			// However, we're already showing that in licenseNotes; if we use it for description too we get duplicate (BL-2198).
-			if (metadata.License is CustomLicense)
-				description = "";
-			data.UpdateLanguageString("licenseDescription", WebUtility.HtmlEncode(description), "en", false);
-
-			string licenseUrl = metadata.License.Url;
-			data.UpdateLanguageString("licenseUrl", licenseUrl, "*", false);
-
-			string licenseNotes = metadata.License.RightsStatement;
-			data.UpdateLanguageString("licenseNotes", WebUtility.HtmlEncode(licenseNotes), "*", false);
-
-			string licenseImageName = metadata.License.GetImage() == null ? "" : "license.png";
-			data.UpdateGenericLanguageString("licenseImage", licenseImageName, false);
-
-
-			UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
-
-			//UpdateDomFromDataSet() is not able to remove items yet, so we do it explicity
-
-			RemoveDataDivElementIfEmptyValue("licenseDescription", description);
-			RemoveDataDivElementIfEmptyValue("licenseImage", licenseImageName);
-			RemoveDataDivElementIfEmptyValue("licenseUrl", licenseUrl);
-			RemoveDataDivElementIfEmptyValue("copyright", copyright);
-			RemoveDataDivElementIfEmptyValue("licenseNotes", licenseNotes);
-		}
+	
 
 		private void RemoveDataDivElementIfEmptyValue(string key, string value)
 		{
@@ -896,48 +856,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public Metadata GetLicenseMetadata()
-		{
-			var data = new DataSet();
-			GatherDataItemsFromXElement(data, _dom.RawDom);
-			var metadata = new Metadata();
-			NamedMutliLingualValue d;
-			if (data.TextVariables.TryGetValue("copyright", out d))
-			{
-				metadata.CopyrightNotice = WebUtility.HtmlDecode(d.TextAlternatives.GetFirstAlternative());
-			}
-			string licenseUrl = "";
-			if (data.TextVariables.TryGetValue("licenseUrl", out d))
-			{
-				licenseUrl = WebUtility.HtmlDecode(d.TextAlternatives.GetFirstAlternative());
-			}
-
-			if (licenseUrl == null || licenseUrl.Trim() == "")
-			{
-				//NB: we are mapping "RightsStatement" (which comes from XMP-dc:Rights) to "LicenseNotes" in the html.
-				//custom licenses live in this field, so if we have notes (and no URL) it is a custom one.
-				if (data.TextVariables.TryGetValue("licenseNotes", out d))
-				{
-					string licenseNotes = d.TextAlternatives.GetFirstAlternative();
-
-					metadata.License = new CustomLicense { RightsStatement = WebUtility.HtmlDecode(licenseNotes) };
-				}
-				else
-				{
-					// The only remaining current option is a NullLicense
-					metadata.License = new NullLicense(); //"contact the copyright owner
-				 }
-			}
-			else // there is a licenseUrl, which means it is a CC license
-			{
-				metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);
-				if (data.TextVariables.TryGetValue("licenseNotes", out d))
-				{
-					metadata.License.RightsStatement = WebUtility.HtmlDecode(d.TextAlternatives.GetFirstAlternative());
-				}
-			}
-			return metadata;
-		}
+	
 
 		public string GetVariableOrNull(string key, string writingSystem)
 		{
@@ -1077,5 +996,6 @@ namespace Bloom.Book
 //        {
 //            return from v in this._dataset.TextVariables where v.Value.IsCollectionValue select v;
 //        }
+
 	}
 }

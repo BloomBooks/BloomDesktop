@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -16,9 +17,11 @@ using Bloom.ImageProcessing;
 using Bloom.Properties;
 using L10NSharp;
 using SIL.Code;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
+using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -1021,6 +1024,5 @@ namespace Bloom.Book
 			}
 			return s + "<p>" + ErrorMessagesHtml + "</p>";
 		}
-
 	}
 }

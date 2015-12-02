@@ -52,7 +52,7 @@ namespace Bloom.Publish
 			var metadata = book.GetLicenseMetadata();
 			// This is usually redundant, but might not be on old books where the license was set before the new
 			// editing code was written.
-			book.UpdateLicenseMetdata(metadata);
+			book.SetMetadata(metadata);
 			var license = metadata.License;
 			if (license == null || (license is NullLicense && string.IsNullOrWhiteSpace(metadata.CopyrightNotice)))
 			{

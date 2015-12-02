@@ -6,13 +6,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Xsl;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Bloom.Collection;
 using DesktopAnalytics;
 using Gecko;
 using SIL.Extensions;
 using SIL.Reporting;
+using SIL.Text;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -783,8 +781,51 @@ namespace Bloom.Book
 				.Distinct()
 				.ToList();
 		}
-		
-				/// <summary>
+
+		public MultiTextBase GetBookSetting(string key)
+		{
+			var result = new MultiTextBase();
+			foreach (XmlElement e in RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "']"))
+			{
+				var lang = e.GetAttribute("lang");
+				result.SetAlternative(lang ?? "", e.InnerXml);
+			}
+			return result;
+		}
+
+		public void RemoveBookSetting(string key)
+		{
+			foreach (XmlElement e in RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "']").Cast<XmlElement>().ToList())
+			{
+				e.ParentNode.RemoveChild(e);
+			}
+		}
+
+		public void SetBookSetting(string key, string writingSystemId, string form)
+		{
+			var dataDiv = GetOrCreateDataDiv(RawDom);
+			XmlElement node =
+				dataDiv.SelectSingleNode(String.Format("div[@data-book='{0}' and @lang='{1}']", key,
+					writingSystemId)) as XmlElement;
+
+			if (string.IsNullOrEmpty(form))
+			{
+				if(null != node)
+					dataDiv.RemoveChild(node);
+				return;
+			}
+
+			if (null == node)
+			{
+				node = RawDom.CreateElement("div");
+				node.SetAttribute("data-book", key);
+				node.SetAttribute("lang", writingSystemId);
+			}
+			node.InnerXml = form;
+			dataDiv.AppendChild(node);
+		}
+
+		/// <summary>
 		/// Blindly merge the classes from the source into the target.
 		/// </summary>
 		/// <param name="sourcePage"></param>
@@ -925,5 +966,22 @@ namespace Bloom.Book
 		{
 			return element.SelectNodes("self::img | self::*[contains(@style,'background-image')]").Count == 1;
 		}
+
+		public static XmlElement GetOrCreateDataDiv(XmlNode dom)
+		{
+			var dataDiv = dom.SelectSingleNode("//div[@id='bloomDataDiv']") as XmlElement;
+			if (dataDiv == null)
+			{
+				XmlDocument doc = dom as XmlDocument;
+				if (doc == null)
+					doc = dom.OwnerDocument;
+				dataDiv = doc.CreateElement("div");
+				dataDiv.SetAttribute("id", "bloomDataDiv");
+				dom.SelectSingleNode("//body").InsertAfter(dataDiv, null);
+			}
+			return dataDiv;
+		}
+
+
 	}
 }

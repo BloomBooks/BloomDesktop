@@ -234,23 +234,6 @@ function AddLanguageTags(container) {
     });
 }
 
-// This function is called directly from EditingView.OnShowBookMetadataEditor()
-function SetCopyrightAndLicense(data) {
-    //nb: for textarea, we need val(). But for div, it would be text()
-    $("DIV[data-book='copyright']").text(DecodeHtml(data.copyright));
-    $("DIV[data-book='licenseUrl']").text(data.licenseUrl);
-    $("DIV[data-book='licenseDescription']").text(data.licenseDescription);
-    $("DIV[data-book='licenseNotes']").text(DecodeHtml(data.licenseNotes));
-    var licenseImageValue = data.licenseImage + "?" + new Date().getTime(); //the time thing makes the browser reload it even if it's the same name
-    if (data.licenseImage.length == 0) {
-        licenseImageValue = ""; //don't wan the date on there
-        $("IMG[data-book='licenseImage']").attr('alt', '');
-    }
-
-    $("IMG[data-book='licenseImage']").attr("src", licenseImageValue);
-    SetBookCopyrightAndLicenseButtonVisibility($('body'));
-}
-
 function SetBookCopyrightAndLicenseButtonVisibility(container) {
     var shouldShowButton = !($(container).find("DIV.copyright").text());
     $(container).find("button#editCopyrightAndLicense").css("display", shouldShowButton ? "inline" : "none");
