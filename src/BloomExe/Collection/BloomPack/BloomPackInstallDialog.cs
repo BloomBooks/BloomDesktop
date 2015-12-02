@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using System.Linq;
+using Bloom.Edit;
 using ICSharpCode.SharpZipLib.Zip;
 using SIL.Reporting;
 
@@ -220,27 +221,7 @@ namespace Bloom.Collection.BloomPack
 
 			var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
 			CopyXMatterFoldersToWhereTheyBelong(newlyAddedFolderOfThePack);
-			CopyReaderToolsSettingsToWhereTheyBelong(newlyAddedFolderOfThePack);
-		}
-
-		private void CopyReaderToolsSettingsToWhereTheyBelong(string newlyAddedFolderOfThePack)
-		{
-			var destFolder = ProjectContext.GetBloomAppDataFolder();
-			foreach (var readerSettingsFile in Directory.GetFiles(newlyAddedFolderOfThePack, CollectionSettings.ReaderToolsSettingsPrefix + "*.json")
-				.Concat(Directory.GetFiles(newlyAddedFolderOfThePack,"ReaderToolsWords-*.json")))
-			{
-				try
-				{
-					File.Copy(readerSettingsFile, Path.Combine(destFolder, Path.GetFileName(readerSettingsFile)), true);
-				}
-				catch (IOException e)
-				{
-					// If we can't do it, we can't. Don't worry about it in production.
-#if DEBUG
-					Debug.Fail("Some file error copying reader settings");
-#endif
-				}
-			}
+			ToolboxTool.CopyToolSettingsForBloomPack(newlyAddedFolderOfThePack);
 		}
 
 		//xmatter in bloompacks was an afterthought... at the moment we unpack everything to programdata/../Collections,

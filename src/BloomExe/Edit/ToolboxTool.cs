@@ -69,6 +69,18 @@ namespace Bloom.Edit
 		// This is run after the page is otherwise idle.
 		internal virtual void RestoreSettings(EditingView _view)
 		{ }
+
+		/// <summary>
+		/// Some tool settings files may need moving to the correct locations when installing a bloompack.
+		/// Currently only the reader tools needs to do this. We could try to do some trick where
+		/// we call a method on all subclasses by reflection, but I think this is sufficient
+		/// encapsulation.
+		/// </summary>
+		/// <param name="newlyAddedFolderOfThePack"></param>
+		internal static void CopyToolSettingsForBloomPack(string newlyAddedFolderOfThePack)
+		{
+			DecodableReaderTool.CopyReaderToolsSettingsToWhereTheyBelong(newlyAddedFolderOfThePack);
+		}
 	}
 
 	/// <summary>
