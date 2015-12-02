@@ -855,6 +855,25 @@ namespace BloomTests.Book
 
 
 		[Test]
+		public void Save_UpdatesBookInfoMetadataTags()
+		{
+			_bookDom = new HtmlDom(
+				@"<html><body>
+					<div class='bloom-page' id='guid3'>
+						<div lang='en' data-derived='topic'>original</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+			book.OurHtmlDom.SetBookSetting("topic", "en", "Animal stories");
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
+
+			book.OurHtmlDom.SetBookSetting("topic", "en", "Science");
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
+		}
+		[Test]
 		public void Save_UpdatesMetadataCreditsRemovingBreaks()
 		{
 			_bookDom = new HtmlDom(
