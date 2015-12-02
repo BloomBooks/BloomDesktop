@@ -268,7 +268,15 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
 			var scriptNodes = dom.SafeSelectNodes("//script");
-			Assert.AreEqual(4, scriptNodes.Count);
+			// JohnT: as of 25 November 2015, the five are:
+			// - bloomBootstrap.js
+			// - readerToolsBootstrap.js (this is the newest...because the accordion is now always available, BL-2970. Perhaps should be rolled into bloomBootstrap.js?
+			// - a literal script which calls 'localize' on each element that has data-i18N
+			// - a literal script which defines a function GetInlineDictionary to return a localization dictionary
+			// - a literal script which defines a GetSettings function, which returns info about languages and collection type.
+			// None of these appears to be anything to do with an EditTimeScript (nor does this string occur elsewhere in our codebase).
+			// So this test may be simply obsolete.
+			Assert.AreEqual(5, scriptNodes.Count);
 			Assert.IsNotEmpty(scriptNodes[0].Attributes["src"].Value);
 			Assert.IsTrue(scriptNodes[0].Attributes["src"].Value.Contains(".js"));
 		}
@@ -884,6 +892,25 @@ namespace BloomTests.Book
 			Assert.That(_metadata.Title, Is.EqualTo("changed & <mangled>"));
 		}
 
+		[Test]
+		public void Save_UpdatesBookInfoMetadataTags()
+		{
+			_bookDom = new HtmlDom(
+				@"<html><body>
+					<div class='bloom-page' id='guid3'>
+						<div lang='en' data-derived='topic'>original</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+			book.OurHtmlDom.SetBookSetting("topic", "en", "Animal stories");
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Animal stories"));
+
+			book.OurHtmlDom.SetBookSetting("topic", "en", "Science");
+			book.Save();
+			Assert.That(book.BookInfo.TagsList, Is.EqualTo("Science"));
+		}
 		[Test]
 		public void Save_UpdatesMetadataCreditsRemovingBreaks()
 		{

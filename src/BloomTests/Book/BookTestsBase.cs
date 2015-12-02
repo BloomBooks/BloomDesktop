@@ -32,7 +32,7 @@ namespace BloomTests.Book
 		protected BookInfo _metadata;
 
 		[SetUp]
-		public void Setup()
+		public virtual void Setup()
 		{
 			_storage = new Moq.Mock<IBookStorage>();
 			_storage.Setup(x => x.GetLooksOk()).Returns(true);

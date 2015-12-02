@@ -58,7 +58,10 @@ namespace Bloom.Collection
 			:this(collectionInfo.PathToSettingsFile)
 		{
 			AllowNewBooks = collectionInfo.AllowNewBooks;
-			DefaultLanguage1FontName = DefaultLanguage2FontName = DefaultLanguage3FontName = GetDefaultFontName();
+			DefaultLanguage1FontName = collectionInfo.DefaultLanguage1FontName;
+			Language1LineHeight = collectionInfo.Language1LineHeight;
+			IsLanguage1Rtl = collectionInfo.IsLanguage1Rtl;
+			DefaultLanguage2FontName = DefaultLanguage3FontName = GetDefaultFontName();
 
 			Language1Iso639Code = collectionInfo.Language1Iso639Code;
 			Language2Iso639Code = collectionInfo.Language2Iso639Code;
@@ -620,7 +623,7 @@ namespace Bloom.Collection
 			}
 		}
 
-		private string GetDefaultFontName()
+		internal static string GetDefaultFontName()
 		{
 			foreach(var candidate in new[] { "Andika New Basic", "Andika", "Gentium", "Charis", "Paduak"/*Myanmar*/})
 			{

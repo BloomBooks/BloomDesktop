@@ -96,6 +96,8 @@ namespace Bloom.CollectionCreating
 																			"Collection Name Problem");
 			this._languageLocationPage.Text = LocalizationManager.GetString("NewCollectionWizard.LocationPage",
 																			"Give Language Location");
+			this._languageFontPage.Text = LocalizationManager.GetString("NewCollectionWizard.FontAndScriptPage",
+																		"Font and Script");
 			this._vernacularLanguagePage.Text = LocalizationManager.GetString("NewCollectionWizard.ChooseLanguagePage",
 																			  "Choose the Main Language For This Collection");
 			this._finishPage.Text = LocalizationManager.GetString("NewCollectionWizard.FinishPage",
@@ -149,11 +151,9 @@ namespace Bloom.CollectionCreating
 				var sanitizedCollectionName = tentativeCollectionName.SanitizePath('.');
 				_collectionInfo.PathToSettingsFile = CollectionSettings.GetPathForNewSettings(DefaultParentDirectoryForCollections, sanitizedCollectionName);
 
-				_languageLocationPage.NextPage = DefaultCollectionPathWouldHaveProblems || (tentativeCollectionName != sanitizedCollectionName)
-					//go ahead to the language location page for now,
-					//but then divert to the page we use for fixing up the name
-					? _collectionNamePage
-					: _finishPage;
+				// An earlier version went direct to finish if the proposed name was OK (unless DefaultCollectionPathWouldHaveProblems || (tentativeCollectionName != sanitizedCollectionName))
+				// but per BL-2649 we now want to always let the user check the name.
+				_languageLocationPage.NextPage = _collectionNamePage;
 			}
 		}
 
@@ -190,6 +190,17 @@ namespace Bloom.CollectionCreating
 		{
 			DialogResult = DialogResult.OK;
 
+			// Collect the data from the Font and Script page.
+			_collectionInfo.DefaultLanguage1FontName = _fontDetails.SelectedFont;
+			_collectionInfo.Language1LineHeight = new decimal(0);
+			if (_fontDetails.ExtraLineHeight)
+			{
+				double height;
+				if (double.TryParse(_fontDetails.LineHeight, out height))
+					_collectionInfo.Language1LineHeight = new decimal(height);
+			}
+			_collectionInfo.IsLanguage1Rtl = _fontDetails.RightToLeft;
+
 			//this both saves a step for the country with the most languages, but also helps get the order between en and tpi to what will be most useful
 			if (_collectionInfo.Country == "Papua New Guinea")
 			{
@@ -202,6 +213,7 @@ namespace Bloom.CollectionCreating
 				Analytics.Track("Created New Source Collection");
 			else
 				Analytics.Track("Create New Vernacular Collection",new Dictionary<string, string>() { { "Country", _collectionInfo.Country } });
+
 			Close();
 		}
 

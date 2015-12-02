@@ -29,15 +29,15 @@ function showOrHidePanel_click(chkbox) {
     if (chkbox.innerHTML === '') {
 
         chkbox.innerHTML = checkMarkString;
-        fireCSharpAccordionEvent('saveAccordionSettingsEvent', chkbox.id + "\t1");
+        fireCSharpAccordionEvent('saveAccordionSettingsEvent', "active\t" + chkbox.id + "\t1");
         if (panel) {
             showingPanel = true;
-            requestPanel(chkbox.id, panel)
+            requestPanel(chkbox.id, panel);
         }
     }
     else {
         chkbox.innerHTML = '';
-        fireCSharpAccordionEvent('saveAccordionSettingsEvent', chkbox.id + "\t0");
+        fireCSharpAccordionEvent('saveAccordionSettingsEvent', "active\t" + chkbox.id + "\t0");
         $('*[data-panelId]').filter(function() { return $(this).attr('data-panelId') === panel; }).remove();
     }
 
@@ -57,10 +57,10 @@ function restoreAccordionSettings(settings) {
     // Before we set stage/level, as it initializes them to 1.
     setCurrentPanel(currentPanel);
 
-    if (opts['decodableState']) {
+    if (opts['decodableReaderState']) {
         state = libsynphony.dbGet('drt_state');
         if (!state) state = new DRTState();
-        var decState = opts['decodableState'];
+        var decState = opts['decodableReaderState'];
         if (decState.startsWith("stage:")) {
             var parts = decState.split(";");
             state.stage = parseInt(parts[0].substring("stage:".length));
@@ -73,10 +73,10 @@ function restoreAccordionSettings(settings) {
         libsynphony.dbSet('drt_state', state);
     }
 
-    if (opts['leveledState']) {
+    if (opts['leveledReaderState']) {
         state = libsynphony.dbGet('drt_state');
         if (!state) state = new DRTState();
-        state.level = parseInt(opts['leveledState']);
+        state.level = parseInt(opts['leveledReaderState']);
         libsynphony.dbSet('drt_state', state);
     }
 }
@@ -166,7 +166,7 @@ function resizeAccordion() {
     var root = $(".accordionRoot");
     // Set accordion container height to fit in new window size
     // Then accordion Resize() will adjust it to fit the container
-    root.height(windowHeight);
+    root.height(windowHeight - 25); // 25 is the top: value set for div.accordionRoot in accordion.less
     BloomAccordion.Resize();
 }
 

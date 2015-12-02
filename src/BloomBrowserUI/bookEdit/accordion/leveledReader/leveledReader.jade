@@ -2,8 +2,9 @@ html
 	head
 
 	body
-		h3(data-panelId='LeveledRT', data-markuptype='2', data-order='20', data-i18n='Accordion.LeveledReaderTool') Leveled Reader Tool
-		div(data-panelId='LeveledRT')
+		// markuptype refers to which kind of synphony markup is displayed in the panel. See ReaderToolsModel.setMarkupType and the MarkupType enumeration.
+		h3(data-panelId='leveledReaderTool', data-markuptype='2', data-order='20', data-i18n='Accordion.LeveledReaderTool') Leveled Reader Tool
+		div(data-panelId='leveledReaderTool')
 			#setupStages
 				img#leveled-edit(src='/bloom/images/edit-white.png')
 				span.setup.noSelect
@@ -71,6 +72,6 @@ html
 						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?ChoiceOfTopic")', data-i18n='LeveledReaderTool.ChoiceOfTopic') Choice of Topic
 			script(type='text/javascript').
 				$(document).ready(function() {
-					// this timeout is different than the DecodableRT timeout to prevent initializing synphony twice
-					setTimeout(initializeLeveledRT, 200);
+					// this timeout is different than the decodableReader timeout to prevent initializing synphony twice
+					setTimeout(initializeLeveledReaderTool, 200);
 				});

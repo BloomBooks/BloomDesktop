@@ -5,11 +5,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Windows.Forms;
+using Bloom.Edit;
 using Bloom.ImageProcessing;
-using Bloom.ToPalaso;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -49,16 +47,6 @@ namespace Bloom.Book
 				if (File.Exists(oldTagsPath))
 				{
 					Book.ConvertTagsToMetaData(oldTagsPath, this);
-				}
-			}
-
-			// should the accordion be enabled?
-			if ((_metadata != null) && (_metadata.Tools != null))
-			{
-				if (!_metadata.ReaderToolsAvailable)
-				{
-					if (_metadata.Tools.Any(t => t.Enabled))
-						_metadata.ReaderToolsAvailable = true;
 				}
 			}
 
@@ -349,6 +337,7 @@ namespace Bloom.Book
 			set { MetaData.CurrentTool = value; }
 		}
 
+		// Whether we should allow the reader tools initially. (Was, whether to show at all. As of BL-2907, they are always an option).
 		public bool ReaderToolsAvailable
 		{
 			get { return MetaData.ReaderToolsAvailable; }
@@ -397,7 +386,13 @@ namespace Bloom.Book
 		}
 		public static BookMetaData FromString(string input)
 		{
-			return JsonConvert.DeserializeObject<BookMetaData>(input);
+			var result = JsonConvert.DeserializeObject<BookMetaData>(input);
+			if (result.Tools != null)
+			{
+				foreach (var tool in result.Tools.Where(t => t is UnknownTool).ToArray())
+					result.Tools.Remove(tool);
+			}
+			return result;
 		}
 
 		public static BookMetaData FromFolder(string bookFolderPath)
@@ -599,7 +594,7 @@ namespace Bloom.Book
 
 		/// <summary>These panels are being displayed in the accordion for this book</summary>
 		/// <example>["decodableReader", "leveledReader", "pageElements"]</example>
-		[JsonProperty("tools")]
+		[JsonProperty("tools",ItemConverterType = typeof(AccordionToolConverter))]
 		public List<AccordionTool> Tools { get; set; }
 
 		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
@@ -652,21 +647,5 @@ namespace Bloom.Book
 
 		[JsonProperty("ethnologueCode")]
 		public string EthnologueCode { get; set; }
-	}
-
-	public class AccordionTool
-	{
-		[JsonProperty("name")]
-		public string Name { get; set; }
-
-		[JsonProperty("enabled")]
-		public bool Enabled { get; set; }
-
-		/// <summary>
-		/// Different tools may use this arbitrarily. Currently decodable and leveled readers use it to store
-		/// the stage or level a book belongs to (at least the one last active when editing it).
-		/// </summary>
-		[JsonProperty("state")]
-		public string State { get; set; }
 	}
 }

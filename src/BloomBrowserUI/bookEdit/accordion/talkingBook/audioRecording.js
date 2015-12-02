@@ -1,7 +1,7 @@
 // This class supports creating audio recordings for talking books.
 // Things currently get started when the user selects the "record audio" item in
-// the right-click menu while editing. This invokes the static function recordAudio
-// in this file, which invokes audioRecording.startRecording. That code breaks the
+// the right-click menu while editing. This invokes the static function showRecordingTools
+// in this file, which invokes audioRecording.showRecordingTools. That code breaks the
 // page's text into sentence-length spans (if not already done), makes sure each
 // has an id (preserving existing ones, and using guids for new ones). Then it
 // displays  a popup 'bubble' with controls for moving between sentences,
@@ -215,7 +215,7 @@ var AudioRecording = (function () {
             "</div>" +
             "</div>";
     };
-    AudioRecording.prototype.startRecording = function () {
+    AudioRecording.prototype.showRecordingTools = function () {
         var editable = $('div.bloom-editable');
         this.makeSentenceSpans(editable);
         // For displaying the qtip, restrict the editable divs to the ones that have
@@ -276,38 +276,22 @@ var AudioRecording = (function () {
             },
             events: {
                 show: function (event, api) {
+                    thisClass.api = api;
                     // I've sometimes observed events like click being handled repeatedly for a single click.
                     // Adding thse .off calls seems to help...it's as if something causes this show event to happen
                     // more than once so the event handlers were being added repeatedly, but I haven't caught
                     // that actually happening. However, the off() calls seem to prevent it.
-                    $('#audio-close').off().click(function () {
-                        thisClass.hiddenSourceBubbles.show();
-                        api.hide();
-                    });
+                    $('#audio-close').off().click(function (e) { return thisClass.hideRecordingTools(); });
                     $('#audio-next').off().click(function () {
                         thisClass.moveToNextSpan();
                     });
-                    $('#audio-prev').off().click(function () {
-                        thisClass.moveToPrevSpan();
-                    });
-                    $('#audio-record').off().mousedown(function () {
-                        thisClass.startRecordCurrent();
-                    }).mouseup(function () {
-                        thisClass.endRecordCurrent();
-                    });
-                    $('#audio-play').off().click(function () {
-                        thisClass.playCurrent();
-                    });
+                    $('#audio-prev').off().click(function (e) { return thisClass.moveToPrevSpan(); });
+                    $('#audio-record').off().mousedown(function (e) { return thisClass.startRecordCurrent(); }).mouseup(function (e) { return thisClass.endRecordCurrent(); });
+                    $('#audio-play').off().click(function (e) { return thisClass.playCurrent(); });
                     $('#player').off();
-                    $('#player').bind('error', function () {
-                        thisClass.cantPlay();
-                    });
-                    $('#player').bind('ended', function () {
-                        thisClass.playEnded();
-                    });
-                    $('#audio-input-dev').off().click(function () {
-                        thisClass.selectInputDevice();
-                    });
+                    $('#player').bind('error', function (e) { return thisClass.cantPlay(); });
+                    $('#player').bind('ended', function (e) { return thisClass.playEnded(); });
+                    $('#audio-input-dev').off().click(function (e) { return thisClass.selectInputDevice(); });
                     thisClass.setStatus('record', Status.Expected);
                     // This is easier to do here than in setPeakLevel,
                     // because it executes in the scope of the bubble
@@ -322,6 +306,10 @@ var AudioRecording = (function () {
                 }
             }
         });
+    };
+    AudioRecording.prototype.hideRecordingTools = function () {
+        this.hiddenSourceBubbles.show();
+        this.api.hide();
     };
     // This gets invoked (via a non-object method of the same name in this file,
     // and one of the same name in CalledFromCSharp) when a C# event fires indicating
@@ -726,9 +714,12 @@ if (typeof ($) === "function") {
     });
 }
 // Function called to start things going.
-// Called by 'calledByCSharp.recordAudio
-function recordAudio() {
-    audioRecorder.startRecording();
+// Called by code in talkingBooks.ts
+function showRecordingTools() {
+    audioRecorder.showRecordingTools();
+}
+function hideRecordingTools() {
+    audioRecorder.hideRecordingTools();
 }
 function cleanupAudio() {
     audioRecorder.cleanupAudio();
