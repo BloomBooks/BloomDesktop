@@ -171,6 +171,8 @@ namespace Bloom.Book
 
 			UpdateTitle(info);//this may change our "bookTitle" variable if the title is based on a template that reads other variables (e.g. "Primer Term2-Week3")
 			UpdateIsbn(info);
+			if (info != null)
+				UpdateBookInfoTags(info);
 			UpdateCredits(info);
 		}
 
@@ -315,6 +317,16 @@ namespace Bloom.Book
 			}
 			info.Isbn = isbn ?? "";
 		}
+
+		// For now, when there is no UI for multiple tags, we make Tags a single item, the book topic.
+		// It's not clear what we will want to do when the topic changes and there is a UI for (possibly multiple) tags.
+		// Very likely we still want to add the new topic (if it is not already present).
+		// Should we still remove the old one?
+		private void UpdateBookInfoTags(BookInfo info)
+		{
+			info.TagsList = GetVariableOrNull("topic", "en");//topic key always in english
+		}
+
 
 		/// <summary>
 		///
