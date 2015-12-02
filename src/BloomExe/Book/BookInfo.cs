@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
+using Bloom.Edit;
 
 namespace Bloom.Book
 {
