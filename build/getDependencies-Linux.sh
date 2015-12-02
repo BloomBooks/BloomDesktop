@@ -65,10 +65,6 @@ if [ "$f1" != "$f2" ]; then mv $f2\?* $f2; fi
 cd -
 }
 
-# clean destination directories
-rm -rf ../src/BloomBrowserUI/bookEdit/js/libsynphony
-rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
-
 # *** Results ***
 # build: Bloom-Default-precise64-Auto (master) (bt403)
 # project: Bloom
@@ -81,13 +77,6 @@ rm -rf ../src/BloomBrowserUI/bookEdit/test/libsynphony
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"connections.dll"=>"DistFiles", "*.chm"=>"DistFiles", "MSBuild.Community.Tasks.dll"=>"build/", "MSBuild.Community.Tasks.Targets"=>"build/"}
-# [1] build: LibSynphony (bt394)
-#     project: Bloom
-#     URL: http://build.palaso.org/viewType.html?buildTypeId=bt394
-#     clean: true
-#     revision: latest.lastSuccessful
-#     paths: {"libsynphony-js.zip!**"=>"src/BloomBrowserUI/bookEdit/js/libsynphony", "libsynphony-test-js.zip!**"=>"src/BloomBrowserUI/bookEdit/test/libsynphony"}
-#     VCS: https://bitbucket.org/phillip_hopper/synphony [default]
 # [2] build: Squirrel (Bloom_Squirrel)
 #     project: Bloom
 #     URL: http://build.palaso.org/viewType.html?buildTypeId=Bloom_Squirrel
@@ -171,16 +160,12 @@ mkdir -p ../build/
 mkdir -p ../lib/dotnet
 mkdir -p ../lib/dotnet/icu48
 mkdir -p ../lib/dotnet/icu52
-mkdir -p ../src/BloomBrowserUI/bookEdit/js/libsynphony
-mkdir -p ../src/BloomBrowserUI/bookEdit/test/libsynphony
 
 # download artifact dependencies
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/connections.dll ../DistFiles/connections.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.dll ../build/MSBuild.Community.Tasks.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt396/latest.lastSuccessful/MSBuild.Community.Tasks.Targets ../build/MSBuild.Community.Tasks.Targets
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/libsynphony-js.zip ../Downloads/libsynphony-js.zip
-copy_auto http://build.palaso.org/guestAuth/repository/download/bt394/latest.lastSuccessful/libsynphony-test-js.zip ../Downloads/libsynphony-test-js.zip
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/Squirrel.dll ../lib/dotnet/Squirrel.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/ICSharpCode.SharpZipLib.dll ../lib/dotnet/ICSharpCode.SharpZipLib.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/ICSharpCode.SharpZipLib.xml ../lib/dotnet/ICSharpCode.SharpZipLib.xml
@@ -300,8 +285,6 @@ copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.las
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/ibusdotnet.dll?branch=%3Cdefault%3E ../lib/dotnet/ibusdotnet.dll
 copy_auto http://build.palaso.org/guestAuth/repository/download/bt322/latest.lastSuccessful/taglib-sharp.dll?branch=%3Cdefault%3E ../lib/dotnet/taglib-sharp.dll
 # extract downloaded zip files
-unzip -uqo ../Downloads/libsynphony-js.zip -d ../src/BloomBrowserUI/bookEdit/js/libsynphony
-unzip -uqo ../Downloads/libsynphony-test-js.zip -d ../src/BloomBrowserUI/bookEdit/test/libsynphony
 unzip -uqo ../Downloads/pdfjs-viewer.zip -d ../DistFiles/pdf
 unzip -uqo ../Downloads/Mercurial-x86_64.zip -d ../Mercurial-x86_64
 unzip -uqo ../Downloads/Mercurial-i686.zip -d ../Mercurial-i686

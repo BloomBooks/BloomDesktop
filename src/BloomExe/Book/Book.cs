@@ -294,7 +294,7 @@ namespace Bloom.Book
 
 			// Enhance JT: can we somehow not add this unless/until the user displays the toolbox?
 			//if (BookInfo.ReaderToolsAvailable)
-			dom.AddJavascriptFile("bookEdit/js/readerToolsBootstrap.js".ToLocalhost());
+			dom.AddJavascriptFile("bookEdit/toolbox/decodableReader/readerToolsBootstrap.js".ToLocalhost());
 		}
 
 

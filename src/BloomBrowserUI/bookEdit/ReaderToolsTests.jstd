@@ -10,7 +10,7 @@ load:
   - js/libsynphony/bloom_lib.js
   - js/jquery.div-columns.js
   - js/libsynphony/jquery.text-markup.js
-  - js/synphonyApi.js
+  - toolbox/decodableReader/synphonyApi.js
   - toolbox/toolbox.js
 test:
   - test/readerTools.Test.js

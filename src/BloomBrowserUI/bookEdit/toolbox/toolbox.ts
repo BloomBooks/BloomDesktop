@@ -1,6 +1,6 @@
 /// <reference path="../../lib/jquery-ui.d.ts" />
-/// <reference path="../js/synphonyApi.ts" />
-/// <reference path="../js/readerToolsModel.ts" />
+/// <reference path="decodableReader/synphonyApi.ts" />
+/// <reference path="decodableReader/readerToolsModel.ts" />
 
 /**
  * The html code for a check mark character

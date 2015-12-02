@@ -1,6 +1,4 @@
 /// <reference path="readerToolsModel.ts" />
-/// <reference path="directoryWatcher.ts" />
-/// <reference path="../../lib/localizationManager/localizationManager.ts" />
 
 interface qtipInterface extends JQuery {
   qtip(options: any): JQuery;

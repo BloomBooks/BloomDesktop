@@ -27,6 +27,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="bookEdit\js\BloomToolbox.js" />
+    <Content Include="bookEdit\toolbox\ReadMe.txt" />
     <Content Include="bookEdit\toolbox\talkingBook\audioRecording.css">
       <DependentUpon>audioRecording.less</DependentUpon>
     </Content>
@@ -60,7 +61,6 @@
     <Content Include="bookEdit\css\qtipOverrides.css">
       <DependentUpon>qtipOverrides.less</DependentUpon>
     </Content>
-    <Content Include="bookEdit\js\readerToolsBootstrap.js" />
     <Content Include="bookEdit\css\BookPagesThumbnailList.less" />
     <Content Include="bookEdit\toolbox\talkingBook\talkingBook.jade" />
     <Content Include="bookEdit\toolbox\talkingBook\audioRecording.less" />
@@ -117,6 +117,10 @@
     <Content Include="bookEdit\js\bloomEditing.js" />
     <TypeScriptCompile Include="bookEdit\js\BloomToolbox.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\decodableReader.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerSettings.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerTools.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerToolsModel.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\synphonyApi.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\leveledReader\leveledReader.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\talkingBook\audioRecording.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\talkingBook\talkingBook.ts" />
@@ -132,7 +136,6 @@
     <TypeScriptCompile Include="bookEdit\js\interIframeChannel.ts" />
     <TypeScriptCompile Include="bookEdit\js\jquery.div-columns.ts" />
     <TypeScriptCompile Include="bookEdit\js\libsynphony\underscore-1.5.2.d.ts" />
-    <TypeScriptCompile Include="bookEdit\js\readerSettings.ts" />
     <Content Include="bookEdit\js\toolbar\bootstrap.icons.css" />
     <Content Include="bookEdit\js\toolbar\glyphicons-halflings.png" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />
@@ -256,9 +259,6 @@
     <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_cccccc_256x240.png" />
     <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_ffffff_256x240.png" />
     <Content Include="themes\bloom-jqueryui-theme\jquery-ui-1.8.16.custom.css" />
-    <TypeScriptCompile Include="bookEdit\js\readerTools.ts" />
-    <TypeScriptCompile Include="bookEdit\js\readerToolsModel.ts" />
-    <TypeScriptCompile Include="bookEdit\js\synphonyApi.ts" />
     <TypeScriptCompile Include="bookEdit\OverflowChecker\OverflowChecker.ts" />
     <TypeScriptCompile Include="bookEdit\sourceBubbles\bloomSourceBubbles.ts" />
     <Content Include="bookEdit\toolbox\toolbox.ts" />
