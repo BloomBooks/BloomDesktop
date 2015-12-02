@@ -940,7 +940,7 @@ namespace BloomTests.Book
 		}
 		
 		[Test,Ignore("Known bug: BL-2962")]
-		public void Save_UpdatesBookInfoMetadataTags()
+		public void Save_UpdatesBookInfoMetadataTags2()
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
