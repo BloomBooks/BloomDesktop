@@ -53,18 +53,22 @@ namespace BloomTests.ImageProcessing
 		private static void ProcessAndSaveImageIntoFolder_AndTestResults(string testImageName, ImageFormat expectedOutputFormat)
 		{
 			var inputPath = SIL.IO.FileLocator.GetFileDistributedWithApplication(_pathToTestImages, testImageName);
-			var image = PalasoImage.FromFile(inputPath);
-			using(var folder = new TemporaryFolder())
+			using (var image = PalasoImage.FromFile(inputPath))
 			{
-				var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path, false);
-				Assert.AreEqual(expectedOutputFormat == ImageFormat.Jpeg ? ".jpg" : ".png", Path.GetExtension(fileName));
-				var outputPath = folder.Combine(fileName);
-				using (var img = Image.FromFile(outputPath))
+				using (var folder = new TemporaryFolder())
 				{
-					Assert.AreEqual(expectedOutputFormat, img.RawFormat);
+					var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(image, folder.Path, false);
+					Assert.AreEqual(expectedOutputFormat == ImageFormat.Jpeg ? ".jpg" : ".png", Path.GetExtension(fileName));
+					var outputPath = folder.Combine(fileName);
+					using (var img = Image.FromFile(outputPath))
+					{
+						Assert.AreEqual(expectedOutputFormat, img.RawFormat);
+					}
+					var alternativeThatShouldNotBeThere = Path.Combine(Path.GetDirectoryName(outputPath),
+						Path.GetFileNameWithoutExtension(outputPath) + (expectedOutputFormat.Equals(ImageFormat.Jpeg) ? ".png" : ".jpg"));
+					Assert.IsFalse(File.Exists(alternativeThatShouldNotBeThere),
+						"Did not expect to have the file " + alternativeThatShouldNotBeThere);
 				}
-				var alternativeThatShouldNotBeThere = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath) + (expectedOutputFormat.Equals(ImageFormat.Jpeg) ? ".png" : ".jpg"));
-				Assert.IsFalse(File.Exists(alternativeThatShouldNotBeThere),"Did not expect to have the file "+alternativeThatShouldNotBeThere);
 			}
 		}
 	}
