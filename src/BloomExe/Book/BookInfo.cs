@@ -338,10 +338,10 @@ namespace Bloom.Book
 		}
 
 		// Whether we should allow the reader tools initially. (Was, whether to show at all. As of BL-2907, they are always an option).
-		public bool ReaderToolsAvailable
+		public bool ToolboxIsOpen
 		{
-			get { return MetaData.ReaderToolsAvailable; }
-			set { MetaData.ReaderToolsAvailable = value; }
+			get { return MetaData.ToolboxIsOpen; }
+			set { MetaData.ToolboxIsOpen = value; }
 		}
 
 		public static IEnumerable<string> TopicsKeys
@@ -600,9 +600,9 @@ namespace Bloom.Book
 		[JsonProperty("currentTool", NullValueHandling = NullValueHandling.Ignore)]
 		public string CurrentTool { get; set; }
 
-		[JsonProperty("readerToolsAvailable")]
+		[JsonProperty("toolboxIsOpen")]
 		[DefaultValue(false)]
-		public bool ReaderToolsAvailable { get; set; }
+		public bool ToolboxIsOpen { get; set; }
 	}
 
 	/// <summary>

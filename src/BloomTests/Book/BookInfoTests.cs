@@ -91,7 +91,7 @@ namespace BloomTests.Book
 		[Test]
 		public void MetaData_WithUnknownTool_DiscardsIt()
 		{
-			var json = "{ \"bookInstanceId\":\"bee9496b-00c2-42f2-83c5-7e2f61f50a33\",\"tools\":[{\"name\":\"decodableReader\",\"enabled\":true,\"state\":\"stage:1;sort:alphabetic\"},{\"name\":\"leveledReader\",\"enabled\":true,\"state\":\"1\"},{\"name\":\"talkingBook\",\"enabled\":true,\"state\":null}, {\"name\":\"rubbish\",\"enabled\":true,\"state\":null}],\"currentTool\":\"leveledReaderTool\",\"readerToolsAvailable\":true}";
+			var json = "{ \"bookInstanceId\":\"bee9496b-00c2-42f2-83c5-7e2f61f50a33\",\"tools\":[{\"name\":\"decodableReader\",\"enabled\":true,\"state\":\"stage:1;sort:alphabetic\"},{\"name\":\"leveledReader\",\"enabled\":true,\"state\":\"1\"},{\"name\":\"talkingBook\",\"enabled\":true,\"state\":null}, {\"name\":\"rubbish\",\"enabled\":true,\"state\":null}],\"currentTool\":\"leveledReaderTool\",\"toolboxIsOpen\":true}";
 			var metadata = BookMetaData.FromString(json);
 			Assert.That(metadata.Tools, Has.Count.EqualTo(3)); // Unknown tool should not show up.
 		}

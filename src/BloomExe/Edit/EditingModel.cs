@@ -581,7 +581,7 @@ namespace Bloom.Edit
 			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 
 			// Enhance JohnT: Can we somehow have a much simpler toolbox content until the user displays it?
-			//if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
+			//if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
 				_server.ToolboxContent = ToolboxTool.MakeToolboxContent(_currentlyDisplayedBook);
 			//else
 			//	_server.ToolboxContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
@@ -616,7 +616,7 @@ namespace Bloom.Edit
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 
 
-			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
+			if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
 			{
 				// Make the toolbox initially visible.
 				// What we have to do to accomplish this is pretty non-intutive. It's a consequence of the way
@@ -998,7 +998,7 @@ namespace Bloom.Edit
 				return; // In production if we can't find the current state just leave it unchanged.
 			}
 			var showToolbox = checkbox.Checked;
-			_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable = showToolbox;
+			_currentlyDisplayedBook.BookInfo.ToolboxIsOpen = showToolbox;
 			_currentlyDisplayedBook.BookInfo.Save();
 
 			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)
