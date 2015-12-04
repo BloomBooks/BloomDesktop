@@ -1,14 +1,14 @@
 ﻿/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 .qtip-default {
   background-color: #faf7cc !important;
-  border-color: #E0DEB7 !important;
+  border-color: #e0deb7 !important;
   color: black !important;
   border-radius: 5px;
 }
 .uibloomSourceTextsBubble {
   z-index: 15002 !important;
   background-color: #faf7cc !important;
-  border-color: #E0DEB7 !important;
+  border-color: #e0deb7 !important;
   border-width: 2px !important;
 }
 .uibloomSourceTextsBubble.passive-bubble {
@@ -23,7 +23,7 @@
 }
 .ui-sourceTextsForBubble {
   position: relative;
-  border-color: #E0DEB7;
+  border-color: #e0deb7;
   max-height: inherit;
 }
 .ui-sourceTextsForBubble NAV {
@@ -60,7 +60,7 @@
   border-top-right-radius: 6px;
   float: left;
   flex: 1 0 auto;
-  background-color: #E0DEB7;
+  background-color: #e0deb7;
 }
 .ui-sourceTextsForBubble NAV > UL > LI:not(:first-child) {
   border-left: 1px solid #faf7cc;
@@ -119,7 +119,7 @@
   margin-top: 2px;
   white-space: nowrap;
   border: 1px solid #faf7cc;
-  background-color: #E0DEB7 !important;
+  background-color: #e0deb7 !important;
   top: 0;
   font-size: 9pt;
   z-index: 5;
@@ -211,10 +211,10 @@ DIV.page.coverColor {
 }
 /*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
 DIV.readOnlyInTranslationMode {
-  border: thin solid #C0B9B9;
+  border: thin solid #c0b9b9;
 }
 DIV.hoverUp {
-  background-color: #D5D5E4;
+  background-color: #d5d5e4;
 }
 .imageButton {
   width: 87px;
@@ -238,13 +238,13 @@ DIV.hoverUp {
 .imageButton.changeImageButton {
   right: 0;
   top: 0;
-  background-color: #96668F;
+  background-color: #96668f;
   background-image: url("../img/changeButton.svg");
 }
 .imageButton.pasteImageButton {
   right: 0;
   bottom: 0;
-  background-color: #0C8597;
+  background-color: #0c8597;
   background-image: url("../img/pasteButton.svg");
   background-position: right center;
 }
@@ -259,7 +259,7 @@ DIV.hoverUp {
   left: 0;
   top: 0;
   background-image: url("../img/imageMetaDataButton.svg") !important;
-  background-color: #3A7F62;
+  background-color: #3a7f62;
 }
 .imageButton.editMetadataButton.imgMetadataProblem {
   background-color: transparent;
@@ -275,7 +275,7 @@ DIV.hoverUp {
 }
 .hoverUp .imageButton.editMetadataButton {
   background-image: none;
-  background-color: #3A7F62 !important;
+  background-color: #3a7f62 !important;
 }
 BUTTON.miniButton {
   width: 20px;

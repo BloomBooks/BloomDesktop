@@ -12,6 +12,7 @@ using SIL.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Edit;
 using L10NSharp;
 
 namespace Bloom.web
@@ -27,6 +28,7 @@ namespace Bloom.web
 		private const string kSynphonyFileNameSuffix = "_lang_data.js";
 		private static readonly IEqualityComparer<string> _equalityComparer = new InsensitiveEqualityComparer();
 		private static readonly char[] _allowedWordsDelimiters = {',', ';', ' ', '\t', '\r', '\n'};
+		private static EnhancedImageServer _server;
 
 		private enum WordFileType
 		{
@@ -37,7 +39,19 @@ namespace Bloom.web
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
 		// whole-book counts. If we ever support having more than one book open, ReadersHandler will need to stop being static, or
 		// some similar change. But by then, we may have the whole book in the main DOM, anyway, and getTextOfPages may be obsolete.
-		public static Book.Book CurrentBook { get; set; }
+		public static Book.Book CurrentBook { get { return Server.CurrentBook; } }
+
+		/// <summary>
+		/// Needs to know the one and only image server to get the current book from it.
+		/// </summary>
+		public static EnhancedImageServer Server
+		{
+			get { return _server; }
+			set
+			{
+				_server = value;
+			}
+		}
 
 		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
 		{
@@ -58,7 +72,7 @@ namespace Bloom.web
 					return true;
 
 				case "saveReaderToolSettings":
-					var path = currentCollectionSettings.DecodableLevelPathName;
+					var path = DecodableReaderTool.GetDecodableLevelPathName(currentCollectionSettings);
 					var content = info.GetPostData()["data"];
 					File.WriteAllText(path, content, Encoding.UTF8);
 					info.ContentType = "text/plain";
@@ -166,7 +180,7 @@ namespace Bloom.web
 				Directory.CreateDirectory(path);
 
 			var fileList1 = new List<string>();
-			var langFileName = string.Format(ProjectContext.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var langFileName = string.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 			var langFile = Path.Combine(path, langFileName);
 
 			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
@@ -231,7 +245,7 @@ namespace Bloom.web
 
 		private static string GetDefaultReaderSettings(CollectionSettings currentCollectionSettings)
 		{
-			var settingsPath = currentCollectionSettings.DecodableLevelPathName;
+			var settingsPath = DecodableReaderTool.GetDecodableLevelPathName(currentCollectionSettings);
 
 			// if file exists, return current settings
 			if (File.Exists(settingsPath))
@@ -309,7 +323,7 @@ namespace Bloom.web
 				if (jsonString.Contains("\"LangID\":\"\""))
 					jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.Language1Iso639Code + "\"");
 
-				var fileName = string.Format(ProjectContext.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+				var fileName = string.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 				fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
 				File.WriteAllText(fileName, jsonString, Encoding.UTF8);

@@ -22,6 +22,7 @@ using SIL.Windows.Forms.Registration;
 using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
 using System.Linq;
+using Bloom.Edit;
 using Bloom.MiscUI;
 using SIL.Windows.Forms.HtmlBrowser;
 
@@ -375,18 +376,6 @@ namespace Bloom
 				_projectContext.Dispose();
 		}
 
-		private static void CopyRelevantNewReaderSettings()
-		{
-			var readerToolsPath = _projectContext.Settings.DecodableLevelPathName;
-			var bloomFolder = ProjectContext.GetBloomAppDataFolder();
-			var newReaderTools = Path.Combine(bloomFolder, Path.GetFileName(readerToolsPath));
-			if (!File.Exists(newReaderTools))
-				return;
-			if (File.Exists(readerToolsPath) && File.GetLastWriteTime(readerToolsPath) > File.GetLastWriteTime(newReaderTools))
-				return; // don't overwrite newer settings?
-			File.Copy(newReaderTools, readerToolsPath, true);
-		}
-
 		private static bool IsBloomBookOrder(string[] args)
 		{
 			return args.Length == 1 && !args[0].ToLowerInvariant().EndsWith(".bloomcollection") && !IsInstallerLaunch(args);
@@ -575,7 +564,7 @@ namespace Bloom
 				_projectContext = _applicationContainer.CreateProjectContext(projectPath);
 				_projectContext.ProjectWindow.Closed += HandleProjectWindowClosed;
 				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;
-				CopyRelevantNewReaderSettings();
+				ToolboxTool.SetupToolboxForCollection(_projectContext.Settings);
 #if DEBUG
 				CheckLinuxFileAssociations();
 #endif

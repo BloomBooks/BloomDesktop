@@ -35,9 +35,6 @@ namespace Bloom
 
 		public string SettingsPath { get; private set; }
 
-		public const string kReaderToolsWordsFileNamePrefix = "ReaderToolsWords-";
-		public const string kReaderToolsWordsFileNameFormat = "ReaderToolsWords-{0}.json";
-
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer)
 		{
 			SettingsPath = projectSettingsPath;
@@ -282,8 +279,8 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html/font-awesome/css");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/readerSetup");
+			foreach (var dir in ToolboxTool.GetToolboxServerDirectories())
+				yield return dir;
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/StyleEditor");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/TopicChooser");
 
