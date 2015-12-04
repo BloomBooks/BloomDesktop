@@ -152,7 +152,10 @@ function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPane
     if (chkBox) {
         chkBox.innerHTML = checkMarkString;
 
-        var panelUrl = '/bloom/bookEdit/toolbox/' + panelId + '/' + panelId + '.htm';
+        // The panelIDs all end in 'Tool' but the containing file and folder names don't have this.
+        var fileAndFolderName = panelId.substring(0, panelId.length - 4);
+
+        var panelUrl = '/bloom/bookEdit/toolbox/' + fileAndFolderName + '/' + fileAndFolderName + '.htm';
         var ajaxSettings = {type: 'GET', url: panelUrl};
 
         $.ajax(ajaxSettings)
@@ -215,8 +218,8 @@ function loadToolboxPanel(newContent, panelId) {
     if (showingPanel) {
         showingPanel = false;
         var id = tab.attr('id');
-        id = parseInt(id.substr(id.lastIndexOf('_'))).toString();
-        toolbox.accordion('option', 'active', id);
+        var tabNumber = parseInt(id.substr(id.lastIndexOf('_')));
+        toolbox.accordion('option', 'active', tabNumber); // must pass as integer
 
         // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
         toolbox.onOnce('accordionactivate.toolbox', function (event, ui) {
