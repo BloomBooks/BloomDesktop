@@ -5,7 +5,6 @@ using System.Linq;
 using System.IO;
 using System.Xml;
 using Bloom.Collection;
-using Bloom.ReaderTools;
 using Newtonsoft.Json;
 using SIL.Xml;
 using SIL.IO;
@@ -14,6 +13,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Edit;
 using L10NSharp;
+using Newtonsoft.Json.Linq;
 
 namespace Bloom.web
 {
@@ -252,8 +252,16 @@ namespace Bloom.web
 				return File.ReadAllText(settingsPath, Encoding.UTF8);
 
 			// file does not exist, so make a new one
-			var settings = new ReaderToolsSettings(true);
-			var settingsString = settings.Json;
+			// The literal string here defines our default reader settings for a collection.
+			var settingsString = "{\"letters\":\"a b c d e f g h i j k l m n o p q r s t u v w x y z\","
+				+ "\"moreWords\":\"\","
+				+ "\"stages\":[{\"letters\":\"\",\"sightWords\":\"\"}],"
+				+ "\"levels\":[{\"maxWordsPerSentence\":2,\"maxWordsPerPage\":2,\"maxWordsPerBook\":20,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]},"
+					+ "{\"maxWordsPerSentence\":5,\"maxWordsPerPage\":5,\"maxWordsPerBook\":23,\"maxUniqueWordsPerBook\":8,\"thingsToRemember\":[]},"
+					+ "{\"maxWordsPerSentence\":7,\"maxWordsPerPage\":10,\"maxWordsPerBook\":72,\"maxUniqueWordsPerBook\":16,\"thingsToRemember\":[]},"
+					+ "{\"maxWordsPerSentence\":8,\"maxWordsPerPage\":18,\"maxWordsPerBook\":206,\"maxUniqueWordsPerBook\":32,\"thingsToRemember\":[]},"
+					+ "{\"maxWordsPerSentence\":12,\"maxWordsPerPage\":25,\"maxWordsPerBook\":500,\"maxUniqueWordsPerBook\":64,\"thingsToRemember\":[]},"
+					+ "{\"maxWordsPerSentence\":20,\"maxWordsPerPage\":50,\"maxWordsPerBook\":1000,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]}]}";
 			File.WriteAllText(settingsPath, settingsString);
 
 			return settingsString;
@@ -265,7 +273,7 @@ namespace Bloom.web
 		private static void MakeLetterAndWordList(string jsonSettings, string allWords)
 		{
 			// load the settings
-			var settings = JsonConvert.DeserializeObject<ReaderToolsSettings>(jsonSettings);
+			dynamic settings = JsonConvert.DeserializeObject(jsonSettings);
 
 			// format the output
 			var sb = new StringBuilder();
@@ -274,19 +282,22 @@ namespace Bloom.web
 			sb.AppendLineFormat(str, CurrentBook.CollectionSettings.Language1Name);
 
 			var idx = 1;
-			foreach (var stage in settings.Stages)
+			foreach (var stage in settings.stages)
 			{
 				sb.AppendLine();
 				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportStage", "Stage {0}"), idx++);
 				sb.AppendLine();
-				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportLetters", "Letters: {0}"), stage.Letters.Replace(" ", ", "));
+				string letters = stage.letters ?? "";
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportLetters", "Letters: {0}"), letters.Replace(" ", ", "));
 				sb.AppendLine();
-				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportSightWords", "New Sight Words: {0}"), stage.SightWords.Replace(" ", ", "));
+				string sightWords = stage.sightWords;
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportSightWords", "New Sight Words: {0}"), sightWords.Replace(" ", ", "));
 
-				Array.Sort(stage.Words);
-				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), string.Join(" ", stage.Words));
+				JArray rawWords = stage.words;
+				string[] stageWords = rawWords.Select(x => x.ToString()).ToArray();
+				Array.Sort(stageWords);
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), string.Join(" ", stageWords));
 				sb.AppendLine();
-
 			}
 
 			// complete word list

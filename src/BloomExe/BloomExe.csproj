@@ -393,7 +393,6 @@
     </Compile>
     <Compile Include="Publish\SHRP_TeachersGuideExtension.cs" />
     <Compile Include="Publish\SHRP_PupilBookExtension.cs" />
-    <Compile Include="ReaderTools\ReaderToolsSettings.cs" />
     <Compile Include="Registration\LicenseDialog.cs">
       <SubType>Form</SubType>
     </Compile>
