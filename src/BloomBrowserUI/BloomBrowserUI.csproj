@@ -133,10 +133,10 @@
     <Content Include="bookEdit\js\toolbar\jquery.toolbars.css" />
     <Content Include="bookEdit\js\toolbar\toolbar.d.ts" />
     <Content Include="bookEdit\OverflowChecker\OverflowChecker.js" />
-    <Content Include="bookEdit\readerSetup\readerSetup.css">
+    <Content Include="bookEdit\toolbox\decodableReader\readerSetup\readerSetup.css">
       <DependentUpon>readerSetup.less</DependentUpon>
     </Content>
-    <Content Include="bookEdit\readerSetup\ReaderSetup.htm" />
+    <Content Include="bookEdit\toolbox\decodableReader\readerSetup\ReaderSetup.htm" />
     <Content Include="bookEdit\sourceBubbles\bloomSourceBubbles.js" />
     <Content Include="bookEdit\sourceBubbles\sourceBubbles.css">
       <DependentUpon>sourceBubbles.less</DependentUpon>
@@ -254,8 +254,8 @@
     <TypeScriptCompile Include="bookEdit\sourceBubbles\bloomSourceBubbles.ts" />
     <Content Include="bookEdit\toolbox\toolbox.ts" />
     <TypeScriptCompile Include="bookEdit\TopicChooser\TopicChooser.ts" />
-    <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
-    <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerSetup\readerSetup.io.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerSetup\readerSetup.ui.ts" />
     <TypeScriptCompile Include="bookEdit\StyleEditor\StyleEditor.ts" />
     <TypeScriptCompile Include="lib\jquery.alphanum.d.ts" />
     <TypeScriptCompile Include="lib\jquery.i18n.custom.ts" />
@@ -299,7 +299,7 @@
     <Content Include="bookEdit\toolbox\toolbox.jade" />
     <Content Include="bookEdit\toolbox\PageElements\PageElements.jade" />
     <Content Include="bookEdit\toolbox\settings\Settings.jade" />
-    <Content Include="bookEdit\readerSetup\ReaderSetup.jade" />
+    <Content Include="bookEdit\toolbox\decodableReader\readerSetup\ReaderSetup.jade" />
     <Content Include="bookEdit\css\origami.less" />
     <Content Include="bookEdit\html\font-awesome\fonts\fontawesome-webfont.woff" />
     <Content Include="bookEdit\StyleEditor\StyleEditor.less" />
@@ -316,7 +316,7 @@
     <Content Include="bookEdit\css\tab.winclassic.less" />
     <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.less" />
     <Content Include="bookEdit\TopicChooser\topicChooser.less" />
-    <Content Include="bookEdit\readerSetup\readerSetup.less" />
+    <Content Include="bookEdit\toolbox\decodableReader\readerSetup\readerSetup.less" />
     <Content Include="bookEdit\toolbox\readerTools.less" />
     <Content Include="bookEdit\toolbox\toolbox.less" />
     <Content Include="bookLayout\CommonBasePageEpub.less" />

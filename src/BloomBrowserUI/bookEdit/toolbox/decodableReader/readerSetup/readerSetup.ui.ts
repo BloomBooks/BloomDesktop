@@ -819,7 +819,7 @@ function checkAndDeleteAllowedWordsFile(fileName: string): void {
       return;
     }
   }
-  
+
   // if you are here, the file name is not in use
   getIframeChannel().simpleAjaxNoCallback('/bloom/readers/recycleAllowedWordsFile', fileName);
 }

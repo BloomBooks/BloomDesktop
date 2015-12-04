@@ -102,7 +102,7 @@ namespace Bloom.Edit
 		public static IEnumerable<string> GetToolboxServerDirectories()
 		{
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/readerSetup");
+			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox/decodableReader/readerSetup");
 		}
 
 		public static string MakeToolboxContent(Book.Book book)

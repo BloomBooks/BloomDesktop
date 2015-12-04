@@ -1,5 +1,5 @@
-/// <reference path="../js/getIframeChannel.ts" />
-/// <reference path="../toolbox/decodableReader/readerSettings.ts" />
+/// <reference path="../../../js/getIframeChannel.ts" />
+/// <reference path="../../../toolbox/decodableReader/readerSettings.ts" />
 /// <reference path="readerSetup.ui.ts" />
 var previousMoreWords;
 window.addEventListener('message', process_IO_Message, false);

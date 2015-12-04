@@ -3,7 +3,7 @@ function CreateConfigDiv(title) {
 
     var dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($("body"));
 
-    var html = '<iframe id="settings_frame" src="/bloom/bookEdit/readerSetup/ReaderSetup.htm" scrolling="no" ' +
+    var html = '<iframe id="settings_frame" src="/bloom/bookEdit/toolbox/decodableReader/readerSetup/ReaderSetup.htm" scrolling="no" ' +
         'style="width: 100%; height: 100%; border-width: 0; margin: 0" ' +
         'onload="initializeReaderSetupDialog();"></iframe>';
 
