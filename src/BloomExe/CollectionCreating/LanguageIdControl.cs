@@ -15,6 +15,7 @@ namespace Bloom.CollectionCreating
 		{
 			InitializeComponent();
 			_lookupISOControl.SelectedLanguage = null;
+			_lookupISOControl.IsShowRegionalDialectsCheckBoxVisible = false;
 		}
 
 		private void OnLookupISOControlReadinessChanged(object sender, EventArgs e)
