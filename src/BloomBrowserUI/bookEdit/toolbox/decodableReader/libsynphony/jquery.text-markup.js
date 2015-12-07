@@ -37,10 +37,10 @@
         // initialize words per page
         var totalWordCount = 0;
 
-        this.each(function() {
-            stashNonTextUIElementsInEditBox(this);
+        var checkLeaf = function(leaf) {
+            stashNonTextUIElementsInEditBox(leaf);
             // split into sentences
-            var fragments = libsynphony.stringToSentences($(this).html());
+            var fragments = libsynphony.stringToSentences($(leaf).html());
             var newHtml = '';
 
             for (var i = 0; i < fragments.length; i++) {
@@ -74,9 +74,28 @@
             }
 
             // set the html
-            $(this).html(newHtml);
-            restoreNonTextUIElementsInEditBox(this);
-        });
+            $(leaf).html(newHtml);
+            restoreNonTextUIElementsInEditBox(leaf);
+        };
+
+        var checkRoot = function(root) {
+            var children = root.children();
+            var processedChild = false; // Did we find a significant child?
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+                var name = child.nodeName.toLowerCase();
+                // Review: is there a better way to pick out the elements that can occur within content elements?
+                if (name != 'span' && name != 'br' && name != 'i' && name != 'b' && name != 'u') {
+                    processedChild = true;
+                    checkRoot($(child));
+                }
+            }
+            if (!processedChild) // root is a leaf; process its actual content
+                checkLeaf(root.get(0));
+            // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
+        };
+
+        this.each(function() {checkRoot($(this));});
 
         // check words per page
         if (totalWordCount > opts.maxWordsPerPage) {
