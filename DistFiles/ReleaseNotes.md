@@ -5,12 +5,19 @@
 - You can now copy and cut images
 - You can now hover over an image to get its dimensions, dots-per-inch, and color depth
 - Bloom uses less memory when you have very large image files
+- Better image memory handling
 - Book folders no longer accumulate files for images that you aren't using anymore
-- Fixed problem where black and white (1 bit) images were converted to 32 bit
+- Can now delete source books downloaded from BloomLibrary.org
+- Faster bloomlibrary.org downloads
 - New Arithmetic Template
 - Better error report when the operating system blocks Bloom from touching a file due to weird file permissions
-- New experimental EPUB option in Publish Tab
-- New experimental Talking Book recording/publishing
+- New experimental EPUB option in Publish Tab (Enable from Settings:Advanced)
+- New experimental Talking Book recording/publishing. Enable from Settings:Advanced. To start, right-click in text and choose "Record Audio".
+- Fixed Art Of Reading forgetting what language you want to search with.
+- Fixed problem where black and white (1 bit) images were converted to 32 bit
+- Fixed problem with publishing from a network drive
+- Fixed problem where blank lines would disappear
+- Several other small fixes
 
 ## 3.4
 - If after creating a page you decide that you want a different layout than the one you original chose, you can now select "Choose Different Layout" and select a different one.
