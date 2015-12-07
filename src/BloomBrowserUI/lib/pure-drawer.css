@@ -48,13 +48,11 @@ body {
   top: 3px; /* JohnT: was 15 */
   z-index: 99;
   color: #ff0000; /* JohnT: was 5d809d; no effect found*/
+  background-color: #333333; /* JohnT: not previously set; fixes a bug in FF29 (BL-2968); should match accordion background */
   width: 20px; /* JohnT: was 70; these two control overall size of control box. */
   height: 20px; /* JohnT: was 70 */
   transition: all 400ms ease-in-out;
   border: 2px solid transparent; /* JohnT: was 5d809d; initial color of the ring */
-  border-radius: 50%;
-  -moz-user-select: none;
-  -ms-user-select: none;
   -o-user-select: none;
   user-select: none;
 }
