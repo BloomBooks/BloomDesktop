@@ -222,6 +222,7 @@
     <Compile Include="Book\BookInfo.cs" />
     <Compile Include="Book\BookServer.cs" />
     <Compile Include="Book\CurrentEditableCollectionSelection.cs" />
+    <Compile Include="Edit\BookSettingsTool.cs" />
     <Compile Include="Edit\ToolboxTool.cs" />
     <Compile Include="Edit\DecodableReaderTool.cs" />
     <Compile Include="Edit\LeveledReaderTool.cs" />

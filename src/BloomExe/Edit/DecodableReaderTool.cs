@@ -16,8 +16,8 @@ namespace Bloom.Edit
 {
 	class DecodableReaderTool : ToolboxTool
 	{
-		public const string ToolId = "decodableReader"; // Avoid changing value; see ToolboxTool.JsonToolId
-		public override string JsonToolId { get { return ToolId; } }
+		public const string StaticToolId = "decodableReader"; // Avoid changing value; see ToolboxTool.JsonToolId
+		public override string ToolId { get { return StaticToolId; } }
 
 		internal static void CopyReaderToolsSettingsToWhereTheyBelong(string newlyAddedFolderOfThePack)
 		{

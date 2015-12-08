@@ -1066,9 +1066,16 @@ namespace Bloom.Book
 			{
 				if(_collectionSettings.IsSourceCollection) //nothing is locked if we're in a shell-making library
 					return false;
+				if (TemporarilyUnlocked)
+					return false;
 				return RecordedAsLockedDown;
 			}
 		}
+
+		/// <summary>
+		/// used during editing where the user consciously unlocks a shellbook in order to make changes
+		/// </summary>
+		public bool TemporarilyUnlocked { get; set; }
 
 		/// <summary>
 		/// This is how the book's LockedDown state will be reported in a vernacular collection.

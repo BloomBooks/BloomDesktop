@@ -20,7 +20,7 @@ namespace Bloom.Edit
 	/// The State field is persisted in this way; it is also passed in to the JavaScript that manages
 	/// the toolbox. New fields and properties should be kept non-public or marked with an
 	/// appropriate attribute if they should NOT be persisted in JSON.
-	/// New subclasses will typically require a new case in WithName and also in ToolboxToolConverter.ReadJson.
+	/// New subclasses will typically require a new case in CreateFromJsonToolId and also in ToolboxToolConverter.ReadJson.
 	/// Note that the values of the Name field are used in the json and therefore cannot readily be changed.
 	/// (Migration would handle a change going forward, but older Blooms would lose the data at best.)
 	/// </summary>
@@ -36,7 +36,7 @@ namespace Bloom.Edit
 		/// existing tools should be changed only with care and for very good reason.
 		/// </summary>
 		[JsonProperty("name")]
-		public abstract string JsonToolId { get; }
+		public abstract string ToolId { get; }
 
 		[JsonProperty("enabled")]
 		public bool Enabled { get; set; }
@@ -52,11 +52,12 @@ namespace Bloom.Edit
 		{
 			switch (jsonToolId)
 			{
-				case DecodableReaderTool.ToolId: return new DecodableReaderTool();
-				case LeveledReaderTool.ToolId: return new LeveledReaderTool();
-				case TalkingBookTool.ToolId: return new TalkingBookTool();
+				case DecodableReaderTool.StaticToolId: return new DecodableReaderTool();
+				case LeveledReaderTool.StaticToolId: return new LeveledReaderTool();
+				case TalkingBookTool.StaticToolId: return new TalkingBookTool();
+				case BookSettingsTool.StaticToolId: return new BookSettingsTool();
 			}
-			throw new ArgumentException("Unexpected tool name");
+			throw new ArgumentException("Unexpected tool name "+jsonToolId);
 		}
 
 		/// <summary>
@@ -65,7 +66,7 @@ namespace Bloom.Edit
 		/// </summary>
 		internal string StateName
 		{
-			get { return JsonToolId + "State"; }
+			get { return ToolId + "State"; }
 		}
 
 		// May be overridden to save some information about the tool state during page save.
@@ -84,7 +85,7 @@ namespace Bloom.Edit
 	/// </summary>
 	public class UnknownTool : ToolboxTool
 	{
-		public override string JsonToolId { get { return "unknownTool"; } }
+		public override string ToolId { get { return "unknownTool"; } }
 	}
 
 	/// <summary>
@@ -103,19 +104,27 @@ namespace Bloom.Edit
 		public override bool CanWrite
 		{ get { return false; } }
 
+
+		//implement JsonConverter.ReadJson
 		public override object ReadJson(JsonReader reader,
 			Type objectType, object existingValue, JsonSerializer serializer)
 		{
 			JObject item = JObject.Load(reader);
 			switch ((string)item["name"])
 			{
-				case DecodableReaderTool.ToolId:
+				//enhance: we don't really want to "register" our panels in several places like this
+				case DecodableReaderTool.StaticToolId:
 					return item.ToObject<DecodableReaderTool>();
-				case LeveledReaderTool.ToolId:
+				case LeveledReaderTool.StaticToolId:
 					return item.ToObject<LeveledReaderTool>();
-				case TalkingBookTool.ToolId:
+				case TalkingBookTool.StaticToolId:
 					return item.ToObject<TalkingBookTool>();
+				case BookSettingsTool.StaticToolId:
+					return item.ToObject<BookSettingsTool>();
+				default: // this version doesn't know about that tool
+					return new UnknownTool();
 			}
+
 			// At this point we are either encountering a meta.json that has been modified by hand,
 			// or more likely one from a more recent Bloom that has an additional tool.
 			// We will ignore the unknown tool (see BookMetaData.FromString()). Here in the
@@ -125,6 +134,7 @@ namespace Bloom.Edit
 			// have to carefully ignore Unknown tools in many places. Hopefully YAGNI.
 			return new UnknownTool();
 		}
+		
 
 		// We don't need a real implementation of this because returning false from CanWrite
 		// tells the converter to use the default write code.

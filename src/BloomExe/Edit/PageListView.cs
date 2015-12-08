@@ -89,7 +89,7 @@ namespace Bloom.Edit
 			_thumbNailList.BackColor = BackColor;
 		}
 
-		private void UpdateDisplay()
+		public void UpdateDisplay()
 		{
 			//Enhance: when you go to another book, currently this shows briefly before we get a 
 			//chance to select how to display it. I haven't found any existing event I can use

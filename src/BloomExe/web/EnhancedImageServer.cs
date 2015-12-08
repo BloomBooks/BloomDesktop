@@ -20,6 +20,7 @@ using SIL.Code;
 using SIL.IO;
 using Bloom.Collection;
 using Bloom.Edit;
+using Newtonsoft.Json;
 using SIL.Reporting;
 using SIL.Extensions;
 using RestSharp.Contrib;
@@ -82,7 +83,7 @@ namespace Bloom.web
 
 		/// <summary>
 		/// This code sets things up so that we can edit (or make a thumbnail of, etc.) one page of a book.
-		/// This is trickly because we have to satisfy several constraints:
+		/// This is tricky because we have to satisfy several constraints:
 		/// - We need to make this page content the 'src' of an iframe in a browser. So it has to be
 		/// locatable by url.
 		/// - It needs to appear to the browser to be a document in the book's folder. This allows local
@@ -219,6 +220,14 @@ namespace Bloom.web
 			if(localPath.StartsWith("imageInfo", StringComparison.InvariantCulture))
 			{
 				return ReplyWithImageInfo(info, localPath);
+			}
+			if (localPath.StartsWith("bookSettings", StringComparison.InvariantCulture))
+			{
+				info.ContentType = "text/json";
+				dynamic settings = new ExpandoObject();
+				settings.unlockShellBook = CurrentBook.TemporarilyUnlocked;
+				info.WriteCompleteOutput(JsonConvert.SerializeObject(settings));
+				return true;
 			}
 			if (localPath.StartsWith("error", StringComparison.InvariantCulture))
 			{
