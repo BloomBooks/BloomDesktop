@@ -873,6 +873,14 @@ namespace Bloom.Edit
 			return _browser1.WebBrowser.Window.Document.GetElementById("pure-toggle-right") as GeckoInputElement;
 		}
 
+		public GeckoElement GetPageBody()
+		{
+			var frame = _browser1.WebBrowser.Window.Document.GetElementById("page") as GeckoIFrameElement;
+			if (frame == null)
+				return null;
+			return frame.ContentDocument.Body;
+		}
+
 		/// <summary>
 		/// Return the HTML element that represents the body of the toolbox
 		/// </summary>

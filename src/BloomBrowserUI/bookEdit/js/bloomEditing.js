@@ -600,7 +600,6 @@ function OneTimeSetup() {
     setupOrigami();
 }
 
-
 // ---------------------------------------------------------------------------------
 // document ready function
 // ---------------------------------------------------------------------------------
@@ -610,6 +609,23 @@ $(document).ready(function() {
     $.fn.reverse = function () {
         return this.pushStack(this.get().reverse(), arguments);
     };
+
+    // Attach a function to implement zooming on mouse wheel with ctrl
+    $('body').on('wheel', function (e) {
+        if (!e.originalEvent.ctrlKey) return;
+        // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
+        var styleString = $('body').attr('style');
+        var scale = 1.0;
+        var searchData = /scale\(([^,]*),/.exec(styleString);
+        if (searchData) {
+            scale = parseFloat(searchData[1]);
+        }
+        // Dividing by 20 seems to make it zoom at a manageable rate, at least with my mouse.
+        // The limitation to zooming between 1/3 and 3 times is arbitrary.
+        scale = Math.min(Math.max(scale + e.originalEvent.deltaY / 20, 0.33), 3.0);
+        // This works with a rule in editMode.less that makes the transform's origin the top left
+        $('body').attr('style', 'transform: scale(' + scale + ',' + scale + ')');
+    });
 
     //if this browser doesn't have endsWith built in, add it
     if (typeof String.prototype.endsWith !== 'function') {
