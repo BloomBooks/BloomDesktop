@@ -5,6 +5,8 @@
 BODY
 {
 	background-color: #363333;
+    transform-origin: top left; /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
+    transition: transform 20ms; /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
 }
 .tool-items:after
 {

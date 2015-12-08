@@ -171,6 +171,10 @@ namespace Bloom
 			GeckoPreferences.User["network.http.pipelining.maxrequests"] = 200;
 			GeckoPreferences.User["network.http.pipelining.max-optimistic-requests"] = 200;
 
+			// This suppresses the normal zoom-whole-window behavior that Gecko normally does when using the mouse while
+			// while holding crtl. Code in bloomEditing.js provides a more controlled zoom of just the body.
+			GeckoPreferences.User["mousewheel.with_control.action"] = 0;
+
 			Application.ApplicationExit += OnApplicationExit;
 		}
 
