@@ -384,9 +384,18 @@ namespace Bloom.Collection
 			}
 			catch (Exception e)
 			{
-				ApplicationException a = new ApplicationException(File.ReadAllText(SettingsFilePath), e);
+				string settingsContents = "";
+				try
+				{
+					settingsContents = File.ReadAllText(SettingsFilePath);
+				}
+				catch (Exception error)
+				{
+					settingsContents = error.Message;
+				}
+				Logger.WriteEvent("Contents of "+SettingsFilePath+": /r/n"+ settingsContents);
 				SIL.Reporting.ErrorReport.NotifyUserOfProblem(e,
-																 "There was an error reading the library settings file.  Please report this error to the developers. To get access to your books, you should make a new library, then copy your book folders from this broken library into the new one, then run Bloom again.");
+																 "There was an error reading the file {0}.  Please report this error to the developers. To get access to your books, you should make a new collection, then copy your book folders from this broken collection into the new one, then run Bloom again.",SettingsFilePath);
 				throw;
 			}
 
