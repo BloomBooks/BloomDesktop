@@ -360,7 +360,9 @@ namespace Bloom
 			_browser.Navigated += CleanupAfterNavigation;//there's also a "document completed"
 			_browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
 
-			GeckoPreferences.User["mousewheel.withcontrolkey.action"] = 3;
+			// This makes any zooming zoom everything, not just enlarge text.
+			// May be obsolete, since I don't think we are using the sort of zooming it controls.
+			// Instead we implement zoom ourselves in a more controlled way using transform: scale
 			GeckoPreferences.User["browser.zoom.full"] = true;
 
 			// in firefox 14, at least, there was a bug such that if you have more than one lang on
@@ -373,7 +375,6 @@ namespace Bloom
 
 		private void _browser_DocumentCompleted(object sender, EventArgs e)
 		{
-			//no: crashes (at least in Sept 2012) AutoZoom();
 		}
 
 		/// <summary>
@@ -646,7 +647,6 @@ namespace Bloom
 		private void CleanupAfterNavigation(object sender, GeckoNavigatedEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-			//_setInitialZoomTimer.Enabled = true;
 
 			Application.Idle += new EventHandler(Application_Idle);
 
@@ -670,18 +670,7 @@ namespace Bloom
 				return;
 			}
 			Application.Idle -= new EventHandler(Application_Idle);
-
-			ZoomToFullWidth();
-
-			//this is the only safe way I've found to do a programatic zoom: trigger a resize event at idle time!
-			//NB: if we instead directly call AutoZoom() here, we get a accessviolation pretty easily
-
-			//But even though on my machine this doesn't crash, switching between books makes the resizing
-			//stop working, so that even manually reziing the window won't get us a new zoom
-/*			var original = Size.Height;
-			Size = new Size(Size.Width, Size.Height + 1);
-			Size = new Size(Size.Width, original);
-	*/	}
+		}
 
 		public void Navigate(string url, bool cleanupFileAfterNavigating)
 		{
@@ -707,9 +696,6 @@ namespace Bloom
 			UpdateDisplay();
 		}
 
-		[DefaultValue(true)]
-		public bool ScaleToFullWidthOfPage { get; set; }
-
 		// NB: make sure you assigned HtmlDom.BaseForRelativePaths if the temporary document might
 		// contain references to files in the directory of the original HTML file it is derived from,
 		// 'cause that provides the information needed
@@ -728,18 +714,6 @@ namespace Bloom
 			_rootDom = dom;//.CloneNode(true); //clone because we want to modify it a bit
 			_pageEditDom = editDom ?? dom;
 
-			/*	This doesn't work for the 1st book shown, or when you change book sizes.
-			 * But it's still worth doing, becuase without it, we have this annoying re-zoom every time we look at different page.
-			*/
-			XmlElement body = (XmlElement) _rootDom.GetElementsByTagName("body")[0];
-			if (ScaleToFullWidthOfPage)
-			{
-				var scale = GetScaleToShowWholeWidthOfPage();
-				if (scale > 0f)
-				{
-					body.SetAttribute("style", GetZoomCSS(scale));
-				}
-			}
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
 			var fakeTempFile = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(htmlDom);
 			SetNewDependent(fakeTempFile);
@@ -760,13 +734,6 @@ namespace Bloom
 			SetNewDependent(tf);
 			_url = tf.Path;
 			UpdateDisplay();
-		}
-
-
-		private static string GetZoomCSS(float scale)
-		{
-			//return "";
-			return string.Format("-moz-transform: scale({0}); -moz-transform-origin: 0 0", scale.ToString(CultureInfo.InvariantCulture));
 		}
 
 		private void SetNewDependent(IDisposable dependent)
@@ -1082,72 +1049,6 @@ namespace Bloom
 
 		private void Browser_Resize(object sender, EventArgs e)
 		{
-			ZoomToFullWidth();
-		}
-
-		private float GetScaleToShowWholeWidthOfPage()
-		{
-			if (_browser != null)
-			{
-				if (_browser.InvokeRequired)
-				{
-					return (float)_browser.Invoke((MethodInvoker)(() => GetScaleToShowWholeWidthOfPage()));
-				}
-
-				var div = _browser.Document.ActiveElement;
-				if (div != null)
-				{
-					div = (GeckoHtmlElement)(div.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault());
-					if (div != null)
-					{
-						if (div.ScrollWidth > _browser.Width)
-						{
-							var widthWeNeed = div.ScrollWidth + 100 + 100/*for qtips*/;
-							return ((float)_browser.Width) / widthWeNeed;
-
-						}
-						else
-						{
-							return 1.0f;
-						}
-					}
-				}
-			}
-			return 0f;
-		}
-
-		private void ZoomToFullWidth()
-		{
-			if (!ScaleToFullWidthOfPage)
-				return;
-			var scale = GetScaleToShowWholeWidthOfPage();
-			if(scale>0f)
-			{
-				SetZoom(scale);
-			}
-		}
-
-		private void SetZoom(float scale)
-		{
-			Debug.Assert(!InvokeRequired);
-/*			//Dangerous. See https://bitbucket.org/geckofx/geckofx-11.0/issue/12/setfullzoom-doesnt-work
-			//and if I get it to work (by only calling it from onresize, it stops working after you navigate
-
-			var geckoMarkupDocumentViewer = _browser.GetMarkupDocumentViewer();
-			if (geckoMarkupDocumentViewer != null)
-			{
-				geckoMarkupDocumentViewer.SetFullZoomAttribute(scale);
-			}
-*/
-			// So we append it to the css instead, making sure it's within the 'mainPageScope', if there is one
-			var cssString = GetZoomCSS(scale);
-			var pageScope = _browser.Document.GetElementById("mainPageScope");
-			// Gecko's CssText setter is smart enough not to duplicate styles!
-			if (pageScope != null)
-				(pageScope as GeckoHtmlElement).Style.CssText += cssString;
-			else
-				_browser.Document.Body.Style.CssText += cssString;
-			_browser.Window.ScrollTo(0, 0);
 		}
 
 		/// <summary>

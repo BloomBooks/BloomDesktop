@@ -44,7 +44,6 @@
 			this._browser1.Isolator = null;
 			this._browser1.Location = new System.Drawing.Point(0, 0);
 			this._browser1.Name = "_browser1";
-			this._browser1.ScaleToFullWidthOfPage = false;
 			this._browser1.Size = new System.Drawing.Size(624, 294);
 			this._browser1.TabIndex = 0;
 			this._browser1.VerticalScrollDistance = 0;
