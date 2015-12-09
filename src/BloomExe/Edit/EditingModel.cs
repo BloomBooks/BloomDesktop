@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Properties;
 using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.web;
@@ -59,7 +60,6 @@ namespace Bloom.Edit
 		private Dictionary<string, IPage> _templatePagesDict;
 		private string _lastPageAdded;
 		internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
-		private string _pageZoom = "1.0";
 
 		// These variables are not thread-safe. Access only on UI thread.
 		private bool _inProcessOfSaving;
@@ -599,7 +599,8 @@ namespace Bloom.Edit
 		private void SetPageZoom()
 		{
 			var body = _domForCurrentPage.Body;
-			body.SetAttribute("style", string.Format("transform: scale({0},{0})", _pageZoom));
+			var pageZoom = Settings.Default.PageZoom ?? "1.0";
+			body.SetAttribute("style", string.Format("transform: scale({0},{0})", pageZoom));
 		}
 
 		/// <summary>
@@ -1013,7 +1014,12 @@ namespace Bloom.Edit
 			var match = Regex.Match(style, "scale\\(([^,]*),");
 			if (!match.Success)
 				return;
-			_pageZoom = match.Groups[1].Value;
+			var pageZoom = match.Groups[1].Value;
+			if (pageZoom != Settings.Default.PageZoom)
+			{
+				Settings.Default.PageZoom = pageZoom;
+				Settings.Default.Save();
+			}
 		}
 
 		/// <summary>
