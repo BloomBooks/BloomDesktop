@@ -91,21 +91,21 @@ function loadReaderSetupData(jsonData: string): void {
 
 function saveClicked(): void {
 
+  var toolbox:any = toolboxWindow();
   // update more words
   if (((<HTMLInputElement>document.getElementById('dls_more_words')).value !== previousMoreWords)
     || (parseInt($('input[name="words-or-letters"]:checked').val()) != 0)) {
 
-    var toolbox = toolboxWindow();
 
     // save the changes and update lists
     saveChangedSettings(function() {
       if (typeof toolbox['readerSampleFilesChanged'] === 'function')
         toolbox['readerSampleFilesChanged']();
-      parent.window['closeSetupDialog']();
+      toolbox.closeSetupDialog();
     });
   }
   else {
-    saveChangedSettings(parent.window['closeSetupDialog']);
+      saveChangedSettings(toolbox.closeSetupDialog);
   }
 }
 

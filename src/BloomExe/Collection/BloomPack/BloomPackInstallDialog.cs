@@ -221,7 +221,7 @@ namespace Bloom.Collection.BloomPack
 
 			var newlyAddedFolderOfThePack = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
 			CopyXMatterFoldersToWhereTheyBelong(newlyAddedFolderOfThePack);
-			ToolboxTool.CopyToolSettingsForBloomPack(newlyAddedFolderOfThePack);
+			ToolboxView.CopyToolSettingsForBloomPack(newlyAddedFolderOfThePack);
 		}
 
 		//xmatter in bloompacks was an afterthought... at the moment we unpack everything to programdata/../Collections,

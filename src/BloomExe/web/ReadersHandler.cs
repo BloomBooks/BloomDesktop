@@ -28,7 +28,6 @@ namespace Bloom.web
 		private const string kSynphonyFileNameSuffix = "_lang_data.js";
 		private static readonly IEqualityComparer<string> _equalityComparer = new InsensitiveEqualityComparer();
 		private static readonly char[] _allowedWordsDelimiters = {',', ';', ' ', '\t', '\r', '\n'};
-		private static EnhancedImageServer _server;
 
 		private enum WordFileType
 		{
@@ -44,14 +43,7 @@ namespace Bloom.web
 		/// <summary>
 		/// Needs to know the one and only image server to get the current book from it.
 		/// </summary>
-		public static EnhancedImageServer Server
-		{
-			get { return _server; }
-			set
-			{
-				_server = value;
-			}
-		}
+		public static EnhancedImageServer Server { get; set; }
 
 		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
 		{

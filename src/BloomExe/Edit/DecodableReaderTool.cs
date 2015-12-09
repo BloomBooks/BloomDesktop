@@ -53,9 +53,9 @@ namespace Bloom.Edit
 		}
 
 		/// <summary>
-		/// If the collection has no reader tools at all, copy the ones that came with the program.
-		/// An earlier version of this method would overwrite the collection ones if the ones that came with the program
-		/// were newer. This seems dangerous...a lot of user work goes into setting up these settings.
+		/// If the collection has no reader tools at all, or if ones that came with the program are newer,
+		/// copy the ones that came with the program.
+		/// This is language-dependent, we'll typcially only overwrite settings for an English collection.
 		/// </summary>
 		/// <param name="settings"></param>
 		public static void CopyRelevantNewReaderSettings(CollectionSettings settings)
@@ -65,8 +65,8 @@ namespace Bloom.Edit
 			var newReaderTools = Path.Combine(bloomFolder, Path.GetFileName(readerToolsPath));
 			if (!File.Exists(newReaderTools))
 				return;
-			if (File.Exists(readerToolsPath))
-				return; // don't overwrite existing settings?
+			if (File.Exists(readerToolsPath) && File.GetLastWriteTime(readerToolsPath) > File.GetLastWriteTime(newReaderTools))
+				return; // don't overwrite newer existing settings?
 			File.Copy(newReaderTools, readerToolsPath);
 		}
 

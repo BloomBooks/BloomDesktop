@@ -1,10 +1,5 @@
 /**
- * split_sentences.test.js
- *
- * Trying out the unit tests for javascript
- *
- * Created Apr 22, 2014 by Phil Hopper
- *
+ * Unit tests for various sentence-related code
  */
 
 describe("Splitting text into sentences", function() {

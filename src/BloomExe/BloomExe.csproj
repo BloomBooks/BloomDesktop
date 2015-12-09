@@ -225,6 +225,7 @@
     <Compile Include="Edit\DecodableReaderTool.cs" />
     <Compile Include="Edit\LeveledReaderTool.cs" />
     <Compile Include="Edit\TalkingBookTool.cs" />
+    <Compile Include="Edit\ToolboxView.cs" />
     <Compile Include="ElementProxy.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
       <SubType>UserControl</SubType>

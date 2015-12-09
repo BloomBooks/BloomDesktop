@@ -582,7 +582,7 @@ namespace Bloom.Edit
 
 			// Enhance JohnT: Can we somehow have a much simpler toolbox content until the user displays it?
 			//if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
-				_server.ToolboxContent = ToolboxTool.MakeToolboxContent(_currentlyDisplayedBook);
+				_server.ToolboxContent = ToolboxView.MakeToolboxContent(_currentlyDisplayedBook);
 			//else
 			//	_server.ToolboxContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 

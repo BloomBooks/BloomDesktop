@@ -564,7 +564,6 @@ namespace Bloom
 				_projectContext = _applicationContainer.CreateProjectContext(projectPath);
 				_projectContext.ProjectWindow.Closed += HandleProjectWindowClosed;
 				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;
-				ToolboxTool.SetupToolboxForCollection(_projectContext.Settings);
 #if DEBUG
 				CheckLinuxFileAssociations();
 #endif

@@ -52,6 +52,7 @@ namespace Bloom
 			}
 
 			_httpServer.StartListening();
+			ToolboxView.SetupToolboxForCollection(Settings);
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -279,7 +280,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/html/font-awesome/css");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/img");
-			foreach (var dir in ToolboxTool.GetToolboxServerDirectories())
+			foreach (var dir in ToolboxView.GetToolboxServerDirectories())
 				yield return dir;
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/StyleEditor");
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/TopicChooser");

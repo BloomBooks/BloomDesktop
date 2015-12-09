@@ -650,6 +650,9 @@ namespace Bloom.Book
 		public void BringBookUpToDate(IProgress progress)
 		{
 			_pagesCache = null;
+			string oldMetaData = "";
+			if (File.Exists(BookInfo.MetaDataPath))
+				oldMetaData = File.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
 			BringBookUpToDate(OurHtmlDom, progress);
 			if (Type == Book.BookType.Publication)
 			{
@@ -663,6 +666,13 @@ namespace Bloom.Book
 			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
 			{
 				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
+			}
+
+			if (oldMetaData.Contains("readerToolsAvailable"))
+			{
+				var newMetaString = oldMetaData.Replace("readerToolsAvailable", "toolboxIsOpen");
+				var newMetaData = BookMetaData.FromString(newMetaString);
+				BookInfo.ToolboxIsOpen = newMetaData.ToolboxIsOpen;
 			}
 
 			Save();
