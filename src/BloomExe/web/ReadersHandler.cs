@@ -269,7 +269,7 @@ namespace Bloom.web
 
 			// format the output
 			var sb = new StringBuilder();
-			var str = LocalizationManager.GetString("DecodableReaderTool.LetterWordReportMessage",
+			var str = LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportMessage",
 				"The following is a generated report of the decodable stages for {0}.  You can make any changes you want to this file, but Bloom will not notice your changes.  It is just a report.");
 			sb.AppendLineFormat(str, CurrentBook.CollectionSettings.Language1Name);
 
@@ -277,18 +277,18 @@ namespace Bloom.web
 			foreach (var stage in settings.stages)
 			{
 				sb.AppendLine();
-				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportStage", "Stage {0}"), idx++);
+				sb.AppendLineFormat(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportStage", "Stage {0}"), idx++);
 				sb.AppendLine();
 				string letters = stage.letters ?? "";
-				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportLetters", "Letters: {0}"), letters.Replace(" ", ", "));
+				sb.AppendLineFormat(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportLetters", "Letters: {0}"), letters.Replace(" ", ", "));
 				sb.AppendLine();
 				string sightWords = stage.sightWords;
-				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportSightWords", "New Sight Words: {0}"), sightWords.Replace(" ", ", "));
+				sb.AppendLineFormat(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportSightWords", "New Sight Words: {0}"), sightWords.Replace(" ", ", "));
 
 				JArray rawWords = stage.words;
 				string[] stageWords = rawWords.Select(x => x.ToString()).ToArray();
 				Array.Sort(stageWords);
-				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), string.Join(" ", stageWords));
+				sb.AppendLineFormat(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), string.Join(" ", stageWords));
 				sb.AppendLine();
 			}
 
@@ -296,7 +296,7 @@ namespace Bloom.web
 			var words = allWords.Split(new[] { '\t' });
 			Array.Sort(words);
 			sb.AppendLine();
-			sb.AppendLine(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportWordList", "Complete Word List"));
+			sb.AppendLine(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList", "Complete Word List"));
 			sb.AppendLine(string.Join(" ", words));
 
 			// write the file
@@ -380,7 +380,7 @@ namespace Bloom.web
 			var destPath = Path.Combine(Path.GetDirectoryName(CurrentBook.CollectionSettings.SettingsFilePath), "Allowed Words");
 			if (!Directory.Exists(destPath)) Directory.CreateDirectory(destPath);
 
-			var textFiles = LocalizationManager.GetString("DecodableReaderTool.FileDialogTextFiles", "Text files");
+			var textFiles = LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.FileDialogTextFiles", "Text files");
 			var dlg = new OpenFileDialog
 			{
 				Multiselect = false,

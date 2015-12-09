@@ -95,33 +95,33 @@
         <seg>Release Notes</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.DecodableReaderTool">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader Tool</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.DecodableReaderToolCheckbox">
+    <tu tuid="EditTab.Toolbox.DecodableReaderToolCheckbox">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader Tool</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.LeveledReaderTool">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader Tool</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.LeveledReaderToolCheckbox">
+    <tu tuid="EditTab.Toolbox.LeveledReaderToolCheckbox">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader Tool</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.More">
+    <tu tuid="EditTab.Toolbox.More">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More...</seg>
@@ -833,37 +833,37 @@
         <seg>&amp;Delete</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.LettersInThisStage">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Letters in this stage</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.MakeLetterWordList">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Open a Letter and Word List File</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.SetUpStages">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SetUpStages">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Set up Stages</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.Stage">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.Stage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Stage</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.StageOf">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.StageOf">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>of</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.WordsInThisStage">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Words in this stage</seg>
@@ -1023,12 +1023,12 @@
         <seg>Text Box</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.DecodableReaderTool.SightWord">
+    <tu tuid="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord">
       <tuv xml:lang="en">
         <seg>Sight Word</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.DecodableReaderTool.WordNotDecodable">
+    <tu tuid="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable">
       <tuv xml:lang="en">
         <seg>This word is not decodable in this stage.</seg>
       </tuv>
@@ -1317,7 +1317,7 @@
         <seg>Change Layout</seg>
       </tuv>
     </tu>
-    <tu tuid="EditTab.LeveledReaderTool.SentenceTooLong">
+    <tu tuid="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This sentence is too long for this level.</seg>
@@ -2135,143 +2135,143 @@
         <seg>B5Portrait</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Actual">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Actual">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Actual</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ChoiceOfTopic">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Choice of Topic</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ConceptLoad">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ConceptLoad">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Concept load</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.FoThisLevel">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.FoThisLevel">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>For this Level</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Formatting">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Formatting">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Formatting</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.HowToMakeLeveledReader">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>How to make a great leveled reader</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.IllustrationSupport">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Illustration Support</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.KeepInMind">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.KeepInMind">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Keep in mind</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Level">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Level">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Level </seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.LevelOf">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.LevelOf">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg> of </seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Max">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Max">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Max</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.PatternAndRecognition">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PatternAndRecognition">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Pattern and recognition</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.PerPage">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerPage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>per page</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.PerSentence">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerSentence">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>per sentence</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Predictability">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Predictability">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Predictability</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.SetUpLevels">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.SetUpLevels">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Set up Levels</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ThisBook">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ThisBook">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Book</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ThisPage">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ThisPage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Page</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.TopicFamiliarity">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.TopicFamiliarity">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Topic familiarity</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Total">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Total">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>total</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Unique">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Unique">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>unique</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Vocabulary">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Vocabulary">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Vocabulary</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.WordCounts">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.WordCounts">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Word counts</seg>
