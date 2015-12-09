@@ -82,7 +82,7 @@ describe("SourceBubbles", function () {
     expect(listItems.length).toBe(2);
     expect(listItems.first().html()).toBe("<a class=\"sourceTextTab\" href=\"#tpi\">Tok Pisin</a>");
     expect(listItems.last().html()).toBe("<a class=\"sourceTextTab\" href=\"#es\">español</a>");
-    expect(result.find('li#fr')).toBe(undefined);
+    expect(result.find('li#fr').length).toBe(0);
     expect(result.find('div').length).toBe(2);
   });
 

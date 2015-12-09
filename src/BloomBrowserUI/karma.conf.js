@@ -40,25 +40,27 @@ module.exports = function (config) {
             '**/StyleEditor/StyleEditor.js',
             '**/OverflowChecker/OverflowChecker.js',
             '**/sourceBubbles/bloomSourceBubbles.js',
-            '**/audio/audioRecording.js',
+            '**/talkingBook/audioRecording.js',
             // as long as the test filename is in the test/specs folder, it will be included in the test run
             'test/specs/**/*.js',
 
             'lib/**/*Spec.js',
 
             // synphony files
-            'bookEdit/js/libsynphony/underscore_min_152.js',
-            'bookEdit/js/libsynphony/xregexp-all-min.js',
-            'bookEdit/js/libsynphony/synphony_lib.js',
-            'bookEdit/js/libsynphony/bloom_xregexp_categories.js',
-            'bookEdit/js/libsynphony/bloom_lib.js',
-            'bookEdit/js/libsynphony/jquery.text-markup.js',
-            'bookEdit/js/synphonyApi.js',
-            'bookEdit/js/readerToolsModel.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/underscore_min_152.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/xregexp-all-min.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/synphony_lib.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/bloom_xregexp_categories.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/bloom_lib.js',
+            'bookEdit/toolbox/decodableReader/libsynphony/jquery.text-markup.js',
+            'bookEdit/toolbox/decodableReader/synphonyApi.js',
+            'bookEdit/toolbox/decodableReader/readerToolsModel.js',
+            'bookEdit/toolbox/decodableReader/readerTools.js',
             'bookEdit/js/*.js',
             'bookEdit/toolbox/toolbox.js',
             'bookEdit/test/*.js',
-            'bookEdit/test/libsynphony/*.test.js'
+            'bookEdit/test/libsynphony/*.test.js',
+            'bookEdit/toolbox/decodableReader/readerSettings.js'
         ],
         // test results reporter to use
         // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'

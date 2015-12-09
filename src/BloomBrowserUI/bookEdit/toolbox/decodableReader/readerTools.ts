@@ -1,6 +1,4 @@
 /// <reference path="readerToolsModel.ts" />
-/// <reference path="directoryWatcher.ts" />
-/// <reference path="../../lib/localizationManager/localizationManager.ts" />
 
 interface qtipInterface extends JQuery {
   qtip(options: any): JQuery;
@@ -110,37 +108,6 @@ function markLeveledStatus(): void {
   var editableElements = $(".bloom-content1");
   editableElements.find('span.' + (<textMarkup>$).cssSentenceTooLong()).each(function() {
     (<qtipInterface>$(this)).qtip({ content: tooLong });
-  });
-}
-
-function setupReaderKeyAndFocusHandlers(container: HTMLElement, model: ReaderToolsModel): void {
-  // invoke function when a bloom-editable element loses focus.
-  $(container).find('.bloom-editable').focusout(function () {
-    model.doMarkup();
-  });
-
-  $(container).find('.bloom-editable').focusin(function () {
-    model.noteFocus(this); // 'This' is the element that just got focus.
-  });
-
-  // and a slightly different one for keypresses
-  $(container).find('.bloom-editable').keypress(function () {
-    model.doKeypressMarkup();
-  });
-
-  $(container).find('.bloom-editable').keydown(function (e) {
-    if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrl-z or ctrl-Y
-      if (model.currentMarkupType !== MarkupType.None) {
-        e.preventDefault();
-        if (e.shiftKey || e.keyCode == 89) { // ctrl-shift-z or ctrl-y
-          model.redo();
-        }
-        else {
-          model.undo();
-        }
-        return false;
-      }
-    }
   });
 }
 

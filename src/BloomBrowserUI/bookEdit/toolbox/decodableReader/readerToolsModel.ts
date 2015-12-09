@@ -1,13 +1,14 @@
-/// <reference path="interIframeChannel.ts" />
-/// <reference path="getIframeChannel.ts" />
+/// <reference path="../../js/interIframeChannel.ts" />
+/// <reference path="../../js/getIframeChannel.ts" />
 /// <reference path="synphonyApi.ts" />
 /// <reference path="libsynphony/jquery.text-markup.d.ts" />
-/// <reference path="jquery.div-columns.ts" />
-/// <reference path="../../lib/jquery-ui.d.ts" />
-/// <reference path="editableDivUtils.ts" />
-/// <reference path="directoryWatcher.ts" />
-/// <reference path="../../lib/localizationManager/localizationManager.ts" />
+/// <reference path="../../js/jquery.div-columns.ts" />
+/// <reference path="../../../lib/jquery-ui.d.ts" />
+/// <reference path="../../js/editableDivUtils.ts" />
+/// <reference path="../../js/directoryWatcher.ts" />
+/// <reference path="../../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
+/// <reference path="../toolbox.ts" />
 
 var iframeChannel = getIframeChannel();
 
@@ -37,8 +38,6 @@ class DRTState {
   level: number = 1;
   markupType: number = MarkupType.Decodable;
 }
-
-declare function fireCSharpToolboxEvent(eventName: string, eventData: string);
 
 interface ReaderToolsWindow extends Window {
   model: ReaderToolsModel;

@@ -1,5 +1,3 @@
-/// <reference path="readerToolsModel.ts" />
-
 class CalledByCSharp {
 
   handleUndo(): void {

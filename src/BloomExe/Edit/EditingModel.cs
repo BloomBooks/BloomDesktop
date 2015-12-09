@@ -581,8 +581,8 @@ namespace Bloom.Edit
 			_currentPage = EnhancedImageServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 
 			// Enhance JohnT: Can we somehow have a much simpler toolbox content until the user displays it?
-			//if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
-				_server.ToolboxContent = MakeToolboxContent();
+			//if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
+				_server.ToolboxContent = ToolboxView.MakeToolboxContent(_currentlyDisplayedBook);
 			//else
 			//	_server.ToolboxContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 
@@ -616,14 +616,15 @@ namespace Bloom.Edit
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 
 
-			if (_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable)
+			if (_currentlyDisplayedBook.BookInfo.ToolboxIsOpen)
 			{
 				// Make the toolbox initially visible.
 				// What we have to do to accomplish this is pretty non-intutive. It's a consequence of the way
 				// the pure-drawer CSS achieves the open/close effect. This input is a check-box, so clicking it
 				// changes the state of things in a way that all the other CSS can depend on.
 				var toolboxCheckBox = dom.SelectSingleNode("//input[@id='pure-toggle-right']");
-				toolboxCheckBox.SetAttribute("checked", "true");
+				if (toolboxCheckBox != null)
+					toolboxCheckBox.SetAttribute("checked", "true");
 			}
 
 			return dom;
@@ -922,105 +923,6 @@ namespace Bloom.Edit
 			item.Enabled = enabled;
 		}
 
-		private string MakeToolboxContent()
-		{
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox", "Toolbox.htm");
-			_toolboxFolder = Path.GetDirectoryName(path);
-
-			var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
-
-			// embed settings on the page
-			var tools = _currentlyDisplayedBook.BookInfo.Tools.Where(t => t.Enabled == true).ToList();
-
-			var settings = new Dictionary<string, object>
-			{
-				{"current", _currentlyDisplayedBook.BookInfo.CurrentTool}
-			};
-
-			RetrieveToolSettings(tools, "talkingBook", settings);
-			RetrieveToolSettings(tools, "decodableReader", settings);
-			RetrieveToolSettings(tools, "leveledReader", settings);
-
-			var settingsStr = JsonConvert.SerializeObject(settings);
-			settingsStr = String.Format("function GetToolboxSettings() {{ return {0};}}", settingsStr) +
-				"\n$(document).ready(function() { restoreToolboxSettings(GetToolboxSettings()); });";
-
-			var scriptElement = domForToolbox.RawDom.CreateElement("script");
-			scriptElement.SetAttribute("type", "text/javascript");
-			scriptElement.SetAttribute("id", "ui-accordionSettings");
-			scriptElement.InnerText = settingsStr;
-
-			domForToolbox.Head.InsertAfter(scriptElement, domForToolbox.Head.LastChild);
-
-			// get additional tabs to load
-			var checkedBoxes = new List<string>();
-
-			LoadPanelIntoToolboxIfAvailable(domForToolbox, tools, checkedBoxes, "decodableReader");
-			LoadPanelIntoToolboxIfAvailable(domForToolbox, tools, checkedBoxes, "leveledReader");
-			LoadPanelIntoToolboxIfAvailable(domForToolbox, tools, checkedBoxes, "talkingBook");
-
-			// Load settings into the toolbox panel
-			AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(_toolboxFolder, "settings", "Settings.htm")));
-
-			// check the appropriate boxes
-			foreach (var checkBoxId in checkedBoxes)
-			{
-				domForToolbox.Body.SelectSingleNode("//div[@id='" + checkBoxId + "']").InnerXml = "&#10004;";
-			}
-
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForToolbox.RawDom);
-			return TempFileUtils.CreateHtml5StringFromXml(domForToolbox.RawDom);
-		}
-
-		private void RetrieveToolSettings(List<ToolboxTool> toolList, string toolName, Dictionary<string, object> settingsObject)
-		{
-			var toolObject = toolList.FirstOrDefault(t => t.JsonToolId == toolName);
-			if (toolObject != null && !string.IsNullOrEmpty(toolObject.State))
-				settingsObject.Add(toolObject.StateName, toolObject.State);
-		}
-
-		private void LoadPanelIntoToolboxIfAvailable(HtmlDom domForToolbox, List<ToolboxTool> toolList, List<string> checkedBoxes, string toolName)
-		{
-			if (toolList.Any(t => t.JsonToolId == toolName))
-			{
-				// For all the toolbox tools, the tool name is used as the name of both the folder where the
-				// assets for that tool are kept, and the name of the main htm file that represents the tool.
-				AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(
-					_toolboxFolder,
-					toolName,
-					toolName + ".htm")));
-				checkedBoxes.Add(toolName + "Check");
-			}
-		}
-
-		/// <summary>Loads the requested panel into the toolbox</summary>
-		private void AppendToolboxPanel(HtmlDom domForToolbox, string fileName)
-		{
-			var toolbox = domForToolbox.Body.SelectSingleNode("//div[@id='toolbox']");
-			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(fileName));
-			AppendAllChildren(subPanelDom.Body, toolbox);
-		}
-
-		void AppendAllChildren(XmlNode source, XmlNode dest)
-		{
-			// Not sure, but the ToArray MIGHT be needed because AppendChild MIGHT remove the node from the source
-			// which MIGHT interfere with iterating over them.
-			foreach (var node in source.ChildNodes.Cast<XmlNode>().ToArray())
-			{
-				// It's nice if the independent HMTL file we are copying can have its own title, but we don't want to duplicate that into
-				// our page document, which already has its own.
-				if (node.Name == "title")
-					continue;
-				// It's no good copying file references; they may be useful for independent testing of the control source,
-				// but the relative paths won't work. Any needed scripts must be re-included.
-				if (node.Name == "script" && node.Attributes != null && node.Attributes["src"] != null)
-					continue;
-				if (node.Name == "link" && node.Attributes != null && node.Attributes["rel"] != null)
-					continue; // likewise stylesheets must be inserted
-				dest.AppendChild(dest.OwnerDocument.ImportNode(node,true));
-			}
-		}
-
 		public void SaveNow()
 		{
 			if (_domForCurrentPage != null)
@@ -1096,7 +998,7 @@ namespace Bloom.Edit
 				return; // In production if we can't find the current state just leave it unchanged.
 			}
 			var showToolbox = checkbox.Checked;
-			_currentlyDisplayedBook.BookInfo.ReaderToolsAvailable = showToolbox;
+			_currentlyDisplayedBook.BookInfo.ToolboxIsOpen = showToolbox;
 			_currentlyDisplayedBook.BookInfo.Save();
 
 			foreach (var tool in _currentlyDisplayedBook.BookInfo.Tools)

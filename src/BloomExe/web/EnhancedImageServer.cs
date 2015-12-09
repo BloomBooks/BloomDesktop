@@ -46,21 +46,24 @@ namespace Bloom.web
 		/// <summary>
 		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
 		/// </summary>
-		internal EnhancedImageServer() : base( new RuntimeImageProcessor(new BookRenamedEvent()))
+		internal EnhancedImageServer() : this( new RuntimeImageProcessor(new BookRenamedEvent()), null)
 		{ }
 
-		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer): base(cache)
+		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer, BloomFileLocator fileLocator = null) : base(cache)
 		{
 			_thumbNailer = thumbNailer;
+			_fileLocator = fileLocator;
+			// Storing this in the ReadersHandler means there can only be one instance of EIS, since ReadersHandler is static. But for
+			// now that's true anyway because we use a fixed port. If we need to change this we could just make an instance here.
+			ReadersHandler.Server = this;
 		}
 
 		/// <summary>
 		/// This constructor is used for unit testing
 		/// </summary>
 		public EnhancedImageServer(RuntimeImageProcessor cache, BloomFileLocator fileLocator)
-			: base(cache)
+			: this(cache, null, fileLocator)
 		{
-			_fileLocator = fileLocator;
 		}
 
 		// We use two different locks to synchronize access to the methods of this class.
@@ -75,16 +78,7 @@ namespace Bloom.web
 		public string ToolboxContent { get; set; }
 		public bool AuthorMode { get; set; }
 
-		/// <summary>
-		/// There can really only be one of these globally, since ReadersHandler is static. But for
-		/// now that's true anyway because we use a fixed port. See comments on the ReadersHandler
-		/// property.
-		/// </summary>
-		public Book.Book CurrentBook
-		{
-			get { return ReadersHandler.CurrentBook; }
-			set { ReadersHandler.CurrentBook = value; }
-		}
+		public Book.Book CurrentBook { get; set; }
 
 		/// <summary>
 		/// This code sets things up so that we can edit (or make a thumbnail of, etc.) one page of a book.

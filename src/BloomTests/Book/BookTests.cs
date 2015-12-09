@@ -268,15 +268,14 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			var dom = book.GetEditableHtmlDomForPage(book.GetPages().ToArray()[2]);
 			var scriptNodes = dom.SafeSelectNodes("//script");
-			// JohnT: as of 25 November 2015, the five are:
+			// JohnT: as of 2 December 2015, the four are:
 			// - bloomBootstrap.js
-			// - readerToolsBootstrap.js (this is the newest...because the toolbox is now always available, BL-2970. Perhaps should be rolled into bloomBootstrap.js?
 			// - a literal script which calls 'localize' on each element that has data-i18N
 			// - a literal script which defines a function GetInlineDictionary to return a localization dictionary
 			// - a literal script which defines a GetSettings function, which returns info about languages and collection type.
 			// None of these appears to be anything to do with an EditTimeScript (nor does this string occur elsewhere in our codebase).
 			// So this test may be simply obsolete.
-			Assert.AreEqual(5, scriptNodes.Count);
+			Assert.AreEqual(4, scriptNodes.Count);
 			Assert.IsNotEmpty(scriptNodes[0].Attributes["src"].Value);
 			Assert.IsTrue(scriptNodes[0].Attributes["src"].Value.Contains(".js"));
 		}

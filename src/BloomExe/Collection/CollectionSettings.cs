@@ -33,7 +33,6 @@ namespace Bloom.Collection
 	{
 		private const int kCurrentOneTimeCheckVersionNumber = 1; // bumping this will trigger a new one time check
 
-		public const string ReaderToolsSettingsPrefix = "ReaderToolsSettings-";
 		private string _language1Iso639Code;
 		private LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
 		private Dictionary<string, string> _isoToLangNameDictionary = new Dictionary<string, string>();
@@ -513,15 +512,6 @@ namespace Bloom.Collection
 
 
 		public virtual string CollectionName { get; protected set; }
-
-		/// <summary>
-		/// The file (currently at a fixed location in every settings folder) where we store any settings
-		/// related to Decodable and Leveled Readers.
-		/// </summary>
-		public string DecodableLevelPathName
-		{
-			get { return Path.Combine(Path.GetDirectoryName(SettingsFilePath), ReaderToolsSettingsPrefix + Language1Iso639Code + ".json"); }
-		}
 
 		[XmlIgnore]
 		public string FolderPath

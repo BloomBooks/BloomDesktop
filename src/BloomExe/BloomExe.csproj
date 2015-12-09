@@ -226,6 +226,7 @@
     <Compile Include="Edit\DecodableReaderTool.cs" />
     <Compile Include="Edit\LeveledReaderTool.cs" />
     <Compile Include="Edit\TalkingBookTool.cs" />
+    <Compile Include="Edit\ToolboxView.cs" />
     <Compile Include="ElementProxy.cs" />
     <Compile Include="MiscUI\LanguageFontDetails.cs">
       <SubType>UserControl</SubType>
@@ -394,7 +395,6 @@
     </Compile>
     <Compile Include="Publish\SHRP_TeachersGuideExtension.cs" />
     <Compile Include="Publish\SHRP_PupilBookExtension.cs" />
-    <Compile Include="ReaderTools\ReaderToolsSettings.cs" />
     <Compile Include="Registration\LicenseDialog.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -1,12 +1,12 @@
 ﻿body #qtip-audio {
   background-color: #faf7cc !important;
-  border-color: #0C8597 !important;
+  border-color: #0c8597 !important;
 }
 body #qtip-audio .ui-icon {
   display: inline-block;
 }
 body div.ui-audioTitle {
-  color: #0C8597;
+  color: #0c8597;
   font-size: larger;
   margin-top: 5px;
   font-size: large;
@@ -74,7 +74,7 @@ body div.button-label-wrapper {
 }
 body span.audio-label {
   font-size: x-small;
-  color: #0C8597;
+  color: #0c8597;
 }
 body span.audio-label.expected {
   color: #96668f;

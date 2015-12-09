@@ -286,10 +286,6 @@ namespace Bloom.Book
 		{
 			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
 			dom.AddJavascriptFile("bookEdit/js/bloomBootstrap.js".ToLocalhost());
-
-			// Enhance JT: can we somehow not add this unless/until the user displays the toolbox?
-			//if (BookInfo.ReaderToolsAvailable)
-			dom.AddJavascriptFile("bookEdit/js/readerToolsBootstrap.js".ToLocalhost());
 		}
 
 
@@ -649,6 +645,9 @@ namespace Bloom.Book
 		public void BringBookUpToDate(IProgress progress)
 		{
 			_pagesCache = null;
+			string oldMetaData = "";
+			if (File.Exists(BookInfo.MetaDataPath))
+				oldMetaData = File.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
 			BringBookUpToDate(OurHtmlDom, progress);
 			if (Type == BookType.Publication)
 			{
@@ -662,6 +661,13 @@ namespace Bloom.Book
 			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
 			{
 				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _collectionSettings.Language1Iso639Code);
+			}
+
+			if (oldMetaData.Contains("readerToolsAvailable"))
+			{
+				var newMetaString = oldMetaData.Replace("readerToolsAvailable", "toolboxIsOpen");
+				var newMetaData = BookMetaData.FromString(newMetaString);
+				BookInfo.ToolboxIsOpen = newMetaData.ToolboxIsOpen;
 			}
 
 			Save();

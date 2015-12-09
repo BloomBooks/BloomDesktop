@@ -26,7 +26,7 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="bookEdit\js\BloomToolbox.js" />
+    <Content Include="bookEdit\toolbox\ReadMe.txt" />
     <Content Include="bookEdit\toolbox\talkingBook\audioRecording.css">
       <DependentUpon>audioRecording.less</DependentUpon>
     </Content>
@@ -34,7 +34,6 @@
       <DependentUpon>toolbox.less</DependentUpon>
     </Content>
     <Content Include="bookEdit\toolbox\toolbox.htm" />
-    <Content Include="bookEdit\toolbox\toolbox.js" />
     <Content Include="bookEdit\toolbox\decodableReader\decodableReader.htm" />
     <Content Include="bookEdit\toolbox\leveledReader\leveledReader.htm" />
     <Content Include="bookEdit\toolbox\PageElements\PageElements.htm" />
@@ -61,7 +60,6 @@
     <Content Include="bookEdit\css\qtipOverrides.css">
       <DependentUpon>qtipOverrides.less</DependentUpon>
     </Content>
-    <Content Include="bookEdit\js\readerToolsBootstrap.js" />
     <Content Include="bookEdit\css\BookPagesThumbnailList.less" />
     <Content Include="bookEdit\toolbox\talkingBook\talkingBook.jade" />
     <Content Include="bookEdit\toolbox\talkingBook\audioRecording.less" />
@@ -85,12 +83,6 @@
     <Content Include="bookEdit\js\pageDragToolbox.js" />
     <Content Include="bookEdit\js\editViewFrame.js" />
     <Content Include="bookEdit\js\jquery.hotkeys.js" />
-    <Content Include="bookEdit\js\libsynphony\bloom_lib.js" />
-    <Content Include="bookEdit\js\libsynphony\bloom_xregexp_categories.js" />
-    <Content Include="bookEdit\js\libsynphony\jquery.text-markup.js" />
-    <Content Include="bookEdit\js\libsynphony\synphony_lib.js" />
-    <Content Include="bookEdit\js\libsynphony\underscore_min_152.js" />
-    <Content Include="bookEdit\js\libsynphony\xregexp-all-min.js" />
     <Content Include="bookEdit\js\origami.js" />
     <Content Include="bookEdit\css\editMode.css">
       <DependentUpon>editMode.less</DependentUpon>
@@ -116,7 +108,12 @@
     <Content Include="bookEdit\img\pasteImageButtonSmall.png" />
     <Content Include="bookEdit\js\bloomBootstrap.js" />
     <Content Include="bookEdit\js\bloomEditing.js" />
-    <TypeScriptCompile Include="bookEdit\js\BloomToolbox.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\decodableReader.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerSettings.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerTools.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerToolsModel.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\synphonyApi.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\leveledReader\leveledReader.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\talkingBook\audioRecording.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\talkingBook\talkingBook.ts" />
     <TypeScriptCompile Include="bookEdit\bloomField\bloomFieldSpec.ts" />
@@ -130,18 +127,16 @@
     <TypeScriptCompile Include="bookEdit\js\getIframeChannel.ts" />
     <TypeScriptCompile Include="bookEdit\js\interIframeChannel.ts" />
     <TypeScriptCompile Include="bookEdit\js\jquery.div-columns.ts" />
-    <TypeScriptCompile Include="bookEdit\js\libsynphony\underscore-1.5.2.d.ts" />
-    <TypeScriptCompile Include="bookEdit\js\readerSettings.ts" />
     <Content Include="bookEdit\js\toolbar\bootstrap.icons.css" />
     <Content Include="bookEdit\js\toolbar\glyphicons-halflings.png" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbars.css" />
     <Content Include="bookEdit\js\toolbar\toolbar.d.ts" />
     <Content Include="bookEdit\OverflowChecker\OverflowChecker.js" />
-    <Content Include="bookEdit\readerSetup\readerSetup.css">
+    <Content Include="bookEdit\toolbox\decodableReader\readerSetup\readerSetup.css">
       <DependentUpon>readerSetup.less</DependentUpon>
     </Content>
-    <Content Include="bookEdit\readerSetup\ReaderSetup.htm" />
+    <Content Include="bookEdit\toolbox\decodableReader\readerSetup\ReaderSetup.htm" />
     <Content Include="bookEdit\sourceBubbles\bloomSourceBubbles.js" />
     <Content Include="bookEdit\sourceBubbles\sourceBubbles.css">
       <DependentUpon>sourceBubbles.less</DependentUpon>
@@ -255,14 +250,12 @@
     <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_cccccc_256x240.png" />
     <Content Include="themes\bloom-jqueryui-theme\images\ui-icons_ffffff_256x240.png" />
     <Content Include="themes\bloom-jqueryui-theme\jquery-ui-1.8.16.custom.css" />
-    <TypeScriptCompile Include="bookEdit\js\readerTools.ts" />
-    <TypeScriptCompile Include="bookEdit\js\readerToolsModel.ts" />
-    <TypeScriptCompile Include="bookEdit\js\synphonyApi.ts" />
     <TypeScriptCompile Include="bookEdit\OverflowChecker\OverflowChecker.ts" />
     <TypeScriptCompile Include="bookEdit\sourceBubbles\bloomSourceBubbles.ts" />
+    <Content Include="bookEdit\toolbox\toolbox.ts" />
     <TypeScriptCompile Include="bookEdit\TopicChooser\TopicChooser.ts" />
-    <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.io.ts" />
-    <TypeScriptCompile Include="bookEdit\readerSetup\readerSetup.ui.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerSetup\readerSetup.io.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerSetup\readerSetup.ui.ts" />
     <TypeScriptCompile Include="bookEdit\StyleEditor\StyleEditor.ts" />
     <TypeScriptCompile Include="lib\jquery.alphanum.d.ts" />
     <TypeScriptCompile Include="lib\jquery.i18n.custom.ts" />
@@ -306,7 +299,7 @@
     <Content Include="bookEdit\toolbox\toolbox.jade" />
     <Content Include="bookEdit\toolbox\PageElements\PageElements.jade" />
     <Content Include="bookEdit\toolbox\settings\Settings.jade" />
-    <Content Include="bookEdit\readerSetup\ReaderSetup.jade" />
+    <Content Include="bookEdit\toolbox\decodableReader\readerSetup\ReaderSetup.jade" />
     <Content Include="bookEdit\css\origami.less" />
     <Content Include="bookEdit\html\font-awesome\fonts\fontawesome-webfont.woff" />
     <Content Include="bookEdit\StyleEditor\StyleEditor.less" />
@@ -323,7 +316,7 @@
     <Content Include="bookEdit\css\tab.winclassic.less" />
     <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.less" />
     <Content Include="bookEdit\TopicChooser\topicChooser.less" />
-    <Content Include="bookEdit\readerSetup\readerSetup.less" />
+    <Content Include="bookEdit\toolbox\decodableReader\readerSetup\readerSetup.less" />
     <Content Include="bookEdit\toolbox\readerTools.less" />
     <Content Include="bookEdit\toolbox\toolbox.less" />
     <Content Include="bookLayout\CommonBasePageEpub.less" />

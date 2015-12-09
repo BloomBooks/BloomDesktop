@@ -343,6 +343,39 @@ namespace BloomTests.Book
 			Assert.That(storage.MetaData.AllowUploading, Is.True);
 		}
 
+
+		[Test]
+		public void BringBookUpToDate_MigratesReaderToolsAvailableToToolboxIsOpen()
+		{
+			var oldMetaData =
+				"{\"bookInstanceId\":\"3328aa4a - 2ef3 - 43a8 - a656 - 1d7c6f00444c\",\"folio\":false,\"title\":\"Landscape basic book\",\"baseUrl\":null,\"bookOrder\":null,\"isbn\":\"\",\"bookLineage\":\"056B6F11-4A6C-4942-B2BC-8861E62B03B3\",\"downloadSource\":null,\"license\":\"cc-by\",\"formatVersion\":\"2.0\",\"licenseNotes\":null,\"copyright\":null,\"authors\":null,\"credits\":\"\",\"tags\":[\"<p>\r\n</p>\"],\"pageCount\":0,\"languages\":[],\"langPointers\":null,\"summary\":null,\"allowUploadingToBloomLibrary\":true,\"bookletMakingIsAppropriate\":true,\"uploader\":null,\"tools\":null,\"readerToolsAvailable\":true}";
+			var storage = GetInitialStorage();
+
+			// This seems to be needed to let it locate some kind of collection settings.
+			var folder = storage.FolderPath;
+			var locator = (FileLocator)storage.GetFileLocator();
+			string root = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
+
+			locator.AddPath(root.CombineForPath("bookLayout"));
+			var collectionSettings =
+				new CollectionSettings(new NewCollectionSettings()
+				{
+					PathToSettingsFile = CollectionSettings.GetPathForNewSettings(folder, "test"),
+					Language1Iso639Code = "xyz",
+					Language2Iso639Code = "en",
+					Language3Iso639Code = "fr"
+				});
+			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Mock<ITemplateFinder>().Object,
+				collectionSettings,
+				new Mock<PageSelection>().Object, new PageListChangedEvent(), new BookRefreshEvent());
+			var jsonPath = book.BookInfo.MetaDataPath;
+			File.WriteAllText(jsonPath, oldMetaData);
+
+			book.BringBookUpToDate(new NullProgress());
+
+			Assert.That(book.BookInfo.ToolboxIsOpen, Is.True);
+		}
+
 		[Test]
 		public void Save_SetsJsonFormatVersion()
 		{

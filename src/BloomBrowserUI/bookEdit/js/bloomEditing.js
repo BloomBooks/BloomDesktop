@@ -268,13 +268,13 @@ $.fn.hasAttr = function (name) {
     return (typeof attr !== 'undefined' && attr !== false);
 };
 
-function getReaderToolsModel() {
+function getToolbox() {
     // I (GJM) tried to define this is readerTools.ts, but it wasn't loaded if no reader tools were active!
     var toolbox = parent.window.document.getElementById("toolbox");
 
     // toolbox will be undefined during unit testing
     if (toolbox)
-        return toolbox.contentWindow['model'];
+        return toolbox.contentWindow['toolbox'];
 }
 
 // Originally, all this code was in document.load and the selectors were acting
@@ -299,15 +299,12 @@ function SetupElements(container) {
         this.innerHTML = this.value;
     });
 
-    var model = getReaderToolsModel();
-
-    var readerToolsActive;
-
-    // model will be undefined if the reader tools are not loaded
-    if (model) {
-        readerToolsActive = 'true';
-
-        setupReaderKeyAndFocusHandlers(container, model);
+    var toolbox = getToolbox();
+    var toolboxVisible = false;
+    // toolbox might be undefined in unit testing?
+    if (toolbox) {
+        toolboxVisible = toolbox.toolboxIsShowing();
+        toolbox.configureElementsForTools(container);
     }
 
     SetBookCopyrightAndLicenseButtonVisibility(container);
@@ -593,7 +590,7 @@ function SetupElements(container) {
     // HACK for BL-1139: except for some reason when the Reader tools are active this causes
     // quick typing on a newly loaded page to get the cursor messed up. So for the Reader tools, the
     // user will need to actually click in the div to start typing.
-    if (!readerToolsActive)
+    if (!toolboxVisible)
         $(container).find("textarea, div.bloom-editable").first().focus(); //review: this might choose a textarea which appears after the div. Could we sort on the tab order?
 }
 

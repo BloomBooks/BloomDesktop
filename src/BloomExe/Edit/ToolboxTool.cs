@@ -1,7 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Xml;
+using Bloom.Book;
+using Bloom.Collection;
+using BloomTemp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SIL.Extensions;
+using SIL.IO;
 
 namespace Bloom.Edit
 {

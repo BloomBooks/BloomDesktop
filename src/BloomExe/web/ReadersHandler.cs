@@ -5,14 +5,15 @@ using System.Linq;
 using System.IO;
 using System.Xml;
 using Bloom.Collection;
-using Bloom.ReaderTools;
 using Newtonsoft.Json;
 using SIL.Xml;
 using SIL.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
+using Bloom.Edit;
 using L10NSharp;
+using Newtonsoft.Json.Linq;
 
 namespace Bloom.web
 {
@@ -37,7 +38,12 @@ namespace Bloom.web
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
 		// whole-book counts. If we ever support having more than one book open, ReadersHandler will need to stop being static, or
 		// some similar change. But by then, we may have the whole book in the main DOM, anyway, and getTextOfPages may be obsolete.
-		public static Book.Book CurrentBook { get; set; }
+		public static Book.Book CurrentBook { get { return Server.CurrentBook; } }
+
+		/// <summary>
+		/// Needs to know the one and only image server to get the current book from it.
+		/// </summary>
+		public static EnhancedImageServer Server { get; set; }
 
 		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
 		{
@@ -58,7 +64,7 @@ namespace Bloom.web
 					return true;
 
 				case "saveReaderToolSettings":
-					var path = currentCollectionSettings.DecodableLevelPathName;
+					var path = DecodableReaderTool.GetDecodableLevelPathName(currentCollectionSettings);
 					var content = info.GetPostData()["data"];
 					File.WriteAllText(path, content, Encoding.UTF8);
 					info.ContentType = "text/plain";
@@ -166,7 +172,7 @@ namespace Bloom.web
 				Directory.CreateDirectory(path);
 
 			var fileList1 = new List<string>();
-			var langFileName = string.Format(ProjectContext.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var langFileName = string.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 			var langFile = Path.Combine(path, langFileName);
 
 			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
@@ -231,15 +237,23 @@ namespace Bloom.web
 
 		private static string GetDefaultReaderSettings(CollectionSettings currentCollectionSettings)
 		{
-			var settingsPath = currentCollectionSettings.DecodableLevelPathName;
+			var settingsPath = DecodableReaderTool.GetDecodableLevelPathName(currentCollectionSettings);
 
 			// if file exists, return current settings
 			if (File.Exists(settingsPath))
 				return File.ReadAllText(settingsPath, Encoding.UTF8);
 
 			// file does not exist, so make a new one
-			var settings = new ReaderToolsSettings(true);
-			var settingsString = settings.Json;
+			// The literal string here defines our default reader settings for a collection.
+			var settingsString = "{\"letters\":\"a b c d e f g h i j k l m n o p q r s t u v w x y z\","
+				+ "\"moreWords\":\"\","
+				+ "\"stages\":[{\"letters\":\"\",\"sightWords\":\"\"}],"
+				+ "\"levels\":[{\"maxWordsPerSentence\":2,\"maxWordsPerPage\":2,\"maxWordsPerBook\":20,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]},"
+					+ "{\"maxWordsPerSentence\":5,\"maxWordsPerPage\":5,\"maxWordsPerBook\":23,\"maxUniqueWordsPerBook\":8,\"thingsToRemember\":[]},"
+					+ "{\"maxWordsPerSentence\":7,\"maxWordsPerPage\":10,\"maxWordsPerBook\":72,\"maxUniqueWordsPerBook\":16,\"thingsToRemember\":[]},"
+					+ "{\"maxWordsPerSentence\":8,\"maxWordsPerPage\":18,\"maxWordsPerBook\":206,\"maxUniqueWordsPerBook\":32,\"thingsToRemember\":[]},"
+					+ "{\"maxWordsPerSentence\":12,\"maxWordsPerPage\":25,\"maxWordsPerBook\":500,\"maxUniqueWordsPerBook\":64,\"thingsToRemember\":[]},"
+					+ "{\"maxWordsPerSentence\":20,\"maxWordsPerPage\":50,\"maxWordsPerBook\":1000,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]}]}";
 			File.WriteAllText(settingsPath, settingsString);
 
 			return settingsString;
@@ -251,7 +265,7 @@ namespace Bloom.web
 		private static void MakeLetterAndWordList(string jsonSettings, string allWords)
 		{
 			// load the settings
-			var settings = JsonConvert.DeserializeObject<ReaderToolsSettings>(jsonSettings);
+			dynamic settings = JsonConvert.DeserializeObject(jsonSettings);
 
 			// format the output
 			var sb = new StringBuilder();
@@ -260,19 +274,22 @@ namespace Bloom.web
 			sb.AppendLineFormat(str, CurrentBook.CollectionSettings.Language1Name);
 
 			var idx = 1;
-			foreach (var stage in settings.Stages)
+			foreach (var stage in settings.stages)
 			{
 				sb.AppendLine();
 				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportStage", "Stage {0}"), idx++);
 				sb.AppendLine();
-				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportLetters", "Letters: {0}"), stage.Letters.Replace(" ", ", "));
+				string letters = stage.letters ?? "";
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportLetters", "Letters: {0}"), letters.Replace(" ", ", "));
 				sb.AppendLine();
-				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportSightWords", "New Sight Words: {0}"), stage.SightWords.Replace(" ", ", "));
+				string sightWords = stage.sightWords;
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportSightWords", "New Sight Words: {0}"), sightWords.Replace(" ", ", "));
 
-				Array.Sort(stage.Words);
-				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), string.Join(" ", stage.Words));
+				JArray rawWords = stage.words;
+				string[] stageWords = rawWords.Select(x => x.ToString()).ToArray();
+				Array.Sort(stageWords);
+				sb.AppendLineFormat(LocalizationManager.GetString("DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), string.Join(" ", stageWords));
 				sb.AppendLine();
-
 			}
 
 			// complete word list
@@ -309,7 +326,7 @@ namespace Bloom.web
 				if (jsonString.Contains("\"LangID\":\"\""))
 					jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.Language1Iso639Code + "\"");
 
-				var fileName = string.Format(ProjectContext.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+				var fileName = string.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 				fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
 				File.WriteAllText(fileName, jsonString, Encoding.UTF8);
