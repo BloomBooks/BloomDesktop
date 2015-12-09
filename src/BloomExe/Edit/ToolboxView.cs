@@ -14,8 +14,10 @@ using SIL.IO;
 namespace Bloom.Edit
 {
 	/// <summary>
-	/// For now this class is a holding place for functionality implemented in C# that supports the toolbox as a whole.
-	/// So far there has been no reason to actually have an instance.
+	/// This class supports the Edit Tab Toolbox as a whole. Eventually, all of this should be moved to javascript-land.
+	/// Since the toolbox is mainly implemented in HTML/Javascript, there is no distinct .NET control for it.
+	/// Thus, unlike other View classes in Bloom, ToolboxView does not inherit from a Control class,
+	/// nor are there ever any instances; all methods are currently static.
 	/// </summary>
 	public class ToolboxView
 	{
