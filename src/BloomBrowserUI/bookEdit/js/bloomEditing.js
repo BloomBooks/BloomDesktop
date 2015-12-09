@@ -622,7 +622,7 @@ $(document).ready(function() {
         }
         // Dividing by 20 seems to make it zoom at a manageable rate, at least with my mouse.
         // The limitation to zooming between 1/3 and 3 times is arbitrary.
-        scale = Math.min(Math.max(scale + e.originalEvent.deltaY / 20, 0.33), 3.0);
+        scale = Math.min(Math.max(scale - e.originalEvent.deltaY / 20, 0.33), 3.0);
         // This works with a rule in editMode.less that makes the transform's origin the top left
         $('body').attr('style', 'transform: scale(' + scale + ',' + scale + ')');
     });
