@@ -21,7 +21,7 @@
         <seg>高级</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.DecodableReaderToolCheckbox">
+    <tu tuid="EditTab.Toolbox.DecodableReaderToolCheckbox">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader Tool</seg>
@@ -30,7 +30,7 @@
         <seg>解码读者工具</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.LeveledReaderToolCheckbox">
+    <tu tuid="EditTab.Toolbox.LeveledReaderToolCheckbox">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">

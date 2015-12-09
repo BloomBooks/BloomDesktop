@@ -21,7 +21,7 @@
         <seg>Ku rwego rwo hejuru</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.DecodableReaderTool">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader Tool</seg>
@@ -30,7 +30,7 @@
         <seg>Igikoresho gifasha umusomyi gusobanukirwa</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.LeveledReaderTool">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader Tool</seg>
@@ -39,7 +39,7 @@
         <seg>Igikoresho cy'umusomyi umenyereye</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.More">
+    <tu tuid="EditTab.Toolbox.More">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More...</seg>

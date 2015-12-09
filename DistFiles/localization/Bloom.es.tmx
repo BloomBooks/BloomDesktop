@@ -23,7 +23,7 @@
         <seg>Sobre Bloom</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.DecodableReaderTool">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader Tool</seg>
@@ -32,7 +32,7 @@
         <seg>Herramienta para libros decodificables</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.LeveledReaderTool">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader Tool</seg>
@@ -41,7 +41,7 @@
         <seg>Herramienta para libros nivelados</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.More">
+    <tu tuid="EditTab.Toolbox.More">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More...</seg>

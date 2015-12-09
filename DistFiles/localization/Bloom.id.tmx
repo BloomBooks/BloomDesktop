@@ -140,7 +140,7 @@
         <seg>Catatan Versi Baru</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.DecodableReaderTool">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader Tool</seg>
@@ -149,7 +149,7 @@
         <seg>Perkakas Buku Dasar ygn Decodable</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.DecodableReaderToolCheckbox">
+    <tu tuid="EditTab.Toolbox.DecodableReaderToolCheckbox">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -159,7 +159,7 @@
         <seg>Perkakas Buku Dasar ygn Decodable </seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.LeveledReaderTool">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader Tool</seg>
@@ -168,7 +168,7 @@
         <seg>Perkakas Buku Dasar ygn Leveled</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.LeveledReaderToolCheckbox">
+    <tu tuid="EditTab.Toolbox.LeveledReaderToolCheckbox">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -178,7 +178,7 @@
         <seg>Perkakas Buku Dasar ygn Leveled</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.More">
+    <tu tuid="EditTab.Toolbox.More">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More...</seg>
