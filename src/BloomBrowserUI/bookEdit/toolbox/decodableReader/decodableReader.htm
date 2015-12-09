@@ -4,16 +4,16 @@
   <body>
     <h3 data-panelId="decodableReaderTool" data-markuptype="1" data-order="10" data-i18n="EditTab.Toolbox.DecodableReaderTool">Decodable Reader Tool</h3>
     <div data-panelId="decodableReaderTool">
-      <div id="setupStages"><img id="decodable-edit" src="/bloom/images/edit-white.png"/><span class="setup noSelect"><a href="javascript:window.showSetupDialog('stages');" data-i18n="DecodableReaderTool.SetUpStages">Set up Stages</a></span></div>
-      <div class="stageLine clear noSelect"><span id="decStage" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine noSelect"><span data-i18n="DecodableReaderTool.Stage">Stage</span> <span id="stageNumber">1</span> <span data-i18n="DecodableReaderTool.StageOf" class="ofStage">of</span> <span id="numberOfStages" class="ofStage">2</span></span><span id="incStage" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
-      <div id="letters-in-this-stage" style="margin-left: 6px" class="section clear"><span data-i18n="DecodableReaderTool.LettersInThisStage">Letters in this stage</span></div>
+      <div id="setupStages"><img id="decodable-edit" src="/bloom/images/edit-white.png"/><span class="setup noSelect"><a href="javascript:window.showSetupDialog('stages');" data-i18n="EditTab.Toolbox.DecodableReaderTool.SetUpStages">Set up Stages</a></span></div>
+      <div class="stageLine clear noSelect"><span id="decStage" class="scroll-button ui-icon ui-icon-triangle-1-w"></span><span class="stageLabel stageLine noSelect"><span data-i18n="EditTab.Toolbox.DecodableReaderTool.Stage">Stage</span> <span id="stageNumber">1</span> <span data-i18n="EditTab.Toolbox.DecodableReaderTool.StageOf" class="ofStage">of</span> <span id="numberOfStages" class="ofStage">2</span></span><span id="incStage" class="scroll-button ui-icon ui-icon-triangle-1-e"></span></div>
+      <div id="letters-in-this-stage" style="margin-left: 6px" class="section clear"><span data-i18n="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage">Letters in this stage</span></div>
       <div class="tableHolder clear">
         <div id="letterList" class="letterList"></div>
       </div>
       <div style="margin-left: 6px;" class="section clear">
         <table>
           <tr>
-            <td style="padding-left: 0;"><span id="sample-words-this-stage" data-i18n="DecodableReaderTool.SampleWordsInThisStage">Sample words in this stage</span><span id="allowed-words-this-stage" data-i18n="DecodableReaderTool.AllowedWordsInThisStage">Allowed words in this stage</span></td>
+            <td style="padding-left: 0;"><span id="sample-words-this-stage" data-i18n="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage">Sample words in this stage</span><span id="allowed-words-this-stage" data-i18n="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage">Allowed words in this stage</span></td>
             <td style="white-space: nowrap; padding-right: 0;">
               <div class="sortBlock clear">
                 <div id="sortAlphabetic" class="sortItem rightBorder sortIconSelected"><i title="Sort alphabetically" class="fa fa-sort-alpha-asc"></i></div>
@@ -27,10 +27,10 @@
       <div class="tableHolder clear">
         <div id="wordList" class="wordList"></div>
       </div>
-      <div id="make-letter-word-list-div" class="clear"><a id="make-letter-word-list" href="javascript:makeLetterWordList();" data-i18n="DecodableReaderTool.MakeLetterWordReport">Generate a letter and word list report</a></div>
+      <div id="make-letter-word-list-div" class="clear"><a id="make-letter-word-list" href="javascript:makeLetterWordList();" data-i18n="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport">Generate a letter and word list report</a></div>
       <div id="allowed-word-list-truncated" style="color: red" class="clear"></div>
       <div id="hiddenWordListForDecodableReader" style="display: none">
-        <label id="allowed_word_list_truncated_text" data-i18n="DecodableReaderTool.AllowedWordListTruncated">Bloom can handle only the first {0} words.</label>
+        <label id="allowed_word_list_truncated_text" data-i18n="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated">Bloom can handle only the first {0} words.</label>
       </div>
       <script type="text/javascript">
         $(document).ready(function() {

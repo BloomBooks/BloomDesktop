@@ -8,28 +8,28 @@ html
 			#setupStages
 				img#decodable-edit(src='/bloom/images/edit-white.png')
 				span.setup.noSelect
-					a(href="javascript:window.showSetupDialog('stages');", data-i18n='DecodableReaderTool.SetUpStages') Set up Stages
+					a(href="javascript:window.showSetupDialog('stages');", data-i18n='EditTab.Toolbox.DecodableReaderTool.SetUpStages') Set up Stages
 			.stageLine.clear.noSelect
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decStage
 				span.stageLabel.stageLine.noSelect
-					span(data-i18n='DecodableReaderTool.Stage') Stage
+					span(data-i18n='EditTab.Toolbox.DecodableReaderTool.Stage') Stage
 					= ' '
 					span#stageNumber 1
 					= ' '
-					span.ofStage(data-i18n='DecodableReaderTool.StageOf') of
+					span.ofStage(data-i18n='EditTab.Toolbox.DecodableReaderTool.StageOf') of
 					= ' '
 					span#numberOfStages.ofStage 2
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incStage
 			#letters-in-this-stage.section.clear(style='margin-left: 6px')
-				span(data-i18n='DecodableReaderTool.LettersInThisStage') Letters in this stage
+				span(data-i18n='EditTab.Toolbox.DecodableReaderTool.LettersInThisStage') Letters in this stage
 			.tableHolder.clear
 				.letterList#letterList
 			.section.clear(style='margin-left: 6px;')
 				table
 					tr
 						td(style='padding-left: 0;')
-							span#sample-words-this-stage(data-i18n='DecodableReaderTool.SampleWordsInThisStage') Sample words in this stage
-							span#allowed-words-this-stage(data-i18n='DecodableReaderTool.AllowedWordsInThisStage') Allowed words in this stage
+							span#sample-words-this-stage(data-i18n='EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage') Sample words in this stage
+							span#allowed-words-this-stage(data-i18n='EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage') Allowed words in this stage
 						td(style='white-space: nowrap; padding-right: 0;')
 							.sortBlock.clear
 								.sortItem.rightBorder.sortIconSelected#sortAlphabetic
@@ -42,10 +42,10 @@ html
 			.tableHolder.clear
 				.wordList#wordList
 			#make-letter-word-list-div.clear
-				a#make-letter-word-list(href='javascript:makeLetterWordList();', data-i18n='DecodableReaderTool.MakeLetterWordReport') Generate a letter and word list report
+				a#make-letter-word-list(href='javascript:makeLetterWordList();', data-i18n='EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport') Generate a letter and word list report
 			#allowed-word-list-truncated.clear(style="color: red")
 			#hiddenWordListForDecodableReader(style="display: none")
-				label#allowed_word_list_truncated_text(data-i18n='DecodableReaderTool.AllowedWordListTruncated') Bloom can handle only the first {0} words.
+				label#allowed_word_list_truncated_text(data-i18n='EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated') Bloom can handle only the first {0} words.
 			script(type='text/javascript').
 				$(document).ready(function() {
 					// this timeout is different than the LeveledRT timeout to prevent initializing synphony twice
