@@ -306,5 +306,18 @@ namespace Bloom.Properties {
                 this["ImageSearchLanguage"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.0")]
+        public string PageZoom {
+            get {
+                return ((string)(this["PageZoom"]));
+            }
+            set {
+                this["PageZoom"] = value;
+            }
+        }
     }
 }
