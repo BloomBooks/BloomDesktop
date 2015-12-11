@@ -48,16 +48,16 @@ namespace Bloom.Edit
 		[JsonProperty("state")]
 		public string State { get; set; }
 
-		public static ToolboxTool CreateFromJsonToolId(string jsonToolId)
+		public static ToolboxTool CreateFromToolId(string toolId)
 		{
-			switch (jsonToolId)
+			switch (toolId)
 			{
 				case DecodableReaderTool.StaticToolId: return new DecodableReaderTool();
 				case LeveledReaderTool.StaticToolId: return new LeveledReaderTool();
 				case TalkingBookTool.StaticToolId: return new TalkingBookTool();
 				case BookSettingsTool.StaticToolId: return new BookSettingsTool();
 			}
-			throw new ArgumentException("Unexpected tool name "+jsonToolId);
+			throw new ArgumentException("Unexpected tool name "+toolId);
 		}
 
 		/// <summary>

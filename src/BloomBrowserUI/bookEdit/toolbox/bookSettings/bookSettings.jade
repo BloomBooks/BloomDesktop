@@ -15,9 +15,9 @@ html
 	head
 		script(src='/bloom/bookEdit/toolbox/bookSettings/bookSettings.js')
 	body
-		p(data-panelId='bookSettings', data-order='100')
+		p(data-panelId='bookSettingsTool', data-order='100')
 			img(src="/bloom/bookEdit/toolbox/bookSettings/icon.svg")
-		div(data-panelId='bookSettings')
+		div(data-panelId='bookSettingsTool')
 			form.bookSettings.showOnlyWhenBookWouldNormallyBeLocked
 				+text('EditTab.Toolbox.Settings.UnlockShellBookIntroductionText','Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.')
 				+checkbox('unlockShellBook', 'EditTab.Toolbox.Settings.Unlock', 'Allow changes to this shellbook')

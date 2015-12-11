@@ -91,7 +91,7 @@ namespace Bloom.Edit
 			var toolsToDisplay = toolsThatHaveDataInBookInfo;
 			toolsToDisplay.AddRange(
 				idsOfToolsThisVersionKnowsAbout.Except(
-					toolsThatHaveDataInBookInfo.Select(t => t.ToolId)).Select(ToolboxTool.CreateFromJsonToolId));
+					toolsThatHaveDataInBookInfo.Select(t => t.ToolId)).Select(ToolboxTool.CreateFromToolId));
 			return toolsToDisplay;
 		}
 
@@ -232,7 +232,7 @@ namespace Bloom.Edit
 
 			if (item == null)
 			{
-				item = ToolboxTool.CreateFromJsonToolId(toolName);
+				item = ToolboxTool.CreateFromToolId(toolName);
 				tools.Add(item);
 			}
 			item.Enabled = enabled;
