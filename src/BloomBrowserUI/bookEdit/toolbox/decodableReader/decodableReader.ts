@@ -53,9 +53,20 @@ class DecodableReaderModel implements ITabModel {
     configureElements(container: HTMLElement) {
         this.setupReaderKeyAndFocusHandlers(container);
     }
+
+    showTool(ui: any) {
+        // change markup based on visible options
+        model.setMarkupType(ui.newHeader.data('markuptype'));
+    }
+
+    hideTool(ui: any) {
+        model.setMarkupType(ui.newHeader.data('markuptype'));
+    }
+
+    name() { return 'decodableReaderTool'; }
 }
 
-tabModels.push(new DecodableReaderModel())
+tabModels.push(new DecodableReaderModel());
 
 
 // "region" ReaderSetup dialog

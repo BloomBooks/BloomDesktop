@@ -2,11 +2,53 @@
 <html>
   <head></head>
   <body>
-    <h3 data-panelId="talkingBookTool" data-order="30" data-i18n="EditTab.Toolbox.TalkingBookTool">Talking Book Tool</h3>
+    <h3 data-panelId="talkingBookTool" data-order="30" data-i18n="EditTab.Toolbox.TalkingBookTool.Heading">Talking Book Tool</h3>
     <div data-panelId="talkingBookTool">
-      <label>
-        <input id="showRecordingTools" type="checkbox"/><span data-i18n="EditTab.Toolbox.TalkingBookTool.ShowRecordingTools">Show Recording Tools</span>
-      </label>
+      <div class="ui-audioBody">
+        <div>
+          <audio id="player"></audio>
+        </div>
+        <div id="audio-check" data-i18n="EditTab.Toolbox.TalkingBookTool.CheckSettings" class="audio-label">1) Check that you are recording into the correct device and that these levels are showing blue:</div>
+        <div class="ui-audioInputGroup">
+          <div class="ui-audioInput"><img id="audio-input-dev" src="" height="15" width="15" alt="mic"/>
+            <ul id="audio-devlist"></ul>
+          </div>
+          <div class="ui-audioMeter">
+            <canvas id="audio-meter" width="80" height="15"></canvas>
+          </div>
+        </div>
+        <div id="audio-look-at" data-i18n="EditTab.Toolbox.TalkingBookTool.LookAtSentence" class="audio-label">2) Look at the highlighted sentence</div>
+        <div id="audio-record-wrapper" class="button-label-wrapper">
+          <div class="button-wrapper">
+            <button id="audio-record" class="ui-audio-button ui-button expected"></button>
+          </div>
+          <div id="audio-record-label" data-i18n="EditTab.Toolbox.TalkingBookTool.Speak" class="audio-label">3) Speak</div>
+        </div>
+        <div id="audio-play-wrapper" class="button-label-wrapper">
+          <div class="button-wrapper">
+            <button id="audio-play" class="ui-audio-button ui-button enabled"></button>
+          </div>
+          <div id="audio-play-label" data-i18n="EditTab.Toolbox.TalkingBookTool.Check" class="audio-label">4) Check</div>
+        </div>
+        <div id="audio-next-wrapper" class="button-label-wrapper">
+          <div class="button-wrapper">
+            <button id="audio-next" class="ui-audio-button ui-button enabled"></button>
+          </div>
+          <div id="audio-next-label" data-i18n="EditTab.Toolbox.TalkingBookTool.Next" class="audio-label">5) Next</div>
+        </div>
+        <div id="audio-prev-wrapper" class="button-label-wrapper">
+          <div class="button-wrapper">
+            <button id="audio-prev" class="ui-audio-button ui-button disabled"></button>
+          </div>
+          <div id="audio-prev-label" data-i18n="EditTab.Toolbox.TalkingBookTool.Back" class="audio-label">Back</div>
+        </div>
+        <div id="audio-listen-wrapper" class="button-label-wrapper">
+          <div class="button-wrapper">
+            <button id="audio-listen" class="ui-audio-button ui-button disabled"></button>
+          </div>
+          <div id="audio-listen-label" data-i18n="EditTab.Toolbox.TalkingBookTool.Listen" class="audio-label">Listen to the whole page</div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

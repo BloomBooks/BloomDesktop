@@ -76,14 +76,6 @@ class CalledByCSharp {
       contentWindow['SetCopyrightAndLicense'](contents);
   }
 
-  showTalkingBookTool() {
-      var contentWindow = this.getToolboxContent();
-        if (!contentWindow) return;
-        if (typeof contentWindow['showTalkingBookTool'] === 'function') {
-            contentWindow['showTalkingBookTool']();
-        }
-    }
-
     cleanupAudio() {
         var contentWindow = this.getPageContent();
         if (!contentWindow) return;
@@ -92,11 +84,11 @@ class CalledByCSharp {
         }
     }
 
-    setPeakLevel(level:string) {
-        var contentWindow = this.getPageContent();
-        if (!contentWindow) return;
-        if (typeof contentWindow['setPeakLevel'] === 'function') {
-            contentWindow['setPeakLevel'](level);
+    setPeakLevel(level: string) {
+        var toolboxWindow = this.getToolboxContent();
+        if (!toolboxWindow) return;
+        if (typeof toolboxWindow['setPeakLevel'] === 'function') {
+            toolboxWindow['setPeakLevel'](level);
         }
     }
 

@@ -1,7 +1,7 @@
 ﻿// This class supports creating audio recordings for talking books.
-// Things currently get started when the user selects the "record audio" item in
-// the right-click menu while editing. This invokes the static function showRecordingTools
-// in this file, which invokes audioRecording.showRecordingTools. That code breaks the
+// Things currently get started when the user selects the "Talking Book Tool" item in
+// the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
+// in this file. That code breaks the
 // page's text into sentence-length spans (if not already done), makes sure each
 // has an id (preserving existing ones, and using guids for new ones). Then it
 // displays  a popup 'bubble' with controls for moving between sentences,
@@ -54,11 +54,10 @@ class AudioRecording {
     levelCanvasHeight: number = 80;
     hiddenSourceBubbles: JQuery;
     audioDevicesUrl = '/bloom/audioDevices';
-    api:any; // the api object we get from the show event after launching the bubble dialog.
 
     private moveToNextSpan(): void {
-        var current: JQuery = $('.ui-audioCurrent');
-        var audioElts = $('.audio-sentence');
+        var current: JQuery = this.getPage().find('.ui-audioCurrent');
+        var audioElts = this.getPage().find('.audio-sentence');
         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
         if (next.length === 0) return; // enhance: go to next page??
         this.setCurrentSpan(current, next);
@@ -71,9 +70,12 @@ class AudioRecording {
         changeTo.addClass('ui-audioCurrent');
         var id = changeTo.attr("id");
         var player = $('#player');
-        //  FF can't directly play mp3, try wav
-        player.attr('src', 'audio/' + id + '.wav');
-        var audioElts = $('.audio-sentence');
+        //  FF can't directly play mp3, try wav. The relevant wav file is in the audio file of the book in the page frame
+        var bookSrc = this.getPageFrame().src;
+        var index = bookSrc.lastIndexOf('/');
+        var bookFolderUrl = bookSrc.substring(0, index + 1);
+        player.attr('src', bookFolderUrl + 'audio/' + id + '.wav');
+        var audioElts = this.getPage().find('.audio-sentence');
         var index = audioElts.index(changeTo);
         this.setStatus('prev', index === 0 ? Status.Disabled : Status.Enabled);
         this.setStatus('next', index === audioElts.length - 1 ? Status.Disabled : Status.Enabled);
@@ -81,8 +83,8 @@ class AudioRecording {
     }
 
     private moveToPrevSpan(): void {
-        var current: JQuery = $('.ui-audioCurrent');
-        var audioElts = $('.audio-sentence');
+        var current: JQuery = this.getPage().find('.ui-audioCurrent');
+        var audioElts = this.getPage().find('.audio-sentence');
         var currentIndex = audioElts.index(current);
         if (currentIndex === 0) return;
         var prev: JQuery = audioElts.eq(currentIndex - 1);
@@ -108,7 +110,7 @@ class AudioRecording {
 
     private startRecordCurrent(): void {
         this.recording = true;
-        var current: JQuery = $('.ui-audioCurrent');
+        var current: JQuery = this.getPage().find('.ui-audioCurrent');
         var id = current.attr("id");
         this.fireCSharpEvent("startRecordAudio", id);
         this.setStatus('record', Status.Active);
@@ -207,119 +209,57 @@ class AudioRecording {
         });
     }
 
-    // Each 'button' in the main list has an actual button (with an image), and in most cases some text below.
-    // It seems to require two divs around the button and span to arrange the button and text vertically
-    // and the row of buttons horizontally. This method generates whatever we decide is needed for each
-    // group, parameterized by the identifier of which button and the text to go below it.
-    // (Note that the full button ID is audio- plus the ID passed in; it is used in other element IDs too.)
-    private makeHtmlForOneButtonGroup(buttonId: string, initialStatusClass: string, buttonLabel: string): string {
-        return "<div id='audio-" + buttonId + "-wrapper' class='button-label-wrapper'>" +
-            "<div>" +
-            "<button id='audio-" + buttonId + "' class='ui-audio-button ui-button " + initialStatusClass + "'/>" +
-            "<span id='audio-" + buttonId + "-label' class='audio-label'>" + buttonLabel + "</span>" +
-            "</div>" +
-            "</div>";
+    public initializeTalkingBookTool() {
+        // I've sometimes observed events like click being handled repeatedly for a single click.
+        // Adding thse .off calls seems to help...it's as if something causes this show event to happen
+        // more than once so the event handlers were being added repeatedly, but I haven't caught
+        // that actually happening. However, the off() calls seem to prevent it.
+        $('#audio-next').off().click(e => this.moveToNextSpan());
+        $('#audio-prev').off().click(e => this.moveToPrevSpan());
+        $('#audio-record').off().mousedown(e => this.startRecordCurrent()).mouseup(e => this.endRecordCurrent());
+        $('#audio-play').off().click(e => this.playCurrent());
+        $('#player').off();
+        $('#player').bind('error', e => this.cantPlay());
+
+        $('#player').bind('ended', e => this.playEnded());
+        $('#audio-input-dev').off().click(e => this.selectInputDevice());
     }
 
-    public showRecordingTools(): void {
-        var editable = <qtipInterface>$('div.bloom-editable');
+    public getPageFrame(): HTMLIFrameElement {
+        return <HTMLIFrameElement>parent.window.document.getElementById('page');
+    }
+
+    // The body of the editable page, a root for searching for document content.
+    public getPage(): JQuery {
+        var page = this.getPageFrame();
+        if (!page) return null;
+        return $(page.contentWindow.document.body);
+    }
+
+    public setupForRecording(): void {
+        var page = this.getPage();
+        if (!page) return; // unit testing?
+        var editable = <qtipInterface>page.find('div.bloom-editable');
         this.makeSentenceSpans(editable);
         // For displaying the qtip, restrict the editable divs to the ones that have
         // audio sentences.
-        editable = <qtipInterface>$('span.audio-sentence').parents('div.bloom-editable');
+        editable = <qtipInterface>$(page).find('span.audio-sentence').parents('div.bloom-editable');
         var thisClass = this;
-        this.hiddenSourceBubbles = $('.uibloomSourceTextsBubble');
+        this.hiddenSourceBubbles = page.find('.uibloomSourceTextsBubble');
         this.hiddenSourceBubbles.hide();
-        var bubble = $("<div class='ui-audioTitle'>Talking Book Audio</div>" +
-            "<audio id='player'></audio>" +
-            "<div class=ui-audioBody>" +
-            this.makeHtmlForOneButtonGroup('prev', 'disabled', '') +
-            this.makeHtmlForOneButtonGroup('record', 'expected', '1) Rec') +
-            this.makeHtmlForOneButtonGroup('play', 'enabled', '2) Check') +
-            this.makeHtmlForOneButtonGroup('next', 'enabled', '3) Next') +
-           "</div><div class='ui-audioFooter'>" +
-                //"<span id='audio-close' class='ui-icon ui-icon-close'>N</span>" +
-            "</div>" +
-            "<div class='ui-audioMeter'><canvas id='audio-meter' width='" +
-                this.levelCanvasWidth + "' height='" + this.levelCanvasHeight + "'></canvas>" +
-            "<div><img id='audio-input-dev' src='' height='15' width='15' alt='mic'>" +
-            "</div>" +
-            "<ul id='audio-devlist'></ul>" +
-            "</div>");
-        bubble.css('z-index', 15003);
-        editable.qtip({
-            id:'audio',
-            position: {
-                my: 'left top',
-                at: 'top right',
-                adjust: {
-                    x: 10,
-                    y: 0
-                }
-            },
-            //content: { text: bubble, title: { text: "Record for read-aloud", button: true } },
-            content: bubble,
 
-            show: {
-                ready: true
-            },
-            hide: {
-                event: false, // works somehow with content.title.button to make close button work
-                effect: function() {
-                    (<any>(<qtipInterface>$('#qtip-audio')).qtip('api')).destroy();
-                    var current: JQuery = $('.ui-audioCurrent');
-                    current.removeClass('ui-audioCurrent');
-                } // prevents it coming back on mouseenter Todo: remove highlights
-            },
-            style: {
-                tip: {
-                    corner: true,
-                    width: 10,
-                    height: 10,
-                    mimic: 'left center',
-                    offset: 20
-                },
-                classes: 'ui-tooltip-green ui-tooltip-rounded uibloomSourceTextsBubble'
-            },
-            events: {
-                show: function (event, api) {
-                    thisClass.api = api;
-                    // I've sometimes observed events like click being handled repeatedly for a single click.
-                    // Adding thse .off calls seems to help...it's as if something causes this show event to happen
-                    // more than once so the event handlers were being added repeatedly, but I haven't caught
-                    // that actually happening. However, the off() calls seem to prevent it.
-                    $('#audio-close').off().click(e => thisClass.hideRecordingTools());
-                    $('#audio-next').off().click(function () {
-                        thisClass.moveToNextSpan();
-                    });
-                    $('#audio-prev').off().click(e => thisClass.moveToPrevSpan());
-                    $('#audio-record').off().mousedown(e => thisClass.startRecordCurrent()).mouseup(e => thisClass.endRecordCurrent());
-                    $('#audio-play').off().click(e => thisClass.playCurrent());
-                    $('#player').off();
-                    $('#player').bind('error', e => thisClass.cantPlay());
-
-                    $('#player').bind('ended', e => thisClass.playEnded());
-                    $('#audio-input-dev').off().click(e => thisClass.selectInputDevice());
-                    thisClass.setStatus('record', Status.Expected);
-
-                    // This is easier to do here than in setPeakLevel,
-                    // because it executes in the scope of the bubble
-                    // iframe where $('#audio-meter') works.
-                    thisClass.levelCanvas = $('#audio-meter').get()[0];
-                    // I'm not sure why this has to be done inside show:, but if we do it below
-                    // addSentenceSpans below, something wipes out the src attr on the <audio>
-                    // element, and we can't play the first sound if any.
-                    var firstSentence = editable.find('span.audio-sentence').first();
-                    thisClass.setCurrentSpan($('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
-                    thisClass.updateInputDeviceDisplay();
-            }
-            }
-        });
+        thisClass.setStatus('record', Status.Expected);
+        thisClass.levelCanvas = $('#audio-meter').get()[0];
+        // I'm not sure why this has to be done inside show:, but if we do it below
+        // addSentenceSpans below, something wipes out the src attr on the <audio>
+        // element, and we can't play the first sound if any.
+        var firstSentence = editable.find('span.audio-sentence').first();
+        thisClass.setCurrentSpan(page.find('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
+        thisClass.updateInputDeviceDisplay();
     }
 
-    public hideRecordingTools() {
+    public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();
-        this.api.hide();
     }
 
     // This gets invoked (via a non-object method of the same name in this file,
@@ -329,29 +269,28 @@ class AudioRecording {
     //  top right of the bubble to indicate the current peak level.
     public setPeakLevel(level: string): void {
         var ctx = this.levelCanvas.getContext("2d");
-
         // Erase the whole canvas
-        var height = this.levelCanvasHeight;
-        var width = this.levelCanvasWidth;
-        var recordQtipColor = '#faf7cc'; // should match value in audioRecording.less
+        var height = 15;
+        var width = 80;
+        var recordQtipColor = '#363333'; // should match value in audioRecording.less
         ctx.fillStyle = recordQtipColor;
         ctx.fillRect(0, 0, width, height);
 
         // Draw the appropriate number and color of bars
         var gap = 2;
-        var barHeight = 4;
-        var interval = gap + barHeight;
-        var bars = Math.floor(height / interval);
+        var barWidth = 4;
+        var interval = gap + barWidth;
+        var bars = Math.floor(width / interval);
         var redBars = Math.max(Math.floor(bars / 10), 1);
         var yellowBars = Math.max(Math.floor(bars / 5), 1);
         var greenBars = bars - redBars - yellowBars;
         var showBars = Math.floor(bars * parseFloat(level)) + 1;
         ctx.fillStyle = '#0C8597'; // should match recordQtipForeground; or "#00FF00"; green
         for (var i = 0; i < showBars; i++) {
-            var bottom = height - interval * i;
+            var left = interval * i;
             if (i >= greenBars) ctx.fillStyle = '96668f';//or "#FFFF00"; yellow
             if (i >= greenBars + yellowBars) ctx.fillStyle = "#FF0000";
-            ctx.fillRect(gap, bottom - barHeight, width - gap - gap, barHeight);
+            ctx.fillRect(left, 0, barWidth, height);
         }
     }
 
@@ -733,7 +672,7 @@ class AudioRecording {
 
     // Clean up stuff audio recording leaves around that should not be saved.
     public cleanupAudio(): void {
-        $('span.ui-audioCurrent').removeClass('ui-audioCurrent');
+        this.getPage().find('span.ui-audioCurrent').removeClass('ui-audioCurrent');
     }
 
     private fireCSharpEvent(eventName, eventData): void {
@@ -753,19 +692,16 @@ if (typeof ($) === "function") {
 
     // Running for real, and jquery properly loaded first
     $(document).ready(function () {
-        audioRecorder = new AudioRecording();
-        libsynphony = new libSynphony();
+        initializeTalkingBookTool();
     });
 }
 
-// Function called to start things going.
-// Called by code in talkingBooks.ts
-function showRecordingTools() {
-    audioRecorder.showRecordingTools();
-}
-
-function hideRecordingTools() {
-    audioRecorder.hideRecordingTools();
+function initializeTalkingBookTool() {
+    if (audioRecorder)
+        return;
+    audioRecorder = new AudioRecording();
+    libsynphony = new libSynphony();
+    audioRecorder.initializeTalkingBookTool();
 }
 
 function cleanupAudio() {

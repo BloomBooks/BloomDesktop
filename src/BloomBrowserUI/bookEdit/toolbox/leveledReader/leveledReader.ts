@@ -11,6 +11,17 @@ class LeveledReaderModel implements ITabModel {
     }
 
     configureElements(container: HTMLElement) {}
+
+    showTool(ui: any) {
+        // change markup based on visible options
+        model.setMarkupType(ui.newHeader.data('markuptype'));
+    }
+
+    hideTool(ui: any) {
+        model.setMarkupType(ui.newHeader.data('markuptype'));
+    }
+
+    name() {return 'leveledReaderTool';}
 }
 
 tabModels.push(new LeveledReaderModel());

@@ -64,14 +64,6 @@ var CalledByCSharp = (function () {
         if (typeof contentWindow['SetCopyrightAndLicense'] === 'function')
             contentWindow['SetCopyrightAndLicense'](contents);
     };
-    CalledByCSharp.prototype.showTalkingBookTool = function () {
-        var contentWindow = this.getToolboxContent();
-        if (!contentWindow)
-            return;
-        if (typeof contentWindow['showTalkingBookTool'] === 'function') {
-            contentWindow['showTalkingBookTool']();
-        }
-    };
     CalledByCSharp.prototype.cleanupAudio = function () {
         var contentWindow = this.getPageContent();
         if (!contentWindow)
@@ -81,11 +73,11 @@ var CalledByCSharp = (function () {
         }
     };
     CalledByCSharp.prototype.setPeakLevel = function (level) {
-        var contentWindow = this.getPageContent();
-        if (!contentWindow)
+        var toolboxWindow = this.getToolboxContent();
+        if (!toolboxWindow)
             return;
-        if (typeof contentWindow['setPeakLevel'] === 'function') {
-            contentWindow['setPeakLevel'](level);
+        if (typeof toolboxWindow['setPeakLevel'] === 'function') {
+            toolboxWindow['setPeakLevel'](level);
         }
     };
     CalledByCSharp.prototype.removeSynphonyMarkup = function () {

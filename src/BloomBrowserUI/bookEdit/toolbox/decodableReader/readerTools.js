@@ -144,10 +144,6 @@ function initializeSynphony(settingsFileContent) {
     synphony.loadSettings(settingsFileContent);
     model.restoreState();
     model.updateControlContents();
-    // change markup based on visible options
-    $('#toolbox').onOnce('accordionactivate.readerTools', function (event, ui) {
-        model.setMarkupType(ui.newHeader.data('markuptype'));
-    });
     // set up a DirectoryWatcher on the Sample Texts directory
     model.directoryWatcher = new DirectoryWatcher('Sample Texts', 10);
     model.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);

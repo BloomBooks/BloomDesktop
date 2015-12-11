@@ -23,6 +23,7 @@ var toolbox = new ToolBox();
 // Array of models, typically one for each tab. The code for each tab inserts an appropriate model
 // into this array in order to be interact with the overall toolbox code.
 var tabModels = [];
+var currentTool;
 /**
  * Fires an event for C# to handle
  * @param {String} eventName
@@ -101,10 +102,26 @@ function setCurrentPanel(currentPanel) {
     toolbox.accordion('option', 'animate', ani);
     // when a panel is activated, save its data-panelId so state can be restored when Bloom is restarted.
     toolbox.onOnce('accordionactivate.toolbox', function (event, ui) {
-        if (ui.newHeader.attr('data-panelId'))
+        var newTool = null;
+        if (ui.newHeader.attr('data-panelId')) {
+            var newToolName = ui.newHeader.attr('data-panelId').toString();
+            for (var i = 0; i < tabModels.length; i++) {
+                if (tabModels[i].name() === newToolName) {
+                    newTool = tabModels[i];
+                }
+            }
             fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
-        else
+        }
+        else {
             fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t");
+        }
+        if (currentTool !== newTool) {
+            if (currentTool)
+                currentTool.hideTool(ui);
+            if (newTool)
+                newTool.showTool(ui);
+            currentTool = newTool;
+        }
     });
 }
 /**
@@ -175,13 +192,6 @@ function loadToolboxPanel(newContent, panelId) {
         var id = tab.attr('id');
         var tabNumber = parseInt(id.substr(id.lastIndexOf('_')));
         toolbox.accordion('option', 'active', tabNumber); // must pass as integer
-        // when a panel is activated, save which it is so state can be restored when Bloom is restarted.
-        toolbox.onOnce('accordionactivate.toolbox', function (event, ui) {
-            if (ui.newHeader.attr('data-panelId'))
-                fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
-            else
-                fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t");
-        });
     }
 }
 $(document).ready(function () {

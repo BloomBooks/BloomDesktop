@@ -52,6 +52,14 @@ var DecodableReaderModel = (function () {
     DecodableReaderModel.prototype.configureElements = function (container) {
         this.setupReaderKeyAndFocusHandlers(container);
     };
+    DecodableReaderModel.prototype.showTool = function (ui) {
+        // change markup based on visible options
+        model.setMarkupType(ui.newHeader.data('markuptype'));
+    };
+    DecodableReaderModel.prototype.hideTool = function (ui) {
+        model.setMarkupType(ui.newHeader.data('markuptype'));
+    };
+    DecodableReaderModel.prototype.name = function () { return 'decodableReaderTool'; };
     return DecodableReaderModel;
 })();
 tabModels.push(new DecodableReaderModel());

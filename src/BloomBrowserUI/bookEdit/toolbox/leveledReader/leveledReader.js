@@ -12,6 +12,14 @@ var LeveledReaderModel = (function () {
         }
     };
     LeveledReaderModel.prototype.configureElements = function (container) { };
+    LeveledReaderModel.prototype.showTool = function (ui) {
+        // change markup based on visible options
+        model.setMarkupType(ui.newHeader.data('markuptype'));
+    };
+    LeveledReaderModel.prototype.hideTool = function (ui) {
+        model.setMarkupType(ui.newHeader.data('markuptype'));
+    };
+    LeveledReaderModel.prototype.name = function () { return 'leveledReaderTool'; };
     return LeveledReaderModel;
 })();
 tabModels.push(new LeveledReaderModel());
