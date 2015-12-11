@@ -54,6 +54,7 @@ class AudioRecording {
     levelCanvasHeight: number = 80;
     hiddenSourceBubbles: JQuery;
     audioDevicesUrl = '/bloom/audioDevices';
+    playingAll: boolean; // true during playAll.
 
     private moveToNextSpan(): void {
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
@@ -122,7 +123,27 @@ class AudioRecording {
         this.setStatus('record', Status.Enabled);
     }
 
+    private playAll(): void {
+        var original: JQuery = this.getPage().find('.ui-audioCurrent');
+        var audioElts = this.getPage().find('.audio-sentence');
+        var first = audioElts.eq(0);
+        this.setCurrentSpan(original, first);
+        this.playingAll = true;
+        this.playCurrent();
+    }
+
     private playEnded(): void {
+        if (this.playingAll) {
+            var current: JQuery = this.getPage().find('.ui-audioCurrent');
+            var audioElts = this.getPage().find('.audio-sentence');
+            var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
+            if (next.length !== 0) {
+                this.setCurrentSpan(current, next);
+                this.playCurrent();
+                return;
+            }
+            this.playingAll = false;
+        }
         this.setStatus('play', Status.Enabled); // no longer 'expected'
         if ($('#audio-next').hasClass('enabled')) {
             this.setStatus('next', Status.Expected);
@@ -218,6 +239,7 @@ class AudioRecording {
         $('#audio-prev').off().click(e => this.moveToPrevSpan());
         $('#audio-record').off().mousedown(e => this.startRecordCurrent()).mouseup(e => this.endRecordCurrent());
         $('#audio-play').off().click(e => this.playCurrent());
+        $('#audio-listen').off().click(e => this.playAll());
         $('#player').off();
         $('#player').bind('error', e => this.cantPlay());
 

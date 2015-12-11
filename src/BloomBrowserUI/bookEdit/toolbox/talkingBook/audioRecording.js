@@ -118,7 +118,26 @@ var AudioRecording = (function () {
         this.setStatus('play', Status.Active);
         this.setStatus('record', Status.Enabled);
     };
+    AudioRecording.prototype.playAll = function () {
+        var original = this.getPage().find('.ui-audioCurrent');
+        var audioElts = this.getPage().find('.audio-sentence');
+        var first = audioElts.eq(0);
+        this.setCurrentSpan(original, first);
+        this.playingAll = true;
+        this.playCurrent();
+    };
     AudioRecording.prototype.playEnded = function () {
+        if (this.playingAll) {
+            var current = this.getPage().find('.ui-audioCurrent');
+            var audioElts = this.getPage().find('.audio-sentence');
+            var next = audioElts.eq(audioElts.index(current) + 1);
+            if (next.length !== 0) {
+                this.setCurrentSpan(current, next);
+                this.playCurrent();
+                return;
+            }
+            this.playingAll = false;
+        }
         this.setStatus('play', Status.Enabled); // no longer 'expected'
         if ($('#audio-next').hasClass('enabled')) {
             this.setStatus('next', Status.Expected);
@@ -215,6 +234,7 @@ var AudioRecording = (function () {
         $('#audio-prev').off().click(function (e) { return _this.moveToPrevSpan(); });
         $('#audio-record').off().mousedown(function (e) { return _this.startRecordCurrent(); }).mouseup(function (e) { return _this.endRecordCurrent(); });
         $('#audio-play').off().click(function (e) { return _this.playCurrent(); });
+        $('#audio-listen').off().click(function (e) { return _this.playAll(); });
         $('#player').off();
         $('#player').bind('error', function (e) { return _this.cantPlay(); });
         $('#player').bind('ended', function (e) { return _this.playEnded(); });
