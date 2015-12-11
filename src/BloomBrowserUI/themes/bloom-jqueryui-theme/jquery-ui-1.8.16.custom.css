@@ -142,7 +142,7 @@ Component containers
 .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default
 {
 	border: 1px solid #666666;
-	background: #555555 url(images/ui-bg_glass_20_555555_1x400.png) repeat-x 50% 50%;
+	background: #666666;
 	font-weight: bold;
 	color: #EEEEEE;
 	padding-top: 7px;

@@ -963,6 +963,8 @@ namespace Bloom.Edit
 				_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
 					//_layoutChoices.ToolTipText); doesn't work because the scanner needs literals
 					"Choose a page size and orientation");
+
+				_pageListView.UpdateDisplay();
 			}
 			catch (Exception error)
 			{

@@ -8,7 +8,7 @@ namespace Bloom.Edit
 {
 	class LeveledReaderTool : ToolboxTool
 	{
-		public const string ToolId = "leveledReader";  // Avoid changing value; see ToolboxTool.JsonToolId
-		public override string JsonToolId { get { return ToolId; } }
+		public const string StaticToolId = "leveledReader";  // Avoid changing value; see ToolboxTool.JsonToolId
+		public override string ToolId { get { return StaticToolId; } }
 	}
 }

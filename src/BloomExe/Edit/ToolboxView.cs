@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using BloomTemp;
 using Newtonsoft.Json;
 using SIL.IO;
+using SIL.Xml;
 
 namespace Bloom.Edit
 {
@@ -55,35 +54,19 @@ namespace Bloom.Edit
 
 			var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 
-			// embed settings on the page
-			var tools = book.BookInfo.Tools.Where(t => t.Enabled == true).ToList();
+			//enhance: this is yet another "place you have to register a new tool"
+			var idsOfToolsThisVersionKnowsAbout = new[] { DecodableReaderTool.StaticToolId, LeveledReaderTool.StaticToolId, TalkingBookTool.StaticToolId, BookSettingsTool.StaticToolId };
+			
+			var toolsToDisplay = GetToolsToDisplay(book, idsOfToolsThisVersionKnowsAbout);
 
-			var settings = new Dictionary<string, object>
-			{
-				{"current", book.BookInfo.CurrentTool}
-			};
+			EmbedSettings(book, toolsToDisplay, domForToolbox);
 
-			RetrieveToolSettings(tools, "talkingBook", settings);
-			RetrieveToolSettings(tools, "decodableReader", settings);
-			RetrieveToolSettings(tools, "leveledReader", settings);
-
-			var settingsStr = JsonConvert.SerializeObject(settings);
-			settingsStr = String.Format("function GetToolboxSettings() {{ return {0};}}", settingsStr) +
-				"\n$(document).ready(function() { restoreToolboxSettings(GetToolboxSettings()); });";
-
-			var scriptElement = domForToolbox.RawDom.CreateElement("script");
-			scriptElement.SetAttribute("type", "text/javascript");
-			scriptElement.SetAttribute("id", "ui-accordionSettings");
-			scriptElement.InnerText = settingsStr;
-
-			domForToolbox.Head.InsertAfter(scriptElement, domForToolbox.Head.LastChild);
-
-			// get additional tabs to load
+			// get additional tools to load
 			var checkedBoxes = new List<string>();
-
-			LoadPanelIntoToolboxIfAvailable(domForToolbox, tools, checkedBoxes, "decodableReader", toolboxFolder);
-			LoadPanelIntoToolboxIfAvailable(domForToolbox, tools, checkedBoxes, "leveledReader", toolboxFolder);
-			LoadPanelIntoToolboxIfAvailable(domForToolbox, tools, checkedBoxes, "talkingBook", toolboxFolder);
+			foreach (var tool in toolsToDisplay)
+			{
+				LoadPanelIntoToolbox(domForToolbox, tool, checkedBoxes, toolboxFolder);
+			}
 
 			// Load settings into the toolbox panel
 			AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(toolboxFolder, "settings", "Settings.htm")));
@@ -91,40 +74,97 @@ namespace Bloom.Edit
 			// check the appropriate boxes
 			foreach (var checkBoxId in checkedBoxes)
 			{
-				domForToolbox.Body.SelectSingleNode("//div[@id='" + checkBoxId + "']").InnerXml = "&#10004;";
+				// Review: really? we have to use a special character to make a check? can't we add "checked" attribute?
+				var node = domForToolbox.Body.SelectSingleNode("//div[@id='" + checkBoxId + "']");
+				if(node!=null)
+					node.InnerXml = "&#10004;";
 			}
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(domForToolbox.RawDom);
 			return TempFileUtils.CreateHtml5StringFromXml(domForToolbox.RawDom);
 		}
 
-		public static void RetrieveToolSettings(List<ToolboxTool> toolList, string toolName, Dictionary<string, object> settingsObject)
+		private static List<ToolboxTool> GetToolsToDisplay(Book.Book book, string[] idsOfToolsThisVersionKnowsAbout)
 		{
-			var toolObject = toolList.FirstOrDefault(t => t.JsonToolId == toolName);
-			if (toolObject != null && !String.IsNullOrEmpty(toolObject.State))
-				settingsObject.Add(toolObject.StateName, toolObject.State);
+			var toolsThatHaveDataInBookInfo =
+				book.BookInfo.Tools.Where(t => idsOfToolsThisVersionKnowsAbout.Contains(t.ToolId)).ToList();
+			var toolsToDisplay = toolsThatHaveDataInBookInfo;
+			toolsToDisplay.AddRange(
+				idsOfToolsThisVersionKnowsAbout.Except(
+					toolsThatHaveDataInBookInfo.Select(t => t.ToolId)).Select(ToolboxTool.CreateFromToolId));
+			return toolsToDisplay;
 		}
 
-		public static void LoadPanelIntoToolboxIfAvailable(HtmlDom domForToolbox, List<ToolboxTool> toolList, List<string> checkedBoxes, string toolName, string toolboxFolder)
+		private static void EmbedSettings(Book.Book book, IEnumerable<ToolboxTool> enabledTools, HtmlDom domForToolbox)
 		{
-			if (toolList.Any(t => t.JsonToolId == toolName))
+			//enhance: providing settings by injecting javascript is a c# kludge. Let's move to ajax requests that get the data from the server at the point that
+			//it needs it (if ever). See BookSettings.ts
+			var settings = new Dictionary<string, object>
 			{
-				// For all the toolbox tools, the tool name is used as the name of both the folder where the
-				// assets for that tool are kept, and the name of the main htm file that represents the tool.
-				AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(
-					toolboxFolder,
-					toolName,
-					toolName + ".htm")));
-				checkedBoxes.Add(toolName + "Check");
+				{"current", book.BookInfo.CurrentTool}
+			};
+
+			foreach (var tool in enabledTools)
+			{
+				RetrieveToolSettings(tool, settings);
 			}
+
+			var settingsStr = JsonConvert.SerializeObject(settings);
+			settingsStr = String.Format("function GetToolboxSettings() {{ return {0};}}", settingsStr) +
+			              "\n$(document).ready(function() { restoreToolboxSettings(GetToolboxSettings()); });";
+
+			var scriptElement = domForToolbox.RawDom.CreateElement("script");
+			scriptElement.SetAttribute("type", "text/javascript");
+			scriptElement.SetAttribute("id", "ui-accordionSettings");
+			scriptElement.InnerText = settingsStr;
+            domForToolbox.Head.InsertAfter(scriptElement, domForToolbox.Head.LastChild);
+		}
+
+		public static void RetrieveToolSettings(ToolboxTool tool, Dictionary<string, object> settingsObject)
+		{
+			if (tool != null && !String.IsNullOrEmpty(tool.State))
+				settingsObject.Add(tool.StateName, tool.State);
+		}
+
+		public static void LoadPanelIntoToolbox(HtmlDom domForToolbox, ToolboxTool tool, List<string> checkedBoxes, string toolboxFolder)
+		{
+			// For all the toolbox tools, the tool name is used as the name of both the folder where the
+			// assets for that tool are kept, and the name of the main htm file that represents the tool.
+			AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(
+				toolboxFolder,
+				tool.ToolId,
+				tool.ToolId + ".htm")));
+			checkedBoxes.Add(tool.ToolId + "Check");
 		}
 
 		/// <summary>Loads the requested panel into the toolbox</summary>
 		public static void AppendToolboxPanel(HtmlDom domForToolbox, string fileName)
 		{
 			var toolbox = domForToolbox.Body.SelectSingleNode("//div[@id='toolbox']");
-			var subPanelDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(fileName));
-			AppendAllChildren(subPanelDom.Body, toolbox);
+			var toolDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(fileName));
+			AddToolDependencies(toolDom);
+			AppendAllChildren(toolDom.Body, toolbox);
+		}
+
+		private static void AddToolDependencies(HtmlDom toolDom)
+		{
+			//TODO: I'm disabling this because the existence of the <script> element messes up the Accordion (it trips over it somehow).
+			//We can return to this approach if/when we fix that or, more likely, abandon the accordion for a better control
+			return;
+
+			//Enhance: this can currently handle a single <script> element in the head of the component html
+			//Enhance: Load in a different way so that the linked files can be debugged in a browser. 
+			//See http://stackoverflow.com/questions/690781/debugging-scripts-added-via-jquery-getscript-function
+			var scriptInHead = toolDom.Head.SelectSingleNode("script");
+			if (scriptInHead != null)
+			{
+				var scriptElement = toolDom.RawDom.CreateElement("script");
+				var path = scriptInHead.GetStringAttribute("src");
+				// use jquery getScript to dynamically load the script
+				scriptElement.InnerText =
+					"$.getScript('" + path + "').done(function() {}).fail(function() {alert('failed to load " + path + "')});";
+				toolDom.Body.AppendChild(scriptElement);
+			}
 		}
 
 		public static void AppendAllChildren(XmlNode source, XmlNode dest)
@@ -145,6 +185,57 @@ namespace Bloom.Edit
 					continue; // likewise stylesheets must be inserted
 				dest.AppendChild(dest.OwnerDocument.ImportNode(node,true));
 			}
+		}
+
+
+		/// <summary>
+		/// Used to save various settings relating to the toolbox. Passed a string which is typically two or three elements
+		/// divided by a tab.
+		/// - may be passed 'active' followed by the ID of one of the check boxes that indicates whether the DR, LR, or TB tools are
+		/// in use, followed by "1" if it is used, or "0" if not. These IDs are arranged to be the tool name followed by "Check".
+		/// - may be passed 'current' followed by the name of one of the toolbox tools
+		/// - may be passed 'state' followed by the name of one of the tools and its current state string.
+		/// </summary>
+		public static void SaveToolboxSettings(Book.Book book, string data)
+		{
+			var args = data.Split(new[] { '\t' });
+
+			switch (args[0])
+			{
+				case "active":
+					UpdateActiveToolSetting(book, args[1].Substring(0, args[1].Length - "Check".Length), args[2] == "1");
+					return;
+
+				case "current":
+					book.BookInfo.CurrentTool = args[1];
+					return;
+
+				case "state":
+					UpdateToolState(book, args[1], args[2]);
+					return;
+			}
+		}
+
+		private static void UpdateToolState(Book.Book book, string toolName, string state)
+		{
+			var tools = book.BookInfo.Tools;
+			var item = tools.FirstOrDefault(t => t.ToolId == toolName);
+
+			if (item != null)
+				item.State = state;
+		}
+
+		private static void UpdateActiveToolSetting(Book.Book book, string toolName, bool enabled)
+		{
+			var tools = book.BookInfo.Tools;
+			var item = tools.FirstOrDefault(t => t.ToolId == toolName);
+
+			if (item == null)
+			{
+				item = ToolboxTool.CreateFromToolId(toolName);
+				tools.Add(item);
+			}
+			item.Enabled = enabled;
 		}
 	}
 }

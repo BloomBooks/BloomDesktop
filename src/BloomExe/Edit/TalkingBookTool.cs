@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Gecko.DOM;
-
-namespace Bloom.Edit
+﻿namespace Bloom.Edit
 {
 	class TalkingBookTool : ToolboxTool
 	{
 		private bool _showRecordingtools;
-		public const string ToolId = "talkingBook";  // Avoid changing value; see ToolboxTool.JsonToolId
-		public override string JsonToolId { get { return ToolId; } }
+		public const string StaticToolId = "talkingBook";  // Avoid changing value; see ToolboxTool.JsonToolId
+		public override string ToolId { get { return StaticToolId; } }
 
 		internal override void SaveSettings(ElementProxy toolbox)
 		{
