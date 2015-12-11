@@ -3,73 +3,73 @@ html
 
 	body
 		// markuptype refers to which kind of synphony markup is displayed in the panel. See ReaderToolsModel.setMarkupType and the MarkupType enumeration.
-		h3(data-panelId='leveledReaderTool', data-markuptype='2', data-order='20', data-i18n='Toolbox.LeveledReaderTool') Leveled Reader Tool
+		h3(data-panelId='leveledReaderTool', data-markuptype='2', data-order='20', data-i18n='EditTab.Toolbox.LeveledReaderTool') Leveled Reader Tool
 		div(data-panelId='leveledReaderTool')
 			#setupStages
 				img#leveled-edit(src='/bloom/images/edit-white.png')
 				span.setup.noSelect
-					a(href="javascript:window.showSetupDialog('levels');", data-i18n='LeveledReaderTool.SetUpLevels') Set up Levels
+					a(href="javascript:window.showSetupDialog('levels');", data-i18n='EditTab.Toolbox.LeveledReaderTool.SetUpLevels') Set up Levels
 			.stageLine.clear.noSelect
 				span.scroll-button.ui-icon.ui-icon-triangle-1-w#decLevel
 				span.stageLabel.stageLine.noSelect
-					span(data-i18n='LeveledReaderTool.Level')="Level "
+					span(data-i18n='EditTab.Toolbox.LeveledReaderTool.Level')="Level "
 					span#levelNumber 1
-					span.ofStage(data-i18n='LeveledReaderTool.LevelOf')!="&nbsp;of&nbsp;"
+					span.ofStage(data-i18n='EditTab.Toolbox.LeveledReaderTool.LevelOf')!="&nbsp;of&nbsp;"
 					span#numberOfLevels.ofStage 2
 				span.scroll-button.ui-icon.ui-icon-triangle-1-e#incLevel
 			table.statistics.clear(style='margin-left: 6px')
 				tr
-					td.section(data-i18n='LeveledReaderTool.WordCounts') Word counts
+					td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.WordCounts') Word counts
 				tr
-					td(data-i18n='LeveledReaderTool.ThisPage') This Page
+					td(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisPage') This Page
 				tr
 					td.statistics-label
-					td.statistics-max(data-i18n='LeveledReaderTool.Max') Max
-					td.statistics-actual(data-i18n='LeveledReaderTool.Actual') Actual
+					td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
+					td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
 				tr
-					td.statistics-label(data-i18n='LeveledReaderTool.PerPage') per page
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.PerPage') per page
 					td.statistics-max#maxWordsPerPage
 					td.statistics-actual#actualWordsPerPage -
 				tr
-					td.statistics-label(data-i18n='LeveledReaderTool.PerSentence') per sentence
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.PerSentence') per sentence
 					td.statistics-max#maxWordsPerSentence
 					td.statistics-actual#actualWordsPerSentence -
 			table.statistics.clear(style='margin-left: 6px')
 				tr
-					td.section(data-i18n='LeveledReaderTool.ThisBook') This Book
+					td.section(data-i18n='EditTab.Toolbox.LeveledReaderTool.ThisBook') This Book
 				tr
 					td.statistics-label
-					td.statistics-max(data-i18n='LeveledReaderTool.Max') Max
-					td.statistics-actual(data-i18n='LeveledReaderTool.Actual') Actual
+					td.statistics-max(data-i18n='EditTab.Toolbox.LeveledReaderTool.Max') Max
+					td.statistics-actual(data-i18n='EditTab.Toolbox.LeveledReaderTool.Actual') Actual
 				tr
-					td.statistics-label(data-i18n='LeveledReaderTool.Total') total
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.Total') total
 					td.statistics-max#maxWordsPerBook
 					td.statistics-actual#actualWordCount -
 				tr
-					td.statistics-label(data-i18n='LeveledReaderTool.PerPage') per page
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.PerPage') per page
 					td.statistics-max#maxWordsPerPageBook
 					td.statistics-actual#actualWordsPerPageBook -
 				tr
-					td.statistics-label(data-i18n='LeveledReaderTool.Unique') unique
+					td.statistics-label(data-i18n='EditTab.Toolbox.LeveledReaderTool.Unique') unique
 					td.statistics-max#maxUniqueWordsPerBook
 					td.statistics-actual#actualUniqueWords -
 			div(style='display: inline-block; position: relative; float: right; margin: 10px 14px')
 			.section(style='clear: both; margin-left: 8px;')
-				span(data-i18n='LeveledReaderTool.FoThisLevel') For this Level
+				span(data-i18n='EditTab.Toolbox.LeveledReaderTool.FoThisLevel') For this Level
 				ul#thingsToRemember
 			.section(style='margin-left: 8px;')
-				span(data-i18n='LeveledReaderTool.KeepInMind') Keep in mind
+				span(data-i18n='EditTab.Toolbox.LeveledReaderTool.KeepInMind') Keep in mind
 				ul
 					li
-						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?Vocabulary")', data-i18n='LeveledReaderTool.Vocabulary') Vocabulary
+						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?Vocabulary")', data-i18n='EditTab.Toolbox.LeveledReaderTool.Vocabulary') Vocabulary
 					li
-						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?Formatting")', data-i18n='LeveledReaderTool.Formatting') Formatting
+						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?Formatting")', data-i18n='EditTab.Toolbox.LeveledReaderTool.Formatting') Formatting
 					li
-						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?Predictability")', data-i18n='LeveledReaderTool.Predictability') Predictability
+						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?Predictability")', data-i18n='EditTab.Toolbox.LeveledReaderTool.Predictability') Predictability
 					li
-						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?IllustrationSupport")', data-i18n='LeveledReaderTool.IllustrationSupport') Illustration Support
+						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?IllustrationSupport")', data-i18n='EditTab.Toolbox.LeveledReaderTool.IllustrationSupport') Illustration Support
 					li
-						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?ChoiceOfTopic")', data-i18n='LeveledReaderTool.ChoiceOfTopic') Choice of Topic
+						a(href='javascript:loadExternalLink("leveledRTInfo/leveledReaderInfo-en.htm?ChoiceOfTopic")', data-i18n='EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic') Choice of Topic
 			script(type='text/javascript').
 				$(document).ready(function() {
 					// this timeout is different than the decodableReader timeout to prevent initializing synphony twice

@@ -5,7 +5,7 @@
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
-    <tu tuid="Accordion.DecodableReaderTool">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader Tool</seg>
@@ -14,7 +14,7 @@
         <seg>เครื่องมือ Decodable Reader  </seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.LeveledReaderTool">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader Tool</seg>
@@ -23,7 +23,7 @@
         <seg>เครื่องมือ Leveled Reader</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.More">
+    <tu tuid="EditTab.Toolbox.More">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More...</seg>
@@ -817,7 +817,7 @@
         <seg>การก่อสร้าง ...</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.LettersInThisStage">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Letters in this stage</seg>
@@ -826,7 +826,7 @@
         <seg>ตัวอักษรในขั้นตอนนี้</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.MakeLetterWordList">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Open a Letter and Word List File</seg>
@@ -835,7 +835,7 @@
         <seg>เปิดตัวอักษรและไฟล์รายการคำ</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.SetUpStages">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SetUpStages">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Set up Stages</seg>
@@ -844,7 +844,7 @@
         <seg>ขั้นตอนการจัดตั้ง</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.Stage">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.Stage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Stage</seg>
@@ -853,7 +853,7 @@
         <seg>ขั้นตอน</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.StageOf">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.StageOf">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>of</seg>
@@ -862,7 +862,7 @@
         <seg>ของ</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.WordsInThisStage">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Words in this stage</seg>
@@ -2121,7 +2121,7 @@
         <seg>B5 แนวตั้ง</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Actual">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Actual">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Actual</seg>
@@ -2130,7 +2130,7 @@
         <seg>แท้</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ChoiceOfTopic">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Choice of Topic</seg>
@@ -2139,7 +2139,7 @@
         <seg>ทางเลือกของข้อความ</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.FoThisLevel">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.FoThisLevel">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>For this Level</seg>
@@ -2148,7 +2148,7 @@
         <seg>สำหรับระดับนี้</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Formatting">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Formatting">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Formatting</seg>
@@ -2157,7 +2157,7 @@
         <seg>การจัดรูปแบบ</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.IllustrationSupport">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Illustration Support</seg>
@@ -2166,7 +2166,7 @@
         <seg>สนับสนุนภาพประกอบ</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.KeepInMind">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.KeepInMind">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Keep in mind</seg>
@@ -2175,7 +2175,7 @@
         <seg>จำไว้</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Level">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Level">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Level </seg>
@@ -2184,7 +2184,7 @@
         <seg>ระดับ</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.LevelOf">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.LevelOf">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg> of </seg>
@@ -2193,7 +2193,7 @@
         <seg>ของ</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Max">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Max">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Max</seg>
@@ -2202,7 +2202,7 @@
         <seg>ที่สุด</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.PerPage">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerPage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>per page</seg>
@@ -2211,7 +2211,7 @@
         <seg>ต่อหน้า</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.PerSentence">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerSentence">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>per sentence</seg>
@@ -2220,7 +2220,7 @@
         <seg>ต่อประโยค</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Predictability">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Predictability">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Predictability</seg>
@@ -2229,7 +2229,7 @@
         <seg>ความสามารถทายได้</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.SetUpLevels">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.SetUpLevels">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Set up Levels</seg>
@@ -2238,7 +2238,7 @@
         <seg>ตั้งค่าระดับ</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ThisBook">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ThisBook">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Book</seg>
@@ -2247,7 +2247,7 @@
         <seg>หนังสือเล่มนี้</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ThisPage">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ThisPage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Page</seg>
@@ -2256,7 +2256,7 @@
         <seg>หน้านี้</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Total">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Total">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>total</seg>
@@ -2265,7 +2265,7 @@
         <seg>ทั้งหมด</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Unique">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Unique">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>unique</seg>
@@ -2274,7 +2274,7 @@
         <seg>เป็นเอกลักษณ์</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Vocabulary">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Vocabulary">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Vocabulary</seg>
@@ -2283,7 +2283,7 @@
         <seg>ประมวลคำศัพท์</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.WordCounts">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.WordCounts">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Word counts</seg>
