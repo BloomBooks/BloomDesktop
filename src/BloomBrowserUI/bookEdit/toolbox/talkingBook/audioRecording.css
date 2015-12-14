@@ -1,5 +1,5 @@
 ﻿body div.ui-audioTitle {
-  color: #0C8597;
+  color: #0c8597;
   font-size: larger;
   margin-top: 5px;
   font-size: large;
@@ -75,7 +75,7 @@ body div.button-wrapper {
   min-width: 60px;
 }
 body div.audio-label {
-  color: #0C8597;
+  color: #0c8597;
   display: inline-block;
   max-width: 100px;
 }

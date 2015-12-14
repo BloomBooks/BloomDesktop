@@ -12,12 +12,14 @@ var LeveledReaderModel = (function () {
         }
     };
     LeveledReaderModel.prototype.configureElements = function (container) { };
-    LeveledReaderModel.prototype.showTool = function (ui) {
+    LeveledReaderModel.prototype.showTool = function () {
         // change markup based on visible options
-        model.setMarkupType(ui.newHeader.data('markuptype'));
+        model.setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!model.setMarkupType(2))
+            model.doMarkup();
     };
-    LeveledReaderModel.prototype.hideTool = function (ui) {
-        model.setMarkupType(ui.newHeader.data('markuptype'));
+    LeveledReaderModel.prototype.hideTool = function () {
+        model.setMarkupType(0);
     };
     LeveledReaderModel.prototype.name = function () { return 'leveledReaderTool'; };
     return LeveledReaderModel;

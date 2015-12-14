@@ -54,13 +54,14 @@ class DecodableReaderModel implements ITabModel {
         this.setupReaderKeyAndFocusHandlers(container);
     }
 
-    showTool(ui: any) {
+    showTool() {
         // change markup based on visible options
-        model.setMarkupType(ui.newHeader.data('markuptype'));
+        model.setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!model.setMarkupType(1)) model.doMarkup();
     }
 
-    hideTool(ui: any) {
-        model.setMarkupType(ui.newHeader.data('markuptype'));
+    hideTool() {
+        model.setMarkupType(0);
     }
 
     name() { return 'decodableReaderTool'; }

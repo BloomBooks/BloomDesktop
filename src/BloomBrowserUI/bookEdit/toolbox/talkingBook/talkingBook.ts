@@ -11,11 +11,11 @@ class TalkingBookModel implements ITabModel {
 
     configureElements(container: HTMLElement) {}
 
-    showTool(ui:any) {
+    showTool() {
         audioRecorder.setupForRecording();
     }
 
-    hideTool(ui:any) {
+    hideTool() {
         audioRecorder.removeRecordingSetup();
     }
 

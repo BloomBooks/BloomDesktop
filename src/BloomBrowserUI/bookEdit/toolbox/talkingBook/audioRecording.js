@@ -114,6 +114,10 @@ var AudioRecording = (function () {
         this.setStatus('record', Status.Active);
     };
     AudioRecording.prototype.playCurrent = function () {
+        this.playingAll = false; // in case it gets clicked after an incomplete play all.
+        this.playCurrentInternal();
+    };
+    AudioRecording.prototype.playCurrentInternal = function () {
         document.getElementById('player').play();
         this.setStatus('play', Status.Active);
         this.setStatus('record', Status.Enabled);
@@ -124,7 +128,7 @@ var AudioRecording = (function () {
         var first = audioElts.eq(0);
         this.setCurrentSpan(original, first);
         this.playingAll = true;
-        this.playCurrent();
+        this.playCurrentInternal();
     };
     AudioRecording.prototype.playEnded = function () {
         if (this.playingAll) {
@@ -133,7 +137,7 @@ var AudioRecording = (function () {
             var next = audioElts.eq(audioElts.index(current) + 1);
             if (next.length !== 0) {
                 this.setCurrentSpan(current, next);
-                this.playCurrent();
+                this.playCurrentInternal();
                 return;
             }
             this.playingAll = false;
@@ -252,9 +256,9 @@ var AudioRecording = (function () {
     };
     AudioRecording.prototype.setupForRecording = function () {
         var page = this.getPage();
-        if (!page)
-            return; // unit testing?
         var editable = page.find('div.bloom-editable');
+        if (editable.length === 0)
+            return; // no editable text on this page.
         this.makeSentenceSpans(editable);
         // For displaying the qtip, restrict the editable divs to the ones that have
         // audio sentences.
@@ -264,15 +268,13 @@ var AudioRecording = (function () {
         this.hiddenSourceBubbles.hide();
         thisClass.setStatus('record', Status.Expected);
         thisClass.levelCanvas = $('#audio-meter').get()[0];
-        // I'm not sure why this has to be done inside show:, but if we do it below
-        // addSentenceSpans below, something wipes out the src attr on the <audio>
-        // element, and we can't play the first sound if any.
         var firstSentence = editable.find('span.audio-sentence').first();
         thisClass.setCurrentSpan(page.find('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
         thisClass.updateInputDeviceDisplay();
     };
     AudioRecording.prototype.removeRecordingSetup = function () {
         this.hiddenSourceBubbles.show();
+        this.getPage().find('.ui-audioCurrent').removeClass('ui-audioCurrent');
     };
     // This gets invoked (via a non-object method of the same name in this file,
     // and one of the same name in CalledFromCSharp) when a C# event fires indicating

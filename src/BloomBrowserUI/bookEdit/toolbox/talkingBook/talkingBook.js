@@ -9,10 +9,10 @@ var TalkingBookModel = (function () {
     }
     TalkingBookModel.prototype.restoreSettings = function (settings) { };
     TalkingBookModel.prototype.configureElements = function (container) { };
-    TalkingBookModel.prototype.showTool = function (ui) {
+    TalkingBookModel.prototype.showTool = function () {
         audioRecorder.setupForRecording();
     };
-    TalkingBookModel.prototype.hideTool = function (ui) {
+    TalkingBookModel.prototype.hideTool = function () {
         audioRecorder.removeRecordingSetup();
     };
     TalkingBookModel.prototype.name = function () { return 'talkingBookTool'; };

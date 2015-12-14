@@ -84,8 +84,10 @@ var CalledByCSharp = (function () {
         var page = this.getPageContent();
         if (!page)
             return;
-        if ((typeof page['jQuery'] !== 'undefined') && (page['jQuery'].fn.removeSynphonyMarkup))
-            page['jQuery']('.bloom-content1').removeSynphonyMarkup();
+        var toolbox = this.getToolboxContent();
+        if ((typeof toolbox['jQuery'] !== 'undefined') && (toolbox['jQuery'].fn.removeSynphonyMarkup)) {
+            toolbox['jQuery'].fn.removeSynphonyMarkup.call(page['jQuery']('.bloom-content1'));
+        }
     };
     CalledByCSharp.prototype.invokeToolboxWithOneParameter = function (functionName, value) {
         var contentWindow = this.getToolboxContent();

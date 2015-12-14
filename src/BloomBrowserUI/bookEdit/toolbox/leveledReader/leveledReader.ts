@@ -12,13 +12,14 @@ class LeveledReaderModel implements ITabModel {
 
     configureElements(container: HTMLElement) {}
 
-    showTool(ui: any) {
+    showTool() {
         // change markup based on visible options
-        model.setMarkupType(ui.newHeader.data('markuptype'));
+        model.setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!model.setMarkupType(2)) model.doMarkup();
     }
 
-    hideTool(ui: any) {
-        model.setMarkupType(ui.newHeader.data('markuptype'));
+    hideTool() {
+        model.setMarkupType(0);
     }
 
     name() {return 'leveledReaderTool';}

@@ -93,12 +93,12 @@ class CalledByCSharp {
     }
 
   removeSynphonyMarkup() {
-
     var page = this.getPageContent();
     if (!page) return;
-
-    if ((typeof page['jQuery'] !== 'undefined') && (page['jQuery'].fn.removeSynphonyMarkup))
-      page['jQuery']('.bloom-content1').removeSynphonyMarkup();
+    var toolbox = this.getToolboxContent();
+    if ((typeof toolbox['jQuery'] !== 'undefined') && (toolbox['jQuery'].fn.removeSynphonyMarkup)) {
+        toolbox['jQuery'].fn.removeSynphonyMarkup.call(page['jQuery']('.bloom-content1'));
+    }
   }
 
   invokeToolboxWithOneParameter(functionName: string, value: string) {

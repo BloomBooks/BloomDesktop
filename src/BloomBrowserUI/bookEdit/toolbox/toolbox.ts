@@ -13,8 +13,8 @@ var showingPanel = false;
 interface ITabModel {
     restoreSettings(settings: string);
     configureElements(container: HTMLElement);
-    showTool(ui: any);
-    hideTool(ui: any);
+    showTool();
+    hideTool();
     name(): string;
 }
 
@@ -75,8 +75,55 @@ function showOrHidePanel_click(chkbox) {
 /**
 * Called by C# to restore user settings
 */
-function restoreToolboxSettings(settings:string) {
+function restoreToolboxSettings(settings: string) {
 
+    var pageFrame = getPageFrame();
+    if (pageFrame.contentWindow.document.readyState === 'loading') {
+        // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
+        $(pageFrame.contentWindow.document).ready(e => restoreToolboxSettingsWhenPageReady(settings));
+        return;
+    }
+    this.restoreToolboxSettingsWhenPageReady(settings); // not loading, we can proceed immediately.
+}
+
+
+function restoreToolboxSettingsWhenPageReady(settings: string) {
+    var page = getPage();
+    if (!page || page.length === 0) {
+        // Somehow, despite firing this function when the document is supposedly ready,
+        // it may not really be ready when this is first called. If it doesn't even have a body yet,
+        // we need to try again later.
+        setTimeout(e => restoreToolboxSettingsWhenPageReady(settings), 100);
+        return;
+    }
+    // Once we have a valid page, we can proceed to the next stage.
+    this.restoreToolboxSettingsWhenCkEditorReady(settings);
+}
+
+function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
+    var editorInstances = (<any>getPageFrame().contentWindow).CKEDITOR.instances;
+    // Somewhere in the process of initializing ckeditor, it resets content to what it was initially.
+    // This wipes out (at least) our page initialization.
+    // To prevent this we hold our initialization until CKEditor has done initializing.
+    // If any instance on the page (e.g., one per div) is not ready, wait until all are.
+    // (The instances property leads to an object in which a field editorN is defined for each
+    // editor, so we just loop until some value of N which doesn't yield an editor instance.)
+    for (var i = 1; ; i++) {
+        var instance = editorInstances['editor' + i];
+        if (instance == null) {
+            if (i === 0) {
+                // no instance at all...if one is later created, get us invoked.
+                (<any>this.getPageFrame().contentWindow).CKEDITOR.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
+                return;
+            }
+            break; // if we get here all instances are ready
+        }
+        if (!instance.instanceReady) {
+            instance.on('instanceReady', e => restoreToolboxSettingsWhenCkEditorReady(settings));
+            return;
+        }
+    }
+    // OK, CKEditor is done, we can finally do the real initialization.
     var opts = settings;
     var currentPanel = opts['current'] || '';
 
@@ -89,7 +136,33 @@ function restoreToolboxSettings(settings:string) {
     }
 }
 
+function getPageFrame(): HTMLIFrameElement {
+    return <HTMLIFrameElement>parent.window.document.getElementById('page');
+}
 
+    // The body of the editable page, a root for searching for document content.
+function getPage(): JQuery {
+    var page = this.getPageFrame();
+    if (!page) return null;
+    return $(page.contentWindow.document.body);
+}
+
+function switchTool(newToolName: string)
+{
+    var newTool = null;
+    for (var i = 0; i < tabModels.length; i++) {
+        if (tabModels[i].name() === newToolName) {
+            newTool = tabModels[i];
+        }
+    }
+    if (currentTool !== newTool) {
+        if (currentTool)
+            currentTool.hideTool();
+        if (newTool)
+            newTool.showTool();
+        currentTool = newTool;
+    }
+}
 
 /**
  * This function attempts to activate the panel whose "data-panelId" attribute is equal to the value
@@ -107,20 +180,12 @@ function setCurrentPanel(currentPanel) {
         // find the index of the panel whose "data-panelId" attribute equals the value of "currentPanel"
         toolbox.find('> h3').each(function() {
             if ($(this).attr('data-panelId') === currentPanel) {
-
                 // the index is the last segment of the element id
                 idx = this.id.substr(this.id.lastIndexOf('-') + 1);
-
-                // set the markup type to the current panel
-                if (model) {
-                    model.setMarkupType(parseInt(this.dataset['markuptype']));
-                    setTimeout(function() { model.doMarkup(); }, 500);
-                }
-
                 // break from the each() loop
                 return false;
             }
-            return true;
+            return true; // continue the each() loop
         });
     }
 
@@ -136,26 +201,18 @@ function setCurrentPanel(currentPanel) {
 
     // when a panel is activated, save its data-panelId so state can be restored when Bloom is restarted.
     toolbox.onOnce('accordionactivate.toolbox', function (event, ui) {
-        var newTool = null;
+        var newToolName = null;
         if (ui.newHeader.attr('data-panelId')) {
-            var newToolName = ui.newHeader.attr('data-panelId').toString();
-            for (var i = 0; i < tabModels.length; i++) {
-                if (tabModels[i].name() === newToolName) {
-                    newTool = tabModels[i];
-                }
-            }
+            newToolName = ui.newHeader.attr('data-panelId').toString();
             fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
         } else {
             fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t");
         }
-        if (currentTool !== newTool) {
-            if (currentTool)
-                currentTool.hideTool(ui);
-            if (newTool)
-                newTool.showTool(ui);
-            currentTool = newTool;
-        }
+        switchTool(newToolName);
     });
+    //alert('switching to ' + currentPanel);
+    //setTimeout(e => switchTool(currentPanel), 700);
+    switchTool(currentPanel);
 }
 
 /**

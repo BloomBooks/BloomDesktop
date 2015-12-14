@@ -57,11 +57,14 @@ var ReaderToolsModel = (function () {
         this.wordListChangedListeners = {};
         // some things need to wait until the word list has finished loading
         this.wordListLoaded = false;
+        this.ckEditorLoaded = false;
         this.allowedWordFilesRemaining = 0;
         // this happens during testing
         if (iframeChannel)
             this.readableFileExtensions = iframeChannel.readableFileExtensions;
     }
+    ReaderToolsModel.prototype.readyToDoMarkup = function () { return this.wordListLoaded && this.ckEditorLoaded; };
+    ReaderToolsModel.prototype.setCkEditorLoaded = function () { this.ckEditorLoaded = true; };
     ReaderToolsModel.prototype.incrementStage = function () {
         this.setStageNumber(this.stageNumber + 1);
     };
@@ -82,7 +85,7 @@ var ReaderToolsModel = (function () {
         this.updateLetterList();
         this.enableStageButtons();
         this.saveState();
-        if (!this.wordListLoaded)
+        if (!this.readyToDoMarkup())
             return;
         this.doMarkup();
         this.updateWordList();
@@ -247,7 +250,7 @@ var ReaderToolsModel = (function () {
             document.getElementById('allowed-words-this-stage').style.display = useAllowedWords ? '' : 'none';
             document.getElementById('allowed-word-list-truncated').style.display = useAllowedWords ? '' : 'none';
         }
-        if (!this.wordListLoaded)
+        if (!this.readyToDoMarkup())
             return;
         var wordList = document.getElementById('wordList');
         if (wordList)
@@ -387,7 +390,7 @@ var ReaderToolsModel = (function () {
         return ReaderToolsModel.selectWordsFromSynphony(false, this.stageGraphemes, this.stageGraphemes, true, true);
     };
     ReaderToolsModel.prototype.getStageWordsAndSightWords = function (stageNumber) {
-        if (!this.wordListLoaded)
+        if (!this.readyToDoMarkup())
             return;
         // first get the sight words
         var sightWords = this.getSightWordsAsObjects(stageNumber);
@@ -399,6 +402,7 @@ var ReaderToolsModel = (function () {
     /**
      * Change the markup type when the user selects a different Tool.
      * @param {int} markupType
+     * returns true if doMarkup called
      */
     ReaderToolsModel.prototype.setMarkupType = function (markupType) {
         var newMarkupType = null;
@@ -418,15 +422,18 @@ var ReaderToolsModel = (function () {
         }
         // if no change, return now
         if (newMarkupType === null)
-            return;
+            return false;
+        var didMarkup = false;
         if (newMarkupType !== this.currentMarkupType) {
             var page = parent.window.document.getElementById('page');
             if (page)
                 $('.bloom-editable', page.contentWindow.document).removeSynphonyMarkup();
             this.currentMarkupType = newMarkupType;
             this.doMarkup();
+            didMarkup = true;
         }
         this.saveState();
+        return didMarkup;
     };
     ReaderToolsModel.getElementsToCheck = function () {
         var page = parent.window.document.getElementById('page');
@@ -547,7 +554,7 @@ var ReaderToolsModel = (function () {
      * Displays the correct markup for the current page.
      */
     ReaderToolsModel.prototype.doMarkup = function () {
-        if (!this.wordListLoaded)
+        if (!this.readyToDoMarkup())
             return;
         if (this.currentMarkupType === MarkupType.None)
             return;
