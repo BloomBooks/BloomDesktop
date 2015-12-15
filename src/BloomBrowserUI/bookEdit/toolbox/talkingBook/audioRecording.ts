@@ -80,7 +80,13 @@ class AudioRecording {
         var index = audioElts.index(changeTo);
         this.setStatus('prev', index === 0 ? Status.Disabled : Status.Enabled);
         this.setStatus('next', index === audioElts.length - 1 ? Status.Disabled : Status.Enabled);
-        this.setStatus('play', Status.Enabled); // Todo: disabled if recording does not exist.
+        // This may get overridden very shortly if we get a notification that the source file is not available.
+        this.setStatus('play', Status.Enabled);
+        // This one we currently just allow the user to try any time there is content in the page.
+        // There's no easy way to test 'is there a recording for any segment'; we're enabling
+        // the play button based on feedback we get as a result of setting the player's src to
+        // the expected file, and that only tells us about that one segment.
+        this.setStatus('listen', Status.Enabled);
     }
 
     private moveToPrevSpan(): void {
@@ -107,6 +113,7 @@ class AudioRecording {
         player.attr('src', src);
         this.setStatus('record', Status.Enabled);
         this.setStatus('play', Status.Expected);
+        this.setStatus('listen', Status.Enabled);
     }
 
     private startRecordCurrent(): void {
@@ -263,9 +270,14 @@ class AudioRecording {
     }
 
     public setupForRecording(): void {
+        this.updateInputDeviceDisplay();
         var page = this.getPage();
         var editable = <qtipInterface>page.find('div.bloom-editable');
-        if (editable.length === 0) return; // no editable text on this page.
+        if (editable.length === 0) {
+            // no editable text on this page.
+            this.configureForNothingToRecord();
+            return;
+        }
         this.makeSentenceSpans(editable);
         // For displaying the qtip, restrict the editable divs to the ones that have
         // audio sentences.
@@ -277,8 +289,21 @@ class AudioRecording {
         thisClass.setStatus('record', Status.Expected);
         thisClass.levelCanvas = $('#audio-meter').get()[0];
         var firstSentence = editable.find('span.audio-sentence').first();
+        if (firstSentence.length === 0) {
+            // no recordable sentence found.
+            this.configureForNothingToRecord();
+            return;
+        }
         thisClass.setCurrentSpan(page.find('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
-        thisClass.updateInputDeviceDisplay();
+    }
+
+    // Disable all buttons...nothing to record on this page
+    configureForNothingToRecord(): void {
+        this.setStatus('record', Status.Disabled);
+        this.setStatus('play', Status.Disabled);
+        this.setStatus('next', Status.Disabled);
+        this.setStatus('prev', Status.Disabled);
+        this.setStatus('listen', Status.Disabled);
     }
 
     public removeRecordingSetup() {
