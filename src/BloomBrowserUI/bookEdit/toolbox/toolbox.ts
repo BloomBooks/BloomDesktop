@@ -158,7 +158,7 @@ function switchTool(newToolName: string)
     if (currentTool !== newTool) {
         if (currentTool)
             currentTool.hideTool();
-        if (newTool)
+        if (newTool && (<HTMLInputElement>$(parent.window.document).find('#pure-toggle-right').get(0)).checked)
             newTool.showTool();
         currentTool = newTool;
     }
@@ -300,6 +300,13 @@ function loadToolboxPanel(newContent, panelId) {
     }
 }
 
+function showToolboxChanged(showing: boolean): void {
+    if (currentTool) {
+        if (showing) currentTool.hideTool();
+        else currentTool.showTool();
+    }
+}
+
 $(document).ready(function () {
     $("#toolbox").accordion({
         heightStyle: "fill"
@@ -313,3 +320,7 @@ $(document).ready(function () {
         resizeTimer = setTimeout(resizeToolbox, 100);
     });
 });
+
+$(parent.window.document).ready(function() {
+    $(parent.window.document).find('#pure-toggle-right').change(function() { showToolboxChanged(!this.checked); });
+})
