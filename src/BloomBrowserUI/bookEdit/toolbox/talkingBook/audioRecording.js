@@ -101,17 +101,20 @@ var AudioRecording = (function () {
             return; // sometimes we get bounce?
         this.recording = false;
         this.fireCSharpEvent("endRecordAudio", "");
-        // The player should already be set to play back the audio we just recorded.
-        // However, if no such file previously existed, it seems Gecko caches this
-        // fact and does not notice that the file has been created. Changing src
-        // to something else and back fixes this.
+        this.updatePlayerStatus();
+        this.setStatus('record', Status.Enabled);
+        this.setStatus('play', Status.Expected);
+        this.setStatus('listen', Status.Enabled);
+    };
+    // Gecko does not notice when a file indicated by the src attribute of the player
+    // is created or deleted; it will cache the previous content of the file or
+    // remember if no such file previously existed. Changing src
+    // to something else and back fixes this.
+    AudioRecording.prototype.updatePlayerStatus = function () {
         var player = $('#player');
         var src = player.attr('src');
         player.attr('src', '');
         player.attr('src', src);
-        this.setStatus('record', Status.Enabled);
-        this.setStatus('play', Status.Expected);
-        this.setStatus('listen', Status.Enabled);
     };
     AudioRecording.prototype.startRecordCurrent = function () {
         this.recording = true;
@@ -157,16 +160,10 @@ var AudioRecording = (function () {
     AudioRecording.prototype.setStatus = function (which, to) {
         $('#audio-' + which).removeClass('expected').removeClass('disabled').removeClass('enabled').removeClass('active').addClass(Status[to].toLowerCase());
         if (to === Status.Expected) {
-            var tags = ['record', 'play', 'next'];
-            for (var i = 0; i < tags.length; i++) {
-                var tag = tags[i];
-                if (tag === which) {
-                    $('#audio-' + tag + '-label').addClass('expected');
-                }
-                else {
-                    $('#audio-' + tag + '-label').removeClass('expected');
-                }
-            }
+            $('#audio-' + which + '-label').addClass('expected');
+        }
+        else {
+            $('#audio-' + which + '-label').removeClass('expected');
         }
     };
     AudioRecording.prototype.cantPlay = function () {
@@ -235,6 +232,14 @@ var AudioRecording = (function () {
             devButton.attr('title', deviceName);
         });
     };
+    // Clear the recording for this sentence
+    AudioRecording.prototype.clearRecording = function () {
+        var currentFile = $('#player').attr('src');
+        this.fireCSharpEvent('deleteFile', currentFile);
+        this.updatePlayerStatus();
+        this.setStatus('record', Status.Expected);
+        this.setStatus('play', Status.Disabled);
+    };
     AudioRecording.prototype.initializeTalkingBookTool = function () {
         var _this = this;
         // I've sometimes observed events like click being handled repeatedly for a single click.
@@ -246,6 +251,7 @@ var AudioRecording = (function () {
         $('#audio-record').off().mousedown(function (e) { return _this.startRecordCurrent(); }).mouseup(function (e) { return _this.endRecordCurrent(); });
         $('#audio-play').off().click(function (e) { return _this.playCurrent(); });
         $('#audio-listen').off().click(function (e) { return _this.playAll(); });
+        $('#audio-clear').off().click(function (e) { return _this.clearRecording(); });
         $('#player').off();
         $('#player').bind('error', function (e) { return _this.cantPlay(); });
         $('#player').bind('ended', function (e) { return _this.playEnded(); });
@@ -293,6 +299,8 @@ var AudioRecording = (function () {
         this.setStatus('play', Status.Disabled);
         this.setStatus('next', Status.Disabled);
         this.setStatus('prev', Status.Disabled);
+        this.setStatus('listen', Status.Disabled);
+        this.setStatus('clear', Status.Disabled);
         this.setStatus('listen', Status.Disabled);
     };
     AudioRecording.prototype.removeRecordingSetup = function () {

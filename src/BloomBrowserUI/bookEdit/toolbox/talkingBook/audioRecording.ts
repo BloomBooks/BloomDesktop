@@ -103,17 +103,21 @@ class AudioRecording {
         if (!this.recording) return; // sometimes we get bounce?
         this.recording = false;
         this.fireCSharpEvent("endRecordAudio", "");
-        // The player should already be set to play back the audio we just recorded.
-        // However, if no such file previously existed, it seems Gecko caches this
-        // fact and does not notice that the file has been created. Changing src
-        // to something else and back fixes this.
+        this.updatePlayerStatus();
+        this.setStatus('record', Status.Enabled);
+        this.setStatus('play', Status.Expected);
+        this.setStatus('listen', Status.Enabled);
+    }
+
+    // Gecko does not notice when a file indicated by the src attribute of the player
+    // is created or deleted; it will cache the previous content of the file or
+    // remember if no such file previously existed. Changing src
+    // to something else and back fixes this.
+    private updatePlayerStatus() {
         var player = $('#player');
         var src = player.attr('src');
         player.attr('src', '');
         player.attr('src', src);
-        this.setStatus('record', Status.Enabled);
-        this.setStatus('play', Status.Expected);
-        this.setStatus('listen', Status.Enabled);
     }
 
     private startRecordCurrent(): void {
@@ -164,15 +168,9 @@ class AudioRecording {
     private setStatus(which: string, to: Status): void {
         $('#audio-' + which).removeClass('expected').removeClass('disabled').removeClass('enabled').removeClass('active').addClass(Status[to].toLowerCase());
         if (to === Status.Expected) {
-            var tags = ['record', 'play', 'next'];
-            for (var i = 0; i < tags.length; i++) {
-                var tag = tags[i];
-                if (tag === which) {
-                    $('#audio-' + tag + '-label').addClass('expected');
-                } else {
-                    $('#audio-' + tag + '-label').removeClass('expected');
-                }
-            }
+            $('#audio-' + which + '-label').addClass('expected');
+        } else {
+            $('#audio-' + which + '-label').removeClass('expected');
         }
     }
 
@@ -241,6 +239,15 @@ class AudioRecording {
         });
     }
 
+    // Clear the recording for this sentence
+    clearRecording(): void {
+        var currentFile = $('#player').attr('src');
+        this.fireCSharpEvent('deleteFile', currentFile);
+        this.updatePlayerStatus();
+        this.setStatus('record', Status.Expected);
+        this.setStatus('play', Status.Disabled);
+    }
+
     public initializeTalkingBookTool() {
         // I've sometimes observed events like click being handled repeatedly for a single click.
         // Adding thse .off calls seems to help...it's as if something causes this show event to happen
@@ -251,6 +258,7 @@ class AudioRecording {
         $('#audio-record').off().mousedown(e => this.startRecordCurrent()).mouseup(e => this.endRecordCurrent());
         $('#audio-play').off().click(e => this.playCurrent());
         $('#audio-listen').off().click(e => this.playAll());
+        $('#audio-clear').off().click(e => this.clearRecording());
         $('#player').off();
         $('#player').bind('error', e => this.cantPlay());
 
@@ -304,7 +312,9 @@ class AudioRecording {
         this.setStatus('next', Status.Disabled);
         this.setStatus('prev', Status.Disabled);
         this.setStatus('listen', Status.Disabled);
-    }
+        this.setStatus('clear', Status.Disabled);
+        this.setStatus('listen', Status.Disabled);
+   }
 
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();

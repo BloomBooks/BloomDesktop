@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.MiscUI;
 using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.web;
@@ -687,6 +688,7 @@ namespace Bloom.Edit
 			AddMessageEventListener("startRecordAudio", StartRecordAudio);
 			AddMessageEventListener("endRecordAudio", EndRecordAudio);
 			AddMessageEventListener("changeRecordingDevice", ChangeRecordingDevice);
+			AddMessageEventListener("deleteFile", DeleteFile);
 		}
 
 		private void SaveToolboxSettings(string data)
@@ -832,6 +834,27 @@ namespace Bloom.Edit
 		private void ChangeRecordingDevice(string deviceName)
 		{
 			_audioRecording.ChangeRecordingDevice(deviceName);
+		}
+
+		/// <summary>
+		/// Delete a file (typically a recording, as requested by the Clear button in the talking book tool)
+		/// </summary>
+		/// <param name="fileUrl"></param>
+		private void DeleteFile(string fileUrl)
+		{
+			var filePath = ServerBase.GetLocalPathWithoutQuery(fileUrl);
+			if (File.Exists(filePath))
+			{
+				try
+				{
+					File.Delete(filePath);
+				}
+				catch (IOException e)
+				{
+					var msg = string.Format(LocalizationManager.GetString("Errors.ProblemDeletingFile","Bloom had a problem deleting this file: {0}"), filePath);
+					ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
+				}
+			}
 		}
 
 		//invoked from TopicChooser.ts
