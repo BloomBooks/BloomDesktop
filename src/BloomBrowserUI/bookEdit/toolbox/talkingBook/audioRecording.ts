@@ -54,7 +54,7 @@ class AudioRecording {
     levelCanvasHeight: number = 80;
     hiddenSourceBubbles: JQuery;
     audioDevicesUrl = '/bloom/audioDevices';
-    playingAll: boolean; // true during playAll.
+    playingAll: boolean; // true during listen.
 
     private moveToNextSpan(): void {
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
@@ -130,20 +130,23 @@ class AudioRecording {
 
     private playCurrent(): void {
         this.playingAll = false; // in case it gets clicked after an incomplete play all.
+        this.setStatus('listen', Status.Enabled); // but no longer active, in case it was
+        this.setStatus('play', Status.Active);
         this.playCurrentInternal();
     }
     private playCurrentInternal() {
         (<HTMLMediaElement>document.getElementById('player')).play();
-        this.setStatus('play', Status.Active);
-        this.setStatus('record', Status.Enabled);
+        this.setStatus('record', Status.Enabled); // but not 'expected' for now.
     }
 
-    private playAll(): void {
+    // 'Listen' is shorthand for playing all the sentences on the page in sequence.
+    private listen(): void {
         var original: JQuery = this.getPage().find('.ui-audioCurrent');
         var audioElts = this.getPage().find('.audio-sentence');
         var first = audioElts.eq(0);
         this.setCurrentSpan(original, first);
         this.playingAll = true;
+        this.setStatus('listen', Status.Active);
         this.playCurrentInternal();
     }
 
@@ -154,12 +157,14 @@ class AudioRecording {
             var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
             if (next.length !== 0) {
                 this.setCurrentSpan(current, next);
+                this.setStatus('listen', Status.Active); // gets returned to enabled by setCurrentSpan
                 this.playCurrentInternal();
                 return;
             }
             this.playingAll = false;
         }
-        this.setStatus('play', Status.Enabled); // no longer 'expected'
+        this.setStatus('play', Status.Enabled); // no longer 'expected' or 'active'
+        this.setStatus('listen', Status.Enabled); // no longer 'expected' or 'active'
         if ($('#audio-next').hasClass('enabled')) {
             this.setStatus('next', Status.Expected);
         }
@@ -257,7 +262,7 @@ class AudioRecording {
         $('#audio-prev').off().click(e => this.moveToPrevSpan());
         $('#audio-record').off().mousedown(e => this.startRecordCurrent()).mouseup(e => this.endRecordCurrent());
         $('#audio-play').off().click(e => this.playCurrent());
-        $('#audio-listen').off().click(e => this.playAll());
+        $('#audio-listen').off().click(e => this.listen());
         $('#audio-clear').off().click(e => this.clearRecording());
         $('#player').off();
         $('#player').bind('error', e => this.cantPlay());

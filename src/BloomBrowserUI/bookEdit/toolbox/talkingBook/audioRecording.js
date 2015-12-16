@@ -125,19 +125,22 @@ var AudioRecording = (function () {
     };
     AudioRecording.prototype.playCurrent = function () {
         this.playingAll = false; // in case it gets clicked after an incomplete play all.
+        this.setStatus('listen', Status.Enabled); // but no longer active, in case it was
+        this.setStatus('play', Status.Active);
         this.playCurrentInternal();
     };
     AudioRecording.prototype.playCurrentInternal = function () {
         document.getElementById('player').play();
-        this.setStatus('play', Status.Active);
-        this.setStatus('record', Status.Enabled);
+        this.setStatus('record', Status.Enabled); // but not 'expected' for now.
     };
-    AudioRecording.prototype.playAll = function () {
+    // 'Listen' is shorthand for playing all the sentences on the page in sequence.
+    AudioRecording.prototype.listen = function () {
         var original = this.getPage().find('.ui-audioCurrent');
         var audioElts = this.getPage().find('.audio-sentence');
         var first = audioElts.eq(0);
         this.setCurrentSpan(original, first);
         this.playingAll = true;
+        this.setStatus('listen', Status.Active);
         this.playCurrentInternal();
     };
     AudioRecording.prototype.playEnded = function () {
@@ -147,12 +150,14 @@ var AudioRecording = (function () {
             var next = audioElts.eq(audioElts.index(current) + 1);
             if (next.length !== 0) {
                 this.setCurrentSpan(current, next);
+                this.setStatus('listen', Status.Active); // gets returned to enabled by setCurrentSpan
                 this.playCurrentInternal();
                 return;
             }
             this.playingAll = false;
         }
-        this.setStatus('play', Status.Enabled); // no longer 'expected'
+        this.setStatus('play', Status.Enabled); // no longer 'expected' or 'active'
+        this.setStatus('listen', Status.Enabled); // no longer 'expected' or 'active'
         if ($('#audio-next').hasClass('enabled')) {
             this.setStatus('next', Status.Expected);
         }
@@ -250,7 +255,7 @@ var AudioRecording = (function () {
         $('#audio-prev').off().click(function (e) { return _this.moveToPrevSpan(); });
         $('#audio-record').off().mousedown(function (e) { return _this.startRecordCurrent(); }).mouseup(function (e) { return _this.endRecordCurrent(); });
         $('#audio-play').off().click(function (e) { return _this.playCurrent(); });
-        $('#audio-listen').off().click(function (e) { return _this.playAll(); });
+        $('#audio-listen').off().click(function (e) { return _this.listen(); });
         $('#audio-clear').off().click(function (e) { return _this.clearRecording(); });
         $('#player').off();
         $('#player').bind('error', function (e) { return _this.cantPlay(); });
