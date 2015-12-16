@@ -94,6 +94,7 @@ libSynphony.prototype.stringToSentences = function(textHTML) {
     var tagHolderClose = String.fromCharCode(5);   // u0005 is a replacement character for all other closing html tags
     var tagHolderSelf = String.fromCharCode(6);    // u0006 is a replacement character for all other self-closing html tags
     var tagHolderEmpty = String.fromCharCode(7);   // u0007 is a replacement character for empty html tags
+    if (textHTML === null) textHTML = '';
 
     // look for html break tags, replace them with the htmlLineBreak place holder
     var regex = /(<br><\/br>|<br>|<br \/>|<br\/>)/g;

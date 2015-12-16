@@ -24,13 +24,18 @@ namespace Bloom.web
 		{
 			get
 			{
-				// The problem with LocalPath alone is that it stops when it encounters even an
-				// encoded #.  Since Bloom doesn't worry about internal addresses, and does allow
-				// book titles (and thus file names) to have a # character, we need to piece together
-				// the original information.  Note that LocalPath removes all Http escaping, but
-				// Fragment does not.  See https://jira.sil.org/browse/BL-951 for details.
-				return _actualContext.Request.Url.LocalPath + HttpUtility.UrlDecode(_actualContext.Request.Url.Fragment);
+				return GetLocalPathWithoutQuery(_actualContext.Request.Url);
 			}
+		}
+
+		public static string GetLocalPathWithoutQuery(Uri uri)
+		{
+			// The problem with LocalPath alone is that it stops when it encounters even an
+			// encoded #.  Since Bloom doesn't worry about internal addresses, and does allow
+			// book titles (and thus file names) to have a # character, we need to piece together
+			// the original information.  Note that LocalPath removes all Http escaping, but
+			// Fragment does not.  See https://jira.sil.org/browse/BL-951 for details.
+			return uri.LocalPath + HttpUtility.UrlDecode(uri.Fragment);
 		}
 
 		public string ContentType

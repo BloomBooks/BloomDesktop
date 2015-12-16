@@ -76,14 +76,6 @@ class CalledByCSharp {
       contentWindow['SetCopyrightAndLicense'](contents);
   }
 
-  showTalkingBookTool() {
-      var contentWindow = this.getToolboxContent();
-        if (!contentWindow) return;
-        if (typeof contentWindow['showTalkingBookTool'] === 'function') {
-            contentWindow['showTalkingBookTool']();
-        }
-    }
-
     cleanupAudio() {
         var contentWindow = this.getPageContent();
         if (!contentWindow) return;
@@ -92,21 +84,21 @@ class CalledByCSharp {
         }
     }
 
-    setPeakLevel(level:string) {
-        var contentWindow = this.getPageContent();
-        if (!contentWindow) return;
-        if (typeof contentWindow['setPeakLevel'] === 'function') {
-            contentWindow['setPeakLevel'](level);
+    setPeakLevel(level: string) {
+        var toolboxWindow = this.getToolboxContent();
+        if (!toolboxWindow) return;
+        if (typeof toolboxWindow['setPeakLevel'] === 'function') {
+            toolboxWindow['setPeakLevel'](level);
         }
     }
 
   removeSynphonyMarkup() {
-
     var page = this.getPageContent();
     if (!page) return;
-
-    if ((typeof page['jQuery'] !== 'undefined') && (page['jQuery'].fn.removeSynphonyMarkup))
-      page['jQuery']('.bloom-content1').removeSynphonyMarkup();
+    var toolbox = this.getToolboxContent();
+    if ((typeof toolbox['jQuery'] !== 'undefined') && (toolbox['jQuery'].fn.removeSynphonyMarkup)) {
+        toolbox['jQuery'].fn.removeSynphonyMarkup.call(page['jQuery']('.bloom-content1'));
+    }
   }
 
   invokeToolboxWithOneParameter(functionName: string, value: string) {

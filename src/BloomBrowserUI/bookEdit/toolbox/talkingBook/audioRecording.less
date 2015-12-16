@@ -1,19 +1,11 @@
-﻿@BubbleBackground:#faf7cc;
-@recordQtipColor:  @BubbleBackground;
-@recordQtipForeground: #0C8597;
+﻿﻿@recordQtipForeground: #0C8597;
 @recordQtipHighlight: #96668f;
 body {
-    #qtip-audio {
-        background-color: @recordQtipColor !important;
-        border-color: @recordQtipForeground !important; // important to overcome .uibloomSourceTextsBubble
-     }
-    #qtip-audio .ui-icon {display:inline-block }
-
     div.ui-audioTitle {color: @recordQtipForeground; font-size:larger; margin-top: 5px; font-size:large;}
 
-    div.ui-audioBody {margin-top: 30px; margin-bottom: 15px}
-    button.ui-audio-button {height:40px; width: 40px; border:none; background-size:contain;background-color:transparent;background-repeat:no-repeat;display:block;margin-bottom:5px;}
-    button#audio-prev {height:20px; width:20px;}
+    div.ui-audioBody {margin-top: 5px;}
+    button.ui-audio-button {height:40px; width: 40px; border:none; background-size:contain;background-color:transparent;background-repeat:no-repeat;display:inline-block;margin-bottom:5px;}
+    button#audio-prev, button#audio-clear {height:20px; width:20px;}
     button#audio-record.enabled {background-image: url(audio/record_enabled.svg)}
     button#audio-record.expected {background-image: url(audio/record_expected.svg)}
     button#audio-record.disabled {background-image: url(audio/record_disabled.svg)}
@@ -27,16 +19,25 @@ body {
     button#audio-next.disabled {background-image: url(audio/next_disabled.svg)}
     button#audio-prev.enabled {background-image: url(audio/prev_enabled.svg)}
     button#audio-prev.disabled {background-image: url(audio/prev_disabled.svg)}
+    button#audio-listen.enabled {background-image: url(audio/listen_enabled.svg)}
+    button#audio-listen.disabled {background-image: url(audio/listen_disabled.svg)}
+    button#audio-listen.active {background-image: url(audio/listen_active.svg)}
+    button#audio-clear.enabled {background-image: url(audio/clear_enabled.svg)}
+    button#audio-clear.disabled {background-image: url(audio/clear_disabled.svg)}
 
-    div.button-label-wrapper {display:inline-block; margin-left:20px;}
-    span.audio-label {font-size:x-small;color:@recordQtipForeground;}
-    span.audio-label.expected {color: @recordQtipHighlight;}
-    button#audio-prev {margin-bottom:25px;}
+    div.button-label-wrapper {margin-left:20px;margin-top: 10px;}
+    div.button-wrapper {display:inline-block;min-width: 60px;}
+    div.audio-label {color:@recordQtipForeground;display:inline-block;max-width:100px;}
+    div.audio-label.expected {color: @recordQtipHighlight;}
+    div.audio-label#audio-look-at , div.audio-label#audio-check{max-width:none;}
+    div#audio-listen-label {position:relative; top:10px;}
    
     div.ui-audioFooter {margin-top: 30px; margin-bottom: 5px}
-     
-    span.ui-audioCurrent {background-color: @recordQtipColor }
-    div.ui-audioMeter {float:right;position:absolute;bottom:5px;right:5px}
+    span.ui-audioCurrent {background-color: #faf7cc }
+    div.ui-audioInput, div.ui-audioMeter {display:inline-block;}
+    div.ui-audioMeter {margin-left:30px;}
+    div.ui-audioInputGroup {margin-top:5px;margin-bottom:12px;}
+    img#audio-input-dev {height:30px;width:30px;margin-left:20px;}
 
      // hidden unless we need to choose between three or more input devices.
      #audio-devlist {display:none;position:absolute;background-color:white; width:200px;
