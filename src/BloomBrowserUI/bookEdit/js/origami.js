@@ -47,6 +47,15 @@ function setupLayoutMode() {
     $('.bloom-editable:visible[contentEditable=true]').removeAttr('contentEditable');
     // Images cannot be changed (other than growing/shrinking with container) in layout mode
     $('.bloom-imageContainer').off('mouseenter').off('mouseleave');
+    // Attaching to html allows it to work even if nothing has focus.
+    $('html').on('keydown.origami', e => {
+        if (e.keyCode === 89 && e.ctrlKey) {
+            origamiRedo();
+        }
+        if (e.keyCode === 90 && e.ctrlKey) {
+            origamiUndo();
+        }
+    });
 }
 
 function layoutToggleClickHandler() {
@@ -58,6 +67,8 @@ function layoutToggleClickHandler() {
         marginBox.removeClass('origami-layout-mode');
         marginBox.find('.bloom-translationGroup .textBox-identifier').remove();
         fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
+        origamiUndoStack.length = origamiUndoIndex = 0;
+        $('html').off('keydown.origami');
     }
 }
 
@@ -65,31 +76,79 @@ function layoutToggleClickHandler() {
 function splitClickHandler() {
     var myInner = $(this).closest('.split-pane-component-inner');
     if ($(this).hasClass('splitter-top'))
-        performSplit2(myInner, 'horizontal', 'bottom', 'top');
+        performSplit(myInner, 'horizontal', 'bottom', 'top', true);
     else if ($(this).hasClass('splitter-right'))
-        performSplit(myInner, 'vertical', 'left', 'right');
+        performSplit(myInner, 'vertical', 'left', 'right', false);
     else if ($(this).hasClass('splitter-bottom'))
-        performSplit(myInner, 'horizontal', 'top', 'bottom');
+        performSplit(myInner, 'horizontal', 'top', 'bottom', false);
     else if ($(this).hasClass('splitter-left'))
-        performSplit2(myInner, 'vertical', 'right', 'left');
+        performSplit(myInner, 'vertical', 'right', 'left', true);
 }
 
-function performSplit(innerElement, verticalOrHorizontal, existingContentPosition, newContentPosition) {
+function performSplit(innerElement, verticalOrHorizontal, existingContentPosition, newContentPosition, prependNew) {
+    addUndoItem(innerElement.parent());
     innerElement.wrap(getSplitPaneHtml(verticalOrHorizontal));
     innerElement.wrap(getSplitPaneComponentHtml(existingContentPosition));
     var newSplitPane = innerElement.closest('.split-pane');
-    newSplitPane.append(getSplitPaneDividerHtml(verticalOrHorizontal));
-    newSplitPane.append(getSplitPaneComponentWithNewContent(newContentPosition));
+    if (prependNew) {
+        newSplitPane.prepend(getSplitPaneDividerHtml(verticalOrHorizontal));
+        newSplitPane.prepend(getSplitPaneComponentWithNewContent(newContentPosition));
+    } else {
+        newSplitPane.append(getSplitPaneDividerHtml(verticalOrHorizontal));
+        newSplitPane.append(getSplitPaneComponentWithNewContent(newContentPosition));
+    }
     newSplitPane.splitPane();
 }
 
-function performSplit2(innerElement, verticalOrHorizontal, existingContentPosition, newContentPosition) {
-    innerElement.wrap(getSplitPaneHtml(verticalOrHorizontal));
-    innerElement.wrap(getSplitPaneComponentHtml(existingContentPosition));
-    var newSplitPane = innerElement.closest('.split-pane');
-    newSplitPane.prepend(getSplitPaneDividerHtml(verticalOrHorizontal));
-    newSplitPane.prepend(getSplitPaneComponentWithNewContent(newContentPosition));
-    newSplitPane.splitPane();
+var origamiUndoStack = [];
+var origamiUndoIndex = 0; // of item that should be redone next, if any
+
+// I made this take an argument of the closest parent that survies the change with only
+// its children modified. I could not make it work for multiple levels of Undo and Redo
+// (including deletions) by only cloning that element, as I first attempted; but I
+// decided to keep the argument in case something requires us to attempt that again one day.
+function addUndoItem(parentElement) {
+    origamiUndoStack.length = origamiUndoIndex; // truncate any redo items
+    var origamiRoot = $('.marginBox');
+    // Currently the only thing in each undo entry is a clone of the marginBox at the
+    // moment just before the original change. I decided to leave it an object in case
+    // at some point we want to attach some more data (e.g., a name of what can be undone).
+    origamiUndoStack.push({ original: origamiRoot.clone(true) });
+    origamiUndoIndex = origamiUndoStack.length;
+}
+
+function origamiCanUndo() {
+    return origamiUndoIndex > 0;
+}
+
+function origamiUndo() {
+    if (origamiCanUndo()) {
+        var origamiRoot = $('.marginBox');
+        // index may be 'out of range' but JS doesn't care
+        // If there's already been an undo this is redundant but safe.
+        // The main point is that the first Undo should make a new clone
+        // indicating the state of things before the Undo.
+        origamiUndoStack[origamiUndoIndex] = { original: origamiRoot.clone(true) };
+        origamiUndoIndex--;
+        origamiRoot.replaceWith(origamiUndoStack[origamiUndoIndex].original);
+    }
+}
+
+function origamiCanRedo() {
+    return origamiUndoStack.length > origamiUndoIndex;
+}
+
+function origamiRedo() {
+    if (origamiCanRedo()) {
+        origamiUndoIndex++;
+        $('.marginBox').replaceWith(origamiUndoStack[origamiUndoIndex].original);
+    }
+}
+
+function undoSplit(innerElement) {
+    innerElement.unwrap();
+    innerElement.siblings.remove();
+    innerElement.unwrap();
 }
 
 // Event handler to add a new column or row (was working in demo but never wired up in Bloom)
@@ -116,6 +175,7 @@ function closeClickHandler() {
     if (!$('.split-pane').length) {
         // We're at the topmost element
         var marginBox = $(this).closest('.marginBox');
+        addUndoItem(marginBox);
         marginBox.empty();
         marginBox.append(getSplitPaneComponentInner());
         return;
@@ -126,6 +186,7 @@ function closeClickHandler() {
     var toReplace = myComponent.parent().parent();                             // the div/cell containing the pane that contains the siblings above
     var positionClass = toReplace.attr('class');
     var positionStyle = toReplace.attr('style');
+    addUndoItem(toReplace.parent());
 
     toReplace.replaceWith(sibling);
 
@@ -249,22 +310,26 @@ function getTextBoxIdentifier() {
 }
 function makeTextFieldClickHandler(e) {
     e.preventDefault();
+    var container = $(this).closest('.split-pane-component-inner');
+    addUndoItem(container);
     //note, we're leaving it to some other part of the system, later, to add the needed .bloom-editable
     //   divs (and set the right classes on them) inside of this new .bloom-translationGroup.
     var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement"></div>');
     //getIframeChannel().simpleAjaxGetWithCallbackParam('/bloom/getNextBookStyle', setStyle, translationGroup);
     $(translationGroup).addClass('normal-style'); // replaces above to make new text boxes normal
-    $(this).closest('.split-pane-component-inner').append(translationGroup).append(getTextBoxIdentifier());
+    container.append(translationGroup).append(getTextBoxIdentifier());
     $(this).closest('.selector-links').remove();
     //TODO: figure out if anything needs to get hooked up immediately
 }
 function makePictureFieldClickHandler(e) {
     e.preventDefault();
+    var container = $(this).closest('.split-pane-component-inner');
+    addUndoItem(container);
     var imageContainer = $('<div class="bloom-imageContainer bloom-leadingElement"></div>');
     var image = $('<img src="placeHolder.png" alt="Could not load the picture"/>');
     imageContainer.append(image);
     SetupImage(image); // Must attach it first so event handler gets added to parent
-    $(this).closest('.split-pane-component-inner').append(imageContainer);
+    container.append(imageContainer);
     $(this).closest('.selector-links').remove();
 }
 
