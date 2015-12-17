@@ -86,7 +86,7 @@ function splitClickHandler() {
 }
 
 function performSplit(innerElement, verticalOrHorizontal, existingContentPosition, newContentPosition, prependNew) {
-    addUndoItem(innerElement.parent());
+    addUndoPoint();
     innerElement.wrap(getSplitPaneHtml(verticalOrHorizontal));
     innerElement.wrap(getSplitPaneComponentHtml(existingContentPosition));
     var newSplitPane = innerElement.closest('.split-pane');
@@ -103,11 +103,9 @@ function performSplit(innerElement, verticalOrHorizontal, existingContentPositio
 var origamiUndoStack = [];
 var origamiUndoIndex = 0; // of item that should be redone next, if any
 
-// I made this take an argument of the closest parent that survies the change with only
-// its children modified. I could not make it work for multiple levels of Undo and Redo
-// (including deletions) by only cloning that element, as I first attempted; but I
-// decided to keep the argument in case something requires us to attempt that again one day.
-function addUndoItem(parentElement) {
+// Add a point to which the user can return using 'undo'. Call this before making any change that
+// would make sense to Undo in origami mode.
+function addUndoPoint() {
     origamiUndoStack.length = origamiUndoIndex; // truncate any redo items
     var origamiRoot = $('.marginBox');
     // Currently the only thing in each undo entry is a clone of the marginBox at the
@@ -145,12 +143,6 @@ function origamiRedo() {
     }
 }
 
-function undoSplit(innerElement) {
-    innerElement.unwrap();
-    innerElement.siblings.remove();
-    innerElement.unwrap();
-}
-
 // Event handler to add a new column or row (was working in demo but never wired up in Bloom)
 //function addClickHandler() {
 //    var topSplitPane = $('.split-pane-frame').children('div').first();
@@ -175,7 +167,7 @@ function closeClickHandler() {
     if (!$('.split-pane').length) {
         // We're at the topmost element
         var marginBox = $(this).closest('.marginBox');
-        addUndoItem(marginBox);
+        addUndoPoint();
         marginBox.empty();
         marginBox.append(getSplitPaneComponentInner());
         return;
@@ -186,7 +178,7 @@ function closeClickHandler() {
     var toReplace = myComponent.parent().parent();                             // the div/cell containing the pane that contains the siblings above
     var positionClass = toReplace.attr('class');
     var positionStyle = toReplace.attr('style');
-    addUndoItem(toReplace.parent());
+    addUndoPoint();
 
     toReplace.replaceWith(sibling);
 
@@ -311,7 +303,7 @@ function getTextBoxIdentifier() {
 function makeTextFieldClickHandler(e) {
     e.preventDefault();
     var container = $(this).closest('.split-pane-component-inner');
-    addUndoItem(container);
+    addUndoPoint();
     //note, we're leaving it to some other part of the system, later, to add the needed .bloom-editable
     //   divs (and set the right classes on them) inside of this new .bloom-translationGroup.
     var translationGroup = $('<div class="bloom-translationGroup bloom-trailingElement"></div>');
@@ -324,7 +316,7 @@ function makeTextFieldClickHandler(e) {
 function makePictureFieldClickHandler(e) {
     e.preventDefault();
     var container = $(this).closest('.split-pane-component-inner');
-    addUndoItem(container);
+    addUndoPoint();
     var imageContainer = $('<div class="bloom-imageContainer bloom-leadingElement"></div>');
     var image = $('<img src="placeHolder.png" alt="Could not load the picture"/>');
     imageContainer.append(image);
