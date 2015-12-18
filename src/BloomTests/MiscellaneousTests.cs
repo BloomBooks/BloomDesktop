@@ -5,13 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Bloom.Edit;
 using NUnit.Framework;
+#if !__MonoCS__
 using SIL.Media.Naudio;
+#endif
 
 namespace BloomTests
 {
 	[TestFixture]
 	public class MiscellaneousTests
 	{
+#if !__MonoCS__
 		/// <summary>
 		/// BL-2974. We don't directly use the reference to NAudio in Bloom.exe, it's just there to make sure the DLL gets copied.
 		/// But the build won't actually fail if it's not there to be copied. Creating this object will fail if it isn't.
@@ -23,5 +26,6 @@ namespace BloomTests
 		{
 			Assert.DoesNotThrow(() => new AudioRecorder(1));
 		}
+#endif
 	}
 }

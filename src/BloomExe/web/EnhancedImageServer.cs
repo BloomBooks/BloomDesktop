@@ -47,7 +47,7 @@ namespace Bloom.web
 		/// <summary>
 		/// This is only used in a few special cases where we need one to pass as an argument but it won't be fully used.
 		/// </summary>
-		internal EnhancedImageServer() : this( new RuntimeImageProcessor(new BookRenamedEvent()), null)
+		internal EnhancedImageServer() : this( new RuntimeImageProcessor(new BookRenamedEvent()), null, null)
 		{ }
 
 		public EnhancedImageServer(RuntimeImageProcessor cache, BookThumbNailer thumbNailer, BloomFileLocator fileLocator = null) : base(cache)
