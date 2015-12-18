@@ -909,6 +909,33 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void Save_UpdatesMetadataCreditsRemovingP()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page'>
+						<div class='bloom-page' id='guid3'>
+							<textarea lang='en' data-book='originalAcknowledgments'><p>original</p></textarea>
+						</div>
+					</div>
+				</body></html>");
+
+			var book = CreateBook();
+
+			var acksElt = _bookDom.SelectSingleNode("//textarea");
+			acksElt.InnerXml = "<p>changed</p>" + Environment.NewLine + "<p>more changes</p>";
+			book.Save();
+			Assert.That(_metadata.Credits, Is.EqualTo("changed" + Environment.NewLine + "more changes"));
+		}
+
+		[Test]
 		public void Save_UpdatesMetadataIsbnAndPageCount()
 		{
 			_bookDom = new HtmlDom(
