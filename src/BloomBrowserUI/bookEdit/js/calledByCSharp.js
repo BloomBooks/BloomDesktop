@@ -2,10 +2,16 @@ var CalledByCSharp = (function () {
     function CalledByCSharp() {
     }
     CalledByCSharp.prototype.handleUndo = function () {
-        // Stuff "in the toolbox" (not clear what that means) gets its own undo handling
-        var contentWindow = this.getToolboxContent();
-        if (contentWindow && contentWindow.model && contentWindow.model.shouldHandleUndo()) {
-            contentWindow.model.undo();
+        // First see if origami is active and knows about something we can undo.
+        var contentWindow = this.getPageContent();
+        if (contentWindow && contentWindow.origamiCanUndo()) {
+            contentWindow.origamiUndo();
+        }
+        // Undoing changes made by commands and dialogs in the toolbox can't be undone using
+        // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
+        var toolboxWindow = this.getToolboxContent();
+        if (toolboxWindow && toolboxWindow.model && toolboxWindow.model.shouldHandleUndo()) {
+            toolboxWindow.model.undo();
         } // elsewhere, we try to ask ckEditor to undo, else just the document
         else {
             var ckEditorUndo = this.ckEditorUndoCommand();
@@ -24,9 +30,14 @@ var CalledByCSharp = (function () {
         }
     };
     CalledByCSharp.prototype.canUndo = function () {
-        var contentWindow = this.getToolboxContent();
-        if (contentWindow && contentWindow.model && contentWindow.model.shouldHandleUndo()) {
-            return contentWindow.model.canUndo();
+        // See comments on handleUndo()
+        var contentWindow = this.getPageContent();
+        if (contentWindow && contentWindow.origamiCanUndo()) {
+            return 'yes';
+        }
+        var toolboxWindow = this.getToolboxContent();
+        if (toolboxWindow && toolboxWindow.model && toolboxWindow.model.shouldHandleUndo()) {
+            return toolboxWindow.model.canUndo();
         }
         /* I couldn't find a way to ask ckeditor if it is ready to do an undo.
           The "canUndo()" is misleading; what it appears to mean is, can this command (undo) be undone?*/
