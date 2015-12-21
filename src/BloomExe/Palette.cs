@@ -11,5 +11,6 @@ namespace Bloom
 		public static Color DisabledTextAgainstDarkBackColor = Color.Gray;
 
 		public static Color Blue = Color.FromArgb(17,129,146);
+		public static Color BloomRed = Color.FromArgb(0xff, 0xD6, 0x56, 0x49);
 	}
 }
