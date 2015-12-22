@@ -21,6 +21,9 @@ var LeveledReaderModel = (function () {
     LeveledReaderModel.prototype.hideTool = function () {
         model.setMarkupType(0);
     };
+    LeveledReaderModel.prototype.updateMarkup = function () {
+        model.doMarkup();
+    };
     LeveledReaderModel.prototype.name = function () { return 'leveledReaderTool'; };
     return LeveledReaderModel;
 })();

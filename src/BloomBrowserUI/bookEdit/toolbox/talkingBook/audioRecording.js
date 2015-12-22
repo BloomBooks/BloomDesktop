@@ -275,19 +275,24 @@ var AudioRecording = (function () {
     AudioRecording.prototype.setupForRecording = function () {
         this.updateInputDeviceDisplay();
         var page = this.getPage();
+        this.hiddenSourceBubbles = page.find('.uibloomSourceTextsBubble');
+        this.hiddenSourceBubbles.hide();
         var editable = page.find('div.bloom-editable');
         if (editable.length === 0) {
             // no editable text on this page.
             this.configureForNothingToRecord();
             return;
         }
+        this.updateMarkupAndControlsToCurrentText();
+    };
+    AudioRecording.prototype.updateMarkupAndControlsToCurrentText = function () {
+        var page = this.getPage();
+        var editable = page.find('div.bloom-editable');
         this.makeSentenceSpans(editable);
         // For displaying the qtip, restrict the editable divs to the ones that have
         // audio sentences.
         editable = $(page).find('span.audio-sentence').parents('div.bloom-editable');
         var thisClass = this;
-        this.hiddenSourceBubbles = page.find('.uibloomSourceTextsBubble');
-        this.hiddenSourceBubbles.hide();
         thisClass.setStatus('record', Status.Expected);
         thisClass.levelCanvas = $('#audio-meter').get()[0];
         var firstSentence = editable.find('span.audio-sentence').first();
@@ -310,7 +315,9 @@ var AudioRecording = (function () {
     };
     AudioRecording.prototype.removeRecordingSetup = function () {
         this.hiddenSourceBubbles.show();
-        this.getPage().find('.ui-audioCurrent').removeClass('ui-audioCurrent');
+        var page = this.getPage();
+        page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
+        var editable = page.find('div.bloom-editable');
     };
     // This gets invoked (via a non-object method of the same name in this file,
     // and one of the same name in CalledFromCSharp) when a C# event fires indicating
@@ -608,19 +615,22 @@ var AudioRecording = (function () {
     // special cases); this root method scans down and does it for each such child
     // in a root (possibly the root itself, if it has no children).
     AudioRecording.prototype.makeSentenceSpans = function (root) {
-        var children = root.children();
-        var processedChild = false; // Did we find a significant child?
-        for (var i = 0; i < children.length; i++) {
-            var child = children[i];
-            var name = child.nodeName.toLowerCase();
-            // Review: is there a better way to pick out the elements that can occur within content elements?
-            if (name != 'span' && name != 'br' && name != 'i' && name != 'b' && name != 'u') {
-                processedChild = true;
-                this.makeSentenceSpans($(child));
+        var thisClass = this;
+        root.each(function (index, e) {
+            var children = $(e).children();
+            var processedChild = false; // Did we find a significant child?
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+                var name = child.nodeName.toLowerCase();
+                // Review: is there a better way to pick out the elements that can occur within content elements?
+                if (name != 'span' && name != 'br' && name != 'i' && name != 'b' && name != 'u' && $(child).attr('id') !== 'formatButton') {
+                    processedChild = true;
+                    thisClass.makeSentenceSpans($(child));
+                }
             }
-        }
-        if (!processedChild)
-            this.makeSentenceSpansLeaf(root);
+            if (!processedChild)
+                thisClass.makeSentenceSpansLeaf($(e));
+        });
         // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
     };
     // The goal for existing markup is that if any existing audio-sentence span has an md5 that matches the content of a
@@ -628,6 +638,13 @@ var AudioRecording = (function () {
     // Where there aren't exact matches, but there are existing audio-sentence spans, we keep the ids as far as possible,
     // just using the original order, since it is possible we have a match and only spelling or punctuation changed.
     AudioRecording.prototype.makeSentenceSpansLeaf = function (elt) {
+        // When all text is deleted, we get in a temporary state with no paragraph elements, so the root editable div
+        // may be processed...and if this happens during editing the format button may be present. The body of this function
+        // will do weird things with it (wrap it in a sentence span, for example) so the easiest thing is to remove
+        // it at the start and reinstate it at the end. Fortunately its position is predictable. But I wish this
+        // otherwise fairly generic code didn't have to know about it.
+        var formatButton = elt.find('#formatButton');
+        formatButton.remove(); // nothing happens if not found
         var markedSentences = elt.find("span.audio-sentence");
         var reuse = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
         markedSentences.each(function (index) {
@@ -681,6 +698,7 @@ var AudioRecording = (function () {
         }
         // set the html
         elt.html(newHtml);
+        elt.append(formatButton);
     };
     AudioRecording.prototype.isRecordable = function (fragment) {
         if (fragment.isSpace)

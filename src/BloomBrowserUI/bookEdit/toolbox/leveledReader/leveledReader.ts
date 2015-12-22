@@ -22,6 +22,10 @@ class LeveledReaderModel implements ITabModel {
         model.setMarkupType(0);
     }
 
+    updateMarkup() {
+        model.doMarkup();
+    }
+
     name() {return 'leveledReaderTool';}
 }
 
