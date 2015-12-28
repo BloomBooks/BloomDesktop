@@ -115,6 +115,7 @@
     <TypeScriptCompile Include="bookEdit\toolbox\bookSettings\bookSettings.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\decodableReader.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerSettings.ts" />
+    <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\jquery.div-columns.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerTools.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\decodableReader\readerToolsModel.ts" />
     <TypeScriptCompile Include="bookEdit\toolbox\leveledReader\leveledReader.ts" />
@@ -130,7 +131,6 @@
     <TypeScriptCompile Include="bookEdit\js\editableDivUtils.ts" />
     <TypeScriptCompile Include="bookEdit\js\getIframeChannel.ts" />
     <TypeScriptCompile Include="bookEdit\js\interIframeChannel.ts" />
-    <TypeScriptCompile Include="bookEdit\js\jquery.div-columns.ts" />
     <Content Include="bookEdit\js\toolbar\bootstrap.icons.css" />
     <Content Include="bookEdit\js\toolbar\glyphicons-halflings.png" />
     <Content Include="bookEdit\js\toolbar\jquery.toolbar.js" />

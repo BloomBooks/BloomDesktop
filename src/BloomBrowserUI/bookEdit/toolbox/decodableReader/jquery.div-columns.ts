@@ -1,4 +1,4 @@
-/// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../../../lib/jquery.d.ts" />
 
 /**
  * jquery.div-columns.js

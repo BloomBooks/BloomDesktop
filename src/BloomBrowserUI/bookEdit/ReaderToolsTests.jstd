@@ -8,7 +8,7 @@ load:
   - toolbox/decodableReader/libsynphony/synphony_lib.js
   - toolbox/decodableReader/libsynphony/bloom_xregexp_categories.js
   - toolbox/decodableReader/libsynphony/bloom_lib.js
-  - js/jquery.div-columns.js
+  - toolbox/decodableReader/jquery.div-columns.js
   - toolbox/decodableReader/libsynphony/jquery.text-markup.js
   - toolbox/decodableReader/synphonyApi.js
   - toolbox/toolbox.js
