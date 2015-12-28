@@ -1,5 +1,5 @@
 /// <reference path="localizationManager/localizationManager.ts" />
-/// <reference path="jquery.d.ts" />
+/// <reference path="../typings/jquery/jquery.d.ts" />
 /**
  * jquery.i18n.custom.js
  *

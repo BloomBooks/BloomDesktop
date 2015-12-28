@@ -86,7 +86,6 @@
     <Content Include="bookEdit\js\bloomImages.js" />
     <Content Include="bookEdit\js\pageDragToolbox.js" />
     <Content Include="bookEdit\js\editViewFrame.js" />
-    <Content Include="bookEdit\js\jquery.hotkeys.js" />
     <Content Include="bookEdit\js\origami.js" />
     <Content Include="bookEdit\css\editMode.css">
       <DependentUpon>editMode.less</DependentUpon>
@@ -196,12 +195,8 @@
     <Content Include="lib\jasmine\.guidsForInstaller.xml" />
     <Content Include="lib\jasmine\jasmine-1.1.0.js" />
     <Content Include="lib\jasmine\JasmineAdapter-1.1.2.js" />
-    <Content Include="lib\jquery-1.10.1.js" />
-    <Content Include="lib\jquery-ui-1.10.3.custom.min.js" />
     <Content Include="lib\jquery-ui.css" />
-    <Content Include="lib\jquery-ui.js" />
     <Content Include="lib\jquery.alphanum.js" />
-    <Content Include="lib\jquery.d.ts" />
     <Content Include="lib\jquery.easytabs - b4 refactor.js" />
     <Content Include="lib\jquery.easytabs - Copy.js" />
     <Content Include="lib\jquery.easytabs.js" />

@@ -192,5 +192,5 @@ function fireCSharpEvent(eventName, eventData) {
     // Solution III (works)
     //var event = new (<any>MessageEvent)(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
 }
-// "endregion" ReaderSetup dialog
+// "endregion" ReaderSetup dialog 
 //# sourceMappingURL=decodableReader.js.map

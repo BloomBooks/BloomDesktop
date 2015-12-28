@@ -1,4 +1,4 @@
-/// <reference path="../../../../lib/jquery.d.ts" />
+/// <reference path="../../../typings/jquery/jquery.d.ts" />
 /**
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
  * @param {jQuery} $

@@ -1,4 +1,4 @@
-/// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../typings/jquery/jquery.d.ts" />
 var EditableDivUtils = (function () {
     function EditableDivUtils() {
     }

@@ -1,5 +1,5 @@
 /// <reference path="../../bookEdit/sourceBubbles/bloomSourceBubbles.ts" />
-/// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../lib/jasmine/jasmine.d.ts"/>
 "use strict";
 describe("SourceBubbles", function () {

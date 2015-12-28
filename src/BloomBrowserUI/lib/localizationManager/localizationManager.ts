@@ -1,4 +1,4 @@
-/// <reference path="../jquery.d.ts" />
+/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../misc-types.d.ts" />
 /// <reference path="../../bookEdit/js/getIframeChannel.ts" />
 
