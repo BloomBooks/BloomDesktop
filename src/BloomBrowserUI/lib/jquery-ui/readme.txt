@@ -1,0 +1,1 @@
+jquery-ui is currently not part of our node_modules because what you get with npm install jquery-ui expects to be run through browserify, which we aren't doing yet. So for now this is downloaded. It is "custom" in that it omits the date-picker, which is 75k unminified, and we don't use it.

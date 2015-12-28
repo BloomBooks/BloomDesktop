@@ -6,8 +6,7 @@ var npmModules = [
 ];
 
 var scripts = [
-    //'moved to npmModules lib/jquery-1.10.1.js', 
-    'lib/jquery-ui-1.10.3.custom.min.js', // nb: we just rename whatever version of jquery-ui we have to this.
+    'lib/jquery-ui/jquery-ui.min.js', // nb: we just rename whatever version of jquery-ui we have to this.
     'lib/jquery.easytabs.js', // we have modified this. Todo: make a github fork of our version
     'lib/jquery.hashchange.min.js',       // needed by easytabs
     'lib/jquery.qtip.js', // currently we have added a fix that may not be needed now. Upgrade?
@@ -20,9 +19,7 @@ var scripts = [
     'lib/jquery.myimgscale.js', // no npm just old bitbucket repo, has been customized. Todo: make github fork of our version.
     'lib/jquery.resize.js', // we have modified this. Todo: make a github fork of our version
     'lib/errorHandler.js', // comes from a bloom-specific typescript fn
-    //moved to npmModules 'lib/toastr.min.js',
     'bookEdit/js/editableDivUtils.js',
-    //moved to npmModules 'bookEdit/js/jquery.hotkeys.js',
     'bookEdit/js/bloomQtipUtils.js',
     'bookEdit/sourceBubbles/bloomSourceBubbles.js',
     'bookEdit/js/bloomNotices.js',
