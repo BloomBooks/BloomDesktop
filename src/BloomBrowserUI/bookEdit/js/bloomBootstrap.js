@@ -1,21 +1,28 @@
+//these are in BloomBrowserUI/node_modules. If you're missing one, do "npm install" from the BloomBrowserUI directory
+var npmModules = [
+    'jquery/dist/jquery.js',
+    'toastr/toastr.js',
+    'jquery.hotkeys/jquery.hotkeys.js'
+];
+
 var scripts = [
-    'lib/jquery-1.10.1.js',               // nb: we just rename whatever version of jquery we have to this.
+    //'moved to npmModules lib/jquery-1.10.1.js', 
     'lib/jquery-ui-1.10.3.custom.min.js', // nb: we just rename whatever version of jquery-ui we have to this.
-    'lib/jquery.easytabs.js',
+    'lib/jquery.easytabs.js', // we have modified this. Todo: make a github fork of our version
     'lib/jquery.hashchange.min.js',       // needed by easytabs
-    'lib/jquery.qtip.js',
-    'lib/jquery.qtipSecondary.js',
+    'lib/jquery.qtip.js', // currently we have added a fix that may not be needed now. Upgrade?
+    'lib/jquery.qtipSecondary.js',//was a duplicate to allow two qtips on same object. Come up with a more elegant way?
     'bookEdit/js/getIframeChannel.js',
-    'lib/localizationManager/localizationManager.js',
+    'lib/localizationManager/localizationManager.js',// comes from a bloom-specific typescript fn. Todo: make a github repo of it (with a more specific name)
     'lib/jquery.i18n.custom.js',
-    'lib/jquery.sizes.js',
-    'lib/jquery.watermark.js',
-    'lib/jquery.myimgscale.js',
-    'lib/jquery.resize.js',
-    'lib/errorHandler.js',
-    'lib/toastr.min.js',
+    'lib/jquery.sizes.js', //review: is this used? Where?
+    'lib/jquery.watermark.js', //replace: no npm or repo
+    'lib/jquery.myimgscale.js', // no npm just old bitbucket repo, has been customized. Todo: make github fork of our version.
+    'lib/jquery.resize.js', // we have modified this. Todo: make a github fork of our version
+    'lib/errorHandler.js', // comes from a bloom-specific typescript fn
+    //moved to npmModules 'lib/toastr.min.js',
     'bookEdit/js/editableDivUtils.js',
-    'bookEdit/js/jquery.hotkeys.js',
+    //moved to npmModules 'bookEdit/js/jquery.hotkeys.js',
     'bookEdit/js/bloomQtipUtils.js',
     'bookEdit/sourceBubbles/bloomSourceBubbles.js',
     'bookEdit/js/bloomNotices.js',
@@ -56,6 +63,10 @@ var styleSheets = [
     'bookEdit/toolbox/talkingBook/audioRecording.css'
 ];
 
+for (var i = 0; i < npmModules.length; i++) {
+
+    document.write('<script type="text/javascript" src="/bloom/node_modules/' + npmModules[i] + '"></script>');
+}
 for (var i = 0; i < scripts.length; i++) {
     document.write('<script type="text/javascript" src="/bloom/' + scripts[i] + '"></script>');
 }

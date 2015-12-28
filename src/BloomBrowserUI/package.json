@@ -1,0 +1,23 @@
+{
+  "name": "bloom",
+  "version": "3.6.0",
+  "description": "Bloom Desktop",
+  "main": "none",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "karma start --browsers Firefox"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BloomBooks"
+  },
+  "author": "SIL International",
+  "license": "MIT",
+  "dependencies": {
+    "jquery": "^1.11.3",
+    "jquery.hotkeys": "^0.1.0",
+    "toastr": "^2.1.2"
+  }
+}
