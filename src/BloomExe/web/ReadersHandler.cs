@@ -13,7 +13,9 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Edit;
 using L10NSharp;
+using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
+using SIL.PlatformUtilities;
 
 namespace Bloom.web
 {
@@ -35,10 +37,17 @@ namespace Bloom.web
 			AllowedWordsFile
 		}
 
+		public static void Init(EnhancedImageServer server)
+		{
+			Server = server;
+			server.RegisterRequestHandler("readers/", HandleRequest);
+			server.RegisterRequestHandler("leveledRTInfo/", ProcessLeveldRtInfo);
+		}
+
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
 		// whole-book counts. If we ever support having more than one book open, ReadersHandler will need to stop being static, or
 		// some similar change. But by then, we may have the whole book in the main DOM, anyway, and getTextOfPages may be obsolete.
-		public static Book.Book CurrentBook { get { return Server.CurrentBook; } }
+		private static Book.Book CurrentBook { get { return Server.CurrentBook; } }
 
 		/// <summary>
 		/// Needs to know the one and only image server to get the current book from it.
@@ -73,7 +82,7 @@ namespace Bloom.web
 
 				case "getDefaultFont":
 					var bookFontName = currentCollectionSettings.DefaultLanguage1FontName;
-					if (string.IsNullOrEmpty(bookFontName)) bookFontName = "sans-serif";
+					if (String.IsNullOrEmpty(bookFontName)) bookFontName = "sans-serif";
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(bookFontName);
 					return true;
@@ -150,7 +159,7 @@ namespace Bloom.web
 
 			foreach (var page in pages)
 			{
-				var pageWords = string.Empty;
+				var pageWords = String.Empty;
 				foreach (XmlElement node in page.SafeSelectNodes(".//div[contains(concat(' ', @class, ' '), ' bloom-content1 ')]"))
 					pageWords += " " + node.InnerText;
 
@@ -172,7 +181,7 @@ namespace Bloom.web
 				Directory.CreateDirectory(path);
 
 			var fileList1 = new List<string>();
-			var langFileName = string.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var langFileName = String.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 			var langFile = Path.Combine(path, langFileName);
 
 			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
@@ -189,7 +198,7 @@ namespace Bloom.web
 					File.Copy(Path.Combine(foundFile.DirectoryName, foundFile.Name), langFile);
 				}
 
-				return string.Empty;
+				return String.Empty;
 			}
 
 			// first look for ReaderToolsWords-<iso>.json
@@ -210,7 +219,7 @@ namespace Bloom.web
 					fileList1.Add(file);
 			}
 
-			return string.Join("\r", fileList1.ToArray());
+			return String.Join("\r", fileList1.ToArray());
 		}
 
 		/// <summary>Gets the contents of a Text file</summary>
@@ -223,7 +232,7 @@ namespace Bloom.web
 
 			path = Path.Combine(path, fileName);
 
-			if (!File.Exists(path)) return string.Empty;
+			if (!File.Exists(path)) return String.Empty;
 
 			// first try utf-8/ascii encoding (the .Net default)
 			var text = File.ReadAllText(path);
@@ -288,7 +297,7 @@ namespace Bloom.web
 				JArray rawWords = stage.words;
 				string[] stageWords = rawWords.Select(x => x.ToString()).ToArray();
 				Array.Sort(stageWords);
-				sb.AppendLineFormat(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), string.Join(" ", stageWords));
+				sb.AppendLineFormat(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), String.Join(" ", stageWords));
 				sb.AppendLine();
 			}
 
@@ -297,7 +306,7 @@ namespace Bloom.web
 			Array.Sort(words);
 			sb.AppendLine();
 			sb.AppendLine(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList", "Complete Word List"));
-			sb.AppendLine(string.Join(" ", words));
+			sb.AppendLine(String.Join(" ", words));
 
 			// write the file
 			var fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, "Decodable Books Letters and Words.txt");
@@ -326,7 +335,7 @@ namespace Bloom.web
 				if (jsonString.Contains("\"LangID\":\"\""))
 					jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.Language1Iso639Code + "\"");
 
-				var fileName = string.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+				var fileName = String.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 				fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
 				File.WriteAllText(fileName, jsonString, Encoding.UTF8);
@@ -350,7 +359,7 @@ namespace Bloom.web
 			PathUtilities.OpenDirectoryInExplorer(path);
 
 			// BL-673: Make sure the folder comes to the front in Linux
-			if (SIL.PlatformUtilities.Platform.IsLinux)
+			if (Platform.IsLinux)
 			{
 				// allow the external process to execute
 				Thread.Sleep(100);
@@ -385,7 +394,7 @@ namespace Bloom.web
 			{
 				Multiselect = false,
 				CheckFileExists = true,
-				Filter = string.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab", textFiles)
+				Filter = String.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab", textFiles)
 			};
 			var result = dlg.ShowDialog();
 			if (result == DialogResult.OK)
@@ -439,7 +448,7 @@ namespace Bloom.web
 			words = words.Distinct(_equalityComparer).ToArray();
 
 			// join the words back into a delimited string to be sent to the browser
-			return string.Join(",", words);
+			return String.Join(",", words);
 		}
 
 		/// <summary>Used when removing duplicates from word lists</summary>
@@ -447,12 +456,96 @@ namespace Bloom.web
 		{
 			public bool Equals(string x, string y)
 			{
-				return string.Equals(x, y, StringComparison.InvariantCultureIgnoreCase);
+				return String.Equals(x, y, StringComparison.InvariantCultureIgnoreCase);
 			}
 
 			public int GetHashCode(string obj)
 			{
 				return obj.ToLowerInvariant().GetHashCode();
+			}
+		}
+
+		/// <summary>
+		/// Handle server queries starting with "leveledRTInfo/". Currently these are requests to see
+		/// one of the additional suggestions for a particular level.
+		/// </summary>
+		/// <param name="localPath"></param>
+		/// <param name="info"></param>
+		/// <param name="dummy"></param>
+		/// <returns></returns>
+		public static bool ProcessLeveldRtInfo(string localPath, IRequestInfo info, CollectionSettings dummy)
+		{
+			var queryPart = String.Empty;
+			if (info.RawUrl.Contains("?"))
+				queryPart = "#" + info.RawUrl.Split('?')[1];
+			var langCode = LocalizationManager.UILanguageId;
+			var completeEnglishPath = FileLocator.GetFileDistributedWithApplication(localPath);
+			var completeUiLangPath = GetUiLanguageFileVersion(completeEnglishPath, langCode);
+			string url;
+			if (langCode != "en" && File.Exists(completeUiLangPath))
+				url = completeUiLangPath;
+			else
+				url = completeEnglishPath;
+			var cleanUrl = url.Replace("\\", "/"); // allows jump to file to work
+
+			string browser = String.Empty;
+			if (Platform.IsLinux)
+			{
+				// REVIEW: This opens HTML files in the browser. Do we have any non-html
+				// files that this code needs to open in the browser? Currently they get
+				// opened in whatever application the user has selected for that file type
+				// which might well be an editor.
+				browser = "xdg-open";
+			}
+			else
+			{
+				// If we don't provide the path of the browser, i.e. Process.Start(url + queryPart), we get file not found exception.
+				// If we prepend "file:///", the anchor part of the link (#xxx) is not sent unless we provide the browser path too.
+				// This is the same behavior when simply typing a url into the Run command on Windows.
+				// If we fail to get the browser path for some reason, we still load the page, just without navigating to the anchor.
+				string defaultBrowserPath;
+				if (TryGetDefaultBrowserPath(out defaultBrowserPath))
+				{
+					browser = defaultBrowserPath;
+				}
+			}
+
+			if (!String.IsNullOrEmpty(browser))
+			{
+				try
+				{
+					Process.Start(browser, "\"file:///" + cleanUrl + queryPart + "\"");
+					return false;
+				}
+				catch (Exception)
+				{
+					Debug.Fail("Jumping to browser with anchor failed.");
+					// Don't crash Bloom because we can't open an external file.
+				}
+			}
+			// If the above failed, either for lack of default browser or exception, try this:
+			Process.Start("\"" + cleanUrl + "\"");
+			return false;
+		}
+
+		private static string GetUiLanguageFileVersion(string englishFileName, string langCode)
+		{
+			return englishFileName.Replace("-en.htm", "-" + langCode + ".htm");
+		}
+
+		private static bool TryGetDefaultBrowserPath(out string defaultBrowserPath)
+		{
+			try
+			{
+				string key = @"HTTP\shell\open\command";
+				using (RegistryKey registrykey = Registry.ClassesRoot.OpenSubKey(key, false))
+					defaultBrowserPath = ((string)registrykey.GetValue(null, null)).Split('"')[1];
+				return true;
+			}
+			catch
+			{
+				defaultBrowserPath = null;
+				return false;
 			}
 		}
 	}

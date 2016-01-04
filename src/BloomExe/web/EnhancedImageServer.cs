@@ -41,6 +41,9 @@ namespace Bloom.web
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
 		private BloomFileLocator _fileLocator;
 		private readonly BookThumbNailer _thumbNailer;
+		// This dictionary allows additional request handlers to be injected into the server. If a request's local path starts with one of the keys in this dictionary,
+		// the corresponding function will be called to handle the request. The function should return true if a result is returned from the request.
+		private Dictionary<string, Func<string, IRequestInfo, CollectionSettings, bool>> _additionalRequestHandlers = new Dictionary<string, Func<string, IRequestInfo, CollectionSettings, bool>>();
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -57,6 +60,11 @@ namespace Bloom.web
 			// Storing this in the ReadersHandler means there can only be one instance of EIS, since ReadersHandler is static. But for
 			// now that's true anyway because we use a fixed port. If we need to change this we could just make an instance here.
 			ReadersHandler.Server = this;
+		}
+
+		public void RegisterRequestHandler(string key, Func<string, IRequestInfo, CollectionSettings, bool> action)
+		{
+			_additionalRequestHandlers[key] = action;
 		}
 
 		/// <summary>
@@ -212,12 +220,21 @@ namespace Bloom.web
 				return ProcessAnyFileContent(info, localPath);
 			}
 			// routing
-			if (localPath.StartsWith("readers/", StringComparison.InvariantCulture))
+			// See if an injected request handler wants to handle this one.
+			// Enhance JohnT:  if we get a larger number of injected handlers, and all keys are still a keyword ending in slash,
+			// it might help to extract the part of the localPath before the slash and use it as a key for dictionary lookup.
+			// There are currently only two so I don't think it is yet.
+			foreach (var kvp in _additionalRequestHandlers)
 			{
-				if (ProcessReaders(localPath, info))
-					return true;
+				if (localPath.StartsWith(kvp.Key))
+				{
+					lock (SyncObj)
+					{
+						return kvp.Value(localPath, info, CurrentCollectionSettings);
+					}
+				}
 			}
-			if(localPath.StartsWith("imageInfo", StringComparison.InvariantCulture))
+			if (localPath.StartsWith("imageInfo", StringComparison.InvariantCulture))
 			{
 				return ReplyWithImageInfo(info, localPath);
 			}
@@ -260,8 +277,6 @@ namespace Bloom.web
 			}
 			else if (localPath.StartsWith("directoryWatcher/", StringComparison.InvariantCulture))
 				return ProcessDirectoryWatcher(info);
-			else if (localPath.StartsWith("leveledRTInfo/", StringComparison.InvariantCulture))
-				return ProcessLevedRTInfo(info, localPath);
 			else if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
 				var temp = LocalHostPathToFilePath(localPath);
@@ -373,14 +388,6 @@ namespace Bloom.web
 			}
 		}
 
-		private bool ProcessReaders(string localPath, IRequestInfo info)
-		{
-			lock (SyncObj)
-			{
-				return ReadersHandler.HandleRequest(localPath, info, CurrentCollectionSettings);
-			}
-		}
-
 		private static void ProcessError(IRequestInfo info)
 		{
 			// pop-up the error messages if a debugger is attached or an environment variable is set
@@ -417,64 +424,6 @@ namespace Bloom.web
 					return true;
 			}
 			return false;
-		}
-
-		private bool ProcessLevedRTInfo(IRequestInfo info, string localPath)
-		{
-			lock (SyncObj)
-			{
-				var queryPart = string.Empty;
-				if (info.RawUrl.Contains("?"))
-					queryPart = "#" + info.RawUrl.Split('?')[1];
-				var langCode = LocalizationManager.UILanguageId;
-				var completeEnglishPath = FileLocator.GetFileDistributedWithApplication(localPath);
-				var completeUiLangPath = GetUiLanguageFileVersion(completeEnglishPath, langCode);
-				string url;
-				if (langCode != "en" && File.Exists(completeUiLangPath))
-					url = completeUiLangPath;
-				else
-					url = completeEnglishPath;
-				var cleanUrl = url.Replace("\\", "/"); // allows jump to file to work
-
-				string browser = string.Empty;
-				if (SIL.PlatformUtilities.Platform.IsLinux)
-				{
-					// REVIEW: This opens HTML files in the browser. Do we have any non-html
-					// files that this code needs to open in the browser? Currently they get
-					// opened in whatever application the user has selected for that file type
-					// which might well be an editor.
-					browser = "xdg-open";
-				}
-				else
-				{
-					// If we don't provide the path of the browser, i.e. Process.Start(url + queryPart), we get file not found exception.
-					// If we prepend "file:///", the anchor part of the link (#xxx) is not sent unless we provide the browser path too.
-					// This is the same behavior when simply typing a url into the Run command on Windows.
-					// If we fail to get the browser path for some reason, we still load the page, just without navigating to the anchor.
-					string defaultBrowserPath;
-					if (TryGetDefaultBrowserPath(out defaultBrowserPath))
-					{
-						browser = defaultBrowserPath;
-					}
-				}
-
-				if (!string.IsNullOrEmpty(browser))
-				{
-					try
-					{
-						Process.Start(browser, "\"file:///" + cleanUrl + queryPart + "\"");
-						return false;
-					}
-					catch (Exception)
-					{
-						Debug.Fail("Jumping to browser with anchor failed.");
-						// Don't crash Bloom because we can't open an external file.
-					}
-				}
-				// If the above failed, either for lack of default browser or exception, try this:
-				Process.Start("\"" + cleanUrl + "\"");
-				return false;
-			}
 		}
 
 		private bool ProcessContent(IRequestInfo info, string localPath)
@@ -731,27 +680,6 @@ namespace Bloom.web
 			info.ContentType = "text/css";
 			info.ReplyWithFileContent(path);
 			return true;
-		}
-
-		private static bool TryGetDefaultBrowserPath(out string defaultBrowserPath)
-		{
-			try
-			{
-				string key = @"HTTP\shell\open\command";
-				using (RegistryKey registrykey = Registry.ClassesRoot.OpenSubKey(key, false))
-					defaultBrowserPath = ((string)registrykey.GetValue(null, null)).Split('"')[1];
-				return true;
-			}
-			catch
-			{
-				defaultBrowserPath = null;
-				return false;
-			}
-		}
-
-		private string GetUiLanguageFileVersion(string englishFileName, string langCode)
-		{
-			return englishFileName.Replace("-en.htm", "-" + langCode + ".htm");
 		}
 
 		private bool CheckForSampleTextChanges(IRequestInfo info)
