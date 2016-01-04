@@ -3,6 +3,9 @@ var LeveledReaderModel = (function () {
     function LeveledReaderModel() {
     }
     LeveledReaderModel.prototype.restoreSettings = function (opts) {
+        if (!model)
+            model = new ReaderToolsModel();
+        initializeLeveledReaderTool();
         if (opts['leveledReaderState']) {
             var state = libsynphony.dbGet('drt_state');
             if (!state)

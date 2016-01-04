@@ -751,15 +751,6 @@ class AudioRecording {
 var audioRecorder;
 var libsynphony: libSynphony;
 
-// Get our instance created
-if (typeof ($) === "function") {
-
-    // Running for real, and jquery properly loaded first
-    $(document).ready(function () {
-        initializeTalkingBookTool();
-    });
-}
-
 function initializeTalkingBookTool() {
     if (audioRecorder)
         return;

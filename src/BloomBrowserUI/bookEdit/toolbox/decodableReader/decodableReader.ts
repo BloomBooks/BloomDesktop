@@ -2,6 +2,8 @@
 
 class DecodableReaderModel implements ITabModel {
     restoreSettings(settings: string) {
+        if (!model) model = new ReaderToolsModel();
+        initializeDecodableReaderTool();
         if (settings['decodableReaderState']) {
             var state = libsynphony.dbGet('drt_state');
             if (!state) state = new DRTState();

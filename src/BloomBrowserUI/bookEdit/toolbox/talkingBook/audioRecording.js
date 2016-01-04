@@ -706,13 +706,6 @@ var AudioRecording = (function () {
 })();
 var audioRecorder;
 var libsynphony;
-// Get our instance created
-if (typeof ($) === "function") {
-    // Running for real, and jquery properly loaded first
-    $(document).ready(function () {
-        initializeTalkingBookTool();
-    });
-}
 function initializeTalkingBookTool() {
     if (audioRecorder)
         return;
