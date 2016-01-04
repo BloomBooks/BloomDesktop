@@ -39,7 +39,6 @@ DistFiles/factoryCollections/Templates/**/basePage.css
 **/Templates/**/previewMode.css
 **/Templates/**/basePage.css
 **/Templates/**/origami.css
-src/BloomBrowserUI/**/*.js
 Acorns*
 _NCrunch*
 *.vsp
