@@ -41,6 +41,9 @@ namespace Bloom.web
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
 		private BloomFileLocator _fileLocator;
 		private readonly BookThumbNailer _thumbNailer;
+		// This dictionary allows additional request handlers to be injected into the server. If a request's local path starts with one of the keys in this dictionary,
+		// the corresponding function will be called to handle the request. The function should return true if a result is returned from the request.
+		private Dictionary<string, Func<string, IRequestInfo, CollectionSettings, bool>> _additionalRequestHandlers = new Dictionary<string, Func<string, IRequestInfo, CollectionSettings, bool>>();
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -57,6 +60,19 @@ namespace Bloom.web
 			// Storing this in the ReadersHandler means there can only be one instance of EIS, since ReadersHandler is static. But for
 			// now that's true anyway because we use a fixed port. If we need to change this we could just make an instance here.
 			ReadersHandler.Server = this;
+		}
+
+		/// <summary>
+		/// Inject an additional URL handler into the server. The injected handler will handle all requests whose local path
+		/// begins with the key string.
+		/// (Note: we could have handlers injected into the constructor by the regular DI mechanism, but the idea is that
+		/// the server does not have to know about all the components that handle particular kinds of specialized requests.)
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="action"></param>
+		public void RegisterRequestHandler(string key, Func<string, IRequestInfo, CollectionSettings, bool> action)
+		{
+			_additionalRequestHandlers[key] = action;
 		}
 
 		/// <summary>
@@ -178,6 +194,7 @@ namespace Bloom.web
 				_urlToSimulatedPageContent.Remove(key.FromLocalhost());
 			}
 		}
+		const string OpenFileInBrowser = "openFileInBrowser/";
 
 		// Every path should return false or send a response.
 		// Otherwise we can get a timeout error as the browser waits for a response.
@@ -212,12 +229,21 @@ namespace Bloom.web
 				return ProcessAnyFileContent(info, localPath);
 			}
 			// routing
-			if (localPath.StartsWith("readers/", StringComparison.InvariantCulture))
+			// See if an injected request handler wants to handle this one.
+			// Enhance JohnT:  if we get a larger number of injected handlers, and all keys are still a keyword ending in slash,
+			// it might help to extract the part of the localPath before the slash and use it as a key for dictionary lookup.
+			// There is currently only one so I don't think it is yet.
+			foreach (var kvp in _additionalRequestHandlers)
 			{
-				if (ProcessReaders(localPath, info))
-					return true;
+				if (localPath.StartsWith(kvp.Key))
+				{
+					lock (SyncObj)
+					{
+						return kvp.Value(localPath, info, CurrentCollectionSettings);
+					}
+				}
 			}
-			if(localPath.StartsWith("imageInfo", StringComparison.InvariantCulture))
+			if (localPath.StartsWith("imageInfo", StringComparison.InvariantCulture))
 			{
 				return ReplyWithImageInfo(info, localPath);
 			}
@@ -260,8 +286,8 @@ namespace Bloom.web
 			}
 			else if (localPath.StartsWith("directoryWatcher/", StringComparison.InvariantCulture))
 				return ProcessDirectoryWatcher(info);
-			else if (localPath.StartsWith("leveledRTInfo/", StringComparison.InvariantCulture))
-				return ProcessLevedRTInfo(info, localPath);
+			else if (localPath.StartsWith(OpenFileInBrowser, StringComparison.InvariantCulture))
+				return ProcessOpenFileInBrowser(info, localPath);
 			else if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
 				var temp = LocalHostPathToFilePath(localPath);
@@ -373,14 +399,6 @@ namespace Bloom.web
 			}
 		}
 
-		private bool ProcessReaders(string localPath, IRequestInfo info)
-		{
-			lock (SyncObj)
-			{
-				return ReadersHandler.HandleRequest(localPath, info, CurrentCollectionSettings);
-			}
-		}
-
 		private static void ProcessError(IRequestInfo info)
 		{
 			// pop-up the error messages if a debugger is attached or an environment variable is set
@@ -419,8 +437,16 @@ namespace Bloom.web
 			return false;
 		}
 
-		private bool ProcessLevedRTInfo(IRequestInfo info, string localPath)
+		/// <summary>
+		/// Handles a url starting with openfileinbrowser by stripping off that prefix, searching for the file
+		/// named in the remainder of the url, and opening it in some browser (passing on any anchor specified).
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="localPath1"></param>
+		/// <returns></returns>
+		private bool ProcessOpenFileInBrowser(IRequestInfo info, string localPath1)
 		{
+			string localPath = localPath1.Substring(OpenFileInBrowser.Length);
 			lock (SyncObj)
 			{
 				var queryPart = string.Empty;

@@ -13,7 +13,9 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Edit;
 using L10NSharp;
+using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
+using SIL.PlatformUtilities;
 
 namespace Bloom.web
 {
@@ -35,10 +37,16 @@ namespace Bloom.web
 			AllowedWordsFile
 		}
 
+		public static void Init(EnhancedImageServer server)
+		{
+			Server = server;
+			server.RegisterRequestHandler("readers/", HandleRequest);
+		}
+
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
 		// whole-book counts. If we ever support having more than one book open, ReadersHandler will need to stop being static, or
 		// some similar change. But by then, we may have the whole book in the main DOM, anyway, and getTextOfPages may be obsolete.
-		public static Book.Book CurrentBook { get { return Server.CurrentBook; } }
+		private static Book.Book CurrentBook { get { return Server.CurrentBook; } }
 
 		/// <summary>
 		/// Needs to know the one and only image server to get the current book from it.
@@ -73,7 +81,7 @@ namespace Bloom.web
 
 				case "getDefaultFont":
 					var bookFontName = currentCollectionSettings.DefaultLanguage1FontName;
-					if (string.IsNullOrEmpty(bookFontName)) bookFontName = "sans-serif";
+					if (String.IsNullOrEmpty(bookFontName)) bookFontName = "sans-serif";
 					info.ContentType = "text/plain";
 					info.WriteCompleteOutput(bookFontName);
 					return true;
@@ -150,7 +158,7 @@ namespace Bloom.web
 
 			foreach (var page in pages)
 			{
-				var pageWords = string.Empty;
+				var pageWords = String.Empty;
 				foreach (XmlElement node in page.SafeSelectNodes(".//div[contains(concat(' ', @class, ' '), ' bloom-content1 ')]"))
 					pageWords += " " + node.InnerText;
 
@@ -172,7 +180,7 @@ namespace Bloom.web
 				Directory.CreateDirectory(path);
 
 			var fileList1 = new List<string>();
-			var langFileName = string.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var langFileName = String.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 			var langFile = Path.Combine(path, langFileName);
 
 			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
@@ -189,7 +197,7 @@ namespace Bloom.web
 					File.Copy(Path.Combine(foundFile.DirectoryName, foundFile.Name), langFile);
 				}
 
-				return string.Empty;
+				return String.Empty;
 			}
 
 			// first look for ReaderToolsWords-<iso>.json
@@ -210,7 +218,7 @@ namespace Bloom.web
 					fileList1.Add(file);
 			}
 
-			return string.Join("\r", fileList1.ToArray());
+			return String.Join("\r", fileList1.ToArray());
 		}
 
 		/// <summary>Gets the contents of a Text file</summary>
@@ -223,7 +231,7 @@ namespace Bloom.web
 
 			path = Path.Combine(path, fileName);
 
-			if (!File.Exists(path)) return string.Empty;
+			if (!File.Exists(path)) return String.Empty;
 
 			// first try utf-8/ascii encoding (the .Net default)
 			var text = File.ReadAllText(path);
@@ -288,7 +296,7 @@ namespace Bloom.web
 				JArray rawWords = stage.words;
 				string[] stageWords = rawWords.Select(x => x.ToString()).ToArray();
 				Array.Sort(stageWords);
-				sb.AppendLineFormat(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), string.Join(" ", stageWords));
+				sb.AppendLineFormat(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportNewDecodableWords", "New Decodable Words: {0}"), String.Join(" ", stageWords));
 				sb.AppendLine();
 			}
 
@@ -297,7 +305,7 @@ namespace Bloom.web
 			Array.Sort(words);
 			sb.AppendLine();
 			sb.AppendLine(LocalizationManager.GetString("EditTab.Toolbox.DecodableReaderTool.LetterWordReportWordList", "Complete Word List"));
-			sb.AppendLine(string.Join(" ", words));
+			sb.AppendLine(String.Join(" ", words));
 
 			// write the file
 			var fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, "Decodable Books Letters and Words.txt");
@@ -326,7 +334,7 @@ namespace Bloom.web
 				if (jsonString.Contains("\"LangID\":\"\""))
 					jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.Language1Iso639Code + "\"");
 
-				var fileName = string.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+				var fileName = String.Format(DecodableReaderTool.kReaderToolsWordsFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
 				fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
 				File.WriteAllText(fileName, jsonString, Encoding.UTF8);
@@ -350,7 +358,7 @@ namespace Bloom.web
 			PathUtilities.OpenDirectoryInExplorer(path);
 
 			// BL-673: Make sure the folder comes to the front in Linux
-			if (SIL.PlatformUtilities.Platform.IsLinux)
+			if (Platform.IsLinux)
 			{
 				// allow the external process to execute
 				Thread.Sleep(100);
@@ -385,7 +393,7 @@ namespace Bloom.web
 			{
 				Multiselect = false,
 				CheckFileExists = true,
-				Filter = string.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab", textFiles)
+				Filter = String.Format("{0} (*.txt;*.csv;*.tab)|*.txt;*.csv;*.tab", textFiles)
 			};
 			var result = dlg.ShowDialog();
 			if (result == DialogResult.OK)
@@ -439,7 +447,7 @@ namespace Bloom.web
 			words = words.Distinct(_equalityComparer).ToArray();
 
 			// join the words back into a delimited string to be sent to the browser
-			return string.Join(",", words);
+			return String.Join(",", words);
 		}
 
 		/// <summary>Used when removing duplicates from word lists</summary>
@@ -447,7 +455,7 @@ namespace Bloom.web
 		{
 			public bool Equals(string x, string y)
 			{
-				return string.Equals(x, y, StringComparison.InvariantCultureIgnoreCase);
+				return String.Equals(x, y, StringComparison.InvariantCultureIgnoreCase);
 			}
 
 			public int GetHashCode(string obj)
