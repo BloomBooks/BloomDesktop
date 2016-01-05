@@ -491,6 +491,7 @@
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
+    <Compile Include="web\CurrentBookHandler.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NHandler.cs" />
     <Compile Include="web\ReadersHandler.cs" />
