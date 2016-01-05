@@ -62,6 +62,14 @@ namespace Bloom.web
 			ReadersHandler.Server = this;
 		}
 
+		/// <summary>
+		/// Inject an additional URL handler into the server. The injected handler will handle all requests whose local path
+		/// begins with the key string.
+		/// (Note: we could have handlers injected into the constructor by the regular DI mechanism, but the idea is that
+		/// the server does not have to know about all the components that handle particular kinds of specialized requests.)
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="action"></param>
 		public void RegisterRequestHandler(string key, Func<string, IRequestInfo, CollectionSettings, bool> action)
 		{
 			_additionalRequestHandlers[key] = action;
@@ -186,6 +194,7 @@ namespace Bloom.web
 				_urlToSimulatedPageContent.Remove(key.FromLocalhost());
 			}
 		}
+		const string OpenFileInBrowser = "openFileInBrowser/";
 
 		// Every path should return false or send a response.
 		// Otherwise we can get a timeout error as the browser waits for a response.
@@ -223,7 +232,7 @@ namespace Bloom.web
 			// See if an injected request handler wants to handle this one.
 			// Enhance JohnT:  if we get a larger number of injected handlers, and all keys are still a keyword ending in slash,
 			// it might help to extract the part of the localPath before the slash and use it as a key for dictionary lookup.
-			// There are currently only two so I don't think it is yet.
+			// There is currently only one so I don't think it is yet.
 			foreach (var kvp in _additionalRequestHandlers)
 			{
 				if (localPath.StartsWith(kvp.Key))
@@ -277,6 +286,8 @@ namespace Bloom.web
 			}
 			else if (localPath.StartsWith("directoryWatcher/", StringComparison.InvariantCulture))
 				return ProcessDirectoryWatcher(info);
+			else if (localPath.StartsWith(OpenFileInBrowser, StringComparison.InvariantCulture))
+				return ProcessOpenFileInBrowser(info, localPath);
 			else if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
 				var temp = LocalHostPathToFilePath(localPath);
@@ -424,6 +435,72 @@ namespace Bloom.web
 					return true;
 			}
 			return false;
+		}
+
+		/// <summary>
+		/// Handles a url starting with openfileinbrowser by stripping off that prefix, searching for the file
+		/// named in the remainder of the url, and opening it in some browser (passing on any anchor specified).
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="localPath1"></param>
+		/// <returns></returns>
+		private bool ProcessOpenFileInBrowser(IRequestInfo info, string localPath1)
+		{
+			string localPath = localPath1.Substring(OpenFileInBrowser.Length);
+			lock (SyncObj)
+			{
+				var queryPart = string.Empty;
+				if (info.RawUrl.Contains("?"))
+					queryPart = "#" + info.RawUrl.Split('?')[1];
+				var langCode = LocalizationManager.UILanguageId;
+				var completeEnglishPath = FileLocator.GetFileDistributedWithApplication(localPath);
+				var completeUiLangPath = GetUiLanguageFileVersion(completeEnglishPath, langCode);
+				string url;
+				if (langCode != "en" && File.Exists(completeUiLangPath))
+					url = completeUiLangPath;
+				else
+					url = completeEnglishPath;
+				var cleanUrl = url.Replace("\\", "/"); // allows jump to file to work
+
+				string browser = string.Empty;
+				if (SIL.PlatformUtilities.Platform.IsLinux)
+				{
+					// REVIEW: This opens HTML files in the browser. Do we have any non-html
+					// files that this code needs to open in the browser? Currently they get
+					// opened in whatever application the user has selected for that file type
+					// which might well be an editor.
+					browser = "xdg-open";
+				}
+				else
+				{
+					// If we don't provide the path of the browser, i.e. Process.Start(url + queryPart), we get file not found exception.
+					// If we prepend "file:///", the anchor part of the link (#xxx) is not sent unless we provide the browser path too.
+					// This is the same behavior when simply typing a url into the Run command on Windows.
+					// If we fail to get the browser path for some reason, we still load the page, just without navigating to the anchor.
+					string defaultBrowserPath;
+					if (TryGetDefaultBrowserPath(out defaultBrowserPath))
+					{
+						browser = defaultBrowserPath;
+					}
+				}
+
+				if (!string.IsNullOrEmpty(browser))
+				{
+					try
+					{
+						Process.Start(browser, "\"file:///" + cleanUrl + queryPart + "\"");
+						return false;
+					}
+					catch (Exception)
+					{
+						Debug.Fail("Jumping to browser with anchor failed.");
+						// Don't crash Bloom because we can't open an external file.
+					}
+				}
+				// If the above failed, either for lack of default browser or exception, try this:
+				Process.Start("\"" + cleanUrl + "\"");
+				return false;
+			}
 		}
 
 		private bool ProcessContent(IRequestInfo info, string localPath)
@@ -680,6 +757,27 @@ namespace Bloom.web
 			info.ContentType = "text/css";
 			info.ReplyWithFileContent(path);
 			return true;
+		}
+
+		private static bool TryGetDefaultBrowserPath(out string defaultBrowserPath)
+		{
+			try
+			{
+				string key = @"HTTP\shell\open\command";
+				using (RegistryKey registrykey = Registry.ClassesRoot.OpenSubKey(key, false))
+					defaultBrowserPath = ((string)registrykey.GetValue(null, null)).Split('"')[1];
+				return true;
+			}
+			catch
+			{
+				defaultBrowserPath = null;
+				return false;
+			}
+		}
+
+		private string GetUiLanguageFileVersion(string englishFileName, string langCode)
+		{
+			return englishFileName.Replace("-en.htm", "-" + langCode + ".htm");
 		}
 
 		private bool CheckForSampleTextChanges(IRequestInfo info)
