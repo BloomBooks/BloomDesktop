@@ -72,7 +72,6 @@ var BloomField = (function () {
     BloomField.WireToCKEditor = function (bloomEditableDiv, ckeditor) {
         ckeditor.on('key', function (event) {
             if (event.data.keyCode === CKEDITOR.SHIFT + 13) {
-                //note: CKEDITOR's has built-in "config.shiftEnterMode = CKEDITOR.ENTER_DIV" but that div has no class.
                 BloomField.InsertLineBreak();
                 event.cancel();
             }
@@ -107,14 +106,14 @@ var BloomField = (function () {
     };
     // This was originally here to do some cleanup needed by SIL-LEAD/SHRP as their
     // typists copied from Word where they had used spaces instead of tabs, too many linebreaks, etc.
-    // It was broken when we added ckeditor, and now isn't actually needed. Meanwhile though I 
+    // It was broken when we added ckeditor, and now isn't actually needed. Meanwhile though I
     // make this way to get a special paste by ctrl-clicking on the paste icon and bypassing
     // ckeditor. So I'm leaving this toy example here to save us
     // time if we need to do something similar in the future.
     BloomField.CalledByCSharp_SpecialPaste = function (contents) {
         var html = contents.replace(/[b,c,d,f,g,h,j,k,l,m,n,p,q,r,s,t,v,w,x,z]/g, 'C');
         html = html.replace(/[a,e,i,o,u]/g, 'V');
-        //convert newlines to paragraphs. We're already inside a  <p>, so each 
+        //convert newlines to paragraphs. We're already inside a  <p>, so each
         //newline finishes that off and starts a new one
         html = html.replace(/\n/g, '</p><p>');
         var page = document.getElementById('page');

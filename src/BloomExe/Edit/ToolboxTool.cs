@@ -134,7 +134,6 @@ namespace Bloom.Edit
 			// have to carefully ignore Unknown tools in many places. Hopefully YAGNI.
 			return new UnknownTool();
 		}
-		
 
 		// We don't need a real implementation of this because returning false from CanWrite
 		// tells the converter to use the default write code.

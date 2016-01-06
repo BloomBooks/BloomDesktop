@@ -43,15 +43,15 @@ CKEDITOR.editorConfig = function( config ) {
 
     // Don't filter out any html that couldn't be produced by the toolbar
 	config.allowedContent = true;
-    
+
     //BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
     //http://stackoverflow.com/a/23983357/723299
     CKEDITOR.dtd.$removeEmpty.span = 0;
-    
+
     //pasteFromWord works if the plugin is added to plugins, and then these are uncommented,
-    //but gives ckeditor "Uncaught TypeError: Cannot read property 'icons' of null". 
-    //Also, need to add pasteFromWordCleanupFile (of which I could find no example) 
-    //in order to stop pictures; the on('paste') stops working if you enable this, at least for pastes that come from Word 
+    //but gives ckeditor "Uncaught TypeError: Cannot read property 'icons' of null".
+    //Also, need to add pasteFromWordCleanupFile (of which I could find no example)
+    //in order to stop pictures; the on('paste') stops working if you enable this, at least for pastes that come from Word
     //CKEDITOR.config.extraPlugins  = 'pasteFromWord';
     // CKEDITOR.config.pasteFromWordPromptCleanup = true;
 };

@@ -56,7 +56,7 @@ namespace Bloom.Edit
 
 			//enhance: this is yet another "place you have to register a new tool"
 			var idsOfToolsThisVersionKnowsAbout = new[] { DecodableReaderTool.StaticToolId, LeveledReaderTool.StaticToolId, TalkingBookTool.StaticToolId, BookSettingsTool.StaticToolId };
-			
+
 			var toolsToDisplay = GetToolsToDisplay(book, idsOfToolsThisVersionKnowsAbout);
 
 			EmbedSettings(book, toolsToDisplay, domForToolbox);
@@ -111,13 +111,13 @@ namespace Bloom.Edit
 
 			var settingsStr = JsonConvert.SerializeObject(settings);
 			settingsStr = String.Format("function GetToolboxSettings() {{ return {0};}}", settingsStr) +
-			              "\n$(document).ready(function() { restoreToolboxSettings(GetToolboxSettings()); });";
+				"\n$(document).ready(function() { restoreToolboxSettings(GetToolboxSettings()); });";
 
 			var scriptElement = domForToolbox.RawDom.CreateElement("script");
 			scriptElement.SetAttribute("type", "text/javascript");
 			scriptElement.SetAttribute("id", "ui-accordionSettings");
 			scriptElement.InnerText = settingsStr;
-            domForToolbox.Head.InsertAfter(scriptElement, domForToolbox.Head.LastChild);
+			domForToolbox.Head.InsertAfter(scriptElement, domForToolbox.Head.LastChild);
 		}
 
 		public static void RetrieveToolSettings(ToolboxTool tool, Dictionary<string, object> settingsObject)
@@ -153,7 +153,7 @@ namespace Bloom.Edit
 			return;
 
 			//Enhance: this can currently handle a single <script> element in the head of the component html
-			//Enhance: Load in a different way so that the linked files can be debugged in a browser. 
+			//Enhance: Load in a different way so that the linked files can be debugged in a browser.
 			//See http://stackoverflow.com/questions/690781/debugging-scripts-added-via-jquery-getscript-function
 			var scriptInHead = toolDom.Head.SelectSingleNode("script");
 			if (scriptInHead != null)

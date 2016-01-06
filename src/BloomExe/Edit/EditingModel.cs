@@ -7,10 +7,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Properties;
 using Bloom.MiscUI;
 using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
@@ -577,6 +579,7 @@ namespace Bloom.Edit
 		public void SetupServerWithCurrentPageIframeContents()
 		{
 			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			SetPageZoom();
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			if (_currentPage != null)
 				_currentPage.Dispose();
@@ -590,6 +593,16 @@ namespace Bloom.Edit
 
 			CurrentBookHandler.CurrentBook = _currentlyDisplayedBook;
 			_server.AuthorMode = CanAddPages;
+		}
+
+		/// <summary>
+		/// Set a style on the body of the main content page that will zoom it to the extent the user currently prefers.
+		/// </summary>
+		private void SetPageZoom()
+		{
+			var body = _domForCurrentPage.Body;
+			var pageZoom = Settings.Default.PageZoom ?? "1.0";
+			body.SetAttribute("style", string.Format("transform: scale({0},{0})", pageZoom));
 		}
 
 		/// <summary>
@@ -928,6 +941,7 @@ namespace Bloom.Edit
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
 					SaveToolboxState();
+					SavePageFrameState();
 
 					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
 					//this old code:
@@ -974,6 +988,28 @@ namespace Bloom.Edit
 					_tasksToDoAfterSaving.RemoveAt(0);
 					task();
 				}
+			}
+		}
+
+		/// <summary>
+		/// Save anything we want to persist from page to page but which is not part of the book from the page's current state.
+		/// Currently this is just the zoom level.
+		/// </summary>
+		void SavePageFrameState()
+		{
+			var body = _view.GetPageBody();
+			var styleAttr = body.Attributes["style"];
+			if (styleAttr == null)
+				return;
+			var style = styleAttr.NodeValue;
+			var match = Regex.Match(style, "scale\\(([^,]*),");
+			if (!match.Success)
+				return;
+			var pageZoom = match.Groups[1].Value;
+			if (pageZoom != Settings.Default.PageZoom)
+			{
+				Settings.Default.PageZoom = pageZoom;
+				Settings.Default.Save();
 			}
 		}
 
