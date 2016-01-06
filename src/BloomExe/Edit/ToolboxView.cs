@@ -92,7 +92,7 @@ namespace Bloom.Edit
 			toolsToDisplay.AddRange(
 				idsOfToolsThisVersionKnowsAbout.Except(
 					toolsThatHaveDataInBookInfo.Select(t => t.ToolId)).Select(ToolboxTool.CreateFromToolId));
-			return toolsToDisplay;
+			return toolsToDisplay.Where(t => t.Enabled || t.AlwaysEnabled).ToList();
 		}
 
 		private static void EmbedSettings(Book.Book book, IEnumerable<ToolboxTool> enabledTools, HtmlDom domForToolbox)
