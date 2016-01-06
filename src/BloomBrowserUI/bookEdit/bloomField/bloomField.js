@@ -1,5 +1,5 @@
 /// <reference path="../../lib/jquery.d.ts" />
-/// <reference path="../ckeditor.d.ts" />
+/// <reference path="../../typings/ckeditor/ckeditor.d.ts" />
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
 //
