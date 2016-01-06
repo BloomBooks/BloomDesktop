@@ -140,7 +140,11 @@ namespace Bloom.Book
 				var path = fileLocator.LocateFile(fileName);
 				if(string.IsNullOrEmpty(path))
 				{
-					throw new ApplicationException("Could not locate "+fileName);
+					// We're looking for a block of json that is typically found in Basic Book.css or a comparable place for
+					// a book based on some other template. Caling code is prepared for not finding this block.
+					// It seems safe to ignore a reference to some missing style sheet.
+					Debug.Fail("Could not locate "+fileName);
+					continue;
 				}
 				var contents = File.ReadAllText(path);
 				var start = contents.IndexOf("STARTLAYOUTS");
