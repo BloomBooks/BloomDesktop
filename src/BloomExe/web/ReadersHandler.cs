@@ -46,7 +46,7 @@ namespace Bloom.web
 		// The current book we are editing. Currently this is needed so we can return all the text, to enable JavaScript to update
 		// whole-book counts. If we ever support having more than one book open, ReadersHandler will need to stop being static, or
 		// some similar change. But by then, we may have the whole book in the main DOM, anyway, and getTextOfPages may be obsolete.
-		private static Book.Book CurrentBook { get { return Server.CurrentBook; } }
+		private static Book.Book CurrentBook { get { return CurrentBookHandler.CurrentBook; } }
 
 		/// <summary>
 		/// Needs to know the one and only image server to get the current book from it.

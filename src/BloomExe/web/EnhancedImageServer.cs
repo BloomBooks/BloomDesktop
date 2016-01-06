@@ -95,8 +95,6 @@ namespace Bloom.web
 		public string ToolboxContent { get; set; }
 		public bool AuthorMode { get; set; }
 
-		public Book.Book CurrentBook { get; set; }
-
 		/// <summary>
 		/// This code sets things up so that we can edit (or make a thumbnail of, etc.) one page of a book.
 		/// This is tricky because we have to satisfy several constraints:
@@ -243,18 +241,6 @@ namespace Bloom.web
 					}
 				}
 			}
-			if (localPath.StartsWith("imageInfo", StringComparison.InvariantCulture))
-			{
-				return ReplyWithImageInfo(info, localPath);
-			}
-			if (localPath.StartsWith("bookSettings", StringComparison.InvariantCulture))
-			{
-				info.ContentType = "text/json";
-				dynamic settings = new ExpandoObject();
-				settings.unlockShellBook = CurrentBook.TemporarilyUnlocked;
-				info.WriteCompleteOutput(JsonConvert.SerializeObject(settings));
-				return true;
-			}
 			if (localPath.StartsWith("error", StringComparison.InvariantCulture))
 			{
 				ProcessError(info);
@@ -328,75 +314,6 @@ namespace Bloom.web
 			if (!path.StartsWith("localhost/", StringComparison.InvariantCulture))
 				return path;
 			return LocalHostPathToFilePath(path);
-		}
-
-		/// <summary>
-		/// Get a json of stats about the image. It is used to populate a tooltip when you hover over an image container
-		/// </summary>
-		private bool ReplyWithImageInfo(IRequestInfo info, string localPath)
-		{
-			lock (SyncObj)
-			{
-				try
-				{
-					info.ContentType = "text/json";
-					Require.That(info.RawUrl.Contains("?"));
-					var query = info.RawUrl.Split('?')[1];
-					var args = HttpUtility.ParseQueryString(query);
-					Guard.AssertThat(args.Get("image") != null, "problem with image parameter");
-					var fileName = args["image"];
-					Guard.AgainstNull(CurrentBook, "CurrentBook");
-					var path = Path.Combine(CurrentBook.FolderPath, fileName);
-					RequireThat.File(path).Exists();
-					var fileInfo = new FileInfo(path);
-					dynamic result = new ExpandoObject();
-					result.name = fileName;
-					result.bytes = fileInfo.Length;
-
-					// Using a stream this way, according to one source,
-					// http://stackoverflow.com/questions/552467/how-do-i-reliably-get-an-image-dimensions-in-net-without-loading-the-image,
-					// supposedly avoids loading the image into memory when we only want its dimensions
-					using(var stream = File.OpenRead(path))
-					using(var img = Image.FromStream(stream, false,false))
-					{
-						result.width = img.Width;
-						result.height = img.Height;
-						switch (img.PixelFormat)
-						{
-							case PixelFormat.Format32bppArgb:
-							case PixelFormat.Format32bppRgb:
-							case PixelFormat.Format32bppPArgb:
-								result.bitDepth = "32";
-								break;
-							case PixelFormat.Format24bppRgb:
-								result.bitDepth = "24";
-								break;
-							case PixelFormat.Format16bppArgb1555:
-							case PixelFormat.Format16bppGrayScale:
-								result.bitDepth = "16";
-								break;
-							case PixelFormat.Format8bppIndexed:
-								result.bitDepth = "8";
-								break;
-							case PixelFormat.Format1bppIndexed:
-								result.bitDepth = "1";
-								break;
-							default:
-								result.bitDepth = "unknown";
-                                break;
-						}
-                    }
-					
-					info.WriteCompleteOutput(Newtonsoft.Json.JsonConvert.SerializeObject(result));
-					return true;
-				}
-				catch (Exception e)
-				{
-					Logger.WriteEvent("Error in server imageInfo/: url was " + localPath);
-					Logger.WriteEvent("Error in server imageInfo/: exception is " + e.Message);
-				}
-				return false;
-			}
 		}
 
 		private static void ProcessError(IRequestInfo info)
@@ -541,10 +458,6 @@ namespace Bloom.web
 					// it on the UI thread
 					HelpLauncher.Show(null, post["data"]);
 					return true;
-				case "getNextBookStyle":
-					info.ContentType = "text/html";
-					info.WriteCompleteOutput(CurrentBook.NextStyleNumber.ToString(CultureInfo.InvariantCulture));
-					return true;
 			}
 			return ProcessAnyFileContent(info, localPath);
 		}
@@ -664,9 +577,13 @@ namespace Bloom.web
 				return true;
 			}
 			// We don't have an image; try to make one.
-			if (CurrentBook == null)
+			// This is the one remaining place where the EIS is aware that there is such a thing as a current book.
+			// Unfortunately it is part of a complex bit of logic that mostly doesn't have to do with current book,
+			// so it doesn't feel right to move it to CurrentBookHandler, especially as it's not possible to
+			// identify the queries which need the knowledge in the usual way (by a leading URL fragment).
+			if (CurrentBookHandler.CurrentBook == null)
 				return false; // paranoia
-			var template = CurrentBook.FindTemplateBook();
+			var template = CurrentBookHandler.CurrentBook.FindTemplateBook();
 			if (template == null)
 				return false; // paranoia
 			var caption = Path.GetFileNameWithoutExtension(path).Trim();

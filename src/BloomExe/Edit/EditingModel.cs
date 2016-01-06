@@ -133,7 +133,7 @@ namespace Bloom.Edit
 			});
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
-			_server.CurrentBook = CurrentBook;
+			CurrentBookHandler.CurrentBook = CurrentBook;
 			_templateInsertionCommand = templateInsertionCommand;
 		}
 
@@ -183,7 +183,7 @@ namespace Bloom.Edit
 			var wasNull = _domForCurrentPage == null;
 			_domForCurrentPage = null;
 			_currentlyDisplayedBook = null;
-			_server.CurrentBook = CurrentBook;
+			CurrentBookHandler.CurrentBook = CurrentBook;
 			_templatePagesDict = null;
 			if (Visible)
 			{
@@ -588,7 +588,7 @@ namespace Bloom.Edit
 			//else
 			//	_server.ToolboxContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 
-			_server.CurrentBook = _currentlyDisplayedBook;
+			CurrentBookHandler.CurrentBook = _currentlyDisplayedBook;
 			_server.AuthorMode = CanAddPages;
 		}
 
