@@ -1,4 +1,5 @@
 /// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../ckeditor.d.ts" />
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -63,15 +64,34 @@ class BloomField {
         );
     }
     
+    private static InsertLineBreak() {
+        //we put in a specially marked span which stylesheets can use to give us "soft return" in the midst of paragraphs
+        //which have either indents or prefixes (like "step 1", "step 2").
+        //The difficult part is that the browser will leave our cursor inside of the new span, which isn't really
+        //what we want. So we also add a zero-width-non-joiner (&#xfeff;) there so that we can get outside of the span.
+        document.execCommand("insertHTML", false, "<span class='bloom-linebreak'></span>&#xfeff;");
+    }
+
+    // This BloomField thing was done before ckeditor; ckeditor kinda expects to the only thing
+    // taking responsibility for the field, so that creates problems. Eventually, we could probably
+    // re-cast everything in this BloomField class as a plugin or at least callbacks to ckeditor.
+    // For now, I just want to fix BL-3009, where this class could no longer get access to shift-enter
+    // keypresses. To regain access, we have to wire up to ckeditor.
+    static WireToCKEditor(bloomEditableDiv: HTMLElement, ckeditor: CKEDITOR.editor) {
+        ckeditor.on('key', event => {
+            if (event.data.keyCode === CKEDITOR.SHIFT + 13) {
+                BloomField.InsertLineBreak();
+                event.cancel();
+            }
+        });
+    }
+
     private static MakeShiftEnterInsertLineBreak(field: HTMLElement) {
         $(field).keypress(e => {
-            if (e.which == 13) { //enter key
+            //NB: This will not fire in the (now normal case) that ckeditor is in charge of this field.
+            if (e.which === 13) { //enter key
                 if (e.shiftKey) {
-                    //we put in a specially marked span which stylesheets can use to give us "soft return" in the midst of paragraphs
-                    //which have either indents or prefixes (like "step 1", "step 2").
-                    //The difficult part is that the browser will leave our cursor inside of the new span, which isn't really
-                    //what we want. So we also add a zero-width-non-joiner (&#xfeff;) there so that we can get outside of the span.
-                    document.execCommand("insertHTML", false, "<span class='bloom-linebreak'></span>&#xfeff;");
+                    BloomField.InsertLineBreak();
                 } else {
                     // If the enter didn't come with a shift key, just insert a paragraph.
                     // Now, why are we doing this if firefox would do it anyway? Because if we previously pressed shift - enter
