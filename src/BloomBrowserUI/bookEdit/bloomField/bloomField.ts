@@ -32,8 +32,7 @@ class BloomField {
             BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(bloomEditableDiv);
             BloomField.MakeTabEnterTabElement(bloomEditableDiv);
             BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
-            $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
-            $(bloomEditableDiv).click(function() { BloomField.ProcessClick; });
+
             $(bloomEditableDiv).blur(function () {
                 BloomField.ModifyForParagraphMode(this);
             });
@@ -115,67 +114,22 @@ class BloomField {
         });
     }
 
-    private static ProcessClick(e: any) {
-
-        // note: currently, the c# code also intercepts the past event and
-        // makes sure that we just get plain 'ol text on the clipboard.
-        // That's a bit heavy handed, but the mess you get from pasting
-        // html from word is formidable.
-
-        var txt = e.originalEvent.clipboardData.getData('text/plain');
-
-        var html: string;
-        if (e.ctrlKey) {
-            html = txt.replace(/\n\n/g, 'twonewlines');
-            html = html.replace(/\n/g, ' ');
-            html = html.replace(/\s+/g, ' ');
-            html = html.replace(/twonewlines/g, '\n');
-
-            //convert remaining newlines to paragraphs. We're already inside a  <p>, so each 
-            //newline finishes that off and starts a new one
-            html = html.replace(/\n/g, '</p><p>');
-
-            document.execCommand("insertHTML", false, html);
-
-            //don't do the normal paste
-            e.stopPropagation();
-            e.preventDefault();
-        }
-    }
-
-    private static ProcessIncomingPaste(e: any) {
-
-        // note: currently, the c# code also intercepts the past event and
-        // makes sure that we just get plain 'ol text on the clipboard.
-        // That's a bit heavy handed, but the mess you get from pasting
-        // html from word is formidable.
-
-        var txt = e.originalEvent.clipboardData.getData('text/plain');
-
-        var html: string;
-
-        if (e.ctrlKey) {
-            html = txt.replace(/\n\n/g, 'twonewlines');
-            html = html.replace(/\n/g, ' ');
-            html = html.replace(/\s+/g, ' ');
-            html = html.replace(/twonewlines/g, '\n');
-        } else {
-            //some typists in SHRP indent in MS Word by hitting newline and pressing a bunch of spaces.
-            // We replace any newline followed by 3 or more spaces with just one space. It could
-            // conceivalby hit some false positive, but it would be easy for the user to fix.
-            html = txt.replace(/\n\s{3,}/g, ' ');
-        }
-        //convert remaining newlines to paragraphs. We're already inside a  <p>, so each 
+    // This was originally here to do some cleanup needed by SIL-LEAD/SHRP as their
+    // typists copied from Word where they had used spaces instead of tabs, too many linebreaks, etc.
+    // It was broken when we added ckeditor, and now isn't actually needed. Meanwhile though I 
+    // make this way to get a special paste by ctrl-clicking on the paste icon and bypassing
+    // ckeditor. So I'm leaving this toy example here to save us
+    // time if we need to do something similar in the future.
+    public static CalledByCSharp_SpecialPaste(contents: string) {
+        let html = contents.replace(/[b,c,d,f,g,h,j,k,l,m,n,p,q,r,s,t,v,w,x,z]/g, 'C');
+        html = html.replace(/[a,e,i,o,u]/g, 'V');
+        //convert newlines to paragraphs. We're already inside a  <p>, so each 
         //newline finishes that off and starts a new one
         html = html.replace(/\n/g, '</p><p>');
-
-        document.execCommand("insertHTML", false, html);
-
-        //don't do the normal paste
-        e.stopPropagation();
-        e.preventDefault();
+        var page = <HTMLIFrameElement>document.getElementById('page');
+        page.contentWindow.document.execCommand("insertHTML", false, html);
     }
-
+    
     // Since embedded images come before the first editable text, going to the beginning of the field and pressing Backspace moves the current paragraph into the caption. Sigh.
     private static PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(field: HTMLElement) {
 
