@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using Bloom.Collection;
 using L10NSharp;
 using SIL.Code;
+using SIL.Extensions;
 using SIL.Linq;
 using SIL.Text;
 using SIL.Xml;
@@ -225,7 +226,19 @@ namespace Bloom.Book
 			{
 				credits = creditsData.TextAlternatives.GetBestAlternativeString(WritingSystemIdsToTry);
 			}
-			info.Credits = credits.Replace("<br />", ""); // Clean out breaks inserted at newlines.
+			try
+			{
+				// This cleans out various kinds of markup, especially <br >, <p>, <b>, etc.
+				var elt = XElement.Parse("<div>" + credits + "</div>", LoadOptions.PreserveWhitespace);
+				// For some reason Value yields \n rather than platform newlines, even when the original
+				// has \r\n.
+				credits = elt.Value.Replace("\n", Environment.NewLine);
+			}
+			catch (XmlException ex)
+			{
+				// If we can't parse it...maybe the user really did type some XML? Just keep what we have
+			}
+			info.Credits = credits;
 		}
 
 		/// <summary>

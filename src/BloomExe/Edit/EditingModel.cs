@@ -13,6 +13,7 @@ using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.MiscUI;
 using Bloom.SendReceive;
 using Bloom.ToPalaso.Experimental;
 using Bloom.web;
@@ -27,6 +28,7 @@ using SIL.Reporting;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Windows.Forms.Reporting;
+using SIL.Xml;
 #if __MonoCS__
 #else
 using SIL.Media.Naudio;
@@ -133,7 +135,7 @@ namespace Bloom.Edit
 			});
 			_contentLanguages = new List<ContentLanguage>();
 			_server.CurrentCollectionSettings = _collectionSettings;
-			_server.CurrentBook = CurrentBook;
+			CurrentBookHandler.CurrentBook = CurrentBook;
 			_templateInsertionCommand = templateInsertionCommand;
 		}
 
@@ -183,7 +185,7 @@ namespace Bloom.Edit
 			var wasNull = _domForCurrentPage == null;
 			_domForCurrentPage = null;
 			_currentlyDisplayedBook = null;
-			_server.CurrentBook = CurrentBook;
+			CurrentBookHandler.CurrentBook = CurrentBook;
 			_templatePagesDict = null;
 			if (Visible)
 			{
@@ -589,7 +591,7 @@ namespace Bloom.Edit
 			//else
 			//	_server.ToolboxContent = "<html><head><meta charset=\"UTF-8\"/></head><body></body></html>";
 
-			_server.CurrentBook = _currentlyDisplayedBook;
+			CurrentBookHandler.CurrentBook = _currentlyDisplayedBook;
 			_server.AuthorMode = CanAddPages;
 		}
 
@@ -691,6 +693,7 @@ namespace Bloom.Edit
 			AddMessageEventListener("saveToolboxSettingsEvent", SaveToolboxSettings);
 			AddMessageEventListener("preparePageForEditingAfterOrigamiChangesEvent", RethinkPageAndReloadIt);
 			AddMessageEventListener("setTopic", SetTopic);
+			AddMessageEventListener("setBookSettings", SetBookSettings);
 			AddMessageEventListener("finishSavingPage", FinishSavingPage);
 			AddMessageEventListener("handleAddNewPageKeystroke", HandleAddNewPageKeystroke);
 			AddMessageEventListener("addPage", (id) => AddNewPageBasedOnTemplate(id));
@@ -698,6 +701,23 @@ namespace Bloom.Edit
 			AddMessageEventListener("startRecordAudio", StartRecordAudio);
 			AddMessageEventListener("endRecordAudio", EndRecordAudio);
 			AddMessageEventListener("changeRecordingDevice", ChangeRecordingDevice);
+			AddMessageEventListener("deleteFile", DeleteFile);
+		}
+
+		private void SaveToolboxSettings(string data)
+		{
+			ToolboxView.SaveToolboxSettings(_currentlyDisplayedBook,data);
+		}
+
+		private void SetBookSettings(string json)
+		{
+			//note: since we only have this one value, it's not clear yet whether the panel involved here will be more of a
+			//and "edit settings", or a "book settings", or a combination of them.
+			//enhance: if this gets much beyond single value, we should create a BookEditSettingsModel (or whatever name fits)
+			//and move all handling there
+			dynamic settings = DynamicJson.Parse(json);
+			_currentlyDisplayedBook.TemporarilyUnlocked = settings.unlockShellBook;
+			RefreshDisplayOfCurrentPage();
 		}
 
 		private void AddMessageEventListener(string name, Action<string> listener)
@@ -829,6 +849,27 @@ namespace Bloom.Edit
 			_audioRecording.ChangeRecordingDevice(deviceName);
 		}
 
+		/// <summary>
+		/// Delete a file (typically a recording, as requested by the Clear button in the talking book tool)
+		/// </summary>
+		/// <param name="fileUrl"></param>
+		private void DeleteFile(string fileUrl)
+		{
+			var filePath = ServerBase.GetLocalPathWithoutQuery(fileUrl);
+			if (File.Exists(filePath))
+			{
+				try
+				{
+					File.Delete(filePath);
+				}
+				catch (IOException e)
+				{
+					var msg = string.Format(LocalizationManager.GetString("Errors.ProblemDeletingFile","Bloom had a problem deleting this file: {0}"), filePath);
+					ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
+				}
+			}
+		}
+
 		//invoked from TopicChooser.ts
 		private void SetTopic(string englishTopicAsKey)
 		{
@@ -885,56 +926,6 @@ namespace Bloom.Edit
 			return returnVal;
 		}
 
-		/// <summary>
-		/// Used to save various settings relating to the toolbox. Passed a string which is typically two or three elements
-		/// divided by a tab.
-		/// - may be passed 'active' followed by the ID of one of the check boxes that indicates whether the DR, LR, or TB tools are
-		/// in use, followed by "1" if it is used, or "0" if not. These IDs are arranged to be the tool name followed by "Check".
-		/// - may be passed 'current' followed by the name of one of the toolbox tools
-		/// - may be passed 'state' followed by the name of one of the tools and its current state string.
-		/// </summary>
-		/// <param name="data"></param>
-		private void SaveToolboxSettings(string data)
-		{
-			var args = data.Split(new[] { '\t' });
-
-			switch (args[0])
-			{
-				case "active":
-					UpdateActiveToolSetting(args[1].Substring(0, args[1].Length - "Check".Length), args[2] == "1");
-					return;
-
-				case "current":
-					_currentlyDisplayedBook.BookInfo.CurrentTool = args[1];
-					return;
-
-				case "state":
-					UpdateToolState(args[1], args[2]);
-					return;
-			}
-		}
-
-		private void UpdateToolState(string toolName, string state)
-		{
-			var tools = _currentlyDisplayedBook.BookInfo.Tools;
-			var item = tools.FirstOrDefault(t => t.JsonToolId == toolName);
-
-			if (item != null)
-				item.State = state;
-		}
-
-		private void UpdateActiveToolSetting(string toolName, bool enabled)
-		{
-			var tools = _currentlyDisplayedBook.BookInfo.Tools;
-			var item = tools.FirstOrDefault(t => t.JsonToolId == toolName);
-
-			if (item == null)
-			{
-				item = ToolboxTool.CreateFromJsonToolId(toolName);
-				tools.Add(item);
-			}
-			item.Enabled = enabled;
-		}
 
 		public void SaveNow()
 		{

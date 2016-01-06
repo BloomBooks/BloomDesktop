@@ -76,6 +76,7 @@ class ReaderToolsModel {
 
   // some things need to wait until the word list has finished loading
   wordListLoaded: boolean = false;
+  ckEditorLoaded: boolean = false;
   allowedWordFilesRemaining: number = 0;
 
   constructor() {
@@ -84,6 +85,8 @@ class ReaderToolsModel {
     if (iframeChannel)
       this.readableFileExtensions = iframeChannel.readableFileExtensions;
   }
+  readyToDoMarkup(): boolean { return this.wordListLoaded && this.ckEditorLoaded; }
+  setCkEditorLoaded() : void { this.ckEditorLoaded = true; }
 
   incrementStage(): void {
     this.setStageNumber(this.stageNumber + 1);
@@ -112,7 +115,7 @@ class ReaderToolsModel {
     this.enableStageButtons();
     this.saveState();
 
-    if (!this.wordListLoaded) return;
+    if (!this.readyToDoMarkup()) return;
 
     this.doMarkup();
     this.updateWordList();
@@ -310,7 +313,7 @@ class ReaderToolsModel {
       document.getElementById('allowed-word-list-truncated').style.display = useAllowedWords ? '' : 'none';
     }
 
-    if (!this.wordListLoaded) return;
+    if (!this.readyToDoMarkup()) return;
 
     var wordList = document.getElementById('wordList');
     if (wordList) document.getElementById('wordList').innerHTML = '';
@@ -476,7 +479,7 @@ class ReaderToolsModel {
 
   getStageWordsAndSightWords(stageNumber: number): DataWord[] {
 
-    if (!this.wordListLoaded) return;
+    if (!this.readyToDoMarkup()) return;
 
     // first get the sight words
     var sightWords = this.getSightWordsAsObjects(stageNumber);
@@ -490,8 +493,9 @@ class ReaderToolsModel {
   /**
    * Change the markup type when the user selects a different Tool.
    * @param {int} markupType
+   * returns true if doMarkup called
    */
-  setMarkupType(markupType: number): void {
+  setMarkupType(markupType: number): boolean {
 
     var newMarkupType = null;
     switch (markupType) {
@@ -512,7 +516,8 @@ class ReaderToolsModel {
     }
 
     // if no change, return now
-    if (newMarkupType === null) return;
+    if (newMarkupType === null) return false;
+    var didMarkup = false;
 
     if (newMarkupType !== this.currentMarkupType) {
       var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById('page');
@@ -520,9 +525,11 @@ class ReaderToolsModel {
         $('.bloom-editable', page.contentWindow.document).removeSynphonyMarkup();
       this.currentMarkupType = newMarkupType;
       this.doMarkup();
+      didMarkup = true;
     }
 
     this.saveState();
+    return didMarkup;
   }
 
   static getElementsToCheck(): JQuery {
@@ -658,7 +665,7 @@ class ReaderToolsModel {
    */
   doMarkup(): void {
 
-    if (!this.wordListLoaded) return;
+    if (!this.readyToDoMarkup()) return;
     if (this.currentMarkupType === MarkupType.None) return;
 
     var oldSelectionPosition = -1;

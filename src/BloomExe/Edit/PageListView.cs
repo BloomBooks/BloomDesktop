@@ -89,7 +89,7 @@ namespace Bloom.Edit
 			_thumbNailList.BackColor = BackColor;
 		}
 
-		private void UpdateDisplay()
+		public void UpdateDisplay()
 		{
 			//Enhance: when you go to another book, currently this shows briefly before we get a 
 			//chance to select how to display it. I haven't found any existing event I can use
@@ -101,7 +101,7 @@ namespace Bloom.Edit
 			//disabled, we don't use that. The button always thinks its in the "Normal" (enabled) state.
 			//But we switch its "normal" image and forecolor in order to get this "soft disabled" state
 			_addPageButton.ImageNormal = _model.CanAddPages ? Resources.AddPageButton : Resources.AddPageButtonDisabled;
-			_addPageButton.ForeColor = _model.CanAddPages ? Palette.Blue : Color.FromArgb(87,87,87);
+			_addPageButton.ForeColor = _model.CanAddPages ? Palette.BloomRed : Color.FromArgb(87,87,87);
 		}
 
 		public void SetBook(Book.Book book)//review: could do this instead by giving this class the bookselection object

@@ -55,8 +55,8 @@ function processDLRMessage(event) {
 }
 function markDecodableStatus() {
     // q-tips; mark sight words and non-decodable words
-    var sightWord = localizationManager.getText('EditTab.DecodableReaderTool.SightWord', 'Sight Word');
-    var notDecodable = localizationManager.getText('EditTab.DecodableReaderTool.WordNotDecodable', 'This word is not decodable in this stage.');
+    var sightWord = localizationManager.getText('EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord', 'Sight Word');
+    var notDecodable = localizationManager.getText('EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable', 'This word is not decodable in this stage.');
     var editableElements = $(".bloom-content1");
     editableElements.find('span.' + $.cssSightWord()).each(function () {
         $(this).qtip({ content: sightWord });
@@ -72,7 +72,7 @@ function markDecodableStatus() {
 }
 function markLeveledStatus() {
     // q-tips; mark sentences that are too long
-    var tooLong = localizationManager.getText('EditTab.LeveledReaderTool.SentenceTooLong', 'This sentence is too long for this level.');
+    var tooLong = localizationManager.getText('EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong', 'This sentence is too long for this level.');
     var editableElements = $(".bloom-content1");
     editableElements.find('span.' + $.cssSentenceTooLong()).each(function () {
         $(this).qtip({ content: tooLong });
@@ -144,10 +144,6 @@ function initializeSynphony(settingsFileContent) {
     synphony.loadSettings(settingsFileContent);
     model.restoreState();
     model.updateControlContents();
-    // change markup based on visible options
-    $('#toolbox').onOnce('accordionactivate.readerTools', function (event, ui) {
-        model.setMarkupType(ui.newHeader.data('markuptype'));
-    });
     // set up a DirectoryWatcher on the Sample Texts directory
     model.directoryWatcher = new DirectoryWatcher('Sample Texts', 10);
     model.directoryWatcher.onChanged('SampleFilesChanged.ReaderTools', readerSampleFilesChanged);

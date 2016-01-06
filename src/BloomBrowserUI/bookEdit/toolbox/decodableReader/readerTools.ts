@@ -83,8 +83,8 @@ function processDLRMessage(event: MessageEvent): void {
 
 function markDecodableStatus(): void {
   // q-tips; mark sight words and non-decodable words
-  var sightWord = localizationManager.getText('EditTab.DecodableReaderTool.SightWord', 'Sight Word');
-  var notDecodable = localizationManager.getText('EditTab.DecodableReaderTool.WordNotDecodable', 'This word is not decodable in this stage.');
+  var sightWord = localizationManager.getText('EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord', 'Sight Word');
+  var notDecodable = localizationManager.getText('EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable', 'This word is not decodable in this stage.');
   var editableElements = $(".bloom-content1");
   editableElements.find('span.' + (<textMarkup>$).cssSightWord()).each(function() {
     (<qtipInterface>$(this)).qtip({ content: sightWord });
@@ -103,7 +103,7 @@ function markDecodableStatus(): void {
 
 function markLeveledStatus(): void {
   // q-tips; mark sentences that are too long
-  var tooLong = localizationManager.getText('EditTab.LeveledReaderTool.SentenceTooLong',
+  var tooLong = localizationManager.getText('EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong',
       'This sentence is too long for this level.');
   var editableElements = $(".bloom-content1");
   editableElements.find('span.' + (<textMarkup>$).cssSentenceTooLong()).each(function() {
@@ -198,11 +198,6 @@ function initializeSynphony(settingsFileContent: string): void {
   model.restoreState();
 
   model.updateControlContents();
-
-  // change markup based on visible options
-  $('#toolbox').onOnce('accordionactivate.readerTools', function(event, ui) {
-    model.setMarkupType(ui.newHeader.data('markuptype'));
-  } );
 
   // set up a DirectoryWatcher on the Sample Texts directory
   model.directoryWatcher = new DirectoryWatcher('Sample Texts', 10);

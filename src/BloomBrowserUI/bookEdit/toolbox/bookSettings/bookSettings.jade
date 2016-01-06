@@ -1,0 +1,23 @@
+﻿mixin radio(key, theValue, i18nKey, englishLabel)
+	label
+		input(type='radio', name=key, value=theValue, data-i18n=i18nKey, onClick='handleBookSettingRadioClick(this);')
+		=englishLabel
+	br
+mixin checkbox(key, i18nKey, englishLabel)
+	input(type='checkbox', name=key, value=theValue, onClick='handleBookSettingCheckboxClick(this);')
+	label(data-i18n=i18nKey)
+		=englishLabel
+mixin text(i18nKey, englishText)
+	p(data-i18n=i18nKey)
+		=englishText
+
+html
+	head
+		script(src='/bloom/bookEdit/toolbox/bookSettings/bookSettings.js')
+	body
+		h3(data-panelId='bookSettingsTool', data-order='100')
+			img(src="/bloom/bookEdit/toolbox/bookSettings/icon.svg")
+		div(data-panelId='bookSettingsTool')
+			form.bookSettings.showOnlyWhenBookWouldNormallyBeLocked
+				+text('EditTab.Toolbox.Settings.UnlockShellBookIntroductionText','Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.')
+				+checkbox('unlockShellBook', 'EditTab.Toolbox.Settings.Unlock', 'Allow changes to this shellbook')

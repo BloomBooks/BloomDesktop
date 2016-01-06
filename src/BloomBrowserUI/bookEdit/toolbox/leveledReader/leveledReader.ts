@@ -11,6 +11,18 @@ class LeveledReaderModel implements ITabModel {
     }
 
     configureElements(container: HTMLElement) {}
+
+    showTool() {
+        // change markup based on visible options
+        model.setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!model.setMarkupType(2)) model.doMarkup();
+    }
+
+    hideTool() {
+        model.setMarkupType(0);
+    }
+
+    name() {return 'leveledReaderTool';}
 }
 
 tabModels.push(new LeveledReaderModel());

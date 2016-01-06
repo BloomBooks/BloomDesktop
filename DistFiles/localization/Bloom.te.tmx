@@ -5,7 +5,7 @@
     <prop type="x-hardlinebreakreplacement">\n</prop>
   </header>
   <body>
-    <tu tuid="Accordion.DecodableReaderTool">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Decodable Reader Tool</seg>
@@ -14,7 +14,7 @@
         <seg>డికోడాబల్ రీడర్ </seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.LeveledReaderTool">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Leveled Reader Tool</seg>
@@ -23,7 +23,7 @@
         <seg>తనపై రీడర్ సాధనం</seg>
       </tuv>
     </tu>
-    <tu tuid="Accordion.More">
+    <tu tuid="EditTab.Toolbox.More">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>More...</seg>
@@ -797,7 +797,7 @@
         <seg>భవనం</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.LettersInThisStage">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.LettersInThisStage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Letters in this stage</seg>
@@ -806,7 +806,7 @@
         <seg>ఈ దశలో లెటర్స్.</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.MakeLetterWordList">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordList">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Open a Letter and Word List File</seg>
@@ -815,7 +815,7 @@
         <seg>ఒక అక్షరం మరియు పద జాబితా ఫైలు తెరువు</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.SetUpStages">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SetUpStages">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Set up Stages</seg>
@@ -824,7 +824,7 @@
         <seg>సెటప్ దశల్లో</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.Stage">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.Stage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Stage</seg>
@@ -833,7 +833,7 @@
         <seg>వేదిక</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.StageOf">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.StageOf">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>of</seg>
@@ -842,7 +842,7 @@
         <seg>యొక్క</seg>
       </tuv>
     </tu>
-    <tu tuid="DecodableReaderTool.WordsInThisStage">
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.WordsInThisStage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Words in this stage</seg>
@@ -1923,7 +1923,7 @@
         <seg>B5చిత్తరువు</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Actual">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Actual">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Actual</seg>
@@ -1932,7 +1932,7 @@
         <seg>అసలు</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ChoiceOfTopic">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Choice of Topic</seg>
@@ -1941,7 +1941,7 @@
         <seg>విషయం యొక్క ఎంపిక</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ConceptLoad">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ConceptLoad">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1951,7 +1951,7 @@
         <seg>భావన లోడ్</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.FoThisLevel">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.FoThisLevel">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>For this Level</seg>
@@ -1960,7 +1960,7 @@
         <seg>ఈ స్థాయి కోసం</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Formatting">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Formatting">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Formatting</seg>
@@ -1969,7 +1969,7 @@
         <seg>ఫార్మాటింగ్</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.HowToMakeLeveledReader">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.HowToMakeLeveledReader">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1979,7 +1979,7 @@
         <seg>ఒక గొప్ప సమం రీడర్ చేయడానికి ఎలా</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.IllustrationSupport">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.IllustrationSupport">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Illustration support</seg>
@@ -1988,7 +1988,7 @@
         <seg>ఇలస్ట్రేషన్ మద్దతు</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.KeepInMind">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.KeepInMind">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Keep in mind</seg>
@@ -1997,7 +1997,7 @@
         <seg>గుర్తుంచుకోండి</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Level">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Level">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Level </seg>
@@ -2006,7 +2006,7 @@
         <seg>స్థాయి</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.LevelOf">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.LevelOf">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg> of </seg>
@@ -2015,7 +2015,7 @@
         <seg>ఆఫ్</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Max">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Max">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Max</seg>
@@ -2024,7 +2024,7 @@
         <seg>మాక్స్</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.PatternAndRecognition">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PatternAndRecognition">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2034,7 +2034,7 @@
         <seg>నమూనా మరియు గుర్తింపు</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.PerPage">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerPage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>per page</seg>
@@ -2043,7 +2043,7 @@
         <seg>పేజీకి</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.PerSentence">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.PerSentence">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>per sentence</seg>
@@ -2052,7 +2052,7 @@
         <seg>వాక్యం పెర్</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Predictability">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Predictability">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Predictability</seg>
@@ -2061,7 +2061,7 @@
         <seg>అంచనాను</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.SetUpLevels">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.SetUpLevels">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Set up Levels</seg>
@@ -2070,7 +2070,7 @@
         <seg>అప్ సెట్ స్థాయిలు</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ThisBook">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ThisBook">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Book</seg>
@@ -2079,7 +2079,7 @@
         <seg>ఈ బుక్</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.ThisPage">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.ThisPage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>This Page</seg>
@@ -2088,7 +2088,7 @@
         <seg>ఈ పేజీని</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.TopicFamiliarity">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.TopicFamiliarity">
       <prop type="x-nolongerused">true</prop>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -2098,7 +2098,7 @@
         <seg>టాపిక్ పరిచయాన్ని</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Total">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Total">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>total</seg>
@@ -2107,7 +2107,7 @@
         <seg>మొత్తం</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Unique">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Unique">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>unique</seg>
@@ -2116,7 +2116,7 @@
         <seg>ప్రత్యేక</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.Vocabulary">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.Vocabulary">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Vocabulary</seg>
@@ -2125,7 +2125,7 @@
         <seg>పదజాలం</seg>
       </tuv>
     </tu>
-    <tu tuid="LeveledReaderTool.WordCounts">
+    <tu tuid="EditTab.Toolbox.LeveledReaderTool.WordCounts">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Word counts</seg>

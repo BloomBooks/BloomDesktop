@@ -1,4 +1,5 @@
 /// <reference path="../../lib/jquery.d.ts" />
+/// <reference path="../../typings/ckeditor/ckeditor.d.ts" />
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -31,8 +32,7 @@ class BloomField {
             BloomField.PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(bloomEditableDiv);
             BloomField.MakeTabEnterTabElement(bloomEditableDiv);
             BloomField.MakeShiftEnterInsertLineBreak(bloomEditableDiv);
-            $(bloomEditableDiv).on('paste', this.ProcessIncomingPaste);
-            $(bloomEditableDiv).click(function() { BloomField.ProcessClick; });
+
             $(bloomEditableDiv).blur(function () {
                 BloomField.ModifyForParagraphMode(this);
             });
@@ -63,15 +63,34 @@ class BloomField {
         );
     }
     
+    private static InsertLineBreak() {
+        //we put in a specially marked span which stylesheets can use to give us "soft return" in the midst of paragraphs
+        //which have either indents or prefixes (like "step 1", "step 2").
+        //The difficult part is that the browser will leave our cursor inside of the new span, which isn't really
+        //what we want. So we also add a zero-width-non-joiner (&#xfeff;) there so that we can get outside of the span.
+        document.execCommand("insertHTML", false, "<span class='bloom-linebreak'></span>&#xfeff;");
+    }
+
+    // This BloomField thing was done before ckeditor; ckeditor kinda expects to the only thing
+    // taking responsibility for the field, so that creates problems. Eventually, we could probably
+    // re-cast everything in this BloomField class as a plugin or at least callbacks to ckeditor.
+    // For now, I just want to fix BL-3009, where this class could no longer get access to shift-enter
+    // keypresses. To regain access, we have to wire up to ckeditor.
+    static WireToCKEditor(bloomEditableDiv: HTMLElement, ckeditor: CKEDITOR.editor) {
+        ckeditor.on('key', event => {
+            if (event.data.keyCode === CKEDITOR.SHIFT + 13) {
+                BloomField.InsertLineBreak();
+                event.cancel();
+            }
+        });
+    }
+
     private static MakeShiftEnterInsertLineBreak(field: HTMLElement) {
         $(field).keypress(e => {
-            if (e.which == 13) { //enter key
+            //NB: This will not fire in the (now normal case) that ckeditor is in charge of this field.
+            if (e.which === 13) { //enter key
                 if (e.shiftKey) {
-                    //we put in a specially marked span which stylesheets can use to give us "soft return" in the midst of paragraphs
-                    //which have either indents or prefixes (like "step 1", "step 2").
-                    //The difficult part is that the browser will leave our cursor inside of the new span, which isn't really
-                    //what we want. So we also add a zero-width-non-joiner (&#xfeff;) there so that we can get outside of the span.
-                    document.execCommand("insertHTML", false, "<span class='bloom-linebreak'></span>&#xfeff;");
+                    BloomField.InsertLineBreak();
                 } else {
                     // If the enter didn't come with a shift key, just insert a paragraph.
                     // Now, why are we doing this if firefox would do it anyway? Because if we previously pressed shift - enter
@@ -95,65 +114,20 @@ class BloomField {
         });
     }
 
-    private static ProcessClick(e: any) {
-
-        // note: currently, the c# code also intercepts the past event and
-        // makes sure that we just get plain 'ol text on the clipboard.
-        // That's a bit heavy handed, but the mess you get from pasting
-        // html from word is formidable.
-
-        var txt = e.originalEvent.clipboardData.getData('text/plain');
-
-        var html: string;
-        if (e.ctrlKey) {
-            html = txt.replace(/\n\n/g, 'twonewlines');
-            html = html.replace(/\n/g, ' ');
-            html = html.replace(/\s+/g, ' ');
-            html = html.replace(/twonewlines/g, '\n');
-
-            //convert remaining newlines to paragraphs. We're already inside a  <p>, so each 
-            //newline finishes that off and starts a new one
-            html = html.replace(/\n/g, '</p><p>');
-
-            document.execCommand("insertHTML", false, html);
-
-            //don't do the normal paste
-            e.stopPropagation();
-            e.preventDefault();
-        }
-    }
-
-    private static ProcessIncomingPaste(e: any) {
-
-        // note: currently, the c# code also intercepts the past event and
-        // makes sure that we just get plain 'ol text on the clipboard.
-        // That's a bit heavy handed, but the mess you get from pasting
-        // html from word is formidable.
-
-        var txt = e.originalEvent.clipboardData.getData('text/plain');
-
-        var html: string;
-
-        if (e.ctrlKey) {
-            html = txt.replace(/\n\n/g, 'twonewlines');
-            html = html.replace(/\n/g, ' ');
-            html = html.replace(/\s+/g, ' ');
-            html = html.replace(/twonewlines/g, '\n');
-        } else {
-            //some typists in SHRP indent in MS Word by hitting newline and pressing a bunch of spaces.
-            // We replace any newline followed by 3 or more spaces with just one space. It could
-            // conceivalby hit some false positive, but it would be easy for the user to fix.
-            html = txt.replace(/\n\s{3,}/g, ' ');
-        }
-        //convert remaining newlines to paragraphs. We're already inside a  <p>, so each 
+    // This was originally here to do some cleanup needed by SIL-LEAD/SHRP as their
+    // typists copied from Word where they had used spaces instead of tabs, too many linebreaks, etc.
+    // It was broken when we added ckeditor, and now isn't actually needed. Meanwhile though I
+    // make this way to get a special paste by ctrl-clicking on the paste icon and bypassing
+    // ckeditor. So I'm leaving this toy example here to save us
+    // time if we need to do something similar in the future.
+    public static CalledByCSharp_SpecialPaste(contents: string) {
+        let html = contents.replace(/[b,c,d,f,g,h,j,k,l,m,n,p,q,r,s,t,v,w,x,z]/g, 'C');
+        html = html.replace(/[a,e,i,o,u]/g, 'V');
+        //convert newlines to paragraphs. We're already inside a  <p>, so each
         //newline finishes that off and starts a new one
         html = html.replace(/\n/g, '</p><p>');
-
-        document.execCommand("insertHTML", false, html);
-
-        //don't do the normal paste
-        e.stopPropagation();
-        e.preventDefault();
+        var page = <HTMLIFrameElement>document.getElementById('page');
+        page.contentWindow.document.execCommand("insertHTML", false, html);
     }
 
     // Since embedded images come before the first editable text, going to the beginning of the field and pressing Backspace moves the current paragraph into the caption. Sigh.

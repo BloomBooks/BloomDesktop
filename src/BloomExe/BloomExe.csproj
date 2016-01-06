@@ -222,6 +222,7 @@
     <Compile Include="Book\BookInfo.cs" />
     <Compile Include="Book\BookServer.cs" />
     <Compile Include="Book\CurrentEditableCollectionSelection.cs" />
+    <Compile Include="Edit\BookSettingsTool.cs" />
     <Compile Include="Edit\ToolboxTool.cs" />
     <Compile Include="Edit\DecodableReaderTool.cs" />
     <Compile Include="Edit\LeveledReaderTool.cs" />
@@ -490,6 +491,7 @@
     <Compile Include="UpdateVersionTable.cs" />
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
+    <Compile Include="web\CurrentBookHandler.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
     <Compile Include="web\I18NHandler.cs" />
     <Compile Include="web\ReadersHandler.cs" />

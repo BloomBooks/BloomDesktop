@@ -1,10 +1,16 @@
 class CalledByCSharp {
 
   handleUndo(): void {
-    // Stuff "in the toolbox" (not clear what that means) gets its own undo handling
-    var contentWindow = this.getToolboxContent();
-    if (contentWindow && contentWindow.model && contentWindow.model.shouldHandleUndo()) {
-          contentWindow.model.undo();
+      // First see if origami is active and knows about something we can undo.
+      var contentWindow = this.getPageContent();
+      if (contentWindow && (<any>contentWindow).origamiCanUndo()) {
+          (<any>contentWindow).origamiUndo();
+      }
+      // Undoing changes made by commands and dialogs in the toolbox can't be undone using
+      // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
+      var toolboxWindow = this.getToolboxContent();
+      if (toolboxWindow && toolboxWindow.model && toolboxWindow.model.shouldHandleUndo()) {
+          toolboxWindow.model.undo();
     } // elsewhere, we try to ask ckEditor to undo, else just the document
     else{
         var ckEditorUndo = this.ckEditorUndoCommand();
@@ -25,9 +31,12 @@ class CalledByCSharp {
  }
 
   canUndo(): string {
-    var contentWindow = this.getToolboxContent();
-    if (contentWindow && contentWindow.model && contentWindow.model.shouldHandleUndo()) {
-          return contentWindow.model.canUndo();
+    // See comments on handleUndo()
+    var contentWindow = this.getPageContent();
+    if (contentWindow && (<any>contentWindow).origamiCanUndo()) {return 'yes';}
+    var toolboxWindow = this.getToolboxContent();
+    if (toolboxWindow && toolboxWindow.model && toolboxWindow.model.shouldHandleUndo()) {
+        return toolboxWindow.model.canUndo();
     }
     /* I couldn't find a way to ask ckeditor if it is ready to do an undo.
       The "canUndo()" is misleading; what it appears to mean is, can this command (undo) be undone?*/
@@ -76,14 +85,6 @@ class CalledByCSharp {
       contentWindow['SetCopyrightAndLicense'](contents);
   }
 
-  showTalkingBookTool() {
-      var contentWindow = this.getToolboxContent();
-        if (!contentWindow) return;
-        if (typeof contentWindow['showTalkingBookTool'] === 'function') {
-            contentWindow['showTalkingBookTool']();
-        }
-    }
-
     cleanupAudio() {
         var contentWindow = this.getPageContent();
         if (!contentWindow) return;
@@ -92,21 +93,21 @@ class CalledByCSharp {
         }
     }
 
-    setPeakLevel(level:string) {
-        var contentWindow = this.getPageContent();
-        if (!contentWindow) return;
-        if (typeof contentWindow['setPeakLevel'] === 'function') {
-            contentWindow['setPeakLevel'](level);
+    setPeakLevel(level: string) {
+        var toolboxWindow = this.getToolboxContent();
+        if (!toolboxWindow) return;
+        if (typeof toolboxWindow['setPeakLevel'] === 'function') {
+            toolboxWindow['setPeakLevel'](level);
         }
     }
 
   removeSynphonyMarkup() {
-
     var page = this.getPageContent();
     if (!page) return;
-
-    if ((typeof page['jQuery'] !== 'undefined') && (page['jQuery'].fn.removeSynphonyMarkup))
-      page['jQuery']('.bloom-content1').removeSynphonyMarkup();
+    var toolbox = this.getToolboxContent();
+    if ((typeof toolbox['jQuery'] !== 'undefined') && (toolbox['jQuery'].fn.removeSynphonyMarkup)) {
+        toolbox['jQuery'].fn.removeSynphonyMarkup.call(page['jQuery']('.bloom-content1'));
+    }
   }
 
   invokeToolboxWithOneParameter(functionName: string, value: string) {

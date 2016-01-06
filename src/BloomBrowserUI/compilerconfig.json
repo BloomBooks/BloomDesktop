@@ -142,5 +142,9 @@
       "enabled": false
     },
     "sourceMap": true
+  },
+  {
+    "outputFile": "bookEdit/toolbox/bookSettings/bookSettings.css",
+    "inputFile": "bookEdit/toolbox/bookSettings/bookSettings.less"
   }
 ]
