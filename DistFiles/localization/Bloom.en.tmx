@@ -2135,6 +2135,30 @@
         <seg>B5Portrait</seg>
       </tuv>
     </tu>
+    <tu tuid="LayoutChoices.HalfLetterPortrait">
+        <prop type="x-dynamic">true</prop>
+        <tuv xml:lang="en">
+            <seg>HalfLetterPortrait</seg>
+        </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.LetterLandscape">
+        <prop type="x-dynamic">true</prop>
+        <tuv xml:lang="en">
+            <seg>LetterLandscape</seg>
+        </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.LetterPortrait">
+        <prop type="x-dynamic">true</prop>
+        <tuv xml:lang="en">
+            <seg>LetterPortrait</seg>
+        </tuv>
+    </tu>
+    <tu tuid="LayoutChoices.QuarterLetterLandscape">
+        <prop type="x-dynamic">true</prop>
+        <tuv xml:lang="en">
+            <seg>QuarterLetterLandscape</seg>
+        </tuv>
+    </tu>
     <tu tuid="EditTab.Toolbox.LeveledReaderTool.Actual">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
