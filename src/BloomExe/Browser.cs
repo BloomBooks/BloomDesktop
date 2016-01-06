@@ -211,7 +211,7 @@ namespace Bloom
 
 			_cutCommand.Implementer = () => _browser.CutSelection();
 			_copyCommand.Implementer = () => _browser.CopySelection();
-			_pasteCommand.Implementer = () => PasteFilteredText(false);
+			_pasteCommand.Implementer = () => Paste();
 			_undoCommand.Implementer = () =>
 			{
 				// Note: this is only used for the Undo button in the toolbar;
@@ -401,7 +401,7 @@ namespace Bloom
 			}
 		}
 
-		private void PasteFilteredText(bool removeSingleLineBreaks)
+		private void Paste()
 		{
 			if (Control.ModifierKeys == Keys.Control)
 			{
@@ -585,15 +585,6 @@ namespace Bloom
 
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
-			var mouseEvent = e as Gecko.DomMouseEventArgs;
-			var specialPasteClick = ModifierKeys.HasFlag(Keys.Control) || (mouseEvent!=null && mouseEvent.Button== GeckoMouseButton.Middle);
-			if(_browser.CanPaste && BloomClipboard.ContainsText() && specialPasteClick)
-			{
-				e.PreventDefault();
-				PasteFilteredText(true);
-				return;
-			}
-
 			Debug.Assert(!InvokeRequired);
 		  //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
 			//it loses its focus.
@@ -602,8 +593,6 @@ namespace Bloom
 			EventHandler handler = OnBrowserClick;
 			if (handler != null)
 				handler(this, e);
-
-
 		}
 
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
