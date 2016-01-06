@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -380,6 +379,9 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			const uint DOM_VK_INSERT = 0x2D;
+
+			//enhance: it's possible that, with the introduction of ckeditor, we don't need to pay any attention 
+			//to ctrl+v. I'm doing a hotfix to a beta here so I don't want to change more than necessary.
 			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
 			{
 				if (_pasteCommand==null /*happened in calendar config*/ || !_pasteCommand.Enabled)
@@ -387,11 +389,7 @@ namespace Bloom
 					Debug.WriteLine("Paste not enabled, so ignoring.");
 					e.PreventDefault();
 				}
-				else if(_browser.CanPaste && BloomClipboard.ContainsText())
-				{
-					e.PreventDefault(); //we'll take it from here, thank you very much
-					PasteFilteredText(false);
-				}
+				//otherwise, ckeditor will handle the paste
 			}
 			// On Windows, Form.ProcessCmdKey (intercepted in Shell) seems to get ctrl messages even when the browser
 			// has focus.  But on Mono, it doesn't.  So we just do the same thing as that Shell.ProcessCmdKey function
@@ -405,34 +403,16 @@ namespace Bloom
 
 		private void PasteFilteredText(bool removeSingleLineBreaks)
 		{
-			//this prone to dying in System.Windows.Forms.Clipboard.SetText. E.g. bl-2787
-			try
+			if (Control.ModifierKeys == Keys.Control)
 			{
-
-				Debug.Assert(!InvokeRequired);
-
-				//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
 				var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
-
-				if (!string.IsNullOrEmpty(text))
-				{
-					if (removeSingleLineBreaks)
-					{
-						text = text.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
-					}
-					//setting clears other formats that might be on the clipboard, such as html
-					BloomClipboard.SetText(text, TextDataFormat.UnicodeText);
-					_browser.Paste();
-				}
-
+				text = System.Web.HttpUtility.JavaScriptStringEncode(text);
+				RunJavaScript("BloomField.CalledByCSharp_SpecialPaste('" + text + "')");
 			}
-			catch (Exception error)
+			else
 			{
-				Logger.WriteEvent("***Failed to paste in Browser.PasteFilteredText()");
-#if DEBUG
-				throw error;
-#endif
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem pasting from the clipboard.");
+				//just let ckeditor do the MSWord filtering
+				_browser.Paste();
 			}
 		}
 
