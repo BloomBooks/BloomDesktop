@@ -788,7 +788,7 @@ namespace Bloom.Book
 			foreach (XmlElement e in RawDom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='" + key + "']"))
 			{
 				var lang = e.GetAttribute("lang");
-				result.SetAlternative(lang ?? "", e.InnerXml);
+				result.SetAlternative(lang ?? "", e.InnerText);
 			}
 			return result;
 		}
@@ -821,7 +821,7 @@ namespace Bloom.Book
 				node.SetAttribute("data-book", key);
 				node.SetAttribute("lang", writingSystemId);
 			}
-			node.InnerXml = form;
+			node.InnerText = form; // not InnerXml as it may contain things like SILA & LASI that are not valid XML
 			dataDiv.AppendChild(node);
 		}
 
