@@ -11,11 +11,15 @@ var checkMarkString = '&#10004;';
 var showingPanel = false;
 var savedSettings: string;
 
+var keypressTimer: any = null;
+
+
 interface ITabModel {
     restoreSettings(settings: string);
     configureElements(container: HTMLElement);
     showTool();
     hideTool();
+    updateMarkup();
     name(): string;
 }
 
@@ -25,7 +29,13 @@ class ToolBox {
     configureElementsForTools(container: HTMLElement) {
         for (var i = 0; i < tabModels.length; i++) {
             tabModels[i].configureElements(container);
-        }
+            // the toolbox itself handles keypresses in order to manage the process
+            // of giving each tool a chance to update things when the user stops typing
+            // (while maintaining the selection if at all possible).
+            $(container).find('.bloom-editable').keypress(function () {
+                doKeypressMarkup();
+            });
+       }
     }
 }
 
@@ -248,6 +258,68 @@ function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPane
                     loadNextCallback(panels, currentPanel);
             });
     }
+}
+
+function doKeypressMarkup(): void {
+
+    // BL-599: "Unresponsive script" while typing in text.
+    // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
+    // function called "clearTimeout." Because of this, the jQuery method $.isFunction(keypressTimer.clearTimeout)
+    // will always return false (since "this.keypressTimer.clearTimeout" is undefined) and the result is a new 500
+    // millisecond timer being created every time the doKeypress method is called, but none of the pre-existing timers
+    // being cleared. The correct way to clear a timeout is to call clearTimeout(), passing it the integer returned by
+    // the function setTimeout().
+
+    //if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
+    //  this.keypressTimer.clearTimeout();
+    //}
+    if(keypressTimer)
+      clearTimeout(keypressTimer);
+
+    keypressTimer = setTimeout(function () {
+
+        // This happens 500ms after the user stops typing.
+        var page: HTMLIFrameElement = <HTMLIFrameElement>parent.window.document.getElementById('page');
+        if (!page) return; // unit testing?
+
+        var selection: Selection = page.contentWindow.getSelection();
+        var current: Node = selection.anchorNode;
+        var active = <HTMLDivElement>$(selection.anchorNode).closest('div').get(0);
+        if (!active || selection.rangeCount > 1 || (selection.rangeCount == 1 && !selection.getRangeAt(0).collapsed)) {
+            return; // don't even try to adjust markup while there is some complex selection
+        }
+
+        var myRange: Range = selection.getRangeAt(0).cloneRange();
+        myRange.setStart(active, 0);
+        var offset: number = myRange.toString().length;
+
+        // In case the IP is somewhere like after the last <br> or between <br>s,
+        // its anchorNode is the div itself, or perhaps one of its spans, and we want to try to put it back
+        // in a comparable position. -1 marks a selection that is at a text level.
+        // other values count the <br> elements immediately before the selection.
+        // I am hoping it doesn't happen that there are <br>s at multiple levels.
+        // Note that the newly marked up version will have any <br>s at the top level only (children of the div).
+        var divBrCount: number = -1;
+        if (current.nodeType !== 3) {
+            divBrCount = 0;
+            // endoffset counts the number of childNodes that the selection is after.
+            // We want to know how many <br> nodes are between it and the previous non-empty node.
+            for (var k = myRange.endOffset - 1; k >= 0; k--) {
+                if (current.childNodes[k].localName === 'br') divBrCount++;
+                else if (current.childNodes[k].textContent.length > 0) break;
+            }
+        }
+
+        var atStart: boolean = myRange.endOffset === 0;
+
+        if (currentTool) currentTool.updateMarkup();
+
+        // Now we try to restore the selection at the specified position.
+        EditableDivUtils.makeSelectionIn(active, offset, divBrCount, atStart);
+
+        // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
+        keypressTimer = null;
+    }, 500);
 }
 
 var resizeTimer;

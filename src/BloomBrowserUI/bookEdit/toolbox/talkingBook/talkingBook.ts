@@ -12,6 +12,10 @@
         audioRecorder.removeRecordingSetup();
     }
 
+    updateMarkup() {
+        audioRecorder.updateMarkupAndControlsToCurrentText();
+    }
+
     name() { return 'talkingBookTool'; }
 }
 

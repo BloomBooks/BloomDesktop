@@ -32,11 +32,6 @@ class DecodableReaderModel implements ITabModel {
             model.noteFocus(this); // 'This' is the element that just got focus.
         });
 
-        // and a slightly different one for keypresses
-        $(container).find('.bloom-editable').keypress(function() {
-            model.doKeypressMarkup();
-        });
-
         $(container).find('.bloom-editable').keydown(function(e) {
             if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrl-z or ctrl-Y
                 if (model.currentMarkupType !== MarkupType.None) {
@@ -64,6 +59,10 @@ class DecodableReaderModel implements ITabModel {
 
     hideTool() {
         model.setMarkupType(0);
+    }
+
+    updateMarkup() {
+        model.doMarkup();
     }
 
     name() { return 'decodableReaderTool'; }
