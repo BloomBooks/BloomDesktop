@@ -654,8 +654,7 @@ class AudioRecording {
     // special cases); this root method scans down and does it for each such child
     // in a root (possibly the root itself, if it has no children).
     private makeSentenceSpans(root: JQuery): void {
-        var thisClass = this;
-        root.each(function(index: number, e: Element) {
+        root.each((index: number, e: Element) => {
             var children = $(e).children();
             var processedChild: boolean = false; // Did we find a significant child?
             for (var i = 0; i < children.length; i++) {
@@ -664,11 +663,11 @@ class AudioRecording {
                 // Review: is there a better way to pick out the elements that can occur within content elements?
                 if (name != 'span' && name != 'br' && name != 'i' && name != 'b' && name != 'u' && $(child).attr('id') !== 'formatButton') {
                     processedChild = true;
-                    thisClass.makeSentenceSpans($(child));
+                    this.makeSentenceSpans($(child));
                 }
             }
             if (!processedChild) // root is a leaf; process its actual content
-                thisClass.makeSentenceSpansLeaf($(e));
+                this.makeSentenceSpansLeaf($(e));
         });
         // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
     }

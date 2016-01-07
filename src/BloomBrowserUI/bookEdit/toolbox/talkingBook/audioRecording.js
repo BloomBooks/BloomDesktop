@@ -615,7 +615,7 @@ var AudioRecording = (function () {
     // special cases); this root method scans down and does it for each such child
     // in a root (possibly the root itself, if it has no children).
     AudioRecording.prototype.makeSentenceSpans = function (root) {
-        var thisClass = this;
+        var _this = this;
         root.each(function (index, e) {
             var children = $(e).children();
             var processedChild = false; // Did we find a significant child?
@@ -625,11 +625,11 @@ var AudioRecording = (function () {
                 // Review: is there a better way to pick out the elements that can occur within content elements?
                 if (name != 'span' && name != 'br' && name != 'i' && name != 'b' && name != 'u' && $(child).attr('id') !== 'formatButton') {
                     processedChild = true;
-                    thisClass.makeSentenceSpans($(child));
+                    _this.makeSentenceSpans($(child));
                 }
             }
             if (!processedChild)
-                thisClass.makeSentenceSpansLeaf($(e));
+                _this.makeSentenceSpansLeaf($(e));
         });
         // Review: is there a need to handle elements that contain both sentence text AND child elements with their own text?
     };
