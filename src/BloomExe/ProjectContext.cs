@@ -222,6 +222,8 @@ namespace Bloom
 //				else
 //				{
 					_httpServer = new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent), parentContainer.Resolve<BookThumbNailer>());
+					ReadersHandler.Init(_httpServer);
+					CurrentBookHandler.Init(_httpServer);
 //				}
 					builder.Register((c => _httpServer)).AsSelf().SingleInstance();
 

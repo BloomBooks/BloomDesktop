@@ -466,7 +466,6 @@
 			this._browser1.Location = new System.Drawing.Point(0, 0);
 			this._browser1.Margin = new System.Windows.Forms.Padding(5);
 			this._browser1.Name = "_browser1";
-			this._browser1.ScaleToFullWidthOfPage = false;
 			this._browser1.Size = new System.Drawing.Size(826, 561);
 			this._browser1.TabIndex = 1;
 			this._browser1.VerticalScrollDistance = 0;

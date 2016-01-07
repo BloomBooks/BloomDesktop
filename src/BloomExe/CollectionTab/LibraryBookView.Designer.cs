@@ -122,7 +122,6 @@
 			this._L10NSharpExtender.SetLocalizingId(this._previewBrowser, "CollectionTab.Browser");
 			this._previewBrowser.Location = new System.Drawing.Point(0, 0);
 			this._previewBrowser.Name = "_previewBrowser";
-			this._previewBrowser.ScaleToFullWidthOfPage = false;
 			this._previewBrowser.Size = new System.Drawing.Size(900, 338);
 			this._previewBrowser.TabIndex = 2;
 			this._previewBrowser.VerticalScrollDistance = 0;
@@ -140,7 +139,6 @@
 			this._L10NSharpExtender.SetLocalizingId(this._readmeBrowser, "CollectionTab.Browser");
 			this._readmeBrowser.Location = new System.Drawing.Point(0, 0);
 			this._readmeBrowser.Name = "_readmeBrowser";
-			this._readmeBrowser.ScaleToFullWidthOfPage = false;
 			this._readmeBrowser.Size = new System.Drawing.Size(900, 108);
 			this._readmeBrowser.TabIndex = 2;
 			this._readmeBrowser.VerticalScrollDistance = 0;

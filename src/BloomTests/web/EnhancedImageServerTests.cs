@@ -1,5 +1,7 @@
 ﻿// Copyright (c) 2014 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
+
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -96,6 +98,33 @@ namespace BloomTests.web
 				// Verify
 				Assert.That(transaction.StatusCode, Is.EqualTo(404));
 				Assert.That(Logger.LogText, Contains.Substring("**EnhancedImageServer: File Missing: /non-existing-file.pdf"));
+			}
+		}
+
+		[Test]
+		public void SupportsHandlerInjection()
+		{
+			// Setup
+			using (var server = CreateImageServer())
+			{
+				var transaction = new PretendRequestInfo(ServerBase.PathEndingInSlash + "thisWontWorkWithoutInjectionButWillWithIt");
+				server.CurrentCollectionSettings = new CollectionSettings();
+				Func<string, IRequestInfo, CollectionSettings, bool> testFunc =
+					(path, info, settings) =>
+					{
+						Assert.That(path, Is.StringContaining("thisWontWorkWithoutInjectionButWillWithIt"));
+						Assert.That(settings, Is.EqualTo(server.CurrentCollectionSettings));
+						info.ContentType = "text/plain";
+						info.WriteCompleteOutput("Did It!");
+						return true;
+					};
+				server.RegisterRequestHandler("thisWontWorkWithoutInjection", testFunc);
+
+				// Execute
+				server.MakeReply(transaction);
+
+				// Verify
+				Assert.That(transaction.ReplyContents, Is.EqualTo("Did It!"));
 			}
 		}
 

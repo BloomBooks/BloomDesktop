@@ -54,7 +54,6 @@ namespace Bloom.Edit
 				_browser.Name = "_browser";
 				_browser.Size = new Size(150, 491);
 				_browser.TabIndex = 0;
-				_browser.ScaleToFullWidthOfPage = false;
 				_browser.VerticalScroll.Visible = false;
 				Controls.Add(_browser);
 			}
