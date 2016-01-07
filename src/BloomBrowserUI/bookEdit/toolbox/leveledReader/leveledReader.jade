@@ -70,8 +70,3 @@ html
 						a(href='javascript:loadExternalLink("openFileInBrowser/leveledRTInfo/leveledReaderInfo-en.htm?IllustrationSupport")', data-i18n='EditTab.Toolbox.LeveledReaderTool.IllustrationSupport') Illustration Support
 					li
 						a(href='javascript:loadExternalLink("openFileInBrowser/leveledRTInfo/leveledReaderInfo-en.htm?ChoiceOfTopic")', data-i18n='EditTab.Toolbox.LeveledReaderTool.ChoiceOfTopic') Choice of Topic
-			script(type='text/javascript').
-				$(document).ready(function() {
-					// this timeout is different than the decodableReader timeout to prevent initializing synphony twice
-					setTimeout(initializeLeveledReaderTool, 200);
-				});

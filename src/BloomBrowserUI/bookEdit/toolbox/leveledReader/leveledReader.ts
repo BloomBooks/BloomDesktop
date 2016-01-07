@@ -2,6 +2,8 @@
 
 class LeveledReaderModel implements ITabModel {
     restoreSettings(opts: string) {
+        if (!model) model = new ReaderToolsModel();
+        initializeLeveledReaderTool();
         if (opts['leveledReaderState']) {
             var state = libsynphony.dbGet('drt_state');
             if (!state) state = new DRTState();

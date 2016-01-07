@@ -46,8 +46,3 @@ html
 			#allowed-word-list-truncated.clear(style="color: red")
 			#hiddenWordListForDecodableReader(style="display: none")
 				label#allowed_word_list_truncated_text(data-i18n='EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated') Bloom can handle only the first {0} words.
-			script(type='text/javascript').
-				$(document).ready(function() {
-					// this timeout is different than the LeveledRT timeout to prevent initializing synphony twice
-					setTimeout(initializeDecodableReaderTool, 100);
-				});

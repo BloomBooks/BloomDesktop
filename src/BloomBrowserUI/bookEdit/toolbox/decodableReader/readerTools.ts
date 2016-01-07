@@ -165,15 +165,6 @@ function initializeLeveledReaderTool(): void {
   $("#toolbox").accordion("refresh");
 }
 
-if (typeof ($) === "function") {
-
-  // Running for real, and jquery properly loaded first
-  $(document).ready(function() {
-    model = new ReaderToolsModel();
-    model.setSynphony(new SynphonyApi());
-  });
-}
-
 function loadSynphonySettings(): void {
 
   // make sure synphony is initialized

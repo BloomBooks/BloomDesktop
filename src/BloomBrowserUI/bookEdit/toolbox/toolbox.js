@@ -7,6 +7,7 @@
  */
 var checkMarkString = '&#10004;';
 var showingPanel = false;
+var savedSettings;
 var keypressTimer = null;
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
 var ToolBox = (function () {
@@ -65,6 +66,7 @@ function showOrHidePanel_click(chkbox) {
 * Called by C# to restore user settings
 */
 function restoreToolboxSettings(settings) {
+    savedSettings = settings;
     var pageFrame = getPageFrame();
     if (pageFrame.contentWindow.document.readyState === 'loading') {
         // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
@@ -113,10 +115,8 @@ function restoreToolboxSettingsWhenCkEditorReady(settings) {
     var currentPanel = opts['current'] || '';
     // Before we set stage/level, as it initializes them to 1.
     setCurrentPanel(currentPanel);
-    // Allow each tab to restore its own settings
-    for (var i = 0; i < tabModels.length; i++) {
-        tabModels[i].restoreSettings(settings);
-    }
+    // Note: the bulk of restoring the settings (everything but which if any panel is active)
+    // is done when a tool becomes current.
 }
 function getPageFrame() {
     return parent.window.document.getElementById('page');
@@ -138,8 +138,14 @@ function switchTool(newToolName) {
     if (currentTool !== newTool) {
         if (currentTool)
             currentTool.hideTool();
-        if (newTool && $(parent.window.document).find('#pure-toggle-right').get(0).checked)
+        if (newTool && $(parent.window.document).find('#pure-toggle-right').get(0).checked) {
+            // If we're activating this tool for the first time, restore its settings.
+            if (!newTool.hasRestoredSettings) {
+                newTool.hasRestoredSettings = true;
+                newTool.restoreSettings(savedSettings);
+            }
             newTool.showTool();
+        }
         currentTool = newTool;
     }
 }

@@ -3,6 +3,9 @@ var DecodableReaderModel = (function () {
     function DecodableReaderModel() {
     }
     DecodableReaderModel.prototype.restoreSettings = function (settings) {
+        if (!model)
+            model = new ReaderToolsModel();
+        initializeDecodableReaderTool();
         if (settings['decodableReaderState']) {
             var state = libsynphony.dbGet('drt_state');
             if (!state)

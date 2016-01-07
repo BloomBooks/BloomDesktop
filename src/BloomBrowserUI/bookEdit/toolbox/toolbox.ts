@@ -9,6 +9,7 @@
 var checkMarkString = '&#10004;';
 
 var showingPanel = false;
+var savedSettings: string;
 
 var keypressTimer: any = null;
 
@@ -87,6 +88,7 @@ function showOrHidePanel_click(chkbox) {
 */
 function restoreToolboxSettings(settings: string) {
 
+    savedSettings = settings;
     var pageFrame = getPageFrame();
     if (pageFrame.contentWindow.document.readyState === 'loading') {
         // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
@@ -140,10 +142,8 @@ function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
     // Before we set stage/level, as it initializes them to 1.
     setCurrentPanel(currentPanel);
 
-    // Allow each tab to restore its own settings
-    for (var i = 0; i < tabModels.length; i++) {
-        tabModels[i].restoreSettings(settings);
-    }
+    // Note: the bulk of restoring the settings (everything but which if any panel is active)
+    // is done when a tool becomes current.
 }
 
 function getPageFrame(): HTMLIFrameElement {
@@ -168,8 +168,14 @@ function switchTool(newToolName: string)
     if (currentTool !== newTool) {
         if (currentTool)
             currentTool.hideTool();
-        if (newTool && (<HTMLInputElement>$(parent.window.document).find('#pure-toggle-right').get(0)).checked)
+        if (newTool && (<HTMLInputElement>$(parent.window.document).find('#pure-toggle-right').get(0)).checked) {
+            // If we're activating this tool for the first time, restore its settings.
+            if (!newTool.hasRestoredSettings) {
+                newTool.hasRestoredSettings = true;
+                newTool.restoreSettings(savedSettings);
+            }
             newTool.showTool();
+        }
         currentTool = newTool;
     }
 }
