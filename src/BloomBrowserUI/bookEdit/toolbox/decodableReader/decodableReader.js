@@ -30,10 +30,6 @@ var DecodableReaderModel = (function () {
         $(container).find('.bloom-editable').focusin(function () {
             model.noteFocus(this); // 'This' is the element that just got focus.
         });
-        // and a slightly different one for keypresses
-        $(container).find('.bloom-editable').keypress(function () {
-            model.doKeypressMarkup();
-        });
         $(container).find('.bloom-editable').keydown(function (e) {
             if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) {
                 if (model.currentMarkupType !== MarkupType.None) {
@@ -60,6 +56,9 @@ var DecodableReaderModel = (function () {
     };
     DecodableReaderModel.prototype.hideTool = function () {
         model.setMarkupType(0);
+    };
+    DecodableReaderModel.prototype.updateMarkup = function () {
+        model.doMarkup();
     };
     DecodableReaderModel.prototype.name = function () { return 'decodableReaderTool'; };
     return DecodableReaderModel;

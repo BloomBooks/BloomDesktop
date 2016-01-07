@@ -47,7 +47,6 @@ var ReaderToolsModel = (function () {
         this.setupType = '';
         this.fontName = '';
         this.readableFileExtensions = [];
-        this.keypressTimer = null;
         this.directoryWatcher = null;
         this.maxAllowedWords = 10000;
         // remember words so we can update the counts real-time
@@ -451,59 +450,6 @@ var ReaderToolsModel = (function () {
         return $('.bloom-page', page.contentWindow.document)
             .not('.bloom-frontMatter, .bloom-backMatter')
             .find('.bloom-content1.bloom-editable');
-    };
-    ReaderToolsModel.prototype.doKeypressMarkup = function () {
-        // BL-599: "Unresponsive script" while typing in text.
-        // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
-        // function called "clearTimeout." Because of this, the jQuery method $.isFunction(this.keypressTimer.clearTimeout)
-        // will always return false (since "this.keypressTimer.clearTimeout" is undefined) and the result is a new 500
-        // millisecond timer being created every time the doKeypress method is called, but none of the pre-existing timers
-        // being cleared. The correct way to clear a timeout is to call clearTimeout(), passing it the integer returned by
-        // the function setTimeout().
-        //if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
-        //  this.keypressTimer.clearTimeout();
-        //}
-        if (model.keypressTimer)
-            clearTimeout(model.keypressTimer);
-        model.keypressTimer = setTimeout(function () {
-            // This happens 500ms after the user stops typing.
-            var page = parent.window.document.getElementById('page');
-            if (!page)
-                return; // unit testing?
-            var selection = page.contentWindow.getSelection();
-            var current = selection.anchorNode;
-            var active = $(selection.anchorNode).closest('div').get(0);
-            if (!active || selection.rangeCount > 1 || (selection.rangeCount == 1 && !selection.getRangeAt(0).collapsed)) {
-                return; // don't even try to adjust markup while there is some complex selection
-            }
-            var myRange = selection.getRangeAt(0).cloneRange();
-            myRange.setStart(active, 0);
-            var offset = myRange.toString().length;
-            // In case the IP is somewhere like after the last <br> or between <br>s,
-            // its anchorNode is the div itself, or perhaps one of its spans, and we want to try to put it back
-            // in a comparable position. -1 marks a selection that is at a text level.
-            // other values count the <br> elements immediately before the selection.
-            // I am hoping it doesn't happen that there are <br>s at multiple levels.
-            // Note that the newly marked up version will have any <br>s at the top level only (children of the div).
-            var divBrCount = -1;
-            if (current.nodeType !== 3) {
-                divBrCount = 0;
-                // endoffset counts the number of childNodes that the selection is after.
-                // We want to know how many <br> nodes are between it and the previous non-empty node.
-                for (var k = myRange.endOffset - 1; k >= 0; k--) {
-                    if (current.childNodes[k].localName === 'br')
-                        divBrCount++;
-                    else if (current.childNodes[k].textContent.length > 0)
-                        break;
-                }
-            }
-            var atStart = myRange.endOffset === 0;
-            model.doMarkup();
-            // Now we try to restore the selection at the specified position.
-            EditableDivUtils.makeSelectionIn(active, offset, divBrCount, atStart);
-            // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
-            model.keypressTimer = null;
-        }, 500);
     };
     ReaderToolsModel.prototype.noteFocus = function (element) {
         this.activeElement = element;

@@ -15,6 +15,9 @@ var TalkingBookModel = (function () {
     TalkingBookModel.prototype.hideTool = function () {
         audioRecorder.removeRecordingSetup();
     };
+    TalkingBookModel.prototype.updateMarkup = function () {
+        audioRecorder.updateMarkupAndControlsToCurrentText();
+    };
     TalkingBookModel.prototype.name = function () { return 'talkingBookTool'; };
     return TalkingBookModel;
 })();
