@@ -111,6 +111,7 @@ namespace Bloom
 					if(lower <= RunningVersion && upper >= RunningVersion)
 						return new UpdateTableLookupResult() { URL = parts[2].Trim() };
 				}
+				parsingErrorMsg = string.Format("{0} contains no record for this version of Bloom", GetUrlOfTable());
 			}
 			catch(ApplicationException e)
 			{
