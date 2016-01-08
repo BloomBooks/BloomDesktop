@@ -102,6 +102,29 @@ namespace Bloom.Publish
 		{
 			_adobeReader.printWithDialog();//.printAll();
 		}
+
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
+			if (ParentForm != null)
+				ParentForm.FormClosing += FormClosing;
+		}
+
+		private void FormClosing(object sender, FormClosingEventArgs e)
+		{
+			if (_adobeReader != null)
+			{
+				// This purposely SUPPRESSES the Dispose of _adobeReader that otherwise automatically happens
+				// as the window shuts down. For some reason Dispose of this object is VERY slow; around 16 seconds
+				// on my fast desktop. I don't think it can hang on to any important resources once the app
+				// quits, so just prevent the Dispose.
+				// (I tried various other things, such as loading a non-existent file and catching the resulting
+				// exception, hiding the _adobeReader, Disposing it in advance (in this method)...nothing else
+				// prevented the long delay on shutdown.)
+				this.Controls.Remove(_adobeReader);
+				_adobeReader = null;
+			}
+		}
 	}
 }
 #endif
