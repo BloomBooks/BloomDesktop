@@ -73,7 +73,7 @@ namespace Bloom
 								"Shown when Bloom tries to check for an update but can't, for example becuase it can't connect to the internet, or a problems with our server, etc.");
 							ShowFailureNotification(failMsg);
 						}
-						else if (result.Error == null)
+						else if (result.Error == null || string.IsNullOrWhiteSpace(result.Error.Message))
 						{
 							SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 								"Bloom failed to find if there is an update available, for some unknown reason.");
