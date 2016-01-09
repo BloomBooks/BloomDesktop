@@ -96,3 +96,5 @@ Andika-R.ttf
 *~
 Bloom/
 .vs/config/applicationhost.config
+
+bookSettings.js decodableReader.js readerSettings.js jquery.div-columns.js readerTools.js readerToolsModel.js leveledReader.js audioRecording.js talkingBook.js bloomFieldSpec.js bloomHintBubbles.js bloomNotices.js bloomQtipUtils.js calledByCSharp.js collectionSettings.d.js directoryWatcher.js editableDivUtils.js getIframeChannel.js interIframeChannel.js OverflowChecker.js bloomSourceBubbles.js TopicChooser.js readerSetup.io.js readerSetup.ui.js jquery.alphanum.d.js jquery.i18n.custom.js localizationManager.js localizationManagerSpec.js page-chooser.js SourceBubblesSpec.js StyleEditorSpec.js
