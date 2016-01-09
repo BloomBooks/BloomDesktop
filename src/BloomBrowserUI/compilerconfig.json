@@ -145,6 +145,7 @@
   },
   {
     "outputFile": "bookEdit/toolbox/bookSettings/bookSettings.css",
-    "inputFile": "bookEdit/toolbox/bookSettings/bookSettings.less"
+    "inputFile": "bookEdit/toolbox/bookSettings/bookSettings.less",
+     "minify": {   "enabled": false  }
   }
 ]

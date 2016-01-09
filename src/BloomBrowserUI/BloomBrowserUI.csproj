@@ -372,7 +372,7 @@
     <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
     <OutputPath>..\..\output\web\</OutputPath>
     <DebugType>full</DebugType>
-    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
+    <TypeScriptJSXEmit>React</TypeScriptJSXEmit>
     <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
     <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
     <TypeScriptOutFile />
@@ -383,13 +383,15 @@
     <TypeScriptSourceRoot />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <TypeScriptTarget>ES3</TypeScriptTarget>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
     <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
     <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
+    <TypeScriptJSXEmit>React</TypeScriptJSXEmit>
     <OutputPath>..\..\output\web\</OutputPath>
   </PropertyGroup>
-  <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" />
+  <!--<Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" />-->
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Import Project="..\..\packages\BuildWebCompiler.1.9.287\build\BuildWebCompiler.targets" Condition="Exists('..\..\packages\BuildWebCompiler.1.9.287\build\BuildWebCompiler.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
