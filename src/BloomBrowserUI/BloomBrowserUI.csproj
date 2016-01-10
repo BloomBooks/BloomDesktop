@@ -24,11 +24,13 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>4.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="bookEdit\toolbox\bookSettings\bookSettings.min.css">
-      <DependentUpon>bookSettings.css</DependentUpon>
-    </Content>
     <Content Include="bookEdit\toolbox\bookSettings\icon.svg" />
     <Content Include="bookEdit\toolbox\ReadMe.txt" />
     <Content Include="bookEdit\toolbox\bookSettings\bookSettings.css">
@@ -399,4 +401,5 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\BuildWebCompiler.1.9.287\build\BuildWebCompiler.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\BuildWebCompiler.1.9.287\build\BuildWebCompiler.targets'))" />
   </Target>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v14.0\WebApplications\Microsoft.WebApplication.targets" />
 </Project>
