@@ -1,0 +1,668 @@
+﻿/*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
+.qtip-default {
+  background-color: #faf7cc !important;
+  border-color: #E0DEB7 !important;
+  color: black !important;
+  border-radius: 5px;
+}
+.uibloomSourceTextsBubble {
+  z-index: 15002 !important;
+  background-color: #faf7cc !important;
+  border-color: #E0DEB7 !important;
+  border-width: 2px !important;
+}
+.uibloomSourceTextsBubble.passive-bubble {
+  z-index: 15001 !important;
+}
+.uibloomSourceTextsBubble.passive-bubble .qtip-content {
+  padding-bottom: 0 !important;
+}
+.uibloomSourceTextsBubble .qtip-content {
+  padding: 0 9px 9px !important;
+  overflow: visible !important;
+}
+.ui-sourceTextsForBubble {
+  position: relative;
+  border-color: #E0DEB7;
+  max-height: inherit;
+}
+.ui-sourceTextsForBubble NAV {
+  display: block;
+  height: 34px;
+  margin: 0 -8px;
+  border-top-right-radius: 15px;
+  border-top-left-radius: 15px;
+}
+.ui-sourceTextsForBubble NAV > UL {
+  z-index: 1;
+  background-color: transparent;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  list-style: outside none none;
+  top: 1px;
+  line-height: 22px;
+}
+.ui-sourceTextsForBubble NAV > UL::after {
+  position: absolute;
+  content: "";
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid #faf7cc;
+  z-index: 2;
+}
+.ui-sourceTextsForBubble NAV > UL > LI {
+  font-size: 9pt;
+  height: 31px;
+  border-right: 1px solid #faf7cc;
+  border-top-right-radius: 6px;
+  float: left;
+  flex: 1 0 auto;
+  background-color: #E0DEB7;
+}
+.ui-sourceTextsForBubble NAV > UL > LI:not(:first-child) {
+  border-left: 1px solid #faf7cc;
+  border-top-left-radius: 6px;
+}
+.ui-sourceTextsForBubble NAV > UL > LI:first-child {
+  border-top-left-radius: 15px;
+}
+.ui-sourceTextsForBubble NAV > UL > LI.active {
+  background-color: #faf7cc;
+  border-bottom-color: #faf7cc;
+  z-index: 3;
+}
+.ui-sourceTextsForBubble NAV > UL > LI A {
+  max-width: 79px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
+  padding: 5px;
+  outline: none;
+  text-decoration: none;
+  color: black;
+  font-family: Segoe UI, sans-serif;
+}
+.ui-sourceTextsForBubble NAV > UL > LI A.active {
+  font-weight: bold;
+}
+.ui-sourceTextsForBubble NAV > UL > LI A:hover {
+  text-decoration: underline;
+  background-color: #faf7cc;
+}
+.ui-sourceTextsForBubble .source-text {
+  font-size: 10pt;
+  line-height: 1.5;
+  color: black;
+  padding-top: 4px;
+}
+.ui-sourceTextsForBubble .source-text.active {
+  overflow-y: hidden !important;
+}
+.ui-sourceTextsForBubble .source-text:lang(th),
+.ui-sourceTextsForBubble .source-text:lang(km),
+.ui-sourceTextsForBubble .source-text:lang(kjg),
+.ui-sourceTextsForBubble .source-text:lang(prt) {
+  font-size: 18pt;
+}
+.dropdown-list {
+  max-height: 200px;
+  overflow-y: auto;
+  text-align: left;
+  opacity: 1;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  margin-top: 2px;
+  white-space: nowrap;
+  border: 1px solid #faf7cc;
+  background-color: #E0DEB7 !important;
+  top: 0;
+  font-size: 9pt;
+  z-index: 5;
+}
+.dropdown-list LI:hover {
+  background-color: #faf7cc;
+}
+.dropdown-menu {
+  width: 32px;
+  border: none !important;
+}
+.dropdown-menu:hover UL {
+  display: inline-block;
+}
+.dropdown-menu DIV {
+  margin: 4px 0 0 0;
+  display: block;
+}
+.dropdown-menu DIV::before {
+  content: "(";
+}
+.dropdown-menu DIV::after {
+  content: ")";
+}
+.dropdown-menu UL {
+  display: none;
+}
+.panel-container {
+  border: 1px solid black;
+  padding: 0 10px;
+}
+BODY {
+  background-color: #363333;
+  transform-origin: top left;
+  /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
+  transition: transform 20ms;
+  /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
+}
+.tool-items:after {
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+  font-size: 0;
+}
+.tool-items {
+  display: inline-block;
+}
+.tool-items {
+  /*\*/
+  display: block;
+  /**/
+  -height: 1px;
+}
+/*+}*/
+DIV.bloom-imageContainer {
+  border: 1px solid #C0B9B9;
+}
+.coverColor DIV.bloom-imageContainer {
+  border: thin solid rgba(1, 1, 1, 0.2);
+}
+/*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
+.marginBox DIV.pageLabel {
+  /*+placement:anchor-top-left -1px -29px;*/
+  position: absolute;
+  left: -1px;
+  top: -29px;
+}
+DIV.pageLabel {
+  text-align: left;
+  /*This black with high transparency gives us a grey on white, and a darker color of whatever the colored background is.*/
+  color: rgba(0, 0, 0, 0.2);
+  /*+placement:anchor-top-left 0px 19px;*/
+  position: absolute;
+  left: 15mm;
+  top: 19px;
+  float: left;
+}
+.evenPage DIV.pageLabel {
+  margin-left: 2.5cm;
+}
+.oddPage DIV.pageLabel {
+  margin-left: 1.3cm;
+}
+DIV.page {
+  background-color: #F8F8F8;
+  border: medium outset #000000;
+}
+DIV.page.coverColor {
+  background-color: #D5D5E4;
+  border: medium outset #000000;
+}
+/*We want divs which are used for editing to look just like textareas (e.g. border). For now, this readOnlyInTranslationMode is an indicator that this is edtiable, but there could be divs which are always edtiable... unfortunately we can't access the contentEditable thing itself. Note that borders are made transpartent by the languagedisplay.css, and there is javascript which notices that transparnet border and makes the field read-only.*/
+DIV.readOnlyInTranslationMode {
+  border: thin solid #C0B9B9;
+}
+DIV.hoverUp {
+  background-color: #D5D5E4;
+}
+.imageButton {
+  width: 87px;
+  height: 52px;
+  z-index: 100;
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center center;
+}
+.imageButton.smallButtonWidth {
+  width: 50%;
+  max-width: 87px;
+  border-style: none;
+}
+.imageButton.smallButtonHeight {
+  height: 50%;
+  max-height: 52px;
+  border-style: none;
+}
+.imageButton.changeImageButton {
+  right: 0;
+  top: 0;
+  background-color: #96668F;
+  background-image: url("../img/changeButton.svg");
+}
+.imageButton.pasteImageButton {
+  right: 0;
+  bottom: 0;
+  background-color: #0C8597;
+  background-image: url("../img/pasteButton.svg");
+  background-position: right center;
+}
+.imageButton.pasteImageButton.smallButtonWidth {
+  width: 87px;
+}
+.imageButton.pasteImageButton.smallButtonWidth.verySmallButtons {
+  width: 98%;
+  background-size: 60%;
+}
+.imageButton.editMetadataButton {
+  left: 0;
+  top: 0;
+  background-image: url("../img/imageMetaDataButton.svg") !important;
+  background-color: #3A7F62;
+}
+.imageButton.editMetadataButton.imgMetadataProblem {
+  background-color: transparent;
+  background-image: url("../img/imageMissingMetaData.svg") !important;
+  border: none;
+}
+.hoverUp .imageButton {
+  border: 2px outset #716666 !important;
+  border-radius: 3px !important;
+}
+.hoverUp .imageButton:hover {
+  border: inset #716666 !important;
+}
+.hoverUp .imageButton.editMetadataButton {
+  background-image: none;
+  background-color: #3A7F62 !important;
+}
+BUTTON.miniButton {
+  width: 20px;
+  height: 18px;
+  right: 60px;
+  border: none;
+  position: absolute;
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-color: transparent;
+  z-index: 120;
+}
+BUTTON.miniButton:hover {
+  border: 1px inset #716666;
+}
+BUTTON.miniButton.verySmallButtons {
+  right: 60%;
+}
+BUTTON.miniButton.smallButtonHeight {
+  height: 15%;
+}
+BUTTON.miniButton.verySmallButtons {
+  width: 30%;
+}
+BUTTON.miniButton.cutImageButton {
+  background-image: url("../img/cut.svg");
+  bottom: 27px;
+}
+BUTTON.miniButton.cutImageButton.disabled {
+  background-image: url("../img/cutGrey.svg");
+  pointer-events: none;
+}
+BUTTON.miniButton.cutImageButton.smallButtonHeight {
+  bottom: 26%;
+}
+BUTTON.miniButton.copyImageButton {
+  background-image: url("../img/copy.svg");
+  bottom: 6px;
+}
+BUTTON.miniButton.copyImageButton.disabled {
+  background-image: url("../img/copyGrey.svg");
+  pointer-events: none;
+}
+BUTTON.miniButton.copyImageButton.smallButtonHeight {
+  bottom: 4%;
+}
+BUTTON.deleteButton {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  background-image: url("../img/deleteButtonSmall.png") !important;
+  width: 40px;
+  height: 40px;
+  z-index: 100;
+}
+/*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
+.moveButtonIcon {
+  background-image: url("../img/moveDivButton.png") !important;
+  width: 37px !important;
+  height: 37px !important;
+}
+BUTTON.moveButton {
+  /*+placement:anchor-top-left -19px -17px;*/
+  position: absolute;
+  left: -19px;
+  top: -17px;
+  background-image: url("../img/moveDivButton.png") !important;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  width: 16px;
+  height: 16px;
+  border: 0 hidden #000000;
+  z-index: 1000;
+  background-size: contain;
+}
+TEXTAREA,
+DIV.bloom-editable {
+  border: thin solid #C0B9B9;
+  /*[disabled]min-height:34px;*/
+}
+/*need a darker border when we have a background color*/
+.coverColor TEXTAREA,
+DIV.bloom-editable {
+  border: thin solid rgba(0, 0, 0, 0.2);
+}
+IMG.hoverUp {
+  background-color: #DFDFDF;
+  border: 1px outset #000000;
+}
+TEXTAREA:focus,
+DIV.bloom-editable:focus {
+  border: 1px solid rgba(82, 168, 236, 0.6);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px rgba(82, 168, 236, 0.6);
+  outline: 0;
+}
+TEXTAREA.province {
+  width: 151px;
+  height: 33px;
+}
+.overflow {
+  color: red !important;
+  border: solid thin red !important;
+}
+.overflow p:empty:after {
+  content: '¶';
+}
+.childOverflowingThis {
+  border-bottom: solid thick red !important;
+}
+.Layout-Problem-Detected:before,
+.Layout-Problem-Detected:after {
+  content: attr(layoutproblem);
+  text-align: left;
+  color: red;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: 9pt;
+  line-height: 9pt;
+}
+.fieldInfo-qtip .ui-tooltip-content {
+  border: 0 solid #A03C50;
+  padding: 0px;
+  text-align: right;
+  color: #363333;
+  font-size: 8pt;
+  margin-top: -8px;
+  margin-right: 8px;
+}
+DIV.textWholePage UL {
+  /*+placement:displace 1px -37px;*/
+  position: absolute;
+  margin-left: 1px;
+  margin-top: -37px;
+}
+/*suggested by http://jqueryui.com/docs/Upgrade_Guide_17*/
+.ui-mouseOver .ui-resizable-handle {
+  width: 8px;
+  height: 8px;
+  border: 1px solid #808080;
+  background: #f2f2f2;
+}
+.ui-resizable-n,
+.ui-resizable-s {
+  left: 45%;
+}
+.ui-resizable-e,
+.ui-resizable-w {
+  top: 45%;
+}
+.ui-resizable-se {
+  /*[disabled]bottom:-5px;*/
+  /*[disabled]right:-5px;*/
+}
+DIV.marginBox {
+  border: 1px solid rgba(115, 189, 189, 0.3);
+}
+.bloom-frontMatter DIV.marginBox {
+  /*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
+  border: none;
+}
+.thisOverflowingParent #formatButton {
+  top: 0;
+}
+#formatButton {
+  overflow: hidden;
+  position: absolute;
+  margin-left: 3px;
+  bottom: 0;
+  left: 0;
+  /*The font-size here is weird, but if we don't set it, the growing/shrinking font of the text will actually move the button up/down on the page*/
+  font-size: 10pt;
+  height: 20px;
+  width: 20px;
+}
+#formatButton img {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+#formatButton:Hover {
+  color: #000000;
+}
+/*Toolbox*/
+#pagedragtoolbox {
+  background-color: #FFFFA3;
+  /*+placement:shift 564px -649px;*/
+  position: relative;
+  left: 564px;
+  top: -649px;
+  width: 274px;
+  height: 645px;
+  /*[empty]padding-top:;*/
+  /*[empty]margin-top:;*/
+}
+.ui-resizable,
+.ui-draggable,
+.ui-deletable {
+  border: 1px solid #C1E6CA;
+}
+#pagedragtoolbox IMG {
+  width: 116px;
+}
+#pagedragtoolbox > UL > LI > DIV {
+  border: 1px dotted #787800;
+  margin-top: 34px;
+  /*[empty]padding-top:;*/
+}
+UL.pagedragtoolbox {
+  height: 212px;
+  width: 207px;
+  margin-left: 31px;
+  margin-top: 15px;
+  background-color: transparent;
+}
+UL.pagedragtoolbox LI {
+  display: inline-block;
+  width: 162px;
+}
+TEXTAREA.Heading1-style,
+DIV.bloom-editable.Heading1-style {
+  font-size: 16pt;
+}
+TEXTAREA.Heading2-style,
+DIV.bloom-editable.Heading2-style {
+  font-size: 13pt;
+  font-weight: bold;
+}
+.centered {
+  text-align: center;
+}
+/*Put in little grey language tooltips in the bottom-right of the editable divs*/
+.languageTip,
+.bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):after {
+  position: absolute;
+  right: 0;
+  bottom: 0px;
+  /*Same grey color as pageLabel*/
+  color: rgba(0, 0, 0, 0.2);
+  font-size: small;
+  font-family: Arial, sans-serif;
+  /* Arial matches .qtip-content */
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+}
+.languageTip {
+  /* 'top' is added by javascript (StyleEditor.AttachLanguageTip) based on the height of the element */
+  margin-right: 1px;
+  text-align: right;
+}
+.bloom-editable[contentEditable=true][data-languageTipContent]:not([data-languageTipContent='']):after {
+  content: attr(data-languageTipContent);
+  bottom: 0px;
+  margin-right: 2px;
+}
+/*Simulate the html5 placeholder attribute which is not available on divs
+The :not(:focus) selector here is something we do NOT want. It was added as a workaround for a firefox bug
+https://bugzilla.mozilla.org/show_bug.cgi?id=997749, namely that when the user clicks in an element which
+has a :before rule applied and which already has focus, weird things happen and typing is suppressed.
+When this bug is fixed, or if we can find a better workaround, the :not(:focus) should be removed
+so that when a div has the data-placeholder attribute set, the placeholder will continue to appear
+even when the div is focused (as long as it is empty).*/
+[contentEditable=true][data-placeholder]:empty:not(:focus):before {
+  content: attr(data-placeholder);
+  color: #DDDBDB;
+}
+/*This block handles marking elements that violate decodable book and leveled reader constraints*/
+SPAN.sentence-too-long {
+  background-color: orange;
+}
+.page-too-many-words .marginBox {
+  border: 5px solid orange !important;
+}
+.book-too-many-unique-words .marginBox {
+  border: 5px solid orange !important;
+}
+.book-too-many-words .marginBox {
+  border: 5px solid orange !important;
+}
+.ui-dialog {
+  z-index: 20000;
+}
+SPAN.word-not-found {
+  background-color: #1D94A4;
+  /*bloomblue	   #D65649; /* bloomRed */
+}
+/* We are disabling the "Possible Word" feature at this time.
+SPAN.possible-word
+{
+	-moz-text-decoration-style: wavy;
+	-moz-text-decoration-line: underline;
+	-moz-text-decoration-color: blue;
+}
+*/
+/*
+ * Layout Mode (origami) switch (from proto.io)
+ */
+.onoffswitch {
+  display: inline-block;
+  vertical-align: middle;
+  /* This is the only thing I added custom */
+  position: relative;
+  width: 50px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+  display: none;
+}
+.onoffswitch-label {
+  display: block;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid #999999;
+  border-radius: 0px;
+}
+.onoffswitch-inner {
+  display: block;
+  width: 200%;
+  margin-left: -100%;
+  -moz-transition: margin 0.3s ease-in 0s;
+  -webkit-transition: margin 0.3s ease-in 0s;
+  -o-transition: margin 0.3s ease-in 0s;
+  transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner:before,
+.onoffswitch-inner:after {
+  display: block;
+  float: left;
+  width: 50%;
+  height: 14px;
+  padding: 0;
+  line-height: 10px;
+  font-size: 14px;
+  color: white;
+  font-family: Trebuchet, Arial, sans-serif;
+  font-weight: bold;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.onoffswitch-inner:before {
+  content: "";
+  padding-left: 10px;
+  background-color: #D65649;
+  color: #FFFFFF;
+}
+.onoffswitch-inner:after {
+  content: "";
+  padding-right: 10px;
+  background-color: #CCCCCC;
+  color: #333333;
+  text-align: right;
+}
+.onoffswitch-switch {
+  display: block;
+  width: 14px;
+  margin: 0px;
+  background: #000000;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 36px;
+  -moz-transition: all 0.3s ease-in 0s;
+  -webkit-transition: all 0.3s ease-in 0s;
+  -o-transition: all 0.3s ease-in 0s;
+  transition: all 0.3s ease-in 0s;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+  margin-left: 0;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+  right: 0px;
+}
+div.cke_float div.cke_top {
+  padding: 4px !important;
+}
+div.cke_float div.cke_top span.cke_toolgroup {
+  margin: 0 !important;
+}
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIng6L2Rldi9iMzYvc3JjL0Jsb29tQnJvd3NlclVJL2Jvb2tFZGl0L3NvdXJjZUJ1YmJsZXMvc291cmNlQnViYmxlcy5sZXNzIiwiZWRpdE1vZGUubGVzcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiO0FBUUE7RUFDQyx5QkFBQTtFQUNBLHFCQUFBO0VBQ0EsWUFBQTtFQUNHLGtCQUFBOztBQUtKO0VBS0kseUJBQUE7RUFTSCx5QkFBQTtFQUNBLHFCQUFBO0VBQ0EsNEJBQUE7O0FBVkcseUJBQUM7RUFDRyx5QkFBQTs7QUFESix5QkFBQyxlQUVHO0VBQ0ksNEJBQUE7O0FBVFoseUJBaUJDO0VBQ0MsNkJBQUE7RUFFQSw0QkFBQTs7QUFNRjtFQUNDLGtCQUFBO0VBQ0EscUJBQUE7RUFDRyxtQkFBQTs7QUFISix3QkFJQztFQUNDLGNBQUE7RUFDQSxZQUFBO0VBQ0EsY0FBQTtFQUVBLDZCQUFBO0VBQ0EsNEJBQUE7O0FBVkYsd0JBSUMsSUFPQztFQUNDLFVBQUE7RUFDQSw2QkFBQTtFQUNBLGtCQUFBO0VBQ0EsU0FBQTtFQUNBLFVBQUE7RUFDQSxhQUFBO0VBQ0EsNkJBQUE7RUFDQSxRQUFBO0VBQ0EsaUJBQUE7O0FBQ0Esd0JBakJGLElBT0MsS0FVRTtFQUNBLGtCQUFBO0VBQ0EsU0FBUyxFQUFUO0VBQ0EsV0FBQTtFQUNBLFNBQUE7RUFDQSxPQUFBO0VBQ0EsZ0NBQUE7RUFDQSxVQUFBOztBQTVCSix3QkFJQyxJQU9DLEtBbUJDO0VBQ0MsY0FBQTtFQUNBLFlBQUE7RUFDQSwrQkFBQTtFQUNBLDRCQUFBO0VBQ0EsV0FBQTtFQUNBLGNBQUE7RUFDQSx5QkFBQTs7QUFDQSx3QkFsQ0gsSUFPQyxLQW1CQyxLQVFFLElBQUk7RUFDSiw4QkFBQTtFQUNBLDJCQUFBOztBQUVELHdCQXRDSCxJQU9DLEtBbUJDLEtBWUU7RUFDQSw0QkFBQTs7QUFFRCx3QkF6Q0gsSUFPQyxLQW1CQyxLQWVFO0VBQ0EseUJBQUE7RUFDQSw0QkFBQTtFQUNBLFVBQUE7O0FBaERMLHdC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 */

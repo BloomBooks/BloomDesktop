@@ -1,0 +1,101 @@
+﻿div.toolboxRoot {
+  display: inline-block;
+  background-color: #404040;
+  color: white;
+  font-size: x-small;
+  position: fixed;
+  top: 25px;
+  bottom: 1px;
+  right: 0;
+  width: 200px;
+  z-index: 18000;
+  /* Just over help bubbles, but under topic dialog */
+}
+.ui-accordion-header {
+  -moz-user-select: none;
+}
+td.section {
+  margin-top: 20px;
+  padding-top: 20px;
+}
+span.scroll-button {
+  color: white;
+  float: left;
+}
+div.ui-accordion {
+  padding-left: 0;
+  padding-right: 0;
+}
+div.ui-accordion-content {
+  padding-left: 3px !important;
+  padding-right: 0 !important;
+}
+div.section {
+  padding-top: 20px;
+  color: lightskyblue;
+}
+div.clear,
+table.clear {
+  clear: both;
+}
+.hidden {
+  display: none !important;
+}
+.align-top {
+  vertical-align: top;
+}
+input[type="checkbox"] {
+  color: #fff;
+  background-color: transparent;
+  border-color: #fff;
+}
+div.checkbox {
+  width: 11px !important;
+  height: 11px !important;
+  border: 1px solid #fff;
+  display: inline-block;
+  position: relative;
+  float: left;
+  margin: 2px 6px 6px;
+  font-size: 17px;
+  overflow: visible;
+  line-height: 4px;
+  cursor: pointer;
+  -moz-user-select: none;
+}
+div.checkbox-label {
+  position: relative;
+  float: left;
+  -moz-user-select: none;
+  cursor: default;
+}
+.ui-accordion h3[data-panelId="decodableReaderTool"],
+.ui-accordion h3[data-panelId="leveledReaderTool"],
+.ui-accordion h3[data-panelId="talkingBookTool"] {
+  padding-left: 28px;
+}
+.ui-accordion h3[data-panelId="decodableReaderTool"] span.ui-accordion-header-icon,
+.ui-accordion h3[data-panelId="leveledReaderTool"] span.ui-accordion-header-icon {
+  background-size: 16px 16px;
+  background-position: 0 0;
+  display: inline-block;
+}
+.ui-accordion h3[data-panelId="talkingBookTool"] span.ui-accordion-header-icon {
+  background-size: 12px 16px;
+  background-position: 2px 0;
+  display: inline-block;
+}
+.ui-accordion h3[data-panelId="decodableReaderTool"] span.ui-accordion-header-icon {
+  background-image: url('/bloom/images/keys-white.png') !important;
+}
+.ui-accordion h3[data-panelId="leveledReaderTool"] span.ui-accordion-header-icon {
+  background-image: url('/bloom/images/steps-white.png') !important;
+}
+.ui-accordion h3[data-panelId="talkingBookTool"] span.ui-accordion-header-icon {
+  background-image: url('/bloom/images/microphone-white.svg') !important;
+}
+.ui-dialog,
+.ui-widget-overlay {
+  z-index: 20000;
+}
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInRvb2xib3gubGVzcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxHQUFHO0VBQ0YscUJBQUE7RUFDQSx5QkFBQTtFQUNBLFlBQUE7RUFDQSxrQkFBQTtFQUNBLGVBQUE7RUFDQSxTQUFBO0VBQ0EsV0FBQTtFQUNBLFFBQUE7RUFDQSxZQUFBO0VBQ0EsY0FBQTs7O0FBR0Q7RUFBdUIsc0JBQUE7O0FBQ3ZCLEVBQUU7RUFBVyxnQkFBQTtFQUFrQixpQkFBQTs7QUFDL0IsSUFBSTtFQUFpQixZQUFBO0VBQWMsV0FBQTs7QUFDbkMsR0FBRztFQUFnQixlQUFBO0VBQWlCLGdCQUFBOztBQUNwQyxHQUFHO0VBQXdCLDRCQUFBO0VBQThCLDJCQUFBOztBQUN6RCxHQUFHO0VBQVcsaUJBQUE7RUFBbUIsbUJBQUE7O0FBQ2pDLEdBQUc7QUFBUSxLQUFLO0VBQVMsV0FBQTs7QUFDekI7RUFBVSx3QkFBQTs7QUFDVjtFQUFhLG1CQUFBOztBQUViLEtBQUs7RUFDSixXQUFBO0VBQ0EsNkJBQUE7RUFDQSxrQkFBQTs7QUFHRCxHQUFHO0VBQ0Ysc0JBQUE7RUFDQSx1QkFBQTtFQUNBLHNCQUFBO0VBQ0EscUJBQUE7RUFDQSxrQkFBQTtFQUNBLFdBQUE7RUFDQSxtQkFBQTtFQUNBLGVBQUE7RUFDQSxpQkFBQTtFQUNBLGdCQUFBO0VBQ0EsZUFBQTtFQUNBLHNCQUFBOztBQUdELEdBQUc7RUFDRixrQkFBQTtFQUNBLFdBQUE7RUFDQSxzQkFBQTtFQUNBLGVBQUE7O0FBR0QsYUFBYyxHQUFFO0FBQ2hCLGFBQWMsR0FBRTtBQUNoQixhQUFjLEdBQUU7RUFDZixrQkFBQTs7QUFHRCxhQUFjLEdBQUUsb0NBQXFDLEtBQUk7QUFDekQsYUFBYyxHQUFFLGtDQUFtQyxLQUFJO0VBQ3RELDBCQUFBO0VBQ0Esd0JBQUE7RUFDQSxxQkFBQTs7QUFHRCxhQUFjLEdBQUUsZ0NBQWlDLEtBQUk7RUFDcEQsMEJBQUE7RUFDQSwwQkFBQTtFQUNBLHFCQUFBOztBQUdELGFBQWMsR0FBRSxvQ0FBcUMsS0FBSTtFQUN4RCxzQkFBcUIsK0JBQXJCOztBQUdELGFBQWMsR0FBRSxrQ0FBbUMsS0FBSTtFQUN0RCxzQkFBcUIsZ0NBQXJCOztBQUdELGFBQWMsR0FBRSxnQ0FBaUMsS0FBSTtFQUNwRCxzQkFBcUIscUNBQXJCOztBQU1EO0FBQVk7RUFDVixjQUFBIiwiZmlsZSI6InVuZGVmaW5lZCJ9 */

@@ -1,0 +1,21 @@
+﻿#topicList .ui-widget-content {
+  background: inherit;
+  color: black;
+  border: none;
+  cursor: pointer;
+}
+#topicList li {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+#topicList .ui-selected {
+  font-weight: bold;
+}
+/* note, we can't get at the style of the dialog itself, because it isn't in the scope that activates this css
+If we wer ever motivated enough to do that, see here: http://stackoverflow.com/questions/2199888/custom-css-scope-and-jquery-ui-dialog-themes
+But more likely we'd just get a Bloom Dialog theme going and so we wouldn't care about customizing it just for this chooser
+div.ui-dialog div.ui-dialog-titlebar {
+  background: darkgray;
+}
+*/
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInRvcGljQ2hvb3Nlci5sZXNzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLFVBQVc7RUFDUCxtQkFBQTtFQUNBLFlBQUE7RUFDQSxZQUFBO0VBQ0EsZUFBQTs7QUFHSixVQUFXO0VBQ1Asa0JBQUE7RUFDQSxtQkFBQTs7QUFHSixVQUFXO0VBQ1AsaUJBQUEiLCJmaWxlIjoidW5kZWZpbmVkIn0= */
