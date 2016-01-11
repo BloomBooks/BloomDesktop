@@ -132,6 +132,9 @@ StyleEditor.js
 bloomField.js
 synphonyApi.js
 toolbox.js
+errorHandler.js
+cSharpDependencyInjector.js
+readerSettings.js
 
 # CSS files that are generated from LESS
 bloomEpubPreview.css

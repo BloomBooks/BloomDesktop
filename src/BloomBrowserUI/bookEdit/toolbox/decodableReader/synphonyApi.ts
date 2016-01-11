@@ -1,5 +1,5 @@
 /// <reference path="libsynphony/synphony.d.ts" />
-/// <reference path="libsynphony/underscore-1.5.2.d.ts" />
+/// <reference path="../../../typings/underscore/underscore.d.ts" />
 /// <reference path="../../../typings/jquery/jquery.d.ts" />
 /// <reference path="readerSettings.ts" />
 

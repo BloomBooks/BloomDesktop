@@ -1,11 +1,13 @@
 /// <binding BeforeBuild='default' />
 var gulp = require('gulp');  
 var debug = require('gulp-debug');
+var ts = require('gulp-typescript');
 var less = require('gulp-less');
 var jade = require('gulp-jade');
 var path = require('path');
 var paths = {
-  less: ['./**/*.less',  '!./node_modules/**/*.less'],
+   typescript: ['./**/*.ts','!./**/*.d.ts'],
+   less: ['./**/*.less',  '!./node_modules/**/*.less'],
   jade: ['./**/*.jade',  '!./node_modules/**/*.jade']
 };
 //Currently we are putting all css's into the same directories as the less
@@ -26,10 +28,18 @@ gulp.task('jade', function () {
     .pipe(gulp.dest('./')); //drop all css's into the same dirs.
 });
 
+gulp.task('typescript', function () {
+  return gulp.src(paths.typescript)
+    .pipe(debug({title: 'typescript:'}))
+    .pipe(ts())
+    .pipe(gulp.dest('./')); //drop all js's into the same dirs.
+});
+
 // Rerun the task when a file changes
 gulp.task('watch', function() {
+  gulp.watch(paths.typescript, ['typescript']),
   gulp.watch(paths.less, ['less']),
   gulp.watch(paths.jade, ['jade']);
 });
 
-gulp.task('default', ['less', 'jade']);
+gulp.task('default', ['typescript', 'less', 'jade']);
