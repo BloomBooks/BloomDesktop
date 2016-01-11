@@ -24,16 +24,27 @@ namespace BloomTests
 			Assert.IsEmpty(t.LookupURLOfUpdate().URL);
 		}
 
-		[Test, Ignore("Broken by 253bc70c10c5304092c16efd51855c2278430269")]
-		public void LookupURLOfUpdate_AllWell_ReportsNoConnectivityError()
+		[Test]
+		public void LookupURLOfUpdate_NoLineForDesiredVersion_ReportsError()
 		{
 			var t = new UpdateVersionTable();
 			t.TextContentsOfTable = @"0.0.0,3.1.99999, http://first.com/first";
 			t.RunningVersion = Version.Parse("3.2.0");
 			var lookupResult = t.LookupURLOfUpdate();
-			Assert.IsFalse(lookupResult.IsConnectivityError);
-			Assert.IsNullOrEmpty(lookupResult.Error.Message);
 			Assert.IsNullOrEmpty(lookupResult.URL);
+			Assert.That(lookupResult.Error.Message, Is.EqualTo("http://bloomlibrary.org/channels/UpgradeTableTestChannel.txt contains no record for this version of Bloom"));
+		}
+
+		[Test]
+		public void LookupURLOfUpdate_AllWell_ReportsNoErrorAndReturnsUrl()
+		{
+			var t = new UpdateVersionTable();
+			t.TextContentsOfTable = @"0.0.0,3.2.99999, http://first.com/first";
+			t.RunningVersion = Version.Parse("3.2.0");
+			var lookupResult = t.LookupURLOfUpdate();
+			Assert.IsFalse(lookupResult.IsConnectivityError);
+			Assert.IsNull(lookupResult.Error);
+			Assert.That(lookupResult.URL, Is.EqualTo("http://first.com/first"));
 		}
 
 		[Test]
