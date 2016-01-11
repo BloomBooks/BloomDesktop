@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "karma start --browsers Firefox"
+    "test": "karma start --browsers Firefox",
+    "build": "gulp"
   },
   "repository": {
     "type": "git",
