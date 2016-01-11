@@ -77,9 +77,6 @@
     <Reference Include="LibChorus">
       <HintPath>..\..\lib\dotnet\LibChorus.dll</HintPath>
     </Reference>
-    <Reference Include="PalasoUIWindowsForms">
-      <HintPath>..\..\lib\dotnet\PalasoUIWindowsForms.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BloomHtmlFileTypeHandler.cs" />
