@@ -1,5 +1,5 @@
 ﻿mixin field
-  .bloom-content1.bloom-editable(contenteditable='true')(attributes)
+  .bloom-content1.bloom-editable(contenteditable='true')&attributes(attributes)
     block
 
 doctype html
@@ -32,9 +32,9 @@ html
         margin-top: 0;
         margin-bottom: 0;
       }
-	  p{
-		 min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
-		}
+      p{
+         min-height: 1em; //without this, an empty paragraph will be invisible, making blank lines impossible
+        }
 
       #hasEmbeddedImage {
         height: 300px;

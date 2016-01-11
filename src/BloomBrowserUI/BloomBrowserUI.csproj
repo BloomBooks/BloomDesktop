@@ -33,9 +33,6 @@
   <ItemGroup>
     <Content Include="bookEdit\toolbox\bookSettings\icon.svg" />
     <Content Include="bookEdit\toolbox\ReadMe.txt" />
-    <Content Include="bookEdit\toolbox\bookSettings\bookSettings.css">
-      <DependentUpon>bookSettings.less</DependentUpon>
-    </Content>
     <Content Include="bookEdit\toolbox\talkingBook\audioRecording.css">
       <DependentUpon>audioRecording.less</DependentUpon>
     </Content>
@@ -57,12 +54,10 @@
       <DependentUpon>TemplatePagesThumbnailList.less</DependentUpon>
     </Content>
     <Content Include="bookEdit\BookPagesThumbnailList\TemplatePagesThumbnailList.htm" />
-    <Content Include="bookEdit\bloomField\test.htm" />
     <Content Include="bookEdit\bloomField\bloomField.ts" />
     <Content Include="bookEdit\css\bloomDialog.css">
       <DependentUpon>bloomDialog.less</DependentUpon>
     </Content>
-    <Content Include="bookEdit\css\BookPagesThumbnailList.css" />
     <Content Include="bookEdit\css\origami.css">
       <DependentUpon>origami.less</DependentUpon>
     </Content>
@@ -74,6 +69,7 @@
     <Content Include="bookEdit\toolbox\talkingBook\audioRecording.less" />
     <Content Include="bookEdit\toolbox\decodableReader\decodableReader.jade" />
     <Content Include="bookEdit\toolbox\leveledReader\leveledReader.jade" />
+    <Content Include="bookEdit\bloomField\test.jade" />
     <None Include="bookEdit\sourceBubbles\sourceBubbles.less" />
     <Content Include="bookEdit\EditViewFrame.htm" />
     <Content Include="bookEdit\html\font-awesome\css\font-awesome.min.css" />
@@ -149,9 +145,6 @@
     <Content Include="bookEdit\sourceBubbles\sourceBubbles.css">
       <DependentUpon>sourceBubbles.less</DependentUpon>
     </Content>
-    <Content Include="bookEdit\StyleEditor\StyleEditor.css">
-      <DependentUpon>StyleEditor.less</DependentUpon>
-    </Content>
     <Content Include="bookEdit\test\cSharpDependencyInjector.js" />
     <Content Include="bookEdit\test\interIframeChannelInitializer.js" />
     <Content Include="bookEdit\test\libsynphony\jquery.text-markup.test.js" />
@@ -184,6 +177,7 @@
     <Content Include="collection\thumbnail.css" />
     <Content Include="epub\baseEpub.css" />
     <Content Include="epub\bloomEpubPreview.htm" />
+    <Content Include="gulpfile.js" />
     <Content Include="images\.guidsForInstaller.xml" />
     <Content Include="images\a5Portrait.svg" />
     <Content Include="images\experiment.png" />
@@ -326,16 +320,9 @@
     <Content Include="bookLayout\CommonBasePageEpub.less" />
     <Content Include="bookEdit\toolbox\bookSettings\bookSettings.less" />
     <Content Include="bookEdit\toolbox\bookSettings\bookSettings.jade" />
-    <None Include="compilerconfig.json" />
-    <Content Include="compilerconfig.json.defaults">
-      <DependentUpon>compilerconfig.json</DependentUpon>
-    </Content>
     <Content Include="packages.config" />
     <Content Include="epub\baseEpub.less" />
     <Content Include="epub\bloomEpubPreview.less" />
-    <Content Include="compilerconfig.json.bindings">
-      <DependentUpon>compilerconfig.json</DependentUpon>
-    </Content>
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -384,4 +371,23 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\BuildWebCompiler.1.9.287\build\BuildWebCompiler.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\BuildWebCompiler.1.9.287\build\BuildWebCompiler.targets'))" />
   </Target>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v14.0\WebApplications\Microsoft.WebApplication.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:51104/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>
