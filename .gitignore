@@ -96,6 +96,8 @@ Andika-R.ttf
 *~
 Bloom/
 .vs/config/applicationhost.config
+
+# javascript files that are generated from Typescript
 bookSettings.js
 decodableReader.js
 jquery.div-columns.js
@@ -131,3 +133,45 @@ bloomField.js
 synphonyApi.js
 toolbox.js
 
+# CSS files that are generated from LESS
+bloomEpubPreview.css
+TemplatePagesThumbnailList.css
+StyleEditor.css
+topicChooser.css
+bloomDialog.css
+editMode.css
+editPaneGlobal.css
+origami.css
+qtipOverrides.css
+sourceBubbles.css
+bookSettings.css
+readerSettings.js
+readerSetup.css
+readerTools.css
+audioRecording.css
+toolbox.css
+CommonBasePageEpub.css
+basePage.css
+baseEpub.css
+page-chooser.css
+previewMode.css
+BookPagesThumbnailList.css
+tab.winclassic.css
+
+# html files that are generated from JADE
+EditViewFrame.html
+test.html
+PageElements.html
+bookSettings.html
+decodableReader.html
+ReaderSetup.html
+leveledReader.html
+Settings.html
+talkingBook.html
+toolbox.html
+blank-preview.html
+page-chooser-mixins.html
+page-chooser-main.html
+OverflowAncestorTestPage.html
+OverflowMarginTestPage.html
+OverflowTestPage.html

@@ -19,5 +19,12 @@
     "jquery": "^1.11.3",
     "jquery.hotkeys": "^0.1.0",
     "toastr": "^2.1.2"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-debug": "^2.1.2",
+    "gulp-jade": "^1.1.0",
+    "gulp-less": "^3.0.5",
+    "path": "^0.12.7"
   }
 }
