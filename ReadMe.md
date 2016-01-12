@@ -1,6 +1,13 @@
-[![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Wrapper-Trigger-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Wrapper-Trigger-debug/)
+##Let's Grow Some Libraries##
+Bloom Desktop is an [award winning](http://allchildrenreading.org/sil-international-wins-enabling-writers-prize-for-software-solution-to-childrens-book-shortage/) software solution to children's book shortage among most of the world's languages. It is application for Windows and Linux that dramatically "lowers the bar" for creating, translating, and sharing books, so that communities can do the work for themselves instead of depending on outsiders.
 
-Bloom Desktop is a hybrid c#/javascript/html/css application for Windows and Linux that dramatically "lowers the bar" for language communities who want books in their own languages. Bloom delivers a low-training, high-output system where mother tongue speakers and their advocates work together to foster both community authorship and access to external material in the vernacular.
+Internally, Bloom is also an odd beast. It started as a c#/winforms app with an embedded browser for editing documents and an embedded Adobe Acrobat for displaying PDF outputs. It wants to grow up to be a pure offline-capable web app. In its current adolescence, Bloom is hybrid of c#/web app in which things are gradually moving to the web side.
+
+|            | Windows | Linux |
+| :--------: | :-----: | :---: |
+| Build      | ![http://build.palaso.org/viewType.html?buildTypeId=bt222&guest=1](https://img.shields.io/teamcity/http/build.palaso.org/s/bt222.svg?style=flat)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug/) |
+| .net Unit tests | (part of above build)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug-Tests/)|
+| JS Unit tests   | ![http://build.palaso.org/viewType.html?buildTypeId=bt430&guest=1](https://img.shields.io/teamcity/http/build.palaso.org/s/bt430.svg?style=flat)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master--JSTests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master--JSTests/)|
 
 # Development Process
 
@@ -12,12 +19,6 @@ We use [YouTrack](https://silbloom.myjetbrains.com) Kanban boards. Errors (via e
 ## Continuous Build System
 
 Each time code is checked in, an automatic build begins on our [TeamCity build server](http://build.palaso.org/project.html?projectId=project16&amp;tab=projectOverview), running all the unit tests. Similarly, when there is a new version of some Bloom dependency (e.g. Palaso, PdfDroplet, our fork of GeckoFX), that server automatically rebuilds Bloom. This automatic build doesn't publish a new installer, however. That kind of build is launched manually, by pressing a button on the TeamCity page. This "publish" process builds Bloom, makes and installer, rsyncs it to the distribution server, and writes out a little bit of html which the [Bloom download page](http://bloomlibrary.org/#/installers) then displays to the user.
-
-|            | Windows | Linux |
-| :--------: | :-----: | :---: |
-| Build      | ![http://build.palaso.org/viewType.html?buildTypeId=bt222&guest=1](https://img.shields.io/teamcity/http/build.palaso.org/s/bt222.svg?style=flat)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug/) |
-| .net Unit tests | (part of above build)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug-Tests/)|
-| JS Unit tests   | ![http://build.palaso.org/viewType.html?buildTypeId=bt430&guest=1](https://img.shields.io/teamcity/http/build.palaso.org/s/bt430.svg?style=flat)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master--JSTests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master--JSTests/)|
 
 ## Building Web Source Code ##
 
