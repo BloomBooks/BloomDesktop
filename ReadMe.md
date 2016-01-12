@@ -31,7 +31,9 @@ This will build and test the Typescript, javascript, less, and jade:
     npm run build
     npm test
 
-Here npm is really just running some gulp scripts, defined in gulpfile.js. Note that when you're using Visual Studio, the "Task Runner Explorer" can be used to start those gulp tasks, and VS should run the "default" gulp task each time it does a build.
+Here npm is really just running some gulp scripts, defined in gulpfile.js. Note that when you're using Visual Studio, the "Task Runner Explorer" can be used to start those gulp tasks, and VS should run the "default" gulp task each time it does a build. To make it run this each time you do a "run", though, make sure you've turned off this option:
+
+    Tools:Options:Projects and Solutions:Build and Run:Only build startup projects and dependencies on Run
 
 ## Building C# Source Code ##
 
