@@ -367,7 +367,7 @@ class ReaderToolsModel {
     }
 
     var div = $('div.wordList');
-    div.css('font-family', model.fontName);
+    div.css('font-family', this.fontName);
 
     ReaderToolsModel.updateElementContent("wordList", result);
 

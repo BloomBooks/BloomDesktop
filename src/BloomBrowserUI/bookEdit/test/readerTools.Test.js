@@ -160,6 +160,7 @@ describe("Bloom Edit Controls tests", function() {
     it("sorts word list correctly when sort buttons clicked", function() {
 
         model.setStageNumber(2);
+        model.ckEditorLoaded = true; // some things only happen once the editor is loaded; pretend it is.
         ReaderToolsModel.updateElementContent.calls.reset();
 
         // Default is currently alphabetic
@@ -217,6 +218,7 @@ describe("Bloom Edit Controls tests", function() {
     });
 
     it ("updates word list on init", function() {
+        model.ckEditorLoaded = true; // some things only happen once the editor is loaded; pretend it is.
         model.updateControlContents();
         expect(ReaderToolsModel.updateElementContent).toHaveBeenCalledWith("wordList", '<div class="word">catty</div><div class=\"word sight-word\">feline</div><div class="word">rate</div><div class=\"word sight-word\">rodent</div><div class="word">sat</div>');
     });
