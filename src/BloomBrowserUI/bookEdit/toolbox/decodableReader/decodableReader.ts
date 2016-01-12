@@ -24,12 +24,16 @@ class DecodableReaderModel implements ITabModel {
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
         // Enhance: at present, model is a global variable defined by readerToolsModel. Try to encapsulate it, or at least give a more specific name.
         // invoke function when a bloom-editable element loses focus.
-        $(container).find('.bloom-editable').focusout(function() {
-            model.doMarkup();
+        $(container).find('.bloom-editable').focusout(function () {
+            if (model) {
+                model.doMarkup();
+            }
         });
 
-        $(container).find('.bloom-editable').focusin(function() {
-            model.noteFocus(this); // 'This' is the element that just got focus.
+        $(container).find('.bloom-editable').focusin(function () {
+            if (model) {
+                model.noteFocus(this); // 'This' is the element that just got focus.
+            }
         });
 
         $(container).find('.bloom-editable').keydown(function(e) {
