@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "karma start --browsers Firefox",
+    "teamcitytest":"karma start karma.conf.js --browsers Chrome --reporters teamcity --single-run",
     "build": "gulp"
   },
   "repository": {
