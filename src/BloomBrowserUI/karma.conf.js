@@ -1,5 +1,9 @@
-// Karma configuration
-// Generated on Wed Oct 23 2013 16:38:14 GMT-0700 (Pacific Daylight Time)
+/* note: when you run karma, you'll get a failure for every <script> and <link> in the html, because
+those start with "/bloom". While the Bloom server strips those off, karma doesn't. Seems like
+Karma's "proxies" argument should be able to do that, but I haven't been successful.
+
+Meanwhile, this file specifies every needed file, so that the tests still pass. 
+*/
 
 module.exports = function (config) {
     config.set({

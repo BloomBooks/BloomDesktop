@@ -27,6 +27,11 @@
     "gulp-jade": "^1.1.0",
     "gulp-less": "^3.0.5",
     "gulp-typescript": "^2.10.0",
+    "jasmine": "^2.4.1",
+    "karma": "^0.13.19",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-firefox-launcher": "^0.1.7",
+    "karma-jasmine": "^0.3.6",
     "path": "^0.12.7"
   }
 }

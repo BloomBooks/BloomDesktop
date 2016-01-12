@@ -1,1 +1,1 @@
-karma start --browsers Firefox
+node_modules\.bin\karma start --browsers Firefox
