@@ -1,7 +1,7 @@
 ##Let's Grow Some Libraries##
 Bloom Desktop is an [award winning](http://allchildrenreading.org/sil-international-wins-enabling-writers-prize-for-software-solution-to-childrens-book-shortage/) software solution to children's book shortage among most of the world's languages. It is application for Windows and Linux that dramatically "lowers the bar" for creating, translating, and sharing books, so that communities can do the work for themselves instead of depending on outsiders.
 
-Internally, Bloom is also an odd beast. It started as a c#/winforms app with an embedded browser for editing documents and an embedded Adobe Acrobat for displaying PDF outputs. It wants to grow up to be a pure offline-capable web app. In its current adolescence, Bloom is hybrid of c#/web app in which things are gradually moving to the web side.
+Internally, Bloom is a hybrid. It started as a c#/winforms app with an embedded browser for editing documents and an embedded Adobe Acrobat for displaying PDF outputs. It wants to grow up to be a pure react-driven offline-capable web app, perhaps with a c# backend. In its current adolescence, Bloom is hybrid of c#/web app in which the UI is gradually moving to the web side.
 
 |            | Windows | Linux |
 | :--------: | :-----: | :---: |
