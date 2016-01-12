@@ -60,7 +60,8 @@ module.exports = function (config) {
             'bookEdit/toolbox/toolbox.js',
             'bookEdit/test/*.js',
             'bookEdit/test/libsynphony/*.test.js',
-            'bookEdit/toolbox/decodableReader/readerSettings.js'
+            'bookEdit/toolbox/decodableReader/readerSettings.js',
+            'bookEdit/toolbox/decodableReader/jquery.div-columns.js'
         ],
         // test results reporter to use
         // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'

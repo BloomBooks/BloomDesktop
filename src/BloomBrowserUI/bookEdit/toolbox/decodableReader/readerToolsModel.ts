@@ -406,7 +406,7 @@ class ReaderToolsModel {
       result += '<div class="letter">' + letter + '</div>';
     }
     var div = $('div.letterList');
-    div.css('font-family', model.fontName);
+    div.css('font-family', this.fontName);
 
     ReaderToolsModel.updateElementContent("letterList", result);
 
