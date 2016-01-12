@@ -1,4 +1,4 @@
-/// <reference path="libsynphony/underscore-1.5.2.d.ts" />
+/// <reference path="../../../typings/underscore/underscore.d.ts" />
 
 /**
  * Decodable Leveled Reader Settings

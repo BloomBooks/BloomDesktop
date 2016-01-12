@@ -1,4 +1,4 @@
-/// <reference path="jquery.d.ts" />
+/// <reference path="../typings/jquery/jquery.d.ts" />
 
 /**
  * This collects javascript exceptions not handled in a try...catch block and forwards them to the server
