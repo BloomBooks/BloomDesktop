@@ -4,14 +4,10 @@ Bloom Desktop is a hybrid c#/javascript/html/css application for Windows and Lin
 
 # Development Process
 
-## RoadMap / Day-to-day progress
+## Kanban / Bug Reports
 
-See the Trello boards:
-[Bloom 2](https://trello.com/b/UA7QLibU/bloom-desktop-2-0), [Bloom 3](https://trello.com/b/ErDHtpNe/bloom-3-0)
+We use [YouTrack](https://silbloom.myjetbrains.com) Kanban boards. Errors (via email or api) also flow into YouTrack, and we do some support from there by @mentioning users.
 
-## Bug Reports
-
-Reports can be entered in [jira](https://jira.sil.org/browse/BL). They can be entered there via email by sending to [issues@bloom.palaso.org](mailto:issues@bloom.palaso.org); things sent there will be visible on the web to anyone who makes an account on the jira system.
 
 ## Continuous Build System
 
@@ -19,19 +15,28 @@ Each time code is checked in, an automatic build begins on our [TeamCity build s
 
 |            | Windows | Linux |
 | :--------: | :-----: | :---: |
-| Build      | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Win32-master-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Win32-master-debug/)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug/) |
-| Unit tests | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Win32-master-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Win32-master-debug-Tests/)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug-Tests/)|
-| JS tests   | | [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master--JSTests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master--JSTests/)|
+| Build      | ![http://build.palaso.org/viewType.html?buildTypeId=bt222&guest=1](https://img.shields.io/teamcity/http/build.palaso.org/s/bt222.svg?style=flat)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug/) |
+| .net Unit tests | (part of above build)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug-Tests/)|
+| JS Unit tests   | ![http://build.palaso.org/viewType.html?buildTypeId=bt430&guest=1](https://img.shields.io/teamcity/http/build.palaso.org/s/bt430.svg?style=flat)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master--JSTests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master--JSTests/)|
 
-## Source Code
+## Building Web Source Code ##
 
-Bloom is written in C# with Winforms, with an embedded Gecko (Firefox) browser and a bunch of jquery-using javascript & Typescript.
+You'll need nodejs installed.
 
-On Windows you'll need at least a 2010 edition of Visual Studio (Version 2010 SP1), including the free Express version.
+This will build and test the Typescript, javascript, less, and jade:
 
-It will avoid some complications if you update to default branch now, before adding the dependencies that follow.
+    cd src/BloomBrowserUI
+    npm install
+    npm run build
+    npm test
 
-### Building the Source Code
+Here npm is really just running some gulp scripts, defined in gulpfile.js. Note that when you're using Visual Studio, the "Task Runner Explorer" can be used to start those gulp tasks, and VS should run the "default" gulp task each time it does a build.
+
+## Building C# Source Code ##
+
+To build the .net/C# part of Bloom, on Windows you'll need at least a 2015 Community edition of Visual Studio (for Linux, see Linux section below).
+
+It will avoid some complications if you update to master branch now, before adding the dependencies that follow.
 
 Before you'll be able to build you'll have to download some binary dependencies (see below).
 
@@ -51,11 +56,16 @@ or
 
 That will take several minutes the first time, and afterwards will be quick as it only downloads what has changed. When you change branches, run this again.
 
-## JADE Sources
-
-We use [JADE](http://www.google.com/url?q=http%3A%2F%2Fjade-lang.com%2F&sa=D&sntz=1&usg=AFQjCNGt56mizPKbPZPjua7fjmzoTXAiEQ) as the source language for html. See [these instructions](https://docs.google.com/a/sil.org/document/d/1dYv-yQ18Jandi1TqDwzXIYrZf3M8NIgIQ8Y0rWlXVAI/edit) for setting up a nice JADE evironment in WebStorm.
 
 #### About Bloom Dependencies
+
+Javascript dependencies should be introduced using 
+
+    npm install <modulename> --save
+
+Typescript definition files should be introduced using
+
+    tsd install <modulename> --save
 
 Our **[Palaso libraries](https://github.com/sillsdev/libpalaso)** hold the classes that are common to multiple products.
 
@@ -101,7 +111,7 @@ At various points you will be asked for your password.
 
 		sudo apt-get install wget
 
-2. Add the SIL keys for the main and testing SIL package repositiories
+2. Add the SIL keys for the main and testing SIL package repositories
 
 		wget -O - http://linux.lsdev.sil.org/downloads/sil-testing.gpg | sudo apt-key add -
 		wget -O - http://packages.sil.org/sil.gpg | sudo apt-key add -
