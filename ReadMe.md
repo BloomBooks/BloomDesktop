@@ -7,7 +7,7 @@ Internally, Bloom is a hybrid. It started as a c#/winforms app with an embedded 
 | :--------: | :-----: | :---: |
 | Build      | ![http://build.palaso.org/viewType.html?buildTypeId=bt222&guest=1](https://img.shields.io/teamcity/http/build.palaso.org/s/bt222.svg?style=flat)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug/) |
 | .net Unit tests | (part of above build)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master-debug-Tests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master-debug-Tests/)|
-| JS Unit tests   | ![http://build.palaso.org/viewType.html?buildTypeId=bt430&guest=1](https://img.shields.io/teamcity/http/build.palaso.org/s/bt430.svg?style=flat)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master--JSTests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master--JSTests/)|
+| JS Unit tests   | (part of above build)| [![Build Status](https://jenkins.lsdev.sil.org/buildStatus/icon?job=Bloom-Linux-any-master--JSTests)](https://jenkins.lsdev.sil.org/view/Bloom/job/Bloom-Linux-any-master--JSTests/)|
 
 # Development Process
 
