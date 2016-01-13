@@ -579,6 +579,7 @@ namespace Bloom.Edit
 		public void SetupServerWithCurrentPageIframeContents()
 		{
 			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			CheckForBL2364("setup");
 			SetPageZoom();
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(_domForCurrentPage.RawDom);
 			if (_currentPage != null)
@@ -908,6 +909,7 @@ namespace Bloom.Edit
 			// So after a change, this eventually gets called. We then ask the page's book to fix things
 			// up so that those boxes are ready to edit
 			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			CheckForBL2364("reset dom in finish save");
 			_currentlyDisplayedBook.UpdateEditableAreasOfElement(_domForCurrentPage);
 
 			//Enhance: Probably we could avoid having two saves, by determing what it is that they entail that is required.
@@ -974,7 +976,7 @@ namespace Bloom.Edit
 						Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
 						throw err;
 					}
-					CheckForBL2364();
+					CheckForBL2364("save");
 					//OK, looks safe, time to save.
 					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage);
 				}
@@ -1034,7 +1036,7 @@ namespace Bloom.Edit
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
 		// to save is not in the book we're trying to save it into.
-		private void CheckForBL2364()
+		private void CheckForBL2364(string when)
 		{
 			try
 			{
@@ -1042,8 +1044,27 @@ namespace Bloom.Edit
 					_domForCurrentPage.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
 				string pageDivId = divElement.GetAttribute("id");
 				if (pageDivId != _pageSelection.CurrentSelection.Id)
+				{
+					// Several reports indicate that this occasionally and unrepeatably happens with various call stacks.
+					// This code is aimed at finding out a little more about the circumstances.
+					try
+					{
+						Logger.WriteEvent("BL2364 failure: pageDiv is {0}", _domForCurrentPage.RawDom.OuterXml);
+						Logger.WriteEvent("BL2364 failure: selection div is {0}", _pageSelection.CurrentSelection.GetDivNodeForThisPage().OuterXml);
+					}
+					catch (Exception)
+					{
+						Logger.WriteEvent("Bl2364: failed to write XML of DOM and selection");
+					}
 					throw new ApplicationException(
-						"Bl-2634: id of _domForCurrentPage is not the same as ID of _pageSelection.CurrentSelection");
+						string.Format(
+							"Bl-2634: id of _domForCurrentPage ({0}) is not the same as ID of _pageSelection.CurrentSelection ({1})",
+							pageDivId, _pageSelection.CurrentSelection.Id));
+				}
+				// By comparing this with the stacks dumped when the check fails, we can hopefully tell whether the DOM or
+				// the Current Selection ID somehow changed, which may help partition the space we need to look in to
+				// solve the problem.
+				Logger.WriteMinorEvent(String.Format("CheckForBl2364({0}: both ids are " + _pageSelection.CurrentSelection.Id, when));
 			}
 			catch (Exception err)
 			{
