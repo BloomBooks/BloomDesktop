@@ -382,6 +382,11 @@ function showToolboxChanged(showing: boolean): void {
     if (currentTool) {
         if (showing) currentTool.hideTool();
         else currentTool.showTool();
+    } else {
+        // starting up for the very first time in this book...no tool is current,
+        // but the talking book tool shows by default.
+        // We need to get it initialized.
+        switchTool('talkingBookTool');
     }
 }
 
