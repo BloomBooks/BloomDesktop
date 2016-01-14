@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "karma start --browsers Firefox",
-    "teamcitytest":"karma start karma.conf.js --browsers Chrome --reporters teamcity --single-run",
+    "teamcitytest": "karma start karma.conf.js --browsers Chrome --reporters teamcity --single-run",
     "build": "gulp"
   },
   "repository": {
@@ -28,6 +28,7 @@
     "gulp-jade": "^1.1.0",
     "gulp-less": "^3.0.5",
     "gulp-typescript": "^2.10.0",
+     "gulp-sourcemaps": "^1.6.0",
     "jasmine": "^2.4.1",
     "karma": "^0.13.19",
     "karma-chrome-launcher": "^0.2.2",

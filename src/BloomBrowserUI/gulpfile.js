@@ -5,6 +5,8 @@ var ts = require('gulp-typescript');
 var less = require('gulp-less');
 var jade = require('gulp-jade');
 var path = require('path');
+var sourcemaps = require('gulp-sourcemaps');
+
 var paths = {
    typescript: ['./**/*.ts','!./**/*.d.ts'],
    less: ['./**/*.less',  '!./node_modules/**/*.less'],
@@ -17,7 +19,9 @@ var paths = {
 gulp.task('less', function () {
   return gulp.src(paths.less)
     .pipe(debug({title: 'less:'}))
+    .pipe(sourcemaps.init())
     .pipe(less())
+    .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('./')); //drop all css's into the same dirs.
 });
 
@@ -31,7 +35,9 @@ gulp.task('jade', function () {
 gulp.task('typescript', function () {
   return gulp.src(paths.typescript)
     .pipe(debug({title: 'typescript:'}))
+    .pipe(sourcemaps.init())
     .pipe(ts())
+    .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('./')); //drop all js's into the same dirs.
 });
 

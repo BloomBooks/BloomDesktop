@@ -20,6 +20,10 @@
   <defs
      id="defs4917">
     <inkscape:path-effect
+       effect="spiro"
+       id="path-effect4893"
+       is_visible="true" />
+    <inkscape:path-effect
        is_visible="true"
        id="path-effect5531"
        effect="spiro" />
@@ -390,9 +394,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.9899495"
-     inkscape:cx="197.17667"
-     inkscape:cy="1466.8379"
+     inkscape:zoom="1.4"
+     inkscape:cx="776.42648"
+     inkscape:cy="1290.5317"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -402,7 +406,20 @@
      inkscape:window-y="468"
      inkscape:window-maximized="1"
      showguides="true"
-     inkscape:guide-bbox="true" />
+     inkscape:guide-bbox="true">
+    <sodipodi:guide
+       position="599.28572,1439.2857"
+       orientation="1,0"
+       id="guide4913" />
+    <sodipodi:guide
+       position="637.85714,1368.5714"
+       orientation="1,0"
+       id="guide4915" />
+    <sodipodi:guide
+       position="652.85714,1428.5714"
+       orientation="1,0"
+       id="guide4917" />
+  </sodipodi:namedview>
   <metadata
      id="metadata4920">
     <rdf:RDF>
@@ -411,7 +428,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -2996,7 +3013,7 @@
            y="215.21935"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#f8f8f8;fill-opacity:1" /></flowRegion><flowPara
          id="flowPara5396">4) Check</flowPara></flowRoot>    <flowRoot
-       transform="translate(523.98172,-420.00049)"
+       transform="translate(525.98172,-420.00049)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#f8f8f8;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="flowRoot5414"
        xml:space="preserve"><flowRegion
@@ -3092,9 +3109,9 @@
        style="fill:#0c8597;fill-opacity:1" />
     <g
        id="g7177"
-       transform="translate(250.86445,-632.17202)">
+       transform="translate(256.86445,-632.17202)">
       <g
-         transform="matrix(0,0.50092951,-0.67234738,0,536.18396,-133.23388)"
+         transform="matrix(0,0.50092951,-0.67234738,0,530.18396,-133.23388)"
          id="g7760-3">
         <rect
            y="193.58995"
@@ -3614,5 +3631,24 @@
            x="126.42857"
            y="215.21935"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#0c8597;fill-opacity:1" /></flowRegion><flowPara
-         id="flowPara5524">1) Check your recording levels:</flowPara></flowRoot>  </g>
+         id="flowPara5524">1) Check your recording levels:</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4883"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#f8f8f8;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="translate(525.96141,-373.635)"><flowRegion
+         id="flowRegion4885"><rect
+           id="rect4887"
+           width="79.999992"
+           height="68.571411"
+           x="126.42857"
+           y="215.21935"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#f8f8f8;fill-opacity:1" /></flowRegion><flowPara
+         id="flowPara4889">Help</flowPara></flowRoot>    <path
+       style="fill:#f8f8f8;fill-opacity:1;fill-rule:evenodd;stroke:#f8f8f8;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 653.375,-144.78065 22.76785,0"
+       id="path4891"
+       inkscape:path-effect="#path-effect4893"
+       inkscape:original-d="m 653.375,-144.78065 22.76785,0"
+       inkscape:connector-curvature="0" />
+  </g>
 </svg>
