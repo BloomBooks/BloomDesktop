@@ -49,7 +49,7 @@ namespace Bloom.Edit
 
 		public static string MakeToolboxContent(Book.Book book)
 		{
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox", "Toolbox.htm");
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox", "toolbox.htm");
 			var toolboxFolder = Path.GetDirectoryName(path);
 
 			var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
