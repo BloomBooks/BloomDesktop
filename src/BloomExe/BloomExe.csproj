@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -1170,11 +1170,13 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   </Target>
   -->
   <Target Name="BeforeBuild">
-    <!-- Copy the appropriate version of icudotnet -->
+    <!-- For Linux, copy the appropriate version of icudotnet -->
     <!-- $(icu-config ...) is passed to shell to exec. -->
     <!-- Escape the $ (%24) to ensure it is sent to the shell. -->
     <Exec Command="cp -p $(SolutionDir)/lib/dotnet/icu%24(icu-config --version|tr -d .|cut -c -2)/icu.net.dll* $(SolutionDir)/lib/dotnet" Condition="'$(OS)'!='Windows_NT'" />
     <Exec Command="[ -e $(SolutionDir)/Mercurial ] || ln -s $(SolutionDir)/Mercurial-%24(uname -m)/Mercurial $(SolutionDir)/Mercurial" Condition="'$(OS)'!='Windows_NT'" />
+    <!-- For Linux, compile the various typescript, jade, and less files in BloomBrowserUI. -->
+    <Exec Condition="'$(OS)'!='Windows_NT'" Command="cd $(SolutionDir)/src/BloomBrowserUI &amp;&amp; npm install &amp;&amp; npm run build" />
   </Target>
   <ItemGroup>
     <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
