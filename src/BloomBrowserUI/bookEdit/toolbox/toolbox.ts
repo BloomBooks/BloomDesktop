@@ -384,9 +384,8 @@ function showToolboxChanged(showing: boolean): void {
         else currentTool.showTool();
     } else {
         // starting up for the very first time in this book...no tool is current,
-        // but the talking book tool shows by default.
-        // We need to get it initialized.
-        switchTool('talkingBookTool');
+        // so select and properly initialize the first one.
+        switchTool($('#toolbox').find(('> h3')).first().attr('data-panelId'));
     }
 }
 
