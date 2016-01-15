@@ -49,7 +49,7 @@ namespace Bloom.Edit
 
 		public static string MakeToolboxContent(Book.Book book)
 		{
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox", "Toolbox.htm");
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox", "Toolbox.html");
 			var toolboxFolder = Path.GetDirectoryName(path);
 
 			var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
@@ -133,7 +133,7 @@ namespace Bloom.Edit
 			AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(
 				toolboxFolder,
 				tool.ToolId,
-				tool.ToolId + ".htm")));
+				tool.ToolId + ".html")));
 			checkedBoxes.Add(tool.ToolId + "Check");
 		}
 
