@@ -133,7 +133,7 @@ namespace Bloom.Edit
 			AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(
 				toolboxFolder,
 				tool.ToolId,
-				tool.ToolId + ".htm")));
+				tool.ToolId + ".html")));
 			checkedBoxes.Add(tool.ToolId + "Check");
 		}
 
