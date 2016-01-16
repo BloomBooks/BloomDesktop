@@ -9,6 +9,7 @@ Standards-Version: 3.9.5
 Build-Depends: debhelper (>= 9.0.0), cli-common-dev (>= 0.8),
  wget, unzip, desktop-file-utils,
  optipng, libsndfile1,
+ npm,
  mono-sil, libgdiplus-sil, geckofx29,
  libenchant-dev, libxklavier-dev, libdconf-dev,
  libicu-dev,
