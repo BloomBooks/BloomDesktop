@@ -1,4 +1,4 @@
-/// <reference path="../../lib/jquery-ui.d.ts" />
+/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="decodableReader/synphonyApi.ts" />
 /// <reference path="decodableReader/readerToolsModel.ts" />
 
@@ -86,8 +86,7 @@ function showOrHidePanel_click(chkbox) {
 /**
 * Called by C# to restore user settings
 */
-function restoreToolboxSettings(settings: string) {
-
+export function restoreToolboxSettings(settings: string) {
     savedSettings = settings;
     var pageFrame = getPageFrame();
     if (pageFrame.contentWindow.document.readyState === 'loading') {
@@ -95,7 +94,7 @@ function restoreToolboxSettings(settings: string) {
         $(pageFrame.contentWindow.document).ready(e => restoreToolboxSettingsWhenPageReady(settings));
         return;
     }
-    this.restoreToolboxSettingsWhenPageReady(settings); // not loading, we can proceed immediately.
+    restoreToolboxSettingsWhenPageReady(settings); // not loading, we can proceed immediately.
 }
 
 

@@ -1,8 +1,11 @@
 ﻿/// <reference path="../toolbox.ts" />
+import { ReaderToolsModel, DRTState, } from "../decodableReader/readerToolsModel";
+import { initializeLeveledReaderTool} from "../decodableReader/readerTools";
+
 
 class LeveledReaderModel implements ITabModel {
     restoreSettings(opts: string) {
-        if (!model) model = new ReaderToolsModel();
+        if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         initializeLeveledReaderTool();
         if (opts['leveledReaderState']) {
             var state = libsynphony.dbGet('drt_state');
@@ -16,16 +19,16 @@ class LeveledReaderModel implements ITabModel {
 
     showTool() {
         // change markup based on visible options
-        model.setCkEditorLoaded(); // we don't call showTool until it is.
-        if (!model.setMarkupType(2)) model.doMarkup();
+        ReaderToolsModel.model.setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!ReaderToolsModel.model.setMarkupType(2)) ReaderToolsModel.model.doMarkup();
     }
 
     hideTool() {
-        model.setMarkupType(0);
+        ReaderToolsModel.model.setMarkupType(0);
     }
 
     updateMarkup() {
-        model.doMarkup();
+        ReaderToolsModel.model.doMarkup();
     }
 
     name() {return 'leveledReaderTool';}

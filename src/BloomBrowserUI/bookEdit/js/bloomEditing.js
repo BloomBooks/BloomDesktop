@@ -302,9 +302,12 @@ function SetupElements(container) {
     var toolbox = getToolbox();
     var toolboxVisible = false;
     // toolbox might be undefined in unit testing?
+   
+    //TODO: how to properly access toolbox from here? this is yet another *#$!% global in our code, grrrr
     if (toolbox) {
-        toolboxVisible = toolbox.toolboxIsShowing();
-        toolbox.configureElementsForTools(container);
+        //TODO: this is broken with the switch to proper TS
+        // toolboxVisible = toolbox.toolboxIsShowing();
+        //toolbox.configureElementsForTools(container);
     }
 
     SetBookCopyrightAndLicenseButtonVisibility(container);

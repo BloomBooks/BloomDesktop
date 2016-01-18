@@ -3,16 +3,19 @@
 /// <reference path="synphonyApi.ts" />
 /// <reference path="libsynphony/jquery.text-markup.d.ts" />
 /// <reference path="jquery.div-columns.ts" />
-/// <reference path="../../../lib/jquery-ui.d.ts" />
+/// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="../../js/editableDivUtils.ts" />
-/// <reference path="../../js/directoryWatcher.ts" />
+/// <reference path="./directoryWatcher.ts" />
 /// <reference path="../../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
 /// <reference path="../toolbox.ts" />
+/// <reference path="directoryWatcher.ts" />
+import {DirectoryWatcher} from "./directoryWatcher";
+import {resizeWordList} from "./readerTools";
 
 var iframeChannel = getIframeChannel();
 
-var model: ReaderToolsModel;
+
 
 var SortType = {
   alphabetic: "alphabetic",
@@ -20,33 +23,34 @@ var SortType = {
   byFrequency: "byFrequency"
 };
 
-var MarkupType = {
+export var MarkupType = {
   None: 0,
   Leveled: 1,
   Decodable: 2
 };
 
-var previousHeight = 0;
-var previousWidth = 0;
-
 var sortIconSelectedClass = "sortIconSelected"; // The class we apply to the selected sort icon
 var disabledIconClass = "disabledIcon"; // The class we apply to icons that are disabled.
 var disabledLimitClass = "disabledLimit"; // The class we apply to max values that are disabled (0).
 
-class DRTState {
+export class DRTState {
   stage: number = 1;
   level: number = 1;
   markupType: number = MarkupType.Decodable;
 }
 
-interface ReaderToolsWindow extends Window {
+export interface ReaderToolsWindow extends Window {
   model: ReaderToolsModel;
   canUndo(): string;
   shouldHandleUndo(): string;
 }
 
-class ReaderToolsModel {
+export class ReaderToolsModel {
 
+  static model: ReaderToolsModel;
+  static previousHeight : number = 0;
+  static previousWidth : number = 0;
+  
   stageNumber: number = 1;
   levelNumber: number = 1;
   synphony: SynphonyApi = new SynphonyApi(); // default state
@@ -98,7 +102,7 @@ class ReaderToolsModel {
   setStageNumber(val: number): void {
 
     // this may result in a need to resize the word list
-    previousHeight = 0;
+    ReaderToolsModel.previousHeight = 0;
 
     var stages = this.synphony.getStages();
     if (val < 1 || val > stages.length) {
@@ -727,8 +731,8 @@ class ReaderToolsModel {
 
   static updateWholeBookCounts(pageSource: string): void {
 
-    model.bookPageWords = JSON.parse(pageSource);
-    model.doMarkup();
+    ReaderToolsModel.model.bookPageWords = JSON.parse(pageSource);
+    ReaderToolsModel.model.doMarkup();
   }
 
   displayBookTotals(): void {
@@ -898,11 +902,11 @@ class ReaderToolsModel {
       // the JavaScript version of Application.DoEvents().
       setTimeout(function() {
 
-        model.wordListLoaded = true;
-        model.updateControlContents(); // needed if user deletes all of the stages.
-        model.doMarkup();
-        model.updateWordList();
-        model.processWordListChangedListeners();
+        ReaderToolsModel.model.wordListLoaded = true;
+        ReaderToolsModel.model.updateControlContents(); // needed if user deletes all of the stages.
+        ReaderToolsModel.model.doMarkup();
+        ReaderToolsModel.model.updateWordList();
+        ReaderToolsModel.model.processWordListChangedListeners();
 
         // write out the ReaderToolsWords-xyz.json file
         iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(lang_data));
@@ -931,8 +935,8 @@ class ReaderToolsModel {
    * @param fileContents
    */
   static setSampleFileContents(fileContents: string): void {
-    model.addWordsFromFile(fileContents);
-    model.getNextSampleFile();
+    ReaderToolsModel.model.addWordsFromFile(fileContents);
+    ReaderToolsModel.model.getNextSampleFile();
   }
 
   /**
@@ -995,7 +999,7 @@ class ReaderToolsModel {
 
   static selectWordsFromAllowedLists(stageNumber: number): string[] {
 
-    var stages: ReaderStage[] = model.getSynphony().getStages(stageNumber);
+    var stages: ReaderStage[] = ReaderToolsModel.model.getSynphony().getStages(stageNumber);
 
     var words: string[] = [];
     for (var i=0; i < stages.length; i++) {
@@ -1004,8 +1008,8 @@ class ReaderToolsModel {
     }
 
     // we are limiting the number of words to maxAllowedWords for performance reasons
-    if (words.length > model.maxAllowedWords) {
-      words = words.slice(0, model.maxAllowedWords);
+    if (words.length > ReaderToolsModel.model.maxAllowedWords) {
+      words = words.slice(0, ReaderToolsModel.model.maxAllowedWords);
     }
 
     return words;
@@ -1030,11 +1034,11 @@ class ReaderToolsModel {
     var msgDiv: JQuery = $(toolbox).find('#allowed-word-list-truncated');
 
     // if the list was truncated, show the message
-    if (words.length < model.maxAllowedWords) {
+    if (words.length < ReaderToolsModel.model.maxAllowedWords) {
       msgDiv.html('');
     }
     else {
-      msgDiv.html(SimpleDotNetFormat($(toolbox).find('#allowed_word_list_truncated_text').html(), [model.maxAllowedWords.toLocaleString()]));
+      msgDiv.html(SimpleDotNetFormat($(toolbox).find('#allowed_word_list_truncated_text').html(), [ReaderToolsModel.model.maxAllowedWords.toLocaleString()]));
     }
 
     return returnVal;
@@ -1090,15 +1094,15 @@ class ReaderToolsModel {
   static setAllowedWordsListList(fileContents: string, stageIndex: number): void {
 
     // remove this one from the count of files remaining
-    model.allowedWordFilesRemaining--;
+    ReaderToolsModel.model.allowedWordFilesRemaining--;
 
-    model.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
+    ReaderToolsModel.model.synphony.getStages()[stageIndex].setAllowedWordsString(fileContents);
 
     // if all loaded...
-    if (model.allowedWordFilesRemaining < 1) {
-      model.wordListLoaded = true;
-      model.updateControlContents();
-      model.doMarkup();
+    if (ReaderToolsModel.model.allowedWordFilesRemaining < 1) {
+      ReaderToolsModel.model.wordListLoaded = true;
+      ReaderToolsModel.model.updateControlContents();
+      ReaderToolsModel.model.doMarkup();
     }
   }
 }

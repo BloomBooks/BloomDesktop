@@ -6,7 +6,7 @@ var npmModules = [
 ];
 
 var scripts = [
-    'lib/jquery-ui/jquery-ui.min.js', // nb: we just rename whatever version of jquery-ui we have to this.
+    'node_modules/jquery-ui/jquery-ui.min.js', // nb: we just rename whatever version of jquery-ui we have to this.
     'lib/jquery.easytabs.js', // we have modified this. Todo: make a github fork of our version
     'lib/jquery.hashchange.min.js',       // needed by easytabs
     'lib/jquery.qtip.js', // currently we have added a fix that may not be needed now. Upgrade?
@@ -43,7 +43,7 @@ var scripts = [
     'bookEdit/toolbox/decodableReader/libsynphony/bloom_xregexp_categories.js',
     'bookEdit/toolbox/decodableReader/libsynphony/synphony_lib.js',
     'bookEdit/toolbox/decodableReader/libsynphony/bloom_lib.js',
-    'bookEdit/toolbox/talkingBook/audioRecording.js'
+    //Review: I'm taking this out hoping it's not needed outside the toolbox: 'bookEdit/toolbox/talkingBook/audioRecording.js'
 ];
 
 var styleSheets = [

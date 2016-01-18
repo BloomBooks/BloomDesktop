@@ -1,4 +1,6 @@
-class CalledByCSharp {
+import { ReaderToolsWindow} from "../toolbox/decodableReader/readerToolsModel";
+
+export class CalledByCSharp {
 
   handleUndo(): void {
       // First see if origami is active and knows about something we can undo.

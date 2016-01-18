@@ -293,7 +293,6 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookPreview/img");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/collection");
-			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/bookEdit/editor");
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI/themes/bloom-jqueryui-theme");
 

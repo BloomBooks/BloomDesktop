@@ -1,0 +1,66 @@
+Hash: 8bd5fe3a2268ca65c266
+Version: webpack 1.12.11
+Time: 3368ms
+               Asset     Size  Chunks             Chunk Names
+    toolboxIFrame.js  1.01 MB    0, 1  [emitted]  toolboxIFrame
+       commonCode.js  3.71 kB       1  [emitted]  common
+toolboxIFrame.js.map  1.38 MB    0, 1  [emitted]  toolboxIFrame
+   commonCode.js.map  3.74 kB       1  [emitted]  common
+chunk    {0} toolboxIFrame.js, toolboxIFrame.js.map (toolboxIFrame) 972 kB {1} [rendered]
+    [0] ./bookEdit/toolbox/index.js 1.1 kB {0} [built]
+    [1] ./~/jquery-ui/jquery-ui.js 436 kB {0} [built]
+        cjs require jquery-ui [0] ./bookEdit/toolbox/index.js 3:0-20
+    [2] ./~/jquery/dist/jquery.js 295 kB {0} [built]
+        cjs require jquery [1] ./~/jquery-ui/jquery-ui.js 1:13-30
+    [3] ./lib/localizationManager/localizationManager.js 12.4 kB {0} [built]
+        cjs require localizationManager/localizationManager.js [0] ./bookEdit/toolbox/index.js 5:0-53
+    [4] ./lib/jquery.i18n.custom.js 1.22 kB {0} [built]
+        cjs require jquery.i18n.custom.js [0] ./bookEdit/toolbox/index.js 7:0-32
+    [5] ./lib/errorHandler.js 622 bytes {0} [built]
+        cjs require errorHandler.js [0] ./bookEdit/toolbox/index.js 9:0-26
+    [6] ./bookEdit/js/editableDivUtils.js 4.32 kB {0} [built]
+        cjs require ../js/editableDivUtils.js [0] ./bookEdit/toolbox/index.js 11:0-36
+    [7] ./bookEdit/js/getIframeChannel.js 722 bytes {0} [built]
+        cjs require ../js/getIframeChannel.js [0] ./bookEdit/toolbox/index.js 13:0-36
+    [8] ./bookEdit/toolbox/decodableReader/directoryWatcher.js 4.2 kB {0} [built]
+        cjs require ./decodableReader/directoryWatcher.js [0] ./bookEdit/toolbox/index.js 15:0-48
+        amd require ./directoryWatcher [18] ./bookEdit/toolbox/decodableReader/readerTools.js 3:0-265:2
+    [9] ./bookEdit/toolbox/decodableReader/libsynphony/underscore_min_152.js 19.9 kB {0} [built]
+        cjs require ./decodableReader/libsynphony/underscore_min_152.js [0] ./bookEdit/toolbox/index.js 17:0-62
+   [10] ./bookEdit/toolbox/decodableReader/libsynphony/bloom_xregexp_categories.js 3.77 kB {0} [built]
+        cjs require ./decodableReader/libsynphony/bloom_xregexp_categories.js [0] ./bookEdit/toolbox/index.js 19:0-68
+   [11] ./bookEdit/toolbox/decodableReader/libsynphony/jquery.text-markup.js 11.7 kB {0} [built]
+        cjs require ./decodableReader/libsynphony/jquery.text-markup.js [0] ./bookEdit/toolbox/index.js 21:0-62
+   [12] ./bookEdit/toolbox/decodableReader/libsynphony/synphony_lib.js 24.1 kB {0} [built]
+        cjs require ./decodableReader/libsynphony/synphony_lib.js [0] ./bookEdit/toolbox/index.js 23:0-56
+   [13] ./bookEdit/toolbox/decodableReader/libsynphony/bloom_lib.js 16.6 kB {0} [built]
+        cjs require ./decodableReader/libsynphony/bloom_lib.js [0] ./bookEdit/toolbox/index.js 25:0-53
+   [14] ./bookEdit/toolbox/decodableReader/synphonyApi.js 3.04 kB {0} [built]
+        cjs require ./decodableReader/synphonyApi.js [0] ./bookEdit/toolbox/index.js 27:0-43
+   [15] ./bookEdit/toolbox/decodableReader/jquery.div-columns.js 2.94 kB {0} [built]
+        cjs require ./decodableReader/jquery.div-columns.js [0] ./bookEdit/toolbox/index.js 29:0-50
+   [16] ./bookEdit/toolbox/decodableReader/readerSettings.js 2.32 kB {0} [built]
+        cjs require ./decodableReader/readerSettings.js [0] ./bookEdit/toolbox/index.js 31:0-46
+   [17] ./bookEdit/toolbox/decodableReader/readerToolsModel.js 44.1 kB {0} [built]
+        cjs require ./decodableReader/readerToolsModel.js [0] ./bookEdit/toolbox/index.js 33:0-48
+        amd require ./readerToolsModel [18] ./bookEdit/toolbox/decodableReader/readerTools.js 3:0-265:2
+        cjs require ./readerToolsModel [19] ./bookEdit/toolbox/decodableReader/decodableReader.js 7:24-53
+        cjs require ../decodableReader/readerToolsModel [20] ./bookEdit/toolbox/leveledReader/leveledReader.js 5:24-70
+   [18] ./bookEdit/toolbox/decodableReader/readerTools.js 13.3 kB {0} [built]
+        cjs require ./decodableReader/readerTools.js [0] ./bookEdit/toolbox/index.js 35:0-43
+        amd require ./readerTools [17] ./bookEdit/toolbox/decodableReader/readerToolsModel.js 3:0-859:2
+        cjs require ./readerTools [19] ./bookEdit/toolbox/decodableReader/decodableReader.js 9:19-43
+        cjs require ../decodableReader/readerTools [20] ./bookEdit/toolbox/leveledReader/leveledReader.js 7:19-60
+   [19] ./bookEdit/toolbox/decodableReader/decodableReader.js 9.77 kB {0} [built]
+        cjs require ./decodableReader/decodableReader.js [0] ./bookEdit/toolbox/index.js 37:0-47
+   [20] ./bookEdit/toolbox/leveledReader/leveledReader.js 2.68 kB {0} [built]
+        cjs require ./leveledReader/leveledReader.js [0] ./bookEdit/toolbox/index.js 39:0-43
+   [21] ./bookEdit/toolbox/talkingBook/talkingBook.js 1.78 kB {0} [built]
+        cjs require ./talkingBook/talkingBook.js [0] ./bookEdit/toolbox/index.js 41:0-39
+   [22] ./bookEdit/toolbox/talkingBook/audioRecording.js 42.5 kB {0} [built]
+        cjs require ./talkingBook/audioRecording.js [0] ./bookEdit/toolbox/index.js 43:0-42
+   [23] ./bookEdit/toolbox/bookSettings/bookSettings.js 1.12 kB {0} [built]
+        cjs require ./bookSettings/bookSettings.js [0] ./bookEdit/toolbox/index.js 45:0-41
+   [24] ./bookEdit/toolbox/toolbox.js 17.1 kB {0} [built]
+        cjs require ./toolbox.js [0] ./bookEdit/toolbox/index.js 47:0-23
+chunk    {1} commonCode.js, commonCode.js.map (common) 0 bytes [rendered]

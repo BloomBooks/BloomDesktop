@@ -1,5 +1,7 @@
 ﻿/// <reference path="../js/calledByCSharp.ts" />
+import {CalledByCSharp} from "../js/calledByCSharp";
 
+import {ReaderToolsModel} from "../toolbox/decodableReader/readerToolsModel";
 interface InjectorWindow extends Window {
 
 
@@ -33,7 +35,7 @@ function ForCodeInspection_UnusedFunctions(): void {
 
   (<InjectorWindow>window).restoreAccordionSettings('');
 
-  var x = model.fontName;
+  var x = ReaderToolsModel.model.fontName;
   var calledByCSharpObj = new CalledByCSharp();
   calledByCSharpObj.removeSynphonyMarkup();
 }

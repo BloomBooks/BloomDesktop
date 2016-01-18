@@ -1,8 +1,15 @@
 ﻿/// <reference path="../toolbox.ts" />
+/// <reference path="./directoryWatcher.ts" />
+/// <reference path="./readerToolsModel.ts" />
+
+import {DirectoryWatcher} from "./directoryWatcher";
+import {DRTState, ReaderToolsModel, MarkupType} from "./readerToolsModel";
+import {initializeDecodableReaderTool} from "./readerTools";
+
 
 class DecodableReaderModel implements ITabModel {
     restoreSettings(settings: string) {
-        if (!model) model = new ReaderToolsModel();
+        if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         initializeDecodableReaderTool();
         if (settings['decodableReaderState']) {
             var state = libsynphony.dbGet('drt_state');
@@ -12,7 +19,7 @@ class DecodableReaderModel implements ITabModel {
                 var parts = decState.split(";");
                 state.stage = parseInt(parts[0].substring("stage:".length));
                 var sort = parts[1].substring("sort:".length);
-                model.setSort(sort);
+                ReaderToolsModel.model.setSort(sort);
             } else {
                 // old state
                 state.stage = parseInt(decState);
@@ -22,28 +29,27 @@ class DecodableReaderModel implements ITabModel {
     }
 
     setupReaderKeyAndFocusHandlers(container: HTMLElement): void {
-        // Enhance: at present, model is a global variable defined by readerToolsModel. Try to encapsulate it, or at least give a more specific name.
         // invoke function when a bloom-editable element loses focus.
         $(container).find('.bloom-editable').focusout(function () {
-            if (model) {
-                model.doMarkup();
+            if (ReaderToolsModel.model) {
+                ReaderToolsModel.model.doMarkup();
             }
         });
 
         $(container).find('.bloom-editable').focusin(function () {
-            if (model) {
-                model.noteFocus(this); // 'This' is the element that just got focus.
+            if (ReaderToolsModel.model) {
+                ReaderToolsModel.model.noteFocus(this); // 'This' is the element that just got focus.
             }
         });
 
         $(container).find('.bloom-editable').keydown(function(e) {
             if ((e.keyCode == 90 || e.keyCode == 89) && e.ctrlKey) { // ctrl-z or ctrl-Y
-                if (model.currentMarkupType !== MarkupType.None) {
+                if (ReaderToolsModel.model.currentMarkupType !== MarkupType.None) {
                     e.preventDefault();
                     if (e.shiftKey || e.keyCode == 89) { // ctrl-shift-z or ctrl-y
-                        model.redo();
+                        ReaderToolsModel.model.redo();
                     } else {
-                        model.undo();
+                        ReaderToolsModel.model.undo();
                     }
                     return false;
                 }
@@ -57,16 +63,16 @@ class DecodableReaderModel implements ITabModel {
 
     showTool() {
         // change markup based on visible options
-        model.setCkEditorLoaded(); // we don't call showTool until it is.
-        if (!model.setMarkupType(1)) model.doMarkup();
+        ReaderToolsModel.model.setCkEditorLoaded(); // we don't call showTool until it is.
+        if (!ReaderToolsModel.model.setMarkupType(1)) ReaderToolsModel.model.doMarkup();
     }
 
     hideTool() {
-        model.setMarkupType(0);
+        ReaderToolsModel.model.setMarkupType(0);
     }
 
     updateMarkup() {
-        model.doMarkup();
+        ReaderToolsModel.model.doMarkup();
     }
 
     name() { return 'decodableReaderTool'; }

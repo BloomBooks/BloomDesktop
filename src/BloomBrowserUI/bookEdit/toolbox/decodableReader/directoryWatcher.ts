@@ -1,10 +1,10 @@
-/// <reference path="../../typings/jquery/jquery.d.ts" />
+/// <reference path="../../../typings/jquery/jquery.d.ts" />
 
 /**
  * Implements a simple directory watcher in javascript. The localhost is listening for requests that begin with this
  * pattern: "/bloom/directoryWatcher/..."
  */
-class DirectoryWatcher {
+export class DirectoryWatcher {
 
   private directoryToWatch: string;
   private refreshInterval: number = 0;

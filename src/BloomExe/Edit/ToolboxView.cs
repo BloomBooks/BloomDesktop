@@ -49,7 +49,7 @@ namespace Bloom.Edit
 
 		public static string MakeToolboxContent(Book.Book book)
 		{
-			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox", "toolbox.htm");
+			var path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI/bookEdit/toolbox", "toolbox.html");
 			var toolboxFolder = Path.GetDirectoryName(path);
 
 			var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
@@ -69,7 +69,7 @@ namespace Bloom.Edit
 			}
 
 			// Load settings into the toolbox panel
-			AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(toolboxFolder, "settings", "Settings.htm")));
+			AppendToolboxPanel(domForToolbox, FileLocator.GetFileDistributedWithApplication(Path.Combine(toolboxFolder, "settings", "Settings.html")));
 
 			// check the appropriate boxes
 			foreach (var checkBoxId in checkedBoxes)

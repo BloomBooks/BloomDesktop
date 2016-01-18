@@ -17,7 +17,7 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
             'node_modules/jquery/dist/jquery.js',
-            'lib/jquery-ui/jquery-ui.min.js',
+            'node_modules/jquery-ui/jquery-ui.min.js',
             'lib/jquery.myimgscale.js',
             'lib/jquery.qtip.js',
             'lib/jquery.qtipSecondary.js',
@@ -45,6 +45,7 @@ module.exports = function (config) {
             '**/OverflowChecker/OverflowChecker.js',
             '**/sourceBubbles/bloomSourceBubbles.js',
             '**/talkingBook/audioRecording.js',
+
             // as long as the test filename is in the test/specs folder, it will be included in the test run
             'test/specs/**/*.js',
 
