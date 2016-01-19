@@ -6,6 +6,7 @@
 /// <reference path="../../lib/jquery-1.9.1.js"/>
 */
 
+import StyleEditor from "../../bookEdit/StyleEditor/StyleEditor";
 "use strict";
 
 //this was getting html, but just setting the rules actually doesn't touch the html

@@ -1,7 +1,8 @@
 ﻿/// <reference path="../toolbox.ts" />
 import { ReaderToolsModel, DRTState, } from "../decodableReader/readerToolsModel";
 import { initializeLeveledReaderTool} from "../decodableReader/readerTools";
-
+import {ITabModel} from "../toolbox";
+import {ToolBox} from "../toolbox";
 
 class LeveledReaderModel implements ITabModel {
     restoreSettings(opts: string) {
@@ -34,4 +35,4 @@ class LeveledReaderModel implements ITabModel {
     name() {return 'leveledReaderTool';}
 }
 
-tabModels.push(new LeveledReaderModel());
+ToolBox.getTabModels().push(new LeveledReaderModel());

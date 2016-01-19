@@ -1,7 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../misc-types.d.ts" />
 /// <reference path="../../bookEdit/js/getIframeChannel.ts" />
-import * as $ from 'jquery';
+
 /**
  * L10NSharp LocalizationManager for javascript.
  *
@@ -31,6 +31,7 @@ import * as $ from 'jquery';
  *   8. Strings that are generated dynamically by JS can also be localized by the localizationManager. An example of
  *      this is found in StyleEditor.GetToolTip(), where the tip for the font size changer is built.
  */
+declare function GetInlineDictionary() : any; //c# injects this
 
 var theOneLocalizationManager: LocalizationManager = new LocalizationManager();
 export default theOneLocalizationManager;
@@ -96,7 +97,7 @@ class LocalizationManager {
    * WARNING! This gets the translated text only if it is already loaded. Otherwise it just gives English back and will give translation next time.
    * Instead, use asyncGetTextInLang().
    *
-   * Additional parameters after the englishText are treated as arguments for SimpleDotNetFormat.
+   * Additional parameters after the englishText are treated as arguments for simpleDotNetFormat.
    * @param {String} stringId
    * @param {String} [englishText]
    * @param [args]
@@ -141,7 +142,7 @@ class LocalizationManager {
         if (args.length > 0) {
 
             // Do the formatting.
-            text = SimpleDotNetFormat(text, args);
+            text = this.simpleDotNetFormat(text, args);
         }
 
         return text;
@@ -196,7 +197,7 @@ class LocalizationManager {
             text = HtmlDecode(text);
             // is this a C#-style string.format style request?
             if (args.length > 0) {
-                text = SimpleDotNetFormat(text, args);
+                text = this.simpleDotNetFormat(text, args);
             }
             deferred.resolve(text);
         });
@@ -204,7 +205,7 @@ class LocalizationManager {
             if (englishDefault) {
                 text = HtmlDecode(englishText);
                 if (args.length > 0) {
-                    text = SimpleDotNetFormat(text, args);
+                    text = this.simpleDotNetFormat(text, args);
                 }
                 deferred.resolve(text);
             } else {
@@ -263,22 +264,19 @@ class LocalizationManager {
   getLanguageName(iso): string {
     return this.getText(iso);
   }
-}
 
-
-
-/**
- * Return a formatted string.
- * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
- * @param {String} format
- * @param {String[]} args
- * @returns {String}
- */
-function SimpleDotNetFormat(format, args) {
-
-  return format.replace(/{(\d+)}/g, function(match: string, index: number) {
-    return (typeof args[index] !== 'undefined') ? args[index] : match;
-  });
+    /**
+     * Return a formatted string.
+     * Replaces {0}, {1} ... {n} with the corresponding elements of the args array.
+     * @param {String} format
+     * @param {String[]} args
+     * @returns {String}
+     */
+  simpleDotNetFormat(format:string, args: string[]) {
+    return format.replace(/{(\d+)}/g, function(match: string, index: number) {
+        return (typeof args[index] !== 'undefined') ? args[index] : match;
+    });
+  }
 }
 
 /**

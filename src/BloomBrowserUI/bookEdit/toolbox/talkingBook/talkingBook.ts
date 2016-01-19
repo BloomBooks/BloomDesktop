@@ -1,4 +1,7 @@
-﻿class TalkingBookModel implements ITabModel {
+﻿import {ITabModel} from "../toolbox";
+import {ToolBox} from "../toolbox";
+
+class TalkingBookModel implements ITabModel {
     restoreSettings(settings: string) {}
 
     configureElements(container: HTMLElement) {}
@@ -19,4 +22,4 @@
     name() { return 'talkingBookTool'; }
 }
 
-tabModels.push(new TalkingBookModel());
+ToolBox.getTabModels().push(new TalkingBookModel());

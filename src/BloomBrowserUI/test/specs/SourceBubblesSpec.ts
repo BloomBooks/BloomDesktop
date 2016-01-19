@@ -2,6 +2,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../lib/jasmine/jasmine.d.ts"/>
 
+import {bloomSourceBubbles} from "../../bookEdit/sourceBubbles/bloomSourceBubbles";
 "use strict";
 
 describe("SourceBubbles", function () {

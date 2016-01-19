@@ -5,7 +5,8 @@
 import {DirectoryWatcher} from "./directoryWatcher";
 import {DRTState, ReaderToolsModel, MarkupType} from "./readerToolsModel";
 import {initializeDecodableReaderTool} from "./readerTools";
-
+import {ITabModel} from "../toolbox";
+import {ToolBox} from "../toolbox";
 
 class DecodableReaderModel implements ITabModel {
     restoreSettings(settings: string) {
@@ -78,7 +79,7 @@ class DecodableReaderModel implements ITabModel {
     name() { return 'decodableReaderTool'; }
 }
 
-tabModels.push(new DecodableReaderModel());
+ToolBox.getTabModels().push(new DecodableReaderModel());
 
 
 // "region" ReaderSetup dialog

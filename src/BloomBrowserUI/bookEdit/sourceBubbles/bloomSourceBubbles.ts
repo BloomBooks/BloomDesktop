@@ -2,24 +2,16 @@
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../js/bloomQtipUtils.ts" />
 /// <reference path="../StyleEditor/StyleEditor.ts" />
-import * as localizationManager from '../../lib/localizationManager/localizationManager';
-
-interface qtipInterface extends JQuery {
-    qtip(options: any): JQuery;
-    qtipSecondary(options: any): JQuery;
-}
-
-interface easytabsInterface extends JQuery {
-    easytabs(options: any): JQuery;
-}
-
-interface arraySort extends JQuery {
-    sort(compare: (a: HTMLElement, b: HTMLElement)=>number): JQuery;
-}
+/// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
+/// <reference path="../../typings/jquery.qtip.d.ts" />
+/// <reference path="../../typings/jquery.easytabs.d.ts" />
+import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
+import StyleEditor from "../StyleEditor/StyleEditor";
+declare function GetSettings() : any; //c# injects this
 
 declare function GetStyleClassFromElement(element: HTMLElement): string;
 
-class bloomSourceBubbles {
+export class bloomSourceBubbles {
 
     //:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph
     private static hasNoText(obj: HTMLElement): boolean {
@@ -111,7 +103,7 @@ class bloomSourceBubbles {
         if (divForBubble.find("textarea, div").length == 0)
             return null;
 
-        var vernacularLang = localizationManager.getVernacularLang();
+        var vernacularLang = theOneLocalizationManager.getVernacularLang();
 
         // Make the li's for the source text elements in this new div, which will later move to a tabbed bubble
         // divForBubble is a single cloned bloom-translationGroup, so no need for .each() here
@@ -120,7 +112,7 @@ class bloomSourceBubbles {
 
         // First, sort the divs (and/or textareas) alphabetically by language code
         var items = $this.find("textarea, div");
-        (<arraySort>items).sort(function(a, b) {
+        items.sort(function(a, b) {
             //nb: Jan 2012: we modified "jquery.easytabs.js" to target @lang attributes, rather than ids.  If that change gets lost,
             //it's just a one-line change.
             var keyA = $(a).attr('lang');
@@ -144,7 +136,7 @@ class bloomSourceBubbles {
         items.each(function() {
             var iso = $(this).attr('lang');
             if (iso) {
-                var languageName = localizationManager.getLanguageName(iso);
+                var languageName = theOneLocalizationManager.getLanguageName(iso);
                 if (!languageName)
                     languageName = iso;
                 var shouldShowOnPage = (iso === vernacularLang) /* could change that to 'bloom-content1' */ || $(this).hasClass('bloom-contentNational1') || $(this).hasClass('bloom-contentNational2') || $(this).hasClass('bloom-content2') || $(this).hasClass('bloom-content3');
@@ -226,7 +218,7 @@ class bloomSourceBubbles {
     private static CreateTabsFromDiv(divForBubble: JQuery): JQuery {
         //now turn that new div into a set of tabs
         if (divForBubble.find("li").length > 0) {
-            (<easytabsInterface>divForBubble).easytabs({
+            divForBubble.easytabs({
                 animate: false,
                 tabs: "> nav > ul > li"
             });
@@ -305,7 +297,7 @@ class bloomSourceBubbles {
         $group.each(function () {
             // var targetHeight = Math.max(55, $(this).height()); // This ensures we get at least one line of the source text!
 
-            var $this: qtipInterface = <qtipInterface>$(this);
+            var $this: JQuery = $(this);
 
             $this.qtip({
                 position: {

@@ -12,6 +12,8 @@
 /// <reference path="directoryWatcher.ts" />
 import {DirectoryWatcher} from "./directoryWatcher";
 import {resizeWordList} from "./readerTools";
+import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
+import {ToolBox} from "../toolbox";
 
 var iframeChannel = getIframeChannel();
 
@@ -1038,7 +1040,7 @@ export class ReaderToolsModel {
       msgDiv.html('');
     }
     else {
-      msgDiv.html(SimpleDotNetFormat($(toolbox).find('#allowed_word_list_truncated_text').html(), [ReaderToolsModel.model.maxAllowedWords.toLocaleString()]));
+      msgDiv.html(theOneLocalizationManager.simpleDotNetFormat($(toolbox).find('#allowed_word_list_truncated_text').html(), [ReaderToolsModel.model.maxAllowedWords.toLocaleString()]));
     }
 
     return returnVal;
@@ -1058,8 +1060,8 @@ export class ReaderToolsModel {
     state.stage = this.stageNumber;
     state.level = this.levelNumber;
     state.markupType = this.currentMarkupType;
-    fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tdecodableReader\t" + "stage:" + this.stageNumber + ";sort:" + this.sort);
-    fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tleveledReader\t" + this.levelNumber);
+    ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tdecodableReader\t" + "stage:" + this.stageNumber + ";sort:" + this.sort);
+    ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tleveledReader\t" + this.levelNumber);
     libsynphony.dbSet('drt_state', state);
   }
 

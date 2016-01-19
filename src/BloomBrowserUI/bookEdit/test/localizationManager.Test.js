@@ -1,6 +1,6 @@
 describe("Localization Manager tests", function() {
 
-    it("SimpleDotNetFormat test", function() {
+    it("simpleDotNetFormat test", function() {
 
         var result = SimpleDotNetFormat('{0} {1} {2}', ['a', 'b', 'c']);
         expect(result).toEqual('a b c');

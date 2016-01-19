@@ -1,7 +1,7 @@
 /// <reference path="localizationManager/localizationManager.ts" />
 /// <reference path="../typings/jquery/jquery.d.ts" />
 import * as jQuery from 'jquery';
-import * as localizationManager from 'localizationManager/localizationManager';
+import theOneLocalizationManager from './localizationManager/localizationManager';
 
 /**
  * jquery.i18n.custom.js
@@ -9,11 +9,6 @@ import * as localizationManager from 'localizationManager/localizationManager';
  * L10NSharp LocalizationManager for javascript
  *
  */
-
-public interface JQuery {
-  localize(): void;
-  localize(callbackDone?: any): void;
-}
 
 /**
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
@@ -31,18 +26,18 @@ public interface JQuery {
     var d = {};
     this.each(function() {
       var key = this.dataset['i18n'];
-      if (!localizationManager.dictionary[key])
+      if (!theOneLocalizationManager.dictionary[key])
         d[key] = $(this).text();
     });
 
     if (Object.keys(d).length > 0) {
       // get the translations and localize
-      localizationManager.loadStrings(d, this, callbackDone);
+      theOneLocalizationManager.loadStrings(d, this, callbackDone);
     }
     else {
       // just localize
       this.each(function() {
-        localizationManager.setElementText(this);
+        theOneLocalizationManager.setElementText(this);
       });
 
       if (typeof callbackDone === 'function') callbackDone();

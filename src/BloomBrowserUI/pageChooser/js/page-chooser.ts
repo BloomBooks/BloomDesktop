@@ -1,5 +1,6 @@
 ﻿/// <reference path="../../bookEdit/js/getIframeChannel.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
+import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 
 window.addEventListener("message", process_EditFrame_Message, false);
 
@@ -152,7 +153,7 @@ class PageChooser {
     // label as the last part of its ID.
     setLocalizedText(elt: JQuery, idPrefix: string, defaultText: string, id: string = defaultText) {
         if (defaultText) {
-            localizationManager.asyncGetText(idPrefix + id, defaultText)
+            theOneLocalizationManager.asyncGetText(idPrefix + id, defaultText)
                 .done(translation => {
                     elt.text(translation);
                 });
@@ -220,7 +221,7 @@ class PageChooser {
             this.setLocalizedText($('#convertAnywayCheckbox'),'EditTab.AddPageDialog.', 'Continue anyway','ChooseLayoutContinueCheckbox')
             this.setLocalizedText($('#convertLosesMaterial'), 'EditTab.AddPageDialog.', 'Converting to this layout will cause some content to be lost.', 'ChooseLayoutWillLoseData')
        }
-        localizationManager.asyncGetText(okButtonLabelId, okButtonLabelText)
+        theOneLocalizationManager.asyncGetText(okButtonLabelId, okButtonLabelText)
             .done(translation => {
                 pageButton.attr('value', translation);
             });

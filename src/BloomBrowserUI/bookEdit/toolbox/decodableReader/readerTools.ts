@@ -1,13 +1,12 @@
 /// <reference path="readerToolsModel.ts" />
 /// <reference path="directoryWatcher.ts" />
+/// <reference path="../../../typings/jquery.qtip.d.ts" />
 import {DirectoryWatcher} from "./directoryWatcher";
 import {ReaderToolsModel} from "./readerToolsModel";
 import {initializeDecodableReaderTool} from "./readerTools";
-import * as localizationManager from '../../lib/localizationManager/localizationManager';
+import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 
-interface qtipInterface extends JQuery {
-  qtip(options: any): JQuery;
-}
+var iframeChannel = getIframeChannel();
 
 interface textMarkup extends JQueryStatic {
   cssSentenceTooLong(): JQuery;
@@ -88,31 +87,31 @@ function processDLRMessage(event: MessageEvent): void {
 
 function markDecodableStatus(): void {
   // q-tips; mark sight words and non-decodable words
-  var sightWord = localizationManager.getText('EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord', 'Sight Word');
-  var notDecodable = localizationManager.getText('EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable', 'This word is not decodable in this stage.');
+  var sightWord = theOneLocalizationManager.getText('EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord', 'Sight Word');
+  var notDecodable = theOneLocalizationManager.getText('EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable', 'This word is not decodable in this stage.');
   var editableElements = $(".bloom-content1");
   editableElements.find('span.' + (<textMarkup>$).cssSightWord()).each(function() {
-    (<qtipInterface>$(this)).qtip({ content: sightWord });
+    this.qtip({ content: sightWord });
   });
 
   editableElements.find('span.' + (<textMarkup>$).cssWordNotFound()).each(function() {
-    (<qtipInterface>$(this)).qtip({ content: notDecodable });
+    this.qtip({ content: notDecodable });
   });
 
 // we're considering dropping this entirely
 // We are disabling the "Possible Word" feature at this time.
 //editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-//    (<qtipInterface>$(this)).qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
+//    $(this.qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
 //});
 }
 
 function markLeveledStatus(): void {
   // q-tips; mark sentences that are too long
-  var tooLong = localizationManager.getText('EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong',
+  var tooLong = theOneLocalizationManager.getText('EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong',
       'This sentence is too long for this level.');
   var editableElements = $(".bloom-content1");
   editableElements.find('span.' + (<textMarkup>$).cssSentenceTooLong()).each(function() {
-    (<qtipInterface>$(this)).qtip({ content: tooLong });
+    $(this).qtip({ content: tooLong });
   });
 }
 

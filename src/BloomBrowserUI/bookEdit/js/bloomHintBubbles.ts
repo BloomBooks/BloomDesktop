@@ -2,11 +2,11 @@
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="collectionSettings.d.ts" />
 /// <reference path="bloomQtipUtils.ts" />
+/// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
+/// <reference path="../../typings/jquery.qtip.d.ts" />
+import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 
-interface qtipInterface extends JQuery {
-    qtip(options: any): JQuery;
-    qtipSecondary(options: any): JQuery;
-}
+declare function GetSettings() : any; //c# injects this
 
 class bloomHintBubbles {
 
@@ -123,7 +123,7 @@ class bloomHintBubbles {
 
         // get the localized string
         if (whatToSay.startsWith('*')) whatToSay = whatToSay.substr(1);
-        whatToSay = localizationManager.getLocalizedHint(whatToSay, target);
+        whatToSay = theOneLocalizationManager.getLocalizedHint(whatToSay, target);
 
         var functionCall = source.data("functiononhintclick");
         if (functionCall) {
@@ -143,7 +143,7 @@ class bloomHintBubbles {
             hideEvents = 'focusout mouseleave';
         }
 
-        (<qtipInterface>target).qtip({
+        target.qtip({
             content: whatToSay,
             position: pos,
             show: {

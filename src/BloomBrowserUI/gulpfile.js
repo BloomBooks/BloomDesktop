@@ -69,7 +69,8 @@ gulp.task('typescript', function () {
     .pipe(debug({title: 'typescript:'}))
     .pipe(sourcemaps.init())
     .pipe(ts({
-        target: "es5"// need to keep this down to the level that our gecko can directly handle. Things going through webpack+babel can target es6, fine. But not this other un-converted  stuff.
+        target: "es5",// need to keep this down to the level that our gecko can directly handle. Things going through webpack+babel can target es6, fine. But not this other un-converted  stuff.
+        module:"commonjs"
     }))
     .pipe(sourcemaps.write(destination))
     .pipe(gulp.dest(destination)); //drop all js's into the same dirs.

@@ -13,8 +13,7 @@ var savedSettings: string;
 
 var keypressTimer: any = null;
 
-
-interface ITabModel {
+export interface ITabModel {
     restoreSettings(settings: string);
     configureElements(container: HTMLElement);
     showTool();
@@ -24,7 +23,7 @@ interface ITabModel {
 }
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
-class ToolBox {
+export class ToolBox {
     toolboxIsShowing() { return showingPanel; }
     configureElementsForTools(container: HTMLElement) {
         for (var i = 0; i < tabModels.length; i++) {
@@ -37,6 +36,18 @@ class ToolBox {
             });
        }
     }
+    /**
+     * Fires an event for C# to handle
+     * @param {String} eventName
+     * @param {String} eventData
+     */
+    static fireCSharpToolboxEvent(eventName: string, eventData: string) {
+
+    var event = new MessageEvent(eventName, {'bubbles' : true, 'cancelable' : true, 'data' : eventData});
+    document.dispatchEvent(event);
+    }
+
+    static getTabModels() { return tabModels;}
 }
 
 var toolbox = new ToolBox();
@@ -45,17 +56,6 @@ var toolbox = new ToolBox();
 // into this array in order to be interact with the overall toolbox code.
 var tabModels: ITabModel[] = [];
 var currentTool: ITabModel;
-
-/**
- * Fires an event for C# to handle
- * @param {String} eventName
- * @param {String} eventData
- */
-function fireCSharpToolboxEvent(eventName: string, eventData: string) {
-
-    var event = new MessageEvent(eventName, {'bubbles' : true, 'cancelable' : true, 'data' : eventData});
-    document.dispatchEvent(event);
-}
 
 /**
  * Handles the click event of the divs in Settings.htm that are styled to be check boxes.
@@ -68,7 +68,7 @@ function showOrHidePanel_click(chkbox) {
     if (chkbox.innerHTML === '') {
 
         chkbox.innerHTML = checkMarkString;
-        fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t1");
+        ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t1");
         if (panel) {
             showingPanel = true;
             requestPanel(chkbox.id, panel, null, null, null);
@@ -76,7 +76,7 @@ function showOrHidePanel_click(chkbox) {
     }
     else {
         chkbox.innerHTML = '';
-        fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t0");
+        ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t0");
         $('*[data-panelId]').filter(function() { return $(this).attr('data-panelId') === panel; }).remove();
     }
 
@@ -219,9 +219,9 @@ function setCurrentPanel(currentPanel) {
         var newToolName = null;
         if (ui.newHeader.attr('data-panelId')) {
             newToolName = ui.newHeader.attr('data-panelId').toString();
-            fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
+            ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
         } else {
-            fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t");
+            ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t");
         }
         switchTool(newToolName);
     });

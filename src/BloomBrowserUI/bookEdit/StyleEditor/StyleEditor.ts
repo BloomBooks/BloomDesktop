@@ -1,5 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
+/// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
+/// <reference path="../../typings/jquery.i18n.custom.d.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
@@ -9,24 +11,15 @@
 /// <reference path="../js/interIframeChannel.ts"/>
 /// <reference path="../js/collectionSettings.d.ts"/>
 /// <reference path="../OverflowChecker/OverflowChecker.ts"/>
-import locmang from '../../lib/localizationManager/localizationManager';
+import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 
 var iframeChannel = getIframeChannel();
 
-//jquery.i18n.custom
-//interface JQuery{localize():string;} //review: why doesn't the above reference of jquery.i18n.custom.ts cover this? Without it, typescript complaines when we do .localize()
-//qtip plugin
-interface JQuery {
-    qtipSecondary(options: any): any;//Query;
-}
-
 declare function GetSettings() : any; //c# injects this
-    
-
 
 declare function GetDifferenceBetweenHeightAndParentHeight(JQuery):number;
 
-class StyleEditor {
+export default class StyleEditor {
 
     private _previousBox: Element;
     private _supportFilesRoot: string;
@@ -362,7 +355,7 @@ class StyleEditor {
 
         // localize
         var tipText = "Changes the text size for all boxes carrying the style '{0}' and language '{1}'.\nCurrent size is {2}pt.";
-        return locmang.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
+        return theOneLocalizationManager.getText('BookEditor.FontSizeTip', tipText, styleName, lang, ptSize);
     }
 
     /**
@@ -428,9 +421,9 @@ class StyleEditor {
     }
 
     getWordSpaceOptions() {
-        return [locmang.getText('EditTab.FormatDialog.WordSpacingNormal', 'Normal'),
-            locmang.getText('EditTab.FormatDialog.WordSpacingWide', 'Wide'),
-            locmang.getText('EditTab.FormatDialog.WordSpacingExtraWide', 'Extra Wide')];
+        return [theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingNormal', 'Normal'),
+            theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingWide', 'Wide'),
+            theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingExtraWide', 'Extra Wide')];
     }
 
     // Returns an object giving the current selection for each format control.
@@ -605,7 +598,7 @@ class StyleEditor {
                 var html = '<div id="format-toolbar" class="bloom-ui bloomDialogContainer">'
                     + '<div data-i18n="EditTab.FormatDialog.Format" class="bloomDialogTitleBar">Format</div>';
                 if (noFormatChange) {
-                    var translation = locmang.getText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.');
+                    var translation = theOneLocalizationManager.getText('BookEditor.FormattingDisabled', 'Sorry, Reader Templates do not allow changes to formatting.');
                     html += '<div class="bloomDialogMainPage"><p>' + translation + '</p></div>';
                 }
                 else if (editor.authorMode) {
@@ -679,13 +672,13 @@ class StyleEditor {
                     editor.getMoreTabDescription();
 
                     $('#font-select').change(function() { editor.changeFont(); });
-                    editor.AddQtipToElement($('#font-select'), locmang.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
+                    editor.AddQtipToElement($('#font-select'), theOneLocalizationManager.getText('EditTab.FormatDialog.FontFaceToolTip', 'Change the font face'), 1500);
                     $('#size-select').change(function() { editor.changeSize(); });
-                    editor.AddQtipToElement($('#size-select'), locmang.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
+                    editor.AddQtipToElement($('#size-select'), theOneLocalizationManager.getText('EditTab.FormatDialog.FontSizeToolTip', 'Change the font size'), 1500);
                     $('#line-height-select').change(function() { editor.changeLineheight(); });
-                    editor.AddQtipToElement($('#line-height-select').parent(), locmang.getText('EditTab.FormatDialog.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
+                    editor.AddQtipToElement($('#line-height-select').parent(), theOneLocalizationManager.getText('EditTab.FormatDialog.LineSpacingToolTip', 'Change the spacing between lines of text'), 1500);
                     $('#word-space-select').change(function() { editor.changeWordSpace(); });
-                    editor.AddQtipToElement($('#word-space-select').parent(), locmang.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
+                    editor.AddQtipToElement($('#word-space-select').parent(), theOneLocalizationManager.getText('EditTab.FormatDialog.WordSpacingToolTip', 'Change the spacing between words'), 1500);
                     if (editor.authorMode) {
                         if (!editor.xmatterMode) {
                             $('#styleSelect').change(function() { editor.selectStyle(); });
@@ -899,7 +892,7 @@ class StyleEditor {
         }
         // BL-2386 This one should NOT be language-dependent; only style dependent
         if (this.shouldSetDefaultRule()) {
-            locmang.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName)
+            theOneLocalizationManager.asyncGetText('BookEditor.DefaultForText', 'This formatting is the default for all text boxes with \'{0}\' style', styleName)
                 .done(translation => {
                     $('#formatCharDesc').html(translation);
                 });
@@ -907,10 +900,10 @@ class StyleEditor {
         }
         //BL-982 Use language name that appears on text windows
         var iso = $(this.boxBeingEdited).attr('lang');
-        var lang = locmang.getLanguageName(iso);
+        var lang = theOneLocalizationManager.getLanguageName(iso);
         if (!lang)
             lang = iso;
-        locmang.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName)
+        theOneLocalizationManager.asyncGetText('BookEditor.ForTextInLang', 'This formatting is for all {0} text boxes with \'{1}\' style', lang, styleName)
             .done(translation => {
                 $('#formatCharDesc').html(translation);
             });
@@ -924,7 +917,7 @@ class StyleEditor {
             if (index > 0) styleName = styleName.substring(0, index);
         }
         // BL-2386 This one should NOT be language-dependent; only style dependent
-        locmang.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName)
+        theOneLocalizationManager.asyncGetText('BookEditor.ForText', 'This formatting is for all text boxes with \'{0}\' style', styleName)
             .done(translation => {
                 $('#formatMoreDesc').html(translation);
             });
