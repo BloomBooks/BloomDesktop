@@ -1,4 +1,5 @@
 /// <reference path="../typings/jquery/jquery.d.ts" />
+import * as $ from 'jquery';
 
 /**
  * This collects javascript exceptions not handled in a try...catch block and forwards them to the server

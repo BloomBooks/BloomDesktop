@@ -2,6 +2,7 @@
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../js/bloomQtipUtils.ts" />
 /// <reference path="../StyleEditor/StyleEditor.ts" />
+import * as localizationManager from '../../lib/localizationManager/localizationManager';
 
 interface qtipInterface extends JQuery {
     qtip(options: any): JQuery;

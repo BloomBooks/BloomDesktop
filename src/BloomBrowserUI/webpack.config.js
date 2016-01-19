@@ -32,8 +32,7 @@ module.exports = {
         extensions: ['', '.js', '.jsx'] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
     },
     plugins: [
-        
-      // new webpack.optimize.CommonsChunkPlugin("common", "commonCode.js")
+             new webpack.optimize.CommonsChunkPlugin("common", "commonCode.js")
       ],
     module: {
 
@@ -50,12 +49,12 @@ module.exports = {
         plugins: [
 
             //answer on various legacy issues: http://stackoverflow.com/questions/28969861/managing-jquery-plugin-dependency-in-webpack?lq=1
-            //prepend var $ = require("jquery") every time it encounters the global $ identifier.
-            // webpack.ProvidePlugin({
-            //     $: "jquery",
-            //     jQuery: "jquery",
-            //     "window.jQuery": "jquery"
-            // })
+            //prepend var $ = require("jquery") every time it encounters the global $ identifier or "jQuery".
+            webpack.ProvidePlugin({
+                $: "jquery",
+                jQuery: "jquery",
+                "window.jQuery": "jquery"
+            })
     ]
     }
 };

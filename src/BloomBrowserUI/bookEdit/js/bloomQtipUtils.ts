@@ -1,5 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="../../lib/jquery-ui.d.ts" />
+/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 
 interface qtipInterface extends JQuery {
     qtip(options: any): JQuery;

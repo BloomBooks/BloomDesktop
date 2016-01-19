@@ -1,7 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../misc-types.d.ts" />
 /// <reference path="../../bookEdit/js/getIframeChannel.ts" />
-
+import * as $ from 'jquery';
 /**
  * L10NSharp LocalizationManager for javascript.
  *
@@ -31,6 +31,11 @@
  *   8. Strings that are generated dynamically by JS can also be localized by the localizationManager. An example of
  *      this is found in StyleEditor.GetToolTip(), where the tip for the font size changer is built.
  */
+
+var theOneLocalizationManager: LocalizationManager = new LocalizationManager();
+export default theOneLocalizationManager;
+
+
 class LocalizationManager {
 
   public dictionary: any;
@@ -61,7 +66,7 @@ class LocalizationManager {
 
     $.ajax(ajaxSettings)
       .done(function (data) {
-        localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
+        theOneLocalizationManager.dictionary = $.extend(theOneLocalizationManager.dictionary, data);
 
         // if callback is passes without a list of elements to localize...
         if (typeof elementsToLocalize === 'function') {
@@ -69,7 +74,7 @@ class LocalizationManager {
         }
         else if (elementsToLocalize) {
           $(elementsToLocalize).each(function() {
-            localizationManager.setElementText(this);
+            theOneLocalizationManager.setElementText(this);
           });
           if (typeof callbackDone === 'function') callbackDone();
         }
@@ -97,12 +102,12 @@ class LocalizationManager {
    * @param [args]
    * @returns {String}
    */
-    getText(stringId: string, englishText?: string, ...args): string {
+    public getText(stringId: string, englishText?: string, ...args): string {
 
         if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
             if (Object.keys(this.dictionary).length == 0) {
                 this.inlineDictionaryLoaded = true;
-                $.extend(localizationManager.dictionary, GetInlineDictionary());
+                $.extend(theOneLocalizationManager.dictionary, GetInlineDictionary());
             }
         }
 
@@ -125,7 +130,7 @@ class LocalizationManager {
 
             $.ajax(ajaxSettings)
                 .done(data => {
-                    localizationManager.dictionary = $.extend(localizationManager.dictionary, data);
+                    theOneLocalizationManager.dictionary = $.extend(theOneLocalizationManager.dictionary, data);
                 });
 
             text = englishText;
@@ -261,7 +266,6 @@ class LocalizationManager {
 }
 
 
-var localizationManager: LocalizationManager = new LocalizationManager();
 
 /**
  * Return a formatted string.

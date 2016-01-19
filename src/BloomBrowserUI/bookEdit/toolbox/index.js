@@ -11,7 +11,6 @@ import 'errorHandler.js';
 import '../js/editableDivUtils.js';
 import '../js/getIframeChannel.js';
 import './decodableReader/directoryWatcher.js';
-import './decodableReader/libsynphony/underscore_min_152.js';
 import './decodableReader/libsynphony/bloom_xregexp_categories.js';
 import './decodableReader/libsynphony/jquery.text-markup.js';
 import './decodableReader/libsynphony/synphony_lib.js';

@@ -1,5 +1,8 @@
 /// <reference path="localizationManager/localizationManager.ts" />
 /// <reference path="../typings/jquery/jquery.d.ts" />
+import * as jQuery from 'jquery';
+import * as localizationManager from 'localizationManager/localizationManager';
+
 /**
  * jquery.i18n.custom.js
  *
@@ -7,7 +10,7 @@
  *
  */
 
-interface JQuery {
+public interface JQuery {
   localize(): void;
   localize(callbackDone?: any): void;
 }

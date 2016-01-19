@@ -3,6 +3,7 @@
 import {DirectoryWatcher} from "./directoryWatcher";
 import {ReaderToolsModel} from "./readerToolsModel";
 import {initializeDecodableReaderTool} from "./readerTools";
+import * as localizationManager from '../../lib/localizationManager/localizationManager';
 
 interface qtipInterface extends JQuery {
   qtip(options: any): JQuery;
