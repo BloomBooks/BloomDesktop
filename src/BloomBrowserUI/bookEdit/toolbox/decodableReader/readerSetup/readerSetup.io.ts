@@ -1,12 +1,13 @@
 /// <reference path="../../../js/getIframeChannel.ts" />
 /// <reference path="../../../toolbox/decodableReader/readerSettings.ts" />
 /// <reference path="readerSetup.ui.ts" />
+import {enableSampleWords, displayLetters, selectLetters, selectLevel, selectStage, setLevelValue} from './readerSetup.ui';
 
 var previousMoreWords: string;
 
 window.addEventListener('message', process_IO_Message, false);
 
-function toolboxWindow(): Window {
+export function toolboxWindow(): Window {
   if (window.parent)
     return (<HTMLIFrameElement>window.parent.document.getElementById('toolbox')).contentWindow;
 }
@@ -27,6 +28,12 @@ function process_IO_Message(event: MessageEvent): void {
 
     default:
   }
+}
+export function setPreviousMoreWords(words: string){
+  previousMoreWords = words;
+}
+export function getPreviousMoreWords():string{
+  return previousMoreWords;
 }
 
 /**
@@ -49,7 +56,7 @@ function loadReaderSetupData(jsonData: string): void {
 
   // language tab
   (<HTMLInputElement>document.getElementById('dls_letters')).value = data.letters;
-  previousMoreWords = data.moreWords.replace(/ /g, '\n');
+  setPreviousMoreWords(data.moreWords.replace(/ /g, '\n'));
   (<HTMLInputElement>document.getElementById('dls_more_words')).value = previousMoreWords;
   $('input[name="words-or-letters"][value="' + data.useAllowedWords + '"]').prop('checked', true);
   enableSampleWords();
@@ -113,7 +120,7 @@ function saveClicked(): void {
  * Pass the settings to C# to be saved.
  * @param [callback]
  */
-function saveChangedSettings(callback?: Function): void {
+export function saveChangedSettings(callback?: Function): void {
 
   // get the values
   var s = getChangedSettings();
@@ -184,7 +191,7 @@ function getLevelValue(innerHTML: string): number {
  * @param original
  * @returns {string}
  */
-function cleanSpaceDelimitedList(original: string): string {
+export function cleanSpaceDelimitedList(original: string): string {
 
   var cleaned: string = original.replace(/,/g, ' '); // replace commas
   cleaned = cleaned.trim().replace(/ ( )+/g, ' ');   // remove consecutive spaces

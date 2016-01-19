@@ -1,5 +1,9 @@
 /// <reference path="readerSetup.io.ts" />
 
+import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
+
+import {saveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords} from './readerSetup.io';
+
 var desiredGPCs: string[];
 var previousGPCs: string[];
 var sightWords: string[];
@@ -119,7 +123,7 @@ function process_UI_Message(event: MessageEvent): void {
 /**
  * Creates the grid of available graphemes
  */
-function displayLetters(): void {
+export function displayLetters(): void {
 
   var letters: string[] = cleanSpaceDelimitedList((<HTMLInputElement>document.getElementById('dls_letters')).value.trim()).split(' ');
   letters = letters.filter(function(n){ return n !== ''; });
@@ -156,7 +160,7 @@ function displayLetters(): void {
   });
 }
 
-function setLevelValue(value: any): string {
+export function setLevelValue(value: any): string {
 
   if (!value) return '-';
 
@@ -171,13 +175,13 @@ function setLevelValue(value: any): string {
  * Update the fields when a different stage is selected
  * @param tr The selected table row element
  */
-function selectStage(tr: HTMLTableRowElement): void {
+export function selectStage(tr: HTMLTableRowElement): void {
 
   if (tr.classList.contains('selected')) return;
 
   var currentStage = (<HTMLTableCellElement>tr.cells[0]).innerHTML;
   document.getElementById('setup-stage-number').innerHTML = currentStage;
-  document.getElementById('setup-remove-stage').innerHTML = localizationManager.getText('ReaderSetup.RemoveStage', 'Remove Stage {0}', currentStage);
+  document.getElementById('setup-remove-stage').innerHTML = theOneLocalizationManager.getText('ReaderSetup.RemoveStage', 'Remove Stage {0}', currentStage);
   (<HTMLInputElement>document.getElementById('setup-stage-sight-words')).value = (<HTMLTableCellElement>tr.cells[2]).innerHTML;
 
   $('#stages-table').find('tbody tr.selected').removeClass('selected').addClass('linked');
@@ -250,7 +254,7 @@ function selectLetter(div: HTMLDivElement): void {
  * Highlights the graphemes for the current stage
  * @param tr Table row
  */
-function selectLetters(tr: HTMLTableRowElement) {
+export function selectLetters(tr: HTMLTableRowElement) {
 
   // remove current formatting
   var letters: JQuery = $('.rs-letters').removeClass('current-letter').removeClass('previous-letter').addClass('unselected-letter');
@@ -278,13 +282,13 @@ function selectLetters(tr: HTMLTableRowElement) {
  * Update display when a different level is selected
  * @param tr
  */
-function selectLevel(tr: HTMLTableRowElement) {
+export function selectLevel(tr: HTMLTableRowElement) {
 
   if (tr.classList.contains('selected')) return;
 
   var currentLevel = getCellInnerHTML(tr, 0);
   document.getElementById('setup-level-number').innerHTML = currentLevel;
-  document.getElementById('setup-remove-level').innerHTML = localizationManager.getText('ReaderSetup.RemoveLevel', 'Remove Level {0}', currentLevel);
+  document.getElementById('setup-remove-level').innerHTML = theOneLocalizationManager.getText('ReaderSetup.RemoveLevel', 'Remove Level {0}', currentLevel);
 
   $('#levels-table').find('tbody tr.selected').removeClass('selected').addClass('linked');
   $(tr).removeClass('linked').addClass('selected');
@@ -465,10 +469,10 @@ function tabBeforeActivate(ui): void {
     }
 
     // update more words
-    if ((<HTMLInputElement>document.getElementById('dls_more_words')).value !== previousMoreWords) {
+    if ((<HTMLInputElement>document.getElementById('dls_more_words')).value !== getPreviousMoreWords()) {
 
       // remember the new list of more words
-      previousMoreWords = (<HTMLInputElement>document.getElementById('dls_more_words')).value;
+      setPreviousMoreWords((<HTMLInputElement>document.getElementById('dls_more_words')).value);
 
       // save the changes and update lists
       var toolbox = toolboxWindow();
@@ -651,11 +655,11 @@ function updateNumbers(tableId: string): void {
 
   if (tableId === 'levels-table') {
     document.getElementById('setup-level-number').innerHTML = currentStage;
-    document.getElementById('setup-remove-level').innerHTML = localizationManager.getText('ReaderSetup.RemoveLevel', 'Remove Level {0}', currentStage);
+    document.getElementById('setup-remove-level').innerHTML = theOneLocalizationManager.getText('ReaderSetup.RemoveLevel', 'Remove Level {0}', currentStage);
   }
   else {
     document.getElementById('setup-stage-number').innerHTML = currentStage;
-    document.getElementById('setup-remove-stage').innerHTML = localizationManager.getText('ReaderSetup.RemoveStage', 'Remove Stage {0}', currentStage);
+    document.getElementById('setup-remove-stage').innerHTML = theOneLocalizationManager.getText('ReaderSetup.RemoveStage', 'Remove Stage {0}', currentStage);
   }
 }
 
@@ -824,7 +828,7 @@ function checkAndDeleteAllowedWordsFile(fileName: string): void {
   getIframeChannel().simpleAjaxNoCallback('/bloom/readers/recycleAllowedWordsFile', fileName);
 }
 
-function enableSampleWords() {
+export function enableSampleWords() {
 
   // get the selected option
   var useSampleWords = $('input[name="words-or-letters"]:checked').val() === '1';

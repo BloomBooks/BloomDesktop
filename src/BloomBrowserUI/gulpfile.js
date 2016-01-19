@@ -19,7 +19,7 @@ var paths = {
    less: ['./**/*.less',  '!./node_modules/**/*.less'],
    jade: ['./**/*.jade',  '!./node_modules/**/*.jade'],
    //all Typescript in the toolbox are handled via the webpack task (haven't cleaned up the rest enough, yet)
-   typescriptNotYetWebPacked: ['./**/*.ts','!./**/*.d.ts', '!./bookEdit/toolbox/**/*.ts']
+   typescriptNotYetWebPacked: ['./**/*.ts','!./**/*.d.ts']//, '!./bookEdit/toolbox/**/*.ts']
 };
 //Currently we are putting all css's into the same directories as the less
 //A next step would be to set it out to \output but that will require 
@@ -86,5 +86,6 @@ gulp.task('watch', function() {
 gulp.task('default', 
     function(callback) { 
         //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
-        runSequence('clean', ['typescript', 'less', 'jade', 'webpack'], callback)
+        //currently our webpack run is pure javascript, so do it only after the typescript is all done
+        runSequence('clean', ['typescript', 'less', 'jade'], 'webpack', callback)
 });

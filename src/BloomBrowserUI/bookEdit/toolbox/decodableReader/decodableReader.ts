@@ -7,6 +7,7 @@ import {DRTState, ReaderToolsModel, MarkupType} from "./readerToolsModel";
 import {initializeDecodableReaderTool} from "./readerTools";
 import {ITabModel} from "../toolbox";
 import {ToolBox} from "../toolbox";
+import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 
 class DecodableReaderModel implements ITabModel {
     restoreSettings(settings: string) {
@@ -106,14 +107,13 @@ function settingsFrameWindow() {
 function showSetupDialog(showWhat) {
 
     var toolbox = window;
-    var lm: LocalizationManager = (<any>toolbox).localizationManager;
-    lm.loadStrings(getSettingsDialogLocalizedStrings(), null, function () {
+    theOneLocalizationManager.loadStrings(getSettingsDialogLocalizedStrings(), null, function () {
 
         var title;
         if (showWhat == 'stages')
-            title = lm.getText('ReaderSetup.SetUpDecodableReaderTool', 'Set up Decodable Reader Tool');
+            title = theOneLocalizationManager.getText('ReaderSetup.SetUpDecodableReaderTool', 'Set up Decodable Reader Tool');
         else
-            title = lm.getText('ReaderSetup.SetUpLeveledReaderTool', 'Set up Leveled Reader Tool');
+            title = theOneLocalizationManager.getText('ReaderSetup.SetUpLeveledReaderTool', 'Set up Leveled Reader Tool');
 
         var dialogContents = CreateConfigDiv(title);
 
@@ -131,21 +131,21 @@ function showSetupDialog(showWhat) {
             buttons: (<any>{
                 Help: {
                     // For consistency, I would have made this 'Common.Help', but we already had 'HelpMenu.Help Menu' translated
-                    text: lm.getText('HelpMenu.Help Menu', 'Help'),
+                    text: theOneLocalizationManager.getText('HelpMenu.Help Menu', 'Help'),
                     class: 'left-button',
                     click: function () {
                         settingsFrameWindow().postMessage('Help', '*');
                     }
                 },
                 OK: {
-                    text: lm.getText('Common.OK', 'OK'),
+                    text: theOneLocalizationManager.getText('Common.OK', 'OK'),
                     click: function () {
                         settingsFrameWindow().postMessage('OK', '*');
                     }
                 },
 
                 Cancel: {
-                    text: lm.getText('Common.Cancel', 'Cancel'),
+                    text: theOneLocalizationManager.getText('Common.Cancel', 'Cancel'),
                     click: function () {
                         $(this).dialog("close");
                     }
