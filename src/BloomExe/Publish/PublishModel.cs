@@ -480,19 +480,14 @@ namespace Bloom.Publish
 				return new List<ToolStripMenuItem>();
 			}
 		}
-//
-//	    private IEnumerable<XmlDocument> GetFileForPrinting()
-//	    {
-////            XmlDocument dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortions.InnerContent, _currentBookCollectionSelection.CurrentSelection, _bookServer);
-////            HtmlDom.AddPublishClassToBody(dom);
-////
-////	        foreach (var pageDom in dom.SelectNodes("/html/body//div[contains(@class,'bloom-page')]"))
-////	        {
-////	            yield return pageDom;
-////	        }
-//	    }
 
-		internal void StageEpub()
+		// PrepareToStageEpub must be called first
+		internal void StageEpub(bool publishWithoutAudio)
+		{
+			_epubMaker.StageEpub(publishWithoutAudio);
+		}
+
+		internal void PrepareToStageEpub()
 		{
 			if (_epubMaker != null)
 			{
@@ -503,7 +498,12 @@ namespace Bloom.Publish
 			_epubMaker = new EpubMaker(_thumbNailer);
 			_epubMaker.Book = BookSelection.CurrentSelection;
 			_epubMaker.Unpaginated = true; // Enhance: UI?
-			_epubMaker.StageEpub();
+		}
+
+		// PrepareToStageEpub must be called first
+		internal bool IsCompressedAudioMissing
+		{
+			get { return _epubMaker.IsCompressedAudioMissing; }
 		}
 
 		internal string StagingDirectory { get { return _epubMaker.StagingDirectory; } }
