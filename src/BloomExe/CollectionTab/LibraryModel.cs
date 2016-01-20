@@ -254,7 +254,7 @@ namespace Bloom.CollectionTab
 					File.Delete(path);
 				}
 
-				Logger.WriteEvent("Making BloomPack");
+				Logger.WriteEvent("Making BloomPack at "+path+" forReaderTools="+forReaderTools.ToString());
 
 				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack...", "Bloom"))
 				{
@@ -272,6 +272,7 @@ namespace Bloom.CollectionTab
 
 						var dirNameOffest = dir.Length - rootName.Length;
 
+						Logger.WriteEvent("BloomPack path will be " + path + ", made from " + dir + " with rootName " + rootName);
 						using (var fsOut = File.Create(path))
 						{
 							using (ZipOutputStream zipStream = new ZipOutputStream(fsOut))
@@ -304,7 +305,7 @@ namespace Bloom.CollectionTab
 		}
 
 		// these files (if encountered) won't be compressed into a BloomPack
-		private static readonly string[] excludedFileExtensions = { ".db", ".pdf" };
+		private static readonly string[] excludedFileExtensions = { ".db", ".pdf", ".BloomPack" };
 
 		/// <summary>
 		/// Adds a directory, along with all files and subdirectories, to the ZipStream.
