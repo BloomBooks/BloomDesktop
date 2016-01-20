@@ -114,7 +114,11 @@ namespace Bloom.Edit
 			deletePageCommand.Implementer = OnDeletePage;
 			pageListChangedEvent.Subscribe(x => _view.UpdatePageList(false));
 			relocatePageEvent.Subscribe(OnRelocatePage);
-			libraryClosingEvent.Subscribe(o=>SaveNow());
+			libraryClosingEvent.Subscribe(o =>
+			{
+				if (Visible)
+					SaveNow();
+			});
 			localizationChangedEvent.Subscribe(o =>
 			{
 				//this is visible was added for https://jira.sil.org/browse/BL-267, where the edit tab has never been
