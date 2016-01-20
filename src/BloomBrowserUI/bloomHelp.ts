@@ -1,7 +1,5 @@
 /// <reference path="typings/jquery/jquery.d.ts" />
 
-// This file holds some code so global that it's not limited to one particular tab.
-
 /**
  * Class to with methods related to invoking bloom help
  * @constructor

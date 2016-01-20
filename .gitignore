@@ -135,7 +135,7 @@ toolbox.js
 errorHandler.js
 cSharpDependencyInjector.js
 readerSettings.js
-sharedCode.js
+bloomHelp.js
 
 # CSS files that are generated from LESS
 bloomEpubPreview.css

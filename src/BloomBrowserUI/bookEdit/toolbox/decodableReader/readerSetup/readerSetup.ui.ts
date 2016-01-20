@@ -1,5 +1,5 @@
 /// <reference path="readerSetup.io.ts" />
-/// <reference path="../../../../sharedCode.ts"/>
+/// <reference path="../../../../bloomHelp.ts"/>
 
 var desiredGPCs: string[];
 var previousGPCs: string[];
