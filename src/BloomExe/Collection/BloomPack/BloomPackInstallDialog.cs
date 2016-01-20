@@ -47,7 +47,13 @@ namespace Bloom.Collection.BloomPack
 				ErrorReport.NotifyUserOfProblem(msg, _path);
 				return;
 			}
+
+			//For BL-3061 at the moment, I'm just trying to log more information.
+			Logger.WriteEvent("BloomPackInstallDialog.BeginInstall. _path is " + _path);
+
 			_folderName = GetRootFolderName();
+
+			Logger.WriteEvent("BloomPackInstallDialog.BeginInstall. _folderName is " + _folderName);
 			if (_folderName == null)
 				return;
 			string destinationFolder = Path.Combine(ProjectContext.GetInstalledCollectionsDirectory(), _folderName);
