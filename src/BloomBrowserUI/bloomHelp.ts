@@ -11,24 +11,12 @@ class BloomHelp {
    * @returns {boolean} Returns false to prevent navigation if link clicked.
    */
     static show(topic: string): boolean {
+        // This may work eventually, but fetch is not supported until FF 39
+        //fetch('/bloom/help', { method: "POST", body: topic });
+        var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{ type: 'POST', url: '/bloom/help' };
+        ajaxSettings['data'] = { data: topic };
 
-        Ajax.simpleNoCallback('/bloom/help', topic);
+        $.ajax(ajaxSettings);
         return false;
     }
-}
-
-class Ajax {
-
-  /**
-   * Sends data to localhost
-   * @param {String} url The URL to request
-   * @param {String} [dataValue] Passed in the post under the "data" key
-   */
-  static simpleNoCallback(url: string, dataValue?: string): void {
-
-    var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{type: 'POST', url: url};
-    if (dataValue) ajaxSettings['data'] = {data: dataValue};
-
-    $.ajax(ajaxSettings)
-  }
 }
