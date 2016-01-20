@@ -148,6 +148,7 @@ namespace Bloom
 						using (_applicationContainer = new ApplicationContainer())
 						{
 							SetUpLocalization();
+							Logger.Init();
 							var path = args[0];
 							// This allows local links to bloom packs.
 							if (path.ToLowerInvariant().StartsWith("bloom://"))
