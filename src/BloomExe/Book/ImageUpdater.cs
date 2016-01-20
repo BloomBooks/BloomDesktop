@@ -30,7 +30,7 @@ namespace Bloom.Book
 			{
 				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / imgElements.Count());
 				progress.WriteStatus("Copying to " + Path.GetFileName(path));
-				metadata.Write(path);
+				metadata.WriteIntellectualPropertyOnly(path);
 				++completed;
 			}
 
