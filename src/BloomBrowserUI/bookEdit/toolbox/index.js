@@ -1,9 +1,10 @@
-//import jQuery from 'jquery';
+//review: does this actually do anything? After all, the whole point is that this isn't global
 import * as $ from 'jquery';
 import * as jQuery from 'jquery';
+
 //doesn't help: (uses webpack script-loader) require('script!../../node_modules/jquery/dist/jquery.js');
 //require('script!../../node_modules/jquery/dist/jquery.js');
-import 'jquery-ui';
+import '../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import 'localizationManager/localizationManager.js';
 import 'jquery.i18n.custom.js';
 import 'errorHandler.js';

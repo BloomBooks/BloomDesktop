@@ -17,7 +17,7 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
             'node_modules/jquery/dist/jquery.js',
-            'node_modules/jquery-ui/jquery-ui.min.js',
+            'modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js',
             'lib/jquery.myimgscale.js',
             'lib/jquery.qtip.js',
             'lib/jquery.qtipSecondary.js',

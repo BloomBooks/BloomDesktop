@@ -6,7 +6,7 @@ var npmModules = [
 ];
 
 var scripts = [
-    'node_modules/jquery-ui/jquery-ui.min.js', // nb: we just rename whatever version of jquery-ui we have to this.
+    'modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js', 
     'lib/jquery.easytabs.js', // we have modified this. Todo: make a github fork of our version
     'lib/jquery.hashchange.min.js',       // needed by easytabs
     'lib/jquery.qtip.js', // currently we have added a fix that may not be needed now. Upgrade?
