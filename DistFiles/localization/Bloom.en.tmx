@@ -127,6 +127,18 @@
         <seg>More...</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.Toolbox.Settings.Unlock">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Allow changes to this shellbook</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.Settings.UnlockShellBookIntroductionText">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</seg>
+      </tuv>
+    </tu>
     <tu tuid="BackMatter.Factory.If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
@@ -851,6 +863,24 @@
         <seg>Set up Stages</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.AllowedWordsInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Allowed words in this stage</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.AllowedWordListTruncated">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Bloom can handle only the first {0} words.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Generate a letter and word list report</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.Toolbox.DecodableReaderTool.Stage">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -1031,6 +1061,72 @@
     <tu tuid="EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable">
       <tuv xml:lang="en">
         <seg>This word is not decodable in this stage.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Sample words in this stage</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Back">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Back</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Check">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>4) Check</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.CheckSettings">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>1) Check that you are recording into the correct device and that these levels are showing blue:</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Clear">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Clear</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Heading">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Talking Book Tool</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Listen">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Listen to the whole page</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.LookAtSentence">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>2) Look at the highlighted sentence</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Next">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>5) Next</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.Speak">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>3) Speak</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.TalkingBookTool.ToolPurpose">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This tool helps create recordings which can be used in epubs</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.Edit">
@@ -2341,6 +2437,12 @@
       <tuv xml:lang="en">
         <seg>label3</seg>
       </tuv>
+    </tu>
+    <tu tuid="Name of Translator, in {lang}">
+        <prop type="x-dynamic">true</prop>
+        <tuv xml:lang="en">
+          <seg>Name of Translator, in {lang}</seg>
+        </tuv>
     </tu>
     <tu tuid="LoginDialog.ShowPassword">
       <tuv xml:lang="en">

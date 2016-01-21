@@ -44,7 +44,33 @@ namespace Bloom.web
 								{
 									if (!d.ContainsKey(key))
 									{
-										var translation = LocalizationManager.GetDynamicString("Bloom", key, post[key]);
+										// We want the translation of the specified key in the current UI language.
+										// The normal LocalizationManager call expects to be passed an English default, which it
+										// will return if the language is English or if it has no translation for the string in
+										// the target language.
+										// We have available in post[key] the string which typically comes from the content of the
+										// element whose data-i18n attribute is the key in this loop. However, this string may come
+										// from an earlier loclization and therefore NOT be English. If we pass it as the english
+										// default, we will get it back unchanged if the UI language has changed (back) to English.
+										// We will also get something other than English as a default for any langauge in which we
+										// don't have the localization.
+										string translation;
+										if (LocalizationManager.GetIsStringAvailableForLangId(key, LocalizationManager.UILanguageId))
+										{
+											// If we HAVE the string in the desired localization, we don't need
+											// a default and can just return the localized string; not passing a default ensures that
+											// even in English we get the true English string for this ID from the TMX.
+											translation = LocalizationManager.GetDynamicString("Bloom", key, null);
+										}
+										else
+										{
+											// We don't have the string in the desired localization, so will return the English.
+											translation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", key, null, null, "en");
+											// If somehow we don't have even an English version of it, keep whatever was in the element
+											// to begin with.
+											if (string.IsNullOrWhiteSpace(translation))
+												translation = post[key];
+										}
 										d.Add(key, translation);
 									}
 								}
