@@ -78,7 +78,12 @@ gulp.task('typescript', function () {
 
 // Rerun the task when a file changes
 gulp.task('watch', function() {
-  gulp.watch(paths.typescriptNotYetWebPacked, ['typescript']),
+ //only works once gulp.watch(paths.typescriptNotYetWebPacked, runSequence('typescript', 'webpack')),
+ //so anything that currently needs webpacking is not watched!!!
+ gulp.watch(paths.typescriptNotYetWebPacked, ['typescript']),
+
+
+
   gulp.watch(paths.less, ['less']),
   gulp.watch(paths.jade, ['jade']);
 });

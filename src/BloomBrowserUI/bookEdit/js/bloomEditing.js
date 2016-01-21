@@ -225,7 +225,7 @@ function AddLanguageTags(container) {
             return;
         }
 
-        var whatToSay = localizationManager.getText(key);
+        var whatToSay = theOneLocalizationManager.getText(key);
         if (!whatToSay)
             whatToSay = key; //just show the code
 
@@ -749,7 +749,7 @@ var disconnectForGarbageCollection = function () {
 function loadLongpressInstructions(jQuerySetOfMatchedElements) {
     getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
         if (response === 'Yes') {
-            localizationManager.asyncGetText(
+            theOneLocalizationManager.asyncGetText(
                 'BookEditor.CharacterMap.Instructions',
                 'To select, use your mouse wheel or point at what you want, then release the key.')
             .done(function (translation) {
