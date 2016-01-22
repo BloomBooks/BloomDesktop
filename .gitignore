@@ -135,6 +135,11 @@ toolbox.js
 errorHandler.js
 cSharpDependencyInjector.js
 readerSettings.js
+editablePageBootstrap.js
+bloomEditing.js
+bloomImages.js
+origami.js
+toolboxBootstrap.js
 
 # CSS files that are generated from LESS
 bloomEpubPreview.css

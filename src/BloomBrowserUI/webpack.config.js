@@ -11,10 +11,10 @@ module.exports = {
     //So we have multiple "entry points" that we need to emit. Fortunately the
     //CommonsChunkPlugin extracts the code that is common to more than one into "commonCode.js"
     entry: { //pageThumbnailsApp:
-             toolboxIFrame: './bookEdit/toolbox/index.js',
-             //editViewApp:  './bookEdit/index.js',
+             //editViewApp:  './bookEdit/editViewFrameBoostrap.js',
+             editablePageIFrame: './bookEdit/editablePageBootstrap.js',
+             toolboxIFrame: './bookEdit/toolbox/toolboxBootstrap.js',
              //settingsIFrame:
-             editablePageIFrame: './bookEdit/editablePageIndex.js',
              //ReaderSetupDialog:
              pageChooserIFrame: './pageChooser/js/page-chooser.js'
              },

@@ -1,6 +1,7 @@
 /// <reference path="readerToolsModel.ts" />
 /// <reference path="directoryWatcher.ts" />
 /// <reference path="../../../typings/jquery.qtip.d.ts" />
+/// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 import {DirectoryWatcher} from "./directoryWatcher";
 import {ReaderToolsModel} from "./readerToolsModel";
 import {initializeDecodableReaderTool} from "./readerTools";

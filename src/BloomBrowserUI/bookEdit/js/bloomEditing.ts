@@ -1,5 +1,4 @@
 ///<reference path="./jquery.hasAttr.d.ts" /> 
-
 import * as $ from 'jquery';
 import * as JQuery from 'jquery';
 import bloomQtipUtils from './bloomQtipUtils';
@@ -14,7 +13,10 @@ import BloomSourceBubbles from '../sourceBubbles/BloomSourceBubbles';
 import BloomHintBubbles from './BloomHintBubbles';
 import getIframeChannel from './getIframeChannel';
 import TopicChooser from '../TopicChooser/TopicChooser';
-    
+import '../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js';
+import './jquery.hasAttr.js'; //reviewSlog for CenterVerticallyInParent
+import '../../lib/jquery.qtip.js'
+import '../../lib/jquery.qtipSecondary.js'
 
 /**
  * Fires an event for C# to handle
@@ -609,124 +611,124 @@ interface String{
 }
 
 // ---------------------------------------------------------------------------------
-// document ready function
+// called inside document ready function
 // ---------------------------------------------------------------------------------
-$(document).ready(function() {
-    bloomQtipUtils.setQtipZindex();
+export function bootstrap(){
+        bloomQtipUtils.setQtipZindex();
 
-    $.fn.reverse = function () {
-        return this.pushStack(this.get().reverse(), arguments);
-    };
-
-    // Attach a function to implement zooming on mouse wheel with ctrl
-    $('body').on('wheel', function (e) {
-        var theEvent  = e.originalEvent as WheelEvent;
-        // reviewSlog does this application work?
-        if (!theEvent.ctrlKey) return;
-        // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
-        var styleString = $('body').attr('style');
-        var scale = 1.0;
-        var searchData = /scale\(([^,]*),/.exec(styleString);
-        if (searchData) {
-            scale = parseFloat(searchData[1]);
-        }
-        // Dividing by 20 seems to make it zoom at a manageable rate, at least with my mouse.
-        // The limitation to zooming between 1/3 and 3 times is arbitrary.
-        scale = Math.min(Math.max(scale - theEvent.deltaY / 20, 0.33), 3.0);
-        // This works with a rule in editMode.less that makes the transform's origin the top left
-        $('body').attr('style', 'transform: scale(' + scale + ',' + scale + ')');
-    });
-
-/* reviewSlog typescript just couldn't cope with this. Our browser has this built in , so it's ok
-    //if this browser doesn't have endsWith built in, add it
-    if (typeof String.prototype.endsWith !== 'function') {if (typeof String.prototype.endsWith !== 'function') {
-        String.prototype.endsWith = function (suffix) {
-            return this.indexOf(suffix, this.length - suffix.length) !== -1;
+        $.fn.reverse = function () {
+            return this.pushStack(this.get().reverse(), arguments);
         };
-    }
 
-    // Defines a starts-with function
-    if (typeof String.prototype.startsWith != 'function') {
-        String.prototype.startsWith = function (str) {
-            return this.indexOf(str) == 0;
-        };
-    }
-*/
-    //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
-    Cleanup();
-
-    SetupElements($('body'));
-    OneTimeSetup();
-
-    // configure ckeditor
-    if (typeof CKEDITOR === "undefined") return;  // this happens during unit testing
-    CKEDITOR.disableAutoInline = true;
-
-    // Map from ckeditor id strings to the div the ckeditor is wrapping.
-    var mapCkeditDiv = new Object();
-
-    // attach ckeditor to the contenteditable="true" class="bloom-content1"
-    // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
-    // but skip any element with class="bloom-userCannotModifyStyles"
-    $('div.bloom-page').find('.bloom-content1[contenteditable="true"],.bloom-content2[contenteditable="true"],.bloom-content3[contenteditable="true"],.bloom-contentNational1[contenteditable="true"]').each(function() {
-
-        if ($(this).hasClass('bloom-userCannotModifyStyles'))
-            return; // equivalent to 'continue'
-
-        if ($(this).css('cursor') == 'not-allowed')
-            return;
-
-        var ckedit = CKEDITOR.inline(this);
-
-        // Record the div of the edit box for use later in positioning the format bar.
-        mapCkeditDiv[ckedit.id] = this;
-
-       // show or hide the toolbar when the text selection changes
-        ckedit.on('selectionCheck', function(evt) {
-            var editor = evt['editor'];
-            // Length of selected text is more reliable than comparing
-            // endpoints of the first range.  Mozilla can return multiple
-            // ranges with the first one being empty.
-            var selection = editor.getSelection();
-            var textSelected = selection.getSelectedText();
-            var show = (textSelected.length > 0);
-            var bar = $('body').find('.' + editor.id);
-            show ? bar.show() : bar.hide();
-
-            // Move the format bar on the screen if needed.
-            // (Note that offsets are not defined if it's not visible.)
-            if (show) {
-                var barTop = bar.offset().top;
-                var div = mapCkeditDiv[editor.id];
-                var rect = div.getBoundingClientRect();
-                var parent = bar.scrollParent();
-                var scrollTop = (parent) ? parent.scrollTop() : 0;
-                var boxTop = rect.top + scrollTop;
-                if (boxTop - barTop < 5) {
-                    var barLeft = bar.offset().left;
-                    var barHeight = bar.height();
-                    bar.offset({ top: boxTop - barHeight, left: barLeft });
-                }
+        // Attach a function to implement zooming on mouse wheel with ctrl
+        $('body').on('wheel', function (e) {
+            var theEvent  = e.originalEvent as WheelEvent;
+            // reviewSlog does this application work?
+            if (!theEvent.ctrlKey) return;
+            // look for an existing transform:scale setting and extract the scale. If not found, use 1.0 as starting point.
+            var styleString = $('body').attr('style');
+            var scale = 1.0;
+            var searchData = /scale\(([^,]*),/.exec(styleString);
+            if (searchData) {
+                scale = parseFloat(searchData[1]);
             }
+            // Dividing by 20 seems to make it zoom at a manageable rate, at least with my mouse.
+            // The limitation to zooming between 1/3 and 3 times is arbitrary.
+            scale = Math.min(Math.max(scale - theEvent.deltaY / 20, 0.33), 3.0);
+            // This works with a rule in editMode.less that makes the transform's origin the top left
+            $('body').attr('style', 'transform: scale(' + scale + ',' + scale + ')');
         });
 
-        // hide the toolbar when ckeditor starts
-        ckedit.on('instanceReady', function(evt) {
-            var editor = evt['editor'];
-            var bar = $('body').find('.' + editor.id);
-            bar.hide();
+    /* reviewSlog typescript just couldn't cope with this. Our browser has this built in , so it's ok
+        //if this browser doesn't have endsWith built in, add it
+        if (typeof String.prototype.endsWith !== 'function') {if (typeof String.prototype.endsWith !== 'function') {
+            String.prototype.endsWith = function (suffix) {
+                return this.indexOf(suffix, this.length - suffix.length) !== -1;
+            };
+        }
+
+        // Defines a starts-with function
+        if (typeof String.prototype.startsWith != 'function') {
+            String.prototype.startsWith = function (str) {
+                return this.indexOf(str) == 0;
+            };
+        }
+    */
+        //eventually we want to run this *after* we've used the page, but for now, it is useful to clean up stuff from last time
+        Cleanup();
+
+        SetupElements($('body'));
+        OneTimeSetup();
+
+        // configure ckeditor
+      //reviewSlog: reinstate this:  if (typeof CKEDITOR === "undefined") return;  // this happens during unit testing
+        CKEDITOR.disableAutoInline = true;
+
+        // Map from ckeditor id strings to the div the ckeditor is wrapping.
+        var mapCkeditDiv = new Object();
+
+        // attach ckeditor to the contenteditable="true" class="bloom-content1"
+        // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
+        // but skip any element with class="bloom-userCannotModifyStyles"
+        $('div.bloom-page').find('.bloom-content1[contenteditable="true"],.bloom-content2[contenteditable="true"],.bloom-content3[contenteditable="true"],.bloom-contentNational1[contenteditable="true"]').each(function() {
+
+            if ($(this).hasClass('bloom-userCannotModifyStyles'))
+                return; // equivalent to 'continue'
+
+            if ($(this).css('cursor') == 'not-allowed')
+                return;
+
+            var ckedit = CKEDITOR.inline(this);
+
+            // Record the div of the edit box for use later in positioning the format bar.
+            mapCkeditDiv[ckedit.id] = this;
+
+        // show or hide the toolbar when the text selection changes
+            ckedit.on('selectionCheck', function(evt) {
+                var editor = evt['editor'];
+                // Length of selected text is more reliable than comparing
+                // endpoints of the first range.  Mozilla can return multiple
+                // ranges with the first one being empty.
+                var selection = editor.getSelection();
+                var textSelected = selection.getSelectedText();
+                var show = (textSelected.length > 0);
+                var bar = $('body').find('.' + editor.id);
+                show ? bar.show() : bar.hide();
+
+                // Move the format bar on the screen if needed.
+                // (Note that offsets are not defined if it's not visible.)
+                if (show) {
+                    var barTop = bar.offset().top;
+                    var div = mapCkeditDiv[editor.id];
+                    var rect = div.getBoundingClientRect();
+                    var parent = bar.scrollParent();
+                    var scrollTop = (parent) ? parent.scrollTop() : 0;
+                    var boxTop = rect.top + scrollTop;
+                    if (boxTop - barTop < 5) {
+                        var barLeft = bar.offset().left;
+                        var barHeight = bar.height();
+                        bar.offset({ top: boxTop - barHeight, left: barLeft });
+                    }
+                }
+            });
+
+            // hide the toolbar when ckeditor starts
+            ckedit.on('instanceReady', function(evt) {
+                var editor = evt['editor'];
+                var bar = $('body').find('.' + editor.id);
+                bar.hide();
+            });
+
+            BloomField.WireToCKEditor(this, ckedit);
         });
 
-        BloomField.WireToCKEditor(this, ckedit);
-    });
-
-    //this is some sample code for working on CommandAvailabilityPublisher websocket messages
-//   var client = new WebSocket("ws://127.0.0.1:8189");
-//   client.onmessage = function(event) {
-//        var commandStatus = JSON.parse(event.data);
-//        alert("DeleteCurrentPage Command "+ (commandStatus.deleteCurrentPage.enabled == true ? "Enabled" : "Disabled")) ;
-//    }
-}); // end document ready function
+        //this is some sample code for working on CommandAvailabilityPublisher websocket messages
+    //   var client = new WebSocket("ws://127.0.0.1:8189");
+    //   client.onmessage = function(event) {
+    //        var commandStatus = JSON.parse(event.data);
+    //        alert("DeleteCurrentPage Command "+ (commandStatus.deleteCurrentPage.enabled == true ? "Enabled" : "Disabled")) ;
+    //    }
+}
 
 // This is invoked from C# when we are about to change pages. It is mainly for origami,
 // but preparePageForEditingAfterOrigamiChangesEvent currently has the (very important)

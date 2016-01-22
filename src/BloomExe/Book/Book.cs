@@ -284,7 +284,10 @@ namespace Bloom.Book
 		private void AddJavaScriptForEditing(HtmlDom dom)
 		{
 			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
-			dom.AddJavascriptFile("bookEdit/js/bloomBootstrap.js".ToLocalhost());
+
+			dom.AddJavascriptFile("lib/ckeditor/ckeditor.js".ToLocalhost());
+			dom.AddJavascriptFile("output/commonCode.js".ToLocalhost());
+			dom.AddJavascriptFile("output/editablePageIFrame.js".ToLocalhost());
 		}
 
 

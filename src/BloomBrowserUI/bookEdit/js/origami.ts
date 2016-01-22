@@ -2,6 +2,7 @@
 ///<reference path="../../lib/split-pane/split-pane.d.ts" /> 
 import {fireCSharpEditEvent} from './bloomEditing';
 import {SetupImage} from './bloomImages';
+import '../../lib/split-pane/split-pane.js';
 
 $(function() {
     $('div.split-pane').splitPane();

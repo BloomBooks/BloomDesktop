@@ -4,7 +4,7 @@ import * as $ from 'jquery';
 import * as jQuery from 'jquery';
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import getIframeChannel from '../../bookEdit/js/getIframeChannel';
-import '../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js';
+import '../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js';
         
         
 window.addEventListener("message", process_EditFrame_Message, false);

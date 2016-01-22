@@ -1,6 +1,10 @@
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="decodableReader/synphonyApi.ts" />
 /// <reference path="decodableReader/readerToolsModel.ts" />
+/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
+
+import '../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js';
+import '../../lib/jquery.i18n.custom.js';
 
 /**
  * The html code for a check mark character
@@ -108,7 +112,7 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
         return;
     }
     // Once we have a valid page, we can proceed to the next stage.
-    this.restoreToolboxSettingsWhenCkEditorReady(settings);
+    restoreToolboxSettingsWhenCkEditorReady(settings);
 }
 
 function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
@@ -151,7 +155,7 @@ function getPageFrame(): HTMLIFrameElement {
 
     // The body of the editable page, a root for searching for document content.
 function getPage(): JQuery {
-    var page = this.getPageFrame();
+    var page = getPageFrame();
     if (!page) return null;
     return $(page.contentWindow.document.body);
 }
@@ -185,7 +189,6 @@ function switchTool(newToolName: string)
  * @param {String} currentPanel
  */
 function setCurrentPanel(currentPanel) {
-
     // NOTE: panels without a "data-panelId" attribute (such as the More panel) cannot be the "currentPanel."
     var idx = '0';
     var toolbox = $('#toolbox');

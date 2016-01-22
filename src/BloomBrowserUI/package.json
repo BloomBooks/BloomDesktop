@@ -53,6 +53,7 @@
     "karma-jasmine": "^0.3.6",
     "path": "^0.12.7",
     "run-sequence": "^1.1.5",
+    "ts-loader": "^0.8.0",
     "webpack": "^1.12.11"
   }
 }
