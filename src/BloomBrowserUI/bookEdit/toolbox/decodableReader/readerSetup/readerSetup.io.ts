@@ -2,6 +2,7 @@
 /// <reference path="../../../toolbox/decodableReader/readerSettings.ts" />
 /// <reference path="readerSetup.ui.ts" />
 import {enableSampleWords, displayLetters, selectLetters, selectLevel, selectStage, setLevelValue} from './readerSetup.ui';
+import getIframeChannel from '../../../js/getIframeChannel';
 
 var previousMoreWords: string;
 

@@ -2,8 +2,6 @@
 import * as $ from 'jquery';
 import * as jQuery from 'jquery';
 
-//doesn't help: (uses webpack script-loader) require('script!../../node_modules/jquery/dist/jquery.js');
-//require('script!../../node_modules/jquery/dist/jquery.js');
 import '../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import 'localizationManager/localizationManager.js';
 import 'jquery.i18n.custom.js';
@@ -27,3 +25,7 @@ import './talkingBook/talkingBook.js';
 import './talkingBook/audioRecording.js';
 import './bookSettings/bookSettings.js';
 import './toolbox.js';
+
+import {restoreToolboxSettings} from './toolbox';
+
+$(document).ready(function() { restoreToolboxSettings(GetToolboxSettings()); });

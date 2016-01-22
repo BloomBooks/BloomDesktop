@@ -7,11 +7,13 @@
 /// <reference path="../../typings/jquery.easytabs.d.ts" />
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import StyleEditor from "../StyleEditor/StyleEditor";
+import bloomQtipUtils from '../js/bloomQtipUtils';
+
 declare function GetSettings() : any; //c# injects this
 
 declare function GetStyleClassFromElement(element: HTMLElement): string;
 
-export class bloomSourceBubbles {
+export default class BloomSourceBubbles {
 
     //:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph
     private static hasNoText(obj: HTMLElement): boolean {
@@ -26,22 +28,22 @@ export class bloomSourceBubbles {
     // param 'group' is a .bloom-translationGroup DIV
     // optional param 'newIso' is defined when the user clicks on a language in the dropdown box
     public static ProduceSourceBubbles(group: HTMLElement, newIso?: string): void {
-        var divForBubble = bloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
+        var divForBubble = BloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
         if(divForBubble == null) return;
 
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
-        divForBubble = bloomSourceBubbles.CreateTabsFromDiv(divForBubble);
+        divForBubble = BloomSourceBubbles.CreateTabsFromDiv(divForBubble);
         if (divForBubble == null) return;
 
         // If divForBubble contains more than two languages, create a dropdown menu to contain the
         // extra possibilities. The menu will show (x), where x is the number of items in the dropdown.
-        divForBubble = bloomSourceBubbles.CreateDropdownIfNecessary(divForBubble);
+        divForBubble = BloomSourceBubbles.CreateDropdownIfNecessary(divForBubble);
 
         // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
         // Also makes sure the tooltips are setup correctly.
-        bloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(group, divForBubble);
+        BloomSourceBubbles.CreateAndShowQtipBubbleFromDiv(group, divForBubble);
 
-        bloomSourceBubbles.HideLabelsThatWouldBeUnderfoot(group);
+        BloomSourceBubbles.HideLabelsThatWouldBeUnderfoot(group);
     }
 
     // Cleans up a clone of the original translationGroup
@@ -61,7 +63,7 @@ export class bloomSourceBubbles {
         divForBubble.find("textarea, div").each(function() {
             //don't want empty items in the bubble
             var $this = $(this);
-            if(bloomSourceBubbles.hasNoText(this)) {
+            if(BloomSourceBubbles.hasNoText(this)) {
                 $this.remove();
                 return true; // skip to next iteration of each()
             }
@@ -79,7 +81,7 @@ export class bloomSourceBubbles {
                 $this.removeClass(styleClass);
 
             // remove any CustomPage min-height styles (they conflict with the source bubble css)
-            bloomSourceBubbles.RemoveCustomPageAdditions($this);
+            BloomSourceBubbles.RemoveCustomPageAdditions($this);
 
             $this.addClass("source-text");
         });
@@ -129,7 +131,7 @@ export class bloomSourceBubbles {
         });
 
         // BL-2357
-        items = bloomSourceBubbles.SmartOrderSourceTabs(items, newIso);
+        items = BloomSourceBubbles.SmartOrderSourceTabs(items, newIso);
 
         var shellEditingMode = false;
         var list = $this.find('ul');
@@ -167,7 +169,7 @@ export class bloomSourceBubbles {
         var defaultSrcLang = settingsObject.defaultSourceLanguage;
         var destination = 0;
         if(newIso) defaultSrcLang = newIso;
-        var newItems = bloomSourceBubbles.DoSafeReplaceInList(items, defaultSrcLang, destination);
+        var newItems = BloomSourceBubbles.DoSafeReplaceInList(items, defaultSrcLang, destination);
         if($(newItems).attr('lang') == defaultSrcLang) { // .attr() just gets the first one
             destination++;
             items = newItems;
@@ -175,14 +177,14 @@ export class bloomSourceBubbles {
         var language2 = settingsObject.currentCollectionLanguage2;
         var language3 = settingsObject.currentCollectionLanguage3;
         if (language2 && language2 != defaultSrcLang) {
-            newItems = bloomSourceBubbles.DoSafeReplaceInList(items, language2, destination);
+            newItems = BloomSourceBubbles.DoSafeReplaceInList(items, language2, destination);
             if($(newItems[destination]).attr('lang') == language2) {
                 destination++;
                 items = newItems;
             }
         }
         if (language3 && language3 != defaultSrcLang) {
-            newItems = bloomSourceBubbles.DoSafeReplaceInList(items, language3, destination);
+            newItems = BloomSourceBubbles.DoSafeReplaceInList(items, language3, destination);
             if($(newItems[destination]).attr('lang') == language3) {
                 items = newItems;
             }
@@ -255,7 +257,7 @@ export class bloomSourceBubbles {
         tabs.remove('.removeThisOne');
 
         container.find('li').each(function () {
-            this.addEventListener("click", bloomSourceBubbles.styledSelectChangeHandler, false);
+            this.addEventListener("click", BloomSourceBubbles.styledSelectChangeHandler, false);
         });
 
         // BL-2390 Add number of extra tabs to visible part of dropdown
@@ -272,7 +274,7 @@ export class bloomSourceBubbles {
 
         // Redo creating the source bubbles with the selected language first
         if(group && group.length > 0) // should be
-            bloomSourceBubbles.ProduceSourceBubbles(group[0], newIso);
+            BloomSourceBubbles.ProduceSourceBubbles(group[0], newIso);
     }
 
     // Turns the tabbed and linked div bundle into a qtip bubble attached to the bloom-translationGroup (group).
@@ -349,7 +351,7 @@ export class bloomSourceBubbles {
                 }
             });
 
-            bloomSourceBubbles.SetupTooltips($this);
+            BloomSourceBubbles.SetupTooltips($this);
         });
     }
 

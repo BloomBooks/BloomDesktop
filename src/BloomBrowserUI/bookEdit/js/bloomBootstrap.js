@@ -6,6 +6,11 @@ var npmModules = [
 ];
 
 var scripts = [
+    'bookEdit/js/jquery.hasAttr.js',
+    'bookEdit/js/bloomEditing.js',
+    "output/commonCode.js",
+    "output/editablePageIFrame.js",
+/*    
     'modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js', 
     'lib/jquery.easytabs.js', // we have modified this. Todo: make a github fork of our version
     'lib/jquery.hashchange.min.js',       // needed by easytabs
@@ -23,7 +28,7 @@ var scripts = [
     'bookEdit/js/bloomQtipUtils.js',
     'bookEdit/sourceBubbles/bloomSourceBubbles.js',
     'bookEdit/js/bloomNotices.js',
-    'bookEdit/js/bloomHintBubbles.js',
+    'bookEdit/js/BloomHintBubbles.js',
     'bookEdit/StyleEditor/StyleEditor.js',
     'bookEdit/OverflowChecker/OverflowChecker.js',
     'bookEdit/TopicChooser/TopicChooser.js',
@@ -44,6 +49,7 @@ var scripts = [
     'bookEdit/toolbox/decodableReader/libsynphony/synphony_lib.js',
     'bookEdit/toolbox/decodableReader/libsynphony/bloom_lib.js',
     //Review: I'm taking this out hoping it's not needed outside the toolbox: 'bookEdit/toolbox/talkingBook/audioRecording.js'
+    */
 ];
 
 var styleSheets = [

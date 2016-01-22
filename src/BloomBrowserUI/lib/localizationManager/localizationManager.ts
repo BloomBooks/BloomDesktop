@@ -1,6 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../misc-types.d.ts" />
 /// <reference path="../../bookEdit/js/getIframeChannel.ts" />
+import getIframeChannel from '../../bookEdit/js/getIframeChannel';
 
 /**
  * L10NSharp LocalizationManager for javascript.
@@ -32,9 +33,6 @@
  *      this is found in StyleEditor.GetToolTip(), where the tip for the font size changer is built.
  */
 declare function GetInlineDictionary() : any; //c# injects this
-
-var theOneLocalizationManager: LocalizationManager = new LocalizationManager();
-export default theOneLocalizationManager;
 
 
 class LocalizationManager {
@@ -288,3 +286,6 @@ function HtmlDecode(text): string {
   div.innerHTML = text;
   return div.firstChild.nodeValue;
 }
+
+var theOneLocalizationManager: LocalizationManager = new LocalizationManager();
+export default theOneLocalizationManager;

@@ -8,13 +8,16 @@ html
 		link(rel='stylesheet', href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/pageChooser/page-chooser.css', type='text/css')
 		link(rel='stylesheet', href='/bloom/bookEdit/bloomDialog.css', type='text/css')
-		script(src='/bloom/bookEdit/js/interIframeChannel.js')
 		script(src='/bloom/node_modules/jquery/dist/jquery.js')
-		script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
+        script(src='/bloom/bookEdit/js/jquery.hasAttr.js')
+        script(src='/bloom/bookEdit/js/bloomEditing.js')
+        script(src='/bloom/bookEdit/js/interIframeChannel.js')
+		
+		//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
 		script(src='/bloom/lib/errorHandler.js')
 		script(src='/bloom/bookEdit/js/editViewFrame.js')
 		//script(src='/bloom/bookEdit/js/calledByCSharp.js')
-		script(src='/bloom/pageChooser/js/page-chooser.js')
+		script(src='/bloom/output/pageChooserIFrame.js')
 		script.
 			//var calledByCSharp;
 			var interIframeChannel;

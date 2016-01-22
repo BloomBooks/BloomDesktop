@@ -1,5 +1,6 @@
 ﻿import {ITabModel} from "../toolbox";
 import {ToolBox} from "../toolbox";
+import * as AudioRecorder from './audioRecording';
 
 class TalkingBookModel implements ITabModel {
     restoreSettings(settings: string) {}
@@ -7,16 +8,16 @@ class TalkingBookModel implements ITabModel {
     configureElements(container: HTMLElement) {}
 
     showTool() {
-        initializeTalkingBookTool();
-        audioRecorder.setupForRecording();
+        AudioRecorder.initializeTalkingBookTool();
+        AudioRecorder.theOneAudioRecorder.setupForRecording();
     }
 
     hideTool() {
-        audioRecorder.removeRecordingSetup();
+        AudioRecorder.theOneAudioRecorder.removeRecordingSetup();
     }
 
     updateMarkup() {
-        audioRecorder.updateMarkupAndControlsToCurrentText();
+        AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
     }
 
     name() { return 'talkingBookTool'; }

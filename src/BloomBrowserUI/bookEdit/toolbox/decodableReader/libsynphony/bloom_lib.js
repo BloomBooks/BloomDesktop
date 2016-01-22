@@ -6,6 +6,8 @@
  * Created Apr 14, 2014 by Phil Hopper
  *
  */
+import {XRegExp} from 'xregexp';
+import {LanguageData, libSynphony} from './synphony_lib';
 
 var wordCache;
 

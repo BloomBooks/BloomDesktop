@@ -14,8 +14,9 @@ module.exports = {
              toolboxIFrame: './bookEdit/toolbox/index.js',
              //editViewApp:  './bookEdit/index.js',
              //settingsIFrame:
-             //pageIFrame:
+             editablePageIFrame: './bookEdit/editablePageIndex.js',
              //ReaderSetupDialog:
+             pageChooserIFrame: './pageChooser/js/page-chooser.js'
              },
 
     output: {
@@ -32,29 +33,27 @@ module.exports = {
         extensions: ['', '.js', '.jsx'] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
     },
     plugins: [
-             new webpack.optimize.CommonsChunkPlugin("common", "commonCode.js")
+           new webpack.optimize.CommonsChunkPlugin("common", "commonCode.js"),
+                         //answer on various legacy issues: http://stackoverflow.com/questions/28969861/managing-jquery-plugin-dependency-in-webpack?lq=1
+            //prepend var $ = require("jquery") every time it encounters the global $ identifier or "jQuery".
+            new webpack.ProvidePlugin({
+                $: "jquery",
+                jQuery: "jquery",
+                "window.jQuery": "jquery"
+            })
       ],
     module: {
 
         loaders: [
            {
                test: /\.(js|jsx)$/,
-               exclude: /node_modules/,
+               //jquery-ui is currently *not* excluded because we added some imports to it
+               exclude: [/node_modules/, /ckeditor/, /*/jquery-ui/,*/ /-min/, /qtip/, /xregexp-all-min.js/],
                loader: 'babel?presets[]=react,presets[]=es2015'
            },
             // { test: /\.ts(x?)$/, loader: 'babel-loader!ts-loader' },
             // { test: /\.less$/, loader: "style!css!less" }
         ],
-        noParse: [pathToReactDom,pathToReact],
-        plugins: [
-
-            //answer on various legacy issues: http://stackoverflow.com/questions/28969861/managing-jquery-plugin-dependency-in-webpack?lq=1
-            //prepend var $ = require("jquery") every time it encounters the global $ identifier or "jQuery".
-            webpack.ProvidePlugin({
-                $: "jquery",
-                jQuery: "jquery",
-                "window.jQuery": "jquery"
-            })
-    ]
+        noParse: [pathToReactDom,pathToReact]
     }
 };

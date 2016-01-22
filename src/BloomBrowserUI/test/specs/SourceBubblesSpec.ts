@@ -1,8 +1,8 @@
-/// <reference path="../../bookEdit/sourceBubbles/bloomSourceBubbles.ts" />
+/// <reference path="../../bookEdit/sourceBubbles/BloomSourceBubbles.ts" />
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../lib/jasmine/jasmine.d.ts"/>
 
-import {bloomSourceBubbles} from "../../bookEdit/sourceBubbles/bloomSourceBubbles";
+import BloomSourceBubbles from "../../bookEdit/sourceBubbles/BloomSourceBubbles";
 "use strict";
 
 describe("SourceBubbles", function () {
@@ -29,7 +29,7 @@ describe("SourceBubbles", function () {
       "</div>"
     ].join("\n"));
     $('body').append(testHtml);
-    var result = bloomSourceBubbles.MakeSourceTextDivForGroup($('body').find('#testTarget')[0]);
+    var result = BloomSourceBubbles.MakeSourceTextDivForGroup($('body').find('#testTarget')[0]);
     // English in test is vernacular, so no tab for it
     // Tok Pisin tab gets moved to first place, since it is currentCollectionLanguage2
     // French is second, since it is currentCollectionLanguage3
@@ -66,7 +66,7 @@ describe("SourceBubbles", function () {
       "</div>"
     ].join("\n"));
     $('body').append(testHtml);
-    var result = bloomSourceBubbles.MakeSourceTextDivForGroup($('body').find('#testTarget')[0]);
+    var result = BloomSourceBubbles.MakeSourceTextDivForGroup($('body').find('#testTarget')[0]);
     // English in test is vernacular, so no tab for it
     // Tok Pisin tab gets moved to first place, since it is currentCollectionLanguage2
     // French is marked as N1, so it gets deleted, since this is the bookTitle
@@ -103,7 +103,7 @@ describe("SourceBubbles", function () {
       "</div>"
     ].join("\n"));
     $('body').append(testHtml);
-    var result = bloomSourceBubbles.CreateDropdownIfNecessary($('body').find('#testTarget'));
+    var result = BloomSourceBubbles.CreateDropdownIfNecessary($('body').find('#testTarget'));
     // result should contain:
     // <nav>
     //   <ul>
@@ -150,7 +150,7 @@ describe("SourceBubbles", function () {
       "</div>"
     ].join("\n"));
     $('body').append(testHtml);
-    var result = bloomSourceBubbles.CreateDropdownIfNecessary($('body').find('#testTarget'));
+    var result = BloomSourceBubbles.CreateDropdownIfNecessary($('body').find('#testTarget'));
     var listItems = result.find('nav > ul > li');
     expect(listItems.length).toBe(2); // this is why we don't need a dropdown
     expect(listItems.first().html()).toBe("<a class=\"sourceTextTab\" href=\"#tpi\">Tok Pisin</a>");

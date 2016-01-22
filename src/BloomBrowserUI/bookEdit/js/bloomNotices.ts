@@ -2,14 +2,16 @@
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="bloomQtipUtils.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
+/// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
+
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 
-class bloomNotices {
+export default class BloomNotices {
     public static addExperimentalNotice(container: HTMLElement): void {
         var experimental = theOneLocalizationManager.getText('EditTab.ExperimentalNotice',
             'This page is an experimental prototype which may have many problems, for which we apologize.');
         $(container).find(".pictureDictionaryPage").each(function () {
-            (<qtipInterface>$(this)).qtipSecondary({
+            ($(this)).qtipSecondary({
                 content: "<div id='experimentNotice'><img src='/bloom/images/experiment.png'/>" + experimental + "<div/>"
                 , show: { ready: true }
                 , hide: false

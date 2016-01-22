@@ -20,7 +20,7 @@
 // Next, we have to keep you from accidentally losing the image placeholder when you do ctrl+a DEL. We prevent this deletion 
 // for any element marked with a 'bloom-preventRemoval' class.
 
-class BloomField {
+export default class BloomField {
     static ManageField(bloomEditableDiv:HTMLElement) {
 
         BloomField.PreventRemovalOfSomeElements(bloomEditableDiv);
@@ -363,7 +363,8 @@ class BloomField {
             //   $(this).html($(this).html().replace('&nbsp;', ""));
 
             //so now we do the following business, where we select the &nbsp; we want to delete, moments before the character is typed or text pasted
-            var selection: Selection = window.getSelection();
+            
+            var selection: FFSelection = window.getSelection() as FFSelection;
 
             //if we're at the start of the text, we're to the left of the character we want to replace
             if (selection.anchorOffset === 0) {
@@ -396,7 +397,7 @@ class BloomField {
     }
 }
 enum CursorPosition { start, end }
-interface Selection {
+interface FFSelection extends Selection{
     //This is nonstandard, but supported by firefox. So we have to tell typescript about it
     modify(alter:string, direction:string, granularity:string):Selection;
 }

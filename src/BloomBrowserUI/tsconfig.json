@@ -1,1 +1,7 @@
-This will be ignored because the gulpfile.js is not set up to use it. Instead, we're currently adding the typescript options there.
+
+{
+    "compilerOptions": {
+            "target": "es5",
+            "module":"commonjs"
+        }
+}

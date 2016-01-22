@@ -2,7 +2,7 @@
 /**
  * Finds the interIframeChannel on the main document
  */
-function getIframeChannel(): interIframeChannel {
+export default function getIframeChannel(): interIframeChannel {
 
   if (typeof document["interIframeChannel"] === 'object') {
     return document["interIframeChannel"];
@@ -14,3 +14,5 @@ function getIframeChannel(): interIframeChannel {
   // not found
   return null;
 }
+
+export function foo(){}

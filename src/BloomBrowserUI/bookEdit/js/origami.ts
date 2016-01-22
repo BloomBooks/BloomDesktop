@@ -1,24 +1,27 @@
 //not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
 ///<reference path="../../lib/split-pane/split-pane.d.ts" /> 
-var bloomEditing_1 = require('./bloomEditing');
-var bloomImages_1 = require('./bloomImages');
-$(function () {
+import {fireCSharpEditEvent} from './bloomEditing';
+import {SetupImage} from './bloomImages';
+
+$(function() {
     $('div.split-pane').splitPane();
 });
-function setupOrigami() {
+
+export function setupOrigami() {
     $('.customPage').append(getOnOffSwitch().append(createTypeSelectors()).append(createTextBoxIdentifier()));
+
     $('.origami-toggle .onoffswitch').change(layoutToggleClickHandler);
-    if ($('.customPage .marginBox.origami-layout-mode').length) {
+
+    if($('.customPage .marginBox.origami-layout-mode').length) {
         setupLayoutMode();
         $('#myonoffswitch').prop('checked', true);
     }
 }
-exports.setupOrigami = setupOrigami;
-function cleanupOrigami() {
+
+export function cleanupOrigami() {
     // Otherwise, we get a new one each time the page is loaded
     $('.split-pane-resize-shim').remove();
 }
-exports.cleanupOrigami = cleanupOrigami;
 function isEmpty(el) {
     var temp = $.trim(el[0].textContent);
     //alert("-" + temp + "- equals empty string: " + (temp == "").toString());
@@ -38,9 +41,10 @@ function setupLayoutMode() {
         }
         if (!$this.find('.bloom-imageContainer, .bloom-translationGroup:not(.box-header-off)').length)
             $this.append(getTypeSelectors());
+
         $this.append(getButtons());
         var contents = $this.find('.bloom-translationGroup:not(.box-header-off) > .bloom-editable');
-        if (!contents.length || (contents.length && !isEmpty(contents)))
+        if(!contents.length || (contents.length && !isEmpty(contents)))
             return true;
         $this.append(getTextBoxIdentifier());
     });
@@ -49,7 +53,7 @@ function setupLayoutMode() {
     // Images cannot be changed (other than growing/shrinking with container) in layout mode
     $('.bloom-imageContainer').off('mouseenter').off('mouseleave');
     // Attaching to html allows it to work even if nothing has focus.
-    $('html').on('keydown.origami', function (e) {
+    $('html').on('keydown.origami', e => {
         if (e.keyCode === 89 && e.ctrlKey) {
             origamiRedo();
         }
@@ -58,20 +62,21 @@ function setupLayoutMode() {
         }
     });
 }
+
 function layoutToggleClickHandler() {
     var marginBox = $('.marginBox');
     if (!marginBox.hasClass('origami-layout-mode')) {
         marginBox.addClass('origami-layout-mode');
         setupLayoutMode();
-    }
-    else {
+    } else {
         marginBox.removeClass('origami-layout-mode');
         marginBox.find('.bloom-translationGroup .textBox-identifier').remove();
-        bloomEditing_1.fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
+        fireCSharpEditEvent('preparePageForEditingAfterOrigamiChangesEvent', '');
         origamiUndoStack.length = origamiUndoIndex = 0;
         $('html').off('keydown.origami');
     }
 }
+
 // Event handler to split the current box in half (vertically or horizontally)
 function splitClickHandler() {
     var myInner = $(this).closest('.split-pane-component-inner');
@@ -84,6 +89,7 @@ function splitClickHandler() {
     else if ($(this).hasClass('splitter-left'))
         performSplit(myInner, 'vertical', 'right', 'left', true);
 }
+
 function performSplit(innerElement, verticalOrHorizontal, existingContentPosition, newContentPosition, prependNew) {
     addUndoPoint();
     innerElement.wrap(getSplitPaneHtml(verticalOrHorizontal));
@@ -92,15 +98,16 @@ function performSplit(innerElement, verticalOrHorizontal, existingContentPositio
     if (prependNew) {
         newSplitPane.prepend(getSplitPaneDividerHtml(verticalOrHorizontal));
         newSplitPane.prepend(getSplitPaneComponentWithNewContent(newContentPosition));
-    }
-    else {
+    } else {
         newSplitPane.append(getSplitPaneDividerHtml(verticalOrHorizontal));
         newSplitPane.append(getSplitPaneComponentWithNewContent(newContentPosition));
     }
     newSplitPane.splitPane();
 }
+
 var origamiUndoStack = [];
 var origamiUndoIndex = 0; // of item that should be redone next, if any
+
 // Add a point to which the user can return using 'undo'. Call this before making any change that
 // would make sense to Undo in origami mode.
 function addUndoPoint() {
@@ -112,9 +119,11 @@ function addUndoPoint() {
     origamiUndoStack.push({ original: origamiRoot.clone(true) });
     origamiUndoIndex = origamiUndoStack.length;
 }
+
 function origamiCanUndo() {
     return origamiUndoIndex > 0;
 }
+
 function origamiUndo() {
     if (origamiCanUndo()) {
         var origamiRoot = $('.marginBox');
@@ -127,15 +136,18 @@ function origamiUndo() {
         origamiRoot.replaceWith(origamiUndoStack[origamiUndoIndex].original);
     }
 }
+
 function origamiCanRedo() {
     return origamiUndoStack.length > origamiUndoIndex;
 }
+
 function origamiRedo() {
     if (origamiCanRedo()) {
         origamiUndoIndex++;
         $('.marginBox').replaceWith(origamiUndoStack[origamiUndoIndex].original);
     }
 }
+
 // Event handler to add a new column or row (was working in demo but never wired up in Bloom)
 //function addClickHandler() {
 //    var topSplitPane = $('.split-pane-frame').children('div').first();
@@ -155,6 +167,7 @@ function origamiRedo() {
 //        newSplitPane.splitPane();
 //    }
 //}
+
 function closeClickHandler() {
     if (!$('.split-pane').length) {
         // We're at the topmost element
@@ -164,22 +177,26 @@ function closeClickHandler() {
         marginBox.append(getSplitPaneComponentInner());
         return;
     }
-    var myComponent = $(this).closest('.split-pane-component'); // the div/cell being removed
+
+    var myComponent = $(this).closest('.split-pane-component');                // the div/cell being removed
     //reviewSlog was doing a first('div') which is actually bogus, now parameters allowed.
-    var sibling = myComponent.siblings('.split-pane-component').filter('div').first(); // the other div/cell in the same pane
-    var toReplace = myComponent.parent().parent(); // the div/cell containing the pane that contains the siblings above
+    var sibling = myComponent.siblings('.split-pane-component').filter('div').first();  // the other div/cell in the same pane
+    var toReplace = myComponent.parent().parent();                             // the div/cell containing the pane that contains the siblings above
     var positionClass = toReplace.attr('class');
     var positionStyle = toReplace.attr('style');
     addUndoPoint();
+
     toReplace.replaceWith(sibling);
+
     // The idea here is we need the position-* class from the parent to replace the sibling's position-* class.
     // This is working for now, but should be cleaned up since it could also add other classes.
     sibling.removeClass(function (index, css) {
-        return (css.match(/(^|\s)position-\S+/g) || []).join(' ');
+        return (css.match (/(^|\s)position-\S+/g) || []).join(' ');
     });
     sibling.addClass(positionClass);
     sibling.attr('style', positionStyle);
 }
+
 function getSplitPaneHtml(verticalOrHorizontal) {
     return $('<div class="split-pane ' + verticalOrHorizontal + '-percent"></div>');
 }
@@ -202,6 +219,7 @@ function getSplitPaneComponentInner() {
     spci.append(getButtons());
     return spci;
 }
+
 function getOnOffSwitch() {
     return $('\
 <div class="origami-toggle bloom-ui"> \
@@ -308,12 +326,11 @@ function makePictureFieldClickHandler(e) {
     var imageContainer = $('<div class="bloom-imageContainer bloom-leadingElement"></div>');
     var image = $('<img src="placeHolder.png" alt="Could not load the picture"/>');
     imageContainer.append(image);
-    bloomImages_1.SetupImage(image); // Must attach it first so event handler gets added to parent
+    SetupImage(image); // Must attach it first so event handler gets added to parent
     container.append(imageContainer);
     $(this).closest('.selector-links').remove();
 }
+
 function setStyle(data, translationGroup) {
     $(translationGroup).addClass('style' + data + '-style');
 }
-
-//# sourceMappingURL=origami.js.map

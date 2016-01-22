@@ -1,11 +1,12 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
+import * as JQuery from 'jquery';
 
-interface qtipInterface extends JQuery {
+export interface qtipInterface extends JQuery {
     qtip(options: any): JQuery;
 }
 
-class bloomQtipUtils {
+export default class bloomQtipUtils {
 
     public static cleanupBubbles(): void {
         // remove the div's which qtip makes for the tips themselves

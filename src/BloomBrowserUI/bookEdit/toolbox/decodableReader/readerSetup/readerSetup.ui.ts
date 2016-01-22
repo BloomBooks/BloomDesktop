@@ -1,7 +1,7 @@
 /// <reference path="readerSetup.io.ts" />
 
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
-
+import getIframeChannel from '../../../js/getIframeChannel';
 import {saveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords} from './readerSetup.io';
 
 var desiredGPCs: string[];

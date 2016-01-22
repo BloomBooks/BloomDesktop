@@ -12,12 +12,14 @@
 /// <reference path="../js/collectionSettings.d.ts"/>
 /// <reference path="../OverflowChecker/OverflowChecker.ts"/>
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
+import getIframeChannel from '../js/getIframeChannel';
+import OverflowChecker from '../OverflowChecker/OverflowChecker';
+import {GetDifferenceBetweenHeightAndParentHeight} from '../js/bloomEditing';
 
 var iframeChannel = getIframeChannel();
 
 declare function GetSettings() : any; //c# injects this
 
-declare function GetDifferenceBetweenHeightAndParentHeight(JQuery):number;
 
 export default class StyleEditor {
 
@@ -367,7 +369,7 @@ export default class StyleEditor {
     AddQtipToElement(element: JQuery, toolTip: string, delay: number = 3000) {
         if (element.length == 0)
             return;
-        (<qtipInterface>element).qtipSecondary({
+        element.qtipSecondary({
             content: toolTip,
             show: {
                 event: 'click mouseenter',

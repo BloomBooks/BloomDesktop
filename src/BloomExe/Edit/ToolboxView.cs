@@ -110,8 +110,8 @@ namespace Bloom.Edit
 			}
 
 			var settingsStr = JsonConvert.SerializeObject(settings);
-			settingsStr = String.Format("function GetToolboxSettings() {{ return {0};}}", settingsStr) +
-				"\n$(document).ready(function() { restoreToolboxSettings(GetToolboxSettings()); });";
+			settingsStr = String.Format("function GetToolboxSettings() {{ return {0};}}", settingsStr);
+			//moved to ts/js so we can require restoreToolboxSettings	: "\n$(document).ready(function() { restoreToolboxSettings(GetToolboxSettings()); });";
 
 			var scriptElement = domForToolbox.RawDom.CreateElement("script");
 			scriptElement.SetAttribute("type", "text/javascript");

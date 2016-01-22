@@ -1,3 +1,5 @@
+import XRegExp from 'xregexp';
+
 /**
  * synphony_lib.js
  *
@@ -18,7 +20,7 @@ var alwaysMatch = [];
  * @param {Object} [optionalObject] Optional. If present, used to initialize the class.
  * @returns {LanguageData}
  */
-function LanguageData(optionalObject) {
+export function LanguageData(optionalObject) {
 
     this.LangName = '';
     this.LangID = '';
@@ -64,7 +66,7 @@ function setLangData(data) {
  * Class that holds Synphony-related functions
  * @returns {libSynphony}
  */
-var libSynphony = function() {};
+export var libSynphony = function() {};
 
 /**
  * Returns a list of words that meet the requested criteria.
@@ -645,4 +647,3 @@ checkStoryResults.prototype.getNumbers = function() {
     return nums;
 };
 
-var libsynphony = new libSynphony();

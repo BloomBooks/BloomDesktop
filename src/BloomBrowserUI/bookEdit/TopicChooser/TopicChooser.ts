@@ -2,7 +2,7 @@
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
-
+import getIframeChannel from '../js/getIframeChannel';
 
 // This must not be renamed. It s called directly from Bloom via RunJavaScript()
 // ReSharper disable once InconsistentNaming
@@ -11,7 +11,7 @@ var ShowTopicChooser = () => {
 }
 
 
-class TopicChooser {
+export default class TopicChooser {
     static showTopicChooser() {
         var currentTopicKey = $("div[data-book='topic']").parent().find("[lang='en']").text();
 

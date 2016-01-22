@@ -14,6 +14,7 @@ import {DirectoryWatcher} from "./directoryWatcher";
 import {resizeWordList} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import {ToolBox} from "../toolbox";
+import getIframeChannel from '../../js/getIframeChannel';
 
 var iframeChannel = getIframeChannel();
 

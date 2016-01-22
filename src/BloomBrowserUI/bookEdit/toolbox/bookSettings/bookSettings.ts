@@ -1,4 +1,6 @@
-﻿if (typeof ($) === "function") { // have jquery
+﻿import getIframeChannel from '../../js/getIframeChannel';
+
+if (typeof ($) === "function") { // have jquery
     $(document).ready(() => {
         // request our model and set the controls
         getIframeChannel().simpleAjaxGet('/bloom/bookSettings', settings => {

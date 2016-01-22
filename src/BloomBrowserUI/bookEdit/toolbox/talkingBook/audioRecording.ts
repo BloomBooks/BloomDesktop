@@ -40,13 +40,16 @@
 // - Some more obvious affordance for launching the Record feature
 // - Extract content of bubble HTML into its own file?
 
+import * as JQuery from 'jquery';
+import * as $ from 'jquery';
+
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
     Enabled, // Can use now, not the most likely thing to do next
     Expected, // The most likely/appropriate button to use next (e.g., Play right after recording)
     Active // Button now active (Play while playing; Record while held down)
 };
-class AudioRecording {
+export default class AudioRecording {
 
     recording: boolean;
     levelCanvas: HTMLCanvasElement;
@@ -287,7 +290,7 @@ class AudioRecording {
         var page = this.getPage();
         this.hiddenSourceBubbles = page.find('.uibloomSourceTextsBubble');
         this.hiddenSourceBubbles.hide();
-        var editable = <qtipInterface>page.find('div.bloom-editable');
+        var editable = page.find('div.bloom-editable');
         if (editable.length === 0) {
             // no editable text on this page.
             this.configureForNothingToRecord();
@@ -298,11 +301,11 @@ class AudioRecording {
 
     public updateMarkupAndControlsToCurrentText() {
         var page = this.getPage();
-        var editable = <qtipInterface>page.find('div.bloom-editable');
+        var editable = page.find('div.bloom-editable');
         this.makeSentenceSpans(editable);
         // For displaying the qtip, restrict the editable divs to the ones that have
         // audio sentences.
-        editable = <qtipInterface>$(page).find('span.audio-sentence').parents('div.bloom-editable');
+        editable = $(page).find('span.audio-sentence').parents('div.bloom-editable');
         var thisClass = this;
 
         thisClass.setStatus('record', Status.Expected);
@@ -331,7 +334,7 @@ class AudioRecording {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
         page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
-        var editable = <qtipInterface>page.find('div.bloom-editable');
+        var editable = page.find('div.bloom-editable');
     }
 
     // This gets invoked (via a non-object method of the same name in this file,
@@ -767,21 +770,21 @@ class AudioRecording {
     }
 }
 
-var audioRecorder;
+export var theOneAudioRecorder: AudioRecording;
 var libsynphony: libSynphony;
 
-function initializeTalkingBookTool() {
-    if (audioRecorder)
+export function initializeTalkingBookTool() {
+    if (theOneAudioRecorder)
         return;
-    audioRecorder = new AudioRecording();
+    theOneAudioRecorder = new AudioRecording();
     libsynphony = new libSynphony();
-    audioRecorder.initializeTalkingBookTool();
+    theOneAudioRecorder.initializeTalkingBookTool();
 }
 
 function cleanupAudio() {
-    audioRecorder.cleanupAudio();
+    theOneAudioRecorder.cleanupAudio();
 }
 
 function setPeakLevel(level:string) {
-    audioRecorder.setPeakLevel(level);
+    theOneAudioRecorder.setPeakLevel(level);
 }

@@ -5,10 +5,11 @@
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
+import bloomQtipUtils from './bloomQtipUtils';
 
 declare function GetSettings() : any; //c# injects this
 
-class bloomHintBubbles {
+export default class BloomHintBubbles {
 
     // Add (yellow) hint bubbles from (usually) label.bubble elements
     public static addHintBubbles(container: HTMLElement): void {
@@ -29,7 +30,7 @@ class bloomHintBubbles {
             labelElement.remove();
 
             //attach the bubble, this editable only, then remove it
-            bloomHintBubbles.MakeHelpBubble($(enclosingEditableDiv), labelElement);
+            BloomHintBubbles.MakeHelpBubble($(enclosingEditableDiv), labelElement);
         });
 
         // Having a <label class='bubble'> inside a div.bloom-translationGroup gives a hint bubble outside each of
@@ -45,7 +46,7 @@ class bloomHintBubbles {
 
             //attach the bubble, separately, to every visible field inside the group
             labelElement.parent().find("div.bloom-editable:visible").each(function () {
-                bloomHintBubbles.MakeHelpBubble($(this), labelElement);
+                BloomHintBubbles.MakeHelpBubble($(this), labelElement);
             });
         });
 
@@ -56,7 +57,7 @@ class bloomHintBubbles {
             if (!whatToSay)
                 return;
 
-            bloomHintBubbles.MakeHelpBubble(imageContainer, labelElement);
+            BloomHintBubbles.MakeHelpBubble(imageContainer, labelElement);
         });
 
         //This is the "low-level" way to get a hint bubble, cramming it all into a data-hint attribute.
@@ -74,7 +75,7 @@ class bloomHintBubbles {
             if (whatToSay.length == 0 || $(this).css('display') == 'none')
                 return;
 
-            bloomHintBubbles.MakeHelpBubble($(this), $(this));
+            BloomHintBubbles.MakeHelpBubble($(this), $(this));
         });
     }
 
@@ -127,7 +128,7 @@ class bloomHintBubbles {
 
         var functionCall = source.data("functiononhintclick");
         if (functionCall) {
-            if (functionCall === 'bookMetadataEditor' && !bloomHintBubbles.canChangeBookLicense())
+            if (functionCall === 'bookMetadataEditor' && !BloomHintBubbles.canChangeBookLicense())
                 return;
             shouldShowAlways = true;
 
