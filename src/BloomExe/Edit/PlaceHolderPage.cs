@@ -20,6 +20,8 @@ namespace Bloom.Edit
 			get { return null; }
 		}
 
+		public string CaptionI18nId { get { return null; } }
+
 		public Image Thumbnail
 		{
 			get { return new Bitmap(32,32); }
@@ -60,8 +62,9 @@ namespace Bloom.Edit
 			get { return false; }
 		}
 
-		public string GetCaptionOrPageNumber(ref int pageNumber)
+		public string GetCaptionOrPageNumber(ref int pageNumber, out string captionI18nId)
 		{
+			captionI18nId = null;
 			return Caption;
 
 		}
