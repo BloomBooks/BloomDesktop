@@ -1004,6 +1004,8 @@ namespace Bloom.Edit
 		void SavePageFrameState()
 		{
 			var body = _view.GetPageBody();
+			if (body == null)
+				return; // BL-3075, not sure how this can happen but it has. Possibly the view is in some state like about:null which has no body.
 			var styleAttr = body.Attributes["style"];
 			if (styleAttr == null)
 				return;
