@@ -7,6 +7,7 @@ import {ReaderToolsModel} from "./readerToolsModel";
 import {initializeDecodableReaderTool} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import getIframeChannel from '../../js/getIframeChannel';
+import "../../js/jquery.text-markup.js";
 
 var iframeChannel = getIframeChannel();
 

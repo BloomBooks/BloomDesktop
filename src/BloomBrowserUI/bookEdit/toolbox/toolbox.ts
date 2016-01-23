@@ -5,6 +5,7 @@
 
 import '../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import '../../lib/jquery.i18n.custom.js';
+import "../js/jquery.text-markup.js"; //onOnce, which probably doesn't belong in there
 
 /**
  * The html code for a check mark character

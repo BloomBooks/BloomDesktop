@@ -10,7 +10,9 @@
  *  Modified September 2015 to set focus before selection in restoreCaretPosition()
  */
 
-;(function ($, window, undefined) {
+import "./jquery.mousewheel.js";
+
+(function ($, window, undefined) {
 
     var pluginName = 'longPress',
         document = window.document,
