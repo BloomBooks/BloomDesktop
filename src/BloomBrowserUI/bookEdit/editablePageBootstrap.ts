@@ -13,17 +13,17 @@ import '../lib/jquery.i18n.custom.js'; //localize()
 // this ended up embedding ckeditor in our big bundle, which then caused ckeditor to look for its support files in the wrong places (c[a] undefined): import '../lib/ckeditor/ckeditor.js';
 
 var styleSheets = [
-    '../themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css',
-    '../themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css',
-    '../lib/jquery.qtip.css',
-    '../css/qtipOverrides.css',
+    'themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css',
+    'themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css',
+    'lib/jquery.qtip.css',
+    'bookEdit/css/qtipOverrides.css',
     'js/toolbar/jquery.toolbars.css',
-    '../css/origami.css',
-    '../css/tab.winclassic.css',
+    'bookEdit/css/origami.css',
+    'bookEdit/css/tab.winclassic.css',
     'StyleEditor/StyleEditor.css',
-    '../css/bloomDialog.css',
-    '../lib/long-press/longpress.css',
-    '../toolbox/talkingBook/audioRecording.css'
+    'bookEdit/css/bloomDialog.css',
+    'lib/long-press/longpress.css',
+    'bookEdit/toolbox/talkingBook/audioRecording.css'
 ];
 
 

@@ -15,6 +15,7 @@ import theOneLocalizationManager from '../../lib/localizationManager/localizatio
 import getIframeChannel from '../js/getIframeChannel';
 import OverflowChecker from '../OverflowChecker/OverflowChecker';
 import {GetDifferenceBetweenHeightAndParentHeight} from '../js/bloomEditing';
+import '../../lib/tabpane.js';
 
 var iframeChannel = getIframeChannel();
 
