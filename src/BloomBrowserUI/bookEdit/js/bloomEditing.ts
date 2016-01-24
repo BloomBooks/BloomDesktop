@@ -662,7 +662,7 @@ export function bootstrap(){
         OneTimeSetup();
 
         // configure ckeditor
-      //reviewSlog: reinstate this:  if (typeof CKEDITOR === "undefined") return;  // this happens during unit testing
+        if (typeof CKEDITOR === "undefined") return;  // this happens during unit testing
         CKEDITOR.disableAutoInline = true;
 
         // Map from ckeditor id strings to the div the ckeditor is wrapping.
@@ -678,7 +678,9 @@ export function bootstrap(){
 
             if ($(this).css('cursor') == 'not-allowed')
                 return;
-
+            
+            console.debug("connecting ckeditor: "+this)
+            var test = CKEDITOR.instances;
             var ckedit = CKEDITOR.inline(this);
 
             // Record the div of the edit box for use later in positioning the format bar.
