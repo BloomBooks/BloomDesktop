@@ -1,4 +1,5 @@
 /// <reference path="readerSetup.io.ts" />
+/// <reference path="../../../../bloomHelp.ts"/>
 
 var desiredGPCs: string[];
 var previousGPCs: string[];
@@ -109,7 +110,7 @@ function process_UI_Message(event: MessageEvent): void {
         default:
       }
       if (helpFile)
-        getIframeChannel().help(helpFile);
+        BloomHelp.show(helpFile);
       return;
 
     default:

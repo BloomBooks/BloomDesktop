@@ -15,17 +15,6 @@ class interIframeChannel {
   }
 
   /**
-   * Opens the application help topic
-   * @param topic
-   * @returns {boolean} Returns false to prevent navigation if link clicked.
-   */
-  help(topic: string): boolean {
-
-    this.simpleAjaxNoCallback('/bloom/help', topic);
-    return false;
-  }
-
-  /**
    * Retrieve data from localhost
    * @param {String} url The URL to request
    * @param {Function} callback Function to call when the ajax request returns
