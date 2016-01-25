@@ -14,5 +14,3 @@ export default function getIframeChannel(): interIframeChannel {
   // not found
   return null;
 }
-
-export function foo(){}
