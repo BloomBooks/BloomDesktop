@@ -11,8 +11,6 @@ import bloomQtipUtils from '../js/bloomQtipUtils';
 
 declare function GetSettings() : any; //c# injects this
 
-declare function GetStyleClassFromElement(element: HTMLElement): string;
-
 export default class BloomSourceBubbles {
 
     //:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph
@@ -76,7 +74,7 @@ export default class BloomSourceBubbles {
             $this.removeClass('thisOverflowingParent');
             $this.removeClass('childOverflowingThis');
 
-            var styleClass = GetStyleClassFromElement(this);
+            var styleClass = StyleEditor.GetStyleClassFromElement(this);
             if (styleClass)
                 $this.removeClass(styleClass);
 

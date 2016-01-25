@@ -94,20 +94,6 @@ function Cleanup() {
     cleanupOrigami();
 }
 
-function GetStyleClassFromElement(element) {
-    var c = $(element).attr("class");
-    if (!c)
-        c = "";
-    var classes = c.split(' ');
-
-    for (var i = 0; i < classes.length; i++) {
-        if (classes[i].indexOf('-style') > 0) {
-            return classes[i];
-        }
-    }
-    return null;
-}
-
 //add a delete button which shows up when you hover
 function SetupDeletable(containerDiv) {
     $(containerDiv).mouseenter(
