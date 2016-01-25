@@ -285,7 +285,18 @@ namespace Bloom.Book
 		{
 			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
 
-			dom.AddJavascriptFile("lib/ckeditor/ckeditor.js".ToLocalhost());
+			//dom.AddJavascriptFile("lib/ckeditor/ckeditor.js".ToLocalhost());
+			
+
+			//reviewslog: four lines are prompted by the qtip "too much recursion" error, which I got on certain pages. The qtip
+			//code in question says it is for when jquery-ui is not found. I "solved" this by loading jquery, jquery-ui,
+			//and finally qtip into the global space here
+			dom.AddJavascriptFile("node_modules/jquery/dist/jquery.js".ToLocalhost());
+			dom.AddJavascriptFile("modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js".ToLocalhost());
+			dom.AddJavascriptFile("lib/jquery.qtip.js".ToLocalhost());
+			dom.AddJavascriptFile("lib/jquery.qtipSecondary.js".ToLocalhost());
+
+
 			dom.AddJavascriptFile("output/commonCode.js".ToLocalhost());
 			dom.AddJavascriptFile("output/editablePageIFrame.js".ToLocalhost());
 		}

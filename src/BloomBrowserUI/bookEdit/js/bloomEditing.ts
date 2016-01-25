@@ -18,6 +18,7 @@ import './jquery.hasAttr.js'; //reviewSlog for CenterVerticallyInParent
 import '../../lib/jquery.qtip.js'
 import '../../lib/jquery.qtipSecondary.js'
 import '../../lib/long-press/jquery.longpress.js'
+import 'jquery.hotkeys'; //makes the on(keydown work with keynames)
 
 /**
  * Fires an event for C# to handle

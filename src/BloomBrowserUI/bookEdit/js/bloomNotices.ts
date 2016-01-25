@@ -5,6 +5,8 @@
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
+//import '../../lib/jquery.qtip.js'
+//import '../../lib/jquery.qtipSecondary.js'
 
 export default class BloomNotices {
     public static addExperimentalNotice(container: HTMLElement): void {
@@ -44,7 +46,7 @@ export default class BloomNotices {
                 var pos = { at: 'right center',
                     my: 'left center'
                 };
-                this.qtip({
+                $(this).qtip({
                     content: whatToSay,
                     position: pos,
                     show: {

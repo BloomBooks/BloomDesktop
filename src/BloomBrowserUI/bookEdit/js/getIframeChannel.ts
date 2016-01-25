@@ -10,7 +10,7 @@ export default function getIframeChannel(): interIframeChannel {
   else if (typeof window.parent["interIframeChannel"] === 'object') {
     return window.parent["interIframeChannel"];
   }
-
+  console.debug('interIframeChannel not found');
   // not found
   return null;
 }
