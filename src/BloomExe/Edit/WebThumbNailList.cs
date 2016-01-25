@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
+using Bloom.web;
 using Gecko;
 using SIL.Windows.Forms.Reporting;
 using SIL.Xml;
@@ -262,8 +263,9 @@ namespace Bloom.Edit
 				var captionDiv = pageDoc.CreateElement("div");
 				captionDiv.SetAttribute("class", "thumbnailCaption");
 				cellDiv.AppendChild(captionDiv);
-				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-				captionDiv.InnerText = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel." + captionOrPageNumber, captionOrPageNumber);
+				string captionI18nId;
+				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber, out captionI18nId);
+				captionDiv.InnerText = I18NHandler.GetTranslationDefaultMayNotBeEnglish(captionI18nId, captionOrPageNumber);
 			}
 
 			// set interval based on physical RAM
@@ -469,8 +471,9 @@ namespace Bloom.Edit
 					continue; // or crash? How can this happen?
 				var gridElt = _browser.WebBrowser.Document.GetElementById(GridId(page));
 				var titleElt = GetFirstChildWithClass(gridElt, "gridTitle") as GeckoElement;
-				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-				var desiredText = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel." + captionOrPageNumber, captionOrPageNumber);
+				string captioni18nId;
+				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber, out captioni18nId);
+				var desiredText = I18NHandler.GetTranslationDefaultMayNotBeEnglish(captioni18nId, captionOrPageNumber);
 				if (titleElt == null || titleElt.TextContent == desiredText)
 					continue;
 				titleElt.TextContent = desiredText;

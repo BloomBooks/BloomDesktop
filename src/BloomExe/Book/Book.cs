@@ -1422,13 +1422,14 @@ namespace Bloom.Book
 			{
 				//review: we want to show titles for template books, numbers for other books.
 				//this here requires that titles be removed when the page is inserted, kind of a hack.
-				var caption = GetPageLabelFromDiv(pageNode);
+				string captionI18nId;
+				var caption = GetPageLabelFromDiv(pageNode, out captionI18nId);
 				if (String.IsNullOrEmpty(caption))
 				{
 					caption = "";
 						//we aren't keeping these up to date yet as thing move around, so.... (pageNumber + 1).ToString();
 				}
-				_pagesCache.Add(CreatePageDecriptor(pageNode, caption));
+				_pagesCache.Add(CreatePageDecriptor(pageNode, caption, captionI18nId));
 			}
 		}
 
@@ -1461,8 +1462,9 @@ namespace Bloom.Book
 
 			foreach (XmlElement pageNode in OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@data-page, 'singleton'))]"))
 			{
-				var caption = GetPageLabelFromDiv(pageNode);
-				result.Add(GetPageIdFromDiv(pageNode), CreatePageDecriptor(pageNode, caption));
+				string captionI18nId;
+				var caption = GetPageLabelFromDiv(pageNode, out captionI18nId);
+				result.Add(GetPageIdFromDiv(pageNode), CreatePageDecriptor(pageNode, caption, captionI18nId));
 			}
 			return result;
 		}
@@ -1472,16 +1474,19 @@ namespace Bloom.Book
 			return pageNode.GetAttribute("id");
 		}
 
-		private static string GetPageLabelFromDiv(XmlElement pageNode)
+		private static string GetPageLabelFromDiv(XmlElement pageNode, out string captionI18nId)
 		{
 			var englishDiv = pageNode.SelectSingleNode("div[contains(@class,'pageLabel') and @lang='en']");
 			var caption = (englishDiv == null) ? String.Empty : englishDiv.InnerText;
+			captionI18nId = null;
+			if (englishDiv != null && englishDiv.Attributes["data-i18n"] != null)
+			captionI18nId = englishDiv.Attributes["data-i18n"].Value;
 			return caption;
 		}
 
-		private IPage CreatePageDecriptor(XmlElement pageNode, string caption)//, Action<Image> thumbNailReadyCallback)
+		private IPage CreatePageDecriptor(XmlElement pageNode, string caption, string captionI18nId)//, Action<Image> thumbNailReadyCallback)
 		{
-			return new Page(this, pageNode, caption,
+			return new Page(this, pageNode, caption, captionI18nId,
 				(page => FindPageDiv(page)));
 		}
 

@@ -90,7 +90,12 @@ namespace Bloom.Publish
 
 			GeckoPreferences.Default["pdfjs.disabled"] = false;
 			SetupLocalization();
-			localizationChangedEvent.Subscribe(o=>SetupLocalization());
+			localizationChangedEvent.Subscribe(o =>
+			{
+				SetupLocalization();
+				UpdateLayoutChoiceLabels();
+				UpdateSaveButton();
+			});
 
 			// Make this extra box available to show when wanted.
 			_previewBox = new PictureBox();
@@ -133,10 +138,18 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_epubRadio, "PublishTab.EpubRadio");
 		}
 
+		// Used by LocalizeSuperToolTip to remember original English keys
+		Dictionary<Control, string> _originalSuperToolTips = new Dictionary<Control, string>();
+
 		private void LocalizeSuperToolTip(Control controlThatHasSuperTooltipAttached, string l10nIdOfControl)
 		{
 			var tooltipinfo = _superToolTip.GetSuperStuff(controlThatHasSuperTooltipAttached);
-			var english = tooltipinfo.SuperToolTipInfo.BodyText;
+			string english;
+			if (!_originalSuperToolTips.TryGetValue(controlThatHasSuperTooltipAttached, out english))
+			{
+				english = tooltipinfo.SuperToolTipInfo.BodyText;
+				_originalSuperToolTips[controlThatHasSuperTooltipAttached] = english;
+			}
 			//enhance: GetLocalizingId didn't work: var l10nidForTooltip = _L10NSharpExtender.GetLocalizingId(controlThatHasSuperTooltipAttached) + ".tooltip";
 			var l10nidForTooltip = l10nIdOfControl + "-tooltip";
 			tooltipinfo.SuperToolTipInfo.BodyText = LocalizationManager.GetDynamicString("Bloom", l10nidForTooltip, english);
@@ -290,6 +303,13 @@ namespace Bloom.Publish
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
 			//_showCropMarks.Checked = _model.ShowCropMarks;
 
+			UpdateLayoutChoiceLabels();
+		}
+
+		private void UpdateLayoutChoiceLabels()
+		{
+			if (_model == null || _model.BookSelection == null || _model.BookSelection.CurrentSelection == null)
+				return; // May get called when localization changes even though tab is not visible.
 			var layout = _model.PageLayout;
 			var layoutChoices = _model.BookSelection.CurrentSelection.GetLayoutChoices();
 			_layoutChoices.DropDownItems.Clear();
@@ -298,7 +318,7 @@ namespace Bloom.Publish
 			foreach (var lc in layoutChoices)
 			{
 				var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + lc, lc.ToString());
-				ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(text);
+				ToolStripMenuItem item = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(text);
 				item.Tag = lc;
 				item.Text = text;
 				item.Checked = lc.ToString() == layout.ToString();
@@ -308,7 +328,8 @@ namespace Bloom.Publish
 			_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
 
 			// "EditTab" because it is the same text.  No sense in having it listed twice.
-			_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip", "Choose a page size and orientation");
+			_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
+				"Choose a page size and orientation");
 		}
 
 		private void OnLayoutChosen(object sender, EventArgs e)
@@ -332,10 +353,6 @@ namespace Bloom.Publish
 			{
 				Controls.Remove(_epubPreviewControl);
 			}
-			if (displayMode == PublishModel.DisplayModes.Epub)
-				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveEpub", "&Save EPUB...");
-			else
-				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveButton", "&Save PDF...");
 			if (displayMode != PublishModel.DisplayModes.Upload && displayMode != PublishModel.DisplayModes.Epub)
 				_pdfViewer.Visible = true;
 			switch (displayMode)
@@ -407,6 +424,15 @@ namespace Bloom.Publish
 					break;
 				}
 			}
+			UpdateSaveButton();
+		}
+
+		private void UpdateSaveButton()
+		{
+			if (Controls.Contains(_epubPreviewControl))
+				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveEpub", "&Save EPUB...");
+			else
+				_saveButton.Text = LocalizationManager.GetString("PublishTab.SaveButton", "&Save PDF...");
 		}
 
 		private void SetupPublishControl()

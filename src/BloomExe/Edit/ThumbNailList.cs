@@ -9,6 +9,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Properties;
+using Bloom.web;
 using L10NSharp;
 
 namespace Bloom.Edit
@@ -112,16 +113,18 @@ namespace Bloom.Edit
 			foreach (ListViewItem item in _listView.Items)
 			{
 				IPage page = (IPage) item.Tag;
-				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber);
-				item.Text = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel."+captionOrPageNumber, captionOrPageNumber);
+				string captionI18nId;
+				var captionOrPageNumber = page.GetCaptionOrPageNumber(ref pageNumber, out captionI18nId);
+				item.Text = I18NHandler.GetTranslationDefaultMayNotBeEnglish(captionI18nId, captionOrPageNumber);
 			}
 			_listView.EndUpdate();
 		}
 
 		private void AddOnePage(IPage page, ref int pageNumber)
 		{
-			var label = PreferPageNumbers ? page.GetCaptionOrPageNumber(ref pageNumber) : page.Caption;
-			label = LocalizationManager.GetDynamicString("Bloom", "TemplateBooks.PageLabel." + label, label);
+			string captioni18nId = page.CaptionI18nId;
+			var label = PreferPageNumbers ? page.GetCaptionOrPageNumber(ref pageNumber, out captioni18nId) : page.Caption;
+			label = I18NHandler.GetTranslationDefaultMayNotBeEnglish(captioni18nId, label);
 
 			ListViewItem item = new ListViewItem(label, 0);
 			item.Tag = page;

@@ -11,6 +11,7 @@ namespace Bloom.Book
 	{
 		string Id { get; }
 		string Caption { get; }
+		string CaptionI18nId { get; }
 		Image Thumbnail { get; }
 		string XPathToDiv { get; }
 		XmlElement GetDivNodeForThisPage();
@@ -18,7 +19,7 @@ namespace Bloom.Book
 		bool CanRelocate { get;}
 		Book Book { get; set; }
 		bool IsBackMatter { get; }
-		string GetCaptionOrPageNumber(ref int pageNumber);
+		string GetCaptionOrPageNumber(ref int pageNumber, out string captionI18nId);
 		int GetIndex();
 		string IdOfFirstAncestor { get;}
 	}
@@ -32,7 +33,7 @@ namespace Bloom.Book
 		private List<string> _tags;
 		private string[] _pageLineage;
 
-		public Page(Book book, XmlElement sourcePage,  string caption, /*Func<IPage, Image> getThumbnail,*/ Func<IPage, XmlElement> getDivNodeForThisPageMethod)
+		public Page(Book book, XmlElement sourcePage,  string caption, string captionI18nId, /*Func<IPage, Image> getThumbnail,*/ Func<IPage, XmlElement> getDivNodeForThisPageMethod)
 		{
 			_id = FixPageId(sourcePage.Attributes["id"].Value);
 			var lineage = sourcePage.Attributes["data-pagelineage"];
@@ -42,6 +43,7 @@ namespace Bloom.Book
 			Book = book;
 			_getDivNodeForThisPageMethod = getDivNodeForThisPageMethod;
 			Caption = caption;
+			CaptionI18nId = captionI18nId;
 			ReadClasses(sourcePage);
 			ReadPageTags(sourcePage);
 		}
@@ -118,7 +120,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public string GetCaptionOrPageNumber(ref int pageNumber)
+		public string GetCaptionOrPageNumber(ref int pageNumber, out string captionI18nId)
 		{
 			string outerXml = _getDivNodeForThisPageMethod(this).OuterXml;
 
@@ -133,14 +135,17 @@ namespace Bloom.Book
 			}
 			if(outerXml.Contains("numberedPage"))
 			{
+				captionI18nId = pageNumber.ToString();
 				return pageNumber.ToString();
 			}
+			captionI18nId = CaptionI18nId ?? "TemplateBooks.PageLabel." + Caption;
 			return Caption;
 		}
 
 		public string Id{get { return _id; }}
 
 		public string Caption { get; private set; }
+		public string CaptionI18nId { get; private set; }
 		public Image Thumbnail { get
 		{ return _getThumbnail(this); } }
 
