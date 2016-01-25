@@ -11,6 +11,5 @@ export default function getIframeChannel(): interIframeChannel {
     return window.parent["interIframeChannel"];
   }
   console.debug('interIframeChannel not found');
-  // not found
   return null;
 }

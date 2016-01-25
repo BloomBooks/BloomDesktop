@@ -298,7 +298,9 @@ namespace Bloom.Book
 			dom.AddJavascriptFile("lib/jquery.qtip.js".ToLocalhost());
 			dom.AddJavascriptFile("lib/jquery.qtipSecondary.js".ToLocalhost());
 
-
+			// first tried this as import 'jquery.hotkeys' in bloomEditing, but that didn't work
+			dom.AddJavascriptFile("node_modules/jquery.hotkeys/jquery.hotkeys.js".ToLocalhost());
+			
 			dom.AddJavascriptFile("output/commonCode.js".ToLocalhost());
 			dom.AddJavascriptFile("output/editablePageIFrame.js".ToLocalhost());
 		}
