@@ -15,13 +15,12 @@ import theOneLocalizationManager from '../../lib/localizationManager/localizatio
 import getIframeChannel from '../js/getIframeChannel';
 import OverflowChecker from '../OverflowChecker/OverflowChecker';
 import {GetDifferenceBetweenHeightAndParentHeight} from '../js/bloomEditing';
-import '../../lib/tabpane.js';
 
 var iframeChannel = getIframeChannel();
 
 declare function GetSettings() : any; //c# injects this
-
-
+declare function WebFxTabPane(element:HTMLElement,useCookie:boolean,callback:any) : any; // from tabpane, from a <script> tag
+ 
 export default class StyleEditor {
 
     private _previousBox: Element;

@@ -286,7 +286,9 @@ namespace Bloom.Book
 			// BL-117, PH: With the newer xulrunner, javascript code with parenthesis in the URL is not working correctly.
 
 			//dom.AddJavascriptFile("lib/ckeditor/ckeditor.js".ToLocalhost());
-			
+
+			//reviewslog: added this to get the "WebFXTabPane()" working in StyleEditor. Previously tried adding "export" to the function and then importing it
+			dom.AddJavascriptFile("lib/tabpane.js".ToLocalhost());
 
 			//reviewslog: four lines are prompted by the qtip "too much recursion" error, which I got on certain pages. The qtip
 			//code in question says it is for when jquery-ui is not found. I "solved" this by loading jquery, jquery-ui,
