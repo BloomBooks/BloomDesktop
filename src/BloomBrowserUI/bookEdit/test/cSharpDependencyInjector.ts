@@ -34,8 +34,6 @@ function ForCodeInspection_UnusedFunctions(): void {
   (<InjectorWindow>window).restoreAccordionSettings('');
 
   var x = model.fontName;
-  var calledByCSharpObj = new CalledByCSharp();
-  calledByCSharpObj.removeSynphonyMarkup();
 }
 
 //noinspection JSUnusedGlobalSymbols

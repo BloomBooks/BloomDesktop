@@ -146,6 +146,13 @@ function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
     // is done when a tool becomes current.
 }
 
+// Remove any markup the toolbox is inserting (called before saving page)
+function removeToolboxMarkup() {
+    if (currentTool != null) {
+        currentTool.hideTool();
+    }
+}
+
 function getPageFrame(): HTMLIFrameElement {
     return <HTMLIFrameElement>parent.window.document.getElementById('page');
 }
@@ -209,8 +216,10 @@ function setCurrentPanel(currentPanel) {
     var ani = toolbox.accordion('option', 'animate');
     toolbox.accordion('option', 'animate', false);
 
-    // the index must be passed as an int, a string will not work
-    toolbox.accordion('option', 'active', parseInt(idx));
+    // the index must be passed as an int, a string will not work. Also, H3 elements have indexes 1, 3, 5, 7,
+    // since an ID is generated for the intermediate content divs also. We need 0, 1, 2, 3.
+    var toolIndex = Math.floor(parseInt(idx) / 2);
+    toolbox.accordion('option', 'active', toolIndex);
 
     // turn animation back on
     toolbox.accordion('option', 'animate', ani);
@@ -226,7 +235,7 @@ function setCurrentPanel(currentPanel) {
         }
         switchTool(newToolName);
     });
-    //alert('switching to ' + currentPanel);
+    //alert('switching to ' + currentPanel + " which has index " + toolIndex);
     //setTimeout(e => switchTool(currentPanel), 700);
     switchTool(currentPanel);
 }
