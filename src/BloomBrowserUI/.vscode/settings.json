@@ -1,0 +1,10 @@
+// Place your settings in this file to overwrite default and user settings. 
+// This can be checked in
+{
+    "search.exclude": {
+		"**/node_modules": true,
+		"**/bower_components": true,
+		"*.map": true,
+		"**/output":true
+	}
+}

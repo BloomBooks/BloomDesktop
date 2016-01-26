@@ -13,11 +13,11 @@ import BloomSourceBubbles from '../sourceBubbles/BloomSourceBubbles';
 import BloomHintBubbles from './BloomHintBubbles';
 import getIframeChannel from './getIframeChannel';
 import TopicChooser from '../TopicChooser/TopicChooser';
-import '../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js';
-import './jquery.hasAttr.js'; //reviewSlog for CenterVerticallyInParent
-import '../../lib/jquery.qtip.js'
-import '../../lib/jquery.qtipSecondary.js'
-import '../../lib/long-press/jquery.longpress.js'
+import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
+import 'jquery.hasAttr.js'; //reviewSlog for CenterVerticallyInParent
+import 'jquery.qtip.js'
+import 'jquery.qtipSecondary.js'
+import 'long-press/jquery.longpress.js'
 import 'jquery.hotkeys'; //makes the on(keydown work with keynames)
 
 /**

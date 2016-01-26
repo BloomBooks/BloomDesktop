@@ -3,9 +3,9 @@
 /// <reference path="decodableReader/readerToolsModel.ts" />
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 
-import '../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js';
-import '../../lib/jquery.i18n.custom.js';
-import "../js/jquery.text-markup.js"; //onOnce, which probably doesn't belong in there
+import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
+import 'jquery.i18n.custom.js';
+import "jquery.text-markup.js"; //onOnce, which probably doesn't belong in there
 
 /**
  * The html code for a check mark character
@@ -251,7 +251,7 @@ function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPane
         // The panelIDs all end in 'Tool' but the containing file and folder names don't have this.
         var fileAndFolderName = panelId.substring(0, panelId.length - 4);
 
-        var panelUrl = '/bloom/bookEdit/toolbox/' + fileAndFolderName + '/' + fileAndFolderName + '.htm';
+        var panelUrl = '/bloom/output/bookEdit/toolbox/' + fileAndFolderName + '/' + fileAndFolderName + '.htm';
         var ajaxSettings = {type: 'GET', url: panelUrl};
 
         $.ajax(ajaxSettings)

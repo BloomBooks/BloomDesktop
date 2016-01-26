@@ -13,6 +13,8 @@ var del = require('del');
 var runSequence = require('run-sequence');
 
 var destination = './'; //this is a temporary measure, to put transpiled stuff in the same dir.
+//to remove the extra stuff, do git clean -fxn -e node_modules
+
 var output = "output"; //this is where we eventually want everything
 
 var paths = {
