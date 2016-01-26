@@ -31,7 +31,9 @@ for (var j = 0; j < styleSheets.length; j++) {
     document.write('<link rel="stylesheet" type="text/css" href="/bloom/' + styleSheets[j] + '">');
 }
 
-// var scripts = [
+
+// TODO: move script stuff out of book.AddJavaScriptForEditing() and into here:
+//var scripts = [
 //     'bookEdit/js/getIframeChannel.js',
 //     'lib/localizationManager/localizationManager.js',
 //     'lib/jquery.i18n.custom.js',
@@ -41,8 +43,16 @@ for (var j = 0; j < styleSheets.length; j++) {
 // for (var i = 0; i < scripts.length; i++) {
 //     document.write('<script type="text/javascript" src="/bloom/' + scripts[i] + '"></script>');
 // }
+import TopicChooser from './TopicChooser/TopicChooser';
+
+
+//ShowTopicChooser() is called by a script tag on a <a> element in a tooltip
+window['ShowTopicChooser'] = () => {
+    TopicChooser.showTopicChooser();
+}
 
 $(document).ready(function() {
+   
      $('body').find('*[data-i18n]').localize();
      bootstrap(); 
 });

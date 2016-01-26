@@ -16,11 +16,11 @@ module.exports = {
     //CommonsChunkPlugin extracts the code that is common to more than one into "commonCode.js"
     entry: { //pageThumbnailsApp:
              //editViewApp:  './bookEdit/editViewFrameBoostrap.js',
-             editablePageIFrame: './output/bookEdit/editablePageBootstrap.js',
-             toolboxIFrame: './output/bookEdit/toolbox/toolboxBootstrap.js',
+             editablePageIFrame: './bookEdit/editablePageBootstrap.js',
+             toolboxIFrame: './bookEdit/toolbox/toolboxBootstrap.js',
              //settingsIFrame:
              //ReaderSetupDialog:
-             pageChooserIFrame: './output/pageChooser/js/page-chooser.js'
+             pageChooserIFrame: './pageChooser/js/page-chooser.js'
              },
 
     output: {
