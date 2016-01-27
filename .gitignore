@@ -140,6 +140,7 @@ bloomEditing.js
 bloomImages.js
 origami.js
 toolboxBootstrap.js
+editViewFrame.js
 
 # CSS files that are generated from LESS
 bloomEpubPreview.css

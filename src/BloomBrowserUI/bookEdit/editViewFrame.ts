@@ -1,3 +1,5 @@
+export function SayHello(){alert ('sayHello');}
+
 // "region" Add Page dialog
 function CreateAddPageDiv(templatesJSON) {
 
@@ -22,7 +24,7 @@ function CreateAddPageDiv(templatesJSON) {
 function showAddPageDialog(templatesJSON) {
 
     var theDialog;
-    var parentElement = document.getElementById('page').contentWindow;
+    var parentElement = (<any>document.getElementById('page')).contentWindow;
 
     // don't show if a dialog already exists
     if ($(document).find(".ui-dialog").length) {
@@ -40,7 +42,7 @@ function showAddPageDialog(templatesJSON) {
         var dialogContents = CreateAddPageDiv(templatesJSON);
 
         theDialog = $(dialogContents).dialog({
-            class: "addPageDialog",
+            //reviewslog Typescript didn't like this class: "addPageDialog",
             autoOpen: false,
             resizable: false,
             modal: true,
@@ -85,7 +87,7 @@ function getAddPageDialogLocalizedStrings() {
 // See property EditingModel.GetJsonTemplatePageObject
 function initializeAddPageDialog(templatesJSON) {
     var templateMsg = 'Data\n' + JSON.stringify(templatesJSON);
-    document.getElementById('addPage_frame').contentWindow.postMessage(templateMsg, '*');
+    (<any>document.getElementById('addPage_frame')).contentWindow.postMessage(templateMsg, '*');
 }
 // "endregion" Add Page dialog
 
@@ -97,9 +99,10 @@ function initializeAddPageDialog(templatesJSON) {
 // Enhance: JT notes that this method pops up from time to time; can we consolidate?
 function fireCSharpEvent(eventName, eventData) {
 
-    var event = new MessageEvent(eventName, {'view' : window, 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
+    var event = new MessageEvent(eventName, {/*'view' : window,*/ 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
     document.dispatchEvent(event);
     // For when we someday change this file to TypeScript... since the above ctor is not declared anywhere.
     // Solution III (works)
     //var event = new (<any>MessageEvent)(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
 }
+

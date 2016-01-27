@@ -16,6 +16,7 @@ module.exports = {
     //CommonsChunkPlugin extracts the code that is common to more than one into "commonCode.js"
     entry: { //pageThumbnailsApp:
              //editViewApp:  './bookEdit/editViewFrameBoostrap.js',
+             editViewApp:  './bookEdit/editViewFrame.js',
              editablePageIFrame: './bookEdit/editablePageBootstrap.js',
              toolboxIFrame: './bookEdit/toolbox/toolboxBootstrap.js',
              //settingsIFrame:
@@ -25,7 +26,10 @@ module.exports = {
 
     output: {
         path: path.join(__dirname, './output/'), //NB: this is ignored if run from gulp
-        filename: '[name].js'
+        filename: "[name].js",
+        //library: "GlobalAccess",
+        library: ["GlobalAccess", "[name]"], //makes each entrypointModule accessible via GlobalAcess["themodulename"].
+        libraryTarget: "var"
     },
     resolve: {
         root: ['.'],
