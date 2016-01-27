@@ -666,8 +666,6 @@ export function bootstrap(){
             if ($(this).css('cursor') == 'not-allowed')
                 return;
             
-            console.debug("connecting ckeditor: "+this)
-            var test = CKEDITOR.instances;
             var ckedit = CKEDITOR.inline(this);
 
             // Record the div of the edit box for use later in positioning the format bar.
