@@ -309,6 +309,40 @@ namespace BloomTests.Publish
 			GetZipEntry(_epub, "content/audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp4");
 		}
 
+		[Test]
+		public void Missing_Audio_CreatedFromWav()
+		{
+			// Similar input as the basic Missing_Audio_Ignored, (also verifies that IDs are really adjusted), but this time we don't create one of the expected audio files.
+			var book = SetupBook("<p><span id='e993d14a-0ec3-4316-840b-ac9143d59a2c'>This is some text.</span><span id='i0d8e9910-dfa3-4376-9373-a869e109b763'>Another sentence</span></p>",
+				"xyz", "1my$Image", "my%20image");
+			MakeImageFiles(book, "my image");
+			MakeFakeAudio(book.FolderPath.CombineForPath("audio", "e993d14a-0ec3-4316-840b-ac9143d59a2c.wav"));
+			// But don't make a fake audio file for the second span
+			MakeEpub("output", "Missing_Audio_CreatedFromWav", book);
+			CheckBasicsInManifest("my_image");
+			CheckBasicsInPage("my_image");
+			CheckNavPage();
+			CheckFontStylesheet();
+
+			// xpath search for slash in attribute value fails (something to do with interpreting it as a namespace reference?)
+			var assertManifest = AssertThatXmlIn.String(_manifestContent.Replace("application/smil", "application^slash^smil"));
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1' and @href='1.xhtml' and @media-overlay='f1_overlay']");
+			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f1_overlay' and @href='1_overlay.smil' and @media-type='application^slash^smil+xml']");
+
+			var smilData = StripXmlHeader(GetZipContent(_epub, "content/1_overlay.smil"));
+			var mgr = new XmlNamespaceManager(new NameTable());
+			mgr.AddNamespace("smil", "http://www.w3.org/ns/SMIL");
+			mgr.AddNamespace("epub", "http://www.idpf.org/2007/ops");
+			var assertSmil = AssertThatXmlIn.String(smilData);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq[@epub:textref='1.xhtml' and @epub:type='bodymatter chapter']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:text[@src='1.xhtml#e993d14a-0ec3-4316-840b-ac9143d59a2c']", mgr);
+			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:text[@src='1.xhtml#i0d8e9910-dfa3-4376-9373-a869e109b763']", mgr);
+			assertSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp3']", mgr);
+			assertSmil.HasNoMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='audio_2fi0d8e9910-dfa3-4376-9373-a869e109b763.mp3']", mgr);
+
+			GetZipEntry(_epub, "content/audio_2fe993d14a-0ec3-4316-840b-ac9143d59a2c.mp3");
+		}
+
 		/// <summary>
 		/// Motivated by "El Nino" from bloom library, which (to defeat caching?) has such a query param in one of its src attrs.
 		/// </summary>
@@ -787,6 +821,15 @@ namespace BloomTests.Publish
 				return;
 			}
 			base.CopyFile(srcPath, dstPath);
+		}
+
+		// We can't test real compression because (a) the wave file is fake to begin with
+		// and (b) we can't assume the machine running the tests has LAME installed.
+		internal override string MakeCompressedAudio(string wavPath)
+		{
+			var output = Path.ChangeExtension(wavPath, "mp3");
+			File.Copy(wavPath, output);
+			return output;
 		}
 	}
 }

@@ -32,6 +32,7 @@ namespace Bloom.Publish
 		private EpubView _epubPreviewControl;
 		private Browser _epubPreviewBrowser;
 		private NavigationIsolator _isolator;
+		private bool _publishWithoutAudio = false; // True if the user has said to go ahead without audio
 
 		public delegate PublishView Factory();//autofac uses this
 
@@ -459,7 +460,6 @@ namespace Bloom.Publish
 		private void SetupEpubControl()
 		{
 			Cursor =Cursors.WaitCursor;
-			_model.StageEpub();
 			if (_epubPreviewControl == null)
 			{
 				_epubPreviewControl = new EpubView();
@@ -479,7 +479,33 @@ namespace Bloom.Publish
 			_epubPreviewControl.BackColor = saveBackGround; // keep own color.
 			// Typically this control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
 			_epubPreviewControl.BringToFront();
-			
+
+			_model.PrepareToStageEpub();
+			if (!_publishWithoutAudio && !LameEncoder.IsAvailable() && _model.IsCompressedAudioMissing)
+			{
+				var missingLameModulePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "epub", "MissingLameModule.htm");
+				_epubPreviewBrowser.Navigate(missingLameModulePath, false);
+				_epubPreviewBrowser.OnBrowserClick += (sender, e) =>
+				{
+					var element = (GeckoHtmlElement)(e as DomEventArgs).Target.CastToGeckoElement();
+					if (element.Attributes["id"].NodeValue == "proceedWithoutAudio")
+					{
+						_publishWithoutAudio = true;
+						SetupEpubControlContent();
+					}
+				};
+			}
+			else
+			{
+				SetupEpubControlContent();
+			}
+			Cursor = Cursors.Default;
+		}
+
+		private void SetupEpubControlContent()
+		{
+			_model.StageEpub(_publishWithoutAudio);
+
 			var root = _model.BookSelection.CurrentSelection.GetFileLocator().LocateDirectoryWithThrow("Readium");
 			var tempFolder = Path.GetDirectoryName(_model.StagingDirectory);
 			// This is kludge. I hope it can be improved. To make a preview we currently need all the Readium
@@ -491,13 +517,14 @@ namespace Bloom.Publish
 			// if we modified it to have localhost: links to the JS and CSS. Haven't tried this yet. The current
 			// approach at least works.
 			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
-			
-			var previewHtmlTemplatePath = BloomFileLocator.GetFileDistributedWithApplication(false,"BloomBrowserUI","epub","bloomEpubPreview.htm");
-			var htmlContents = File.ReadAllText(previewHtmlTemplatePath).Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory));
+
+			var previewHtmlTemplatePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "epub",
+				"bloomEpubPreview.htm");
+			var htmlContents = File.ReadAllText(previewHtmlTemplatePath)
+				.Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory));
 			var previewHtmlInstancePath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
 			File.WriteAllText(previewHtmlInstancePath, htmlContents);
 			_epubPreviewBrowser.Navigate(previewHtmlInstancePath.ToLocalhost(), false);
-			Cursor = Cursors.Default;
 		}
 
 		private void OnBookletRadioChanged(object sender, EventArgs e)

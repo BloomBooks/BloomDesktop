@@ -37,14 +37,12 @@ namespace Bloom.Edit
 			get { return "mp3"; }
 		}
 
-		public static bool IsAvailable(out string message)
+		public static bool IsAvailable()
 		{
 			if (string.IsNullOrEmpty(LocateAndRememberLAMEPath()))
 			{
-				message = LocalizationManager.GetString("PublishTab.EpubNeedsLame", "To make talking books, first install \"Lame For Audacity\", if it is legal in your country.  Google \"Lame For Audacity\" to get an up-to-date link", "");
 				return false;
 			}
-			message = "";
 			return true;
 		}
 
