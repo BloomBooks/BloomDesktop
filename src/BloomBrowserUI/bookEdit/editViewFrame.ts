@@ -1,4 +1,10 @@
+import theOneLocalizationManager from '../lib/localizationManager/localizationManager';
+
+
+
 export function SayHello(){alert ('sayHello');}
+import {getToolboxFrameMethods} from './js/BloomFrames';
+export {getToolboxFrameMethods};
 
 // "region" Add Page dialog
 function CreateAddPageDiv(templatesJSON) {
@@ -21,23 +27,28 @@ function CreateAddPageDiv(templatesJSON) {
 //noinspection JSUnusedGlobalSymbols
 // method called from EditingModel.cs
 // for 'templatesJSON', see property EditingModel.GetJsonTemplatePageObject
-function showAddPageDialog(templatesJSON) {
+export function showAddPageDialog(templatesJSON) {
 
     var theDialog;
-    var parentElement = (<any>document.getElementById('page')).contentWindow;
-
+    
+    //reviewSlog. I don't see why the localiationManager should live on the page. Where stuff is equally relevant to all frames,
+    //it should if anything belong to the root frmate (this one)
+    //var parentElement = (<any>document.getElementById('page')).contentWindow;
+    //var lm = parentElement.localizationManager;
+      var lm = theOneLocalizationManager;
+      
     // don't show if a dialog already exists
     if ($(document).find(".ui-dialog").length) {
         return;
     }
-    parentElement.localizationManager.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
+        lm.loadStrings(getAddPageDialogLocalizedStrings(), null, function() {
 
         var forChooseLayout = templatesJSON.chooseLayout;
         if (forChooseLayout) {
-            var title = parentElement.localizationManager.getText('EditTab.AddPageDialog.ChooseLayoutTitle', 'Choose Different Layout...');
+            var title = lm.getText('EditTab.AddPageDialog.ChooseLayoutTitle', 'Choose Different Layout...');
 
         } else {
-            var title = parentElement.localizationManager.getText('EditTab.AddPageDialog.Title', 'Add Page...');
+            var title = lm.getText('EditTab.AddPageDialog.Title', 'Add Page...');
         }
         var dialogContents = CreateAddPageDiv(templatesJSON);
 

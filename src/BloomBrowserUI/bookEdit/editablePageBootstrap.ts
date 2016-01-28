@@ -57,3 +57,5 @@ $(document).ready(function() {
      $('body').find('*[data-i18n]').localize();
      bootstrap(); 
 });
+
+export function SayHello() { alert('hello from editable page frame.'); }

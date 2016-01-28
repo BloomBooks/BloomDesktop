@@ -1170,14 +1170,14 @@ namespace Bloom.Edit
 			//_addPageDialogShowing = true;
 			var jsonTemplates = _model.GetAddPageArguments(false);
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
+			RunJavaScript("Exports.editViewApp.showAddPageDialog(" + jsonTemplates + ");");
 		}
 
 		internal void ShowChangeLayoutDialog(IPage page)
 		{
 			var jsonTemplates = _model.GetAddPageArguments(true, page);
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("showAddPageDialog(" + jsonTemplates + ");");
+			RunJavaScript("Exports.editViewApp.showAddPageDialog(" + jsonTemplates + ");");
 		}
 	}
 }

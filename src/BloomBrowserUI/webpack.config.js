@@ -28,7 +28,7 @@ module.exports = {
         path: path.join(__dirname, './output/'), //NB: this is ignored if run from gulp
         filename: "[name].js",
         //library: "GlobalAccess",
-        library: ["GlobalAccess", "[name]"], //makes each entrypointModule accessible via GlobalAcess["themodulename"].
+        library: ["Exports", "[name]"], //makes each entrypointModule accessible via, e.g. Exports.toolboxIFrame
         libraryTarget: "var"
     },
     resolve: {

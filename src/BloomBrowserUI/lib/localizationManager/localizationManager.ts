@@ -35,7 +35,7 @@ import getIframeChannel from '../../bookEdit/js/getIframeChannel';
 declare function GetInlineDictionary() : any; //c# injects this
 
 
-class LocalizationManager {
+export class LocalizationManager {
 
   public dictionary: any;
   private inlineDictionaryLoaded: boolean = false;
