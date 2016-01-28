@@ -10,7 +10,7 @@ export class CalledByCSharp {
       }
       // Undoing changes made by commands and dialogs in the toolbox can't be undone using
       // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
-      var toolboxWindow = this.getToolboxContent();
+      var toolboxWindow = this.getToolboxWindow();
       if (toolboxWindow && toolboxWindow.model && toolboxWindow.model.shouldHandleUndo()) {
           toolboxWindow.model.undo();
     } // elsewhere, we try to ask ckEditor to undo, else just the document
@@ -36,7 +36,7 @@ export class CalledByCSharp {
     // See comments on handleUndo()
     var contentWindow = this.getPageContent();
     if (contentWindow && (<any>contentWindow).origamiCanUndo()) {return 'yes';}
-    var toolboxWindow = this.getToolboxContent();
+    var toolboxWindow = this.getToolboxWindow();
     if (toolboxWindow && toolboxWindow.model && toolboxWindow.model.shouldHandleUndo()) {
         return toolboxWindow.model.canUndo();
     }
@@ -63,7 +63,7 @@ export class CalledByCSharp {
 
   loadReaderToolSettings(settings: string, bookFontName: string) {
 
-    var contentWindow = this.getToolboxContent();
+    var contentWindow = this.getToolboxWindow();
     if (!contentWindow) return;
 
     if (typeof contentWindow['initializeSynphony'] === 'function')
@@ -96,7 +96,7 @@ export class CalledByCSharp {
     }
 
     setPeakLevel(level: string) {
-        var toolboxWindow = this.getToolboxContent();
+        var toolboxWindow = this.getToolboxWindow();
         if (!toolboxWindow) return;
         if (typeof toolboxWindow['setPeakLevel'] === 'function') {
             toolboxWindow['setPeakLevel'](level);
@@ -106,7 +106,7 @@ export class CalledByCSharp {
   removeSynphonyMarkup() {
     var page = this.getPageContent();
     if (!page) return;
-    var toolbox = this.getToolboxContent();
+    var toolbox = this.getToolboxWindow();
     if ((typeof toolbox['jQuery'] !== 'undefined') && (toolbox['jQuery'].fn.removeSynphonyMarkup)) {
         toolbox['jQuery'].fn.removeSynphonyMarkup.call(page['jQuery']('.bloom-content1'));
     }
@@ -114,7 +114,7 @@ export class CalledByCSharp {
 
   invokeToolboxWithOneParameter(functionName: string, value: string) {
 
-    var contentWindow = this.getToolboxContent();
+    var contentWindow = this.getToolboxWindow();
     if (!contentWindow) return;
 
     if (typeof contentWindow[functionName] === 'function')
@@ -126,7 +126,7 @@ export class CalledByCSharp {
     return (page) ? page.contentWindow : null;
   }
 
-  getToolboxContent(): ReaderToolsWindow {
+  getToolboxWindow(): ReaderToolsWindow {
     var toolbox = <HTMLIFrameElement>document.getElementById('toolbox');
     return (toolbox) ? <ReaderToolsWindow>toolbox.contentWindow : null;
   }

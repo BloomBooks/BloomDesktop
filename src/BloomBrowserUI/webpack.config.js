@@ -26,9 +26,23 @@ module.exports = {
     output: {
         path: path.join(__dirname, './output/'), //NB: this is ignored if run from gulp
         filename: "[name].js",
-        //library: "GlobalAccess",
-        library: ["Exports", "[name]"], //makes each entrypointModule accessible via, e.g. Exports.toolboxIFrame
-        libraryTarget: "var"
+        
+        libraryTarget: "var",
+        
+        //makes a single entry point module's epxorts accessible via Exports.
+        //Note that if you include more than one entry point js in the frame, the second one will overwrite the Exports var
+        // (see the other way of doing this, below, if that becomes necessary for some reason)
+        library: "FrameExports" 
+        
+        //Makes each entrypointModule accessible via, e.g. Exports.toolboxIFrame
+        //At the moment, I'm going with this one even though the resulting code is needlessly verbose:
+        //Exports.nameOfMyFrame.Foo() instead of Exports.Foo().
+        //Leaning this way becuase I'm thinking it will be help in that the caller has to express what
+        // frame they *think* they are talking to, and if they're wrong, will get an error. If we do it
+        // the other way, you could just say Exports.Foo(), and 
+        //wonder why Foo() isn't there.
+        //library: ["FrameExports", "[name]"] 
+        
     },
     resolve: {
         root: ['.'],
