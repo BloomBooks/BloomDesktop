@@ -728,7 +728,7 @@ export function bootstrap(){
 // This is invoked from C# when we are about to change pages. It is mainly for origami,
 // but preparePageForEditingAfterOrigamiChangesEvent currently has the (very important)
 // side effect of saving the changes to the current page.
-var pageSelectionChanging = function () {
+export var pageSelectionChanging = function () {
     var marginBox = $('.marginBox');
     marginBox.removeClass('origami-layout-mode');
     marginBox.find('.bloom-translationGroup .textBox-identifier').remove();
@@ -739,7 +739,7 @@ var pageSelectionChanging = function () {
 // method for changing pages).  It is mainly to clean things up so that garbage collection
 // won't lose multiple megabytes of data that both the DOM (C++) and Javascript subsystems
 // think the other is still using.
-var disconnectForGarbageCollection = function () {
+export var disconnectForGarbageCollection = function () {
     // disconnect all event handlers
     //review: was this, but TS didn't like it    $.find().off();
     $('body').find('*').off();

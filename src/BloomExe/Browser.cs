@@ -100,7 +100,7 @@ namespace Bloom
 				"PlacesDBUtils", // happens if you let bloom sit there long enough
 				"privatebrowsing", // no idea why it shows this error sometimes
 				"xulrunner", // can happen when mootools (used by calendar) is loaded
-				"calledByCSharp", // this can happen while switching pages quickly, when the page unloads after the script starts executing.
+				"FrameExports", // this can happen while switching pages quickly, when the page unloads after the script starts executing.
 				"resource://", // these errors/warnings are coming from internal firefox files
 				"chrome://",   // these errors/warnings are coming from internal firefox files
 				"jar:",        // these errors/warnings are coming from internal firefox files
@@ -220,10 +220,10 @@ namespace Bloom
 			{
 				// Note: this is only used for the Undo button in the toolbar;
 				// ctrl-z is handled in JavaScript directly.
-				var result = RunJavaScript("(typeof calledByCSharp === 'undefined') ? 'undefined' : 'ok'");
+				var result = RunJavaScript("(typeof FrameExports === 'undefined' || typeof FrameExports.handleUndo === 'undefined') ? 'undefined' : 'ok'");
 				if (result == "ok")
 				{
-					RunJavaScript("calledByCSharp.handleUndo()");
+					RunJavaScript("FrameExports.handleUndo()");
 				}
 				else
 				{
@@ -282,10 +282,10 @@ namespace Bloom
 			{
 				if (_browser == null)
 					return false;
-				var result = RunJavaScript("(typeof calledByCSharp === 'undefined') ? 'f' : 'y'");
+				var result = RunJavaScript("(typeof FrameExports === 'undefined' || typeof FrameExports.canUndo === 'undefined') ? 'f' : 'y'");
 				if (result == "y")
 				{
-					result = RunJavaScript("calledByCSharp.canUndo()");
+					result = RunJavaScript("FrameExports.canUndo()");
 					if (result == "fail")
 						return _browser.CanUndo; // not using special Undo.
 					return result == "yes";

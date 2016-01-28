@@ -586,12 +586,12 @@ export class ReaderToolsModel {
     EditableDivUtils.makeSelectionIn(this.activeElement, restoreOffset, null, true);
   }
 
-  canUndo(): string {
-    if (!this.activeElement) return 'no';
+  canUndo(): boolean {
+    if (!this.activeElement) return false;
     if (this.undoStack && (this.undoStack.length > 1 || this.activeElement.textContent !== this.undoStack[0].text)) {
-      return 'yes';
+      return true;
     }
-    return 'no';
+    return false;
   }
 
   redo(): void {

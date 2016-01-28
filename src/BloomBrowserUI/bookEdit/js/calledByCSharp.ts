@@ -2,27 +2,6 @@ import { ReaderToolsWindow} from "../toolbox/decodableReader/readerToolsModel";
 
 export class CalledByCSharp {
 
-  handleUndo(): void {
-      // First see if origami is active and knows about something we can undo.
-      var contentWindow = this.getPageContent();
-      if (contentWindow && (<any>contentWindow).origamiCanUndo()) {
-          (<any>contentWindow).origamiUndo();
-      }
-      // Undoing changes made by commands and dialogs in the toolbox can't be undone using
-      // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
-      var toolboxWindow = this.getToolboxWindow();
-      if (toolboxWindow && toolboxWindow.model && toolboxWindow.model.shouldHandleUndo()) {
-          toolboxWindow.model.undo();
-    } // elsewhere, we try to ask ckEditor to undo, else just the document
-    else{
-        var ckEditorUndo = this.ckEditorUndoCommand();
-        if (ckEditorUndo === null || !ckEditorUndo.exec()) {
-            //sometimes ckEditor isn't active, so it wasn't paying attention, so it can't do the undo. So ask the document to do an undo:
-            (<any>this.getPageContent()).document.execCommand('undo', false, null);
-        }
-    }
-  }
-
  ckEditorUndoCommand(): any {
      try {
          return (<any>this.getPageContent()).CKEDITOR.instances.editor1.commands.undo;
@@ -31,25 +10,6 @@ export class CalledByCSharp {
          return null;
      }
  }
-
-  canUndo(): string {
-    // See comments on handleUndo()
-    var contentWindow = this.getPageContent();
-    if (contentWindow && (<any>contentWindow).origamiCanUndo()) {return 'yes';}
-    var toolboxWindow = this.getToolboxWindow();
-    if (toolboxWindow && toolboxWindow.model && toolboxWindow.model.shouldHandleUndo()) {
-        return toolboxWindow.model.canUndo();
-    }
-    /* I couldn't find a way to ask ckeditor if it is ready to do an undo.
-      The "canUndo()" is misleading; what it appears to mean is, can this command (undo) be undone?*/
-
-    /*  var ckEditorUndo = this.ckEditorUndoCommand();
-        if (ckEditorUndo === null) return 'fail';
-        return ckEditorUndo.canUndo() ? 'yes' : 'no';
-    */
-
-      return "fail"; //go ask the browser
-  }
 
   pageSelectionChanging() {
     var contentWindow = this.getPageContent();

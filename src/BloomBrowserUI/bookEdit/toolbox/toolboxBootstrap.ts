@@ -2,7 +2,15 @@
 import * as $ from 'jquery';
 import {restoreToolboxSettings} from './toolbox';
 
-export function SayHello() { alert('hello from toolbox frame.'); }
+import {ReaderToolsModel} from './decodablereader/readertoolsmodel'
+
+export function canUndo() :boolean {
+    return ReaderToolsModel.model !== null && ReaderToolsModel.model.shouldHandleUndo() && ReaderToolsModel.model.canUndo();
+}
+
+export function undo() {
+    ReaderToolsModel.model.undo();
+}
 
 //this is currently inserted by c#. TODO: get settings via ajax
 declare function GetToolboxSettings():any;

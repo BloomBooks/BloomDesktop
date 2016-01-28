@@ -121,11 +121,11 @@ function addUndoPoint() {
     origamiUndoIndex = origamiUndoStack.length;
 }
 
-function origamiCanUndo() {
+export function origamiCanUndo() {
     return origamiUndoIndex > 0;
 }
 
-function origamiUndo() {
+export function origamiUndo() {
     if (origamiCanUndo()) {
         var origamiRoot = $('.marginBox');
         // index may be 'out of range' but JS doesn't care

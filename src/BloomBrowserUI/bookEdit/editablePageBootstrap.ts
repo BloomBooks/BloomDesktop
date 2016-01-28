@@ -11,6 +11,17 @@ import * as jQuery from 'jquery';
 import {bootstrap} from './js/bloomEditing';
 import '../lib/jquery.i18n.custom.js'; //localize()
 import '../lib/jquery.myimgscale.js'; //scaleImage()
+
+// This exports the functions that should be accessible from other IFrames or from C#.
+// For example, FrameExports.getPageFrameExports().pageSelectionChanging() can be called.
+import {pageSelectionChanging} from './js/bloomEditing';
+export {pageSelectionChanging};
+import {disconnectForGarbageCollection} from './js/bloomEditing';
+export {disconnectForGarbageCollection};
+import {origamiCanUndo} from './js/origami';
+export {origamiCanUndo}
+import {origamiUndo} from './js/origami';
+export {origamiUndo}
 // this ended up embedding ckeditor in our big bundle, which then caused ckeditor to look for its support files in the wrong places (c[a] undefined): import '../lib/ckeditor/ckeditor.js';
 
 var styleSheets = [
