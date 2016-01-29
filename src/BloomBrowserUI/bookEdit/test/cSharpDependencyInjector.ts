@@ -1,12 +1,6 @@
-﻿/// <reference path="../js/calledByCSharp.ts" />
-import {CalledByCSharp} from "../js/calledByCSharp";
-
-import {ReaderToolsModel} from "../toolbox/decodableReader/readerToolsModel";
-interface InjectorWindow extends Window {
-
-
-  restoreAccordionSettings(val: string): void;
-}
+﻿//Sadly, we get some data into JS-land by c# literally pushing the methods into the dom.
+//Until we get rid of that (they should instead be ajax calls to the server)
+//this file has static versions of those methods, for use in unit tests. Karma should include it.
 
 /**
  * Test substitute for RuntimeInformationInjector.cs AddUISettingsToDom()
@@ -24,21 +18,6 @@ function GetSettings(): any {
   return v;
 }
 
-//noinspection JSUnusedGlobalSymbols
-/**
- * These functions are called by C#, so the WebStorm code inspection thinks they are unused.
- */
-function ForCodeInspection_UnusedFunctions(): void {
-
-  // don't actually do anything
-  if (1 === 1) return;
-
-  (<InjectorWindow>window).restoreAccordionSettings('');
-
-  var x = ReaderToolsModel.model.fontName;
-  var calledByCSharpObj = new CalledByCSharp();
-  calledByCSharpObj.removeSynphonyMarkup();
-}
 
 //noinspection JSUnusedGlobalSymbols
 /**

@@ -1,3 +1,5 @@
+///<reference path="../../typings/axios/axios.d.ts"/>
+//ignore//<reference path="../../typings/es6-promise/es6-promise.d.ts"/>
 ///<reference path="./jquery.hasAttr.d.ts" /> 
 import * as $ from 'jquery';
 import * as JQuery from 'jquery';
@@ -20,6 +22,12 @@ import 'jquery.qtipSecondary.js'
 import 'long-press/jquery.longpress.js'
 import 'jquery.hotkeys'; //makes the on(keydown work with keynames)
 
+//promise may be needed to run tests with phantomjs
+//import promise = require('es6-promise');
+//promise.Promise.polyfill();
+import axios = require("axios");
+
+
 /**
  * Fires an event for C# to handle
  * @param {String} eventName
@@ -30,7 +38,6 @@ export function fireCSharpEditEvent(eventName, eventData) {
     var event = new MessageEvent(eventName, {/*'view' : window,*/ 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
     document.dispatchEvent(event);
 }
-
 
 export function GetDifferenceBetweenHeightAndParentHeight(jqueryNode) {
     // function also declared and used in StyleEditor
@@ -746,18 +753,20 @@ var disconnectForGarbageCollection = function () {
 };
 
 function loadLongpressInstructions(jQuerySetOfMatchedElements) {
-    getIframeChannel().simpleAjaxGet('/bloom/windows/useLongpress', function(response) {
-        if (response === 'Yes') {
-            theOneLocalizationManager.asyncGetText(
-                'BookEditor.CharacterMap.Instructions',
-                'To select, use your mouse wheel or point at what you want, then release the key.')
-            .done(function (translation) {
-                    jQuerySetOfMatchedElements.longPress(
-                        { instructions: "<div class='instructions'>" + translation + "</div>" }
-                    );
-            });
-        };
-    });
+    axios.get('/bloom/windows/useLongpress')
+        .then(response => {
+           if (response.data === 'Yes') {
+                theOneLocalizationManager.asyncGetText(
+                    'BookEditor.CharacterMap.Instructions',
+                    'To select, use your mouse wheel or point at what you want, then release the key.')
+                    .done(function (translation) {
+                        jQuerySetOfMatchedElements.longPress(
+                            { instructions: "<div class='instructions'>" + translation + "</div>" }
+                        );
+                });
+            };
+        })
 }
+
 
 

@@ -1,10 +1,14 @@
 "use strict";
+import 'jasmine-jquery';
+import OverflowChecker from '../../bookEdit/OverflowChecker/OverflowChecker';
 
+//hello
 var consoleDef = false;
 
 jQuery.fn.RunTests = function() {
     $.each(this, RunTest);
 };
+
 
 jQuery.fn.RunAncestorMarginTests = function() {
     $.each(this, RunAncestorMarginTest);
@@ -78,7 +82,7 @@ describe("Overflow Tests", function () {
     }
 
     it("Check test page for Self overflows", function() {
-        loadFixtures('OverflowTestPage.htm');
+        loadFixtures('OverflowTestPage.html');
         expect($('#jasmine-fixtures')).toBeTruthy();
         if(window.console && window.console.log) {
             consoleDef = true;
@@ -88,7 +92,7 @@ describe("Overflow Tests", function () {
     });
 
     it("Check test page for Margin overflows", function() {
-        loadFixtures('OverflowMarginTestPage.htm');
+        loadFixtures('OverflowMarginTestPage.html');
         expect($('#jasmine-fixtures')).toBeTruthy();
         if(window.console && window.console.log) {
             consoleDef = true;
@@ -98,7 +102,7 @@ describe("Overflow Tests", function () {
     });
 
     it("Check test page for Fixed Ancestor overflows", function() {
-        loadFixtures('OverflowAncestorTestPage.htm');
+        loadFixtures('OverflowAncestorTestPage.html');
         expect($('#jasmine-fixtures')).toBeTruthy();
         if(window.console && window.console.log) {
             consoleDef = true;

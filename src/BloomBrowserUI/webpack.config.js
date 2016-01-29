@@ -7,6 +7,7 @@ var pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, 'lib');
 var pathToTranspiledJavascriptFilesInOutputLib = path.resolve(__dirname, 'output/lib');
 var pathToBookEditJS = path.resolve(__dirname, 'bookEdit/js');
 var pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(__dirname, 'modified_libraries');
+var glob = require("glob");
 
 module.exports = {
     context: __dirname,
@@ -20,9 +21,14 @@ module.exports = {
              toolboxIFrame: './bookEdit/toolbox/toolboxBootstrap.js',
              //settingsIFrame:
              //ReaderSetupDialog:
-             pageChooserIFrame: './pageChooser/js/page-chooser.js'
-             },
+             pageChooserIFrame: './pageChooser/js/page-chooser.js',
+             testBundle: glob.sync("./test/**/*Spec.js") //TODO add other specs
+           },
 
+    // output: {
+    //     path: path.join(__dirname, './output/'), //NB: this is ignored if run from gulp
+    //     filename: '[name].js'
+    // },
     output: {
         path: path.join(__dirname, './output/'), //NB: this is ignored if run from gulp
         filename: "[name].js",
@@ -44,6 +50,7 @@ module.exports = {
         //library: ["FrameExports", "[name]"] 
         
     },
+    
     resolve: {
         root: ['.'],
         alias: {
