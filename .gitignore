@@ -107,6 +107,7 @@ leveledReader.js
 audioRecording.js
 talkingBook.js
 bloomFieldSpec.js
+OverflowSpec.js
 bloomHintBubbles.js
 bloomNotices.js
 bloomQtipUtils.js

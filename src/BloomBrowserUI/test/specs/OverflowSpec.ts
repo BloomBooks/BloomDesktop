@@ -1,9 +1,16 @@
 "use strict";
+/// <reference path="../../typings/jasmine/jasmine.d.ts"/>
+/// <reference path="../../typings/jasmine-jquery/jasmine-jquery.d.ts"/>
+
 import 'jasmine-jquery';
 import OverflowChecker from '../../bookEdit/OverflowChecker/OverflowChecker';
 
-//hello
 var consoleDef = false;
+
+interface JQuery {
+  RunTests(): JQuery;
+  RunAncestorMarginTests(): JQuery;
+}
 
 jQuery.fn.RunTests = function() {
     $.each(this, RunTest);
@@ -12,9 +19,11 @@ jQuery.fn.RunTests = function() {
 
 jQuery.fn.RunAncestorMarginTests = function() {
     $.each(this, RunAncestorMarginTest);
-};
+}
 
-var RunTest = function(index, value) {
+console.log = function(any){}
+
+function RunTest(index, value) {
     var testHtml = $(value);
     var nameAttr = testHtml.attr("name");
     if(typeof nameAttr === 'undefined')
@@ -35,14 +44,14 @@ var RunTest = function(index, value) {
         var fontS = cs.getPropertyValue('font-size');
         var font = cs.getPropertyValue('font-family');
         var padding = cs.getPropertyValue('padding');
-        console.warn('     Computed Style: line-height ' + lineH + ' font-size ' + fontS + ' padding ' + padding);
-        console.warn('     OverflowSelf: ' + overflowingSelf + ' font: ' + font);
-        console.warn('     Expecting: ' + testExpectation); // added this because the failure message is not always immediately after the test output
+        console.log('     Computed Style: line-height ' + lineH + ' font-size ' + fontS + ' padding ' + padding);
+        console.log('     OverflowSelf: ' + overflowingSelf + ' font: ' + font);
+        console.log('     Expecting: ' + testExpectation); // added this because the failure message is not always immediately after the test output
     }
     expect(overflowingSelf).toBe(testExpectation);
 };
 
-var RunAncestorMarginTest = function(index, value) {
+function RunAncestorMarginTest(index, value) {
     var testHtml = $(value);
     var nameAttr = testHtml.attr("name");
     if(typeof nameAttr === 'undefined')
@@ -64,9 +73,9 @@ var RunAncestorMarginTest = function(index, value) {
         var fontS = cs.getPropertyValue('font-size');
         var font = cs.getPropertyValue('font-family');
         var padding = cs.getPropertyValue('padding');
-        console.warn('     Computed Style: line-height ' + lineH + ' font-size ' + fontS + ' padding ' + padding);
-        console.warn('     OverflowMargins: ' + overflowingMargins + ' font: ' + font);
-        console.warn('     Expecting: ' + testExpectation); // added this because the failure message is not always immediately after the test output
+        console.log('     Computed Style: line-height ' + lineH + ' font-size ' + fontS + ' padding ' + padding);
+        console.log('     OverflowMargins: ' + overflowingMargins + ' font: ' + font);
+        console.log('     Expecting: ' + testExpectation); // added this because the failure message is not always immediately after the test output
     }
     expect(overflowingMargins).toBe(testExpectation);
 };

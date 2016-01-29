@@ -31,24 +31,18 @@ module.exports = function (config) {
         port: 9876,
         colors: true,
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-        logLevel: config.LOG_INFO,
+        logLevel: config.LOG_WARN,
         autoWatch: true,
 
 
         // Start these browsers, currently available:
         // - Chrome IF YOU USE CHROME, NOTE THAT IF YOU MINIMIZE CHROME, IT WILL RUN TESTS SUPER SLOWLY
-        // - ChromeCanary
         // - Firefox
-        // - Opera
-        // - Safari (only Mac)
         // - PhantomJS
-        // - IE (only Windows)
         browsers: ['Firefox'],
-
 
         // If browser does not capture in given timeout [ms], kill it
         captureTimeout: 6000,
-
 
         // Continuous Integration mode
         // if true, it capture browsers, run tests and exit
