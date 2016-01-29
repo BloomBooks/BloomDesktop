@@ -7,7 +7,8 @@ var pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, 'lib');
 var pathToTranspiledJavascriptFilesInOutputLib = path.resolve(__dirname, 'output/lib');
 var pathToBookEditJS = path.resolve(__dirname, 'bookEdit/js');
 var pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(__dirname, 'modified_libraries');
-var glob = require("glob");
+
+var globule = require("globule");
 
 module.exports = {
     context: __dirname,
@@ -22,13 +23,10 @@ module.exports = {
              //settingsIFrame:
              //ReaderSetupDialog:
              pageChooserIFrame: './pageChooser/js/page-chooser.js',
-             testBundle: glob.sync("./test/**/*Spec.js") //TODO add other specs
+             
+             testBundle: globule.find(["./**/*Spec.js", "!./node_modules/**"])//TODO this maybe slow if 1st it finds it all, then it excludes node_modules
            },
 
-    // output: {
-    //     path: path.join(__dirname, './output/'), //NB: this is ignored if run from gulp
-    //     filename: '[name].js'
-    // },
     output: {
         path: path.join(__dirname, './output/'), //NB: this is ignored if run from gulp
         filename: "[name].js",
@@ -39,16 +37,7 @@ module.exports = {
         //Note that if you include more than one entry point js in the frame, the second one will overwrite the Exports var
         // (see the other way of doing this, below, if that becomes necessary for some reason)
         library: "FrameExports" 
-        
-        //Makes each entrypointModule accessible via, e.g. Exports.toolboxIFrame
-        //At the moment, I'm going with this one even though the resulting code is needlessly verbose:
-        //Exports.nameOfMyFrame.Foo() instead of Exports.Foo().
-        //Leaning this way becuase I'm thinking it will be help in that the caller has to express what
-        // frame they *think* they are talking to, and if they're wrong, will get an error. If we do it
-        // the other way, you could just say Exports.Foo(), and 
-        //wonder why Foo() isn't there.
-        //library: ["FrameExports", "[name]"] 
-        
+       
     },
     
     resolve: {

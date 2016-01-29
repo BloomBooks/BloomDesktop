@@ -1,6 +1,5 @@
 /// <reference path="../../bookEdit/sourceBubbles/BloomSourceBubbles.ts" />
-/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="../../lib/jasmine/jasmine.d.ts"/>
+///<reference path="../../typings/bundledFromTSC.d.ts"/>
 
 import BloomSourceBubbles from "../../bookEdit/sourceBubbles/BloomSourceBubbles";
 "use strict";

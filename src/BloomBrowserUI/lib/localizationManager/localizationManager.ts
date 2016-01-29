@@ -102,6 +102,8 @@ export class LocalizationManager {
    * @returns {String}
    */
     public getText(stringId: string, englishText?: string, ...args): string {
+        if(typeof stringId === 'undefined')
+            throw 'localizationManager.getText() stringid was undefined';
 
         if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
             if (Object.keys(this.dictionary).length == 0) {

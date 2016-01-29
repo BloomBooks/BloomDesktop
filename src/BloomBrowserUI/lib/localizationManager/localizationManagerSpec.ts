@@ -1,5 +1,5 @@
 /// <reference path="localizationManager.ts" />
-/// <reference path="../jasmine/jasmine.d.ts"/>
+///<reference path="../../typings/bundledFromTSC.d.ts"/>
 
 /*
 /// <reference path="../../lib/jquery-1.9.1.js"/>

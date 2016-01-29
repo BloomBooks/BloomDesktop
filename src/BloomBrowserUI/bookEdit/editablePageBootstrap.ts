@@ -1,5 +1,4 @@
-/// <reference path="../typings/jquery/jquery.d.ts" />
-/// <reference path="../typings/jqueryui/jqueryui.d.ts" />
+/// <reference path="../typings/bundledFromTSC.d.ts" />
 /// <reference path="../typings/jquery.i18n.custom.d.ts" />
 /// <reference path="../lib/jquery.i18n.custom.ts" />
 /// <reference path="js/getIframeChannel.ts"/>

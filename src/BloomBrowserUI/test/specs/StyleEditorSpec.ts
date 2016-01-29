@@ -1,6 +1,6 @@
 /// <reference path="../../bookEdit/StyleEditor/StyleEditor.ts" />
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="../../lib/jasmine/jasmine.d.ts"/>
+
 
 /*
 /// <reference path="../../lib/jquery-1.9.1.js"/>

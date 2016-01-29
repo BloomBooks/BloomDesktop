@@ -217,7 +217,7 @@ function AddLanguageTags(container) {
         }
 
         var key = $this.attr("lang");
-        if (key == "*" || key.length < 1)
+        if (key != undefined && (key == "*" || key.length < 1))
             return; //seeing a "*" was confusing even to me
 
         // if this or any parent element has the class bloom-hideLanguageNameDisplay, we don't want to show any of these tags

@@ -1,23 +1,19 @@
-/// <reference path="../../typings/jquery/jquery.d.ts" />
-/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
-/// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
-/// <reference path="../../typings/jquery.i18n.custom.d.ts" />
+/// <reference path="../../typings/bundledFromTSC.d.ts"/>
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
 /// <reference path="../../lib/misc-types.d.ts" />
 /// <reference path="../../lib/jquery.alphanum.d.ts"/>
 /// <reference path="../js/toolbar/toolbar.d.ts"/>
-/// <reference path="../js/getIframeChannel.ts"/>
-/// <reference path="../js/interIframeChannel.ts"/>
 /// <reference path="../js/collectionSettings.d.ts"/>
 /// <reference path="../OverflowChecker/OverflowChecker.ts"/>
+
+
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
 import getIframeChannel from '../js/getIframeChannel';
 import OverflowChecker from '../OverflowChecker/OverflowChecker';
 import {GetDifferenceBetweenHeightAndParentHeight} from '../js/bloomEditing';
 import '../../lib/jquery.alphanum';
-
-var iframeChannel = getIframeChannel();
+import axios = require("axios");
 
 declare function GetSettings() : any; //c# injects this
 declare function WebFxTabPane(element:HTMLElement,useCookie:boolean,callback:any) : any; // from tabpane, from a <script> tag
@@ -526,8 +522,9 @@ export default class StyleEditor {
         // the user could actually modify a style and thus need the information.
         // More dangerous is using it in getCharTabDescription. But as that is launched by a later
         // async request, I think it should be OK.
-        iframeChannel.simpleAjaxGet('/bloom/authorMode', function(result) {
-            editor.authorMode = result == 'true';
+        
+        axios.get('/bloom/authorMode').then( result=>{
+            editor.authorMode = result.data == 'true';
         });
         editor.xmatterMode = this.IsPageXMatter(targetBox);
 
@@ -578,7 +575,9 @@ export default class StyleEditor {
         // The namespace (".formatButton") in the event name prevents off from interfering with other click handlers.
         $(targetBox).off('click.formatButton');
         $(targetBox).on('click.formatButton', '#formatButton', function() {
-            iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function(fontData) {
+            //iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function(fontData) {
+            axios.get('/bloom/availableFontNames').then( result=>{
+                var fontData = result.data as string;
                 editor.boxBeingEdited = targetBox;
                 // This line is needed inside the click function to keep from using a stale version of 'styleName'
                 // and chopping off 6 characters each time!
