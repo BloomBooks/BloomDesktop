@@ -76,8 +76,8 @@ module.exports = {
            {
                test: /\.(js|jsx)$/,
                //jquery-ui is currently *not* excluded because we added some imports to it
-               exclude: [/node_modules/, /ckeditor/, /*/jquery-ui/,*/ /-min/, /qtip/, /xregexp-all-min.js/],
-               loader: 'babel?presets[]=react,presets[]=es2015'
+               exclude: [/node_modules/, /ckeditor/, /jquery-ui/, /-min/, /qtip/, /xregexp-all-min.js/],
+               loader: 'babel?presets[]=react,presets[]=es2015',
            },
             // { test: /\.ts(x?)$/, loader: 'babel-loader!ts-loader' },
             // { test: /\.less$/, loader: "style!css!less" }
