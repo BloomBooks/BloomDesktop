@@ -2,7 +2,7 @@
 import * as $ from 'jquery';
 import {restoreToolboxSettings} from './toolbox';
 
-import {ReaderToolsModel} from './decodablereader/readertoolsmodel'
+import {ReaderToolsModel} from './decodablereader/readerToolsModel'
 
 export function canUndo() :boolean {
     return ReaderToolsModel.model !== null && ReaderToolsModel.model.shouldHandleUndo() && ReaderToolsModel.model.canUndo();
