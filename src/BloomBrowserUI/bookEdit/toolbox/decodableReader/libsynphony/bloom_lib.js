@@ -6,8 +6,12 @@
  * Created Apr 14, 2014 by Phil Hopper
  *
  */
-import {XRegExp} from 'xregexp';
+import XRegExp from 'xregexp';
+require('./bloom_xregexp_categories.js'); // reviewslog should add PEP to XRegExp, but it's not working
 import {LanguageData, libSynphony} from './synphony_lib';
+import _ from 'underscore';
+
+
 
 var wordCache;
 

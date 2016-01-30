@@ -6,6 +6,8 @@
  * Created Jun 4, 2014 by Hopper
  *
  */
+import {LanguageData} from '../../toolbox/decodableReader/libsynphony/synphony_lib.js';
+import '../../toolbox/decodableReader/libsynphony/bloom_lib.js'; //add several functions to LanguageData
 
 describe("LanguageData", function() {
 

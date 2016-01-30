@@ -7,6 +7,19 @@
  *
  */
 
+import 'underscore';
+import {libSynphony}  from '../toolbox/decodableReader/libsynphony/synphony_lib.js';
+import '../toolbox/decodableReader/libsynphony/bloom_lib.js'; //add several functions to LanguageData
+
+
+//***************** TODO
+// THIS EXPECTS THERE TO BE A GLOBAL (lowercase) libsynphony. Which I think is a naming crime, but in any case, it needs one. 
+// TODO this lower case *instance* is exported from synphony_lib.js, but it isn't working. I get
+// TypeError: _synphony_lib.libsynphony is undefined
+import {libsynphony}  from '../toolbox/decodableReader/libsynphony/synphony_lib.js';
+//just testing var libsynphony = new libSynphony();
+
+
 /**
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
  * @param {jQuery} $

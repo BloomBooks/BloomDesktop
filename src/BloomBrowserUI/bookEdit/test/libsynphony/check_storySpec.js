@@ -13,7 +13,8 @@ describe("Check Story", function() {
 
     function generateTestData() {
 
-        lang_data = {"LangName":"","LangID":"",
+//reviewslog: changed from bare lang_data to window.lang_data
+        window.lang_data = {"LangName":"","LangID":"",
             "LanguageSortOrder":["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","ch","'","b'","-","aa"],
             "ProductivityGPCSequence":[],
             "Numbers":[0,1,2,3,4,5,6,7,8,9],

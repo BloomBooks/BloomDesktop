@@ -17,6 +17,12 @@ import {ToolBox} from "../toolbox";
 import getIframeChannel from '../../js/getIframeChannel';
 import "../../js/jquery.text-markup.js";
 
+//import 'underscore';
+import {libSynphony}  from './libsynphony/synphony_lib.js';
+
+import './libsynphony/bloom_lib.js'; //add several functions to LanguageData
+
+
 var iframeChannel = getIframeChannel();
 
 

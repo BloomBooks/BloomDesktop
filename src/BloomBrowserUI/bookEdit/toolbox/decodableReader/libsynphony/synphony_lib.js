@@ -1,4 +1,5 @@
 import XRegExp from 'xregexp';
+import  'underscore';
 
 /**
  * synphony_lib.js
@@ -66,6 +67,8 @@ function setLangData(data) {
  * Class that holds Synphony-related functions
  * @returns {libSynphony}
  */
+
+//TODO: this should be PascalCase
 export var libSynphony = function() {};
 
 /**
@@ -647,3 +650,5 @@ checkStoryResults.prototype.getNumbers = function() {
     return nums;
 };
 
+//TODO: change to something like "theOneLibSynhpony"
+export var libsynphony = new libSynphony();
