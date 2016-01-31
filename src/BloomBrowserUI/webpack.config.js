@@ -12,7 +12,7 @@ var globule = require("globule");
 
 module.exports = {
     context: __dirname,
-    
+    devtool: 'source-map',
     //Bloom is not (yet) one webapp; it's actually a several loosely related ones. 
     //So we have multiple "entry points" that we need to emit. Fortunately the
     //CommonsChunkPlugin extracts the code that is common to more than one into "commonCode.js"
