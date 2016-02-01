@@ -28,13 +28,33 @@ namespace Bloom.Edit
 	/// </summary>
 	class AudioRecording
 	{
+		private AudioRecorder _recorder;
 		/// <summary>
 		/// The file we want to record to
 		/// </summary>
 		public string Path { get; set; }
 #if __MonoCS__
 #else
-		public AudioRecorder Recorder { get; private set; } // Palaso component to do the actual recording.
+		// Palaso component to do the actual recording.
+		private AudioRecorder Recorder
+		{
+			get
+			{
+				// We postpone actually creating a recorder until something uses audio.
+				// Typically it is created when the talking book tool requests AudioDevicesJson
+				// to update the icon. At that point we start really sending volume requests.
+				if (_recorder == null)
+				{
+					Form.ActiveForm.Invoke((Action) (() =>
+					{
+						_recorder = new AudioRecorder(1);
+						_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
+						BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
+					}));
+				}
+				return _recorder;
+			}
+		}
 #endif
 		private readonly string _backupPath; // If we are about to replace a recording, save the old one here; a temp file.
 		private DateTime _startRecording; // For tracking recording length.
@@ -62,13 +82,6 @@ namespace Bloom.Edit
 
 		public AudioRecording()
 		{
-#if __MonoCS__
-#else
-			Recorder = new AudioRecorder(1);
-			Recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
-#endif
-			BeginMonitoring();
-
 			_startRecordingTimer = new Timer();
 			_startRecordingTimer.Interval = 300; //  ms from click to actual recording
 			_startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
@@ -121,6 +134,13 @@ namespace Bloom.Edit
 			}
 		}
 
+		/// <summary>
+		/// Used to initiate sending the PeakLevelChanged notifications.
+		/// Currently this typically happens when the Recorder instance is created,
+		/// which is usually when the talking book tool asks for the AudioDevicesJson.
+		/// This is not very intuitive, but it's the most easily detectable event
+		/// that indicates that the talking book tool is actually active.
+		/// </summary>
 		public void BeginMonitoring()
 		{
 #if __MonoCS__
