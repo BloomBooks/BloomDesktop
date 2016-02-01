@@ -9,7 +9,7 @@
 /// <reference path="../../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
 /// <reference path="../toolbox.ts" />
-/// <reference path="directoryWatcher.ts" />
+/// <reference path="./libsynphony/synphony_lib.d.ts" />
 import {DirectoryWatcher} from "./directoryWatcher";
 import {resizeWordList} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
@@ -18,7 +18,8 @@ import getIframeChannel from '../../js/getIframeChannel';
 import "../../js/jquery.text-markup.js";
 
 //import 'underscore';
-import {libSynphony}  from './libsynphony/synphony_lib.js';
+import {libSynphony, lang_data, libsynphony}  from './libsynphony/synphony_lib';
+import {SynphonyApi} from './synphonyApi';
 
 import './libsynphony/bloom_lib.js'; //add several functions to LanguageData
 

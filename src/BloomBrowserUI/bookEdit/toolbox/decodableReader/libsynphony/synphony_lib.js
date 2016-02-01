@@ -13,15 +13,15 @@ import  'underscore';
 /**
  * @type LanguageData
  */
-var lang_data;
+export var lang_data = new LanguageData();
 var alwaysMatch = [];
 
 /**
  * Class to hold language data
- * @param {Object} [optionalObject] Optional. If present, used to initialize the class.
+ * @param {Object} [optionalObject] Optional. If present, used to initialize the class. (We think not used.)
  * @returns {LanguageData}
  */
-export function LanguageData(optionalObject) {
+function LanguageData(optionalObject) {
 
     this.LangName = '';
     this.LangID = '';
@@ -37,6 +37,7 @@ export function LanguageData(optionalObject) {
     if (typeof optionalObject !== "undefined")
         _.extend(this, optionalObject);
 }
+
 
 /**
  * Called by langname_lang_data.js
@@ -69,7 +70,7 @@ function setLangData(data) {
  */
 
 //TODO: this should be PascalCase
-export var libSynphony = function() {};
+export var libSynphony = function() {}
 
 /**
  * Returns a list of words that meet the requested criteria.
@@ -651,4 +652,4 @@ checkStoryResults.prototype.getNumbers = function() {
 };
 
 //TODO: change to something like "theOneLibSynhpony"
-export var libsynphony = new libSynphony();
+export var libsynphony = new libSynphony()

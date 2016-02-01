@@ -3,6 +3,7 @@ import { ReaderToolsModel, DRTState, } from "../decodableReader/readerToolsModel
 import { initializeLeveledReaderTool} from "../decodableReader/readerTools";
 import {ITabModel} from "../toolbox";
 import {ToolBox} from "../toolbox";
+import {libsynphony}  from '../decodableReader/libsynphony/synphony_lib';
 
 class LeveledReaderModel implements ITabModel {
     restoreSettings(opts: string) {

@@ -8,6 +8,8 @@ import {initializeDecodableReaderTool} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import getIframeChannel from '../../js/getIframeChannel';
 import "../../js/jquery.text-markup.js";
+import {lang_data, LanguageData, libsynphony}  from './libsynphony/synphony_lib';
+import {SynphonyApi} from './synphonyApi';
 
 var iframeChannel = getIframeChannel();
 
@@ -232,7 +234,7 @@ function setDefaultFont(fontName: string): void {
 function readerSampleFilesChanged(): void {
 
   // reset the file and word list
-  lang_data = new LanguageData();
+  //lang_data = new LanguageData(); // now initialized in module declaration
   ReaderToolsModel.model.allWords = {};
   ReaderToolsModel.model.textCounter = 0;
 

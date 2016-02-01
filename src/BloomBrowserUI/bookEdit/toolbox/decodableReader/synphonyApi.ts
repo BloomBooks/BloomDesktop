@@ -1,9 +1,10 @@
-/// <reference path="libsynphony/synphony.d.ts" />
+/// <reference path="libsynphony/synphony_lib.d.ts" />
 /// <reference path="../../../typings/underscore/underscore.d.ts" />
 /// <reference path="../../../typings/jquery/jquery.d.ts" />
 /// <reference path="readerSettings.ts" />
 
-class SynphonyApi {
+import {lang_data, LanguageData}  from './libsynphony/synphony_lib';
+export class SynphonyApi {
 
   stages: ReaderStage[] = [];
   levels: ReaderLevel[] = [];
@@ -15,7 +16,7 @@ class SynphonyApi {
    */
   loadSettings(fileContent): void {
 
-    if (!lang_data) lang_data = new LanguageData();
+    //if (!lang_data) lang_data = new LanguageData(); now initialized in global declaration
 
     if (!fileContent) return;
 
@@ -72,7 +73,7 @@ class SynphonyApi {
 
     var wordNames = Object.keys(words);
 
-    if (!lang_data) lang_data = new LanguageData();
+    //if (!lang_data) lang_data = new LanguageData(); now initialized in global declaration
     for (var i = 0; i < wordNames.length; i++) {
       lang_data.addWord(wordNames[i], words[wordNames[i]]);
     }

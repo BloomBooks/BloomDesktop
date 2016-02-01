@@ -1,6 +1,6 @@
 /// <reference path="bloom_lib.d.ts" />
 
-declare class LanguageData {
+export class LanguageData {
 
     LangName: string;
     LangID: string;
@@ -19,7 +19,7 @@ declare class LanguageData {
     addWord(word: string[], freq?: number): void;
 }
 
-declare class libSynphony {
+export class libSynphony {
 
   dbGet(key: string): any;
   dbSet(key: string, value: any): void;
@@ -38,5 +38,5 @@ declare class libSynphony {
                           aPartsOfSpeech: string[]): string[];
 }
 
-declare var lang_data: LanguageData;
-declare var libsynphony: libSynphony;
+export var lang_data: LanguageData;
+export var libsynphony: libSynphony;

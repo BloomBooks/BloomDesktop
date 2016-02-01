@@ -8,6 +8,7 @@ import {initializeDecodableReaderTool} from "./readerTools";
 import {ITabModel} from "../toolbox";
 import {ToolBox} from "../toolbox";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
+import {libsynphony}  from './libsynphony/synphony_lib';
 
 class DecodableReaderModel implements ITabModel {
     restoreSettings(settings: string) {
