@@ -7,20 +7,6 @@ import OverflowChecker from '../../bookEdit/OverflowChecker/OverflowChecker';
 
 var consoleDef = false;
 
-interface JQuery {
-  RunTests(): JQuery;
-  RunAncestorMarginTests(): JQuery;
-}
-
-jQuery.fn.RunTests = function() {
-    $.each(this, RunTest);
-};
-
-
-jQuery.fn.RunAncestorMarginTests = function() {
-    $.each(this, RunAncestorMarginTest);
-}
-
 console.log = function(any){}
 
 function RunTest(index, value) {
@@ -51,7 +37,7 @@ function RunTest(index, value) {
     expect(overflowingSelf).toBe(testExpectation);
 };
 
-function RunAncestorMarginTest(index, value) {
+function RunAncestorMarginTest(index:number, value:HTMLElement) {
     var testHtml = $(value);
     var nameAttr = testHtml.attr("name");
     if(typeof nameAttr === 'undefined')
@@ -97,7 +83,7 @@ describe("Overflow Tests", function () {
             consoleDef = true;
             console.log('Commencing Overflow tests...');
         }
-        $(".myTest").RunTests();
+        $(".myTest").each(e=>this.RunTest(e))
     });
 
     it("Check test page for Margin overflows", function() {
@@ -107,7 +93,7 @@ describe("Overflow Tests", function () {
             consoleDef = true;
             console.log('Commencing Margin Overflow tests...');
         }
-        $(".myTest").RunAncestorMarginTests();
+        $(".myTest").each((index,element)=>RunAncestorMarginTest(index,element as HTMLElement));
     });
 
     it("Check test page for Fixed Ancestor overflows", function() {
@@ -117,6 +103,6 @@ describe("Overflow Tests", function () {
             consoleDef = true;
             console.log('Commencing Fixed Ancestor Overflow tests...');
         }
-        $(".myTest").RunAncestorMarginTests();
+        $(".myTest").each((index,element)=>RunAncestorMarginTest(index,element as HTMLElement));
     });
 });
