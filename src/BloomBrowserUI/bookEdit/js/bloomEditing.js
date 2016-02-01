@@ -645,7 +645,13 @@ $(document).ready(function() {
     // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
     // but skip any element with class="bloom-userCannotModifyStyles"
     $('div.bloom-page').find('.bloom-content1[contenteditable="true"],.bloom-content2[contenteditable="true"],.bloom-content3[contenteditable="true"],.bloom-contentNational1[contenteditable="true"]').each(function() {
-
+        if ($(this).find('.bloom-imageContainer').length) {
+            // We would *like* to wire up ckeditor, but would need to get it to stop interfering 
+            // with the embedded image. See https://silbloom.myjetbrains.com/youtrack/issue/BL-3125.
+            // Currently this is only possible in the grade 4 Uganda books by SIL-LEAD.
+            // So for now, we just going to say that you don't get ckeditor inside fields that have an embedded image.
+            return;
+        }
         if ($(this).hasClass('bloom-userCannotModifyStyles'))
             return; // equivalent to 'continue'
 
