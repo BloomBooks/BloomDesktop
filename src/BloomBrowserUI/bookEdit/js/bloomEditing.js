@@ -663,10 +663,10 @@ $(document).ready(function() {
         // Record the div of the edit box for use later in positioning the format bar.
         mapCkeditDiv[ckedit.id] = this;
 
-        // show or hide the toolbar when the text selection changes
+       // show or hide the toolbar when the text selection changes
         ckedit.on('selectionCheck', function(evt) {
             var editor = evt['editor'];
-            // Length of selected text is more reliable than compariing
+            // Length of selected text is more reliable than comparing
             // endpoints of the first range.  Mozilla can return multiple
             // ranges with the first one being empty.
             var selection = editor.getSelection();
@@ -698,6 +698,8 @@ $(document).ready(function() {
             var bar = $('body').find('.' + editor.id);
             bar.hide();
         });
+
+        BloomField.WireToCKEditor(this, ckedit);
     });
 
     //this is some sample code for working on CommandAvailabilityPublisher websocket messages

@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
@@ -212,7 +211,7 @@ namespace Bloom
 
 			_cutCommand.Implementer = () => _browser.CutSelection();
 			_copyCommand.Implementer = () => _browser.CopySelection();
-			_pasteCommand.Implementer = () => PasteFilteredText(false);
+			_pasteCommand.Implementer = () => Paste();
 			_undoCommand.Implementer = () =>
 			{
 				// Note: this is only used for the Undo button in the toolbar;
@@ -380,6 +379,9 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			const uint DOM_VK_INSERT = 0x2D;
+
+			//enhance: it's possible that, with the introduction of ckeditor, we don't need to pay any attention 
+			//to ctrl+v. I'm doing a hotfix to a beta here so I don't want to change more than necessary.
 			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
 			{
 				if (_pasteCommand==null /*happened in calendar config*/ || !_pasteCommand.Enabled)
@@ -387,11 +389,7 @@ namespace Bloom
 					Debug.WriteLine("Paste not enabled, so ignoring.");
 					e.PreventDefault();
 				}
-				else if(_browser.CanPaste && BloomClipboard.ContainsText())
-				{
-					e.PreventDefault(); //we'll take it from here, thank you very much
-					PasteFilteredText(false);
-				}
+				//otherwise, ckeditor will handle the paste
 			}
 			// On Windows, Form.ProcessCmdKey (intercepted in Shell) seems to get ctrl messages even when the browser
 			// has focus.  But on Mono, it doesn't.  So we just do the same thing as that Shell.ProcessCmdKey function
@@ -403,36 +401,18 @@ namespace Bloom
 			}
 		}
 
-		private void PasteFilteredText(bool removeSingleLineBreaks)
+		private void Paste()
 		{
-			//this prone to dying in System.Windows.Forms.Clipboard.SetText. E.g. bl-2787
-			try
+			if (Control.ModifierKeys == Keys.Control)
 			{
-
-				Debug.Assert(!InvokeRequired);
-
-				//Remove everything from the clipboard except the unicode text (e.g. remove messy html from ms word)
 				var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
-
-				if (!string.IsNullOrEmpty(text))
-				{
-					if (removeSingleLineBreaks)
-					{
-						text = text.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
-					}
-					//setting clears other formats that might be on the clipboard, such as html
-					BloomClipboard.SetText(text, TextDataFormat.UnicodeText);
-					_browser.Paste();
-				}
-
+				text = System.Web.HttpUtility.JavaScriptStringEncode(text);
+				RunJavaScript("BloomField.CalledByCSharp_SpecialPaste('" + text + "')");
 			}
-			catch (Exception error)
+			else
 			{
-				Logger.WriteEvent("***Failed to paste in Browser.PasteFilteredText()");
-#if DEBUG
-				throw error;
-#endif
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem pasting from the clipboard.");
+				//just let ckeditor do the MSWord filtering
+				_browser.Paste();
 			}
 		}
 
@@ -605,15 +585,6 @@ namespace Bloom
 
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
-			var mouseEvent = e as Gecko.DomMouseEventArgs;
-			var specialPasteClick = ModifierKeys.HasFlag(Keys.Control) || (mouseEvent!=null && mouseEvent.Button== GeckoMouseButton.Middle);
-			if(_browser.CanPaste && BloomClipboard.ContainsText() && specialPasteClick)
-			{
-				e.PreventDefault();
-				PasteFilteredText(true);
-				return;
-			}
-
 			Debug.Assert(!InvokeRequired);
 		  //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
 			//it loses its focus.
@@ -622,8 +593,6 @@ namespace Bloom
 			EventHandler handler = OnBrowserClick;
 			if (handler != null)
 				handler(this, e);
-
-
 		}
 
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
