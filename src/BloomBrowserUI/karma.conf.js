@@ -16,7 +16,11 @@ module.exports = function (config) {
             // fixtures
             { pattern: 'test/fixtures/**/*.html', included: false, served: true },
         ],
-        
+
+        preprocessors: {
+        '**/*.js': ['sourcemap']
+        },
+                
         // test results reporter to use
         // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage', 'teamcity'
         reporters: ['progress'],
