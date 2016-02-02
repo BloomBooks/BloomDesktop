@@ -16,7 +16,9 @@
         audioRecorder.updateMarkupAndControlsToCurrentText();
     }
 
-    name() { return 'talkingBookTool'; }
+    name() { return 'talkingBook'; }
+
+    hasRestoredSettings: boolean;
 }
 
 tabModels.push(new TalkingBookModel());

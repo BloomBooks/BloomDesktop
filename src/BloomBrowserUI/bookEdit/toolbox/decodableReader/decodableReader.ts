@@ -69,7 +69,9 @@ class DecodableReaderModel implements ITabModel {
         model.doMarkup();
     }
 
-    name() { return 'decodableReaderTool'; }
+    name() { return 'decodableReader'; }
+
+    hasRestoredSettings: boolean;
 }
 
 tabModels.push(new DecodableReaderModel());

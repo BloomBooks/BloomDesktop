@@ -273,8 +273,13 @@ function getToolbox() {
     var toolbox = parent.window.document.getElementById("toolbox");
 
     // toolbox will be undefined during unit testing
-    if (toolbox)
-        return toolbox.contentWindow['toolbox'];
+    if (toolbox) {
+        var result = toolbox.contentWindow['toolbox'];
+        // This is a way of checking that it really is our instance of Toolbox.
+        // Somehow at some point an HTML element can get assigned to that variable.
+        if (result && result.toolboxIsShowing) {return result;}
+    }
+    return null;
 }
 
 // Originally, all this code was in document.load and the selectors were acting

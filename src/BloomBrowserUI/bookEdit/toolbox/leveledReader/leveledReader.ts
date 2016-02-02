@@ -28,7 +28,9 @@ class LeveledReaderModel implements ITabModel {
         model.doMarkup();
     }
 
-    name() {return 'leveledReaderTool';}
+    name() {return 'leveledReader';}
+
+    hasRestoredSettings: boolean;
 }
 
 tabModels.push(new LeveledReaderModel());
