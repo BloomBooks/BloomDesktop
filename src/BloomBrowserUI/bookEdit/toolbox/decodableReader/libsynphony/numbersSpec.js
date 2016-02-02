@@ -7,6 +7,9 @@
  *
  */
 
+import {checkStoryResults} from './synphony_lib';
+import {_} from "underscore";
+
 describe("NumberTests", function() {
 
     beforeEach(function() {

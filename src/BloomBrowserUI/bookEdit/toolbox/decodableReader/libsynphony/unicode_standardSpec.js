@@ -25,7 +25,7 @@ describe("Unicode Standards", function() {
 
         // Break at the start and end of text.
         var inputText = "this is a block of text to test";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(1);
     });
 
@@ -33,7 +33,7 @@ describe("Unicode Standards", function() {
 
         // Do not break within CRLF.
         var inputText = "This is\r\na block of\r\ntext to test.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(3);
     });
 
@@ -41,7 +41,7 @@ describe("Unicode Standards", function() {
 
         // Break after paragraph separators.
         var inputText = 'Sentence 1\rSentence 2\nSentence 3\u0085Sentence 4\u2028Sentence 5\u2029Sentence 6\r\nSentence 7<br>Sentence 8';
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(8);
     });
 
@@ -49,7 +49,7 @@ describe("Unicode Standards", function() {
 
         // Ignore Format and Extend characters, except when they appear at the beginning of a region of text.
         var inputText = "Thi\u200cs is\r\na blo\u2063ck of\r\nte\u202axt to t\u200dest.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
 
         //for (var i = 0; i < fragments.length; i++)
         //	jstestdriver.console.debug(i, fragments[i].text);
@@ -61,7 +61,7 @@ describe("Unicode Standards", function() {
 
         // Do not break after ambiguous terminators like period if they are immediately followed by a number or lowercase letter.
         var inputText = "This is test sentence .0 .a";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(1);
     });
 
@@ -69,7 +69,7 @@ describe("Unicode Standards", function() {
 
         // Do not break after ambiguous terminators like period if they are between uppercase letters.
         var inputText = "This is test sentence U.S.A.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(1);
     });
 
@@ -77,15 +77,15 @@ describe("Unicode Standards", function() {
 
         // Do not break after ambiguous terminators like period if the first following letter (optionally after certain punctuation) is lowercase.
         var inputText = "This is test sentence. this is a continuation of the sentence.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(1);
 
         var inputText = "This is test (sentence.)' this is a continuation of the sentence.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(1);
 
         inputText = "This is test (sentence.)' '(this is a continuation) of the sentence.";
-        fragments = libsynphony.stringToSentences(inputText);
+        fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(1);
     });
 
@@ -93,11 +93,11 @@ describe("Unicode Standards", function() {
 
         // Do not break after ambiguous terminators like period if they are followed by “continuation” punctuation such as comma, colon, or semicolon.
         var inputText = "This is test sentence., This is a continuation of the sentence.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(1);
 
         inputText = "This is test sentence. : This is a continuation of the sentence.";
-        fragments = libsynphony.stringToSentences(inputText);
+        fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(1);
     });
 
@@ -105,7 +105,7 @@ describe("Unicode Standards", function() {
 
         // Break after sentence terminators, but include closing punctuation
         var inputText = "This is a test sentence.)'\"";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments[0].text).toBe(inputText);
     });
 
@@ -120,7 +120,7 @@ describe("Unicode Standards", function() {
         var result5 = " This is sentence 3.";
         var result6 = "\r\n";
 
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
         expect(fragments.length).toBe(6);
         expect(fragments[0].text).toBe(result1);
         expect(fragments[1].text).toBe(result2);

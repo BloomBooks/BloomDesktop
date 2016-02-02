@@ -1,5 +1,5 @@
 import XRegExp from 'xregexp';
-import  'underscore';
+import {_} from 'underscore';
 
 /**
  * synphony_lib.js
@@ -13,15 +13,21 @@ import  'underscore';
 /**
  * @type LanguageData
  */
-export var lang_data = new LanguageData();
+// var singletonLanguageData = new LanguageData();
+// export var theOneLanguageDataInstance = singletonLanguageData;;
+
+export var theOneLanguageDataInstance = new LanguageData();
+
 var alwaysMatch = [];
 
 /**
  * Class to hold language data
  * @param {Object} [optionalObject] Optional. If present, used to initialize the class. (We think not used.)
  * @returns {LanguageData}
+ * 
+ * Note: we export it because bloom_lib extends it
  */
-function LanguageData(optionalObject) {
+export function LanguageData(optionalObject) {
 
     this.LangName = '';
     this.LangID = '';
@@ -40,14 +46,14 @@ function LanguageData(optionalObject) {
 
 
 /**
- * Called by langname_lang_data.js
+ * Called by langname_theOneLanguageDataInstance.js
  * @param {String} data
  */
 function setLangData(data) {
 
     try {
-        lang_data = new LanguageData(data);
-        libsynphony.processVocabularyGroups();
+        theOneLanguageDataInstance = new LanguageData(data);
+        theOneLibSynphony.processVocabularyGroups();
     }
     catch (e) {
 
@@ -114,10 +120,10 @@ libSynphony.prototype.selectGPCWordsWithArrayCompare = function(aDesiredGPCs, aK
         if (allowUpperCase) {//if true then we add uppercase
             for (var k = 0, klen = aKnownGPCs.length; k < klen; k++) {
                 var temp = [];
-                for (var j = 0, jlen = lang_data.GPCS.length; j < jlen; j++) {
-                    if (lang_data.GPCS[j]["GPC"] === aKnownGPCs[k]) {
-                        if (lang_data.GPCS[j]["GPCuc"] !== "") {
-                            temp.push(lang_data.GPCS[j]["GPCuc"]);
+                for (var j = 0, jlen = theOneLanguageDataInstance.GPCS.length; j < jlen; j++) {
+                    if (theOneLanguageDataInstance.GPCS[j]["GPC"] === aKnownGPCs[k]) {
+                        if (theOneLanguageDataInstance.GPCS[j]["GPCuc"] !== "") {
+                            temp.push(theOneLanguageDataInstance.GPCS[j]["GPCuc"]);
                         }
                     }
                 }
@@ -131,17 +137,17 @@ libSynphony.prototype.selectGPCWordsWithArrayCompare = function(aDesiredGPCs, aK
         if (alwaysMatch.length > 0) {
             aCriteria = aCriteria.concat(alwaysMatch);
         } else {
-            if ((typeof lang_data['AlwaysMatch'] !== 'undefined') && (lang_data['AlwaysMatch'] !== '')) {
-                alwaysMatch = alwaysMatch.concat(lang_data['AlwaysMatch']);
+            if ((typeof theOneLanguageDataInstance['AlwaysMatch'] !== 'undefined') && (theOneLanguageDataInstance['AlwaysMatch'] !== '')) {
+                alwaysMatch = alwaysMatch.concat(theOneLanguageDataInstance['AlwaysMatch']);
             }
-            if ((typeof lang_data['SyllableBreak'] !== 'undefined') && (lang_data['SyllableBreak'] !== '')) {
-                alwaysMatch.push(lang_data['SyllableBreak']);
+            if ((typeof theOneLanguageDataInstance['SyllableBreak'] !== 'undefined') && (theOneLanguageDataInstance['SyllableBreak'] !== '')) {
+                alwaysMatch.push(theOneLanguageDataInstance['SyllableBreak']);
             }
-            if ((typeof lang_data['StressSymbol'] !== 'undefined') && (lang_data['StressSymbol'] !== '')) {
-                alwaysMatch.push(lang_data['StressSymbol']);
+            if ((typeof theOneLanguageDataInstance['StressSymbol'] !== 'undefined') && (theOneLanguageDataInstance['StressSymbol'] !== '')) {
+                alwaysMatch.push(theOneLanguageDataInstance['StressSymbol']);
             }
-            if ((typeof lang_data['MorphemeBreak'] !== 'undefined') && (lang_data['MorphemeBreak'] !== '')) {
-                alwaysMatch.push(lang_data['MorphemeBreak']);
+            if ((typeof theOneLanguageDataInstance['MorphemeBreak'] !== 'undefined') && (theOneLanguageDataInstance['MorphemeBreak'] !== '')) {
+                alwaysMatch.push(theOneLanguageDataInstance['MorphemeBreak']);
             }
             aCriteria = aCriteria.concat(alwaysMatch);
         }
@@ -231,22 +237,22 @@ libSynphony.prototype.chooseVocabGroups = function(aSelectedGroups) {
     for (var i = 0; i < aSelectedGroups.length; i++) {
         switch (aSelectedGroups[i]) {
             case 'group1':
-                groups.push(lang_data.group1);
+                groups.push(theOneLanguageDataInstance.group1);
                 break;
             case 'group2':
-                groups.push(lang_data.group2);
+                groups.push(theOneLanguageDataInstance.group2);
                 break;
             case 'group3':
-                groups.push(lang_data.group3);
+                groups.push(theOneLanguageDataInstance.group3);
                 break;
             case 'group4':
-                groups.push(lang_data.group4);
+                groups.push(theOneLanguageDataInstance.group4);
                 break;
             case 'group5':
-                groups.push(lang_data.group5);
+                groups.push(theOneLanguageDataInstance.group5);
                 break;
             case 'group6':
-                groups.push(lang_data.group6);
+                groups.push(theOneLanguageDataInstance.group6);
                 break;
             default:
                 break;
@@ -258,11 +264,11 @@ libSynphony.prototype.chooseVocabGroups = function(aSelectedGroups) {
 
 /**
  * Processes vocabulary and creates indexes to speed lookups.
- * @param {LanguageData} [optionalLangData] Optional. If missing, the default lang_data is used.
+ * @param {LanguageData} [optionalLangData] Optional. If missing, the default theOneLanguageDataInstance is used.
  */
 libSynphony.prototype.processVocabularyGroups = function(optionalLangData) {
 
-    var data = (typeof optionalLangData === "undefined") ? lang_data : optionalLangData;
+    var data = (typeof optionalLangData === "undefined") ? theOneLanguageDataInstance : optionalLangData;
 
     var n = data["VocabularyGroups"];
     var u, gpc, syll;
@@ -452,7 +458,7 @@ libSynphony.prototype.checkStory = function(aFocusWordList, aWordCumulativeList,
     // Why not for full gpc? Once you have covered the regular spelling patterns (in English)
     // you will match all the other words, so everything gets tagged as 'possible'. Not useful!!
     var possible_words = [];
-    if ((typeof lang_data === 'undefined') || (lang_data["UseFullGPCNotation"] === false)) {
+    if ((typeof theOneLanguageDataInstance === 'undefined') || (theOneLanguageDataInstance["UseFullGPCNotation"] === false)) {
 
         // allow punctuation characters in the words
         // BL-1216 Use negative look-ahead to keep letters from being counted as punctuation
@@ -464,10 +470,10 @@ libSynphony.prototype.checkStory = function(aFocusWordList, aWordCumulativeList,
         });
 
         // BL-1217: exclude words with unknown graphemes, specifically 'aa' when only 'a' is known
-        if (typeof lang_data !== 'undefined') {
+        if (typeof theOneLanguageDataInstance !== 'undefined') {
 
             // get the unknown letters
-            var unknownGPCs = _.difference(_.pluck(lang_data['GPCS'], 'GPC'), letters.split('|')); // .join('|');
+            var unknownGPCs = _.difference(_.pluck(theOneLanguageDataInstance['GPCS'], 'GPC'), letters.split('|')); // .join('|');
             if (Array.isArray(unknownGPCs) && (unknownGPCs.length > 0)) {
 
                 // remove from the list of unknownGPCs characters used to build multi-graphs in the list aGPCsKnown
@@ -612,7 +618,8 @@ libSynphony.prototype.dbSet = function(key, value) {
 };
 
 /**
- *
+ * TODO: This appears to just through junk willy-nilly onto Window. Not clear that it "checks" anything. Confusing
+ * 
  * @param {Array} focus_words The words used in the story from the current stage
  * @param {Array} cumulative_words The words used in the story from the previous stages
  * @param {Array} possible_words Other words used in the story that may be decodable
@@ -622,7 +629,7 @@ libSynphony.prototype.dbSet = function(key, value) {
  * @param {int} totalWordCount
  * @returns {checkStoryResults}
  */
-function checkStoryResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readableWordCount, totalWordCount) {
+export function checkStoryResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readableWordCount, totalWordCount) {
 
     // constructor code
     this.focus_words = focus_words;
@@ -652,4 +659,4 @@ checkStoryResults.prototype.getNumbers = function() {
 };
 
 //TODO: change to something like "theOneLibSynhpony"
-export var libsynphony = new libSynphony()
+export var theOneLibSynphony = new libSynphony()

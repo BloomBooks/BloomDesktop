@@ -5,7 +5,7 @@ describe("Bloom Edit Controls tests", function() {
 
     beforeEach(function() {
         //noinspection JSUndeclaredVariable
-        lang_data = null;
+        globalLanguageData = null;
         model = new ReaderToolsModel();
 
         var settings = {};

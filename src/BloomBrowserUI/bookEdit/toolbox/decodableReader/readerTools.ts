@@ -8,8 +8,11 @@ import {initializeDecodableReaderTool} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import getIframeChannel from '../../js/getIframeChannel';
 import "../../js/jquery.text-markup.js";
-import {lang_data, LanguageData, libsynphony}  from './libsynphony/synphony_lib';
-import {SynphonyApi} from './synphonyApi';
+import {theOneLanguageData, LanguageData, theOneLibSynphony}  from './libSynphony/synphony_lib';
+import './libSynphony/synphony_lib.js';
+import SynphonyApi from './synphonyApi';
+import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
+
 
 var iframeChannel = getIframeChannel();
 
@@ -234,7 +237,7 @@ function setDefaultFont(fontName: string): void {
 function readerSampleFilesChanged(): void {
 
   // reset the file and word list
-  //lang_data = new LanguageData(); // now initialized in module declaration
+  theOneLanguageData = new LanguageData();
   ReaderToolsModel.model.allWords = {};
   ReaderToolsModel.model.textCounter = 0;
 
@@ -276,9 +279,9 @@ function makeLetterWordList(): void {
 
   // get list of all words
   var allGroups: string[] = [];
-  for (var j = 1; j <= lang_data.VocabularyGroups; j++)
+  for (var j = 1; j <= theOneLanguageData.VocabularyGroups; j++)
     allGroups.push('group' + j);
-  allGroups = libsynphony.chooseVocabGroups(allGroups);
+  allGroups = theOneLibSynphony.chooseVocabGroups(allGroups);
 
   var allWords: string[] = [];
   for (var g = 0; g < allGroups.length; g++) {

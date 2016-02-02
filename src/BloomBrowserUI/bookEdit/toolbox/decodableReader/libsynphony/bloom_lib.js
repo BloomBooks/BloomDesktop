@@ -8,8 +8,8 @@
  */
 import XRegExp from 'xregexp';
 require('./bloom_xregexp_categories.js'); // reviewslog should add PEP to XRegExp, but it's not working
-import {LanguageData, libSynphony} from './synphony_lib';
-import _ from 'underscore';
+import {theOneLibSynphony, LanguageData, libSynphony} from './synphony_lib';
+import * as _ from 'underscore';
 
 
 
@@ -69,7 +69,7 @@ function textFragment(str, isSpace) {
     this.text = str;
     this.isSentence = !isSpace;
     this.isSpace = isSpace;
-    this.words = libsynphony.getWordsFromHtmlString(jQuery('<div>' + str.replace(/<br><\/br>|<br>|<br \/>|<br\/>/gi, '\n') + '</div>')
+    this.words = theOneLibSynphony.getWordsFromHtmlString(jQuery('<div>' + str.replace(/<br><\/br>|<br>|<br \/>|<br\/>/gi, '\n') + '</div>')
         .text()).filter(function(word) { return word != ""});
 
     this.wordCount = function() {
@@ -206,28 +206,28 @@ libSynphony.prototype.loadLanguageData = function(fileInputElement, callback) {
 
     var reader = new FileReader();
     reader.onload = function(e) {
-        callback(libsynphony.langDataFromString(e.target.result));
+        callback(theOneLibSynphony.langDataFromString(e.target.result));
     };
     reader.readAsText(file);
 };
 
 /**
- * Parses the langDataString into a lang_data object.
+ * Parses the langDataString into a globalLanguageData object.
  * NOTE: Split into 2 functions, langDataFromString() and parseLangDataString(), for testing.
  * @param {String} langDataString
  * @returns {Boolean}
  */
 libSynphony.prototype.langDataFromString = function(langDataString) {
 
-    lang_data = this.parseLangDataString(langDataString);
+    globalLanguageData = this.parseLangDataString(langDataString);
 
-    libsynphony.processVocabularyGroups();
+    theOneLibSynphony.processVocabularyGroups();
 
     return true;
 };
 
 /**
- * Parses the langDataString into a lang_data object
+ * Parses the langDataString into a globalLanguageData object
  * @param {String} langDataString
  * @returns {LanguageData}
  */
@@ -266,7 +266,7 @@ libSynphony.prototype.parseLangDataString = function(langDataString) {
  * @returns {Array} An array of strings
  */
 libSynphony.prototype.selectGPCWordNamesWithArrayCompare = function(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech) {
-    var gpcs = libsynphony.selectGPCWordsWithArrayCompare(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech);
+    var gpcs = theOneLibSynphony.selectGPCWordsWithArrayCompare(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech);
     return _.pluck(gpcs, 'Name');
 };
 
@@ -303,7 +303,7 @@ libSynphony.prototype.selectGPCWordsFromCache = function(aDesiredGPCs, aKnownGPC
 
     wordCache.desiredGPCs = aDesiredGPCs;
     wordCache.knownGPCs = aKnownGPCs;
-    wordCache.selectedWords = libsynphony.selectGPCWordsWithArrayCompare(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech);
+    wordCache.selectedWords = theOneLibSynphony.selectGPCWordsWithArrayCompare(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech);
 
     return wordCache.selectedWords;
 };

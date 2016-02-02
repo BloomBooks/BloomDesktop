@@ -42,7 +42,7 @@
 
 import * as JQuery from 'jquery';
 import * as $ from 'jquery';
-import {libSynphony}  from '../decodableReader/libsynphony/synphony_lib';
+import {libSynphony}  from '../decodableReader/libSynphony/synphony_lib';
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -696,7 +696,7 @@ export default class AudioRecording {
             $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
         });
 
-        var fragments: textFragment[] = libsynphony.stringToSentences(elt.html());
+        var fragments: textFragment[] = theOneLibSynphony.stringToSentences(elt.html());
 
         // If any new sentence has an md5 that matches a saved one, attatch that id/md5 pair to that fragment.
         for (var i = 0; i < fragments.length; i++) {
@@ -706,7 +706,7 @@ export default class AudioRecording {
                 for (var j = 0; j < reuse.length; j++) {
                     if (currentMd5 === reuse[j].md5) {
                         // It's convenient here (very locally) to add a field to fragment which is not part
-                        // of its spec in libsynphony.
+                        // of its spec in theOneLibSynphony.
                         (<any>fragment).matchingAudioSpan = reuse[j];
                         reuse.splice(j, 1); // don't reuse again
                         break;
@@ -772,13 +772,13 @@ export default class AudioRecording {
 }
 
 export var theOneAudioRecorder: AudioRecording;
-var libsynphony: libSynphony;
+var theOneLibSynphony: libSynphony;
 
 export function initializeTalkingBookTool() {
     if (theOneAudioRecorder)
         return;
     theOneAudioRecorder = new AudioRecording();
-    libsynphony = new libSynphony();
+    theOneLibSynphony = new libSynphony();
     theOneAudioRecorder.initializeTalkingBookTool();
 }
 

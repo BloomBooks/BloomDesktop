@@ -6,8 +6,8 @@
  * Created Jun 4, 2014 by Hopper
  *
  */
-import {LanguageData} from '../../toolbox/decodableReader/libsynphony/synphony_lib.js';
-import '../../toolbox/decodableReader/libsynphony/bloom_lib.js'; //add several functions to LanguageData
+import {theOneLibSynphony, LanguageData} from './synphony_lib.js';
+import './bloom_lib.js'; //add several functions to LanguageData
 
 describe("LanguageData", function() {
 
@@ -160,7 +160,7 @@ describe("LanguageData", function() {
             ']' +
             '})';
 
-        var langData = libsynphony.parseLangDataString(langStr);
+        var langData = theOneLibSynphony.parseLangDataString(langStr);
 
         expect(langData.ProductivityGPCSequence).toEqual(["a","s","u","t","n","m","i","p","l","e","r","k","o","b","ai","d","g","h","w","ng","f","j","y","v","-"]);
         expect(langData.GPCS.length).toEqual(26);

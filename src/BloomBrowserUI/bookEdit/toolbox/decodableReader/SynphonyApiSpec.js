@@ -1,3 +1,6 @@
+import SynphonyApi from "./synphonyApi";
+import {ReaderStage} from './ReaderSettings';
+
 describe("SynphonyApi tests", function() {
     it("loads a file with a specified name", function() {
         // Todo PhilH: this test should load a data file and check that the expected stages are present
@@ -25,4 +28,4 @@ describe("Stage tests", function() {
         var stage = new ReaderStage("X");
         expect(stage.getName()).toBe("X");
     });
-});
+});                                                             

@@ -38,5 +38,7 @@ export class libSynphony {
                           aPartsOfSpeech: string[]): string[];
 }
 
-export var lang_data: LanguageData;
-export var libsynphony: libSynphony;
+export var theOneLanguageData: LanguageData;
+export var theOneLibSynphony: libSynphony;
+
+//export function checkStoryResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readableWordCount, totalWordCount);

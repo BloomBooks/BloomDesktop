@@ -8,14 +8,14 @@ import {initializeDecodableReaderTool} from "./readerTools";
 import {ITabModel} from "../toolbox";
 import {ToolBox} from "../toolbox";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
-import {libsynphony}  from './libsynphony/synphony_lib';
+import {theOneLibSynphony}  from './libSynphony/synphony_lib';
 
 class DecodableReaderModel implements ITabModel {
     restoreSettings(settings: string) {
         if (!ReaderToolsModel.model) ReaderToolsModel.model = new ReaderToolsModel();
         initializeDecodableReaderTool();
         if (settings['decodableReaderState']) {
-            var state = libsynphony.dbGet('drt_state');
+            var state = theOneLibSynphony.dbGet('drt_state');
             if (!state) state = new DRTState();
             var decState = settings['decodableReaderState'];
             if (decState.startsWith("stage:")) {
@@ -27,7 +27,7 @@ class DecodableReaderModel implements ITabModel {
                 // old state
                 state.stage = parseInt(decState);
             }
-            libsynphony.dbSet('drt_state', state);
+            theOneLibSynphony.dbSet('drt_state', state);
         }
     }
 

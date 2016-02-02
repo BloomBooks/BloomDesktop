@@ -9,19 +9,21 @@
 /// <reference path="../../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
 /// <reference path="../toolbox.ts" />
-/// <reference path="./libsynphony/synphony_lib.d.ts" />
+/// <reference path="./libSynphony/synphony_lib.d.ts" />
 import {DirectoryWatcher} from "./directoryWatcher";
 import {resizeWordList} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import {ToolBox} from "../toolbox";
 import getIframeChannel from '../../js/getIframeChannel';
 import "../../js/jquery.text-markup.js";
+import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
 
 //import 'underscore';
-import {libSynphony, lang_data, libsynphony}  from './libsynphony/synphony_lib';
-import {SynphonyApi} from './synphonyApi';
+import {libSynphony, theOneLanguageData, theOneLibSynphony}  from './libSynphony/synphony_lib';
+//import './libSynphony/synphony_lib';
+import SynphonyApi from './synphonyApi';
 
-import './libsynphony/bloom_lib.js'; //add several functions to LanguageData
+import './libSynphony/bloom_lib.js'; //add several functions to LanguageData
 
 
 var iframeChannel = getIframeChannel();
@@ -679,7 +681,7 @@ export class ReaderToolsModel {
         editableElements.checkDecodableReader({
           focusWords: cumulativeWords,
           previousWords: cumulativeWords,
-          // libsynphony lowercases the text, so we must do the same with sight words.  (BL-2550)
+          // theOneLibSynphony lowercases the text, so we must do the same with sight words.  (BL-2550)
           sightWords: sightWords.join(' ').toLowerCase().split(/\s/),
           knownGraphemes: this.stageGraphemes
         });
@@ -764,7 +766,7 @@ export class ReaderToolsModel {
     var total = 0;
     for (var i = 0; i < pageStrings.length; i++) {
       var page = pageStrings[i];
-      var fragments: textFragment[] = libsynphony.stringToSentences(page);
+      var fragments: textFragment[] = theOneLibSynphony.stringToSentences(page);
 
       // remove inter-sentence space
       fragments = fragments.filter(function (frag) {
@@ -782,7 +784,7 @@ export class ReaderToolsModel {
     var wordMap = {};
     for (var i = 0; i < pageStrings.length; i++) {
       var page = pageStrings[i];
-      var fragments: textFragment[] = libsynphony.stringToSentences(page);
+      var fragments: textFragment[] = theOneLibSynphony.stringToSentences(page);
 
       // remove inter-sentence space
       fragments = fragments.filter(function (frag) {
@@ -806,7 +808,7 @@ export class ReaderToolsModel {
       var page = pageStrings[i];
 
       // split into sentences
-      var fragments = libsynphony.stringToSentences(page);
+      var fragments = theOneLibSynphony.stringToSentences(page);
 
       // remove inter-sentence space
       fragments = fragments.filter(function (frag) {
@@ -875,15 +877,15 @@ export class ReaderToolsModel {
 
     // is this a Synphony data file?
     if (fileContents.substr(0, 12) === '{"LangName":') {
-      libsynphony.langDataFromString(fileContents);
-      this.getSynphony().loadFromLangData(lang_data);
+      theOneLibSynphony.langDataFromString(fileContents);
+      this.getSynphony().loadFromLangData(theOneLanguageData);
     }
     else if (fileContents.substr(0, 12) === 'setLangData(') {
-      libsynphony.langDataFromString(fileContents);
-      this.getSynphony().loadFromLangData(lang_data);
+      theOneLibSynphony.langDataFromString(fileContents);
+      this.getSynphony().loadFromLangData(theOneLanguageData);
     }
     else {
-      var words = libsynphony.getWordsFromHtmlString(fileContents);
+      var words = theOneLibSynphony.getWordsFromHtmlString(fileContents);
 
       // Limit the number of words processed from files.  The program hangs on very long lists.
       var lim = words.length;
@@ -920,7 +922,7 @@ export class ReaderToolsModel {
         ReaderToolsModel.model.processWordListChangedListeners();
 
         // write out the ReaderToolsWords-xyz.json file
-        iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(lang_data));
+        iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(theOneLanguageData));
       }, 200);
 
       return;
@@ -967,7 +969,7 @@ export class ReaderToolsModel {
 
     // add words to the word list
     SynphonyApi.addWords(this.allWords);
-    libsynphony.processVocabularyGroups();
+    theOneLibSynphony.processVocabularyGroups();
   }
 
   /**
@@ -988,7 +990,7 @@ export class ReaderToolsModel {
 
     if (!selectedGroups) {
       selectedGroups = [];
-      for (var i = 1; i <= lang_data.VocabularyGroups; i++)
+      for (var i = 1; i <= theOneLanguageData.VocabularyGroups; i++)
         selectedGroups.push('group' + i);
     }
 
@@ -1003,9 +1005,9 @@ export class ReaderToolsModel {
       partsOfSpeech = [];
 
     if (justWordName)
-      return libsynphony.selectGPCWordNamesWithArrayCompare(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
+      return theOneLibSynphony.selectGPCWordNamesWithArrayCompare(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
     else
-      return libsynphony.selectGPCWordsFromCache(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
+      return theOneLibSynphony.selectGPCWordsFromCache(desiredGPCs, knownGPCs, restrictToKnownGPCs, allowUpperCase, syllableLengths, selectedGroups, partsOfSpeech);
   }
 
   static selectWordsFromAllowedLists(stageNumber: number): string[] {
@@ -1071,7 +1073,7 @@ export class ReaderToolsModel {
     state.markupType = this.currentMarkupType;
     ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tdecodableReader\t" + "stage:" + this.stageNumber + ";sort:" + this.sort);
     ToolBox.fireCSharpToolboxEvent('saveToolboxSettingsEvent', "state\tleveledReader\t" + this.levelNumber);
-    libsynphony.dbSet('drt_state', state);
+    theOneLibSynphony.dbSet('drt_state', state);
   }
 
   restoreState(): void {
@@ -1080,7 +1082,7 @@ export class ReaderToolsModel {
     var toolbox = $('#toolbox');
     if (typeof toolbox.accordion !== 'function') return;
 
-    var state = libsynphony.dbGet('drt_state');
+    var state = theOneLibSynphony.dbGet('drt_state');
     if (!state) state = new DRTState();
 
     if (!this.currentMarkupType) this.currentMarkupType = state.markupType;

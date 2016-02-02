@@ -7,17 +7,17 @@
  *
  */
 
-import 'underscore';
-import {libSynphony}  from '../toolbox/decodableReader/libsynphony/synphony_lib.js';
-import '../toolbox/decodableReader/libsynphony/bloom_lib.js'; //add several functions to LanguageData
+import {_} from 'underscore';
+import {libSynphony}  from '../toolbox/decodableReader/libSynphony/synphony_lib.js';
+import '../toolbox/decodableReader/libSynphony/bloom_lib.js'; //add several functions to LanguageData
 
 
 //***************** TODO
-// THIS EXPECTS THERE TO BE A GLOBAL (lowercase) libsynphony. Which I think is a naming crime, but in any case, it needs one. 
+// THIS EXPECTS THERE TO BE A GLOBAL (lowercase) theOneLibSynphony. Which I think is a naming crime, but in any case, it needs one. 
 // TODO this lower case *instance* is exported from synphony_lib.js, but it isn't working. I get
-// TypeError: _synphony_lib.libsynphony is undefined
-import {libsynphony}  from '../toolbox/decodableReader/libsynphony/synphony_lib.js';
-//just testing var libsynphony = new libSynphony();
+// TypeError: _synphony_lib.theOneLibSynphony is undefined
+import {theOneLibSynphony}  from '../toolbox/decodableReader/libSynphony/synphony_lib.js';
+//just testing var theOneLibSynphony = new libSynphony();
 
 
 /**
@@ -53,7 +53,7 @@ import {libsynphony}  from '../toolbox/decodableReader/libsynphony/synphony_lib.
         var checkLeaf = function(leaf) {
             stashNonTextUIElementsInEditBox(leaf);
             // split into sentences
-            var fragments = libsynphony.stringToSentences($(leaf).html());
+            var fragments = theOneLibSynphony.stringToSentences($(leaf).html());
             var newHtml = '';
 
             for (var i = 0; i < fragments.length; i++) {
@@ -145,7 +145,7 @@ import {libsynphony}  from '../toolbox/decodableReader/libsynphony/synphony_lib.
         /**
          * @type checkStoryResults
          */
-        var results = libsynphony.checkStory(opts.focusWords, opts.previousWords, opts.knownGraphemes, text, opts.sightWords.join(' '));
+        var results = theOneLibSynphony.checkStory(opts.focusWords, opts.previousWords, opts.knownGraphemes, text, opts.sightWords.join(' '));
 
         // markup
         this.each(function() {
@@ -154,13 +154,13 @@ import {libsynphony}  from '../toolbox/decodableReader/libsynphony/synphony_lib.
 
             // ignore empty elements
             if ((html.trim().length > 0) && (html !== '<br>')) {
-                html = libsynphony.wrap_words_extra(html, results.sight_words, cssSightWord, ' data-segment="word"');
-                html = libsynphony.wrap_words_extra(html, results.possible_words, cssPossibleWord, ' data-segment="word"');
+                html = theOneLibSynphony.wrap_words_extra(html, results.sight_words, cssSightWord, ' data-segment="word"');
+                html = theOneLibSynphony.wrap_words_extra(html, results.possible_words, cssPossibleWord, ' data-segment="word"');
 
                 // remove numbers from list of bad words
                 var notFound = _.difference(results.remaining_words, results.getNumbers());
 
-                html = libsynphony.wrap_words_extra(html, notFound, cssWordNotFound, ' data-segment="word"');
+                html = theOneLibSynphony.wrap_words_extra(html, notFound, cssWordNotFound, ' data-segment="word"');
                 $(this).html(html);
             }
             restoreNonTextUIElementsInEditBox(this);
@@ -180,7 +180,7 @@ import {libsynphony}  from '../toolbox/decodableReader/libsynphony/synphony_lib.
         this.each(function() {
 
             // split into sentences
-            var fragments = libsynphony.stringToSentences(removeAllMarkup($(this).html()));
+            var fragments = theOneLibSynphony.stringToSentences(removeAllMarkup($(this).html()));
 
             if ((!fragments) || (fragments.length === 0)) return;
 
@@ -210,7 +210,7 @@ import {libsynphony}  from '../toolbox/decodableReader/libsynphony/synphony_lib.
         this.each(function() {
 
             // split into sentences
-            var fragments = libsynphony.stringToSentences(removeAllMarkup($(this).html()));
+            var fragments = theOneLibSynphony.stringToSentences(removeAllMarkup($(this).html()));
 
             // remove inter-sentence space
             fragments = fragments.filter(function(frag) {

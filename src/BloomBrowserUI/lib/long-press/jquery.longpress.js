@@ -10,7 +10,7 @@
  *  Modified September 2015 to set focus before selection in restoreCaretPosition()
  */
 
-import "./jquery.mousewheel.js";
+require("./jquery.mousewheel.js");
 
 (function ($, window, undefined) {
 

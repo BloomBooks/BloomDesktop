@@ -1,20 +1,11 @@
-/* global libsynphony, expect */
-
-/**
- * check_story.test.js
- *
- * Trying out the unit tests for javascript
- *
- * Created Apr 22, 2014 by Phil Hopper
- *
- */
+import {theOneLibSynphony} from './synphony_lib';
 
 describe("Check Story", function() {
 
     function generateTestData() {
 
-//reviewslog: changed from bare lang_data to window.lang_data
-        window.lang_data = {"LangName":"","LangID":"",
+//reviewslog: changed from bare globalLanguageData to window.globalLanguageData
+        window.globalLanguageData = {"LangName":"","LangID":"",
             "LanguageSortOrder":["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","ch","'","b'","-","aa"],
             "ProductivityGPCSequence":[],
             "Numbers":[0,1,2,3,4,5,6,7,8,9],
@@ -65,7 +56,7 @@ describe("Check Story", function() {
 
         var inputText = "a bad cad chad ch,ad had d,ach d,ac";
         var knownGPCs = ['a', 'b', 'ch', 'd', 'n'];
-        var results = libsynphony.checkStory([], [], knownGPCs, inputText, "");
+        var results = theOneLibSynphony.checkStory([], [], knownGPCs, inputText, "");
         expect(results.possible_words.length).toBe(5);  // a bad chad ch,ad d,ach
         expect(results.remaining_words.length).toBe(3); // cad had d,ac
     });
@@ -74,7 +65,7 @@ describe("Check Story", function() {
 
         var inputText = "a bad cad chad ch,ad had d,ach d,ac";
         var knownGPCs = ['a', 'b', 'ch', 'h', 'd', 'n'];
-        var results = libsynphony.checkStory([], [], knownGPCs, inputText, "");
+        var results = theOneLibSynphony.checkStory([], [], knownGPCs, inputText, "");
         expect(results.possible_words.length).toBe(6);  // a bad chad ch,ad d,ach had
         expect(results.remaining_words.length).toBe(2); // cad d,ac
     });
@@ -83,7 +74,7 @@ describe("Check Story", function() {
 
         var inputText = "o'o 'obo bodo' cob";
         var knownGPCs = ["'", 'b', 'o', 'd'];
-        var results = libsynphony.checkStory([], [], knownGPCs, inputText, "");
+        var results = theOneLibSynphony.checkStory([], [], knownGPCs, inputText, "");
         expect(results.possible_words.length).toBe(3);  // o'o 'obo bodo'
         expect(results.remaining_words.length).toBe(1); // cobc
     });
@@ -92,7 +83,7 @@ describe("Check Story", function() {
 
         var inputText = "o'o b'ob bob' ob'o cob";
         var knownGPCs = ['b', "b'", 'o', 'd'];
-        var results = libsynphony.checkStory([], [], knownGPCs, inputText, "");
+        var results = theOneLibSynphony.checkStory([], [], knownGPCs, inputText, "");
         expect(results.possible_words.length).toBe(3);  // b'ob bob' ob'o
         expect(results.remaining_words.length).toBe(2); // o'o cob
     });
@@ -105,7 +96,7 @@ describe("Check Story", function() {
 
         var inputText = "o-o -obo bodo- cob d,oc";
         var knownGPCs = ['b', '-', 'o', 'd'];
-        var results = libsynphony.checkStory([], [], knownGPCs, inputText, "");
+        var results = theOneLibSynphony.checkStory([], [], knownGPCs, inputText, "");
         expect(results.possible_words.length).toBe(3);  // o-o -obo bodo-
         expect(results.remaining_words.length).toBe(2); // cob d,oc
     });
@@ -114,7 +105,7 @@ describe("Check Story", function() {
 
         var inputText = "a and nad dan aa dad aand naad daan";
         var knownGPCs = ['a', 'd', 'n'];
-        var results = libsynphony.checkStory([], [], knownGPCs, inputText, "");
+        var results = theOneLibSynphony.checkStory([], [], knownGPCs, inputText, "");
         expect(results.possible_words.length).toBe(5);  // a and nad dan dad
         expect(results.remaining_words.length).toBe(4); // aa aand naad daan
     });

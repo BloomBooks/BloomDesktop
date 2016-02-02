@@ -1,3 +1,6 @@
+import AudioRecording from './AudioRecording';
+
+
 describe("audio recording tests", function() {
     it("inserts sentence spans with ids and class when none exist", function() {
         var div = $("<div>This is a sentence. This is another</div>");
@@ -85,7 +88,7 @@ describe("audio recording tests", function() {
         var spans = div.find("span");
         expect(spans.length).toBe(2);
         // I'm not sure why we get this leading space in the first span; somehow that's how stuff currently comes
-        // out of the libsynphony.stringToSentences code. It doesn't seem to cause a problem in Bloom.
+        // out of the theOneLibSynphony.stringToSentences code. It doesn't seem to cause a problem in Bloom.
         expect(spans[0].innerHTML).toBe('            Long dispela taim i gat wanpela bikpela taun i gat planti manmeri.');
         expect(spans[1].innerHTML).toBe('Nem bilong dispela taun em Nineveh.');
         // Again, I'm a bit surprised that it works out to so much leading space, but it looks right in the running program.

@@ -2,6 +2,11 @@
  * Unit tests for various sentence-related code
  */
 
+//dump it in (how else to activate the jquery extensions it adds?)
+import './synphony_lib';
+import {_} from "underscore";
+import {theOneLibSynphony, LanguageData, libSynphony} from './synphony_lib';
+
 describe("Splitting text into sentences", function() {
 
     beforeEach(function() {
@@ -15,7 +20,7 @@ describe("Splitting text into sentences", function() {
     it("Split into sentences, get word count", function() {
 
         var inputText = "This is not sentence 2. \"This is 'sentence 2.'\"";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
         var sentences = _.filter(fragments, function(frag) {
             return frag.isSentence;
         });
@@ -26,7 +31,7 @@ describe("Splitting text into sentences", function() {
     it("Get total word count", function() {
 
         var inputText = "This is sentence 1. \"This is 'sentence 2.'\" this is sentence.3. This is the 4th sentence! Is this the 5th sentence? Is \"this\" \"sentence 6?\"";
-        var words = libsynphony.getWordsFromHtmlString(inputText);
+        var words = theOneLibSynphony.getWordsFromHtmlString(inputText);
 
         expect(words.length).toBe(25);
     });
@@ -34,7 +39,7 @@ describe("Splitting text into sentences", function() {
     it("Get unique word count", function() {
 
         var inputText = "This is sentence 1. \"This is 'sentence 2.'\" this is sentence.3. This is the 4th sentence! Is this the 5th sentence? Is \"this\" \"sentence 6?\"";
-        var words = libsynphony.getUniqueWordsFromHtmlString(inputText);
+        var words = theOneLibSynphony.getUniqueWordsFromHtmlString(inputText);
 
         expect(words.length).toBe(10);
     });
@@ -42,7 +47,7 @@ describe("Splitting text into sentences", function() {
     it("Tag around sentence", function() {
 
         var inputText = "This is sentence 1. <span class=\"test\">This is sentence 2.</span> This is sentence 3.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
 
         expect(fragments.length).toBe(5);
         expect(fragments[0].text).toBe('This is sentence 1.');
@@ -54,7 +59,7 @@ describe("Splitting text into sentences", function() {
 
     it("Tag between sentences", function() {
         var inputText = "This is sentence 1.<span class=\"test\"> </span>This is sentence 2. This is sentence 3.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
 
         expect(fragments.length).toBe(5);
         expect(fragments[0].text).toBe('This is sentence 1.');
@@ -66,7 +71,7 @@ describe("Splitting text into sentences", function() {
 
     it("Tag between sentences extra space", function() {
         var inputText = "This is sentence 1. <span class=\"test\"> </span> This is sentence 2. This is sentence 3.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
 
         expect(fragments.length).toBe(5);
         expect(fragments[0].text).toBe('This is sentence 1.');
@@ -78,7 +83,7 @@ describe("Splitting text into sentences", function() {
 
     it("Empty tag between sentences", function() {
         var inputText = "This is sentence 1.<span class=\"test\"></span>This is sentence 2. This is sentence 3.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
 
         expect(fragments.length).toBe(5);
         expect(fragments[0].text).toBe('This is sentence 1.');
@@ -90,7 +95,7 @@ describe("Splitting text into sentences", function() {
 
     it("Self-closing tag between sentences", function() {
         var inputText = "This is sentence 1.<img src=\"\" title=\"test\" />This is sentence 2. This is sentence 3.";
-        var fragments = libsynphony.stringToSentences(inputText);
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
 
         expect(fragments.length).toBe(5);
         expect(fragments[0].text).toBe('This is sentence 1.');
@@ -103,7 +108,7 @@ describe("Splitting text into sentences", function() {
     it("Break tag between sentences", function() {
         var input = "This is sentence 1.<br>This is sentence 2.<br />\r\nThis is sentence 3.<br/>This is sentence 4.<br></br>This is sentence 5.";
         var expected = "This is sentence 1.<br />This is sentence 2.<br />\r\nThis is sentence 3.<br />This is sentence 4.<br />This is sentence 5.";
-        var fragments = libsynphony.stringToSentences(input);
+        var fragments = theOneLibSynphony.stringToSentences(input);
 
         var output = '';
 

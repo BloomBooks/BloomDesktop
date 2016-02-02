@@ -4,6 +4,7 @@
 import {enableSampleWords, displayLetters, selectLetters, selectLevel, selectStage, setLevelValue} from './readerSetup.ui';
 import getIframeChannel from '../../../js/getIframeChannel';
 import "../../../js/jquery.text-markup.js";
+import {ReaderStage, ReaderLevel, ReaderSettings, ReaderSettingsReplacer} from '../ReaderSettings';
 
 var previousMoreWords: string;
 

@@ -331,7 +331,7 @@ export default class BloomField {
     private static PrepareNonParagraphField(field:HTMLElement) {
         if ($(field).text() === '') {
             //add a span with only a zero-width space in it
-            //enhance: a zero-width placeholder would be a bit better, but libsynphony doesn't know this is a space: //$(this).html('<span class="bloom-ui">&#8203;</span>');
+            //enhance: a zero-width placeholder would be a bit better, but theOneLibSynphony doesn't know this is a space: //$(this).html('<span class="bloom-ui">&#8203;</span>');
             $(field).html('&nbsp;');
             //now we tried deleting it immediately, or after a pause, but that doesn't help. So now we don't delete it until they type or paste something.
             // REMOVE: why was this doing it for all of the elements? $(container).find(".bloom-editable").one('paste keypress', FixUpOnFirstInput);

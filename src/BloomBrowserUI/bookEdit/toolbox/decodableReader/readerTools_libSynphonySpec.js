@@ -1,8 +1,12 @@
+import {ReaderToolsModel} from "./readerToolsModel";
+import {globalLanguageData}  from './libSynphony/synphony_lib';
+
 describe("readerTools-libSynphony tests", function() {
 
     function generateTestData() {
 
-        lang_data = null;
+        //reviewslog this wasn't allowed  globalLanguageData = null;
+        //so we need another way to clear out this global, for testing purposes
         var model = new ReaderToolsModel();
 
         var settings = {};
@@ -28,8 +32,9 @@ describe("readerTools-libSynphony tests", function() {
 
     function generateSightWordsOnlyTestData() {
 
-        lang_data = null;
-        var model = new ReaderToolsModel();
+       //reviewslog this wasn't allowed  globalLanguageData = null;
+        //so we need another way to clear out this global, for testing purposes
+       var model = new ReaderToolsModel();
 
         var settings = {};
         settings.stages = [];
