@@ -42,7 +42,8 @@
 
 import * as JQuery from 'jquery';
 import * as $ from 'jquery';
-import {libSynphony}  from '../decodableReader/libSynphony/synphony_lib';
+import {libSynphony, theOneLibSynphony}  from '../decodableReader/libSynphony/synphony_lib';
+import {TextFragment} from '../decodableReader/libSynphony/bloom_lib'; 
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -657,7 +658,7 @@ export default class AudioRecording {
     // makeSentenceLeaf does this for roots which don't have children (except a few
     // special cases); this root method scans down and does it for each such child
     // in a root (possibly the root itself, if it has no children).
-    private makeSentenceSpans(root: JQuery): void {
+    public makeSentenceSpans(root: JQuery): void {
         root.each((index: number, e: Element) => {
             var children = $(e).children();
             var processedChild: boolean = false; // Did we find a significant child?
@@ -696,7 +697,7 @@ export default class AudioRecording {
             $(this).replaceWith($(this).html()); // strip out the audio-sentence wrapper so we can re-partition.
         });
 
-        var fragments: textFragment[] = theOneLibSynphony.stringToSentences(elt.html());
+        var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(elt.html());
 
         // If any new sentence has an md5 that matches a saved one, attatch that id/md5 pair to that fragment.
         for (var i = 0; i < fragments.length; i++) {
@@ -748,7 +749,7 @@ export default class AudioRecording {
         elt.append(formatButton);
     }
 
-    private isRecordable(fragment: textFragment): Boolean {
+    private isRecordable(fragment: TextFragment): Boolean {
         if (fragment.isSpace) return false; // this seems to be reliable
         // initial white-space fragments may currently be marked sentence
         var test = fragment.text.replace(/<br *[^>]*\/?>/g, " ");
@@ -772,13 +773,12 @@ export default class AudioRecording {
 }
 
 export var theOneAudioRecorder: AudioRecording;
-var theOneLibSynphony: libSynphony;
 
 export function initializeTalkingBookTool() {
     if (theOneAudioRecorder)
         return;
     theOneAudioRecorder = new AudioRecording();
-    theOneLibSynphony = new libSynphony();
+    //reviewslog: not allowed    theOneLibSynphony = new libSynphony();
     theOneAudioRecorder.initializeTalkingBookTool();
 }
 

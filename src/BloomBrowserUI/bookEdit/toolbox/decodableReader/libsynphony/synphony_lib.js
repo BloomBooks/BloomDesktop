@@ -16,8 +16,11 @@ import {_} from 'underscore';
 // var singletonLanguageData = new LanguageData();
 // export var theOneLanguageDataInstance = singletonLanguageData;;
 
-export var theOneLanguageDataInstance = new LanguageData();
+export let theOneLanguageDataInstance = new LanguageData();
 
+export function ResetLanguageDataInstance(){
+    theOneLanguageDataInstance = new LanguageData();
+}
 var alwaysMatch = [];
 
 /**

@@ -3,8 +3,11 @@
 /// <reference path="../../../typings/jquery/jquery.d.ts" />
 /// <reference path="readerSettings.ts" />
 
-import {theOneLanguageData, LanguageData}  from './libSynphony/synphony_lib';
+import {theOneLanguageDataInstance, theOneLibSynphony, LanguageData}  from './libSynphony/synphony_lib';
 import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
+import * as _ from 'underscore';
+
+
 export default class SynphonyApi {
 
   stages: ReaderStage[] = [];
@@ -24,9 +27,9 @@ export default class SynphonyApi {
     this.source = <ReaderSettings>jQuery.extend(new ReaderSettings(), fileContent);
 
     if (this.source.letters !== '') {
-      theOneLanguageData.addGrapheme(this.source.letters.split(' '));
-      theOneLanguageData.addWord(this.source.moreWords.split(' '));
-      theOneLanguageData.LanguageSortOrder = this.source.letters.split(' ');
+      theOneLanguageDataInstance.addGrapheme(this.source.letters.split(' '));
+      theOneLanguageDataInstance.addWord(this.source.moreWords.split(' '));
+      theOneLanguageDataInstance.LanguageSortOrder = this.source.letters.split(' ');
     }
 
     var stgs = this.source.stages;
@@ -76,7 +79,7 @@ export default class SynphonyApi {
 
     //if (!lang_data) lang_data = new LanguageData(); now initialized in global declaration
     for (var i = 0; i < wordNames.length; i++) {
-      theOneLanguageData.addWord(wordNames[i], words[wordNames[i]]);
+      theOneLanguageDataInstance.addWord(wordNames[i], words[wordNames[i]]);
     }
   }
 

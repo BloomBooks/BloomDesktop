@@ -41,7 +41,7 @@ function DataGPC(optionalGrapheme) {
  * @param {String} optionalWord Optional. The word to initialize the class.
  * @returns {DataWord}
  */
-function DataWord(optionalWord) {
+export function DataWord(optionalWord) {
 
     var w = (typeof optionalWord === "undefined") ? '' : optionalWord;
 
@@ -61,9 +61,9 @@ function DataWord(optionalWord) {
  * Class that holds text fragment information
  * @param {String} str The text of the fragment
  * @param {Boolean} isSpace <code>TRUE</code> if this fragment is inter-sentence space, otherwise <code>FALSE</code>.
- * @returns {textFragment}
+ * @returns {TextFragment}
  */
-function textFragment(str, isSpace) {
+function TextFragment(str, isSpace) {
 
     // constructor code
     this.text = str;
@@ -87,7 +87,7 @@ function WordCache() {
 /**
  * Takes an HTML string and returns an array of fragments containing sentences and inter-sentence spaces
  * @param {String} textHTML The HTML text to split
- * @returns {Array} An array of <code>textFragment</code> objects
+ * @returns {Array} An array of <code>TextFragment</code> objects
  */
 libSynphony.prototype.stringToSentences = function(textHTML) {
 
@@ -183,9 +183,9 @@ libSynphony.prototype.stringToSentences = function(textHTML) {
 
                 // is this space between sentences?
                 if (fragment.substring(0, 1) === nonSentence)
-                    returnVal.push(new textFragment(fragment.substring(1), true));
+                    returnVal.push(new TextFragment(fragment.substring(1), true));
                 else
-                    returnVal.push(new textFragment(fragment, false));
+                    returnVal.push(new TextFragment(fragment, false));
             }
         }
     }

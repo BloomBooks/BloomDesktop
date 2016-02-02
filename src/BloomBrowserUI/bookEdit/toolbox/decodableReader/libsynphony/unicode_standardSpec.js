@@ -1,11 +1,4 @@
-/**
- * unicode_standard.test.js
- *
- *
- *
- * Created May 6, 2014 by Phil Hopper
- *
- */
+import {theOneLibSynphony}  from './synphony_lib';
 
 describe("Unicode Standards", function() {
 

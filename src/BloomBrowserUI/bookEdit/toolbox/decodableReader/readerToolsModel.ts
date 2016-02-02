@@ -16,15 +16,16 @@ import theOneLocalizationManager from '../../../lib/localizationManager/localiza
 import {ToolBox} from "../toolbox";
 import getIframeChannel from '../../js/getIframeChannel';
 import "../../js/jquery.text-markup.js";
+import './jquery.div-columns.js';
+
 import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
 
-//import 'underscore';
-import {libSynphony, theOneLanguageData, theOneLibSynphony}  from './libSynphony/synphony_lib';
+import * as _ from 'underscore';
+import {libSynphony, theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synphony_lib';
 //import './libSynphony/synphony_lib';
 import SynphonyApi from './synphonyApi';
 
-import './libSynphony/bloom_lib.js'; //add several functions to LanguageData
-
+import {DataWord,TextFragment} from './libSynphony/bloom_lib';
 
 var iframeChannel = getIframeChannel();
 
@@ -766,7 +767,7 @@ export class ReaderToolsModel {
     var total = 0;
     for (var i = 0; i < pageStrings.length; i++) {
       var page = pageStrings[i];
-      var fragments: textFragment[] = theOneLibSynphony.stringToSentences(page);
+      var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(page);
 
       // remove inter-sentence space
       fragments = fragments.filter(function (frag) {
@@ -784,7 +785,7 @@ export class ReaderToolsModel {
     var wordMap = {};
     for (var i = 0; i < pageStrings.length; i++) {
       var page = pageStrings[i];
-      var fragments: textFragment[] = theOneLibSynphony.stringToSentences(page);
+      var fragments: TextFragment[] = theOneLibSynphony.stringToSentences(page);
 
       // remove inter-sentence space
       fragments = fragments.filter(function (frag) {
@@ -878,11 +879,11 @@ export class ReaderToolsModel {
     // is this a Synphony data file?
     if (fileContents.substr(0, 12) === '{"LangName":') {
       theOneLibSynphony.langDataFromString(fileContents);
-      this.getSynphony().loadFromLangData(theOneLanguageData);
+      this.getSynphony().loadFromLangData(theOneLanguageDataInstance);
     }
     else if (fileContents.substr(0, 12) === 'setLangData(') {
       theOneLibSynphony.langDataFromString(fileContents);
-      this.getSynphony().loadFromLangData(theOneLanguageData);
+      this.getSynphony().loadFromLangData(theOneLanguageDataInstance);
     }
     else {
       var words = theOneLibSynphony.getWordsFromHtmlString(fileContents);
@@ -922,7 +923,7 @@ export class ReaderToolsModel {
         ReaderToolsModel.model.processWordListChangedListeners();
 
         // write out the ReaderToolsWords-xyz.json file
-        iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(theOneLanguageData));
+        iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(theOneLanguageDataInstance));
       }, 200);
 
       return;
@@ -990,7 +991,7 @@ export class ReaderToolsModel {
 
     if (!selectedGroups) {
       selectedGroups = [];
-      for (var i = 1; i <= theOneLanguageData.VocabularyGroups; i++)
+      for (var i = 1; i <= theOneLanguageDataInstance.VocabularyGroups; i++)
         selectedGroups.push('group' + i);
     }
 

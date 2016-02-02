@@ -1,11 +1,14 @@
 import {ReaderToolsModel} from "./readerToolsModel";
-import {theOneLanguageDataInstance}  from './libSynphony/synphony_lib';
+import {theOneLanguageDataInstance,   ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
+import {_} from "underscore";
 
 describe("readerTools-libSynphony tests", function() {
 
     function generateTestData() {
 
         //reviewslog this wasn't allowed  theOneLanguageDataInstance = null;
+        ResetLanguageDataInstance();
+        
         //so we need another way to clear out this global, for testing purposes
         var model = new ReaderToolsModel();
 
@@ -33,6 +36,8 @@ describe("readerTools-libSynphony tests", function() {
     function generateSightWordsOnlyTestData() {
 
        //reviewslog this wasn't allowed  theOneLanguageDataInstance = null;
+       ResetLanguageDataInstance();
+       
         //so we need another way to clear out this global, for testing purposes
        var model = new ReaderToolsModel();
 

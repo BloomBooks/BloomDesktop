@@ -1,4 +1,5 @@
 /// <reference path="bloom_lib.d.ts" />
+import {TextFragment} from './bloom_lib';
 
 export class LanguageData {
 
@@ -23,7 +24,7 @@ export class libSynphony {
 
   dbGet(key: string): any;
   dbSet(key: string, value: any): void;
-  stringToSentences(textHTML: string): textFragment[];
+  stringToSentences(textHTML: string): TextFragment[];
   langDataFromString(langDataString: string): boolean;
   getWordsFromHtmlString(textHTML: string): string[];
   processVocabularyGroups(optionalLangData?: LanguageData): void;
@@ -38,7 +39,8 @@ export class libSynphony {
                           aPartsOfSpeech: string[]): string[];
 }
 
-export var theOneLanguageData: LanguageData;
+export var theOneLanguageDataInstance: LanguageData;
 export var theOneLibSynphony: libSynphony;
+export function ResetLanguageDataInstance(): void;
 
 //export function StoryCheckResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readableWordCount, totalWordCount);

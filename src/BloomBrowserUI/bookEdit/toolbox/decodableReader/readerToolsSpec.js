@@ -1,3 +1,6 @@
+import {theOneLanguageDataInstance, ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
+import {ReaderToolsModel} from './readerToolsModel';
+
 describe("Bloom Edit Controls tests", function() {
 
     var model;
@@ -5,7 +8,9 @@ describe("Bloom Edit Controls tests", function() {
 
     beforeEach(function() {
         //noinspection JSUndeclaredVariable
-        theOneLanguageDataInstance = null;
+        //reviewslog: this is not allowed: theOneLanguageDataInstance = null;
+        ResetLanguageDataInstance();
+        
         model = new ReaderToolsModel();
 
         var settings = {};

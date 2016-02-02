@@ -83,7 +83,7 @@ describe("Overflow Tests", function () {
             consoleDef = true;
             console.log('Commencing Overflow tests...');
         }
-        $(".myTest").each(e=>this.RunTest(e))
+        $(".myTest").each((index,element)=>RunTest(index,element))
     });
 
     it("Check test page for Margin overflows", function() {
