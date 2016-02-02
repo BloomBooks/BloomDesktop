@@ -143,7 +143,7 @@ import {theOneLibSynphony}  from '../toolbox/decodableReader/libSynphony/synphon
         });
 
         /**
-         * @type checkStoryResults
+         * @type StoryCheckResults
          */
         var results = theOneLibSynphony.checkStory(opts.focusWords, opts.previousWords, opts.knownGraphemes, text, opts.sightWords.join(' '));
 

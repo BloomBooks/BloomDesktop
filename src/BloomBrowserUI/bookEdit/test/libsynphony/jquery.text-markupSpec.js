@@ -64,7 +64,7 @@ describe("jquery.text-markup", function() {
         var input = 'a ae big';
         var out = 'a <span class="possible-word" data-segment="word">ae</span> <span class="word-not-found" data-segment="word">big</span>';
         $('#text_entry1').html(input).checkDecodableReader({focusWords: ['a'], knownGraphemes: ['a', 'e', 's']});
-        result = $('#text_entry1').html();
+        var result = $('#text_entry1').html();
         expect(result).toBe(out);
     });
 
@@ -72,7 +72,7 @@ describe("jquery.text-markup", function() {
         var input = 'a ae word';
         var out = 'a <span class="possible-word" data-segment="word">ae</span> <span class="word-not-found" data-segment="word">word</span>';
         $('#text_entry1').html(input).checkDecodableReader({focusWords: ['a'], knownGraphemes: ['a', 'e', 's']});
-        result = $('#text_entry1').html();
+        var result = $('#text_entry1').html();
         expect(result).toBe(out);
     });
 

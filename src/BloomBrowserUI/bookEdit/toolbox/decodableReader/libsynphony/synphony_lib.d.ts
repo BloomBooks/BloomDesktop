@@ -41,4 +41,4 @@ export class libSynphony {
 export var theOneLanguageData: LanguageData;
 export var theOneLibSynphony: libSynphony;
 
-//export function checkStoryResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readableWordCount, totalWordCount);
+//export function StoryCheckResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readableWordCount, totalWordCount);

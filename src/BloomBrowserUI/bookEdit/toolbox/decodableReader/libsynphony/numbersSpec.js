@@ -7,7 +7,7 @@
  *
  */
 
-import {checkStoryResults} from './synphony_lib';
+import {StoryCheckResults} from './synphony_lib';
 import {_} from "underscore";
 
 describe("NumberTests", function() {
@@ -23,7 +23,7 @@ describe("NumberTests", function() {
     it("latinNumerals", function() {
 
         var remainingWords = ['qwerty', 'a1sdfg', '123', '12zxcvb', '456.789'];
-        var storyResults = new checkStoryResults([], [], [], [], remainingWords, 0, 0);
+        var storyResults = new StoryCheckResults([], [], [], [], remainingWords, 0, 0);
 
         var numbers = storyResults.getNumbers();
 
@@ -36,7 +36,7 @@ describe("NumberTests", function() {
     it("arabicNumerals", function() {
 
         var remainingWords = ['qwerty', '٠asdfg', '٠١٢', 'zxc٤vb', '٣٤٥٦٧٨٩'];
-        var storyResults = new checkStoryResults([], [], [], [], remainingWords, 0, 0);
+        var storyResults = new StoryCheckResults([], [], [], [], remainingWords, 0, 0);
 
         var numbers = storyResults.getNumbers();
 
@@ -49,7 +49,7 @@ describe("NumberTests", function() {
     it("devanagariNumerals", function() {
 
         var remainingWords = ['qwerty', '९asdfg९', '०१२', 'zxcvb', '३४५६७८९'];
-        var storyResults = new checkStoryResults([], [], [], [], remainingWords, 0, 0);
+        var storyResults = new StoryCheckResults([], [], [], [], remainingWords, 0, 0);
 
         var numbers = storyResults.getNumbers();
 
@@ -62,7 +62,7 @@ describe("NumberTests", function() {
     it("testRemainingWords", function() {
 
         var remainingWords = ['qwerty', 'a1sdfg', 'on', '123', '12zxcvb', '456.789'];
-        var storyResults = new checkStoryResults([], [], [], [], remainingWords, 0, 0);
+        var storyResults = new StoryCheckResults([], [], [], [], remainingWords, 0, 0);
 
         var numbers = storyResults.getNumbers();
         var badWords = _.difference(remainingWords, numbers);

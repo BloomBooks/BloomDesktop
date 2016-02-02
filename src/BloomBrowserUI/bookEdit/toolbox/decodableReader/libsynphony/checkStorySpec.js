@@ -1,11 +1,11 @@
-import {theOneLibSynphony} from './synphony_lib';
+import {theOneLibSynphony, setLangData} from './synphony_lib';
 
 describe("Check Story", function() {
 
     function generateTestData() {
 
-//reviewslog: changed from bare globalLanguageData to window.globalLanguageData
-        window.globalLanguageData = {"LangName":"","LangID":"",
+//reviewslog: changed from bare theOneLanguageDataInstance to window.theOneLanguageDataInstance
+        setLangData( {"LangName":"","LangID":"",
             "LanguageSortOrder":["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","ch","'","b'","-","aa"],
             "ProductivityGPCSequence":[],
             "Numbers":[0,1,2,3,4,5,6,7,8,9],
@@ -41,7 +41,7 @@ describe("Check Story", function() {
                 {"GPC":"-","GPCuc":"-","Grapheme":"-","Phoneme":"-","Category":"other","Combining":"false","Frequency":1,"TokenFreq":1,"IPA":"","Alt":[]},
                 {"GPC":"aa","GPCuc":"AA","Grapheme":"aa","Phoneme":"aa","Category":"other","Combining":"false","Frequency":1,"TokenFreq":1,"IPA":"","Alt":[]}],
             "VocabularyGroupsDescriptions":[],"VocabularyGroups":1,"group1":[],
-            "UseFullGPCNotation":false};
+            "UseFullGPCNotation":false});
     }
 
     beforeEach(function() {

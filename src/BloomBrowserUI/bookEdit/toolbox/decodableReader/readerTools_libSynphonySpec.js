@@ -1,11 +1,11 @@
 import {ReaderToolsModel} from "./readerToolsModel";
-import {globalLanguageData}  from './libSynphony/synphony_lib';
+import {theOneLanguageDataInstance}  from './libSynphony/synphony_lib';
 
 describe("readerTools-libSynphony tests", function() {
 
     function generateTestData() {
 
-        //reviewslog this wasn't allowed  globalLanguageData = null;
+        //reviewslog this wasn't allowed  theOneLanguageDataInstance = null;
         //so we need another way to clear out this global, for testing purposes
         var model = new ReaderToolsModel();
 
@@ -32,7 +32,7 @@ describe("readerTools-libSynphony tests", function() {
 
     function generateSightWordsOnlyTestData() {
 
-       //reviewslog this wasn't allowed  globalLanguageData = null;
+       //reviewslog this wasn't allowed  theOneLanguageDataInstance = null;
         //so we need another way to clear out this global, for testing purposes
        var model = new ReaderToolsModel();
 

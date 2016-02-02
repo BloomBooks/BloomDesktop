@@ -12,13 +12,15 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [           
             'bookEdit/test/cSharpDependencyInjector.js', //defines a global GetSettings()
-            'output/*.js',           
+            'output/commonCode.js',           
+            'output/testBundle.js',           
             // fixtures
             { pattern: 'test/fixtures/**/*.html', included: false, served: true },
         ],
 
         preprocessors: {
-        '**/*.js': ['sourcemap']
+        '**/*.js': ['sourcemap'],
+         '**/*.html': [] //prevent  karma from preprocessing html (blocks jasmine fixture feature) https://github.com/karma-runner/karma/issues/788
         },
                 
         // test results reporter to use

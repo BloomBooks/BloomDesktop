@@ -103,8 +103,14 @@ export class LocalizationManager {
    */
     public getText(stringId: string, englishText?: string, ...args): string {
         if(typeof stringId === 'undefined')
-            throw 'localizationManager.getText() stringid was undefined';
-
+        {
+            try { 
+                throw new Error('localizationManager.getText() stringid was undefined');
+            }
+            catch (e) { 
+                    throw(e.message+e.stack); 
+            }
+        }
         if ((!this.inlineDictionaryLoaded) && (typeof GetInlineDictionary === 'function')) {
             if (Object.keys(this.dictionary).length == 0) {
                 this.inlineDictionaryLoaded = true;

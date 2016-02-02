@@ -45,29 +45,9 @@ export function LanguageData(optionalObject) {
 }
 
 
-/**
- * Called by langname_theOneLanguageDataInstance.js
- * @param {String} data
- */
-function setLangData(data) {
-
-    try {
-        theOneLanguageDataInstance = new LanguageData(data);
-        theOneLibSynphony.processVocabularyGroups();
-    }
-    catch (e) {
-
-        var div = document.getElementById('loading_data');
-        if (div) {
-            // this is running in the SynPhony UI, so show the error message
-            alert('error');
-            div.innerHTML = "Error loading language data: " + e.message;
-        }
-        else {
-            // this is not running in the SynPhony UI, throw the exception
-            throw e;
-        }
-    }
+export function setLangData(data) {
+    theOneLanguageDataInstance = new LanguageData(data);
+    theOneLibSynphony.processVocabularyGroups();
 }
 
 /**
@@ -398,7 +378,7 @@ libSynphony.prototype.getUniqueWordsFromHtmlString = function(textHTML) {
  * @param {Array} aGPCsKnown An array of all the predefined GPCs (aka knownGPCs)
  * @param {String} storyHTML  $('story_input').value
  * @param {String} sightWords $('sight_words').value
- * @returns {checkStoryResults} Statistics
+ * @returns {StoryCheckResults} Statistics
  */
 libSynphony.prototype.checkStory = function(aFocusWordList, aWordCumulativeList, aGPCsKnown, storyHTML, sightWords) {
 
@@ -427,7 +407,7 @@ libSynphony.prototype.checkStory = function(aFocusWordList, aWordCumulativeList,
     // if aGPCsKnown is empty, return now
     // BL-2359: Need to allow stages based on word lists rather than known graphemes
     //if (aGPCsKnown.length === 0)
-    //    return new checkStoryResults([], [], [], [], [], 0, total_words);
+    //    return new StoryCheckResults([], [], [], [], [], 0, total_words);
 
     // first we do diffs on aFocusWordList and aWordCumulativeList with story_vocab words
     var story_focus_words = _.intersection(aFocusWordList, story_vocab_compacted);
@@ -504,7 +484,7 @@ libSynphony.prototype.checkStory = function(aFocusWordList, aWordCumulativeList,
     // FIFTH PASS: we handle everything else that's left over
 
     var readable = focus_words.length + cumulative_words.length + possible_words.length;
-    return new checkStoryResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readable, total_words);
+    return new StoryCheckResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readable, total_words);
 };
 
 /**
@@ -618,7 +598,7 @@ libSynphony.prototype.dbSet = function(key, value) {
 };
 
 /**
- * TODO: This appears to just through junk willy-nilly onto Window. Not clear that it "checks" anything. Confusing
+ * Construct a "StoryCheckResults" Class
  * 
  * @param {Array} focus_words The words used in the story from the current stage
  * @param {Array} cumulative_words The words used in the story from the previous stages
@@ -627,9 +607,9 @@ libSynphony.prototype.dbSet = function(key, value) {
  * @param {Array} remaining_words
  * @param {int} readableWordCount
  * @param {int} totalWordCount
- * @returns {checkStoryResults}
+ * @returns {StoryCheckResults}
  */
-export function checkStoryResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readableWordCount, totalWordCount) {
+export function StoryCheckResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readableWordCount, totalWordCount) {
 
     // constructor code
     this.focus_words = focus_words;
@@ -645,7 +625,7 @@ export function checkStoryResults(focus_words, cumulative_words, possible_words,
  * Searches the remaining_words for words that are numbers.
  * @returns {Array}
  */
-checkStoryResults.prototype.getNumbers = function() {
+StoryCheckResults.prototype.getNumbers = function() {
 
     var nums = [];
     var regex = new XRegExp('^[\\p{N}\\p{P}]+$', 'g');

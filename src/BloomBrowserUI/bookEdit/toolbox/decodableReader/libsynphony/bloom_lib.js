@@ -212,14 +212,14 @@ libSynphony.prototype.loadLanguageData = function(fileInputElement, callback) {
 };
 
 /**
- * Parses the langDataString into a globalLanguageData object.
+ * Parses the langDataString into a theOneLanguageDataInstance object.
  * NOTE: Split into 2 functions, langDataFromString() and parseLangDataString(), for testing.
  * @param {String} langDataString
  * @returns {Boolean}
  */
 libSynphony.prototype.langDataFromString = function(langDataString) {
 
-    globalLanguageData = this.parseLangDataString(langDataString);
+    theOneLanguageDataInstance = this.parseLangDataString(langDataString);
 
     theOneLibSynphony.processVocabularyGroups();
 
@@ -227,7 +227,7 @@ libSynphony.prototype.langDataFromString = function(langDataString) {
 };
 
 /**
- * Parses the langDataString into a globalLanguageData object
+ * Parses the langDataString into a theOneLanguageDataInstance object
  * @param {String} langDataString
  * @returns {LanguageData}
  */
