@@ -12,7 +12,7 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [           
             'bookEdit/test/cSharpDependencyInjector.js', //defines a global GetSettings()
-            'output/commonCode.js',           
+            'output/commonBundle.js',           
             'output/testBundle.js',           
             // fixtures
             { pattern: 'test/fixtures/**/*.html', included: false, served: true },

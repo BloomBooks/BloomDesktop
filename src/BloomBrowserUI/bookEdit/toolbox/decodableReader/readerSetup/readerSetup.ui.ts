@@ -4,6 +4,7 @@ import theOneLocalizationManager from '../../../../lib/localizationManager/local
 import getIframeChannel from '../../../js/getIframeChannel';
 import {saveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords} from './readerSetup.io';
 import {DataWord} from '../libSynphony/bloom_lib'; 
+import '../libSynphony/jquery.text-markup.js';
 
 var desiredGPCs: string[];
 var previousGPCs: string[];

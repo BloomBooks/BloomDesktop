@@ -7,18 +7,9 @@
  *
  */
 
-import {_} from 'underscore';
-import {libSynphony}  from '../toolbox/decodableReader/libSynphony/synphony_lib.js';
-import '../toolbox/decodableReader/libSynphony/bloom_lib.js'; //add several functions to LanguageData
-
-
-//***************** TODO
-// THIS EXPECTS THERE TO BE A GLOBAL (lowercase) theOneLibSynphony. Which I think is a naming crime, but in any case, it needs one. 
-// TODO this lower case *instance* is exported from synphony_lib.js, but it isn't working. I get
-// TypeError: _synphony_lib.theOneLibSynphony is undefined
-import {theOneLibSynphony}  from '../toolbox/decodableReader/libSynphony/synphony_lib.js';
-//just testing var theOneLibSynphony = new libSynphony();
-
+import * as _ from 'underscore';
+import {theOneLibSynphony, LibSynphony}  from './synphony_lib';
+import './bloom_lib.js'; //add several functions to LanguageData
 
 /**
  * Use an 'Immediately Invoked Function Expression' to make this compatible with jQuery.noConflict().
@@ -113,7 +104,7 @@ import {theOneLibSynphony}  from '../toolbox/decodableReader/libSynphony/synphon
         // check words per page
         if (totalWordCount > opts.maxWordsPerPage) {
 
-            var page = parent.window.document.getElementById('page');
+            var page = parent.window.document.getElementById('page') as HTMLIFrameElement;
             if (!page)
                 $('body').find('div.bloom-page').addClass(cssTooManyWordsOnPage);
             else
@@ -244,7 +235,7 @@ import {theOneLibSynphony}  from '../toolbox/decodableReader/libSynphony/synphon
         });
 
         // remove page markup
-        var page = parent.window.document.getElementById('page');
+        var page = parent.window.document.getElementById('page') as HTMLIFrameElement;
         if (!page)
             $('body').find('div.' + cssTooManyWordsOnPage).removeClass(cssTooManyWordsOnPage);
         else

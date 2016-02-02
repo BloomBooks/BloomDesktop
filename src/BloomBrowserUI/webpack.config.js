@@ -15,14 +15,11 @@ module.exports = {
     devtool: 'source-map',
     //Bloom is not (yet) one webapp; it's actually a several loosely related ones. 
     //So we have multiple "entry points" that we need to emit. Fortunately the
-    //CommonsChunkPlugin extracts the code that is common to more than one into "commonCode.js"
-    entry: { //pageThumbnailsApp:
-             editViewApp:  './bookEdit/editViewFrame.js',
-             editablePageIFrame: './bookEdit/editablePageBootstrap.js',
-             toolboxIFrame: './bookEdit/toolbox/toolboxBootstrap.js',
-             //settingsIFrame:
-             //ReaderSetupDialog:
-             pageChooserIFrame: './pageChooser/js/page-chooser.js',
+    //CommonsChunkPlugin extracts the code that is common to more than one into "commonBundle.js"
+    entry: { editTabRootBundle:  './bookEdit/editViewFrame.js',
+             editablePageBundle: './bookEdit/editablePageBootstrap.js',
+             toolboxBundle: './bookEdit/toolbox/toolboxBootstrap.js',
+             pageChooserBundle: './pageChooser/js/page-chooser.js',
              
              testBundle: globule.find(["./**/*Spec.js", "!./node_modules/**"])//TODO this maybe slow if 1st it finds it all, then it excludes node_modules
            },
@@ -50,7 +47,7 @@ module.exports = {
         extensions: ['', '.js', '.jsx'] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
     },
     plugins: [
-           new webpack.optimize.CommonsChunkPlugin("common", "commonCode.js"),
+           new webpack.optimize.CommonsChunkPlugin("common", "commonBundle.js"),
                          //answer on various legacy issues: http://stackoverflow.com/questions/28969861/managing-jquery-plugin-dependency-in-webpack?lq=1
             //prepend var $ = require("jquery") every time it encounters the global $ identifier or "jQuery".
             new webpack.ProvidePlugin({

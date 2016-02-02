@@ -42,7 +42,7 @@
 
 import * as JQuery from 'jquery';
 import * as $ from 'jquery';
-import {libSynphony, theOneLibSynphony}  from '../decodableReader/libSynphony/synphony_lib';
+import {theOneLibSynphony}  from '../decodableReader/libSynphony/synphony_lib';
 import {TextFragment} from '../decodableReader/libSynphony/bloom_lib'; 
 
 enum Status {
@@ -778,7 +778,7 @@ export function initializeTalkingBookTool() {
     if (theOneAudioRecorder)
         return;
     theOneAudioRecorder = new AudioRecording();
-    //reviewslog: not allowed    theOneLibSynphony = new libSynphony();
+    //reviewslog: not allowed    theOneLibSynphony = new LibSynphony();
     theOneAudioRecorder.initializeTalkingBookTool();
 }
 

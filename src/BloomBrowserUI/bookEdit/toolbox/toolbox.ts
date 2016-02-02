@@ -5,7 +5,7 @@
 
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import 'jquery.i18n.custom.js';
-import "jquery.text-markup.js"; //onOnce, which probably doesn't belong in there
+import "./decodableReader/libSynphony/jquery.text-markup.js"; //onOnce, which probably doesn't belong in there
 
 /**
  * The html code for a check mark character

@@ -20,7 +20,7 @@ export class LanguageData {
     addWord(word: string[], freq?: number): void;
 }
 
-export class libSynphony {
+export class LibSynphony {
 
   dbGet(key: string): any;
   dbSet(key: string, value: any): void;
@@ -37,10 +37,13 @@ export class libSynphony {
   selectGPCWordsFromCache(aDesiredGPCs: string[], aKnownGPCs: string[], restrictToKnownGPCs: boolean,
                           allowUpperCase: boolean, aSyllableLengths: number[], aSelectedGroups: string[],
                           aPartsOfSpeech: string[]): string[];
+                          
+  wrap_words_extra(storyHTML:string, aWords:any, cssClass:string, extra:string);
+  checkStory(aFocusWordList:any, aWordCumulativeList:any, aGPCsKnown:any, storyHTML:any, sightWords:any);
 }
 
 export var theOneLanguageDataInstance: LanguageData;
-export var theOneLibSynphony: libSynphony;
+export var theOneLibSynphony: LibSynphony;
 export function ResetLanguageDataInstance(): void;
 
 //export function StoryCheckResults(focus_words, cumulative_words, possible_words, sight_words, remaining_words, readableWordCount, totalWordCount);

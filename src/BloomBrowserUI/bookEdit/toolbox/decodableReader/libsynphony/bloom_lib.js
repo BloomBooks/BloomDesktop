@@ -1,14 +1,14 @@
 /**
  * bloom_lib.js
  *
- * Extensions to the libSynphony class to support Bloom.
+ * Extensions to the LibSynphony class to support Bloom.
  *
  * Created Apr 14, 2014 by Phil Hopper
  *
  */
 import XRegExp from 'xregexp';
 require('./bloom_xregexp_categories.js'); // reviewslog should add PEP to XRegExp, but it's not working
-import {theOneLibSynphony, LanguageData, libSynphony} from './synphony_lib';
+import {theOneLibSynphony, theOneLanguageDataInstance, LanguageData, LibSynphony} from './synphony_lib';
 import * as _ from 'underscore';
 
 
@@ -89,7 +89,7 @@ function WordCache() {
  * @param {String} textHTML The HTML text to split
  * @returns {Array} An array of <code>TextFragment</code> objects
  */
-libSynphony.prototype.stringToSentences = function(textHTML) {
+LibSynphony.prototype.stringToSentences = function(textHTML) {
 
     // place holders
     var delimiter = String.fromCharCode(0);
@@ -198,7 +198,7 @@ libSynphony.prototype.stringToSentences = function(textHTML) {
  * @param {Element} fileInputElement
  * @param {Function} callback Function with one parameter, which will be TRUE if successful.
  */
-libSynphony.prototype.loadLanguageData = function(fileInputElement, callback) {
+LibSynphony.prototype.loadLanguageData = function(fileInputElement, callback) {
 
     var file = fileInputElement.files[0];
 
@@ -211,48 +211,6 @@ libSynphony.prototype.loadLanguageData = function(fileInputElement, callback) {
     reader.readAsText(file);
 };
 
-/**
- * Parses the langDataString into a theOneLanguageDataInstance object.
- * NOTE: Split into 2 functions, langDataFromString() and parseLangDataString(), for testing.
- * @param {String} langDataString
- * @returns {Boolean}
- */
-libSynphony.prototype.langDataFromString = function(langDataString) {
-
-    theOneLanguageDataInstance = this.parseLangDataString(langDataString);
-
-    theOneLibSynphony.processVocabularyGroups();
-
-    return true;
-};
-
-/**
- * Parses the langDataString into a theOneLanguageDataInstance object
- * @param {String} langDataString
- * @returns {LanguageData}
- */
-libSynphony.prototype.parseLangDataString = function(langDataString) {
-
-    // check for setLangData( ... )
-    var pos = langDataString.indexOf('{');
-    if (pos > 0)
-        langDataString = langDataString.substring(pos);
-
-    // should end with } (closing brace)
-    pos = langDataString.lastIndexOf('}');
-    if (pos < (langDataString.length - 1))
-        langDataString = langDataString.substring(0, pos + 1);
-
-    // fix errors and remove extra characters the JSON parser does not like
-    langDataString = langDataString.replace('GPCS:', '"GPCS":');     // this name may not be inside double-quotes
-    langDataString = langDataString.replace(/\/\/.*\r\n/g, '\r\n');  // remove comments from the file
-
-    // load the data
-    var langData = JSON.parse(langDataString);
-
-    // add the functions from LanguageData
-    return jQuery.extend(true, new LanguageData(), langData);
-};
 
 /**
  * Returns just the Name property (the actual word) of the selected DataWord objects.
@@ -265,7 +223,7 @@ libSynphony.prototype.parseLangDataString = function(langDataString) {
  * @param {Array} aPartsOfSpeech
  * @returns {Array} An array of strings
  */
-libSynphony.prototype.selectGPCWordNamesWithArrayCompare = function(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech) {
+LibSynphony.prototype.selectGPCWordNamesWithArrayCompare = function(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech) {
     var gpcs = theOneLibSynphony.selectGPCWordsWithArrayCompare(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech);
     return _.pluck(gpcs, 'Name');
 };
@@ -281,7 +239,7 @@ libSynphony.prototype.selectGPCWordNamesWithArrayCompare = function(aDesiredGPCs
  * @param {Array} aPartsOfSpeech
  * @returns {Array} An array of WordObject objects
  */
-libSynphony.prototype.selectGPCWordsFromCache = function(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech) {
+LibSynphony.prototype.selectGPCWordsFromCache = function(aDesiredGPCs, aKnownGPCs, restrictToKnownGPCs, allowUpperCase, aSyllableLengths, aSelectedGroups, aPartsOfSpeech) {
 
     // check if the list of graphemes changed
     if (!wordCache) {

@@ -1,7 +1,7 @@
 /// <reference path="../../js/interIframeChannel.ts" />
 /// <reference path="../../js/getIframeChannel.ts" />
 /// <reference path="synphonyApi.ts" />
-/// <reference path="../../js/jquery.text-markup.d.ts" />
+/// <reference path="./libSynphony/jquery.text-markup.d.ts" />
 /// <reference path="jquery.div-columns.ts" />
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="../../js/editableDivUtils.ts" />
@@ -15,16 +15,12 @@ import {resizeWordList} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import {ToolBox} from "../toolbox";
 import getIframeChannel from '../../js/getIframeChannel';
-import "../../js/jquery.text-markup.js";
+import "./libSynphony/jquery.text-markup.js";
 import './jquery.div-columns.js';
-
 import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
-
 import * as _ from 'underscore';
-import {libSynphony, theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synphony_lib';
-//import './libSynphony/synphony_lib';
+import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synphony_lib';
 import SynphonyApi from './synphonyApi';
-
 import {DataWord,TextFragment} from './libSynphony/bloom_lib';
 
 var iframeChannel = getIframeChannel();
