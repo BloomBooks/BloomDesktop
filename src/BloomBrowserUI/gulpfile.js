@@ -21,7 +21,7 @@ var paths = {
    less: ['./**/*.less',  '!./node_modules/**/*.less'],
    jade: ['./**/*.jade',  '!./node_modules/**/*.jade'],
    //all Typescript in the toolbox are handled via the webpack task (haven't cleaned up the rest enough, yet)
-   typescriptNotYetWebPacked: ['./**/*.ts','!./**/*.d.ts']//, '!./bookEdit/toolbox/**/*.ts']
+   typescript: ['./**/*.ts','!./**/*.d.ts']//, '!./bookEdit/toolbox/**/*.ts']
 };
 //Currently we are putting all css's into the same directories as the less
 //A next step would be to set it out to \output but that will require 
@@ -67,7 +67,7 @@ gulp.task('clean', function () {
 // });
 
 gulp.task('typescript', function () {
-  return gulp.src(paths.typescriptNotYetWebPacked)
+  return gulp.src(paths.typescript)
     .pipe(debug({title: 'typescript:'}))
     .pipe(sourcemaps.init())
     .pipe(ts({
@@ -80,9 +80,9 @@ gulp.task('typescript', function () {
 
 // Rerun the task when a file changes
 gulp.task('watch', function() {
- //only works once gulp.watch(paths.typescriptNotYetWebPacked, runSequence('typescript', 'webpack')),
+ //only works once gulp.watch(paths.typescript, runSequence('typescript', 'webpack')),
  //so anything that currently needs webpacking is not watched!!!
- gulp.watch(paths.typescriptNotYetWebPacked, ['typescript']),
+ gulp.watch(paths.typescript, ['typescript']),
   gulp.watch(paths.less, ['less']),
   gulp.watch(paths.jade, ['jade']);
 });
@@ -90,7 +90,7 @@ gulp.task('watch', function() {
 // Rerun the task when a file changes
 gulp.task('watchts', function() {
     runSequence('typescript');
-    gulp.watch(paths.typescriptNotYetWebPacked, ['typescript']);
+    gulp.watch(paths.typescript, ['typescript']);
 });
 
 gulp.task('default', 

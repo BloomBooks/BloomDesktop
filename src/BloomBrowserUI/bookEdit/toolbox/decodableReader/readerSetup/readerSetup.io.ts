@@ -3,8 +3,8 @@
 /// <reference path="readerSetup.ui.ts" />
 import {enableSampleWords, displayLetters, selectLetters, selectLevel, selectStage, setLevelValue} from './readerSetup.ui';
 import getIframeChannel from '../../../js/getIframeChannel';
-import "../libSynphony/jquery.text-markup.js";
 import {ReaderStage, ReaderLevel, ReaderSettings, ReaderSettingsReplacer} from '../ReaderSettings';
+import "../../../../lib/jquery.onSafe.js";
 
 var previousMoreWords: string;
 
@@ -78,7 +78,7 @@ function loadReaderSetupData(jsonData: string): void {
   }
 
   // click event for stage rows
-  tbody.find('tr').onOnce('click', function() {
+  tbody.find('tr').onSafe('click', function() {
     selectStage(this);
     displayLetters();
     selectLetters(this);
@@ -94,7 +94,7 @@ function loadReaderSetupData(jsonData: string): void {
   }
 
   // click event for level rows
-  tbodyLevels.find('tr').onOnce('click', function() {
+  tbodyLevels.find('tr').onSafe('click', function() {
     selectLevel(this);
   });
 }

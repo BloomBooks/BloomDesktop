@@ -7,13 +7,12 @@ import {ReaderToolsModel} from "./readerToolsModel";
 import {initializeDecodableReaderTool} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import getIframeChannel from '../../js/getIframeChannel';
-import "./libSynphony/jquery.text-markup.js";
 import {theOneLanguageDataInstance, LanguageData, theOneLibSynphony, ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
 import './libSynphony/synphony_lib.js';
 import SynphonyApi from './synphonyApi';
 import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
 import {DataWord} from './libSynphony/bloom_lib'; 
-
+import "../../../lib/jquery.onSafe"; 
 
 var iframeChannel = getIframeChannel();
 
@@ -130,23 +129,23 @@ export function initializeDecodableReaderTool(): void {
   loadSynphonySettings();
 
   // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
-  $('#incStage').onOnce('click.readerTools', function() {
+  $('#incStage').onSafe('click.readerTools', function() {
     ReaderToolsModel.model.incrementStage();
   });
 
-  $('#decStage').onOnce('click.readerTools', function() {
+  $('#decStage').onSafe('click.readerTools', function() {
     ReaderToolsModel.model.decrementStage();
   });
 
-  $('#sortAlphabetic').onOnce('click.readerTools', function() {
+  $('#sortAlphabetic').onSafe('click.readerTools', function() {
     ReaderToolsModel.model.sortAlphabetically();
   });
 
-  $('#sortLength').onOnce('click.readerTools', function() {
+  $('#sortLength').onSafe('click.readerTools', function() {
     ReaderToolsModel.model.sortByLength();
   });
 
-  $('#sortFrequency').onOnce('click.readerTools', function() {
+  $('#sortFrequency').onSafe('click.readerTools', function() {
     ReaderToolsModel.model.sortByFrequency();
   });
 
@@ -166,11 +165,11 @@ export function initializeLeveledReaderTool(): void {
   // load synphony settings
   loadSynphonySettings();
 
-  $('#incLevel').onOnce('click.readerTools', function() {
+  $('#incLevel').onSafe('click.readerTools', function() {
     ReaderToolsModel.model.incrementLevel();
   });
 
-  $('#decLevel').onOnce('click.readerTools', function() {
+  $('#decLevel').onSafe('click.readerTools', function() {
     ReaderToolsModel.model.decrementLevel();
   });
 

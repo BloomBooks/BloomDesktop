@@ -1,11 +1,11 @@
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="decodableReader/synphonyApi.ts" />
 /// <reference path="decodableReader/readerToolsModel.ts" />
-/// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
+
 
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import 'jquery.i18n.custom.js';
-import "./decodableReader/libSynphony/jquery.text-markup.js"; //onOnce, which probably doesn't belong in there
+import "jquery.onSafe"; 
 
 /**
  * The html code for a check mark character
@@ -221,7 +221,7 @@ function setCurrentPanel(currentPanel) {
     toolbox.accordion('option', 'animate', ani);
 
     // when a panel is activated, save its data-panelId so state can be restored when Bloom is restarted.
-    toolbox.onOnce('accordionactivate.toolbox', function (event, ui) {
+    toolbox.onSafe('accordionactivate.toolbox', function (event, ui) {
         var newToolName = null;
         if (ui.newHeader.attr('data-panelId')) {
             newToolName = ui.newHeader.attr('data-panelId').toString();

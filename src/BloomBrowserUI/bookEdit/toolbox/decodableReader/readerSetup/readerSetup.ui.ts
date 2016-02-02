@@ -1,10 +1,10 @@
 /// <reference path="readerSetup.io.ts" />
-
+/// <reference path="../../../../lib/jquery.onSafe.d.ts" />
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
+import '../../../../lib/jquery.onSafe.ts';
 import getIframeChannel from '../../../js/getIframeChannel';
 import {saveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords} from './readerSetup.io';
 import {DataWord} from '../libSynphony/bloom_lib'; 
-import '../libSynphony/jquery.text-markup.js';
 
 var desiredGPCs: string[];
 var previousGPCs: string[];
@@ -157,7 +157,7 @@ export function displayLetters(): void {
     div.append($('<div class="book-font unselected-letter rs-letters rs-letters-' + suffix + '">' + letters[i] + '</div>'));
   }
 
-  $('div.rs-letters').onOnce('click', function() {
+  $('div.rs-letters').onSafe('click', function() {
     selectLetter(this);
   });
 }
@@ -416,7 +416,7 @@ function addNewStage(): void {
   tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="book-font"></td><td class="book-font"></td><td class="book-font"></td></tr>');
 
   // click event for stage rows
-  tbody.find('tr:last').onOnce('click', function() {
+  tbody.find('tr:last').onSafe('click', function() {
     selectStage(this);
     displayLetters();
     selectLetters(this);
@@ -432,7 +432,7 @@ function addNewLevel(): void {
   tbody.append('<tr class="linked"><td>' + (tbody.children().length + 1) + '</td><td class="words-per-sentence">-</td><td class="words-per-page">-</td><td class="words-per-book">-</td><td class="unique-words-per-book">-</td><td style="display: none"></td></tr>');
 
   // click event for stage rows
-  tbody.find('tr:last').onOnce('click', function() {
+  tbody.find('tr:last').onSafe('click', function() {
     selectLevel(this);
   });
 
@@ -695,63 +695,63 @@ function attachEventHandlers(): void {
 
   if (typeof ($) === "function") {
 
-    $("#open-text-folder").onOnce('click', function() {
+    $("#open-text-folder").onSafe('click', function() {
       getIframeChannel().simpleAjaxNoCallback('/bloom/readers/openTextsFolder');
       return false;
     });
 
-    $("#setup-add-stage").onOnce('click', function() {
+    $("#setup-add-stage").onSafe('click', function() {
       addNewStage();
       return false;
     });
 
-    $("#define-sight-words").onOnce('click', function() {
+    $("#define-sight-words").onSafe('click', function() {
       alert('What are sight words?');
       return false;
     });
 
-    $("#setup-stage-sight-words").onOnce('keyup', function() {
+    $("#setup-stage-sight-words").onSafe('keyup', function() {
       updateSightWords(this);
       requestWordsForSelectedStage();
     });
 
-    $('#setup-remove-stage').onOnce('click', function() {
+    $('#setup-remove-stage').onSafe('click', function() {
       removeStage();
       return false;
     });
 
-    $('#setup-add-level').onOnce('click', function() {
+    $('#setup-add-level').onSafe('click', function() {
       addNewLevel();
       return false;
     });
 
-    $('#setup-remove-level').onOnce('click', function() {
+    $('#setup-remove-level').onSafe('click', function() {
       removeLevel();
       return false;
     });
 
     var toRemember = $('#things-to-remember');
-    toRemember.onOnce('keydown', handleThingsToRemember);
-    toRemember.onOnce('keyup', storeThingsToRemember);
+    toRemember.onSafe('keydown', handleThingsToRemember);
+    toRemember.onSafe('keyup', storeThingsToRemember);
 
     var levelDetail = $('#level-detail');
-    levelDetail.find('.level-checkbox').onOnce('change', function() {
+    levelDetail.find('.level-checkbox').onSafe('change', function() {
       var id = this.id.replace(/^use-/, '');
       var txtBox: HTMLInputElement = <HTMLInputElement>document.getElementById('max-' + id);
       txtBox.disabled = !this.checked;
       $('#levels-table').find('tbody tr.selected td.' + id).html(this.checked ? txtBox.value : '-');
     });
 
-    levelDetail.find('.level-textbox').onOnce('keyup', function() {
+    levelDetail.find('.level-textbox').onSafe('keyup', function() {
       var id = this.id.replace(/^max-/, '');
       $('#levels-table').find('tbody tr.selected td.' + id).html(this.value);
     });
 
-    $('input[name="words-or-letters"]').onOnce('change', function() {
+    $('input[name="words-or-letters"]').onSafe('change', function() {
       enableSampleWords();
     });
 
-    $('#setup-choose-allowed-words-file').onOnce('click', function() {
+    $('#setup-choose-allowed-words-file').onSafe('click', function() {
       getIframeChannel().simpleAjaxPost('/bloom/readers/selectStageAllowedWordsFile',
         function(fileName: string) {
           if (fileName) setAllowedWordsFile(fileName);
@@ -762,7 +762,7 @@ function attachEventHandlers(): void {
       return false;
     });
 
-    $('#remove-allowed-word-file').onOnce('click', function() {
+    $('#remove-allowed-word-file').onSafe('click', function() {
       setAllowedWordsFile('');
 
       // hide stale controls
@@ -772,14 +772,14 @@ function attachEventHandlers(): void {
     });
 
     var allowedDiv = $('#allowed-words-file-div');
-    allowedDiv.onOnce('mouseenter', function() {
+    allowedDiv.onSafe('mouseenter', function() {
       var title = document.getElementById('remove_word_list').innerHTML;
       var anchor = $(this).find('a');
       anchor.attr('title', title);
       anchor.show();
     });
 
-    allowedDiv.onOnce('mouseleave', function() { $(this).find('a').hide(); });
+    allowedDiv.onSafe('mouseleave', function() { $(this).find('a').hide(); });
   }
 }
 
