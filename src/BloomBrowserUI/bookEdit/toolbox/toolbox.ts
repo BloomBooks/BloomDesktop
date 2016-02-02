@@ -7,8 +7,6 @@
  * @type String
  */
 var checkMarkString = '&#10004;';
-
-var showingPanel = false;
 var savedSettings: string;
 
 var keypressTimer: any = null;
@@ -20,12 +18,13 @@ interface ITabModel {
     showTool();
     hideTool();
     updateMarkup();
-    name(): string;
+    name(): string; // without trailing 'Tool'!
+    hasRestoredSettings : boolean;
 }
 
 // Class that represents the whole toolbox. Gradually we will move more functionality in here.
 class ToolBox {
-    toolboxIsShowing() { return showingPanel; }
+    toolboxIsShowing() { return (<HTMLInputElement>$(parent.window.document).find('#pure-toggle-right').get(0)).checked; }
     configureElementsForTools(container: HTMLElement) {
         for (var i = 0; i < tabModels.length; i++) {
             tabModels[i].configureElements(container);
@@ -70,7 +69,6 @@ function showOrHidePanel_click(chkbox) {
         chkbox.innerHTML = checkMarkString;
         fireCSharpToolboxEvent('saveToolboxSettingsEvent', "active\t" + chkbox.id + "\t1");
         if (panel) {
-            showingPanel = true;
             requestPanel(chkbox.id, panel, null, null, null);
         }
     }
@@ -166,24 +164,35 @@ function getPage(): JQuery {
 
 function switchTool(newToolName: string)
 {
+    fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + newToolName); // Have Bloom remember which tool is active. (Might be none)
     var newTool = null;
-    for (var i = 0; i < tabModels.length; i++) {
-        if (tabModels[i].name() === newToolName) {
-            newTool = tabModels[i];
+    if (newToolName) {
+        for (var i = 0; i < tabModels.length; i++) {
+            // the newToolName comes from meta.json and we've changed our minds a few times about
+            // whether it should end in 'Tool' so what's in the meta.json might have it or not.
+            // For robustness we will recognize any tool name that starts with the (no -Tool)
+            // name we're looking for.
+            if (newToolName.startsWith(tabModels[i].name())) {
+                newTool = tabModels[i];
+            }
         }
     }
     if (currentTool !== newTool) {
         if (currentTool)
             currentTool.hideTool();
-        if (newTool && (<HTMLInputElement>$(parent.window.document).find('#pure-toggle-right').get(0)).checked) {
-            // If we're activating this tool for the first time, restore its settings.
-            if (!newTool.hasRestoredSettings) {
-                newTool.hasRestoredSettings = true;
-                newTool.restoreSettings(savedSettings);
-            }
-            newTool.showTool();
-        }
+        activateTool(newTool);
         currentTool = newTool;
+    }
+}
+
+function activateTool(newTool: ITabModel) {
+    if (newTool && toolbox.toolboxIsShowing()) {
+        // If we're activating this tool for the first time, restore its settings.
+        if (!newTool.hasRestoredSettings) {
+            newTool.hasRestoredSettings = true;
+            newTool.restoreSettings(savedSettings);
+        }
+        newTool.showTool();
     }
 }
 
@@ -210,6 +219,9 @@ function setCurrentPanel(currentPanel) {
             }
             return true; // continue the each() loop
         });
+    } else {
+        // Leave idx at 0, and update currentPanel to the corresponding ID.
+        currentPanel = toolbox.find('> h3').first().attr('data-panelId');
     }
 
     // turn off animation
@@ -225,13 +237,14 @@ function setCurrentPanel(currentPanel) {
     toolbox.accordion('option', 'animate', ani);
 
     // when a panel is activated, save its data-panelId so state can be restored when Bloom is restarted.
+    // We do this after we actually set the initial panel, because setting the intial panel may not CHANGE
+    // the active panel (if it's already the one we want, typically the first), so we can't rely on
+    // the activate event happening in the initial call. Instead, we make SURE to call it for the
+    // panel we are making active.
     toolbox.onOnce('accordionactivate.toolbox', function (event, ui) {
-        var newToolName = null;
+        var newToolName = "";
         if (ui.newHeader.attr('data-panelId')) {
             newToolName = ui.newHeader.attr('data-panelId').toString();
-            fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t" + ui.newHeader.attr('data-panelId').toString());
-        } else {
-            fireCSharpToolboxEvent('saveToolboxSettingsEvent', "current\t");
         }
         switchTool(newToolName);
     });
@@ -321,7 +334,7 @@ function doKeypressMarkup(): void {
 
         var atStart: boolean = myRange.endOffset === 0;
 
-        if (currentTool) currentTool.updateMarkup();
+        if (currentTool && toolbox.toolboxIsShowing()) currentTool.updateMarkup();
 
         // Now we try to restore the selection at the specified position.
         EditableDivUtils.makeSelectionIn(active, offset, divBrCount, atStart);
@@ -352,7 +365,7 @@ function loadToolboxPanel(newContent, panelId) {
     parts.filter('*[data-i18n]').localize();
     parts.find('*[data-i18n]').localize();
 
-    var toolbox = $('#toolbox');
+    var toolboxElt = $('#toolbox');
 
     // expect parts to have 2 items, an h3 and a div
     if (parts.length < 2) return;
@@ -370,27 +383,26 @@ function loadToolboxPanel(newContent, panelId) {
     // Where to insert the new panel?
     // NOTE: there will always be at least one panel, the "More..." panel, so there will always be at least one panel
     // in the toolbox. And the "More..." panel will have the highest order so it is always at the bottom of the stack.
-    var insertBefore = toolbox.children().filter(function() { return $(this).data('order') > order; }).first();
+    var insertBefore = toolboxElt.children().filter(function() { return $(this).data('order') > order; }).first();
 
     // Insert now.
     tab.insertBefore(insertBefore);
     div.insertBefore(insertBefore);
 
-    toolbox.accordion('refresh');
+    toolboxElt.accordion('refresh');
 
     // if requested, open the panel that was just inserted
-    if (showingPanel) {
-        showingPanel = false;
+    if (toolbox.toolboxIsShowing()) {
         var id = tab.attr('id');
         var tabNumber = parseInt(id.substr(id.lastIndexOf('_')));
-        toolbox.accordion('option', 'active', tabNumber); // must pass as integer
+        toolboxElt.accordion('option', 'active', tabNumber); // must pass as integer
     }
 }
 
 function showToolboxChanged(showing: boolean): void {
     if (currentTool) {
         if (showing) currentTool.hideTool();
-        else currentTool.showTool();
+        else activateTool(currentTool);
     } else {
         // starting up for the very first time in this book...no tool is current,
         // so select and properly initialize the first one.
