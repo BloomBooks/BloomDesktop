@@ -11,8 +11,9 @@ var browserify = require('gulp-browserify');
 var webpack = require('gulp-webpack');
 var del = require('del');
 var runSequence = require('run-sequence');
+var gulpCopy = require('gulp-copy');
 
-var destination = './'; //this is a temporary measure, to put transpiled stuff in the same dir.
+var destination = 'output';
 //to remove the extra stuff, do git clean -fxn -e node_modules
 
 var output = "output"; //this is where we eventually want everything
@@ -20,8 +21,8 @@ var output = "output"; //this is where we eventually want everything
 var paths = {
    less: ['./**/*.less',  '!./node_modules/**/*.less'],
    jade: ['./**/*.jade',  '!./node_modules/**/*.jade'],
-   //all Typescript in the toolbox are handled via the webpack task (haven't cleaned up the rest enough, yet)
-   typescript: ['./**/*.ts','!./**/*.d.ts']//, '!./bookEdit/toolbox/**/*.ts']
+   typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*','!./output/**/*.*'],
+   nonPreprocessedFiles: ['./**/*.*', '!./**/node_modules/**/*.*','!./output/**/*.*']
 };
 //Currently we are putting all css's into the same directories as the less
 //A next step would be to set it out to \output but that will require 
@@ -55,7 +56,7 @@ gulp.task('clean', function () {
   return del(["output/**/*", "output"]);
 });
 
-// gulp.task('jsx', () => {
+// gulp.task('jsx?', () => {
 // 	return gulp.src(paths.jsx)
 // 		.pipe(babel({
 // 			presets: ['es2015', "react"]
@@ -65,6 +66,19 @@ gulp.task('clean', function () {
 // 		}))
 // 		.pipe(gulp.dest(destination));
 // });
+
+gulp.task('copy', function () {
+  return gulp.src(paths.nonPreprocessedFiles)
+    // .pipe(debug({title: 'javascript:'}))
+    // .pipe(sourcemaps.init())
+    // .pipe(babel({
+    //     presets: ['es2015', "react"]
+    // }))
+    .pipe(gulpCopy(destination))
+    //.pipe(sourcemaps.write(destination))
+    //.pipe(gulp.dest(destination)); //drop all js's into the same dirs.
+});
+
 
 gulp.task('typescript', function () {
   return gulp.src(paths.typescript)
@@ -80,22 +94,29 @@ gulp.task('typescript', function () {
 
 // Rerun the task when a file changes
 gulp.task('watch', function() {
+    runSequence('default');
+    gulp.watch(paths.nonPreprocessedFiles, ['copy']);
+    gulp.watch(paths.typescript, ['typescript']),
+    gulp.watch(paths.less, ['less']),
+    gulp.watch(paths.jade, ['jade']);
+
  //only works once gulp.watch(paths.typescript, runSequence('typescript', 'webpack')),
  //so anything that currently needs webpacking is not watched!!!
- gulp.watch(paths.typescript, ['typescript']),
-  gulp.watch(paths.less, ['less']),
-  gulp.watch(paths.jade, ['jade']);
 });
 
 // Rerun the task when a file changes
-gulp.task('watchts', function() {
-    runSequence('typescript');
+gulp.task('watchcode', function() {
+    runSequence('copy','typescript');
+    gulp.watch(paths.nonPreprocessedFiles, ['copy']);
     gulp.watch(paths.typescript, ['typescript']);
 });
 
+gulp.task('code', function() {
+    runSequence(['copy','typescript']);
+});
 gulp.task('default', 
     function(callback) { 
         //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
         //currently our webpack run is pure javascript, so do it only after the typescript is all done
-        runSequence('clean', ['typescript', 'less', 'jade'], 'webpack', callback)
+        runSequence('clean', 'copy',['typescript', 'less', 'jade'], 'webpack', callback)
 });

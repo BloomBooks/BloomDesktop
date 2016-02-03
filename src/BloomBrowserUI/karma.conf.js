@@ -6,14 +6,14 @@ Karma's "proxies" argument should be able to do that, but I haven't been success
 module.exports = function (config) {
     config.set({
         // base path, that will be used to resolve files and exclude
-        basePath: '.',
+        basePath: './output',
         frameworks: ['jasmine'],
 
         // list of files / patterns to load in the browser
         files: [           
             'bookEdit/test/cSharpDependencyInjector.js', //defines a global GetSettings()
-            'output/commonBundle.js',           
-            'output/testBundle.js',           
+            'commonBundle.js',           
+            'testBundle.js',           
             // fixtures
             { pattern: 'test/fixtures/**/*.html', included: false, served: true },
         ],
@@ -30,7 +30,7 @@ module.exports = function (config) {
         colors: true,
         
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-        logLevel: config.LOG_WARN,
+        logLevel: config.LOG_ERROR,
         autoWatch: true,
         
         // Start these browsers, currently available:

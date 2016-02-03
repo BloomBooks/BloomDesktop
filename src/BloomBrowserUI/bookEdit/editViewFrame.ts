@@ -1,7 +1,5 @@
 import theOneLocalizationManager from '../lib/localizationManager/localizationManager';
-
-import '../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js'; //for dialog()
-//import {FrameExports} from './js/bloomFrames'
+import 'jquery-ui/jquery-ui-1.10.3.custom.min.js'; //for dialog()
 
 export function SayHello() { alert('Hello from editViewFrame'); }
 

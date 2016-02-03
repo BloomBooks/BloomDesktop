@@ -4,8 +4,8 @@
 
 
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
-import 'jquery.i18n.custom.js';
-import "jquery.onSafe"; 
+import '../../lib/jquery.i18n.custom.js';
+import "../../lib/jquery.onSafe"; 
 
 /**
  * The html code for a check mark character

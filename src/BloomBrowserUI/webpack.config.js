@@ -4,11 +4,16 @@ var node_modules = path.resolve(__dirname, 'node_modules');
 var pathToReact = path.resolve(node_modules, 'react/dist/react.min.js');
 var pathToReactDom = path.resolve(node_modules, 'react-dom/dist/react-dom.min.js');
 var pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, 'lib');
-var pathToTranspiledJavascriptFilesInOutputLib = path.resolve(__dirname, 'output/lib');
+
+//review is this used?
+//var pathToTranspiledJavascriptFilesInOutputLib = path.resolve(__dirname, 'output/lib');
+
+
 var pathToBookEditJS = path.resolve(__dirname, 'bookEdit/js');
 var pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(__dirname, 'modified_libraries');
 
 var globule = require("globule");
+var rootOfTranspiled ="./output";
 
 module.exports = {
     context: __dirname,
@@ -16,12 +21,12 @@ module.exports = {
     //Bloom is not (yet) one webapp; it's actually a several loosely related ones. 
     //So we have multiple "entry points" that we need to emit. Fortunately the
     //CommonsChunkPlugin extracts the code that is common to more than one into "commonBundle.js"
-    entry: { editTabRootBundle:  './bookEdit/editViewFrame.js',
-             editablePageBundle: './bookEdit/editablePageBootstrap.js',
-             toolboxBundle: './bookEdit/toolbox/toolboxBootstrap.js',
-             pageChooserBundle: './pageChooser/js/page-chooser.js',
+    entry: { editTabRootBundle:  rootOfTranspiled+'/bookEdit/editViewFrame.js',
+             editablePageBundle: rootOfTranspiled+'/bookEdit/editablePageBootstrap.js',
+             toolboxBundle: rootOfTranspiled+'/bookEdit/toolbox/toolboxBootstrap.js',
+             pageChooserBundle: rootOfTranspiled+'/pageChooser/js/page-chooser.js',
              
-             testBundle: globule.find(["./**/*Spec.js", "!./node_modules/**"])//TODO this maybe slow if 1st it finds it all, then it excludes node_modules
+             testBundle: globule.find([rootOfTranspiled+"/**/*Spec.js", "!./node_modules/**"])//TODO this maybe slow if 1st it finds it all, then it excludes node_modules
            },
 
     output: {
@@ -43,7 +48,7 @@ module.exports = {
               'react-dom': pathToReactDom,
               'react': pathToReact // the point of this is to use the minified version. https://christianalfoni.github.io/react-webpack-cookbook/Optimizing-rebundling.html
             },
-        modulesDirectories: [pathToOriginalJavascriptFilesInLib, pathToTranspiledJavascriptFilesInOutputLib,node_modules, pathToBookEditJS,pathToOriginalJavascriptFilesInModified_Libraries],
+        modulesDirectories: [pathToOriginalJavascriptFilesInLib, node_modules, pathToBookEditJS,pathToOriginalJavascriptFilesInModified_Libraries],
         extensions: ['', '.js', '.jsx'] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
     },
     plugins: [
