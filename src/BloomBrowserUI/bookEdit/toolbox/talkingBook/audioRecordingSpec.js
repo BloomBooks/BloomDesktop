@@ -78,7 +78,7 @@ describe("audio recording tests", function() {
         expect(spans.first().next().attr('class')).toBe('audio-sentence');
     });
     //reviewSlog: this is broken because it now emits more spaces.
-   /* it("handles leading space and <br>", function() {
+    it("handles leading space and <br>", function() {
         var div = $("<div>\
             <br class=''></br>\
             <br></br>\
@@ -89,9 +89,11 @@ describe("audio recording tests", function() {
         expect(spans.length).toBe(2);
         // I'm not sure why we get this leading space in the first span; somehow that's how stuff currently comes
         // out of the libsynphony.stringToSentences code. It doesn't seem to cause a problem in Bloom.
-        expect(spans[0].innerHTML).toBe('            Long dispela taim i gat wanpela bikpela taun i gat planti manmeri.');
+        // (In these replace statements, I'm not using \s because I'm not sure newlines might not be more significant,
+        // so I'd like to at least review the situation if we start inserting those. For the same reason trim() is not appropriate.
+        expect(spans[0].innerHTML.replace(/[ \t]s+/,'')).toBe('Long dispela taim i gat wanpela bikpela taun i gat planti manmeri.');
         expect(spans[1].innerHTML).toBe('Nem bilong dispela taun em Nineveh.');
         // Again, I'm a bit surprised that it works out to so much leading space, but it looks right in the running program.
-        expect(div.text()).toBe('                                    Long dispela taim i gat wanpela bikpela taun i gat planti manmeri. Nem bilong dispela taun em Nineveh.');
-    });*/
+        expect(div.text().replace(/^[ \t]+/,'')).toBe('Long dispela taim i gat wanpela bikpela taun i gat planti manmeri. Nem bilong dispela taun em Nineveh.');
+    });
 });
