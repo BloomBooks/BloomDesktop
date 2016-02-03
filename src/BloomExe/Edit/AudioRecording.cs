@@ -50,6 +50,14 @@ namespace Bloom.Edit
 						_recorder = new AudioRecorder(1);
 						_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
 						BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
+						Application.ApplicationExit += (sender, args) =>
+						{
+							if (_recorder != null)
+							{
+								_recorder.Dispose();
+								_recorder = null;
+							}
+						};
 					}));
 				}
 				return _recorder;
