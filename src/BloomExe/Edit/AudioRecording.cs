@@ -50,6 +50,24 @@ namespace Bloom.Edit
 						_recorder = new AudioRecorder(1);
 						_recorder.PeakLevelChanged += ((s, e) => SetPeakLevel(e));
 						BeginMonitoring(); // will call this recursively; make sure _recorder has been set by now!
+						Application.ApplicationExit += (sender, args) =>
+						{
+							if (_recorder != null)
+							{
+								var temp = _recorder;
+								_recorder = null;
+								try
+								{
+									temp.Dispose();
+								}
+								catch (Exception)
+								{
+									// Not sure how this can fail, but we don't need to crash if
+									// something goes wrong trying to free the audio object.
+									Debug.Fail("Something went wrong disposing of AudioRecorder");
+								}
+							}
+						};
 					}));
 				}
 				return _recorder;
