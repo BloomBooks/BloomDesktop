@@ -4,16 +4,17 @@ var node_modules = path.resolve(__dirname, 'node_modules');
 var pathToReact = path.resolve(node_modules, 'react/dist/react.min.js');
 var pathToReactDom = path.resolve(node_modules, 'react-dom/dist/react-dom.min.js');
 var pathToOriginalJavascriptFilesInLib = path.resolve(__dirname, 'lib');
-
-//review is this used?
-//var pathToTranspiledJavascriptFilesInOutputLib = path.resolve(__dirname, 'output/lib');
-
-
 var pathToBookEditJS = path.resolve(__dirname, 'bookEdit/js');
 var pathToOriginalJavascriptFilesInModified_Libraries = path.resolve(__dirname, 'modified_libraries');
-
 var globule = require("globule");
-var rootOfTranspiled ="./output";
+
+//note: if you change this, change it in gulpfile.js & karma.conf.js as well 
+var outputDir ="../../output/browser";
+
+//because our output directory does not have the same parent as our node_modules
+//https://github.com/babel/babel-loader/issues/166
+var babelQueryString = 'presets[]='+require.resolve('babel-preset-es2015')+',presets[]='+require.resolve('babel-preset-react');
+var babelString =  require.resolve('babel-loader')+'?'+babelQueryString;
 
 module.exports = {
     context: __dirname,
@@ -21,16 +22,16 @@ module.exports = {
     //Bloom is not (yet) one webapp; it's actually a several loosely related ones. 
     //So we have multiple "entry points" that we need to emit. Fortunately the
     //CommonsChunkPlugin extracts the code that is common to more than one into "commonBundle.js"
-    entry: { editTabRootBundle:  rootOfTranspiled+'/bookEdit/editViewFrame.js',
-             editablePageBundle: rootOfTranspiled+'/bookEdit/editablePageBootstrap.js',
-             toolboxBundle: rootOfTranspiled+'/bookEdit/toolbox/toolboxBootstrap.js',
-             pageChooserBundle: rootOfTranspiled+'/pageChooser/js/page-chooser.js',
+    entry: { editTabRootBundle:  outputDir+'/bookEdit/editViewFrame.js',
+             editablePageBundle: outputDir+'/bookEdit/editablePageBootstrap.js',
+             toolboxBundle: outputDir+'/bookEdit/toolbox/toolboxBootstrap.js',
+             pageChooserBundle: outputDir+'/pageChooser/js/page-chooser.js',
              
-             testBundle: globule.find([rootOfTranspiled+"/**/*Spec.js", "!./node_modules/**"])//TODO this maybe slow if 1st it finds it all, then it excludes node_modules
+             testBundle: globule.find([outputDir+"/**/*Spec.js", "!./node_modules/**"])//TODO this maybe slow if 1st it finds it all, then it excludes node_modules
            },
 
     output: {
-        path: path.join(__dirname, './output/'), //NB: this is ignored if run from gulp
+        path: path.join(__dirname, outputDir), 
         filename: "[name].js",
         
         libraryTarget: "var",
@@ -68,7 +69,9 @@ module.exports = {
                test: /\.(js|jsx)$/,
                //jquery-ui is currently *not* excluded because we added some imports to it
                exclude: [/node_modules/, /ckeditor/, /jquery-ui/, /-min/, /qtip/, /xregexp-all-min.js/],
-               loader: 'babel?presets[]=react,presets[]=es2015',
+//               loader: 'babel?presets[]=react,presets[]=es2015',
+               //loader: 'babel?presets[]='+__dirname+"/node_modules/babel-preset-es2015",
+               loader: babelString
            },
             // { test: /\.ts(x?)$/, loader: 'babel-loader!ts-loader' },
             // { test: /\.less$/, loader: "style!css!less" }

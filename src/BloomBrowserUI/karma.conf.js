@@ -3,10 +3,14 @@ those start with "/bloom". While the Bloom server strips those off, karma doesn'
 Karma's "proxies" argument should be able to do that, but I haven't been successful.
 */
 
+
+//note: if you change this, change it in gulpfile.js & webpack.config.js 
+var outputDir ="../../output/browser";
+
 module.exports = function (config) {
     config.set({
         // base path, that will be used to resolve files and exclude
-        basePath: './output',
+        basePath: outputDir,
         frameworks: ['jasmine'],
 
         // list of files / patterns to load in the browser
@@ -25,7 +29,7 @@ module.exports = function (config) {
                 
         // test results reporter to use
         // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage', 'teamcity'
-        reporters: ['progress'],
+        reporters: ['spec'],
         port: 9876,
         colors: true,
         
@@ -37,6 +41,7 @@ module.exports = function (config) {
         // - Chrome IF YOU USE CHROME, NOTE THAT IF YOU MINIMIZE CHROME, IT WILL RUN TESTS SUPER SLOWLY
         // - Firefox
         // - PhantomJS
+        //NB: as of Feb 2016, the all pass in Phantom & Chrome, but only 98 are found, compared to 101 with Firefox
         browsers: ['Firefox'],
 
         // If browser does not capture in given timeout [ms], kill it

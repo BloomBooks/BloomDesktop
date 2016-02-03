@@ -91,7 +91,7 @@ namespace Bloom.ImageProcessing
 			if (!File.Exists(imageFile))
 			{
 				var fileName = Path.GetFileName(imageFile);
-				var sourceDir = FileLocator.GetDirectoryDistributedWithApplication("BloomBrowserUI");
+				var sourceDir = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 				imageFile = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
 
 				// image file not found

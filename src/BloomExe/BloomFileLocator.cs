@@ -11,6 +11,7 @@ namespace Bloom
 {
 	public class BloomFileLocator : FileLocator
 	{
+		public static readonly string BrowserRoot = "output/browser";
 		private readonly CollectionSettings _collectionSettings;
 		private readonly XMatterPackFinder _xMatterPackFinder;
 		private readonly IEnumerable<string> _factorySearchPaths;

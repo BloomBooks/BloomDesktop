@@ -528,7 +528,7 @@ namespace Bloom.web
 					// (like C:\... or \\localhost\C$\...) to a file that exists. So this execution path
 					// can return contents of any file that exists if the URL gives its full path...even ones that
 					// are generated temp files most certainly NOT distributed with the application.
-					path = FileLocator.GetFileDistributedWithApplication("BloomBrowserUI", modPath);
+					path = FileLocator.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, modPath);
 				}
 			}
 			catch (ApplicationException)
@@ -664,7 +664,7 @@ namespace Bloom.web
 			if (string.IsNullOrEmpty(path))
 			{
 				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
-				var lastTry = FileLocator.GetFileDistributedWithApplication(true, "BloomBrowserUI", localPath);
+				var lastTry = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
 				if(File.Exists(lastTry)) path = lastTry;
 			}
 
