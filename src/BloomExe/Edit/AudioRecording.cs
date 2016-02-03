@@ -54,8 +54,18 @@ namespace Bloom.Edit
 						{
 							if (_recorder != null)
 							{
-								_recorder.Dispose();
+								var temp = _recorder;
 								_recorder = null;
+								try
+								{
+									temp.Dispose();
+								}
+								catch (Exception)
+								{
+									// Not sure how this can fail, but we don't need to crash if
+									// something goes wrong trying to free the audio object.
+									Debug.Fail("Something went wrong disposing of AudioRecorder");
+								}
 							}
 						};
 					}));
