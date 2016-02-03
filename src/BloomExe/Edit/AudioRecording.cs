@@ -318,6 +318,32 @@ namespace Bloom.Edit
 			MessageBox.Show(null, LocalizationManager.GetString("EditTab.AudioControl.PleaseHold",
 				"Please hold the record button down until you have finished recording", "Appears when the button is pressed very briefly"),
 				 LocalizationManager.GetString("EditTab.AudioControl.PressToRecord", "Press to record", "Caption for PleaseHold message"));
+			// Seems sometimes on a very short click the recording actually got started while we were informing the user
+			// that he didn't click long enough. Before we try to delete the file where the recording is taking place,
+			// we have to stop it; otherwise, we will get an exception trying to delete it.
+			while (Recording)
+			{
+				try
+				{
+					Recorder.Stop();
+					Application.DoEvents();
+				}
+				catch (Exception)
+				{
+				}
+			}
+			// Don't kid the user we have a recording for this.
+			// Also, the absence of the file is how the UI knows to switch back to the state where 'speak'
+			// is the expected action.
+			try
+			{
+				File.Delete(Path);
+			}
+			catch (Exception)
+			{
+				Debug.Fail("can't delete the recording even after we stopped");
+			}
+
 			// If we had a prior recording, restore it...button press may have been a mistake.
 			if (File.Exists(_backupPath))
 			{
