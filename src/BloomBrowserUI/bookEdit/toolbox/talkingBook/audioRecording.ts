@@ -56,9 +56,19 @@ class AudioRecording {
     audioDevicesUrl = '/bloom/audioDevices';
     playingAll: boolean; // true during listen.
 
+    // We only do recording in editable divs in the main content language.
+    // This should NOT restrict to ones that already contain audio-sentence spans.
+    private getRecordableDivs() : JQuery {
+        return this.getPage().find('div.bloom-editable.bloom-content1');
+    }
+
+    private getAudioElements() : JQuery {
+        return this.getRecordableDivs().find('.audio-sentence');
+    }
+
     private moveToNextSpan(): void {
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
-        var audioElts = this.getPage().find('.audio-sentence');
+        var audioElts = this.getAudioElements();
         var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
         if (next.length === 0) return; // enhance: go to next page??
         this.setCurrentSpan(current, next);
@@ -76,7 +86,7 @@ class AudioRecording {
         var index = bookSrc.lastIndexOf('/');
         var bookFolderUrl = bookSrc.substring(0, index + 1);
         player.attr('src', bookFolderUrl + 'audio/' + id + '.wav');
-        var audioElts = this.getPage().find('.audio-sentence');
+        var audioElts = this.getAudioElements();
         var index = audioElts.index(changeTo);
         this.setStatus('prev', index === 0 ? Status.Disabled : Status.Enabled);
         this.setStatus('next', index === audioElts.length - 1 ? Status.Disabled : Status.Enabled);
@@ -91,7 +101,7 @@ class AudioRecording {
 
     private moveToPrevSpan(): void {
         var current: JQuery = this.getPage().find('.ui-audioCurrent');
-        var audioElts = this.getPage().find('.audio-sentence');
+        var audioElts = this.getAudioElements();
         var currentIndex = audioElts.index(current);
         if (currentIndex === 0) return;
         var prev: JQuery = audioElts.eq(currentIndex - 1);
@@ -142,7 +152,7 @@ class AudioRecording {
     // 'Listen' is shorthand for playing all the sentences on the page in sequence.
     private listen(): void {
         var original: JQuery = this.getPage().find('.ui-audioCurrent');
-        var audioElts = this.getPage().find('.audio-sentence');
+        var audioElts = this.getAudioElements();
         var first = audioElts.eq(0);
         this.setCurrentSpan(original, first);
         this.playingAll = true;
@@ -153,7 +163,7 @@ class AudioRecording {
     private playEnded(): void {
         if (this.playingAll) {
             var current: JQuery = this.getPage().find('.ui-audioCurrent');
-            var audioElts = this.getPage().find('.audio-sentence');
+            var audioElts = this.getAudioElements();
             var next: JQuery = audioElts.eq(audioElts.index(current) + 1);
             if (next.length !== 0) {
                 this.setCurrentSpan(current, next);
@@ -289,10 +299,9 @@ class AudioRecording {
 
     public setupForRecording(): void {
         this.updateInputDeviceDisplay();
-        var page = this.getPage();
-        this.hiddenSourceBubbles = page.find('.uibloomSourceTextsBubble');
+        this.hiddenSourceBubbles = this.getPage().find('.uibloomSourceTextsBubble');
         this.hiddenSourceBubbles.hide();
-        var editable = <qtipInterface>page.find('div.bloom-editable');
+        var editable = this.getRecordableDivs();
         if (editable.length === 0) {
             // no editable text on this page.
             this.configureForNothingToRecord();
@@ -302,12 +311,11 @@ class AudioRecording {
     }
 
     public updateMarkupAndControlsToCurrentText() {
-        var page = this.getPage();
-        var editable = <qtipInterface>page.find('div.bloom-editable');
+        var editable = this.getRecordableDivs();
         this.makeSentenceSpans(editable);
         // For displaying the qtip, restrict the editable divs to the ones that have
         // audio sentences.
-        editable = <qtipInterface>$(page).find('span.audio-sentence').parents('div.bloom-editable');
+        editable = editable.has('span.audio-sentence');
         var thisClass = this;
 
         thisClass.setStatus('record', Status.Expected);
@@ -318,7 +326,7 @@ class AudioRecording {
             this.configureForNothingToRecord();
             return;
         }
-        thisClass.setCurrentSpan(page.find('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
+        thisClass.setCurrentSpan(this.getPage().find('.ui-audioCurrent'), firstSentence); // typically first arg matches nothing.
     }
 
     // Disable all buttons...nothing to record on this page
