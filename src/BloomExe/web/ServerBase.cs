@@ -114,7 +114,7 @@ namespace Bloom.web
 			{
 				TryStart();
 			}
-			catch (Exception error)
+			catch (HttpListenerException error)
 			{
 				Logger.WriteEvent(error.Message);
 				if (!SIL.PlatformUtilities.Platform.IsWindows) throw;
