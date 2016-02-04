@@ -386,6 +386,12 @@ namespace Bloom.web
 			var localPath = CorrectedLocalPath(localPathWithoutQuery, rawUrl);
 			if (localPath.StartsWith(BloomUrlPrefix))
 				localPath = localPath.Substring(BloomUrlPrefix.Length);
+
+			// and if the file is using localhost:8089/foo.js, at this point it will say "/foo.js", so let's strip off that leading slash
+			else if (localPath.StartsWith("/"))
+			{
+				localPath = localPath.Substring(1);
+			}
 			if (localPath.Contains("?") && !File.Exists(localPath))
 			{
 				var idx = localPath.LastIndexOf("?", StringComparison.Ordinal);
