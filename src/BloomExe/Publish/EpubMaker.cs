@@ -88,6 +88,17 @@ namespace Bloom.Publish
 			_thumbNailer = thumbNailer;
 		}
 
+		public bool BookHasAudio
+		{
+			get
+			{
+				return
+					Book.RawDom.SafeSelectNodes("//span[@id]")
+						.Cast<XmlElement>()
+						.Any(span => AudioPathForId(span.Attributes["id"].Value) != null);
+			}
+		}
+
 		public bool IsCompressedAudioMissing
 		{
 			get

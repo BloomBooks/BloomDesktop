@@ -520,8 +520,16 @@ namespace Bloom.Publish
 
 			var previewHtmlTemplatePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "epub",
 				"bloomEpubPreview.htm");
+			// This version is appropriate if the book has no audio.
+			var talkingBookPara =
+				"This tool will automatically make a talking book if you use the <a href=\"javascript:void(0)\" style=\"cursor: pointer; color: blue; text-decoration: underline;\" onclick=\"return BloomHelp.show('/Tasks/Edit_tasks/Record_Audio/Show_the_Talking_Book_Tool.htm');\">Talking Book tool</a> to record your book.";
+			if (_publishWithoutAudio)
+				talkingBookPara = "This book will be published without recorded sound.";
+			else if (_model.BookHasAudio)
+				talkingBookPara = "This book has audio recordings and the resulting epub will be a talking book. You can preview this by clicking on any of the text.";
 			var htmlContents = File.ReadAllText(previewHtmlTemplatePath)
-				.Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory));
+				.Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory))
+				.Replace("{TalkingBookPara}", talkingBookPara);
 			var previewHtmlInstancePath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
 			File.WriteAllText(previewHtmlInstancePath, htmlContents);
 			_epubPreviewBrowser.Navigate(previewHtmlInstancePath.ToLocalhost(), false);
