@@ -180,6 +180,11 @@ class AudioRecording {
     }
 
     private cantPlay(): void {
+        if ($('#audio-play').hasClass('expected')) {
+            // We just finished a too-short or otherwise unsuccessful recording.
+            // We still need to record.
+            this.setStatus('record', Status.Expected);
+        }
         this.setStatus('play', Status.Disabled);
     }
 
