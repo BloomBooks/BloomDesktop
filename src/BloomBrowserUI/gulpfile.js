@@ -27,9 +27,6 @@ var paths = {
    
    //files we are *not* running through some compiler that need to make it into the outputDir directory.
    filesThatMightBeNeededInOutput: ['./**/*.*', '!./**/*.ts','!./**/node_modules/**/*.*','!./output/**/*.*'],
-   
-   
-   node_modulesCalledDirectlyAtRuntime: ['./node_modules/jquery/dist/jquery.min.js']
 };
 
 gulp.task('less', function () {
@@ -74,16 +71,16 @@ gulp.task('clean', function () {
 //This task is needed to move files we are *not* running through some
 //compiler into the outputDir directory.
 gulp.task('copy', function () {
-  gulp.src(paths.node_modulesCalledDirectlyAtRuntime)
-    .pipe(gulpCopy(outputDir));
+    // this prefix:3 thing strips off node_modules/jquery/dist so that the file ends up right in the ouput dir 
+  gulp.src('./node_modules/jquery/dist/jquery.min.js')
+    .pipe(gulpCopy(outputDir, {prefix:3}))
+
+  gulp.src('./node_modules/jquery.hotkeys/jquery.hotkeys.js')
+    .pipe(gulpCopy(outputDir, {prefix:2}))
+    
   return gulp.src(paths.filesThatMightBeNeededInOutput)
     .pipe(gulpCopy(outputDir))
 });
-gulp.task('c', function () {
-  return gulp.src(paths.node_modulesCalledDirectlyAtRuntime)
-    .pipe(gulpCopy(outputDir))
-});
-
 
 gulp.task('typescript', function () {
   return gulp.src(paths.typescript)

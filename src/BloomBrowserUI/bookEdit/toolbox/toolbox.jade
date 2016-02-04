@@ -10,13 +10,10 @@ html
 		link(rel='stylesheet', href='/bloom/lib/jquery.qtip.css')
 
 		//reviewslog: since we only access the ckeditor on the page, we should be able to reference that one, not addd one to this iframe script(src='/bloom/lib/ckeditor/ckeditor.js')
-		script(src='/bloom/output/commonBundle.js')
-		script(src='/bloom/output/toolboxBundle.js')
+		script(src='/bloom/commonBundle.js')
+		script(src='/bloom/toolboxBundle.js')
 
-		//TODO: we should not be need to explicitly import this here
-		//script(src="/bloom/node_modules/jquery/dist/jquery.min.js")
-
-		
+	
 		//TODO: get these raw script calls out of here, should be part of toolboxIFrame.js
 
 		// not sure we need all three qtip files are needed. qtips are only in the toolbox so far.

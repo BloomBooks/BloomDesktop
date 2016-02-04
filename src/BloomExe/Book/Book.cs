@@ -293,16 +293,16 @@ namespace Bloom.Book
 			//reviewslog: four lines are prompted by the qtip "too much recursion" error, which I got on certain pages. The qtip
 			//code in question says it is for when jquery-ui is not found. I "solved" this by loading jquery, jquery-ui,
 			//and finally qtip into the global space here
-			dom.AddJavascriptFile("node_modules/jquery/dist/jquery.js".ToLocalhost());
+			dom.AddJavascriptFile("jquerY.min.js".ToLocalhost());
 			dom.AddJavascriptFile("modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js".ToLocalhost());
 			dom.AddJavascriptFile("lib/jquery.qtip.js".ToLocalhost());
 			dom.AddJavascriptFile("lib/jquery.qtipSecondary.js".ToLocalhost());
 
 			// first tried this as import 'jquery.hotkeys' in bloomEditing, but that didn't work
-			dom.AddJavascriptFile("node_modules/jquery.hotkeys/jquery.hotkeys.js".ToLocalhost());
+			dom.AddJavascriptFile("jquery.hotkeys.js".ToLocalhost());
 			
-			dom.AddJavascriptFile("output/commonCode.js".ToLocalhost());
-			dom.AddJavascriptFile("output/editablePageIFrame.js".ToLocalhost());
+			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
+			dom.AddJavascriptFile("editablePageBundle.js".ToLocalhost());
 			// Add this last because currently its document ready function has to execute AFTER the bootstrap call in bloomEditing.ts,
 			// which is compiled into editablePageIFrame.js. The bootstrap function sets CKEDITOR.disableAutoInline = true,
 			// which suppresses a document ready function in CKEditor iself from calling inline() on all content editable

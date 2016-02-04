@@ -536,7 +536,12 @@ namespace Bloom.web
 				// ignore
 			}
 			if (!File.Exists(path))
+			{
+#if DEBUG
+				MessageBox.Show("(DEBUG ONLY) Not Found"+System.Environment.NewLine+ "localPath=" + localPath+System.Environment.NewLine+"path="+path);
+#endif
 				return false;
+			}
 			info.ContentType = GetContentType(Path.GetExtension(modPath));
 			info.ReplyWithFileContent(path);
 			return true;
