@@ -5,7 +5,10 @@ body {
 
     div.ui-audioBody {margin-top: 5px;}
     button.ui-audio-button {height:40px; width: 40px; border:none; background-size:contain;background-color:transparent;background-repeat:no-repeat;display:inline-block;margin-bottom:5px;}
-    button#audio-prev, button#audio-clear {height:20px; width:20px;}
+    button#audio-prev, button#audio-clear {height:20px; width:20px; margin-left: 10px;}
+    button#audio-play {height:45px; width:45px} // visually same width as record button
+    button#audio-listen {margin-left:2px} // visually centered
+    div#audio-help-wrapper {margin-left:80px;margin-top:10px;}
     button#audio-record.enabled {background-image: url(audio/record_enabled.svg)}
     button#audio-record.expected {background-image: url(audio/record_expected.svg)}
     button#audio-record.disabled {background-image: url(audio/record_disabled.svg)}
@@ -39,7 +42,7 @@ body {
     div.ui-audioInput, div.ui-audioMeter {display:inline-block;}
     div.ui-audioMeter {margin-left:30px;}
     div.ui-audioInputGroup {margin-top:5px;margin-bottom:12px;}
-    img#audio-input-dev {height:30px;width:30px;margin-left:20px;}
+    img#audio-input-dev {height:30px;width:30px;margin-left:25px;}
 
      // hidden unless we need to choose between three or more input devices.
      #audio-devlist {display:none;position:absolute;background-color:white; width:200px;
