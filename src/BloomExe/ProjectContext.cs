@@ -271,6 +271,7 @@ namespace Bloom
 		{
 			//bookLayout has basepage.css. We have it first because it will find its way to many other folders, but this is the authoritative one
 			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot, "bookLayout");
+			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 
 			//hack to get the distfiles folder itself
 			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));

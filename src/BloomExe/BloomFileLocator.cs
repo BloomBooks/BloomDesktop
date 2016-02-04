@@ -11,13 +11,20 @@ namespace Bloom
 {
 	public class BloomFileLocator : FileLocator
 	{
-		public static readonly string BrowserRoot = "output/browser";
 		private readonly CollectionSettings _collectionSettings;
 		private readonly XMatterPackFinder _xMatterPackFinder;
 		private readonly IEnumerable<string> _factorySearchPaths;
 		private readonly List<string> _bookSpecificSearchPaths;
 		private readonly IEnumerable<string> _userInstalledSearchPaths;
 		private readonly IEnumerable<string> _afterXMatterSearchPaths;
+
+		public static string BrowserRoot
+		{
+			get
+			{
+				return Directory.Exists(Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,"output")) ? "output/browser" : "browser";
+			}
+		}
 
 		public BloomFileLocator(CollectionSettings collectionSettings, XMatterPackFinder xMatterPackFinder, IEnumerable<string> factorySearchPaths, IEnumerable<string> userInstalledSearchPaths,
 			IEnumerable<string> afterXMatterSearchPaths = null)
@@ -46,6 +53,8 @@ namespace Bloom
 		/// <returns></returns>
 		protected override IEnumerable<string> GetSearchPaths()
 		{
+			yield return BloomFileLocator.BrowserRoot;
+
 			//The versions of the files that come with the program should always win out.
 			//NB: This should not include any sample books.
 			foreach (var searchPath in _factorySearchPaths)
@@ -120,6 +129,18 @@ namespace Bloom
 				locator.AddPath(path);
 			}
 			return locator;
+		}
+
+		public static string GetBrowserFile(params string[] parts)
+		{
+			parts[0] = Path.Combine(BrowserRoot,parts[0]);
+			return FileLocator.GetFileDistributedWithApplication(false, parts);
+		}
+
+		public static string GetBrowserDirectory(params string[] parts)
+		{
+			parts[0] = Path.Combine(BrowserRoot, parts[0]);
+			return FileLocator.GetDirectoryDistributedWithApplication(false, parts);
 		}
 	}
 }

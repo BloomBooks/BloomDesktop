@@ -466,7 +466,7 @@ namespace Bloom.Publish
 			// approach at least works.
 			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
 			
-			var previewHtmlTemplatePath = BloomFileLocator.GetFileDistributedWithApplication(false,BloomFileLocator.BrowserRoot,"epub","bloomEpubPreview.htm");
+			var previewHtmlTemplatePath = BloomFileLocator.GetBrowserFile("epub","bloomEpubPreview.htm");
 			var htmlContents = File.ReadAllText(previewHtmlTemplatePath).Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory));
 			var previewHtmlInstancePath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
 			File.WriteAllText(previewHtmlInstancePath, htmlContents);

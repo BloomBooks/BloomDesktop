@@ -627,7 +627,7 @@ namespace Bloom.Edit
 		/// <returns></returns>
 		public HtmlDom GetXmlDocumentForEditScreenWebPage()
 		{
-			var path = FileLocator.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit", "EditViewFrame.html"));
+			var path = FileLocator.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "bookEdit", "EditViewFrame.html"));
 			// {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
 			// We don't really make a file for the page, the contents are just saved in our local server.
 			// But we give it a url that makes it seem to be in the book folder so local urls work.

@@ -196,7 +196,7 @@ namespace Bloom.Edit
 				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
 				return result;
 			}
-			var frame = BloomFileLocator.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, "bookEdit", "BookPagesThumbnailList", "BookPagesThumbnailList.htm");
+			var frame = BloomFileLocator.GetBrowserFile("bookEdit", "BookPagesThumbnailList", "BookPagesThumbnailList.htm");
 			var backColor = ColorToHtmlCode(BackColor);
 			var htmlText = System.IO.File.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
 			_usingTwoColumns = RoomForTwoColumns;

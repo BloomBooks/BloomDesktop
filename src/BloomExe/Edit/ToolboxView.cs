@@ -43,13 +43,13 @@ namespace Bloom.Edit
 
 		public static IEnumerable<string> GetToolboxServerDirectories()
 		{
-			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/toolbox"));
-			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/toolbox/decodableReader/readerSetup"));
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit","toolbox");
+			yield return BloomFileLocator.GetBrowserDirectory("bookEdit/toolbox/decodableReader/readerSetup");
 		}
 
 		public static string MakeToolboxContent(Book.Book book)
 		{
-			var path = FileLocator.GetFileDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/toolbox", "toolbox.html"));
+			var path = BloomFileLocator.GetBrowserFile("bookEdit/toolbox", "toolbox.html");
 			var toolboxFolder = Path.GetDirectoryName(path);
 
 			var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
