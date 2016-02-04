@@ -101,7 +101,7 @@ namespace Bloom.web
 		}
 #endif
 
-		#region Startuup
+		#region Startup
 
 		public void StartListening()
 		{
@@ -114,18 +114,26 @@ namespace Bloom.web
 			{
 				TryStart();
 			}
-			catch (Exception)
+			catch (Exception error)
 			{
+				Logger.WriteEvent(error.Message);
 				if (!SIL.PlatformUtilities.Platform.IsWindows) throw;
 
-				AddUrlAccessControlEntry();
+				//Note: we could as easily *remove* this, as it appears to only needed if there is a registration that is more specific than some other.
+				//E.g., if there is one for http://localhost:8089/bloom, then we won't be able to access http://localhost:8089/ without first adding it too.
+				//But if there are not entries for http://localhost:8089/, then we're ok.
+				//AddUrlAccessControlEntry(RootPathEndingInSlash);
+
+				RemoveUrlAccessControlEntryWeDontUseAnymore();
 				TryStart();
 			}
 		}
 
 		private void TryStart()
 		{
+			Logger.WriteMinorEvent("Starting Server");
 			_listener = new HttpListener {AuthenticationSchemes = AuthenticationSchemes.Anonymous};
+			_listener.Prefixes.Add(RootPathEndingInSlash);
 			_listener.Prefixes.Add(PathEndingInSlash);
 			_listener.Start();
 
@@ -387,7 +395,12 @@ namespace Bloom.web
 			}
 			return localPath;
 		}
+		public static string RootPathEndingInSlash
+		{
+			get { return "http://localhost:8089/"; }
+		}
 
+		//We may stop using this one... the /bloom is superfluous since we own the port
 		public static string PathEndingInSlash
 		{
 			get { return "http://localhost:8089" + BloomUrlPrefix; }
@@ -416,7 +429,8 @@ namespace Bloom.web
 		/// TODO: Note: doing this at runtime isn't as good as doing it in the installer, because we have no way of
 		/// removing these entries on uninstall (but the installer does).
 		/// </summary>
-		private static void AddUrlAccessControlEntry()
+		/// <param name="pathEndingInSlash"></param>
+		private static void AddUrlAccessControlEntry(string pathEndingInSlash)
 		{
 			MessageBox.Show(
 				string.Format("We need to do one more thing before Bloom is ready. Bloom needs temporary administrator privileges to set up part of its communication with the embedded web browser.{0}{0}After you click 'OK', you may be asked to authorize this step.", Environment.NewLine),
@@ -424,13 +438,36 @@ namespace Bloom.web
 
 			var startInfo = new ProcessStartInfo
 			{
-				UseShellExecute = true,
+				//UseShellExecute = false,
 				Verb = "runas",
 				FileName = "netsh",
-				Arguments = string.Format("http add urlacl url={0} user=everyone", PathEndingInSlash.TrimEnd('/'))
+				Arguments = string.Format("http add urlacl url={0} user=everyone", pathEndingInSlash)//.TrimEnd('/'))
 			};
 
 			Process.Start(startInfo);
+
+			Thread.Sleep(1000);
+		}
+
+		//  url=http://localhost:8089/bloom/ can interfer with accessing  url=http://localhost:8089/
+		// Some users may have this from a previous version.
+		private static void RemoveUrlAccessControlEntryWeDontUseAnymore()
+		{
+			MessageBox.Show(
+				string.Format("We need to do one more thing before Bloom is ready. Bloom needs temporary administrator privileges to set up part of its communication with the embedded web browser.{0}{0}After you click 'OK', you may be asked to authorize this step.", Environment.NewLine),
+					@"Almost there!", MessageBoxButtons.OK);
+
+			var startInfo = new ProcessStartInfo
+			{
+				//UseShellExecute = false,
+				Verb = "runas",
+				FileName = "netsh",
+				Arguments = string.Format("http delete urlacl url=http://localhost:8089/bloom")
+			};
+
+			Process.Start(startInfo);
+
+			Thread.Sleep(1000);
 		}
 
 		private static void GetIsAbleToUsePort()
