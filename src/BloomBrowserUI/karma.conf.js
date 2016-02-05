@@ -28,13 +28,13 @@ module.exports = function (config) {
         },
                 
         // test results reporter to use
-        // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage', 'teamcity'
+        // possible values: 'spec' (nice list with checkboxes), 'dots', 'progress', 'junit', 'growl', 'coverage', 'teamcity'
         reporters: ['spec'],
         port: 9876,
         colors: true,
         
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-        logLevel: config.LOG_ERROR,
+        logLevel: config.LOG_INFO,
         autoWatch: true,
         
         // Start these browsers, currently available:

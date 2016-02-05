@@ -25,6 +25,9 @@
     },
     "jasmine-jquery/jasmine-jquery.d.ts": {
       "commit": "5d0f2126c8dac8fce0ff020218aea06607213b0d"
+    },
+    "query-string/query-string.d.ts": {
+      "commit": "4ec3c5bf291bc02f49eb30c1077340b235165c67"
     }
   }
 }

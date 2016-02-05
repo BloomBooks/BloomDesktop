@@ -16,7 +16,7 @@ import theOneLocalizationManager from '../../../lib/localizationManager/localiza
 import {ToolBox} from "../toolbox";
 import getIframeChannel from '../../js/getIframeChannel';
 import "./libSynphony/jquery.text-markup.js";
-import './jquery.div-columns.js';
+import './jquery.div-columns.ts';
 import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
 import * as _ from 'underscore';
 import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synphony_lib';

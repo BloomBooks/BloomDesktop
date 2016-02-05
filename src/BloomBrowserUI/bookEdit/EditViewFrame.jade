@@ -12,10 +12,10 @@ html
 		script(src='/bloom/jquery.min.js')
 		//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
 		script(src='/bloom/bookEdit/js/jquery.hasAttr.js')
-		script(src='/bloom/bookEdit/js/interIframeChannel.js')
+		//script(src='/bloom/bookEdit/js/interIframeChannel.js')
 		
 		//script(src='/bloom/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js')
-		script(src='/bloom/lib/errorHandler.js')
+		//script(src='/bloom/lib/errorHandler.js')
 
 		//script(src='/bloom/bookEdit/js/calledByCSharp.js')
 		script(src='/bloom/commonBundle.js')
@@ -23,11 +23,11 @@ html
 		//script(src='/bloom/pageChooserBundle.js')
 		script.
 			//var calledByCSharp;
-			var interIframeChannel;
+			//var interIframeChannel;
 			$().ready(function () {
 				//calledByCSharp = new CalledByCSharp();
 				// The iframe communication channel needs to be initialized before the child documents are loaded.
-				interIframeChannel = new interIframeChannel();
+				//interIframeChannel = new interIframeChannel();
 				// {simulatedPageFileInBookFolder} is replaced by EditingModel.GetXmlDocumentForEditScreenWebPage().
 				
 				

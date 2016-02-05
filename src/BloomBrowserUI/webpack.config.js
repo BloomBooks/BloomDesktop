@@ -22,12 +22,12 @@ module.exports = {
     //Bloom is not (yet) one webapp; it's actually a several loosely related ones. 
     //So we have multiple "entry points" that we need to emit. Fortunately the
     //CommonsChunkPlugin extracts the code that is common to more than one into "commonBundle.js"
-    entry: { editTabRootBundle:  outputDir+'/bookEdit/editViewFrame.js',
-             editablePageBundle: outputDir+'/bookEdit/editablePageBootstrap.js',
-             toolboxBundle: outputDir+'/bookEdit/toolbox/toolboxBootstrap.js',
-             pageChooserBundle: outputDir+'/pageChooser/js/page-chooser.js',
+    entry: { editTabRootBundle:  './bookEdit/editViewFrame.ts',
+             editablePageBundle: './bookEdit/editablePageBootstrap.ts',
+             toolboxBundle: './bookEdit/toolbox/toolboxBootstrap.ts',
+             pageChooserBundle: './pageChooser/page-chooser.ts',
              
-             testBundle: globule.find([outputDir+"/**/*Spec.js", "!./node_modules/**"])//TODO this maybe slow if 1st it finds it all, then it excludes node_modules
+             testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//TODO this maybe slow if 1st it finds it all, then it excludes node_modules
            },
 
     output: {
@@ -50,7 +50,7 @@ module.exports = {
               'react': pathToReact // the point of this is to use the minified version. https://christianalfoni.github.io/react-webpack-cookbook/Optimizing-rebundling.html
             },
         modulesDirectories: [pathToOriginalJavascriptFilesInLib, node_modules, pathToBookEditJS,pathToOriginalJavascriptFilesInModified_Libraries],
-        extensions: ['', '.js', '.jsx'] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
+        extensions: ['', '.js', '.jsx', '.ts', '.tsx'] //We may need to add .less here... otherwise maybe it will ignore them unless they are require()'d
     },
     plugins: [
            new webpack.optimize.CommonsChunkPlugin("common", "commonBundle.js"),
@@ -65,6 +65,7 @@ module.exports = {
     module: {
 
         loaders: [
+           { test: /\.ts(x?)$/, loader: 'ts-loader' },
            {
                test: /\.(js|jsx)$/,
                //jquery-ui is currently *not* excluded because we added some imports to it

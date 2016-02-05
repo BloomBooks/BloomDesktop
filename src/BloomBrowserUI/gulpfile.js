@@ -1,7 +1,7 @@
 /// <binding />
 var gulp = require('gulp');  
 var debug = require('gulp-debug');
-var ts = require('gulp-typescript');
+//var ts = require('gulp-typescript');
 var less = require('gulp-less');
 var jade = require('gulp-jade');
 var batch = require('gulp-batch');
@@ -9,7 +9,7 @@ var watch = require('gulp-watch');
 var path = require('path');
 var sourcemaps = require('gulp-sourcemaps');
 const babel = require('gulp-babel');
-var browserify = require('gulp-browserify');
+//var browserify = require('gulp-browserify');
 var webpack = require('gulp-webpack');
 var del = require('del');
 var runSequence = require('run-sequence');
@@ -23,7 +23,7 @@ var outputDir = "../../output/browser";
 var paths = {
    less: ['./**/*.less',  '!./node_modules/**/*.less','!./output/**/*.*'],
    jade: ['./**/*.jade',  '!./node_modules/**/*.jade','!./output/**/*.*'],
-   typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*','!./output/**/*.*'],
+   //typescript: ['./**/*.ts','!./**/*.d.ts', '!./**/node_modules/**/*.*','!./output/**/*.*'],
    
    //files we are *not* running through some compiler that need to make it into the outputDir directory.
    filesThatMightBeNeededInOutput: ['./**/*.*', '!./**/*.ts','!./**/node_modules/**/*.*','!./output/**/*.*'],
@@ -82,25 +82,22 @@ gulp.task('copy', function () {
     .pipe(gulpCopy(outputDir))
 });
 
-gulp.task('typescript', function () {
-  return gulp.src(paths.typescript)
-    .pipe(debug({title: 'typescript:'}))
-    .pipe(sourcemaps.init())
-    .pipe(ts({
-        target: "es5",// need to keep this down to the level that our gecko can directly handle. Things going through webpack+babel can target es6, fine. But not this other un-converted  stuff.
-        module:"commonjs"
-    }))
-    .pipe(sourcemaps.write(outputDir))
-    .pipe(gulp.dest(outputDir)); //drop all js's into the same dirs.
-});
+// gulp.task('typescript', function () {
+//   return gulp.src(paths.typescript)
+//     .pipe(debug({title: 'typescript:'}))
+//     .pipe(sourcemaps.init())
+//     .pipe(ts({
+//         target: "es5",// need to keep this down to the level that our gecko can directly handle. Things going through webpack+babel can target es6, fine. But not this other un-converted  stuff.
+//         module:"commonjs"
+//     }))
+//     .pipe(sourcemaps.write(outputDir))
+//     .pipe(gulp.dest(outputDir)); //drop all js's into the same dirs.
+// });
 
 gulp.task('watchInner', function() {
     watch(paths.less, batch(function (events, done) {
         gulp.start('copy', done);
     }));    
-    watch(paths.less, batch(function (events, done) {
-        gulp.start('typescript', done);
-    }));
     watch(paths.less, batch(function (events, done) {
         gulp.start('less', done);
     }));
@@ -112,18 +109,14 @@ gulp.task('watchInner', function() {
 
 gulp.task('watch', function() {
       console.log('****** PLEASE run "webpack --watch" in a separate console *********');     
-      runSequence('clean', 'copy',  [ 'less', 'jade',  'typescript'],'watchInner');
+      runSequence('clean', 'copy',  [ 'less', 'jade'],'watchInner');
 });
 
-
-gulp.task('code', function() {
-    runSequence(['copy','typescript']);
-});
 
 gulp.task('default', 
     function(callback) { 
         //NB: run-sequence is needed for gulp 3.x, but soon there will be gulp which will have a built-in "series" function.
         //currently our webpack run is pure javascript, so do it only after the typescript is all done
-         runSequence('clean', 'copy',  [ 'less', 'jade',  'typescript'],'webpack', callback)
+         runSequence('clean', 'copy',  [ 'less', 'jade'],'webpack', callback)
 });
     

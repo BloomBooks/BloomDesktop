@@ -1,7 +1,9 @@
-/// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../misc-types.d.ts" />
 /// <reference path="../../bookEdit/js/getIframeChannel.ts" />
+///<reference path="../../typings/bundledFromTSC.d.ts"/>
 import getIframeChannel from '../../bookEdit/js/getIframeChannel';
+import axios = require("axios");
+import * as QueryString from 'query-string';
 
 /**
  * L10NSharp LocalizationManager for javascript.
@@ -197,17 +199,20 @@ export class LocalizationManager {
         // But we want to first massage the data we get back from the ajax call, before we re - "send" the result along
         //to the caller. So, we do that by making our *own* deferred object, and "resolve" it with the massaged value.
         var deferred = $.Deferred();
-        var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
+        //var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
         //when the async call comes back, we massage the text
-        promise.done(text => {
-            text = HtmlDecode(text);
+        var queryString  = QueryString.stringify({ key: id, englishText: englishText, langId: langId});
+        axios.get("/bloom/i18n/translate?"+queryString)
+         .then(response => {
+           var text = HtmlDecode(response.data);
             // is this a C#-style string.format style request?
             if (args.length > 0) {
                 text = this.simpleDotNetFormat(text, args);
             }
             deferred.resolve(text);
-        });
-        promise.fail(text => {
+        })
+        //reviewslog: verify that this block gets activated when needed
+        .catch(text => {
             if (englishDefault) {
                 text = HtmlDecode(englishText);
                 if (args.length > 0) {

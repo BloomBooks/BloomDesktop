@@ -274,7 +274,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 
 			//hack to get the distfiles folder itself
-			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
+			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("AndikaNewBasic"));
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/js"));
@@ -298,7 +298,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"themes/bloom-jqueryui-theme"));
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib"));
-			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/localizationManager"));
+			// not needed: yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/localizationManager"));
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/long-press"));
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/split-pane"));
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/ckeditor/skins/icy_orange"));

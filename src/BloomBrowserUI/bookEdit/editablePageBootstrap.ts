@@ -8,7 +8,7 @@
 import * as $ from 'jquery';
 import * as jQuery from 'jquery';
 import {bootstrap} from './js/bloomEditing';
-import '../lib/jquery.i18n.custom.js'; //localize()
+import '../lib/jquery.i18n.custom.ts'; //localize()
 import '../lib/jquery.myimgscale.js'; //scaleImage()
 
 // This exports the functions that should be accessible from other IFrames or from C#.
