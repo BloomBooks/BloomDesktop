@@ -1,9 +1,9 @@
-﻿import getIframeChannel from '../../js/getIframeChannel';
-
+﻿import axios = require('axios');
 if (typeof ($) === "function") { // have jquery
     $(document).ready(() => {
         // request our model and set the controls
-        getIframeChannel().simpleAjaxGet('/bloom/bookSettings', settings => {
+        axios.get<string>('/bloom/bookSettings', result => {
+            var settings = JSON.parse(result.data);
             // enhance: this is just dirt-poor binding of 1 checkbox for now
             $("input[name='unlockShellBook']").prop("checked", settings.unlockShellBook);
         });

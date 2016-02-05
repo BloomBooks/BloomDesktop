@@ -13,7 +13,6 @@ import BloomField from '../bloomField/BloomField';
 import BloomNotices from './bloomNotices';
 import BloomSourceBubbles from '../sourceBubbles/BloomSourceBubbles';
 import BloomHintBubbles from './BloomHintBubbles';
-import getIframeChannel from './getIframeChannel';
 import TopicChooser from '../TopicChooser/TopicChooser';
 import 'jquery-ui/jquery-ui-1.10.3.custom.min.js';
 import 'jquery.hasAttr.js'; //reviewSlog for CenterVerticallyInParent

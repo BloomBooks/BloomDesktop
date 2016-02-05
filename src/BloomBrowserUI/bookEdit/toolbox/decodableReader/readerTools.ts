@@ -6,15 +6,13 @@ import {DirectoryWatcher} from "./directoryWatcher";
 import {ReaderToolsModel} from "./readerToolsModel";
 import {initializeDecodableReaderTool} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
-import getIframeChannel from '../../js/getIframeChannel';
 import {theOneLanguageDataInstance, LanguageData, theOneLibSynphony, ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
 import './libSynphony/synphony_lib.js';
 import SynphonyApi from './synphonyApi';
 import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
 import {DataWord} from './libSynphony/bloom_lib'; 
-import "../../../lib/jquery.onSafe"; 
-
-var iframeChannel = getIframeChannel();
+import "../../../lib/jquery.onSafe";
+import axios = require('axios');
 
 interface textMarkup extends JQueryStatic {
   cssSentenceTooLong(): JQuery;
@@ -182,8 +180,8 @@ function loadSynphonySettings(): void {
   // make sure synphony is initialized
   if (!readerToolsInitialized && !ReaderToolsModel.model.getSynphony().source) {
     readerToolsInitialized = true;
-    iframeChannel.simpleAjaxGet('/bloom/readers/getDefaultFont', setDefaultFont);
-    iframeChannel.simpleAjaxGet('/bloom/readers/loadReaderToolSettings', initializeSynphony);
+    axios.get<string>('/bloom/readers/getDefaultFont').then(result => setDefaultFont(result.data));
+    axios.get<string>('/bloom/readers/loadReaderToolSettings').then(result => initializeSynphony(result.data));
   }
 }
 
@@ -213,7 +211,7 @@ function initializeSynphony(settingsFileContent: string): void {
   }
   else {
     // get the list of sample texts
-    iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+    axios.get<string>('/bloom/readers/getSampleTextsList').then(result => setTextsList(result.data));
   }
 }
 
@@ -249,7 +247,7 @@ function readerSampleFilesChanged(): void {
   synphony.loadSettings(settings);
 
   // reload the sample texts
-  iframeChannel.simpleAjaxGet('/bloom/readers/getSampleTextsList', setTextsList);
+  axios.get<string>('/bloom/readers/getSampleTextsList').then(result => setTextsList(result.data));
 }
 
 /**

@@ -2,7 +2,7 @@
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 /// <reference path="../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="../../lib/jquery.i18n.custom.ts" />
-import getIframeChannel from '../js/getIframeChannel';
+import axios = require('axios');
 
 // This must not be renamed. It s called directly from Bloom via RunJavaScript()
 // ReSharper disable once InconsistentNaming
@@ -77,10 +77,8 @@ export default class TopicChooser {
     }
 
     static populateTopics(currentTopicKey: string) {
-        var iframeChannel = getIframeChannel();
-
-
-        iframeChannel.simpleAjaxGet('/bloom/topics', topics => {
+        axios.get<string>('/bloom/topics').then(result => {
+            var topics = JSON.parse(result.data);
             // Here, topics will be an object with a property for each known topic. Each property is a key:value pair
             // where the key is the English, and the value is the topic in the UI Language
 

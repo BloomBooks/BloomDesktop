@@ -1,9 +1,9 @@
-﻿///<reference path="../../lib/jquery.myimgscale.d.ts" /> 
+﻿///<reference path="../../lib/jquery.myimgscale.d.ts" />
+import axios = require('axios');
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
 
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
-import getIframeChannel from './getIframeChannel';
 
 declare function ResetRememberedSize(element: HTMLElement);
 
@@ -133,16 +133,17 @@ function SetupImageContainer(containerDiv) {
 }
 
 function SetImageTooltip(container, img) {
-  getIframeChannel().simpleAjaxGet('/bloom/imageInfo?image=' + GetRawImageUrl(img), function (response) {
+    axios.get<string>('/bloom/imageInfo', { params: { image: GetRawImageUrl(img) } }).then(result => {
+        var response = JSON.parse(result.data);
         const kBrowserDpi = 96; // this appears to be constant even on higher dpi screens. See http://www.w3.org/TR/css3-values/#absolute-lengths
         var dpi = Math.round(response.width / ($(img).width() / kBrowserDpi));
-      var info = response.name + "\n"
-          + getFileLengthString(response.bytes) + "\n"
-          + response.width + " x " + response.height + "\n"
-          + dpi + " DPI (should be 300-600)\n"
-          + "Bit Depth: " + response.bitDepth.toString();
+        var info = response.name + "\n"
+            + getFileLengthString(response.bytes) + "\n"
+            + response.width + " x " + response.height + "\n"
+            + dpi + " DPI (should be 300-600)\n"
+            + "Bit Depth: " + response.bitDepth.toString();
         container.title = info;
-        });
+    });
 }
 
 function getFileLengthString(bytes) :String {

@@ -1,7 +1,5 @@
 /// <reference path="../misc-types.d.ts" />
-/// <reference path="../../bookEdit/js/getIframeChannel.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import getIframeChannel from '../../bookEdit/js/getIframeChannel';
 import axios = require("axios");
 import * as QueryString from 'query-string';
 
@@ -43,9 +41,6 @@ export class LocalizationManager {
   private inlineDictionaryLoaded: boolean = false;
 
   constructor() {
-    if (typeof document['getIframeChannel'] === 'function')
-      this.dictionary = document['getIframeChannel']().localizationManagerDictionary;
-    else
       this.dictionary = {};
   }
 
@@ -201,8 +196,7 @@ export class LocalizationManager {
         var deferred = $.Deferred();
         //var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
         //when the async call comes back, we massage the text
-        var queryString  = QueryString.stringify({ key: id, englishText: englishText, langId: langId});
-        axios.get("/bloom/i18n/translate?"+queryString)
+        axios.get("/bloom/i18n/translate", { params: { key: id, englishText: englishText, langId: langId }})
          .then(response => {
            var text = HtmlDecode(response.data);
             // is this a C#-style string.format style request?

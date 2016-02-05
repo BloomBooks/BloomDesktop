@@ -9,7 +9,6 @@
 
 
 import theOneLocalizationManager from '../../lib/localizationManager/localizationManager';
-import getIframeChannel from '../js/getIframeChannel';
 import OverflowChecker from '../OverflowChecker/OverflowChecker';
 import {GetDifferenceBetweenHeightAndParentHeight} from '../js/bloomEditing';
 import '../../lib/jquery.alphanum';
@@ -575,7 +574,6 @@ export default class StyleEditor {
         // The namespace (".formatButton") in the event name prevents off from interfering with other click handlers.
         $(targetBox).off('click.formatButton');
         $(targetBox).on('click.formatButton', '#formatButton', function() {
-            //iframeChannel.simpleAjaxGet('/bloom/availableFontNames', function(fontData) {
             axios.get('/bloom/availableFontNames').then( result=>{
                 var fontData = result.data as string;
                 editor.boxBeingEdited = targetBox;
