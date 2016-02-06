@@ -10,8 +10,8 @@
     "test": "karma start",
     "teamcitytest": "karma start karma.conf.js --browsers Chrome --reporters teamcity --single-run",
     "build": "gulp",
-    "gitClean": 'git clean -X --dry-run --exclude="!node_modules"',
-    "gitCleanForReal": 'git clean -fX --exclude="!node_modules"'
+    "gitClean": "git clean -X --dry-run --exclude='!node_modules'",
+    "gitCleanForReal": "git clean -fX --exclude='!node_modules'"
   },
   "repository": {
     "type": "git",
@@ -36,6 +36,7 @@
     "react-dom": "^0.14.6",
     "toastr": "^2.1.2",
     "typescript": "^1.7.5",
+    "underscore": "^1.8.3",
     "xregexp": "^3.0.0"
   },
   "devDependencies": {
@@ -63,11 +64,11 @@
     "gulp-watch": "^4.3.5",
     "jade-loader": "^0.8.0",
     "jasmine": "^2.4.1",
+    "jasmine-jquery": "^2.1.1",
     "karma": "^0.13.19",
     "karma-chrome-launcher": "^0.2.2",
     "karma-firefox-launcher": "^0.1.7",
     "karma-jasmine": "^0.3.6",
-    "karma-phantomjs-launcher": "^0.2.3",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-teamcity-reporter": "^0.2.1",
     "less-loader": "^2.2.2",
