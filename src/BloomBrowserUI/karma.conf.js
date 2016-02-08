@@ -15,7 +15,7 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [           
-            'bookEdit/test/cSharpDependencyInjector.js', //defines a global GetSettings()
+            'bookEdit/test/GetSettingsMock.js', 
             'commonBundle.js',           
             'testBundle.js',           
             // fixtures

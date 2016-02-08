@@ -1,4 +1,9 @@
-﻿//Sadly, we get some data into JS-land by c# literally pushing the methods into the dom.
+﻿// NB: Do not save this as Typescript!!! Currently we need it as a separate js file that
+// Karma can explicitly include. If you rename this to .ts, then no js will be created 
+// (because we just emit a bundled js file of all dependencies), and Karma won't find it.
+// Also, write it for ES3, as it isn't (as of this writing) going through babel.
+
+//Sadly, we get some data into JS-land by c# literally pushing the methods into the dom.
 //Until we get rid of that (they should instead be ajax calls to the server)
 //this file has static versions of those methods, for use in unit tests. Karma should include it.
 
@@ -6,8 +11,8 @@
  * Test substitute for RuntimeInformationInjector.cs AddUISettingsToDom()
  * @returns {Object}
  */
-function GetSettings(): any {
-  var v: any = {};
+function GetSettings() {
+  var v = {};
   v.defaultSourceLanguage = 'en';
   v.currentCollectionLanguage2 = 'tpi';
   v.currentCollectionLanguage3 = 'fr';
