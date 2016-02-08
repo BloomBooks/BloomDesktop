@@ -195,12 +195,11 @@ export class LocalizationManager {
         var deferred = $.Deferred();
         //var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
         //when the async call comes back, we massage the text
-        var queryString  = QueryString.stringify({ key: id, englishText: englishText, langId: langId});
-        axios.get("/bloom/i18n/translate?"+queryString)
+        axios.get("/bloom/i18n/translate",
         {
             params:{ key: id, englishText: englishText, langId: langId}
         })
-         .then(response => {
+        .then(response => {
            var text = HtmlDecode(response.data);
             // is this a C#-style string.format style request?
             if (args.length > 0) {
