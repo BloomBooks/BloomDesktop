@@ -2,9 +2,11 @@
 /// <reference path="../../../../lib/jquery.onSafe.d.ts" />
 import theOneLocalizationManager from '../../../../lib/localizationManager/localizationManager';
 import '../../../../lib/jquery.onSafe.ts';
-import getIframeChannel from '../../../js/getIframeChannel';
 import {saveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPreviousMoreWords, getPreviousMoreWords} from './readerSetup.io';
-import {DataWord} from '../libSynphony/bloom_lib'; 
+import {DataWord} from '../libSynphony/bloom_lib';
+import BloomHelp from '../../../../BloomHelp.ts';
+import axios = require('axios');
+import {ReaderToolsModel} from '../readerToolsModel';
 
 var desiredGPCs: string[];
 var previousGPCs: string[];
@@ -24,7 +26,7 @@ function process_UI_Message(event: MessageEvent): void {
       if (s.length > 0) {
 
         var files: string[] = s.split('\r');
-        var extensions: string[] = getIframeChannel().readableFileExtensions;
+        var extensions: string[] = ReaderToolsModel.getReadableFileExtensions();
         var needsTxtExtension: string = document.getElementById('needs_txt_extension').innerHTML;
         var notSupported: string = document.getElementById('format_not_supported').innerHTML;
         var foundNotSupported: boolean = false;
@@ -115,7 +117,7 @@ function process_UI_Message(event: MessageEvent): void {
         default:
       }
       if (helpFile)
-        getIframeChannel().help(helpFile);
+        BloomHelp.show(helpFile);
       return;
 
     default:
@@ -696,7 +698,7 @@ function attachEventHandlers(): void {
   if (typeof ($) === "function") {
 
     $("#open-text-folder").onSafe('click', function() {
-      getIframeChannel().simpleAjaxNoCallback('/bloom/readers/openTextsFolder');
+      axios.post('/bloom/readers/openTextsFolder');
       return false;
     });
 
@@ -752,13 +754,13 @@ function attachEventHandlers(): void {
     });
 
     $('#setup-choose-allowed-words-file').onSafe('click', function() {
-      getIframeChannel().simpleAjaxPost('/bloom/readers/selectStageAllowedWordsFile',
-        function(fileName: string) {
-          if (fileName) setAllowedWordsFile(fileName);
+      axios.post<string>('/bloom/readers/selectStageAllowedWordsFile').then(result => {
+        var fileName = result.data;
+        if (fileName) setAllowedWordsFile(fileName);
 
-          // hide stale controls
-          $('#setup-stage-matching-words').find('div').hide();
-        });
+        // hide stale controls
+        $('#setup-stage-matching-words').find('div').hide();
+      });
       return false;
     });
 
@@ -827,7 +829,7 @@ function checkAndDeleteAllowedWordsFile(fileName: string): void {
   }
 
   // if you are here, the file name is not in use
-  getIframeChannel().simpleAjaxNoCallback('/bloom/readers/recycleAllowedWordsFile', fileName);
+  axios.post('/bloom/readers/recycleAllowedWordsFile', { params: { data: fileName } });
 }
 
 export function enableSampleWords() {

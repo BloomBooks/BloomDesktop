@@ -1,5 +1,3 @@
-/// <reference path="../../js/interIframeChannel.ts" />
-/// <reference path="../../js/getIframeChannel.ts" />
 /// <reference path="synphonyApi.ts" />
 /// <reference path="./libSynphony/jquery.text-markup.d.ts" />
 /// <reference path="jquery.div-columns.ts" />
@@ -14,7 +12,6 @@ import {DirectoryWatcher} from "./directoryWatcher";
 import {resizeWordList} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import {ToolBox} from "../toolbox";
-import getIframeChannel from '../../js/getIframeChannel';
 import "./libSynphony/jquery.text-markup.js";
 import './jquery.div-columns.ts';
 import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
@@ -22,10 +19,6 @@ import * as _ from 'underscore';
 import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synphony_lib';
 import SynphonyApi from './synphonyApi';
 import {DataWord,TextFragment} from './libSynphony/bloom_lib';
-
-var iframeChannel = getIframeChannel();
-
-
 
 var SortType = {
   alphabetic: "alphabetic",
@@ -91,13 +84,10 @@ export class ReaderToolsModel {
   wordListLoaded: boolean = false;
   ckEditorLoaded: boolean = false;
   allowedWordFilesRemaining: number = 0;
-
-  constructor() {
-
-    // this happens during testing
-    if (iframeChannel)
-      this.readableFileExtensions = iframeChannel.readableFileExtensions;
+  public static getReadableFileExtensions() {
+      return ['txt', 'js', 'json'];
   }
+
   readyToDoMarkup(): boolean { return this.wordListLoaded && this.ckEditorLoaded; }
   setCkEditorLoaded() : void { this.ckEditorLoaded = true; }
 
@@ -611,6 +601,10 @@ export class ReaderToolsModel {
     EditableDivUtils.makeSelectionIn(this.activeElement, restoreOffset, null, true);
   }
 
+  getPageWindow(): Window {
+      return (<HTMLIFrameElement>document.getElementById('page')).contentWindow;
+  }
+
   /**
    * Displays the correct markup for the current page.
    */
@@ -642,7 +636,7 @@ export class ReaderToolsModel {
           editableElements.checkLeveledReader(options);
 
           // update current page words
-          var pageDiv = $('body', iframeChannel.getPageWindow().document).find('div.bloom-page');
+          var pageDiv = $('body', this.getPageWindow().document).find('div.bloom-page');
           if (pageDiv.length) {
             if (pageDiv[0].id)
               this.bookPageWords[pageDiv[0].id] = editableElements['allWords'];
@@ -736,13 +730,11 @@ export class ReaderToolsModel {
   }
 
   static getTextOfWholeBook(): void {
-    iframeChannel.simpleAjaxGet('/bloom/readers/getTextOfPages', ReaderToolsModel.updateWholeBookCounts);
-  }
-
-  static updateWholeBookCounts(pageSource: string): void {
-
-    ReaderToolsModel.model.bookPageWords = JSON.parse(pageSource);
-    ReaderToolsModel.model.doMarkup();
+    axios.get<string>('/bloom/readers/getTextOfPages').then(result => {
+      var pageSource: string = result.data;
+      ReaderToolsModel.model.bookPageWords = JSON.parse(pageSource);
+      ReaderToolsModel.model.doMarkup();
+    });
   }
 
   displayBookTotals(): void {
@@ -919,7 +911,7 @@ export class ReaderToolsModel {
         ReaderToolsModel.model.processWordListChangedListeners();
 
         // write out the ReaderToolsWords-xyz.json file
-        iframeChannel.simpleAjaxNoCallback('/bloom/readers/saveReaderToolsWords', JSON.stringify(theOneLanguageDataInstance));
+        axios.post('/bloom/readers/saveReaderToolsWords', {params: {data: JSON.stringify(theOneLanguageDataInstance)}});
       }, 200);
 
       return;
@@ -929,15 +921,17 @@ export class ReaderToolsModel {
     var fileName;
     do {
       var ext = this.texts[this.textCounter].split('.').pop();
-      if (this.readableFileExtensions.indexOf(ext) > -1)
+      if (ReaderToolsModel.getReadableFileExtensions().indexOf(ext) > -1)
         fileName = this.texts[this.textCounter];
       this.textCounter++;
     } while (!fileName && (this.textCounter < this.texts.length));
 
-    if (fileName)
-      iframeChannel.simpleAjaxGet('/bloom/readers/getSampleFileContents', ReaderToolsModel.setSampleFileContents, fileName);
-    else
-      this.getNextSampleFile();
+      if (fileName) {
+          axios.get<string>('/bloom/readers/getSampleFileContents', { params: { data: encodeURIComponent(fileName) } })
+              .then(result => ReaderToolsModel.setSampleFileContents(result.data));
+      } else {
+          this.getNextSampleFile();
+      }
   }
 
   /**
@@ -1025,6 +1019,10 @@ export class ReaderToolsModel {
     return words;
   }
 
+  static getToolboxWindow(): Window {
+      return (<HTMLIFrameElement>document.getElementById('toolbox')).contentWindow;
+  }
+
   /**
    * Get the allowed words for the current stage and all previous stages as an array of DataWord objects
    * @param stageNumber
@@ -1040,7 +1038,7 @@ export class ReaderToolsModel {
     }
 
     // inform the user if the list was truncated
-    var toolbox: Document = iframeChannel.getToolboxWindow().document;
+    var toolbox: Document = this.getToolboxWindow().document;
     var msgDiv: JQuery = $(toolbox).find('#allowed-word-list-truncated');
 
     // if the list was truncated, show the message
@@ -1096,7 +1094,8 @@ export class ReaderToolsModel {
 
     stages.forEach(function(stage, index) {
       if (stage.allowedWordsFile) {
-        iframeChannel.simpleAjaxGetWithCallbackParam('/bloom/readers/getAllowedWordsList', ReaderToolsModel.setAllowedWordsListList, index, stage.allowedWordsFile);
+          axios.get<string>('/bloom/readers/getAllowedWordsList?data=' + encodeURIComponent(stage.allowedWordsFile))
+              .then(result => this.setAllowedWordsListList(result.data, index));
       }
     });
   }

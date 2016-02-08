@@ -2,13 +2,11 @@
 var gulp = require('gulp');  
 var debug = require('gulp-debug');
 //var ts = require('gulp-typescript');
-var less = require('gulp-less');
-var jade = require('gulp-jade');
 var batch = require('gulp-batch');
 var watch = require('gulp-watch');
 var path = require('path');
 var sourcemaps = require('gulp-sourcemaps');
-const babel = require('gulp-babel');
+//const babel = require('gulp-babel');
 //var browserify = require('gulp-browserify');
 var webpack = require('gulp-webpack');
 var del = require('del');
@@ -30,6 +28,7 @@ var paths = {
 };
 
 gulp.task('less', function () {
+  var less = require('gulp-less');
   return gulp.src(paths.less)
     .pipe(debug({title: 'less:'}))
     .pipe(sourcemaps.init())
@@ -39,15 +38,15 @@ gulp.task('less', function () {
 });
 
 gulp.task('jade', function () {
+  var jade = require('gulp-jade');
   return gulp.src(paths.jade)
     .pipe(debug({title: 'jade:'}))
     .pipe(jade())
     .pipe(gulp.dest(outputDir)); //drop all css's into the same dirs.
 });
 
-var webpackconfig = require('./webpack.config.js');
-
 gulp.task('webpack', function() {
+  var webpackconfig = require('./webpack.config.js');
   return gulp.src('unused') // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
     .pipe(webpack( webpackconfig))
     .pipe(gulp.dest(outputDir));

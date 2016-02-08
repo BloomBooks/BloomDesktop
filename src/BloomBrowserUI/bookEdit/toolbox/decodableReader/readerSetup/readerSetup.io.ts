@@ -1,10 +1,9 @@
-/// <reference path="../../../js/getIframeChannel.ts" />
 /// <reference path="../../../toolbox/decodableReader/readerSettings.ts" />
 /// <reference path="readerSetup.ui.ts" />
 import {enableSampleWords, displayLetters, selectLetters, selectLevel, selectStage, setLevelValue} from './readerSetup.ui';
-import getIframeChannel from '../../../js/getIframeChannel';
 import {ReaderStage, ReaderLevel, ReaderSettings, ReaderSettingsReplacer} from '../ReaderSettings';
 import "../../../../lib/jquery.onSafe.js";
+import axios = require('axios');
 
 var previousMoreWords: string;
 
@@ -134,9 +133,9 @@ export function saveChangedSettings(callback?: Function): void {
 
   // save now
   if (callback)
-    getIframeChannel().simpleAjaxPost('/bloom/readers/saveReaderToolSettings', callback, settingsStr);
+    axios.post('/bloom/readers/saveReaderToolSettings', { params: { data: settingsStr } }).then(result => {callback(result.data)});
   else
-    getIframeChannel().simpleAjaxNoCallback('/bloom/readers/saveReaderToolSettings', settingsStr);
+    axios.post('/bloom/readers/saveReaderToolSettings', { params: { data: settingsStr } });
 }
 
 function getChangedSettings(): any {

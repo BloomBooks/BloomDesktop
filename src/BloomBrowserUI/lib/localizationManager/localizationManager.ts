@@ -1,7 +1,5 @@
 /// <reference path="../misc-types.d.ts" />
-/// <reference path="../../bookEdit/js/getIframeChannel.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import getIframeChannel from '../../bookEdit/js/getIframeChannel';
 import axios = require("axios");
 
 /**
@@ -42,9 +40,6 @@ export class LocalizationManager {
   private inlineDictionaryLoaded: boolean = false;
 
   constructor() {
-    if (typeof document['getIframeChannel'] === 'function')
-      this.dictionary = document['getIframeChannel']().localizationManagerDictionary;
-    else
       this.dictionary = {};
   }
 
@@ -200,7 +195,8 @@ export class LocalizationManager {
         var deferred = $.Deferred();
         //var promise = getIframeChannel().asyncGet("/bloom/i18n/translate", { key: id, englishText: englishText, langId: langId });
         //when the async call comes back, we massage the text
-        axios.get("/bloom/i18n/translate",
+        var queryString  = QueryString.stringify({ key: id, englishText: englishText, langId: langId});
+        axios.get("/bloom/i18n/translate?"+queryString)
         {
             params:{ key: id, englishText: englishText, langId: langId}
         })
