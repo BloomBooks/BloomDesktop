@@ -32,6 +32,7 @@
     "query-string": "^3.0.0",
     "react": "^0.14.6",
     "react-dom": "^0.14.6",
+    "time-require": "^0.1.2",
     "toastr": "^2.1.2",
     "typescript": "^1.7.5",
     "xregexp": "^3.0.0"
