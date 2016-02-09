@@ -68,7 +68,7 @@ function RunAncestorMarginTest(index:number, value:HTMLElement) {
 
 // Uses jasmine-query-1.3.1.js
 describe("Overflow Tests", function () {
-    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
+    jasmine.getFixtures().fixturesPath = 'base/bookEdit/OverflowChecker';
 
     // these tests are only reliable when tested with Firefox
     if (navigator.userAgent.indexOf('Firefox') === -1) {
@@ -77,7 +77,7 @@ describe("Overflow Tests", function () {
     }
 
     it("Check test page for Self overflows", function() {
-        loadFixtures('OverflowTestPage.html');
+        loadFixtures('OverflowFixture.html');
         expect($('#jasmine-fixtures')).toBeTruthy();
         if(window.console && window.console.log) {
             consoleDef = true;
@@ -87,7 +87,7 @@ describe("Overflow Tests", function () {
     });
 
     it("Check test page for Margin overflows", function() {
-        loadFixtures('OverflowMarginTestPage.html');
+        loadFixtures('OverflowMarginFixture.html');
         expect($('#jasmine-fixtures')).toBeTruthy();
         if(window.console && window.console.log) {
             consoleDef = true;
@@ -97,7 +97,7 @@ describe("Overflow Tests", function () {
     });
 
     it("Check test page for Fixed Ancestor overflows", function() {
-        loadFixtures('OverflowAncestorTestPage.html');
+        loadFixtures('OverflowAncestorFixture.html');
         expect($('#jasmine-fixtures')).toBeTruthy();
         if(window.console && window.console.log) {
             consoleDef = true;

@@ -19,7 +19,7 @@ module.exports = function (config) {
             'commonBundle.js',           
             'testBundle.js',           
             // fixtures
-            { pattern: 'test/fixtures/**/*.html', included: false, served: true },
+            { pattern: '**/*Fixture.html', included: false, served: true },
         ],
 
         preprocessors: {
