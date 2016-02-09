@@ -1,46 +1,38 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/jquery.gridly.d.ts" />
 import * as $ from 'jquery';
-import '../../modfied_libraries/jquery.gridly.js';
+import '../../modified_libraries/gridly/jquery.gridly.js';
 import {SetImageElementUrl} from '../js/bloomImages';
 
 var thumbnailTimerInterval = 200;
-var reorder = function (elements) {
-    var ids = "";
-    elements.each(function () {
-    var id = $(this).attr('id');
-    if (id)
-        ids += "," + id;
-    });
-    fireCSharpEvent("gridReordered", ids);
-};
-export function WireUp() {
+
+$(window).ready(function(){
     $('.gridly').gridly({
-    base: 35, // px
-    gutter: 10, // px
-    columns: 4,
-    callbacks: {
-        reordered: reorder
-    }
+        base: 35, // px
+        gutter: 10, // px
+        columns: 4,
+        callbacks: {
+            reordered: reorder
+        }
     });
-    jQuery('.gridItem').click(function () {
+    jQuery('.gridItem').click(function() {
         fireCSharpEvent("gridClick", $(this).attr('id'));
     });
 
     // start the thumbnail timer
     var timerSetting = document.body.dataset['thumbnailInterval'];
     if (timerSetting)
-    thumbnailTimerInterval = parseInt(timerSetting.value);
+        thumbnailTimerInterval = parseInt(timerSetting);//reviewslog: was timerSetting.value, but timerSetting is a string)
 
     // This timeout expires before the main page is displayed to the user, so we're using
     // thumbnailTimerInterval * 2 for the first interval to give the UI more time to catch up.
     setTimeout(loadNextThumbnail, thumbnailTimerInterval * 2);
 
-    jQuery('#menu').click(function (event) {
+    jQuery('#menu').click(function(event) {
         event.stopPropagation();
         fireCSharpEvent("menuClicked", $(this).parent().parent().attr('id'));
     });
-}
+});
 
 function fireCSharpEvent(eventName, eventData) {
 
@@ -73,3 +65,13 @@ function loadNextThumbnail() {
     // load more responsive, especially on low-end hardware.
     setTimeout(loadNextThumbnail, thumbnailTimerInterval);
 }
+
+function reorder(elements) {
+    var ids = "";
+    elements.each(function() {
+        var id = $(this).attr('id');
+        if (id)
+            ids += "," + id;
+    });
+    fireCSharpEvent("gridReordered", ids);
+};

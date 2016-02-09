@@ -26,7 +26,7 @@ module.exports = {
              editablePageBundle: './bookEdit/editablePageBootstrap.ts',
              toolboxBundle: './bookEdit/toolbox/toolboxBootstrap.ts',
              pageChooserBundle: './pageChooser/page-chooser.ts',
-             
+             pageThumbnailListBundle: './bookEdit/pageThumbnailList/pageThumbnailList.ts',
              testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//TODO this maybe slow if 1st it finds it all, then it excludes node_modules
            },
 
