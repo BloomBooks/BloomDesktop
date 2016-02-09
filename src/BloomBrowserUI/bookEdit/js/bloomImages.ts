@@ -179,7 +179,7 @@ function GetRawImageUrl(imgOrDivWithBackgroundImage) {
     }
     return "";
 }
-function SetImageElementUrl(imgOrDivWithBackgroundImage, url) {
+export function SetImageElementUrl(imgOrDivWithBackgroundImage, url) {
     if (imgOrDivWithBackgroundImage.tagName.toLowerCase() === "img") {
         imgOrDivWithBackgroundImage.src = url;
     }

@@ -74,8 +74,8 @@ gulp.task('copy', function () {
   gulp.src('./node_modules/jquery/dist/jquery.min.js')
     .pipe(gulpCopy(outputDir, {prefix:3}))
 
-  gulp.src('./node_modules/jquery.hotkeys/jquery.hotkeys.js')
-    .pipe(gulpCopy(outputDir, {prefix:2}))
+//   gulp.src('./node_modules/jquery.hotkeys/jquery.hotkeys.js')
+//     .pipe(gulpCopy(outputDir, {prefix:2}))
     
   return gulp.src(paths.filesThatMightBeNeededInOutput)
     .pipe(gulpCopy(outputDir))

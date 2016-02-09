@@ -8,79 +8,12 @@
 
   <link rel="stylesheet" type="text/css" href="BookPagesThumbnailList.css" />
   <link rel="stylesheet" href="/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css" />
-  <script src="/bloom/jquery.min.js" type="text/javascript"></script>
-  <script type="text/javascript" src="/bloom/modified_libraries/gridly/jquery.gridly.js"></script>
-  <script type="text/javascript" src="/bloom/lib/errorHandler.js"></script>
-  <script src="/bloom/bookEdit/js/bloomImages.js" type="text/javascript"></script>
+  <!--<script src="/bloom/jquery.min.js" type="text/javascript"></script>-->
+  <!--<script type="text/javascript" src="/bloom/modified_libraries/gridly/jquery.gridly.js"></script>-->
+  <!--<script type="text/javascript" src="/bloom/lib/errorHandler.js"></script>-->
+  <!--<script src="/bloom/bookEdit/js/bloomImages.js" type="text/javascript"></script>-->
+  <script src="/bloom/bookEdit/BookPagesThumbnailList/BookPagesThumbnailListBootstrap.js"></script>
   <script>
-    var thumbnailTimerInterval = 200;
-    var reorder = function (elements) {
-      var ids = "";
-      elements.each(function () {
-        var id = $(this).attr('id');
-        if (id)
-          ids += "," + id;
-      });
-      fireCSharpEvent("gridReordered", ids);
-    };
-    jQuery().ready(function () {
-      $('.gridly').gridly({
-        base: 35, // px
-        gutter: 10, // px
-        columns: 4,
-        callbacks: {
-          reordered: reorder
-        }
-      });
-      jQuery('.gridItem').click(function () {
-        fireCSharpEvent("gridClick", $(this).attr('id'));
-      });
-
-      // start the thumbnail timer
-      var timerSetting = document.body.dataset['thumbnailInterval'];
-      if (timerSetting)
-        thumbnailTimerInterval = parseInt(timerSetting.value);
-
-      // This timeout expires before the main page is displayed to the user, so we're using
-      // thumbnailTimerInterval * 2 for the first interval to give the UI more time to catch up.
-      setTimeout(loadNextThumbnail, thumbnailTimerInterval * 2);
-
-      jQuery('#menu').click(function (event) {
-        event.stopPropagation();
-        fireCSharpEvent("menuClicked", $(this).parent().parent().attr('id'));
-      });
-    });
-    function fireCSharpEvent(eventName, eventData) {
-
-      var event = new MessageEvent(eventName, { 'view': window, 'bubbles': true, 'cancelable': true, 'data': eventData });
-      document.dispatchEvent(event);
-    }
-
-    function loadNextThumbnail() {
-
-      // The "thumb-src" attribute is added to the img tags on the server while the page is being built. The value
-      // of the "src" attribute is copied into it and then the "src" attribute is set to an empty string so the
-      // images can be loaded here in a controlled manner so as not to overwhelm system memory.
-      var nextImg = jQuery('body').find('*[thumb-src]').first();
-
-      // stop processing if there are no more images
-      if ((!nextImg) || (nextImg.length === 0)) return;
-
-      var img = nextImg[0];
-
-      // adding this to the query string tells the server to generate a thumbnail from the image file
-      var src = img.getAttribute('thumb-src') + '?thumbnail=1';
-      img.removeAttribute('thumb-src');
-
-      SetImageElementUrl(img, src);
-
-      // This delay is needed because the processing of larger images was causing out-of-memory errors if several
-      // images were requested before the server had finished processing previous images requests. We are also
-      // attempting to prevent the browser from timing out and showing the alt text instead of the image.
-      // 2015-06-04: The interval is now a variable rather than a constant in order to make the initial Edit tab
-      // load more responsive, especially on low-end hardware.
-      setTimeout(loadNextThumbnail, thumbnailTimerInterval);
-    }
   </script>
   <title></title>
 </head>
