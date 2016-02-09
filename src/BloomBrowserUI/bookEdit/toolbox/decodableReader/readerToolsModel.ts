@@ -12,7 +12,7 @@ import {DirectoryWatcher} from "./directoryWatcher";
 import {resizeWordList} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import {ToolBox} from "../toolbox";
-import "./libSynphony/jquery.text-markup.js";
+import "./libSynphony/jquery.text-markup.ts";
 import './jquery.div-columns.ts';
 import {ReaderStage, ReaderLevel, ReaderSettings} from './ReaderSettings';
 import * as _ from 'underscore';

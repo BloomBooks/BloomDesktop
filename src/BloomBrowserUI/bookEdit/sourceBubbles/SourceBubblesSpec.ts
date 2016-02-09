@@ -9,7 +9,9 @@ describe("SourceBubbles", function () {
   beforeEach(function () {
     $('body').html('');
   });
-
+  afterEach(function () {
+    $('body').html('');
+  });
   it("Run MakeSourceTextDivForGroup with pre-defined settings", function () {
     // TODO: Testing is a bit hampered by not being able (currently) to put test values
     // into the cSharpDependencyInjector version of GetSettings(). Someday it might

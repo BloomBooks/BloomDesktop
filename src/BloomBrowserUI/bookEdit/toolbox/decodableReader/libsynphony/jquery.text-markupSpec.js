@@ -21,15 +21,14 @@ describe("jquery.text-markup", function() {
     var divTextEntry3;
 
     beforeEach(function() {
+        document.body.innerHTML = "";
         divTextEntry1 = addDiv('text_entry1');
         divTextEntry2 = addDiv('text_entry2');
         divTextEntry3 = addDiv('text_entry3');
     });
 
     afterEach(function() {
-        document.body.removeChild(divTextEntry1);
-        document.body.removeChild(divTextEntry2);
-        document.body.removeChild(divTextEntry3);
+        document.body.innerHTML = "";
     });
 
     it("checkLeveledReader", function() {
@@ -77,12 +76,10 @@ describe("jquery.text-markup", function() {
     });
 
     it("getMaxSentenceLength", function() {
-
         $('#text_entry1').html("Three word sentence. Short sentence.");
         $('#text_entry2').html("Two-word sentence. A really longer six word sentence.");
         $('#text_entry3').html("Another four word sentence. A longer five word sentence.");
 
-        // check 2 word sentences
         var result = $('div').getMaxSentenceLength();
         expect(result).toBe(6);
     });
