@@ -134,14 +134,14 @@ function SetupImageContainer(containerDiv) {
 
 function SetImageTooltip(container, img) {
     axios.get<string>('/bloom/imageInfo', { params: { image: GetRawImageUrl(img) } }).then(result => {
-        var response = JSON.parse(result.data);
+        var image:any = result.data;
         const kBrowserDpi = 96; // this appears to be constant even on higher dpi screens. See http://www.w3.org/TR/css3-values/#absolute-lengths
-        var dpi = Math.round(response.width / ($(img).width() / kBrowserDpi));
-        var info = response.name + "\n"
-            + getFileLengthString(response.bytes) + "\n"
-            + response.width + " x " + response.height + "\n"
+        var dpi = Math.round(image.width / ($(img).width() / kBrowserDpi));
+        var info = image.name + "\n"
+            + getFileLengthString(image.bytes) + "\n"
+            + image.width + " x " + image.height + "\n"
             + dpi + " DPI (should be 300-600)\n"
-            + "Bit Depth: " + response.bitDepth.toString();
+            + "Bit Depth: " + image.bitDepth.toString();
         container.title = info;
     });
 }
