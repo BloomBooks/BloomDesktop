@@ -295,11 +295,11 @@ namespace Bloom.Book
 			//and finally qtip into the global space here
 			dom.AddJavascriptFile("jquerY.min.js".ToLocalhost());
 			dom.AddJavascriptFile("modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js".ToLocalhost());
-			dom.AddJavascriptFile("lib/jquery.qtip.js".ToLocalhost());
-			dom.AddJavascriptFile("lib/jquery.qtipSecondary.js".ToLocalhost());
+//			dom.AddJavascriptFile("lib/jquery.qtip.js".ToLocalhost());
+//			dom.AddJavascriptFile("lib/jquery.qtipSecondary.js".ToLocalhost());
 
 			// first tried this as import 'jquery.hotkeys' in bloomEditing, but that didn't work
-			dom.AddJavascriptFile("jquery.hotkeys.js".ToLocalhost());
+			//dom.AddJavascriptFile("jquery.hotkeys.js".ToLocalhost());
 			
 			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
 			dom.AddJavascriptFile("editablePageBundle.js".ToLocalhost());

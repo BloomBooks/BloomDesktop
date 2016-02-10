@@ -23,7 +23,8 @@ module.exports = {
     //So we have multiple "entry points" that we need to emit. Fortunately the
     //CommonsChunkPlugin extracts the code that is common to more than one into "commonBundle.js"
     entry: { editTabRootBundle:  './bookEdit/editViewFrame.ts',
-             editablePageBundle: './bookEdit/editablePageBootstrap.ts',
+             //editablePageBootstrap: './bookEdit/editablePageBootstrap.ts',
+             editablePageBundle: './bookEdit/editablePage.ts',
              toolboxBundle: './bookEdit/toolbox/toolboxBootstrap.ts',
              pageChooserBundle: './pageChooser/page-chooser.ts',
              pageThumbnailListBundle: './bookEdit/pageThumbnailList/pageThumbnailList.ts',
