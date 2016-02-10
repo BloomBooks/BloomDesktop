@@ -438,9 +438,10 @@ namespace Bloom.web
 					info.WriteCompleteOutput(ToolboxContent ?? "");
 					return true;
 				case "availableFontNames":
+					info.ContentType = "text/json";
 					var list = new List<string>(Browser.NamesOfFontsThatBrowserCanRender());
 					list.Sort();
-					info.WriteCompleteOutput(string.Join(",", list.ToArray()));
+					info.WriteCompleteOutput(JsonConvert.SerializeObject(new{fonts = list}));
 					return true;
 				case "authorMode":
 					info.ContentType = "text/plain";

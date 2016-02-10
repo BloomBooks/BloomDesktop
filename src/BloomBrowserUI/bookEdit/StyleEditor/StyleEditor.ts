@@ -575,7 +575,6 @@ export default class StyleEditor {
         $(targetBox).off('click.formatButton');
         $(targetBox).on('click.formatButton', '#formatButton', function() {
             axios.get('/bloom/availableFontNames').then( result=>{
-                var fontData = result.data as string;
                 editor.boxBeingEdited = targetBox;
                 // This line is needed inside the click function to keep from using a stale version of 'styleName'
                 // and chopping off 6 characters each time!
@@ -586,7 +585,7 @@ export default class StyleEditor {
                 //alert('font: ' + fontName + ' size: ' + sizeString + ' height: ' + lineHeight + ' space: ' + wordSpacing);
                 // Enhance: lineHeight may well be something like 35px; what should we select initially?
 
-                var fonts = fontData.split(',');
+                var fonts = result.data['fonts'];
                 editor.styles = editor.getFormattingStyles();
                 if (editor.styles.indexOf(styleName) == -1) {
                     editor.styles.push(styleName);
