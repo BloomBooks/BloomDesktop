@@ -540,6 +540,20 @@ namespace Bloom.web
 			{
 				// ignore
 			}
+
+			//There's probably a eventual way to make this problem go away,
+			// but at the moment FF, looking for source maps to go with css, is
+			// looking for those maps where we said the css was, which is in the actual
+			// book folders. So instead redirect to our browser file folder.
+			if (!File.Exists(path))
+			{
+				var startOfBookLayout = localPath.IndexOf("bookLayout");
+				if (startOfBookLayout > 0)
+					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookLayout));
+				var startOfBookEdit = localPath.IndexOf("bookEdit");
+				if (startOfBookEdit > 0)
+					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookEdit));
+			}
 			if (!File.Exists(path))
 			{
 #if DEBUG
