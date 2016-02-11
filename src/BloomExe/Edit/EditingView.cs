@@ -101,7 +101,7 @@ namespace Bloom.Edit
 		internal void SetPeakLevel(string level)
 		{
 			if (this.IsHandleCreated)
-				Invoke((Action) (() =>_browser1.RunJavaScript("if (calledByCSharp) { calledByCSharp.setPeakLevel(" + level + "); }")));
+				Invoke((Action) (() =>_browser1.RunJavaScript("if (typeof calledByCSharp != 'undefined') { calledByCSharp.setPeakLevel(" + level + "); }")));
 		}
 
 #if TooExpensive
@@ -864,7 +864,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
-			RunJavaScript("if (calledByCSharp) { calledByCSharp.removeSynphonyMarkup(); calledByCSharp.cleanupAudio(); }");
+			RunJavaScript("if (typeof calledByCSharp != 'undefined') { calledByCSharp.removeSynphonyMarkup(); calledByCSharp.cleanupAudio(); }");
 			_browser1.ReadEditableAreasNow();
 		}
 

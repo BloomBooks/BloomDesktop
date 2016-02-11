@@ -10,7 +10,7 @@ import BloomHelp from '../../BloomHelp';
 export {BloomHelp};
 
 export function canUndo() :boolean {
-    return ReaderToolsModel.model !== null && ReaderToolsModel.model.shouldHandleUndo() && ReaderToolsModel.model.canUndo();
+    return (typeof ReaderToolsModel.model != 'undefined') && ReaderToolsModel.model.shouldHandleUndo() && ReaderToolsModel.model.canUndo();
 }
 
 export function undo() {
