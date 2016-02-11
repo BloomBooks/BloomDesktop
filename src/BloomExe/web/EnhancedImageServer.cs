@@ -281,6 +281,10 @@ namespace Bloom.web
 					localPath = temp;
 			}
 
+			//Firefox debugger, looking for a source map, was prefixing in this unexpected 
+			//way.
+			localPath = localPath.Replace("output/browser/", "");
+
 			return ProcessContent(info, localPath);
 		}
 
