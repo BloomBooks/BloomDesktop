@@ -1004,7 +1004,12 @@ namespace Bloom.Edit
 		void SavePageFrameState()
 		{
 			var body = _view.GetPageBody();
+#if !DEBUG // not worth crashing over a timing problem that means we don't save zoom state
+			if (body == null)
+				return;
+#endif
 			var styleAttr = body.Attributes["style"];
+
 			if (styleAttr == null)
 				return;
 			var style = styleAttr.NodeValue;
