@@ -10,6 +10,7 @@ export {getToolboxFrameExports};
 import {getPageFrameExports} from './js/BloomFrames';
 export {getPageFrameExports};
 
+//Called by c# using FrameExports.handleUndo()
 export function handleUndo(): void {
     // First see if origami is active and knows about something we can undo.
     var contentWindow = getPageFrameExports();
@@ -23,7 +24,7 @@ export function handleUndo(): void {
         (<any>toolboxWindow).undo();
     } // elsewhere, we try to ask ckEditor to undo, else just the document
     else {
-        // I don't think this will ever be executed given the current definition of canUndo.
+        // reviewslog: I don't think this will ever be executed given the current definition of canUndo.
         // I've tried to update it to the FrameExports world but am not confident it is right.
         var ckEditorUndo = this.ckEditorUndoCommand();
         if(ckEditorUndo === null || !ckEditorUndo.exec()) {
@@ -33,6 +34,7 @@ export function handleUndo(): void {
     }
 }
 
+//Called by c# using FrameExports.canUndo()
 export function canUndo(): string {
     // See comments on handleUndo()
     var contentWindow = getPageFrameExports();
