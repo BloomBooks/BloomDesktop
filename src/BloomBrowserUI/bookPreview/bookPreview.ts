@@ -1,3 +1,10 @@
+import * as $ from 'jquery';
+import 'jquery.hasAttr.js'; //reviewSlog for CenterVerticallyInParent
+import '../lib/errorHandler';
+//import theOneLocalizationManager from '../lib/localizationManager/localizationManager';
+import '../lib/jquery.myimgscale'; //scaleImage
+//import '../lib/jquery.i18n.custom.js';
+
 $.fn.CenterVerticallyInParent = function () {
     return this.each(function (i) {
 
@@ -9,9 +16,7 @@ $.fn.CenterVerticallyInParent = function () {
     });
 };
 
- //Do the little bit of jscript needed even when we're just displaying the document
-
-jQuery(document).ready(function () {
+$(document).ready(function () {
 
     $('textarea').focus(function () { $(this).attr('readonly', 'readonly'); });
 
@@ -38,7 +43,8 @@ jQuery(document).ready(function () {
 
 
     //--------------------------------
-    //keep divs vertically centered (yes, I first tried *all* the css approaches, they don't work for our situation)
+    //keep divs vertically centered (yes, I first tried *all* the css approaches available at the time,
+    // they didn't work for our situation). (2016)There may be more options nowadays.
 
     //TODO: this is't working yet, (see CenterVerticallyInParent) but in any case one todo is to trigger
     //on something different. When the user invokes "layout-style-SplitAcrossPages" mode (e.g. via the menu in the publish tab),

@@ -379,7 +379,7 @@ namespace Bloom.Book
 			}
 			pageDom.SortStyleSheetLinks();
 
-			AddPreviewJScript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
+			AddPreviewJavascript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
 			return pageDom;
 		}
 
@@ -397,7 +397,7 @@ namespace Bloom.Book
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.SortStyleSheetLinks();
-			AddPreviewJScript(pageDom);
+			AddPreviewJavascript(pageDom);
 			AddFillerTextToEmptyEditDivs(pageDom);
 			return pageDom;
 		}
@@ -660,7 +660,7 @@ namespace Bloom.Book
 
 			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, _collectionSettings, primaryLanguage, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
 
-			AddPreviewJScript(previewDom);
+			AddPreviewJavascript(previewDom);
 			previewDom.AddPublishClassToBody();
 			return previewDom;
 		}
@@ -1398,28 +1398,10 @@ namespace Bloom.Book
 		/// Make stuff readonly, which isn't doable via css, surprisingly
 		/// </summary>
 		/// <param name="dom"></param>
-		internal void AddPreviewJScript(HtmlDom dom)
+		internal void AddPreviewJavascript(HtmlDom dom)
 		{
-//			XmlElement header = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//head");
-//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.js"));
-//			AddJavascriptFile(dom, header, _storage.GetFileLocator().LocateFileWithThrow("jquery.myimgscale.js"));
-//
-//			XmlElement script = dom.CreateElement("script");
-//			script.SetAttribute("type", "text/javascript");
-//			script.InnerText = @"jQuery(function() {
-//						$('textarea').focus(function() {$(this).attr('readonly','readonly');});
-//
-//						//make images scale up to their container without distorting their proportions, while being centered within it.
-//						$('img').scaleImage({ scale: 'fit' }); //uses jquery.myimgscale.js
-//			})";
-//			header.AppendChild(script);
-
-			var pathToJavascript = _storage.GetFileLocator().LocateFileWithThrow("bloomPreviewBootstrap.js");
-			if(string.IsNullOrEmpty(pathToJavascript))
-			{
-				throw new ApplicationException("Could not locate " +"bloomPreviewBootstrap.js");
-			}
-			dom.AddJavascriptFile(pathToJavascript);
+			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
+			dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
 		}
 
 		public IEnumerable<IPage> GetPages()
@@ -1822,7 +1804,7 @@ namespace Bloom.Book
 					throw new ArgumentOutOfRangeException("bookletPortion");
 			}
 			AddCoverColor(printingDom, Color.White);
-			AddPreviewJScript(printingDom);
+			AddPreviewJavascript(printingDom);
 			return printingDom;
 		}
 

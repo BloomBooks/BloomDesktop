@@ -25,6 +25,7 @@ module.exports = {
     entry: { editTabRootBundle:  './bookEdit/editViewFrame.ts',
              //editablePageBootstrap: './bookEdit/editablePageBootstrap.ts',
              editablePageBundle: './bookEdit/editablePage.ts',
+             bookPreviewBundle: './bookPreview/bookPreview.ts',
              toolboxBundle: './bookEdit/toolbox/toolboxBootstrap.ts',
              pageChooserBundle: './pageChooser/page-chooser.ts',
              pageThumbnailListBundle: './bookEdit/pageThumbnailList/pageThumbnailList.ts',
