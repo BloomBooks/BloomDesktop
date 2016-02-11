@@ -523,7 +523,7 @@ export default class StyleEditor {
         // async request, I think it should be OK.
         
         axios.get('/bloom/authorMode').then( result=>{
-            editor.authorMode = result.data == 'true';
+            editor.authorMode = result.data == true;
         });
         editor.xmatterMode = this.IsPageXMatter(targetBox);
 
