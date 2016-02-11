@@ -1,6 +1,7 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import * as $ from 'jquery';
-import {restoreToolboxSettings} from './toolbox';
+import {restoreToolboxSettings, showOrHidePanel_click} from './toolbox';
+export {showOrHidePanel_click};
 
 import {ReaderToolsModel} from './decodableReader/readerToolsModel'
 

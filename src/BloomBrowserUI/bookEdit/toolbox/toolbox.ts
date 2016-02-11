@@ -65,7 +65,7 @@ var currentTool: ITabModel;
  * Handles the click event of the divs in Settings.htm that are styled to be check boxes.
  * @param chkbox
  */
-function showOrHidePanel_click(chkbox) {
+export function showOrHidePanel_click(chkbox) {
 
     var panel = $(chkbox).data('panel');
 
@@ -252,7 +252,7 @@ function requestPanel(checkBoxId, panelId, loadNextCallback, panels, currentPane
         // The panelIDs all end in 'Tool' but the containing file and folder names don't have this.
         var fileAndFolderName = panelId.substring(0, panelId.length - 4);
 
-        var panelUrl = '/bloom/bookEdit/toolbox/' + fileAndFolderName + '/' + fileAndFolderName + '.htm';
+        var panelUrl = '/bloom/bookEdit/toolbox/' + fileAndFolderName + '/' + fileAndFolderName + '.html';
         var ajaxSettings = {type: 'GET', url: panelUrl};
 
         $.ajax(ajaxSettings)
