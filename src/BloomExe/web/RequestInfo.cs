@@ -144,6 +144,24 @@ namespace Bloom.web
 			return _queryStringList;
 		}
 
+
+		public string GetPostJson()
+		{
+			var request = _actualContext.Request;
+
+			if (!request.HasEntityBody)
+				return string.Empty;
+
+			using (var body = request.InputStream)
+			{
+				using (StreamReader reader = new StreamReader(body, request.ContentEncoding))
+				{
+					var inputString = reader.ReadToEnd();
+					return UnescapeString(inputString);
+				}
+			}
+		}
+
 		public NameValueCollection GetPostData()
 		{
 			if (_postData == null)

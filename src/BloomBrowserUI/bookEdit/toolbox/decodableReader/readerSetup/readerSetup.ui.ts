@@ -7,6 +7,7 @@ import {DataWord} from '../libSynphony/bloom_lib';
 import BloomHelp from '../../../../BloomHelp.ts';
 import axios = require('axios');
 import {ReaderToolsModel} from '../readerToolsModel';
+import * as _ from 'underscore';
 
 var desiredGPCs: string[];
 var previousGPCs: string[];
@@ -895,14 +896,16 @@ function wordListChangedCallback() {
   requestWordsForSelectedStage();
 }
 
+import {getToolboxFrameExports} from '../../../js/BloomFrames.ts';
+
 $(document).ready(function () {
   attachEventHandlers();
   $('body').find('*[data-i18n]').localize(finishInitializing);
-  var toolbox = toolboxWindow();
-  toolbox['addWordListChangedListener']('wordListChanged.ReaderSetup', wordListChangedCallback);
+ toolboxWindow().FrameExports.addWordListChangedListener('wordListChanged.ReaderSetup', wordListChangedCallback);
   // found solution to longpress access here:
   // http://stackoverflow.com/questions/3032770/execute-javascript-function-in-a-another-iframe-when-parent-is-from-different-do
-  var pageIframe = parent.frames['page'];
   var container = $('body');
-  pageIframe.loadLongpressInstructions(container.find('textarea'));
+//   var pageIframe = parent.frames['page'];
+//   pageIframe.FrameExports.loadLongpressInstructions(container.find('textarea'));
+  getToolboxFrameExports().loadLongpressInstructions(container.find('textarea'));
 });

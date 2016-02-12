@@ -37,6 +37,6 @@ function getRootWindow(): Window{
 function getFrame(id: string): WindowWithExports{
     return (<HTMLIFrameElement>getRootWindow().document.getElementById(id)).contentWindow as WindowWithExports;
 }
-function getFrameExports(id: string): Window{
+function getFrameExports(id: string): any{
     return getFrame(id).FrameExports;
 }

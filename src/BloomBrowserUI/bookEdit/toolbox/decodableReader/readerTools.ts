@@ -46,7 +46,7 @@ function processDLRMessage(event: MessageEvent): void {
 
     case 'Words': // request from setup dialog for a list of words for a stage
       var words: any;
-      if (ReaderToolsModel.model.getSynphony().source.useAllowedWords) {
+      if (ReaderToolsModel.model.synphony.source.useAllowedWords) {//reviewslog
         // params[1] is the stage number
         words = ReaderToolsModel.selectWordsFromAllowedLists(parseInt(params[1]));
       }
@@ -59,10 +59,10 @@ function processDLRMessage(event: MessageEvent): void {
       return;
 
     case 'Refresh': // notification from setup dialog that settings have changed
-      var synphony = ReaderToolsModel.model.getSynphony();
+      var synphony = ReaderToolsModel.model.synphony;//reviewslog
       synphony.loadSettings(JSON.parse(params[1]));
 
-      if (ReaderToolsModel.model.getSynphony().source.useAllowedWords) {
+      if (synphony.source.useAllowedWords) {
         ReaderToolsModel.model.getAllowedWordsLists();
       }
       else {
@@ -178,7 +178,7 @@ export function initializeLeveledReaderTool(): void {
 function loadSynphonySettings(): void {
 
   // make sure synphony is initialized
-  if (!readerToolsInitialized && !ReaderToolsModel.model.getSynphony().source) {
+  if (!readerToolsInitialized && !ReaderToolsModel.model.synphony.source) {
     readerToolsInitialized = true;
     axios.get<string>('/bloom/readers/getDefaultFont').then(result => setDefaultFont(result.data));
     axios.get<string>('/bloom/readers/loadReaderToolSettings').then(result => initializeSynphony(result.data));
@@ -194,7 +194,7 @@ function loadSynphonySettings(): void {
  */
 function initializeSynphony(settingsFileContent: string): void {
 
-  var synphony = ReaderToolsModel.model.getSynphony();
+  var synphony = ReaderToolsModel.model.synphony;
   synphony.loadSettings(settingsFileContent);
   ReaderToolsModel.model.restoreState();
 
@@ -240,10 +240,10 @@ function readerSampleFilesChanged(): void {
   ReaderToolsModel.model.allWords = {};
   ReaderToolsModel.model.textCounter = 0;
 
-  var settings = ReaderToolsModel.model.getSynphony().source;
+  var settings = ReaderToolsModel.model.synphony.source;
   ReaderToolsModel.model.setSynphony(new SynphonyApi());
 
-  var synphony = ReaderToolsModel.model.getSynphony();
+  var synphony = ReaderToolsModel.model.synphony;
   synphony.loadSettings(settings);
 
   // reload the sample texts
@@ -253,14 +253,14 @@ function readerSampleFilesChanged(): void {
 /**
  * Adds a function to the list of functions to call when the word list changes
  */
-function addWordListChangedListener(listenerNameAndContext: string, callback: () => {}) {
+export function addWordListChangedListener(listenerNameAndContext: string, callback: () => {}) {
   ReaderToolsModel.model.wordListChangedListeners[listenerNameAndContext] = callback;
 }
 
 function makeLetterWordList(): void {
 
   // get a copy of the current settings
-  var settings: ReaderSettings = <ReaderSettings>jQuery.extend(true, {}, ReaderToolsModel.model.getSynphony().source);
+  var settings: ReaderSettings = <ReaderSettings>jQuery.extend(true, {}, ReaderToolsModel.model.synphony.source);
 
   // remove levels
   if (typeof settings.levels !== null)
@@ -326,7 +326,7 @@ export function resizeWordList(startTimeout: boolean = true): void {
 
     var top = wordList.parent().position().top;
 
-    var synphony = ReaderToolsModel.model.getSynphony();
+    var synphony = ReaderToolsModel.model.synphony;
     if (synphony.source) {
 
       var ht = currentHeight - top;

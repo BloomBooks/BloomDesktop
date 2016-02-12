@@ -88,9 +88,9 @@ ToolBox.getTabModels().push(new DecodableReaderModel());
 function CreateConfigDiv(title) {
     var dialogContents = $('<div id="synphonyConfig" title="' + title + '"/>').appendTo($(parentDocument()).find("body"));
 
-    var html = '<iframe id="settings_frame" src="/bloom/bookEdit/toolbox/decodableReader/readerSetup/ReaderSetup.htm" scrolling="no" ' +
+    var html = '<iframe id="settings_frame" src="/bloom/bookEdit/toolbox/decodableReader/readerSetup/ReaderSetup.html" scrolling="no" ' +
         'style="width: 100%; height: 100%; border-width: 0; margin: 0" ' +
-        'onload="document.getElementById(\'toolbox\').contentWindow.initializeReaderSetupDialog()"></iframe>';
+        'onload="document.getElementById(\'toolbox\').contentWindow.FrameExports.initializeReaderSetupDialog()"></iframe>';
 
     dialogContents.append(html);
 
@@ -105,9 +105,9 @@ function settingsFrameWindow() {
     return (<HTMLIFrameElement>parentDocument().getElementById('settings_frame')).contentWindow;
 }
 
-function showSetupDialog(showWhat) {
+export function showSetupDialog(showWhat) {
 
-    var toolbox = window;
+    //var toolbox = window;
     theOneLocalizationManager.loadStrings(getSettingsDialogLocalizedStrings(), null, function () {
 
         var title;
@@ -124,7 +124,7 @@ function showSetupDialog(showWhat) {
         h = size[0];
         w = size[1];
 
-        (<any>toolbox).model.setupType = showWhat;
+        ReaderToolsModel.model.setupType = showWhat;
 
         $(dialogContents).dialog({
             autoOpen: true,
@@ -203,11 +203,11 @@ function getSettingsDialogLocalizedStrings() {
 /**
  * Used by the settings_frame to initialize the setup dialog
  */
-function initializeReaderSetupDialog() {
+export function initializeReaderSetupDialog() {
 
-    var model = (<any>window).model;
+    var model = ReaderToolsModel.model;
 
-    var sourceMsg = 'Data\n' + JSON.stringify(model.getSynphony().source);
+    var sourceMsg = 'Data\n' + JSON.stringify(model.synphony.source);
     var fontMsg = 'Font\n' + model.fontName;
     settingsFrameWindow().postMessage(sourceMsg, '*');
     settingsFrameWindow().postMessage(fontMsg, '*');

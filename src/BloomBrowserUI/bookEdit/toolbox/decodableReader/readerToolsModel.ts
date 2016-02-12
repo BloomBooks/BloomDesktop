@@ -19,6 +19,7 @@ import * as _ from 'underscore';
 import {theOneLanguageDataInstance, theOneLibSynphony}  from './libSynphony/synphony_lib';
 import SynphonyApi from './synphonyApi';
 import {DataWord,TextFragment} from './libSynphony/bloom_lib';
+import axios = require('axios');
 
 var SortType = {
   alphabetic: "alphabetic",
@@ -50,7 +51,7 @@ export interface ReaderToolsWindow extends Window {
 
 export class ReaderToolsModel {
 
-  static model: ReaderToolsModel;
+  static model: ReaderToolsModel = new ReaderToolsModel(); //reviewslog: is that all it takes to make a singleton?
   static previousHeight : number = 0;
   static previousWidth : number = 0;
   
@@ -303,7 +304,8 @@ export class ReaderToolsModel {
   updateWordList(): void {
 
     // show the correct headings
-    var useAllowedWords = (this.synphony.source) ? this.synphony.source.useAllowedWords === 1 : false;
+    //reviewSLog
+    var useAllowedWords = (ReaderToolsModel.model.synphony.source) ? ReaderToolsModel.model.synphony.source.useAllowedWords === 1 : false;
 
     // this happens during unit testing
     if (document.getElementById('make-letter-word-list-div')) {
@@ -838,9 +840,9 @@ export class ReaderToolsModel {
     this.synphony = val;
   }
 
-  getSynphony(): SynphonyApi {
-    return this.synphony;
-  }
+//   getSynphony(): SynphonyApi {
+//     return this.synphony;
+//   }
 
   /**
    * This group of functions uses jquery (if loaded) to update the real model.
@@ -864,14 +866,18 @@ export class ReaderToolsModel {
    */
   addWordsFromFile(fileContents: string): void {
 
+//reviewslog: at the moment, thes first two clauses just do the same things
+
     // is this a Synphony data file?
     if (fileContents.substr(0, 12) === '{"LangName":') {
       theOneLibSynphony.langDataFromString(fileContents);
-      this.getSynphony().loadFromLangData(theOneLanguageDataInstance);
+      ReaderToolsModel.model.synphony.loadFromLangData(theOneLanguageDataInstance);
+      //revewslog this.getSynphony().loadFromLangData(theOneLanguageDataInstance);
     }
     else if (fileContents.substr(0, 12) === 'setLangData(') {
       theOneLibSynphony.langDataFromString(fileContents);
-      this.getSynphony().loadFromLangData(theOneLanguageDataInstance);
+       ReaderToolsModel.model.synphony.loadFromLangData(theOneLanguageDataInstance);
+      //revewslog this.getSynphony().loadFromLangData(theOneLanguageDataInstance);
     }
     else {
       var words = theOneLibSynphony.getWordsFromHtmlString(fileContents);
@@ -911,7 +917,7 @@ export class ReaderToolsModel {
         ReaderToolsModel.model.processWordListChangedListeners();
 
         // write out the ReaderToolsWords-xyz.json file
-        axios.post('/bloom/readers/saveReaderToolsWords', {params: {data: JSON.stringify(theOneLanguageDataInstance)}});
+        axios.post('/bloom/readers/saveReaderToolsWords', theOneLanguageDataInstance);
       }, 200);
 
       return;
@@ -1003,7 +1009,7 @@ export class ReaderToolsModel {
 
   static selectWordsFromAllowedLists(stageNumber: number): string[] {
 
-    var stages: ReaderStage[] = ReaderToolsModel.model.getSynphony().getStages(stageNumber);
+    var stages: ReaderStage[] = ReaderToolsModel.model.synphony.getStages(stageNumber);
 
     var words: string[] = [];
     for (var i=0; i < stages.length; i++) {

@@ -20,13 +20,14 @@ module.exports = function (config) {
             'testBundle.js',   // If you want a test run, make sure it is in this bundle that webpack produces
                                // If you want a jasmine fixture to be served, make sure the name ends in Fixture.html
             { pattern: '**/*Fixture.html', included: false, served: true },
+            { pattern: '**/*.js.map', included: false },
         ],
 
         preprocessors: {
-        '**/*.js': ['sourcemap'],
+        '**/*.js': ['sourcemap'], // this doesn't actually work, in the error message it generates, you can see the name of the original file
          '**/*.html': [] //prevent  karma from preprocessing html (blocks jasmine fixture feature) https://github.com/karma-runner/karma/issues/788
         },
-                
+        
         // test results reporter to use
         // possible values: 'spec' (nice list with checkboxes), 'dots', 'progress', 'junit', 'growl', 'coverage', 'teamcity'
         reporters: ['spec'],

@@ -103,7 +103,7 @@ namespace Bloom.web
 
 				case "saveReaderToolsWords":
 					info.ContentType = "text/plain";
-					info.WriteCompleteOutput(SaveReaderToolsWordsFile(info.GetPostData()["data"]));
+					info.WriteCompleteOutput(SaveReaderToolsWordsFile(info.GetPostJson()));
 					return true;
 
 				case "makeLetterAndWordList":

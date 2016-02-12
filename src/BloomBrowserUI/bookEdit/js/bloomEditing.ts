@@ -751,7 +751,7 @@ export var disconnectForGarbageCollection = function () {
     $('[style*=".background-image"]').each(function () { $(this).remove(); });
 };
 
-function loadLongpressInstructions(jQuerySetOfMatchedElements) {
+export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
     axios.get('/bloom/windows/useLongpress')
         .then(response => {
            if (response.data === 'Yes') {

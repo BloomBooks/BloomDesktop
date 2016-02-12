@@ -1,14 +1,15 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import * as $ from 'jquery';
 import {restoreToolboxSettings, showOrHidePanel_click} from './toolbox';
-export {showOrHidePanel_click};
-
 import {ReaderToolsModel} from './decodableReader/readerToolsModel'
 
-// These functions or classes should be available for calling by non-module code (such as C# directly)
-// using the FrameExports object (see more details in BloomFrames.ts)
-import BloomHelp from '../../BloomHelp';
-export {BloomHelp};
+// each of these exports shows up under this window's FrameExports object (see BloomFrames.ts)
+// reviewslog: is this actually needed? Could these be be directly imported where they are used?
+export {showOrHidePanel_click};
+export {showSetupDialog, initializeReaderSetupDialog} from './decodableReader/decodableReader'
+export {addWordListChangedListener} from './decodableReader/readerTools';
+export {loadLongpressInstructions} from '../js/bloomEditing';
+export {default as BloomHelp} from '../../BloomHelp';
 
 export function canUndo() :boolean {
     return (typeof ReaderToolsModel.model != 'undefined') && ReaderToolsModel.model.shouldHandleUndo() && ReaderToolsModel.model.canUndo();

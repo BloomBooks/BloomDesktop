@@ -9,9 +9,12 @@ var previousMoreWords: string;
 
 window.addEventListener('message', process_IO_Message, false);
 
-export function toolboxWindow(): Window {
+export interface ToolboxWindow extends Window{
+    FrameExports:any;
+}
+export function toolboxWindow(): ToolboxWindow {
   if (window.parent)
-    return (<HTMLIFrameElement>window.parent.document.getElementById('toolbox')).contentWindow;
+    return (<HTMLIFrameElement>window.parent.document.getElementById('toolbox')).contentWindow as ToolboxWindow;
 }
 
 function process_IO_Message(event: MessageEvent): void {

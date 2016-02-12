@@ -15,5 +15,6 @@ namespace Bloom.web
 		void WriteError(int errorCode, string errorDescription);
 		System.Collections.Specialized.NameValueCollection GetQueryString();
 		System.Collections.Specialized.NameValueCollection GetPostData();
+		string GetPostJson();
 	}
 }

@@ -23,7 +23,7 @@ describe("readerTools-libSynphony tests", function() {
 
         var sampleFileContents = 'The cat sat on the mat. The rat sat on the cat.';
 
-        var synphony = model.getSynphony();
+        var synphony = model.synphony;
         synphony.loadSettings(settings);
 
         model.addWordsFromFile(sampleFileContents);
@@ -48,7 +48,7 @@ describe("readerTools-libSynphony tests", function() {
         settings.stages.push({"letters":"","sightWords":"carnivore omnivore"});
         settings.stages.push({"letters":"","sightWords":"rodent"});
 
-        var synphony = model.getSynphony();
+        var synphony = model.synphony;
         synphony.loadSettings(settings);
 
         model.addWordsToSynphony();
@@ -92,7 +92,7 @@ describe("readerTools-libSynphony tests", function() {
     it("addWordsToSynphony", function() {
 
         var model = generateTestData();
-        var synphony = model.getSynphony();
+        var synphony = model.synphony;
 
         expect(synphony.stages.length).toBe(3);
         model.setStageNumber(1);

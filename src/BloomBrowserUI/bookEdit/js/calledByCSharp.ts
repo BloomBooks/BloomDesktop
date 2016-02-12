@@ -2,6 +2,7 @@ import { ReaderToolsWindow} from "../toolbox/decodableReader/readerToolsModel";
 
 export class CalledByCSharp {
 
+/* Nothing calls this (Feb 2016)
  ckEditorUndoCommand(): any {
      try {
          return (<any>this.getPageContent()).CKEDITOR.instances.editor1.commands.undo;
@@ -10,6 +11,8 @@ export class CalledByCSharp {
          return null;
      }
  }
+ */
+
 // Moved to FrameExports system
 //   pageSelectionChanging() {
 //     var contentWindow = this.getPageContent();
