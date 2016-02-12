@@ -207,6 +207,9 @@ export function initializeReaderSetupDialog() {
 
     var model = ReaderToolsModel.model;
 
+    if(typeof model.synphony.source == 'undefined' || model.synphony.source === null){
+        throw new Error("ReaderToolsModel.model was not loaded with settings");
+    }
     var sourceMsg = 'Data\n' + JSON.stringify(model.synphony.source);
     var fontMsg = 'Font\n' + model.fontName;
     settingsFrameWindow().postMessage(sourceMsg, '*');

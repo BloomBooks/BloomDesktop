@@ -535,6 +535,8 @@ namespace Bloom.web
 					// are generated temp files most certainly NOT distributed with the application.
 					path = FileLocator.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, modPath);
 				}
+				if (localPath.Contains("favicon.ico")) //need something to pacify Chrome
+					path = FileLocator.GetFileDistributedWithApplication("BloomPack.ico");
 			}
 			catch (ApplicationException)
 			{

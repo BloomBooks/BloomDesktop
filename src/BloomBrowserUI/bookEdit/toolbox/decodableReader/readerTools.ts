@@ -4,7 +4,6 @@
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 import {DirectoryWatcher} from "./directoryWatcher";
 import {ReaderToolsModel} from "./readerToolsModel";
-import {initializeDecodableReaderTool} from "./readerTools";
 import theOneLocalizationManager from '../../../lib/localizationManager/localizationManager';
 import {theOneLanguageDataInstance, LanguageData, theOneLibSynphony, ResetLanguageDataInstance}  from './libSynphony/synphony_lib';
 import './libSynphony/synphony_lib.js';

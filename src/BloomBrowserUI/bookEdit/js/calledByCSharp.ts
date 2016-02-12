@@ -24,7 +24,7 @@ export class CalledByCSharp {
 //       contentWindow['disconnectForGarbageCollection']();
 //   }
 
-/* Nothing calls this (Feb 2016)
+/* Nothing calls this (Feb 2016). Far as I can tell, nothing called it in Bloom 3.5, either.
   loadReaderToolSettings(settings: string, bookFontName: string) {
 
     var contentWindow = this.getToolboxWindow();
