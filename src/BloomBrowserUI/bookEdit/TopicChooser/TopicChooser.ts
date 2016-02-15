@@ -77,8 +77,8 @@ export default class TopicChooser {
     }
 
     static populateTopics(currentTopicKey: string) {
-        axios.get<string>('/bloom/topics').then(result => {
-            var topics = JSON.parse(result.data);
+        axios.get<any>('/bloom/topics').then(result => {
+            var topics = result.data;
             // Here, topics will be an object with a property for each known topic. Each property is a key:value pair
             // where the key is the English, and the value is the topic in the UI Language
 

@@ -1,4 +1,4 @@
-import AudioRecording from './AudioRecording';
+import AudioRecording from './audioRecording';
 
 
 describe("audio recording tests", function() {
