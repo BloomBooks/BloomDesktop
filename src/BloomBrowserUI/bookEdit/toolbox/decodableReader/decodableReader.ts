@@ -78,7 +78,9 @@ class DecodableReaderModel implements ITabModel {
         ReaderToolsModel.model.doMarkup();
     }
 
-    name() { return 'decodableReaderTool'; }
+    name() { return 'decodableReader'; }
+
+    hasRestoredSettings: boolean;
 }
 
 ToolBox.getTabModels().push(new DecodableReaderModel());

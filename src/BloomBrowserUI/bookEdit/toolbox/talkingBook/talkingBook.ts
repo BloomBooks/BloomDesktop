@@ -20,7 +20,9 @@ class TalkingBookModel implements ITabModel {
         AudioRecorder.theOneAudioRecorder.updateMarkupAndControlsToCurrentText();
     }
 
-    name() { return 'talkingBookTool'; }
+    name() { return 'talkingBook'; }
+
+    hasRestoredSettings: boolean;
 }
 
 ToolBox.getTabModels().push(new TalkingBookModel());

@@ -6,7 +6,7 @@ import {saveChangedSettings, cleanSpaceDelimitedList, toolboxWindow, setPrevious
 import {DataWord} from '../libSynphony/bloom_lib';
 import BloomHelp from '../../../../BloomHelp.ts';
 import axios = require('axios');
-import {ReaderToolsModel} from '../readerToolsModel';
+//import {ReaderToolsModel} from '../readerToolsModel';
 import * as _ from 'underscore';
 
 var desiredGPCs: string[];
@@ -27,7 +27,7 @@ function process_UI_Message(event: MessageEvent): void {
       if (s.length > 0) {
 
         var files: string[] = s.split('\r');
-        var extensions: string[] = ReaderToolsModel.getReadableFileExtensions();
+          var extensions: string[] = ['txt', 'js', 'json']; // reviewSlog ReaderToolsModel.getReadableFileExtensions(); but do NOT want to import that here; it should only be in toolbox iframe
         var needsTxtExtension: string = document.getElementById('needs_txt_extension').innerHTML;
         var notSupported: string = document.getElementById('format_not_supported').innerHTML;
         var foundNotSupported: boolean = false;
