@@ -150,6 +150,13 @@ function restoreToolboxSettingsWhenCkEditorReady(settings: string) {
     // is done when a tool becomes current.
 }
 
+// Remove any markup the toolbox is inserting (called before saving page)
+export function removeToolboxMarkup() {
+    if (currentTool != null) {
+        currentTool.hideTool();
+    }
+}
+
 function getPageFrame(): HTMLIFrameElement {
     return <HTMLIFrameElement>parent.window.document.getElementById('page');
 }

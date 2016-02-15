@@ -864,7 +864,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
-			RunJavaScript("if (typeof calledByCSharp != 'undefined') { calledByCSharp.removeSynphonyMarkup(); calledByCSharp.cleanupAudio(); }");
+			RunJavaScript("FrameExports.getToolboxFrameExports().removeToolboxMarkup();");
 			_browser1.ReadEditableAreasNow();
 		}
 

@@ -120,15 +120,17 @@ export default class BloomField {
     // make this way to get a special paste by ctrl-clicking on the paste icon and bypassing
     // ckeditor. So I'm leaving this toy example here to save us
     // time if we need to do something similar in the future.
-    public static CalledByCSharp_SpecialPaste(contents: string) {
-        let html = contents.replace(/[b,c,d,f,g,h,j,k,l,m,n,p,q,r,s,t,v,w,x,z]/g, 'C');
-        html = html.replace(/[a,e,i,o,u]/g, 'V');
-        //convert newlines to paragraphs. We're already inside a  <p>, so each
-        //newline finishes that off and starts a new one
-        html = html.replace(/\n/g, '</p><p>');
-        var page = <HTMLIFrameElement>document.getElementById('page');
-        page.contentWindow.document.execCommand("insertHTML", false, html);
-    }
+    // JohnT: disabled when we switched to modules, since to make it work again we'd have to
+    // work it into FrameExports etc.
+    //public static CalledByCSharp_SpecialPaste(contents: string) {
+    //    let html = contents.replace(/[b,c,d,f,g,h,j,k,l,m,n,p,q,r,s,t,v,w,x,z]/g, 'C');
+    //    html = html.replace(/[a,e,i,o,u]/g, 'V');
+    //    //convert newlines to paragraphs. We're already inside a  <p>, so each
+    //    //newline finishes that off and starts a new one
+    //    html = html.replace(/\n/g, '</p><p>');
+    //    var page = <HTMLIFrameElement>document.getElementById('page');
+    //    page.contentWindow.document.execCommand("insertHTML", false, html);
+    //}
 
     // Since embedded images come before the first editable text, going to the beginning of the field and pressing Backspace moves the current paragraph into the caption. Sigh.
     private static PreventBackspaceAtStartFromMovingTextIntoEmbeddedImageCaption(field: HTMLElement) {

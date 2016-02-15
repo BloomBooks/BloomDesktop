@@ -408,17 +408,19 @@ namespace Bloom
 
 		private void Paste()
 		{
-			if (Control.ModifierKeys == Keys.Control)
-			{
-				var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
-				text = System.Web.HttpUtility.JavaScriptStringEncode(text);
-				RunJavaScript("BloomField.CalledByCSharp_SpecialPaste('" + text + "')");
-			}
-			else
-			{
+			// Saved as an example of how to do a special paste. But since we introduced modules,
+			// if we want this we have to get the ts code into the FrameExports system.
+			//if (Control.ModifierKeys == Keys.Control)
+			//{
+			//	var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
+			//	text = System.Web.HttpUtility.JavaScriptStringEncode(text);
+			//	RunJavaScript("BloomField.CalledByCSharp_SpecialPaste('" + text + "')");
+			//}
+			//else
+			//{
 				//just let ckeditor do the MSWord filtering
 				_browser.Paste();
-			}
+			//}
 		}
 
 		/// <summary>

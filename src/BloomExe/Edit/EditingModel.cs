@@ -664,8 +664,9 @@ namespace Bloom.Edit
 		/// <summary>
 		/// For some reason, we need to call this code OnIdle.
 		/// We couldn't figure out the timing any other way.
-		/// Otherwise, sometimes the calledByCSharp object doesn't exist; then we don't call restoreToolboxSettings.
+		/// Otherwise, sometimes the JS we want to call doesn't exist; then we don't call restoreToolboxSettings.
 		/// If we don't call restoreToolboxSettings, then the more panel stays open without the checkboxes checked.
+		/// reviewSlog: This problem might have gone away with our new efficient loading of code in bundles.
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>

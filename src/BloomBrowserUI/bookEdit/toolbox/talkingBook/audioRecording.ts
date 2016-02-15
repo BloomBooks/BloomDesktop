@@ -339,7 +339,6 @@ export default class AudioRecording {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
         page.find('.ui-audioCurrent').removeClass('ui-audioCurrent');
-        var editable = page.find('div.bloom-editable');
     }
 
     // This gets invoked (via a non-object method of the same name in this file,
@@ -746,11 +745,6 @@ export default class AudioRecording {
         return !test.match(/^\s*$/);
     }
 
-    // Clean up stuff audio recording leaves around that should not be saved.
-    public cleanupAudio(): void {
-        this.getPage().find('span.ui-audioCurrent').removeClass('ui-audioCurrent');
-    }
-
     private fireCSharpEvent(eventName, eventData): void {
         // Note: other implementations of fireCSharpEvent have 'view':'window', but the TS compiler does
         // not like this. It seems to work fine without it, and I don't know why we had it, so I am just
@@ -768,8 +762,4 @@ export function initializeTalkingBookTool() {
     theOneAudioRecorder = new AudioRecording();
     //reviewslog: not allowed    theOneLibSynphony = new LibSynphony();
     theOneAudioRecorder.initializeTalkingBookTool();
-}
-
-function cleanupAudio() {
-    theOneAudioRecorder.cleanupAudio();
 }

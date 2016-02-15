@@ -1,6 +1,6 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 import * as $ from 'jquery';
-import {restoreToolboxSettings, showOrHidePanel_click} from './toolbox';
+import {restoreToolboxSettings, showOrHidePanel_click, removeToolboxMarkup} from './toolbox';
 import {ReaderToolsModel} from './decodableReader/readerToolsModel'
 import TalkingBookModel from './talkingBook/talkingBook';
 import {handleBookSettingCheckboxClick} from './bookSettings/bookSettings';
@@ -8,6 +8,7 @@ import {handleBookSettingCheckboxClick} from './bookSettings/bookSettings';
 // each of these exports shows up under this window's FrameExports object (see BloomFrames.ts)
 // reviewslog: is this actually needed? Could these be be directly imported where they are used?
 export {showOrHidePanel_click};
+export {removeToolboxMarkup};
 export {showSetupDialog, initializeReaderSetupDialog} from './decodableReader/decodableReader'
 export {addWordListChangedListener} from './decodableReader/readerTools';
 export {loadLongpressInstructions} from '../js/bloomEditing';
