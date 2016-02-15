@@ -4,6 +4,7 @@ import {enableSampleWords, displayLetters, selectLetters, selectLevel, selectSta
 import {ReaderStage, ReaderLevel, ReaderSettings, ReaderSettingsReplacer} from '../ReaderSettings';
 import "../../../../lib/jquery.onSafe.js";
 import axios = require('axios');
+import * as _ from 'underscore';
 
 var previousMoreWords: string;
 
