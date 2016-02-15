@@ -3,7 +3,10 @@ This version focuses on what we are calling "the toolbox": a panel on the right 
 
 - You can now hide or show the toolbox
 - Talking book recording is now controlled from a panel in the toolbox
-- Using the "Book Settings" panel, you can now switch between authoring and translation mode, so if you're translating a shell book and need to do things like change a picture, add a page, translate some acknowledgments, whatever... you can switch in to "author mode" and do what you need to do.
+
+- (Delayed) Using the "Book Settings" panel, you can now switch between authoring and translation mode, so if you're translating a shell book and need to do things like change a picture, add a page, translate some acknowledgements, whatever... you can switch in to "author mode" and do what you need to do.
+
+
 ## 3.5
 - You can now copy and cut images
 - You can now hover over an image to get its dimensions, dots-per-inch, and color depth

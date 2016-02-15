@@ -1,21 +1,25 @@
 ﻿<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="bloomEpubPreview.css">
+</head>
 <body>
-  <head>
-    <link rel="stylesheet" type="text/css" href="bloomEpubPreview.css">
-    <link rel="stylesheet" href="/bloom/lib/jquery-ui.css">
-    <script src="/bloom/node_modules/jquery/dist/jquery.js"></script>
-    <script src="/bloom/lib/jquery-ui/jquery-ui.min.js"></script>
-  </head>
   <div id="missingLame">
-      <p>
-          Your book has audio recordings. Bloom can use these to make a talking book. To do this, you must first install \"Lame For Audacity\", if it is legal in your country. This is used to create the compressed recordings
-          required for talking books. Google \"Lame For Audacity\" to get an up-to-date link.
-      </p>
-      <p>If you prefer to go ahead and publish your book without audio, click <a id="proceedWithoutAudio" href="javascript:void(0)">here</a>.</p>
+    <h3>Please Install LAME</h3>
     <p>
-      (Bloom <a href="https://en.wikipedia.org/wiki/EPUB">EPUB</a> Output is an experimental feature. We have included it in this version of Bloom in the hopes that you will try it out and give us feedback that will guide future development.
+      This book has audio recordings. Bloom can use these to make a "Talking Book" e-book. However, Bloom needs a program called "LAME for Audacity" in order to create the mp3 files that the book will use. Setting it up is easy. First download and run <a href='http://lame.buanzo.org/#lamewindl'>'Lame_v3.99 for Windows.exe'</a>. Next, restart Bloom.
     </p>
-    <p>Are you interetested in in distributing Bloom books for use on phones and other ebook readers? Is there something you would need us to do before it is useful for you? Please use the Help:Report A Problem command to send us feedback. Thanks!)
+    <p>
+      If you prefer to go ahead and publish your book without audio, click <a id="proceedWithoutAudio" href="javascript:void(0)">here</a>.
+    </p>
+
+    <h3>Legal Considerations</h3>
+    <p>
+      The use of mp3's is quite confusing for us non-lawyers. Our understanding is that in a few countries (perhaps only in the USA, and then only until 2017), there are patents covering the creation of mp3's. In correspondence with the patent holder's representative, we were told:
+      <blockquote>You may need a license if there is any type of subscription, content, service, per unit or itemized revenue for the distribution of mp3, or if there is any advertising present during the presentation of any mp3 content, either on a webpage with any links to your Talking Books, or as part of a messaging system, and this total mp3-associated mp3 revenue exceeds USD $100,000 per year.</blockquote>
+
+      Therefore, if you are just making Talking Books and giving them away, then only the distributor (e.g. BloomLibrary.org) needs to be concerned about licensing this technology (and since we don't make money from BloomLibrary.org, we don't have to worry, either.) For more information, see <a href="http://www.mp3licensing.com/">mp3licensing.com</a>
     </p>
   </div>
 </body>
+</html>
