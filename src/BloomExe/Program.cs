@@ -1038,6 +1038,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
 		private static void CheckForCorruptUserConfig()
 		{
+#if WaitForBloom3pt6
 			//First check the user.config we get through using the palaso stuff.  This is the one in a folder with a name like Bloom/3.5.0.0
 			var palasoSettings = new SIL.Settings.CrossPlatformSettingsProvider();
 			palasoSettings.Initialize(null,null);
@@ -1050,7 +1051,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 				Logger.WriteEvent("error reading palaso user config: "+error.Message);
 				Logger.WriteEvent("Should self-heal");
 			}
-
+#endif
 			//Now check the plain .net user.config we also use (sigh). This is the one in a folder with a name like Bloom.exe_Url_avygitvf1lws5lpjrmoh5j0ggsx4tkj0
 
 			//roughly from http://stackoverflow.com/questions/9572243/what-causes-user-config-to-empty-and-how-do-i-restore-without-restarting
