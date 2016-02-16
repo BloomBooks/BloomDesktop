@@ -55,7 +55,7 @@ namespace Bloom.Edit
 			var domForToolbox = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(path));
 
 			//enhance: this is yet another "place you have to register a new tool"
-			var idsOfToolsThisVersionKnowsAbout = new[] { DecodableReaderTool.StaticToolId, LeveledReaderTool.StaticToolId, TalkingBookTool.StaticToolId, BookSettingsTool.StaticToolId };
+			var idsOfToolsThisVersionKnowsAbout = new[] { DecodableReaderTool.StaticToolId, LeveledReaderTool.StaticToolId, TalkingBookTool.StaticToolId, /*BookSettingsTool.StaticToolId*/ };
 
 			var toolsToDisplay = GetToolsToDisplay(book, idsOfToolsThisVersionKnowsAbout);
 
