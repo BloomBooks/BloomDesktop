@@ -77,7 +77,7 @@ namespace Bloom.Book
 			BookRefreshEvent bookRefreshEvent)
 		{
 			BookInfo = info;
-			UserPrefs = UserPrefs.Load(Path.Combine(info.FolderPath, "book.userPrefs"));
+			UserPrefs = UserPrefs.LoadOrMakeNew(Path.Combine(info.FolderPath, "book.userPrefs"));
 
 			Guard.AgainstNull(storage,"storage");
 

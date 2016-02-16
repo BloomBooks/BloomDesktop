@@ -1,5 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Diagnostics;
+using Newtonsoft.Json;
 using System.IO;
+using SIL.Reporting;
+
 
 namespace Bloom.Book
 {
@@ -11,12 +15,30 @@ namespace Bloom.Book
 
 		private UserPrefs() {}
 
-		public static UserPrefs Load(string fileName)
+		public static UserPrefs LoadOrMakeNew(string fileName)
 		{
 			if (string.IsNullOrEmpty(fileName))
 				return null;
 
-			var userPrefs = File.Exists(fileName) ? JsonConvert.DeserializeObject<UserPrefs>(File.ReadAllText(fileName)) : new UserPrefs();
+			UserPrefs userPrefs = null;
+			if(File.Exists(fileName))
+			{
+				try
+				{
+					userPrefs = JsonConvert.DeserializeObject<UserPrefs>(File.ReadAllText(fileName));
+					if (userPrefs == null)
+						throw new ApplicationException("JsonConvert.DeserializeObject() returned null");
+				}
+				catch (Exception e)
+				{
+					Logger.WriteEvent("error reading UserPrefs at "+fileName+"  "+e.Message);
+					//otherwise, just give them a new user prefs
+					userPrefs = null;
+				}
+				
+			}
+			if(userPrefs == null)
+				userPrefs = new UserPrefs();
 			userPrefs._fileName = fileName;
 			userPrefs._loading = false;
 			return userPrefs;
