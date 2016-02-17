@@ -119,15 +119,15 @@ class AudioRecording {
         this.setStatus('listen', Status.Enabled);
     }
 
-    // Gecko does not notice when a file indicated by the src attribute of the player
-    // is created or deleted; it will cache the previous content of the file or
-    // remember if no such file previously existed. Changing src
-    // to something else and back fixes this.
+    // Gecko has no way of knowing that we've created or modified the audio file,
+    // so it will cache the previous content of the file or
+    // remember if no such file previously existed. So we add a bogus query string
+    // based on the current time so that it asks the server for the file again.
+    // Fixes BL-3161
     private updatePlayerStatus() {
         var player = $('#player');
         var src = player.attr('src');
-        player.attr('src', '');
-        player.attr('src', src);
+        player.attr('src', src+"?nocache="+new Date().getTime());
     }
 
     private startRecordCurrent(): void {
