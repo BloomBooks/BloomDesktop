@@ -74,7 +74,7 @@ namespace Bloom.Edit
 			}
 		}
 #endif
-		private readonly string _backupPath; // If we are about to replace a recording, save the old one here; a temp file.
+		private string _backupPath; // If we are about to replace a recording, save the old one here; a temp file.
 		private DateTime _startRecording; // For tracking recording length.
 #if __MonoCS__
 #else
@@ -257,16 +257,34 @@ namespace Bloom.Edit
 
 			if (File.Exists(Path))
 			{
+				//Try to deal with _backPath getting locked (BL-3160)
+				try
+				{
+					File.Delete(_backupPath);
+				}
+				catch(IOException)
+				{
+					_backupPath = System.IO.Path.GetTempFileName();
+				}
 				try
 				{
 					File.Copy(Path, _backupPath, true);
+				}
+				catch (Exception err)
+				{
+					ErrorReport.NotifyUserOfProblem(err,
+						"Bloom cold not copy "+Path+" to "+_backupPath+" If things remains stuck, you may need to restart your computer.");
+					return false;
+				}
+				try
+				{
 					File.Delete(Path);
 					//DesktopAnalytics.Analytics.Track("Re-recorded a clip", ContextForAnalytics);
 				}
 				catch (Exception err)
 				{
 					ErrorReport.NotifyUserOfProblem(err,
-						"Sigh. The old copy of that file is locked up, so we can't record over it at the moment. Yes, this problem will need to be fixed.");
+						"The old copy of the recording at " + Path + " is locked up, so Bloom can't record over it at the moment. If it remains stuck, you may need to restart your computer.");
 					return false;
 				}
 			}
