@@ -126,7 +126,7 @@ class AudioRecording {
     // Fixes BL-3161
     private updatePlayerStatus() {
         var player = $('#player');
-        var src = player.attr('src');
+        var src = player.attr('src').split("?")[0]; // strip off any previous query string
         player.attr('src', src+"?nocache="+new Date().getTime());
     }
 
