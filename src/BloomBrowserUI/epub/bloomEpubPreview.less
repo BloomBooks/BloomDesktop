@@ -1,3 +1,10 @@
+a:hover {
+    color: blue;
+}
+a {
+    color: black;
+}
+
 body {
 	background-color: #808080;
     font-family:"Segoe UI";
@@ -28,13 +35,12 @@ body {
    padding-top: 131px;
   content:''
 }*/
-#instructions{
+#sideColumn{
   background-repeat: no-repeat;
   position: absolute;
   top:10px;
   left: 50px;
   width: 217px;
-  padding-top: 131px;
   display: block;
 }
 #device {
@@ -95,4 +101,18 @@ iframe {
 }
 #missingLame{
     max-width: 4in;
+}
+
+//Hide all the conditional texts
+.showWhenHaveAudioButNotMakingTalkingBook, .showForTalkingBooks, .showWhenNoAudio{
+    display: none;    
+}
+
+//Show the conditional texts that match the _AudioSituationClass_ the c# has replaced at runtime
+.noAudioAvailable .showWhenNoAudio, .isTalkingBook .showForTalkingBooks, .haveAudioButNotMakingTalkingBook .showWhenHaveAudioButNotMakingTalkingBook{
+    display: inherit;
+}
+
+.isTalkingBook span.showForTalkingBooks{
+    display:inline !important;
 }

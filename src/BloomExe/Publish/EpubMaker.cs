@@ -257,6 +257,17 @@ namespace Bloom.Publish
 			get { return Path.Combine(Storage.FolderPath, "audio"); }
 		}
 
+		public bool BookHasAudio
+ 		{
+ 			get
+ 			{
+ 				return
+ 					Book.RawDom.SafeSelectNodes("//span[@id]")
+ 						.Cast<XmlElement>()
+ 						.Any(span => AudioPathForId(span.Attributes["id"].Value) != null);
+ 			}
+ 		}
+
 		private bool IsCompressedAudioForIdMissing(string id)
 		{
 			if (AudioPathForId(id) != null)

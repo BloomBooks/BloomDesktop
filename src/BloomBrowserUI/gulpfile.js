@@ -1,4 +1,4 @@
-/// <binding BeforeBuild='default' />
+/// <binding BeforeBuild='default' ProjectOpened='default' />
 var gulp = require('gulp');  
 var debug = require('gulp-debug');
 var ts = require('gulp-typescript');
@@ -8,7 +8,7 @@ var path = require('path');
 var sourcemaps = require('gulp-sourcemaps');
 
 var paths = {
-   typescript: ['./**/*.ts','!./**/*.d.ts'],
+   typescript: ['./**/*.ts','!./**/*.d.ts','!./node_modules/**/*.*'],
    less: ['./**/*.less',  '!./node_modules/**/*.less'],
   jade: ['./**/*.jade',  '!./node_modules/**/*.jade']
 };
