@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using L10NSharp;
 #if __MonoCS__
@@ -13,7 +11,7 @@ using SIL.Media.Naudio;
 #endif
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Windows.Forms.Widgets;
+
 // Note: it is for the benefit of this component that Bloom references NAudio. We don't use it directly,
 // but Palaso.Media does, and we need to make sure it gets copied to our output.
 
@@ -207,10 +205,17 @@ namespace Bloom.Edit
 				WarnPressTooShort();
 			else
 			{
-				_mp3Encoder.Encode(Path, Path.Substring(0, Path.Length - 4), new NullProgress());
-				// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format (or alternative mp4)
-				// is required for epub. The wav file is a better permanent record of the recording; also,
-				// it is used for playback.
+				//We don't actually need the mp3 now, so let people play with recording even without LAME (previously it could crash BL-3159).
+				//We could put this off entirely until we make the epub.
+				//I'm just gating this for now because maybe the thought was that it's better to do it a little at a time?
+				//That's fine so long as it doesn't make the UI unresponsive on slow machines.
+				if(LameEncoder.IsAvailable())
+				{
+					_mp3Encoder.Encode(Path, Path.Substring(0, Path.Length - 4), new NullProgress());
+					// Note: we need to keep the .wav file as well as the mp3 one. The mp3 format (or alternative mp4)
+					// is required for epub. The wav file is a better permanent record of the recording; also,
+					// it is used for playback.
+				}
 			}
 #endif
 		}
