@@ -113,6 +113,7 @@ class AudioRecording {
         if (!this.recording) return; // sometimes we get bounce?
         this.recording = false;
         this.fireCSharpEvent("endRecordAudio", "");
+        this.setStatus('record', Status.Disabled);
         this.updatePlayerStatus();
         this.setStatus('record', Status.Enabled);
         this.setStatus('play', Status.Expected);

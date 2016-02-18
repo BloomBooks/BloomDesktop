@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
+using SIL.Reporting;
 
 
 namespace Bloom.web
@@ -66,7 +67,28 @@ namespace Bloom.web
 			var buffer = new byte[1024 * 512]; //512KB
 			var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
 
-			using (var fs = File.OpenRead(path))
+			//Deal with BL-3153, where the file was still open in another thread
+			FileStream fs;
+			try
+			{
+				fs = File.OpenRead(path);
+			}
+			catch(System.IO.FileNotFoundException error)
+			{
+
+				Logger.WriteError("Server could not find" + path, error);
+				_actualContext.Response.StatusCode = 404;
+				return;
+			}
+			catch (Exception error)
+			{
+
+				Logger.WriteError("Server could not read " + path, error);
+				_actualContext.Response.StatusCode = 500;
+				return;
+			}
+
+			using (fs)
 			{
 				_actualContext.Response.ContentLength64 = fs.Length;
 				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));//helps with debugging what file is being chosen
